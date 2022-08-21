@@ -15,7 +15,7 @@ struct App {
     slider_2_value: f32,
     record_state: button::State,
     recording: bool,
-    record_sender: Option<std::sync::mpsc::Sender<bool>>,
+    record_sender: Option<std::sync::mpsc::Sender<(bool, f32, f32)>>,
     input_device_list_state: pick_list::State<String>,
     input_device_list_options: Vec<String>,
     input_device_list_selected: Option<String>,
@@ -83,15 +83,17 @@ impl Application for App {
         match msg {
             Message::Slider1Changed(new_value) => {
                 self.slider_1_value = new_value;
+                self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
             }
             Message::Slider2Changed(new_value) => {
                 self.slider_2_value = new_value;
+                self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
             }
             Message::RecordPressed => {
                 if self.recording {
                     if self.record_sender.is_some()
                     {
-                        self.record_sender.as_ref().unwrap().send(false).unwrap();
+                        self.record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                     }
                 } else {
                     let (record_sender, record_receiver) = std::sync::mpsc::channel();
@@ -99,7 +101,7 @@ impl Application for App {
                     let input_device_name = self.input_device_list_selected.clone();
                     let output_device_name = self.output_device_list_selected.clone();
                     std::thread::spawn(move || { start_recording(record_receiver, input_device_name, output_device_name) }); 
-                    self.record_sender.as_ref().unwrap().send(true).unwrap();
+                    self.record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                 }
 
                 self.recording = !self.recording;
@@ -154,7 +156,7 @@ impl Application for App {
     }
 }
 
-fn start_recording(record_receiver: std::sync::mpsc::Receiver<bool>, input_device_name: Option<String>, output_device_name: Option<String>)  {
+fn start_recording(record_receiver: std::sync::mpsc::Receiver<(bool, f32, f32)>, input_device_name: Option<String>, output_device_name: Option<String>)  {
     let host = cpal::default_host();
 
     //FIXME better unique identifier than the name of the device
@@ -172,17 +174,19 @@ fn start_recording(record_receiver: std::sync::mpsc::Receiver<bool>, input_devic
     let config = cpal::StreamConfig { channels: 1, sample_rate: SampleRate(48000), buffer_size: BufferSize::Default };
     let ring = RingBuffer::new(100_0000);
     let (mut producer, mut consumer) = ring.split();
+    static mut input_volume: f32 = 50.0;
+    static mut output_volume: f32 = 50.0;
 
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {
         for &sample in data {
-            producer.push(sample).unwrap();
+            producer.push(sample * unsafe { input_volume } / 100.0).unwrap();
         }
     };
 
     let output_data_fn = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
         for sample in data {
             *sample = match consumer.pop() {
-                Some(s) => s,
+                Some(s) => s * unsafe { output_volume } / 100.0,
                 None => {
                     0.0
                 }
@@ -196,8 +200,10 @@ fn start_recording(record_receiver: std::sync::mpsc::Receiver<bool>, input_devic
     input_stream.play().unwrap();
     output_stream.play().unwrap();
     loop {
-        let recording = record_receiver.recv().unwrap();
+        let (recording, ivol, ovol) = record_receiver.recv().unwrap();
         if recording {
+            unsafe { input_volume = ivol };
+            unsafe { output_volume = ovol };
             std::thread::sleep(std::time::Duration::from_millis(50));
         } else {
             break
