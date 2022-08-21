@@ -41,9 +41,9 @@ impl Application for App {
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
         let slider_1_state = slider::State::new();
-        let slider_1_value = 50.0;
+        let slider_1_value = 85.0;
         let slider_2_state = slider::State::new();
-        let slider_2_value = 50.0;
+        let slider_2_value = 85.0;
         let record_state = button::State::new();
         let recording = false;
         let record_sender = None;
@@ -178,19 +178,31 @@ fn start_recording(record_receiver: std::sync::mpsc::Receiver<(bool, f32, f32)>,
     let config = cpal::StreamConfig { channels: 1, sample_rate: SampleRate(48000), buffer_size: BufferSize::Default };
     let ring = RingBuffer::new(100_0000);
     let (mut producer, mut consumer) = ring.split();
-    static mut input_volume: f32 = 50.0;
-    static mut output_volume: f32 = 50.0;
+    static mut input_volume: f32 = 85.0;
+    static mut output_volume: f32 = 85.0;
 
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {
         for &sample in data {
-            producer.push(sample * unsafe { input_volume } / 100.0).unwrap();
+            // -90 to +10dB log scale? (maybe)
+            // https://www.reddit.com/r/programming/comments/9n2y0/stop_making_linear_volume_controls/c0dgsjj
+            let db = (-90.0) + (10.0 - (-90.0)) * ( unsafe { input_volume } / 100.0);
+            let mut scale = (db/20.0 * (10.0f32).log10()).exp();
+            if unsafe { input_volume } == 0.0 { scale = 0.0 };
+            producer.push(sample * scale).unwrap();
         }
     };
 
     let output_data_fn = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
         for sample in data {
             *sample = match consumer.pop() {
-                Some(s) => s * unsafe { output_volume } / 100.0,
+                Some(s) => {
+                    // -90 to +10dB log scale? (maybe)
+                    // https://www.reddit.com/r/programming/comments/9n2y0/stop_making_linear_volume_controls/c0dgsjj
+                    let db = (-90.0) + (10.0 - (-90.0)) * ( unsafe { output_volume } / 100.0);
+                    let mut scale = (db/20.0 * (10.0f32).log10()).exp();
+                    if unsafe { output_volume } == 0.0 { scale = 0.0 };
+                    s * scale
+                },
                 None => {
                     0.0
                 }
