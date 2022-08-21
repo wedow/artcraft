@@ -83,11 +83,15 @@ impl Application for App {
         match msg {
             Message::Slider1Changed(new_value) => {
                 self.slider_1_value = new_value;
-                self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                if self.record_sender.is_some() {
+                    self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                }
             }
             Message::Slider2Changed(new_value) => {
                 self.slider_2_value = new_value;
-                self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                if self.record_sender.is_some() {
+                    self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                }
             }
             Message::RecordPressed => {
                 if self.recording {
