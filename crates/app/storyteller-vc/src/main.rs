@@ -112,9 +112,30 @@ impl Application for App {
             }
             Message::InputDeviceChanged(new_device) => {
                 self.input_device_list_selected = Some(new_device);
+                // Restart recording if currently recording and the device changes
+                if self.recording {
+                    self.record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                    let (record_sender, record_receiver) = std::sync::mpsc::channel();
+                    self.record_sender = Some(record_sender);
+                    let input_device_name = self.input_device_list_selected.clone();
+                    let output_device_name = self.output_device_list_selected.clone();
+                    std::thread::spawn(move || { start_recording(record_receiver, input_device_name, output_device_name) }); 
+                    self.record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                }
             }
             Message::OutputDeviceChanged(new_device) => {
                 self.output_device_list_selected = Some(new_device);
+                // Restart recording if currently recording and the device changes
+                if self.recording {
+                    self.record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                    let (record_sender, record_receiver) = std::sync::mpsc::channel();
+                    self.record_sender = Some(record_sender);
+                    let input_device_name = self.input_device_list_selected.clone();
+                    let output_device_name = self.output_device_list_selected.clone();
+                    std::thread::spawn(move || { start_recording(record_receiver, input_device_name, output_device_name) }); 
+                    self.record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                }
+
             }
         }
         Command::none()
@@ -155,7 +176,7 @@ impl Application for App {
                 )
             )
             .push(
-                Button::new(&mut self.record_state, if self.recording { Text::new("Stop") } else  {Text::new("Record")} ).on_press(Message::RecordPressed)
+                Button::new(&mut self.record_state, if self.recording { Text::new("Stop") } else {Text::new("Record")} ).on_press(Message::RecordPressed)
             ).into()
     }
 }
