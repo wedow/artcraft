@@ -3,35 +3,52 @@ use iced::widget::{Slider, slider, Button, button, Text, pick_list, PickList};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{SampleRate, BufferSize, Device};
 use ringbuf::RingBuffer;
+use native_dialog::FileDialog;
 
 pub fn main() -> iced::Result {
     App::run(Settings::default())
 }
 
 struct App {
+    model_browse_state: button::State,
     slider_1_state: slider::State,
     slider_1_value: f32,
     slider_2_state: slider::State,
     slider_2_value: f32,
     record_state: button::State,
     recording: bool,
-    record_sender: Option<std::sync::mpsc::Sender<(bool, f32, f32)>>,
+    record_sender: Option<std::sync::mpsc::Sender<(bool, f32)>>,
+    play_target_state: button::State,
+    play_source_state: button::State,
+    target_playing: bool,
+    source_playing: bool,
+    realtime_record_state: button::State,
+    realtime_recording: bool,
+    realtime_record_sender: Option<std::sync::mpsc::Sender<(bool, f32, f32)>>,
     input_device_list_state: pick_list::State<String>,
     input_device_list_options: Vec<String>,
     input_device_list_selected: Option<String>,
+    input_browse_state: button::State,
     output_device_list_state: pick_list::State<String>,
     output_device_list_options: Vec<String>,
     output_device_list_selected: Option<String>,
+    output_browse_state: button::State,
 }
 
 
 #[derive(Clone, Debug)]
 enum Message {
+    ModelBrowsePressed,
     Slider1Changed(f32),
     Slider2Changed(f32),
     RecordPressed,
+    PlayTargetPressed,
+    PlaySourcePressed,
+    RealtimeRecordPressed,
     InputDeviceChanged(String),
     OutputDeviceChanged(String),
+    InputBrowsePressed,
+    OutputBrowsePressed,
 }
 
 impl Application for App {
@@ -40,6 +57,7 @@ impl Application for App {
     type Flags = ();
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
+        let model_browse_state = button::State::new();
         let slider_1_state = slider::State::new();
         let slider_1_value = 85.0;
         let slider_2_state = slider::State::new();
@@ -47,15 +65,27 @@ impl Application for App {
         let record_state = button::State::new();
         let recording = false;
         let record_sender = None;
+        let play_target_state = button::State::new();
+        let play_source_state = button::State::new();
+        let target_playing = false;
+        let source_playing = false;
+        let realtime_record_state = button::State::new();
+        let realtime_recording = false;
+        let realtime_record_sender = None;
         let input_device_list_state = pick_list::State::new();
-        let input_device_list_options = cpal::default_host().input_devices().unwrap().map(|d|d.name().unwrap()).collect();
+        let mut input_device_list_options: Vec<String> = cpal::default_host().input_devices().unwrap().map(|d|d.name().unwrap()).collect();
+        input_device_list_options.insert(0, String::from("From file"));
+        let input_browse_state = button::State::new();
         let input_device_list_selected = None;
         let output_device_list_state = pick_list::State::new();
-        let output_device_list_options = cpal::default_host().output_devices().unwrap().map(|d| d.name().unwrap()).collect();
+        let mut output_device_list_options: Vec<String> = cpal::default_host().output_devices().unwrap().map(|d| d.name().unwrap()).collect();
+        output_device_list_options.insert(0, String::from("To file"));
         let output_device_list_selected = None;
+        let output_browse_state = button::State::new();
 
         (
             App {
+                model_browse_state,
                 slider_1_state,
                 slider_1_value,
                 slider_2_state,
@@ -63,77 +93,106 @@ impl Application for App {
                 record_state,
                 recording,
                 record_sender,
+                play_target_state,
+                play_source_state,
+                target_playing,
+                source_playing,
+                realtime_record_state,
+                realtime_recording,
+                realtime_record_sender,
                 input_device_list_state,
                 input_device_list_options,
                 input_device_list_selected,
+                input_browse_state,
                 output_device_list_state,
                 output_device_list_options,
                 output_device_list_selected,
-
+                output_browse_state,
             },
             Command::none()
         )
     }
 
     fn title(&self) -> String {
-        String::from("Storyteller VC")
+        String::from("Storyteller Recast")
     }
 
     fn update(&mut self, msg: Self::Message) -> Command<Self::Message> {
         match msg {
             Message::Slider1Changed(new_value) => {
                 self.slider_1_value = new_value;
-                if self.record_sender.is_some() {
-                    self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                if self.realtime_record_sender.is_some() {
+                    self.realtime_record_sender.as_ref().unwrap().send((self.realtime_recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                 }
             }
             Message::Slider2Changed(new_value) => {
                 self.slider_2_value = new_value;
-                if self.record_sender.is_some() {
-                    self.record_sender.as_ref().unwrap().send((self.recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                if self.realtime_record_sender.is_some() {
+                    self.realtime_record_sender.as_ref().unwrap().send((self.realtime_recording.clone(), self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                 }
             }
-            Message::RecordPressed => {
-                if self.recording {
-                    if self.record_sender.is_some()
+            // Realtime record button => record and playback at the same time
+            Message::RealtimeRecordPressed => {
+                if self.realtime_recording {
+                    if self.realtime_record_sender.is_some()
                     {
-                        self.record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                        self.realtime_record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                     }
                 } else {
-                    let (record_sender, record_receiver) = std::sync::mpsc::channel();
-                    self.record_sender = Some(record_sender);
+                    let (realtime_record_sender, realtime_record_receiver) = std::sync::mpsc::channel();
+                    self.realtime_record_sender = Some(realtime_record_sender);
                     let input_device_name = self.input_device_list_selected.clone();
-                    let output_device_name = self.output_device_list_selected.clone();
-                    std::thread::spawn(move || { start_recording(record_receiver, input_device_name, output_device_name) }); 
-                    self.record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                    let output_device_name = self.output_device_list_selected.clone(); std::thread::spawn(move || { start_realtime_recording(realtime_record_receiver, input_device_name, output_device_name) }); 
+                    self.realtime_record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                 }
 
-                self.recording = !self.recording;
+                self.realtime_recording = !self.realtime_recording;
             }
+            Message::ModelBrowsePressed => { 
+                let path = FileDialog::new()
+                    .add_filter("Storyteller Recast Model", &["recast"])
+                    .show_open_single_file()
+                    .unwrap();
+            }
+            Message::InputBrowsePressed => { 
+                let path = FileDialog::new()
+                    .add_filter("WAV audio file", &["wav"])
+                    .show_open_single_file()
+                    .unwrap();
+            }
+            Message::OutputBrowsePressed => { 
+                let path = FileDialog::new()
+                    .add_filter("WAV audio file", &["wav"])
+                    .show_save_single_file()
+                    .unwrap();
+            }
+            Message::RecordPressed => { }
+            Message::PlayTargetPressed => { }
+            Message::PlaySourcePressed => { }
             Message::InputDeviceChanged(new_device) => {
                 self.input_device_list_selected = Some(new_device);
                 // Restart recording if currently recording and the device changes
-                if self.recording {
-                    self.record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
-                    let (record_sender, record_receiver) = std::sync::mpsc::channel();
-                    self.record_sender = Some(record_sender);
+                if self.realtime_recording {
+                    self.realtime_record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                    let (realtime_record_sender, realtime_record_receiver) = std::sync::mpsc::channel();
+                    self.realtime_record_sender = Some(realtime_record_sender);
                     let input_device_name = self.input_device_list_selected.clone();
                     let output_device_name = self.output_device_list_selected.clone();
-                    std::thread::spawn(move || { start_recording(record_receiver, input_device_name, output_device_name) }); 
-                    self.record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                    std::thread::spawn(move || { start_realtime_recording(realtime_record_receiver, input_device_name, output_device_name) }); 
+                    self.realtime_record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                 }
             }
             Message::OutputDeviceChanged(new_device) => {
                 self.output_device_list_selected = Some(new_device);
                 // Restart recording if currently recording and the device changes
-                if self.recording {
-                    self.record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
-                    let (record_sender, record_receiver) = std::sync::mpsc::channel();
-                    self.record_sender = Some(record_sender);
+                if self.realtime_recording {
+                    self.realtime_record_sender.as_ref().unwrap().send((false, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                    let (realtime_record_sender, realtime_record_receiver) = std::sync::mpsc::channel();
+                    self.realtime_record_sender = Some(realtime_record_sender);
                     let input_device_name = self.input_device_list_selected.clone();
                     let output_device_name = self.output_device_list_selected.clone();
-                    std::thread::spawn(move || { start_recording(record_receiver, input_device_name, output_device_name) }); 
-                    self.record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
+                    std::thread::spawn(move || { start_realtime_recording(realtime_record_receiver, input_device_name, output_device_name) }); 
+                    self.realtime_record_sender.as_ref().unwrap().send((true, self.slider_1_value.clone(), self.slider_2_value.clone())).unwrap();
                 }
 
             }
@@ -142,7 +201,33 @@ impl Application for App {
     }
 
     fn view(&mut self) -> Element<Self::Message> {
-        Column::new()
+        let mut file_selection_row_elems: Vec<Element<Self::Message>> = vec![];
+        if self.input_device_list_selected == Some(String::from("From file"))
+        {
+            file_selection_row_elems.push(
+                Text::new("Input File: ").into()
+            );
+            file_selection_row_elems.push(
+                Button::new(&mut self.input_browse_state, Text::new("Browse")).on_press(Message::InputBrowsePressed).into()
+            );
+        }
+        if self.output_device_list_selected == Some(String::from("To file"))
+        {
+            file_selection_row_elems.push(
+                Text::new("Output File: ").into()
+            );
+            file_selection_row_elems.push(
+                Button::new(&mut self.output_browse_state, Text::new("Browse")).on_press(Message::OutputBrowsePressed).into()
+            );
+        }
+        let mut file_selection_row = Row::with_children(file_selection_row_elems);
+
+        let elements = Column::new()
+            .push(
+                Row::new()
+                .push(Text::new("Select Voice File: "))
+                .push(Button::new(&mut self.model_browse_state, Text::new("Browse")).on_press(Message::ModelBrowsePressed))
+            )
             .push(
                 Row::new()
                 .push(Text::new("Input Device: "))
@@ -165,6 +250,9 @@ impl Application for App {
                 )
             )
             .push(
+                file_selection_row
+            )
+            .push(
                 Row::new()
                 .push(Text::new("Input Volume: "))
                 .push(
@@ -176,12 +264,28 @@ impl Application for App {
                 )
             )
             .push(
-                Button::new(&mut self.record_state, if self.recording { Text::new("Stop") } else {Text::new("Record")} ).on_press(Message::RecordPressed)
-            ).into()
+                Row::new()
+                .push(
+                    Button::new(&mut self.record_state, if self.recording { Text::new("Stop")} else {Text::new("Record")}).on_press(Message::RecordPressed)
+                )
+                .push(
+                    Button::new(&mut self.play_target_state, Text::new("Play Target")).on_press(Message::PlayTargetPressed)
+                )
+                .push(
+                    Button::new(&mut self.play_source_state, Text::new("Play Source")).on_press(Message::PlaySourcePressed)
+                )
+                .push(
+                    Button::new(&mut self.realtime_record_state, if self.realtime_recording { Text::new("Stop") } else {Text::new("Realtime\n(experimental)")}).on_press(Message::RealtimeRecordPressed)
+                )
+
+            );
+
+        elements.into()
     }
 }
 
-fn start_recording(record_receiver: std::sync::mpsc::Receiver<(bool, f32, f32)>, input_device_name: Option<String>, output_device_name: Option<String>)  {
+// Realtime record => record and playback at the same time
+fn start_realtime_recording(realtime_record_receiver: std::sync::mpsc::Receiver<(bool, f32, f32)>, input_device_name: Option<String>, output_device_name: Option<String>)  {
     let host = cpal::default_host();
 
     //FIXME better unique identifier than the name of the device
@@ -199,6 +303,7 @@ fn start_recording(record_receiver: std::sync::mpsc::Receiver<(bool, f32, f32)>,
     let config = cpal::StreamConfig { channels: 1, sample_rate: SampleRate(48000), buffer_size: BufferSize::Default };
     let ring = RingBuffer::new(100_0000);
     let (mut producer, mut consumer) = ring.split();
+    //FIXME unsafe
     static mut input_volume: f32 = 85.0;
     static mut output_volume: f32 = 85.0;
 
@@ -237,8 +342,8 @@ fn start_recording(record_receiver: std::sync::mpsc::Receiver<(bool, f32, f32)>,
     input_stream.play().unwrap();
     output_stream.play().unwrap();
     loop {
-        let (recording, ivol, ovol) = record_receiver.recv().unwrap();
-        if recording {
+        let (realtime_recording, ivol, ovol) = realtime_record_receiver.recv().unwrap();
+        if realtime_recording {
             unsafe { input_volume = ivol };
             unsafe { output_volume = ovol };
             std::thread::sleep(std::time::Duration::from_millis(50));

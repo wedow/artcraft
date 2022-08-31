@@ -1,5 +1,5 @@
 [package]
-name = "storyteller-vc"
+name = "storyteller-recast"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 iced = "0.4.2"
 ringbuf = "0.2.8"
+native-dialog = "0.6.3"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 cpal = { version = "0.13.5", features=["wasm-bindgen"] }
