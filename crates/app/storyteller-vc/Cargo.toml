@@ -9,6 +9,8 @@ edition = "2021"
 iced = "0.4.2"
 ringbuf = "0.2.8"
 native-dialog = "0.6.3"
+tch = "0.8.0"
+hound = "3.4.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 cpal = { version = "0.13.5", features=["wasm-bindgen"] }
