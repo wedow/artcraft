@@ -778,6 +778,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "fakeyou-recast"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "cpal",
+ "hound",
+ "iced",
+ "iced_native",
+ "native-dialog",
+ "ringbuf",
+ "tch",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2283,22 +2299,6 @@ name = "stdweb"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef5430c8e36b713e13b48a9f709cc21e046723fe44ce34587b73a830203b533e"
-
-[[package]]
-name = "storyteller-recast"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook",
- "cpal",
- "hound",
- "iced",
- "iced_native",
- "native-dialog",
- "ringbuf",
- "tch",
- "wasm-bindgen",
- "web-sys",
-]
 
 [[package]]
 name = "str-buf"
