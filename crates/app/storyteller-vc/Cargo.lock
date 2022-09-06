@@ -2292,6 +2292,7 @@ dependencies = [
  "cpal",
  "hound",
  "iced",
+ "iced_native",
  "native-dialog",
  "ringbuf",
  "tch",

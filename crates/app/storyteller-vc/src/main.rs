@@ -1,7 +1,8 @@
 use std::fs::File;
-use std::path::Path;
-use iced::{executor, Application, Command, Element, Settings, Column, Row};
+use std::path::PathBuf;
+use iced::{executor, Application, Command, Element, Settings, Column, Row, window, Subscription, keyboard::{self, KeyCode}};
 use iced::widget::{Slider, slider, Button, button, Text, pick_list, PickList};
+use iced_native::{event, subscription, Event};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{SampleRate, BufferSize};
 use ringbuf::RingBuffer;
@@ -9,15 +10,34 @@ use native_dialog::FileDialog;
 use tch::{CModule, Tensor};
 
 pub fn main() -> iced::Result {
-    App::run(Settings::default())
+    let settings = Settings {
+        window: window::Settings {
+            size: (838, 400),
+            resizable: true,
+            decorations: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    App::run(settings)
 }
 
 
 //FIXME unsafe
 static mut RECORD_BUF: [f32; 319507] = [0.0; 319507];
+static mut RECORD_SAMPLE_COUNT: usize = 0;
+static mut INPUT_VOLUME: f32 = 80.0;
+static mut OUTPUT_VOLUME: f32 = 80.0;
 
 struct App {
+    models: Models,
     model_browse_state: button::State,
+    model_browse_selected: Option<PathBuf>,
+    hifigan_browse_state: button::State,
+    hifigan_browse_selected: Option<PathBuf>,
+    hubert_browse_state: button::State,
+    hubert_browse_selected: Option<PathBuf>,
+    show_debug: bool,
     slider_1_state: slider::State,
     slider_1_value: f32,
     slider_2_state: slider::State,
@@ -36,19 +56,119 @@ struct App {
     input_device_list_options: Vec<String>,
     input_device_list_selected: Option<String>,
     input_browse_state: button::State,
+    input_browse_selected: Option<PathBuf>,
     output_device_list_state: pick_list::State<String>,
     output_device_list_options: Vec<String>,
     output_device_list_selected: Option<String>,
     output_browse_state: button::State,
+    output_browse_selected: Option<PathBuf>
 }
 
-//FIXME unsafe
-static mut INPUT_VOLUME: f32 = 80.0;
-static mut OUTPUT_VOLUME: f32 = 80.0;
+impl App {
+    //fn take_models(&mut self) -> Models {
+        //std::mem::replace(&mut self.models, Models::new())
+    //}
+
+    fn play_target(&self, output_device_name: Option<String>) {
+        //TODO some kind of loading spinner or something while this is happening
+        if self.models.hubert_model.is_none() || self.models.acoustic_model.is_none() || self.models.hubert_model.is_none() { return }
+        let mut wav_data = unsafe { RECORD_BUF.to_vec() };
+        wav_data.resize(319507, 0.0);
+        let tensor = Tensor::of_slice(wav_data.as_slice());
+        let wav_tensor = tensor.unsqueeze(0).unsqueeze(0).to(tch::Device::Cuda(0));
+        //println!("wav: {:?}", wav_tensor.size());
+        let hubert_start_time = std::time::Instant::now();
+        let hubert_output = self.models.hubert_model.as_ref().unwrap().method_ts("units", &[wav_tensor]).unwrap();
+        let hubert_end_time = std::time::Instant::now();
+        //println!("hubert: {:?}", hubert_output.size());
+        let generate_start_time = std::time::Instant::now();
+        let generate_output = self.models.acoustic_model.as_ref().unwrap().method_ts("generate", &[hubert_output]).unwrap();
+        let generate_end_time = std::time::Instant::now();
+        //println!("generate: {:?}", generate_output.size());
+        let mut transpose_output = generate_output.transpose(1, 2);
+        //println!("transpose: {:?}", transpose_output.size());
+
+        let hubert_start_time = std::time::Instant::now();
+        let hubert_output = tch::no_grad(move|| {
+            let foo = self.models.hifigan_model.as_ref().unwrap().forward_ts(&[transpose_output]).unwrap(); 
+            foo
+        });
+        let hubert_end_time = std::time::Instant::now();
+        //println!("hubert: {:?}", hubert_output.size());
+
+        //println!("hubert: {:?}", hubert_end_time - hubert_start_time);
+        //println!("generator: {:?}", generate_end_time - generate_start_time);
+        //println!("hubert: {:?}", hubert_end_time - hubert_start_time);
+
+        let sample_count = hubert_output.size()[2];
+        let samples = hubert_output.reshape(&[sample_count]).to(tch::Device::Cpu);
+        // RECORD_SAMPLE_COUNT is used instead of sample_count because the input
+        // tensor is padded to 20 seconds and the model has a stroke if the user
+        // stops recording before then and sample_count is used.
+        let mut sample_buf = vec![0.0; unsafe { RECORD_SAMPLE_COUNT }];
+        samples.copy_data(&mut sample_buf, unsafe { RECORD_SAMPLE_COUNT });
+
+        let mut i = 0;
+        let output_data_fn = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
+            let mut iter = data.iter_mut(); 
+            for (j, sample) in data.iter_mut().enumerate() {
+                let s = sample_buf[i];
+                *sample = apply_volume(s, unsafe { OUTPUT_VOLUME});
+                // expand one sample to 6 to convert 16khz mono to 48khz stereo
+                if j%6 == 5 && i < unsafe { RECORD_SAMPLE_COUNT } as usize
+                {
+                    i += 1;
+                }
+            }
+        };
+
+        let output_device = get_output_device(output_device_name).0.unwrap();
+        let output_config = cpal::StreamConfig { channels: 2, sample_rate: SampleRate(48000), buffer_size: BufferSize::Default };
+
+        let output_stream = output_device.build_output_stream(&output_config, output_data_fn, err_fn).unwrap();
+
+        output_stream.play().unwrap();
+        // FIXME ¯\_(ツ)_/¯
+        std::thread::sleep(core::time::Duration::from_secs_f32(unsafe { RECORD_SAMPLE_COUNT } as f32 / 16000.0 - 0.1));
+
+
+        //let spec = hound::WavSpec {
+            //channels: 1,
+            //sample_rate: 16000,
+            //bits_per_sample: 32,
+            //sample_format: hound::SampleFormat::Float,
+        //};
+        //let mut writer = hound::WavWriter::create("test.wav", spec).unwrap();
+        //for sample in sample_buf.iter() {
+            //writer.write_sample(*sample).unwrap();
+        //}
+        
+    }
+}
+
+struct Models {
+    // FIXME provide load functions and unpub these
+    pub hubert_model: Option<CModule>,
+    pub acoustic_model: Option<CModule>,
+    pub hifigan_model: Option<CModule>,
+}
+
+impl Models {
+    fn new() -> Models {
+        Models {
+            hubert_model: None,
+            acoustic_model: None,
+            hifigan_model: None,
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 enum Message {
     ModelBrowsePressed,
+    HifiganBrowsePressed,
+    HubertBrowsePressed,
+    ShowDebugPressed,
     Slider1Changed(f32),
     Slider2Changed(f32),
     RecordPressed,
@@ -67,7 +187,14 @@ impl Application for App {
     type Flags = ();
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
+        let models = Models::new();
         let model_browse_state = button::State::new();
+        let model_browse_selected = None;
+        let hifigan_browse_state = button::State::new();
+        let hifigan_browse_selected = None;
+        let hubert_browse_state = button::State::new();
+        let hubert_browse_selected = None;
+        let show_debug = false;
         let slider_1_state = slider::State::new();
         let slider_1_value = 80.0;
         let slider_2_state = slider::State::new();
@@ -86,16 +213,25 @@ impl Application for App {
         let mut input_device_list_options: Vec<String> = cpal::default_host().input_devices().unwrap().map(|d|d.name().unwrap()).collect();
         input_device_list_options.insert(0, String::from("From file"));
         let input_browse_state = button::State::new();
+        let input_browse_selected = None;
         let input_device_list_selected = None;
         let output_device_list_state = pick_list::State::new();
         let mut output_device_list_options: Vec<String> = cpal::default_host().output_devices().unwrap().map(|d| d.name().unwrap()).collect();
         output_device_list_options.insert(0, String::from("To file"));
         let output_device_list_selected = None;
         let output_browse_state = button::State::new();
+        let output_browse_selected = None;
 
         (
             App {
+                models,
                 model_browse_state,
+                model_browse_selected,
+                hifigan_browse_state,
+                hifigan_browse_selected,
+                hubert_browse_state,
+                hubert_browse_selected,
+                show_debug,
                 slider_1_state,
                 slider_1_value,
                 slider_2_state,
@@ -114,21 +250,26 @@ impl Application for App {
                 input_device_list_options,
                 input_device_list_selected,
                 input_browse_state,
+                input_browse_selected,
                 output_device_list_state,
                 output_device_list_options,
                 output_device_list_selected,
                 output_browse_state,
+                output_browse_selected,
             },
             Command::none()
         )
     }
 
     fn title(&self) -> String {
-        String::from("Storyteller Recast")
+        String::from("FakeYou Recast")
     }
 
-    fn update(&mut self, msg: Self::Message) -> Command<Self::Message> {
+    fn update<'b>(&mut self, msg: Self::Message) -> Command<Self::Message> {
         match msg {
+            Message::ShowDebugPressed => {
+                self.show_debug = !self.show_debug;
+            }
             Message::Slider1Changed(new_value) => {
                 self.slider_1_value = new_value;
                 if self.realtime_record_sender.is_some() {
@@ -160,21 +301,78 @@ impl Application for App {
             }
             Message::ModelBrowsePressed => { 
                 let path = FileDialog::new()
-                    .add_filter("Storyteller Recast Model", &["recast"])
+                    .add_filter("FakeYou Recast Model", &["recast"])
                     .show_open_single_file()
                     .unwrap();
+                match path {
+                    Some(p) => {
+                        //TODO some kind of loading spinner or something while this is happening
+                        let mut acoustic = CModule::load(p.clone()).unwrap();
+                        acoustic.set_eval();
+                        self.models.acoustic_model = Some(acoustic);
+                        self.model_browse_selected = Some(p);
+                        if self.models.hifigan_model.is_none() {
+                            let mut hifigan = CModule::load("./model1.recast_base").unwrap();
+                            hifigan.set_eval();
+                           self.models.hifigan_model = Some(hifigan);
+                           self.hifigan_browse_selected = Some(PathBuf::from("./model1.recast_base"));
+                        }
+                        if self.models.hubert_model.is_none() {
+                            let mut hubert = CModule::load("./model2.recast_base").unwrap();
+                            self.hubert_browse_selected = Some(PathBuf::from("./model2.recast_base"));
+                            hubert.set_eval();
+                           self.models.hubert_model = Some(hubert);
+                        }
+                    },
+                    None => {}
+                }
+                //FIXME some kind of progress bar while all this crap loads
+            }
+            Message::HifiganBrowsePressed => { 
+                let path = FileDialog::new()
+                    // Hifigan shhhh
+                    .add_filter("Base Model 1", &["pt"])
+                    .show_open_single_file()
+                    .unwrap();
+                match path {
+                    Some(p) => {
+                        let mut hifigan = CModule::load(p.clone()).unwrap();
+                        hifigan.set_eval();
+                        self.models.hifigan_model = Some(hifigan);
+                        self.hifigan_browse_selected = Some(p);
+                    },
+                    None => {}
+                }
+            }
+            Message::HubertBrowsePressed => { 
+                let path = FileDialog::new()
+                    // Hubert shhhh
+                    .add_filter("Base Model 2", &["pt"])
+                    .show_open_single_file()
+                    .unwrap();
+                match path {
+                    Some(p) => {
+                        let mut hubert = CModule::load(p.clone()).unwrap();
+                        hubert.set_eval();
+                        self.models.hubert_model = Some(hubert);
+                        self.hubert_browse_selected = Some(p);
+                    },
+                    None => {}
+                }
             }
             Message::InputBrowsePressed => { 
                 let path = FileDialog::new()
                     .add_filter("WAV audio file", &["wav"])
                     .show_open_single_file()
                     .unwrap();
+                self.input_browse_selected = path;
             }
             Message::OutputBrowsePressed => { 
                 let path = FileDialog::new()
                     .add_filter("WAV audio file", &["wav"])
                     .show_save_single_file()
                     .unwrap();
+                self.output_browse_selected = path;
             }
             Message::RecordPressed => { 
                 if self.recording {
@@ -195,9 +393,16 @@ impl Application for App {
             }
             Message::PlayTargetPressed => {
                 let output_device_name = self.output_device_list_selected.clone();
-                std::thread::spawn(move || {
-                    play_target(output_device_name);
-                });
+                // TODO experiment with threads some more.
+                // I managed to move the models out of self and into the thread with the
+                // commented out take_models function below, but I'm not sure how to put
+                // them back into self when it's done, so it just consumes the models
+                // when the target button is pressed, which ain't good. Gave up and used 
+                // the main thread for now
+                //let models = self.take_models();
+                //std::thread::spawn(move || {
+                    self.play_target(output_device_name)
+                //});
             }
             Message::PlaySourcePressed => { 
                 let output_device_name = self.output_device_list_selected.clone();
@@ -236,7 +441,52 @@ impl Application for App {
         Command::none()
     }
 
+    fn subscription(&self) -> Subscription<Message> {
+        subscription::events_with(|event, status| {
+            if let event::Status::Captured = status {
+                return None;
+            }
+
+            match event {
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    modifiers,
+                    key_code,
+                }) => match key_code {
+                    KeyCode::F12 => Some(Message::ShowDebugPressed),
+                    _ => None,
+                }
+                _ => None,
+            }
+        })
+    }
+
     fn view(&mut self) -> Element<Self::Message> {
+        let mut model_selection_row_elems: Vec<Element<Self::Message>> = vec![];
+        let selected_model_str = if self.model_browse_selected.is_none() { "" } else {self.model_browse_selected.as_ref().unwrap().file_stem().unwrap().to_str().unwrap() };
+        let selected_hifigan_str = if self.hifigan_browse_selected.is_none() { "" } else {self.hifigan_browse_selected.as_ref().unwrap().file_stem().unwrap().to_str().unwrap() };
+        let selected_hubert_str = if self.hubert_browse_selected.is_none() { "" } else {self.hubert_browse_selected.as_ref().unwrap().file_stem().unwrap().to_str().unwrap() };
+        model_selection_row_elems
+            .push(Text::new("Select Recast Model File: ").into());
+        model_selection_row_elems
+            .push(Button::new(&mut self.model_browse_state, Text::new("Browse")).on_press(Message::ModelBrowsePressed).into());
+        model_selection_row_elems
+            .push(Text::new(selected_model_str).into());
+        if self.show_debug {
+            model_selection_row_elems
+                .push(Text::new("Select Debug Model 1: ").into());
+            model_selection_row_elems
+                .push(Button::new(&mut self.hifigan_browse_state, Text::new("Browse")).on_press(Message::HifiganBrowsePressed).into());
+            model_selection_row_elems
+            .push(Text::new(selected_hifigan_str).into());
+            model_selection_row_elems
+                .push(Text::new("Select Debug Model 2: ").into());
+            model_selection_row_elems
+                .push(Button::new(&mut self.hubert_browse_state, Text::new("Browse")).on_press(Message::HubertBrowsePressed).into());
+            model_selection_row_elems
+            .push(Text::new(selected_hubert_str).into());
+        }
+        let mut model_selection_row = Row::with_children(model_selection_row_elems);
+
         let mut file_selection_row_elems: Vec<Element<Self::Message>> = vec![];
         if self.input_device_list_selected == Some(String::from("From file"))
         {
@@ -259,11 +509,7 @@ impl Application for App {
         let mut file_selection_row = Row::with_children(file_selection_row_elems);
 
         let elements = Column::new()
-            .push(
-                Row::new()
-                .push(Text::new("Select Voice File: "))
-                .push(Button::new(&mut self.model_browse_state, Text::new("Browse")).on_press(Message::ModelBrowsePressed))
-            )
+            .push(model_selection_row)
             .push(
                 Row::new()
                 .push(Text::new("Input Device: "))
@@ -305,10 +551,10 @@ impl Application for App {
                     Button::new(&mut self.record_state, if self.recording { Text::new("Stop")} else {Text::new("Record")}).on_press(Message::RecordPressed)
                 )
                 .push(
-                    Button::new(&mut self.play_target_state, Text::new("Play Target")).on_press(Message::PlayTargetPressed)
+                    Button::new(&mut self.play_source_state, Text::new("Play Source")).on_press(Message::PlaySourcePressed)
                 )
                 .push(
-                    Button::new(&mut self.play_source_state, Text::new("Play Source")).on_press(Message::PlaySourcePressed)
+                    Button::new(&mut self.play_target_state, Text::new("Play Target")).on_press(Message::PlayTargetPressed)
                 )
                 .push(
                     Button::new(&mut self.realtime_record_state, if self.realtime_recording { Text::new("Stop") } else {Text::new("Realtime\n(experimental)")}).on_press(Message::RealtimeRecordPressed)
@@ -318,6 +564,7 @@ impl Application for App {
 
         elements.into()
     }
+
 }
 
 /// Realtime record => record and playback at the same time
@@ -383,7 +630,8 @@ fn start_recording(record_receiver: std::sync::mpsc::Receiver<(bool, f32)>, inpu
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {
         for &sample in data.iter() {
             //FIXME unsafe
-           unsafe{ RECORD_BUF[i] = apply_volume(sample, unsafe { INPUT_VOLUME }) };
+           unsafe{ RECORD_BUF[i] = apply_volume(sample, INPUT_VOLUME ) };
+           unsafe { RECORD_SAMPLE_COUNT = i};
            i += 1;
            //FIXME overflow
         }
@@ -414,6 +662,7 @@ fn play_source(output_device_name: Option<String>) {
         for (j, sample) in data.iter_mut().enumerate() {
             let s = unsafe { RECORD_BUF[i] };
             *sample = apply_volume(s, unsafe { OUTPUT_VOLUME});
+            // Expand one sample to 6 to convert 16khz mono to 48khz stereo
             if j%6 == 5 && i < 319507
             {
                 i += 1;
@@ -429,6 +678,7 @@ fn play_source(output_device_name: Option<String>) {
 }
 
 
+
 fn get_input_device(input_device_name: Option<String>) -> (Option<cpal::Device>, Option<File>) {
     let mut input_device: Option<cpal::Device> = None;
     let mut file: Option<std::fs::File> = None;
@@ -441,9 +691,9 @@ fn get_input_device(input_device_name: Option<String>) -> (Option<cpal::Device>,
             //FIXME better unique identifier than the name of the device?
             //or maybe it's guaranteed unique already idk
             let input_device_foo = host.input_devices().unwrap().filter(|d| d.name().unwrap() == input_device_name).next().unwrap();
-            //for config in input_device_foo.supported_input_configs().unwrap() {
-                //println!("{:?}", config);
-            //}
+            /*for config in input_device_foo.supported_input_configs().unwrap() {
+                println!("{:?}", config);
+            }*/
             input_device = Some(input_device_foo)
         }
     }
@@ -465,9 +715,9 @@ fn get_output_device(output_device_name: Option<String>) -> (Option<cpal::Device
             //FIXME better unique identifier than the name of the device?
             //or maybe it's guaranteed unique already idk
             let output_device_foo = host.output_devices().unwrap().filter(|d| d.name().unwrap() == output_device_name).next().unwrap();
-            //for config in output_device_foo.supported_output_configs().unwrap() {
-                //println!("{:?}", config);
-            //}
+            /*for config in output_device_foo.supported_output_configs().unwrap() {
+                println!("{:?}", config);
+            }*/
             output_device = Some(output_device_foo)
 
         }
@@ -490,87 +740,4 @@ fn err_fn(err: cpal::StreamError) {
     eprintln!("Error: {:?}", err);
 }
 
-fn play_target(output_device_name: Option<String>) {
-    //FIXME don't hardocde all this crap
-    let mut hubert = CModule::load("/home/paul/Downloads/hubert_soft-jit.pt").unwrap();
-    let mut obama_softvc = CModule::load("/home/paul/Downloads/obama-softvc-5000gs-jit.pt").unwrap();
-    let mut obama_hifigan = CModule::load("/home/paul/Downloads/obama-hifigan-1000gs-jit.pt").unwrap();
-    hubert.to(tch::Device::Cuda(0), tch::Kind::Float, false);
-    hubert.set_eval();
-    obama_softvc.to(tch::Device::Cuda(0), tch::Kind::Float, false);
-    obama_softvc.set_eval();
-    obama_hifigan.to(tch::Device::Cuda(0), tch::Kind::Float, false);
-    obama_hifigan.set_eval();
-    //let mut wav_file_path = Path::new("/home/paul/Downloads/brandon1_16k.wav");
-    //let reader = hound::WavReader::open(&wav_file_path).unwrap();
-    //let mut wav_data: Vec<f32> = reader.into_samples::<f32>().map(|s| s.unwrap()).collect();
-    let mut wav_data = unsafe { RECORD_BUF.to_vec() };
-    wav_data.resize(319507, 0.0);
-    let tensor = Tensor::of_slice(wav_data.as_slice());
-    let wav_tensor = tensor.unsqueeze(0).unsqueeze(0).to(tch::Device::Cuda(0));
-    println!("wav: {:?}", wav_tensor.size());
-    let hubert_start_time = std::time::Instant::now();
-    let hubert_output = hubert.method_ts("units", &[wav_tensor]).unwrap();
-    let hubert_end_time = std::time::Instant::now();
-    println!("hubert: {:?}", hubert_output.size());
-    let generate_start_time = std::time::Instant::now();
-    let generate_output = obama_softvc.method_ts("generate", &[hubert_output]).unwrap();
-    let generate_end_time = std::time::Instant::now();
-    println!("generate: {:?}", generate_output.size());
-    let mut transpose_output = generate_output.transpose(1, 2);
-    println!("transpose: {:?}", transpose_output.size());
 
-    let hifigan_start_time = std::time::Instant::now();
-    let hifigan_output = tch::no_grad(move|| {
-        let foo = obama_hifigan.forward_ts(&[transpose_output]).unwrap(); 
-        foo
-    });
-    let hifigan_end_time = std::time::Instant::now();
-    println!("hifigan: {:?}", hifigan_output.size());
-
-    println!("hubert: {:?}", hubert_end_time - hubert_start_time);
-    println!("generator: {:?}", generate_end_time - generate_start_time);
-    println!("hifigan: {:?}", hifigan_end_time - hifigan_start_time);
-
-
-
-    let sample_count = hifigan_output.size()[2];
-    let samples = hifigan_output.reshape(&[sample_count]).to(tch::Device::Cpu);
-    let mut sample_buf = vec![0_f32; sample_count as usize];
-    samples.copy_data(&mut sample_buf, sample_count as usize);
-
-    let mut i = 0;
-    let output_data_fn = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-        let mut iter = data.iter_mut(); 
-        for (j, sample) in data.iter_mut().enumerate() {
-            let s = sample_buf[i];
-            *sample = apply_volume(s, unsafe { OUTPUT_VOLUME});
-            if j%6 == 5 && i < sample_count as usize
-            {
-                i += 1;
-            }
-        }
-    };
-
-    let output_device = get_output_device(output_device_name).0.unwrap();
-    let output_config = cpal::StreamConfig { channels: 2, sample_rate: SampleRate(48000), buffer_size: BufferSize::Default };
-
-    let output_stream = output_device.build_output_stream(&output_config, output_data_fn, err_fn).unwrap();
-
-    output_stream.play().unwrap();
-    // FIXME ¯\_(ツ)_/¯
-    std::thread::sleep(core::time::Duration::from_secs(19));
-
-
-    //let spec = hound::WavSpec {
-        //channels: 1,
-        //sample_rate: 16000,
-        //bits_per_sample: 32,
-        //sample_format: hound::SampleFormat::Float,
-    //};
-    //let mut writer = hound::WavWriter::create("test.wav", spec).unwrap();
-    //for sample in sample_buf.iter() {
-        //writer.write_sample(*sample).unwrap();
-    //}
-    
-}
