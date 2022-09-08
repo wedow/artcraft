@@ -243,6 +243,7 @@ impl Application for App {
                 match path {
                     Some(p) => {
                         //TODO some kind of loading spinner or something while this is happening
+                        tch::maybe_init_cuda();
                         let mut models = self.models.clone();
                         let path = p.clone();
                         std::thread::spawn(move ||{
@@ -563,7 +564,8 @@ fn start_realtime_recording(realtime_record_receiver: std::sync::mpsc::Receiver<
 fn start_recording(record_receiver: std::sync::mpsc::Receiver<(bool, f32)>, input_device_name: Option<String>)  {
     let input_device = get_input_device(input_device_name).0.unwrap();
     let input_config = cpal::StreamConfig { channels: 1, sample_rate: SampleRate(48000), buffer_size: BufferSize::Default };
-
+    unsafe { RECORD_BUF = [0f32; 319507] };
+    unsafe { RECORD_SAMPLE_COUNT = 0 };
     let mut i = 0;
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {
         for (j, &sample) in data.iter().enumerate() {
@@ -623,10 +625,12 @@ fn play_target(models: Models, output_device_name: Option<String>) {
     let mut wav_data = unsafe { RECORD_BUF.to_vec() };
     wav_data.resize(319507, 0.0);
     let tensor = Tensor::of_slice(wav_data.as_slice());
+    tch::maybe_init_cuda();
     let wav_tensor = tensor.unsqueeze(0).unsqueeze(0).to(tch::Device::Cuda(0));
     if cfg!(debug_assertions) {
         println!("wav: {:?}", wav_tensor.size());
     }
+    tch::jit::set_graph_executor_optimize(false);
     let hubert_start_time = std::time::Instant::now();
     let hubert_output = {
         let hubert_model = models.hubert_model.lock().unwrap();
@@ -659,11 +663,13 @@ fn play_target(models: Models, output_device_name: Option<String>) {
 
     if cfg!(debug_assertions) {
         println!("hifigan: {:?}", hifigan_output.size());
+    }
 
+    //if cfg!(debug_assertions) {
         println!("hubert: {:?}", hubert_end_time - hubert_start_time);
         println!("generator: {:?}", generate_end_time - generate_start_time);
         println!("hifigan: {:?}", hifigan_end_time - hifigan_start_time);
-    }
+    //}
 
     let sample_count = hifigan_output.size()[2];
     let samples = hifigan_output.reshape(&[sample_count]).to(tch::Device::Cpu);
@@ -672,6 +678,17 @@ fn play_target(models: Models, output_device_name: Option<String>) {
     // stops recording before then and sample_count is used.
     let mut sample_buf = vec![0.0; unsafe { RECORD_SAMPLE_COUNT }];
     samples.copy_data(&mut sample_buf, unsafe { RECORD_SAMPLE_COUNT });
+
+    let spec = hound::WavSpec {
+        channels: 1,
+        sample_rate: 16000,
+        bits_per_sample: 32,
+        sample_format: hound::SampleFormat::Float,
+    };
+    let mut writer = hound::WavWriter::create("test.wav", spec).unwrap();
+    for sample in sample_buf.iter() {
+        writer.write_sample(*sample).unwrap();
+    }
 
     let mut i = 0;
     let output_data_fn = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
@@ -695,19 +712,6 @@ fn play_target(models: Models, output_device_name: Option<String>) {
     output_stream.play().unwrap();
     // FIXME ¯\_(ツ)_/¯
     std::thread::sleep(core::time::Duration::from_secs_f32(unsafe { RECORD_SAMPLE_COUNT } as f32 / 16000.0 - 0.3));
-
-
-    //let spec = hound::WavSpec {
-        //channels: 1,
-        //sample_rate: 16000,
-        //bits_per_sample: 32,
-        //sample_format: hound::SampleFormat::Float,
-    //};
-    //let mut writer = hound::WavWriter::create("test.wav", spec).unwrap();
-    //for sample in sample_buf.iter() {
-        //writer.write_sample(*sample).unwrap();
-    //}
-    
 }
 
 fn get_input_device(input_device_name: Option<String>) -> (Option<cpal::Device>, Option<File>) {
