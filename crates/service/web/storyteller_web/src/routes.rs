@@ -26,6 +26,7 @@ use crate::http_server::endpoints::misc::default_route_404::default_route_404;
 use crate::http_server::endpoints::misc::detect_locale_handler::detect_locale_handler;
 use crate::http_server::endpoints::misc::enable_alpha_easy_handler::enable_alpha_easy_handler;
 use crate::http_server::endpoints::misc::enable_alpha_handler::enable_alpha_handler;
+use crate::http_server::endpoints::misc::avt_handler::avt_handler;
 use crate::http_server::endpoints::misc::root_index::get_root_index;
 use crate::http_server::endpoints::moderation::approval::pending_w2l_templates::get_pending_w2l_templates_handler;
 use crate::http_server::endpoints::moderation::categories::delete_category::delete_category_handler;
@@ -144,7 +145,7 @@ pub fn add_routes<T, B> (app: App<T, B>) -> App<T, B>
         .route(web::get().to(list_events_handler))
         .route(web::head().to(|| HttpResponse::Ok()))
   )
-      .service(
+    .service(
         web::resource("/detect_locale")
             .route(web::get().to(detect_locale_handler))
             .route(web::head().to(|| HttpResponse::Ok()))
@@ -160,6 +161,7 @@ pub fn add_routes<T, B> (app: App<T, B>) -> App<T, B>
   )
   .service(enable_alpha_handler)
   .service(enable_alpha_easy_handler)
+  .service(avt_handler)
   .default_service( web::route().to(default_route_404))
 }
 

@@ -43,3 +43,4 @@ pub mod files;
 pub mod jobs;
 pub mod users;
 pub mod voice_conversion;
+pub mod avt;

@@ -18,6 +18,7 @@ pub(crate) enum EntityType {
   MediaUpload,
   User,
   VoiceConversionModel,
+  Avt,
 }
 
 impl EntityType {
@@ -29,6 +30,7 @@ impl EntityType {
       Self::MediaUpload => "mu_",
       Self::User => "U:", // NB: Old-style prefix.
       Self::VoiceConversionModel => "voco_",
+      Self::Avt => "avt_",
     }
   }
 }

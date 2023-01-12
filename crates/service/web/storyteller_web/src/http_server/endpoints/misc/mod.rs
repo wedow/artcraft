@@ -4,3 +4,5 @@ pub mod detect_locale_handler;
 pub mod enable_alpha_easy_handler;
 pub mod enable_alpha_handler;
 pub mod root_index;
+pub mod avt_cookie;
+pub mod avt_handler;

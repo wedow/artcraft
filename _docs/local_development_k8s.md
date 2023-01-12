@@ -13,7 +13,7 @@ regular ports (12345 for the api, 6379 for redis, 3306 for mysql)
 - That's it, we just spun up mysql, applied database migrations, spun up redis, and spun up our api
 
 # Development tips
-- Rebuild and "deploy" (locally) with `cargo build --release --bin storyteller-web --target=x86_64-unknown-linux-musl && kubectl rollout restart storyteller-web`
+- Rebuild and "deploy" (locally) with `cargo build --release --bin storyteller-web --target=x86_64-unknown-linux-musl && kubectl rollout restart deployment.apps/storyteller-web`
 - View logs from the api with `kubectl logs  storyteller-web<TAB>`
 - Delete everything minikube (if you start running out of disk space or what-have-you) with `minikube delete`
 - See pod status with `kubectl get pods`
