@@ -11,7 +11,7 @@ use crate::stripe::http_endpoints::customer_portal::stripe_create_customer_porta
 use crate::stripe::http_endpoints::webhook::stripe_webhook_handler::stripe_webhook_handler;
 use crate::users::http_endpoints::list_active_user_subscriptions_handler::list_active_user_subscriptions_handler;
 
-pub fn add_suggested_stripe_billing_routes<T, B> (app: App<T, B>) -> App<T, B>
+pub fn add_suggested_stripe_billing_routes<T, B> (app: App<T>) -> App<T>
   where
       B: MessageBody,
       T: ServiceFactory<

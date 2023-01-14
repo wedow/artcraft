@@ -1,17 +1,17 @@
-use actix_http::header;
-use actix_http::http::StatusCode;
 use actix_web::cookie::Cookie;
+use actix_web::http::StatusCode;
+use actix_web::http::header;
 use actix_web::web::Query;
 use actix_web::{HttpResponse, HttpRequest, Responder, get, web, HttpMessage};
 use crate::http_server::endpoints::investor_demo::default_redirect::{DEFAULT_INVESTOR_REDIRECT, redirect_is_allowed};
 use crate::http_server::endpoints::investor_demo::demo_cookie::STORYTELLER_DEMO_COOKIE_NAME;
 use crate::server_state::ServerState;
+use http_server_common::request::get_request_host::get_request_host;
 use hyper::header::LOCATION;
 use log::info;
 use std::ops::Deref;
 use std::sync::Arc;
 use time::OffsetDateTime;
-use http_server_common::request::get_request_host::get_request_host;
 
 #[derive(Deserialize)]
 pub struct QueryFields {
@@ -48,7 +48,6 @@ pub async fn disable_demo_mode_handler(
   // Kill the cookie
   let mut cookie_builder = Cookie::build(STORYTELLER_DEMO_COOKIE_NAME, "")
       .secure(server_state.env_config.cookie_secure) // HTTPS-only
-      .expires(OffsetDateTime::unix_epoch())
       .http_only(false) // This is meant to be exposed to Javascript!
       // NB: Since we're setting this from direct HTTP access rather than XHR, the browser
       // implicitly sets the path used to access the cookie, ie. '/demo_mode', which is not what
@@ -60,10 +59,11 @@ pub async fn disable_demo_mode_handler(
     cookie_builder = cookie_builder.domain(cookie_domain);
   }
 
-  let cookie = cookie_builder.finish();
+  let mut cookie = cookie_builder.finish();
+  cookie.make_removal();
 
   HttpResponse::build(StatusCode::FOUND)
       .append_header((header::LOCATION, safe_redirect_url.to_string()))
-      .del_cookie(&cookie)
+      .cookie(cookie)
       .finish()
 }

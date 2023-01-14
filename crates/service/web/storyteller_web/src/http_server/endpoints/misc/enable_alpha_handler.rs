@@ -1,5 +1,5 @@
 use actix_web::cookie::Cookie;
-use actix_http::http::StatusCode;
+use actix_web::http::StatusCode;
 use actix_web::web::Query;
 use actix_web::{HttpResponse, HttpRequest, Responder, get, web, HttpMessage};
 use crate::http_server::endpoints::misc::alpha_cookie::{ALPHA_COOKIE_NAME, alpha_cookie};
@@ -26,7 +26,7 @@ pub async fn enable_alpha_handler(http_request: HttpRequest,
 {
   info!("GET /alpha");
 
-  let cookie = alpha_cookie(&server_state);
+  let mut cookie = alpha_cookie(&server_state);
 
   match query.enable {
     None => {
@@ -45,9 +45,11 @@ pub async fn enable_alpha_handler(http_request: HttpRequest,
                       ALPHA_COOKIE_NAME, ENABLE_LINK, DISABLE_LINK, STATUS_LINK))
     }
     Some(false) => {
+      cookie.make_removal();
+
       HttpResponse::build(StatusCode::OK)
         .content_type(CONTENT_TYPE)
-        .del_cookie(&cookie)
+        .cookie(cookie)
         .body(format!("<h1>Vocodes 2.0</h1><h2>unsetting `{}` cookie</h2> {} | {} | {}",
                       ALPHA_COOKIE_NAME, ENABLE_LINK, DISABLE_LINK, STATUS_LINK))
     }

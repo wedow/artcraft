@@ -1,5 +1,5 @@
 use actix_cors::Cors;
-use actix_http::http;
+use actix_web::http;
 use log::info;
 use reusable_types::server_environment::ServerEnvironment;
 

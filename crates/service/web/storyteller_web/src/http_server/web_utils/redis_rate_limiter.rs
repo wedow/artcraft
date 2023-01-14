@@ -1,7 +1,7 @@
 //! NB: This doesn't live in the `util.redis` package because it depends on `http_server`.
 //! It's only used for the server anyway, so living here makes sense.
 
-use actix_http::http::{HeaderName, HeaderMap};
+use actix_web::http::{HeaderName, HeaderMap};
 use actix_web::HttpRequest;
 use futures_old_for_limiter::Future;
 use http_server_common::request::get_request_ip::get_request_ip;

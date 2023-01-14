@@ -1,5 +1,5 @@
 use actix_http::Error;
-use actix_http::http::header;
+use actix_web::http::header;
 use actix_web::HttpResponseBuilder;
 use actix_web::cookie::Cookie;
 use actix_web::error::ResponseError;

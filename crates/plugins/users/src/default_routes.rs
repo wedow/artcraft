@@ -11,7 +11,7 @@ use crate::endpoints::session_info_handler::session_info_handler;
 // NB: This does not include the user edit endpoints since FakeYou's API mounts them alongside other things.
 // A 'v2' API would mount under a v2 prefix and the entity type.
 
-pub fn add_suggested_api_v1_account_creation_and_session_routes<T, B> (app: App<T, B>) -> App<T, B>
+pub fn add_suggested_api_v1_account_creation_and_session_routes<T, B> (app: App<T>) -> App<T>
   where
       B: MessageBody,
       T: ServiceFactory<

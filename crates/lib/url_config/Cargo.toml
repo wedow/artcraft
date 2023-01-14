@@ -19,5 +19,5 @@ http_server_common = { path = "../../lib/http_server_common" }
 reusable_types = { path = "../../_types/reusable_types" }
 
 # External
-actix-web = "4.0.0-beta.10"
+actix-web = "4.2.1"
 anyhow = "1.0.40"

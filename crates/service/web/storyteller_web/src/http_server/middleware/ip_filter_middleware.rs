@@ -4,7 +4,7 @@
 // 2. Middleware's call method gets called with normal request.
 
 use actix_http::StatusCode;
-use actix_http::http::{header, HeaderMap, HeaderValue};
+use actix_web::http::{header, HeaderMap, HeaderValue};
 use actix_http::{error, body::Body, Response};
 use actix_web::dev::{Service, Transform};
 use actix_web::dev::{ServiceRequest, ServiceResponse};

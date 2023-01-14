@@ -14,7 +14,6 @@ use jwt::VerifyWithKey;
 use log::warn;
 use sha2::Sha256;
 use std::collections::BTreeMap;
-use time::OffsetDateTime;
 
 /**
  * Cookie version history
@@ -80,9 +79,9 @@ impl SessionCookieManager {
   }
 
   pub fn delete_cookie(&self) -> Cookie {
-    Cookie::build(SESSION_COOKIE_NAME, "DELETED")
-      .expires(OffsetDateTime::unix_epoch())
-      .finish()
+    let mut cookie = Cookie::build(SESSION_COOKIE_NAME, "DELETED").finish();
+    cookie.make_removal();
+    cookie
   }
 
   pub fn decode_session_cookie_payload(&self, session_cookie: &Cookie)

@@ -1,17 +1,17 @@
 use actix_http::header;
-use actix_http::http::StatusCode;
 use actix_web::cookie::Cookie;
+use actix_web::http::StatusCode;
 use actix_web::web::Query;
 use actix_web::{HttpResponse, HttpRequest, Responder, get, web, HttpMessage};
 use crate::http_server::endpoints::investor_demo::default_redirect::{DEFAULT_INVESTOR_REDIRECT, redirect_is_allowed};
 use crate::http_server::endpoints::investor_demo::demo_cookie::STORYTELLER_DEMO_COOKIE_NAME;
 use crate::server_state::ServerState;
+use http_server_common::request::get_request_host::get_request_host;
 use hyper::header::LOCATION;
 use log::info;
 use std::ops::Deref;
 use std::sync::Arc;
 use time::OffsetDateTime;
-use http_server_common::request::get_request_host::get_request_host;
 
 #[derive(Deserialize)]
 pub struct QueryFields {

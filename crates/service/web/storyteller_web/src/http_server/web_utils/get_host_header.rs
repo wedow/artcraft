@@ -1,5 +1,5 @@
-use actix_http::http::HeaderMap;
-use actix_http::http::HeaderName;
+use actix_web::http::HeaderMap;
+use actix_web::http::HeaderName;
 use actix_web::HttpRequest;
 use actix_web::http::HeaderValue;
 use container_common::anyhow_result::AnyhowResult;

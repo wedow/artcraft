@@ -1,6 +1,6 @@
 use actix_web::HttpRequest;
 use actix_web::dev::ServiceRequest;
-use actix_web::http::{HeaderMap, HeaderName};
+use actix_web::http::header::{HeaderMap, HeaderName};
 use log::debug;
 use std::str::FromStr;
 

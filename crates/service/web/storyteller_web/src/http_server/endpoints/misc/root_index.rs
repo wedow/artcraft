@@ -1,7 +1,7 @@
-use actix_http::http::StatusCode;
 use actix_web::Error;
 use actix_web::Responder;
 use actix_web::Result;
+use actix_web::http::StatusCode;
 use actix_web::web::Data;
 use actix_web::{HttpResponse, HttpRequest, get};
 use crate::server_state::ServerState;

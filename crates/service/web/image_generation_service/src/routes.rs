@@ -6,7 +6,7 @@ use actix_web::{App, web, HttpResponse};
 use http_server_common::endpoints::default_route_404::default_route_404;
 use http_server_common::endpoints::root_index::get_root_index;
 
-pub fn add_routes<T, B> (app: App<T, B>) -> App<T, B>
+pub fn add_routes<T, B> (app: App<T>) -> App<T>
   where
       B: MessageBody,
       T: ServiceFactory<

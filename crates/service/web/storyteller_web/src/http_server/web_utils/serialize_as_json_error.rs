@@ -1,4 +1,4 @@
-use actix_http::http::{StatusCode, header};
+use actix_web::http::{StatusCode, header};
 use actix_web::HttpResponse;
 use actix_web::HttpResponseBuilder;
 use actix_web::error::ResponseError;
