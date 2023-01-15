@@ -18,6 +18,7 @@ pub struct TtsInferenceJobInsertBuilder {
 
   // ========== Optional ==========
   maybe_creator_user_token: Option<String>,
+  maybe_creator_anonymous_visitor_token: Option<String>,
   creator_set_visibility: Option<String>,
   is_from_api: bool,
   is_for_twitch: bool,
@@ -42,6 +43,7 @@ impl TtsInferenceJobInsertBuilder {
       raw_inference_text: None,
       creator_ip_address: None,
       maybe_creator_user_token: None,
+      maybe_creator_anonymous_visitor_token: None,
       creator_set_visibility: None,
       is_from_api: false,
       is_for_twitch: false,
@@ -61,6 +63,7 @@ impl TtsInferenceJobInsertBuilder {
       // Defaults
       uuid_idempotency_token: Some(idempotency_token),
       maybe_creator_user_token: None,
+      maybe_creator_anonymous_visitor_token: None,
       creator_ip_address: Some("127.0.0.1".to_string()),
       // hidden | public | ...
       creator_set_visibility: Some("hidden".to_string()),
@@ -100,6 +103,11 @@ impl TtsInferenceJobInsertBuilder {
   pub fn set_maybe_creator_user_token(mut self, value: Option<&str>) -> Self {
     self.maybe_creator_user_token = value.map(|s| s.to_string());
     self
+  }
+
+  pub fn set_maybe_creator_anonymous_visitor_token(mut self, value: Option<&str>) -> Self {
+      self.maybe_creator_anonymous_visitor_token = value.map(|s| s.to_string());
+      self
   }
 
   pub fn set_creator_set_visibility(mut self, value: &str) -> Self {
@@ -167,6 +175,7 @@ SET
   model_token = ?,
   raw_inference_text = ?,
   maybe_creator_user_token = ?,
+  maybe_creator_anonymous_visitor_token = ?,
   creator_ip_address = ?,
   creator_set_visibility = ?,
   is_from_api = ?,
@@ -181,6 +190,7 @@ SET
       model_token,
       raw_inference_text,
       self.maybe_creator_user_token.clone(),
+      self.maybe_creator_anonymous_visitor_token.clone(),
       creator_ip_address,
       creator_set_visibility,
       self.is_from_api,

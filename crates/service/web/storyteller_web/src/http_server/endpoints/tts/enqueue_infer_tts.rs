@@ -6,6 +6,7 @@
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, HttpRequest};
+use users_component::utils::crypted_cookie_manager::CryptedCookie;
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::http_server::endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
@@ -90,6 +91,7 @@ pub async fn infer_tts_handler(
 {
   let mut is_from_api = false;
   let mut maybe_user_token : Option<String> = None;
+  let mut maybe_avt: Option<String> = None;
   let mut priority_level ;
   let mut use_high_priority_rate_limiter = false; // NB: Careful!
   let mut disable_rate_limiter = false; // NB: Careful!
@@ -115,6 +117,14 @@ pub async fn infer_tts_handler(
 
   if let Some(user_session) = maybe_user_session.as_ref() {
     maybe_user_token = Some(user_session.user_token.to_string());
+  }
+
+  if let Some(cookie) = http_request.cookie("avt") {
+    let maybe_map = server_state.ccm.decrypt_cookie_to_map(&CryptedCookie(cookie));
+    if maybe_map.is_ok() {
+        let map = maybe_map.unwrap();
+        maybe_avt = map.get("avt").cloned();
+    }
   }
 
   // TODO: Plan should handle "first anonymous use" and "investor" cases.
@@ -260,6 +270,7 @@ pub async fn infer_tts_handler(
       .set_model_token(&model_token)
       .set_raw_inference_text(&inference_text)
       .set_maybe_creator_user_token(maybe_user_token.as_deref())
+      .set_maybe_creator_anonymous_visitor_token(maybe_avt.as_deref())
       .set_creator_ip_address(&ip_address)
       .set_creator_set_visibility(set_visibility.to_str())
       .set_priority_level(priority_level)
