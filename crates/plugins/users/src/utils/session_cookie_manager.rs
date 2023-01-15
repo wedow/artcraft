@@ -26,9 +26,8 @@ const SESSION_COOKIE_NAME : &'static str = "session";
 // TODO(echelon,2022-08-29): Fix how domains and "secure" cookies are handled
 
 #[derive(Clone)]
-pub struct SessionCookieManager<'a> {
-  cookie_domain: String,
-  ccm: &'a CryptedCookieManager<'a>,
+pub struct SessionCookieManager {
+  ccm: CryptedCookieManager,
 }
 
 #[derive(Clone)]
@@ -40,11 +39,10 @@ pub struct SessionCookiePayload {
   pub maybe_user_token: Option<String>,
 }
 
-impl<'a> SessionCookieManager<'a> {
-  pub fn new(cookie_domain: &str, ccm: &'a CryptedCookieManager) -> Self {
+impl SessionCookieManager {
+  pub fn new(ccm: CryptedCookieManager) -> Self {
     Self {
-      cookie_domain: cookie_domain.to_string(),
-      ccm
+      ccm,
     }
   }
 
@@ -56,7 +54,7 @@ impl<'a> SessionCookieManager<'a> {
     claims.insert("user_token".to_string(), user_token.to_string());
     claims.insert("cookie_version".to_string(), cookie_version);
 
-    let crypt_cookie = self.ccm.encrypt_map_to_cookie(claims, SESSION_COOKIE_NAME)?;
+    let crypt_cookie = self.ccm.encrypt_map_to_cookie(claims, SESSION_COOKIE_NAME.to_string())?;
 
     Ok(crypt_cookie)
   }

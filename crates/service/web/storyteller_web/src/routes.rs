@@ -161,7 +161,11 @@ pub fn add_routes<T, B> (app: App<T, B>) -> App<T, B>
   )
   .service(enable_alpha_handler)
   .service(enable_alpha_easy_handler)
-  .service(avt_handler)
+  .service(
+    web::resource("/avt")
+      .route(web::get().to(avt_handler))
+      .route(web::head().to(|| HttpResponse::Ok())))
+    
   .default_service( web::route().to(default_route_404))
 }
 

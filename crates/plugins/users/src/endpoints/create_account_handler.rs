@@ -90,7 +90,7 @@ pub async fn create_account_handler(
   http_request: HttpRequest,
   request: web::Json<CreateAccountRequest>,
   mysql_pool: web::Data<MySqlPool>,
-  session_cookie_manager: web::Data<SessionCookieManager<'_>>,
+  session_cookie_manager: web::Data<SessionCookieManager>,
   firehose_publisher: web::Data<FirehosePublisher>,
 ) -> Result<HttpResponse, CreateAccountErrorResponse>
 {

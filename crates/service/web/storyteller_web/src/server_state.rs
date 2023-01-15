@@ -17,6 +17,7 @@ use reusable_types::server_environment::ServerEnvironment;
 use sqlx::MySqlPool;
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 use users_component::utils::session_checker::SessionChecker;
+use users_component::utils::crypted_cookie_manager::CryptedCookieManager;
 use users_component::utils::session_cookie_manager::SessionCookieManager;
 
 /// State that is injected into every endpoint.
@@ -40,6 +41,8 @@ pub struct ServerState {
   pub redis_pool: r2d2::Pool<RedisConnectionManager>,
 
   pub redis_rate_limiters: RedisRateLimiters,
+
+  pub ccm: CryptedCookieManager,
 
   pub cookie_manager: SessionCookieManager,
 

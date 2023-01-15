@@ -7,17 +7,17 @@ use sha2::Sha256;
 use anyhow::anyhow;
 
 #[derive(Clone)]
-pub struct CryptedCookieManager<'manager> {
-    cookie_domain: &'manager str,
-    hmac_secret: &'manager str,
+pub struct CryptedCookieManager {
+    cookie_domain: String,
+    hmac_secret: String,
 }
 
 
 #[derive(Clone)]
-pub struct CryptedCookie<'manager>(pub Cookie<'manager>);
+pub struct CryptedCookie<'a>(pub Cookie<'a>);
 
-impl<'manager> CryptedCookieManager<'manager> {
-    pub fn new(cookie_domain: &'manager str, hmac_secret: &'manager str) -> Self {
+impl CryptedCookieManager{
+    pub fn new(cookie_domain: String, hmac_secret: String) -> Self {
         Self {
             cookie_domain,
             hmac_secret
@@ -39,7 +39,7 @@ impl<'manager> CryptedCookieManager<'manager> {
 
     /// Note: the cookies created by this function are permanent by default,
     /// expiration can be modified afterwards if desired
-    pub fn encrypt_map_to_cookie(&self, map: BTreeMap<String, String>, cookie_name: &'manager str) -> AnyhowResult<CryptedCookie> {
+    pub fn encrypt_map_to_cookie(&self, map: BTreeMap<String, String>, cookie_name: String) -> AnyhowResult<CryptedCookie> {
         let jwt = self.encrypt_map(map)?;
         let make_secure = !self.cookie_domain.to_lowercase().contains("jungle.horse")
             && !self.cookie_domain.to_lowercase().contains("localhost");

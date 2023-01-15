@@ -1,14 +1,14 @@
-use actix_web::cookie::Cookie;
+use std::collections::BTreeMap;
+
 use crate::server_state::ServerState;
+use container_common::anyhow_result::AnyhowResult;
 use tokens::avt::AnonymousVisitorToken;
+use users_component::utils::crypted_cookie_manager::CryptedCookie;
 
 pub const AVT_COOKIE_NAME: &'static str = "avt";
 
-pub fn avt_cookie(server_state: &ServerState) -> Cookie {
-    Cookie::build(AVT_COOKIE_NAME, AnonymousVisitorToken::generate().to_string())
-        .domain(&server_state.env_config.cookie_domain)
-        .secure(server_state.env_config.cookie_secure) // HTTPS-only
-        .http_only(false) // This is meant to be exposed to Javascript!
-        .permanent()
-        .finish()
+pub fn avt_cookie(server_state: &ServerState) -> AnyhowResult<CryptedCookie> {
+    let mut map = BTreeMap::new();
+    map.insert(AVT_COOKIE_NAME.to_string(), AnonymousVisitorToken::generate().to_string());
+    Ok(server_state.ccm.encrypt_map_to_cookie(map, AVT_COOKIE_NAME.to_string())?)
 }

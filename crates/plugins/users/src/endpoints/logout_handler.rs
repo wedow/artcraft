@@ -49,7 +49,7 @@ impl fmt::Display for LogoutError {
 
 pub async fn logout_handler(
   http_request: HttpRequest,
-  session_cookie_manager: web::Data<SessionCookieManager<'_>>,
+  session_cookie_manager: web::Data<SessionCookieManager>,
   mysql_pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse, LogoutError>
 {

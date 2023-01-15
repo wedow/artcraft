@@ -85,6 +85,7 @@ use tokio::runtime::Runtime;
 use twitch_common::twitch_secrets::TwitchSecrets;
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 use users_component::utils::session_checker::SessionChecker;
+use users_component::utils::crypted_cookie_manager::CryptedCookieManager;
 use users_component::utils::session_cookie_manager::SessionCookieManager;
 
 const DEFAULT_BIND_ADDRESS : &'static str = "0.0.0.0:12345";
@@ -219,7 +220,8 @@ async fn main() -> AnyhowResult<()> {
   let website_homepage_redirect =
       easyenv::get_env_string_or_default("WEBSITE_HOMEPAGE_REDIRECT", "https://vo.codes/");
 
-  let cookie_manager = SessionCookieManager::new(&cookie_domain, &hmac_secret);
+  let ccm = CryptedCookieManager::new(cookie_domain.clone(), hmac_secret);
+  let cookie_manager = SessionCookieManager::new(ccm.clone());
   let session_checker = SessionChecker::new(&cookie_manager);
 
   let access_key = easyenv::get_env_string_required(ENV_ACCESS_KEY)?;
@@ -362,6 +364,7 @@ async fn main() -> AnyhowResult<()> {
     },
     firehose_publisher,
     badge_granter,
+    ccm,
     cookie_manager,
     session_checker,
     private_bucket_client,
