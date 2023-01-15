@@ -7,14 +7,10 @@ use actix_web::HttpRequest;
 use actix_web::cookie::Cookie;
 use anyhow::anyhow;
 use container_common::anyhow_result::AnyhowResult;
-use hmac::Hmac;
-use hmac::NewMac;
-use jwt::SignWithKey;
-use jwt::VerifyWithKey;
 use log::warn;
-use sha2::Sha256;
 use std::collections::BTreeMap;
 use time::OffsetDateTime;
+use super::crypted_cookie_manager::{CryptedCookieManager, CryptedCookie};
 
 /**
  * Cookie version history
@@ -30,9 +26,9 @@ const SESSION_COOKIE_NAME : &'static str = "session";
 // TODO(echelon,2022-08-29): Fix how domains and "secure" cookies are handled
 
 #[derive(Clone)]
-pub struct SessionCookieManager {
+pub struct SessionCookieManager<'a> {
   cookie_domain: String,
-  hmac_secret: String,
+  ccm: &'a CryptedCookieManager<'a>,
 }
 
 #[derive(Clone)]
@@ -44,39 +40,25 @@ pub struct SessionCookiePayload {
   pub maybe_user_token: Option<String>,
 }
 
-impl SessionCookieManager {
-  pub fn new(cookie_domain: &str, hmac_secret: &str) -> Self {
+impl<'a> SessionCookieManager<'a> {
+  pub fn new(cookie_domain: &str, ccm: &'a CryptedCookieManager) -> Self {
     Self {
       cookie_domain: cookie_domain.to_string(),
-      hmac_secret: hmac_secret.to_string(),
+      ccm
     }
   }
 
-  pub fn create_cookie(&self, session_token: &str, user_token: &str) -> AnyhowResult<Cookie> {
-    let key: Hmac<Sha256> = Hmac::new_varkey(self.hmac_secret.as_bytes())
-      .map_err(|e| anyhow!("invalid hmac: {:?}", e))?;
-
+  pub fn create_cookie(&self, session_token: &str, user_token: &str) -> AnyhowResult<CryptedCookie> {
     let cookie_version = COOKIE_VERSION.to_string();
 
     let mut claims = BTreeMap::new();
-    claims.insert("session_token", session_token);
-    claims.insert("user_token", user_token);
-    claims.insert("cookie_version", &cookie_version);
+    claims.insert("session_token".to_string(), session_token.to_string());
+    claims.insert("user_token".to_string(), user_token.to_string());
+    claims.insert("cookie_version".to_string(), cookie_version);
 
-    let jwt_string = claims.sign_with_key(&key)?;
+    let crypt_cookie = self.ccm.encrypt_map_to_cookie(claims, SESSION_COOKIE_NAME)?;
 
-    let make_secure = !self.cookie_domain.to_lowercase().contains("jungle.horse")
-      && !self.cookie_domain.to_lowercase().contains("localhost");
-
-    Ok(Cookie::build(SESSION_COOKIE_NAME, jwt_string)
-      //.domain(&self.cookie_domain)
-      .secure(make_secure) // HTTPS-only
-      //.path("/")
-      //.http_only(true) // Not exposed to Javascript
-      //.expires(OffsetDateTime::now_utc() + time::Duration::days(365))
-      .permanent()
-      //.same_site(SameSite::Lax)
-      .finish())
+    Ok(crypt_cookie)
   }
 
   pub fn delete_cookie(&self) -> Cookie {
@@ -85,22 +67,18 @@ impl SessionCookieManager {
       .finish()
   }
 
-  pub fn decode_session_cookie_payload(&self, session_cookie: &Cookie)
+  pub fn decode_session_cookie_payload(&self, session_cookie: &CryptedCookie)
     -> AnyhowResult<SessionCookiePayload>
   {
-    let key: Hmac<Sha256> = Hmac::new_varkey(self.hmac_secret.as_bytes())
-        .map_err(|e| anyhow!("invalid hmac: {:?}", e))?;
 
-    let cookie_contents = session_cookie.value().to_string();
-
-    let claims: BTreeMap<String, String> = cookie_contents.verify_with_key(&key)?;
+    let claims: BTreeMap<String, String> = self.ccm.decrypt_cookie_to_map(session_cookie)?;
 
     let session_token = claims["session_token"].clone();
     let maybe_user_token = claims.get("user_token")
         .map(|t| t.to_string());
 
     Ok(SessionCookiePayload {
-      session_token,
+      session_token: session_token.to_string(),
       maybe_user_token,
     })
   }
@@ -110,7 +88,7 @@ impl SessionCookieManager {
   {
     let cookie = match request.cookie(SESSION_COOKIE_NAME) {
       None => return Ok(None),
-      Some(cookie) => cookie,
+      Some(cookie) => CryptedCookie(cookie),
     };
 
     match self.decode_session_cookie_payload(&cookie) {
@@ -122,7 +100,7 @@ impl SessionCookieManager {
     }
   }
 
-  pub fn decode_session_token(&self, session_cookie: &Cookie) -> AnyhowResult<String> {
+  pub fn decode_session_token(&self, session_cookie: &CryptedCookie) -> AnyhowResult<String> {
     let cookie_payload =
         self.decode_session_cookie_payload(session_cookie)?;
     Ok(cookie_payload.session_token)
@@ -133,7 +111,7 @@ impl SessionCookieManager {
   {
     let cookie = match request.cookie(SESSION_COOKIE_NAME) {
       None => return Ok(None),
-      Some(cookie) => cookie,
+      Some(cookie) => CryptedCookie(cookie),
     };
 
     match self.decode_session_token(&cookie) {

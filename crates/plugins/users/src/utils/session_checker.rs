@@ -14,13 +14,13 @@ use sqlx::pool::PoolConnection;
 use sqlx::{MySqlPool, MySql};
 
 #[derive(Clone)]
-pub struct SessionChecker {
-  cookie_manager: SessionCookieManager,
+pub struct SessionChecker<'a> {
+  cookie_manager: SessionCookieManager<'a>,
 }
 
-impl SessionChecker {
+impl<'a> SessionChecker<'a> {
 
-  pub fn new(cookie_manager: &SessionCookieManager) -> Self {
+  pub fn new(cookie_manager: &'a SessionCookieManager) -> Self {
     Self {
       cookie_manager: cookie_manager.clone(),
     }

@@ -82,7 +82,7 @@ impl ResponseError for LoginErrorResponse {
 pub async fn login_handler(
   http_request: HttpRequest,
   request: web::Json<LoginRequest>,
-  session_cookie_manager: web::Data<SessionCookieManager>,
+  session_cookie_manager: web::Data<SessionCookieManager<'_>>,
   mysql_pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse, LoginErrorResponse>
 {
@@ -162,7 +162,7 @@ pub async fn login_handler(
     .map_err(|_e| LoginErrorResponse::server_error())?;
 
   Ok(HttpResponse::Ok()
-    .cookie(session_cookie)
+    .cookie(session_cookie.0)
     .content_type("application/json")
     .body(body))
 }

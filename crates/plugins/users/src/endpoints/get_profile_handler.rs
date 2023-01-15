@@ -97,7 +97,7 @@ pub async fn get_profile_handler(
   http_request: HttpRequest,
   path: Path<GetProfilePathInfo>,
   mysql_pool: web::Data<MySqlPool>,
-  session_checker: web::Data<SessionChecker>,
+  session_checker: web::Data<SessionChecker<'_>>,
 ) -> Result<HttpResponse, ProfileError>
 {
   let mut benchmark = MultiBenchmarkingTimer::new_started();

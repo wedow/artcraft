@@ -91,7 +91,7 @@ pub async fn edit_profile_handler(
   path: Path<EditProfilePathInfo>,
   request: web::Json<EditProfileRequest>,
   mysql_pool: web::Data<MySqlPool>,
-  session_checker: web::Data<SessionChecker>,
+  session_checker: web::Data<SessionChecker<'_>>,
 ) -> Result<HttpResponse, EditProfileError>
 {
   let maybe_user_session = session_checker

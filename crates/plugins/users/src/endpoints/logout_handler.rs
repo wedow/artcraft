@@ -6,6 +6,7 @@
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, HttpRequest};
+use crate::utils::crypted_cookie_manager::CryptedCookie;
 use crate::utils::session_cookie_manager::SessionCookieManager;
 use database_queries::queries::users::user_sessions::delete_user_session::delete_user_session;
 use http_server_common::response::response_error_helpers::to_simple_json_error;
@@ -48,13 +49,13 @@ impl fmt::Display for LogoutError {
 
 pub async fn logout_handler(
   http_request: HttpRequest,
-  session_cookie_manager: web::Data<SessionCookieManager>,
+  session_cookie_manager: web::Data<SessionCookieManager<'_>>,
   mysql_pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse, LogoutError>
 {
   let delete_cookie = match http_request.cookie("session") {
     Some(cookie) => {
-      match session_cookie_manager.decode_session_token(&cookie) {
+      match session_cookie_manager.decode_session_token(&CryptedCookie(cookie.clone())) {
         Err(e) => {
           warn!("Session cookie decode error: {:?}", e);
         },

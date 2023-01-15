@@ -105,7 +105,7 @@ impl fmt::Display for SessionInfoError {
 pub async fn session_info_handler(
   http_request: HttpRequest,
   mysql_pool: web::Data<MySqlPool>,
-  session_checker: web::Data<SessionChecker>,
+  session_checker: web::Data<SessionChecker<'_>>,
 ) -> Result<HttpResponse, SessionInfoError>
 {
   let mut mysql_connection = mysql_pool.acquire()
