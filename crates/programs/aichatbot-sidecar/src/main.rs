@@ -15,6 +15,7 @@ pub mod workers;
 use actix_web::{HttpResponse, HttpServer, web};
 use async_openai::Client;
 use clap::{App, Arg};
+use web_scrapers::sites::slashdot::slashdot_scraper::{SlashdotFeed, SlashdotScraper};
 use crate::gui::launch_gui::launch_gui;
 use crate::main_loop::main_loop;
 use crate::persistence::save_directory::SaveDirectory;
@@ -29,7 +30,7 @@ use errors::AnyhowResult;
 use log::info;
 use sqlite_queries::queries::by_table::web_scraping_targets::insert_web_scraping_target::{Args, insert_web_scraping_target};
 use sqlx::sqlite::SqlitePoolOptions;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use tokio::runtime::{Builder, Runtime};
@@ -37,6 +38,7 @@ use web_scrapers::sites::cnn::cnn_article_scraper::cnn_article_scraper;
 use web_scrapers::sites::techcrunch::techcrunch_article_scraper::techcrunch_article_scraper;
 use web_scrapers::sites::theguardian::theguardian_scraper::theguardian_scraper_test;
 use workers::web_content_scraping::single_target::ingest_url_scrape_and_save::ingest_url_scrape_and_save;
+use strum::IntoEnumIterator;
 
 #[tokio::main]
 pub async fn main() -> AnyhowResult<()> {
@@ -94,6 +96,7 @@ pub async fn main2() -> AnyhowResult<()> {
   let job_state = Arc::new(JobState {
     sqlite_pool: pool,
     save_directory: save_directory.clone(),
+    slashdot_scrapers: Arc::new(RwLock::new(SlashdotFeed::iter().map(|feed| SlashdotScraper::new(feed)).collect())),
   });
 
   info!("Starting worker threads and web server...");
@@ -102,6 +105,7 @@ pub async fn main2() -> AnyhowResult<()> {
   let openai_client2 = openai_client.clone();
   let job_state2 = job_state.clone();
   let job_state3 = job_state.clone();
+  let job_state4 = job_state.clone();
 
   // NB: both egui and imgui (which we aren't using) complain about launching on a non-main thread.
   // They even complain that this is impossible on Windows (and our program aims to be multiplatform)
@@ -121,6 +125,13 @@ pub async fn main2() -> AnyhowResult<()> {
         .enable_io()
         .build()
         .unwrap();
+
+    tokio_runtime.spawn(async {
+      let mut scrapers_lock = job_state4.slashdot_scrapers.write().unwrap();
+      for scraper in scrapers_lock.iter_mut() {
+        scraper.refresh().await;
+      }
+    });
 
     tokio_runtime.spawn(async {
       let _r = web_index_ingestion_main_loop(job_state2).await;

@@ -1,4 +1,4 @@
-use crate::payloads::web_scraping_target::WebScrapingTarget;
+use crate::{payloads::web_scraping_target::WebScrapingTarget, common_extractors::extract_meta_rss::RssMetaScraper};
 use enums::by_table::web_scraping_targets::web_content_type::WebContentType;
 use errors::AnyhowResult;
 use log::warn;
@@ -33,45 +33,19 @@ impl CnnFeed {
 }
 
 pub async fn cnn_indexer(feed: CnnFeed) -> AnyhowResult<Vec<WebScrapingTarget>> {
-  let content = reqwest::get(feed.url())
-      .await?
-      .bytes()
-      .await?;
+    let mut rss_meta_scraper = RssMetaScraper::new(feed.url());
+    rss_meta_scraper.refresh().await?;
 
-  let channel = Channel::read_from(&content[..])?;
-
-  let mut targets = Vec::with_capacity(channel.items.len());
-
-  for item in channel.items {
-    let canonical_url = match item.link {
-      Some(url) => url.clone(),
-      None => {
-        warn!("Skipping item due to not having a URL");
-        continue;
-      }
-    };
-
-    let maybe_image_url = item.extensions.get("media")
-        .map(|media| media.get("group"))
-        .flatten()
-        .map(|group| group.get(0))
-        .flatten()
-        .map(|extension| extension.children.get("content"))
-        .flatten()
-        .map(|extensions| extensions.get(0)) // NB: First image is biggest
-        .flatten()
-        .map(|extension| extension.attrs.get("url"))
-        .flatten()
-        .map(|url| url.to_string());
-
-    targets.push(WebScrapingTarget {
-      canonical_url,
-      web_content_type: WebContentType::CnnArticle,
-      maybe_title: item.title.clone(),
-      maybe_full_image_url: maybe_image_url,
-      maybe_thumbnail_image_url: None,
-    });
-  }
+    //FIXME: get rid of this Vec if it's not too disruptive
+    let mut targets = rss_meta_scraper.map(|entry| {
+        WebScrapingTarget {
+            canonical_url: entry.url,
+            web_content_type: WebContentType::CnnArticle,
+            maybe_title: entry.maybe_title,
+            maybe_full_image_url: entry.maybe_image_url,
+            maybe_thumbnail_image_url: None,
+        }
+    }).collect();
 
   Ok(targets)
 }

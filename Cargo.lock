@@ -3281,6 +3281,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "html2text"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8177c65914761eea31e755aadea4db42d516e425046824564979e2158eec7fcb"
+dependencies = [
+ "html5ever",
+ "markup5ever",
+ "tendril",
+ "unicode-width",
+ "xml5ever",
+]
+
+[[package]]
 name = "html5ever"
 version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8182,6 +8195,7 @@ dependencies = [
  "chrono",
  "enums",
  "errors",
+ "html2text",
  "log",
  "once_cell",
  "reqwest",
@@ -8628,6 +8642,17 @@ name = "xml-rs"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b07db065a5cf61a7e4ba64f29e67db906fb1787316516c4e6e5ff0fea1efcd8a"
+
+[[package]]
+name = "xml5ever"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4034e1d05af98b51ad7214527730626f019682d797ba38b51689212118d8e650"
+dependencies = [
+ "log",
+ "mac",
+ "markup5ever",
+]
 
 [[package]]
 name = "zeroize"

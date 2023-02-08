@@ -15,6 +15,7 @@ use web_scrapers::sites::techcrunch::techcrunch_indexer::{techcrunch_indexer, Te
 
 /// Download RSS feeds and index pages to determine which articles and content will be scraped (async/downstream of this)
 pub async fn web_index_ingestion_main_loop(job_state: Arc<JobState>) {
+  
   loop {
     info!("web_index_ingestion main loop");
 
