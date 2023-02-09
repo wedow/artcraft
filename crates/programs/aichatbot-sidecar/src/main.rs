@@ -15,7 +15,6 @@ pub mod workers;
 use actix_web::{HttpResponse, HttpServer, web};
 use async_openai::Client;
 use clap::{App, Arg};
-use web_scrapers::sites::slashdot::slashdot_scraper::{SlashdotFeed, SlashdotScraper};
 use crate::gui::launch_gui::launch_gui;
 use crate::main_loop::main_loop;
 use crate::persistence::save_directory::SaveDirectory;
@@ -40,27 +39,27 @@ use web_scrapers::sites::theguardian::theguardian_scraper::theguardian_scraper_t
 use workers::web_content_scraping::single_target::ingest_url_scrape_and_save::ingest_url_scrape_and_save;
 use strum::IntoEnumIterator;
 
-#[tokio::main]
-pub async fn main() -> AnyhowResult<()> {
-  test().await
-}
+//#[tokio::main]
+//pub async fn main() -> AnyhowResult<()> {
+  //test().await
+//}
 
-async fn test() -> AnyhowResult<()> {
-  let database_url = easyenv::get_env_string_required("DATABASE_URL")?;
-  let pool = SqlitePoolOptions::new()
-      .max_connections(5)
-      .connect(&database_url).await?;
+//async fn test() -> AnyhowResult<()> {
+  //let database_url = easyenv::get_env_string_required("DATABASE_URL")?;
+  //let pool = SqlitePoolOptions::new()
+      //.max_connections(5)
+      //.connect(&database_url).await?;
 
-  let _ = dotenv::from_filename(".env-aichatbot-secrets").ok();
-  let startup_args = get_startup_args()?;
-  let save_directory = SaveDirectory::new(&startup_args.save_directory);
+  //let _ = dotenv::from_filename(".env-aichatbot-secrets").ok();
+  //let startup_args = get_startup_args()?;
+  //let save_directory = SaveDirectory::new(&startup_args.save_directory);
 
-  //let url = "https://techcrunch.com/2023/02/04/elon-musk-says-twitter-will-provide-a-free-write-only-api-to-bots-providing-good-content/";
-  let url = "https://www.cnn.com/2023/02/04/business/automakers-problems-catching-up-with-tesla/index.html";
-  ingest_url_scrape_and_save(url, WebContentType::CnnArticle, &save_directory).await?;
+  ////let url = "https://techcrunch.com/2023/02/04/elon-musk-says-twitter-will-provide-a-free-write-only-api-to-bots-providing-good-content/";
+  //let url = "https://www.cnn.com/2023/02/04/business/automakers-problems-catching-up-with-tesla/index.html";
+  //ingest_url_scrape_and_save(url, WebContentType::CnnArticle, &save_directory).await?;
 
-  Ok(())
-}
+  //Ok(())
+//}
 
 pub const LOG_LEVEL: &'static str = concat!(
   "info,",
@@ -72,7 +71,7 @@ pub const LOG_LEVEL: &'static str = concat!(
 );
 
 #[actix_web::main]
-pub async fn main2() -> AnyhowResult<()> {
+pub async fn main() -> AnyhowResult<()> {
   easyenv::init_all_with_default_logging(Some(LOG_LEVEL));
 
   // NB: Do not check this secrets-containing dotenv file into VCS.
@@ -96,7 +95,6 @@ pub async fn main2() -> AnyhowResult<()> {
   let job_state = Arc::new(JobState {
     sqlite_pool: pool,
     save_directory: save_directory.clone(),
-    slashdot_scrapers: Arc::new(RwLock::new(SlashdotFeed::iter().map(|feed| SlashdotScraper::new(feed)).collect())),
   });
 
   info!("Starting worker threads and web server...");
@@ -105,7 +103,6 @@ pub async fn main2() -> AnyhowResult<()> {
   let openai_client2 = openai_client.clone();
   let job_state2 = job_state.clone();
   let job_state3 = job_state.clone();
-  let job_state4 = job_state.clone();
 
   // NB: both egui and imgui (which we aren't using) complain about launching on a non-main thread.
   // They even complain that this is impossible on Windows (and our program aims to be multiplatform)
@@ -127,10 +124,6 @@ pub async fn main2() -> AnyhowResult<()> {
         .unwrap();
 
     tokio_runtime.spawn(async {
-      let mut scrapers_lock = job_state4.slashdot_scrapers.write().unwrap();
-      for scraper in scrapers_lock.iter_mut() {
-        scraper.refresh().await;
-      }
     });
 
     tokio_runtime.spawn(async {

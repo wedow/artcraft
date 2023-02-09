@@ -1,7 +1,7 @@
 use enums::by_table::web_scraping_targets::web_content_type::WebContentType;
 use errors::AnyhowResult;
 
-use crate::{common_extractors::extract_meta_rss::RssMetaScraper, payloads::web_scraping_result::{WebScrapingResult, ScrapedWebArticle}};
+use crate::{common_extractors::extract_meta_rss::{RssMetaRequester, RssMetaIterator}, payloads::web_scraping_result::{WebScrapingResult, ScrapedWebArticle}};
 
 #[derive(Copy, Clone, Debug, EnumIter, EnumCount)]
 pub enum SlashdotFeed {
@@ -28,23 +28,24 @@ impl SlashdotFeed {
     }
 }
 
-pub struct SlashdotScraper(RssMetaScraper);
+pub struct SlashdotRequester(RssMetaRequester);
+pub struct SlashdotIterator(RssMetaIterator);
 
-impl SlashdotScraper {
+impl SlashdotRequester {
 
     /// This won't have any data until refresh is called
     pub fn new(feed: SlashdotFeed) -> Self {
         Self (
-            RssMetaScraper::new(feed.url()),
+            RssMetaRequester::new(feed.url()),
         )
     }
 
-    pub async fn refresh(&mut self) -> AnyhowResult<()> {
-        self.0.refresh().await
+    pub async fn request(&mut self) -> AnyhowResult<SlashdotIterator> {
+        Ok(SlashdotIterator(self.0.request().await?))
     }
 }
 
-impl std::iter::Iterator for SlashdotScraper {
+impl std::iter::Iterator for SlashdotIterator {
     type Item = WebScrapingResult;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -59,7 +60,9 @@ impl std::iter::Iterator for SlashdotScraper {
                             maybe_title: entry.maybe_title,
                             maybe_author: entry.maybe_author,
                             paragraphs: Vec::new(), // sorry don't have this either
-                            body_text: entry.maybe_summary.unwrap_or(String::new()),
+                            // First line contains all the content, subsequent lines are link
+                            // references and junk
+                            body_text: entry.maybe_summary.unwrap_or(String::new()).lines().next().unwrap_or("").to_string(),
                             maybe_heading_image_url: None,
                             maybe_featured_image_url: None,
                         }

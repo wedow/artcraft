@@ -4,49 +4,46 @@ use html2text::from_read;
 use log::warn;
 use rss::{Enclosure, Channel};
 
-pub struct RssMetaScraper {
+pub struct RssMetaRequester {
     feed_url: &'static str,
-    feed_data: Option<Channel>,
 }
 
 
-impl RssMetaScraper {
+impl RssMetaRequester {
     /// This doesn't fetch any data until refresh is called!
     pub fn new(feed_url: &'static str) -> Self {
         Self {
             feed_url,
-            feed_data: None,
         }
     }
 
-    pub async fn refresh(&mut self) -> AnyhowResult<()> {
+    pub async fn request(&mut self) -> AnyhowResult<RssMetaIterator> {
         let body = reqwest::get(self.feed_url)
        .await?
        .bytes()
        .await?;
 
-        self.feed_data = match Channel::read_from(&body[..]) {
-            Ok(data) => Some(data),
-            Err(_e) => None,
-        };
-        Ok(())
+        let feed_data = Channel::read_from(&body[..])?;
+        Ok(RssMetaIterator
+            {
+                feed_data,
+            }
+        )
     }
 }
 
 
+pub struct RssMetaIterator {
+    feed_data: Channel,
+}
 
-impl std::iter::Iterator for RssMetaScraper {
+
+impl std::iter::Iterator for RssMetaIterator {
     type Item = RssMeta;
 
     fn next(&mut self) -> Option<Self::Item> {
 
-        let entry = match &self.feed_data {
-            Some(feed) => {
-               feed.items.iter().next() 
-            }
-            None => None,
-        };
-        
+        let entry = self.feed_data.items.iter().next();
         match entry {
             None => None,
             Some(entry) => {

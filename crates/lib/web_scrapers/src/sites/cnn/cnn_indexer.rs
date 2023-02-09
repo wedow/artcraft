@@ -1,4 +1,4 @@
-use crate::{payloads::web_scraping_target::WebScrapingTarget, common_extractors::extract_meta_rss::RssMetaScraper};
+use crate::{payloads::web_scraping_target::WebScrapingTarget, common_extractors::extract_meta_rss::{RssMetaRequester, RssMetaIterator}};
 use enums::by_table::web_scraping_targets::web_content_type::WebContentType;
 use errors::AnyhowResult;
 use log::warn;
@@ -33,11 +33,11 @@ impl CnnFeed {
 }
 
 pub async fn cnn_indexer(feed: CnnFeed) -> AnyhowResult<Vec<WebScrapingTarget>> {
-    let mut rss_meta_scraper = RssMetaScraper::new(feed.url());
-    rss_meta_scraper.refresh().await?;
+    let mut rss_meta_requester = RssMetaRequester::new(feed.url());
+    let rss_meta_iter = rss_meta_requester.request().await?;
 
     //FIXME: get rid of this Vec if it's not too disruptive
-    let mut targets = rss_meta_scraper.map(|entry| {
+    let targets = rss_meta_iter.map(|entry| {
         WebScrapingTarget {
             canonical_url: entry.url,
             web_content_type: WebContentType::CnnArticle,

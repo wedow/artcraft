@@ -8,7 +8,7 @@ use crate::persistence::save_directory::SaveDirectory;
 
 pub fn just_save(web_content_type: WebContentType, scraping_result: WebScrapingResult, save_directory: &SaveDirectory) -> AnyhowResult<()>
 {
-    let url = scraping_result.result.url;
+    let url = scraping_result.result.url.clone();
     {
         let directory = save_directory.directory_for_webpage_url(&url)?;
         std::fs::create_dir_all(&directory)?;
@@ -22,7 +22,7 @@ pub fn just_save(web_content_type: WebContentType, scraping_result: WebScrapingR
 
     {
         let yaml_filename = save_directory.scrape_summary_file_for_webpage_url(&url)?;
-        let mut file = std::fs::File::create(&yaml_filename)?;
+        let file = std::fs::File::create(&yaml_filename)?;
         serde_yaml::to_writer(file, &scraping_result.result)?;
     }
 
