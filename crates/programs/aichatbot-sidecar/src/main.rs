@@ -124,9 +124,6 @@ pub async fn main() -> AnyhowResult<()> {
         .unwrap();
 
     tokio_runtime.spawn(async {
-    });
-
-    tokio_runtime.spawn(async {
       let _r = web_index_ingestion_main_loop(job_state2).await;
     });
 
