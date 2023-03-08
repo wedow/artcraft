@@ -16,6 +16,8 @@ twitch_secrets.toml
 
 # Rust build directory
 target/
+crates/lib/database_queries/target/
+crates/lib/sqlite_queries/target/
 
 # Vim noise
 *.swo

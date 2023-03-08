@@ -45,7 +45,8 @@ RUN $HOME/.cargo/bin/rustc --version
 RUN $HOME/.cargo/bin/cargo --version
 
 # Cargo Chef does Rust build caching: https://github.com/LukeMathWalker/cargo-chef
-RUN $HOME/.cargo/bin/cargo install cargo-chef --locked
+# TODO(bt,2023-03-08): builds are failing with "no space left on device"; disabling build caching
+#RUN $HOME/.cargo/bin/cargo install cargo-chef --locked
 
 # ======================================================================
 # =============== (2) use cargo-chef to "plan" the build ===============
@@ -55,7 +56,8 @@ FROM rust-base AS planner
 
 # NB: Copying in everything does not appear to impact cached builds if irrelevant files are changed (at least at this step)
 COPY . .
-RUN $HOME/.cargo/bin/cargo chef prepare --recipe-path recipe.json
+# TODO(bt,2023-03-08): builds are failing with "no space left on device"; disabling build caching
+#RUN $HOME/.cargo/bin/cargo chef prepare --recipe-path recipe.json
 
 # ======================================================================================================
 # =============== (3) "cook" the libraries (cacheable), then run the app build and tests ===============
@@ -63,10 +65,12 @@ RUN $HOME/.cargo/bin/cargo chef prepare --recipe-path recipe.json
 
 FROM rust-base AS builder
 
-COPY --from=planner /tmp/recipe.json recipe.json
+# TODO(bt,2023-03-08): builds are failing with "no space left on device"; disabling build caching
+#COPY --from=planner /tmp/recipe.json recipe.json
 
 # NB: This step builds and caches the dependencies as its own layer.
-RUN $HOME/.cargo/bin/cargo chef cook --release --recipe-path recipe.json
+# TODO(bt,2023-03-08): builds are failing with "no space left on device"; disabling build caching
+#RUN $HOME/.cargo/bin/cargo chef cook --release --recipe-path recipe.json
 
 # NB: Now we build and test our code.
 COPY Cargo.lock .
