@@ -79,10 +79,24 @@ COPY crates/ ./crates
 COPY db/ ./db
 COPY test_data/ ./test_data
 
+# Print a report on disk space
+RUN echo "Disk usage at root (before tests):"
+RUN du -hsc / | sort -hr
+RUN echo "Disk usage at current directory (before tests):"
+RUN pwd
+RUN du -hsc * | sort -hr
+
 # Run all of the tests
 RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
   $HOME/.cargo/bin/cargo test
+
+# Print a report on disk space
+RUN echo "Disk usage at root (after tests):"
+RUN du -hsc / | sort -hr
+RUN echo "Disk usage at current directory (after tests):"
+RUN pwd
+RUN du -hsc * | sort -hr
 
 # Build all the binaries.
 RUN SQLX_OFFLINE=true \
