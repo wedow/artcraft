@@ -13,7 +13,7 @@ use std::sync::Arc;
 use tokens::users::user::UserToken;
 
 // TODO: Make non-`Serialize` and make the HTTP endpoints do the work
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserProfileResult {
   pub user_token: UserToken,
   pub username: String,
@@ -49,7 +49,7 @@ pub struct UserProfileResult {
 }
 
 // TODO: Make non-`Serialize` and make the HTTP endpoints do the work
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserProfileModeratorFields {
   pub is_banned: bool,
   pub maybe_mod_comments: Option<String>,

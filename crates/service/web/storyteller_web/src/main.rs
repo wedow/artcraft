@@ -506,6 +506,7 @@ pub async fn serve(server_state: ServerState) -> AnyhowResult<()>
     let app = App::new()
       .app_data(web::Data::new(server_state_arc.firehose_publisher.clone()))
       .app_data(web::Data::new(server_state_arc.mysql_pool.clone()))
+      .app_data(web::Data::new(server_state_arc.redis_pool.clone()))
       .app_data(web::Data::new(server_state_arc.session_checker.clone()))
       .app_data(web::Data::new(server_state_arc.cookie_manager.clone()))
       .app_data(web::Data::new(server_state_arc.stripe.clone().config.clone()))

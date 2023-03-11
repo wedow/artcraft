@@ -11,18 +11,20 @@ use chrono::{DateTime, Utc};
 use crate::utils::session_checker::SessionChecker;
 use database_queries::queries::users::user_badges::list_user_badges::UserBadgeForList;
 use database_queries::queries::users::user_badges::list_user_badges::list_user_badges;
-use database_queries::queries::users::user_profiles::get_user_profile_by_username::get_user_profile_by_username_from_connection;
+use database_queries::queries::users::user_profiles::get_user_profile_by_username::{get_user_profile_by_username_from_connection, UserProfileResult};
 use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use http_server_common::util::timer::MultiBenchmarkingTimer;
-use log::warn;
+use log::{error, warn};
 use sqlx::MySqlPool;
 use std::fmt;
+use r2d2_redis::{r2d2, RedisConnectionManager};
+use r2d2_redis::r2d2::PooledConnection;
+use r2d2_redis::redis::Commands;
 use tokens::users::user::UserToken;
 
 // TODO: This is duplicated in query_user_profile
-// TODO: This handler has embedded queries.
 
 #[derive(Serialize)]
 pub struct UserProfileRecordForResponse {
@@ -97,6 +99,7 @@ pub async fn get_profile_handler(
   http_request: HttpRequest,
   path: Path<GetProfilePathInfo>,
   mysql_pool: web::Data<MySqlPool>,
+  redis_pool: web::Data<r2d2::Pool<RedisConnectionManager>>,
   session_checker: web::Data<SessionChecker>,
 ) -> Result<HttpResponse, ProfileError>
 {
@@ -130,25 +133,65 @@ pub async fn get_profile_handler(
     is_mod = user_session.can_ban_users;
   }
 
-  let (pool_connection, maybe_user_profile) =
-      benchmark.time_async_section_moving_args("profile query", pool_connection, |mut pc| async {
-        let ret = get_user_profile_by_username_from_connection(&path.username, &mut pc).await;
-        (pc, ret)
-      }).await;
 
-  let user_profile = match maybe_user_profile {
-    Ok(Some(user_profile)) => user_profile,
-    Ok(None) => {
-      warn!("Invalid user");
-      return Err(ProfileError::NotFound);
-    },
-    Err(err) => {
-      warn!("User profile query error: {:?}", err);
-      return Err(ProfileError::ServerError);
-    }
+  // TODO: Standard cache key
+  let cache_key = format!("cache:userProfile:{}", path.username);
+  let mut maybe_redis = redis_pool.get().ok();
+
+  let mut maybe_user_data = None;
+  let mut store_in_cache = false;
+
+  if let Some(redis) = maybe_redis.as_mut() {
+    maybe_user_data = try_get_user_from_redis_cache(&cache_key, redis);
+  }
+
+  if maybe_user_data.is_some() {
+    warn!("User pulled from Redis cache key: {}", cache_key);
+  }
+
+  if maybe_user_data.is_none() {
+    let (pool_connection, maybe_user_profile) =
+        benchmark.time_async_section_moving_args("profile query", pool_connection, |mut pc| async {
+          let ret = get_user_profile_by_username_from_connection(&path.username, &mut pc).await;
+          (pc, ret)
+        }).await;
+
+    let user_profile = match maybe_user_profile {
+      Ok(Some(user_profile)) => user_profile,
+      Ok(None) => return Err(ProfileError::NotFound),
+      Err(err) => {
+        error!("User profile query error: {:?}", err);
+        return Err(ProfileError::ServerError);
+      }
+    };
+
+    let (_pool_connection, maybe_badges) =
+        benchmark.time_async_section_moving_args("badges query", pool_connection, |mut pc| async {
+          let ret = list_user_badges(&mut pc, &user_profile.user_token.0)
+              .await;
+          (pc, ret)
+        }).await;
+
+    let badges = maybe_badges
+        .unwrap_or_else(|err| {
+          warn!("Error querying badges: {:?}", err);
+          return Vec::new(); // NB: Fine if this fails. Not sure why it would.
+        });
+
+    maybe_user_data = Some(RedisCacheData {
+      user_profile: user_profile.clone(),
+      badges: badges.clone(),
+    });
+
+    store_in_cache = true;
+  }
+
+  let user_data = match maybe_user_data {
+    None => return Err(ProfileError::NotFound),
+    Some(user_data) => user_data,
   };
 
-  let is_banned = user_profile.maybe_moderator_fields
+  let is_banned = user_data.user_profile.maybe_moderator_fields
       .as_ref()
       .map(|mod_fields| mod_fields.is_banned)
       .unwrap_or(false);
@@ -158,46 +201,43 @@ pub async fn get_profile_handler(
     return Err(ProfileError::NotFound);
   }
 
-  let (_pool_connection, maybe_badges) =
-      benchmark.time_async_section_moving_args("badges query", pool_connection, |mut pc| async {
-        let ret = list_user_badges(&mut pc, &user_profile.user_token.0)
-            .await;
-        (pc, ret)
-      }).await;
-
-  let badges = maybe_badges
-      .unwrap_or_else(|err| {
-        warn!("Error querying badges: {:?}", err);
-        return Vec::new(); // NB: Fine if this fails. Not sure why it would.
-      });
+  if store_in_cache {
+    if let Some(redis) = maybe_redis.as_mut() {
+      if let Ok(redis_payload) = serde_json::to_string(&user_data) {
+        const SECONDS : usize = 60;
+        // NB: Compiler can't figure out the throwaway result type
+        let _r : Option<String> = redis.set_ex(&cache_key, redis_payload, SECONDS).ok();
+      }
+    }
+  }
 
   let mut profile_for_response = UserProfileRecordForResponse {
-    user_token: user_profile.user_token,
-    username: user_profile.username,
-    display_name: user_profile.display_name,
-    email_gravatar_hash: user_profile.email_gravatar_hash,
-    profile_markdown: user_profile.profile_markdown,
-    profile_rendered_html: user_profile.profile_rendered_html,
-    user_role_slug: user_profile.user_role_slug,
-    disable_gravatar: user_profile.disable_gravatar,
-    preferred_tts_result_visibility: user_profile.preferred_tts_result_visibility,
-    preferred_w2l_result_visibility: user_profile.preferred_w2l_result_visibility,
-    discord_username: user_profile.discord_username,
-    twitch_username: user_profile.twitch_username,
-    twitter_username: user_profile.twitter_username,
-    patreon_username: user_profile.patreon_username,
-    github_username: user_profile.github_username,
-    cashapp_username: user_profile.cashapp_username,
-    website_url: user_profile.website_url,
-    created_at: user_profile.created_at,
-    maybe_moderator_fields: user_profile.maybe_moderator_fields.map(|mod_fields| {
+    user_token: user_data.user_profile.user_token,
+    username: user_data.user_profile.username,
+    display_name: user_data.user_profile.display_name,
+    email_gravatar_hash: user_data.user_profile.email_gravatar_hash,
+    profile_markdown: user_data.user_profile.profile_markdown,
+    profile_rendered_html: user_data.user_profile.profile_rendered_html,
+    user_role_slug: user_data.user_profile.user_role_slug,
+    disable_gravatar: user_data.user_profile.disable_gravatar,
+    preferred_tts_result_visibility: user_data.user_profile.preferred_tts_result_visibility,
+    preferred_w2l_result_visibility: user_data.user_profile.preferred_w2l_result_visibility,
+    discord_username: user_data.user_profile.discord_username,
+    twitch_username: user_data.user_profile.twitch_username,
+    twitter_username: user_data.user_profile.twitter_username,
+    patreon_username: user_data.user_profile.patreon_username,
+    github_username: user_data.user_profile.github_username,
+    cashapp_username: user_data.user_profile.cashapp_username,
+    website_url: user_data.user_profile.website_url,
+    created_at: user_data.user_profile.created_at,
+    maybe_moderator_fields: user_data.user_profile.maybe_moderator_fields.map(|mod_fields| {
       UserProfileModeratorFields {
         is_banned: mod_fields.is_banned,
         maybe_mod_comments: mod_fields.maybe_mod_comments,
         maybe_mod_user_token: mod_fields.maybe_mod_user_token,
       }
     }),
-    badges,
+    badges: user_data.badges,
   };
 
   if !is_mod {
@@ -230,4 +270,27 @@ pub async fn get_profile_handler(
   let http_response = http_response.body(body);
 
   Ok(http_response)
+}
+
+
+#[derive(Serialize, Deserialize, Clone)]
+pub (crate) struct RedisCacheData {
+  pub user_profile: UserProfileResult,
+  pub badges: Vec<UserBadgeForList>,
+}
+
+// TODO: Async
+pub (crate) fn try_get_user_from_redis_cache(
+  cache_key: &str,
+  redis: &mut PooledConnection<RedisConnectionManager>,
+) -> Option<RedisCacheData> {
+
+  let results : Option<String> = redis.get(cache_key).ok().flatten();
+
+  let redis_data = match results {
+    None => return None,
+    Some(redis_data) => redis_data,
+  };
+
+  serde_json::from_str(&redis_data).ok()
 }

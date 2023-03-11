@@ -5,7 +5,7 @@ use log::{warn, info};
 use sqlx::{MySql, MySqlPool};
 use sqlx::pool::PoolConnection;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserBadgeForList {
   pub slug: String,
   pub title: String,

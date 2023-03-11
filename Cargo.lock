@@ -7745,6 +7745,7 @@ dependencies = [
  "log",
  "md-5",
  "once_cell",
+ "r2d2_redis",
  "regex",
  "reusable_types",
  "serde",

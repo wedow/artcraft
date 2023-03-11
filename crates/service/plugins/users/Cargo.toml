@@ -55,3 +55,7 @@ toml = "0.5.8"
 # "rustls" doesn't appear to work with IP addresses, per:
 # https://github.com/launchbadge/sqlx/issues/1095#issuecomment-798050828
 sqlx = { version = "0.6.2", features = [ "mysql", "runtime-actix-native-tls", "offline", "chrono" ] }
+
+# TODO: Shouldn't really be a dependency, but need to add caching for the DDoS attack.
+# Redis Database
+r2d2_redis = "0.14.0"
