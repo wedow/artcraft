@@ -18,6 +18,8 @@ pub async fn edit_tts_model_moderator_details(
   is_twitch_featured: bool,
   moderator_user_token: &str,
   maybe_mod_comments: Option<&str>,
+  use_default_mel_multiply_factor: bool,
+  maybe_custom_mel_multiply_factor: Option<f64>,
 ) -> Result<MySqlQueryResult, sqlx::Error> {
   sqlx::query!(
         r#"
@@ -31,6 +33,8 @@ SET
     is_front_page_featured = ?,
     is_twitch_featured = ?,
     maybe_suggested_unique_bot_command = ?,
+    use_default_mel_multiply_factor = ?,
+    maybe_custom_mel_multiply_factor = ?,
     version = version + 1
 WHERE token = ?
 LIMIT 1
@@ -43,6 +47,8 @@ LIMIT 1
       is_front_page_featured,
       is_twitch_featured,
       maybe_suggested_unique_bot_command,
+      use_default_mel_multiply_factor,
+      maybe_custom_mel_multiply_factor,
       tts_model_token
     )
       .execute(mysql_pool)

@@ -81,6 +81,11 @@ pub struct EditTtsModelRequest {
 
   // NB: We take "empty string" to mean removal.
   pub maybe_suggested_unique_bot_command: Option<String>,
+
+  // Moderator-set mel multiply factors
+  // These fields are misleadingly named just in case a competitor is snooping the javascript.
+  pub use_default_m_factor: Option<bool>,
+  pub maybe_custom_m_factor: Option<f64>,
 }
 
 #[derive(Debug)]
@@ -351,6 +356,9 @@ async fn update_mod_details(
     }
   }
 
+  let use_default_mel_multiply_factor = request.use_default_m_factor.unwrap_or(false);
+  let maybe_custom_mel_multiply_factor = request.maybe_custom_m_factor;
+
   let query_result = edit_tts_model_moderator_details(
     &mysql_pool,
     tts_model_token,
@@ -362,6 +370,8 @@ async fn update_mod_details(
     is_twitch_featured,
     moderator_user_token,
     request.maybe_mod_comments.as_deref(),
+    use_default_mel_multiply_factor,
+    maybe_custom_mel_multiply_factor,
   ).await;
 
   match query_result {

@@ -71,6 +71,10 @@ pub struct CustomVocoderFields {
 /// "Moderator-only fields" that we wouldn't want to expose to ordinary users.
 /// It's the web endpoint controller's responsibility to clear these for non-mods.
 pub struct TtsModelModeratorFields {
+  // Moderator-set mel multiply factors
+  pub use_default_mel_multiply_factor: bool,
+  pub maybe_custom_mel_multiply_factor: Option<f64>,
+
   pub creator_is_banned: bool,
   pub creator_ip_address_creation: String,
   pub creator_ip_address_last_update: String,
@@ -166,6 +170,8 @@ pub async fn get_tts_model_by_token_using_connection(
     created_at: model.created_at,
     updated_at: model.updated_at,
     maybe_moderator_fields: Some(TtsModelModeratorFields {
+      use_default_mel_multiply_factor: i8_to_bool(model.use_default_mel_multiply_factor),
+      maybe_custom_mel_multiply_factor: model.maybe_custom_mel_multiply_factor,
       creator_is_banned: i8_to_bool(model.creator_is_banned),
       creator_ip_address_creation: model.creator_ip_address_creation,
       creator_ip_address_last_update: model.creator_ip_address_last_update,
@@ -190,6 +196,9 @@ SELECT
     tts.text_pipeline_type,
     tts.text_preprocessing_algorithm,
     tts.maybe_default_pretrained_vocoder,
+
+    tts.use_default_mel_multiply_factor,
+    tts.maybe_custom_mel_multiply_factor,
 
     tts.creator_user_token,
     users.username as creator_username,
@@ -264,6 +273,9 @@ SELECT
     tts.text_preprocessing_algorithm,
     tts.maybe_default_pretrained_vocoder,
 
+    tts.use_default_mel_multiply_factor,
+    tts.maybe_custom_mel_multiply_factor,
+
     tts.creator_user_token,
     users.username as creator_username,
     users.display_name as creator_display_name,
@@ -333,6 +345,9 @@ struct InternalTtsModelRecordRaw {
   pub text_pipeline_type: Option<String>,
   pub maybe_default_pretrained_vocoder: Option<String>,
   pub text_preprocessing_algorithm: String,
+
+  pub use_default_mel_multiply_factor: i8,
+  pub maybe_custom_mel_multiply_factor: Option<f64>,
 
   pub creator_user_token: String,
   pub creator_username: String,

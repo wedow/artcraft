@@ -117,6 +117,11 @@ pub struct UserRatingsStats {
 /// It's the web endpoint controller's responsibility to clear these for non-mods.
 #[derive(Serialize)]
 pub struct TtsModelModeratorFieldInfo {
+  // Moderator-set mel multiply factors
+  // These fields are misleadingly named just in case a competitor is snooping the javascript.
+  pub use_default_m_factor: bool,
+  pub maybe_custom_m_factor: Option<f64>,
+
   pub creator_is_banned: bool,
   pub creator_ip_address_creation: String,
   pub creator_ip_address_last_update: String,
@@ -286,6 +291,8 @@ pub async fn get_tts_model_handler(
       updated_at: model.updated_at,
       maybe_moderator_fields: model.maybe_moderator_fields.map(|mod_fields| {
         TtsModelModeratorFieldInfo {
+          use_default_m_factor: mod_fields.use_default_mel_multiply_factor,
+          maybe_custom_m_factor: mod_fields.maybe_custom_mel_multiply_factor,
           creator_is_banned: mod_fields.creator_is_banned,
           creator_ip_address_creation: mod_fields.creator_ip_address_creation,
           creator_ip_address_last_update: mod_fields.creator_ip_address_last_update,
