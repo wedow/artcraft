@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use crate::anyhow_result::AnyhowResult;
-use std::sync::{Arc, RwLock, PoisonError, RwLockWriteGuard};
+use std::sync::{Arc, RwLock};
 use std::time::{Instant, Duration};
 
 /// Sometimes I need to kill a thread from somewhere else. This is a mechanism
