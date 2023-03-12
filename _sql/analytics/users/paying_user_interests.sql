@@ -2,6 +2,8 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 -- noinspection SqlResolveForFile
 
+-- TODO: Do an analysis of voice binned by # of paying customers that use it.
+
 -- The most popular models amongst paying subscribers.
 -- This should give us insight as to which models subscribers pay us for.
 SELECT *

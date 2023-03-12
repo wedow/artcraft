@@ -63,7 +63,7 @@ from (
     join users as u
     on u.token = m.creator_user_token
 order by r.use_count desc
-    limit 100;
+    limit 25;
 
 --
 -- Top 20 ***NEW*** models to share in #announcements
