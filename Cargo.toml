@@ -12,6 +12,7 @@ members = [
   "crates/cli/database_backup",
   "crates/cli/database_cleanup",
   "crates/cli/scrape_test",
+  "crates/cli/so_vits_svc_onnx_inference",
 
   # Shared libraries
   "crates/lib/actix_helpers",

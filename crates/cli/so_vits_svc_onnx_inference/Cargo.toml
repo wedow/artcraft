@@ -1,0 +1,21 @@
+[package]
+name = "so_vits_svc_onnx_inference"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.2.1", features = ["derive"] }
+env_logger = "0.10.0"
+log = "0.4.17"
+ndarray = "0.15.6"
+onnxruntime = { git = "https://github.com/28Smiles/onnxruntime-rs", rev = "aea2c8e8f16496417cbdea5dac64ce569d0060d1"}
+rand = "0.8.5"
+rsworld = "0.1.0"
+rsworld-sys = "0.1.0"
+rubato = "0.12.0"
+symphonia =  { version = "0.5.2", features = ["aac", "alac", "flac", "mp3", "ogg", "vorbis", "wav"] }
+webrtc-vad = "0.4.0"
+media = { path = "../../lib/media" }
+hound = "3.5.0"

@@ -202,12 +202,12 @@ fn read_duration(format: &mut Box<dyn FormatReader>) -> AnyhowResult<Option<u64>
 mod tests {
   use std::path::PathBuf;
   use errors::AnyhowResult;
-  use crate::decode_basic_audio_info::decode_basic_audio_info;
+  use super::decode_basic_audio_info;
 
   fn test_file(path_from_repo_root: &str) -> PathBuf {
     // https://doc.rust-lang.org/cargo/reference/environment-variables.html
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path.push(format!("../../../{}", path_from_repo_root));
+    path.push(format!("../../../../{}", path_from_repo_root));
     path
   }
 

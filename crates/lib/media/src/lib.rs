@@ -18,4 +18,5 @@
 #![allow(dead_code)]
 #![allow(non_snake_case)]
 
-pub mod decode_basic_audio_info;
+pub mod decode;
+pub mod resample;

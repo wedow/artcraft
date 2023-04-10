@@ -13,12 +13,15 @@ name = "media" # NB: Public "media" crate was squatted, so we're good to use thi
 path = "src/lib.rs"
 
 [dependencies]
+arrayvec = "0.7.2"
 
 # Internal
 errors = { path = "../errors" }
+hound = "3.5.0"
 
 # External
 log = "0.4.14"
+rubato = "0.12.0"
 
 # Powerful audio decoder and demuxer
 symphonia = { version = "0.5.1", features = ["aac", "alac", "flac", "isomp4", "mkv", "mp3", "ogg", "vorbis", "wav"] }
