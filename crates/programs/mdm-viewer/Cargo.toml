@@ -1,0 +1,12 @@
+[package]
+name = "mdm-viewer"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fyrox = { git = "https://github.com/FyroxEngine/Fyrox", rev="9a4f1c0fbce96eb55839405492ff554757fac6e0"}
+ndarray = "0.15.6"
+serde = { version = "1.0.159", features = ["derive"] }
+serde_json = "1.0.95"

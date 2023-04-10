@@ -47,6 +47,7 @@ members = [
 
   # Programs: Desktop apps
   "crates/programs/aichatbot-sidecar",
+  "crates/programs/mdm-viewer",
 
   # Services: API servers, jobs, workers, etc.
   "crates/service/job/analytics_job",
