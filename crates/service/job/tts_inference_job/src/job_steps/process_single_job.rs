@@ -30,6 +30,7 @@ use tempdir::TempDir;
 use tts_common::clean_symbols::clean_symbols;
 use tts_common::text_pipelines::guess_pipeline::guess_text_pipeline_heuristic;
 use tts_common::text_pipelines::text_pipeline_type::TextPipelineType;
+use jobs_common::audiowmark::audiowmark_add;
 
 /// Text starting with this will be treated as a test request.
 /// This allows the request to bypass the model cache and query the latest TTS model.
@@ -349,6 +350,9 @@ pub async fn process_single_job(
 
   safe_delete_temp_file(&output_metadata_fs_path);
 
+  // =================== Watermark Audio ============================ //
+  let output_audio_watermarked_fs_path = temp_dir.path().join("output_watermarked.wav");
+  let _audiowmark_stdout = audiowmark_add(&output_audio_fs_path, 40, *b"FAKE YOU DOT COM", &output_audio_watermarked_fs_path).map_err(|e| ProcessSingleJobError::Other(e.into()))?; 
   // ==================== UPLOAD AUDIO TO BUCKET ==================== //
 
   job_progress_reporter.log_status("uploading result")
@@ -363,12 +367,13 @@ pub async fn process_single_job(
 
   job_args.public_bucket_client.upload_filename_with_content_type(
     &audio_result_object_path,
-    &output_audio_fs_path,
+    &output_audio_watermarked_fs_path,
     "audio/wav")
       .await
       .map_err(|e| ProcessSingleJobError::Other(e))?;
 
   safe_delete_temp_file(&output_audio_fs_path);
+  safe_delete_temp_file(&output_audio_watermarked_fs_path);
 
   // ==================== UPLOAD SPECTROGRAM TO BUCKETS ==================== //
 

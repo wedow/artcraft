@@ -4,3 +4,4 @@ pub mod job_progress_reporter;
 pub mod noop_logger;
 pub mod redis_job_status_logger;
 pub mod semi_persistent_cache_dir;
+pub mod audiowmark;

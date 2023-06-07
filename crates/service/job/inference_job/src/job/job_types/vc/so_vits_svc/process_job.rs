@@ -9,6 +9,7 @@ use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
 use crate::job::job_types::vc::so_vits_svc::so_vits_svc_inference_command::{Device, InferenceArgs};
 use crate::job_dependencies::JobDependencies;
 use crate::util::maybe_download_file_from_bucket::maybe_download_file_from_bucket;
+use jobs_common::audiowmark::audiowmark_add;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
 use errors::AnyhowResult;
 use filesys::create_dir_all_if_missing::create_dir_all_if_missing;
@@ -252,6 +253,11 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
     file_size_bytes,
   };
 
+  // ==================== Watermark the result audio ================== //
+  let output_audio_watermarked_fs_path = work_temp_dir.path().join("output_watermarked.wav");
+  let _watermark_process_stdout = audiowmark_add(output_audio_fs_path, 40, b"FAKE YOU DOT COM", &output_audio_watermarked_fs_path).map_err(|e| ProcessSingleJobError::Other(e.into()); 
+  
+
   //safe_delete_temp_file(&output_metadata_fs_path);
 
   // ==================== UPLOAD AUDIO TO BUCKET ==================== //
@@ -269,11 +275,12 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
 
   args.job_dependencies.public_bucket_client.upload_filename_with_content_type(
     &result_bucket_object_pathbuf,
-    &output_audio_fs_path,
+    &output_audio_watermarked_fs_path,
     "audio/wav")
       .await
       .map_err(|e| ProcessSingleJobError::Other(e))?;
 
+  safe_delete_temp_file(&output_audio_watermarked_fs_path);
   safe_delete_temp_file(&output_audio_fs_path);
 
 //  // ==================== UPLOAD SPECTROGRAM TO BUCKETS ==================== //

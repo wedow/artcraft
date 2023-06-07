@@ -202,7 +202,7 @@ WHERE user_sessions.token = ?
     },
     Err(err) => {
       match err {
-        RowNotFound => {
+        sqlx::Error::RowNotFound => {
           warn!("Valid cookie; invalid session: {}", session_token);
           Ok(None)
         },
