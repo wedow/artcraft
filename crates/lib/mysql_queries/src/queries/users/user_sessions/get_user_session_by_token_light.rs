@@ -38,7 +38,7 @@ AND deleted_at IS NULL
     Ok(session_record) => Ok(Some(session_record)),
     Err(err) => {
       match err {
-        RowNotFound => {
+        sqlx::Error::RowNotFound => {
           warn!("Valid cookie; invalid session: {}", session_token);
           Ok(None)
         },

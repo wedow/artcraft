@@ -17,6 +17,9 @@ pub enum VoiceConversionModelType {
 
   #[serde(rename = "so_vits_svc")]
   SoVitsSvc,
+
+  #[serde(rename = "rvc")]
+  Rvc,
 }
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
@@ -29,6 +32,7 @@ impl VoiceConversionModelType {
     match self {
       Self::SoftVc => "soft_vc",
       Self::SoVitsSvc => "so_vits_svc",
+      Self::Rvc => "rvc",
     }
   }
 
@@ -36,6 +40,7 @@ impl VoiceConversionModelType {
     match value {
       "soft_vc" => Ok(Self::SoftVc),
       "so_vits_svc" => Ok(Self::SoVitsSvc),
+      "rvc" => Ok(Self::Rvc),
       _ => Err(format!("invalid value: {:?}", value)),
     }
   }
@@ -46,6 +51,7 @@ impl VoiceConversionModelType {
     BTreeSet::from([
       Self::SoftVc,
       Self::SoVitsSvc,
+      Self::Rvc,
     ])
   }
 }
@@ -59,26 +65,31 @@ mod tests {
   fn test_serialization() {
     assert_serialization(VoiceConversionModelType::SoftVc, "soft_vc");
     assert_serialization(VoiceConversionModelType::SoVitsSvc, "so_vits_svc");
+    assert_serialization(VoiceConversionModelType::Rvc, "rvc");
   }
 
   #[test]
   fn to_str() {
+    assert_eq!(VoiceConversionModelType::SoftVc.to_str(), "soft_vc");
     assert_eq!(VoiceConversionModelType::SoVitsSvc.to_str(), "so_vits_svc");
+    assert_eq!(VoiceConversionModelType::Rvc.to_str(), "rvc");
   }
 
   #[test]
   fn from_str() {
     assert_eq!(VoiceConversionModelType::from_str("soft_vc").unwrap(), VoiceConversionModelType::SoftVc);
     assert_eq!(VoiceConversionModelType::from_str("so_vits_svc").unwrap(), VoiceConversionModelType::SoVitsSvc);
+    assert_eq!(VoiceConversionModelType::from_str("rvc").unwrap(), VoiceConversionModelType::Rvc);
   }
 
   #[test]
   fn all_variants() {
     // Static check
     let mut variants = VoiceConversionModelType::all_variants();
-    assert_eq!(variants.len(), 2);
+    assert_eq!(variants.len(), 3);
     assert_eq!(variants.pop_first(), Some(VoiceConversionModelType::SoftVc));
     assert_eq!(variants.pop_first(), Some(VoiceConversionModelType::SoVitsSvc));
+    assert_eq!(variants.pop_first(), Some(VoiceConversionModelType::Rvc));
     assert_eq!(variants.pop_first(), None);
 
     // Generated check

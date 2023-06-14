@@ -78,6 +78,9 @@ pub async fn process_single_vc_job(job_dependencies: &JobDependencies, job: &Ava
         media_upload_token: &media_upload_token,
       }).await?
     }
+    VoiceConversionModelType::Rvc => {
+       unimplemented!() 
+    }
   };
 
   Ok(job_success_result)

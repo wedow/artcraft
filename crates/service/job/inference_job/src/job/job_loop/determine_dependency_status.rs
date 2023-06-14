@@ -63,6 +63,9 @@ pub async fn determine_dependency_status(job_dependencies: &JobDependencies, job
               .semi_persistent_cache
               .voice_conversion_model_path(model.token.as_str()))
         }
+        VoiceConversionModelType::Rvc => {
+            unimplemented!()
+        }
       }
     }
     MaybeInferenceModel::None => {
