@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 
 members = [
   # Types: common strongly-typed tokens, ids, payloads, etc.
@@ -49,6 +50,7 @@ members = [
 
   # Programs: Desktop apps
   "crates/programs/aichatbot-sidecar",
+  "crates/programs/bevy-experiments",
 
   # Services: API servers, jobs, workers, etc.
   "crates/service/job/analytics_job",
