@@ -13,7 +13,7 @@ pub(crate) fn camera_setup(
 ) {
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(0.3, 2.0, 5.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
             ..default()
         },
        EnvironmentMapLight {
