@@ -1,19 +1,38 @@
+use bevy::render::camera::RenderTarget;
+use bevy::render::render_resource::{TextureUsages, TextureFormat, TextureDimension, Extent3d, TextureDescriptor};
 use bevy::window::CursorGrabMode;
 use bevy::{input::mouse::MouseMotion, prelude::*};
 use bevy_mod_picking::prelude::RaycastPickCamera;
+use bevy_transform_gizmo::GizmoTransformable;
 
 use std::f32::consts::*;
 use std::fmt;
 
 pub(crate) const RADIANS_PER_DOT: f32 = 1.0 / 180.0;
 
+const RENDER_WIDTH: u32 = 1920;
+const RENDER_HEIGHT: u32 = 1080;
+
+#[derive(Component)]
+pub(crate) struct RenderCam;
+
+#[derive(Component)]
+pub(crate) struct ViewportCam;
+
 pub(crate) fn camera_setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut images: ResMut<Assets<Image>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    commands.spawn((
+    // viewport camera
+    commands.spawn(((
         Camera3dBundle {
             transform: Transform::from_xyz(0.3, 2.0, 5.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
+            camera: Camera {
+                order: 0,
+                ..default()
+            },
             ..default()
         },
        EnvironmentMapLight {
@@ -23,7 +42,70 @@ pub(crate) fn camera_setup(
         RaycastPickCamera::default(),
         bevy_transform_gizmo::GizmoPickSource::default(),
         CameraController::default(),
-    ));
+    ), ViewportCam));
+
+
+    
+    // render cam
+    
+
+    let output_texture_handle = {
+        let size = Extent3d {
+            width: RENDER_WIDTH,
+            height: RENDER_HEIGHT,
+            ..default()
+        };
+        let mut export_texture = Image {
+            texture_descriptor: TextureDescriptor {
+                label: None,
+                size,
+                dimension: TextureDimension::D2,
+                format: TextureFormat::Rgba8UnormSrgb,
+                mip_level_count: 1,
+                sample_count: 1,
+                usage: TextureUsages::COPY_DST
+                    | TextureUsages::COPY_SRC
+                    | TextureUsages::RENDER_ATTACHMENT,
+                view_formats: &[],
+            },
+            ..default()
+        };
+        export_texture.resize(size);
+        images.add(export_texture)
+    };
+
+
+    let camera_proxy_mesh = asset_server.load("cameraProxy.glb#Mesh0/Primitive0");
+    let camera_proxy_mat = materials.add(StandardMaterial {
+        base_color: Color::BLACK,
+        ..default()
+    });
+    commands.spawn(((MaterialMeshBundle::<StandardMaterial> {
+        mesh: camera_proxy_mesh,
+        material: camera_proxy_mat,
+        transform: Transform::from_xyz(0.0, 2.0, 5.0)
+            .with_rotation(Quat::from_rotation_x(TAU/2.0))
+            .with_scale(Vec3::new(0.2, 0.2, 0.2)),
+        ..default()
+    }), GizmoTransformable))
+        .with_children(|parent| {
+            parent.spawn(((
+                Camera3dBundle {
+                    transform: Transform::from_xyz(0.0, 0.0, 2.0).with_rotation(Quat::from_rotation_x(TAU/2.0)),
+                    camera: Camera {
+                        order: 1,
+                        target: RenderTarget::Image(output_texture_handle.clone()),
+                        ..default()
+                    },
+                    ..default()
+                },
+                EnvironmentMapLight {
+                    diffuse_map: asset_server.load("pisa_diffuse_rgb9e5_zstd.ktx2"),
+                    specular_map: asset_server.load("pisa_specular_rgb9e5_zstd.ktx2"),
+                },
+            ), RenderCam));
+        });
+
 }
 
 #[derive(Component)]
@@ -61,7 +143,7 @@ impl Default for CameraController {
             key_up: KeyCode::E,
             key_down: KeyCode::Q,
             key_run: KeyCode::LShift,
-            mouse_key_enable_mouse: MouseButton::Left,
+            mouse_key_enable_mouse: MouseButton::Right,
             keyboard_key_enable_mouse: KeyCode::M,
             walk_speed: 5.0,
             run_speed: 15.0,
@@ -206,3 +288,12 @@ fn camera_controller(
         }
     }
 }
+
+pub(crate) struct SnapToRenderCam;
+
+pub(crate) fn snap_to_render_cam(mut viewport_query: Query<&mut Transform, (With<ViewportCam>, Without<RenderCam>)>, mut render_query: Query<&GlobalTransform, (With<RenderCam>, Without<ViewportCam>)>) {
+    let view_tran: &mut Transform = &mut viewport_query.get_single_mut().unwrap();
+    let rend_tran: &GlobalTransform  = render_query.get_single_mut().unwrap();
+    *view_tran = (*rend_tran).into(); 
+}
+
