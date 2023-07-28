@@ -186,6 +186,10 @@ pub async fn handle_upload(
       "audio/opus" /* .opus */ => Some(MediaUploadType::Audio),
       "audio/x-flac" /* .flac */ => Some(MediaUploadType::Audio),
       "audio/x-wav" /* .wav */ => Some(MediaUploadType::Audio),
+      // Image
+      "image/jpeg" /* .jpg */ => Some(MediaUploadType::Image),
+      "image/png" /* .png */ => Some(MediaUploadType::Image),
+      "image/webp" /* .webp */ => Some(MediaUploadType::Image),
       // Video
       "video/mp4" /* .mp4 */ => Some(MediaUploadType::Video),
       "video/quicktime" /* .mov */ => Some(MediaUploadType::Video),
@@ -193,7 +197,7 @@ pub async fn handle_upload(
       _ => None,
     };
 
-    let do_decode = match mimetype {
+    let do_audio_decode = match mimetype {
       "audio/opus" => {
         // TODO/FIXME(bt, 2023-05-19): Symphonia is currently broken for Firefox's opus.
         //  We're on an off-master branch that may resolve the problem in the future, but for now
@@ -219,10 +223,14 @@ pub async fn handle_upload(
         //    right: `Ebml`: EBML element type must be checked before calling this function', /Users/bt/.cargo/git/checkouts/symphonia-8fbe6c90fc095688/e1a7009/symphonia-format-mkv/src/ebml.rs:335:9
         false
       }
+      // Also, don't decode images
+      "image/jpeg" => false,
+      "image/png" => false,
+      "image/webp" => false,
       _ => true,
     };
 
-    if do_decode && media_upload_type.is_some() {
+    if do_audio_decode && media_upload_type.is_some() {
       let basic_info = decode_basic_audio_bytes_info(
         bytes.as_ref(),
         Some(mimetype),
