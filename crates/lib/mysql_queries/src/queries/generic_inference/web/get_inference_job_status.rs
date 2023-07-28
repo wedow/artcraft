@@ -120,6 +120,7 @@ WHERE jobs.token = ?
   };
 
   let maybe_model_title = match record.inference_category {
+    InferenceCategory::LipsyncAnimation => Some("lipsync animation"),
     InferenceCategory::TextToSpeech => record.maybe_tts_model_title.as_deref(),
     InferenceCategory::VoiceConversion => record.maybe_voice_conversion_model_title.as_deref(),
   };
@@ -127,6 +128,7 @@ WHERE jobs.token = ?
   // NB: A bit of a hack. We store TTS results with a full path.
   // Going forward, all other record types will store a hash.
   let (bucket_path_is_hash, maybe_public_bucket_hash) = match record.inference_category {
+    InferenceCategory::LipsyncAnimation => (true, Some("todo")), // TODO - these values are wrong
     InferenceCategory::TextToSpeech => (false, record.maybe_tts_public_bucket_path.as_deref()),
     InferenceCategory::VoiceConversion => (true, record.maybe_voice_conversion_public_bucket_hash.as_deref()),
   };

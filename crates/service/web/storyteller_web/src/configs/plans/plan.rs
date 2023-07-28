@@ -42,6 +42,10 @@ pub struct Plan {
     /// Whether this plan does not exist in Stripe and only exists as defined by this server.
     is_synthetic_plan: bool,
 
+    // ========== Features for lipsync (SadTalker, not Wav2Lip) ==========
+
+    lipsync_requires_frontend_keepalive: bool,
+
     // ========== Features for TTS ==========
 
     tts_base_priority_level: u8,
@@ -83,6 +87,7 @@ impl Plan {
             stripe_price_id: builder.stripe_price_id.clone(),
             is_development_plan: builder.is_development_plan,
             is_synthetic_plan: builder.is_synthetic_plan,
+            lipsync_requires_frontend_keepalive: builder.lipsync_requires_frontend_keepalive,
             tts_base_priority_level: builder.tts_base_priority_level,
             tts_max_duration: builder.tts_max_duration,
             tts_max_character_length: builder.tts_max_character_length,
@@ -133,6 +138,10 @@ impl Plan {
         self.is_synthetic_plan
     }
 
+    pub fn lipsync_requires_frontend_keepalive(&self) -> bool {
+        self.lipsync_requires_frontend_keepalive
+    }
+
     pub fn tts_base_priority_level(&self) -> u8 {
         self.tts_base_priority_level
     }
@@ -168,6 +177,10 @@ pub struct PlanBuilder {
     stripe_price_id: Option<String>,
     is_development_plan: bool,
     is_synthetic_plan: bool,
+
+    // ========== Features for lipsync (SadTalker, not Wav2Lip) ==========
+
+    lipsync_requires_frontend_keepalive: bool,
 
     // ========== Features for TTS ==========
 
@@ -211,6 +224,9 @@ impl PlanBuilder {
             stripe_price_id: None,
             is_development_plan: false,
             is_synthetic_plan: false,
+
+            // Lipsync (SadTalker, not Wav2Lip)
+            lipsync_requires_frontend_keepalive: true,
 
             // TTS
             tts_base_priority_level : TTS_DEFAULT_PRIORITY_LEVEL,
@@ -269,6 +285,11 @@ impl PlanBuilder {
 
     pub fn is_synthetic_plan(mut self, value: bool) -> Self {
         self.is_synthetic_plan = value;
+        self
+    }
+
+    pub fn lipsync_requires_frontend_keepalive(mut self, value: bool) -> Self {
+        self.lipsync_requires_frontend_keepalive = value;
         self
     }
 
