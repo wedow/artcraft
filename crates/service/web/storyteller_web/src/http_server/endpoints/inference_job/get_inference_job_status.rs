@@ -216,6 +216,10 @@ pub async fn get_inference_job_status_handler(
     },
     maybe_result: record.maybe_result_details.map(|result_details| {
       let public_bucket_media_path = match inference_category {
+        InferenceCategory::LipsyncAnimation => {
+          // TODO
+          "TODO".to_string()
+        }
         InferenceCategory::TextToSpeech => {
           // NB: TTS results receive the legacy treatment where their table only reports the full bucket path
           result_details.public_bucket_location_or_hash

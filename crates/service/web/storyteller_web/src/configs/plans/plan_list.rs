@@ -15,6 +15,7 @@ pub static FREE_LOGGED_OUT_PLAN : Lazy<Plan> = Lazy::new(|| {
         .tts_max_character_length(1024)
         .web_vc_base_priority_level(FAKEYOU_ANONYMOUS_PRIORITY_LEVEL)
         .web_vc_requires_frontend_keepalive(true)
+        .lipsync_requires_frontend_keepalive(true)
         .build()
 });
 
@@ -28,6 +29,7 @@ pub static FREE_LOGGED_OUT_FIRST_TRY_PLAN : Lazy<Plan> = Lazy::new(|| {
         .tts_max_character_length(1024)
         .web_vc_base_priority_level(FAKEYOU_LOGGED_IN_PRIORITY_LEVEL) // NB: Same as logged-in free users.
         .web_vc_requires_frontend_keepalive(true)
+        .lipsync_requires_frontend_keepalive(true)
         .build()
 });
 
@@ -41,6 +43,7 @@ pub static FREE_LOGGED_IN_PLAN : Lazy<Plan> = Lazy::new(|| {
         .tts_max_character_length(1024)
         .web_vc_base_priority_level(FAKEYOU_LOGGED_IN_PRIORITY_LEVEL)
         .web_vc_requires_frontend_keepalive(true)
+        .lipsync_requires_frontend_keepalive(true)
         .build()
 });
 
@@ -56,6 +59,7 @@ pub static LOYALTY_PLANS : Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_max_duration_seconds(30)
         .web_vc_base_priority_level(2)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .build());
 
     plans
@@ -77,6 +81,7 @@ pub static DEVELOPMENT_PREMIUM_PLANS: Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_max_character_length(2048)
         .tts_max_duration_seconds(30)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .build());
 
     plans.insert(PlanBuilder::new("development_fakeyou_pro")
@@ -89,6 +94,7 @@ pub static DEVELOPMENT_PREMIUM_PLANS: Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_max_character_length(2048)
         .tts_max_duration_seconds(60 * 2)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .build());
 
     plans.insert(PlanBuilder::new("development_fakeyou_elite")
@@ -101,6 +107,7 @@ pub static DEVELOPMENT_PREMIUM_PLANS: Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_max_character_length(2048)
         .tts_max_duration_seconds(60 * 5)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .build());
 
     plans
@@ -122,6 +129,7 @@ pub static PRODUCTION_PREMIUM_PLANS: Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_max_duration_seconds(30)
         .web_vc_base_priority_level(20)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .build());
 
     plans.insert(PlanBuilder::new("fakeyou_pro")
@@ -134,6 +142,7 @@ pub static PRODUCTION_PREMIUM_PLANS: Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_max_duration_seconds(60 * 2)
         .web_vc_base_priority_level(30)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .build());
 
     plans.insert(PlanBuilder::new("fakeyou_elite")
@@ -146,6 +155,7 @@ pub static PRODUCTION_PREMIUM_PLANS: Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_max_duration_seconds(60 * 5)
         .web_vc_base_priority_level(40)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .build());
 
     // ========== Spanish plans ==========
@@ -158,6 +168,7 @@ pub static PRODUCTION_PREMIUM_PLANS: Lazy<HashSet<Plan>> = Lazy::new(|| {
         .tts_base_priority_level(10)
         .web_vc_base_priority_level(10)
         .web_vc_requires_frontend_keepalive(false)
+        .lipsync_requires_frontend_keepalive(false)
         .tts_max_duration_seconds(30)
         .build());
 
@@ -405,6 +416,7 @@ mod test {
     fn test_assert_web_vc_keepalive_forced() {
         FREE_PLANS_BY_SLUG.iter().for_each(|(price_id, plan)| {
             assert!(plan.web_vc_requires_frontend_keepalive());
+            assert!(plan.lipsync_requires_frontend_keepalive());
         });
     }
 
@@ -412,9 +424,11 @@ mod test {
     fn test_assert_web_vc_no_keepalive() {
         LOYALTY_PLANS_BY_SLUG.iter().for_each(|(price_id, plan)| {
             assert!(!plan.web_vc_requires_frontend_keepalive());
+            assert!(!plan.lipsync_requires_frontend_keepalive());
         });
         PRODUCTION_PREMIUM_PLANS_BY_SLUG.iter().for_each(|(price_id, plan)| {
             assert!(!plan.web_vc_requires_frontend_keepalive());
+            assert!(!plan.lipsync_requires_frontend_keepalive());
         });
     }
 

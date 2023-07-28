@@ -16,6 +16,10 @@ use strum::EnumIter;
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Serialize)]
 pub enum InferenceCategory {
+  /// Eg. SadTalker and possibly Wav2Lip
+  #[serde(rename = "lipsync_animation")]
+  LipsyncAnimation,
+
   #[serde(rename = "text_to_speech")]
   TextToSpeech,
 
@@ -31,6 +35,7 @@ impl_mysql_enum_coders!(InferenceCategory);
 impl InferenceCategory {
   pub fn to_str(&self) -> &'static str {
     match self {
+      Self::LipsyncAnimation => "lipsync_animation",
       Self::TextToSpeech => "text_to_speech",
       Self::VoiceConversion => "voice_conversion",
     }
@@ -38,6 +43,7 @@ impl InferenceCategory {
 
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
+      "lipsync_animation" => Ok(Self::LipsyncAnimation),
       "text_to_speech" => Ok(Self::TextToSpeech),
       "voice_conversion" => Ok(Self::VoiceConversion),
       _ => Err(format!("invalid value: {:?}", value)),
@@ -48,6 +54,7 @@ impl InferenceCategory {
     // NB: BTreeSet is sorted
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
+      Self::LipsyncAnimation,
       Self::TextToSpeech,
       Self::VoiceConversion,
     ])
@@ -61,18 +68,21 @@ mod tests {
 
   #[test]
   fn test_serialization() {
+    assert_serialization(InferenceCategory::LipsyncAnimation, "lipsync_animation");
     assert_serialization(InferenceCategory::TextToSpeech, "text_to_speech");
     assert_serialization(InferenceCategory::VoiceConversion, "voice_conversion");
   }
 
   #[test]
   fn to_str() {
+    assert_eq!(InferenceCategory::LipsyncAnimation.to_str(), "lipsync_animation");
     assert_eq!(InferenceCategory::TextToSpeech.to_str(), "text_to_speech");
     assert_eq!(InferenceCategory::VoiceConversion.to_str(), "voice_conversion");
   }
 
   #[test]
   fn from_str() {
+    assert_eq!(InferenceCategory::from_str("lipsync_animation").unwrap(), InferenceCategory::LipsyncAnimation);
     assert_eq!(InferenceCategory::from_str("text_to_speech").unwrap(), InferenceCategory::TextToSpeech);
     assert_eq!(InferenceCategory::from_str("voice_conversion").unwrap(), InferenceCategory::VoiceConversion);
   }
@@ -81,7 +91,8 @@ mod tests {
   fn all_variants() {
     // Static check
     let mut variants = InferenceCategory::all_variants();
-    assert_eq!(variants.len(), 2);
+    assert_eq!(variants.len(), 3);
+    assert_eq!(variants.pop_first(), Some(InferenceCategory::LipsyncAnimation));
     assert_eq!(variants.pop_first(), Some(InferenceCategory::TextToSpeech));
     assert_eq!(variants.pop_first(), Some(InferenceCategory::VoiceConversion));
     assert_eq!(variants.pop_first(), None);
