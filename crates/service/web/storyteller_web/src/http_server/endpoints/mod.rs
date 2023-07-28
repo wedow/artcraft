@@ -1,3 +1,4 @@
+pub mod animation;
 pub mod api_tokens;
 pub mod categories;
 pub mod comments;

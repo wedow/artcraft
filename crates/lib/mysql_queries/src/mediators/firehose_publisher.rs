@@ -32,6 +32,10 @@ enum FirehoseEvent {
   VcInferenceStarted,
   VcInferenceCompleted,
 
+  // SadTalker, not Wav2Lip
+  LipsyncAnimationStarted,
+  LipsyncAnimationCompleted,
+
   GenericDownloadStarted,
   GenericDownloadCompleted,
 
@@ -64,6 +68,8 @@ impl FirehoseEvent {
       FirehoseEvent::W2lInferenceCompleted => "w2l_inference_completed",
       FirehoseEvent::VcInferenceStarted => "vc_inference_started",
       FirehoseEvent::VcInferenceCompleted => "vc_inference_completed",
+      FirehoseEvent::LipsyncAnimationStarted => "lipsync_animation_started",
+      FirehoseEvent::LipsyncAnimationCompleted => "lipsync_animation_completed",
       FirehoseEvent::GenericDownloadStarted => "generic_download_started",
       FirehoseEvent::GenericDownloadCompleted => "generic_download_completed",
       FirehoseEvent::MediaUploaded => "media_uploaded",
@@ -216,6 +222,16 @@ impl FirehosePublisher {
       maybe_user_token.map(|u| u.as_str()),
       Some(inference_job_token.as_str()), // TODO: This could be vc model token
       Some(result_token)
+    ).await?;
+    Ok(())
+  }
+
+  pub async fn enqueue_lipsync_animation(&self, maybe_user_token: Option<&UserToken>, inference_job_token: &InferenceJobToken) -> AnyhowResult<()> {
+    let _record_id = self.insert(
+      FirehoseEvent::LipsyncAnimationStarted,
+      maybe_user_token.map(|u| u.as_str()),
+      Some(inference_job_token.as_str()),
+      Some(inference_job_token.as_str()),
     ).await?;
     Ok(())
   }
