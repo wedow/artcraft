@@ -26,7 +26,7 @@ pub struct AvailableInferenceJob {
   // Inference class
   pub inference_category: InferenceCategory,
 
-  pub maybe_model_type: Option<String>, // TODO: Strongly type.
+  pub maybe_model_type: Option<InferenceModelType>,
   pub maybe_model_token: Option<String>,
 
   pub maybe_input_source_token: Option<String>,
@@ -115,7 +115,11 @@ pub async fn list_available_generic_inference_jobs(
               .map_err(|e| anyhow!("error: {:?}", e))?, // TODO/FIXME: This is a gross fix.
           inference_category: InferenceCategory::from_str(&record.inference_category)
               .map_err(|e| anyhow!("error: {:?}", e))?, // TODO/FIXME: This is a gross fix.
-          maybe_model_type: record.maybe_model_type,
+          maybe_model_type: record.maybe_model_type
+              .as_deref()
+              .map(|model_type| InferenceModelType::from_str(model_type))
+              .transpose()
+              .map_err(|e| anyhow!("error: {:?}", e))?, // TODO/FIXME: This is a gross fix.
           maybe_model_token: record.maybe_model_token,
           maybe_input_source_token: record.maybe_input_source_token,
           maybe_input_source_token_type: record.maybe_input_source_token_type,
