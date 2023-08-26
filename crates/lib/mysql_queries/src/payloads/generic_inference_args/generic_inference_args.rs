@@ -1,3 +1,4 @@
+use crate::payloads::generic_inference_args::lipsync_payload::{LipsyncAnimationAudioSource, LipsyncAnimationImageSource, LipsyncArgs};
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use errors::AnyhowResult;
 
@@ -47,15 +48,8 @@ pub enum FundamentalFrequencyMethodForJob {
 pub enum PolymorphicInferenceArgs {
   /// Lipsync Animation (Short name to save  space when serializing)
   /// This is SadTalker, not Wav2Lip.
-  La {
-    #[serde(rename = "a")] // NB: DO NOT CHANGE. It could break live jobs. Renamed to be fewer bytes.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    maybe_audio_media_upload_token: Option<String>,
+  La (LipsyncArgs),
 
-    #[serde(rename = "i")] // NB: DO NOT CHANGE. It could break live jobs. Renamed to be fewer bytes.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    maybe_image_media_upload_token: Option<String>,
-  },
   /// Text to speech. (Short name to save space when serializing.)
   Tts {
     // No arguments yet.
@@ -85,6 +79,7 @@ pub enum PolymorphicInferenceArgs {
     transpose: Option<i32>,
   },
 }
+
 
 impl GenericInferenceArgs {
 
@@ -117,22 +112,23 @@ impl InferenceCategoryAbbreviated {
 
 #[cfg(test)]
 mod tests {
-  use crate::payloads::generic_inference_args::{FundamentalFrequencyMethodForJob, GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
+  use crate::payloads::generic_inference_args::generic_inference_args::{FundamentalFrequencyMethodForJob, GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
+  use crate::payloads::generic_inference_args::lipsync_payload::{LipsyncAnimationAudioSource, LipsyncAnimationImageSource, LipsyncArgs};
 
   #[test]
   fn typical_lipsync_animation_args_serialize() {
     let args = GenericInferenceArgs {
       inference_category: Some(InferenceCategoryAbbreviated::LipsyncAnimation),
-      args: Some(PolymorphicInferenceArgs::La {
-        maybe_audio_media_upload_token: Some("foo".to_string()),
-        maybe_image_media_upload_token: Some("bar".to_string()),
-      }),
+      args: Some(PolymorphicInferenceArgs::La(LipsyncArgs {
+        maybe_audio_source: Some(LipsyncAnimationAudioSource::U("foo".to_string())),
+        maybe_image_source: Some(LipsyncAnimationImageSource::F("bar".to_string())),
+      })),
     };
 
     let json = serde_json::ser::to_string(&args).unwrap();
 
     // NB: Assert the serialized form. If this changes and the test breaks, be careful about migrating.
-    assert_eq!(json, r#"{"cat":"la","args":{"La":{"a":"foo","i":"bar"}}}"#.to_string());
+    assert_eq!(json, r#"{"cat":"la","args":{"La":{"a":{"U":"foo"},"i":{"F":"bar"}}}}"#.to_string());
 
     // NB: Make sure we don't overflow the DB field capacity (TEXT column).
     assert!(json.len() < 1000);

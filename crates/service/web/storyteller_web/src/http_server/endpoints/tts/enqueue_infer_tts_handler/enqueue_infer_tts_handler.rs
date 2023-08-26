@@ -20,7 +20,7 @@ use http_server_common::request::get_request_api_token::get_request_api_token;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{info, warn};
-use mysql_queries::payloads::generic_inference_args::{GenericInferenceArgs, InferenceCategoryAbbreviated};
+use mysql_queries::payloads::generic_inference_args::generic_inference_args::{GenericInferenceArgs, InferenceCategoryAbbreviated};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
 use mysql_queries::queries::tts::tts_inference_jobs::insert_tts_inference_job::TtsInferenceJobInsertBuilder;
 use mysql_queries::queries::tts::tts_models::get_tts_model::TtsModelRecord;

@@ -13,7 +13,7 @@ use std::future::Future;
 use std::path::Path;
 use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
 use tokens::jobs::inference::InferenceJobToken;
-use crate::payloads::generic_inference_args::GenericInferenceArgs;
+use crate::payloads::generic_inference_args::generic_inference_args::GenericInferenceArgs;
 
 /// table: generic_inference_jobs
 #[derive(Debug)]

@@ -15,11 +15,14 @@ use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{info, warn};
-use mysql_queries::payloads::generic_inference_args::{GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
+use mysql_queries::payloads::generic_inference_args::generic_inference_args::{GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
+use mysql_queries::payloads::generic_inference_args::lipsync_payload::{LipsyncAnimationAudioSource, LipsyncAnimationImageSource, LipsyncArgs};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{InsertGenericInferenceArgs, insert_generic_inference_job};
 use std::sync::Arc;
 use tokens::files::media_upload::MediaUploadToken;
 use tokens::jobs::inference::InferenceJobToken;
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::voice_conversion_results::VoiceConversionResultToken;
 use tokens::users::user::UserToken;
 use tts_common::priority::FAKEYOU_INVESTOR_PRIORITY_LEVEL;
 
@@ -35,15 +38,30 @@ const ROUTING_TAG_HEADER_NAME : &'static str = "routing-tag";
 pub struct EnqueueLipsyncAnimationRequest {
   uuid_idempotency_token: String,
 
-  // TODO: Eventually accept result tokens for audio.
-  source_image_media_upload_token: MediaUploadToken,
-  source_audio_media_upload_token: MediaUploadToken,
+  audio_source: AudioSource,
+  image_source: ImageSource,
 
   creator_set_visibility: Option<Visibility>,
   is_storyteller_demo: Option<bool>,
 
   /// SadTalker: parameter to animate the full body.
   animate_full_body: Option<bool>,
+}
+
+/// Treated as an enum. Only one of these may be set.
+#[derive(Deserialize)]
+pub struct AudioSource {
+  maybe_media_file_token: Option<MediaFileToken>,
+  maybe_media_upload_token: Option<MediaUploadToken>,
+  maybe_tts_result_token: Option<String>,
+  maybe_voice_conversion_result_token: Option<VoiceConversionResultToken>,
+}
+
+/// Treated as an enum. Only one of these may be set.
+#[derive(Deserialize)]
+pub struct ImageSource {
+  maybe_media_file_token: Option<MediaFileToken>,
+  maybe_media_upload_token: Option<MediaUploadToken>,
 }
 
 #[derive(Serialize)]
@@ -190,9 +208,31 @@ pub async fn enqueue_lipsync_animation_handler(
 
   // ==================== LOOK UP MODEL INFO ==================== //
 
-  // TODO(bt): CHECK DATABASE!
-  let audio_media_token = request.source_audio_media_upload_token.clone();
-  let image_media_token = request.source_image_media_upload_token.clone();
+  // TODO(bt): CHECK DATABASE FOR TOKENS!
+
+  let audio_source = {
+    if let Some(ref token) = request.audio_source.maybe_media_file_token {
+      LipsyncAnimationAudioSource::media_file_token(token.as_str())
+    } else if let Some(ref token) = request.audio_source.maybe_media_upload_token {
+      LipsyncAnimationAudioSource::media_upload_token(token.as_str())
+    } else if let Some(ref token) = request.audio_source.maybe_tts_result_token {
+      LipsyncAnimationAudioSource::tts_result_token(token)
+    } else if let Some(ref token) = request.audio_source.maybe_voice_conversion_result_token {
+      LipsyncAnimationAudioSource::voice_conversion_result_token(token.as_str())
+    } else {
+      return Err(EnqueueLipsyncAnimationError::BadInput("audio source not fully specified".to_string()));
+    }
+  };
+
+  let image_source = {
+    if let Some(ref token) = request.image_source.maybe_media_file_token {
+      LipsyncAnimationImageSource::media_file_token(token.as_str())
+    } else if let Some(ref token) = request.image_source.maybe_media_upload_token {
+      LipsyncAnimationImageSource::media_upload_token(token.as_str())
+    } else {
+      return Err(EnqueueLipsyncAnimationError::BadInput("image source not fully specified".to_string()));
+    }
+  };
 
   // ==================== CHECK AND ENQUEUE ANIMATION ==================== //
 
@@ -224,13 +264,12 @@ pub async fn enqueue_lipsync_animation_handler(
 
   info!("Creating lipsync animation job record...");
 
-  // TODO: Cleanup.
-  let maybe_args = Some(PolymorphicInferenceArgs::La {
-    maybe_audio_media_upload_token: Some(audio_media_token.to_string()),
-    maybe_image_media_upload_token: Some(image_media_token.to_string()),
-  });
+  // TODO: other SadTalker arguments.
+  let maybe_args = Some(PolymorphicInferenceArgs::La(LipsyncArgs {
+    maybe_audio_source: Some(audio_source),
+    maybe_image_source: Some(image_source),
+  }));
 
-  // TODO: SadTalker arguments.
   //let set_args = request.auto_predict_f0.is_some()
   //    || request.transpose.is_some()
   //    || request.override_f0_method.is_some();

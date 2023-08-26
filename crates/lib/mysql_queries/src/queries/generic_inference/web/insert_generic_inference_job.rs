@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use crate::payloads::generic_inference_args::GenericInferenceArgs;
+use crate::payloads::generic_inference_args::generic_inference_args::GenericInferenceArgs;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::by_table::generic_inference_jobs::inference_input_source_token_type::InferenceInputSourceTokenType;
 use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
