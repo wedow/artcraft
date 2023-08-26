@@ -1,18 +1,17 @@
 use anyhow::anyhow;
 use container_common::anyhow_result::AnyhowResult;
+use crate::job::job_loop::command_exit_status::CommandExitStatus;
 use filesys::path_to_string::path_to_string;
 use log::info;
-use mysql_queries::payloads::generic_inference_args::FundamentalFrequencyMethodForJob;
+use mysql_queries::payloads::generic_inference_args::generic_inference_args::FundamentalFrequencyMethodForJob;
 use once_cell::sync::Lazy;
 use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
-use std::fs::OpenOptions;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
-use subprocess::{ExitStatus, Popen, PopenConfig, Redirection};
+use subprocess::{Popen, PopenConfig};
 use subprocess_common::docker_options::{DockerEnvVar, DockerFilesystemMount, DockerGpu, DockerOptions};
-use crate::job::job_loop::command_exit_status::CommandExitStatus;
 
 // These environment vars are not copied over to the subprocess
 // TODO/FIXME(bt, 2023-05-28): This is horrific security!

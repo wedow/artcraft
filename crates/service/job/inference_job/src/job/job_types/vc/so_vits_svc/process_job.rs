@@ -15,9 +15,9 @@ use filesys::file_size::file_size;
 use log::{error, info, warn};
 use media::decode_basic_audio_info::decode_basic_audio_file_info;
 use mimetypes::mimetype_for_file::get_mimetype_for_file;
-use mysql_queries::payloads::generic_inference_args::PolymorphicInferenceArgs;
+use mysql_queries::payloads::generic_inference_args::generic_inference_args::PolymorphicInferenceArgs;
 use mysql_queries::queries::generic_inference::job::list_available_generic_inference_jobs::AvailableInferenceJob;
-use mysql_queries::queries::media_uploads::get_media_upload_for_inference::{get_media_upload_for_inference, MediaUploadRecordForInference};
+use mysql_queries::queries::media_uploads::get_media_upload_for_inference::MediaUploadRecordForInference;
 use mysql_queries::queries::voice_conversion::inference::get_voice_conversion_model_for_inference::VoiceConversionModelForInference;
 use mysql_queries::queries::voice_conversion::results::insert_voice_conversion_result::{insert_voice_conversion_result, InsertArgs};
 use std::time::Instant;
@@ -149,6 +149,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
   let auto_predict_f0 = maybe_args
       .map(|args| match args {
         PolymorphicInferenceArgs::Tts { .. } => None,
+        PolymorphicInferenceArgs::La(_) => None,
         PolymorphicInferenceArgs::Vc { auto_predict_f0, .. } => *auto_predict_f0,
       })
       .flatten()
@@ -157,6 +158,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
   let maybe_transpose = maybe_args
       .map(|args| match args {
         PolymorphicInferenceArgs::Tts { .. } => None,
+        PolymorphicInferenceArgs::La(_) => None,
         PolymorphicInferenceArgs::Vc { transpose, .. } => *transpose,
       })
       .flatten();
@@ -164,6 +166,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
   let maybe_override_f0_method = maybe_args
       .map(|args| match args {
         PolymorphicInferenceArgs::Tts { .. } => None,
+        PolymorphicInferenceArgs::La(_) => None,
         PolymorphicInferenceArgs::Vc { override_f0_method, .. } =>
           *override_f0_method,
       })

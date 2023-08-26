@@ -167,6 +167,10 @@ async fn do_process_single_job(
   let mut maybe_result_entity : Option<ResultEntity>;
 
   let job_success_result = match job.inference_category {
+    InferenceCategory::LipsyncAnimation => {
+      // TODO: This is not implemented.
+      return Err(ProcessSingleJobError::Other(anyhow!("not implemented".to_string())));
+    }
     InferenceCategory::TextToSpeech => {
       process_single_tts_job(job_dependencies, job).await?
     }

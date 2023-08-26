@@ -270,22 +270,6 @@ pub async fn enqueue_lipsync_animation_handler(
     maybe_image_source: Some(image_source),
   }));
 
-  //let set_args = request.auto_predict_f0.is_some()
-  //    || request.transpose.is_some()
-  //    || request.override_f0_method.is_some();
-
-  //if set_args {
-  //  maybe_args = Some(PolymorphicInferenceArgs::Vc {
-  //    auto_predict_f0: request.auto_predict_f0,
-  //    override_f0_method: request.override_f0_method.map(|f| match f {
-  //      FundamentalFrequencyMethod::Crepe => FundamentalFrequencyMethodForJob::Crepe,
-  //      FundamentalFrequencyMethod::Dio => FundamentalFrequencyMethodForJob::Dio,
-  //      FundamentalFrequencyMethod::Harvest => FundamentalFrequencyMethodForJob::Harvest,
-  //    }),
-  //    transpose: request.transpose,
-  //  });
-  //}
-
   let query_result = insert_generic_inference_job(InsertGenericInferenceArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,
     inference_category: InferenceCategory::LipsyncAnimation,
