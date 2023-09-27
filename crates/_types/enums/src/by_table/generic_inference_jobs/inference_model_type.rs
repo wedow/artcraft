@@ -26,7 +26,8 @@ pub enum InferenceModelType {
 
   #[serde(rename = "so_vits_svc")]
   SoVitsSvc,
-
+  #[serde(rename = "vall_E_X")]
+  VallEX,
   // TODO: Does this need to be "legacy_tacotron2" ?
   #[serde(rename = "tacotron2")]
   Tacotron2,
@@ -46,6 +47,7 @@ impl InferenceModelType {
       Self::RvcV2 => "rvc_v2",
       Self::SadTalker => "sad_talker",
       Self::SoVitsSvc => "so_vits_svc",
+      Self::VallEX => "vall_E_X",
       Self::Tacotron2 => "tacotron2",
       Self::Vits => "vits",
     }
@@ -56,6 +58,7 @@ impl InferenceModelType {
       "rvc_v2" => Ok(Self::RvcV2),
       "sad_talker" => Ok(Self::SadTalker),
       "so_vits_svc" => Ok(Self::SoVitsSvc),
+      "vall_E_X" => Ok(Self::VallEX),
       "tacotron2" => Ok(Self::Tacotron2),
       "vits" => Ok(Self::Vits),
       _ => Err(format!("invalid value: {:?}", value)),
@@ -77,7 +80,8 @@ impl InferenceModelType {
 
 #[cfg(test)]
 mod tests {
-  use crate::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
+
+use crate::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
   use crate::test_helpers::assert_serialization;
 
   #[test]
@@ -87,6 +91,7 @@ mod tests {
     assert_serialization(InferenceModelType::SoVitsSvc, "so_vits_svc");
     assert_serialization(InferenceModelType::Tacotron2, "tacotron2");
     assert_serialization(InferenceModelType::Vits, "vits");
+    assert_serialization(InferenceModelType::VallEX,"vall_E_X");
   }
 
   #[test]
