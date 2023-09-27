@@ -101,6 +101,7 @@ use crate::by_table::generic_inference_jobs::inference_model_type::InferenceMode
     assert_eq!(InferenceModelType::SoVitsSvc.to_str(), "so_vits_svc");
     assert_eq!(InferenceModelType::Tacotron2.to_str(), "tacotron2");
     assert_eq!(InferenceModelType::Vits.to_str(), "vits");
+    assert_eq!(InferenceModelType::VallEX.to_str(), "vall_E_X");
   }
 
   #[test]
@@ -110,6 +111,7 @@ use crate::by_table::generic_inference_jobs::inference_model_type::InferenceMode
     assert_eq!(InferenceModelType::from_str("so_vits_svc").unwrap(), InferenceModelType::SoVitsSvc);
     assert_eq!(InferenceModelType::from_str("tacotron2").unwrap(), InferenceModelType::Tacotron2);
     assert_eq!(InferenceModelType::from_str("vits").unwrap(), InferenceModelType::Vits);
+    assert_eq!(InferenceModelType::from_str("vall_E_X").unwrap(), InferenceModelType::VallEX);
   }
 
   #[test]
@@ -122,6 +124,7 @@ use crate::by_table::generic_inference_jobs::inference_model_type::InferenceMode
     assert_eq!(variants.pop_first(), Some(InferenceModelType::SoVitsSvc));
     assert_eq!(variants.pop_first(), Some(InferenceModelType::Tacotron2));
     assert_eq!(variants.pop_first(), Some(InferenceModelType::Vits));
+    assert_eq!(variants.pop_first(), Some(InferenceModelType::VallEX));
     assert_eq!(variants.pop_first(), None);
 
     // Generated check
