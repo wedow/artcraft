@@ -18,7 +18,7 @@ build_shared_mysql_database_library() {
   # NB: For now, this is our monolithic DB that serves all of our microservices (gross)
   # It's a single package so that queries can be shared (again, gross)
   pushd crates/lib/mysql_queries
-  SQLX_OFFLINE=true cargo sqlx prepare --merged
+  SQLX_OFFLINE=true cargo sqlx prepare
   popd
 }
 
@@ -35,6 +35,9 @@ build_shared_sqlite_database_library() {
 echo 'mysql prepare'
 build_shared_mysql_database_library
 
-echo 'sqlite prepare'
-build_shared_sqlite_database_library
+#echo 'sqlite prepare'
+#build_shared_sqlite_database_library
+
+echo 'done'
+
 

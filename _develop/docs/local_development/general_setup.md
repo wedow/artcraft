@@ -108,7 +108,9 @@ error (see below).
 ### (7) (optional) Install the SQLx CLI (if doing database development)
 
 ```bash
-cargo install sqlx-cli --no-default-features --features rustls,mysql,sqlite
+# NB(bt,2023-10-04): "--no-default-features" not working
+# cargo install sqlx-cli --no-default-features --features rustls,mysql,sqlite
+cargo install sqlx-cli --features rustls,mysql,sqlite
 ```
 
 We'll be using diesel to manage the migrations, but sqlx within the app to actually perform queries.
