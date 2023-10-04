@@ -283,7 +283,10 @@ pub async fn enqueue_lipsync_animation_handler(
     inference_args.maybe_make_still = Some(true);
   }
 
-  if request.remove_watermark.unwrap_or(false) {
+  let remove_watermark = request.remove_watermark.unwrap_or(false)
+      && plan.can_remove_visual_watermarks();
+
+  if remove_watermark {
     inference_args.maybe_remove_watermark = Some(true);
   }
 
