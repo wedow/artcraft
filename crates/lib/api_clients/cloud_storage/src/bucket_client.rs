@@ -45,7 +45,7 @@ impl BucketClient {
       endpoint: "https://storage.googleapis.com".to_owned(),
     };
 
-    let mut bucket = Bucket::new(&bucket_name, region, credentials)?;
+    let mut bucket = Bucket::new(bucket_name, region, credentials)?;
 
     bucket.set_request_timeout(bucket_request_timeout);
     bucket.set_path_style();

@@ -39,7 +39,7 @@ pub async fn customer_subscription_created_handler(
 
   // NB: It's possible to receive events out of order.
   // We won't want to play a `create` event on top.
-  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id(&summary.stripe_subscription_id, &mysql_pool)
+  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id(&summary.stripe_subscription_id, mysql_pool)
       .await
       .map_err(|err| {
         error!("Mysql error: {:?}", err);
@@ -88,7 +88,7 @@ pub async fn customer_subscription_created_handler(
         maybe_canceled_at: summary.maybe_canceled_at,
     };
 
-    let _r = upsert.upsert(mysql_pool)
+    upsert.upsert(mysql_pool)
         .await
         .map_err(|err| {
             error!("Mysql error: {:?}", err);

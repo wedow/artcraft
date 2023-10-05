@@ -11,7 +11,7 @@
 #![deny(unused_qualifications)]
 #![deny(unused_qualifications)]
 
-use env_logger;
+
 use std::error::Error;
 use std::fmt::{Display, Debug, Formatter};
 use std::{env, fmt};

@@ -72,7 +72,7 @@ async fn query_single_model_statistics(
 
     info!("TTS model {} uses {} times (three hours)", model_token, result.use_count);
 
-    let _r = upsert_trending_model_analytics(Args {
+    upsert_trending_model_analytics(Args {
       model_token: ModelToken::Tts(model_token),
       window_name: WindowName::Last3Hours,
       numeric_value: result.use_count,
@@ -92,7 +92,7 @@ async fn query_single_model_statistics(
 
     info!("TTS model {} uses {} times (three days)", model_token, result.use_count);
 
-    let _r = upsert_trending_model_analytics(Args {
+    upsert_trending_model_analytics(Args {
       model_token: ModelToken::Tts(model_token),
       window_name: WindowName::Last3Days,
       numeric_value: result.use_count,
@@ -109,7 +109,7 @@ async fn query_single_model_statistics(
 
     info!("TTS model {} uses {} times (total)", model_token, result.total_use_count);
 
-    let _r = upsert_trending_model_analytics(Args {
+    upsert_trending_model_analytics(Args {
       model_token: ModelToken::Tts(model_token),
       window_name: WindowName::AllTime,
       numeric_value: result.total_use_count,

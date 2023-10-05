@@ -49,7 +49,7 @@ impl MediaFileBucketPath {
   }
 
   pub fn get_object_hash(&self) -> &str {
-    &self.directory.get_object_hash()
+    self.directory.get_object_hash()
   }
 
   pub fn get_basename() -> &'static str {

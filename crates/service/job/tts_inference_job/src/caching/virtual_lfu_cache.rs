@@ -162,10 +162,10 @@ pub mod tests {
     let discarded = cache.insert_returning_replaced("bin");
     assert_eq!(discarded, Some("foo".to_string()));
 
-    assert_eq!(false, cache.in_cache(&"foo".to_string()));
-    assert_eq!(true, cache.in_cache(&"bar".to_string()));
-    assert_eq!(true, cache.in_cache(&"baz".to_string()));
-    assert_eq!(true, cache.in_cache(&"bin".to_string()));
+    assert!(!cache.in_cache(&"foo".to_string()));
+    assert!(cache.in_cache(&"bar".to_string()));
+    assert!(cache.in_cache(&"baz".to_string()));
+    assert!(cache.in_cache(&"bin".to_string()));
   }
 
   #[test]
@@ -179,10 +179,10 @@ pub mod tests {
     let discarded = cache.insert_returning_replaced("bin");
     assert_eq!(discarded, Some("bar".to_string()));
 
-    assert_eq!(true, cache.in_cache(&"foo".to_string()));
-    assert_eq!(false, cache.in_cache(&"bar".to_string()));
-    assert_eq!(true, cache.in_cache(&"baz".to_string()));
-    assert_eq!(true, cache.in_cache(&"bin".to_string()));
+    assert!(cache.in_cache(&"foo".to_string()));
+    assert!(!cache.in_cache(&"bar".to_string()));
+    assert!(cache.in_cache(&"baz".to_string()));
+    assert!(cache.in_cache(&"bin".to_string()));
   }
 
   #[test]
@@ -198,9 +198,9 @@ pub mod tests {
     let discarded = cache.insert_returning_replaced("bin");
     assert_eq!(discarded, Some("baz".to_string()));
 
-    assert_eq!(true, cache.in_cache(&"foo".to_string()));
-    assert_eq!(true, cache.in_cache(&"bar".to_string()));
-    assert_eq!(false, cache.in_cache(&"baz".to_string()));
-    assert_eq!(true, cache.in_cache(&"bin".to_string()));
+    assert!(cache.in_cache(&"foo".to_string()));
+    assert!(cache.in_cache(&"bar".to_string()));
+    assert!(!cache.in_cache(&"baz".to_string()));
+    assert!(cache.in_cache(&"bin".to_string()));
   }
 }

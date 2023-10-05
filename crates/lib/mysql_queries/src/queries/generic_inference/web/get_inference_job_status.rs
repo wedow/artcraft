@@ -150,7 +150,7 @@ WHERE jobs.token = ?
                   entity_token: entity_token.to_string(),
                   public_bucket_location_or_hash: public_bucket_hash.to_string(),
                   public_bucket_location_is_hash: bucket_path_is_hash,
-                  maybe_successfully_completed_at: record.maybe_successfully_completed_at.clone(),
+                  maybe_successfully_completed_at: record.maybe_successfully_completed_at,
                 }
               })
             })

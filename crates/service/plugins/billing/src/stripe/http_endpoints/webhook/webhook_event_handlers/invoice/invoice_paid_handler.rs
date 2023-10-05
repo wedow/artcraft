@@ -99,11 +99,11 @@ fn invoice_paid_extractor(invoice: &Invoice) -> AnyhowResult<Option<InvoicePaidD
 
   let maybe_stripe_customer_id  = invoice.customer
       .as_ref()
-      .map(|c| expand_customer_id(c));
+      .map(expand_customer_id);
 
   let maybe_stripe_subscription_id = invoice.subscription
       .as_ref()
-      .map(|s| expand_subscription_id(s));
+      .map(expand_subscription_id);
 
   // TODO: We only handle a single line item for now.
   let line_item = match invoice.lines.data.first() {
@@ -122,7 +122,7 @@ fn invoice_paid_extractor(invoice: &Invoice) -> AnyhowResult<Option<InvoicePaidD
       let maybe_product_id = line_item.price
           .as_ref()
           .and_then(|price| price.product.as_ref())
-          .map(|product| expand_product_id(product));
+          .map(expand_product_id);
 
       let maybe_price_id = line_item.price
           .as_ref()

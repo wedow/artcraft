@@ -8,7 +8,7 @@ pub fn validate_profile_github_username(username: &str) -> Result<(), String> {
     };
   }
 
-  if username.len() < 1 {
+  if username.is_empty() {
     return Err("github username is too short".to_string());
   }
 

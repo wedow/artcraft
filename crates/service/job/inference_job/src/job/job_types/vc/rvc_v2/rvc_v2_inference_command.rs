@@ -168,7 +168,7 @@ impl RvcV2InferenceCommand {
     if let Some(venv_command) = self.maybe_virtual_env_activation_command.as_deref() {
       command.push_str(" && ");
       command.push_str(venv_command);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     // NB: We can't use `onnx` for model integrity checking (that might take long anyway), so
@@ -182,7 +182,7 @@ impl RvcV2InferenceCommand {
       }
       ExecutableOrCommand::Command(ref cmd) => {
         command.push_str(cmd);
-        command.push_str(" ");
+        command.push(' ');
       }
     }
 
@@ -251,13 +251,13 @@ impl RvcV2InferenceCommand {
       }
       Some(timeout) => {
         info!("Executing with timeout: {:?}", &timeout);
-        let exit_status = p.wait_timeout(timeout.clone())?;
+        let exit_status = p.wait_timeout(timeout)?;
 
         match exit_status {
           None => {
             // NB: If the program didn't successfully terminate, kill it.
             info!("Subprocess didn't end after timeout: {:?}; terminating...", &timeout);
-            let _r = p.terminate()?;
+            p.terminate()?;
             Ok(CommandExitStatus::Timeout)
           }
           Some(exit_status) => {

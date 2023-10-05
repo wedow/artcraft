@@ -37,7 +37,7 @@ pub async fn stripe_create_checkout_session_redirect_handler(
     maybe_internal_product_key,
     &http_request,
     &stripe_config,
-    server_environment.get_ref().clone(),
+    *server_environment.get_ref(),
     &stripe_client,
     &url_redirector,
     internal_product_to_stripe_lookup.get_ref(),

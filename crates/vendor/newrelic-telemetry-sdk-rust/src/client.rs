@@ -217,7 +217,7 @@ impl ClientBuilder {
         self.endpoint_traces = Endpoint {
             host: url.to_string(),
             path: TRACE_API_PATH,
-            port: port,
+            port,
         };
         self
     }
@@ -359,7 +359,7 @@ impl Client {
         Ok(Client {
             api_key: builder.api_key,
             endpoint_traces: builder.endpoint_traces.uri(builder.use_tls)?,
-            user_agent: user_agent,
+            user_agent,
             backoff_sequence: backoff_seq,
             client: hyper::client::Client::builder().build::<_, hyper::Body>(https),
         })
@@ -494,7 +494,7 @@ impl Client {
                 return SendableState::Retry(None);
             }
         }
-        return SendableState::Done;
+        SendableState::Done
     }
 }
 
@@ -635,7 +635,7 @@ mod tests {
             client.backoff_sequence,
             vec![0, 2, 4, 8, 16, 32]
                 .into_iter()
-                .map(|d| Duration::from_secs(d))
+                .map(Duration::from_secs)
                 .collect::<Vec<Duration>>()
         );
 
@@ -687,8 +687,7 @@ mod tests {
 
     #[test]
     fn uri_from_endpoint_error() -> Result<()> {
-        for endpoint in vec![
-            Endpoint {
+        for endpoint in [Endpoint {
                 host: "host:80".to_string(),
                 path: TRACE_API_PATH,
                 port: Some(80),
@@ -702,13 +701,12 @@ mod tests {
                 host: "".to_string(),
                 path: TRACE_API_PATH,
                 port: None,
-            },
-        ] {
+            }] {
             let uri = endpoint.uri(true);
 
             assert!(
                 uri.is_err(),
-                format!("Could create an uri from {:?}: {:?}", endpoint, uri)
+                "Could create an uri from {:?}: {:?}", endpoint, uri
             );
         }
 
@@ -766,7 +764,7 @@ mod tests {
 
     #[test]
     fn process_response_error() -> Result<()> {
-        for code in vec![400, 401, 403, 404, 405, 409, 410, 411] {
+        for code in [400, 401, 403, 404, 405, 409, 410, 411] {
             let batch = Box::new(TestBatch);
             let response = Response::builder().status(code).body(())?;
 
@@ -899,7 +897,7 @@ mod tests {
         assert_eq!(b.endpoint_traces.host, "trace-api.newrelic.com");
         assert_eq!(b.endpoint_traces.port, None);
         assert_eq!(b.product_info, None);
-        assert_eq!(b.use_tls, true);
+        assert!(b.use_tls);
     }
 
     #[test]
@@ -929,7 +927,7 @@ mod tests {
             seq,
             vec![0, 5, 10, 20, 40, 80, 160, 320]
                 .into_iter()
-                .map(|d| Duration::from_secs(d))
+                .map(Duration::from_secs)
                 .collect::<Vec<Duration>>()
         );
     }
@@ -952,7 +950,7 @@ mod tests {
             seq,
             vec![0, 2, 4, 8, 16, 32]
                 .into_iter()
-                .map(|d| Duration::from_secs(d))
+                .map(Duration::from_secs)
                 .collect::<Vec<Duration>>()
         );
     }

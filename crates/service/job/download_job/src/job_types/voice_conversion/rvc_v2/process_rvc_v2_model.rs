@@ -88,7 +88,7 @@ pub async fn process_rvc_v2_model<'a, 'b>(
     safe_delete_temp_file(&original_model_file_path);
     safe_delete_possible_temp_file(maybe_original_model_index_file_path.as_deref());
     safe_delete_temp_file(&output_wav_path);
-    safe_delete_temp_directory(&temp_dir);
+    safe_delete_temp_directory(temp_dir);
     return Err(anyhow!("model check error: {:?}", e));
   }
 
@@ -119,7 +119,7 @@ pub async fn process_rvc_v2_model<'a, 'b>(
     safe_delete_temp_file(&original_model_file_path);
     safe_delete_possible_temp_file(maybe_original_model_index_file_path.as_deref());
     safe_delete_temp_file(&output_wav_path);
-    safe_delete_temp_directory(&temp_dir);
+    safe_delete_temp_directory(temp_dir);
     return Err(err);
   }
 
@@ -133,9 +133,9 @@ pub async fn process_rvc_v2_model<'a, 'b>(
     if let Err(err) = job_state.bucket_client.upload_filename(&model_index_bucket_path, &original_index_file_path).await {
       error!("Problem uploading index file: {:?}", err);
       safe_delete_temp_file(&original_model_file_path);
-      safe_delete_temp_file(&original_index_file_path);
+      safe_delete_temp_file(original_index_file_path);
       safe_delete_temp_file(&output_wav_path);
-      safe_delete_temp_directory(&temp_dir);
+      safe_delete_temp_directory(temp_dir);
       return Err(err);
     }
   }
@@ -147,7 +147,7 @@ pub async fn process_rvc_v2_model<'a, 'b>(
   safe_delete_temp_file(&original_model_file_path);
   safe_delete_possible_temp_file(maybe_original_model_index_file_path.as_deref());
   safe_delete_temp_file(&output_wav_path);
-  safe_delete_temp_directory(&temp_dir);
+  safe_delete_temp_directory(temp_dir);
 
   // ==================== SAVE RECORDS ==================== //
 
@@ -157,7 +157,7 @@ pub async fn process_rvc_v2_model<'a, 'b>(
     model_type: VoiceConversionModelType::RvcV2,
     title: &job.title,
     original_download_url: &job.download_url,
-    original_filename: &download_filename,
+    original_filename: download_filename,
     file_size_bytes,
     creator_user_token: &job.creator_user_token,
     creator_ip_address: &job.creator_ip_address,

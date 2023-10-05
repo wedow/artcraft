@@ -21,7 +21,7 @@ pub struct Args<'a> {
 pub async fn upsert_trending_model_analytics(args: Args<'_>) -> AnyhowResult<()> {
 
   let (model_type, model_token) = match args.model_token {
-    ModelToken::Tts(ref token) => (ModelType::Tts, token.as_str()),
+    ModelToken::Tts(token) => (ModelType::Tts, token.as_str()),
   };
 
   let query = sqlx::query!(

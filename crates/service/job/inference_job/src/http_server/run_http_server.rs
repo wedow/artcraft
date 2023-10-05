@@ -25,7 +25,7 @@ pub fn run_http_server(args: CreateServerArgs) -> AnyhowResult<Server>
   // HTTP server args
   let bind_address = easyenv::get_env_string_or_default("HTTP_BIND_ADDRESS", DEFAULT_BIND_ADDRESS);
   let num_workers = easyenv::get_env_num("HTTP_NUM_WORKERS", DEFAULT_NUM_WORKERS)?;
-  let hostname = args.container_environment.hostname.clone();
+  let _hostname = args.container_environment.hostname.clone();
 
   let server_state = HttpServerSharedState {
     job_stats: args.job_stats.clone(),
@@ -44,19 +44,19 @@ pub fn run_http_server(args: CreateServerArgs) -> AnyhowResult<Server>
     // NB: app_data being clone()'d below should all be safe (dependencies included)
     App::new()
         .app_data(server_state_arc.clone())
-        .wrap(Logger::new(&log_format)
+        .wrap(Logger::new(log_format)
             .exclude("/_status")
         )
         //.wrap(middleware::Compress::default())
         .service(
           web::resource("/")
-              .route(web::get().to(|| HttpResponse::Ok()))
-              .route(web::head().to(|| HttpResponse::Ok()))
+              .route(web::get().to(HttpResponse::Ok))
+              .route(web::head().to(HttpResponse::Ok))
         )
         .service(
           web::resource("/_status")
               .route(web::get().to(get_health_check_handler))
-              .route(web::head().to(|| HttpResponse::Ok()))
+              .route(web::head().to(HttpResponse::Ok))
         )
   })
       .bind(bind_address)?

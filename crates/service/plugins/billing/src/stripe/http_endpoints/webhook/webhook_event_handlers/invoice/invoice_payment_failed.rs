@@ -15,7 +15,7 @@ pub fn invoice_payment_failed_handler(invoice: &Invoice) -> Result<StripeWebhook
   // or cancel their subscriptions.
   let maybe_stripe_customer_id  = invoice.customer
       .as_ref()
-      .map(|c| expand_customer_id(c));
+      .map(expand_customer_id);
 
   // NB: Our internal user token.
   let maybe_user_token = invoice.metadata.get(METADATA_USER_TOKEN)

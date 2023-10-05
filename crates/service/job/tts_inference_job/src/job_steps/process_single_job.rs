@@ -96,7 +96,7 @@ pub async fn process_single_job(
   let lock_acquired =
       mark_tts_inference_job_pending_and_grab_lock(&job_args.mysql_pool, job.id)
           .await
-          .map_err(|e| ProcessSingleJobError::Other(e))?;
+          .map_err(ProcessSingleJobError::Other)?;
 
   if !lock_acquired {
     warn!("Could not acquire job lock for: {:?}", &job.id);
@@ -250,23 +250,23 @@ pub async fn process_single_job(
 
   // NB: TempDir exists until it goes out of scope, at which point it should delete from filesystem.
   let temp_dir = TempDir::new(&temp_dir)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
   let text_input_fs_path = temp_dir.path().join("inference_input.txt");
 
   std::fs::write(&text_input_fs_path, &cleaned_inference_text)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
   // ==================== RUN INFERENCE ==================== //
 
   job_progress_reporter.log_status("running inference")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   // TODO: Fix this.
   let maybe_unload_model_path = job_args
       .virtual_model_lfu
       .insert_returning_replaced(tts_synthesizer_fs_path.to_str().unwrap_or(""))
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   if let Some(model_path) = maybe_unload_model_path.as_deref() {
     warn!("Remove model from LFU cache: {:?}", model_path);
@@ -289,7 +289,7 @@ pub async fn process_single_job(
   let mut pretrained_vocoder = VocoderType::HifiGanSuperResolution;
   if let Some(default_vocoder) = model_record.maybe_default_pretrained_vocoder.as_deref() {
     pretrained_vocoder = VocoderType::from_str(default_vocoder)
-        .map_err(|e| ProcessSingleJobError::Other(e))?;
+        .map_err(ProcessSingleJobError::Other)?;
   }
 
   info!("With pretrained vocoder: {:?}", pretrained_vocoder);
@@ -325,7 +325,7 @@ pub async fn process_single_job(
     max_decoder_steps,
     &tts_synthesizer_fs_path,
     pretrained_vocoder,
-    &text_pipeline_type_or_guess.to_str(),
+    text_pipeline_type_or_guess.to_str(),
     &hifigan_vocoder_model_fs_path_to_use,
     &hifigan_superres_vocoder_model_fs_path,
     &waveglow_vocoder_model_fs_path,
@@ -337,25 +337,25 @@ pub async fn process_single_job(
     model_record.maybe_custom_mel_multiply_factor,
   )
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   // ==================== CHECK ALL FILES EXIST AND GET METADATA ==================== //
 
   info!("Checking that output files exist...");
 
-  check_file_exists(&output_audio_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
-  check_file_exists(&output_spectrogram_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
-  check_file_exists(&output_metadata_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
+  check_file_exists(&output_audio_fs_path).map_err(ProcessSingleJobError::Other)?;
+  check_file_exists(&output_spectrogram_fs_path).map_err(ProcessSingleJobError::Other)?;
+  check_file_exists(&output_metadata_fs_path).map_err(ProcessSingleJobError::Other)?;
 
   let file_metadata = read_metadata_file(&output_metadata_fs_path)
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   safe_delete_temp_file(&output_metadata_fs_path);
 
   // ==================== UPLOAD AUDIO TO BUCKET ==================== //
 
   job_progress_reporter.log_status("uploading result")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let audio_result_object_path = job_args.bucket_path_unifier.tts_inference_wav_audio_output_path(
     &job.uuid_idempotency_token); // TODO: Don't use this!
@@ -369,7 +369,7 @@ pub async fn process_single_job(
     &output_audio_fs_path,
     "audio/wav")
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   safe_delete_temp_file(&output_audio_fs_path);
 
@@ -387,7 +387,7 @@ pub async fn process_single_job(
     &output_spectrogram_fs_path,
     "application/json")
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   safe_delete_temp_file(&output_spectrogram_fs_path);
 
@@ -399,7 +399,7 @@ pub async fn process_single_job(
   // ==================== SAVE RECORDS ==================== //
 
   let text_hash = sha256_hash_string(&cleaned_inference_text)
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let worker_name = job_args.get_worker_name();
 
@@ -407,7 +407,7 @@ pub async fn process_single_job(
 
   let (id, inference_result_token) = insert_tts_result(
     &job_args.mysql_pool,
-    JobType::TtsJob(&job),
+    JobType::TtsJob(job),
     &text_hash,
     Some(pretrained_vocoder),
     &audio_result_object_path,
@@ -418,7 +418,7 @@ pub async fn process_single_job(
     &worker_name,
     job_args.worker_details.is_debug_worker)
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Marking job complete...");
   mark_tts_inference_job_done(
@@ -428,7 +428,7 @@ pub async fn process_single_job(
     Some(&inference_result_token),
     &worker_name)
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("TTS Done. Original text was: {}", &job.raw_inference_text);
 
@@ -443,7 +443,7 @@ pub async fn process_single_job(
       })?;
 
   job_progress_reporter.log_status("done")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Job {:?} complete success! Downloaded, ran inference, and uploaded. Saved model record: {}, Result Token: {}",
         job.id, id, &inference_result_token);

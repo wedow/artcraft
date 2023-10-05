@@ -46,7 +46,7 @@ pub async fn process_softvc_model<'a, 'b>(
 
   if let Err(e) = model_check_result {
     safe_delete_temp_file(&file_path);
-    safe_delete_temp_directory(&temp_dir);
+    safe_delete_temp_directory(temp_dir);
     return Err(anyhow!("model check error: {:?}", e));
   }
 
@@ -61,7 +61,7 @@ pub async fn process_softvc_model<'a, 'b>(
     Err(e) => {
       safe_delete_temp_file(&file_path);
       safe_delete_temp_file(&output_metadata_fs_path);
-      safe_delete_temp_directory(&temp_dir);
+      safe_delete_temp_directory(temp_dir);
       return Err(e);
     }
   };
@@ -70,7 +70,7 @@ pub async fn process_softvc_model<'a, 'b>(
 
   info!("Uploading SoftVC model to GCS...");
 
-  let private_bucket_hash = sha256_hash_file(&download_filename)?;
+  let private_bucket_hash = sha256_hash_file(download_filename)?;
 
   info!("File hash: {}", private_bucket_hash);
 
@@ -83,7 +83,7 @@ pub async fn process_softvc_model<'a, 'b>(
   if let Err(e) = job_state.bucket_client.upload_filename(&model_bucket_path, &file_path).await {
     safe_delete_temp_file(&output_metadata_fs_path);
     safe_delete_temp_file(&file_path);
-    safe_delete_temp_directory(&temp_dir);
+    safe_delete_temp_directory(temp_dir);
     return Err(e);
   }
 
@@ -92,7 +92,7 @@ pub async fn process_softvc_model<'a, 'b>(
   // NB: We should be using a tempdir, but to make absolutely certain we don't overflow the disk...
   safe_delete_temp_file(&output_metadata_fs_path);
   safe_delete_temp_file(&file_path);
-  safe_delete_temp_directory(&temp_dir);
+  safe_delete_temp_directory(temp_dir);
 
   // ==================== SAVE RECORDS ==================== //
 
@@ -102,7 +102,7 @@ pub async fn process_softvc_model<'a, 'b>(
     model_type: VoiceConversionModelType::SoftVc,
     title: &job.title,
     original_download_url: &job.download_url,
-    original_filename: &download_filename,
+    original_filename: download_filename,
     file_size_bytes: file_metadata.file_size_bytes,
     creator_user_token: &job.creator_user_token,
     creator_ip_address: &job.creator_ip_address,

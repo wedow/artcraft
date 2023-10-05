@@ -235,14 +235,14 @@ mod tests {
     fn into_value() {
         // Should be able to use Value::from or .into() to create Values
         assert_eq!(Value::Int(-5), Value::from(-5));
-        assert_eq!(Value::Int(-5), (-5 as i32).into());
+        assert_eq!(Value::Int(-5), (-5_i32).into());
 
         // cast needed because integer types default to i32
-        assert_eq!(Value::UInt(5), Value::from(5 as u64));
-        assert_eq!(Value::UInt(5), (5 as u64).into());
+        assert_eq!(Value::UInt(5), Value::from(5_u64));
+        assert_eq!(Value::UInt(5), 5_u64.into());
 
         assert_eq!(Value::Float(3.14159), Value::from(3.14159));
-        assert_eq!(Value::Float(3.14159), (3.14159 as f64).into());
+        assert_eq!(Value::Float(3.14159), 3.14159_f64.into());
 
         assert_eq!(Value::Str("root".to_string()), Value::from("root"));
         assert_eq!(Value::Str("root".to_string()), "root".into());

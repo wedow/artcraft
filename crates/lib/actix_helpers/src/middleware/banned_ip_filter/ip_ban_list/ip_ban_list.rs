@@ -89,9 +89,9 @@ mod tests {
     ip_ban_list.add_set("local".to_string(), local_ip_set).unwrap();
     ip_ban_list.add_set("remote".to_string(), remote_ip_set).unwrap();
 
-    assert_eq!(ip_ban_list.contains_ip_address("192.168.0.1").unwrap(), true);
-    assert_eq!(ip_ban_list.contains_ip_address("8.8.8.8").unwrap(), true);
+    assert!(ip_ban_list.contains_ip_address("192.168.0.1").unwrap());
+    assert!(ip_ban_list.contains_ip_address("8.8.8.8").unwrap());
 
-    assert_eq!(ip_ban_list.contains_ip_address("1.2.3.4").unwrap(), false);
+    assert!(!ip_ban_list.contains_ip_address("1.2.3.4").unwrap());
   }
 }

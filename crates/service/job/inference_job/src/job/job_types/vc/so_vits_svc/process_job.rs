@@ -85,7 +85,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
       .fs
       .scoped_temp_dir_creator_for_work
       .new_tempdir(&work_temp_dir)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
   // ==================== DOWNLOAD MEDIA FILE ==================== //
 
@@ -125,7 +125,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
   // ==================== SETUP FOR INFERENCE ==================== //
 
   job_progress_reporter.log_status("running inference")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   //let config_path = PathBuf::from("/models/voice_conversion/so-vits-svc/example_config.json"); // TODO: This could be variable.
   let input_wav_path = original_media_upload_fs_path;
@@ -144,36 +144,32 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
 
   let maybe_args = job.maybe_inference_args
       .as_ref()
-      .map(|args| args.args.as_ref())
-      .flatten();
+      .and_then(|args| args.args.as_ref());
 
 
   // If not specified by the user, turn off auto prediction. It sounds awful.
   let auto_predict_f0 = maybe_args
-      .map(|args| match args {
+      .and_then(|args| match args {
         PolymorphicInferenceArgs::Tts { .. } => None,
         PolymorphicInferenceArgs::La(_) => None,
         PolymorphicInferenceArgs::Vc { auto_predict_f0, .. } => *auto_predict_f0,
       })
-      .flatten()
       .unwrap_or(false);
 
   let maybe_transpose = maybe_args
-      .map(|args| match args {
+      .and_then(|args| match args {
         PolymorphicInferenceArgs::Tts { .. } => None,
         PolymorphicInferenceArgs::La(_) => None,
         PolymorphicInferenceArgs::Vc { transpose, .. } => *transpose,
-      })
-      .flatten();
+      });
 
   let maybe_override_f0_method = maybe_args
-      .map(|args| match args {
+      .and_then(|args| match args {
         PolymorphicInferenceArgs::Tts { .. } => None,
         PolymorphicInferenceArgs::La(_) => None,
         PolymorphicInferenceArgs::Vc { override_f0_method, .. } =>
           *override_f0_method,
-      })
-      .flatten();
+      });
 
   // ==================== RUN INFERENCE SCRIPT ==================== //
 
@@ -210,21 +206,21 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
 
   info!("Checking that output files exist...");
 
-  check_file_exists(&output_audio_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
+  check_file_exists(&output_audio_fs_path).map_err(ProcessSingleJobError::Other)?;
   //check_file_exists(&output_metadata_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
   //check_file_exists(&output_spectrogram_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
 
   info!("Interrogating result file properties...");
 
   let file_size_bytes = file_size(&output_audio_fs_path)
-      .map_err(|err| ProcessSingleJobError::Other(err))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let maybe_mimetype = get_mimetype_for_file(&output_audio_fs_path)
-      .map_err(|err| ProcessSingleJobError::from_io_error(err))?
+      .map_err(ProcessSingleJobError::from_io_error)?
       .map(|mime| mime.to_string());
 
   let audio_info = decode_basic_audio_file_info(&output_audio_fs_path, maybe_mimetype.as_deref(), None)
-      .map_err(|err| ProcessSingleJobError::Other(err))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   if audio_info.required_full_decode {
     warn!("Required a full decode of the output data to get duration! That's inefficient!");
@@ -243,7 +239,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
   // ==================== UPLOAD AUDIO TO BUCKET ==================== //
 
   job_progress_reporter.log_status("uploading result")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let result_bucket_location = VoiceConversionResultOriginalFilePath::generate_new();
 
@@ -258,7 +254,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
     &output_audio_fs_path,
     "audio/wav")
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   safe_delete_temp_file(&output_audio_fs_path);
 
@@ -291,7 +287,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
 
   let (inference_result_token, id) = insert_voice_conversion_result(InsertArgs {
     pool: &args.job_dependencies.mysql_pool,
-    job: &job,
+    job,
     public_bucket_hash: result_bucket_location.get_object_hash(),
     file_size_bytes: file_metadata.file_size_bytes,
     duration_millis: file_metadata.duration_millis.unwrap_or(0),
@@ -301,13 +297,13 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
     is_debug_worker: args.job_dependencies.worker_details.is_debug_worker
   })
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("VC Done.");
 
   // TODO: Update upstream to be strongly typed
   let maybe_user_token = job.maybe_creator_user_token.as_deref()
-      .map(|token| UserToken::new_from_str(token));
+      .map(UserToken::new_from_str);
 
   args.job_dependencies.firehose_publisher.vc_inference_finished(
     maybe_user_token.as_ref(),
@@ -320,7 +316,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
       })?;
 
   job_progress_reporter.log_status("done")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Job {:?} complete success! Downloaded, ran inference, and uploaded. Saved model record: {}, Result Token: {}",
         job.id, id, &inference_result_token);

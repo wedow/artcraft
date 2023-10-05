@@ -18,9 +18,8 @@ pub fn get_service_request_ip_address(request: &ServiceRequest) -> String {
           .remote_addr()
           .unwrap_or("")
           .to_string();
-      let ip_address = ip_address_and_port.split(":")
-          .collect::<Vec<&str>>()
-          .get(0)
+      let ip_address = ip_address_and_port.split(':')
+          .collect::<Vec<&str>>().first()
           .copied()
           .unwrap_or("")
           .to_string();

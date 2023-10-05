@@ -37,7 +37,7 @@ impl JobStats {
 
    pub fn get_status(&self) -> AnyhowResult<SuccessAndFailureStats> {
       // NB: lock errors can't be moved between threads, so we change their type
-      let mut lock = self.inner.read()
+      let lock = self.inner.read()
           .map_err(|e| anyhow!("lock read error: {:?}", e))?;
 
       Ok(SuccessAndFailureStats {

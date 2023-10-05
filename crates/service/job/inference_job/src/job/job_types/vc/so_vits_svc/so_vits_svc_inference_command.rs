@@ -242,7 +242,7 @@ impl SoVitsSvcInferenceCommand {
     if let Some(venv_command) = self.maybe_virtual_env_activation_command.as_deref() {
       command.push_str(" && ");
       command.push_str(venv_command);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     // NB: We can't use `onnx` for model integrity checking (that might take long anyway), so
@@ -256,7 +256,7 @@ impl SoVitsSvcInferenceCommand {
       }
       ExecutableOrCommand::Command(ref cmd) => {
         command.push_str(cmd);
-        command.push_str(" ");
+        command.push(' ');
       }
     }
 
@@ -280,13 +280,13 @@ impl SoVitsSvcInferenceCommand {
 
     command.push_str(" --auto-predict-f0 ");
     command.push_str(if args.auto_predict_f0 { "true" } else { "false" });
-    command.push_str(" ");
+    command.push(' ');
 
     if let Some(transpose) = args.maybe_transpose {
       let value = transpose.to_string();
       command.push_str(" --transpose ");
       command.push_str(&value);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     if let Some(f0_method) = args.maybe_override_f0_method {
@@ -296,8 +296,8 @@ impl SoVitsSvcInferenceCommand {
         FundamentalFrequencyMethodForJob::Harvest => "harvest",
       };
       command.push_str(" --f0-method ");
-      command.push_str(&method);
-      command.push_str(" ");
+      command.push_str(method);
+      command.push(' ');
     }
 
     let device = match args.device {
@@ -311,13 +311,13 @@ impl SoVitsSvcInferenceCommand {
     if let Some(enable_hacky_fix) = self.enable_hacky_fix {
       command.push_str(" --hacky-fix ");
       command.push_str(if enable_hacky_fix { "true" } else { "false" } );
-      command.push_str(" ");
+      command.push(' ');
     }
 
     // NB: Input wav path is not a named arg
-    command.push_str(" ");
+    command.push(' ');
     command.push_str(&path_to_string(args.input_path));
-    command.push_str(" ");
+    command.push(' ');
 
     // ===== End Python Args =====
 
@@ -397,13 +397,13 @@ impl SoVitsSvcInferenceCommand {
       }
       Some(timeout) => {
         info!("Executing with timeout: {:?}", &timeout);
-        let exit_status = p.wait_timeout(timeout.clone())?;
+        let exit_status = p.wait_timeout(timeout)?;
 
         match exit_status {
           None => {
             // NB: If the program didn't successfully terminate, kill it.
             info!("Subprocess didn't end after timeout: {:?}; terminating...", &timeout);
-            let _r = p.terminate()?;
+            p.terminate()?;
             Ok(CommandExitStatus::Timeout)
           }
           Some(exit_status) => {

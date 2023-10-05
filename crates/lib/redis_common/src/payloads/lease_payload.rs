@@ -36,12 +36,12 @@ impl LeasePayload {
   }
 
   pub fn deserialize(payload: &str) -> AnyhowResult<Self> {
-    let pieces = payload.split(":").collect::<Vec<_>>();
+    let pieces = payload.split(':').collect::<Vec<_>>();
     if pieces.len() != 2 {
       return Err(anyhow!("Invalid payload: {}", payload));
     }
 
-    let pair = (pieces.get(0), pieces.get(1));
+    let pair = (pieces.first(), pieces.get(1));
 
     if let (Some(k), Some(v)) = pair {
       Ok(Self::from_string_id(k, v))

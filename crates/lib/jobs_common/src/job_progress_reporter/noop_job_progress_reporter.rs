@@ -15,33 +15,33 @@ impl NoOpJobProgressReporterBuilder {
 }
 
 impl JobProgressReporterBuilder for NoOpJobProgressReporterBuilder {
-  fn new_generic_download(&self, job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
+  fn new_generic_download(&self, _job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
     NoOpJobProgressReporterBuilder::create_instance()
   }
 
-  fn new_generic_inference(&self, job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
+  fn new_generic_inference(&self, _job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
     NoOpJobProgressReporterBuilder::create_instance()
   }
 
-  fn new_tts_download(&self, tts_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
+  fn new_tts_download(&self, _tts_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
     NoOpJobProgressReporterBuilder::create_instance()
   }
 
-  fn new_tts_inference(&self, tts_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
+  fn new_tts_inference(&self, _tts_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
     NoOpJobProgressReporterBuilder::create_instance()
   }
 
-  fn new_w2l_download(&self, w2l_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
+  fn new_w2l_download(&self, _w2l_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
     NoOpJobProgressReporterBuilder::create_instance()
   }
 
-  fn new_w2l_inference(&self, w2l_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
+  fn new_w2l_inference(&self, _w2l_job_token: &str) -> AnyhowResult<Box<dyn JobProgressReporter>> {
     NoOpJobProgressReporterBuilder::create_instance()
   }
 }
 
 impl JobProgressReporter for NoOpJobProgressReporter {
-  fn log_status(&mut self, logging_details: &str) -> AnyhowResult<()> {
+  fn log_status(&mut self, _logging_details: &str) -> AnyhowResult<()> {
     Ok(()) // No-op
   }
 }

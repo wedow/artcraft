@@ -26,7 +26,7 @@ pub async fn update_dataset(args: UpdateDatasetArgs<'_>) -> AnyhowResult<()>{
     let mut maybe_creator_synthetic_id : Option<u64> = None;
 
     let mut transaction = args.mysql_pool.begin().await?;
-    if let Some(creator_user_token) = args.maybe_creator_user_token.as_deref() {
+    if let Some(creator_user_token) = args.maybe_creator_user_token {
         let user_token = UserToken::new_from_str(creator_user_token);
 
         let next_zs_dataset_synthetic_id = transactional_increment_generic_synthetic_id(

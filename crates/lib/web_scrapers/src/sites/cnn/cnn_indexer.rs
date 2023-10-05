@@ -67,16 +67,11 @@ pub async fn cnn_indexer(feed: CnnFeed) -> AnyhowResult<Vec<WebScrapingTarget>> 
     }
 
     let maybe_image_url = item.extensions.get("media")
-        .map(|media| media.get("group"))
-        .flatten()
-        .map(|group| group.get(0))
-        .flatten()
-        .map(|extension| extension.children.get("content"))
-        .flatten()
-        .map(|extensions| extensions.get(0)) // NB: First image is biggest
-        .flatten()
-        .map(|extension| extension.attrs.get("url"))
-        .flatten()
+        .and_then(|media| media.get("group"))
+        .and_then(|group| group.get(0))
+        .and_then(|extension| extension.children.get("content"))
+        .and_then(|extensions| extensions.get(0))
+        .and_then(|extension| extension.attrs.get("url"))
         .map(|url| url.to_string());
 
     targets.push(WebScrapingTarget {

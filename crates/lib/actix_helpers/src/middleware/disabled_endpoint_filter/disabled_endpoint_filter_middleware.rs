@@ -39,7 +39,7 @@ impl<S, B> Service<ServiceRequest> for DisabledEndpointFilterMiddleware<S>
 
     // NB: Fail open.
     // We don't want our service to explode because we can't read our configs.
-    let is_disabled = self.disabled_endpoints.endpoint_is_disabled(&endpoint);
+    let is_disabled = self.disabled_endpoints.endpoint_is_disabled(endpoint);
 
     if is_disabled {
       Either::Right(err(Error::from(DisabledError {})))

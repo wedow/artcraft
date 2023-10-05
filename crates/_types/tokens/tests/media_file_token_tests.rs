@@ -154,10 +154,10 @@ mod crockford_traits {
   #[test]
   fn prefix_ends_with_separator() {
     let prefix = MediaFileToken::token_prefix();
-    assert!(prefix.ends_with("_"));
+    assert!(prefix.ends_with('_'));
 
     let token_string = MediaFileToken::generate().to_string();
-    assert!(token_string.contains(":") || token_string.contains("_"));
+    assert!(token_string.contains(':') || token_string.contains('_'));
   }
 
   #[test]

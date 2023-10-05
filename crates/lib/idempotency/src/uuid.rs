@@ -28,7 +28,7 @@ mod tests {
     #[test]
     fn hyphenated() {
       for _ in 0..10 {
-        assert_eq!(generate_random_uuid().contains("-"), true);
+        assert!(generate_random_uuid().contains('-'));
       }
     }
 

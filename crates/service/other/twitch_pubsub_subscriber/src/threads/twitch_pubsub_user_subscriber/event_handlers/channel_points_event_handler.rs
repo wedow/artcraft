@@ -70,14 +70,14 @@ impl ChannelPointsEventHandler {
 
     let mut event_builder = event_builder.set_sender_twitch_user_id(&user_id)
         .set_sender_twitch_username(&user_name)
-        .set_destination_channel_id(&redemption.channel_id.to_string())
+        .set_destination_channel_id(redemption.channel_id.as_ref())
         // TODO:
         .set_destination_channel_name("todo: not available")
         .set_title(&redemption.reward.title)
         .set_prompt(&redemption.reward.prompt)
         .set_user_text_input(redemption.user_input.as_deref())
-        .set_redemption_id(&redemption.id.to_string())
-        .set_reward_id(&redemption.reward.id.to_string())
+        .set_redemption_id(redemption.id.as_ref())
+        .set_reward_id(redemption.reward.id.as_ref())
         .set_is_sub_only(redemption.reward.is_sub_only)
         .set_reward_cost(redemption.reward.cost as u64);
     // TODO:
@@ -106,8 +106,7 @@ impl ChannelPointsEventHandler {
                   reward_name.eq_ignore_ascii_case(&redemption.reward.title)
                 }
               }
-            })
-            .map(|rule| rule.clone());
+            }).cloned();
         Ok(maybe_rule)
       }
     };

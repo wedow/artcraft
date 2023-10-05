@@ -41,7 +41,7 @@ SET
       .execute(args.mysql_pool)
       .await;
 
-  let record_id = match query_result {
+  let _record_id = match query_result {
     Ok(res) => {
       res.last_insert_id()
     },

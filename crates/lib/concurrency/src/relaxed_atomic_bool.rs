@@ -35,13 +35,13 @@ mod tests {
   #[test]
   fn test_get_and_set() {
     let b = RelaxedAtomicBool::new(false);
-    assert_eq!(false, b.get());
+    assert!(!b.get());
 
     b.set(true);
-    assert_eq!(true, b.get());
+    assert!(b.get());
 
     b.set(false);
-    assert_eq!(false, b.get());
+    assert!(!b.get());
   }
 
   #[test]
@@ -52,11 +52,11 @@ mod tests {
     let c = a.clone();
     let d = a.clone();
 
-    thread::spawn(move || assert_eq!(true, a.get()));
-    thread::spawn(move || assert_eq!(true, b.get()));
-    thread::spawn(move || assert_eq!(true, c.get()));
+    thread::spawn(move || assert!(a.get()));
+    thread::spawn(move || assert!(b.get()));
+    thread::spawn(move || assert!(c.get()));
 
-    assert_eq!(true, d.get());
+    assert!(d.get());
   }
 
   #[test]
@@ -66,7 +66,7 @@ mod tests {
     let keep_looping = RelaxedAtomicBool::new(true);
     let another = keep_looping.clone();
 
-    assert_eq!(true, keep_looping.get());
+    assert!(keep_looping.get());
 
     thread::spawn(move || another.set(false));
 
@@ -79,6 +79,6 @@ mod tests {
       }
     }
 
-    assert_eq!(false, keep_looping.get());
+    assert!(!keep_looping.get());
   }
 }

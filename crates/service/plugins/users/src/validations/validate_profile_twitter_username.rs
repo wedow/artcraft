@@ -7,7 +7,7 @@ pub fn validate_profile_twitter_username(username: &str) -> Result<(), String> {
     };
   }
 
-  if username.starts_with("@") {
+  if username.starts_with('@') {
     if username.len() < 5 {
       return Err("twitter username is too short".to_string());
     }
@@ -32,7 +32,7 @@ pub fn validate_profile_twitter_username(username: &str) -> Result<(), String> {
 
 /// Remove the leading '@' for consistency and better internal use.
 pub fn normalize_twitter_username_for_storage(username: &str) -> String {
-  username.replace("@", "")
+  username.replace('@', "")
 }
 
 #[cfg(test)]

@@ -50,7 +50,7 @@ pub async fn cnn_article_scraper(url: &str) -> AnyhowResult<WebScrapingResult> {
   let mut paragraphs = Vec::new();
 
   if let Some(article_content_div) = document.select(&ARTICLE_CONTENT_SELECTOR).next() {
-    for paragraph in article_content_div.select(&PARAGRAPH_SELECTOR).into_iter() {
+    for paragraph in article_content_div.select(&PARAGRAPH_SELECTOR) {
 
       let mut paragraph_assembly = Vec::new();
 
@@ -82,8 +82,7 @@ pub async fn cnn_article_scraper(url: &str) -> AnyhowResult<WebScrapingResult> {
 
   let maybe_timestamp = maybe_timestamp_raw
       .as_deref()
-      .map(|ts| parse_timestamp(ts))
-      .flatten();
+      .and_then(parse_timestamp);
 
   let body_text = paragraphs.join("\n\n");
 
@@ -122,7 +121,9 @@ fn parse_timestamp(timestamp: &str) -> Option<DateTime<Utc>> {
       .map(|ts| ts.replace(" , ", ", "));
 
   // Parse
-  let maybe_timestamp = maybe_timestamp
+  
+
+  maybe_timestamp
       .map(|ts| NaiveDateTime::parse_from_str(&ts, "%l:%M %P, %B %e, %Y"))
       .transpose()
       .ok()
@@ -136,9 +137,7 @@ fn parse_timestamp(timestamp: &str) -> Option<DateTime<Utc>> {
       .ok()
       .flatten()
       // NB: The "Utc" time above is actually EST/EDT.
-      .map(|utc| utc.add(Duration::hours(5)));
-
-  maybe_timestamp
+      .map(|utc| utc.add(Duration::hours(5)))
 }
 
 #[cfg(test)]

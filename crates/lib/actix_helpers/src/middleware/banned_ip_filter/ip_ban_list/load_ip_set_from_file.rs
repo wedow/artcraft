@@ -14,7 +14,7 @@ pub fn load_ip_set_from_file<P: AsRef<Path>>(path: P) -> AnyhowResult<IpSet> {
   let lines = reader.lines()
       .filter_map(|line| line.ok())
       .map(|line| line.trim().to_string())
-      .filter(|line| !(line.starts_with("#") || line.is_empty()))
+      .filter(|line| !(line.starts_with('#') || line.is_empty()))
       .collect::<HashSet<String>>();
 
   Ok(IpSet::from_set(lines))
@@ -39,11 +39,11 @@ mod tests {
     let ip_set = load_ip_set_from_file(filename).unwrap();
 
     // Comments are not included
-    assert_eq!(ip_set.contains_ip_address("# this is test data"), false);
+    assert!(!ip_set.contains_ip_address("# this is test data"));
 
     // IP addresses in the file are.
-    assert_eq!(ip_set.contains_ip_address("127.0.0.1"), true);
-    assert_eq!(ip_set.contains_ip_address("192.168.1.1"), false);
+    assert!(ip_set.contains_ip_address("127.0.0.1"));
+    assert!(!ip_set.contains_ip_address("192.168.1.1"));
 
     // Length is expected
     assert_eq!(ip_set.len(), 2);

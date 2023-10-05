@@ -2,16 +2,12 @@
 
 /// MySQL stores non-nullable booleans as i8.
 pub fn i8_to_bool(value: i8) -> bool {
-  if value == 0 {
-    false
-  } else {
-    true
-  }
+  value != 0
 }
 
 /// Bool conversion, but turn nulls to a default value.
 pub fn nullable_i8_to_bool(value: Option<i8>, default_value: bool) -> bool {
-  value.map(|v| i8_to_bool(v))
+  value.map(i8_to_bool)
       .unwrap_or(default_value)
 }
 
@@ -27,7 +23,7 @@ pub fn nullable_i8_to_bool_default_false(value: Option<i8>) -> bool {
 
 /// Bool conversion, but retain nulls.
 pub fn nullable_i8_to_optional_bool(value: Option<i8>) -> Option<bool> {
-  value.map(|v| i8_to_bool(v))
+  value.map(i8_to_bool)
 }
 
 #[cfg(test)]
@@ -36,36 +32,36 @@ mod tests {
 
   #[test]
   fn test_i8_to_bool() {
-    assert_eq!(i8_to_bool(0), false);
-    assert_eq!(i8_to_bool(1), true);
-    assert_eq!(i8_to_bool(-1), true);
-    assert_eq!(i8_to_bool(120), true);
+    assert!(!i8_to_bool(0));
+    assert!(i8_to_bool(1));
+    assert!(i8_to_bool(-1));
+    assert!(i8_to_bool(120));
   }
 
   #[test]
   fn test_nullable_i8_to_bool() {
-    assert_eq!(nullable_i8_to_bool(None, false), false);
-    assert_eq!(nullable_i8_to_bool(None, true), true);
-    assert_eq!(nullable_i8_to_bool(Some(0), false), false);
-    assert_eq!(nullable_i8_to_bool(Some(0), true), false);
+    assert!(!nullable_i8_to_bool(None, false));
+    assert!(nullable_i8_to_bool(None, true));
+    assert!(!nullable_i8_to_bool(Some(0), false));
+    assert!(!nullable_i8_to_bool(Some(0), true));
 
-    assert_eq!(nullable_i8_to_bool(Some(1), false), true);
-    assert_eq!(nullable_i8_to_bool(Some(1), true), true);
+    assert!(nullable_i8_to_bool(Some(1), false));
+    assert!(nullable_i8_to_bool(Some(1), true));
 
-    assert_eq!(nullable_i8_to_bool(Some(100), false), true);
-    assert_eq!(nullable_i8_to_bool(Some(100), true), true);
-    assert_eq!(nullable_i8_to_bool(Some(-100), false), true);
-    assert_eq!(nullable_i8_to_bool(Some(-100), true), true);
+    assert!(nullable_i8_to_bool(Some(100), false));
+    assert!(nullable_i8_to_bool(Some(100), true));
+    assert!(nullable_i8_to_bool(Some(-100), false));
+    assert!(nullable_i8_to_bool(Some(-100), true));
   }
 
   #[test]
   fn test_nullable_i8_to_bool_default_false() {
-    assert_eq!(nullable_i8_to_bool_default_false(None), false);
-    assert_eq!(nullable_i8_to_bool_default_false(Some(0)), false);
+    assert!(!nullable_i8_to_bool_default_false(None));
+    assert!(!nullable_i8_to_bool_default_false(Some(0)));
 
-    assert_eq!(nullable_i8_to_bool_default_false(Some(1)), true);
-    assert_eq!(nullable_i8_to_bool_default_false(Some(100)), true);
-    assert_eq!(nullable_i8_to_bool_default_false(Some(-100)), true);
+    assert!(nullable_i8_to_bool_default_false(Some(1)));
+    assert!(nullable_i8_to_bool_default_false(Some(100)));
+    assert!(nullable_i8_to_bool_default_false(Some(-100)));
   }
 
   #[test]

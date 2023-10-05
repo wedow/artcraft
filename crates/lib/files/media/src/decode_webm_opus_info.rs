@@ -16,8 +16,7 @@ pub fn decode_mkv_or_webm(
   // The `matroska-demuxer` crate (ver "0.4.0") (as an alternative) exposes this as
   // mkv.info().timestamp_scale()
   let time_base = reader.default_track()
-      .map(|track| track.codec_params.time_base)
-      .flatten()
+      .and_then(|track| track.codec_params.time_base)
       .ok_or_else(|| anyhow!("file did not have a default track!"))?;
 
   let mut last_timestamp = 0;

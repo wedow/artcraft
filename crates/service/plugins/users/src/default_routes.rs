@@ -27,36 +27,36 @@ pub fn add_suggested_api_v1_account_creation_and_session_routes<T, B> (app: App<
       .service(
         web::resource("/create_account")
             .route(web::post().to(create_account_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
+            .route(web::head().to(HttpResponse::Ok))
       )
       .service(
         web::resource("/login")
             .route(web::post().to(login_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
+            .route(web::head().to(HttpResponse::Ok))
       )
       .service(
           web::resource("/v1/login")
               .route(web::post().to(login_handler))
-              .route(web::head().to(|| HttpResponse::Ok()))
+              .route(web::head().to(HttpResponse::Ok))
       )
       .service(
         web::resource("/logout")
             .route(web::post().to(logout_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
+            .route(web::head().to(HttpResponse::Ok))
       )
       .service(
           web::resource("/v1/logout")
               .route(web::post().to(logout_handler))
-              .route(web::head().to(|| HttpResponse::Ok()))
+              .route(web::head().to(HttpResponse::Ok))
       )
       .service(
         web::resource("/session")
             .route(web::get().to(session_info_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
+            .route(web::head().to(HttpResponse::Ok))
       )
       .service(
           web::resource("/v1/session")
               .route(web::get().to(session_info_handler))
-              .route(web::head().to(|| HttpResponse::Ok()))
+              .route(web::head().to(HttpResponse::Ok))
       )
 }

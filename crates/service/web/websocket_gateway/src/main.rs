@@ -155,7 +155,7 @@ async fn main() -> AnyhowResult<()> {
 pub async fn serve(server_state: ObsGatewayServerState) -> AnyhowResult<()>
 {
   let bind_address = server_state.env_config.bind_address.clone();
-  let num_workers = server_state.env_config.num_workers.clone();
+  let num_workers = server_state.env_config.num_workers;
   let hostname = server_state.hostname.clone();
 
   let server_state_arc = web::Data::new(Arc::new(server_state));
@@ -168,7 +168,7 @@ pub async fn serve(server_state: ObsGatewayServerState) -> AnyhowResult<()>
     App::new()
         .app_data(server_state_arc.clone())
         .wrap(build_production_cors_config())
-        .wrap(Logger::new(&log_format)
+        .wrap(Logger::new(log_format)
             .exclude("/liveness")
             .exclude("/readiness"))
         .wrap(DefaultHeaders::new()
@@ -180,7 +180,7 @@ pub async fn serve(server_state: ObsGatewayServerState) -> AnyhowResult<()>
         // Twitch websocket
         .service(web::resource("/obs/{twitch_username}")
             .route(web::get().to(obs_gateway_websocket_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
+            .route(web::head().to(HttpResponse::Ok))
         )
         // Local development debugging
         .service(

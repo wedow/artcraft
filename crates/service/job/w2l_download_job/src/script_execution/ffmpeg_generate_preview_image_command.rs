@@ -30,12 +30,12 @@ impl FfmpegGeneratePreviewImageCommand {
     command.push_str(" && ");
     command.push_str("ffmpeg");
     command.push_str(" -i ");
-    command.push_str(&input_image_filename);
+    command.push_str(input_image_filename);
     command.push_str(" -vf ");
     command.push_str(&scale);
 
-    command.push_str(" "); // NB: no arg flag for output filename
-    command.push_str(&output_image_filename);
+    command.push(' '); // NB: no arg flag for output filename
+    command.push_str(output_image_filename);
 
     info!("Command: {:?}", command);
 

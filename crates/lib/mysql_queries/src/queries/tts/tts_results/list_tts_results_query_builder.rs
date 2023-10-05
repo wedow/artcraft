@@ -241,7 +241,7 @@ LEFT OUTER JOIN users
 
     let mut query = "".to_string();
 
-    if let Some(offset) = self.offset {
+    if let Some(_offset) = self.offset {
       if !first_predicate_added {
         query.push_str(" WHERE");
         first_predicate_added = true;
@@ -257,18 +257,16 @@ LEFT OUTER JOIN users
         } else {
           query.push_str(" tts_results.id > ?");
         }
+      } else if self.cursor_is_reversed {
+        // NB: We're searching backwards.
+        query.push_str(" tts_results.id > ?");
+        sort_ascending = !sort_ascending;
       } else {
-        if self.cursor_is_reversed {
-          // NB: We're searching backwards.
-          query.push_str(" tts_results.id > ?");
-          sort_ascending = !sort_ascending;
-        } else {
-          query.push_str(" tts_results.id < ?");
-        }
+        query.push_str(" tts_results.id < ?");
       }
     }
 
-    if let Some(username) = self.scope_creator_username.as_deref() {
+    if let Some(_username) = self.scope_creator_username.as_deref() {
       if !first_predicate_added {
         query.push_str(" WHERE users.username = ?");
         first_predicate_added = true;

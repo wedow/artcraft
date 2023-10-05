@@ -41,7 +41,7 @@ impl<S, B> Service<ServiceRequest> for BannedIpFilterMiddleware<S>
     // NB: Fail open.
     // We don't want our service to explode because we can't read bans.
     let is_banned = self.ip_ban_list
-        .contains_ip_address(&ip_address)
+        .contains_ip_address(ip_address)
         .unwrap_or(false);
 
     if is_banned {

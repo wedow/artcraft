@@ -5,14 +5,13 @@ use regex::Regex;
 
 /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language
 static ACCEPT_LANGUAGE_QUALITY_FACTOR_REGEX : Lazy<Regex> = Lazy::new(|| {
-  Regex::new(r#";q=\d+\.\d+"#).expect("should be valid regex")
+  Regex::new(r";q=\d+\.\d+").expect("should be valid regex")
 });
 
 /// Parse out accept languages
 /// Does not error so that the endpoint won't degrade
 pub fn parse_accept_language(accept_languages_header: &str) -> Vec<LanguageTag> {
-  let unparsed_tags = accept_languages_header.split(",")
-      .into_iter()
+  let unparsed_tags = accept_languages_header.split(',')
       .map(|tag| tag.trim())
       .map(|tag| ACCEPT_LANGUAGE_QUALITY_FACTOR_REGEX.replace(tag, ""))
       .map(|tag| tag.to_string())

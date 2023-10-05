@@ -33,7 +33,7 @@ impl Span {
         Span {
             id: id.to_string(),
             trace_id: trace_id.to_string(),
-            timestamp: timestamp,
+            timestamp,
             attributes: HashMap::new(),
         }
     }

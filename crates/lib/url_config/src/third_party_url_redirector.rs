@@ -48,10 +48,10 @@ impl ThirdPartyUrlRedirector {
             (ServerEnvironment::Development, "api.dev.storyteller.ai") => "dev.storyteller.ai",
             (ServerEnvironment::Development, hostname ) => {
                 // Handle localhost with ports.
-                let parts = hostname.split(":")
+                let parts = hostname.split(':')
                     .collect::<Vec<&str>>();
 
-                let maybe_host = parts.get(0).map(|s| *s);
+                let maybe_host = parts.first().copied();
                 let maybe_port = parts
                     .get(1)
                     .map(|p| u32::from_str(p))

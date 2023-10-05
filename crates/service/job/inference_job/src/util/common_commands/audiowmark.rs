@@ -43,11 +43,11 @@ where P: AsRef<Path> {
             if out.status.success() {
                 Ok(
                     u128::from_str_radix(String::from_utf8(out.stdout)
-                        .map_err(|e| io::Error::new(io::ErrorKind::Other, "audiowmark output parse failed"))?
+                        .map_err(|_e| io::Error::new(io::ErrorKind::Other, "audiowmark output parse failed"))?
                         .split_whitespace().take(3).collect::<Vec<&str>>().get(2)
                             .ok_or(io::Error::new(io::ErrorKind::Other, "audiowmark output didn't match expected format"))?
                     , 16)
-                    .map_err(|e| io::Error::new(io::ErrorKind::Other, "audiowmark output parse failed"))?
+                    .map_err(|_e| io::Error::new(io::ErrorKind::Other, "audiowmark output parse failed"))?
                     .to_be_bytes()
                 )
             }

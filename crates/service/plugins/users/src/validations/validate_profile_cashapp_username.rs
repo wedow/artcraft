@@ -7,7 +7,7 @@ pub fn validate_profile_cashapp_username(username: &str) -> Result<(), String> {
     };
   }
 
-  if username.starts_with("$") {
+  if username.starts_with('$') {
     if username.len() < 2 {
       return Err("cashapp username is too short".to_string());
     }
@@ -15,7 +15,7 @@ pub fn validate_profile_cashapp_username(username: &str) -> Result<(), String> {
       return Err("cashapp username is too long".to_string());
     }
   } else {
-    if username.len() < 1 {
+    if username.is_empty() {
       return Err("cashapp username is too short".to_string());
     }
     if username.len() > 20 {
@@ -32,7 +32,7 @@ pub fn validate_profile_cashapp_username(username: &str) -> Result<(), String> {
 
 /// Remove the leading '$' for consistency and better internal use.
 pub fn normalize_cashapp_username_for_storage(username: &str) -> String {
-  username.replace("$", "")
+  username.replace('$', "")
 }
 
 #[cfg(test)]

@@ -148,7 +148,7 @@ pub async fn mark_tts_upload_job_failure(
     next_status = "dead";
   }
 
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE tts_model_upload_jobs
 SET
@@ -176,7 +176,7 @@ pub async fn mark_tts_upload_job_done(
 {
   let status = if success { "complete_success" } else { "complete_failure" };
 
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE tts_model_upload_jobs
 SET

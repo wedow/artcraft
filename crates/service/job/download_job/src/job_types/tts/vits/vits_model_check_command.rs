@@ -76,7 +76,7 @@ impl VitsModelCheckCommand {
     if let Some(venv_command) = self.maybe_virtual_env_activation_command.as_deref() {
       command.push_str(" && ");
       command.push_str(venv_command);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     let python_binary = self.maybe_override_python_interpreter
@@ -85,7 +85,7 @@ impl VitsModelCheckCommand {
 
     command.push_str(" && ");
     command.push_str(python_binary);
-    command.push_str(" ");
+    command.push(' ');
     command.push_str(&path_to_string(&self.check_script_name));
 
     // ===== Begin Python Args =====
@@ -108,9 +108,9 @@ impl VitsModelCheckCommand {
     command.push_str(&path_to_string(device));
 
     command.push_str(" --test-string ");
-    command.push_str("'");
+    command.push('\'');
     command.push_str(&path_to_string(args.test_string));
-    command.push_str("'");
+    command.push('\'');
 
     // ===== End Python Args =====
 

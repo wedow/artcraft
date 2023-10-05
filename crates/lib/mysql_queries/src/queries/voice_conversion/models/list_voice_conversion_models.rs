@@ -70,7 +70,7 @@ pub async fn list_voice_conversion_models_with_connection(
     Ok(models) => models,
     Err(err) => {
       match err {
-        RowNotFound => {
+        _RowNotFound => {
           return Ok(Vec::new());
         },
         _ => {

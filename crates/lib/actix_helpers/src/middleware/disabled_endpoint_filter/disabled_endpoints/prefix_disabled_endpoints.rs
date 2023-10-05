@@ -29,7 +29,7 @@ impl PrefixDisabledEndpoints {
     let lines = reader.lines()
         .filter_map(|line| line.ok())
         .map(|line| line.trim().to_string())
-        .filter(|line| !(line.starts_with("#") || line.is_empty()))
+        .filter(|line| !(line.starts_with('#') || line.is_empty()))
         .collect::<HashSet<String>>();
 
     Ok(Self::from_set(lines))
@@ -60,18 +60,18 @@ pub mod tests {
     endpoints.add_endpoint("/this/is/a/test".to_string());
 
     // Disabled
-    assert_eq!(endpoints.endpoint_is_disabled("/foo"), true);
-    assert_eq!(endpoints.endpoint_is_disabled("/this/is/a/test"), true);
+    assert!(endpoints.endpoint_is_disabled("/foo"));
+    assert!(endpoints.endpoint_is_disabled("/this/is/a/test"));
 
     // Also disabled due to "starts with"
-    assert_eq!(endpoints.endpoint_is_disabled("/foo/"), true);
-    assert_eq!(endpoints.endpoint_is_disabled("/foo/bar"), true);
-    assert_eq!(endpoints.endpoint_is_disabled("/this/is/a/test/again"), true);
+    assert!(endpoints.endpoint_is_disabled("/foo/"));
+    assert!(endpoints.endpoint_is_disabled("/foo/bar"));
+    assert!(endpoints.endpoint_is_disabled("/this/is/a/test/again"));
 
     // Not disabled
-    assert_eq!(endpoints.endpoint_is_disabled("/"), false);
-    assert_eq!(endpoints.endpoint_is_disabled("/bar"), false);
-    assert_eq!(endpoints.endpoint_is_disabled("/this/is/not/a/test"), false);
+    assert!(!endpoints.endpoint_is_disabled("/"));
+    assert!(!endpoints.endpoint_is_disabled("/bar"));
+    assert!(!endpoints.endpoint_is_disabled("/this/is/not/a/test"));
 
     // Metadata
     assert_eq!(endpoints.len(), 2);

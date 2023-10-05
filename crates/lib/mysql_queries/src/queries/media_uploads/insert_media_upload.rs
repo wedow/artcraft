@@ -50,7 +50,7 @@ pub async fn insert_media_upload(args: Args<'_>) -> AnyhowResult<(MediaUploadTok
 
   let mut transaction = args.mysql_pool.begin().await?;
 
-  if let Some(creator_user_token) = args.maybe_creator_user_token.as_deref() {
+  if let Some(creator_user_token) = args.maybe_creator_user_token {
     let query_result = sqlx::query!(
         r#"
 INSERT INTO media_upload_synthetic_ids

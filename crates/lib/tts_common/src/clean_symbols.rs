@@ -393,7 +393,7 @@ mod tests {
 
   #[test]
   pub fn most_frequent_failures_5k_usages() {
-    assert_converted("​", " "); // b'\\u200b' 6019
+    assert_converted("\u{200B}", " "); // b'\\u200b' 6019
     assert_converted("ğ", "g"); // b'\\u011f' 6103
     assert_converted("–", "-"); // b'\\u2013' 6172
     assert_converted("ì", "i"); // b'\xec' 6209

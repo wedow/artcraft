@@ -58,7 +58,7 @@ impl PretrainedHubertModel {
     bucket_client.download_file_to_disk(&self.cloud_bucket_path, &temp_path)
         .await
         .map_err(|e| {
-          safe_delete_temp_directory(&temp_dir);
+          safe_delete_temp_directory(temp_dir);
           anyhow!("couldn't download cloud object to disk: {:?}", e)
         })?;
 
@@ -68,7 +68,7 @@ impl PretrainedHubertModel {
 
     std::fs::rename(&temp_path, &self.filesystem_path)
         .map_err(|e| {
-          safe_delete_temp_directory(&temp_dir);
+          safe_delete_temp_directory(temp_dir);
           anyhow!("couldn't rename disk files: {:?}", e)
         })?;
 

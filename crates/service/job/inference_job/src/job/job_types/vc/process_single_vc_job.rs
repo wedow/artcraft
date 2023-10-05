@@ -57,7 +57,7 @@ pub async fn process_single_vc_job(job_dependencies: &JobDependencies, job: &Ava
 
   let maybe_media_upload_token = job.maybe_input_source_token
       .as_deref()
-      .map(|token| MediaUploadToken::new_from_str(token));
+      .map(MediaUploadToken::new_from_str);
 
   let media_upload_token = match maybe_media_upload_token {
     None => return Err(ProcessSingleJobError::Other(anyhow!("no associated media upload for vc job: {:?}", job.inference_job_token))),

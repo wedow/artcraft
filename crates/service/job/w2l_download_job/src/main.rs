@@ -585,7 +585,7 @@ async fn process_job(downloader: &Downloader, job: &W2lTemplateUploadJobRecord) 
         "image/webp").await?;
     }
 
-    safe_delete_temp_file(&image_preview_filename);
+    safe_delete_temp_file(image_preview_filename);
   }
 
   // TODO: Fix this ugh.
@@ -604,7 +604,7 @@ async fn process_job(downloader: &Downloader, job: &W2lTemplateUploadJobRecord) 
         "image/webp").await?;
     }
 
-    safe_delete_temp_file(&video_preview_filename);
+    safe_delete_temp_file(video_preview_filename);
   }
 
   // ==================== DELETE DOWNLOADED FILE ==================== //

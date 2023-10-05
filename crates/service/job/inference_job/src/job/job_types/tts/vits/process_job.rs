@@ -89,17 +89,17 @@ pub async fn process_job(args: VitsProcessJobArgs<'_>) -> Result<JobSuccessResul
 
   // NB: TempDir exists until it goes out of scope, at which point it should delete from filesystem.
   let temp_dir = TempDir::new(&temp_dir)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
   let text_input_fs_path = temp_dir.path().join("inference_input.txt");
 
   std::fs::write(&text_input_fs_path, &cleaned_inference_text)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
   // ==================== SETUP FOR INFERENCE ==================== //
 
   job_progress_reporter.log_status("running inference")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let output_audio_fs_path = temp_dir.path().join("output.wav");
   let output_metadata_fs_path = temp_dir.path().join("metadata.json");
@@ -140,19 +140,19 @@ pub async fn process_job(args: VitsProcessJobArgs<'_>) -> Result<JobSuccessResul
 
   info!("Checking that output files exist...");
 
-  check_file_exists(&output_audio_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
-  check_file_exists(&output_metadata_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
+  check_file_exists(&output_audio_fs_path).map_err(ProcessSingleJobError::Other)?;
+  check_file_exists(&output_metadata_fs_path).map_err(ProcessSingleJobError::Other)?;
   //check_file_exists(&output_spectrogram_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
 
   let file_metadata = read_metadata_file(&output_metadata_fs_path)
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   safe_delete_temp_file(&output_metadata_fs_path);
 
   // ==================== UPLOAD AUDIO TO BUCKET ==================== //
 
   job_progress_reporter.log_status("uploading result")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let audio_result_object_path = args.job_dependencies.bucket_path_unifier.tts_inference_wav_audio_output_path(
     &job.uuid_idempotency_token); // TODO: Don't use this!
@@ -166,7 +166,7 @@ pub async fn process_job(args: VitsProcessJobArgs<'_>) -> Result<JobSuccessResul
     &output_audio_fs_path,
     "audio/wav")
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   safe_delete_temp_file(&output_audio_fs_path);
 
@@ -196,7 +196,7 @@ pub async fn process_job(args: VitsProcessJobArgs<'_>) -> Result<JobSuccessResul
   // ==================== SAVE RECORDS ==================== //
 
   let text_hash = sha256_hash_string(&cleaned_inference_text)
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Saving tts inference record...");
 
@@ -206,7 +206,7 @@ pub async fn process_job(args: VitsProcessJobArgs<'_>) -> Result<JobSuccessResul
 
   let (id, inference_result_token) = insert_tts_result(
     &args.job_dependencies.mysql_pool,
-    JobType::GenericInferenceJob(&job),
+    JobType::GenericInferenceJob(job),
     &text_hash,
     NO_PRETRAINED_VOCODER,
     &audio_result_object_path,
@@ -217,7 +217,7 @@ pub async fn process_job(args: VitsProcessJobArgs<'_>) -> Result<JobSuccessResul
     &args.job_dependencies.container.hostname,
     args.job_dependencies.worker_details.is_debug_worker)
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("TTS Done. Original text was: {:?}", &job.maybe_raw_inference_text);
 
@@ -232,7 +232,7 @@ pub async fn process_job(args: VitsProcessJobArgs<'_>) -> Result<JobSuccessResul
       })?;
 
   job_progress_reporter.log_status("done")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Job {:?} complete success! Downloaded, ran inference, and uploaded. Saved model record: {}, Result Token: {}",
         job.id, id, &inference_result_token);

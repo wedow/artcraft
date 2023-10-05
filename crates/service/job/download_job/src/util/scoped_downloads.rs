@@ -52,7 +52,7 @@ impl ScopedDownloads {
 
 pub fn parse_download_types(comma_separated_types: &str) -> AnyhowResult<BTreeSet<GenericDownloadType>> {
   let scoped_types = comma_separated_types.trim()
-      .split(",")
+      .split(',')
       .map(|val| val.to_lowercase())
       .collect::<Vec<String>>();
 
@@ -60,7 +60,7 @@ pub fn parse_download_types(comma_separated_types: &str) -> AnyhowResult<BTreeSe
 
   for t in scoped_types.into_iter() {
     let model_type = GenericDownloadType::from_str(&t)
-        .map_err(|err| anyhow!(
+        .map_err(|_err| anyhow!(
           "Invalid model type: {:?}; should include only items from: {:?}",
           t,
           GenericDownloadType::all_variants()))?;
@@ -92,10 +92,10 @@ mod tests {
       GenericDownloadType::Vits,
     ]));
 
-    assert_eq!(true, scoping.can_run_job(GenericDownloadType::RvcV2));
-    assert_eq!(true, scoping.can_run_job(GenericDownloadType::Vits));
+    assert!(scoping.can_run_job(GenericDownloadType::RvcV2));
+    assert!(scoping.can_run_job(GenericDownloadType::Vits));
 
-    assert_eq!(false, scoping.can_run_job(GenericDownloadType::SoVitsSvc));
-    assert_eq!(false, scoping.can_run_job(GenericDownloadType::Tacotron2));
+    assert!(!scoping.can_run_job(GenericDownloadType::SoVitsSvc));
+    assert!(!scoping.can_run_job(GenericDownloadType::Tacotron2));
   }
 }

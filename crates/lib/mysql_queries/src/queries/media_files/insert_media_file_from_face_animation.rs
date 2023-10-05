@@ -60,9 +60,9 @@ pub async fn insert_media_file_from_face_animation(
     maybe_creator_category_synthetic_id = Some(next_lipsync_id);
   }
 
-  let vc_model_token = args.job.maybe_model_token.as_deref();
-  let creator_ip_address = args.job.creator_ip_address.as_str();
-  let creator_set_visibility = args.job.creator_set_visibility.clone();
+  let _vc_model_token = args.job.maybe_model_token.as_deref();
+  let _creator_ip_address = args.job.creator_ip_address.as_str();
+  let _creator_set_visibility = args.job.creator_set_visibility;
 
   const ORIGIN_CATEGORY : MediaFileOriginCategory = MediaFileOriginCategory::Inference;
   const ORIGIN_MODEL_TYPE : MediaFileOriginModelType = MediaFileOriginModelType::SadTalker;
@@ -127,7 +127,9 @@ SET
         .execute(&mut transaction)
         .await;
 
-    let record_id = match query_result {
+    
+
+    match query_result {
       Ok(res) => {
         res.last_insert_id()
       },
@@ -136,9 +138,7 @@ SET
         //transaction.rollback().await?;
         return Err(anyhow!("Mysql error: {:?}", err));
       }
-    };
-
-    record_id
+    }
   };
 
   transaction.commit().await?;

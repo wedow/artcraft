@@ -91,7 +91,7 @@ pub async fn login_handler(
 {
   let check_username_or_email = request.username_or_email.to_lowercase();
 
-  let maybe_user = if check_username_or_email.contains("@") {
+  let maybe_user = if check_username_or_email.contains('@') {
     lookup_user_for_login_by_email(&check_username_or_email, &mysql_pool).await
   } else {
     lookup_user_for_login_by_username(&check_username_or_email, &mysql_pool).await

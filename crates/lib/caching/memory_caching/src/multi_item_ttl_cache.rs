@@ -25,7 +25,7 @@ impl <K: Ord + Clone, V: Clone + ?Sized> MultiItemTtlCache<K, V> {
     let maybe_copy = match self.cache.lock() {
       Err(e) => bail!("could not unlock mutex to read: {:?}", e),
       Ok(cache) => {
-        cache.peek(&key).map(|inner| inner.clone())
+        cache.peek(&key).cloned()
       },
     };
     Ok(maybe_copy)

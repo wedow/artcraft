@@ -42,7 +42,7 @@ pub fn read_from_filename_and_paths<P: AsRef<Path>, Q: AsRef<Path>>(filename: P,
 /// Returns okay if no file was read, or an error if in attempting to read a file there was an error.
 /// Returns boolean reflecting whether a file was read.
 pub fn maybe_read_from_filename_and_paths<P: AsRef<Path>, Q: AsRef<Path>>(filename: P, paths: &[Q]) -> AnyhowResult<bool> {
-  Ok(do_read_from_filename_and_paths(filename, paths)?)
+  do_read_from_filename_and_paths(filename, paths)
 }
 
 pub fn do_read_from_filename_and_paths<P: AsRef<Path>, Q: AsRef<Path>>(filename: P, paths: &[Q]) -> AnyhowResult<bool> {

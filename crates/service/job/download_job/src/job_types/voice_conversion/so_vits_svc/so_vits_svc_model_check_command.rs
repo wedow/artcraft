@@ -165,7 +165,7 @@ impl SoVitsSvcModelCheckCommand {
     if let Some(venv_command) = self.maybe_virtual_env_activation_command.as_deref() {
       command.push_str(" && ");
       command.push_str(venv_command);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     // NB: We can't use `onnx` for model integrity checking (that might take long anyway), so
@@ -179,7 +179,7 @@ impl SoVitsSvcModelCheckCommand {
       }
       ExecutableOrCommand::Command(ref cmd) => {
         command.push_str(cmd);
-        command.push_str(" ");
+        command.push(' ');
       }
     }
 
@@ -218,9 +218,9 @@ impl SoVitsSvcModelCheckCommand {
     };
 
     // NB: Input wav path is not a named arg
-    command.push_str(" ");
+    command.push(' ');
     command.push_str(&path_to_string(input_path));
-    command.push_str(" ");
+    command.push(' ');
 
     // ===== End Python Args =====
 

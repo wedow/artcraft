@@ -23,13 +23,11 @@ pub struct JobArgs<'a> {
 pub fn validate_job(job: &AvailableInferenceJob) -> Result<JobArgs, ProcessSingleJobError> {
   let inference_args = job.maybe_inference_args
       .as_ref()
-      .map(|args| args.args.as_ref())
-      .flatten();
+      .and_then(|args| args.args.as_ref());
 
   let inference_category = job.maybe_inference_args
       .as_ref()
-      .map(|args| args.inference_category)
-      .flatten();
+      .and_then(|args| args.inference_category);
 
   match inference_category {
     Some(InferenceCategoryAbbreviated::LipsyncAnimation) => {}, // Valid
@@ -86,8 +84,8 @@ pub fn validate_job(job: &AvailableInferenceJob) -> Result<JobArgs, ProcessSingl
     Some(FaceEnhancer::R) => Some("RestoreFormer".to_string()),
   };
 
-  let mut width = inference_args.maybe_resize_width;
-  let mut height = inference_args.maybe_resize_height;
+  let width = inference_args.maybe_resize_width;
+  let height = inference_args.maybe_resize_height;
 
   Ok(JobArgs {
     audio_source,

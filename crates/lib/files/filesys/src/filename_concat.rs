@@ -27,7 +27,7 @@ mod tests {
   use crate::filename_concat::filename_concat;
 
   // Layout: Base, Suffix, Expected Result
-  const TEST_CASES : [(&'static str, &'static str, &'static str); 11] = [
+  const TEST_CASES : [(&str, &str, &str); 11] = [
     // Absolute
     ("/", "foo", "/foo"),
     ("/usr/bin", "baz", "/usr/binbaz"),

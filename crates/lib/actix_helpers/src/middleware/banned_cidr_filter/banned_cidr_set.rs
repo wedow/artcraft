@@ -94,15 +94,15 @@ mod tests {
     ban_set.add_cidr(to_cidr("127.0.0.0/24")).expect("cdr add failed");
 
     // Banned
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.0"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.1"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.100"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.255"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.0"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.1"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.100"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.255"))?);
 
     // Not banned
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("127.0.1.1"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("4.4.4.4"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("1.2.3.4"))?);
+    assert!(!(ban_set.ip_is_banned(to_ip("127.0.1.1"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("4.4.4.4"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("1.2.3.4"))?));
 
     // Stats
     assert_eq!(1, ban_set.total_cidr_count()?);
@@ -118,22 +118,22 @@ mod tests {
     ban_set.add_cidr(to_cidr("127.0.0.0/8")).expect("cdr add failed");
 
     // Banned /24
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.0"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.1"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.100"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.255"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.0"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.1"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.100"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.255"))?);
 
     // Banned /8
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.1.0.0"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.100.0.1"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.127.0.100"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.255.0.255"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.1.0.0"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.100.0.1"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.127.0.100"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.255.0.255"))?);
 
     // Not banned
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("126.0.1.1"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("128.0.1.1"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("4.4.4.4"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("1.2.3.4"))?);
+    assert!(!(ban_set.ip_is_banned(to_ip("126.0.1.1"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("128.0.1.1"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("4.4.4.4"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("1.2.3.4"))?));
 
     // Stats
     assert_eq!(1, ban_set.total_cidr_count()?);
@@ -150,23 +150,23 @@ mod tests {
     ban_set.add_cidr(to_cidr("192.168.1.0/24")).expect("cdr add failed");
 
     // Banned (CIDR 1)
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.0"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.1"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.100"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("127.0.0.255"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.0"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.1"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.100"))?);
+    assert!(ban_set.ip_is_banned(to_ip("127.0.0.255"))?);
 
     // Banned (CIDR 2)
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("192.168.1.0"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("192.168.1.1"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("192.168.1.100"))?);
-    assert_eq!(true, ban_set.ip_is_banned(to_ip("192.168.1.255"))?);
+    assert!(ban_set.ip_is_banned(to_ip("192.168.1.0"))?);
+    assert!(ban_set.ip_is_banned(to_ip("192.168.1.1"))?);
+    assert!(ban_set.ip_is_banned(to_ip("192.168.1.100"))?);
+    assert!(ban_set.ip_is_banned(to_ip("192.168.1.255"))?);
 
     // Not banned
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("127.0.1.1"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("192.168.0.1"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("192.168.2.1"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("4.4.4.4"))?);
-    assert_eq!(false, ban_set.ip_is_banned(to_ip("1.2.3.4"))?);
+    assert!(!(ban_set.ip_is_banned(to_ip("127.0.1.1"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("192.168.0.1"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("192.168.2.1"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("4.4.4.4"))?));
+    assert!(!(ban_set.ip_is_banned(to_ip("1.2.3.4"))?));
 
     // Stats
     assert_eq!(2, ban_set.total_cidr_count()?);

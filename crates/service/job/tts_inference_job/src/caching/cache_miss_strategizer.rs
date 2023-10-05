@@ -44,14 +44,14 @@ pub struct CacheMissStrategizer<T: Hash + Eq> {
 impl CacheMissLog {
   fn new(first_miss: DateTime<Utc>) -> Self {
     Self {
-      first_miss: first_miss.clone(),
+      first_miss,
       most_recent_miss: first_miss,
     }
   }
 
   fn with_most_recent_miss(&self, most_recent_miss: DateTime<Utc>) -> Self {
     Self {
-      first_miss: self.first_miss.clone(),
+      first_miss: self.first_miss,
       most_recent_miss,
     }
   }
@@ -63,7 +63,7 @@ impl <T: Hash + Eq> CacheMissStrategizer<T> {
       max_cold_duration,
       forget_duration,
       cache_miss_log: HashMap::new(),
-      get_time_function: Box::new(|| Utc::now()),
+      get_time_function: Box::new(Utc::now),
     }
   }
 
@@ -86,8 +86,8 @@ impl <T: Hash + Eq> CacheMissStrategizer<T> {
     let now : DateTime<Utc> = (self.get_time_function)();
 
     if let Some((_id, cache_miss_log)) = self.cache_miss_log.get_key_value(&id) {
-      let admit_duration = now.signed_duration_since(cache_miss_log.first_miss.clone());
-      let forget_duration = now.signed_duration_since(cache_miss_log.most_recent_miss.clone());
+      let admit_duration = now.signed_duration_since(cache_miss_log.first_miss);
+      let forget_duration = now.signed_duration_since(cache_miss_log.most_recent_miss);
 
       if forget_duration > self.forget_duration {
         // Too much time elapsed.

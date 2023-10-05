@@ -135,7 +135,7 @@ impl RvcV2ModelCheckCommand {
     if let Some(venv_command) = self.maybe_virtual_env_activation_command.as_deref() {
       command.push_str(" && ");
       command.push_str(venv_command);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     command.push_str(" && ");
@@ -146,7 +146,7 @@ impl RvcV2ModelCheckCommand {
       }
       ExecutableOrCommand::Command(ref cmd) => {
         command.push_str(cmd);
-        command.push_str(" ");
+        command.push(' ');
       }
     }
 

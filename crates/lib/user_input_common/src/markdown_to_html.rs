@@ -5,11 +5,11 @@ pub fn markdown_to_html(markdown_input: &str) -> String {
   // Let's prevent that nonsense.
   // https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
   let markdown_input = markdown_input
-      .replace("&", "&amp;")
-      .replace("<", "&lt;")
-      .replace(">", "&gt;")
-      .replace("\"", "&quot;")
-      .replace("'", "&#x27;"); // NB: &apos; is not in the HTML spec
+      .replace('&', "&amp;")
+      .replace('<', "&lt;")
+      .replace('>', "&gt;")
+      .replace('\"', "&quot;")
+      .replace('\'', "&#x27;"); // NB: &apos; is not in the HTML spec
 
   let mut options = Options::empty();
   options.insert(Options::ENABLE_STRIKETHROUGH);

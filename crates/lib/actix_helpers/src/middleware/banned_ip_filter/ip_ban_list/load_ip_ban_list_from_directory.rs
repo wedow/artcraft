@@ -28,7 +28,7 @@ pub fn load_ip_ban_list_from_directory<P: AsRef<Path>>(path: P) -> AnyhowResult<
 fn ignore_path(path: &Path) -> bool {
   // NB: Path is quoted for some reason and fails ends_with() etc., so we convert it to a string.
   let test_path = path.to_string_lossy();
-  test_path.ends_with("~")
+  test_path.ends_with('~')
 }
 
 #[cfg(test)]
@@ -47,11 +47,11 @@ mod tests {
   #[test]
   fn test_ignore_paths() {
     // Good
-    assert_eq!(false, ignore_path(Path::new("file.txt")));
-    assert_eq!(false, ignore_path(Path::new("file")));
+    assert!(!ignore_path(Path::new("file.txt")));
+    assert!(!ignore_path(Path::new("file")));
 
     // Vim files, private files, etc.
-    assert_eq!(true, ignore_path(Path::new("file.txt~")));
+    assert!(ignore_path(Path::new("file.txt~")));
   }
 
   #[test]
@@ -60,11 +60,11 @@ mod tests {
     let ip_set = load_ip_ban_list_from_directory(directory).unwrap();
 
     // Comments are not included
-    assert_eq!(ip_set.contains_ip_address("# this is test data").unwrap(), false);
+    assert!(!ip_set.contains_ip_address("# this is test data").unwrap());
 
     // IP addresses in both files are
-    assert_eq!(ip_set.contains_ip_address("127.0.0.1").unwrap(), true);
-    assert_eq!(ip_set.contains_ip_address("192.168.0.1").unwrap(), true);
+    assert!(ip_set.contains_ip_address("127.0.0.1").unwrap());
+    assert!(ip_set.contains_ip_address("192.168.0.1").unwrap());
 
     // All five IPs were loaded
     assert_eq!(ip_set.total_ip_address_count().unwrap(), 5);

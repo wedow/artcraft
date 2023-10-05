@@ -36,7 +36,7 @@ pub async fn download_audio_file(
   let bucket_object_path;
 
   match audio_source {
-    LipsyncAnimationAudioSource::F(media_file_token) => {
+    LipsyncAnimationAudioSource::F(_media_file_token) => {
       // TODO(bt, 2023-09-08): Implement
       return Err(ProcessSingleJobError::NotYetImplemented)
     }
@@ -63,7 +63,7 @@ pub async fn download_audio_file(
       let media_upload_bucket_path = MediaUploadOriginalFilePath::from_object_hash(&media_upload_result.public_bucket_directory_hash);
       bucket_object_path = media_upload_bucket_path.to_full_object_pathbuf();
     }
-    LipsyncAnimationAudioSource::T(tts_result_token) => {
+    LipsyncAnimationAudioSource::T(_tts_result_token) => {
       // TODO(bt, 2023-09-08): Implement
       return Err(ProcessSingleJobError::NotYetImplemented)
     }
@@ -71,7 +71,7 @@ pub async fn download_audio_file(
       let voice_conversion_result = get_voice_conversion_result_for_inference(
         voice_conversion_result_token,
         false,
-        &mysql_pool,
+        mysql_pool,
       ).await;
 
       let voice_conversion_result = match voice_conversion_result {
@@ -102,7 +102,7 @@ pub async fn download_audio_file(
     job_progress_reporter,
     "downloading",
     job.id.0,
-    &temp_dir_creator,
+    temp_dir_creator,
   ).await?;
 
   Ok(AudioFile {

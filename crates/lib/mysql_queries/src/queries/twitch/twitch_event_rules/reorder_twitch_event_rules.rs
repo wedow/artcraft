@@ -57,8 +57,7 @@ pub async fn reorder_twitch_event_rules(
 //    ip_address_last_update=VALUES(ip_address_last_update)
 //        "#, query_inner);
 
-  let rule_tokens = rule_token_to_order_map.iter()
-      .map(|(token, _position)|  {
+  let rule_tokens = rule_token_to_order_map.keys().map(|token| {
         format!("'{}'", token)
       })
       .collect::<Vec<String>>()
@@ -71,8 +70,7 @@ pub async fn reorder_twitch_event_rules(
       .collect::<Vec<String>>()
       .join("\n");
 
-  let query_inner_ip_addresses = rule_token_to_order_map.iter()
-      .map(|(token, position)|  {
+  let query_inner_ip_addresses = rule_token_to_order_map.keys().map(|token| {
         format!("when token = '{}' then '{}'", token.as_str(), ip_address_update)
       })
       .collect::<Vec<String>>()
@@ -93,7 +91,7 @@ SET
   "#, query_inner_positions, query_inner_ip_addresses, user_token, rule_tokens);
 
   // NB: This, unfortunately, cannot be statically checked.
-  let mut query = sqlx::query(&query);
+  let query = sqlx::query(&query);
 
   let result = query.execute(mysql_pool).await;
 

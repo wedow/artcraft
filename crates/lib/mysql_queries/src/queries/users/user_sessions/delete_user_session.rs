@@ -3,7 +3,7 @@ use sqlx::MySqlPool;
 use errors::AnyhowResult;
 
 pub async fn delete_user_session(session_token: &str, mysql_pool: &MySqlPool) -> AnyhowResult<()> {
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE user_sessions
 SET deleted_at = CURRENT_TIMESTAMP()

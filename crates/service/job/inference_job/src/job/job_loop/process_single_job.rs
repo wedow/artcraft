@@ -168,7 +168,7 @@ async fn do_process_single_job(
 
   // ==================== HANDLE DIFFERENT INFERENCE TYPES ==================== //
 
-  let mut maybe_result_entity : Option<ResultEntity>;
+  let mut _maybe_result_entity : Option<ResultEntity>;
 
   let job_success_result = match job.inference_category {
     InferenceCategory::LipsyncAnimation => {

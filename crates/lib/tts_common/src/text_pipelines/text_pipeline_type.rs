@@ -93,7 +93,7 @@ impl TextPipelineType {
       TextPipelineType::SpanishV2 => TextPipelineType::LegacyFakeYou,
       TextPipelineType::SyntheticLegacyFakeYou2 => TextPipelineType::LegacyFakeYou,
       // Maintain original type for everything else
-      _ => self.clone(),
+      _ => *self,
     }
   }
 
@@ -105,7 +105,7 @@ impl TextPipelineType {
       // with the mysterious "legacy_fakeyou_2".
       TextPipelineType::SpanishV2 => TextPipelineType::SyntheticLegacyFakeYou2,
       // Maintain original type for everything else
-      _ => self.clone(),
+      _ => *self,
     }
   }
 
@@ -116,7 +116,7 @@ impl TextPipelineType {
       //  and it should never be saved to the DB.
       TextPipelineType::SyntheticLegacyFakeYou2 => TextPipelineType::SpanishV2,
       // Maintain original type for everything else
-      _ => self.clone(),
+      _ => *self,
     }
   }
 }

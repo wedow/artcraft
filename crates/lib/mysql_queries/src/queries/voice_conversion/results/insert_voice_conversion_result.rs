@@ -90,9 +90,9 @@ LIMIT 1
     maybe_creator_synthetic_id = Some(next_id);
   }
 
-  let vc_model_token = args.job.maybe_model_token.as_deref();
-  let creator_ip_address = args.job.creator_ip_address.as_str();
-  let creator_set_visibility = args.job.creator_set_visibility.clone();
+  let _vc_model_token = args.job.maybe_model_token.as_deref();
+  let _creator_ip_address = args.job.creator_ip_address.as_str();
+  let _creator_set_visibility = args.job.creator_set_visibility;
 
   let record_id = {
     let query_result = sqlx::query!(
@@ -149,7 +149,9 @@ SET
         .execute(&mut transaction)
         .await;
 
-    let record_id = match query_result {
+    
+
+    match query_result {
       Ok(res) => {
         res.last_insert_id()
       },
@@ -158,9 +160,7 @@ SET
         //transaction.rollback().await?;
         return Err(anyhow!("Mysql error: {:?}", err));
       }
-    };
-
-    record_id
+    }
   };
 
   transaction.commit().await?;

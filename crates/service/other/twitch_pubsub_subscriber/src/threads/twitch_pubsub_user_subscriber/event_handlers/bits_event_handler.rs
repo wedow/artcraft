@@ -51,7 +51,7 @@ impl BitsEventHandler {
     if let Some(rule) = maybe_rule {
       info!("Bits Rule matched: {}", &rule.token);
       self.handle_matched_rule(&rule, data).await?;
-      self.report_event_for_analytics(&data).await?; // Report event for analytics
+      self.report_event_for_analytics(data).await?; // Report event for analytics
     }
     Ok(())
   }
@@ -62,8 +62,8 @@ impl BitsEventHandler {
     let mut event_builder = TwitchPubsubBitsInsertBuilder::new();
     let mut event_builder = event_builder.set_sender_twitch_user_id(&user_id)
         .set_sender_twitch_username(&user_name)
-        .set_destination_channel_id(&data.channel_id.to_string())
-        .set_destination_channel_name(&data.channel_name.to_string())
+        .set_destination_channel_id(data.channel_id.as_ref())
+        .set_destination_channel_name(data.channel_name.as_ref())
         .set_bits_used(data.bits_used as u64)
         .set_total_bits_used(data.total_bits_used as u64)
         .set_is_anonymous(data.is_anonymous)
@@ -85,8 +85,8 @@ impl BitsEventHandler {
                 EventMatchPredicate::NotSet {} => false, // Not set
                 EventMatchPredicate::ChannelPointsRewardNameExactMatch { .. } => false, // Wrong type
                 EventMatchPredicate::BitsCheermoteNameExactMatch { ref cheermote_name } => {
-                  let contains_cheermote = data.chat_message.to_lowercase().contains(&cheermote_name.to_lowercase());
-                  contains_cheermote
+                  
+                  data.chat_message.to_lowercase().contains(&cheermote_name.to_lowercase())
                 },
                 EventMatchPredicate::BitsCheermotePrefixSpendThreshold { ref cheermote_prefix, minimum_bits_spent } => {
                   let contains_cheermote = data.chat_message.to_lowercase().contains(&cheermote_prefix.to_lowercase());
@@ -98,8 +98,7 @@ impl BitsEventHandler {
                   spent >= minimum_bits_spent
                 },
               }
-            })
-            .map(|rule| rule.clone());
+            }).cloned();
         Ok(maybe_rule)
       }
     };

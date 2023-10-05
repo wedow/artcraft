@@ -113,7 +113,7 @@ macro_rules! impl_model_downloader {
     }
 
     #[async_trait::async_trait]
-    impl crate::util::model_downloader::ModelDownloader for $struct_name {
+    impl $crate::util::model_downloader::ModelDownloader for $struct_name {
       fn get_model_name(&self) -> &str {
         &self.model_name
       }

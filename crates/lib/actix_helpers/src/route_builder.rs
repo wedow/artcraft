@@ -56,7 +56,7 @@ impl <T, B> RouteBuilder<T, B>
     self.app = self.app.service(
       web::resource(path)
           .route(web::get().to(handler))
-          .route(web::head().to(|| HttpResponse::Ok())) // NB: For XHR/CORS HEAD requests.
+          .route(web::head().to(HttpResponse::Ok)) // NB: For XHR/CORS HEAD requests.
     );
     self
   }
@@ -71,7 +71,7 @@ impl <T, B> RouteBuilder<T, B>
     self.app = self.app.service(
       web::resource(path)
           .route(web::post().to(handler))
-          .route(web::head().to(|| HttpResponse::Ok())) // NB: For XHR/CORS HEAD requests.
+          .route(web::head().to(HttpResponse::Ok)) // NB: For XHR/CORS HEAD requests.
     );
     self
   }

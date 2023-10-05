@@ -34,21 +34,15 @@ pub async fn theguardian_indexer() -> AnyhowResult<Vec<WebScrapingTarget>> {
     };
 
     let maybe_thumbnail_url = item.extensions.get("media")
-        .map(|media| media.get("content"))
-        .flatten()
-        .map(|extensions| extensions.get(0))
-        .flatten()
-        .map(|extension| extension.attrs.get("url"))
-        .flatten()
+        .and_then(|media| media.get("content"))
+        .and_then(|extensions| extensions.get(0))
+        .and_then(|extension| extension.attrs.get("url"))
         .map(|url| url.to_string());
 
     let maybe_image_url = item.extensions.get("media")
-        .map(|media| media.get("content"))
-        .flatten()
-        .map(|extensions| extensions.get(1))
-        .flatten()
-        .map(|extension| extension.attrs.get("url"))
-        .flatten()
+        .and_then(|media| media.get("content"))
+        .and_then(|extensions| extensions.get(1))
+        .and_then(|extension| extension.attrs.get("url"))
         .map(|url| url.to_string());
 
     targets.push(WebScrapingTarget {

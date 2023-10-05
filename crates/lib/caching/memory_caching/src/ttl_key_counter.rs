@@ -30,7 +30,7 @@ impl TtlKeyCounter {
           Ok(0)
         }
         Some(count) => {
-          let return_count = count.clone();
+          let return_count = *count;
           *count = count.saturating_add(1);
           Ok(return_count)
         }

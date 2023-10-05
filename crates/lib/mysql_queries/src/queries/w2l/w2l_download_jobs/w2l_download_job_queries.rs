@@ -154,7 +154,7 @@ pub async fn mark_w2l_template_upload_job_failure(
     next_status = "dead";
   }
 
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE w2l_template_upload_jobs
 SET
@@ -178,7 +178,7 @@ pub async fn mark_w2l_template_upload_job_permanently_dead(
   job: &W2lTemplateUploadJobRecord,
   failure_reason: &str,
 ) -> AnyhowResult<()> {
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE w2l_template_upload_jobs
 SET
@@ -205,7 +205,7 @@ pub async fn mark_w2l_template_upload_job_done(
 {
   let status = if success { "complete_success" } else { "complete_failure" };
 
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE w2l_template_upload_jobs
 SET

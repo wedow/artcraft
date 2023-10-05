@@ -202,7 +202,7 @@ pub async fn mark_w2l_inference_job_failure(
     next_status = "dead";
   }
 
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE w2l_inference_jobs
 SET
@@ -229,7 +229,7 @@ pub async fn mark_w2l_inference_job_done(
 ) -> AnyhowResult<()> {
   let status = if success { "complete_success" } else { "complete_failure" };
 
-  let query_result = sqlx::query!(
+  let _query_result = sqlx::query!(
         r#"
 UPDATE w2l_inference_jobs
 SET
@@ -370,7 +370,9 @@ SET
         .execute(&mut transaction)
         .await;
 
-    let record_id = match query_result {
+    
+
+    match query_result {
       Ok(res) => {
         res.last_insert_id()
       },
@@ -379,9 +381,7 @@ SET
         transaction.rollback().await?;
         return Err(anyhow!("Mysql error: {:?}", err));
       }
-    };
-
-    record_id
+    }
   };
 
   transaction.commit().await?;

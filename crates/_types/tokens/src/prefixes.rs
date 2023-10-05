@@ -68,7 +68,7 @@ mod tests {
         .map(|entity| entity.prefix())
         .collect::<HashSet<&'static str>>();
 
-    assert!(entities.len() > 0);
+    assert!(!entities.is_empty());
     assert_eq!(entities.len(), EntityType::COUNT);
   }
 
@@ -77,12 +77,12 @@ mod tests {
     let entities = EntityType::iter()
         .map(|entity| entity.prefix())
         .map(|prefix| prefix.to_lowercase())
-        .map(|prefix| prefix.replace("-", ""))
-        .map(|prefix| prefix.replace(":", ""))
-        .map(|prefix| prefix.replace("_", ""))
+        .map(|prefix| prefix.replace('-', ""))
+        .map(|prefix| prefix.replace(':', ""))
+        .map(|prefix| prefix.replace('_', ""))
         .collect::<HashSet<String>>();
 
-    assert!(entities.len() > 0);
+    assert!(!entities.is_empty());
     assert_eq!(entities.len(), EntityType::COUNT);
   }
 
@@ -90,7 +90,7 @@ mod tests {
   fn test_all_prefixes_end_with_separator() {
     assert!(EntityType::iter()
         .map(|entity| entity.prefix())
-        .all(|prefix| prefix.ends_with(":") || prefix.ends_with("_")));
+        .all(|prefix| prefix.ends_with(':') || prefix.ends_with('_')));
   }
 
   #[test]
@@ -101,7 +101,7 @@ mod tests {
         //  These tokens are from the AIChatBot sidecar, so asserting their validity is less important.
         continue;
       }
-      assert_eq!(prefix.len() - 1, prefix.replace(":", "").replace("_", "").len());
+      assert_eq!(prefix.len() - 1, prefix.replace(':', "").replace('_', "").len());
     }
   }
 }

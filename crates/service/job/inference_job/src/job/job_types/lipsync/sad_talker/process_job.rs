@@ -57,7 +57,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
 
     // Temporary debugging
     info!("Downloader {}", i);
-    i = i + 1;
+    i += 1;
 
     let result = downloader.download_if_not_on_filesystem(
       &args.job_dependencies.private_bucket_client,
@@ -79,13 +79,13 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
       .fs
       .scoped_temp_dir_creator_for_work
       .new_tempdir(&work_temp_dir)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
 
   // ==================== QUERY AND DOWNLOAD FILES ==================== //
 
   let audio_path = download_audio_file(
-    &job_args.audio_source,
+    job_args.audio_source,
     &args.job_dependencies.public_bucket_client,
     &mut job_progress_reporter,
     job,
@@ -97,7 +97,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
   info!("Audio file: {:?}", audio_path.filesystem_path);
 
   let image_path = download_image_file(
-    &job_args.image_source,
+    job_args.image_source,
     &args.job_dependencies.public_bucket_client,
     &mut job_progress_reporter,
     job,
@@ -121,8 +121,8 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
     if job_args.enhancer.is_some() {
       // The enhancer will double the size of the image, so we'll downsize the image by half
       // if it's enabled.
-      width = width / 2;
-      height = height / 2;
+      width /= 2;
+      height /= 2;
       info!("Enhancer will be doubling image size, so cutting frame size to {}x{}.", width, height)
     }
 
@@ -156,7 +156,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
   info!("Ready for SadTalker inference...");
 
   job_progress_reporter.log_status("running inference")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let output_video_fs_path = work_temp_dir.path().join("output.mp4");
   let output_video_fs_path_watermark = work_temp_dir.path().join("output_watermark.mp4");
@@ -167,10 +167,9 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
 
   // TODO: Limit output length for non-premium (???)
 
-  let maybe_args = job.maybe_inference_args
+  let _maybe_args = job.maybe_inference_args
       .as_ref()
-      .map(|args| args.args.as_ref())
-      .flatten();
+      .and_then(|args| args.args.as_ref());
 
   // ==================== RUN INFERENCE SCRIPT ==================== //
 
@@ -225,7 +224,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
 
   info!("Checking that output file exists: {:?} ...", output_video_fs_path);
 
-  check_file_exists(&output_video_fs_path).map_err(|e| ProcessSingleJobError::Other(e))?;
+  check_file_exists(&output_video_fs_path).map_err(ProcessSingleJobError::Other)?;
 
   // ==================== WATERMARK ==================== //
 
@@ -263,17 +262,17 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
   // ==================== CHECK ALL FILES EXIST AND GET METADATA ==================== //
 
   info!("Checking that output watermark file exists: {:?} ...", finished_file);
-  check_file_exists(&finished_file).map_err(|e| ProcessSingleJobError::Other(e))?;
+  check_file_exists(&finished_file).map_err(ProcessSingleJobError::Other)?;
 
   info!("Interrogating result file size ...");
 
   let file_size_bytes = file_size(&finished_file)
-      .map_err(|err| ProcessSingleJobError::Other(err))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Interrogating result mimetype ...");
 
   let mimetype = get_mimetype_for_file(&finished_file)
-      .map_err(|err| ProcessSingleJobError::from_io_error(err))?
+      .map_err(ProcessSingleJobError::from_io_error)?
       .map(|mime| mime.to_string())
       .ok_or(ProcessSingleJobError::Other(anyhow!("Mimetype could not be determined")))?;
 
@@ -287,7 +286,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
   // ==================== UPLOAD AUDIO TO BUCKET ==================== //
 
   job_progress_reporter.log_status("uploading result")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   let result_bucket_location = MediaFileBucketPath::generate_new();
 
@@ -302,7 +301,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
     &finished_file,
     &mimetype) // TODO: We should check the mimetype to make sure bad payloads can't get uploaded
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   // ==================== DELETE TEMP FILES ==================== //
 
@@ -319,7 +318,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
 
   let (media_file_token, id) = insert_media_file_from_face_animation(InsertArgs {
     pool: &args.job_dependencies.mysql_pool,
-    job: &job,
+    job,
     maybe_mime_type: Some(&mimetype),
     file_size_bytes,
     sha256_checksum: &file_checksum,
@@ -329,13 +328,13 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
     worker_cluster: &args.job_dependencies.container.cluster_name,
   })
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("SadTalker Done.");
 
   // TODO: Update upstream to be strongly typed
   let maybe_user_token = job.maybe_creator_user_token.as_deref()
-      .map(|token| UserToken::new_from_str(token));
+      .map(UserToken::new_from_str);
 
   args.job_dependencies.firehose_publisher.lipsync_animation_finished(
     maybe_user_token.as_ref(),
@@ -348,7 +347,7 @@ pub async fn process_job(args: SadTalkerProcessJobArgs<'_>) -> Result<JobSuccess
       })?;
 
   job_progress_reporter.log_status("done")
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Job {:?} complete success! Downloaded, ran inference, and uploaded. Saved model record: {}, Result Token: {}",
         job.id, id, &media_file_token);

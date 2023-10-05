@@ -52,7 +52,7 @@ pub async fn process_so_vits_svc_model<'a, 'b>(
   if let Err(e) = model_check_result {
     safe_delete_temp_file(&original_model_file_path);
     safe_delete_temp_file(&output_wav_path);
-    safe_delete_temp_directory(&temp_dir);
+    safe_delete_temp_directory(temp_dir);
     return Err(anyhow!("model check error: {:?}", e));
   }
 
@@ -68,7 +68,7 @@ pub async fn process_so_vits_svc_model<'a, 'b>(
 
   info!("Uploading so-vits-svc voice conversion model to GCS...");
 
-  let private_bucket_hash = sha256_hash_file(&download_filename)?;
+  let private_bucket_hash = sha256_hash_file(download_filename)?;
 
   info!("File hash: {}", private_bucket_hash);
 
@@ -82,7 +82,7 @@ pub async fn process_so_vits_svc_model<'a, 'b>(
     error!("Problem uploading original model: {:?}", err);
     safe_delete_temp_file(&original_model_file_path);
     safe_delete_temp_file(&output_wav_path);
-    safe_delete_temp_directory(&temp_dir);
+    safe_delete_temp_directory(temp_dir);
     return Err(err);
   }
 
@@ -92,7 +92,7 @@ pub async fn process_so_vits_svc_model<'a, 'b>(
   info!("Done uploading; deleting temporary files and paths...");
   safe_delete_temp_file(&original_model_file_path);
   safe_delete_temp_file(&output_wav_path);
-  safe_delete_temp_directory(&temp_dir);
+  safe_delete_temp_directory(temp_dir);
 
   // ==================== SAVE RECORDS ==================== //
 
@@ -102,7 +102,7 @@ pub async fn process_so_vits_svc_model<'a, 'b>(
     model_type: VoiceConversionModelType::SoVitsSvc,
     title: &job.title,
     original_download_url: &job.download_url,
-    original_filename: &download_filename,
+    original_filename: download_filename,
     file_size_bytes,
     creator_user_token: &job.creator_user_token,
     creator_ip_address: &job.creator_ip_address,

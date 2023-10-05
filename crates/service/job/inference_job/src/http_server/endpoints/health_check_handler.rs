@@ -95,7 +95,7 @@ pub async fn get_health_check_handler(
   };
 
   let body = serde_json::to_string(&response)
-      .map_err(|e| HealthCheckError::ServerError)?;
+      .map_err(|_e| HealthCheckError::ServerError)?;
 
   if is_healthy {
     Ok(HttpResponse::Ok()

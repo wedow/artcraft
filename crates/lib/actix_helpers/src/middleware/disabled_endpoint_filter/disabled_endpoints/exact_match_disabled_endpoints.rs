@@ -29,7 +29,7 @@ impl ExactMatchDisabledEndpoints {
     let lines = reader.lines()
         .filter_map(|line| line.ok())
         .map(|line| line.trim().to_string())
-        .filter(|line| !(line.starts_with("#") || line.is_empty()))
+        .filter(|line| !(line.starts_with('#') || line.is_empty()))
         .collect::<HashSet<String>>();
 
     Ok(Self::from_set(lines))
@@ -59,14 +59,14 @@ pub mod tests {
     endpoints.add_endpoint("/this/is/a/test".to_string());
 
     // Disabled
-    assert_eq!(endpoints.endpoint_is_disabled("/foo"), true);
-    assert_eq!(endpoints.endpoint_is_disabled("/this/is/a/test"), true);
+    assert!(endpoints.endpoint_is_disabled("/foo"));
+    assert!(endpoints.endpoint_is_disabled("/this/is/a/test"));
 
     // Not disabled
-    assert_eq!(endpoints.endpoint_is_disabled("/bar"), false);
-    assert_eq!(endpoints.endpoint_is_disabled("/foo/"), false);
-    assert_eq!(endpoints.endpoint_is_disabled("/foo/bar"), false);
-    assert_eq!(endpoints.endpoint_is_disabled("/this/is/a/test/again"), false);
+    assert!(!endpoints.endpoint_is_disabled("/bar"));
+    assert!(!endpoints.endpoint_is_disabled("/foo/"));
+    assert!(!endpoints.endpoint_is_disabled("/foo/bar"));
+    assert!(!endpoints.endpoint_is_disabled("/this/is/a/test/again"));
 
     // Stats
     assert_eq!(endpoints.len(), 2);

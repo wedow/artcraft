@@ -145,7 +145,7 @@ impl TwitchOauthTokenFinder {
       query = query.bind(twitch_username);
     }
 
-    let mut result = query.fetch_optional(mysql_pool).await;
+    let result = query.fetch_optional(mysql_pool).await;
 
     match result {
       Ok(Some(record)) => {

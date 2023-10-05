@@ -52,7 +52,7 @@ impl ScopedExecution {
 
 pub fn parse_model_types(comma_separated_types: &str) -> AnyhowResult<BTreeSet<InferenceModelType>> {
   let scoped_types = comma_separated_types.trim()
-      .split(",")
+      .split(',')
       .map(|val| val.to_lowercase())
       .collect::<Vec<String>>();
 
@@ -60,7 +60,7 @@ pub fn parse_model_types(comma_separated_types: &str) -> AnyhowResult<BTreeSet<I
 
   for t in scoped_types.into_iter() {
     let model_type = InferenceModelType::from_str(&t)
-        .map_err(|err| anyhow!(
+        .map_err(|_err| anyhow!(
           "Invalid model type: {:?}; should include only items from: {:?}",
           t,
           InferenceModelType::all_variants()))?;
@@ -92,10 +92,10 @@ mod tests {
       InferenceModelType::Vits
     ]));
 
-    assert_eq!(true, scoping.can_run_job(InferenceModelType::RvcV2));
-    assert_eq!(true, scoping.can_run_job(InferenceModelType::Vits));
+    assert!(scoping.can_run_job(InferenceModelType::RvcV2));
+    assert!(scoping.can_run_job(InferenceModelType::Vits));
 
-    assert_eq!(false, scoping.can_run_job(InferenceModelType::SoVitsSvc));
-    assert_eq!(false, scoping.can_run_job(InferenceModelType::Tacotron2));
+    assert!(!scoping.can_run_job(InferenceModelType::SoVitsSvc));
+    assert!(!scoping.can_run_job(InferenceModelType::Tacotron2));
   }
 }

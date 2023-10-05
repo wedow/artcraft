@@ -577,11 +577,11 @@ impl TwitchPubsubUserSubscriberThreadStageTwo {
         .set_model_token(model_token)
         .set_raw_inference_text(&sanitized_text);
 
-    let _r = builder.insert(&self.mysql_pool).await?;
+    builder.insert(&self.mysql_pool).await?;
 
     // TODO: Report job token to frontend
     let mut redis = self.redis_pool.get()?;
-    let redis_key = RedisKeys::twitch_tts_job_queue(&self.twitch_user_id.get_str());
+    let redis_key = RedisKeys::twitch_tts_job_queue(self.twitch_user_id.get_str());
 
     let _size : Option<u64> = redis.rpush(&redis_key, job_token)?;
     let _size : Option<u64> = redis.expire(&redis_key, STREAMER_TTS_JOB_QUEUE_TTL_SECONDS)?;

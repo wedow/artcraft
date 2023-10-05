@@ -83,7 +83,7 @@ mod tests {
 
   #[test]
   fn test_is_deployed_in_production() {
-    assert_eq!(true, ServerEnvironment::Production.is_deployed_in_production());
-    assert_eq!(false, ServerEnvironment::Development.is_deployed_in_production());
+    assert!(ServerEnvironment::Production.is_deployed_in_production());
+    assert!(!ServerEnvironment::Development.is_deployed_in_production());
   }
 }

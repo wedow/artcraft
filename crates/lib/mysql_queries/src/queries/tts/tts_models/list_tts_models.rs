@@ -76,7 +76,7 @@ pub async fn list_tts_models_with_connection(
     Ok(models) => models,
     Err(err) => {
       match err {
-        RowNotFound => {
+        _RowNotFound => {
           return Ok(Vec::new());
         },
         _ => {

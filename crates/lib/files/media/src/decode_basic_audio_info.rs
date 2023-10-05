@@ -100,7 +100,7 @@ fn decode_basic_audio_info_inner(
         duration_millis + frac_millis
       });
 
-  let maybe_codec_name = get_codec_short_name(&audio_track);
+  let maybe_codec_name = get_codec_short_name(audio_track);
 
   if maybe_track_duration.is_none() && maybe_codec_name.as_deref() == Some("opus") {
     // NB: Symphonia doesn't properly support webm containers with opus at time of writing (2023-04-30),
@@ -108,7 +108,7 @@ fn decode_basic_audio_info_inner(
     // read for now.
     let media_source_stream = match original_media_source {
       OriginalMediaSource::FileBytes(bytes) => open_bytes_media_source_stream(bytes)?,
-      OriginalMediaSource::FilePath(path) => open_file_media_source_stream(&path)?,
+      OriginalMediaSource::FilePath(path) => open_file_media_source_stream(path)?,
     };
 
     let mut info = decode_mkv_or_webm(media_source_stream)?;
@@ -281,7 +281,7 @@ mod tests {
       let path = test_file("test_data/browser_api_recording/chromium_web_audio_upload.bin");
       let info = decode_basic_audio_file_info(path, None, None)?;
       assert_eq!(info.codec_name, Some("opus".to_string()));
-      assert_eq!(info.required_full_decode, true);
+      assert!(info.required_full_decode);
       assert_eq!(info.duration_millis, Some(9119));
       Ok(())
     }
@@ -303,7 +303,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("aac".to_string()));
       assert_eq!(info.duration_millis, Some(40128));
-      assert_eq!(info.required_full_decode, true);
+      assert!(info.required_full_decode);
       Ok(())
     }
 
@@ -314,7 +314,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("flac".to_string()));
       assert_eq!(info.duration_millis, Some(5120));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -327,7 +327,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, incorrect_mimetype, incorrect_extension)?;
       assert_eq!(info.codec_name, Some("flac".to_string()));
       assert_eq!(info.duration_millis, Some(5120));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -339,7 +339,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("alac".to_string()));
       assert_eq!(info.duration_millis, Some(5493));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -351,7 +351,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("mp3".to_string()));
       assert_eq!(info.duration_millis, Some(15023));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -365,7 +365,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("vorbis".to_string()));
       assert_eq!(info.duration_millis, Some(4903)); // NB: This disagrees with ffprobe, but it's pretty close.
-      assert_eq!(info.required_full_decode, true);
+      assert!(info.required_full_decode);
       Ok(())
     }
 
@@ -376,7 +376,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("pcm_s16le".to_string()));
       assert_eq!(info.duration_millis, Some(1891));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -387,7 +387,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("pcm_s16le".to_string()));
       assert_eq!(info.duration_millis, Some(847));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -398,7 +398,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("pcm_f32le".to_string()));
       assert_eq!(info.duration_millis, Some(708));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -409,7 +409,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("pcm_u8".to_string()));
       assert_eq!(info.duration_millis, Some(1741));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
   }
@@ -424,7 +424,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("opus".to_string()));
       assert_eq!(info.duration_millis, Some(15007));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -435,7 +435,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("aac".to_string()));
       assert_eq!(info.duration_millis, Some(30128));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -446,7 +446,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("aac".to_string()));
       assert_eq!(info.duration_millis, Some(15295));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
 
@@ -457,7 +457,7 @@ mod tests {
       let info = decode_basic_audio_bytes_info(&bytes, None, None)?;
       assert_eq!(info.codec_name, Some("opus".to_string()));
       assert_eq!(info.duration_millis, Some(10016));
-      assert_eq!(info.required_full_decode, false);
+      assert!(!info.required_full_decode);
       Ok(())
     }
   }

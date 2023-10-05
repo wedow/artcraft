@@ -54,7 +54,7 @@ pub async fn theguardian_article_scraper(url: &str) -> AnyhowResult<WebScrapingR
   let mut paragraphs = Vec::new();
 
   if let Some(article_content_div) = document.select(&ARTICLE_CONTENT_SELECTOR).next() {
-    for paragraph in article_content_div.select(&PARAGRAPH_SELECTOR).into_iter() {
+    for paragraph in article_content_div.select(&PARAGRAPH_SELECTOR) {
 
       let mut paragraph_assembly = Vec::new();
 
@@ -88,7 +88,7 @@ pub async fn theguardian_article_scraper(url: &str) -> AnyhowResult<WebScrapingR
   // have to type juggle.
   let maybe_timestamp = maybe_timestamp_raw
       .as_deref()
-      .map(|ts| remove_timestamp_abbreviated_weekday_name(&ts))
+      .map(remove_timestamp_abbreviated_weekday_name)
       .map(|ts| NaiveDateTime::parse_from_str(&ts, "%e %b %Y %H.%M %Z"))
       .transpose()?
       .map(|naive| match Utc.from_local_datetime(&naive) {

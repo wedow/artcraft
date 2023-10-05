@@ -467,7 +467,7 @@ SET
         // NB: MySQL Error Code 1062: Duplicate key insertion (this is harder to access)
         match err {
           Database(err) => {
-            let maybe_code = err.code().map(|c| c.into_owned());
+            let _maybe_code = err.code().map(|c| c.into_owned());
             /*match maybe_code.as_deref() {
               Some("23000") => {
                 if err.message().contains("username") {

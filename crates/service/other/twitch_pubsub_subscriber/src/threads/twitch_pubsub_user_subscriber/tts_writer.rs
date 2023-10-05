@@ -53,7 +53,7 @@ impl TtsWriter {
         .set_model_token(model_token)
         .set_raw_inference_text(&sanitized_text);
 
-    let _r = builder.insert(&self.mysql_pool).await?;
+    builder.insert(&self.mysql_pool).await?;
 
     let mut redis = self.redis_pool.get()?;
 

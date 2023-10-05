@@ -30,7 +30,7 @@ impl <T: Clone + ?Sized> SingleItemTtlCache<T> {
     let maybe_copy = match self.cache.lock() {
       Err(e) => bail!("could not unlock mutex to read: {:?}", e),
       Ok(cache) => {
-        cache.peek(CACHE_KEY).map(|inner| inner.clone())
+        cache.peek(CACHE_KEY).cloned()
       },
     };
     Ok(maybe_copy)

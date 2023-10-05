@@ -21,10 +21,6 @@ impl DisabledEndpoints {
   pub fn endpoint_is_disabled(&self, endpoint: &str) -> bool {
     if self.exact_match_endpoints.endpoint_is_disabled(endpoint) {
       true
-    } else if self.prefix_endpoints.endpoint_is_disabled(endpoint) {
-      true
-    } else {
-      false
-    }
+    } else { self.prefix_endpoints.endpoint_is_disabled(endpoint) }
   }
 }

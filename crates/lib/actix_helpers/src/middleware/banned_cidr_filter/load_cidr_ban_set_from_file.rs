@@ -16,7 +16,7 @@ pub fn load_cidr_ban_set_from_file<P: AsRef<Path>>(path: P) -> AnyhowResult<Bann
   let lines = reader.lines()
       .filter_map(|line| line.ok())
       .map(|line| line.trim().to_string())
-      .filter(|line| !(line.starts_with("#") || line.is_empty()))
+      .filter(|line| !(line.starts_with('#') || line.is_empty()))
       .collect::<HashSet<String>>();
 
   let cidr_bans = BannedCidrSet::new();
@@ -55,18 +55,18 @@ mod tests {
     let cidr_bans = load_cidr_ban_set_from_file(filename).unwrap();
 
     // Banned CIDRs (1)
-    assert_eq!(true, cidr_bans.ip_is_banned(to_ip("127.0.0.0"))?);
-    assert_eq!(true, cidr_bans.ip_is_banned(to_ip("127.0.0.1"))?);
-    assert_eq!(true, cidr_bans.ip_is_banned(to_ip("127.0.0.100"))?);
+    assert!(cidr_bans.ip_is_banned(to_ip("127.0.0.0"))?);
+    assert!(cidr_bans.ip_is_banned(to_ip("127.0.0.1"))?);
+    assert!(cidr_bans.ip_is_banned(to_ip("127.0.0.100"))?);
 
     // Banned CIDRs (2)
-    assert_eq!(true, cidr_bans.ip_is_banned(to_ip("192.168.0.1"))?);
-    assert_eq!(true, cidr_bans.ip_is_banned(to_ip("192.168.0.100"))?);
+    assert!(cidr_bans.ip_is_banned(to_ip("192.168.0.1"))?);
+    assert!(cidr_bans.ip_is_banned(to_ip("192.168.0.100"))?);
 
     // Permitted
-    assert_eq!(false, cidr_bans.ip_is_banned(to_ip("1.2.3.4"))?);
-    assert_eq!(false, cidr_bans.ip_is_banned(to_ip("4.4.4.4"))?);
-    assert_eq!(false, cidr_bans.ip_is_banned(to_ip("255.255.255.255"))?);
+    assert!(!(cidr_bans.ip_is_banned(to_ip("1.2.3.4"))?));
+    assert!(!(cidr_bans.ip_is_banned(to_ip("4.4.4.4"))?));
+    assert!(!(cidr_bans.ip_is_banned(to_ip("255.255.255.255"))?));
 
     // Stats from file loaded
     assert_eq!(2, cidr_bans.total_cidr_count()?);

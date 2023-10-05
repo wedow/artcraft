@@ -90,7 +90,7 @@ WHERE
       maybe_extra_file_modification_info: upload.maybe_extra_file_modification_info
           .as_deref()
           .filter(|info| !info.trim().is_empty())
-          .map(|info| MediaUploadModificationDetails::from_json(info))
+          .map(MediaUploadModificationDetails::from_json)
           .transpose()
           .map_err(|err| {
             anyhow!("Error parsing field `maybe_extra_file_modification_info` from JSON: {:?}", err)

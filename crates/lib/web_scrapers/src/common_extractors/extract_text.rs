@@ -29,7 +29,7 @@ mod tests {
   #[test]
   fn test_extract_text_cnn() {
     let html = include_str!("../../../../../test_data/html_scraping/cnn_article_with_video.html");
-    let document = Html::parse_document(&html);
+    let document = Html::parse_document(html);
 
     let maybe_text = extract_text(&document, &CNN_TITLE_SELECTOR);
 
@@ -40,7 +40,7 @@ mod tests {
   #[test]
   fn test_extract_text_techcrunch() {
     let html = include_str!("../../../../../test_data/html_scraping/techcrunch_article.html");
-    let document = Html::parse_document(&html);
+    let document = Html::parse_document(html);
 
     let maybe_text = extract_text(&document, &TECHCRUNCH_TITLE_SELECTOR);
 

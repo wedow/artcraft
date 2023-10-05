@@ -50,11 +50,11 @@ mod tests {
 
   #[test]
   fn is_success() {
-    assert_eq!(CommandExitStatus::Success.is_success(), true);
-    assert_eq!(CommandExitStatus::Failure.is_success(), false);
-    assert_eq!(CommandExitStatus::Timeout.is_success(), false);
-    assert_eq!(CommandExitStatus::Unknown.is_success(), false);
-    assert_eq!(CommandExitStatus::FailureWithReason{ reason: "foo".to_string() }.is_success(), false);
+    assert!(CommandExitStatus::Success.is_success());
+    assert!(!CommandExitStatus::Failure.is_success());
+    assert!(!CommandExitStatus::Timeout.is_success());
+    assert!(!CommandExitStatus::Unknown.is_success());
+    assert!(!CommandExitStatus::FailureWithReason{ reason: "foo".to_string() }.is_success());
   }
 
   #[test]

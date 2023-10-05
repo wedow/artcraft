@@ -28,7 +28,7 @@ pub async fn gizmodo_indexer() -> AnyhowResult<Vec<WebScrapingTarget>> {
       }
     };
 
-    let mut maybe_skip_reason = None;
+    let maybe_skip_reason = None;
 
     //// Lazy heuristic to skip CNN video articles, which contain little text.
     //// eg. https://www.cnn.com/videos/politics/2023/02/08/pelosi-gop-hecklers-reaction-joe-biden-state-of-the-union-tapper-intv-vpx.cnn

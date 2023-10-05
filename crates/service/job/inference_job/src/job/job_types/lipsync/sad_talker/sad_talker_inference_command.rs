@@ -189,7 +189,7 @@ impl SadTalkerInferenceCommand {
     if let Some(venv_command) = self.maybe_virtual_env_activation_command.as_deref() {
       command.push_str(" && ");
       command.push_str(venv_command);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     command.push_str(" && ");
@@ -197,11 +197,11 @@ impl SadTalkerInferenceCommand {
     match self.executable_or_command {
       ExecutableOrCommand::Executable(ref executable) => {
         command.push_str(&path_to_string(executable));
-        command.push_str(" ");
+        command.push(' ');
       }
       ExecutableOrCommand::Command(ref cmd) => {
         command.push_str(cmd);
-        command.push_str(" ");
+        command.push(' ');
       }
     }
 
@@ -219,15 +219,15 @@ impl SadTalkerInferenceCommand {
     command.push_str(" --result_file ");
     command.push_str(&path_to_string(args.output_file));
 
-    if let Some(preprocess) = args.maybe_preprocess.as_deref() {
+    if let Some(preprocess) = args.maybe_preprocess {
       command.push_str(" --preprocess ");
       command.push_str(preprocess);
-      command.push_str(" ");
+      command.push(' ');
     }
-    if let Some(enhancer) = args.maybe_enhancer.as_deref() {
+    if let Some(enhancer) = args.maybe_enhancer {
       command.push_str(" --enhancer ");
       command.push_str(enhancer);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     if args.make_still {
@@ -290,13 +290,13 @@ impl SadTalkerInferenceCommand {
       }
       Some(timeout) => {
         info!("Executing with timeout: {:?}", &timeout);
-        let exit_status = p.wait_timeout(timeout.clone())?;
+        let exit_status = p.wait_timeout(timeout)?;
 
         match exit_status {
           None => {
             // NB: If the program didn't successfully terminate, kill it.
             info!("Subprocess didn't end after timeout: {:?}; terminating...", &timeout);
-            let _r = p.terminate()?;
+            p.terminate()?;
             Ok(CommandExitStatus::Timeout)
           }
           Some(exit_status) => {

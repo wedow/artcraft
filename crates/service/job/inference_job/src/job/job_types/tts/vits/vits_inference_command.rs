@@ -91,7 +91,7 @@ impl VitsInferenceCommand {
     if let Some(venv_command) = self.maybe_virtual_env_activation_command.as_deref() {
       command.push_str(" && ");
       command.push_str(venv_command);
-      command.push_str(" ");
+      command.push(' ');
     }
 
     let python_binary = self.maybe_override_python_interpreter
@@ -100,7 +100,7 @@ impl VitsInferenceCommand {
 
     command.push_str(" && ");
     command.push_str(python_binary);
-    command.push_str(" ");
+    command.push(' ');
     command.push_str(&path_to_string(&self.inference_script_name));
 
     // ===== Begin Python Args =====

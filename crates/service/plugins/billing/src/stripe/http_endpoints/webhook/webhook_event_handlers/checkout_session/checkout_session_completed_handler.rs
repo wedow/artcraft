@@ -17,7 +17,7 @@ pub fn checkout_session_completed_handler(checkout_session: CheckoutSession) -> 
   // their subscriptions.
   let maybe_stripe_customer_id  = checkout_session.customer
       .as_ref()
-      .map(|c| expand_customer_id(c));
+      .map(expand_customer_id);
 
   // NB: Our internal user token.
   let maybe_user_token = checkout_session.metadata.get(METADATA_USER_TOKEN)

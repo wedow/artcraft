@@ -87,12 +87,10 @@ pub async fn list_available_generic_inference_jobs(
 )
   -> AnyhowResult<Vec<AvailableInferenceJob>>
 {
-  let model_types = args.maybe_scope_by_model_type
-      .map(|types| types.clone())
+  let model_types = args.maybe_scope_by_model_type.cloned()
       .unwrap_or(InferenceModelType::all_variants()); // NB: All model types
 
-  let inference_categories = args.maybe_scope_by_job_category
-        .map(|types| types.clone())
+  let inference_categories = args.maybe_scope_by_job_category.cloned()
         .unwrap_or(InferenceCategory::all_variants()); // NB: All categories
 
   let query = if args.sort_by_priority {
@@ -117,7 +115,7 @@ pub async fn list_available_generic_inference_jobs(
               .map_err(|e| anyhow!("error: {:?}", e))?, // TODO/FIXME: This is a gross fix.
           maybe_model_type: record.maybe_model_type
               .as_deref()
-              .map(|model_type| InferenceModelType::from_str(model_type))
+              .map(InferenceModelType::from_str)
               .transpose()
               .map_err(|e| anyhow!("error: {:?}", e))?, // TODO/FIXME: This is a gross fix.
           maybe_model_token: record.maybe_model_token,
@@ -125,7 +123,7 @@ pub async fn list_available_generic_inference_jobs(
           maybe_input_source_token_type: record.maybe_input_source_token_type,
           maybe_inference_args: record.maybe_inference_args
               .as_deref()
-              .map(|args| GenericInferenceArgs::from_json(args))
+              .map(GenericInferenceArgs::from_json)
               .transpose()?,
           maybe_raw_inference_text: record.maybe_raw_inference_text,
           status: JobStatus::from_str(&record.status)?,
@@ -145,9 +143,6 @@ pub async fn list_available_generic_inference_jobs(
         };
         Ok(record)
       })
-      // NB: Magic Vec<Result> -> Result<Vec<>>
-      // https://stackoverflow.com/a/63798748
-      .into_iter()
       .collect::<Result<Vec<AvailableInferenceJob>, anyhow::Error>>()?;
 
   Ok(job_records)
@@ -238,7 +233,7 @@ FROM generic_inference_jobs"#.to_string();
   LIMIT ?
         "#);
 
-  let mut query = sqlx::query_as::<_, AvailableInferenceJobRawInternal>(&query)
+  let query = sqlx::query_as::<_, AvailableInferenceJobRawInternal>(&query)
       .bind(args.is_debug_worker)
       .bind(args.num_records);
 
@@ -331,7 +326,7 @@ FROM generic_inference_jobs"#.to_string();
   LIMIT ?
         "#);
 
-  let mut query = sqlx::query_as::<_, AvailableInferenceJobRawInternal>(&query)
+  let query = sqlx::query_as::<_, AvailableInferenceJobRawInternal>(&query)
       .bind(args.is_debug_worker)
       .bind(args.num_records);
 

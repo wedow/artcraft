@@ -34,7 +34,7 @@ pub async fn download_image_file(
   let bucket_object_path;
 
   match image_source {
-    LipsyncAnimationImageSource::F(media_file_token) => {
+    LipsyncAnimationImageSource::F(_media_file_token) => {
       // TODO(bt, 2023-09-08): Implement
       return Err(ProcessSingleJobError::NotYetImplemented)
     }
@@ -73,7 +73,7 @@ pub async fn download_image_file(
     job_progress_reporter,
     "downloading",
     job.id.0,
-    &temp_dir_creator,
+    temp_dir_creator,
   ).await?;
 
   Ok(ImageFile {

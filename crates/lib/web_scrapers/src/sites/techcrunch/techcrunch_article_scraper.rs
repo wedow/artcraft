@@ -50,7 +50,7 @@ pub async fn techcrunch_article_scraper(url: &str) -> AnyhowResult<WebScrapingRe
   let mut paragraphs = Vec::new();
 
   if let Some(article_content_div) = document.select(&ARTICLE_CONTENT_SELECTOR).next() {
-    for paragraph in article_content_div.select(&PARAGRAPH_SELECTOR).into_iter() {
+    for paragraph in article_content_div.select(&PARAGRAPH_SELECTOR) {
 
       let mut paragraph_assembly = Vec::new();
 

@@ -71,7 +71,7 @@ pub async fn stripe_webhook_handler(
   let stripe_event_created_at = NaiveDateTime::from_timestamp(webhook_payload.created, 0);
 
   let stripe_event_type = serde_json::to_string(&webhook_payload.event_type)
-      .map(|s| s.replace("\"", ""))
+      .map(|s| s.replace('\"', ""))
       .map_err(|err| {
         error!("Could not deserialize webhook type: {:?}", err);
         StripeWebhookError::BadRequest

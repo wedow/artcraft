@@ -31,7 +31,7 @@ impl FfmpegGeneratePreviewVideoCommand {
     command.push_str(" && ");
     command.push_str("ffmpeg");
     command.push_str(" -i ");
-    command.push_str(&input_video_filename);
+    command.push_str(input_video_filename);
     command.push_str(" -lossless 0 ");
     command.push_str(" -ss 00:00:00 ");
     command.push_str(" -t 00:00:03 ");
@@ -42,8 +42,8 @@ impl FfmpegGeneratePreviewVideoCommand {
       command.push_str(" -loop 0 "); // NB: -loop 1 disables looping
     }
 
-    command.push_str(" "); // NB: no arg flag for output filename
-    command.push_str(&output_video_filename);
+    command.push(' '); // NB: no arg flag for output filename
+    command.push_str(output_video_filename);
 
     info!("Command: {:?}", command);
 

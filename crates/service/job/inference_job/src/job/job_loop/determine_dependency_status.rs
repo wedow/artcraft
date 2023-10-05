@@ -102,7 +102,7 @@ pub async fn get_model_record_from_cacheable_query(job_dependencies: &JobDepende
           match maybe_tts_model {
             Some(model) => {
               let token = token.to_string();
-              let _r = job_dependencies.caches.tts_model_record_cache.store_copy(&token, &model)?;
+              job_dependencies.caches.tts_model_record_cache.store_copy(&token, &model)?;
               MaybeInferenceModel::TtsModel(model)
             },
 
@@ -125,7 +125,7 @@ pub async fn get_model_record_from_cacheable_query(job_dependencies: &JobDepende
           match maybe_vc_model {
             Some(model) => {
               let token = token.to_string();
-              let _r = job_dependencies.caches.vc_model_record_cache.store_copy(&token, &model)?;
+              job_dependencies.caches.vc_model_record_cache.store_copy(&token, &model)?;
               MaybeInferenceModel::VcModel(model)
             },
 

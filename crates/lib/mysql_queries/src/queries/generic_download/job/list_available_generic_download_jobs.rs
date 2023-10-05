@@ -41,8 +41,7 @@ pub async fn list_available_generic_download_jobs(
 )
   -> AnyhowResult<Vec<AvailableDownloadJob>>
 {
-  let download_types = maybe_scoped_download_types
-      .map(|types| types.clone())
+  let download_types = maybe_scoped_download_types.cloned()
       .unwrap_or(GenericDownloadType::all_variants()); // NB: All model types
 
   // NB/TODO(bt,2023-07-20): Non-statically typed SQL can't do type annotations AFAIK
@@ -82,7 +81,7 @@ WHERE
   if let Some(clause) = download_type_clause(&download_types) {
     query.push_str(" AND ");
     query.push_str(&clause);
-    query.push_str(" ");
+    query.push(' ');
   }
 
   query.push_str(&format!(r#"
@@ -90,7 +89,7 @@ WHERE
     LIMIT {}
   "#, num_records));
 
-  let mut job_records = sqlx::query_as::<_, AvailableDownloadJobRawInternal>(&query)
+  let job_records = sqlx::query_as::<_, AvailableDownloadJobRawInternal>(&query)
       .fetch_all(pool)
       .await?;
 
@@ -129,7 +128,7 @@ fn download_type_clause(download_types: &BTreeSet<GenericDownloadType>) -> Optio
     return None;
   }
 
-  let download_types = download_types.into_iter()
+  let download_types = download_types.iter()
       .map(|download_type| download_type.to_str())
       .map(|download_type| format!("\"{}\"", download_type))
       .collect::<Vec<_>>()

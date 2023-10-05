@@ -28,7 +28,7 @@ pub async fn maybe_download_file_from_bucket(
   warn!("{} does not exist at path: {:?}", name_or_description_of_file, &file_path);
 
   job_progress_reporter.log_status(job_progress_update_description)
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   // NB: Download to temp directory to stop concurrent writes and race conditions from other
   // workers writing to a shared volume.
@@ -36,7 +36,7 @@ pub async fn maybe_download_file_from_bucket(
 
   // NB: TempDir exists until it goes out of scope, at which point it should delete from filesystem.
   let temp_dir = scoped_tempdir_creator.new_tempdir(&temp_dir)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
   let temp_path = temp_dir.path().join("download.part");
 
@@ -44,15 +44,15 @@ pub async fn maybe_download_file_from_bucket(
 
   bucket_client.download_file_to_disk(&bucket_object_path, &temp_path)
       .await
-      .map_err(|e| ProcessSingleJobError::Other(e))?;
+      .map_err(ProcessSingleJobError::Other)?;
 
   info!("Downloaded {} from bucket!", name_or_description_of_file);
 
   info!("Renaming {} temp file from {:?} to {:?}!",
     name_or_description_of_file, &temp_path, &file_path);
 
-  std::fs::rename(&temp_path, &file_path)
-      .map_err(|e| ProcessSingleJobError::from_io_error(e))?;
+  std::fs::rename(&temp_path, file_path)
+      .map_err(ProcessSingleJobError::from_io_error)?;
 
   info!("Finished downloading {} file to {:?}", name_or_description_of_file, &file_path);
 

@@ -8,7 +8,7 @@ use crate::latin_alphabet::latin_to_ascii;
 static BANNED_SLURS_SET : Lazy<HashSet<String>> = Lazy::new(|| {
   BANNED_SLURS.lines()
       .map(|line| line.trim())
-      .filter(|line| !(line.starts_with("#") || line.is_empty()))
+      .filter(|line| !(line.starts_with('#') || line.is_empty()))
       .map(|line| line.to_string())
       .collect::<HashSet<String>>()
 });
@@ -29,41 +29,41 @@ mod tests {
 
   #[test]
   fn valid_text_passes() {
-    assert_eq!(contains_slurs(""), false);
-    assert_eq!(contains_slurs("this is a test."), false);
-    assert_eq!(contains_slurs("this\nis\na\ntest\n\n"), false);
-    assert_eq!(contains_slurs("    this    is    a       test"), false);
+    assert!(!contains_slurs(""));
+    assert!(!contains_slurs("this is a test."));
+    assert!(!contains_slurs("this\nis\na\ntest\n\n"));
+    assert!(!contains_slurs("    this    is    a       test"));
   }
 
   #[test]
   fn text_with_slurs_fails() {
-    assert_eq!(contains_slurs("a sentence containing fag is banned"), true);
-    assert_eq!(contains_slurs("a\nsentence\ncontaining fags\nis banned"), true);
+    assert!(contains_slurs("a sentence containing fag is banned"));
+    assert!(contains_slurs("a\nsentence\ncontaining fags\nis banned"));
   }
 
   #[test]
   fn text_with_mixed_case_slurs_fails() {
-    assert_eq!(contains_slurs("FAG"), true);
-    assert_eq!(contains_slurs("FaG"), true);
-    assert_eq!(contains_slurs("fAg"), true);
-    assert_eq!(contains_slurs("A SENTENCE CONTAINING FAG IS BANNED"), true);
-    assert_eq!(contains_slurs("a\nsentence\ncontaining FAGS\nis banned"), true);
+    assert!(contains_slurs("FAG"));
+    assert!(contains_slurs("FaG"));
+    assert!(contains_slurs("fAg"));
+    assert!(contains_slurs("A SENTENCE CONTAINING FAG IS BANNED"));
+    assert!(contains_slurs("a\nsentence\ncontaining FAGS\nis banned"));
   }
 
   #[test]
   fn text_with_latin_obfuscated_slurs_fails() {
-    assert_eq!(contains_slurs("FÀG"), true);
-    assert_eq!(contains_slurs("FÁG"), true);
-    assert_eq!(contains_slurs("FÂG"), true);
-    assert_eq!(contains_slurs("FÃG"), true);
-    assert_eq!(contains_slurs("FÄG"), true);
-    assert_eq!(contains_slurs("FÅG"), true);
+    assert!(contains_slurs("FÀG"));
+    assert!(contains_slurs("FÁG"));
+    assert!(contains_slurs("FÂG"));
+    assert!(contains_slurs("FÃG"));
+    assert!(contains_slurs("FÄG"));
+    assert!(contains_slurs("FÅG"));
 
-    assert_eq!(contains_slurs("fàg"), true);
-    assert_eq!(contains_slurs("fág"), true);
-    assert_eq!(contains_slurs("fâg"), true);
-    assert_eq!(contains_slurs("fãg"), true);
-    assert_eq!(contains_slurs("fäg"), true);
-    assert_eq!(contains_slurs("fåg"), true);
+    assert!(contains_slurs("fàg"));
+    assert!(contains_slurs("fág"));
+    assert!(contains_slurs("fâg"));
+    assert!(contains_slurs("fãg"));
+    assert!(contains_slurs("fäg"));
+    assert!(contains_slurs("fåg"));
   }
 }

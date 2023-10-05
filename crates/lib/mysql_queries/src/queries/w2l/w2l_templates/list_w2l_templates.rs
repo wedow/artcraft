@@ -70,7 +70,7 @@ pub async fn list_w2l_templates(
       warn!("Error: {:?}", err);
 
       match err {
-        RowNotFound => {
+        _RowNotFound => {
           return Ok(Vec::new());
         },
         _ => {

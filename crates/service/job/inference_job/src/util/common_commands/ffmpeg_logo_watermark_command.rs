@@ -126,11 +126,11 @@ impl FfmpegLogoWatermarkCommand {
     match self.executable_or_command {
       ExecutableOrCommand::Executable(ref executable) => {
         command.push_str(&path_to_string(executable));
-        command.push_str(" ");
+        command.push(' ');
       }
       ExecutableOrCommand::Command(ref cmd) => {
         command.push_str(cmd);
-        command.push_str(" ");
+        command.push(' ');
       }
     }
 
@@ -153,7 +153,7 @@ impl FfmpegLogoWatermarkCommand {
     command.push_str(&format!("\"[1]format=rgba,colorchannelmixer=aa={}[logo];", args.alpha));
     command.push_str("[logo][0]scale2ref=oh*mdar:ih*0.2[logo][video];");
     command.push_str("[video][logo]overlay=(main_w-overlay_w)-10:(main_h-overlay_h)-10\"");
-    command.push_str(" ");
+    command.push(' ');
 
     command.push_str(&path_to_string(args.output_path));
 
@@ -166,7 +166,7 @@ impl FfmpegLogoWatermarkCommand {
       &command
     ];
 
-    let mut config = PopenConfig::default();
+    let config = PopenConfig::default();
 
     let mut p = Popen::create(&command_parts, config)?;
 
@@ -180,13 +180,13 @@ impl FfmpegLogoWatermarkCommand {
       }
       Some(timeout) => {
         info!("Executing with timeout: {:?}", &timeout);
-        let exit_status = p.wait_timeout(timeout.clone())?;
+        let exit_status = p.wait_timeout(timeout)?;
 
         match exit_status {
           None => {
             // NB: If the program didn't successfully terminate, kill it.
             info!("Subprocess didn't end after timeout: {:?}; terminating...", &timeout);
-            let _r = p.terminate()?;
+            p.terminate()?;
             Ok(CommandExitStatus::Timeout)
           }
           Some(exit_status) => {

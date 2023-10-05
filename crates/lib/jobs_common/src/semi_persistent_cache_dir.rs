@@ -61,7 +61,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_tts_synthesizer_model_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.tts_synthesizer_model_directory())?;
+    fs::create_dir_all(self.tts_synthesizer_model_directory())?;
     Ok(())
   }
 
@@ -77,7 +77,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_tts_pretrained_vocoder_model_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.tts_pretrained_vocoder_model_directory())?;
+    fs::create_dir_all(self.tts_pretrained_vocoder_model_directory())?;
     Ok(())
   }
 
@@ -92,7 +92,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_custom_vocoder_model_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.custom_vocoder_model_directory())?;
+    fs::create_dir_all(self.custom_vocoder_model_directory())?;
     Ok(())
   }
 
@@ -109,7 +109,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_voice_conversion_model_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.voice_conversion_model_directory())?;
+    fs::create_dir_all(self.voice_conversion_model_directory())?;
     Ok(())
   }
 
@@ -125,7 +125,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_w2l_model_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.w2l_model_directory())?;
+    fs::create_dir_all(self.w2l_model_directory())?;
     Ok(())
   }
 
@@ -140,7 +140,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_w2l_end_bump_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.w2l_end_bump_directory())?;
+    fs::create_dir_all(self.w2l_end_bump_directory())?;
     Ok(())
   }
 
@@ -157,7 +157,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_w2l_template_media_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.w2l_template_media_directory())?;
+    fs::create_dir_all(self.w2l_template_media_directory())?;
     Ok(())
   }
 
@@ -175,7 +175,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_w2l_face_template_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.w2l_face_template_directory())?;
+    fs::create_dir_all(self.w2l_face_template_directory())?;
     Ok(())
   }
 
@@ -187,7 +187,7 @@ impl SemiPersistentCacheDir {
   }
 
   pub fn create_video_asset_path(&self) -> AnyhowResult<()> {
-    let _ = fs::create_dir_all(self.video_asset_path())?;
+    fs::create_dir_all(self.video_asset_path())?;
     Ok(())
   }
 

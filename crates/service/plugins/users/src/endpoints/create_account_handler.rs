@@ -111,7 +111,7 @@ pub async fn create_account_handler(
     error_fields.insert("username".to_string(), "username contains slurs".to_string());
   }
 
-  if !request.email_address.contains("@") {
+  if !request.email_address.contains('@') {
     error_fields.insert("email_address".to_string(), "invalid email address".to_string());
   }
 

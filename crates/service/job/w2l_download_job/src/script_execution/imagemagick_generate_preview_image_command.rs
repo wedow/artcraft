@@ -32,14 +32,14 @@ impl ImagemagickGeneratePreviewImageCommand {
     command.push_str(" && ");
     //command.push_str("magick");
     command.push_str("convert ");
-    command.push_str(&input_image_filename);
+    command.push_str(input_image_filename);
     command.push_str(" -resize ");
     command.push_str(&dimensions);
     command.push_str(" -quality 50 ");
     command.push_str(" -define webp:loseless=false ");
 
-    command.push_str(" "); // NB: no arg flag for output filename
-    command.push_str(&output_image_filename);
+    command.push(' '); // NB: no arg flag for output filename
+    command.push_str(output_image_filename);
 
     info!("Command: {:?}", command);
 

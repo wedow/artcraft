@@ -19,7 +19,7 @@ pub fn random_prefix_crockford_token(prefix: &str, length: usize, uppercase: boo
     return Err(anyhow!("prefix not set; use other crockford functions"));
   }
 
-  if !prefix.ends_with(":") {
+  if !prefix.ends_with(':') {
     prefix = format!("{}:", prefix);
   }
 
