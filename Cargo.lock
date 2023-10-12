@@ -2440,6 +2440,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "generic_query"
+version = "0.1.0"
+
+[[package]]
+name = "generic_query_builder"
+version = "0.1.0"
+dependencies = [
+ "generic_query",
+ "quote",
+ "syn 1.0.107",
+]
+
+[[package]]
 name = "getopts"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3570,8 +3583,11 @@ dependencies = [
  "dotenv",
  "enums",
  "errors",
+ "generic_query",
+ "generic_query_builder",
  "log",
  "once_cell",
+ "quote",
  "regex",
  "reusable_types",
  "serde",
@@ -3579,6 +3595,7 @@ dependencies = [
  "serde_json",
  "sqlx",
  "sqlx_mysql_helpers",
+ "syn 1.0.107",
  "tokens",
  "toml",
 ]
@@ -5510,6 +5527,8 @@ dependencies = [
  "futures 0.3.26",
  "futures-core",
  "futures-util",
+ "generic_query",
+ "generic_query_builder",
  "google_drive_common",
  "hashing",
  "hex",

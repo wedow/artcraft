@@ -23,7 +23,8 @@ errors = { path = "../errors" }
 reusable_types = { path = "../../_types/reusable_types" }
 sqlx_mysql_helpers = { path = "../sqlx_mysql_helpers" }
 tokens = { path = "../../_types/tokens" }
-
+generic_query = { path = "../generic_query" }
+generic_query_builder = { path = "../generic_query_builder" }
 # External
 anyhow = "1.0.40"
 base64 = "0.21.0"
@@ -46,4 +47,6 @@ toml = "0.5.8"
 # "rustls" doesn't appear to work with IP addresses, per:
 # https://github.com/launchbadge/sqlx/issues/1095#issuecomment-798050828
 sqlx = { version = "0.6.2", features = [ "mysql", "runtime-actix-native-tls", "offline", "chrono" ] }
+quote = { version = "1.0.30", features = [] }
+syn = "1.0.107"
 
