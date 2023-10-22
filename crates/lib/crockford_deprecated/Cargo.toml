@@ -1,5 +1,5 @@
 [package]
-name = "crockford"
+name = "crockford_deprecated"
 edition = "2018"
 version = "0.0.1"
 authors = [
@@ -11,7 +11,7 @@ publish = false
 [lib]
 # NB: Public "crockford" crate is non-sensically only for encoding and decoding u64s (wtf?)
 # Our crate is for generating entropy and crockford encoding it.
-name = "crockford"
+name = "crockford_deprecated"
 path = "src/lib.rs"
 
 [dependencies]
