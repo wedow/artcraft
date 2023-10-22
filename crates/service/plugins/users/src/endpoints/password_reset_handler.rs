@@ -7,9 +7,13 @@
         - provide new password
  */
 
-use actix_web::{HttpRequest, HttpResponse, web};
+use std::fmt::Display;
+
+use actix_web::http::StatusCode;
+use actix_web::{HttpRequest, HttpResponse, web, ResponseError};
 use byteorder::ByteOrder;
 use http_server_common::request::get_request_ip::get_request_ip;
+use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::warn;
 use mysql_queries::queries::users::user::create_password_reset_request::create_password_reset;
 use mysql_queries::queries::users::user::lookup_user_for_login_by_email::lookup_user_for_login_by_email;
@@ -17,6 +21,7 @@ use mysql_queries::queries::users::user::lookup_user_for_login_by_username::look
 use rand::RngCore;
 use serde::Deserialize;
 use sqlx::MySqlPool;
+use strum_macros::Display;
 
 /// This can be reused in login requests in the future!
 #[derive(Deserialize)]
@@ -33,16 +38,22 @@ pub struct PasswordResetRequest {
 #[derive(Serialize)]
 pub struct PasswordResetResponse {}
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Display)]
 pub enum PasswordResetRequestError {
     NoSuchUser,
     Internal,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct PasswordResetErrorResponse {
     kind: PasswordResetRequestError,
 }
+impl Display for PasswordResetErrorResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 impl From<PasswordResetRequestError> for PasswordResetErrorResponse {
     fn from(value: PasswordResetRequestError) -> Self {
         Self { kind: value }
@@ -54,6 +65,17 @@ impl From<errors::AnyhowError> for PasswordResetErrorResponse {
         Self { kind: PasswordResetRequestError::Internal }
     }
 }
+
+impl ResponseError for PasswordResetErrorResponse {
+    //TODO: Yknow, clean this up and stuff
+    fn status_code(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+  
+    fn error_response(&self) -> HttpResponse {
+        serialize_as_json_error(self)
+    }
+  }
 
 /// 
 /// Non-authenticated!
@@ -91,10 +113,16 @@ pub async fn password_reset_request_handler(
         .map(|chunk| byteorder::LittleEndian::read_u64(chunk))
         .for_each(|chunk| crockford::encode_into::<String>(chunk, &mut secret_key));
 
+    secret_key.truncate(32);
+
 
     //TODO: Handle banned users, they shouldn't be able to do this
 
-    create_password_reset(&mysql_pool, &user, ip_address, secret_key.clone()).await?;
+    create_password_reset(&mysql_pool, &user, ip_address, secret_key.clone()).await
+    .map_err(|err| {
+        log::error!("AAAAAHHH! {:?}", err);
+        err
+    })?;
     email::send_password_reset(&user.email_address, secret_key).await?;
 
     Ok(HttpResponse::Ok().finish())
