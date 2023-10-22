@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crockford::crockford_entropy_lower;
+use crockford_deprecated::crockford_entropy_lower;
 
 use crate::public::media_files::directory::MediaFileBucketDirectory;
 use crate::public::public_path::PublicPath;

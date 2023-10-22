@@ -8,7 +8,7 @@ use container_common::filesystem::check_file_exists::check_file_exists;
 use container_common::filesystem::safe_delete_possible_temp_file::safe_delete_possible_temp_file;
 use container_common::filesystem::safe_delete_temp_directory::safe_delete_temp_directory;
 use container_common::filesystem::safe_delete_temp_file::safe_delete_temp_file;
-use crockford::crockford_entropy_lower;
+use crockford_deprecated::crockford_entropy_lower;
 use enums::by_table::voice_conversion_models::voice_conversion_model_type::VoiceConversionModelType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
@@ -183,7 +183,7 @@ pub async fn process_rvc_v2_model<'a, 'b>(
 
 //#[cfg(test)]
 //mod tests {
-//  use crockford::crockford_entropy_lower;
+//  use crockford_deprecated::crockford_entropy_lower;
 //
 //  #[test]
 //  fn temp() {

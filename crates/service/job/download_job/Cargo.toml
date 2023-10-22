@@ -20,7 +20,7 @@ cloud_storage = { path = "../../../lib/api_clients/cloud_storage" }
 concurrency = { path = "../../../lib/concurrency" }
 config = { path = "../../../lib/deprecated/config" }
 container_common = { path = "../../../lib/deprecated/container_common" }
-crockford = { path = "../../../lib/crockford" }
+crockford_deprecated = { path = "../../../lib/crockford" }
 easyenv = { path = "../../../lib/easyenv" }
 enums = { path = "../../../_types/enums" }
 errors = { path = "../../../lib/errors" }

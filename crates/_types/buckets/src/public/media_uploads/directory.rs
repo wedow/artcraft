@@ -1,4 +1,4 @@
-use crockford::crockford_entropy_lower;
+use crockford_deprecated::crockford_entropy_lower;
 
 use crate::public::public_path::PublicPath;
 use crate::util::hashed_directory_path_long_string::hashed_directory_path_long_string;
