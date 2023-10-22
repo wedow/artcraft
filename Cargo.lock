@@ -1086,7 +1086,7 @@ dependencies = [
 name = "buckets"
 version = "0.0.1"
 dependencies = [
- "crockford",
+ "crockford_deprecated",
  "errors",
 ]
 
@@ -1516,7 +1516,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "crockford"
+name = "crockford_deprecated"
 version = "0.0.1"
 dependencies = [
  "rand 0.8.5",
@@ -2011,7 +2011,7 @@ dependencies = [
  "concurrency",
  "config",
  "container_common",
- "crockford",
+ "crockford_deprecated",
  "dotenv",
  "easyenv",
  "enums",

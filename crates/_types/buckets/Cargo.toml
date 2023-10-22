@@ -15,7 +15,7 @@ path = "src/lib.rs"
 [dependencies]
 
 # Internal
-crockford_deprecated = { path = "../../lib/crockford" }
+crockford_deprecated = { path = "../../lib/crockford_deprecated" }
 errors = { path = "../../lib/errors" }
 
 # External
