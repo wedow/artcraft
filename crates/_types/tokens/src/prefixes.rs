@@ -23,6 +23,7 @@ pub(crate) enum EntityType {
   MediaUpload,
   ModelCategory,
   NewsStory, // NB: aichatbot / sqlite
+  PasswordReset,
   TtsModel,
   TtsRenderTask, // NB: aichatbot / sqlite
   User,
@@ -47,6 +48,7 @@ impl EntityType {
       Self::MediaUpload => "mu_",
       Self::ModelCategory => "CAT:", // NB: Old-style prefix, do not use for future tokens.
       Self::NewsStory => "news_story_",
+      Self::PasswordReset => "pw_reset_",
       Self::TtsModel => "TM:", // NB: Old-style prefix, do not use for future tokens.
       Self::TtsRenderTask => "tts_task_",
       Self::User => "U:", // NB: Old-style prefix, do not use for future tokens.

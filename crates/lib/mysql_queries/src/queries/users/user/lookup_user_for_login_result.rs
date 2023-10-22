@@ -8,4 +8,5 @@ pub struct UserRecordForLogin {
   pub email_address: String,
   pub password_hash: Vec<u8>,
   pub is_banned: i8,
+  pub password_version: i32,
 }

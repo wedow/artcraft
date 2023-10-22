@@ -1,4 +1,5 @@
 pub mod create_account;
+pub mod create_password_reset_request;
 pub mod get_user_token_by_username;
 pub mod list_users_query_builder;
 pub mod lookup_user_for_login_by_email;

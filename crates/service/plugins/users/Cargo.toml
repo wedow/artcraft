@@ -17,6 +17,7 @@ path = "src/lib.rs"
 # Internal
 container_common = { path = "../../../lib/deprecated/container_common" }
 cookies = { path = "../../../lib/cookies" }
+email = { path = "../../../lib/email" }
 enums = { path = "../../../_types/enums" }
 errors = { path = "../../../lib/errors" }
 http_server_common = { path = "../../../lib/deprecated/http_server_common" }
@@ -65,3 +66,5 @@ sqlx = { version = "0.6.2", features = [ "mysql", "runtime-actix-native-tls", "o
 # TODO: Shouldn't really be a dependency, but need to add caching for the DDoS attack.
 # Redis Database
 r2d2_redis = "0.14.0"
+crockford = "1.1.2"
+byteorder = "1.5.0"
