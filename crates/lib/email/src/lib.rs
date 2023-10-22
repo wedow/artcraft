@@ -1,27 +1,32 @@
-use errors::AnyhowResult;
+use errors::{AnyhowResult, AnyhowError, anyhow};
+
+use lettre::message::header::ContentType;
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{Message, SmtpTransport, Transport};
+
 
 pub async fn send_password_reset(email_address: &str, secret_key: String) -> AnyhowResult<()> { 
-  todo!();
-  // use futures::Future;
-  // use mail_headers::{
-  //     headers::*,
-  //     header_components::Domain
-  // };
-  // use mail_core::{Mail, default_impl::simple_context};
-  // use mail_smtp::{self as smtp, ConnectionConfig};
+    let email = Message::builder()
+    .from("Support <support@storyteller.ai>".parse().unwrap())
+    .to( email_address.parse().unwrap())
+    .subject("Your password reset")
+    .header(ContentType::TEXT_PLAIN)
+    .body(format!("Here you go! {secret_key}"))
+    .unwrap();
 
-  // let ctx = simple_context::new(Domain::from_unchecked("example.com".to_owned()), "asdkds".parse().unwrap())
-  //     .unwrap();
+    let creds = Credentials::new("smtp_username".to_owned(), "smtp_password".to_owned());
 
-  // let mut mail = Mail::plain_text("Some body", &ctx);
-  // mail.insert_headers(headers! {
-  //     _From: ["bla@example.com"],
-  //     _To: ["blub@example.com"],
-  //     Subject: "Some Mail"
-  // }.unwrap());
+    // Open a remote connection to gmail
+    let mailer = SmtpTransport::relay("smtp.gmail.com")
+    .unwrap()
+    .credentials(creds)
+    .build();
 
-  // let con_config = ConnectionConfig::builder_local_unencrypted().build();
+    // Send the email
+    match mailer.send(&email) {
+    Ok(_) => println!("Email sent successfully!"),
+    Err(e) => panic!("Could not send email: {e:?}"),
+    }
 
-  // let fut = smtp::send(mail.into(), con_config, ctx);
-  // let results = fut.wait();
+    Ok(())
 }
