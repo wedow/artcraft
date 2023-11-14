@@ -176,10 +176,18 @@ pub fn add_routes<T, B>(app: App<T>, server_environment: ServerEnvironment) -> A
     app = add_user_rating_routes(app); /* /v1/user_rating/... */
     app = add_subscription_routes(app); /* /v1/subscriptions/... */
 
+    
+
     // TODO find a long term feature flag solution, since this code is likely deployed into production we don't want the route found.
     if !server_environment.is_deployed_in_production() {
         warn!("Adding voice designer routes (development only)");
         app = add_voice_designer_routes(app); /* /v1/voice_designer */
+    }
+    if !server_environment.is_deployed_in_production() {
+        warn!("Adding image gen routes (development only)");
+        app = add_image_gen_routes(app); /* /v1/image_gen */
+        app = add_favorites_routes(app);
+        app = add_weights_routes(app);
     }
     // ==================== Comments ====================
 
@@ -654,61 +662,6 @@ fn add_web_vc_routes<T, B>(app: App<T>) -> App<T>
                     .route(web::get().to(list_voice_conversion_models_handler))
                     .route(web::head().to(|| HttpResponse::Ok()))
             )
-        //.service(
-        //  web::resource("/upload")
-        //      .route(web::post().to(upload_w2l_template_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/template/{token}")
-        //      .route(web::get().to(get_w2l_template_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/template/{template_token}/count")
-        //      .route(web::get().to(get_w2l_template_use_count_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/template/{template_token}/edit")
-        //      .route(web::post().to(edit_w2l_template_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/template/{token}/moderate")
-        //      .route(web::post().to(set_w2l_template_mod_approval_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/template/{token}/delete")
-        //      .route(web::post().to(delete_w2l_template_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/result/{token}")
-        //      .route(web::get().to(get_w2l_inference_result_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/result/{token}/edit")
-        //      .route(web::post().to(edit_w2l_inference_result_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/result/{token}/delete")
-        //      .route(web::post().to(delete_w2l_inference_result_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/job/{token}")
-        //      .route(web::get().to(get_w2l_inference_job_status_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/upload_template_job/{token}")
-        //      .route(web::get().to(get_w2l_upload_template_job_status_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
     )
 }
 
@@ -740,16 +693,6 @@ fn add_vocoder_routes<T, B>(app: App<T>) -> App<T>
                     .route(web::get().to(get_vocoder_handler))
                     .route(web::head().to(|| HttpResponse::Ok()))
             )
-        //.service(
-        //  web::resource("/model/{token}/edit")
-        //      .route(web::post().to(edit_w2l_template_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
-        //.service(
-        //  web::resource("/model/{token}/delete")
-        //      .route(web::post().to(delete_w2l_template_handler))
-        //      .route(web::head().to(|| HttpResponse::Ok()))
-        //)
     )
 }
 
