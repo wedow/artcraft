@@ -1,0 +1,139 @@
+use std::fmt;
+use std::sync::Arc;
+
+use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::Path;
+use chrono::{DateTime, Utc};
+use log::warn;
+
+use enums::common::visibility::Visibility;
+use mysql_queries::queries::voice_designer::voices::get_voice::get_voice_by_token;
+use tokens::tokens::users::UserToken;
+use tokens::tokens::zs_voices::ZsVoiceToken;
+
+use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
+use crate::server_state::ServerState;
+
+#[derive(Serialize, Clone)]
+pub struct GetVoiceResponse {
+    voice_token: ZsVoiceToken,
+    title: String,
+
+    ietf_language_tag: String,
+    ietf_primary_language_subtag: String,
+
+    creator: UserDetailsLight,
+
+    creator_set_visibility: Visibility,
+
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
+
+#[derive(Deserialize)]
+pub struct GetVoicePathInfo {
+    voice_token: String,
+}
+
+#[derive(Debug)]
+pub enum GetVoiceError {
+    NotAuthorized,
+    NotFound,
+    ServerError,
+}
+
+impl fmt::Display for GetVoiceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl ResponseError for GetVoiceError {
+    fn status_code(&self) -> StatusCode {
+        match *self {
+            GetVoiceError::NotAuthorized => StatusCode::UNAUTHORIZED,
+            GetVoiceError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+            GetVoiceError::NotFound => StatusCode::NOT_FOUND,
+        }
+    }
+}
+
+pub async fn get_voice_handler(
+    http_request: HttpRequest,
+    path: Path<GetVoicePathInfo>,
+    server_state: web::Data<Arc<ServerState>>
+) -> Result<HttpResponse, GetVoiceError> {
+
+    let maybe_user_session = server_state
+        .session_checker
+        .maybe_get_user_session(&http_request, &server_state.mysql_pool)
+        .await
+        .map_err(|e| {
+            warn!("Session checker error: {:?}", e);
+            GetVoiceError::ServerError
+        })?;
+
+    let user_session = match maybe_user_session {
+        Some(session) => session,
+        None => {
+            warn!("not logged in");
+            return Err(GetVoiceError::NotAuthorized);
+        }
+    };
+
+    let voice_token = path.voice_token.clone();
+    let creator_user_token = user_session.user_token.clone();
+    let is_mod = user_session.can_ban_users;
+
+    let voice_lookup_result = get_voice_by_token(
+        &ZsVoiceToken::new(voice_token.clone()),
+        is_mod,
+        &server_state.mysql_pool,
+    ).await;
+
+    let voice = match voice_lookup_result {
+        Ok(Some(voice)) => voice,
+        Ok(None) => {
+            warn!("Voice not found: {:?}", voice_token);
+            return Err(GetVoiceError::NotFound);
+        },
+        Err(err) => {
+            warn!("Error looking up voice: {:?}", err);
+            return Err(GetVoiceError::ServerError);
+        }
+    };
+
+    let is_creator = voice.maybe_creator_user_token
+        .map(|creator_user_token| creator_user_token.as_str() == &user_session.user_token)
+        .unwrap_or(false);
+
+    if !is_creator && !is_mod {
+        warn!("user is not allowed to view this voice: {}", user_session.user_token);
+        return Err(GetVoiceError::NotAuthorized);
+    }
+
+    let response = GetVoiceResponse{
+        voice_token: voice.token,
+        title: voice.title,
+        ietf_language_tag: voice.ietf_language_tag,
+        ietf_primary_language_subtag: voice.ietf_primary_language_subtag,
+        creator: UserDetailsLight::from_db_fields(
+            &UserToken::new_from_str(user_session.user_token.as_ref()),
+            user_session.username.as_ref(),
+            user_session.display_name.as_ref(),
+            user_session.email_gravatar_hash.as_ref(),
+        ),
+        creator_set_visibility: voice.creator_set_visibility,
+        created_at: voice.created_at,
+        updated_at: voice.updated_at,
+    };
+
+    let body = serde_json::to_string(&response)
+        .map_err(|e| GetVoiceError::ServerError)?;
+
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .body(body))
+}

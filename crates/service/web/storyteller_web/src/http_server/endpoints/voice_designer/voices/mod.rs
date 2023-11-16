@@ -5,3 +5,4 @@ pub mod list_voices_by_session;
 pub mod list_voices_by_user;
 pub mod search_voices;
 pub mod update_voice;
+pub mod get_voice;

@@ -17,6 +17,7 @@ path = "src/lib.rs"
 dotenv = "0.15.0"
 env_logger = "0.10.0"
 log = "0.4.20"
+my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
 
 [dev-dependencies]
 # None yet

@@ -77,6 +77,7 @@ FROM rust-base AS builder
 COPY Cargo.lock .
 COPY Cargo.toml .
 COPY crates/ ./crates
+COPY my-workspace-hack/ ./my-workspace-hack
 COPY includes/ ./includes
 COPY test_data/ ./test_data
 

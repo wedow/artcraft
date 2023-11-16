@@ -20,6 +20,7 @@ logging = { path = "../../lib/logging" }
 # External
 clap = { version = "4.4.7", features = ["derive"] }
 walkdir = "2.4.0"
+my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
 
 [dev-dependencies]
 # None yet

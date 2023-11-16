@@ -12,3 +12,4 @@ path = "src/lib.rs"
 [dependencies]
 errors = { path = "../errors" }
 lettre = "0.11.0"
+my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }

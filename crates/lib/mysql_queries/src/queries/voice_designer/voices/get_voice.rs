@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use chrono::{DateTime, Utc};
 use log::error;
 use sqlx::{MySql, MySqlPool};
 use sqlx::pool::PoolConnection;
@@ -14,7 +15,10 @@ pub struct ZsVoice {
     pub ietf_language_tag: String,
     pub ietf_primary_language_subtag: String,
     pub bucket_hash: String,
-    pub maybe_creator_user_token: Option<UserToken>
+    pub maybe_creator_user_token: Option<UserToken>,
+    pub creator_set_visibility: Visibility,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 pub async fn get_voice_by_token(
@@ -71,7 +75,10 @@ pub async fn get_voice_by_token_with_connection(
         ietf_language_tag: record.ietf_language_tag,
         ietf_primary_language_subtag: record.ietf_primary_language_subtag,
         bucket_hash: record.bucket_hash,
-        maybe_creator_user_token: record.maybe_creator_user_token
+        maybe_creator_user_token: record.maybe_creator_user_token,
+        creator_set_visibility: record.creator_set_visibility,
+        created_at: record.created_at,
+        updated_at: record.updated_at,
     }))
 }
 
@@ -89,7 +96,9 @@ async fn select_include_deleted(
         zv.ietf_primary_language_subtag,
         zv.maybe_creator_user_token as `maybe_creator_user_token: tokens::tokens::users::UserToken`,
         zv.bucket_hash,
-        zv.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`
+        zv.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`,
+        zv.created_at,
+        zv.updated_at
         FROM zs_voices as zv
         WHERE
             zv.token = ?
@@ -113,7 +122,9 @@ async fn select_without_deleted(
         zv.ietf_primary_language_subtag,
         zv.maybe_creator_user_token as `maybe_creator_user_token: tokens::tokens::users::UserToken`,
         zv.bucket_hash,
-        zv.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`
+        zv.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`,
+        zv.created_at,
+        zv.updated_at
         FROM zs_voices as zv
         WHERE
             zv.token = ?
@@ -133,4 +144,6 @@ pub struct RawVoice {
     maybe_creator_user_token: Option<UserToken>,
     bucket_hash: String,
     creator_set_visibility: Visibility,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
 }

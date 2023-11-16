@@ -2228,6 +2228,7 @@ dependencies = [
  "errors",
  "futures-util",
  "hostname",
+ "my-workspace-hack",
  "reusable_types",
  "serde",
  "serde_derive",
@@ -2349,6 +2350,7 @@ version = "0.1.0"
 dependencies = [
  "errors",
  "lettre",
+ "my-workspace-hack",
 ]
 
 [[package]]
@@ -3592,6 +3594,7 @@ dependencies = [
  "dotenv",
  "env_logger 0.10.0",
  "log",
+ "my-workspace-hack",
 ]
 
 [[package]]
@@ -3610,6 +3613,7 @@ dependencies = [
  "clap 4.4.7",
  "errors",
  "logging",
+ "my-workspace-hack",
  "walkdir",
 ]
 
@@ -4377,6 +4381,7 @@ version = "0.0.1"
 dependencies = [
  "bcrypt",
  "errors",
+ "my-workspace-hack",
 ]
 
 [[package]]
@@ -5996,6 +6001,7 @@ dependencies = [
  "media",
  "memory_caching",
  "mimetypes",
+ "my-workspace-hack",
  "mysql_queries",
  "native-tls",
  "once_cell",
@@ -6999,6 +7005,7 @@ dependencies = [
  "log",
  "magic-crypt",
  "md-5",
+ "my-workspace-hack",
  "mysql_queries",
  "native-tls",
  "pulldown-cmark",

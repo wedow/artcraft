@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use chrono::{DateTime, Utc};
 use log::error;
 use sqlx::{MySql, MySqlPool};
 use sqlx::pool::PoolConnection;
@@ -15,6 +16,8 @@ pub struct ZsDataset {
     pub ietf_primary_language_subtag: String,
     pub maybe_creator_user_token: Option<String>,
     pub creator_set_visibility: Visibility,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 pub async fn get_dataset_by_token(
@@ -72,6 +75,8 @@ pub async fn get_dataset_by_token_with_connection(
         ietf_primary_language_subtag: record.ietf_primary_language_subtag,
         maybe_creator_user_token: record.maybe_creator_user_token,
         creator_set_visibility: record.creator_set_visibility,
+        created_at: record.created_at,
+        updated_at: record.updated_at,
     }))
 }
 
@@ -88,7 +93,9 @@ async fn select_include_deleted(
         zd.ietf_language_tag,
         zd.ietf_primary_language_subtag,
         zd.maybe_creator_user_token,
-        zd.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`
+        zd.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`,
+        zd.created_at,
+        zd.updated_at
         FROM zs_voice_datasets as zd
         WHERE
             zd.token = ?
@@ -111,7 +118,9 @@ async fn select_without_deleted(
         zd.ietf_language_tag,
         zd.ietf_primary_language_subtag,
         zd.maybe_creator_user_token,
-        zd.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`
+        zd.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`,
+        zd.created_at,
+        zd.updated_at
         FROM zs_voice_datasets as zd
         WHERE
             zd.token = ?
@@ -130,4 +139,6 @@ pub struct RawDataset {
     ietf_primary_language_subtag: String,
     maybe_creator_user_token: Option<String>,
     creator_set_visibility: Visibility,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
 }

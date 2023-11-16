@@ -1,0 +1,140 @@
+use std::fmt;
+use std::sync::Arc;
+
+use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::Path;
+use chrono::{DateTime, Utc};
+use log::warn;
+
+use enums::common::visibility::Visibility;
+use mysql_queries::queries::voice_designer::datasets::get_dataset::get_dataset_by_token;
+use mysql_queries::queries::voice_designer::datasets::list_datasets_by_username::list_datasets_by_username;
+use tokens::tokens::users::UserToken;
+use tokens::tokens::zs_voice_datasets::ZsVoiceDatasetToken;
+
+use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
+use crate::server_state::ServerState;
+
+#[derive(Serialize, Clone)]
+pub struct GetDatasetResponse {
+    dataset_token: ZsVoiceDatasetToken,
+    title: String,
+
+    ietf_language_tag: String,
+    ietf_primary_language_subtag: String,
+
+    creator: UserDetailsLight,
+
+    creator_set_visibility: Visibility,
+
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
+
+#[derive(Deserialize)]
+pub struct GetDatasetPathInfo {
+    dataset_token: String,
+}
+
+#[derive(Debug)]
+pub enum GetDatasetError {
+    NotAuthorized,
+    NotFound,
+    ServerError,
+}
+
+impl fmt::Display for GetDatasetError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl ResponseError for GetDatasetError {
+    fn status_code(&self) -> StatusCode {
+        match *self {
+            GetDatasetError::NotAuthorized => StatusCode::UNAUTHORIZED,
+            GetDatasetError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+            GetDatasetError::NotFound => StatusCode::NOT_FOUND,
+        }
+    }
+}
+
+pub async fn get_dataset_handler(
+    http_request: HttpRequest,
+    path: Path<GetDatasetPathInfo>,
+    server_state: web::Data<Arc<ServerState>>
+) -> Result<HttpResponse, GetDatasetError> {
+
+    let maybe_user_session = server_state
+        .session_checker
+        .maybe_get_user_session(&http_request, &server_state.mysql_pool)
+        .await
+        .map_err(|e| {
+            warn!("Session checker error: {:?}", e);
+            GetDatasetError::ServerError
+        })?;
+
+    let user_session = match maybe_user_session {
+        Some(session) => session,
+        None => {
+            warn!("not logged in");
+            return Err(GetDatasetError::NotAuthorized);
+        }
+    };
+
+    let dataset_token = path.dataset_token.clone();
+    let creator_user_token = user_session.user_token.clone();
+    let is_mod = user_session.can_ban_users;
+
+    let dataset_lookup_result = get_dataset_by_token(
+        &ZsVoiceDatasetToken::new(dataset_token.clone()),
+        is_mod,
+        &server_state.mysql_pool,
+    ).await;
+
+    let dataset = match dataset_lookup_result {
+        Ok(Some(dataset)) => dataset,
+        Ok(None) => {
+            warn!("Dataset not found: {:?}", dataset_token);
+            return Err(GetDatasetError::NotFound);
+        },
+        Err(err) => {
+            warn!("Error looking up dataset: {:?}", err);
+            return Err(GetDatasetError::ServerError);
+        }
+    };
+
+    let is_creator = dataset.maybe_creator_user_token.as_deref()
+        .map(|creator_user_token| creator_user_token == &user_session.user_token)
+        .unwrap_or(false);
+
+    if !is_creator && !is_mod {
+        warn!("user is not allowed to view this dataset: {}", user_session.user_token);
+        return Err(GetDatasetError::NotAuthorized);
+    }
+
+    let response = GetDatasetResponse{
+        dataset_token: dataset.token,
+        title: dataset.title,
+        ietf_language_tag: dataset.ietf_language_tag,
+        ietf_primary_language_subtag: dataset.ietf_primary_language_subtag,
+        creator: UserDetailsLight::from_db_fields(
+            &UserToken::new_from_str(user_session.user_token.as_ref()),
+            user_session.username.as_ref(),
+            user_session.display_name.as_ref(),
+            user_session.email_gravatar_hash.as_ref(),
+        ),
+        creator_set_visibility: dataset.creator_set_visibility,
+        created_at: dataset.created_at,
+        updated_at: dataset.updated_at,
+    };
+
+    let body = serde_json::to_string(&response)
+        .map_err(|e| GetDatasetError::ServerError)?;
+
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .body(body))
+}

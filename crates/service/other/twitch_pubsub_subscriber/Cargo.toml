@@ -85,6 +85,7 @@ toml = "0.5.8"
 
 # Text processing
 pulldown-cmark = "0.9.3"
+my-workspace-hack = { version = "0.1", path = "../../../../my-workspace-hack" }
 
 [build-dependencies]
 # NB: Only using diesel for migrations support

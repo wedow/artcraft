@@ -29,6 +29,7 @@ pub(crate) enum TokenPrefix {
   InferenceJob,
   MediaFile,
   MediaUpload,
+  ModelWeight,
   NewsStory, // NB: aichatbot / sqlite
   PasswordReset,
   TtsRenderTask, // NB: aichatbot / sqlite
@@ -92,6 +93,7 @@ impl PrefixGenerator for TokenPrefix {
       Self::InferenceJob => "jinf_",
       Self::MediaFile => "m_",
       Self::MediaUpload => "mu_",
+      Self::ModelWeight => "weight_",
       Self::NewsStory => "news_story_",
       Self::PasswordReset => "pw_reset_",
       Self::TtsRenderTask => "tts_task_",

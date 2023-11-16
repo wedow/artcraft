@@ -116,11 +116,13 @@ use crate::http_server::endpoints::voice_designer::voice_dataset_samples::list_s
 use crate::http_server::endpoints::voice_designer::voice_dataset_samples::upload_sample::upload_sample_handler;
 use crate::http_server::endpoints::voice_designer::voice_datasets::create_dataset::create_dataset_handler;
 use crate::http_server::endpoints::voice_designer::voice_datasets::delete_dataset::delete_dataset_handler;
+use crate::http_server::endpoints::voice_designer::voice_datasets::get_dataset::get_dataset_handler;
 use crate::http_server::endpoints::voice_designer::voice_datasets::list_datasets_by_session::list_datasets_by_session_handler;
 use crate::http_server::endpoints::voice_designer::voice_datasets::list_datasets_by_user::list_datasets_by_user_handler;
 use crate::http_server::endpoints::voice_designer::voice_datasets::update_dataset::update_dataset_handler;
 use crate::http_server::endpoints::voice_designer::voices::create_voice::create_voice_handler;
 use crate::http_server::endpoints::voice_designer::voices::delete_voice::delete_voice_handler;
+use crate::http_server::endpoints::voice_designer::voices::get_voice::get_voice_handler;
 use crate::http_server::endpoints::voice_designer::voices::list_available_voices::list_available_voices_handler;
 use crate::http_server::endpoints::voice_designer::voices::list_voices_by_session::list_voices_by_session_handler;
 use crate::http_server::endpoints::voice_designer::voices::list_voices_by_user::list_voices_by_user_handler;
@@ -1269,63 +1271,78 @@ fn add_subscription_routes<T, B>(app: App<T>) -> App<T>
     )
 }
 
-fn add_voice_designer_routes<T, B>(app: App<T>) -> App<T>
-    where
-        B: MessageBody,
-        T: ServiceFactory<
-            ServiceRequest,
-            Config = (),
-            Response = ServiceResponse<B>,
-            Error = Error,
-            InitError = ()
-        >
-{
-    app.service(
-        web
-            ::scope("/v1/voice_designer")
-            .service(
-                web
-                    ::scope("/dataset")
-                    .route("/create", web::post().to(create_dataset_handler))
-                    .service(
-                        web
-                            ::resource("/{dataset_token}/update")
-                            .route(web::post().to(update_dataset_handler))
-                            .route(web::head().to(|| HttpResponse::Ok()))
-                    )
-                    .route("/{dataset_token}/delete", web::delete().to(delete_dataset_handler))
-                    .route("/user/{username}/list", web::get().to(list_datasets_by_user_handler))
-                    .route("/session/list", web::get().to(list_datasets_by_session_handler))
-            )
-            .service(
-                web
-                    ::scope("/voice")
-                    .route("/list", web::get().to(list_available_voices_handler))
-                    .route("/search", web::post().to(search_voices))
-                    .route("/create", web::post().to(create_voice_handler))
-                    .route("/{voice_token}/update", web::post().to(update_voice_handler))
-                    .route("/{voice_token}/delete", web::delete().to(delete_voice_handler))
-                    .route("/user/{username}/list", web::get().to(list_voices_by_user_handler))
-                    .route("/session/list", web::get().to(list_voices_by_session_handler))
-            )
-            .service(
-                web
-                    ::scope("/sample")
-                    .route("/upload", web::post().to(upload_sample_handler))
-                    .route("/{sample_token}/delete", web::delete().to(delete_sample_handler))
-                    .route(
-                        "/dataset/{dataset_token}/list",
-                        web::get().to(list_samples_by_dataset_handler)
-                    )
-            )
-            .service(
-                web
-                    ::scope("/inference")
-                    .route("/enqueue_tts", web::post().to(enqueue_tts_request))
-                    .route("/enqueue_vc", web::post().to(enqueue_vc_request))
-            )
-    )
+fn add_voice_designer_routes<T,B> (app:App<T>)-> App<T>
+  where 
+    B: MessageBody,
+    T: ServiceFactory<
+      ServiceRequest,
+      Config = (),
+      Response = ServiceResponse<B>,
+      Error = Error,
+      InitError = (),
+      >,
+      {
+        app.service(
+          web::scope("/v1/voice_designer")
+              .service(
+                  web::scope("/dataset")
+                      .route("/create", web::post().to(create_dataset_handler))
+                      .service(web::resource("/{dataset_token}/update")
+                          .route(web::post().to(update_dataset_handler))
+                          .route(web::head().to(|| HttpResponse::Ok()))
+                      )
+                      .route("/{dataset_token}", web::get().to(get_dataset_handler))
+                      .route("/{dataset_token}/delete", web::delete().to(delete_dataset_handler))
+                      .route("/user/{username}/list", web::get().to(list_datasets_by_user_handler))
+                      .route("/session/list", web::get().to(list_datasets_by_session_handler))
+              )
+              .service(
+                  web::scope("/voice")
+                      .route("/list", web::get().to(list_available_voices_handler))
+                      .route("/search", web::post().to(search_voices))
+                      .route("/create", web::post().to(create_voice_handler))
+                      .route("/{voice_token}", web::get().to(get_voice_handler))
+                      .route("/{voice_token}/update", web::post().to(update_voice_handler))
+                      .route("/{voice_token}/delete", web::delete().to(delete_voice_handler))
+                      .route("/user/{username}/list", web::get().to(list_voices_by_user_handler))
+                      .route("/session/list", web::get().to(list_voices_by_session_handler))
+              )
+              .service(
+                  web::scope("/sample")
+                      .route("/upload", web::post().to(upload_sample_handler))
+                      .route("/{sample_token}/delete", web::delete().to(delete_sample_handler))
+                      .route("/dataset/{dataset_token}/list", web::get().to(list_samples_by_dataset_handler))
+              )
+              .service(
+                  web::scope("/inference")
+                      .route("/enqueue_tts", web::post().to(enqueue_tts_request))
+                      .route("/enqueue_vc", web::post().to(enqueue_vc_request))
+              )
+      )
 }
+
+// fn add_image_generation_routes<T, B>(app: App<T>) -> App<T>
+//     where
+//         B: MessageBody,
+//         T: ServiceFactory<
+//             ServiceRequest,
+//             Config = (),
+//             Response = ServiceResponse<B>,
+//             Error = Error,
+//             InitError = ()
+//         >
+// {
+//     app.service(
+//         web
+//             ::scope("/v1/image_generation")
+//             .route("/inference", web::post().to(create_inference_job_handler))
+//             .route("/trending_weights_loras", web::get().to(get_trending_weights_loras_handler))
+//             .route("/recent_weights_loras", web::get().to(get_recent_weights_loras_handler))
+//             .route("/popular_weights_loras", web::get().to(get_popular_weights_loras_handler))
+//             .route("/get_weights_loras_by_user", web::get().to(get_weights_loras_by_user_handler))
+//     )
+// }
+
 
 // fn add_favorites_routes<T, B>(app: App<T>) -> App<T>
 //     where
@@ -1381,26 +1398,3 @@ fn add_weights_routes<T, B>(app: App<T>) -> App<T>
             )
     )
 }
-
-
-// fn add_image_generation_routes<T, B>(app: App<T>) -> App<T>
-//     where
-//         B: MessageBody,
-//         T: ServiceFactory<
-//             ServiceRequest,
-//             Config = (),
-//             Response = ServiceResponse<B>,
-//             Error = Error,
-//             InitError = ()
-//         >
-// {
-//     app.service(
-//         web
-//             ::scope("/v1/image_generation")
-//             .route("/inference", web::post().to(create_inference_job_handler))
-//             .route("/trending_weights_loras", web::get().to(get_trending_weights_loras_handler))
-//             .route("/recent_weights_loras", web::get().to(get_recent_weights_loras_handler))
-//             .route("/popular_weights_loras", web::get().to(get_popular_weights_loras_handler))
-//             .route("/get_weights_loras_by_user", web::get().to(get_weights_loras_by_user_handler))
-//     )
-// }
