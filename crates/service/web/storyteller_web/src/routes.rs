@@ -137,10 +137,18 @@ use crate::http_server::endpoints::w2l::get_w2l_result::get_w2l_inference_result
 use crate::http_server::endpoints::w2l::get_w2l_template::get_w2l_template_handler;
 use crate::http_server::endpoints::w2l::get_w2l_template_use_count::get_w2l_template_use_count_handler;
 use crate::http_server::endpoints::w2l::get_w2l_upload_template_job_status::get_w2l_upload_template_job_status_handler;
+
 use crate::http_server::endpoints::w2l::list_user_w2l_inference_results::list_user_w2l_inference_results_handler;
 use crate::http_server::endpoints::w2l::list_user_w2l_templates::list_user_w2l_templates_handler;
 use crate::http_server::endpoints::w2l::list_w2l_templates::list_w2l_templates_handler;
 use crate::http_server::endpoints::w2l::set_w2l_template_mod_approval::set_w2l_template_mod_approval_handler;
+
+use crate::http_server::endpoints::weights::upload_weights::upload_weights_handler;
+use crate::http_server::endpoints::weights::delete_weight::delete_weight_handler;
+use crate::http_server::endpoints::weights::update_weight_metadata::update_weight_metadata_handler;
+use crate::http_server::endpoints::weights::get_weight_details::get_weight_details_handler;
+use crate::http_server::endpoints::weights::get_weights_by_user::get_weights_by_user_handler;
+use crate::http_server::endpoints::weights::get_weights_by_user_and_type::get_weights_by_user_and_type_handler;
 
 pub fn add_routes<T, B>(app: App<T>, server_environment: ServerEnvironment) -> App<T>
     where
@@ -1319,50 +1327,30 @@ fn add_voice_designer_routes<T, B>(app: App<T>) -> App<T>
     )
 }
 
-fn add_favorites_routes<T, B>(app: App<T>) -> App<T>
-    where
-        B: MessageBody,
-        T: ServiceFactory<
-            ServiceRequest,
-            Config = (),
-            Response = ServiceResponse<B>,
-            Error = Error,
-            InitError = ()
-        >
-{
-    app.service(
-        web
-            ::scope("/v1/favorites")
-            .route("", web::post().to(create_favorite_handler))
-            .route("/user/{username}", web::get().to(get_favorites_by_user_handler))
-            .route(
-                "/user/{username}/{entity_type}",
-                web::get().to(get_favorites_by_user_and_type_handler)
-            )
-            .route("/add", web::post().to(add_favorite_handler))
-            .route("/delete", web::post().to(delete_favorite_handler))
-    )
-}
-
-async fn create_favorite_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorite created")
-}
-
-async fn get_favorites_by_user_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorites by user")
-}
-
-async fn get_favorites_by_user_and_type_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorites by user and type")
-}
-
-async fn add_favorite_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorite added")
-}
-
-async fn delete_favorite_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorite deleted")
-}
+// fn add_favorites_routes<T, B>(app: App<T>) -> App<T>
+//     where
+//         B: MessageBody,
+//         T: ServiceFactory<
+//             ServiceRequest,
+//             Config = (),
+//             Response = ServiceResponse<B>,
+//             Error = Error,
+//             InitError = ()
+//         >
+// {
+//     app.service(
+//         web
+//             ::scope("/v1/favorites")
+//             .route("", web::post().to(create_favorite_handler))
+//             .route("/user/{username}", web::get().to(get_favorites_by_user_handler))
+//             .route(
+//                 "/user/{username}/{entity_type}",
+//                 web::get().to(get_favorites_by_user_and_type_handler)
+//             )
+//             .route("/add", web::post().to(add_favorite_handler))
+//             .route("/delete", web::post().to(delete_favorite_handler))
+//     )
+// }
 
 fn add_weights_routes<T, B>(app: App<T>) -> App<T>
     where
@@ -1394,71 +1382,25 @@ fn add_weights_routes<T, B>(app: App<T>) -> App<T>
     )
 }
 
-async fn upload_weights_handler() -> impl Responder {
-    HttpResponse::Ok().body("Weights uploaded")
-}
 
-async fn get_weight_details_handler() -> impl Responder {
-    HttpResponse::Ok().body("Weight details")
-}
-
-async fn update_weight_metadata_handler() -> impl Responder {
-    HttpResponse::Ok().body("Weight metadata updated")
-}
-
-async fn delete_weight_handler() -> impl Responder {
-    HttpResponse::Ok().body("Weight deleted")
-}
-
-async fn get_weights_by_user_handler() -> impl Responder {
-    HttpResponse::Ok().body("Weights by user")
-}
-
-async fn get_weights_by_user_and_type_handler() -> impl Responder {
-    HttpResponse::Ok().body("Weights by user and type")
-}
-
-fn add_favorites_routes<T, B>(app: App<T>) -> App<T>
-    where
-        B: MessageBody,
-        T: ServiceFactory<
-            ServiceRequest,
-            Config = (),
-            Response = ServiceResponse<B>,
-            Error = Error,
-            InitError = ()
-        >
-{
-    app.service(
-        web
-            ::scope("/v1/favorites")
-            .route("", web::post().to(create_favorite_handler))
-            .route("/user/{username}", web::get().to(get_favorites_by_user_handler))
-            .route(
-                "/user/{username}/{entity_type}",
-                web::get().to(get_favorites_by_user_and_type_handler)
-            )
-            .route("/add", web::post().to(add_favorite_handler))
-            .route("/delete", web::post().to(delete_favorite_handler))
-    )
-}
-
-async fn create_favorite_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorite created")
-}
-
-async fn get_favorites_by_user_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorites by user")
-}
-
-async fn get_favorites_by_user_and_type_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorites by user and type")
-}
-
-async fn add_favorite_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorite added")
-}
-
-async fn delete_favorite_handler() -> impl Responder {
-    HttpResponse::Ok().body("Favorite deleted")
-}
+// fn add_image_generation_routes<T, B>(app: App<T>) -> App<T>
+//     where
+//         B: MessageBody,
+//         T: ServiceFactory<
+//             ServiceRequest,
+//             Config = (),
+//             Response = ServiceResponse<B>,
+//             Error = Error,
+//             InitError = ()
+//         >
+// {
+//     app.service(
+//         web
+//             ::scope("/v1/image_generation")
+//             .route("/inference", web::post().to(create_inference_job_handler))
+//             .route("/trending_weights_loras", web::get().to(get_trending_weights_loras_handler))
+//             .route("/recent_weights_loras", web::get().to(get_recent_weights_loras_handler))
+//             .route("/popular_weights_loras", web::get().to(get_popular_weights_loras_handler))
+//             .route("/get_weights_loras_by_user", web::get().to(get_weights_loras_by_user_handler))
+//     )
+// }
