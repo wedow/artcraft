@@ -43,6 +43,7 @@ pub async fn seed_zero_shot_tts(mysql_pool: &Pool<MySql>, maybe_bucket_client: O
     ("Hilary", "7wav68ba2yy86491jk36cgk36tkmzesr", "hilary.wav", &user_token),
     ("Obama", "z3gy4v56sgtfrxfrpvaj7v74sqc67rcq", "obama.wav", &user_token),
     ("Trump", "qcy7pv3rph0ntkqnpz5cfg9ksyh7kkz5", "trump.wav", &user_token),
+    ("Juri", "qcy7pv3rph0ntkqnpz5cfg9kssd7kkz5", "juri.wav", &user_token),
   ];
 
   for (voice_name, bucket_hash, wav_file, user_token) in records {
