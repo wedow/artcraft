@@ -23,7 +23,7 @@ anyhow = "1.0.75"
 # Serialization
 serde = "1.0.125"
 serde_derive = "1.0.125"
-serde_json = "1.0.64"
+serde_json = "1.0.108"
 
 # TODO: Get rid of in favor of std::time
 time = "0.2.26"

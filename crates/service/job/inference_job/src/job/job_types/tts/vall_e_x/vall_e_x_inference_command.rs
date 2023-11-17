@@ -43,7 +43,7 @@ pub struct InferenceArgs<P: AsRef<Path>> {
     pub input_embedding_name: String,
     pub input_text: String, // name of the text
     pub output_file_name: String, // output file name in the output folder
-    pub stderr_output_file: String,
+    pub stderr_output_file: P,
 }
 
 pub struct CreateVoiceInferenceArgs<P: AsRef<Path>> {
@@ -259,7 +259,7 @@ impl VallEXInferenceCommand {
 
         let mut config = PopenConfig::default();
 
-        info!("stderr will be written to file: {:?}", args.stderr_output_file);
+        info!("stderr will be written to file: {:?}", args.stderr_output_file.as_ref());
 
         let stderr_file = File::create(&args.stderr_output_file)?;
         config.stderr = Redirection::File(stderr_file);

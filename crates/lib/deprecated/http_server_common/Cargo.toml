@@ -38,7 +38,7 @@ language-tags = "0.3.2" # Parsing single tags richly
 # Serialization
 serde = "1.0.125"
 serde_derive = "1.0.125"
-serde_json = "1.0.64"
+serde_json = "1.0.108"
 my-workspace-hack = { version = "0.1", path = "../../../../my-workspace-hack" }
 
 [dev-dependencies]
