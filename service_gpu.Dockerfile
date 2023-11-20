@@ -138,6 +138,13 @@ LABEL org.opencontainers.image.url='https://github.com/storytold/storyteller-web
 
 WORKDIR /
 
+# Install rsync to copy files to other containers
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
+        rsync \
+        --no-install-recommends \ 
+    && apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
+
 # Give the container its version so it can report over HTTP.
 ARG GIT_SHA
 RUN echo -n ${GIT_SHA} > GIT_SHA
