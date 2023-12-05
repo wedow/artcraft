@@ -12,7 +12,7 @@ use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginM
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
-use mysql_queries::queries::media_files::list_media_files_for_user::{list_media_files_for_user, ListMediaFileForUserArgs, ViewAs};
+use mysql_queries::queries::media_files::list_media_files::{list_media_files, ListMediaFilesArgs, ViewAs};
 use tokens::tokens::media_files::MediaFileToken;
 
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
@@ -50,7 +50,7 @@ pub struct MediaFileListItem {
   pub maybe_public_bucket_prefix: Option<String>,
   pub maybe_public_bucket_extension: Option<String>,
 
-  pub maybe_creator: Option<UserDetailsLight>,
+  pub creator: UserDetailsLight,
 
   pub creator_set_visibility: Visibility,
 
@@ -91,7 +91,6 @@ pub async fn list_media_files_handler(
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<HttpResponse, ErrorResponse>
 {
-  info!("Fetching inference results for user: {}", &path.username);
 
   let maybe_user_session = server_state
       .session_checker
@@ -108,7 +107,6 @@ pub async fn list_media_files_handler(
   match maybe_user_session {
     None => {},
     Some(session) => {
-      is_author = session.username == path.username;
       is_mod = session.can_ban_users;
     },
   };
@@ -130,15 +128,13 @@ pub async fn list_media_files_handler(
     None
   };
 
-  let view_as = if is_author {
-    ViewAs::Author
-  } else if is_mod {
+  let view_as = if is_mod {
     ViewAs::Moderator
   } else {
     ViewAs::AnotherUser
   };
 
-  let query_results = list_media_files_for_user(ListMediaFileForUserArgs {
+  let query_results = list_media_files(ListMediaFilesArgs {
     limit,
     maybe_filter_media_type: query.filter_media_type,
     maybe_offset: cursor,
@@ -189,6 +185,12 @@ pub async fn list_media_files_handler(
         public_bucket_directory_hash: record.public_bucket_directory_hash,
         maybe_public_bucket_prefix: record.maybe_public_bucket_prefix,
         maybe_public_bucket_extension: record.maybe_public_bucket_extension,
+        creator: UserDetailsLight::from_db_fields(
+          &record.creator_user_token,
+          &record.creator_username,
+          &record.creator_display_name,
+          &record.creator_email_gravatar_hash,
+        ),
         creator_set_visibility: record.creator_set_visibility,
         created_at: record.created_at,
         updated_at: record.updated_at,

@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
-use sqlx::{MySql, MySqlPool, QueryBuilder};
+use log::warn;
+use sqlx::{Execute, MySql, MySqlPool, QueryBuilder};
 
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
@@ -8,6 +9,7 @@ use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
 use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::users::UserToken;
 
 pub struct MediaFileListPage {
   pub records: Vec<MediaFileListItem>,
@@ -34,6 +36,10 @@ pub struct MediaFileListItem {
   pub maybe_public_bucket_prefix: Option<String>,
   pub maybe_public_bucket_extension: Option<String>,
 
+  pub creator_user_token: UserToken,
+  pub creator_username: String,
+  pub creator_display_name: String,
+  pub creator_email_gravatar_hash: String,
   pub creator_set_visibility: Visibility,
 
   pub created_at: DateTime<Utc>,
@@ -42,13 +48,11 @@ pub struct MediaFileListItem {
 
 #[derive(Clone, Copy)]
 pub enum ViewAs {
-  Author,
   Moderator,
   AnotherUser,
 }
 
 pub struct ListMediaFilesArgs<'a> {
-  pub username: &'a str,
   pub limit: usize,
   pub maybe_filter_media_type: Option<MediaFileType>,
   pub maybe_offset: Option<usize>,
@@ -61,7 +65,6 @@ pub async fn list_media_files(args: ListMediaFilesArgs<'_>) -> AnyhowResult<Medi
 
   let mut query = query_builder(
     args.maybe_filter_media_type,
-    args.username,
     args.limit,
     args.maybe_offset,
     args.cursor_is_reversed,
@@ -71,7 +74,6 @@ pub async fn list_media_files(args: ListMediaFilesArgs<'_>) -> AnyhowResult<Medi
   let query = query.build_query_as::<MediaFileListItemInternal>();
 
   let results = query.fetch_all(args.mysql_pool).await?;
-
   let first_id = results.first()
       .map(|raw_result| raw_result.id);
 
@@ -81,7 +83,7 @@ pub async fn list_media_files(args: ListMediaFilesArgs<'_>) -> AnyhowResult<Medi
   let results = results.into_iter()
       .map(|record| {
         MediaFileListItem {
-          token: record.token,
+          token: MediaFileToken::new_from_str(&record.media_file_token),
           origin_category: record.origin_category,
           origin_product_category: record.origin_product_category,
           maybe_origin_model_type: record.maybe_origin_model_type,
@@ -90,6 +92,10 @@ pub async fn list_media_files(args: ListMediaFilesArgs<'_>) -> AnyhowResult<Medi
           public_bucket_directory_hash: record.public_bucket_directory_hash,
           maybe_public_bucket_prefix: record.maybe_public_bucket_prefix,
           maybe_public_bucket_extension: record.maybe_public_bucket_extension,
+          creator_user_token: UserToken::new_from_str(&record.creator_user_token),
+          creator_username: record.creator_username,
+          creator_display_name: record.creator_display_name,
+          creator_email_gravatar_hash: record.creator_email_gravatar_hash,
           creator_set_visibility: record.creator_set_visibility,
           created_at: record.created_at,
           updated_at: record.updated_at,
@@ -107,19 +113,18 @@ pub async fn list_media_files(args: ListMediaFilesArgs<'_>) -> AnyhowResult<Medi
 
 fn query_builder<'a>(
   maybe_filter_media_type: Option<MediaFileType>,
-  username: &'a str,
   limit: usize,
   maybe_offset: Option<usize>,
   cursor_is_reversed: bool,
   view_as: ViewAs,
 ) -> QueryBuilder<'a, MySql> {
 
-  // NB: Query cannot be statically checked by sqlx
-  let mut query_builder: QueryBuilder<MySql> = QueryBuilder::new(
+  let mut query_string = String::from(
     r#"
+
 SELECT
   m.id,
-  m.token as `token: tokens::tokens::media_files::MediaFileToken`,
+  m.token as media_file_token,
 
   m.origin_category as `origin_category: enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory`,
   m.origin_product_category as `origin_product_category: enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory`,
@@ -133,21 +138,25 @@ SELECT
   m.maybe_public_bucket_prefix,
   m.maybe_public_bucket_extension,
 
+  users.token as creator_user_token,
+  users.username as creator_username,
+  users.display_name as creator_display_name,
+  users.email_gravatar_hash as creator_email_gravatar_hash,
   m.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`,
   m.created_at,
   m.updated_at
 
 FROM media_files AS m
-LEFT OUTER JOIN users AS u
-    ON m.maybe_creator_user_token = u.token
-
-WHERE u.username = ?
+LEFT OUTER JOIN users
+    ON m.maybe_creator_user_token = users.token
+WHERE m.maybe_creator_user_token IS NOT NULL
 AND m.user_deleted_at IS NULL
 AND m.mod_deleted_at IS NULL
     "#
   );
 
-  query_builder.push_bind(username);
+  // NB: Query cannot be statically checked by sqlx
+  let mut query_builder: QueryBuilder<MySql> = QueryBuilder::new(query_string);
 
   if let Some(media_type) = maybe_filter_media_type {
     query_builder.push(" AND m.media_file_type = ? ");
@@ -155,7 +164,6 @@ AND m.mod_deleted_at IS NULL
   }
 
   match view_as {
-    ViewAs::Author => {}
     ViewAs::Moderator => {}
     ViewAs::AnotherUser => {
       query_builder.push(" AND m.creator_set_visibility = 'public' ");
@@ -184,7 +192,7 @@ AND m.mod_deleted_at IS NULL
 #[derive(sqlx::FromRow)]
 struct MediaFileListItemInternal {
   id: i64,
-  token: MediaFileToken,
+  media_file_token: String,
 
   origin_category: MediaFileOriginCategory,
   origin_product_category: MediaFileOriginProductCategory,
@@ -196,6 +204,10 @@ struct MediaFileListItemInternal {
   maybe_public_bucket_prefix: Option<String>,
   maybe_public_bucket_extension: Option<String>,
 
+  creator_user_token: String,
+  creator_username: String,
+  creator_display_name: String,
+  creator_email_gravatar_hash: String,
   creator_set_visibility: Visibility,
 
   created_at: DateTime<Utc>,
