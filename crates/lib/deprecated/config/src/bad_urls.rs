@@ -3,8 +3,13 @@
 use crate::is_bad_download_url::is_bad_download_url;
 
 /// Reports if the URL is inappropriate for downloading as a TTS model, vocoder, etc.
+/// DEPRECATE:
 pub fn is_bad_tts_model_download_url(url: &str) -> anyhow::Result<bool> {
   // TODO: Just use this.
+  is_bad_download_url(url)
+}
+
+pub fn is_bad_model_weights_download_url(url: &str) -> anyhow::Result<bool> {
   is_bad_download_url(url)
 }
 
