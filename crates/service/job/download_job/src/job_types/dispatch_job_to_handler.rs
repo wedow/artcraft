@@ -112,6 +112,17 @@ pub async fn dispatch_job_to_handler<'a, 'b: 'a>(args: DispatchJobToHandlerArgs<
       ).await?;
       entity_token = results.entity_token.clone();
       entity_type = results.entity_type.clone();
+    },
+    GenericDownloadType::StableDiffusion15 => {
+      let results = process_vits_model(
+        args.job_runner_state,
+        args.job,
+        args.temp_dir,
+        args.download_filename,
+        args.redis_logger,
+      ).await?;
+      entity_token = results.entity_token.clone();
+      entity_type = results.entity_type.clone();
     }
   }
 

@@ -149,7 +149,6 @@ pub async fn upload_weights_handler(
     let job_token;
     let download_job_type;
 
-
     let generic_download_type = match supported_model_weights_type {
         WeightsType::HifiGan => GenericDownloadType::HifiGan,
         WeightsType::RvcV2 => GenericDownloadType::RvcV2,
