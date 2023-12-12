@@ -64,6 +64,11 @@ pub enum GenericDownloadType {
   #[serde(rename = "vits")]
   #[sqlx(rename = "vits")]
   Vits,
+
+  // SD models
+  #[serde(rename = "sd_15")]
+  #[sqlx(rename = "sd_15")]
+  StableDiffusion15,
 }
 
 /// NB: Legacy API for older code.
@@ -78,6 +83,7 @@ impl GenericDownloadType {
       Self::SoVitsSvc => "so_vits_svc",
       Self::Tacotron2 => "tacotron2",
       Self::Vits => "vits",
+      Self::StableDiffusion15 => "sd_15"
     }
   }
 
@@ -91,6 +97,7 @@ impl GenericDownloadType {
       "so_vits_svc" => Ok(Self::SoVitsSvc),
       "tacotron2" => Ok(Self::Tacotron2),
       "vits" => Ok(Self::Vits),
+      "sd_15" => Ok(Self::StableDiffusion15),
       _ => Err(format!("invalid value: {:?}", value)),
     }
   }
@@ -107,6 +114,7 @@ impl GenericDownloadType {
       Self::SoVitsSvc,
       Self::Tacotron2,
       Self::Vits,
+      Self::StableDiffusion15,
     ])
   }
 }
@@ -126,6 +134,7 @@ mod tests {
     assert_serialization(GenericDownloadType::SoVitsSvc, "so_vits_svc");
     assert_serialization(GenericDownloadType::Tacotron2, "tacotron2");
     assert_serialization(GenericDownloadType::Vits, "vits");
+    assert_serialization(GenericDownloadType::StableDiffusion15, "sd_15");
   }
 
   #[test]
@@ -138,6 +147,7 @@ mod tests {
     assert_eq!(GenericDownloadType::SoVitsSvc.to_str(), "so_vits_svc");
     assert_eq!(GenericDownloadType::Tacotron2.to_str(), "tacotron2");
     assert_eq!(GenericDownloadType::Vits.to_str(), "vits");
+    assert_eq!(GenericDownloadType::StableDiffusion15.to_str(), "sd_15");
   }
 
   #[test]
@@ -150,13 +160,14 @@ mod tests {
     assert_eq!(GenericDownloadType::from_str("so_vits_svc").unwrap(), GenericDownloadType::SoVitsSvc);
     assert_eq!(GenericDownloadType::from_str("tacotron2").unwrap(), GenericDownloadType::Tacotron2);
     assert_eq!(GenericDownloadType::from_str("vits").unwrap(), GenericDownloadType::Vits);
+    assert_eq!(GenericDownloadType::from_str("sd_15").unwrap(), GenericDownloadType::StableDiffusion15);
   }
 
   #[test]
   fn all_variants() {
     // Static check
     let mut variants = GenericDownloadType::all_variants();
-    assert_eq!(variants.len(), 8);
+    assert_eq!(variants.len(), 9);
     assert_eq!(variants.pop_first(), Some(GenericDownloadType::HifiGan));
     assert_eq!(variants.pop_first(), Some(GenericDownloadType::HifiGanRocketVc));
     assert_eq!(variants.pop_first(), Some(GenericDownloadType::HifiGanSoVitsSvc));
@@ -165,6 +176,7 @@ mod tests {
     assert_eq!(variants.pop_first(), Some(GenericDownloadType::SoVitsSvc));
     assert_eq!(variants.pop_first(), Some(GenericDownloadType::Tacotron2));
     assert_eq!(variants.pop_first(), Some(GenericDownloadType::Vits));
+    assert_eq!(variants.pop_first(), Some(GenericDownloadType::StableDiffusion15));
     assert_eq!(variants.pop_first(), None);
 
     // Generated check
