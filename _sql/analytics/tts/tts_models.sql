@@ -53,10 +53,11 @@ select
     m.user_deleted_at,
     m.mod_deleted_at
 from (
-    select model_token, count(*) as use_count
-    from tts_results
-    where created_at > ( CURDATE() - INTERVAL 12 HOUR )
-    group by model_token
+    select maybe_model_token as model_token, count(*) as use_count
+    from generic_inference_jobs
+    where maybe_model_token IS NOT NULL
+    and created_at > ( CURDATE() - INTERVAL 7 DAY )
+    group by maybe_model_token
 ) as r
     join tts_models as m
     on m.token = r.model_token
