@@ -11,6 +11,8 @@ use http_server_common::response::serialize_as_json_error::serialize_as_json_err
 use mysql_queries::composite_keys::by_table::user_ratings::user_rating_entity::UserRatingEntity;
 use mysql_queries::queries::users::user_ratings::update_tts_model_ratings::update_tts_model_ratings;
 use mysql_queries::queries::users::user_ratings::upsert_user_rating::{Args, upsert_user_rating};
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;
 use tokens::tokens::w2l_templates::W2lTemplateToken;
 
@@ -102,6 +104,12 @@ pub async fn set_user_rating_handler(
   let entity= match request.entity_type {
     UserRatingEntityType::TtsModel => UserRatingEntity::TtsModel(
       TtsModelToken::new_from_str(&request.entity_token)),
+
+    UserRatingEntityType::MediaFile => UserRatingEntity::MediaFile(
+      MediaFileToken::new_from_str(&request.entity_token)),
+
+    UserRatingEntityType::ModelWeight => UserRatingEntity::ModelWeight(
+      ModelWeightToken::new_from_str(&request.entity_token)),
 
     UserRatingEntityType::W2lTemplate => UserRatingEntity::W2lTemplate(
       W2lTemplateToken::new_from_str(&request.entity_token)),

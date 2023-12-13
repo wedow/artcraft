@@ -1,4 +1,6 @@
 use enums::by_table::user_ratings::entity_type::UserRatingEntityType;
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;
 use tokens::tokens::w2l_templates::W2lTemplateToken;
 
@@ -14,6 +16,8 @@ use tokens::tokens::w2l_templates::W2lTemplateToken;
 pub enum UserRatingEntity {
   TtsModel(TtsModelToken),
   W2lTemplate(W2lTemplateToken),
+  MediaFile(MediaFileToken),
+  ModelWeight(ModelWeightToken),
 }
 
 // TODO: Make traits for these? Maybe overkill.
@@ -22,6 +26,8 @@ impl UserRatingEntity {
     match self {
       UserRatingEntity::TtsModel(_) => UserRatingEntityType::TtsModel,
       UserRatingEntity::W2lTemplate(_) => UserRatingEntityType::W2lTemplate,
+      UserRatingEntity::MediaFile(_) => UserRatingEntityType::MediaFile,
+      UserRatingEntity::ModelWeight(_) => UserRatingEntityType::ModelWeight,
     }
   }
 
@@ -29,6 +35,8 @@ impl UserRatingEntity {
     match self {
       UserRatingEntity::TtsModel(token) => token.as_str(),
       UserRatingEntity::W2lTemplate(token) => token.as_str(),
+      UserRatingEntity::MediaFile(token) => token.as_str(),
+      UserRatingEntity::ModelWeight(token) => token.as_str(),
     }
   }
 }

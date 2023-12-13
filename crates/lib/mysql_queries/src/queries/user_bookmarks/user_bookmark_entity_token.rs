@@ -1,5 +1,6 @@
 use enums::by_table::user_bookmarks::user_bookmark_entity_type::UserBookmarkEntityType;
 use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;
 use tokens::tokens::tts_results::TtsResultToken;
 use tokens::tokens::users::UserToken;
@@ -15,6 +16,7 @@ pub enum UserBookmarkEntityToken {
   W2lTemplate(W2lTemplateToken),
   W2lResult(W2lResultToken),
   MediaFile(MediaFileToken),
+  ModelWeight(ModelWeightToken),
   VoiceConversionModel(VoiceConversionModelToken),
   ZsVoice(ZsVoiceToken),
 }
@@ -28,6 +30,7 @@ impl UserBookmarkEntityToken {
       UserBookmarkEntityType::W2lTemplate => Self::W2lTemplate(W2lTemplateToken::new_from_str(token)),
       UserBookmarkEntityType::W2lResult => Self::W2lResult(W2lResultToken::new_from_str(token)),
       UserBookmarkEntityType::MediaFile => Self::MediaFile(MediaFileToken::new_from_str(token)),
+      UserBookmarkEntityType::ModelWeight => Self::ModelWeight(ModelWeightToken::new_from_str(token)),
       UserBookmarkEntityType::VoiceConversionModel => Self::VoiceConversionModel(VoiceConversionModelToken::new_from_str(token)),
       UserBookmarkEntityType::ZsVoice => Self::ZsVoice(ZsVoiceToken::new_from_str(token)),
     }
@@ -41,6 +44,7 @@ impl UserBookmarkEntityToken {
       UserBookmarkEntityToken::W2lTemplate(w2l_template_token) => (UserBookmarkEntityType::W2lTemplate, w2l_template_token.as_str()),
       UserBookmarkEntityToken::W2lResult(w2l_result_token) => (UserBookmarkEntityType::W2lResult, w2l_result_token.as_str()),
       UserBookmarkEntityToken::MediaFile(media_file_token) => (UserBookmarkEntityType::MediaFile, media_file_token.as_str()),
+      UserBookmarkEntityToken::ModelWeight(model_weight_token) => (UserBookmarkEntityType::ModelWeight, model_weight_token.as_str()),
       UserBookmarkEntityToken::VoiceConversionModel(voice_conversion_model_token) => (UserBookmarkEntityType::VoiceConversionModel, voice_conversion_model_token.as_str()),
       UserBookmarkEntityToken::ZsVoice(zs_voice_token) => (UserBookmarkEntityType::ZsVoice, zs_voice_token.as_str()),
     }

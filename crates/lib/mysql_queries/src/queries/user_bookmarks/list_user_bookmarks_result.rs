@@ -70,6 +70,7 @@ impl RawUserBookmarkRecord {
               MediaFileType::Image => Some("image media file".to_string()),
               MediaFileType::Video => Some("video media file".to_string()),
             }),
+        UserBookmarkEntityType::ModelWeight => None,
         UserBookmarkEntityType::VoiceConversionModel => self.maybe_descriptive_text_voice_conversion_model_title,
         UserBookmarkEntityType::ZsVoice => self.maybe_descriptive_text_zs_voice_title,
       },

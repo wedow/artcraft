@@ -33,6 +33,10 @@ pub enum UserBookmarkEntityType {
     #[serde(rename = "media_file")]
     MediaFile,
 
+    /// Model Weight
+    #[serde(rename = "model_weight")]
+    ModelWeight,
+
     /// VoiceConversionModel
     #[serde(rename = "voice_conversion_model")]
     VoiceConversionModel,
@@ -56,6 +60,7 @@ impl UserBookmarkEntityType {
             Self::W2lTemplate => "w2l_template",
             Self::W2lResult => "w2l_result",
             Self::MediaFile => "media_file",
+            Self::ModelWeight => "model_weight",
             Self::VoiceConversionModel => "voice_conversion_model",
             Self::ZsVoice => "zs_voice",
         }
@@ -69,6 +74,7 @@ impl UserBookmarkEntityType {
             "w2l_template" => Ok(Self::W2lTemplate),
             "w2l_result" => Ok(Self::W2lResult),
             "media_file" => Ok(Self::MediaFile),
+            "model_weight" => Ok(Self::ModelWeight),
             "voice_conversion_model" => Ok(Self::VoiceConversionModel),
             "zs_voice" => Ok(Self::ZsVoice),
             _ => Err(format!("invalid value: {:?}", value)),
@@ -92,6 +98,7 @@ mod tests {
             assert_serialization(UserBookmarkEntityType::W2lTemplate, "w2l_template");
             assert_serialization(UserBookmarkEntityType::W2lResult, "w2l_result");
             assert_serialization(UserBookmarkEntityType::MediaFile, "media_file");
+            assert_serialization(UserBookmarkEntityType::ModelWeight, "model_weight");
             assert_serialization(UserBookmarkEntityType::VoiceConversionModel, "voice_conversion_model");
             assert_serialization(UserBookmarkEntityType::ZsVoice, "zs_voice");
         }
@@ -108,6 +115,7 @@ mod tests {
             assert_eq!(UserBookmarkEntityType::W2lTemplate.to_str(), "w2l_template");
             assert_eq!(UserBookmarkEntityType::W2lResult.to_str(), "w2l_result");
             assert_eq!(UserBookmarkEntityType::MediaFile.to_str(), "media_file");
+            assert_eq!(UserBookmarkEntityType::ModelWeight.to_str(), "model_weight");
             assert_eq!(UserBookmarkEntityType::VoiceConversionModel.to_str(), "voice_conversion_model");
             assert_eq!(UserBookmarkEntityType::ZsVoice.to_str(), "zs_voice");
         }
@@ -120,6 +128,7 @@ mod tests {
             assert_eq!(UserBookmarkEntityType::from_str("w2l_template").unwrap(), UserBookmarkEntityType::W2lTemplate);
             assert_eq!(UserBookmarkEntityType::from_str("w2l_result").unwrap(), UserBookmarkEntityType::W2lResult);
             assert_eq!(UserBookmarkEntityType::from_str("media_file").unwrap(), UserBookmarkEntityType::MediaFile);
+            assert_eq!(UserBookmarkEntityType::from_str("model_weight").unwrap(), UserBookmarkEntityType::ModelWeight);
             assert_eq!(UserBookmarkEntityType::from_str("voice_conversion_model").unwrap(), UserBookmarkEntityType::VoiceConversionModel);
             assert_eq!(UserBookmarkEntityType::from_str("zs_voice").unwrap(), UserBookmarkEntityType::ZsVoice);
             assert!(UserBookmarkEntityType::from_str("foo").is_err());
