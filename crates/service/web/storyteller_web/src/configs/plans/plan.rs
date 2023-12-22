@@ -49,6 +49,9 @@ pub struct Plan {
 
     can_remove_visual_watermarks: bool,
 
+    // ========== Features for Videofilters ==========
+    rerender_requires_frontend_keepalive: bool,
+
     // ========== Features for TTS ==========
 
     tts_base_priority_level: u8,
@@ -91,6 +94,7 @@ impl Plan {
             is_development_plan: builder.is_development_plan,
             is_synthetic_plan: builder.is_synthetic_plan,
             lipsync_requires_frontend_keepalive: builder.lipsync_requires_frontend_keepalive,
+            rerender_requires_frontend_keepalive: builder.rerender_requires_frontend_keepalive,
             can_remove_visual_watermarks: builder.can_remove_visual_watermarks,
             tts_base_priority_level: builder.tts_base_priority_level,
             tts_max_duration: builder.tts_max_duration,
@@ -146,6 +150,10 @@ impl Plan {
         self.lipsync_requires_frontend_keepalive
     }
 
+    pub fn rerender_requires_frontent_keepalive(&self) -> bool {
+        self.rerender_requires_frontend_keepalive
+    }
+
     pub fn can_remove_visual_watermarks(&self) -> bool {
         self.can_remove_visual_watermarks
     }
@@ -191,6 +199,9 @@ pub struct PlanBuilder {
     lipsync_requires_frontend_keepalive: bool,
 
     can_remove_visual_watermarks: bool,
+
+    // ========== Features for Videofilters ==========
+    rerender_requires_frontend_keepalive: bool,
 
     // ========== Features for TTS ==========
 
@@ -238,6 +249,9 @@ impl PlanBuilder {
             // Lipsync (SadTalker, not Wav2Lip)
             lipsync_requires_frontend_keepalive: true,
             can_remove_visual_watermarks: false,
+
+            // Videofilters
+            rerender_requires_frontend_keepalive: true,
 
             // TTS
             tts_base_priority_level : TTS_DEFAULT_PRIORITY_LEVEL,
@@ -301,6 +315,11 @@ impl PlanBuilder {
 
     pub fn lipsync_requires_frontend_keepalive(mut self, value: bool) -> Self {
         self.lipsync_requires_frontend_keepalive = value;
+        self
+    }
+
+    pub fn rerender_requires_frontend_keepalive(mut self, value: bool) -> Self {
+        self.rerender_requires_frontend_keepalive = value;
         self
     }
 

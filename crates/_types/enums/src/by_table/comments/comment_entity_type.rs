@@ -13,6 +13,14 @@ pub enum CommentEntityType {
   #[serde(rename = "user")]
   User,
 
+  /// Media files
+  #[serde(rename = "media_file")]
+  MediaFile,
+
+  /// Model weights
+  #[serde(rename = "model_weight")]
+  ModelWeight,
+
   /// TTS model (architecture does not matter)
   #[serde(rename = "tts_model")]
   TtsModel,
@@ -39,6 +47,8 @@ impl CommentEntityType {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::User => "user",
+      Self::MediaFile => "media_file",
+      Self::ModelWeight => "model_weight",
       Self::TtsModel => "tts_model",
       Self::TtsResult => "tts_result",
       Self::W2lTemplate => "w2l_template",
@@ -49,6 +59,8 @@ impl CommentEntityType {
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
       "user" => Ok(Self::User),
+      "media_file" => Ok(Self::MediaFile),
+      "model_weight" => Ok(Self::ModelWeight),
       "tts_model" => Ok(Self::TtsModel),
       "tts_result" => Ok(Self::TtsResult),
       "w2l_template" => Ok(Self::W2lTemplate),
@@ -69,6 +81,8 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(CommentEntityType::User, "user");
+      assert_serialization(CommentEntityType::MediaFile, "media_file");
+      assert_serialization(CommentEntityType::ModelWeight, "model_weight");
       assert_serialization(CommentEntityType::TtsModel, "tts_model");
       assert_serialization(CommentEntityType::TtsResult, "tts_result");
       assert_serialization(CommentEntityType::W2lTemplate, "w2l_template");
@@ -82,6 +96,8 @@ mod tests {
     #[test]
     fn test_to_str() {
       assert_eq!(CommentEntityType::User.to_str(), "user");
+      assert_eq!(CommentEntityType::MediaFile.to_str(), "media_file");
+      assert_eq!(CommentEntityType::ModelWeight.to_str(), "model_weight");
       assert_eq!(CommentEntityType::TtsModel.to_str(), "tts_model");
       assert_eq!(CommentEntityType::TtsResult.to_str(), "tts_result");
       assert_eq!(CommentEntityType::W2lTemplate.to_str(), "w2l_template");
@@ -91,6 +107,8 @@ mod tests {
     #[test]
     fn test_from_str() {
       assert_eq!(CommentEntityType::from_str("user").unwrap(), CommentEntityType::User);
+      assert_eq!(CommentEntityType::from_str("media_file").unwrap(), CommentEntityType::MediaFile);
+      assert_eq!(CommentEntityType::from_str("model_weight").unwrap(), CommentEntityType::ModelWeight);
       assert_eq!(CommentEntityType::from_str("tts_model").unwrap(), CommentEntityType::TtsModel);
       assert_eq!(CommentEntityType::from_str("tts_result").unwrap(), CommentEntityType::TtsResult);
       assert_eq!(CommentEntityType::from_str("w2l_template").unwrap(), CommentEntityType::W2lTemplate);

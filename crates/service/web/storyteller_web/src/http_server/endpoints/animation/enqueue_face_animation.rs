@@ -209,16 +209,20 @@ pub async fn enqueue_face_animation_handler(
       get_request_header_optional(&http_request, ROUTING_TAG_HEADER_NAME)
           .map(|routing_tag| routing_tag.trim().to_string());
 
+  // ==================== BANNED USERS ==================== //
+
+  if let Some(ref user) = maybe_user_session {
+    if user.role.is_banned {
+      warn!("User is not authorized because they are banned.");
+      return Err(EnqueueFaceAnimationError::NotAuthorized);
+    }
+  }
+
   // ==================== RATE LIMIT ==================== //
 
   let rate_limiter = match maybe_user_session {
     None => &server_state.redis_rate_limiters.logged_out,
-    Some(ref user) => {
-      if user.role.is_banned {
-        return Err(EnqueueFaceAnimationError::NotAuthorized);
-      }
-      &server_state.redis_rate_limiters.logged_in
-    },
+    Some(ref _user) => &server_state.redis_rate_limiters.logged_in
   };
 
   if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {

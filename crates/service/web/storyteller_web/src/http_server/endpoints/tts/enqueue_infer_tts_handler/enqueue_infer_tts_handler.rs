@@ -32,6 +32,7 @@ use tts_common::priority::{FAKEYOU_DEFAULT_VALID_API_TOKEN_PRIORITY_LEVEL, FAKEY
 use user_input_common::check_for_slurs::contains_slurs;
 use users_component::utils::user_session_extended::UserSessionExtended;
 
+use crate::configs::app_startup::username_set::UsernameSet;
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::configs::plans::plan::Plan;
 use crate::http_server::endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
@@ -240,29 +241,43 @@ pub async fn enqueue_infer_tts_handler(
       get_request_header_optional(&http_request, ROUTING_TAG_HEADER_NAME)
           .map(|routing_tag| routing_tag.trim().to_string());
 
+  // ==================== BANNED USERS ==================== //
+
+  if let Some(ref user) = maybe_user_session {
+    if user.role.is_banned {
+      warn!("User is not authorized to use TTS model because they are banned.");
+      return Err(InferTtsError::NotAuthorized);
+    }
+  }
+
   // ==================== RATE LIMIT ==================== //
 
   if !disable_rate_limiter {
-    let mut rate_limiter = match maybe_user_session {
-      None => &server_state.redis_rate_limiters.logged_out,
-      Some(ref user) => {
-        if user.role.is_banned {
-          warn!("User is not authorized to use TTS model because they are banned.");
-          return Err(InferTtsError::NotAuthorized);
-        }
-        &server_state.redis_rate_limiters.logged_in
+    let maybe_username = maybe_user_session
+        .as_ref()
+        .map(|session| session.user.username.as_str());
+
+    // FIXME(bt,2023-12-13): These boolean flags are a bit dangerous.
+    let rate_limiter_type = get_rate_limiter_type(
+      maybe_username,
+      &server_state.redis_rate_limiters.api_ai_streamer_username_set,
+      is_investor,
+      is_from_api,
+      use_high_priority_rate_limiter
+    );
+
+    let rate_limiter = match rate_limiter_type {
+      RateLimiterType::LoggedOut => &server_state.redis_rate_limiters.logged_out,
+      RateLimiterType::LoggedIn => &server_state.redis_rate_limiters.logged_in,
+      RateLimiterType::ApiHighPriority => {
+        info!("Using API high priority rate limiter");
+        &server_state.redis_rate_limiters.api_high_priority
+      },
+      RateLimiterType::ApiAiStreamer => {
+        info!("Using AI streamer rate limiter");
+        &server_state.redis_rate_limiters.api_ai_streamers
       },
     };
-
-    // TODO/TEMP
-    if is_investor || is_from_api {
-      rate_limiter = &server_state.redis_rate_limiters.logged_in;
-    }
-
-    // TODO: This is for VidVoice.ai and should be replaced with per-API consumer rate limiters
-    if use_high_priority_rate_limiter {
-      rate_limiter = &server_state.redis_rate_limiters.api_high_priority;
-    }
 
     if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
       return Err(InferTtsError::RateLimited);
@@ -476,6 +491,54 @@ pub async fn enqueue_infer_tts_handler(
     .body(body))
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum RateLimiterType {
+  LoggedOut,
+  LoggedIn,
+  ApiHighPriority,
+  ApiAiStreamer,
+}
+
+// FIXME(bt,2023-12-13): The boolean flags and disjoint decision making are kind of terrible.
+fn get_rate_limiter_type(
+  maybe_username: Option<&str>,
+  ai_streamer_username_set: &UsernameSet,
+  is_investor: bool,
+  is_from_api: bool,
+  use_high_priority_rate_limiter: bool,
+) -> RateLimiterType {
+  // For AI live streamers
+  // https://www.notion.so/storytellerai/dd88609558a24196b4ddeeef6079da98
+  let mut is_ai_streamer = false;
+
+  let mut rate_limiter = match maybe_username {
+    None => RateLimiterType::LoggedOut,
+    Some(username) => {
+      if ai_streamer_username_set.username_is_in_set(username) {
+        is_ai_streamer = true;
+      }
+
+      RateLimiterType::LoggedIn
+    },
+  };
+
+  // TODO/TEMP
+  if is_investor || is_from_api {
+    rate_limiter = RateLimiterType::LoggedIn;
+  }
+
+  // TODO: This is for VidVoice.ai and should be replaced with per-API consumer rate limiters
+  if use_high_priority_rate_limiter {
+    rate_limiter = RateLimiterType::ApiHighPriority;
+  }
+
+  if is_ai_streamer {
+    rate_limiter = RateLimiterType::ApiAiStreamer;
+  }
+
+  rate_limiter
+}
+
 pub fn validate_inference_text(text: &str, plan: &Plan) -> Result<(), String> {
   if text.len() < 3 {
     return Err("text is too short".to_string());
@@ -541,4 +604,38 @@ fn random_troll_text() -> &'static str {
   ];
   let random = texts.choose(&mut rand::thread_rng());
   random.map(|r| *r).unwrap_or(texts[0])
+}
+
+
+#[cfg(test)]
+mod tests {
+
+  mod rate_limiter_tests {
+    use crate::configs::app_startup::username_set::UsernameSet;
+    use crate::http_server::endpoints::tts::enqueue_infer_tts_handler::enqueue_infer_tts_handler::{get_rate_limiter_type, RateLimiterType};
+
+    fn build_username_set() -> UsernameSet {
+      UsernameSet::from_comma_separated("ai_streamer")
+    }
+
+    #[test]
+    fn test_logged_out() {
+      let rate_limiter = get_rate_limiter_type(None, &build_username_set(), false, false, false);
+      assert_eq!(rate_limiter, RateLimiterType::LoggedOut);
+    }
+
+    #[test]
+    fn test_logged_in() {
+      let username = Some("not_ai_streamer");
+      let rate_limiter = get_rate_limiter_type(username, &build_username_set(), false, false, false);
+      assert_eq!(rate_limiter, RateLimiterType::LoggedIn);
+    }
+
+    #[test]
+    fn test_ai_streamer() {
+      let username = Some("ai_streamer");
+      let rate_limiter = get_rate_limiter_type(username, &build_username_set(), false, false, false);
+      assert_eq!(rate_limiter, RateLimiterType::ApiAiStreamer);
+    }
+  }
 }

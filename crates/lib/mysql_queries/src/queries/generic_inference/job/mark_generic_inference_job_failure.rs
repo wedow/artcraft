@@ -20,7 +20,7 @@ pub async fn mark_generic_inference_job_failure(
   // statuses: "attempt_failed", "complete_failure", "dead"
   let mut next_status = "attempt_failed";
 
-  let mut maybe_public_failure_reason = maybe_public_failure_reason.map(|reason| {
+  let maybe_public_failure_reason = maybe_public_failure_reason.map(|reason| {
     let mut reason = reason.trim().to_string();
     reason.truncate(512); // Max length of column is 512
     reason

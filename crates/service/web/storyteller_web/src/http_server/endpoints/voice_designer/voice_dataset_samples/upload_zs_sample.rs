@@ -6,7 +6,7 @@ use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
 use hyper::StatusCode;
 use log::{error, info, warn};
 use once_cell::sync::Lazy;
-use buckets::public::media_files::original_file::MediaFileBucketPath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::generic_inference_jobs::inference_input_source_token_type::InferenceInputSourceTokenType::MediaUpload;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_uploads::media_upload_type::MediaUploadType;
@@ -26,6 +26,7 @@ use tokens::tokens::zs_voice_dataset_samples::ZsVoiceDatasetSampleToken;
 use tokens::tokens::zs_voice_datasets::ZsVoiceDatasetToken;
 
 use crate::http_server::endpoints::media_uploads::common::drain_multipart_request::{drain_multipart_request, MediaSource};
+use crate::http_server::endpoints::media_uploads::common::upload_error::UploadError;
 use crate::server_state::ServerState;
 use crate::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 
@@ -111,16 +112,19 @@ pub async fn upload_zs_sample_handler(
         UploadSampleError::ServerError
       })?;
 
+  // ==================== BANNED USERS ==================== //
+
+  if let Some(ref user) = maybe_user_session {
+    if user.is_banned {
+      return Err(UploadSampleError::NotAuthorized);
+    }
+  }
+
   // ==================== RATE LIMIT ==================== //
 
   let rate_limiter = match maybe_user_session {
-    None => &server_state.redis_rate_limiters.logged_out,
-    Some(ref user) => {
-      if user.is_banned {
-        return Err(UploadSampleError::NotAuthorized);
-      }
-      &server_state.redis_rate_limiters.logged_in
-    },
+    None => &server_state.redis_rate_limiters.file_upload_logged_out,
+    Some(ref _user) => &server_state.redis_rate_limiters.file_upload_logged_in,
   };
 
   if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {

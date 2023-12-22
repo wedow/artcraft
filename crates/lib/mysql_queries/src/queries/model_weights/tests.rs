@@ -3,8 +3,8 @@ mod tests {
     use anyhow::Ok;
     use rand::Rng;
     use serial_test::serial;
-    use sqlx::MySqlPool;
     use sqlx::mysql::MySqlPoolOptions;
+    use sqlx::MySqlPool;
     use tokio;
 
     use config::shared_constants::DEFAULT_MYSQL_CONNECTION_STRING;
@@ -17,8 +17,8 @@ mod tests {
     use enums::common::visibility::Visibility;
     use tokens::tokens::{model_weights::ModelWeightToken, users::UserToken};
 
-    use crate::queries::model_weights::create_weight::create_weight;
-    use crate::queries::model_weights::create_weight::CreateModelWeightsArgs;
+    use crate::queries::model_weights::create::create_weight::create_weight;
+    use crate::queries::model_weights::create::create_weight::CreateModelWeightsArgs;
     use crate::queries::model_weights::delete_weights::{
         delete_weights_as_mod,
         delete_weights_as_user,
@@ -26,8 +26,8 @@ mod tests {
         undelete_weights_as_user,
     };
     use crate::queries::model_weights::get_weight::get_weight_by_token;
-    use crate::queries::model_weights::list_weights_by_user::list_weights_by_creator_username;
-    use crate::queries::model_weights::list_weights_query_builder::ListWeightsQueryBuilder;
+    use crate::queries::model_weights::list::list_weights_by_user::{list_weights_by_creator_username, ListWeightsForUserArgs};
+    use crate::queries::model_weights::list::list_weights_query_builder::ListWeightsQueryBuilder;
     use crate::queries::users::user::get_user_token_by_username::get_user_token_by_username;
 
     async fn setup() -> sqlx::Pool<sqlx::MySql> {
@@ -76,9 +76,9 @@ mod tests {
             original_filename: Some("filename1.txt".to_string()),
             file_size_bytes: 1024,
             file_checksum_sha2: "checksum1".to_string(),
-            private_bucket_hash: "bucket_hash1".to_string(),
-            maybe_private_bucket_prefix: Some("_fake".to_string()),
-            maybe_private_bucket_extension: Some("rvc".to_string()),
+            public_bucket_hash: "bucket_hash1".to_string(),
+            maybe_public_bucket_prefix: Some("_fake".to_string()),
+            maybe_public_bucket_extension: Some("rvc".to_string()),
             cached_user_ratings_total_count: 10,
             cached_user_ratings_positive_count: 9,
             cached_user_ratings_negative_count: 1,
@@ -112,9 +112,9 @@ mod tests {
         assert_eq!(result.original_filename, Some("filename1.txt".to_string()));
         assert_eq!(result.file_size_bytes, 1024);
         assert_eq!(result.file_checksum_sha2, "checksum1".to_string());
-        assert_eq!(result.private_bucket_hash, "bucket_hash1".to_string());
-        assert_eq!(result.maybe_private_bucket_prefix, Some("_fake".to_string()));
-        assert_eq!(result.maybe_private_bucket_extension, Some("rvc".to_string()));
+        assert_eq!(result.public_bucket_hash, "bucket_hash1".to_string());
+        assert_eq!(result.maybe_public_bucket_prefix, Some("_fake".to_string()));
+        assert_eq!(result.maybe_public_bucket_extension, Some("rvc".to_string()));
         assert_eq!(result.cached_user_ratings_total_count, 10);
         assert_eq!(result.cached_user_ratings_positive_count, 9);
         assert_eq!(result.cached_user_ratings_negative_count, 1);
@@ -151,9 +151,9 @@ mod tests {
             original_filename: Some("filename1.txt".to_string()),
             file_size_bytes: 1024,
             file_checksum_sha2: "checksum1".to_string(),
-            private_bucket_hash: "bucket_hash1".to_string(),
-            maybe_private_bucket_prefix: Some("_fake".to_string()),
-            maybe_private_bucket_extension: Some("rvc".to_string()),
+            public_bucket_hash: "bucket_hash1".to_string(),
+            maybe_public_bucket_prefix: Some("_fake".to_string()),
+            maybe_public_bucket_extension: Some("rvc".to_string()),
             cached_user_ratings_total_count: 10,
             cached_user_ratings_positive_count: 9,
             cached_user_ratings_negative_count: 1,
@@ -228,9 +228,9 @@ mod tests {
             original_filename: Some("filename1.txt".to_string()),
             file_size_bytes: 1024,
             file_checksum_sha2: "checksum1".to_string(),
-            private_bucket_hash: "bucket_hash1".to_string(),
-            maybe_private_bucket_prefix: Some("_fake".to_string()),
-            maybe_private_bucket_extension: Some("rvc".to_string()),
+            public_bucket_hash: "bucket_hash1".to_string(),
+            maybe_public_bucket_prefix: Some("_fake".to_string()),
+            maybe_public_bucket_extension: Some("rvc".to_string()),
             cached_user_ratings_total_count: 10,
             cached_user_ratings_positive_count: 9,
             cached_user_ratings_negative_count: 1,
@@ -290,16 +290,19 @@ mod tests {
             &creator_username
         ).await?;
 
-        let weights_by_username = list_weights_by_creator_username(
-            &pool,
-            &creator_username,
-            can_see_deleted
-        ).await?;
-        for weight in weights_by_username.iter() {
+        let weights_by_username = list_weights_by_creator_username(ListWeightsForUserArgs {
+            creator_username: &creator_username,
+            page_size: 0,
+            page_index: 0,
+            sort_ascending: false,
+            can_see_deleted,
+            mysql_pool: &pool,
+        }).await?;
+        for weight in weights_by_username.records.iter() {
             // print weight
             println!("weight: {:?}", weight.creator_username);
         }
-        assert_eq!(weights_by_username.len(), 5);
+        assert_eq!(weights_by_username.records.len(), 5);
 
         Ok(())
     }
@@ -340,9 +343,9 @@ mod tests {
                 original_filename: Some(format!("filename {}.txt", i)),
                 file_size_bytes: 1024,
                 file_checksum_sha2: format!("checksum{}", i),
-                private_bucket_hash: format!("bucket_hash{}", i),
-                maybe_private_bucket_prefix: Some("_fake".to_string()),
-                maybe_private_bucket_extension: Some("rvc".to_string()),
+                public_bucket_hash: format!("bucket_hash{}", i),
+                maybe_public_bucket_prefix: Some("_fake".to_string()),
+                maybe_public_bucket_extension: Some("rvc".to_string()),
                 cached_user_ratings_total_count: 10,
                 cached_user_ratings_positive_count: 9,
                 cached_user_ratings_negative_count: 1,
@@ -583,9 +586,9 @@ mod tests {
                 original_filename: Some(format!("filename {}.txt", i)),
                 file_size_bytes: 1024,
                 file_checksum_sha2: format!("checksum{}", i),
-                private_bucket_hash: format!("bucket_hash{}", i),
-                maybe_private_bucket_prefix: Some("_fake".to_string()),
-                maybe_private_bucket_extension: Some("rvc".to_string()),
+                public_bucket_hash: format!("bucket_hash{}", i),
+                maybe_public_bucket_prefix: Some("_fake".to_string()),
+                maybe_public_bucket_extension: Some("rvc".to_string()),
                 cached_user_ratings_total_count: 10,
                 cached_user_ratings_positive_count: 9,
                 cached_user_ratings_negative_count: 1,

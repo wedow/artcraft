@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
 use actix_web::http::StatusCode;
-use log::{error, info};
+use log::{error, info, warn};
 
 use enums::by_table::user_ratings::entity_type::UserRatingEntityType;
 use enums::by_table::user_ratings::rating_value::UserRatingValue;
@@ -11,7 +11,11 @@ use http_server_common::response::serialize_as_json_error::serialize_as_json_err
 use mysql_queries::composite_keys::by_table::user_ratings::user_rating_entity::UserRatingEntity;
 use mysql_queries::queries::users::user_ratings::update_tts_model_ratings::update_tts_model_ratings;
 use mysql_queries::queries::users::user_ratings::upsert_user_rating::{Args, upsert_user_rating};
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;
+use tokens::tokens::tts_results::TtsResultToken;
+use tokens::tokens::w2l_results::W2lResultToken;
 use tokens::tokens::w2l_templates::W2lTemplateToken;
 
 use crate::server_state::ServerState;
@@ -73,6 +77,27 @@ pub async fn set_user_rating_handler(
   request: web::Json<SetUserRatingRequest>,
   server_state: web::Data<Arc<ServerState>>) -> Result<HttpResponse, SetUserRatingError>
 {
+  // NB(bt,2023-12-14): Kasisnu found that we're getting entity type mismatches in production. Apart from
+  // querying the database for entity existence, this is the next best way to prevent incorrect comment
+  // attachment. This is a bit of a bad process, though, since the token types are supposed to be opaque.
+  let token = request.entity_token.as_str();
+  let token_prefix_matches = match request.entity_type {
+    // NB: Users had an older prefix (U:) that got replaced with the new prefix (user_)
+    UserRatingEntityType::MediaFile => token.starts_with(MediaFileToken::token_prefix()),
+    UserRatingEntityType::ModelWeight => token.starts_with(ModelWeightToken::token_prefix()),
+    UserRatingEntityType::TtsModel => token.starts_with(TtsModelToken::token_prefix()),
+    UserRatingEntityType::TtsResult => token.starts_with(TtsResultToken::token_prefix()),
+    UserRatingEntityType::W2lTemplate => token.starts_with(W2lTemplateToken::token_prefix()),
+    UserRatingEntityType::W2lResult => token.starts_with(W2lResultToken::token_prefix()),
+    //UserRatingEntityType::VoiceConversionModel => token.starts_with(VoiceConversionModelToken::token_prefix()),
+    //UserRatingEntityType::ZsVoice => token.starts_with(ZsVoiceToken::token_prefix()),
+  };
+
+  if !token_prefix_matches {
+    warn!("invalid token prefix: {:?} for {:?}", request.entity_token, request.entity_type);
+    return Err(SetUserRatingError::BadInput("invalid token prefix".to_string()));
+  }
+
   let mut mysql_connection = server_state.mysql_pool.acquire()
       .await
       .map_err(|e| {
@@ -100,6 +125,9 @@ pub async fn set_user_rating_handler(
   let ip_address = get_request_ip(&http_request);
 
   let entity= match request.entity_type {
+    UserRatingEntityType::MediaFile => UserRatingEntity::MediaFile(MediaFileToken::new_from_str(&request.entity_token)),
+    UserRatingEntityType::ModelWeight => UserRatingEntity::ModelWeight(ModelWeightToken::new_from_str(&request.entity_token)),
+
     UserRatingEntityType::TtsModel => UserRatingEntity::TtsModel(
       TtsModelToken::new_from_str(&request.entity_token)),
 
@@ -108,7 +136,7 @@ pub async fn set_user_rating_handler(
 
     // TODO: We'll handle ratings of more types in the future.
     UserRatingEntityType::W2lResult | UserRatingEntityType::TtsResult =>
-      return Err(SetUserRatingError::BadInput("type not yet supported".to_string()))
+      return Err(SetUserRatingError::BadInput("type not yet supported".to_string())),
   };
 
   let _r = upsert_user_rating(Args {

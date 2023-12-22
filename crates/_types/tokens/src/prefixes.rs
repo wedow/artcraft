@@ -27,7 +27,6 @@ pub(crate) enum TokenPrefix {
   Comment,
   DownloadJob,
   EmailSenderJob,
-  Favorite,
   InferenceJob,
   MediaFile,
   MediaUpload,
@@ -36,6 +35,7 @@ pub(crate) enum TokenPrefix {
   PasswordReset,
   TtsRenderTask, // NB: aichatbot / sqlite
   User,
+  UserBookmark,
   UserSession,
   VoiceConversionModel,
   VoiceConversionResult,
@@ -94,7 +94,6 @@ impl PrefixGenerator for TokenPrefix {
       Self::DownloadJob => "jdown_", // NB: Previously "JGUP:"
       Self::EmailSenderJob => "email_job_",
       Self::InferenceJob => "jinf_",
-      Self::Favorite => "fav_",
       Self::MediaFile => "m_",
       Self::MediaUpload => "mu_",
       Self::ModelWeight => "weight_",
@@ -102,6 +101,7 @@ impl PrefixGenerator for TokenPrefix {
       Self::PasswordReset => "pw_reset_",
       Self::TtsRenderTask => "tts_task_",
       Self::User => "user_", // NB: Previously "U:"
+      Self::UserBookmark => "ub_",
       Self::UserSession => "session_",
       Self::VoiceConversionModel => "vcm_",
       Self::VoiceConversionResult => "vcr_",

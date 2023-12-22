@@ -85,7 +85,7 @@ pub async fn process_tacotron_model<'a, 'b>(
 
   // TODO(bt,2023-11-27): This method of uploading model files is super deprecated.
   //  Try to standardize on something resembling media_files going forward.
-  if let Err(e) = job_state.bucket_client.upload_filename(&model_bucket_path, &file_path).await {
+  if let Err(e) = job_state.private_bucket_client.upload_filename(&model_bucket_path, &file_path).await {
     safe_delete_temp_file(&output_metadata_fs_path);
     safe_delete_temp_file(&file_path);
     safe_delete_temp_directory(&temp_dir);

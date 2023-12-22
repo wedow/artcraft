@@ -16,18 +16,26 @@ path = "src/lib.rs"
 
 # Internal
 buckets = { path = "../../../_types/buckets" }
-
+crockford = { path = "../../../lib/crockford" }
+errors = { path = "../../../lib/errors" }
+easyenv = { path = "../../../lib/easyenv" }
+filesys = { path = "../../../lib/files/filesys" }
+hashing = { path = "../../../lib/files/hashing" }
+mimetypes = { path = "../../../lib/files/mimetypes" }
+storyteller_root = { path = "../../../lib/storyteller_root" }
 # Workspace hack (faster compile times)
 my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
 
 # External
 anyhow = "1.0.75"
 log = "0.4.14"
-
+env_logger = "0.10.1"
+async-trait = "0.1.75"
 # The "never-encode-slash" feature seems to have been removed:
 # https://github.com/durch/rust-s3/pull/254
 rust-s3 = { version = "0.33.0" }
 
 # Runtime
 # NB: We switched to Tokio from `async-std` for broader ecosystem support.
-tokio = { version = "1.6.0", features = ["macros"] }
+tokio = { version = "1.34.0", features = ["macros"] }
+

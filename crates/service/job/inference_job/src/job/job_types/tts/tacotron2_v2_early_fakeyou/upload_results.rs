@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use log::info;
 use tempdir::TempDir;
 
-use buckets::public::media_files::original_file::MediaFileBucketPath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
 use filesys::safe_delete_temp_directory::safe_delete_temp_directory;
 use filesys::safe_delete_temp_file::safe_delete_temp_file;
@@ -13,7 +13,7 @@ use hashing::sha256::sha256_hash_string::sha256_hash_string;
 use jobs_common::job_progress_reporter::job_progress_reporter::JobProgressReporter;
 use mysql_queries::column_types::vocoder_type::VocoderType;
 use mysql_queries::queries::generic_inference::job::list_available_generic_inference_jobs::AvailableInferenceJob;
-use mysql_queries::queries::media_files::insert_media_file_from_tacotron2::{insert_media_file_from_tacotron2, InsertMediaFileArgs};
+use mysql_queries::queries::media_files::create::insert_media_file_from_tacotron2::{insert_media_file_from_tacotron2, InsertMediaFileArgs};
 use mysql_queries::queries::tts::tts_results::insert_tts_result::insert_tts_result;
 use mysql_queries::queries::tts::tts_results::insert_tts_result::JobType;
 

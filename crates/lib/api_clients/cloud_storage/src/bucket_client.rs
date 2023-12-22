@@ -1,6 +1,6 @@
 use std::path::Path;
 use std::time::Duration;
-
+use errors::AnyhowResult;
 use anyhow::anyhow;
 use anyhow::bail;
 use log::info;
@@ -10,14 +10,30 @@ use s3::creds::Credentials;
 use s3::region::Region;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
-
+ use std::error::Error;
+ 
 #[derive(Clone)]
 pub struct BucketClient {
   bucket: Bucket,
-
   /// If set, put all files under this root path.
   optional_bucket_root: Option<String>,
 }
+
+
+#[derive(Debug)]
+pub enum BucketClientError {
+    ErrorWithCodeAndMessage { code: u16, message: String },
+}
+
+impl std::fmt::Display for BucketClientError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            BucketClientError::ErrorWithCodeAndMessage { code, message } => write!(f, "Error {}: {}", code, message),
+        }
+    }
+}
+impl Error for BucketClientError {}
+
 
 impl BucketClient {
 
@@ -87,6 +103,25 @@ impl BucketClient {
     Ok(())
   }
 
+  pub async fn upload_file_with_content_type_process(&self, object_name: &str, bytes: &[u8], content_type: &str) -> AnyhowResult<()> {
+    info!("Filename for bucket: {}", object_name);
+    let object_name = self.get_rooted_object_name(object_name);
+    info!("Rooted filename for bucket: {}", object_name);
+    let response = self.bucket.put_object_with_content_type(&object_name, bytes, content_type).await?;
+    let body_bytes = response.bytes();
+    let code = response.status_code();
+    info!("upload code: {}", code);
+    if code != 200 {
+      let body = String::from_utf8_lossy(body_bytes);
+      warn!("upload body: {}", body);
+      return Err(anyhow!("upload failed: {}", code));
+    } else {
+      info!("upload success: {}", code);
+      Ok(())
+    }
+  }
+
+  #[deprecated = "Use upload_file instead above it returns an error we can surface and act on. upload_file_with_content_type_process"]
   pub async fn upload_file_with_content_type(&self, object_name: &str, bytes: &[u8], content_type: &str) -> anyhow::Result<()> {
     info!("Filename for bucket: {}", object_name);
 
@@ -191,8 +226,7 @@ impl BucketClient {
     &self,
     object_path: P,
     filesystem_path: Q,
-  ) -> anyhow::Result<()> {
-    // TODO I think we might want to return an error here? but there has to a reason why we are just returning ok?
+  ) -> AnyhowResult<()> {
     let object_path_str = object_path.as_ref()
       .to_str()
       .map(|s| s.to_string())
@@ -208,9 +242,7 @@ impl BucketClient {
       404 => bail!("File not found in bucket: {}", &object_path_str),
       _ => {},
     }
-
     info!("download code: {}", status_code);
-
     Ok(())
   }
 

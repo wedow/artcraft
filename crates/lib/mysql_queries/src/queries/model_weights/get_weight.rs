@@ -1,18 +1,16 @@
-use container_common::anyhow_result::AnyhowResult;
-
-use sqlx::{ MySqlPool, MySql };
-use sqlx::pool::PoolConnection;
 use anyhow::anyhow;
-use log::{ error };
+use chrono::{DateTime, Utc};
+use log::error;
+use sqlx::{MySql, MySqlPool};
+use sqlx::pool::PoolConnection;
 
-use enums::by_table::model_weights::weights_types::WeightsType;
+use container_common::anyhow_result::AnyhowResult;
 use enums::by_table::model_weights::weights_category::WeightsCategory;
-
+use enums::by_table::model_weights::weights_types::WeightsType;
 use enums::common::visibility::Visibility;
-use tokens::tokens::{ users::UserToken, model_weights::ModelWeightToken };
-use chrono::{ DateTime, Utc };
+use tokens::tokens::{model_weights::ModelWeightToken, users::UserToken};
 
-// Notes ensure that Enums have sqlx::Type 
+// Notes ensure that Enums have sqlx::Type
 //  'weights_type: enums::by_table::model_weights::weights_types::WeightsType' use this to map
 // Retrieved Model Weight can be constrained to the fields that are needed
 
@@ -24,17 +22,28 @@ pub struct RetrivedModelWeight {
     pub maybe_thumbnail_token: Option<String>,
     pub description_markdown: String,
     pub description_rendered_html: String,
+
     pub creator_user_token: UserToken,
+    pub creator_username: String,
+    pub creator_display_name: String,
+    pub creator_gravatar_hash: String,
+
     pub creator_ip_address: String,
     pub creator_set_visibility: Visibility,
+
     pub maybe_last_update_user_token: Option<UserToken>,
     pub original_download_url: Option<String>,
     pub original_filename: Option<String>,
     pub file_size_bytes: i32,
     pub file_checksum_sha2: String,
-    pub private_bucket_hash: String,
-    pub maybe_private_bucket_prefix: Option<String>,
-    pub maybe_private_bucket_extension: Option<String>,
+    pub public_bucket_hash: String,
+    pub maybe_public_bucket_prefix: Option<String>,
+    pub maybe_public_bucket_extension: Option<String>,
+
+    pub maybe_avatar_public_bucket_hash: Option<String>,
+    pub maybe_avatar_public_bucket_prefix: Option<String>,
+    pub maybe_avatar_public_bucket_extension: Option<String>,
+
     pub cached_user_ratings_negative_count: u32,
     pub cached_user_ratings_positive_count: u32,
     pub cached_user_ratings_total_count: u32,
@@ -90,6 +99,9 @@ pub async fn get_weights_by_token_with_connection(
             description_markdown: record.description_markdown,
             description_rendered_html: record.description_rendered_html,
             creator_user_token: record.creator_user_token,
+            creator_username: record.creator_username,
+            creator_display_name: record.creator_display_name,
+            creator_gravatar_hash: record.creator_gravatar_hash,
             creator_ip_address: record.creator_ip_address,
             creator_set_visibility: record.creator_set_visibility,
             maybe_last_update_user_token: record.maybe_last_update_user_token,
@@ -97,9 +109,12 @@ pub async fn get_weights_by_token_with_connection(
             original_filename: record.original_filename,
             file_size_bytes: record.file_size_bytes,
             file_checksum_sha2: record.file_checksum_sha2,
-            private_bucket_hash: record.private_bucket_hash,
-            maybe_private_bucket_prefix: record.maybe_private_bucket_prefix,
-            maybe_private_bucket_extension: record.maybe_private_bucket_extension,
+            public_bucket_hash: record.public_bucket_hash,
+            maybe_public_bucket_prefix: record.maybe_public_bucket_prefix,
+            maybe_public_bucket_extension: record.maybe_public_bucket_extension,
+            maybe_avatar_public_bucket_hash: record.maybe_avatar_public_bucket_hash,
+            maybe_avatar_public_bucket_prefix: record.maybe_avatar_public_bucket_prefix,
+            maybe_avatar_public_bucket_extension: record.maybe_avatar_public_bucket_extension,
             cached_user_ratings_negative_count: record.cached_user_ratings_negative_count,
             cached_user_ratings_positive_count: record.cached_user_ratings_positive_count,
             cached_user_ratings_total_count: record.cached_user_ratings_total_count,
@@ -130,7 +145,12 @@ async fn select_include_deleted(
         wt.maybe_thumbnail_token,
         wt.description_markdown,
         wt.description_rendered_html,
+
         wt.creator_user_token as `creator_user_token: tokens::tokens::users::UserToken`,
+        users.username as creator_username,
+        users.display_name as creator_display_name,
+        users.email_gravatar_hash AS creator_gravatar_hash,
+
         wt.creator_ip_address,
         wt.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`,
         wt.maybe_last_update_user_token as `maybe_last_update_user_token: tokens::tokens::users::UserToken`,
@@ -138,9 +158,14 @@ async fn select_include_deleted(
         wt.original_filename,
         wt.file_size_bytes,
         wt.file_checksum_sha2,
-        wt.private_bucket_hash,
-        wt.maybe_private_bucket_prefix,
-        wt.maybe_private_bucket_extension,
+        wt.public_bucket_hash,
+        wt.maybe_public_bucket_prefix,
+        wt.maybe_public_bucket_extension,
+
+        avatar.public_bucket_directory_hash as maybe_avatar_public_bucket_hash,
+        avatar.maybe_public_bucket_prefix as maybe_avatar_public_bucket_prefix,
+        avatar.maybe_public_bucket_extension as maybe_avatar_public_bucket_extension,
+
         wt.cached_user_ratings_negative_count,
         wt.cached_user_ratings_positive_count,
         wt.cached_user_ratings_total_count,
@@ -152,6 +177,10 @@ async fn select_include_deleted(
         wt.user_deleted_at,
         wt.mod_deleted_at
         FROM model_weights as wt
+        JOIN users
+            ON users.token = wt.creator_user_token
+        LEFT OUTER JOIN media_files as avatar
+            ON avatar.token = wt.maybe_avatar_media_file_token
         WHERE
             wt.token = ?
             "#,
@@ -178,17 +207,27 @@ async fn select_without_deleted(
         wt.maybe_thumbnail_token,
         wt.description_markdown,
         wt.description_rendered_html,
-        wt.creator_user_token as `creator_user_token: tokens::tokens::users::UserToken`,
         wt.creator_ip_address,
         wt.creator_set_visibility as `creator_set_visibility: enums::common::visibility::Visibility`,
+
+        wt.creator_user_token as `creator_user_token: tokens::tokens::users::UserToken`,
+        users.username as creator_username,
+        users.display_name as creator_display_name,
+        users.email_gravatar_hash AS creator_gravatar_hash,
+
         wt.maybe_last_update_user_token as `maybe_last_update_user_token: tokens::tokens::users::UserToken`,
         wt.original_download_url,
         wt.original_filename,
         wt.file_size_bytes,
         wt.file_checksum_sha2,
-        wt.private_bucket_hash,
-        wt.maybe_private_bucket_prefix,
-        wt.maybe_private_bucket_extension,
+        wt.public_bucket_hash,
+        wt.maybe_public_bucket_prefix,
+        wt.maybe_public_bucket_extension,
+
+        avatar.public_bucket_directory_hash as maybe_avatar_public_bucket_hash,
+        avatar.maybe_public_bucket_prefix as maybe_avatar_public_bucket_prefix,
+        avatar.maybe_public_bucket_extension as maybe_avatar_public_bucket_extension,
+
         wt.cached_user_ratings_negative_count,
         wt.cached_user_ratings_positive_count,
         wt.cached_user_ratings_total_count,
@@ -200,6 +239,10 @@ async fn select_without_deleted(
         wt.user_deleted_at,
         wt.mod_deleted_at
         FROM model_weights as wt
+        JOIN users
+            ON users.token = wt.creator_user_token
+        LEFT OUTER JOIN media_files as avatar
+            ON avatar.token = wt.maybe_avatar_media_file_token
         WHERE
             wt.token = ?
             AND wt.user_deleted_at IS NULL
@@ -220,7 +263,12 @@ pub struct RawWeight {
     pub maybe_thumbnail_token: Option<String>,
     pub description_markdown: String,
     pub description_rendered_html: String,
+
     pub creator_user_token: UserToken,
+    pub creator_username: String,
+    pub creator_display_name: String,
+    pub creator_gravatar_hash: String,
+
     pub creator_ip_address: String,
     pub creator_set_visibility: Visibility,
     pub maybe_last_update_user_token: Option<UserToken>,
@@ -228,9 +276,14 @@ pub struct RawWeight {
     pub original_filename: Option<String>,
     pub file_size_bytes: i32,
     pub file_checksum_sha2: String,
-    pub private_bucket_hash: String,
-    pub maybe_private_bucket_prefix: Option<String>,
-    pub maybe_private_bucket_extension: Option<String>,
+    pub public_bucket_hash: String,
+    pub maybe_public_bucket_prefix: Option<String>,
+    pub maybe_public_bucket_extension: Option<String>,
+
+    pub maybe_avatar_public_bucket_hash: Option<String>,
+    pub maybe_avatar_public_bucket_prefix: Option<String>,
+    pub maybe_avatar_public_bucket_extension: Option<String>,
+
     pub cached_user_ratings_negative_count: u32,
     pub cached_user_ratings_positive_count: u32,
     pub cached_user_ratings_total_count: u32,

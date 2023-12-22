@@ -16,6 +16,7 @@ path = "src/main.rs"
 
 # Internal
 bootstrap = { path = "../../../lib/bootstrap" }
+buckets = { path = "../../../_types/buckets" }
 cloud_storage = { path = "../../../lib/api_clients/cloud_storage" }
 concurrency = { path = "../../../lib/concurrency" }
 config = { path = "../../../lib/deprecated/config" }
@@ -28,10 +29,12 @@ filesys = { path = "../../../lib/files/filesys" }
 google_drive_common = { path = "../../../lib/api_clients/google_drive_common" }
 hashing = { path = "../../../lib/files/hashing" }
 jobs_common = { path = "../../../lib/jobs_common" }
+migration = { path = "../../../lib/migration" }
 mimetypes = { path = "../../../lib/files/mimetypes" }
 mysql_queries = { path = "../../../lib/mysql_queries" }
 reusable_types = { path = "../../../_types/reusable_types" }
 subprocess_common = { path = "../../../lib/subprocess_common" }
+tokens = { path = "../../../_types/tokens" }
 
 # Workspace hack (faster compile times)
 my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
@@ -53,7 +56,7 @@ r2d2_redis = "0.14.0"
 
 # Runtime
 # NB: We switched to Tokio from `async-std` for broader ecosystem support.
-tokio = { version = "1.6.0", features = ["macros"] }
+tokio = { version = "1.34.0", features = ["macros"] }
 
 # NB: Hyper is just for HTTP client use in jobs. I'd use Actix client, but I need tokio runtime
 # NB: Furthermore, the Tokio runtime is old, so I have to use an older Hyper.

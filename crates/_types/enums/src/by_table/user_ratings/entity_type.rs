@@ -9,6 +9,14 @@ use strum::EnumIter;
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[derive(Clone, Copy, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub enum UserRatingEntityType {
+  /// Media files (inference results, uploads, etc.)
+  #[serde(rename = "media_file")]
+  MediaFile,
+
+  /// Model weights (modern, polymorphic, type agnostic)
+  #[serde(rename = "model_weight")]
+  ModelWeight,
+
   /// TTS model (architecture does not matter)
   #[serde(rename = "tts_model")]
   TtsModel,
@@ -34,6 +42,8 @@ impl_mysql_enum_coders!(UserRatingEntityType);
 impl UserRatingEntityType {
   pub fn to_str(&self) -> &'static str {
     match self {
+      Self::MediaFile => "media_file",
+      Self::ModelWeight => "model_weight",
       Self::TtsModel => "tts_model",
       Self::TtsResult => "tts_result",
       Self::W2lTemplate => "w2l_template",
@@ -43,6 +53,8 @@ impl UserRatingEntityType {
 
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
+      "media_file" => Ok(Self::MediaFile),
+      "model_weight" => Ok(Self::ModelWeight),
       "tts_model" => Ok(Self::TtsModel),
       "tts_result" => Ok(Self::TtsResult),
       "w2l_template" => Ok(Self::W2lTemplate),
@@ -62,6 +74,8 @@ mod tests {
 
     #[test]
     fn test_serialization() {
+      assert_serialization(UserRatingEntityType::MediaFile, "media_file");
+      assert_serialization(UserRatingEntityType::ModelWeight, "model_weight");
       assert_serialization(UserRatingEntityType::TtsModel, "tts_model");
       assert_serialization(UserRatingEntityType::TtsResult, "tts_result");
       assert_serialization(UserRatingEntityType::W2lTemplate, "w2l_template");
@@ -74,6 +88,8 @@ mod tests {
 
     #[test]
     fn test_to_str() {
+      assert_eq!(UserRatingEntityType::MediaFile.to_str(), "media_file");
+      assert_eq!(UserRatingEntityType::ModelWeight.to_str(), "model_weight");
       assert_eq!(UserRatingEntityType::TtsModel.to_str(), "tts_model");
       assert_eq!(UserRatingEntityType::TtsResult.to_str(), "tts_result");
       assert_eq!(UserRatingEntityType::W2lTemplate.to_str(), "w2l_template");
@@ -82,6 +98,8 @@ mod tests {
 
     #[test]
     fn test_from_str() {
+      assert_eq!(UserRatingEntityType::from_str("media_file").unwrap(), UserRatingEntityType::MediaFile);
+      assert_eq!(UserRatingEntityType::from_str("model_weight").unwrap(), UserRatingEntityType::ModelWeight);
       assert_eq!(UserRatingEntityType::from_str("tts_model").unwrap(), UserRatingEntityType::TtsModel);
       assert_eq!(UserRatingEntityType::from_str("tts_result").unwrap(), UserRatingEntityType::TtsResult);
       assert_eq!(UserRatingEntityType::from_str("w2l_template").unwrap(), UserRatingEntityType::W2lTemplate);

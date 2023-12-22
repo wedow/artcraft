@@ -6,11 +6,14 @@ use sqlx::MySqlPool;
 use enums::by_table::voice_conversion_models::voice_conversion_model_type::VoiceConversionModelType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
+use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::users::UserToken;
 use tokens::tokens::voice_conversion_models::VoiceConversionModelToken;
 
 pub struct InsertVoiceConversionModelArgs<'a, P: AsRef<Path>> {
   pub model_type: VoiceConversionModelType,
+
+  pub maybe_new_weights_token: Option<&'a ModelWeightToken>,
 
   pub title: &'a str,
 
@@ -60,7 +63,8 @@ SET
   has_index_file = ?,
   private_bucket_hash = ?,
   private_bucket_object_name = ?,
-  file_size_bytes = ?
+  file_size_bytes = ?,
+  maybe_migration_new_model_weights_token = ?
         "#,
       &model_token,
       args.model_type.to_str(),
@@ -72,7 +76,8 @@ SET
       args.has_index_file,
       args.private_bucket_hash,
       private_bucket_object_name,
-      args.file_size_bytes
+      args.file_size_bytes,
+      args.maybe_new_weights_token,
     )
       .execute(args.mysql_pool)
       .await;

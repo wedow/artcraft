@@ -336,7 +336,7 @@ FROM generic_inference_jobs"#.to_string();
   LIMIT ?
         "#);
 
-  let mut query = sqlx::query_as::<_, AvailableInferenceJobRawInternal>(&query)
+  let query = sqlx::query_as::<_, AvailableInferenceJobRawInternal>(&query)
       .bind(args.is_debug_worker)
       .bind(args.num_records);
 

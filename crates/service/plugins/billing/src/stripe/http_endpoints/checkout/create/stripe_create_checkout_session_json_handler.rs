@@ -3,12 +3,12 @@ use actix_web::web::Json;
 
 use reusable_types::server_environment::ServerEnvironment;
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
+use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 
 use crate::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use crate::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_shared::stripe_create_checkout_session_shared;
 use crate::stripe::stripe_config::StripeConfig;
 use crate::stripe::traits::internal_product_to_stripe_lookup::InternalProductToStripeLookup;
-use crate::stripe::traits::internal_session_cache_purge::InternalSessionCachePurge;
 use crate::stripe::traits::internal_user_lookup::InternalUserLookup;
 
 // =============== Request ===============

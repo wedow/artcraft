@@ -1,30 +1,24 @@
-use clap::{App, Arg};
+use clap::Parser;
 
-use errors::{anyhow, AnyhowResult};
+use errors::AnyhowResult;
 use web_scrapers::scrape_supported_webpage::scrape_supported_webpage;
+
+#[derive(Parser, Debug)]
+#[command(name = "scrape_test")]
+pub struct Args {
+  #[arg(name="url", short='u', long = "url", help = "URL of the page to scrape", required = true)]
+  url: String,
+
+  #[arg(name="print_html", long = "html", help = "Print the HTML scraped", required = true)]
+  print_html: bool,
+}
 
 #[tokio::main]
 pub async fn main() -> AnyhowResult<()> {
-  let matches = App::new("scrape_test")
-      .arg(Arg::with_name("url")
-          .short("u")
-          .long("url")
-          .value_name("URL")
-          .help("URL of the page to scrape")
-          .takes_value(true)
-          .required(true))
-      .arg(Arg::with_name("print_html")
-          .long("html")
-          .help("Print the HTML scraped")
-          .takes_value(false)
-          .required(false))
-      .get_matches();
+  let args = Args::parse();
 
-  let url = matches.value_of("url")
-      .map(|val| val.trim().to_string())
-      .ok_or(anyhow!("no url supplied"))?;
-
-  let print_html = matches.is_present("print_html");
+  let url = args.url.trim().to_string();
+  let print_html = args.print_html;
 
   let scrape_result = scrape_supported_webpage(&url).await?;
 

@@ -30,6 +30,7 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::users::UserToken;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
+use crate::http_server::endpoints::media_uploads::common::upload_error::UploadError;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::server_state::ServerState;
 
@@ -138,16 +139,19 @@ pub async fn create_voice_handler(
         |routing_tag| routing_tag.trim().to_string()
     );
 
+    // ==================== BANNED USERS ==================== //
+
+    if let Some(ref user) = maybe_user_session {
+        if user.role.is_banned {
+            return Err(EnqueueCreateVoiceRequestError::NotAuthorized);
+        }
+    }
+
     // ==================== RATE LIMIT ==================== //
 
     let rate_limiter = match maybe_user_session {
         None => &server_state.redis_rate_limiters.logged_out,
-        Some(ref user) => {
-            if user.role.is_banned {
-                return Err(EnqueueCreateVoiceRequestError::NotAuthorized);
-            }
-            &server_state.redis_rate_limiters.logged_in
-        }
+        Some(ref _user) => &server_state.redis_rate_limiters.logged_in,
     };
 
     if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {

@@ -44,7 +44,6 @@ use memory_caching::multi_item_ttl_cache::MultiItemTtlCache;
 use memory_caching::ttl_key_counter::TtlKeyCounter;
 use mysql_queries::common_inputs::container_environment_arg::ContainerEnvironmentArg;
 use mysql_queries::mediators::firehose_publisher::FirehosePublisher;
-use newrelic_telemetry::ClientBuilder;
 
 use crate::http_server::run_http_server::CreateServerArgs;
 use crate::http_server::run_http_server::launch_http_server;
@@ -149,12 +148,6 @@ async fn main() -> AnyhowResult<()> {
     mysql_pool: mysql_pool.clone(), // NB: MySqlPool is clone/send/sync safe
   };
 
-  let license_key = easyenv::get_env_string_required("NEWRELIC_API_KEY")?;
-
-  let newrelic_disabled = easyenv::get_env_bool_or_default("IS_NEWRELIC_DISABLED", false);
-
-  let newrelic_client = ClientBuilder::new(&license_key).build().unwrap();
-
   let maybe_minimum_priority = easyenv::get_env_string_optional("MAYBE_MINIMUM_PRIORITY")
       .map(|priority_string| {
         priority_string.parse::<u8>()
@@ -237,8 +230,6 @@ async fn main() -> AnyhowResult<()> {
     clients: ClientDependencies {
       job_progress_reporter,
       firehose_publisher,
-      newrelic_client,
-      newrelic_disabled,
     },
     job: JobSystemDependencies {
       system: JobSystemControls {

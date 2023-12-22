@@ -27,7 +27,7 @@ pub async fn search_tts_models(
 
   let mut response_json = search_response.json::<Value>().await?;
 
-  let mut hits = response_json.get_mut("hits")
+  let hits = response_json.get_mut("hits")
       .map(|hits| hits.take());
 
   let hits = hits.map(|mut hits| {

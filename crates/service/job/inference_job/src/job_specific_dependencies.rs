@@ -7,6 +7,7 @@ use crate::job::job_types::tts::vall_e_x::vall_e_x_dependencies::VallExDependenc
 use crate::job::job_types::tts::vits::vits_dependencies::VitsDependencies;
 use crate::job::job_types::vc::rvc_v2::rvc_v2_dependencies::RvcV2Dependencies;
 use crate::job::job_types::vc::so_vits_svc::svc_dependencies::SvcDependencies;
+use crate::job::job_types::videofilter::rerender_a_video::rerender_dependencies::RerenderDependencies;
 use crate::util::scoped_execution::ScopedExecution;
 
 pub struct JobSpecificDependencies {
@@ -16,6 +17,7 @@ pub struct JobSpecificDependencies {
   pub maybe_tacotron2_dependencies: Option<Tacotron2Dependencies>,
   pub maybe_vall_e_x_dependencies: Option<VallExDependencies>,
   pub maybe_vits_dependencies: Option<VitsDependencies>,
+  pub maybe_rerender_dependencies: Option<RerenderDependencies>,
 }
 
 impl JobSpecificDependencies {
@@ -27,6 +29,7 @@ impl JobSpecificDependencies {
     let mut maybe_tacotron2_dependencies = None;
     let mut maybe_vall_e_x_dependencies = None;
     let mut maybe_vits_dependencies = None;
+    let mut maybe_rerender_dependencies = None;
 
     if scoped_execution.can_run_job(InferenceModelType::RvcV2) {
       print_with_space("Setting RVCv2 dependencies...");
@@ -58,6 +61,11 @@ impl JobSpecificDependencies {
       maybe_vits_dependencies = Some(VitsDependencies::setup()?);
     }
 
+    if scoped_execution.can_run_job(InferenceModelType::RerenderAVideo) {
+      print_with_space("Setting Rerender dependencies...");
+      maybe_rerender_dependencies = Some(RerenderDependencies::setup()?);
+    }
+
     Ok(JobSpecificDependencies {
       maybe_rvc_v2_dependencies,
       maybe_sad_talker_dependencies,
@@ -65,6 +73,7 @@ impl JobSpecificDependencies {
       maybe_tacotron2_dependencies,
       maybe_vall_e_x_dependencies,
       maybe_vits_dependencies,
+      maybe_rerender_dependencies,
     })
   }
 }

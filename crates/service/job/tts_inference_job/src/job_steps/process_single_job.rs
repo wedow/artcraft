@@ -6,14 +6,13 @@
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::anyhow;
 use log::{error, info, warn};
 use tempdir::TempDir;
 
 use container_common::anyhow_result::AnyhowResult;
-use container_common::token::random_uuid::generate_random_uuid;
 use filesys::check_file_exists::check_file_exists;
 use filesys::safe_delete_temp_directory::safe_delete_temp_directory;
 use filesys::safe_delete_temp_file::safe_delete_temp_file;
@@ -24,7 +23,6 @@ use mysql_queries::queries::tts::tts_inference_jobs::mark_tts_inference_job_done
 use mysql_queries::queries::tts::tts_inference_jobs::mark_tts_inference_job_pending_and_grab_lock::mark_tts_inference_job_pending_and_grab_lock;
 use mysql_queries::queries::tts::tts_models::get_tts_model_for_inference::{get_tts_model_for_inference, TtsModelForInferenceRecord};
 use mysql_queries::queries::tts::tts_results::insert_tts_result::{insert_tts_result, JobType};
-use newrelic_telemetry::Span;
 use tts_common::clean_symbols::clean_symbols;
 use tts_common::text_pipelines::guess_pipeline::guess_text_pipeline_heuristic;
 use tts_common::text_pipelines::text_pipeline_type::TextPipelineType;
@@ -56,33 +54,12 @@ pub async fn process_single_job(
   job_args: &JobArgs,
   job: &AvailableTtsInferenceJob,
   cached_model_record: &TtsModelForInferenceRecord,
-) -> Result<(Span, Span), ProcessSingleJobError> {
+) -> Result<(), ProcessSingleJobError> {
 
   // NB: Hack to allow cache bypass for debug requests
   // This will let us iterate faster with model changes.
   let mut maybe_queried_model = None;
   let mut model_record = cached_model_record;
-
-  let start = Instant::now();
-
-  let span_id = generate_random_uuid();
-  let trace_id = generate_random_uuid();
-  let maybe_user_token = job.maybe_creator_user_token.as_deref().unwrap_or("");
-
-  let mut job_iteration_span = Span::new(&span_id, &trace_id, get_timestamp_millis())
-      .name("single job execution")
-      .attribute("user_token", maybe_user_token)
-      .service_name("tts-inference-job");
-
-  let span_id = generate_random_uuid();
-  let trace_id = generate_random_uuid();
-
-  let created_at_timestamp = (job.created_at.timestamp() as u64) * 1000;
-
-  let mut since_creation_span = Span::new(&span_id, &trace_id, created_at_timestamp)
-      .name("job since creation")
-      .attribute("user_token", maybe_user_token)
-      .service_name("tts-inference-job");
 
   let mut job_progress_reporter = job_args
       .job_progress_reporter
@@ -100,15 +77,7 @@ pub async fn process_single_job(
 
   if !lock_acquired {
     warn!("Could not acquire job lock for: {:?}", &job.id);
-    let duration = start.elapsed();
-
-    since_creation_span.set_attribute("status", "failure");
-    since_creation_span.set_duration(duration);
-
-    job_iteration_span.set_attribute("status", "failure");
-    job_iteration_span.set_duration(duration);
-
-    return Ok((since_creation_span, job_iteration_span));
+    return Ok(());
   }
 
   info!("Lock acquired for job: {}", job.inference_job_token);
@@ -448,15 +417,7 @@ pub async fn process_single_job(
   info!("Job {:?} complete success! Downloaded, ran inference, and uploaded. Saved model record: {}, Result Token: {}",
         job.id, id, &inference_result_token);
 
-  let duration = start.elapsed();
-
-  since_creation_span.set_attribute("status", "success");
-  since_creation_span.set_duration(duration);
-
-  job_iteration_span.set_attribute("status", "success");
-  job_iteration_span.set_duration(duration);
-
-  Ok((since_creation_span, job_iteration_span))
+  Ok(())
 }
 
 fn get_timestamp_millis() -> u64 {

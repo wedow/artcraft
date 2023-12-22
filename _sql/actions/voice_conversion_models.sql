@@ -13,6 +13,9 @@ where token IN (
     'vcm_502wkt2pca3y'
 );
 
+-- Re-home Nessu's models
+update voice_conversion_models set creator_user_token = "user_7z1h6sykg4r62" where creator_user_token = "U:C00NRSW1AE8T4" limit 5;
+
 -- Remove broken models
 update voice_conversion_models
 set
@@ -344,6 +347,46 @@ where token IN (
     'vcm_zmxv2k1q9jd8'
 );
 
+update voice_conversion_models
+set
+    mod_deleted_at = NOW(),
+    maybe_mod_comments = 'takedown request'
+where token IN (
+    'vcm_3mzcjkf78x7m',
+    'vcm_7k2t1wnyqxsc',
+    'vcm_w2edpe6q2nya',
+    'vcm_vz9cg294xa29',
+    'vcm_0z1ys58589k7',
+    'vcm_4x8a30h1r26z',
+    'vcm_0vf9prxsww60',
+    'vcm_yxbadkvqhg16',
+    'vcm_p0ezrc6wvzak',
+    'vcm_6r5pbtexyvtp',
+    'vcm_pb0ewrf7ych5',
+    'vcm_7frb2xk0cxk3',
+    'vcm_x129c9s2af06',
+    'vcm_e0snndfd59b6',
+    'vcm_nb8zb0djqwqw',
+    'vcm_2erz5hbh8tpf',
+    'vcm_e9wn2ccqe3bk',
+    'vcm_f8jbxdbjgcjb',
+    'vcm_x02h7z3jqxb0',
+    'vcm_xy97xcgnk9y6',
+    'vcm_a47wtfbsjrfc',
+    'vcm_kygenhbg5mgj',
+    'vcm_s8gndv19yt7p',
+    'vcm_ny9pj57w5eyh'
+);
+
+
+update voice_conversion_models
+set
+  mod_deleted_at = NOW(),
+  maybe_mod_comments = 'abuse'
+where token IN (
+  'vcm_qajyd528p8kw',
+  'vcm_f5pcdecmzcc5'
+);
 
 
 

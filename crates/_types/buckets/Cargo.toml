@@ -18,6 +18,7 @@ path = "src/lib.rs"
 crockford = { path = "../../lib/crockford" }
 errors = { path = "../../lib/errors" }
 
+
 # Workspace hack (faster compile times)
 my-workspace-hack = { version = "0.1", path = "../../my-workspace-hack" }
 

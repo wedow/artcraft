@@ -9,6 +9,8 @@ use enums::by_table::user_ratings::rating_value::UserRatingValue;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::composite_keys::by_table::user_ratings::user_rating_entity::UserRatingEntity;
 use mysql_queries::queries::users::user_ratings::get_user_rating::{Args, get_user_rating};
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;
 use tokens::tokens::w2l_templates::W2lTemplateToken;
 
@@ -105,9 +107,12 @@ pub async fn get_user_rating_handler(
     UserRatingEntityType::W2lTemplate => UserRatingEntity::W2lTemplate(
       W2lTemplateToken::new_from_str(&path.entity_token)),
 
+    UserRatingEntityType::MediaFile => UserRatingEntity::MediaFile(MediaFileToken::new_from_str(&path.entity_token)),
+    UserRatingEntityType::ModelWeight => UserRatingEntity::ModelWeight(ModelWeightToken::new_from_str(&path.entity_token)),
+
     // TODO: We'll handle ratings of more types in the future.
     UserRatingEntityType::W2lResult | UserRatingEntityType::TtsResult =>
-      return Err(GetUserRatingError::BadInput("type not yet supported".to_string()))
+      return Err(GetUserRatingError::BadInput("type not yet supported".to_string())),
   };
 
   let maybe_rating = get_user_rating(Args {

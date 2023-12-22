@@ -4,7 +4,7 @@ use std::time::Instant;
 use anyhow::anyhow;
 use log::{error, info, warn};
 
-use buckets::public::media_files::original_file::MediaFileBucketPath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
 use filesys::check_file_exists::check_file_exists;
 use filesys::file_size::file_size;
@@ -13,7 +13,7 @@ use filesys::safe_delete_temp_file::safe_delete_temp_file;
 use hashing::sha256::sha256_hash_file::sha256_hash_file;
 use mimetypes::mimetype_for_file::get_mimetype_for_file;
 use mysql_queries::queries::generic_inference::job::list_available_generic_inference_jobs::AvailableInferenceJob;
-use mysql_queries::queries::media_files::insert_media_file_from_face_animation::{insert_media_file_from_face_animation, InsertArgs};
+use mysql_queries::queries::media_files::create::insert_media_file_from_face_animation::{insert_media_file_from_face_animation, InsertArgs};
 use tokens::tokens::users::UserToken;
 
 use crate::job::job_loop::job_success_result::{JobSuccessResult, ResultEntity};

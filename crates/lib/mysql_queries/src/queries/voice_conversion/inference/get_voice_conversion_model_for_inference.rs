@@ -1,8 +1,3 @@
-// NB: Incrementally getting rid of build warnings...
-//#![forbid(unused_imports)]
-//#![forbid(unused_mut)]
-//#![forbid(unused_variables)]
-
 use chrono::{DateTime, Utc};
 use log::warn;
 use sqlx;
@@ -19,10 +14,6 @@ pub struct VoiceConversionModelForInference {
   pub model_type: VoiceConversionModelType,
 
   pub title: String,
-
-  //pub creator_user_token: UserToken,
-  //pub creator_username: String,
-  //pub creator_display_name: String,
 
   // (rvc_v2 models:) whether the model also has an associated index file.
   pub has_index_file: bool,

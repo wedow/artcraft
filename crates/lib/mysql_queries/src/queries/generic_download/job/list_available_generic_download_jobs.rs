@@ -52,7 +52,7 @@ SELECT
   id,
   token,
 
-  creator_user_token as `creator_user_token: tokens::tokens::users::UserToken`,
+  creator_user_token,
   creator_ip_address,
   creator_set_visibility,
 
@@ -101,7 +101,7 @@ WHERE
           id: GenericDownloadJobId(record.id),
           download_job_token: DownloadJobToken::new(record.token),
           creator_ip_address: record.creator_ip_address,
-          creator_user_token: record.creator_user_token,
+          creator_user_token: UserToken::new_from_str(&record.creator_user_token),
           // NB: Failure case for parsing visibility - default to private
           creator_set_visibility: Visibility::from_str(&record.creator_set_visibility)
               .unwrap_or(Visibility::Private),
@@ -144,7 +144,7 @@ struct AvailableDownloadJobRawInternal {
   pub id: i64,
   pub token: String,
 
-  pub creator_user_token: UserToken,
+  pub creator_user_token: String,
   pub creator_ip_address: String,
   pub creator_set_visibility: String,
 

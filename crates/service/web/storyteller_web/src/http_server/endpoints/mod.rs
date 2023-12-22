@@ -25,5 +25,5 @@ pub mod voice_clone_requests;
 pub mod voice_conversion;
 pub mod voice_designer;
 pub mod w2l;
-pub mod favorites;
+pub mod user_bookmarks;
 pub mod weights;

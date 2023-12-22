@@ -1,3 +1,5 @@
+use utoipa::ToSchema;
+
 /// Pagination by page id
 /// This type of pagination is by "page id" and "page count".
 /// This should never be used to walk the entire public database as competitors and investors
@@ -5,13 +7,13 @@
 /// This is best used for user profiles and scoped down results.
 ///
 /// See `PaginationCursors` for the other type of pagination.
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct PaginationPage {
   /// The current page number
-  pub current: u64,
+  pub current: usize,
 
   /// How many pages there are in total
-  pub total_page_count: u64,
+  pub total_page_count: usize,
 }
 
 #[cfg(test)]

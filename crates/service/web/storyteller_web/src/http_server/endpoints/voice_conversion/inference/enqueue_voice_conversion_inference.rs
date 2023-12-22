@@ -17,24 +17,22 @@ use sqlx::pool::PoolConnection;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::by_table::generic_inference_jobs::inference_input_source_token_type::InferenceInputSourceTokenType;
 use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
-use enums::by_table::voice_conversion_models::voice_conversion_model_type::VoiceConversionModelType;
 use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
+use migration::voice_conversion::query_vc_model_info_lite_for_migration::query_vc_model_info_lite_for_migration_with_connection;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::{FundamentalFrequencyMethodForJob, GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
-use mysql_queries::queries::voice_conversion::model_info_lite::get_voice_conversion_model_info_lite::get_voice_conversion_model_info_lite_with_connection;
 use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_uploads::MediaUploadToken;
 use tokens::tokens::users::UserToken;
-use tokens::tokens::voice_conversion_models::VoiceConversionModelToken;
 use tts_common::priority::FAKEYOU_INVESTOR_PRIORITY_LEVEL;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::http_server::endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
-use crate::memory_cache::model_token_to_info_cache::{ModelInfoLite, ModelTokenToInfoCache};
+use crate::memory_cache::model_token_to_info_cache::{ModelInfoForInferenceJob, ModelTokenToInfoCache};
 use crate::server_state::ServerState;
 
 /// Debug requests can get routed to special "debug-only" workers, which can
@@ -48,7 +46,7 @@ const ROUTING_TAG_HEADER_NAME : &str = "routing-tag";
 #[derive(Deserialize)]
 pub struct EnqueueVoiceConversionInferenceRequest {
   uuid_idempotency_token: String,
-  voice_conversion_model_token: VoiceConversionModelToken,
+  voice_conversion_model_token: String,
 
   // TODO: Make media upload token optional and allow result audio to be re-used as well
   source_media_upload_token: MediaUploadToken,
@@ -205,17 +203,20 @@ pub async fn enqueue_voice_conversion_inference_handler(
       get_request_header_optional(&http_request, ROUTING_TAG_HEADER_NAME)
           .map(|routing_tag| routing_tag.trim().to_string());
 
+  // ==================== BANNED USERS ==================== //
+
+  if let Some(ref user) = maybe_user_session {
+    if user.role.is_banned {
+      return Err(EnqueueVoiceConversionInferenceError::NotAuthorized);
+    }
+  }
+
   // ==================== RATE LIMIT ==================== //
 
   if !disable_rate_limiter {
     let mut rate_limiter = match maybe_user_session {
       None => &server_state.redis_rate_limiters.logged_out,
-      Some(ref user) => {
-        if user.role.is_banned {
-          return Err(EnqueueVoiceConversionInferenceError::NotAuthorized);
-        }
-        &server_state.redis_rate_limiters.logged_in
-      },
+      Some(ref _session) => &server_state.redis_rate_limiters.logged_in
     };
 
     // TODO/TEMP
@@ -234,7 +235,7 @@ pub async fn enqueue_voice_conversion_inference_handler(
   let model_token = request.voice_conversion_model_token.clone();
   let media_token = request.source_media_upload_token.clone();
 
-  let model_info_lite  = lookup_model_info(
+  let model_inference_info = lookup_model_info(
     &model_token,
     &server_state.caches.durable.model_token_info,
     &mut mysql_connection
@@ -249,7 +250,7 @@ pub async fn enqueue_voice_conversion_inference_handler(
         EnqueueVoiceConversionInferenceError::ServerError
       })?;
 
-  let redis_count_key = RedisKeys::web_vc_model_usage_count(model_token.as_str());
+  let redis_count_key = RedisKeys::web_vc_model_usage_count(&model_token);
 
   redis.incr(&redis_count_key, 1)
       .map_err(|e| {
@@ -266,7 +267,6 @@ pub async fn enqueue_voice_conversion_inference_handler(
   let set_visibility = request.creator_set_visibility
       .or(maybe_user_preferred_visibility)
       .unwrap_or(Visibility::Public);
-
 
   info!("Creating voice conversion inference job record...");
 
@@ -292,8 +292,8 @@ pub async fn enqueue_voice_conversion_inference_handler(
   let query_result = insert_generic_inference_job(InsertGenericInferenceArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,
     inference_category: InferenceCategory::VoiceConversion,
-    maybe_model_type: Some(model_info_lite.model_type),
-    maybe_model_token: Some(model_token.as_str()),
+    maybe_model_type: Some(model_inference_info.job_model_type),
+    maybe_model_token: Some(&model_token),
     maybe_input_source_token: Some(media_token.as_str()),
     maybe_input_source_token_type: Some(InferenceInputSourceTokenType::MediaUpload),
     maybe_raw_inference_text: None, // NB: Voice conversion isn't TTS, so there's no text.
@@ -344,62 +344,59 @@ pub async fn enqueue_voice_conversion_inference_handler(
 }
 
 async fn lookup_model_info(
-  model_token: &VoiceConversionModelToken,
+  model_token: &str,
   cache: &ModelTokenToInfoCache,
   mysql_connection: &mut PoolConnection<MySql>,
-) -> Result<ModelInfoLite, EnqueueVoiceConversionInferenceError> {
-  let maybe_model_token_info = cache
-      .get_info(model_token.as_str())
+) -> Result<ModelInfoForInferenceJob, EnqueueVoiceConversionInferenceError> {
+  let maybe_model_inference_info = cache
+      .get_info(model_token)
       .map_err(|err| {
         error!("in-memory cache error: {:?}", err);
         EnqueueVoiceConversionInferenceError::ServerError
       })?;
 
-  let model_token_info = match maybe_model_token_info {
-    Some(info) => info,
+  if let Some(inference_info) = maybe_model_inference_info {
+    return Ok(inference_info);
+  }
+
+  let result = query_vc_model_info_lite_for_migration_with_connection(
+    model_token, mysql_connection)
+      .await
+      .map_err(|err| {
+        error!("model lookup error: {:?}", err);
+        EnqueueVoiceConversionInferenceError::ServerError
+      })?;
+
+  let model_info = match result {
+    Some(model_info) => model_info,
     None => {
-      let result = get_voice_conversion_model_info_lite_with_connection(
-        model_token.as_str(), mysql_connection)
-          .await
-          .map_err(|err| {
-            error!("model lookup error: {:?}", err);
-            EnqueueVoiceConversionInferenceError::ServerError
-          })?;
-
-      match result {
-        Some(info) => {
-          let model_type = match info.model_type {
-            VoiceConversionModelType::RvcV2 => InferenceModelType::RvcV2,
-            VoiceConversionModelType::SoVitsSvc => InferenceModelType::SoVitsSvc,
-            VoiceConversionModelType::SoftVc => {
-              // SoftVC is unsupported
-              return Err(EnqueueVoiceConversionInferenceError::BadInput("wrong model type".to_string()));
-            }
-          };
-
-          let model_info = ModelInfoLite {
-            inference_category: InferenceCategory::VoiceConversion,
-            model_type,
-          };
-
-          cache.insert_one(model_token.as_str(), &model_info)
-              .map_err(|err| {
-                error!("cache insertion error: {:?}", err);
-                EnqueueVoiceConversionInferenceError::ServerError
-              })?;
-
-          model_info
-        }
-        None => {
-          // NB: Fail open for now.
-          ModelInfoLite {
-            inference_category: InferenceCategory::VoiceConversion,
-            model_type: InferenceModelType::SoVitsSvc,
-          }
-        }
-      }
+      warn!("model not found for {model_token}; failing open");
+      // NB: Fail open for now.
+      return Ok(ModelInfoForInferenceJob {
+        job_inference_category: InferenceCategory::VoiceConversion,
+        job_model_type: InferenceModelType::SoVitsSvc,
+      });
     }
   };
 
-  Ok(model_token_info)
+  let inference_info = match (model_info.get_inference_category(), model_info.get_inference_model_type()) {
+    (Some(inference_category), Some(model_type)) => {
+      ModelInfoForInferenceJob {
+        job_inference_category: inference_category,
+        job_model_type: model_type,
+      }
+    }
+    _ => {
+      error!("wrong model type for inference: {:?}", model_info);
+      return Err(EnqueueVoiceConversionInferenceError::BadInput("wrong model type for inference".to_string()));
+    }
+  };
+
+  cache.insert_one(model_token, &inference_info)
+      .map_err(|err| {
+        error!("cache insertion error: {:?}", err);
+        EnqueueVoiceConversionInferenceError::ServerError
+      })?;
+
+  Ok(inference_info)
 }

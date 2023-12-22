@@ -85,17 +85,27 @@ async fn main() -> AnyhowResult<()> {
   let access_key = easyenv::get_env_string_required(ENV_ACCESS_KEY)?;
   let secret_key = easyenv::get_env_string_required(ENV_SECRET_KEY)?;
   let region_name = easyenv::get_env_string_required(ENV_REGION_NAME)?;
-  let bucket_name = easyenv::get_env_string_required(ENV_BUCKET_NAME)?;
+  let private_bucket_name = easyenv::get_env_string_required("PRIVATE_BUCKET_NAME")?;
+  let public_bucket_name = easyenv::get_env_string_required("PUBLIC_BUCKET_NAME")?;
   let bucket_root = easyenv::get_env_string_required(ENV_BUCKET_ROOT)?;
 
   let bucket_timeout = easyenv::get_env_duration_seconds_or_default("BUCKET_TIMEOUT_SECONDS",
     Duration::from_secs(60 * 5));
 
-  let bucket_client = BucketClient::create(
+  let private_bucket_client = BucketClient::create(
     &access_key,
     &secret_key,
     &region_name,
-    &bucket_name,
+    &private_bucket_name,
+    None,
+    Some(bucket_timeout),
+  )?;
+
+  let public_bucket_client = BucketClient::create(
+    &access_key,
+    &secret_key,
+    &region_name,
+    &public_bucket_name,
     None,
     Some(bucket_timeout),
   )?;
@@ -346,7 +356,8 @@ async fn main() -> AnyhowResult<()> {
     download_temp_directory: temp_directory,
     mysql_pool,
     redis_pool,
-    bucket_client,
+    private_bucket_client,
+    public_bucket_client,
     bucket_path_unifier: BucketPathUnifier::default_paths(),
     bucket_root_tts_model_uploads: bucket_root.to_string(),
     nvidia_smi_health_check_status,

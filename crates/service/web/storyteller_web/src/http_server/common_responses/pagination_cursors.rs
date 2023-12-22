@@ -1,10 +1,12 @@
+use utoipa::ToSchema;
+
 /// Pagination by cursors
 /// These types of pagination are for "infinite scrolling", which do not reveal a number of pages.
 /// This is good so that investors and competitors cannot reveal how many database records we have.
 /// This is typically used for "discovery" type pages, not user profiles.
 ///
 /// See `PaginationPage` for the other type of pagination.
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct PaginationCursors {
 
   /// The "next" cursor.

@@ -44,13 +44,9 @@ tts_common = { path = "../../../lib/tts_common" }
 # Workspace hack (faster compile times)
 my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
 
-# Vendored code
-# newrelic-telemetry = { path = "../../../vendor/newrelic-telemetry-sdk-rust" }
-
 # External
 anyhow = "1.0.75"
 chrono = { version = "0.4.22", features = ["serde"] }
-clap = "2.34.0" # TODO: This is really out of date, but has conflicts when updated
 dotenv = "0.15.0"
 hostname = "0.3.1"
 lfu = "0.2.5"
@@ -66,7 +62,7 @@ r2d2_redis = "0.14.0"
 
 # Runtime
 # NB: We switched to Tokio from `async-std` for broader ecosystem support.
-tokio = { version = "1.6.0", features = ["macros"] }
+tokio = { version = "1.34.0", features = ["macros"] }
 
 # NB: Hyper is just for HTTP client use in jobs. I'd use Actix client, but I need tokio runtime
 # NB: Furthermore, the Tokio runtime is old, so I have to use an older Hyper.

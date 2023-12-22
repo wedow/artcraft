@@ -42,9 +42,12 @@
 //! // The key to count and track
 //! let key = "10.0.0.5";
 //!
+//! // TODO(bt,2023-12-12): This doctest is so far behind in `futures` versions and needs to be updated.
+//! //  Tokio should be executing the future and evaluating the result.
 //! // Start and run a Tokio runtime to drive the Future to completion
-//! tokio::run(
-//!     limiter
+//! //let mut rt = tokio::runtime::Runtime::new().unwrap();
+//! //rt.block_on(...)//!
+//! let _r = limiter
 //!         // Count returns a Status if the key is under the limit and an `Error::LimitExceeded`
 //!         // containing a Status if the limit has been exceeded
 //!         .count(key)
@@ -57,8 +60,9 @@
 //!         .and_then(|status| {
 //!             println!("ok: {:?}", status);
 //!             Ok(())
-//!         }),
-//! );
+//!         })
+//!         .wait();
+//! //);
 //! # Ok::<(), limitation::Error>(())
 //! ```
 //!

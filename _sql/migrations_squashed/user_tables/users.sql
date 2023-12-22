@@ -53,6 +53,14 @@ CREATE TABLE users (
 
   -- ========== DISPLAY / PROFILE ==========
 
+  -- The "avatar" image is a media file of type image that serves as a
+  -- small avatar or profile picture icon.
+  maybe_avatar_media_file_token VARCHAR(32) DEFAULT NULL,
+
+  -- The "cover" image is a media file of type image that covers the
+  -- top of the page.
+  maybe_cover_media_file_token VARCHAR(32) DEFAULT NULL,
+
   -- Gravatar image hashes are precomputed.
   email_gravatar_hash CHAR(32) NOT NULL,
 
@@ -162,7 +170,9 @@ CREATE TABLE users (
   UNIQUE KEY (token),
   UNIQUE KEY (username),
   UNIQUE KEY (email_address),
-  KEY fk_user_role_slug (user_role_slug)
+  KEY fk_user_role_slug (user_role_slug),
+  KEY fk_maybe_avatar_media_file_token (maybe_avatar_media_file_token),
+  KEY fk_maybe_cover_media_file_token (maybe_cover_media_file_token)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 

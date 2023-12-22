@@ -13,7 +13,7 @@ use errors::AnyhowResult;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::users::UserToken;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct MediaFile {
   pub token: MediaFileToken,
 

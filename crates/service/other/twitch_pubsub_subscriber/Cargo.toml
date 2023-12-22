@@ -43,7 +43,7 @@ uuid = { version = "0.8.2", features = ["v4"] }
 
 # Runtime
 # NB: We switched to Tokio from `async-std` for broader ecosystem support.
-tokio = { version = "1.10.0", features = ["rt-multi-thread", "macros", "time"] }
+tokio = { version = "1.34.0", features = ["rt-multi-thread", "macros", "time"] }
 
 # Futures
 futures = { version = "0.3.17", features = ["thread-pool"] } # feature for ThreadPool

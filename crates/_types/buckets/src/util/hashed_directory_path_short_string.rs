@@ -5,6 +5,7 @@
 /// With a million items, each directory will have ~244 items.
 /// With a billion items, each directory will have ~244,140 items (impractical at this scale).
 ///
+#[deprecated(note = "Use hashed_directory_path_long_string instead! (This function is only used by BucketPathUnifier, which should also die)")]
 pub fn hashed_directory_path_short_string(file_hash: &str) -> String {
   match file_hash.len() {
     0 | 1 => "".to_string(),

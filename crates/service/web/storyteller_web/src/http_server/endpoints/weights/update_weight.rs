@@ -11,7 +11,7 @@ use enums::common::visibility::Visibility;
 use http_server_common::response::response_success_helpers::simple_json_success;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::queries::model_weights::get_weight::get_weight_by_token;
-use mysql_queries::queries::model_weights::update_weight::{ update_weights, UpdateWeightArgs };
+use mysql_queries::queries::model_weights::edit::update_weight::{ update_weights, UpdateWeightArgs };
 use tokens::tokens::model_weights::ModelWeightToken;
 
 use crate::server_state::ServerState;

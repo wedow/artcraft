@@ -3,6 +3,7 @@
 .env
 .env-aichatbot-secrets
 .env-elasticsearch-secrets
+.env-migration-tool-secrets
 .env-secrets
 _develop/tools/.secrets
 _develop/tools/db_secrets.toml
@@ -16,6 +17,9 @@ production_database_voice_clone_report_download.sh
 secrets.toml
 secrets.yaml
 twitch_secrets.toml
+
+# Old env secrets
+.*-secrets
 
 # New env secrets (per-app)
 *-secrets.env

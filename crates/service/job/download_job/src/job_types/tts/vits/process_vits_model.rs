@@ -91,7 +91,7 @@ pub async fn process_vits_model<'a, 'b>(
 
   redis_logger.log_status("uploading VITS TTS model")?;
 
-  if let Err(err) = job_state.bucket_client.upload_filename(&model_bucket_path, &original_model_file_path).await {
+  if let Err(err) = job_state.private_bucket_client.upload_filename(&model_bucket_path, &original_model_file_path).await {
     error!("Problem uploading original model: {:?}", err);
     error!(" - Model file: {:?}", &original_model_file_path);
     error!(" - Traced model file: {:?}", &traced_model_file_path);
@@ -111,7 +111,7 @@ pub async fn process_vits_model<'a, 'b>(
 
   redis_logger.log_status("uploading VITS TTS (traced) model")?;
 
-  if let Err(err) = job_state.bucket_client.upload_filename(&traced_model_bucket_path, &traced_model_file_path).await {
+  if let Err(err) = job_state.private_bucket_client.upload_filename(&traced_model_bucket_path, &traced_model_file_path).await {
     error!("Problem uploading traced model: {:?}", err);
     error!(" - Model file: {:?}", &original_model_file_path);
     error!(" - Traced model file: {:?}", &traced_model_file_path);

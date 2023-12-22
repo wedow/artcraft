@@ -16,6 +16,13 @@ use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::queries::comments::comment_entity_token::CommentEntityToken;
 use mysql_queries::queries::comments::insert_comment::{insert_comment, InsertCommentArgs};
 use tokens::tokens::comments::CommentToken;
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
+use tokens::tokens::tts_models::TtsModelToken;
+use tokens::tokens::tts_results::TtsResultToken;
+use tokens::tokens::users::UserToken;
+use tokens::tokens::w2l_results::W2lResultToken;
+use tokens::tokens::w2l_templates::W2lTemplateToken;
 use user_input_common::check_for_slurs::contains_slurs;
 use user_input_common::markdown_to_html::markdown_to_html;
 
@@ -76,6 +83,26 @@ pub async fn create_comment_handler(
   server_state: web::Data<Arc<ServerState>>,
 ) -> Result<HttpResponse, CreateCommentError>
 {
+  // NB(bt,2023-12-14): Kasisnu found that we're getting entity type mismatches in production. Apart from
+  // querying the database for entity existence, this is the next best way to prevent incorrect comment
+  // attachment. This is a bit of a bad process, though, since the token types are supposed to be opaque.
+  let token = request.entity_token.as_str();
+  let token_prefix_matches = match request.entity_type {
+    // NB: Users had an older prefix (U:) that got replaced with the new prefix (user_)
+    CommentEntityType::User => token.starts_with(UserToken::token_prefix()) || token.starts_with("U:"),
+    CommentEntityType::MediaFile => token.starts_with(MediaFileToken::token_prefix()),
+    CommentEntityType::ModelWeight => token.starts_with(ModelWeightToken::token_prefix()),
+    CommentEntityType::TtsModel => token.starts_with(TtsModelToken::token_prefix()),
+    CommentEntityType::TtsResult => token.starts_with(TtsResultToken::token_prefix()),
+    CommentEntityType::W2lTemplate => token.starts_with(W2lTemplateToken::token_prefix()),
+    CommentEntityType::W2lResult => token.starts_with(W2lResultToken::token_prefix()),
+  };
+
+  if !token_prefix_matches {
+    warn!("invalid token prefix: {:?} for {:?}", request.entity_token, request.entity_type);
+    return Err(CreateCommentError::BadInput("invalid token prefix".to_string()));
+  }
+
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await

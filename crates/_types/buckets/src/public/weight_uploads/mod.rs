@@ -1,2 +1,2 @@
-pub mod directory;
-pub mod original_file;
+pub mod bucket_directory;
+pub mod bucket_file_path;

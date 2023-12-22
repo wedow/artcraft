@@ -79,7 +79,7 @@ pub async fn process_hifigan_softvc_vocoder<'a, 'b>(
 
   redis_logger.log_status("uploading hifigan model")?;
 
-  if let Err(e) = job_state.bucket_client.upload_filename(&model_bucket_path, &file_path).await {
+  if let Err(e) = job_state.private_bucket_client.upload_filename(&model_bucket_path, &file_path).await {
     safe_delete_temp_file(&output_metadata_fs_path);
     safe_delete_temp_file(&file_path);
     safe_delete_temp_directory(&temp_dir);

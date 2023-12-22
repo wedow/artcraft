@@ -23,6 +23,27 @@ and success_execution_millis IS NOT NULL
 order by id desc
 limit 50;
 
+-- See how many are using a deleted model
+select
+    creator_ip_address,
+    count(*)
+from generic_inference_jobs
+where maybe_model_token = 'vcm_4x8a30h1r26z'
+and created_at >  NOW() - INTERVAL 24 HOUR
+group by  creator_ip_address
+
+-- See which deleted models are in use
+select
+    vm.token,
+    vm.title,
+    count(*)
+from generic_inference_jobs as j
+join voice_conversion_models as vm
+on j.maybe_model_token = vm.token
+where vm.mod_deleted_at IS NOT NULL
+  and j.created_at >  NOW() - INTERVAL 24 HOUR
+group by vm.token, vm.title
+
 -- See who is uploading SadTalker jobs
 select
     maybe_creator_user_token,

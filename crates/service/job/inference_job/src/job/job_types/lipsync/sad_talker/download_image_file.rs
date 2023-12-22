@@ -5,8 +5,8 @@ use log::{error, warn};
 use sqlx::MySqlPool;
 use tempdir::TempDir;
 
-use buckets::public::media_files::original_file::MediaFileBucketPath;
-use buckets::public::media_uploads::original_file::MediaUploadOriginalFilePath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
+use buckets::public::media_uploads::bucket_file_path::MediaUploadOriginalFilePath;
 use cloud_storage::bucket_client::BucketClient;
 use jobs_common::job_progress_reporter::job_progress_reporter::JobProgressReporter;
 use mysql_queries::payloads::generic_inference_args::lipsync_payload::LipsyncAnimationImageSource;

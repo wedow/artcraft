@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use log::warn;
 use sqlx::MySqlPool;
 
-use buckets::public::media_uploads::original_file::MediaUploadOriginalFilePath;
+use buckets::public::media_uploads::bucket_file_path::MediaUploadOriginalFilePath;
 use enums::by_table::media_uploads::media_upload_source::MediaUploadSource;
 use enums::by_table::media_uploads::media_upload_type::MediaUploadType;
 use enums::common::visibility::Visibility;

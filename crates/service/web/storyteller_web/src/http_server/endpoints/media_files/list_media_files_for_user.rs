@@ -5,43 +5,44 @@ use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Path, Query};
 use chrono::{DateTime, Utc};
-use log::{info, warn};
+use log::warn;
+use utoipa::{IntoParams, ToSchema};
 
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
-use mysql_queries::queries::media_files::list_media_files_for_user::{list_media_files_for_user, ListMediaFileForUserArgs, ViewAs};
+use mysql_queries::queries::media_files::list::list_media_files_for_user::{list_media_files_for_user, ListMediaFileForUserArgs, ViewAs};
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
+use crate::http_server::common_responses::pagination_page::PaginationPage;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::server_state::ServerState;
 
-#[derive(Deserialize)]
-pub struct PathInfo {
+#[derive(Deserialize, ToSchema)]
+pub struct ListMediaFilesForUserPathInfo {
   username: String,
 }
 
-#[derive(Deserialize)]
-pub struct QueryParams {
+#[derive(Deserialize, ToSchema, IntoParams)]
+pub struct ListMediaFilesForUserQueryParams {
   pub sort_ascending: Option<bool>,
-  pub limit: Option<usize>,
-  pub cursor: Option<String>,
-  pub cursor_is_reversed: Option<bool>,
+  pub page_size: Option<usize>,
+  pub page_index: Option<usize>,
   pub filter_media_type: Option<MediaFileType>,
 }
 
-#[derive(Serialize)]
-pub struct SuccessResponse {
+#[derive(Serialize, ToSchema)]
+pub struct ListMediaFilesForUserSuccessResponse {
   pub success: bool,
-  pub results: Vec<MediaFileListItem>,
-  pub pagination: PaginationCursors,
+  pub results: Vec<MediaFileForUserListItem>,
+  pub pagination: PaginationPage,
 }
 
-#[derive(Serialize)]
-pub struct MediaFileListItem {
+#[derive(Serialize, ToSchema)]
+pub struct MediaFileForUserListItem {
   pub token: MediaFileToken,
 
   pub origin_category: MediaFileOriginCategory,
@@ -50,9 +51,9 @@ pub struct MediaFileListItem {
   pub maybe_origin_model_token: Option<String>,
 
   pub media_type: MediaFileType,
-  pub public_bucket_directory_hash: String,
-  pub maybe_public_bucket_prefix: Option<String>,
-  pub maybe_public_bucket_extension: Option<String>,
+
+  /// URL to the media file.
+  pub public_bucket_path: String,
 
   pub creator_set_visibility: Visibility,
 
@@ -60,39 +61,50 @@ pub struct MediaFileListItem {
   pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug)]
-pub enum ErrorResponse {
+#[derive(Debug, ToSchema)]
+pub enum ListMediaFilesForUserError {
   ServerError,
 }
 
-impl ResponseError for ErrorResponse {
+impl ResponseError for ListMediaFilesForUserError {
   fn status_code(&self) -> StatusCode {
     match *self {
-      ErrorResponse::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+      ListMediaFilesForUserError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
     }
   }
 
   fn error_response(&self) -> HttpResponse {
     let error_reason = match self {
-      ErrorResponse::ServerError => "server error".to_string(),
+      ListMediaFilesForUserError::ServerError => "server error".to_string(),
     };
 
     to_simple_json_error(&error_reason, self.status_code())
   }
 }
 
-impl std::fmt::Display for ErrorResponse {
+impl std::fmt::Display for ListMediaFilesForUserError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "{:?}", self)
   }
 }
 
+#[utoipa::path(
+  get,
+  path = "/v1/media_files/list/user/{username}",
+  params(
+     ListMediaFilesForUserQueryParams,
+  ),
+  responses(
+    (status = 200, description = "List Featured Media Files", body = ListMediaFilesForUserSuccessResponse),
+    (status = 500, description = "Server error", body = ListMediaFilesForUserError),
+  ),
+)]
 pub async fn list_media_files_for_user_handler(
   http_request: HttpRequest,
-  path: Path<PathInfo>,
-  query: Query<QueryParams>,
+  path: Path<ListMediaFilesForUserPathInfo>,
+  query: Query<ListMediaFilesForUserQueryParams>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<HttpResponse, ErrorResponse>
+) -> Result<HttpResponse, ListMediaFilesForUserError>
 {
   let maybe_user_session = server_state
       .session_checker
@@ -100,7 +112,7 @@ pub async fn list_media_files_for_user_handler(
       .await
       .map_err(|e| {
         warn!("Session checker error: {:?}", e);
-        ErrorResponse::ServerError
+        ListMediaFilesForUserError::ServerError
       })?;
 
   let mut is_author = false;
@@ -115,21 +127,10 @@ pub async fn list_media_files_for_user_handler(
   };
 
   // TODO(bt,2023-12-04): Enforce real maximums and defaults
-  let limit = query.limit.unwrap_or(25);
-
+  let limit = query.page_size.unwrap_or(25);
   let sort_ascending = query.sort_ascending.unwrap_or(false);
-  let cursor_is_reversed = query.cursor_is_reversed.unwrap_or(false);
-
-  let cursor = if let Some(cursor) = query.cursor.as_deref() {
-    let cursor = server_state.sort_key_crypto.decrypt_id(cursor)
-        .map_err(|e| {
-          warn!("crypto error: {:?}", e);
-          ErrorResponse::ServerError
-        })?;
-    Some(cursor as usize)
-  } else {
-    None
-  };
+  let page_size = query.page_size.unwrap_or_else(|| 25);
+  let page_index = query.page_index.unwrap_or_else(|| 0);
 
   let view_as = if is_author {
     ViewAs::Author
@@ -139,12 +140,13 @@ pub async fn list_media_files_for_user_handler(
     ViewAs::AnotherUser
   };
 
+
   let query_results = list_media_files_for_user(ListMediaFileForUserArgs {
     username: &path.username,
-    limit,
     maybe_filter_media_type: query.filter_media_type,
-    maybe_offset: cursor,
-    cursor_is_reversed,
+    page_size,
+    page_index,
+    sort_ascending,
     view_as,
     mysql_pool: &server_state.mysql_pool,
   }).await;
@@ -154,61 +156,42 @@ pub async fn list_media_files_for_user_handler(
     Ok(results) => results,
     Err(e) => {
       warn!("Query error: {:?}", e);
-      return Err(ErrorResponse::ServerError);
+      return Err(ListMediaFilesForUserError::ServerError);
     }
   };
 
-  let cursor_next = if let Some(id) = results_page.last_id {
-    let cursor = server_state.sort_key_crypto.encrypt_id(id as u64)
-        .map_err(|e| {
-          warn!("crypto error: {:?}", e);
-          ErrorResponse::ServerError
-        })?;
-    Some(cursor)
-  } else {
-    None
-  };
-
-  let cursor_previous = if let Some(id) = results_page.first_id {
-    let cursor = server_state.sort_key_crypto.encrypt_id(id as u64)
-        .map_err(|e| {
-          warn!("crypto error: {:?}", e);
-          ErrorResponse::ServerError
-        })?;
-    Some(cursor)
-  } else {
-    None
-  };
 
   let results = results_page.records.into_iter()
-      .map(|record| MediaFileListItem {
+      .map(|record| MediaFileForUserListItem {
         token: record.token,
         origin_category: record.origin_category,
         origin_product_category: record.origin_product_category,
         maybe_origin_model_type: record.maybe_origin_model_type,
         maybe_origin_model_token: record.maybe_origin_model_token,
         media_type: record.media_type,
-        public_bucket_directory_hash: record.public_bucket_directory_hash,
-        maybe_public_bucket_prefix: record.maybe_public_bucket_prefix,
-        maybe_public_bucket_extension: record.maybe_public_bucket_extension,
+        public_bucket_path: MediaFileBucketPath::from_object_hash(
+          &record.public_bucket_directory_hash,
+          record.maybe_public_bucket_prefix.as_deref(),
+          record.maybe_public_bucket_extension.as_deref())
+            .get_full_object_path_str()
+            .to_string(),
         creator_set_visibility: record.creator_set_visibility,
         created_at: record.created_at,
         updated_at: record.updated_at,
       })
       .collect::<Vec<_>>();
 
-  let response = SuccessResponse {
+  let response = ListMediaFilesForUserSuccessResponse {
     success: true,
     results,
-    pagination: PaginationCursors {
-      maybe_next: cursor_next,
-      maybe_previous: cursor_previous,
-      cursor_is_reversed,
+    pagination: PaginationPage{
+      current: results_page.current_page,
+      total_page_count: results_page.total_page_count,
     }
   };
 
   let body = serde_json::to_string(&response)
-      .map_err(|e| ErrorResponse::ServerError)?;
+      .map_err(|e| ListMediaFilesForUserError::ServerError)?;
 
   Ok(HttpResponse::Ok()
       .content_type("application/json")

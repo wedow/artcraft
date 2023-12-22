@@ -20,15 +20,13 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use actix_cors::Cors;
-use actix_web::{App, HttpResponse, HttpServer, middleware, web};
+use actix_web::{App, HttpServer, middleware, web};
 use actix_web::middleware::{DefaultHeaders, Logger};
 use anyhow::anyhow;
 use elasticsearch::Elasticsearch;
 use elasticsearch::http::transport::Transport;
 use futures::Future;
-use limitation::Limiter;
-use log::{error, info};
+use log::info;
 use r2d2_redis::r2d2;
 use r2d2_redis::redis::Commands;
 use r2d2_redis::RedisConnectionManager;
@@ -48,7 +46,6 @@ use actix_helpers::middleware::disabled_endpoint_filter::disabled_endpoints::exa
 use actix_helpers::middleware::disabled_endpoint_filter::disabled_endpoints::prefix_disabled_endpoints::PrefixDisabledEndpoints;
 use billing_component::stripe::stripe_config::{FullUrlOrPath, StripeCheckoutConfigs, StripeConfig, StripeCustomerPortalConfigs, StripeSecrets};
 use billing_component::stripe::traits::internal_product_to_stripe_lookup::InternalProductToStripeLookup;
-use billing_component::stripe::traits::internal_session_cache_purge::InternalSessionCachePurge;
 use billing_component::stripe::traits::internal_subscription_product_lookup::InternalSubscriptionProductLookup;
 use billing_component::stripe::traits::internal_user_lookup::InternalUserLookup;
 use bootstrap::bootstrap::{bootstrap, BootstrapArgs};
@@ -56,10 +53,9 @@ use cloud_storage::bucket_client::BucketClient;
 use config::common_env::CommonEnv;
 use config::shared_constants::DEFAULT_MYSQL_CONNECTION_STRING;
 use config::shared_constants::DEFAULT_RUST_LOG;
-use container_common::files::read_toml_file_to_struct::read_toml_file_to_struct;
 use email_sender::smtp_email_sender::SmtpEmailSender;
 use errors::AnyhowResult;
-use http_server_common::cors::{build_cors_config, build_production_cors_config};
+use http_server_common::cors::build_cors_config;
 use memory_caching::single_item_ttl_cache::SingleItemTtlCache;
 use mysql_queries::mediators::badge_granter::BadgeGranter;
 use mysql_queries::mediators::firehose_publisher::FirehosePublisher;
@@ -67,6 +63,7 @@ use redis_caching::redis_ttl_cache::RedisTtlCache;
 use reusable_types::server_environment::ServerEnvironment;
 use twitch_common::twitch_secrets::TwitchSecrets;
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
+use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 use users_component::cookies::anonymous_visitor_tracking::avt_cookie_manager::AvtCookieManager;
 use users_component::cookies::session::session_cookie_manager::SessionCookieManager;
 use users_component::utils::session_checker::SessionChecker;
@@ -75,12 +72,12 @@ use crate::billing::internal_product_to_stripe_lookup_impl::InternalProductToStr
 use crate::billing::internal_session_cache_purge_impl::InternalSessionCachePurgeImpl;
 use crate::billing::stripe_internal_subscription_product_lookup_impl::StripeInternalSubscriptionProductLookupImpl;
 use crate::billing::stripe_internal_user_lookup_impl::StripeInternalUserLookupImpl;
-use crate::configs::static_api_tokens::{StaticApiTokenConfig, StaticApiTokens, StaticApiTokenSet};
+use crate::configs::app_startup::redis_rate_limiters::configure_redis_rate_limiters;
+use crate::configs::static_api_tokens::StaticApiTokenSet;
 use crate::http_server::middleware::pushback_filter_middleware::PushbackFilter;
-use crate::http_server::web_utils::redis_rate_limiter::RedisRateLimiter;
 use crate::memory_cache::model_token_to_info_cache::ModelTokenToInfoCache;
 use crate::routes::add_routes;
-use crate::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, InMemoryCaches, RedisRateLimiters, ServerInfo, ServerState, StaticFeatureFlags, StripeSettings, TrollBans, TwitchOauth, TwitchOauthSecrets};
+use crate::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, InMemoryCaches, ServerInfo, ServerState, StaticFeatureFlags, StripeSettings, TrollBans, TwitchOauth, TwitchOauthSecrets};
 use crate::threads::db_health_checker_thread::db_health_check_status::HealthCheckStatus;
 use crate::threads::db_health_checker_thread::db_health_checker_thread::db_health_checker_thread;
 use crate::threads::poll_ip_banlist_thread::poll_ip_bans;
@@ -173,65 +170,6 @@ async fn main() -> AnyhowResult<()> {
     easyenv::get_env_num("REDIS_CACHE_TTL_SECONDS", 60)?,
   );
 
-  info!("Setting up Redis rate limiters...");
-
-  // Old env vars:
-  //
-  // "LIMITER_ENABLED"
-  // "LIMITER_MAX_REQUESTS"
-  // "LIMITER_WINDOW_SECONDS"
-  //
-  let logged_out_redis_rate_limiter = {
-    let limiter_enabled = easyenv::get_env_bool_or_default("LIMITER_LOGGED_OUT_ENABLED", true);
-    let limiter_max_requests = easyenv::get_env_num("LIMITER_LOGGED_OUT_MAX_REQUESTS", 3)?;
-    let limiter_window_seconds = easyenv::get_env_num("LIMITER_LOGGED_OUT_WINDOW_SECONDS", 10)?;
-
-    let limiter = Limiter::build(&common_env.redis_0_connection_string)
-        .limit(limiter_max_requests)
-        .period(Duration::from_secs(limiter_window_seconds))
-        .finish()?;
-
-    RedisRateLimiter::new(limiter, "logged_out", limiter_enabled)
-  };
-
-  let logged_in_redis_rate_limiter = {
-    let limiter_enabled = easyenv::get_env_bool_or_default("LIMITER_LOGGED_IN_ENABLED", true);
-    let limiter_max_requests = easyenv::get_env_num("LIMITER_LOGGED_IN_MAX_REQUESTS", 3)?;
-    let limiter_window_seconds = easyenv::get_env_num("LIMITER_LOGGED_IN_WINDOW_SECONDS", 10)?;
-
-    let limiter = Limiter::build(&common_env.redis_0_connection_string)
-        .limit(limiter_max_requests)
-        .period(Duration::from_secs(limiter_window_seconds))
-        .finish()?;
-
-    RedisRateLimiter::new(limiter, "logged_in", limiter_enabled)
-  };
-
-  let api_high_priority_redis_rate_limiter = {
-    let limiter_enabled = easyenv::get_env_bool_or_default("LIMITER_API_HIGH_PRIORITY_ENABLED", true);
-    let limiter_max_requests = easyenv::get_env_num("LIMITER_API_HIGH_PRIORITY_MAX_REQUESTS", 30)?;
-    let limiter_window_seconds = easyenv::get_env_num("LIMITER_API_HIGH_PRIORITY_WINDOW_SECONDS", 30)?;
-
-    let limiter = Limiter::build(&common_env.redis_0_connection_string)
-        .limit(limiter_max_requests)
-        .period(Duration::from_secs(limiter_window_seconds))
-        .finish()?;
-
-    RedisRateLimiter::new(limiter, "api_high_priority", limiter_enabled)
-  };
-
-  let model_upload_rate_limiter = {
-    let limiter_enabled = easyenv::get_env_bool_or_default("LIMITER_MODEL_UPLOAD_ENABLED", true);
-    let limiter_max_requests = easyenv::get_env_num("LIMITER_MODEL_UPLOAD_MAX_REQUESTS", 3)?;
-    let limiter_window_seconds = easyenv::get_env_num("LIMITER_MODEL_UPLOAD_WINDOW_SECONDS", 10)?;
-
-    let limiter = Limiter::build(&common_env.redis_0_connection_string)
-        .limit(limiter_max_requests)
-        .period(Duration::from_secs(limiter_window_seconds))
-        .finish()?;
-
-    RedisRateLimiter::new(limiter, "model_upload", limiter_enabled)
-  };
 
   info!("Connecting to elasticsearch...");
 
@@ -420,6 +358,7 @@ async fn main() -> AnyhowResult<()> {
 
     // Temporary flags
     enable_enqueue_generic_tts_job: easyenv::get_env_bool_or_default("FF_ENABLE_ENQUEUE_GENERIC_TTS_JOB", false),
+    switch_voice_conversion_to_model_weights: easyenv::get_env_bool_or_default("FF_SWITCH_VOICE_CONVERSION_TO_MODEL_WEIGHTS", false),
   };
 
   let third_party_url_redirector = ThirdPartyUrlRedirector::new(server_environment);
@@ -466,12 +405,7 @@ async fn main() -> AnyhowResult<()> {
     elasticsearch,
     redis_pool,
     redis_ttl_cache,
-    redis_rate_limiters: RedisRateLimiters {
-      logged_out: logged_out_redis_rate_limiter,
-      logged_in: logged_in_redis_rate_limiter,
-      api_high_priority: api_high_priority_redis_rate_limiter,
-      model_upload: model_upload_rate_limiter,
-    },
+    redis_rate_limiters: configure_redis_rate_limiters(&common_env)?,
     firehose_publisher,
     badge_granter,
     avt_cookie_manager,

@@ -9,8 +9,8 @@ use chrono::{DateTime, Utc};
 use log::error;
 use r2d2_redis::redis::{Commands, RedisResult};
 
-use buckets::public::media_files::original_file::MediaFileBucketPath;
-use buckets::public::voice_conversion_results::original_file::VoiceConversionResultOriginalFilePath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
+use buckets::public::voice_conversion_results::bucket_file_path::VoiceConversionResultOriginalFilePath;
 use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::common::job_status_plus::JobStatusPlus;
@@ -249,6 +249,14 @@ fn record_to_payload(
       // NB: Be careful here, because this varies based on the type of inference result.
       let public_bucket_media_path = match inference_category {
         InferenceCategory::LipsyncAnimation => {
+          MediaFileBucketPath::from_object_hash(
+            &result_details.public_bucket_location_or_hash,
+            result_details.maybe_media_file_public_bucket_prefix.as_deref(),
+            result_details.maybe_media_file_public_bucket_extension.as_deref())
+              .get_full_object_path_str()
+              .to_string()
+        }
+        InferenceCategory::VideoFilter => {
           MediaFileBucketPath::from_object_hash(
             &result_details.public_bucket_location_or_hash,
             result_details.maybe_media_file_public_bucket_prefix.as_deref(),

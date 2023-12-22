@@ -8,7 +8,7 @@ use actix_web::web::Path;
 use chrono::{DateTime, Utc};
 use log::warn;
 
-use buckets::public::media_files::original_file::MediaFileBucketPath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use mysql_queries::queries::media_files::get_media_file::get_media_file;

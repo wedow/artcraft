@@ -7,20 +7,18 @@ use enums::by_table::model_weights::weights_category::WeightsCategory;
 use enums::by_table::model_weights::weights_types::WeightsType;
 use mysql_queries::queries::model_weights::create_weight::{ self, create_weight };
 use once_cell::sync::Lazy;
-use http_server_common::response::response_error_helpers::to_simple_json_error;
 
 use tokens::tokens::model_weights::ModelWeightToken;
 
 use crate::http_server::endpoints::media_uploads::common::upload_error::UploadError;
 use crate::server_state::ServerState;
-use crate::validations::model_uploads::validate_model_title;
 
 use log::{ error, info, warn };
-use actix_web::http::StatusCode;
+
 use buckets::public::weight_uploads::original_file::WeightUploadOriginalFilePath;
 use enums::by_table::media_uploads::media_upload_source::MediaUploadSource;
 use enums::by_table::media_uploads::media_upload_type::MediaUploadType;
-use mysql_queries::queries::generic_download::web::insert_generic_download_job::{insert_generic_download_job, InsertGenericDownloadJobArgs};
+
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use http_server_common::request::get_request_ip::get_request_ip;
 use media::decode_basic_audio_info::decode_basic_audio_bytes_info;
@@ -28,11 +26,19 @@ use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
 use mysql_queries::queries::media_uploads::get_media_upload_by_uuid::get_media_upload_by_uuid_with_connection;
 use mysql_queries::queries::media_uploads::insert_media_upload::{ Args, insert_media_upload };
 
-use actix_web::{ HttpResponseBuilder, ResponseError};
+use crate::http_server::endpoints::media_uploads::common::drain_multipart_request::{
+    drain_multipart_request,
+    MediaSource,
+};
 use crate::validations::validate_idempotency_token_format::validate_idempotency_token_format;
+use utoipa::ToSchema;
 
 use config::bad_urls::is_bad_model_weights_download_url;
-use enums::by_table::generic_download_jobs::generic_download_type::GenericDownloadType;
+
+use enums::by_table::model_weights::{
+    weights_category::WeightsCategory,
+    weights_types::WeightsType,
+};
 use enums::common::visibility::Visibility;
 use utoipa::ToSchema;
 
@@ -96,7 +102,6 @@ impl ResponseError for UploadModelWeightsError {
 
 pub async fn upload_weights_handler(
     http_request: HttpRequest,
-    request: web::Json<UploadModelWeightsRequest>,
     server_state: web::Data<Arc<ServerState>>,
     mut multipart_payload: Multipart
 ) -> Result<HttpResponse, UploadError> {
@@ -128,12 +133,11 @@ pub async fn upload_weights_handler(
         return Err(UploadModelWeightsError::BadInput(reason));
     }
 
-
     if let Err(reason) = validate_model_title(&request.title) {
         return Err(UploadModelWeightsError::BadInput(reason));
     }
 
-    match is_bad_model_weights_download_url(&request.download_url) {
+    match is_bad_model_weights_download_url(&download_url) {
         Ok(false) => {} // Ok case
         Ok(true) => {
             return Err(UploadModelWeightsError::BadInput("Bad model download URL".to_string()));
@@ -149,23 +153,15 @@ pub async fn upload_weights_handler(
     let job_token;
     let download_job_type;
 
-    let generic_download_type = match supported_model_weights_type {
-        WeightsType::HifiGan => GenericDownloadType::HifiGan,
-        WeightsType::RvcV2 => GenericDownloadType::RvcV2,
-        WeightsType::Tacotron2 => GenericDownloadType::Tacotron2,
-        WeightsType::Vits => GenericDownloadType::Vits,
-        WeightsType::sd_15 => GenericDownloadType::StableDiffusion15,
-    };
-
     let (download_job_token, _record_id) = insert_generic_download_job(
         InsertGenericDownloadJobArgs {
-            uuid_idempotency_token: &request.idempotency_token,
+            uuid_idempotency_token: &uuid,
             download_type: GenericDownloadType::Vits,
-            download_url: &request.download_url,
-            title: &request.title,
+            download_url: &download_url,
+            title: &title,
             creator_user_token: &user_session.user_token,
-            creator_ip_address: &http_request.ip_address,
-            creator_set_visibility: &request.creator_set_visibility, // TODO: Creator set preference
+            creator_ip_address: &ip_address,
+            creator_set_visibility: visibility, // TODO: Creator set preference
             mysql_pool: &server_state.mysql_pool,
         }
     ).await.map_err(|err| {

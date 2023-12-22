@@ -5,9 +5,9 @@ use std::time::Instant;
 use anyhow::anyhow;
 use log::{error, info, warn};
 
-use buckets::public::media_files::original_file::MediaFileBucketPath;
-use buckets::public::zs_voices::directory::{ModelCategory, ModelType};
-use buckets::public::zs_voices::file::ZeroShotVoiceEmbeddingBucketPath;
+use buckets::private::zs_voices::bucket_directory::{ModelCategory, ModelType};
+use buckets::private::zs_voices::bucket_file_path::ZeroShotVoiceEmbeddingBucketPath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::bucket_client::BucketClient;
 use cloud_storage::bucket_path_unifier::BucketPathUnifier;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;

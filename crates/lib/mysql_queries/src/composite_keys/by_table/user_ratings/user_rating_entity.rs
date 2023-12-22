@@ -1,4 +1,6 @@
 use enums::by_table::user_ratings::entity_type::UserRatingEntityType;
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;
 use tokens::tokens::w2l_templates::W2lTemplateToken;
 
@@ -12,6 +14,8 @@ use tokens::tokens::w2l_templates::W2lTemplateToken;
 /// NB: We probably don't want to expose this type of interface to web clients because it's
 /// monotonous as a JSON interface.
 pub enum UserRatingEntity {
+  MediaFile(MediaFileToken),
+  ModelWeight(ModelWeightToken),
   TtsModel(TtsModelToken),
   W2lTemplate(W2lTemplateToken),
 }
@@ -20,6 +24,8 @@ pub enum UserRatingEntity {
 impl UserRatingEntity {
   pub fn get_entity_type(&self) -> UserRatingEntityType {
     match self {
+      UserRatingEntity::MediaFile(_) => UserRatingEntityType::MediaFile,
+      UserRatingEntity::ModelWeight(_) => UserRatingEntityType::ModelWeight,
       UserRatingEntity::TtsModel(_) => UserRatingEntityType::TtsModel,
       UserRatingEntity::W2lTemplate(_) => UserRatingEntityType::W2lTemplate,
     }
@@ -27,6 +33,8 @@ impl UserRatingEntity {
 
   pub fn get_entity_token_str(&self) -> &str {
     match self {
+      UserRatingEntity::MediaFile(token) => token.as_str(),
+      UserRatingEntity::ModelWeight(token) => token.as_str(),
       UserRatingEntity::TtsModel(token) => token.as_str(),
       UserRatingEntity::W2lTemplate(token) => token.as_str(),
     }

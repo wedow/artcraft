@@ -10,7 +10,6 @@ use jobs_common::semi_persistent_cache_dir::SemiPersistentCacheDir;
 use memory_caching::multi_item_ttl_cache::MultiItemTtlCache;
 use mysql_queries::mediators::firehose_publisher::FirehosePublisher;
 use mysql_queries::queries::tts::tts_models::get_tts_model_for_inference::TtsModelForInferenceRecord;
-use newrelic_telemetry::Client as NewRelicClient;
 
 use crate::caching::cache_miss_strategizer_multi::SyncMultiCacheMissStrategizer;
 use crate::caching::virtual_lfu_cache::SyncVirtualLfuCache;
@@ -37,10 +36,6 @@ pub struct JobArgs {
   pub http_clients: JobHttpClients,
 
   pub job_stats: JobStats,
-
-  pub newrelic_client: NewRelicClient,
-
-  pub newrelic_disabled: bool,
 
   pub worker_details: JobWorkerDetails,
 

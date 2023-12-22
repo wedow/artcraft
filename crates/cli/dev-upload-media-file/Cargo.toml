@@ -1,0 +1,42 @@
+[package]
+name = "dev-upload-media-file"
+edition = "2018"
+version = "0.0.1"
+authors = [
+    "Brandon Thomas <bt@brand.io>",
+    "Brandon Thomas <echelon@gmail.com>",
+]
+publish = false
+
+[[bin]]
+name = "dev-upload-media-file"
+path = "src/main.rs"
+
+[dependencies]
+# Internal
+buckets = { path = "../../_types/buckets" }
+cloud_storage = { path = "../../lib/api_clients/cloud_storage" }
+config = { path = "../../lib/deprecated/config" }
+easyenv = { path = "../../lib/easyenv" }
+enums = { path = "../../_types/enums" }
+errors = { path = "../../lib/errors" }
+filesys = { path = "../../lib/files/filesys" }
+mimetypes = { path = "../../lib/files/mimetypes" }
+mysql_queries = { path = "../../lib/mysql_queries" }
+tokens = { path = "../../_types/tokens" }
+
+# Workspace hack (faster compile times)
+my-workspace-hack = { version = "0.1", path = "../../my-workspace-hack" }
+
+# External
+clap = "4.4.8"
+log = "0.4.14"
+
+# Runtime
+# NB: We switched to Tokio from `async-std` for broader ecosystem support.
+tokio = { version = "1.34.0", features = ["macros"] }
+
+sqlx = { version = "0.7.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
+
+[dev-dependencies]
+# None yet

@@ -1,12 +1,12 @@
 use std::str::FromStr;
 
-use clap::{App, Arg, ArgMatches};
+use clap::Parser;
 use strum::{EnumCount, EnumString, IntoEnumIterator};
 use strum::EnumIter;
 
 use errors::{anyhow, AnyhowResult, bail};
 
-pub struct CliArgs {
+pub struct ParsedArgs {
   pub mysql_environment: Environment,
   pub elasticsearch_environment: Environment,
   pub action: Action,
@@ -25,51 +25,36 @@ pub enum Action {
   SearchTts,
 }
 
-pub fn parse_cli_args() -> AnyhowResult<CliArgs> {
-  let matches = App::new("dev-database-seed")
-      .arg(Arg::with_name("action")
-          .long("action")
-          .help("action to take")
-          .takes_value(true)
-          .required(true))
-      .arg(Arg::with_name("mysql")
-          .long("mysql")
-          .help("Production or development")
-          .takes_value(true)
-          .required(false))
-      .arg(Arg::with_name("elasticsearch")
-        .long("elasticsearch")
-        .help("Production or development")
-        .takes_value(true)
-        .required(false))
-      .get_matches();
+#[derive(Parser, Debug)]
+#[command(name="elasticsearch-cli")]
+pub struct Args {
+  #[arg(name="action", long="action", help="action to take", required=true)]
+  action: String,
 
-  Ok(CliArgs {
-    mysql_environment: to_environment(&matches, "mysql")?,
-    elasticsearch_environment: to_environment(&matches, "elasticsearch")?,
-    action: get_action(&matches)?,
+  #[arg(name="mysql", long="mysql", help="production or development")]
+  mysql: Option<String>,
+
+  #[arg(name="elasticsearch", long="elasticsearch", help="production or development")]
+  elasticsearch: Option<String>,
+}
+
+pub fn parse_cli_args() -> AnyhowResult<ParsedArgs> {
+  let args = Args::parse();
+
+  Ok(ParsedArgs {
+    mysql_environment: to_environment(args.mysql.as_deref())?,
+    elasticsearch_environment: to_environment(args.elasticsearch.as_deref())?,
+    action: action_from_str(&args.action)?,
   })
 }
 
-fn to_environment(matches: &ArgMatches, key: &str) -> AnyhowResult<Environment> {
-  let value = matches.value_of(key)
-      .map(|s| s.to_lowercase());
-
-  Ok(match value.as_deref() {
+fn to_environment(environment: Option<&str>) -> AnyhowResult<Environment> {
+  Ok(match environment {
     None => Environment::Development,
     Some("dev") | Some("development") => Environment::Development,
     Some("prod") | Some("production") => Environment::Production,
-    _ => bail!("invalid environment: {:?}", value),
+    _ => bail!("invalid environment: {:?}", environment),
   })
-}
-
-fn get_action(matches: &ArgMatches) -> AnyhowResult<Action> {
-  let action = matches.value_of("action")
-      .map(|s| action_from_str(s))
-      .transpose()?
-      .ok_or(anyhow!("no action provided"))?;
-
-  Ok(action)
 }
 
 fn action_from_str(value: &str) -> AnyhowResult<Action> {

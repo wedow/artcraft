@@ -1,27 +1,23 @@
 use std::sync::Arc;
-use actix_web::web::Query;
-use actix_web::{ HttpRequest, HttpResponse, web };
+
+use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
-use chrono::{ DateTime, Utc };
-use log::{ info, warn };
+use chrono::{DateTime, Utc};
+use log::{info, warn};
 use rand::Rng;
-use enums::common::visibility::Visibility;
-use mysql_queries::queries::model_weights::list_weights_query_builder::ListWeightsQueryBuilder;
-
-use enums::by_table::model_weights::{
-    weights_types::WeightsType,
-    weights_category::WeightsCategory,
-};
-
-use tokens::tokens::users::UserToken;
-use tokens::tokens::model_weights::ModelWeightToken;
-
-use crate::http_server::common_responses::user_details_lite::{UserDetailsLight,DefaultAvatarInfo};
-use crate::server_state::ServerState;
-
 use utoipa::ToSchema;
 
+use enums::by_table::model_weights::{
+    weights_category::WeightsCategory,
+    weights_types::WeightsType,
+};
+use enums::common::visibility::Visibility;
+use mysql_queries::queries::model_weights::list::list_weights_query_builder::ListWeightsQueryBuilder;
+use tokens::tokens::model_weights::ModelWeightToken;
+use tokens::tokens::users::UserToken;
+
+use crate::server_state::ServerState;
 
 #[derive(Deserialize,ToSchema)]
 pub struct ListAvailableWeightsQuery {

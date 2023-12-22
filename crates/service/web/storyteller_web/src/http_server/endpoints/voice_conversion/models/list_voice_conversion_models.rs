@@ -18,21 +18,23 @@ use sqlx::pool::PoolConnection;
 use enums::by_table::voice_conversion_models::voice_conversion_model_type::VoiceConversionModelType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
+use migration::voice_conversion::list_vc_models_for_migration::list_vc_models_for_migration;
 use mysql_queries::queries::users::user_sessions::get_user_session_by_token::SessionUserRecord;
-use mysql_queries::queries::voice_conversion::models::list_voice_conversion_models::list_voice_conversion_models_with_connection;
-use tokens::tokens::users::UserToken;
-use tokens::tokens::voice_conversion_models::VoiceConversionModelToken;
 
+use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::server_state::ServerState;
 
 #[derive(Serialize, Clone)]
 pub struct VoiceConversionModel {
-  pub token: VoiceConversionModelToken,
+  /// NB: token can be a `model_weights` token or a `voice_conversion_models` token.
+  pub token: String,
+
   pub model_type: VoiceConversionModelType,
+
   pub title: String,
 
-  pub creator: CreatorDetails,
+  pub creator: UserDetailsLight,
   pub creator_set_visibility: Visibility,
 
   pub ietf_language_tag: String,
@@ -49,14 +51,6 @@ pub struct VoiceConversionModel {
 
   pub created_at: DateTime<Utc>,
   pub updated_at: DateTime<Utc>,
-}
-
-#[derive(Serialize, Clone)]
-pub struct CreatorDetails {
-  pub user_token: UserToken,
-  pub username: String,
-  pub display_name: String,
-  pub gravatar_hash: String,
 }
 
 // TODO: Add user ratings.
@@ -140,7 +134,7 @@ pub async fn list_voice_conversion_models_handler(
           })?;
 
       // TODO: Fail open in case the DB is down. Pull from expired cache if query fails.
-      let models = get_all_models(&mut mysql_connection)
+      let models = get_all_models(&mut mysql_connection, server_state.flags.switch_voice_conversion_to_model_weights)
           .await
           .map_err(|e| {
             error!("Error querying database: {:?}", e);
@@ -219,47 +213,34 @@ pub fn render_response_payload(response: ListVoiceConversionModelsSuccessRespons
   Ok(body)
 }
 
-async fn get_all_models(mysql_connection: &mut PoolConnection<MySql>) -> AnyhowResult<Vec<VoiceConversionModel>> {
-  let mut models = list_voice_conversion_models_with_connection(
-    mysql_connection,
-    None,
-  ).await?;
+async fn get_all_models(mysql_connection: &mut PoolConnection<MySql>, use_weights_table: bool) -> AnyhowResult<Vec<VoiceConversionModel>> {
+  let mut models = list_vc_models_for_migration(mysql_connection, use_weights_table).await?;
 
-  //let model_categories_map
-  //    = fetch_and_build_voice_conversion_model_category_map_with_connection(mysql_connection).await?;
-
-  // Make the list nice for human readers.
+  // NB: Make the list nice for human readers.
   models.sort_by(|a, b|
-      natural_lexical_cmp(&a.title, &b.title));
+      natural_lexical_cmp(&a.title(), &b.title()));
 
   let models_for_response = models.into_iter()
+      .filter(|model| model.is_voice_conversion_model())
       .map(|model| {
+        // TODO(bt,2023-12-18): All of these clones are lame, but this is just to support the migration.
         VoiceConversionModel {
-          token: model.token,
-          model_type: model.model_type,
-          title: model.title,
-          creator: CreatorDetails {
-            user_token: model.creator_user_token,
-            username: model.creator_username,
-            display_name: model.creator_display_name,
-            gravatar_hash: model.creator_gravatar_hash,
-          },
-          creator_set_visibility: model.creator_set_visibility,
-          ietf_language_tag: model.ietf_language_tag,
-          ietf_primary_language_subtag: model.ietf_primary_language_subtag,
-          is_front_page_featured: model.is_front_page_featured,
-          // TODO: Add user ratings
-          //user_ratings: UserRatingsStats {
-          //  positive_count: model.user_ratings_positive_count,
-          //  negative_count: model.user_ratings_negative_count,
-          //  total_count: model.user_ratings_total_count,
-          //},
-          // TODO: Add categories
-          //category_tokens: model_categories_map.model_to_category_tokens.get(&model_token)
-          //    .map(|hash| hash.clone())
-          //    .unwrap_or(HashSet::new()),
-          created_at: model.created_at,
-          updated_at: model.updated_at,
+          token: model.token().to_string(),
+          model_type: model.legacy_voice_conversion_model_type()
+              .unwrap_or(VoiceConversionModelType::SoVitsSvc),
+          title: model.title().to_string(),
+          is_front_page_featured: false, // TODO(bt,2023-12-18): None of the models are "featured" yet.
+          creator: UserDetailsLight::from_db_fields(
+              model.creator_user_token(),
+              model.creator_username(),
+              model.creator_display_name(),
+              model.creator_gravatar_hash(),
+          ),
+          creator_set_visibility: model.creator_set_visibility(),
+          ietf_language_tag: model.ietf_language_tag().to_string(),
+          ietf_primary_language_subtag: model.ietf_primary_language_subtag().to_string(),
+          created_at: model.created_at().clone(),
+          updated_at: model.updated_at().clone(),
         }
       })
       .collect::<Vec<VoiceConversionModel>>();

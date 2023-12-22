@@ -184,7 +184,7 @@ impl ListCategoriesQueryBuilder {
       query = query.bind(model_type);
     }
 
-    let mut results = query.fetch_all(&mut **mysql_connection)
+    let results = query.fetch_all(&mut **mysql_connection)
         .await?;
 
     Ok(results)
@@ -239,7 +239,7 @@ LEFT OUTER JOIN users
 
     let mut query = "".to_string();
 
-    if let Some(username) = self.scope_creator_user_token.as_deref() {
+    if let Some(_username) = self.scope_creator_user_token.as_deref() {
       if !first_predicate_added {
         query.push_str(" WHERE model_categories.creator_user_token = ?");
         first_predicate_added = true;
@@ -248,7 +248,7 @@ LEFT OUTER JOIN users
       }
     }
 
-    if let Some(model_type) = self.scope_model_type.as_deref() {
+    if let Some(_model_type) = self.scope_model_type.as_deref() {
       if !first_predicate_added {
         query.push_str(" WHERE model_categories.model_type = ?");
         first_predicate_added = true;

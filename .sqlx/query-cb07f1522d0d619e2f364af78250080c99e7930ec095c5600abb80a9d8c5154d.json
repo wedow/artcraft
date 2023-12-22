@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\n        INSERT INTO model_weights\n        SET\n          token = ?,\n          weights_type = ?,\n          weights_category = ?,\n          title = ?,\n          maybe_thumbnail_token = ?,\n          description_markdown = ?,\n          description_rendered_html = ?,\n          creator_user_token = ?,\n          creator_ip_address = ?,\n          creator_set_visibility = ?,\n          maybe_last_update_user_token = ?,\n          original_download_url = ?,\n          original_filename = ?,\n          file_size_bytes = ?,\n          file_checksum_sha2 = ?,\n          public_bucket_hash = ?,\n          maybe_public_bucket_prefix = ?,\n          maybe_public_bucket_extension = ?,\n          cached_user_ratings_total_count = ?,\n          cached_user_ratings_positive_count = ?,\n          cached_user_ratings_negative_count = ?,\n          maybe_cached_user_ratings_ratio = ?,\n          version = ?\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 23
+    },
+    "nullable": []
+  },
+  "hash": "cb07f1522d0d619e2f364af78250080c99e7930ec095c5600abb80a9d8c5154d"
+}

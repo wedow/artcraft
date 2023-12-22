@@ -30,6 +30,7 @@ reusable_types = { path = "../../../_types/reusable_types" }
 server_environment = { path = "../../../lib/server_environment" }
 tokens = { path = "../../../_types/tokens" }
 user_input_common = { path = "../../../lib/user_input_common" }
+user_traits_component = { path = "../user_traits_component" }
 
 # Workspace hack (faster compile times)
 my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }

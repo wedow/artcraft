@@ -310,7 +310,7 @@ Secrets:
   - Put `.env-secrets` in the root `storyteller-rust` directory.
   
 - Per app secrets (ask Brandon for these):
-  - Put `storteller-web.development-secrets.env` in `crates/service/web/storyteller-web/config`
+  - Put `storteller-web.development-secrets.env` in `crates/service/web/storyteller_web/config`
   - Put `inference-job.development-secrets.env` in `crates/service/job/inference_job/config`
   - Put `donwload-job.development-secrets.env` in `crates/service/job/download_job/config`
 

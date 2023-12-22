@@ -1,7 +1,9 @@
-pub mod create_weight;
+pub mod create;
 pub mod delete_weights;
+pub mod edit;
 pub mod get_weight;
-pub mod update_weight;
-pub mod list_weights_by_user;
-pub mod list_weights_query_builder;
+pub mod inference;
+pub mod list;
+pub mod migration;
+pub mod model_weight_info_lite;
 pub mod tests;

@@ -121,6 +121,11 @@ CREATE TABLE voice_conversion_models (
   -- If a moderator has comments.
   maybe_mod_comments VARCHAR(255) DEFAULT NULL,
 
+  -- ========== MIGRATION DETAILS ==========
+
+  -- If migrated to model_weights, this is the new token
+  maybe_migration_new_model_weights_token VARCHAR(32) DEFAULT NULL,
+
   -- ========== VECTOR CLOCK ==========
 
   -- Incremented with every update.

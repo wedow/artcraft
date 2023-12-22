@@ -49,6 +49,7 @@ pub(crate) static MINIMUM_CHARACTER_ENTROPY : usize = 8;
 #[macro_use]
 mod macros;
 
+pub (crate) mod deterministic_rng;
 pub (crate) mod prefixes;
 
 pub mod tokens;

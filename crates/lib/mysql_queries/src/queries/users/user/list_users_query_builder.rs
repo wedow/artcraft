@@ -65,10 +65,10 @@ impl ListUsersQueryBuilder {
 
     let internal_results = self.internal_query(mysql_pool).await?;
 
-    let mut first_id = internal_results.first()
+    let first_id = internal_results.first()
         .map(|raw_result| raw_result.user_id);
 
-    let mut last_id = internal_results.last()
+    let last_id = internal_results.last()
         .map(|raw_result| raw_result.user_id);
 
     let users = internal_results
@@ -106,17 +106,17 @@ impl ListUsersQueryBuilder {
   ) -> AnyhowResult<Vec<UserForListRaw>> {
 
     let query = self.build_query_string();
-    let mut query = sqlx::query_as::<_, UserForListRaw>(&query);
+    let query = sqlx::query_as::<_, UserForListRaw>(&query);
 
 
-    let mut results = query.fetch_all(mysql_pool)
+    let results = query.fetch_all(mysql_pool)
         .await?;
 
     Ok(results)
   }
 
   pub fn build_query_string(&self) -> String {
-    let mut query_string = r#"
+    let query_string = r#"
 SELECT
   id as user_id,
   token as user_token,

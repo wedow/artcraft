@@ -80,7 +80,7 @@ pub async fn process_softvc_model<'a, 'b>(
 
   redis_logger.log_status("uploading rocket vc  model")?; // NB: "rocket vc" is a codename
 
-  if let Err(e) = job_state.bucket_client.upload_filename(&model_bucket_path, &file_path).await {
+  if let Err(e) = job_state.private_bucket_client.upload_filename(&model_bucket_path, &file_path).await {
     safe_delete_temp_file(&output_metadata_fs_path);
     safe_delete_temp_file(&file_path);
     safe_delete_temp_directory(&temp_dir);
@@ -100,6 +100,7 @@ pub async fn process_softvc_model<'a, 'b>(
 
   let (_id, model_token) = insert_voice_conversion_model_from_download_job(InsertVoiceConversionModelArgs {
     model_type: VoiceConversionModelType::SoftVc,
+    maybe_new_weights_token: None,
     title: &job.title,
     original_download_url: &job.download_url,
     original_filename: &download_filename,

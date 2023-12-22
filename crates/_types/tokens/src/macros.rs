@@ -60,6 +60,41 @@ macro_rules! impl_crockford_generator {
         $t(token)
       }
 
+      /// Constructor for a new token to be used **DETERMINISTICALLY** in tests and seeding.
+      /// This will not use a real RNG, so do not use in production code!
+      /// Once called, it will output the same random numbers in sequence.
+      pub fn reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(state: u64) {
+        let deterministic = crate::deterministic_rng::DeterministicRng::get_instance().expect("tests should not fail due to mutex");
+        deterministic.reset_rng(state);
+      }
+
+      /// Constructor for a new token to be used **DETERMINISTICALLY** in tests and seeding.
+      /// This will not use a real RNG, so do not use in production code!
+      /// Once called, it will output the same random numbers in sequence.
+      pub fn generate_for_testing_and_dev_seeding_never_use_in_production_seriously() -> Self {
+        use rand::Rng;
+
+        // FIXME(bt,2023-12-14): This is bad error handling. (Maybe panic if lock is poisoned?)
+        let deterministic = crate::deterministic_rng::DeterministicRng::get_instance().expect("tests should not fail due to mutex");
+        let mut rng = deterministic.get_rng().expect("tests should not fail due to mutex");
+
+        let charset = Self::token_character_set();
+        let entropy_length = Self::entropic_character_len();
+
+        let entropy_part: String = (0..entropy_length)
+          .map(|_| {
+            let idx = rng.gen_range(0..charset.len());
+            charset[idx] as char
+          })
+          .collect();
+
+        let token_prefix = Self::token_prefix();
+
+        let token = format!("{}{}", token_prefix, entropy_part);
+
+        $t(token)
+      }
+
       #[inline]
       pub fn entropy_suffix(&self) -> &str {
         use crate::prefixes::PrefixGenerator;

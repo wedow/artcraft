@@ -3,7 +3,7 @@ use tokens::tokens::voice_conversion_models::VoiceConversionModelToken;
 
 /// This is meant to be used for quick in-memory caches,
 /// particularly the one that serves the voice conversion enqueue API.
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 pub struct VoiceConversionModelInfoLite {
   pub token: VoiceConversionModelToken,
   pub model_type: VoiceConversionModelType,

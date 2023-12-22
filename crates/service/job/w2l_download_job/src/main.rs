@@ -28,7 +28,6 @@ use sqlx::mysql::MySqlPoolOptions;
 use sqlx::MySqlPool;
 use tempdir::TempDir;
 
-use buckets::util::hash_to_bucket_path_string::hash_to_bucket_path_string;
 use cloud_storage::bucket_client::BucketClient;
 use config::common_env::CommonEnv;
 use config::is_bad_video_download_url::is_bad_video_download_url;
@@ -474,9 +473,11 @@ async fn process_job(downloader: &Downloader, job: &W2lTemplateUploadJobRecord) 
   info!("File hash: {}", private_bucket_hash);
 
   // Full path to video/image
-  let full_object_path = hash_to_bucket_path_string(
-    &private_bucket_hash,
-    Some(&downloader.bucket_root_w2l_template_uploads))?;
+  //let full_object_path = hash_to_bucket_path_string(
+  //  &private_bucket_hash,
+  //  Some(&downloader.bucket_root_w2l_template_uploads))?;
+
+  let full_object_path = "THIS_IS_BROKEN_BECAUSE_W2L_IS_DEAD";
 
   // ==================== GENERATE VIDEO PREVIEWS ==================== //
 

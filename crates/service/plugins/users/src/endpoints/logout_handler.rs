@@ -13,6 +13,7 @@ use sqlx::MySqlPool;
 
 use http_server_common::response::response_error_helpers::to_simple_json_error;
 use mysql_queries::queries::users::user_sessions::delete_user_session::delete_user_session;
+use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 
 use crate::cookies::session::session_cookie_manager::SessionCookieManager;
 
@@ -53,8 +54,12 @@ pub async fn logout_handler(
   http_request: HttpRequest,
   session_cookie_manager: web::Data<SessionCookieManager>,
   mysql_pool: web::Data<MySqlPool>,
+  internal_session_cache_purge: web::Data<dyn InternalSessionCachePurge>,
 ) -> Result<HttpResponse, LogoutError>
 {
+  // Best effort to delete Redis session cache
+  internal_session_cache_purge.best_effort_purge_session_cache(&http_request);
+
   let mut delete_cookie = match http_request.cookie("session") {
     Some(cookie) => {
       match session_cookie_manager.decode_session_token(&cookie) {

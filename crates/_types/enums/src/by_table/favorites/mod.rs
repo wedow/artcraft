@@ -1,1 +1,0 @@
-pub mod favorite_entity_type;

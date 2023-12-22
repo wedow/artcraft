@@ -33,7 +33,9 @@ pub struct JobState {
 
   pub redis_pool: r2d2::Pool<RedisConnectionManager>,
 
-  pub bucket_client: BucketClient,
+  pub public_bucket_client: BucketClient,
+  pub private_bucket_client: BucketClient,
+
   pub firehose_publisher: FirehosePublisher,
   pub badge_granter: BadgeGranter,
 

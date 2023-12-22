@@ -268,7 +268,7 @@ LEFT OUTER JOIN users
       }
     }
 
-    if let Some(username) = self.scope_creator_username.as_deref() {
+    if let Some(_username) = self.scope_creator_username.as_deref() {
       if !first_predicate_added {
         query.push_str(" WHERE users.username = ?");
         first_predicate_added = true;

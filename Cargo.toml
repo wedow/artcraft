@@ -10,13 +10,14 @@ members = [
   "crates/_types/tokens",
 
   # CLI tools for operations, etc.
-  "crates/cli/database_backup",
-  "crates/cli/database_cleanup",
-  "crates/cli/dev_database_seed",
-  "crates/cli/dev_upload_media_file",
+  "crates/cli/database-backup",
+  "crates/cli/database-cleanup",
+  "crates/cli/dev-database-seed",
+  "crates/cli/dev-upload-media-file",
   "crates/cli/elasticsearch-cli",
   "crates/cli/kubectl-pod-cleanup",
   "crates/cli/lru-delete-models",
+  "crates/cli/migration-tool",
   "crates/cli/scrape_test",
 
   # Shared libraries
@@ -48,6 +49,7 @@ members = [
   "crates/lib/idempotency",
   "crates/lib/jobs_common",
   "crates/lib/logging",
+  "crates/lib/migration",
   "crates/lib/mysql_queries",
   "crates/lib/password",
   "crates/lib/redis_common",
@@ -83,11 +85,13 @@ members = [
   # Service Plugins: complete subsystems that can be plugged into services (users, billing, etc.)
   "crates/service/plugins/billing",
   "crates/service/plugins/inference_workloads",
+  "crates/service/plugins/user_traits_component",
   "crates/service/plugins/users",
 
   # Vendored code
   "crates/vendor/limitation",
-  "crates/vendor/newrelic-telemetry-sdk-rust",
+  # NB(bt,2023-12-12): Newrelic keeps breaking with upgrades. Kill for now.
+  #"crates/vendor/newrelic-telemetry-sdk-rust", 
 
   # cargo-hakari workspace hack (compilation speedup hack)
   "crates/my-workspace-hack",

@@ -159,7 +159,7 @@ impl ListAssignedTtsCategoriesQueryBuilder {
     // NB: Model token is always used for scoping.
     query = query.bind(&self.scope_tts_model_token);
 
-    let mut results = query.fetch_all(&mut **mysql_connection)
+    let results = query.fetch_all(&mut **mysql_connection)
         .await?;
 
     Ok(results)

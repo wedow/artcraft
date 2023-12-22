@@ -20,6 +20,7 @@ use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 use users_component::cookies::anonymous_visitor_tracking::avt_cookie_manager::AvtCookieManager;
 use users_component::cookies::session::session_cookie_manager::SessionCookieManager;
 use users_component::utils::session_checker::SessionChecker;
+use crate::configs::app_startup::username_set::UsernameSet;
 
 use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::list_fully_computed_assigned_tts_categories::ModelTokensByCategoryToken;
 use crate::http_server::endpoints::leaderboard::get_leaderboard::LeaderboardInfo;
@@ -140,8 +141,20 @@ pub struct RedisRateLimiters {
   /// constructions)
   pub api_high_priority: RedisRateLimiter,
 
+  /// API rate limit for AI streamers
+  pub api_ai_streamers: RedisRateLimiter,
+
+  /// Usernames of AI streamers
+  pub api_ai_streamer_username_set: UsernameSet,
+
   /// A rate limiter for TTS and W2L uploads
   pub model_upload: RedisRateLimiter,
+
+  /// For uploading files for voice conversion, face animator, etc.
+  pub file_upload_logged_out: RedisRateLimiter,
+
+  /// For uploading files for voice conversion, face animator, etc.
+  pub file_upload_logged_in: RedisRateLimiter,
 }
 
 /// In-memory caches of several types.
@@ -241,8 +254,15 @@ pub struct StaticFeatureFlags {
   /// This should be a number over 100.
   pub troll_ban_user_percent: u8,
 
+  // TODO(2023-03-20): Remove temporary flag when done.
+  //  NB(bt,2023-12-18): This is rolled out (=="TRUE")
   /// TEMPORARY: Control enqueuing TTS jobs to the generic job worker.
   pub enable_enqueue_generic_tts_job: bool,
+
+  // TODO(2023-12-18): Remove temporary flag when done.
+  /// TEMPORARY: Move voice control model listing over to `model_weights` from `voice_conversion_models`
+  /// This will control all downstream enqueuing, jobs, etc.
+  pub switch_voice_conversion_to_model_weights: bool,
 }
 
 /// Instead of top level service denial, these are bans against entities that instead return

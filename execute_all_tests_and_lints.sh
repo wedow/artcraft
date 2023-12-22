@@ -4,6 +4,7 @@ set -euxo pipefail
 
 echo 'Run cargo check...'
 
+#RUSTFLAGS=-Awarnings cargo check
 cargo check
 
 echo 'Run lints...'

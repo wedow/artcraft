@@ -5,16 +5,16 @@ use std::time::Instant;
 use anyhow::anyhow;
 use log::{error, info, warn};
 
-use buckets::public::media_files::original_file::MediaFileBucketPath;
-use buckets::public::zs_voices::directory::{ModelCategory, ModelType};
-use buckets::public::zs_voices::file::ZeroShotVoiceEmbeddingBucketPath;
+use buckets::private::zs_voices::bucket_directory::{ModelCategory, ModelType};
+use buckets::private::zs_voices::bucket_file_path::ZeroShotVoiceEmbeddingBucketPath;
+use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::bucket_client::BucketClient;
 use cloud_storage::bucket_path_unifier::BucketPathUnifier;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
 use filesys::file_size::file_size;
 use hashing::sha256::sha256_hash_file::sha256_hash_file;
-use mysql_queries::queries::media_files::insert_media_file_from_zero_shot_tts::insert_media_file_from_zero_shot;
-use mysql_queries::queries::media_files::insert_media_file_from_zero_shot_tts::InsertArgs;
+use mysql_queries::queries::media_files::create::insert_media_file_from_zero_shot_tts::insert_media_file_from_zero_shot;
+use mysql_queries::queries::media_files::create::insert_media_file_from_zero_shot_tts::InsertArgs;
 use mysql_queries::queries::voice_designer::voices::get_voice::{get_voice_by_token, ZsVoice};
 
 use crate::job::job_loop::job_success_result::JobSuccessResult;

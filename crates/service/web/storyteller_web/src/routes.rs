@@ -12,6 +12,7 @@ use users_component::endpoints::edit_profile_handler::edit_profile_handler;
 use users_component::endpoints::get_profile_handler::get_profile_handler;
 
 use crate::http_server::endpoints::animation::enqueue_face_animation::enqueue_face_animation_handler;
+use crate::http_server::endpoints::animation::enqueue_rerender_animation::enqueue_rerender_animation_handler;
 use crate::http_server::endpoints::api_tokens::create_api_token::create_api_token_handler;
 use crate::http_server::endpoints::api_tokens::delete_api_token::delete_api_token_handler;
 use crate::http_server::endpoints::api_tokens::edit_api_token::edit_api_token_handler;
@@ -28,11 +29,6 @@ use crate::http_server::endpoints::comments::list_comments_handler::list_comment
 use crate::http_server::endpoints::download_job::enqueue_generic_download::enqueue_generic_download_handler;
 use crate::http_server::endpoints::download_job::get_generic_upload_job_status::get_generic_download_job_status_handler;
 use crate::http_server::endpoints::events::list_events::list_events_handler;
-use crate::http_server::endpoints::favorites::create_favorite_handler::create_favorite_handler;
-use crate::http_server::endpoints::favorites::delete_favorite_handler::delete_favorite_handler;
-use crate::http_server::endpoints::favorites::list_favorites_for_entity_handler::list_favorites_for_entity_handler;
-use crate::http_server::endpoints::favorites::list_favorites_for_session_handler::list_favorites_for_session_handler;
-use crate::http_server::endpoints::favorites::list_favorites_for_user_handler::list_favorites_for_user_handler;
 use crate::http_server::endpoints::flags::design_refresh_flag::disable_design_refresh_flag_handler::disable_design_refresh_flag_handler;
 use crate::http_server::endpoints::flags::design_refresh_flag::enable_design_refresh_flag_handler::enable_design_refresh_flag_handler;
 use crate::http_server::endpoints::inference_job::get_inference_job_status::get_inference_job_status_handler;
@@ -44,8 +40,11 @@ use crate::http_server::endpoints::investor_demo::enable_demo_mode_handler::enab
 use crate::http_server::endpoints::leaderboard::get_leaderboard::leaderboard_handler;
 use crate::http_server::endpoints::media_files::delete_media_file::delete_media_file_handler;
 use crate::http_server::endpoints::media_files::get_media_file::get_media_file_handler;
+use crate::http_server::endpoints::media_files::list_featured_media_files::list_featured_media_files_handler;
 use crate::http_server::endpoints::media_files::list_media_files::list_media_files_handler;
 use crate::http_server::endpoints::media_files::list_media_files_for_user::list_media_files_for_user_handler;
+use crate::http_server::endpoints::media_files::update_media_file::update_media_file_handler;
+use crate::http_server::endpoints::media_files::upload_media_file::upload_media_file_handler;
 use crate::http_server::endpoints::media_uploads::list_user_media_uploads_of_type::list_user_media_uploads_of_type_handler;
 use crate::http_server::endpoints::media_uploads::upload_audio::upload_audio_handler;
 use crate::http_server::endpoints::media_uploads::upload_image::upload_image_handler;
@@ -109,6 +108,11 @@ use crate::http_server::endpoints::twitch::oauth::check_oauth_status::check_oaut
 use crate::http_server::endpoints::twitch::oauth::oauth_begin_json::oauth_begin_enroll_json;
 use crate::http_server::endpoints::twitch::oauth::oauth_begin_redirect::oauth_begin_enroll_redirect;
 use crate::http_server::endpoints::twitch::oauth::oauth_end::oauth_end_enroll_from_redirect;
+use crate::http_server::endpoints::user_bookmarks::create_user_bookmark_handler::create_user_bookmark_handler;
+use crate::http_server::endpoints::user_bookmarks::delete_user_bookmark_handler::delete_user_bookmark_handler;
+use crate::http_server::endpoints::user_bookmarks::list_user_bookmarks_for_entity_handler::list_user_bookmarks_for_entity_handler;
+use crate::http_server::endpoints::user_bookmarks::list_user_bookmarks_for_session_handler::list_user_bookmarks_for_session_handler;
+use crate::http_server::endpoints::user_bookmarks::list_user_bookmarks_for_user_handler::list_user_bookmarks_for_user_handler;
 use crate::http_server::endpoints::user_ratings::get_user_rating_handler::get_user_rating_handler;
 use crate::http_server::endpoints::user_ratings::set_user_rating_handler::set_user_rating_handler;
 use crate::http_server::endpoints::vocoders::get_vocoder::get_vocoder_handler;
@@ -151,13 +155,13 @@ use crate::http_server::endpoints::w2l::list_user_w2l_inference_results::list_us
 use crate::http_server::endpoints::w2l::list_user_w2l_templates::list_user_w2l_templates_handler;
 use crate::http_server::endpoints::w2l::list_w2l_templates::list_w2l_templates_handler;
 use crate::http_server::endpoints::w2l::set_w2l_template_mod_approval::set_w2l_template_mod_approval_handler;
-
-use crate::http_server::endpoints::weights::get_weight::get_weight_handler;
 use crate::http_server::endpoints::weights::delete_weight::delete_weight_handler;
-use crate::http_server::endpoints::weights::update_weight::update_weight_handler;
+use crate::http_server::endpoints::weights::get_weight::get_weight_handler;
 use crate::http_server::endpoints::weights::list_available_weights::list_available_weights_handler;
+use crate::http_server::endpoints::weights::list_featured_weights::list_featured_weights_handler;
 use crate::http_server::endpoints::weights::list_weights_by_user::list_weights_by_user_handler;
-use crate::http_server::endpoints::weights::upload_weight::upload_weights_handler;
+use crate::http_server::endpoints::weights::set_model_weight_avatar::set_model_weight_avatar_handler;
+use crate::http_server::endpoints::weights::update_weight::update_weight_handler;
 
 pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> App<T>
   where
@@ -202,20 +206,21 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
       .add_post("/v1/comments/delete/{comment_token}", delete_comment_handler)
       .into_app();
 
-  // ==================== Favorites ====================
+  // ==================== User Bookmarks ====================
 
   let mut app = RouteBuilder::from_app(app)
-      .add_post("/v1/favorites/create", create_favorite_handler)
-      .add_post("/v1/favorites/delete/{favorite_token}", delete_favorite_handler)
-      .add_get("/v1/favorites/list/session", list_favorites_for_session_handler)
-      .add_get("/v1/favorites/list/user/{username}", list_favorites_for_user_handler)
-      .add_get("/v1/favorites/list/entity/{entity_type}/{entity_token}", list_favorites_for_entity_handler)
+      .add_post("/v1/user_bookmarks/create", create_user_bookmark_handler)
+      .add_post("/v1/user_bookmarks/delete/{user_bookmark_token}", delete_user_bookmark_handler)
+      .add_get("/v1/user_bookmarks/list/session", list_user_bookmarks_for_session_handler)
+      .add_get("/v1/user_bookmarks/list/user/{username}", list_user_bookmarks_for_user_handler)
+      .add_get("/v1/user_bookmarks/list/entity/{entity_type}/{entity_token}", list_user_bookmarks_for_entity_handler)
       .into_app();
 
   // ==================== Animations ====================
 
   let mut app = RouteBuilder::from_app(app)
       .add_post("/v1/animation/face_animation/create", enqueue_face_animation_handler)
+      .add_post("/v1/animation/rerender/create", enqueue_rerender_animation_handler)
       .into_app();
 
   // ==================== "Generic" Inference ====================
@@ -1017,12 +1022,23 @@ fn add_media_file_routes<T, B> (app: App<T>) -> App<T>
           .route(web::delete().to(delete_media_file_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
+      .service(web::resource("/file/{token}/update")
+          .route(web::post().to(update_media_file_handler))
+      )
       .service(web::resource("/list")
           .route(web::get().to(list_media_files_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
+      .service(web::resource("/list_featured")
+          .route(web::get().to(list_featured_media_files_handler))
+          .route(web::head().to(|| HttpResponse::Ok()))
+      )
       .service(web::resource("/list/user/{username}")
           .route(web::get().to(list_media_files_for_user_handler))
+          .route(web::head().to(|| HttpResponse::Ok()))
+      )
+      .service(web::resource("/upload")
+          .route(web::post().to(upload_media_file_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )
@@ -1256,18 +1272,17 @@ fn add_weights_routes<T, B>(app: App<T>) -> App<T>
     app.service(
         web
             ::scope("/v1/weights")
-            .route("/upload", web::post().to(upload_weights_handler))
-            .service(
-                web
-                    ::resource("/weight/{weight_token}")
-                    .route(web::get().to(get_weight_handler))
-                    .route(web::post().to(update_weight_handler))
-                    .route(web::delete().to(delete_weight_handler))
+            //.route("/upload", web::post().to(upload_weights_handler))
+            .service(web::resource("/weight/{weight_token}")
+                .route(web::get().to(get_weight_handler))
+                .route(web::post().to(update_weight_handler))
+                .route(web::delete().to(delete_weight_handler))
+            )
+            .service(web::resource("/weight/{token}/avatar")
+                .route(web::post().to(set_model_weight_avatar_handler))
             )
             .route("/by_user/{username}", web::get().to(list_weights_by_user_handler))
-            .route(
-                "/list",
-                web::get().to(list_available_weights_handler)
-            )
+            .route("/list", web::get().to(list_available_weights_handler))
+            .route("/list_featured", web::get().to(list_featured_weights_handler))
     )
 }
