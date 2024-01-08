@@ -159,8 +159,8 @@ async fn process_job_batch(job_dependencies: &JobDependencies, jobs: Vec<Availab
       &[
         // TODO: need job_ prefix?
         OtelAttribute::new("job_id", job.id),
-        OtelAttribute::new("job_inference_category", job.inference_category),
-        OtelAttribute::new("job_inference_token", job.inference_job_token),
+        OtelAttribute::new("job_inference_category", job.inference_category.to_str()),
+        OtelAttribute::new("job_inference_token", job.inference_job_token.as_str()),
       ]
     )
   }
