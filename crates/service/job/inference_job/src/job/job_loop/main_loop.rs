@@ -124,7 +124,7 @@ async fn process_job_batch(job_dependencies: &JobDependencies, jobs: Vec<Availab
   let job_count = jobs.len();
   let meter = otel::meter(OTEL_METER_NAME);
   // TODO: total_duration as histogram for min/max/avg/percentiles
-  let job_duration = meter.i64_observable_gauge("job_duration").with_unit(metrics::Unit::new("ms")).init();
+  let job_duration_metric = meter.i64_observable_gauge("job_duration").with_unit(metrics::Unit::new("ms")).init();
 
   for (i, job) in jobs.into_iter().enumerate() {
     let start_time = Instant::now();
@@ -155,10 +155,10 @@ async fn process_job_batch(job_dependencies: &JobDependencies, jobs: Vec<Availab
       }
     }
     let job_duration = Instant::now().duration_since(start_time);;
-    job_duration.observe(job_duration.as_millis(),
+    job_duration_metric.observe(job_duration.as_millis(),
       &[
         // TODO: need job_ prefix?
-        OtelAttribute::new("job_id", job.id),
+        OtelAttribute::new("job_id", format!("{}", job.id)),
         OtelAttribute::new("job_inference_category", job.inference_category.to_str()),
         OtelAttribute::new("job_inference_token", job.inference_job_token.as_str()),
       ]
