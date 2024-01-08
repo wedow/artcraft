@@ -9,12 +9,16 @@ use jobs_common::noop_logger::NoOpLogger;
 use mysql_queries::queries::generic_inference::job::list_available_generic_inference_jobs::{AvailableInferenceJob, list_available_generic_inference_jobs, ListAvailableGenericInferenceJobArgs};
 use mysql_queries::queries::generic_inference::job::mark_generic_inference_job_completely_failed::mark_generic_inference_job_completely_failed;
 use mysql_queries::queries::generic_inference::job::mark_generic_inference_job_failure::mark_generic_inference_job_failure;
+use opentelemetry::metrics::AsyncInstrument;
 
+use crate::OTEL_METER_NAME;
 use crate::job::job_loop::clear_full_filesystem::clear_full_filesystem;
 use crate::job::job_loop::process_single_job::process_single_job;
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
 use crate::job::job_loop::process_single_job_success_case::ProcessSingleJobSuccessCase;
 use crate::job_dependencies::JobDependencies;
+
+use opentelemetry::{global as otel, KeyValue as OtelAttribute};
 
 // Job runner timeouts (guards MySQL)
 const START_TIMEOUT_MILLIS : u64 = 500;
@@ -118,7 +122,12 @@ pub async fn main_loop(job_dependencies: JobDependencies) {
 
 async fn process_job_batch(job_dependencies: &JobDependencies, jobs: Vec<AvailableInferenceJob>) -> AnyhowResult<()> {
   let job_count = jobs.len();
+  let meter = otel::meter(OTEL_METER_NAME);
+  // TODO: total_duration as histogram for min/max/avg/percentiles
+  let job_duration = meter.i64_observable_gauge("job_duration").with_unit(metrics::Unit::new("ms")).init();
+
   for (i, job) in jobs.into_iter().enumerate() {
+    let start_time = Instant::now();
     let result = process_single_job(job_dependencies, &job).await;
 
     match result {
@@ -145,6 +154,15 @@ async fn process_job_batch(job_dependencies: &JobDependencies, jobs: Vec<Availab
         let _r = handle_error(&job_dependencies, &job, err).await?;
       }
     }
+    let job_duration = Instant::now().duration_since(start_time);;
+    job_duration.observe(job_duration.as_millis(),
+      &[
+        // TODO: need job_ prefix?
+        OtelAttribute::new("job_id", job.id),
+        OtelAttribute::new("job_inference_category", job.inference_category),
+        OtelAttribute::new("job_inference_token", job.inference_job_token),
+      ]
+    )
   }
 
   Ok(())

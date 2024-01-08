@@ -80,4 +80,4 @@ my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
 time = "0.3.30"
 mime = "0.3.17"
 rand = { version = "0.8.5", features = [] }
-opentelemetry = "0.21.0"
+opentelemetry = {version = "0.21.0", features = ["metrics"]}
