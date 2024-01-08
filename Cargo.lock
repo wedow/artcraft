@@ -3074,6 +3074,7 @@ dependencies = [
  "my-workspace-hack",
  "mysql_queries",
  "once_cell",
+ "opentelemetry",
  "r2d2_redis",
  "rand 0.8.5",
  "redis_common",
@@ -4159,6 +4160,22 @@ dependencies = [
  "openssl-src",
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "opentelemetry"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e32339a5dc40459130b3bd269e9892439f55b33e772d2a9d402a789baaf4e8a"
+dependencies = [
+ "futures-core",
+ "futures-sink",
+ "indexmap",
+ "js-sys",
+ "once_cell",
+ "pin-project-lite",
+ "thiserror",
+ "urlencoding",
 ]
 
 [[package]]
