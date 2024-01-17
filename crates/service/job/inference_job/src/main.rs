@@ -22,6 +22,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use log::{info, warn};
+use opentelemetry::metrics;
 use r2d2_redis::r2d2;
 use r2d2_redis::RedisConnectionManager;
 use sqlx::mysql::MySqlPoolOptions;
@@ -71,6 +72,8 @@ const ENV_PUBLIC_BUCKET_NAME : &str = "PUBLIC_BUCKET_NAME";
 
 // HTTP sidecar
 const ENV_TTS_INFERENCE_SIDECAR_HOSTNAME: &str = "TTS_INFERENCE_SIDECAR_HOSTNAME";
+
+const OTEL_METER_NAME: &str = "inference-job";
 
 //#[tokio::main]
 #[actix_web::main]

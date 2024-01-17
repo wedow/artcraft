@@ -17,6 +17,7 @@ production_database_voice_clone_report_download.sh
 secrets.toml
 secrets.yaml
 twitch_secrets.toml
+.DS_Store
 
 # Old env secrets
 .*-secrets
