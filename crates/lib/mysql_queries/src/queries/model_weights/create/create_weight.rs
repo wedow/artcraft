@@ -26,10 +26,6 @@ pub struct CreateModelWeightsArgs<'a> {
     pub public_bucket_hash: String,
     pub maybe_public_bucket_prefix: Option<String>,
     pub maybe_public_bucket_extension: Option<String>,
-    //pub cached_user_ratings_total_count: u32,
-    //pub cached_user_ratings_positive_count: u32,
-    //pub cached_user_ratings_negative_count: u32,
-    //pub maybe_cached_user_ratings_ratio: Option<f32>,
     pub version: i32,
     pub mysql_pool: &'a MySqlPool,
 }
@@ -78,10 +74,6 @@ pub async fn create_weight(args: CreateModelWeightsArgs<'_>) -> AnyhowResult<Mod
             args.public_bucket_hash,
             args.maybe_public_bucket_prefix,
             args.maybe_public_bucket_extension,
-            //args.cached_user_ratings_total_count,
-            //args.cached_user_ratings_positive_count,
-            //args.cached_user_ratings_negative_count,
-            //args.maybe_cached_user_ratings_ratio,
             args.version
         )
         .execute(args.mysql_pool).await;

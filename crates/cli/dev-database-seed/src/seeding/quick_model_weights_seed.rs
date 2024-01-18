@@ -2,12 +2,15 @@ use std::path::PathBuf;
 use std::vec;
 
 use log::info;
-use sqlx::{MySql, Pool};
+use sqlx::{ MySql, Pool };
 use cloud_storage::remote_file_manager::remote_cloud_file_manager::RemoteCloudFileClient;
 use cloud_storage::remote_file_manager::remote_cloud_bucket_details::RemoteCloudBucketDetails;
 
 use cloud_storage::remote_file_manager::weights_descriptor;
-use cloud_storage::remote_file_manager::weights_descriptor::{WeightsLoRADescriptor, WeightsSD15Descriptor};
+use cloud_storage::remote_file_manager::weights_descriptor::{
+    WeightsLoRADescriptor,
+    WeightsSD15Descriptor,
+};
 use easyenv::from_filename;
 
 use enums::by_table::model_weights::{
@@ -15,8 +18,11 @@ use enums::by_table::model_weights::{
     weights_types::WeightsType,
 };
 use enums::common::visibility::Visibility;
-use errors::{anyhow, AnyhowResult};
-use mysql_queries::queries::model_weights::create::create_weight::{create_weight, CreateModelWeightsArgs};
+use errors::{ anyhow, AnyhowResult };
+use mysql_queries::queries::model_weights::create::create_weight::{
+    create_weight,
+    CreateModelWeightsArgs,
+};
 use mysql_queries::queries::users::user::create_account::create_account;
 use mysql_queries::queries::users::user::get_user_token_by_username::get_user_token_by_username;
 use storyteller_root::get_seed_tool_data_root;
@@ -27,13 +33,10 @@ use crate::seeding::users::HANASHI_USERNAME;
 
 // 3.Example of testing the download for a sanity check. Where you basically upload the data from. We use the seed weights github project, look at the db weights record.
 pub async fn test_seed_weights_files() -> AnyhowResult<()> {
-
     let seed_path = PathBuf::from("/storyteller/root/custom-seed-tool-data");
     let remote_cloud_file_client = RemoteCloudFileClient::get_remote_cloud_file_client().await;
     let remote_cloud_file_client = match remote_cloud_file_client {
-        Ok(res) => {
-            res
-        }
+        Ok(res) => { res }
         Err(_) => {
             return Err(anyhow!("failed to get remote cloud file client"));
         }
@@ -62,8 +65,12 @@ pub async fn test_seed_weights_files() -> AnyhowResult<()> {
     Ok(())
 }
 
-pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserToken) -> AnyhowResult<()> {
-    let sd1_5_markdown_description = r#"
+pub async fn seed_weights_for_paging(
+    mysql_pool: &Pool<MySql>,
+    user_token: UserToken
+) -> AnyhowResult<()> {
+    let sd1_5_markdown_description =
+        r#"
 # Dragonfruit AI Models Update and Workflow
 
 ## Last Update for Dragonfruit Models
@@ -127,19 +134,20 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
 *Thank you for your continued support and feedback!*
 "#;
 
-    let _sd1_5_image_token = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/be706282-2978-42a0-aaa2-73881aad94e9/width=1024/00049-2287632957-1girl,face,curly%20hair,red%20hair,white%20background,.jpeg";
+    let _sd1_5_image_token =
+        "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/be706282-2978-42a0-aaa2-73881aad94e9/width=1024/00049-2287632957-1girl,face,curly%20hair,red%20hair,white%20background,.jpeg";
 
     // create a loop that loops from 1 to 100
     for i in 1..=100 {
         // create a new weight
-        
+
         let weights_category = match i {
             1..=20 => WeightsCategory::VoiceConversion,
             21..=40 => WeightsCategory::TextToSpeech,
             41..=60 => WeightsCategory::ImageGeneration,
             61..=80 => WeightsCategory::ImageGeneration,
             81..=100 => WeightsCategory::ImageGeneration,
-            _ => WeightsCategory::ImageGeneration
+            _ => WeightsCategory::ImageGeneration,
         };
 
         let weights_types = match i {
@@ -148,7 +156,7 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
             41..=60 => WeightsType::StableDiffusion15,
             61..=80 => WeightsType::StableDiffusionXL,
             81..=100 => WeightsType::LoRA,
-            _ => WeightsType::LoRA
+            _ => WeightsType::LoRA,
         };
 
         let mut model_weight_token;
@@ -158,98 +166,85 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
         let mut original_filename;
         let mut original_download_url;
 
-        let mut _private_bucket_hash:String = "".to_string();
+        let mut _private_bucket_hash: String = "".to_string();
         let mut private_bucket_prefix;
         let mut private_bucket_extension;
 
-        //let mut cached_user_ratings_total_count;
-        //let mut cached_user_ratings_positive_count;
-        //let mut cached_user_ratings_negative_count;
-        //let mut cached_user_ratings_ratio;
         let mut version;
 
         match i {
             1..=20 => {
-                // voice conversion model
-                let rvc_markdown_description = r#"
+                let rvc_markdown_description =
+                    r#"
                 # RVC v2
                 - **Improved Quality:** The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.
                 - Gawr Gura MOS 4
                 "#;
 
-                model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+                model_weight_token =
+                    ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("Gawr Gura: {}", i);
-                description = format!("Description Number {} The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.", i);
+                description =
+                    format!("Description Number {} The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.", i);
                 description_rendered_html = rvc_markdown_description;
-                
+
                 original_filename = format!("gura_gwar{}.safetensors", i);
                 original_download_url = format!("www.google.ca");
 
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("rvcV2");
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding RVCv2 model {}", i);
-            },
-            21..=40 =>{
+            }
+            21..=40 => {
                 // TTS
-                model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+                model_weight_token =
+                    ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("dragonfruitGTv1: {}", i);
-                
+
                 description = format!("Description Number {}:", i);
-            
-                let tts_markdown_description = r#"
+
+                let tts_markdown_description =
+                    r#"
                 # HifiGAN Tacotron2
                 - **Improved Quality:** The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.
                 - Goku MOS 4
                 "#;
 
                 description_rendered_html = tts_markdown_description;
-                
                 original_filename = format!("filename{}.txt", i);
-                original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
-
-                // private_bucket_hash = format!("bucket_hash{}", i);
+                original_download_url = format!(
+                    "https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16"
+                );
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("tt2");
-
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding TT2 model {}", i);
-            },
+            }
             41..=60 => {
                 // SD 1.5
-                model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+                model_weight_token =
+                    ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("dragonfruitGTv1: {}", i);
-                
-                description = format!("Description Number {}:", i);
-                
-                description_rendered_html = sd1_5_markdown_description;
-                
-                original_filename = format!("filename{}.txt", i);
-                original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
 
-                // private_bucket_hash = format!("bucket_hash{}", i);
+                description = format!("Description Number {}:", i);
+
+                description_rendered_html = sd1_5_markdown_description;
+
+                original_filename = format!("filename{}.txt", i);
+                original_download_url = format!(
+                    "https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16"
+                );
+
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("sd15");
-
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding SD15 model {}", i);
-            },
+            }
             61..=80 => {
                 // SD XL
-                let sdxl_markdown_description = r#"
+                let sdxl_markdown_description =
+                    r#"
                 # Special Edition Release Announcement
 
                 ## What's New?
@@ -266,122 +261,118 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
 
                 Have fun! 😊
                 "#;
-                let _sdxl_image_token = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/be706282-2978-42a0-aaa2-73881aad94e9/width=1024/00049-2287632957-1girl,face,curly%20hair,red%20hair,white%20background,.jpeg";
+                let _sdxl_image_token =
+                    "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/be706282-2978-42a0-aaa2-73881aad94e9/width=1024/00049-2287632957-1girl,face,curly%20hair,red%20hair,white%20background,.jpeg";
 
-                model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+                model_weight_token =
+                    ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("SDXL_Niji_Special Edition: {}", i);
                 description = format!("Description Number {}:", i);
 
                 // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("sdxl");
-  
+
                 description_rendered_html = sdxl_markdown_description;
-                  
+
                 original_filename = format!("filename{}.txt", i);
-                original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
-  
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
+                original_download_url = format!(
+                    "https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16"
+                );
+
                 version = i as i32;
                 println!("Seeding SDXL model {}", i);
-            },
+            }
             81..=100 => {
                 // LoRA
-                let lora_markdown_description = r#"
+                let lora_markdown_description =
+                    r#"
                 - **Improved Quality:** The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.
                 - LoRA Gawr Gura
                 "#;
 
-                let _lora_image_token = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/123645df-dee2-4239-863a-76a150b09c32/width=1024/00000-2171948503.jpeg";
-                model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+                let _lora_image_token =
+                    "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/123645df-dee2-4239-863a-76a150b09c32/width=1024/00000-2171948503.jpeg";
+                model_weight_token =
+                    ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("Gawr Gura LoRA: {}", i);
-                
+
                 description = format!("Description Number {}:", i);
 
                 description_rendered_html = lora_markdown_description;
-                
-                original_filename = format!("filename{}.txt", i);
-                original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
 
-                // private_bucket_hash = format!("bucket_hash{}", i);
+                original_filename = format!("filename{}.txt", i);
+                original_download_url = format!(
+                    "https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16"
+                );
+
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("loRA");
 
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding LoRA model {}", i);
-            },
+            }
             _ => {
                 // We went out of range so have more gwar gura
-                let rvc_markdown_description = r#"
+                let rvc_markdown_description =
+                    r#"
                 # RVC v2
                 - **Improved Quality:** The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.
                 - Gawr Gura MOS 4
                 "#;
 
-                model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+                model_weight_token =
+                    ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("Gawr Gura: {}", i);
-                description = format!("Description Number {} The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.", i);
+                description =
+                    format!("Description Number {} The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.", i);
                 description_rendered_html = rvc_markdown_description;
-                
+
                 original_filename = format!("gura_gwar{}.safetensors", i);
                 original_download_url = format!("www.google.ca");
 
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("rvcV2");
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
 
                 println!("Out of range");
             }
         }
-     
-            let args = CreateModelWeightsArgs {
-                token: &model_weight_token, // replace with actual ModelWeightToken
-                weights_type: weights_types, // replace with actual WeightsType
-                weights_category, // replace with actual WeightsCategory
-                title,
-                maybe_description_markdown: Some(description),
-                maybe_description_rendered_html: Some(description_rendered_html.to_string()),
-                creator_user_token: Some(&user_token), // replace with actual UserToken
-                creator_ip_address: "192.168.1.1",
-                creator_set_visibility: Visibility::Public,
-                maybe_last_update_user_token: Some(user_token.to_string()),
-                original_download_url: Some(original_download_url),
-                original_filename: Some(original_filename),
-                file_size_bytes: 1024,
-                file_checksum_sha2: "checksum1".to_string(),
-                public_bucket_hash: "bucket_hash1".to_string(),
-                maybe_public_bucket_prefix: Some(private_bucket_prefix),
-                maybe_public_bucket_extension: Some(private_bucket_extension),
-                //cached_user_ratings_total_count,
-                //cached_user_ratings_positive_count,
-                //cached_user_ratings_negative_count,
-                //maybe_cached_user_ratings_ratio: Some(cached_user_ratings_ratio as f32),
-                version,
-                mysql_pool: &mysql_pool, // replace with actual MySqlPool
-            };
-        
-            create_weight(args).await;
-        }
+
+        let args = CreateModelWeightsArgs {
+            token: &model_weight_token, // replace with actual ModelWeightToken
+            weights_type: weights_types, // replace with actual WeightsType
+            weights_category, // replace with actual WeightsCategory
+            title,
+            maybe_description_markdown: Some(description),
+            maybe_description_rendered_html: Some(description_rendered_html.to_string()),
+            creator_user_token: Some(&user_token), // replace with actual UserToken
+            creator_ip_address: "192.168.1.1",
+            creator_set_visibility: Visibility::Public,
+            maybe_last_update_user_token: Some(user_token.to_string()),
+            original_download_url: Some(original_download_url),
+            original_filename: Some(original_filename),
+            file_size_bytes: 1024,
+            file_checksum_sha2: "checksum1".to_string(),
+            public_bucket_hash: "bucket_hash1".to_string(),
+            maybe_public_bucket_prefix: Some(private_bucket_prefix),
+            maybe_public_bucket_extension: Some(private_bucket_extension),
+            version,
+            mysql_pool: &mysql_pool,
+        };
+
+        create_weight(args).await;
+    }
     Ok(())
 }
 
 // 2. Example of seeding weights for testing the inference includes create model weights.
-pub async fn seed_weights_for_testing_inference(mysql_pool: &Pool<MySql>, user_token: UserToken) -> AnyhowResult<()>{
-
-
-    let miyhoyo_description = r#"一个面向米哈游角色的模型合集~A collection for MIHOYO Characters~
+pub async fn seed_weights_for_testing_inference(
+    mysql_pool: &Pool<MySql>,
+    user_token: UserToken
+) -> AnyhowResult<()> {
+    let miyhoyo_description =
+        r#"一个面向米哈游角色的模型合集~A collection for MIHOYO Characters~
 对应人物tag记录在版本信息里，可在右侧“About this version”选项中查看。The corresponding character prompts are recorded in the version information and can be viewed in the About this version option on the right.
 打开目录寻找最爱~（附带链接，点击直达）~Open the catalog, find your favorites~ (with links, click to go directly):
 崩坏三 Honkai Impact 3rd：
@@ -551,7 +542,8 @@ pub async fn seed_weights_for_testing_inference(mysql_pool: &Pool<MySql>, user_t
 鹿鸣-Luming
     """#;
 
-    let sd1_5_markdown_description = r#"
+    let sd1_5_markdown_description =
+        r#"
 00025-2161235528-1girl,(orange_hair_1.1),(zentangle, mandala, tangle, entangle_0.6),(fractal art),the most beautiful form of chaos,brutalist desi.png
 
 
@@ -585,24 +577,27 @@ majicMIX fantasy v2 =
 Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
 "#;
 
-
-    let sd_vae_description = r"This is an earlier version of a stable VAE. Compared to other VAEs, it has a higher level of stability. I am not the creator, but I could not find this VAE on the website, so I am sharing it here.
+    let sd_vae_description =
+        r"This is an earlier version of a stable VAE. Compared to other VAEs, it has a higher level of stability. I am not the creator, but I could not find this VAE on the website, so I am sharing it here.
 这是较早时候的稳定VAE，与其他VAE相比具有较高的稳定性，不容易坏图。我不是作者，但是站里没找着所以搬运。#";
 
-
     info!("Seeding weights for inference...");
-    ModelWeightToken::reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(54321);
-    let model_weight_token1 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token2 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token3 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-
+    ModelWeightToken::reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(
+        54321
+    );
+    let model_weight_token1 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token2 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token3 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
     let remote_cloud_file_client = RemoteCloudFileClient::get_remote_cloud_file_client().await?;
     // TO SEED - cargo run --bin dev-database-seed -- --bucket
     // EXAMPLE HERE USING REMOTE CLOUD FILE CLIENT.
 
     let sd_15_weights_descriptor = Box::new(WeightsSD15Descriptor {});
-    let lora_descriptor = Box::new(WeightsLoRADescriptor{});
+    let lora_descriptor = Box::new(WeightsLoRADescriptor {});
     let sd_vae_15_weights_descriptor = Box::new(WeightsSD15Descriptor {});
 
     let mut path_object_SD = get_seed_tool_data_root();
@@ -615,9 +610,18 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
     path_to_VAE.push("models/imagegen/vae/zVae_v20.safetensors");
 
     // 2.uploading it from the weights folder which is a github project. you have to create your workflow file descriptor  Box::new(WeightsSD15Descriptor {}); similar to this...
-    let metadata1 = remote_cloud_file_client.upload_file(sd_15_weights_descriptor,path_object_SD.as_path().to_str().unwrap()).await?;
-    let metadata2 = remote_cloud_file_client.upload_file(lora_descriptor,path_object_loRA.as_path().to_str().unwrap()).await?;
-    let metadata3 = remote_cloud_file_client.upload_file(sd_vae_15_weights_descriptor,path_to_VAE.as_path().to_str().unwrap()).await?;
+    let metadata1 = remote_cloud_file_client.upload_file(
+        sd_15_weights_descriptor,
+        path_object_SD.as_path().to_str().unwrap()
+    ).await?;
+    let metadata2 = remote_cloud_file_client.upload_file(
+        lora_descriptor,
+        path_object_loRA.as_path().to_str().unwrap()
+    ).await?;
+    let metadata3 = remote_cloud_file_client.upload_file(
+        sd_vae_15_weights_descriptor,
+        path_to_VAE.as_path().to_str().unwrap()
+    ).await?;
     // 3.creating the record and applying metadata
     let weights1 = CreateModelWeightsArgs {
         token: &model_weight_token1, // replace with actual ModelWeightToken
@@ -630,7 +634,9 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         creator_ip_address: "192.168.1.1",
         creator_set_visibility: Visibility::Public,
         maybe_last_update_user_token: Some("Last Update User Token".to_string()),
-        original_download_url: Some("https://civitai.com/models/41865/majicmix-fantasy".to_string()),
+        original_download_url: Some(
+            "https://civitai.com/models/41865/majicmix-fantasy".to_string()
+        ),
         original_filename: Some("majicmixFantasy_v30Vae.safetensors".to_string()),
         file_size_bytes: metadata1.file_size_bytes as i32,
         file_checksum_sha2: metadata1.sha256_checksum.to_string(),
@@ -641,7 +647,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         mysql_pool: &mysql_pool, // replace with actual MySqlPool
     };
 
-    let weights2  = CreateModelWeightsArgs {
+    let weights2 = CreateModelWeightsArgs {
         token: &model_weight_token2, // replace with actual ModelWeightToken
         weights_type: WeightsType::LoRA, // replace with actual WeightsType
         weights_category: WeightsCategory::ImageGeneration, // replace with actual WeightsCategory
@@ -652,7 +658,9 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         creator_ip_address: "292.268.2.2",
         creator_set_visibility: Visibility::Public,
         maybe_last_update_user_token: Some("<p> Honkai <p>".to_string()),
-        original_download_url: Some("https://civitai.com/models/95243/mihoyo-collection-honkai-impact-3rd-or-honkai-star-rail-or-genshin-impact-or-zenless-zone-zero".to_string()),
+        original_download_url: Some(
+            "https://civitai.com/models/95243/mihoyo-collection-honkai-impact-3rd-or-honkai-star-rail-or-genshin-impact-or-zenless-zone-zero".to_string()
+        ),
         original_filename: Some("xiawolei-v100-000019.safetensors".to_string()),
         file_size_bytes: metadata2.file_size_bytes as i32,
         file_checksum_sha2: metadata2.sha256_checksum.to_string(),
@@ -698,13 +706,20 @@ pub async fn seed_weights_for_user_token(
 ) -> AnyhowResult<()> {
     info!("Seeding weights...");
 
-    ModelWeightToken::reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(54321);
+    ModelWeightToken::reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(
+        54321
+    );
 
-    let model_weight_token1 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token2 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token3 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token4 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token5 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token1 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token2 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token3 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token4 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token5 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
     let model_weights_args = vec![
         CreateModelWeightsArgs {
@@ -725,7 +740,7 @@ pub async fn seed_weights_for_user_token(
             public_bucket_hash: "bucket_hash1".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("rvc".to_string()),
-       
+
             version: 1,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -748,7 +763,7 @@ pub async fn seed_weights_for_user_token(
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("tt2".to_string()),
             version: 2,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         },
         CreateModelWeightsArgs {
             token: &model_weight_token3, // replace with actual ModelWeightToken
@@ -768,12 +783,8 @@ pub async fn seed_weights_for_user_token(
             public_bucket_hash: "bucket_hash3".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("safetensors".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
             version: 1,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         },
         CreateModelWeightsArgs {
             token: &model_weight_token4, // replace with actual ModelWeightToken
@@ -794,7 +805,7 @@ pub async fn seed_weights_for_user_token(
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
             version: 2,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         },
         CreateModelWeightsArgs {
             token: &model_weight_token5, // replace with actual ModelWeightToken
@@ -815,7 +826,7 @@ pub async fn seed_weights_for_user_token(
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
             version: 2,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         }
     ];
 
@@ -825,22 +836,34 @@ pub async fn seed_weights_for_user_token(
     Ok(())
 }
 
+pub async fn original_seed_weights(
+    mysql_pool: &Pool<MySql>,
+    _user_token: UserToken
+) -> AnyhowResult<()> {
+    let model_weight_token1 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let creator_token1 =
+        UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
-pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserToken) -> AnyhowResult<()> {
-    let model_weight_token1 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let creator_token1 = UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token2 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let creator_token2 =
+        UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
-    let model_weight_token2 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let creator_token2 = UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token3 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let creator_token3 =
+        UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
-    let model_weight_token3 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let creator_token3 = UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token4 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let creator_token4 =
+        UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
-    let model_weight_token4 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let creator_token4 = UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-
-    let model_weight_token5 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let creator_token5 = UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token5 =
+        ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let creator_token5 =
+        UserToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
     let model_weights_args = vec![
         CreateModelWeightsArgs {
@@ -862,7 +885,7 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("rvc".to_string()),
             version: 1,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         },
         CreateModelWeightsArgs {
             token: &model_weight_token2, // replace with actual ModelWeightToken
@@ -883,7 +906,7 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("tt2".to_string()),
             version: 2,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         },
         CreateModelWeightsArgs {
             token: &model_weight_token3, // replace with actual ModelWeightToken
@@ -904,7 +927,7 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("safetensors".to_string()),
             version: 1,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         },
         CreateModelWeightsArgs {
             token: &model_weight_token4, // replace with actual ModelWeightToken
@@ -925,7 +948,7 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
             version: 2,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         },
         CreateModelWeightsArgs {
             token: &model_weight_token5, // replace with actual ModelWeightToken
@@ -946,7 +969,7 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
             version: 2,
-            mysql_pool: &mysql_pool, // replace with actual MySqlPool
+            mysql_pool: &mysql_pool,
         }
     ];
 
@@ -955,12 +978,11 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
     }
 
     Ok(())
-
 }
 
 pub async fn seed_weights(mysql_pool: &Pool<MySql>) -> AnyhowResult<()> {
     info!("Seeding weights...");
-    
+
     let user_token = match get_user_token_by_username(HANASHI_USERNAME, mysql_pool).await? {
         None => {
             return Err(anyhow!("could not find user hanashi"));
@@ -971,8 +993,7 @@ pub async fn seed_weights(mysql_pool: &Pool<MySql>) -> AnyhowResult<()> {
     //original_seed_weights(mysql_pool,user_token).await?;
     //seed_weights_for_user_token(mysql_pool, user_token).await?;
     //seed_weights_for_paging(mysql_pool,user_token).await?;
-    seed_weights_for_testing_inference(mysql_pool,user_token).await?;
-    //println!("TESTING DOWLOAD");
+    seed_weights_for_testing_inference(mysql_pool, user_token).await?;
     //test_seed_weights_files().await?;
     Ok(())
 }
