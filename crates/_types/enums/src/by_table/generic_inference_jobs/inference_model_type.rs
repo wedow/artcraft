@@ -41,6 +41,8 @@ pub enum InferenceModelType {
   ComfyUi,
   #[serde(rename = "styletts2")]
   StyleTTS2,
+  #[serde(rename = "bvh_to_workflow")]
+  BvhToWorkflow
 }
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
@@ -62,6 +64,7 @@ impl InferenceModelType {
       Self::MocapNet => "mocap_net",
       Self::StyleTTS2 => "styletts2",
       Self::ComfyUi => "comfy_ui",
+      Self::BvhToWorkflow => "bvh_to_workflow",
     }
   }
 
@@ -78,6 +81,7 @@ impl InferenceModelType {
       "mocap_net" => Ok(Self::MocapNet),
       "styletts2" => Ok(Self::StyleTTS2),
       "comfy_ui" => Ok(Self::ComfyUi),
+      "bvh_to_workflow" => Ok(Self::BvhToWorkflow),
       _ => Err(format!("invalid value: {:?}", value)),
     }
   }
@@ -97,6 +101,7 @@ impl InferenceModelType {
       InferenceModelType::MocapNet,
       InferenceModelType::StyleTTS2,
       InferenceModelType::ComfyUi,
+      InferenceModelType::BvhToWorkflow,
     ])
   }
 }
@@ -122,6 +127,7 @@ mod tests {
       assert_serialization(InferenceModelType::MocapNet, "mocap_net");
       assert_serialization(InferenceModelType::ComfyUi, "comfy_ui");
       assert_serialization(InferenceModelType::StyleTTS2, "styletts2");
+      assert_serialization(InferenceModelType::BvhToWorkflow, "bvh_to_workflow");
     }
 
     #[test]
@@ -137,6 +143,7 @@ mod tests {
       assert_eq!(InferenceModelType::MocapNet.to_str(), "mocap_net");
       assert_eq!(InferenceModelType::StyleTTS2.to_str(), "styletts2");
       assert_eq!(InferenceModelType::ComfyUi.to_str(), "comfy_ui");
+      assert_eq!(InferenceModelType::BvhToWorkflow.to_str(), "bvh_to_workflow");
     }
 
     #[test]
@@ -152,13 +159,14 @@ mod tests {
       assert_eq!(InferenceModelType::from_str("mocap_net").unwrap(), InferenceModelType::MocapNet);
       assert_eq!(InferenceModelType::from_str("styletts2").unwrap(), InferenceModelType::StyleTTS2);
       assert_eq!(InferenceModelType::from_str("comfy_ui").unwrap(), InferenceModelType::ComfyUi);
+      assert_eq!(InferenceModelType::from_str("bvh_to_workflow").unwrap(), InferenceModelType::BvhToWorkflow);
     }
 
     #[test]
     fn all_variants() {
       // Static check
       let mut variants = InferenceModelType::all_variants();
-      assert_eq!(variants.len(), 11);
+      assert_eq!(variants.len(), 12);
       assert_eq!(variants.pop_first(), Some(InferenceModelType::RvcV2));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::SadTalker));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::SoVitsSvc));
@@ -170,6 +178,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(InferenceModelType::MocapNet));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::ComfyUi));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::StyleTTS2));
+      assert_eq!(variants.pop_first(), Some(InferenceModelType::BvhToWorkflow));
       assert_eq!(variants.pop_first(), None);
 
       // Generated check

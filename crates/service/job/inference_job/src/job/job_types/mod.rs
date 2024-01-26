@@ -6,3 +6,4 @@ pub mod image_generation;
 pub(crate) mod mocap;
 pub(crate) mod workflow;
 pub mod format_conversion;
+pub mod bevy_to_workflow;

@@ -58,6 +58,10 @@ pub enum InferenceCategoryAbbreviated {
   #[serde(rename = "fg")] // NB: DO NOT CHANGE. It could break live jobs. Renamed to be fewer bytes.
   #[serde(alias = "convert_fbx_gltf")]
   ConvertFbxToGltf,
+
+  #[serde(rename = "bw")] // NB: DO NOT CHANGE. It could break live jobs. Renamed to be fewer bytes.
+  #[serde(alias = "convert_bvh_to_workflow")]
+  ConvertBvhToWorkflow,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -143,6 +147,7 @@ impl InferenceCategoryAbbreviated {
       InferenceCategory::Mocap => Self::Mocap,
       InferenceCategory::Workflow => Self::Workflow,
       InferenceCategory::ConvertFbxToGltf => Self::ConvertFbxToGltf,
+      InferenceCategory::ConvertBvhToWorkflow => Self::ConvertBvhToWorkflow,
     }
   }
 
@@ -156,6 +161,7 @@ impl InferenceCategoryAbbreviated {
       Self::Mocap => InferenceCategory::Mocap,
       Self::Workflow => InferenceCategory::Workflow,
       Self::ConvertFbxToGltf => InferenceCategory::ConvertFbxToGltf,
+      Self::ConvertBvhToWorkflow => InferenceCategory::ConvertBvhToWorkflow,
     }
   }
 }
