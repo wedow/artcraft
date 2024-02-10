@@ -126,7 +126,7 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
 
     // create a loop that loops from 1 to 100
     for i in 1..=100 {
-        // create a new weight
+
         
         let weights_category = match i {
             1..=20 => WeightsCategory::VoiceConversion,
@@ -156,11 +156,6 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
         let _private_bucket_hash = "".to_string();
         let private_bucket_prefix;
         let private_bucket_extension;
-
-        //let mut cached_user_ratings_total_count;
-        //let mut cached_user_ratings_positive_count;
-        //let mut cached_user_ratings_negative_count;
-        //let mut cached_user_ratings_ratio;
         let version;
 
         match i {
@@ -179,14 +174,8 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
                 
                 original_filename = format!("gura_gwar{}.safetensors", i);
                 original_download_url = format!("www.google.ca");
-
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("rvcV2");
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding RVCv2 model {}", i);
             },
@@ -204,18 +193,10 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
                 "#;
 
                 description_rendered_html = tts_markdown_description;
-                
                 original_filename = format!("filename{}.txt", i);
                 original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
-
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("tt2");
-
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding TT2 model {}", i);
             },
@@ -223,22 +204,12 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
                 // SD 1.5
                 model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("dragonfruitGTv1: {}", i);
-                
                 description = format!("Description Number {}:", i);
-                
                 description_rendered_html = sd1_5_markdown_description;
-                
                 original_filename = format!("filename{}.txt", i);
                 original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
-
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("sd15");
-
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding SD15 model {}", i);
             },
@@ -262,24 +233,14 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
                 Have fun! 😊
                 "#;
                 let _sdxl_image_token = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/be706282-2978-42a0-aaa2-73881aad94e9/width=1024/00049-2287632957-1girl,face,curly%20hair,red%20hair,white%20background,.jpeg";
-
                 model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("SDXL_Niji_Special Edition: {}", i);
                 description = format!("Description Number {}:", i);
-
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("sdxl");
-  
                 description_rendered_html = sdxl_markdown_description;
-                  
                 original_filename = format!("filename{}.txt", i);
                 original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
-  
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding SDXL model {}", i);
             },
@@ -289,26 +250,15 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
                 - **Improved Quality:** The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.
                 - LoRA Gawr Gura
                 "#;
-
                 let _lora_image_token = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/123645df-dee2-4239-863a-76a150b09c32/width=1024/00000-2171948503.jpeg";
                 model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("Gawr Gura LoRA: {}", i);
-                
                 description = format!("Description Number {}:", i);
-
                 description_rendered_html = lora_markdown_description;
-                
                 original_filename = format!("filename{}.txt", i);
                 original_download_url = format!("https://civitai.com/api/download/models/149193?type=Model&format=SafeTensor&size=pruned&fp=fp16");
-
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("loRA");
-
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
                 println!("Seeding LoRA model {}", i);
             },
@@ -319,22 +269,14 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
                 - **Improved Quality:** The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.
                 - Gawr Gura MOS 4
                 "#;
-
                 model_weight_token = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
                 title = format!("Gawr Gura: {}", i);
                 description = format!("Description Number {} The special edition offers significantly better quality with fewer issues. It's the model as initially envisioned.", i);
                 description_rendered_html = rvc_markdown_description;
-                
                 original_filename = format!("gura_gwar{}.safetensors", i);
                 original_download_url = format!("www.google.ca");
-
-                // private_bucket_hash = format!("bucket_hash{}", i);
                 private_bucket_prefix = format!("_fake");
                 private_bucket_extension = format!("rvcV2");
-                //cached_user_ratings_total_count = i;
-                //cached_user_ratings_positive_count = i;
-                //cached_user_ratings_negative_count = i;
-                //cached_user_ratings_ratio = i as u32 / 100;
                 version = i as i32;
 
                 println!("Out of range");
@@ -359,10 +301,6 @@ pub async fn seed_weights_for_paging(mysql_pool: &Pool<MySql>, user_token: UserT
                 public_bucket_hash: "bucket_hash1".to_string(),
                 maybe_public_bucket_prefix: Some(private_bucket_prefix),
                 maybe_public_bucket_extension: Some(private_bucket_extension),
-                //cached_user_ratings_total_count,
-                //cached_user_ratings_positive_count,
-                //cached_user_ratings_negative_count,
-                //maybe_cached_user_ratings_ratio: Some(cached_user_ratings_ratio as f32),
                 version: version as u32,
                 mysql_pool: &mysql_pool, // replace with actual MySqlPool
             };
@@ -647,7 +585,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("Last Update User Token".to_string()),
         original_download_url: Some("https://civitai.com/models/41865/majicmix-fantasy".to_string()),
         original_filename: Some("majicmixFantasy_v30Vae.safetensors".to_string()),
-        file_size_bytes: metadata1.file_size_bytes,
+        file_size_bytes: 0,
         file_checksum_sha2: metadata1.sha256_checksum.to_string(),
         public_bucket_hash: metadata1.bucket_details.clone().unwrap().object_hash,
         maybe_public_bucket_prefix: Some(metadata1.bucket_details.clone().unwrap().prefix),
@@ -669,7 +607,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("<p> Honkai <p>".to_string()),
         original_download_url: Some("https://civitai.com/models/95243/mihoyo-collection-honkai-impact-3rd-or-honkai-star-rail-or-genshin-impact-or-zenless-zone-zero".to_string()),
         original_filename: Some("xiawolei-v100-000019.safetensors".to_string()),
-        file_size_bytes: metadata2.file_size_bytes,
+        file_size_bytes: 0,
         file_checksum_sha2: metadata2.sha256_checksum.to_string(),
         public_bucket_hash: metadata2.bucket_details.clone().unwrap().object_hash.clone(),
         maybe_public_bucket_prefix: Some(metadata2.bucket_details.clone().unwrap().prefix),
@@ -691,7 +629,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("Last Update User Token".to_string()),
         original_download_url: Some("https://civitai.com/models/97653/z-vae".to_string()),
         original_filename: Some("zVae_v20.safetensors".to_string()),
-        file_size_bytes: metadata3.file_size_bytes,
+        file_size_bytes: 0,
         file_checksum_sha2: metadata3.sha256_checksum.to_string(),
         public_bucket_hash: metadata3.bucket_details.clone().unwrap().object_hash,
         maybe_public_bucket_prefix: Some(metadata3.bucket_details.clone().unwrap().prefix),
@@ -714,7 +652,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("Last Update User Token".to_string()),
         original_download_url: Some("https://civitai.com/models/144249/animerge".to_string()),
         original_filename: Some("".to_string()),
-        file_size_bytes: metadata4.file_size_bytes,
+        file_size_bytes: 0,
         file_checksum_sha2: metadata4.sha256_checksum.to_string(),
         public_bucket_hash: metadata4.bucket_details.clone().unwrap().object_hash,
         maybe_public_bucket_prefix: Some(metadata4.bucket_details.clone().unwrap().prefix),
@@ -736,7 +674,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("<p> Honkai <p>".to_string()),
         original_download_url: Some("https://civitai.com/models/56454/clara-honkai-star-rail-lora".to_string()),
         original_filename: Some("clara.safetensors".to_string()),
-        file_size_bytes: metadata5.file_size_bytes,
+        file_size_bytes: 0,
         file_checksum_sha2: metadata5.sha256_checksum.to_string(),
         public_bucket_hash: metadata5.bucket_details.clone().unwrap().object_hash.clone(),
         maybe_public_bucket_prefix: Some(metadata5.bucket_details.clone().unwrap().prefix),
@@ -759,7 +697,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("Last Update User Token".to_string()),
         original_download_url: Some("https://civitai.com/models/97653/????".to_string()),
         original_filename: Some("zVae_v20.safetensors".to_string()),
-        file_size_bytes: metadata6.file_size_bytes,
+        file_size_bytes: 0,
         file_checksum_sha2: metadata6.sha256_checksum.to_string(),
         public_bucket_hash: metadata6.bucket_details.clone().unwrap().object_hash,
         maybe_public_bucket_prefix: Some(metadata6.bucket_details.clone().unwrap().prefix),
@@ -782,30 +720,12 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
 
 pub async fn seed_workflows_for_testing_inference(mysql_pool: &Pool<MySql>, user_token: UserToken) -> AnyhowResult<()>{
     let model_weight_token1 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token2 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token3 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
-    let model_weight_token4 = ModelWeightToken::new_from_str("weight_n8sz47gmfw2zx02snrbz88ns9");
 
     let mut path_to_comfy = get_seed_tool_data_root();
     path_to_comfy.push("models/workflows/comfyui/yae_video_prod.json");
     let remote_cloud_file_client = RemoteCloudFileClient::get_remote_cloud_file_client().await?;
     let comfy_weights_descriptor = Box::new(WeightsWorkflowDescriptor {});
     let metadata1 = remote_cloud_file_client.upload_file(comfy_weights_descriptor, path_to_comfy.as_path().to_str().unwrap()).await?;
-
-    // let mut path_to_comfy2 = get_seed_tool_data_root();
-    // path_to_comfy2.push("models/workflows/comfyui/majicmixRealistic_v7.safetensors");
-    // let comfy_weights_descriptor2 = Box::new(WeightsSD15Descriptor {});
-    // let metadata2 = remote_cloud_file_client.upload_file(comfy_weights_descriptor2, path_to_comfy2.as_path().to_str().unwrap()).await?;
-
-    // let mut path_to_comfy3 = get_seed_tool_data_root();
-    // path_to_comfy3.push("models/workflows/comfyui/yae_video_test.json");
-    // let comfy_weights_descriptor3 = Box::new(WeightsWorkflowDescriptor {});
-    // let metadata3 = remote_cloud_file_client.upload_file(comfy_weights_descriptor3, path_to_comfy3.as_path().to_str().unwrap()).await?;
-
-/*    let mut path_to_comfy4 = get_seed_tool_data_root();
-    path_to_comfy4.push("models/workflows/comfyui/v3_sd15_mm.ckpt");
-    let comfy_weights_descriptor4 = Box::new(WeightsSD15CkptDescriptor {});
-    let metadata4 = remote_cloud_file_client.upload_file(comfy_weights_descriptor4, path_to_comfy4.as_path().to_str().unwrap()).await?;*/
 
     let weights1 = CreateModelWeightsArgs {
         token: &model_weight_token1, // replace with actual ModelWeightToken
@@ -828,76 +748,9 @@ pub async fn seed_workflows_for_testing_inference(mysql_pool: &Pool<MySql>, user
         version: 1,
         mysql_pool: &mysql_pool, // replace with actual MySqlPool
     };
-    // let weights2 = CreateModelWeightsArgs {
-    //     token: &model_weight_token2, // replace with actual ModelWeightToken
-    //     weights_type: WeightsType::ComfyUi, // replace with actual WeightsType
-    //     weights_category: WeightsCategory::WorkflowConfig, // replace with actual WeightsCategory
-    //     title: "v1-5-pruned-emaonly".to_string(),
-    //     maybe_description_markdown: Some("Test model for ComfyUI".to_string()),
-    //     maybe_description_rendered_html: Some("<p>Description</p>".to_string()),
-    //     creator_user_token: Some(&user_token), // replace with actual UserToken
-    //     creator_ip_address: "192.168.1.1",
-    //     creator_set_visibility: Visibility::Public,
-    //     maybe_last_update_user_token: Some("Last Update User Token".to_string()),
-    //     original_download_url: Some("https://huggingface.co/runwayml/stable-diffusion-v1-5".to_string()),
-    //     original_filename: Some("v1-5-pruned-emaonly.ckpt".to_string()),
-    //     file_size_bytes: metadata2.file_size_bytes as i32,
-    //     file_checksum_sha2: metadata2.sha256_checksum.to_string(),
-    //     public_bucket_hash: metadata2.bucket_details.clone().unwrap().object_hash,
-    //     maybe_public_bucket_prefix: Some(metadata2.bucket_details.clone().unwrap().prefix),
-    //     maybe_public_bucket_extension: Some(metadata2.bucket_details.clone().unwrap().suffix),
-    //     version: 1,
-    //     mysql_pool: &mysql_pool, // replace with actual MySqlPool
-    // };
-
-    // let weights3 = CreateModelWeightsArgs {
-    //     token: &model_weight_token3, // replace with actual ModelWeightToken
-    //     weights_type: WeightsType::ComfyUi, // replace with actual WeightsType
-    //     weights_category: WeightsCategory::WorkflowConfig, // replace with actual WeightsCategory
-    //     title: "yae-video-test".to_string(),
-    //     maybe_description_markdown: Some("Test workflow for ComfyUI".to_string()),
-    //     maybe_description_rendered_html: Some("<p>Description</p>".to_string()),
-    //     creator_user_token: Some(&user_token), // replace with actual UserToken
-    //     creator_ip_address: "192.168.1.1",
-    //     creator_set_visibility: Visibility::Public,
-    //     maybe_last_update_user_token: Some("Last Update User Token".to_string()),
-    //     original_download_url: Some("https://github.com/comfyanonymous/ComfyUI".to_string()),
-    //     original_filename: Some("yae-video-test.json".to_string()),
-    //     file_size_bytes: metadata3.file_size_bytes as i32,
-    //     file_checksum_sha2: metadata3.sha256_checksum.to_string(),
-    //     public_bucket_hash: metadata3.bucket_details.clone().unwrap().object_hash,
-    //     maybe_public_bucket_prefix: Some(metadata3.bucket_details.clone().unwrap().prefix),
-    //     maybe_public_bucket_extension: Some(metadata3.bucket_details.clone().unwrap().suffix),
-    //     version: 1,
-    //     mysql_pool: &mysql_pool, // replace with actual MySqlPool
-    // };
-
-    // let weights4 = CreateModelWeightsArgs {
-    //     token: &model_weight_token4, // replace with actual ModelWeightToken
-    //     weights_type: WeightsType::ComfyUi, // replace with actual WeightsType
-    //     weights_category: WeightsCategory::WorkflowConfig, // replace with actual WeightsCategory
-    //     title: "v3_sd15_mm".to_string(),
-    //     maybe_description_markdown: Some("ComfyUI motion module".to_string()),
-    //     maybe_description_rendered_html: Some("<p>Description</p>".to_string()),
-    //     creator_user_token: Some(&user_token), // replace with actual UserToken
-    //     creator_ip_address: "192.168.1.1",
-    //     creator_set_visibility: Visibility::Public,
-    //     maybe_last_update_user_token: Some("Last Update User Token".to_string()),
-    //     original_download_url: Some("https://huggingface.co/guoyww/animatediff/blob/main/v3_sd15_mm.ckpt".to_string()),
-    //     original_filename: Some("v3_sd15_mm.ckpt".to_string()),
-    //     file_size_bytes: metadata4.file_size_bytes as i32,
-    //     file_checksum_sha2: metadata4.sha256_checksum.to_string(),
-    //     public_bucket_hash: metadata4.bucket_details.clone().unwrap().object_hash,
-    //     maybe_public_bucket_prefix: Some(metadata4.bucket_details.clone().unwrap().prefix),
-    //     maybe_public_bucket_extension: Some(metadata4.bucket_details.clone().unwrap().suffix),
-    //     version: 1,
-    //     mysql_pool: &mysql_pool, // replace with actual MySqlPool
-    // };
 
     create_weight(weights1).await?;
-    // create_weight(weights2).await?;
-    // create_weight(weights3).await?;
-    // create_weight(weights4).await?;
+
 
     Ok(())
 }
@@ -935,10 +788,10 @@ pub async fn seed_weights_for_user_token(
             public_bucket_hash: "bucket_hash1".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("rvc".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 1,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -960,10 +813,10 @@ pub async fn seed_weights_for_user_token(
             public_bucket_hash: "bucket_hash2".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("tt2".to_string()),
-            //cached_user_ratings_total_count: 20,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 2,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 2,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -985,10 +838,10 @@ pub async fn seed_weights_for_user_token(
             public_bucket_hash: "bucket_hash3".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("safetensors".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 1,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -1010,10 +863,10 @@ pub async fn seed_weights_for_user_token(
             public_bucket_hash: "bucket_hash4".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 2,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -1035,10 +888,10 @@ pub async fn seed_weights_for_user_token(
             public_bucket_hash: "bucket_hash4".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 2,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         }
@@ -1086,10 +939,10 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             public_bucket_hash: "bucket_hash1".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("rvc".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 1,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -1111,10 +964,10 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             public_bucket_hash: "bucket_hash2".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("tt2".to_string()),
-            //cached_user_ratings_total_count: 20,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 2,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 2,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -1136,10 +989,10 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             public_bucket_hash: "bucket_hash3".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("safetensors".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 1,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -1161,10 +1014,10 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             public_bucket_hash: "bucket_hash4".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 2,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         },
@@ -1186,10 +1039,10 @@ pub async fn original_seed_weights(mysql_pool: &Pool<MySql>, _user_token: UserTo
             public_bucket_hash: "bucket_hash5".to_string(),
             maybe_public_bucket_prefix: Some("_fake".to_string()),
             maybe_public_bucket_extension: Some("LoRA".to_string()),
-            //cached_user_ratings_total_count: 10,
-            //cached_user_ratings_positive_count: 9,
-            //cached_user_ratings_negative_count: 1,
-            //maybe_cached_user_ratings_ratio: Some(0.9),
+            
+            
+            
+            
             version: 2,
             mysql_pool: &mysql_pool, // replace with actual MySqlPool
         }
