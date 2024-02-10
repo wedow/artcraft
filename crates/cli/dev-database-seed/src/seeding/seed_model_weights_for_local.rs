@@ -600,6 +600,11 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
     let lora_descriptor = Box::new(WeightsLoRADescriptor{});
     let sd_vae_15_weights_descriptor = Box::new(WeightsSD15Descriptor {});
 
+
+    let sd_15_weights_descriptor2 = Box::new(WeightsSD15Descriptor {});
+    let lora_descriptor2 = Box::new(WeightsLoRADescriptor{});
+    let sd_vae_15_weights_descriptor2 = Box::new(WeightsSD15Descriptor {});
+
     let mut path_object_SD = get_seed_tool_data_root();
     path_object_SD.push("models/imagegen/sd15/majicmixFantasy_v30Vae.safetensors");
 
@@ -615,7 +620,7 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
 
     // hongkai clara
     let mut path_object_loRA2 = get_seed_tool_data_root();
-    path_to_loRA.push("models/imagegen/loRA/Clara_Honkai_Star_Rail_v2-10.safetensors");
+    path_object_loRA2.push("models/imagegen/loRA/Clara_Honkai_Star_Rail_v2-10.safetensors");
 
     // anime vae
     let mut path_to_VAE2 =  get_seed_tool_data_root();
@@ -625,9 +630,9 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
     let metadata2 = remote_cloud_file_client.upload_file(lora_descriptor,path_object_loRA.as_path().to_str().unwrap()).await?;
     let metadata3 = remote_cloud_file_client.upload_file(sd_vae_15_weights_descriptor,path_to_VAE.as_path().to_str().unwrap()).await?;
 
-    let metadata4 = remote_cloud_file_client.upload_file(sd_15_weights_descriptor,path_object_SD_anime.as_path().to_str().unwrap()).await?;
-    let metadata5 = remote_cloud_file_client.upload_file(lora_descriptor,path_object_loRA2.as_path().to_str().unwrap()).await?;
-    let metadata6 = remote_cloud_file_client.upload_file(sd_vae_15_weights_descriptor,path_to_VAE2.as_path().to_str().unwrap()).await?;
+    let metadata4 = remote_cloud_file_client.upload_file(sd_15_weights_descriptor2,path_object_SD_anime.as_path().to_str().unwrap()).await?;
+    let metadata5 = remote_cloud_file_client.upload_file(lora_descriptor2,path_object_loRA2.as_path().to_str().unwrap()).await?;
+    let metadata6 = remote_cloud_file_client.upload_file(sd_vae_15_weights_descriptor2,path_to_VAE2.as_path().to_str().unwrap()).await?;
 
     let weights1 = CreateModelWeightsArgs {
         token: &model_weight_token1, // replace with actual ModelWeightToken
@@ -709,11 +714,11 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("Last Update User Token".to_string()),
         original_download_url: Some("https://civitai.com/models/144249/animerge".to_string()),
         original_filename: Some("".to_string()),
-        file_size_bytes: metadata1.file_size_bytes,
-        file_checksum_sha2: metadata1.sha256_checksum.to_string(),
-        public_bucket_hash: metadata1.bucket_details.clone().unwrap().object_hash,
-        maybe_public_bucket_prefix: Some(metadata1.bucket_details.clone().unwrap().prefix),
-        maybe_public_bucket_extension: Some(metadata1.bucket_details.clone().unwrap().suffix),
+        file_size_bytes: metadata4.file_size_bytes,
+        file_checksum_sha2: metadata4.sha256_checksum.to_string(),
+        public_bucket_hash: metadata4.bucket_details.clone().unwrap().object_hash,
+        maybe_public_bucket_prefix: Some(metadata4.bucket_details.clone().unwrap().prefix),
+        maybe_public_bucket_extension: Some(metadata4.bucket_details.clone().unwrap().suffix),
         version: 1,
         mysql_pool: &mysql_pool, // replace with actual MySqlPool
     };
@@ -731,11 +736,11 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("<p> Honkai <p>".to_string()),
         original_download_url: Some("https://civitai.com/models/56454/clara-honkai-star-rail-lora".to_string()),
         original_filename: Some("clara.safetensors".to_string()),
-        file_size_bytes: metadata2.file_size_bytes,
-        file_checksum_sha2: metadata2.sha256_checksum.to_string(),
-        public_bucket_hash: metadata2.bucket_details.clone().unwrap().object_hash.clone(),
-        maybe_public_bucket_prefix: Some(metadata2.bucket_details.clone().unwrap().prefix),
-        maybe_public_bucket_extension: Some(metadata2.bucket_details.clone().unwrap().suffix),
+        file_size_bytes: metadata5.file_size_bytes,
+        file_checksum_sha2: metadata5.sha256_checksum.to_string(),
+        public_bucket_hash: metadata5.bucket_details.clone().unwrap().object_hash.clone(),
+        maybe_public_bucket_prefix: Some(metadata5.bucket_details.clone().unwrap().prefix),
+        maybe_public_bucket_extension: Some(metadata5.bucket_details.clone().unwrap().suffix),
         version: 2,
         mysql_pool: &mysql_pool, // replace with actual MySqlPool
     };
@@ -754,11 +759,11 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         maybe_last_update_user_token: Some("Last Update User Token".to_string()),
         original_download_url: Some("https://civitai.com/models/97653/????".to_string()),
         original_filename: Some("zVae_v20.safetensors".to_string()),
-        file_size_bytes: metadata3.file_size_bytes,
-        file_checksum_sha2: metadata3.sha256_checksum.to_string(),
-        public_bucket_hash: metadata3.bucket_details.clone().unwrap().object_hash,
-        maybe_public_bucket_prefix: Some(metadata3.bucket_details.clone().unwrap().prefix),
-        maybe_public_bucket_extension: Some(metadata3.bucket_details.clone().unwrap().suffix),
+        file_size_bytes: metadata6.file_size_bytes,
+        file_checksum_sha2: metadata6.sha256_checksum.to_string(),
+        public_bucket_hash: metadata6.bucket_details.clone().unwrap().object_hash,
+        maybe_public_bucket_prefix: Some(metadata6.bucket_details.clone().unwrap().prefix),
+        maybe_public_bucket_extension: Some(metadata6.bucket_details.clone().unwrap().suffix),
         version: 1,
         mysql_pool: &mysql_pool, // replace with actual MySqlPool
     };
