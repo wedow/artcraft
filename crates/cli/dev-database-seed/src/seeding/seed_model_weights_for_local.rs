@@ -590,6 +590,9 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
     let model_weight_token2 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
     let model_weight_token3 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
+    let model_weight_token4 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token5 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
+    let model_weight_token6 = ModelWeightToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously();
 
     let remote_cloud_file_client = RemoteCloudFileClient::get_remote_cloud_file_client().await?;
 
@@ -606,9 +609,25 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
     let mut path_to_VAE = get_seed_tool_data_root();
     path_to_VAE.push("models/imagegen/vae/zVae_v20.safetensors");
 
+    // anime model 
+    let mut path_object_SD_anime = get_seed_tool_data_root();
+    path_object_SD_anime.push("models/imagegen/sd15/animerge_v26.safetensors");
+
+    // hongkai clara
+    let mut path_object_loRA2 = get_seed_tool_data_root();
+    path_to_loRA.push("models/imagegen/loRA/Clara_Honkai_Star_Rail_v2-10.safetensors");
+
+    // anime vae
+    let mut path_to_VAE2 =  get_seed_tool_data_root();
+    path_to_VAE2.push("models/imagegen/vae/vaeFtMse840000EmaPruned_vae.safetensors");
+
     let metadata1 = remote_cloud_file_client.upload_file(sd_15_weights_descriptor,path_object_SD.as_path().to_str().unwrap()).await?;
     let metadata2 = remote_cloud_file_client.upload_file(lora_descriptor,path_object_loRA.as_path().to_str().unwrap()).await?;
     let metadata3 = remote_cloud_file_client.upload_file(sd_vae_15_weights_descriptor,path_to_VAE.as_path().to_str().unwrap()).await?;
+
+    let metadata4 = remote_cloud_file_client.upload_file(sd_15_weights_descriptor,path_object_SD_anime.as_path().to_str().unwrap()).await?;
+    let metadata5 = remote_cloud_file_client.upload_file(lora_descriptor,path_object_loRA2.as_path().to_str().unwrap()).await?;
+    let metadata6 = remote_cloud_file_client.upload_file(sd_vae_15_weights_descriptor,path_to_VAE2.as_path().to_str().unwrap()).await?;
 
     let weights1 = CreateModelWeightsArgs {
         token: &model_weight_token1, // replace with actual ModelWeightToken
@@ -676,9 +695,82 @@ Noosphere by skumerz + dalcefoPainting + 饭特稀V08 by zhazhahui345 + GhostMix
         mysql_pool: &mysql_pool, // replace with actual MySqlPool
     };
 
+
+    let weights4 = CreateModelWeightsArgs {
+        token: &model_weight_token4, // replace with actual ModelWeightToken
+        weights_type: WeightsType::StableDiffusion15, // replace with actual WeightsType
+        weights_category: WeightsCategory::ImageGeneration, // replace with actual WeightsCategory
+        title: "animerge_v26".to_string(),
+        maybe_description_markdown: Some(sd1_5_markdown_description.to_string()),
+        maybe_description_rendered_html: Some("<p>Description</p>".to_string()),
+        creator_user_token: Some(&user_token), // replace with actual UserToken
+        creator_ip_address: "192.168.1.1",
+        creator_set_visibility: Visibility::Public,
+        maybe_last_update_user_token: Some("Last Update User Token".to_string()),
+        original_download_url: Some("https://civitai.com/models/144249/animerge".to_string()),
+        original_filename: Some("".to_string()),
+        file_size_bytes: metadata1.file_size_bytes,
+        file_checksum_sha2: metadata1.sha256_checksum.to_string(),
+        public_bucket_hash: metadata1.bucket_details.clone().unwrap().object_hash,
+        maybe_public_bucket_prefix: Some(metadata1.bucket_details.clone().unwrap().prefix),
+        maybe_public_bucket_extension: Some(metadata1.bucket_details.clone().unwrap().suffix),
+        version: 1,
+        mysql_pool: &mysql_pool, // replace with actual MySqlPool
+    };
+
+    let weights5  = CreateModelWeightsArgs {
+        token: &model_weight_token5, // replace with actual ModelWeightToken
+        weights_type: WeightsType::LoRA, // replace with actual WeightsType
+        weights_category: WeightsCategory::ImageGeneration, // replace with actual WeightsCategory
+        title: "clara LoRA".to_string(),
+        maybe_description_markdown: Some(miyhoyo_description.to_string()),
+        maybe_description_rendered_html: Some(miyhoyo_description.to_string()),
+        creator_user_token: Some(&user_token), // replace with actual UserToken
+        creator_ip_address: "292.268.2.2",
+        creator_set_visibility: Visibility::Public,
+        maybe_last_update_user_token: Some("<p> Honkai <p>".to_string()),
+        original_download_url: Some("https://civitai.com/models/56454/clara-honkai-star-rail-lora".to_string()),
+        original_filename: Some("clara.safetensors".to_string()),
+        file_size_bytes: metadata2.file_size_bytes,
+        file_checksum_sha2: metadata2.sha256_checksum.to_string(),
+        public_bucket_hash: metadata2.bucket_details.clone().unwrap().object_hash.clone(),
+        maybe_public_bucket_prefix: Some(metadata2.bucket_details.clone().unwrap().prefix),
+        maybe_public_bucket_extension: Some(metadata2.bucket_details.clone().unwrap().suffix),
+        version: 2,
+        mysql_pool: &mysql_pool, // replace with actual MySqlPool
+    };
+
+    // some VAE
+    let weights6 = CreateModelWeightsArgs {
+        token: &model_weight_token6, // replace with actual ModelWeightToken
+        weights_type: WeightsType::StableDiffusion15, // replace with actual WeightsType
+        weights_category: WeightsCategory::ImageGeneration, // replace with actual WeightsCategory
+        title: "anime-vae".to_string(),
+        maybe_description_markdown: Some(sd_vae_description.to_string()),
+        maybe_description_rendered_html: Some("<p>Description</p>".to_string()),
+        creator_user_token: Some(&user_token), // replace with actual UserToken
+        creator_ip_address: "192.168.1.1",
+        creator_set_visibility: Visibility::Public,
+        maybe_last_update_user_token: Some("Last Update User Token".to_string()),
+        original_download_url: Some("https://civitai.com/models/97653/????".to_string()),
+        original_filename: Some("zVae_v20.safetensors".to_string()),
+        file_size_bytes: metadata3.file_size_bytes,
+        file_checksum_sha2: metadata3.sha256_checksum.to_string(),
+        public_bucket_hash: metadata3.bucket_details.clone().unwrap().object_hash,
+        maybe_public_bucket_prefix: Some(metadata3.bucket_details.clone().unwrap().prefix),
+        maybe_public_bucket_extension: Some(metadata3.bucket_details.clone().unwrap().suffix),
+        version: 1,
+        mysql_pool: &mysql_pool, // replace with actual MySqlPool
+    };
+
     create_weight(weights1).await?;
     create_weight(weights2).await?;
     create_weight(weights3).await?;
+
+
+    create_weight(weights4).await?;
+    create_weight(weights5).await?;
+    create_weight(weights6).await?;
 
     Ok(())
 }
@@ -1119,9 +1211,9 @@ pub async fn seed_weights(mysql_pool: &Pool<MySql>) -> AnyhowResult<()> {
     // original_seed_weights(mysql_pool,user_token).await?;
     // seed_weights_for_user_token(mysql_pool, user_token).await?;
     // seed_weights_for_paging(mysql_pool,user_token).await?;
-    // seed_weights_for_testing_inference(mysql_pool,user_token.clone()).await?;
+    seed_weights_for_testing_inference(mysql_pool,user_token.clone()).await?;
     // println!("TESTING DOWLOAD");
     // test_seed_weights_files().await?;
-    seed_workflows_for_testing_inference(mysql_pool,user_token.clone()).await?;
+    //seed_workflows_for_testing_inference(mysql_pool,user_token.clone()).await?;
     Ok(())
 }

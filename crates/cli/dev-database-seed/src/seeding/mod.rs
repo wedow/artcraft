@@ -1,4 +1,4 @@
-pub mod model_weights;
+pub mod seed_model_weights_for_local;
 pub mod seed_media_files;
 pub mod tts_tacotron2;
 pub mod users;

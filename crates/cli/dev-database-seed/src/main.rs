@@ -7,7 +7,7 @@ use errors::AnyhowResult;
 
 use crate::bucket_clients::get_bucket_clients;
 use crate::cli_args::parse_cli_args;
-use crate::seeding::model_weights::seed_weights;
+use crate::seeding::seed_model_weights_for_local::seed_weights;
 
 pub mod bucket_clients;
 
