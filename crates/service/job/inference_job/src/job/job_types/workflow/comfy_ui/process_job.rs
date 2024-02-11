@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::{File, read_to_string};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -45,6 +46,44 @@ fn recursively_delete_files_in(path: &Path) -> std::io::Result<()> {
             safe_delete_temp_file(entry.path());
         }
     }
+    Ok(())
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Remote {
+    bucket: String,
+    path: String,
+    #[serde(rename = "type")]
+    type_: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct HttpCallback {
+    url: String,
+    method: String,
+    headers: HashMap<String, String>,
+    #[serde(default)]
+    json: HashMap<String, Value>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ThumbnailTask {
+    event_id: String,
+    input: Remote,
+    output: Remote,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    callback: Option<HttpCallback>,
+    #[serde(default)]
+    tags: Vec<HashMap<String, String>>,
+}
+
+async fn send_thumbnail_task(task: &ThumbnailTask, url: &str) -> Result<(), ReqwestError> {
+    let client = reqwest::Client::new();
+    client.post(url)
+        .json(task)
+        .send()
+        .await?
+        .error_for_status()?; // This ensures we get an error back if the response status is not 2xx.
     Ok(())
 }
 
