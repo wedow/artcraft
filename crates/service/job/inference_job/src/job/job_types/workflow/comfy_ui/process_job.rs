@@ -5,10 +5,12 @@ use std::time::Instant;
 
 use anyhow::anyhow;
 use log::{error, info, warn};
+use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use tokio::io::AsyncWriteExt;
 use walkdir::WalkDir;
 
+use container_common::token::random_uuid::generate_random_uuid;
 use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::remote_file_manager::remote_cloud_bucket_details::RemoteCloudBucketDetails;
 use cloud_storage::remote_file_manager::remote_cloud_file_manager::RemoteCloudFileClient;
@@ -49,7 +51,7 @@ fn recursively_delete_files_in(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 struct Remote {
     bucket: String,
     path: String,
@@ -57,16 +59,14 @@ struct Remote {
     type_: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 struct HttpCallback {
     url: String,
     method: String,
     headers: HashMap<String, String>,
-    #[serde(default)]
-    json: HashMap<String, Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 struct ThumbnailTask {
     event_id: String,
     input: Remote,
@@ -77,7 +77,8 @@ struct ThumbnailTask {
     tags: Vec<HashMap<String, String>>,
 }
 
-async fn send_thumbnail_task(task: &ThumbnailTask, url: &str) -> Result<(), ReqwestError> {
+async fn send_thumbnail_task(task: &ThumbnailTask) -> Result<(), ReqwestError> {
+    let url = "http://thumbnail-generator.media-server/tasks";
     let client = reqwest::Client::new();
     client.post(url)
         .json(task)
