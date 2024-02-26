@@ -90,6 +90,9 @@ CREATE TABLE media_files (
   -- The duration in millis, if audio or video.
   maybe_duration_millis INT(10) DEFAULT NULL,
 
+  -- Frame rate for video, sampling rate for audio (if present)
+  maybe_sample_rate FLOAT DEFAULT NULL,
+
   -- Audio encoder details
   -- Only present if the file was audio or a video that had audio.
   maybe_audio_encoding VARCHAR(32) DEFAULT NULL,

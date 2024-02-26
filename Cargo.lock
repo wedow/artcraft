@@ -3935,6 +3935,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "mp4"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9ef834d5ed55e494a2ae350220314dc4aacd1c43a9498b00e320e0ea352a5c3"
+dependencies = [
+ "byteorder",
+ "bytes 1.5.0",
+ "num-rational 0.4.1",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "my-workspace-hack"
 version = "0.1.0"
 dependencies = [
@@ -4260,6 +4274,7 @@ dependencies = [
  "num-bigint 0.4.4",
  "num-integer",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -6441,6 +6456,7 @@ dependencies = [
  "utoipa",
  "utoipa-swagger-ui",
  "uuid 0.8.2",
+ "videos",
 ]
 
 [[package]]
@@ -7770,6 +7786,17 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "videos"
+version = "0.0.1"
+dependencies = [
+ "errors",
+ "log",
+ "mp4",
+ "my-workspace-hack",
+ "testing",
+]
 
 [[package]]
 name = "void"

@@ -1,0 +1,29 @@
+[package]
+name = "videos"
+edition = "2018"
+version = "0.0.1"
+authors = [
+    "Brandon Thomas <bt@brand.io>",
+    "Brandon Thomas <echelon@gmail.com>",
+]
+publish = false
+
+[lib]
+# NB: Public "videos" crate doesn't exist; "video" crate looks like it's not useful
+name = "videos"
+path = "src/lib.rs"
+
+[dependencies]
+
+# Internal
+errors = { path = "../../errors" }
+
+# Workspace hack (faster compile times)
+my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
+
+# External
+mp4 = "0.14.0"
+log = "0.4.20"
+
+[dev-dependencies]
+testing = { path = "../../testing" }

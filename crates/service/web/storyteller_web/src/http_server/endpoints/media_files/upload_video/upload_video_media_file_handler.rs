@@ -1,9 +1,9 @@
 use std::collections::HashSet;
+use std::io::BufReader;
 use std::sync::Arc;
 
 use actix_multipart::Multipart;
-use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
-use http::StatusCode;
+use actix_web::{HttpRequest, HttpResponse, web};
 use log::{error, info, warn};
 use once_cell::sync::Lazy;
 use utoipa::ToSchema;
@@ -13,74 +13,59 @@ use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use http_server_common::request::get_request_ip::get_request_ip;
-use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
+use mimetypes::mimetype_to_extension::mimetype_to_extension;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::create::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
 use tokens::tokens::media_files::MediaFileToken;
+use videos::get_mp4_info::get_mp4_info;
 
-use crate::http_server::endpoints::engine::drain_multipart_request::drain_multipart_request;
+use crate::http_server::endpoints::engine::create_scene_handler::{CreateSceneError, CreateSceneSuccessResponse};
+use crate::http_server::endpoints::media_files::upload_video::drain_multipart_request::drain_multipart_request;
+use crate::http_server::endpoints::media_files::upload_video::drain_multipart_request::MediaFileUploadSource;
+use crate::http_server::endpoints::media_files::upload_video::upload_error::VideoMediaFileUploadError;
 use crate::server_state::ServerState;
 use crate::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 
-#[derive(Debug, Serialize, ToSchema)]
-pub enum CreateSceneError {
-  BadInput(String),
-  NotAuthorized,
-  MustBeLoggedIn,
-  ServerError,
-  RateLimited,
-}
-
-impl ResponseError for CreateSceneError {
-  fn status_code(&self) -> StatusCode {
-    match *self {
-      CreateSceneError::BadInput(_) => StatusCode::BAD_REQUEST,
-      CreateSceneError::NotAuthorized => StatusCode::UNAUTHORIZED,
-      CreateSceneError::MustBeLoggedIn => StatusCode::UNAUTHORIZED,
-      CreateSceneError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
-      CreateSceneError::RateLimited => StatusCode::TOO_MANY_REQUESTS,
-    }
-  }
-
-  fn error_response(&self) -> HttpResponse {
-    serialize_as_json_error(self)
-  }
-}
-
-impl std::fmt::Display for CreateSceneError {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{:?}", self)
-  }
-}
-
 #[derive(Serialize, ToSchema)]
-pub struct CreateSceneSuccessResponse {
+pub struct UploadVideoMediaSuccessResponse {
   pub success: bool,
   pub media_file_token: MediaFileToken,
 }
 
+static ALLOWED_MIME_TYPES : Lazy<HashSet<&'static str>> = Lazy::new(|| {
+  HashSet::from([
+    // Video
+    "video/mp4", // NB: Only mp4 for now.
+  ])
+});
+
 #[utoipa::path(
   post,
-  path = "/v1/engine/create_scene",
+  path = "/v1/media_files/upload/video",
   responses(
-    (status = 200, description = "Found", body = CreateSceneSuccessResponse),
-    (status = 404, description = "Not found", body = CreateSceneError),
-    (status = 500, description = "Server error", body = CreateSceneError),
+    (status = 200, description = "Success Update", body = UploadVideoMediaSuccessResponse),
+    (status = 400, description = "Bad input", body = MediaFileUploadError),
+    (status = 401, description = "Not authorized", body = MediaFileUploadError),
+    (status = 429, description = "Too many requests", body = MediaFileUploadError),
+    (status = 500, description = "Server error", body = MediaFileUploadError),
   ),
+  params(
+    ("request" = (), description = "Ask Brandon. This is form-multipart."),
+  )
 )]
-pub async fn create_scene_handler(
+pub async fn upload_video_media_file_handler(
   http_request: HttpRequest,
   server_state: web::Data<Arc<ServerState>>,
   mut multipart_payload: Multipart,
-) -> Result<HttpResponse, CreateSceneError> {
+) -> Result<HttpResponse, VideoMediaFileUploadError> {
 
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await
       .map_err(|err| {
         error!("MySql pool error: {:?}", err);
-        CreateSceneError::ServerError
+        VideoMediaFileUploadError::ServerError
       })?;
 
   // ==================== READ SESSION ==================== //
@@ -91,7 +76,7 @@ pub async fn create_scene_handler(
       .await
       .map_err(|e| {
         error!("Session checker error: {:?}", e);
-        CreateSceneError::ServerError
+        VideoMediaFileUploadError::ServerError
       })?;
 
   let maybe_avt_token = server_state
@@ -102,7 +87,7 @@ pub async fn create_scene_handler(
 
   if let Some(ref user) = maybe_user_session {
     if user.is_banned {
-      return Err(CreateSceneError::NotAuthorized);
+      return Err(VideoMediaFileUploadError::NotAuthorized);
     }
   }
 
@@ -114,7 +99,7 @@ pub async fn create_scene_handler(
   };
 
   if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
-    return Err(CreateSceneError::RateLimited);
+    return Err(VideoMediaFileUploadError::RateLimited);
   }
 
   // ==================== READ MULTIPART REQUEST ==================== //
@@ -123,25 +108,38 @@ pub async fn create_scene_handler(
       .await
       .map_err(|e| {
         // TODO: Error handling could be nicer.
-        CreateSceneError::BadInput("bad request".to_string())
+        VideoMediaFileUploadError::BadInput("bad request".to_string())
       })?;
 
+  // TODO(bt, 2024-02-26): This should be a transaction.
   let uuid_idempotency_token = upload_media_request.uuid_idempotency_token
-      .ok_or(CreateSceneError::BadInput("no uuid".to_string()))?;
+      .ok_or(VideoMediaFileUploadError::BadInput("no uuid".to_string()))?;
 
   // ==================== HANDLE IDEMPOTENCY ==================== //
 
   if let Err(reason) = validate_idempotency_token_format(&uuid_idempotency_token) {
-    return Err(CreateSceneError::BadInput(reason));
+    return Err(VideoMediaFileUploadError::BadInput(reason));
   }
 
-  // TODO(bt, 2024-02-22): This should be a transaction.
   insert_idempotency_token(&uuid_idempotency_token, &mut *mysql_connection)
       .await
       .map_err(|err| {
         error!("Error inserting idempotency token: {:?}", err);
-        CreateSceneError::BadInput("invalid idempotency token".to_string())
+        VideoMediaFileUploadError::BadInput("invalid idempotency token".to_string())
       })?;
+
+  // ==================== UPLOAD METADATA ==================== //
+
+  let creator_set_visibility = maybe_user_session
+      .as_ref()
+      .map(|user_session| user_session.preferred_tts_result_visibility) // TODO: We need a new type of visibility control.
+      .unwrap_or(Visibility::default());
+
+  let upload_type = match upload_media_request.media_source {
+    MediaFileUploadSource::Unknown => UploadType::Filesystem,
+    MediaFileUploadSource::UserFile => UploadType::Filesystem,
+    MediaFileUploadSource::UserDeviceApi => UploadType::DeviceCaptureApi,
+  };
 
   // ==================== USER DATA ==================== //
 
@@ -152,42 +150,61 @@ pub async fn create_scene_handler(
 
   // ==================== FILE DATA ==================== //
 
-  let mut maybe_mimetype = upload_media_request.file_bytes
-      .as_ref()
-      .map(|bytes| get_mimetype_for_bytes(bytes.as_ref()))
-      .flatten();
-
-  let mime_type = maybe_mimetype
-      .unwrap_or("text/plain");
-
-  let bytes = match upload_media_request.file_bytes {
-    None => return Err(CreateSceneError::BadInput("missing file contents".to_string())),
+  let file_bytes = match upload_media_request.file_bytes {
+    None => return Err(VideoMediaFileUploadError::BadInput("missing file contents".to_string())),
     Some(bytes) => bytes,
   };
 
-  let file_size_bytes = bytes.len();
+  let mut maybe_mimetype = get_mimetype_for_bytes(&file_bytes);
 
-  let hash = sha256_hash_bytes(&bytes)
+  let mimetype = match maybe_mimetype {
+    None => return Err(VideoMediaFileUploadError::BadInput("unknown mimetype".to_string())),
+    Some(mimetype) => if ALLOWED_MIME_TYPES.contains(mimetype) {
+      mimetype
+    } else {
+      return Err(VideoMediaFileUploadError::BadInput("unsupported mimetype".to_string()));
+    }
+  };
+
+  let file_size_bytes = file_bytes.len();
+
+  let hash = sha256_hash_bytes(&file_bytes)
       .map_err(|io_error| {
         error!("Problem hashing bytes: {:?}", io_error);
-        CreateSceneError::ServerError
+        VideoMediaFileUploadError::ServerError
       })?;
 
-  const PREFIX : Option<&str> = Some("scene_");
-  const SUFFIX : Option<&str> = Some(".scn.ron");
+  // ==================== FRAME RATE ==================== //
 
-  let public_upload_path = MediaFileBucketPath::generate_new(PREFIX, SUFFIX);
+  let reader = BufReader::new(file_bytes.as_ref());
+
+  let mp4_info = get_mp4_info(&reader, file_size_bytes as u64)
+      .map_err(|err| {
+        warn!("Error reading mp4 info: {:?}", err);
+        VideoMediaFileUploadError::ServerError
+      })?;
+
+  // ==================== UPLOAD AND SAVE ==================== //
+
+  // TODO(bt,2024-02-26): We statically know the extension if it was an allowed mimetype. Fix this.
+  let mut extension = mimetype_to_extension(mimetype)
+      .map(|extension| format!(".{extension}"))
+      .unwrap_or(".mp4".to_string());
+
+  const PREFIX : Option<&str> = Some("video_");
+
+  let public_upload_path = MediaFileBucketPath::generate_new(PREFIX, Some(&extension));
 
   info!("Uploading media to bucket path: {}", public_upload_path.get_full_object_path_str());
 
   server_state.public_bucket_client.upload_file_with_content_type(
     public_upload_path.get_full_object_path_str(),
-    bytes.as_ref(),
-    mime_type)
+    file_bytes.as_ref(),
+    mimetype)
       .await
       .map_err(|e| {
         warn!("Upload media bytes to bucket error: {:?}", e);
-        CreateSceneError::ServerError
+        VideoMediaFileUploadError::ServerError
       })?;
 
   // TODO(bt, 2024-02-22): This should be a transaction.
@@ -195,23 +212,23 @@ pub async fn create_scene_handler(
     maybe_creator_user_token: maybe_user_token.as_ref(),
     maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
-    creator_set_visibility: Visibility::Public,
-    upload_type: UploadType::StorytellerEngine,
-    media_file_type: MediaFileType::SceneRon,
-    maybe_mime_type: Some(mime_type),
+    creator_set_visibility,
+    upload_type,
+    media_file_type: MediaFileType::Video,
+    maybe_mime_type: Some(mimetype),
     file_size_bytes: file_size_bytes as u64,
-    maybe_sample_rate: None,
-    duration_millis: 0, // None
+    maybe_sample_rate: Some(mp4_info.framerate as f32),
+    duration_millis: mp4_info.duration_millis as u64,
     sha256_checksum: &hash,
     public_bucket_directory_hash: public_upload_path.get_object_hash(),
     maybe_public_bucket_prefix: PREFIX,
-    maybe_public_bucket_extension: SUFFIX,
+    maybe_public_bucket_extension: Some(&extension),
     pool: &server_state.mysql_pool,
   })
       .await
       .map_err(|err| {
         warn!("New file creation DB error: {:?}", err);
-        CreateSceneError::ServerError
+        VideoMediaFileUploadError::ServerError
       })?;
 
   info!("new media file id: {} token: {:?}", record_id, &token);
@@ -222,7 +239,7 @@ pub async fn create_scene_handler(
   };
 
   let body = serde_json::to_string(&response)
-      .map_err(|e| CreateSceneError::ServerError)?;
+      .map_err(|e| VideoMediaFileUploadError::ServerError)?;
 
   return Ok(HttpResponse::Ok()
       .content_type("application/json")

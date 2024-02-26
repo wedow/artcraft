@@ -34,6 +34,7 @@ pub struct InsertMediaFileFromUploadArgs<'a> {
   pub maybe_mime_type: Option<&'a str>,
   pub file_size_bytes: u64,
   pub duration_millis: u64,
+  pub maybe_sample_rate: Option<f32>,
   pub sha256_checksum: &'a str,
 
   // TODO: Media duration.
@@ -98,6 +99,8 @@ SET
   maybe_mime_type = ?,
   file_size_bytes = ?,
 
+  maybe_sample_rate = ?,
+
   checksum_sha2 = ?,
 
   public_bucket_directory_hash = ?,
@@ -121,6 +124,8 @@ SET
       args.media_file_type.to_str(),
       args.maybe_mime_type,
       args.file_size_bytes,
+
+      args.maybe_sample_rate,
 
       args.sha256_checksum,
 

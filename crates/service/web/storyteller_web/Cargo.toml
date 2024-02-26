@@ -53,6 +53,7 @@ tts_common = { path = "../../../lib/tts_common" }
 twitch_common = { path = "../../../lib/api_clients/twitch_common" }
 url_config = { path = "../../../lib/url_config" }
 user_input_common = { path = "../../../lib/user_input_common" }
+videos = { path = "../../../lib/files/videos" }
 
 # Internal Components
 billing_component = { path = "../../plugins/billing" }

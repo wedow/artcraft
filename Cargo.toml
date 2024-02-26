@@ -48,6 +48,7 @@ members = [
   "crates/lib/files/images",
   "crates/lib/files/media",
   "crates/lib/files/mimetypes",
+  "crates/lib/files/videos",
   "crates/lib/idempotency",
   "crates/lib/jobs_common",
   "crates/lib/logging",

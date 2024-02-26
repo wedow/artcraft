@@ -1087,6 +1087,10 @@ fn add_media_file_routes<T, B> (app: App<T>) -> App<T>
           .route(web::post().to(upload_media_file_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
+      .service(web::resource("/upload/video")
+          .route(web::post().to(upload_media_file_handler))
+          .route(web::head().to(|| HttpResponse::Ok()))
+      )
   )
 }
 
