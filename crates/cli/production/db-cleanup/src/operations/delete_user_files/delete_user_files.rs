@@ -44,6 +44,7 @@ pub async fn delete_all_files(username: &str, mysql: &Pool<MySql>) -> AnyhowResu
       username,
       maybe_filter_media_types: None,
       maybe_filter_media_classes: None,
+      maybe_filter_engine_categories: None,
       page_size: 100,
       page_index,
       sort_ascending: false,

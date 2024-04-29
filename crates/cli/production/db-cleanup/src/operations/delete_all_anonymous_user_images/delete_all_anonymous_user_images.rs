@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::thread;
 use std::time::Duration;
 
@@ -24,12 +25,14 @@ pub async fn delete_all_anonymous_user_images(_args: &Args, mysql: &Pool<MySql>)
 
     let media_files = list_media_files(ListMediaFilesArgs {
       limit: 100,
-      maybe_filter_media_type: Some(MediaFileType::Image),
+      maybe_filter_media_types: Some(&HashSet::from([MediaFileType::Image])),
+      maybe_filter_media_classes: None,
       maybe_offset,
       cursor_is_reversed: false,
       sort_ascending: false,
       view_as: ViewAs::Moderator,
       mysql_pool: &mysql,
+      maybe_filter_engine_categories: None,
     }).await?;
 
     if media_files.records.is_empty() {
