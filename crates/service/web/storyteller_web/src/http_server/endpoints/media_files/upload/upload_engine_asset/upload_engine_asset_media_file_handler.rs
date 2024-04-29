@@ -124,7 +124,7 @@ pub async fn upload_engine_asset_media_file_handler(
 
   // ==================== UPLOAD METADATA ==================== //
 
-  let creator_set_visibility = upload_media_request.visibility
+  let creator_set_visibility = upload_media_request.maybe_visibility
       .as_deref()
       .map(|visibility| Visibility::from_str(visibility))
       .transpose()
@@ -207,19 +207,20 @@ pub async fn upload_engine_asset_media_file_handler(
 
   // TODO(bt, 2024-02-22): This should be a transaction.
   let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
+    maybe_media_class: Some(MediaFileClass::Dimensional),
+    media_file_type,
     maybe_creator_user_token: maybe_user_token.as_ref(),
     maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility,
     upload_type: UploadType::Filesystem,
-    media_file_type,
-    maybe_media_class: Some(MediaFileClass::Dimensional),
-    maybe_media_subtype: upload_media_request.media_file_subtype,
+    maybe_engine_category: upload_media_request.maybe_engine_category,
+    maybe_animation_type: upload_media_request.maybe_animation_type,
     maybe_mime_type: Some(mimetype),
     file_size_bytes: file_size_bytes as u64,
     duration_millis: 0,
     sha256_checksum: &hash,
-    maybe_title: upload_media_request.title.as_deref(),
+    maybe_title: upload_media_request.maybe_title.as_deref(),
     public_bucket_directory_hash: public_upload_path.get_object_hash(),
     maybe_public_bucket_prefix: PREFIX,
     maybe_public_bucket_extension: Some(suffix),

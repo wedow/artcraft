@@ -10,6 +10,7 @@ use utoipa::ToSchema;
 
 use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
+use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_subtype::MediaFileSubtype;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
@@ -195,14 +196,15 @@ pub async fn create_scene_handler(
 
   // TODO(bt, 2024-02-22): This should be a transaction.
   let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
+    maybe_media_class: Some(MediaFileClass::Dimensional),
+    media_file_type: MediaFileType::SceneRon,
     maybe_creator_user_token: maybe_user_token.as_ref(),
     maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
     upload_type: UploadType::StorytellerEngine,
-    media_file_type: MediaFileType::SceneRon,
-    maybe_media_class: Some(MediaFileClass::Dimensional),
-    maybe_media_subtype: Some(MediaFileSubtype::StorytellerScene),
+    maybe_engine_category: Some(MediaFileEngineCategory::Scene),
+    maybe_animation_type: None,
     maybe_mime_type: Some(mime_type),
     file_size_bytes: file_size_bytes as u64,
     duration_millis: 0, // None

@@ -333,14 +333,15 @@ pub async fn process_upload_media_file(
       })?;
 
   let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
+    maybe_media_class: None,
+    media_file_type,
     maybe_creator_user_token: maybe_user_token.as_ref(),
     maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility,
     upload_type,
-    media_file_type,
-    maybe_media_class: None,
-    maybe_media_subtype: None,
+    maybe_engine_category: None,
+    maybe_animation_type: None,
     maybe_mime_type: Some(mime_type),
     file_size_bytes: file_size_bytes as u64,
     duration_millis: 0, // TODO

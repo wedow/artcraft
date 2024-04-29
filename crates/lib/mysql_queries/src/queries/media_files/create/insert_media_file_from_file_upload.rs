@@ -3,7 +3,9 @@ use sqlx;
 use sqlx::MySqlPool;
 
 use enums::by_table::generic_synthetic_ids::id_category::IdCategory;
+use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
+use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_subtype::MediaFileSubtype;
@@ -25,16 +27,18 @@ pub enum UploadType {
 pub struct InsertMediaFileFromUploadArgs<'a> {
   pub pool: &'a MySqlPool,
 
+  pub media_file_type: MediaFileType,
+  pub maybe_media_class: Option<MediaFileClass>,
+
+  pub upload_type: UploadType,
+
+  pub maybe_engine_category: Option<MediaFileEngineCategory>,
+  pub maybe_animation_type: Option<MediaFileAnimationType>,
+
   pub maybe_creator_user_token: Option<&'a UserToken>,
   pub maybe_creator_anonymous_visitor_token: Option<&'a AnonymousVisitorTrackingToken>,
   pub creator_ip_address: &'a str,
   pub creator_set_visibility: Visibility,
-
-  pub upload_type: UploadType,
-
-  pub media_file_type: MediaFileType,
-  pub maybe_media_class: Option<MediaFileClass>,
-  pub maybe_media_subtype: Option<MediaFileSubtype>,
 
   pub maybe_mime_type: Option<&'a str>,
   pub file_size_bytes: u64,
@@ -88,8 +92,6 @@ pub async fn insert_media_file_from_file_upload(
 
   const ORIGIN_PRODUCT_CATEGORY : MediaFileOriginProductCategory = MediaFileOriginProductCategory::Unknown;
 
-  let media_class = args.maybe_media_class.unwrap_or(MediaFileClass::Unknown);
-
   let record_id = {
     let query_result = sqlx::query!(
         r#"
@@ -97,15 +99,15 @@ INSERT INTO media_files
 SET
   token = ?,
 
+  media_class = ?,
+  media_type = ?,
+
   origin_category = ?,
   origin_product_category = ?,
 
-  maybe_origin_model_type = NULL,
-  maybe_origin_model_token = NULL,
+  maybe_engine_category = ?,
+  maybe_animation_type = ?,
 
-  media_type = ?,
-  media_class = ?,
-  maybe_media_subtype = ?,
   maybe_mime_type = ?,
   file_size_bytes = ?,
 
@@ -124,17 +126,25 @@ SET
   creator_set_visibility = ?,
 
   maybe_creator_file_synthetic_id = ?,
-  maybe_creator_category_synthetic_id = ?
+  maybe_creator_category_synthetic_id = ?,
+
+  maybe_origin_model_type = NULL,
+  maybe_origin_model_token = NULL
         "#,
       token.as_str(),
+
+      args.maybe_media_class
+        .map(|media_class| media_class.to_str())
+        .unwrap_or_else(|| MediaFileClass::Unknown.to_str()),
+
+      args.media_file_type.to_str(),
 
       origin_category.to_str(),
       ORIGIN_PRODUCT_CATEGORY.to_str(),
 
-      args.media_file_type.to_str(),
-      media_class.to_str(),
-      args.maybe_media_subtype.map(|s| s.to_str()),
-      
+      args.maybe_engine_category.map(|s| s.to_str()),
+      args.maybe_animation_type.map(|s| s.to_str()),
+
       args.maybe_mime_type,
       args.file_size_bytes,
 

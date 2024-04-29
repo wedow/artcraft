@@ -218,14 +218,15 @@ pub async fn upload_video_media_file_handler(
 
   // TODO(bt, 2024-02-22): This should be a transaction.
   let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
+    maybe_media_class: Some(MediaFileClass::Video),
+    media_file_type: MediaFileType::Video,
     maybe_creator_user_token: maybe_user_token.as_ref(),
     maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility,
     upload_type,
-    maybe_media_subtype: None,
-    maybe_media_class: Some(MediaFileClass::Video),
-    media_file_type: MediaFileType::Video,
+    maybe_engine_category: None,
+    maybe_animation_type: None,
     maybe_mime_type: Some(mimetype),
     file_size_bytes: file_size_bytes as u64,
     duration_millis: mp4_info.duration_millis as u64,
