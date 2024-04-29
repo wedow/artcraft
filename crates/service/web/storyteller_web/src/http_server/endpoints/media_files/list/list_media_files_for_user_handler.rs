@@ -27,6 +27,9 @@ use crate::http_server::common_responses::media_file_cover_image_details::{Media
 use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::pagination_page::PaginationPage;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
+use crate::http_server::endpoints::media_files::list::helpers::get_scoped_engine_categories::get_scoped_engine_categories;
+use crate::http_server::endpoints::media_files::list::helpers::get_scoped_media_classes::get_scoped_media_classes;
+use crate::http_server::endpoints::media_files::list::helpers::get_scoped_media_types::get_scoped_media_types;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::server_state::ServerState;
 use crate::util::allowed_studio_access::allowed_studio_access;
@@ -49,6 +52,10 @@ pub struct ListMediaFilesForUserQueryParams {
   /// NB: This can be one (or more comma-separated values) from `MediaFileClass`.
   /// ?filter_media_type=animation or ?filter_media_type=animation,character (etc.)
   pub filter_media_classes: Option<String>,
+
+  /// NB: This can be one (or more comma-separated values) from `MediaFileEngineCategory`.
+  /// ?filter_engine_categories=scene or ?filter_engine_categories=animation,character,object (etc.)
+  pub filter_engine_categories: Option<String>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -211,8 +218,9 @@ pub async fn list_media_files_for_user_handler(
     ViewAs::AnotherUser
   };
 
-  let mut maybe_filter_media_types = get_scoped_media_types(&query);
-  let mut maybe_filter_media_classes  = get_scoped_media_classes(&query);
+  let mut maybe_filter_media_types = get_scoped_media_types(query.filter_media_type.as_deref());
+  let mut maybe_filter_media_classes  = get_scoped_media_classes(query.filter_media_classes.as_deref());
+  let mut maybe_filter_engine_categories = get_scoped_engine_categories(query.filter_engine_categories.as_deref());
 
   info!("Querying media files for user: {:?} - {:?}", path.username, maybe_filter_media_types);
 
@@ -220,6 +228,7 @@ pub async fn list_media_files_for_user_handler(
     username: &path.username,
     maybe_filter_media_types: maybe_filter_media_types.as_ref(),
     maybe_filter_media_classes: maybe_filter_media_classes.as_ref(),
+    maybe_filter_engine_categories: maybe_filter_engine_categories.as_ref(),
     page_size,
     page_index,
     sort_ascending,
@@ -318,49 +327,4 @@ pub async fn list_media_files_for_user_handler(
   Ok(HttpResponse::Ok()
       .content_type("application/json")
       .body(body))
-}
-
-
-fn get_scoped_media_types(
-  query: &Query<ListMediaFilesForUserQueryParams>,
-) -> Option<HashSet<MediaFileType>> {
-
-  let types = match query.filter_media_type.as_deref() {
-    None => return None,
-    Some(types) => types,
-  };
-
-  // NB: This silently fails on invalid values. Probably not the best tactic.
-  let types = types.split(",")
-      .map(|ty| MediaFileType::from_str(ty))
-      .flatten()
-      .collect::<HashSet<_>>();
-
-  if types.is_empty() {
-    return None;
-  }
-
-  Some(types)
-}
-
-fn get_scoped_media_classes(
-  query: &Query<ListMediaFilesForUserQueryParams>,
-) -> Option<HashSet<MediaFileClass>> {
-
-  let classes = match query.filter_media_classes.as_deref() {
-    None => return None,
-    Some(classes) => classes,
-  };
-
-  // NB: This silently fails on invalid values. Probably not the best tactic.
-  let classes = classes.split(",")
-      .map(|ty| MediaFileClass::from_str(ty))
-      .flatten()
-      .collect::<HashSet<_>>();
-
-  if classes.is_empty() {
-    return None;
-  }
-
-  Some(classes)
 }

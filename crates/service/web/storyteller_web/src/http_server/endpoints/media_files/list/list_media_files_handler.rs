@@ -38,6 +38,7 @@ pub struct ListMediaFilesQueryParams {
   pub page_size: Option<usize>,
   pub cursor: Option<String>,
   pub cursor_is_reversed: Option<bool>,
+
   pub filter_media_type: Option<MediaFileType>,
 }
 

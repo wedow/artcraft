@@ -75,9 +75,9 @@ pub struct MediaFileListItem {
 
 pub struct ListMediaFileForUserArgs<'a> {
   pub username: &'a str,
-  //pub maybe_filter_media_type: Option<MediaFileType>,
   pub maybe_filter_media_types: Option<&'a HashSet<MediaFileType>>,
   pub maybe_filter_media_classes: Option<&'a HashSet<MediaFileClass>>,
+  pub maybe_filter_engine_categories: Option<&'a HashSet<MediaFileEngineCategory>>,
   pub page_size: usize,
   pub page_index: usize,
   pub sort_ascending: bool,
@@ -89,9 +89,9 @@ pub async fn list_media_files_for_user(args: ListMediaFileForUserArgs<'_>) -> An
   /// Let's figure out how many results we could have returned total
   let count_fields = select_total_count_field();
   let mut count_query_builder = query_builder(
-    //args.maybe_filter_media_type,
     args.maybe_filter_media_types,
     args.maybe_filter_media_classes,
+    args.maybe_filter_engine_categories,
     args.username,
     false,
     0,
@@ -107,9 +107,9 @@ pub async fn list_media_files_for_user(args: ListMediaFileForUserArgs<'_>) -> An
   /// Now fetch the actual results with all the fields
   let result_fields = select_result_fields();
   let mut query = query_builder(
-    //args.maybe_filter_media_type,
     args.maybe_filter_media_types,
     args.maybe_filter_media_classes,
+    args.maybe_filter_engine_categories,
     args.username,
     true,
     args.page_index,
@@ -222,9 +222,9 @@ fn select_total_count_field() -> String {
 }
 
 fn query_builder<'a>(
-  //maybe_filter_media_type: Option<MediaFileType>,
   maybe_filter_media_types: Option<&HashSet<MediaFileType>>,
   maybe_filter_media_classes: Option<&HashSet<MediaFileClass>>,
+  maybe_filter_engine_categories: Option<&HashSet<MediaFileEngineCategory>>,
   username: &'a str,
   enforce_limits: bool,
   page_index: usize,
@@ -291,6 +291,22 @@ LEFT OUTER JOIN prompts
 
       for media_class in media_classes.iter() {
         separated.push_bind(media_class.to_str());
+      }
+
+      separated.push_unseparated(") ");
+    }
+  }
+
+  if let Some(engine_categories) = maybe_filter_engine_categories {
+    // NB: `WHERE IN` comma separated syntax will be wrong if list has zero length
+    // We'll skip the predicate if the list isn't empty.
+    if !engine_categories.is_empty() {
+      query_builder.push(" AND m.maybe_engine_category IN ( ");
+
+      let mut separated = query_builder.separated(", ");
+
+      for engine_category in engine_categories.iter() {
+        separated.push_bind(engine_category.to_str());
       }
 
       separated.push_unseparated(") ");
