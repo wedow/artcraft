@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, MySql, MySqlPool, QueryBuilder, Row};
 use sqlx::mysql::MySqlRow;
@@ -84,7 +85,9 @@ pub struct MediaFileListItem {
 
 pub struct ListMediaFilesArgs<'a> {
   pub limit: usize,
-  pub maybe_filter_media_type: Option<MediaFileType>,
+  pub maybe_filter_media_types: Option<&'a HashSet<MediaFileType>>,
+  pub maybe_filter_media_classes: Option<&'a HashSet<MediaFileClass>>,
+  pub maybe_filter_engine_categories: Option<&'a HashSet<MediaFileEngineCategory>>,
   pub maybe_offset: Option<usize>,
   pub cursor_is_reversed: bool,
   pub sort_ascending: bool,
@@ -95,7 +98,9 @@ pub struct ListMediaFilesArgs<'a> {
 pub async fn list_media_files(args: ListMediaFilesArgs<'_>) -> AnyhowResult<MediaFileListPage> {
 
   let mut query = query_builder(
-    args.maybe_filter_media_type,
+    args.maybe_filter_media_types,
+    args.maybe_filter_media_classes,
+    args.maybe_filter_engine_categories,
     args.limit,
     args.maybe_offset,
     args.cursor_is_reversed,
@@ -166,7 +171,9 @@ pub async fn list_media_files(args: ListMediaFilesArgs<'_>) -> AnyhowResult<Medi
 }
 
 fn query_builder<'a>(
-  maybe_filter_media_type: Option<MediaFileType>,
+  maybe_filter_media_types: Option<&HashSet<MediaFileType>>,
+  maybe_filter_media_classes: Option<&HashSet<MediaFileClass>>,
+  maybe_filter_engine_categories: Option<&HashSet<MediaFileEngineCategory>>,
   limit: usize,
   maybe_offset: Option<usize>,
   cursor_is_reversed: bool,
@@ -248,18 +255,70 @@ LEFT OUTER JOIN prompts
 
   let mut first_predicate_added = false;
 
-  if let Some(media_type) = maybe_filter_media_type {
-    if !first_predicate_added {
-      query_builder.push(" WHERE ");
-      first_predicate_added = true;
-    } else {
-      query_builder.push(" AND ");
+  if let Some(media_types) = maybe_filter_media_types {
+    // NB: `WHERE IN` comma separated syntax will be wrong if list has zero length
+    // We'll skip the predicate if the list isn't empty.
+    if !media_types.is_empty() {
+      if !first_predicate_added {
+        query_builder.push(" WHERE ");
+        first_predicate_added = true;
+      } else {
+        query_builder.push(" AND ");
+      }
+      query_builder.push(" m.media_type IN ( ");
+
+      let mut separated = query_builder.separated(", ");
+
+      for media_type in media_types.iter() {
+        separated.push_bind(media_type.to_str());
+      }
+
+      separated.push_unseparated(") ");
     }
-    // FIXME: Binding shouldn't require to_str().
-    //  Otherwise, it's calling the Display trait on the raw type which is resulting in an
-    //  incorrect binding and runtime error.
-    query_builder.push(" m.media_type = ");
-    query_builder.push_bind(media_type.to_str());
+  }
+
+  if let Some(media_classes) = maybe_filter_media_classes {
+    // NB: `WHERE IN` comma separated syntax will be wrong if list has zero length
+    // We'll skip the predicate if the list isn't empty.
+    if !media_classes.is_empty() {
+      if !first_predicate_added {
+        query_builder.push(" WHERE ");
+        first_predicate_added = true;
+      } else {
+        query_builder.push(" AND ");
+      }
+      query_builder.push(" m.media_class IN ( ");
+
+      let mut separated = query_builder.separated(", ");
+
+      for media_class in media_classes.iter() {
+        separated.push_bind(media_class.to_str());
+      }
+
+      separated.push_unseparated(") ");
+    }
+  }
+
+  if let Some(engine_categories) = maybe_filter_engine_categories {
+    // NB: `WHERE IN` comma separated syntax will be wrong if list has zero length
+    // We'll skip the predicate if the list isn't empty.
+    if !engine_categories.is_empty() {
+      if !first_predicate_added {
+        query_builder.push(" WHERE ");
+        first_predicate_added = true;
+      } else {
+        query_builder.push(" AND ");
+      }
+      query_builder.push(" m.maybe_engine_category IN ( ");
+
+      let mut separated = query_builder.separated(", ");
+
+      for engine_category in engine_categories.iter() {
+        separated.push_bind(engine_category.to_str());
+      }
+
+      separated.push_unseparated(") ");
+    }
   }
 
   match view_as {

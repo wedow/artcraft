@@ -27,6 +27,9 @@ use crate::http_server::common_responses::media_file_cover_image_details::{Media
 use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
+use crate::http_server::endpoints::media_files::list::helpers::get_scoped_engine_categories::get_scoped_engine_categories;
+use crate::http_server::endpoints::media_files::list::helpers::get_scoped_media_classes::get_scoped_media_classes;
+use crate::http_server::endpoints::media_files::list::helpers::get_scoped_media_types::get_scoped_media_types;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::server_state::ServerState;
 use crate::util::allowed_explore_media_access::allowed_explore_media_access;
@@ -39,7 +42,17 @@ pub struct ListMediaFilesQueryParams {
   pub cursor: Option<String>,
   pub cursor_is_reversed: Option<bool>,
 
-  pub filter_media_type: Option<MediaFileType>,
+  /// NB: This can be one (or more comma-separated values) from `MediaFileType`.
+  /// ?filter_media_type=image or ?filter_media_type=image,video (etc.)
+  pub filter_media_type: Option<String>,
+
+  /// NB: This can be one (or more comma-separated values) from `MediaFileClass`.
+  /// ?filter_media_type=animation or ?filter_media_type=animation,character (etc.)
+  pub filter_media_classes: Option<String>,
+
+  /// NB: This can be one (or more comma-separated values) from `MediaFileEngineCategory`.
+  /// ?filter_engine_categories=scene or ?filter_engine_categories=animation,character,object (etc.)
+  pub filter_engine_categories: Option<String>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -213,9 +226,15 @@ pub async fn list_media_files_handler(
     ViewAs::AnotherUser
   };
 
+  let mut maybe_filter_media_types = get_scoped_media_types(query.filter_media_type.as_deref());
+  let mut maybe_filter_media_classes  = get_scoped_media_classes(query.filter_media_classes.as_deref());
+  let mut maybe_filter_engine_categories = get_scoped_engine_categories(query.filter_engine_categories.as_deref());
+
   let query_results = list_media_files(ListMediaFilesArgs {
     limit,
-    maybe_filter_media_type: query.filter_media_type,
+    maybe_filter_media_types: maybe_filter_media_types.as_ref(),
+    maybe_filter_media_classes: maybe_filter_media_classes.as_ref(),
+    maybe_filter_engine_categories: maybe_filter_engine_categories.as_ref(),
     maybe_offset: cursor,
     cursor_is_reversed,
     sort_ascending,
