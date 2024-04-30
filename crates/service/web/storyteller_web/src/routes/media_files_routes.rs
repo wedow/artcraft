@@ -16,6 +16,7 @@ use crate::http_server::endpoints::media_files::list::list_media_files_by_batch_
 use crate::http_server::endpoints::media_files::list::list_media_files_for_user_handler::list_media_files_for_user_handler;
 use crate::http_server::endpoints::media_files::upload::upload_engine_asset::upload_engine_asset_media_file_handler::upload_engine_asset_media_file_handler;
 use crate::http_server::endpoints::media_files::upload::upload_generic::upload_media_file_handler::upload_media_file_handler;
+use crate::http_server::endpoints::media_files::upload::upload_new_scene_media_file_handler::upload_new_scene_media_file_handler;
 use crate::http_server::endpoints::media_files::upload::upload_video::upload_video_media_file_handler::upload_video_media_file_handler;
 use crate::http_server::endpoints::media_files::upsert_upload::write_engine_asset::write_engine_asset_media_file_handler::write_engine_asset_media_file_handler;
 use crate::http_server::endpoints::media_files::upsert_upload::write_scene_file::write_scene_file_media_file_handler::write_scene_file_media_file_handler;
@@ -90,6 +91,10 @@ pub fn add_media_file_routes<T, B> (app: App<T>) -> App<T>
       )
       .service(web::resource("/write/scene_file")
           .route(web::post().to(write_scene_file_media_file_handler))
+          .route(web::head().to(|| HttpResponse::Ok()))
+      )
+      .service(web::resource("/upload/new_scene")
+          .route(web::post().to(upload_new_scene_media_file_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )

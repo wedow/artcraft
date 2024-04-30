@@ -4,11 +4,13 @@ use actix_web::HttpResponse;
 use utoipa::ToSchema;
 
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
+use crate::http_server::endpoints::media_files::upsert_upload::write_error::MediaFileWriteError;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub enum MediaFileUploadError {
   BadInput(String),
   NotAuthorized,
+  NotAuthorizedVerbose(String),
   MustBeLoggedIn,
   ServerError,
   RateLimited,
@@ -17,11 +19,12 @@ pub enum MediaFileUploadError {
 impl ResponseError for MediaFileUploadError {
   fn status_code(&self) -> StatusCode {
     match *self {
-      MediaFileUploadError::BadInput(_) => StatusCode::BAD_REQUEST,
-      MediaFileUploadError::NotAuthorized => StatusCode::UNAUTHORIZED,
-      MediaFileUploadError::MustBeLoggedIn => StatusCode::UNAUTHORIZED,
-      MediaFileUploadError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
-      MediaFileUploadError::RateLimited => StatusCode::TOO_MANY_REQUESTS,
+      Self::BadInput(_) => StatusCode::BAD_REQUEST,
+      Self::NotAuthorized => StatusCode::UNAUTHORIZED,
+      Self::NotAuthorizedVerbose(_) => StatusCode::UNAUTHORIZED,
+      Self::MustBeLoggedIn => StatusCode::UNAUTHORIZED,
+      Self::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+      Self::RateLimited => StatusCode::TOO_MANY_REQUESTS,
     }
   }
 
