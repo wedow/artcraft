@@ -86,6 +86,7 @@ pub struct InferenceArgs<'s> {
 
     pub face_detailer_enabled: bool,
     pub upscaler_enabled: bool,
+    pub maybe_strength: Option<f32>,
 }
 
 pub enum InferenceDetails<'s> {
@@ -260,6 +261,12 @@ impl ComfyInferenceCommand {
 
         if args.upscaler_enabled {
             command.push_str(" --upscaler-enabled ");
+        }
+
+        if let Some(strength) = args.maybe_strength {
+            command.push_str(" --strength ");
+            command.push_str(&strength.to_string());
+            command.push_str(" ");
         }
 
         if let Some(docker_options) = self.maybe_docker_options.as_ref() {

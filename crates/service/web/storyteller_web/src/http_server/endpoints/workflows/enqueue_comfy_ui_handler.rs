@@ -281,6 +281,7 @@ pub async fn enqueue_comfy_ui_handler(
             .map(|value| str_to_bool(&value)),
         use_face_detailer: None,
         use_upscaler: None,
+        strength: None,
     };
 
     info!("Creating ComfyUI job record...");

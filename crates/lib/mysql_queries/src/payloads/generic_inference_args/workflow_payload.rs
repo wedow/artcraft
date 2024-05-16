@@ -142,4 +142,8 @@ pub struct WorkflowArgs {
     #[serde(rename = "up")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_upscaler: Option<bool>,
+
+    #[serde(rename = "s")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strength: Option<f32>,
 }

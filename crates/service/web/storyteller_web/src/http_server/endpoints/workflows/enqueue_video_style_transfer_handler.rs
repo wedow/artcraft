@@ -48,6 +48,15 @@ const DEFAULT_TRIM_MILLISECONDS_END : u64 = 3_000;
 /// This is the maximum duration (for premium users)
 const MAXIMUM_DURATION_MILLIS : u64 = 10_000;
 
+/// Strength of Diffusion:
+///  * Range (0.0 - 1.0)
+///  * 0.0 less dreamy
+///  * 1.0 dream more
+///  * The Python code will default to "1.0" if not supplied
+const MINIMUM_STRENGTH : f32 = 0.0;
+const MAXIMUM_STRENGTH : f32 = 1.0;
+const DEFAULT_STRENGTH : f32 = 1.0;
+
 #[derive(Deserialize, ToSchema)]
 pub struct EnqueueVideoStyleTransferRequest {
     /// Entropy for request de-duplication (required)
@@ -85,6 +94,9 @@ pub struct EnqueueVideoStyleTransferRequest {
     /// Use video upscaler
     /// Only for premium accounts
     use_upscaler: Option<bool>,
+
+    /// Use Strength of the style transfer
+    use_strength: Option<f32>,
 
     /// Optional visibility setting override.
     creator_set_visibility: Option<Visibility>,
@@ -275,6 +287,16 @@ pub async fn enqueue_video_style_transfer_handler(
         }
     }
 
+    let maybe_strength = request.use_strength
+        .map(|strength| {
+            if strength < MINIMUM_STRENGTH || strength > MAXIMUM_STRENGTH {
+                Err(EnqueueVideoStyleTransferError::BadInput("Strength must be between 0.0 and 1.0".to_string()))
+            } else {
+                Ok(strength)
+            }
+        })
+        .transpose()?;
+
     // Must have paid plan to remove watermark
     let remove_watermark = request.remove_watermark
         .map(|remove_watermark| remove_watermark && has_paid_plan);
@@ -305,6 +327,7 @@ pub async fn enqueue_video_style_transfer_handler(
             .map(|value| str_to_bool(&value)),
         use_face_detailer: request.use_face_detailer,
         use_upscaler: request.use_upscaler,
+        strength: maybe_strength,
     };
 
     info!("Creating ComfyUI job record...");

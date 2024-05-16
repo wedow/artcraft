@@ -250,6 +250,7 @@ pub async fn enqueue_workflow_upload_request(
             .map(|value| str_to_bool(&value)),
         use_face_detailer: None,
         use_upscaler: None,
+        strength: None,
     };
    
     // create the inference args here
