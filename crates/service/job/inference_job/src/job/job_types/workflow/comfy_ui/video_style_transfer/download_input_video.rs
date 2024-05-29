@@ -6,6 +6,7 @@ use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::remote_file_manager::remote_cloud_file_manager::RemoteCloudFileClient;
 use filesys::path_to_string::path_to_string;
 use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
+use videos::ffprobe_get_dimensions::ffprobe_get_dimensions;
 
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::video_paths::VideoPaths;

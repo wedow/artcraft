@@ -39,6 +39,7 @@ use subprocess_common::command_runner::command_runner_args::{RunAsSubprocessArgs
 use thumbnail_generator::task_client::thumbnail_task::ThumbnailTaskBuilder;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
+use videos::ffprobe_get_dimensions::ffprobe_get_dimensions;
 
 use crate::job::job_loop::job_success_result::{JobSuccessResult, ResultEntity};
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
@@ -227,6 +228,10 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 
     videos.debug_print_paths_after_download();
 
+    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.original_video_path) {
+        info!("Download video dimensions: {}x{}", dimensions.width, dimensions.height);
+    }
+
     // ========================= PROCESS VIDEO ======================== //
 
     let target_fps = comfy_args.target_fps.unwrap_or(24);
@@ -301,6 +306,10 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
     }
 
     videos.debug_print_paths_after_trim();
+
+    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.trimmed_resampled_video_path) {
+        info!("Trimmed / resampled video dimensions: {}x{}", dimensions.width, dimensions.height);
+    }
 
     // make outputs dir if not exist
     let output_dir = root_comfy_path.join("output");
@@ -386,6 +395,10 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
     }
 
     videos.debug_print_paths_after_comfy();
+
+    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.comfy_output_video_path) {
+        info!("Comfy output video dimensions: {}x{}", dimensions.width, dimensions.height);
+    }
 
     // ==================== CHECK OUTPUT FILE ======================== //
 
@@ -500,6 +513,10 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
     }
 
     videos.debug_print_paths_after_post_processing();
+
+    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.get_final_video_to_upload()) {
+        info!("Final video upload dimensions: {}x{}", dimensions.width, dimensions.height);
+    }
 
     // ==================== VALIDATE AND SAVE RESULTS ======================== //
 
