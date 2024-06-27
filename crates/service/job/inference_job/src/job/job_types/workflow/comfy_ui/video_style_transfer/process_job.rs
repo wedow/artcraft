@@ -50,6 +50,7 @@ use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::down
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::download_input_video::{download_input_video, DownloadInputVideoArgs};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::post_process_add_watermark::{post_process_add_watermark, PostProcessAddWatermarkArgs};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::post_process_restore_audio::{post_process_restore_audio, PostProcessRestoreVideoArgs};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::preprocess_save_audio::{preprocess_save_audio, ProcessSaveAudioArgs};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::preprocess_trim_and_resample_video::{preprocess_trim_and_resample_video, ProcessTrimAndResampleVideoArgs};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::validate_and_save_results::{SaveResultsArgs, validate_and_save_results};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::video_paths::VideoPaths;
@@ -260,6 +261,18 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
         videos: &videos,
     })?;
 
+    // ========================= PREPROCESS AUDIO ======================== //
+
+    let mut lipsync_enabled = comfy_args.lipsync_enabled.unwrap_or(false);
+    if let Err(err) = preprocess_save_audio(ProcessSaveAudioArgs {
+        comfy_deps: model_dependencies,
+        videos: &mut videos,
+    }) {
+        error!("Audio extraction failed: {:?}", err);
+
+        lipsync_enabled = false;
+    }
+
     // ========================= CREATE OUTPUT DIR ======================== //
 
     // make outputs dir if not exist
@@ -318,7 +331,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
             inference_details,
             face_detailer_enabled: comfy_args.use_face_detailer.unwrap_or(false),
             upscaler_enabled: comfy_args.use_upscaler.unwrap_or(false),
-            lipsync_enabled: comfy_args.lipsync_enabled.unwrap_or(false),
+            lipsync_enabled,
             disable_lcm: comfy_args.disable_lcm.unwrap_or(false),
             use_cinematic: comfy_args.use_cinematic.unwrap_or(false),
             maybe_strength: comfy_args.strength,
@@ -372,6 +385,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 
         safe_delete_temp_file(&videos.comfy_input_video_path);
         safe_delete_temp_file(&videos.trimmed_resampled_video_path);
+        safe_delete_temp_file(&videos.trimmed_audio_path);
         safe_delete_temp_file(&videos.original_video_path);
 
         let output_dir = root_comfy_path.join("output");

@@ -5,3 +5,4 @@ pub mod post_process_add_watermark;
 pub mod post_process_restore_audio;
 pub mod preprocess_trim_and_resample_video;
 pub mod validate_and_save_results;
+pub mod preprocess_save_audio;
