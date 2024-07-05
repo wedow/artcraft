@@ -11,6 +11,8 @@ pub async fn test_search_media_files(client: &Elasticsearch) -> AnyhowResult<()>
 
   let results = search_media_files(SearchArgs {
     search_term: "cac",
+    is_featured: None,
+    maybe_creator_user_token: None,
     maybe_media_classes: Some(HashSet::from_iter(vec![
       MediaFileClass::Dimensional,
       MediaFileClass::Image,

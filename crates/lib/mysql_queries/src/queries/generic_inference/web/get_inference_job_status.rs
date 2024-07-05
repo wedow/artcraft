@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use log::warn;
 use sqlx::{MySql, MySqlPool};
 use sqlx::pool::PoolConnection;
@@ -80,7 +80,9 @@ SELECT
     jobs.updated_at,
 
     jobs.first_started_at as maybe_first_started_at,
-    jobs.successfully_completed_at as maybe_successfully_completed_at
+    jobs.successfully_completed_at as maybe_successfully_completed_at,
+
+    NOW() as database_clock
 
 FROM generic_inference_jobs as jobs
 
@@ -223,6 +225,7 @@ fn raw_record_to_public_result(record: RawGenericInferenceJobStatus) -> GenericI
     is_keepalive_required: i8_to_bool(record.is_keepalive_required),
     created_at: record.created_at,
     updated_at: record.updated_at,
+    database_clock: DateTime::from_naive_utc_and_offset(record.database_clock, Utc),
   }
 }
 
@@ -268,6 +271,10 @@ struct RawGenericInferenceJobStatus {
 
   pub maybe_first_started_at: Option<DateTime<Utc>>,
   pub maybe_successfully_completed_at: Option<DateTime<Utc>>,
+
+  // NB: Typed query can't convert to Utc, so we use NaiveDateTime and do the type conversion ourselves.
+  // The database server *should* be reporting in UTC.
+  pub database_clock: NaiveDateTime,
 }
 
 #[cfg(test)]

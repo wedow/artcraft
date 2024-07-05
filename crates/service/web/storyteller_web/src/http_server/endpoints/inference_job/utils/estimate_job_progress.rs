@@ -6,6 +6,7 @@ use enums::by_table::generic_inference_jobs::inference_category::InferenceCatego
 use enums::common::job_status_plus::JobStatusPlus;
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 
+// TODO: These numbers are made up. We should measure the average job durations.
 const COMFY_JOB_AVERAGE_SECONDS : u64 = 60 * 4;
 const LIPSYNC_JOB_AVERAGE_SECONDS : u64 = 60 * 3;
 const TTS_JOB_AVERAGE_SECONDS : u64 = 7;
@@ -32,12 +33,10 @@ pub fn estimate_job_progress(job: &GenericInferenceJobStatus) -> u8 {
   //  and perhaps the code should be updated to always write every job attempt's start time.
   let started_at= job.maybe_first_started_at.unwrap_or(job.created_at);
 
-  // TODO: To avoid clock skew, we should select the current time from the database in the
-  //  same query. It should be as easy as selecting another column with `NOW()`.
-  let now = Utc::now();
+  let now = job.database_clock;
 
   if started_at < now {
-    return 0; // Clock skew for a probably newish job.
+    return 0; // We shouldn't see clock skew unless we read from a DB replica.
   }
 
   let duration = now.signed_duration_since(started_at);

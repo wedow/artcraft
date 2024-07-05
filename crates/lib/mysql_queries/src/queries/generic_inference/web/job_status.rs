@@ -32,6 +32,9 @@ pub struct GenericInferenceJobStatus {
 
   pub created_at: DateTime<Utc>,
   pub updated_at: DateTime<Utc>,
+
+  /// This is MySQL's NOW(), which will let us do duration math without clock skew.
+  pub database_clock: DateTime<Utc>,
 }
 
 /// NB: Serialize is for internal moderator-only endpoints

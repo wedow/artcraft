@@ -167,7 +167,9 @@ SELECT
     jobs.updated_at,
 
     jobs.first_started_at as maybe_first_started_at,
-    jobs.successfully_completed_at as maybe_successfully_completed_at
+    jobs.successfully_completed_at as maybe_successfully_completed_at,
+
+    NOW() as database_clock
 
 FROM generic_inference_jobs as jobs
 
@@ -293,6 +295,7 @@ fn raw_records_to_public_result(records: Vec<RawGenericInferenceJobStatus>) -> V
           is_keepalive_required: i8_to_bool(record.is_keepalive_required),
           created_at: record.created_at,
           updated_at: record.updated_at,
+          database_clock: record.database_clock,
         }
       })
       .collect::<Vec<_>>()
@@ -340,6 +343,8 @@ struct RawGenericInferenceJobStatus {
 
   pub maybe_first_started_at: Option<DateTime<Utc>>,
   pub maybe_successfully_completed_at: Option<DateTime<Utc>>,
+
+  pub database_clock: DateTime<Utc>,
 }
 
 // NB(bt,2023-12-05): There's an issue with type hinting in the `as` clauses with QueryBuilder (or
@@ -386,6 +391,7 @@ impl FromRow<'_, MySqlRow> for RawGenericInferenceJobStatus {
       maybe_successfully_completed_at: row.try_get("maybe_successfully_completed_at")?,
       created_at: row.try_get("created_at")?,
       updated_at: row.try_get("updated_at")?,
+      database_clock: row.try_get("database_clock")?,
     })
   }
 }
