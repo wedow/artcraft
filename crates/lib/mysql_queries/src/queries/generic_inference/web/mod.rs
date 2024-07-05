@@ -3,6 +3,7 @@ pub mod dismiss_finished_jobs_for_user;
 pub mod get_inference_job_status;
 pub mod get_pending_inference_job_count;
 pub mod insert_generic_inference_job;
+pub mod job_status;
 pub mod kill_generic_inference_jobs;
 pub mod list_session_jobs;
 pub mod mark_generic_inference_job_cancelled_by_user;

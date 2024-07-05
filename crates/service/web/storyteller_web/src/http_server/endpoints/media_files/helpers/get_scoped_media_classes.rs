@@ -30,7 +30,7 @@ mod test {
 
   use enums::by_table::media_files::media_file_class::MediaFileClass;
 
-  use crate::http_server::endpoints::media_files::list::helpers::get_scoped_media_classes::get_scoped_media_classes;
+  use crate::http_server::endpoints::media_files::helpers::get_scoped_media_classes::get_scoped_media_classes;
 
   #[test]
   fn none() {

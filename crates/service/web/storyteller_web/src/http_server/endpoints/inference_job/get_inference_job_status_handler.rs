@@ -16,10 +16,12 @@ use enums::by_table::generic_inference_jobs::frontend_failure_category::Frontend
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
-use mysql_queries::queries::generic_inference::web::get_inference_job_status::{GenericInferenceJobStatus, get_inference_job_status};
+use mysql_queries::queries::generic_inference::web::get_inference_job_status::get_inference_job_status;
+use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
+use crate::http_server::endpoints::inference_job::utils::estimate_job_progress::estimate_job_progress;
 use crate::http_server::responses::filter_model_name::maybe_filter_model_name;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::server_state::ServerState;
@@ -94,7 +96,10 @@ pub struct StatusDetailsResponse {
 
   /// An enum the frontend can use to display localized/I18N error
   /// messages. These pertain to both transient and permanent failures.
-  pub maybe_failure_category: Option<FrontendFailureCategory>
+  pub maybe_failure_category: Option<FrontendFailureCategory>,
+
+  /// This is an integer number between 0 and 100 that reports the completeness.
+  pub progress_percentage: u8,
 }
 
 /// Details about the completed result (if any)
@@ -247,6 +252,8 @@ fn record_to_payload(
 ) -> InferenceJobStatusResponsePayload {
   let inference_category = record.request_details.inference_category;
 
+  let progress_percentage = estimate_job_progress(&record);
+
   InferenceJobStatusResponsePayload {
     job_token: record.job_token,
     request: RequestDetailsResponse {
@@ -266,6 +273,7 @@ fn record_to_payload(
       attempt_count: record.attempt_count as u8,
       requires_keepalive: record.is_keepalive_required,
       maybe_failure_category: record.maybe_frontend_failure_category,
+      progress_percentage,
     },
     maybe_result: record.maybe_result_details.map(|result_details| {
       // NB: Be careful here, because this varies based on the type of inference result.

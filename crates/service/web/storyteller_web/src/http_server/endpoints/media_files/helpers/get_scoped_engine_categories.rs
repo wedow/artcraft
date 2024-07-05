@@ -30,7 +30,7 @@ mod test {
 
   use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 
-  use crate::http_server::endpoints::media_files::list::helpers::get_scoped_engine_categories::get_scoped_engine_categories;
+  use crate::http_server::endpoints::media_files::helpers::get_scoped_engine_categories::get_scoped_engine_categories;
 
   #[test]
   fn none() {
