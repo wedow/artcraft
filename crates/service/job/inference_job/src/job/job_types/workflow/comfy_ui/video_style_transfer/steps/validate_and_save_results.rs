@@ -34,7 +34,7 @@ use crate::job::job_types::workflow::comfy_ui::comfy_process_job_args::ComfyProc
 use crate::job::job_types::workflow::comfy_ui::comfy_ui_dependencies::ComfyDependencies;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::check_and_validate_job::JobArgs;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::VideoDownloads;
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::video_paths::VideoPaths;
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
 use crate::job_dependencies::JobDependencies;
 
 fn get_file_extension(mimetype: &str) -> anyhow::Result<&'static str> {

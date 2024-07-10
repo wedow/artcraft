@@ -53,9 +53,9 @@ use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::prep
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::preprocess_trim_and_resample_videos::{preprocess_trim_and_resample_videos, ProcessTrimAndResampleVideoArgs};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::validate_and_save_results::{SaveResultsArgs, validate_and_save_results};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::comfy_ui_inference_command::{InferenceArgs, InferenceDetails};
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{InputVideoAndPaths, VideoDownloads};
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::video_paths::VideoPaths;
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::write_workflow_prompt::{WorkflowPromptArgs, write_workflow_prompt};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{SecondaryInputVideoAndPaths, VideoDownloads};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::write_workflow_prompt::{WorkflowPromptArgs, write_workflow_prompt};
 use crate::job_dependencies::JobDependencies;
 use crate::util::common_commands::ffmpeg_audio_replace_args::FfmpegAudioReplaceArgs;
 use crate::util::common_commands::ffmpeg_logo_watermark_command::WatermarkArgs;
@@ -531,7 +531,7 @@ fn safe_delete_all_input_videos(videos: &VideoDownloads) {
     }
 }
 
-fn safe_delete_videos(video: &InputVideoAndPaths) {
+fn safe_delete_videos(video: &SecondaryInputVideoAndPaths) {
     safe_delete_temp_file(&video.original_download_path);
     if let Some(processed_path) = &video.maybe_processed_path {
         safe_delete_temp_file(processed_path);

@@ -3,7 +3,7 @@ use log::{error, info};
 use filesys::check_file_exists::check_file_exists;
 
 use crate::job::job_types::workflow::comfy_ui::comfy_ui_dependencies::ComfyDependencies;
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::video_paths::VideoPaths;
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
 use crate::util::common_commands::ffmpeg_logo_watermark_command::WatermarkArgs;
 
 pub struct PostProcessAddWatermarkArgs<'a> {

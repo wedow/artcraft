@@ -13,8 +13,8 @@ use videos::ffprobe_get_dimensions::ffprobe_get_dimensions;
 
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
 use crate::job::job_types::workflow::comfy_ui::comfy_ui_dependencies::ComfyDependencies;
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{InputVideoAndPaths, VideoDownloads};
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::video_paths::VideoPaths;
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{SecondaryInputVideoAndPaths, VideoDownloads};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
 
 pub struct ProcessTrimAndResampleVideoArgs<'a> {
   pub comfy_args: &'a WorkflowArgs,
@@ -55,10 +55,18 @@ pub fn preprocess_trim_and_resample_videos(
 
   let skip_resampling_video = args.comfy_args.skip_process_video.unwrap_or(false);
 
-  preprocess_trim_and_resample_primary_video(&args, &resample_details, skip_resampling_video)?;
+  preprocess_trim_and_resample_primary_video(
+    &args.comfy_deps,
+    &resample_details,
+    skip_resampling_video,
+    args.download_videos,
+    args.primary_video_paths)?;
 
   if !skip_resampling_video {
-    preprocess_trim_and_resample_secondary_videos(&args.comfy_deps, &resample_details, args.download_videos)?;
+    preprocess_trim_and_resample_secondary_videos(
+      &args.comfy_deps,
+      &resample_details,
+      args.download_videos)?;
   }
 
   Ok(())
@@ -71,22 +79,26 @@ struct ResampleDetails {
 }
 
 fn preprocess_trim_and_resample_primary_video(
-  args: &ProcessTrimAndResampleVideoArgs<'_>,
+  comfy_deps: &ComfyDependencies,
   resample_details: &ResampleDetails,
   skip_process_video: bool,
+  download_videos: &mut VideoDownloads,
+  primary_video_paths: &VideoPaths,
 ) -> Result<(), ProcessSingleJobError> {
+
+  let resampled_path = primary_video_paths.comfy_input_dir.join("trimmed.mp4");
 
   if skip_process_video {
     info!("Skipping video trim / resample...");
     info!("(This might break if we need to copy the video path. Salt's code implicitly expects videos to be in certain places, but doesn't allow passing of config, and that's horrible.)");
 
-    std::fs::copy(&args.download_videos.input_video.original_download_path, &args.primary_video_paths.trimmed_resampled_video_path)
+    std::fs::copy(&download_videos.input_video.original_download_path, &resampled_path)
         .map_err(|err| {
           error!("Error copying video (1): {:?}", err);
           ProcessSingleJobError::IoError(err)
         })?;
 
-    std::fs::copy(&args.download_videos.input_video.original_download_path, &args.primary_video_paths.comfy_output_video_path)
+    std::fs::copy(&download_videos.input_video.original_download_path, &primary_video_paths.comfy_output_video_path)
         .map_err(|err| {
           error!("Error copying video (2): {:?}", err);
           ProcessSingleJobError::IoError(err)
@@ -94,23 +106,23 @@ fn preprocess_trim_and_resample_primary_video(
 
   } else {
     info!("Calling video trim / resample...");
-    info!("Script: {:?}", &args.comfy_deps.inference_command.processing_script);
+    info!("Script: {:?}", &comfy_deps.inference_command.processing_script);
 
     // NB(bt,2024-07-09): Despite what the comments on this field say, the script `format_video.py` writes
     // to a file named 'input.mp4', not 'trimmed.mp4'. This pathing really needs to be cleaned up.
-    let comfy_input_video_path = args.primary_video_paths.comfy_input_dir.join("input.mp4");
+    let comfy_input_video_path = primary_video_paths.comfy_input_dir.join("input.mp4");
 
     // shell out to python script
     let output = Command::new("python3")
         .stdout(Stdio::inherit()) // NB: This should emit to the rust job's stdout
         .stderr(Stdio::inherit()) // NB: This should emit to the rust job's stderr
-        .arg(path_to_string(&args.comfy_deps.inference_command.processing_script))
+        .arg(path_to_string(&comfy_deps.inference_command.processing_script))
         .arg("DO_NOT_USE_THIS_ARG_ANYMORE")
         .arg(format!("{:?}", resample_details.trim_start_millis))
         .arg(format!("{:?}", resample_details.trim_end_millis))
         .arg(format!("{:?}", resample_details.target_fps))
         .arg("--input")
-        .arg(path_to_string(&args.download_videos.input_video.original_download_path))
+        .arg(path_to_string(&download_videos.input_video.original_download_path))
         .arg("--output")
         // NB(bt,2024-07-09): Despite what the comments on this field say, the script `format_video.py` writes
         // to a file named 'input.mp4', not 'trimmed.mp4'. This pathing really needs to be cleaned up.
@@ -134,18 +146,21 @@ fn preprocess_trim_and_resample_primary_video(
 
     // NB: The process video script implicitly saves the above video as "input.mp4"
     // Comfy sometimes overwrites this, so we need to make a copy.
-    std::fs::copy(&comfy_input_video_path, &args.primary_video_paths.trimmed_resampled_video_path)
+    std::fs::copy(&comfy_input_video_path, &resampled_path)
         .map_err(|err| {
           error!("Error copying trimmed video: {:?}", err);
           ProcessSingleJobError::IoError(err)
         })?;
   }
 
-  args.primary_video_paths.debug_print_paths_after_trim();
+  primary_video_paths.debug_print_paths_after_trim();
 
-  if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&args.primary_video_paths.trimmed_resampled_video_path) {
+  if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&resampled_path) {
     info!("Trimmed / resampled video dimensions: {}x{}", dimensions.width, dimensions.height);
   }
+
+  // NB(bt,2024-07-10): Even if we don't resample, the python side still expects certain pathing for now
+  download_videos.input_video.maybe_processed_path = Some(resampled_path);
 
   Ok(())
 }
@@ -177,7 +192,7 @@ fn preprocess_trim_and_resample_secondary_videos(
 fn preprocess_trim_and_resample_secondary_video(
   comfy_deps: &ComfyDependencies,
   resample_details: &ResampleDetails,
-  video: &InputVideoAndPaths,
+  video: &SecondaryInputVideoAndPaths,
 ) -> Result<PathBuf, ProcessSingleJobError> {
   info!("Calling video trim / resample...");
   info!("Script: {:?}", &comfy_deps.inference_command.processing_script);

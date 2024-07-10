@@ -15,8 +15,8 @@ use videos::ffprobe_get_dimensions::ffprobe_get_dimensions;
 
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::check_and_validate_job::JobArgs;
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{InputVideoAndPaths, VideoDownloads, VideoMediaFileRecord};
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::video_paths::VideoPaths;
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{PrimaryInputVideoAndPaths, SecondaryInputVideoAndPaths, VideoDownloads, VideoMediaFileRecord};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
 
 pub struct DownloadInputVideoArgs<'a> {
   pub job_args: &'a JobArgs<'a>,
@@ -93,11 +93,7 @@ async fn download_primary_video(
   info!("Downloaded primary input video!");
 
   Ok(VideoDownloads {
-    input_video: InputVideoAndPaths {
-      record: VideoMediaFileRecord::Single(input_media_file),
-      original_download_path: download_path,
-      maybe_processed_path: None,
-    },
+    input_video: PrimaryInputVideoAndPaths::new(input_media_file, download_path),
     maybe_depth: None,
     maybe_normal: None,
     maybe_outline: None,
@@ -164,7 +160,7 @@ async fn download_secondary_video(
   desired_token: &MediaFileToken,
   all_video_media_files: &[MediaFilesByTokensRecord],
   args: &DownloadInputVideoArgs<'_>
-) -> Result<Option<InputVideoAndPaths>, ProcessSingleJobError> {
+) -> Result<Option<SecondaryInputVideoAndPaths>, ProcessSingleJobError> {
 
   let file_description = match secondary_video_type {
     SecondaryVideoType::Depth => "depth video",
@@ -205,7 +201,7 @@ async fn download_secondary_video(
     path_to_string(&download_path)
   ).await?;
 
-  Ok(Some(InputVideoAndPaths {
+  Ok(Some(SecondaryInputVideoAndPaths {
     record: VideoMediaFileRecord::Bulk(media_file.clone()),
     original_download_path: download_path,
     maybe_processed_path: None,
