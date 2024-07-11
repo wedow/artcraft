@@ -52,8 +52,9 @@ use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::post
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::preprocess_save_audio::{preprocess_save_audio, ProcessSaveAudioArgs};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::preprocess_trim_and_resample_videos::{preprocess_trim_and_resample_videos, ProcessTrimAndResampleVideoArgs};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::validate_and_save_results::{SaveResultsArgs, validate_and_save_results};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::comfy_dirs::ComfyDirs;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::comfy_ui_inference_command::{InferenceArgs, InferenceDetails};
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{SecondaryInputVideoAndPaths, VideoDownloads};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{PrimaryInputVideoAndPaths, SecondaryInputVideoAndPaths, VideoDownloads};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::write_workflow_prompt::{WorkflowPromptArgs, write_workflow_prompt};
 use crate::job_dependencies::JobDependencies;
@@ -70,7 +71,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
         .new_generic_inference(job.inference_job_token.as_str())
         .map_err(|e| ProcessSingleJobError::Other(anyhow!(e)))?;
 
-    let model_dependencies = args
+    let comfy_deps = args
         .job_dependencies
         .job
         .job_specific_dependencies
@@ -96,7 +97,10 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 
     // ===================== DOWNLOAD REQUIRED MODELS IF NOT EXIST ===================== //
 
-    let root_comfy_path = model_dependencies.inference_command.mounts_directory.clone();
+    // TODO: Replace all other paths with this
+    let comfy_dirs = ComfyDirs::new(&comfy_deps);
+
+    let root_comfy_path = comfy_deps.inference_command.mounts_directory.clone();
 
     let remote_cloud_file_client = RemoteCloudFileClient::get_remote_cloud_file_client().await;
     let remote_cloud_file_client = match remote_cloud_file_client {
@@ -159,7 +163,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
     workflow_path = write_workflow_prompt(WorkflowPromptArgs {
         workflow_path: &workflow_path,
         comfy_args: &comfy_args,
-        model_dependencies: &model_dependencies,
+        model_dependencies: &comfy_deps,
         maybe_positive_prompt: comfy_args.positive_prompt.as_deref(),
         maybe_negative_prompt: comfy_args.negative_prompt.as_deref(),
     })?;
@@ -216,7 +220,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
     info!("Root comfy path: {:?}", &root_comfy_path);
     info!("Job output path will be (fix this code! the job shouldn't set this path!): {:?}", &job_args.output_path);
 
-    let mut videos = VideoPaths::new(&root_comfy_path, job_args.output_path);
+    //let mut videos = VideoPaths::new(&root_comfy_path, job_args.output_path);
 
     // TODO(bt,2024-04-20): Clean up this mess.
 
@@ -239,18 +243,18 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 
     // ==================== DOWNLOAD VIDEOS ==================== //
 
-    let mut download_videos = download_input_videos(DownloadInputVideoArgs {
+    let mut videos = download_input_videos(DownloadInputVideoArgs {
         job_args: &job_args,
-        videos: &videos,
+        comfy_dirs: &comfy_dirs,
         mysql_pool: &deps.db.mysql_pool,
         remote_cloud_file_client: &remote_cloud_file_client,
     }).await?;
 
     info!("Downloaded video!");
 
-    videos.debug_print_paths_after_download();
+    //videos.debug_print_paths_after_download();
 
-    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&download_videos.input_video.original_download_path) {
+    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.input_video.original_download_path) {
         info!("Download video dimensions: {}x{}", dimensions.width, dimensions.height);
     }
 
@@ -258,16 +262,16 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 
     preprocess_trim_and_resample_videos(ProcessTrimAndResampleVideoArgs {
         comfy_args,
-        comfy_deps: model_dependencies,
-        primary_video_paths: &videos,
-        download_videos: &mut download_videos,
+        comfy_deps,
+        comfy_dirs: &comfy_dirs,
+        videos: &mut videos,
     })?;
 
     // ========================= PREPROCESS AUDIO ======================== //
 
     let mut lipsync_enabled = comfy_args.lipsync_enabled.unwrap_or(false);
     if let Err(err) = preprocess_save_audio(ProcessSaveAudioArgs {
-        comfy_deps: model_dependencies,
+        comfy_deps,
         videos: &mut videos,
     }) {
         error!("Audio extraction failed: {:?}", err);
@@ -336,7 +340,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 
     info!("Running ComfyUI inference...");
 
-    let command_exit_status = model_dependencies
+    let command_exit_status = comfy_deps
         .inference_command
         .execute_inference(InferenceArgs {
             stderr_output_file: &stderr_output_file,
@@ -353,13 +357,13 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
                 .as_ref()
                 .map(|image| path_to_string(&image.ipa_image_path)),
             global_ipa_strength: None, // TODO: Expose a UI slider
-            depth_video_path: download_videos.maybe_depth.as_ref()
+            depth_video_path: videos.maybe_depth.as_ref()
                 .map(|v| v.maybe_processed_path.as_deref())
                 .flatten(),
-            normal_video_path: download_videos.maybe_normal.as_ref()
+            normal_video_path: videos.maybe_normal.as_ref()
                 .map(|v| v.maybe_processed_path.as_deref())
                 .flatten(),
-            outline_video_path: download_videos.maybe_outline.as_ref()
+            outline_video_path: videos.maybe_outline.as_ref()
                 .map(|v| v.maybe_processed_path.as_deref())
                 .flatten(),
         });
@@ -375,15 +379,15 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
         info!("Captured stduout output: {}", contents);
     }
 
-    videos.debug_print_paths_after_comfy();
+    //videos.debug_print_paths_after_comfy();
 
-    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.comfy_output_video_path) {
+    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.input_video.comfy_output_video_path) {
         info!("Comfy output video dimensions: {}x{}", dimensions.width, dimensions.height);
     }
 
     // ==================== CHECK OUTPUT FILE ======================== //
 
-    if let Err(err) = check_file_exists(&videos.comfy_output_video_path) {
+    if let Err(err) = check_file_exists(&videos.input_video.comfy_output_video_path) {
         error!("Output file does not  exist: {:?}", err);
 
         error!("Inference failed: {:?}", command_exit_status);
@@ -396,7 +400,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
         safe_delete_temp_file(&stdout_output_file);
         safe_delete_temp_directory(&work_temp_dir);
         safe_delete_temp_file(&workflow_path);
-        safe_delete_all_input_videos(&download_videos);
+        safe_delete_all_input_videos(&videos);
 
         // TODO(bt,2024-04-21): Not sure we want to delete the LoRA?
         if let Some(lora_path) = maybe_lora_path {
@@ -407,37 +411,31 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
             safe_delete_temp_file(ipa_path.ipa_image_path);
         }
 
-        safe_delete_temp_file(&videos.comfy_input_video_path);
-        safe_delete_temp_file(&videos.trimmed_resampled_video_path);
-        safe_delete_temp_file(&videos.trimmed_audio_path);
-        //safe_delete_temp_file(&videos.original_video_path);
-
-        let output_dir = root_comfy_path.join("output");
-        safe_recursively_delete_files(&output_dir);
+        safe_recursively_delete_files(&comfy_dirs.comfy_output_dir);
 
         return Err(ProcessSingleJobError::Other(anyhow!("Output file did not exist: {:?}",
-            &videos.comfy_output_video_path)));
+            &videos.input_video.comfy_output_video_path)));
     }
 
     // ==================== COPY BACK AUDIO ==================== //
 
     post_process_restore_audio(PostProcessRestoreVideoArgs {
-        comfy_deps: model_dependencies,
+        comfy_deps,
         videos: &mut videos,
     });
 
     // ==================== OPTIONAL WATERMARK ==================== //
 
     post_process_add_watermark(PostProcessAddWatermarkArgs {
-        comfy_deps: model_dependencies,
+        comfy_deps,
         videos: &mut videos,
     });
 
     // ==================== DEBUG ======================== //
 
-    videos.debug_print_paths_after_post_processing();
+    //videos.debug_print_paths_after_post_processing();
 
-    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.get_final_video_to_upload()) {
+    if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&videos.input_video.get_final_video_to_upload()) {
         info!("Final video upload dimensions: {}x{}", dimensions.width, dimensions.height);
     }
 
@@ -447,11 +445,10 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
         job,
         deps: &deps,
         job_args: &job_args,
-        comfy_deps: model_dependencies,
+        comfy_deps,
         comfy_args,
         videos: &videos,
         job_progress_reporter: &mut job_progress_reporter,
-        download_videos: &download_videos,
         inference_duration,
     }).await?;
 
@@ -468,13 +465,7 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 
     safe_delete_temp_file(&stderr_output_file);
     safe_delete_temp_file(&stdout_output_file);
-    //safe_delete_temp_file(&videos.original_video_path);
-    safe_delete_temp_file(&videos.trimmed_resampled_video_path);
-    safe_delete_temp_file(&videos.comfy_output_video_path);
-    safe_delete_temp_file(videos.video_to_watermark());
-    safe_delete_temp_file(videos.get_final_video_to_upload());
-    safe_delete_temp_file(videos.get_non_watermarked_video_to_upload());
-    safe_delete_all_input_videos(&download_videos);
+    safe_delete_all_input_videos(&videos);
 
     // TODO(bt,2024-03-01): Do we really want to delete the workflow, models, etc.?
 
@@ -516,22 +507,33 @@ pub async fn process_job(args: ComfyProcessJobArgs<'_>) -> Result<JobSuccessResu
 }
 
 fn safe_delete_all_input_videos(videos: &VideoDownloads) {
-    safe_delete_videos(&videos.input_video);
+    safe_delete_primary_videos(&videos.input_video);
 
     if let Some(depth) = &videos.maybe_depth {
-        safe_delete_videos(depth);
+        safe_delete_secondary_videos(depth);
     }
 
     if let Some(normal) = &videos.maybe_normal {
-        safe_delete_videos(normal);
+        safe_delete_secondary_videos(normal);
     }
 
     if let Some(outline) = &videos.maybe_outline {
-        safe_delete_videos(outline);
+        safe_delete_secondary_videos(outline);
     }
 }
 
-fn safe_delete_videos(video: &SecondaryInputVideoAndPaths) {
+fn safe_delete_primary_videos(video: &PrimaryInputVideoAndPaths) {
+    safe_delete_temp_file(&video.original_download_path);
+    safe_delete_temp_file(&video.comfy_output_video_path);
+    safe_delete_temp_file(video.video_to_watermark());
+    safe_delete_temp_file(video.get_final_video_to_upload());
+    safe_delete_temp_file(video.get_non_watermarked_video_to_upload());
+    if let Some(processed_path) = &video.maybe_processed_path {
+        safe_delete_temp_file(processed_path);
+    }
+}
+
+fn safe_delete_secondary_videos(video: &SecondaryInputVideoAndPaths) {
     safe_delete_temp_file(&video.original_download_path);
     if let Some(processed_path) = &video.maybe_processed_path {
         safe_delete_temp_file(processed_path);

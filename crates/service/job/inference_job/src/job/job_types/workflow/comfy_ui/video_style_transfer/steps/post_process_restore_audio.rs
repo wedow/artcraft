@@ -12,7 +12,7 @@ use crate::util::common_commands::ffmpeg_audio_replace_args::FfmpegAudioReplaceA
 
 pub struct PostProcessRestoreVideoArgs<'a> {
   pub comfy_deps: &'a ComfyDependencies,
-  pub videos: &'a mut VideoPaths,
+  pub videos: &'a mut VideoDownloads,
 }
 
 /// NB: Purposefully infallible.
@@ -21,7 +21,18 @@ pub fn post_process_restore_audio(
 ) -> () {
   info!("Restoring audio...");
 
+  // Use the original downloaded video if we didn't trim and resample it.
+  let input_video_file = args
+      .videos
+      .input_video
+      .maybe_processed_path
+      .as_deref()
+      .unwrap_or(
+        &args.videos.input_video.original_download_path
+      );
+
   let output_video_fs_path_restored = args.videos
+      .input_video
       .comfy_output_video_path
       .with_extension("_restored.mp4");
 
@@ -30,8 +41,8 @@ pub fn post_process_restore_audio(
       .ffmpeg_command_runner
       .run_with_subprocess(RunAsSubprocessArgs {
         args: Box::new(&FfmpegAudioReplaceArgs {
-          input_video_file: &args.videos.comfy_output_video_path,
-          input_audio_file: &args.videos.trimmed_resampled_video_path,
+          input_video_file: &args.videos.input_video.comfy_output_video_path,
+          input_audio_file: &input_video_file,
           output_video_file: &output_video_fs_path_restored,
         }),
         stderr: StreamRedirection::None,
@@ -53,6 +64,6 @@ pub fn post_process_restore_audio(
 
   if use_restored_audio {
     info!("Success generating restored audio file: {:?}", output_video_fs_path_restored);
-    args.videos.audio_restored_video_path = Some(output_video_fs_path_restored);
+    args.videos.input_video.audio_restored_video_path = Some(output_video_fs_path_restored);
   }
 }

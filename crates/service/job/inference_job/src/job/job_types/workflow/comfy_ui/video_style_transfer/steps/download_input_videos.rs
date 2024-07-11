@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
 use log::{error, info};
@@ -14,13 +14,15 @@ use tokens::tokens::media_files::MediaFileToken;
 use videos::ffprobe_get_dimensions::ffprobe_get_dimensions;
 
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
+use crate::job::job_types::workflow::comfy_ui::comfy_ui_dependencies::ComfyDependencies;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::steps::check_and_validate_job::JobArgs;
-use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{PrimaryInputVideoAndPaths, SecondaryInputVideoAndPaths, VideoDownloads, VideoMediaFileRecord};
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::comfy_dirs::ComfyDirs;
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{PrimaryInputVideoAndPaths, SecondaryInputVideoAndPaths, VideoDownloads};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
 
 pub struct DownloadInputVideoArgs<'a> {
   pub job_args: &'a JobArgs<'a>,
-  pub videos: &'a VideoPaths,
+  pub comfy_dirs: &'a ComfyDirs,
   pub mysql_pool: &'a MySqlPool,
   pub remote_cloud_file_client: &'a RemoteCloudFileClient,
 }
@@ -35,7 +37,7 @@ pub async fn download_input_videos(
 
 // TODO: Consolidate primary video download with secondary download logic.
 async fn download_primary_video(
-  args: &DownloadInputVideoArgs<'_>
+  args: &DownloadInputVideoArgs<'_>,
 ) -> Result<VideoDownloads, ProcessSingleJobError> {
   let input_media_file_token = match args.job_args.maybe_input_file {
     None => return Err(ProcessSingleJobError::InvalidJob(anyhow!("No primary input video file provided"))),
@@ -81,7 +83,7 @@ async fn download_primary_video(
 
   // NB(bt,2024-07-09): This convention is muddled with the python side.
   // We may not have flexibility to change this pathing for a while.
-  let download_path = args.videos.comfy_input_dir.join("video.mp4");
+  let download_path = args.comfy_dirs.comfy_input_dir.join("video.mp4");
 
   info!("Downloading primary input file to {:?}", download_path);
 
@@ -92,8 +94,13 @@ async fn download_primary_video(
 
   info!("Downloaded primary input video!");
 
+  // TODO: This monumentally sucks.
+  //  The upstream shouldn't be telling us what to do about this at all.
+  let job_output_path = args.job_args.output_path;
+
   Ok(VideoDownloads {
-    input_video: PrimaryInputVideoAndPaths::new(input_media_file, download_path),
+    input_video: PrimaryInputVideoAndPaths::new(
+      input_media_file, &args.comfy_dirs, job_output_path),
     maybe_depth: None,
     maybe_normal: None,
     maybe_outline: None,
@@ -169,9 +176,9 @@ async fn download_secondary_video(
   };
 
   let download_path = match secondary_video_type {
-    SecondaryVideoType::Depth => args.videos.comfy_input_dir.join("depth_download.mp4"),
-    SecondaryVideoType::Normal => args.videos.comfy_input_dir.join("normal_download.mp4"),
-    SecondaryVideoType::Outline => args.videos.comfy_input_dir.join("outline_download.mp4"),
+    SecondaryVideoType::Depth => args.comfy_dirs.comfy_input_dir.join("depth_download.mp4"),
+    SecondaryVideoType::Normal => args.comfy_dirs.comfy_input_dir.join("normal_download.mp4"),
+    SecondaryVideoType::Outline => args.comfy_dirs.comfy_input_dir.join("outline_download.mp4"),
   };
 
   let maybe_media_file = all_video_media_files
@@ -202,7 +209,7 @@ async fn download_secondary_video(
   ).await?;
 
   Ok(Some(SecondaryInputVideoAndPaths {
-    record: VideoMediaFileRecord::Bulk(media_file.clone()),
+    record: media_file.clone(),
     original_download_path: download_path,
     maybe_processed_path: None,
   }))

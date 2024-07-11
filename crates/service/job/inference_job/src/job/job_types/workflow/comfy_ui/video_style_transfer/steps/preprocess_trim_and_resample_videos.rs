@@ -13,21 +13,15 @@ use videos::ffprobe_get_dimensions::ffprobe_get_dimensions;
 
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
 use crate::job::job_types::workflow::comfy_ui::comfy_ui_dependencies::ComfyDependencies;
+use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::comfy_dirs::ComfyDirs;
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing::{SecondaryInputVideoAndPaths, VideoDownloads};
 use crate::job::job_types::workflow::comfy_ui::video_style_transfer::util::video_pathing_deprecated::VideoPaths;
 
 pub struct ProcessTrimAndResampleVideoArgs<'a> {
   pub comfy_args: &'a WorkflowArgs,
   pub comfy_deps: &'a ComfyDependencies,
-
-  // TODO(bt,2024-07-09): This is going to need refatoring and consolidation for clarity.
-  //  'VideoPaths' was for the original video and all of its resamplings, outputs,
-  //  watermarkings, etc. Now that we have depth, normal, and outline map videos (and
-  //  possibly more), we're going to need to group these. Those files are referenced by
-  //  `VideoDownloadDetails`, which is a better system to keep track of the videos as they
-  //  pass through the system.
-  pub primary_video_paths: &'a VideoPaths,
-  pub download_videos: &'a mut VideoDownloads,
+  pub comfy_dirs: &'a ComfyDirs,
+  pub videos: &'a mut VideoDownloads,
 }
 
 pub fn preprocess_trim_and_resample_videos(
@@ -57,16 +51,16 @@ pub fn preprocess_trim_and_resample_videos(
 
   preprocess_trim_and_resample_primary_video(
     &args.comfy_deps,
+    &args.comfy_dirs,
     &resample_details,
     skip_resampling_video,
-    args.download_videos,
-    args.primary_video_paths)?;
+    args.videos)?;
 
   if !skip_resampling_video {
     preprocess_trim_and_resample_secondary_videos(
       &args.comfy_deps,
       &resample_details,
-      args.download_videos)?;
+      args.videos)?;
   }
 
   Ok(())
@@ -80,25 +74,25 @@ struct ResampleDetails {
 
 fn preprocess_trim_and_resample_primary_video(
   comfy_deps: &ComfyDependencies,
+  comfy_dirs: &ComfyDirs,
   resample_details: &ResampleDetails,
   skip_process_video: bool,
-  download_videos: &mut VideoDownloads,
-  primary_video_paths: &VideoPaths,
+  videos: &mut VideoDownloads,
 ) -> Result<(), ProcessSingleJobError> {
 
-  let resampled_path = primary_video_paths.comfy_input_dir.join("trimmed.mp4");
+  let resampled_path = comfy_dirs.comfy_input_dir.join("trimmed.mp4");
 
   if skip_process_video {
     info!("Skipping video trim / resample...");
     info!("(This might break if we need to copy the video path. Salt's code implicitly expects videos to be in certain places, but doesn't allow passing of config, and that's horrible.)");
 
-    std::fs::copy(&download_videos.input_video.original_download_path, &resampled_path)
+    std::fs::copy(&videos.input_video.original_download_path, &resampled_path)
         .map_err(|err| {
           error!("Error copying video (1): {:?}", err);
           ProcessSingleJobError::IoError(err)
         })?;
 
-    std::fs::copy(&download_videos.input_video.original_download_path, &primary_video_paths.comfy_output_video_path)
+    std::fs::copy(&videos.input_video.original_download_path, &videos.input_video.comfy_output_video_path)
         .map_err(|err| {
           error!("Error copying video (2): {:?}", err);
           ProcessSingleJobError::IoError(err)
@@ -110,7 +104,7 @@ fn preprocess_trim_and_resample_primary_video(
 
     // NB(bt,2024-07-09): Despite what the comments on this field say, the script `format_video.py` writes
     // to a file named 'input.mp4', not 'trimmed.mp4'. This pathing really needs to be cleaned up.
-    let comfy_input_video_path = primary_video_paths.comfy_input_dir.join("input.mp4");
+    let comfy_input_video_path = comfy_dirs.comfy_input_dir.join("input.mp4");
 
     // shell out to python script
     let output = Command::new("python3")
@@ -122,7 +116,7 @@ fn preprocess_trim_and_resample_primary_video(
         .arg(format!("{:?}", resample_details.trim_end_millis))
         .arg(format!("{:?}", resample_details.target_fps))
         .arg("--input")
-        .arg(path_to_string(&download_videos.input_video.original_download_path))
+        .arg(path_to_string(&videos.input_video.original_download_path))
         .arg("--output")
         // NB(bt,2024-07-09): Despite what the comments on this field say, the script `format_video.py` writes
         // to a file named 'input.mp4', not 'trimmed.mp4'. This pathing really needs to be cleaned up.
@@ -153,14 +147,14 @@ fn preprocess_trim_and_resample_primary_video(
         })?;
   }
 
-  primary_video_paths.debug_print_paths_after_trim();
+  //primary_video_paths.debug_print_paths_after_trim();
 
   if let Ok(Some(dimensions)) = ffprobe_get_dimensions(&resampled_path) {
     info!("Trimmed / resampled video dimensions: {}x{}", dimensions.width, dimensions.height);
   }
 
   // NB(bt,2024-07-10): Even if we don't resample, the python side still expects certain pathing for now
-  download_videos.input_video.maybe_processed_path = Some(resampled_path);
+  videos.input_video.maybe_processed_path = Some(resampled_path);
 
   Ok(())
 }
