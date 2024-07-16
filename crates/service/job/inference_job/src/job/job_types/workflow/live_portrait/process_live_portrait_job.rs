@@ -206,10 +206,12 @@ pub async fn process_live_portrait_job(
 
 //  // ==================== COPY BACK AUDIO ==================== //
 //
-//  post_process_restore_audio(PostProcessRestoreVideoArgs {
-//    comfy_deps,
-//    videos: &mut videos,
-//  });
+   let result = post_process_restore_audio(PostProcessRestoreVideoArgs {
+     comfy_deps,
+     input_video_file: &output_file_path,
+     input_audio_file: &driver_file_path,
+     output_video_file: &output_file_path.with_extension("_restored.mp4"),
+   });
 //
 //  // ==================== OPTIONAL WATERMARK ==================== //
 //

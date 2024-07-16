@@ -412,10 +412,24 @@ pub async fn process_video_style_transfer_job(deps: &JobDependencies, job: &Avai
 
     // ==================== COPY BACK AUDIO ==================== //
 
-    post_process_restore_audio(PostProcessRestoreVideoArgs {
+    if let (result) = post_process_restore_audio(PostProcessRestoreVideoArgs {
         comfy_deps,
-        videos: &mut videos,
-    });
+        input_video_file: videos.primary_video.comfy_output_video_path.as_path(),
+        input_audio_file: videos.primary_video.input_video(),
+        output_video_file: &videos
+          .primary_video
+          .comfy_output_video_path
+          .with_extension("_restored.mp4"),
+    }) {
+        match result.audio_restored_video_path {
+            Some(audio_restored_video_path) => {
+                videos.primary_video.audio_restored_video_path = Some(audio_restored_video_path);
+            }
+            None => {
+                error!("Audio restoration failed.");
+            }
+        }
+    }
 
     // ==================== OPTIONAL WATERMARK ==================== //
 

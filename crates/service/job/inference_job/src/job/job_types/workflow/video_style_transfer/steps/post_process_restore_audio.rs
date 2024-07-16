@@ -1,3 +1,4 @@
+use std::path::{Path, PathBuf};
 use log::{error, info};
 
 use filesys::check_file_exists::check_file_exists;
@@ -11,31 +12,29 @@ use crate::util::common_commands::ffmpeg_audio_replace_args::FfmpegAudioReplaceA
 
 pub struct PostProcessRestoreVideoArgs<'a> {
   pub comfy_deps: &'a ComfyDependencies,
-  pub videos: &'a mut VideoPathing,
+  pub input_video_file: &'a Path,
+  pub input_audio_file: &'a Path,
+  pub output_video_file: &'a Path,
 }
 
-/// NB: Purposefully infallible.
+pub struct PostProcessRestoreVideoResult {
+  pub audio_restored_video_path: Option<PathBuf>,
+}
+ /// NB: Purposefully infallible.
 pub fn post_process_restore_audio(
   args: PostProcessRestoreVideoArgs<'_>
-) -> () {
+) -> (PostProcessRestoreVideoResult) {
   info!("Restoring audio...");
 
-  // Use the original downloaded video if we didn't trim and resample it.
-  let input_video_file = args.videos.primary_video.input_video();
-
-  let output_video_fs_path_restored = args.videos
-      .primary_video
-      .comfy_output_video_path
-      .with_extension("_restored.mp4");
 
   let command_exit_status = args
       .comfy_deps
       .ffmpeg_command_runner
       .run_with_subprocess(RunAsSubprocessArgs {
         args: Box::new(&FfmpegAudioReplaceArgs {
-          input_video_file: &args.videos.primary_video.comfy_output_video_path,
-          input_audio_file: &input_video_file,
-          output_video_file: &output_video_fs_path_restored,
+          input_video_file: &args.input_video_file,
+          input_audio_file: &args.input_audio_file,
+          output_video_file: &args.output_video_file,
         }),
         stderr: StreamRedirection::None,
         stdout: StreamRedirection::None,
@@ -44,7 +43,7 @@ pub fn post_process_restore_audio(
   let mut use_restored_audio = true;
 
   // NB: Don't fail the entire command if audio restoration fails
-  if let Err(err) = check_file_exists(&output_video_fs_path_restored) {
+  if let Err(err) = check_file_exists(&args.output_video_file.to_path_buf()) {
     use_restored_audio = false;
     error!("Audio copy failed: {:?}", err);
   }
@@ -54,8 +53,12 @@ pub fn post_process_restore_audio(
     error!("Audio copy failed: {:?} ; we'll save the non-audio copy.", command_exit_status);
   }
 
-  if use_restored_audio {
-    info!("Success generating restored audio file: {:?}", output_video_fs_path_restored);
-    args.videos.primary_video.audio_restored_video_path = Some(output_video_fs_path_restored);
-  }
+  PostProcessRestoreVideoResult {
+     audio_restored_video_path: if use_restored_audio {
+       info!("Success generating restored audio file: {:?}", &args.output_video_file);
+       Some(args.output_video_file.to_path_buf())
+     } else {
+       None
+     }
+   }
 }
