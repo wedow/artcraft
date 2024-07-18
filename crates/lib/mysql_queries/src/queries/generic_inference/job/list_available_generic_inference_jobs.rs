@@ -41,6 +41,7 @@ pub struct AvailableInferenceJob {
   pub maybe_inference_args: Option<GenericInferenceArgs>,
   pub maybe_raw_inference_text: Option<String>,
 
+  pub maybe_download_url: Option<String>,
   // For model uploads, a possible cover image
   pub maybe_cover_image_media_file_token: Option<MediaFileToken>,
 
@@ -120,6 +121,7 @@ pub async fn list_available_generic_inference_jobs(
           creator_ip_address: record.creator_ip_address,
           maybe_creator_user_token: record.maybe_creator_user_token.clone(),
           maybe_creator_user_token_typed,
+          maybe_download_url: record.maybe_download_url,
           maybe_creator_anonymous_visitor_token: record.maybe_creator_anonymous_visitor_token,
           maybe_cover_image_media_file_token: record.maybe_cover_image_media_file_token
               .map(|s| MediaFileToken::new_from_str(&s)),
@@ -226,6 +228,7 @@ SELECT
 
   maybe_inference_args,
   maybe_raw_inference_text,
+  maybe_download_url,
 
   maybe_creator_user_token,
   maybe_creator_anonymous_visitor_token,
@@ -330,6 +333,7 @@ struct AvailableInferenceJobRawInternal {
   pub maybe_inference_args: Option<String>,
   pub maybe_raw_inference_text: Option<String>,
 
+  pub maybe_download_url: Option<String>,
   pub maybe_cover_image_media_file_token: Option<String>,
 
   // User information to propagate downstream

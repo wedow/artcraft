@@ -1,5 +1,5 @@
 use errors::AnyhowResult;
-
+use crate::payloads::generic_inference_args::gptsovits_payload::GptSovitsPayload;
 use crate::payloads::generic_inference_args::image_generation_payload::StableDiffusionArgs;
 use crate::payloads::generic_inference_args::lipsync_payload::LipsyncArgs;
 use crate::payloads::generic_inference_args::live_portrait_payload::LivePortraitPayload;
@@ -67,6 +67,10 @@ pub enum InferenceCategoryAbbreviated {
   #[serde(rename = "bw")] // NB: DO NOT CHANGE. It could break live jobs. Renamed to be fewer bytes.
   #[serde(alias = "convert_bvh_to_workflow")]
   ConvertBvhToWorkflow,
+
+  #[serde(rename = "gs")] // NB: DO NOT CHANGE. It could break live jobs. Renamed to be fewer bytes.
+  #[serde(alias = "gpt_sovits")]
+  GptSovits
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -134,6 +138,9 @@ pub enum PolymorphicInferenceArgs {
 
   /// Render engine scene to video args
   Es(RenderEngineSceneToVideoArgs),
+
+  /// GPT Sovits
+  Gs(GptSovitsPayload),
 }
 
 impl GenericInferenceArgs {

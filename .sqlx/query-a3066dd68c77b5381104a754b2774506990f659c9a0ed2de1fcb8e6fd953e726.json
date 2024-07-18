@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\nINSERT INTO users (\n  token,\n  username,\n  display_name,\n  email_address,\n  email_gravatar_hash,\n  profile_markdown,\n  profile_rendered_html,\n  user_role_slug,\n  password_hash,\n  ip_address_creation,\n  ip_address_last_login,\n  ip_address_last_update,\n  can_access_studio\n)\nVALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 13
+    },
+    "nullable": []
+  },
+  "hash": "a3066dd68c77b5381104a754b2774506990f659c9a0ed2de1fcb8e6fd953e726"
+}

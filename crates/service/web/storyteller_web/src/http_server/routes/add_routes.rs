@@ -65,6 +65,7 @@ use crate::http_server::endpoints::tts::delete_tts_model::delete_tts_model_handl
 use crate::http_server::endpoints::tts::delete_tts_result::delete_tts_inference_result_handler;
 use crate::http_server::endpoints::tts::edit_tts_model::edit_tts_model_handler;
 use crate::http_server::endpoints::tts::edit_tts_result::edit_tts_inference_result_handler;
+use crate::http_server::endpoints::tts::enqueue_gptsovits_model_upload::enqueue_gptsovits_model_upload_handler;
 use crate::http_server::endpoints::tts::enqueue_infer_tts_handler::enqueue_infer_tts_handler::enqueue_infer_tts_handler;
 use crate::http_server::endpoints::tts::enqueue_upload_tts_model::upload_tts_model_handler;
 use crate::http_server::endpoints::tts::get_pending_tts_inference_job_count::get_pending_tts_inference_job_count_handler;
@@ -336,6 +337,11 @@ fn add_tts_routes<T, B> (app: App<T>) -> App<T>
       .service(
         web::resource("/model/{model_token}/edit")
             .route(web::post().to(edit_tts_model_handler))
+            .route(web::head().to(|| HttpResponse::Ok()))
+      )
+      .service(
+        web::resource("/model/gptsovits/upload")
+            .route(web::post().to(enqueue_gptsovits_model_upload_handler))
             .route(web::head().to(|| HttpResponse::Ok()))
       )
       .service(

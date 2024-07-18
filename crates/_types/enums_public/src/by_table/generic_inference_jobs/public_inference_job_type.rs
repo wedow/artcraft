@@ -23,6 +23,8 @@ pub enum PublicInferenceJobType {
   /// TODO(bt,2024-07-15): We may segregate these two job types in the future
   VideoRender,
 
+  GptSovits,
+
   // Everything else is the same
 
   /// Jobs that run ComfyUI workflows
@@ -85,6 +87,7 @@ impl PublicInferenceJobType {
       InferenceJobType::LivePortrait => Self::ActingFace,
       // Conserved variants
       InferenceJobType::VideoRender => Self::VideoRender,
+      InferenceJobType::GptSovits => Self::GptSovits,
       InferenceJobType::ComfyUi => Self::ComfyUi,
       InferenceJobType::ConvertFbxToGltf => Self::ConvertFbxToGltf,
       InferenceJobType::MocapNet => Self::MocapNet,
@@ -106,6 +109,7 @@ impl PublicInferenceJobType {
       Self::ActingFace => InferenceJobType::LivePortrait,
       // Conserved variants
       Self::VideoRender => InferenceJobType::VideoRender,
+      Self::GptSovits => InferenceJobType::GptSovits,
       Self::ComfyUi => InferenceJobType::ComfyUi,
       Self::ConvertFbxToGltf => InferenceJobType::ConvertFbxToGltf,
       Self::MocapNet => InferenceJobType::MocapNet,

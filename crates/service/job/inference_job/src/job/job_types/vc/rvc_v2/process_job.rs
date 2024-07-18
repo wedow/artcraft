@@ -260,6 +260,7 @@ pub async fn process_job(args: RvcV2ProcessJobArgs<'_>) -> Result<JobSuccessResu
         PolymorphicInferenceArgs::Cu(_) => None,
         PolymorphicInferenceArgs::Es(_) => None,
         PolymorphicInferenceArgs::Lp(_) => None,
+        PolymorphicInferenceArgs::Gs(_) => None,
       })
       .flatten();
 
@@ -274,6 +275,7 @@ pub async fn process_job(args: RvcV2ProcessJobArgs<'_>) -> Result<JobSuccessResu
         PolymorphicInferenceArgs::Cu(_) => None,
         PolymorphicInferenceArgs::Es(_) => None,
         PolymorphicInferenceArgs::Lp(_) => None,
+        PolymorphicInferenceArgs::Gs(_) => None,
       })
       .flatten();
 

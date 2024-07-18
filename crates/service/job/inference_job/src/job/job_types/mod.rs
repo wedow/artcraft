@@ -7,3 +7,4 @@ pub mod tts;
 pub mod vc;
 pub mod videofilter;
 pub mod workflow;
+pub mod gpt_sovits;

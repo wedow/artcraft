@@ -181,6 +181,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
         PolymorphicInferenceArgs::Cu(_) => None,
         PolymorphicInferenceArgs::Es(_) => None,
         PolymorphicInferenceArgs::Lp(_) => None,
+        PolymorphicInferenceArgs::Gs(_) => None,
       })
       .flatten()
       .unwrap_or(false);
@@ -196,6 +197,7 @@ pub async fn process_job(args: SoVitsSvcProcessJobArgs<'_>) -> Result<JobSuccess
         PolymorphicInferenceArgs::Cu(_) => None,
         PolymorphicInferenceArgs::Es(_) => None,
         PolymorphicInferenceArgs::Lp(_) => None,
+        PolymorphicInferenceArgs::Gs(_) => None,
       })
       .flatten();
 
