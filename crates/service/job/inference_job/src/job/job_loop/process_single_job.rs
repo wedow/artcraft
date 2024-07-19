@@ -17,6 +17,7 @@ use crate::job::job_loop::job_success_result::JobSuccessResult;
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
 use crate::job::job_loop::process_single_job_success_case::ProcessSingleJobSuccessCase;
 use crate::job::job_types::format_conversion::process_single_format_conversion_job::process_single_format_conversion_job;
+use crate::job::job_types::gpt_sovits::process_single_gpt_sovits_job::process_single_gpt_sovits_job;
 use crate::job::job_types::image_generation::process_single_ig_job::process_single_ig_job;
 use crate::job::job_types::lipsync::process_single_lipsync_job::process_single_lipsync_job;
 use crate::job::job_types::mocap::process_single_mc_job::process_single_mc_job;
@@ -254,6 +255,7 @@ fn can_use_new_dispatch(job: &AvailableInferenceJob) -> bool {
   match job.job_type {
     InferenceJobType::VideoRender => true,
     InferenceJobType::LivePortrait => true,
+    InferenceJobType::GptSovits => true,
     _ => false,
   }
 }
@@ -269,7 +271,10 @@ async fn new_dispatch(
     | InferenceJobType::ComfyUi => {
       // NB: These are all comfy workflow jobs too
       process_single_workflow_job(job_dependencies, job).await?
-    }
+    },
+    InferenceJobType::GptSovits => {
+      process_single_gpt_sovits_job(job_dependencies, job).await?
+    },
     _ => {
       return Err(ProcessSingleJobError::InvalidJob(
         anyhow!("invalid job type for dispatch: {:?}", job.job_type)))

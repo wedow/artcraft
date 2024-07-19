@@ -40,7 +40,7 @@ impl ScopedJobTypeExecution {
 
   pub fn can_run_job(&self, job_type: InferenceJobType) -> bool {
     match self.scoped_types {
-      None => true,
+      None => false,
       Some(ref types) => types.contains(&job_type),
     }
   }

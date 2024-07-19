@@ -1,29 +1,32 @@
 use std::collections::{BTreeSet, HashSet};
 use std::io::{BufReader, Cursor, Read};
 use std::path::{Path, PathBuf};
+
 use log::{error, info, warn};
 use once_cell::sync::Lazy;
 use zip::ZipArchive;
-use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
+
+use buckets::public::weight_files::bucket_directory::WeightFileBucketDirectory;
+use buckets::public::weight_files::bucket_file_path::WeightFileBucketPath;
 use cloud_storage::bucket_client::BucketClient;
 use filesys::path_to_string::path_to_string;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 
 static ALLOWED_TYPES_GPT : Lazy<HashSet<&'static str>> = Lazy::new(|| {
   HashSet::from([
-    ".pth",
+    "pth",
   ])
 });
 
 static ALLOWED_TYPES_SOVITS : Lazy<HashSet<&'static str>> = Lazy::new(|| {
   HashSet::from([
-    ".ckpt",
+    "ckpt",
   ])
 });
 
 static ALLOWED_TYPES_REF_AUDIO : Lazy<HashSet<&'static str>> = Lazy::new(|| {
   HashSet::from([
-    ".wav",
+    "wav",
   ])
 });
 
@@ -88,7 +91,7 @@ pub enum GptSovitsPackageError {
 }
 
 pub struct GptSovitsPackageFile {
-  pub public_upload_path: MediaFileBucketPath,
+  pub public_upload_path: WeightFileBucketPath,
   pub sha256_checksum: String,
   pub file_size_bytes: u64,
 }
@@ -103,6 +106,7 @@ pub struct GptSovitsPackageDetails {
 pub async fn extract_and_verify_gpt_sovits_package(
   zip_container_file_bytes: &[u8],
   bucket_client: &BucketClient,
+  weights_file_bucket_directory: &WeightFileBucketDirectory,
   prefix: Option<&str>,
   suffix: Option<&str>
 ) -> Result<GptSovitsPackageDetails, GptSovitsPackageError> {
@@ -113,6 +117,10 @@ pub async fn extract_and_verify_gpt_sovits_package(
       error!("Error reading zip archive: {:?}", err);
       GptSovitsPackageError::InvalidArchive
     })?;
+
+  if archive.len() > 255 {
+    return Err(GptSovitsPackageError::TooManyFiles);
+  }
 
   let mut gpt_model: Option<GptSovitsPackageFile> = None;
   let mut sovits_checkpoint: Option<GptSovitsPackageFile> = None;
@@ -131,8 +139,6 @@ pub async fn extract_and_verify_gpt_sovits_package(
         GptSovitsPackageError::InvalidArchive
       })?;
 
-    let filename = file.name();
-    let filename_lowercase = filename.to_lowercase();
 
     let mut zip_item_bytes = Vec::new();
 
@@ -144,8 +150,13 @@ pub async fn extract_and_verify_gpt_sovits_package(
 
     match entry.package_type {
       GptSovitsPackageFileType::GptModel => {
-        let suffix_with_package_identifier = format!(".{}.{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
-        let bucket_public_upload_path = MediaFileBucketPath::generate_new(prefix, Some(&suffix_with_package_identifier));
+        let suffix_with_package_identifier = format!(".{}{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
+        let bucket_public_upload_path = WeightFileBucketPath::from_object_hash(
+          weights_file_bucket_directory.get_object_hash(),
+          Some("weight_"),
+          Some(&suffix_with_package_identifier),
+        );
+        info!("Uploading GPT model to: {}", bucket_public_upload_path.get_full_object_path_str());
         bucket_client.upload_file_with_content_type(
           bucket_public_upload_path.get_full_object_path_str(),
           zip_item_bytes.as_ref(),
@@ -171,8 +182,13 @@ pub async fn extract_and_verify_gpt_sovits_package(
         });
       },
       GptSovitsPackageFileType::SovitsCheckpoint => {
-        let suffix_with_package_identifier = format!(".{}.{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
-        let bucket_public_upload_path = MediaFileBucketPath::generate_new(prefix, Some(&suffix_with_package_identifier));
+        let suffix_with_package_identifier = format!(".{}{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
+        let bucket_public_upload_path = WeightFileBucketPath::from_object_hash(
+          weights_file_bucket_directory.get_object_hash(),
+          Some("weight_"),
+          Some(&suffix_with_package_identifier),
+        );
+        info!("Uploading sovits checkpoint to {:?}", bucket_public_upload_path.get_full_object_path_str());
         bucket_client.upload_file_with_content_type(
           bucket_public_upload_path.get_full_object_path_str(),
           zip_item_bytes.as_ref(),
@@ -198,8 +214,13 @@ pub async fn extract_and_verify_gpt_sovits_package(
         });
       },
       GptSovitsPackageFileType::ReferenceAudio => {
-        let suffix_with_package_identifier = format!(".{}.{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
-        let bucket_public_upload_path = MediaFileBucketPath::generate_new(prefix, Some(&suffix_with_package_identifier));
+        let suffix_with_package_identifier = format!(".{}{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
+        let bucket_public_upload_path = WeightFileBucketPath::from_object_hash(
+          weights_file_bucket_directory.get_object_hash(),
+          Some("weight_"),
+          Some(&suffix_with_package_identifier),
+        );
+        info!("Uploading reference audio package to {:?}", bucket_public_upload_path.get_full_object_path_str());
         bucket_client.upload_file_with_content_type(
           bucket_public_upload_path.get_full_object_path_str(),
           zip_item_bytes.as_ref(),
@@ -262,10 +283,12 @@ fn get_relevant_zip_entries(archive: &mut ZipArchive<BufReader<Cursor<&[u8]>>>) 
     info!("Enclosed name: {:?}", file.enclosed_name());
 
     if file.is_dir() {
+      info!("Skipping directory: {:?}", filename);
       continue;
     }
 
     if filename_lowercase.starts_with("__macosx/") {
+      info!("Skipping __MACOSX directory entry: {:?}", filename);
       // Mac users sometimes have a bogus __MACOSX directory, which may double the file count.
       continue;
     }
@@ -278,9 +301,13 @@ fn get_relevant_zip_entries(archive: &mut ZipArchive<BufReader<Cursor<&[u8]>>>) 
     let extension = enclosed_name.extension()
       .map(|ext| ext.to_str().unwrap_or(""))
       .unwrap_or("");
+    
+    info!("Attempting to process file with name {} extension: {}", enclosed_name.display(), extension);
 
     match GptSovitsPackageFileType::for_extension(extension) {
-      None => {}
+      None => {
+        info!("Skipping file with name {} extension: {}", enclosed_name.display(), extension);
+      }
       Some(package_type) => {
         if entries.iter().any(|entry| &entry.package_type == &package_type) {
           return match package_type {
@@ -295,6 +322,7 @@ fn get_relevant_zip_entries(archive: &mut ZipArchive<BufReader<Cursor<&[u8]>>>) 
             }
           }
         }
+        info!("Adding file with name {} extension: {}", enclosed_name.display(), extension);
         entries.push(PackageZipEntryDetails {
           enclosed_name: enclosed_name.to_path_buf(),
           maybe_better_alternative_output_name: package_type.package_identifier().to_string(),

@@ -6,6 +6,7 @@ use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use log::{info, log, warn};
 use utoipa::ToSchema;
+
 use config::bad_urls::is_bad_tts_model_download_url;
 use enums::by_table::generic_download_jobs::generic_download_type::GenericDownloadType;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
@@ -19,14 +20,15 @@ use mysql_queries::payloads::generic_inference_args::gptsovits_payload::GptSovit
 use mysql_queries::queries::generic_download::web::insert_generic_download_job::{insert_generic_download_job, InsertGenericDownloadJobArgs};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
 use tokens::tokens::media_files::MediaFileToken;
+
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::http_server::headers::get_routing_tag_header::get_routing_tag_header;
 use crate::http_server::headers::has_debug_header::has_debug_header;
-use crate::state::server_state::ServerState;
-use crate::http_server::validations::validate_model_title::validate_model_title;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
+use crate::http_server::validations::validate_model_title::validate_model_title;
 use crate::http_server::web_utils::require_user_session::RequireUserSessionError;
 use crate::http_server::web_utils::require_user_session_using_connection::require_user_session_using_connection;
+use crate::state::server_state::ServerState;
 
 #[derive(Deserialize, ToSchema)]
 pub struct EnqueueGptSovitsModelUploadRequest {
@@ -160,7 +162,7 @@ pub async fn enqueue_gptsovits_model_upload_handler(
     maybe_model_token: None,
     maybe_input_source_token: None,
     maybe_input_source_token_type: None,
-    maybe_download_url: None,
+    maybe_download_url: Some(&download_url),
     maybe_cover_image_media_file_token: request.maybe_cover_image_media_file_token.as_ref(),
     maybe_raw_inference_text: None,
     maybe_max_duration_seconds: None,
@@ -170,7 +172,7 @@ pub async fn enqueue_gptsovits_model_upload_handler(
         GptSovitsPayload {
           maybe_title: title,
           maybe_description: None,
-          creator_visibility: None,
+          creator_visibility: Some(creator_set_visibility),
         })
       ),
     }),
@@ -179,7 +181,7 @@ pub async fn enqueue_gptsovits_model_upload_handler(
     maybe_avt_token: maybe_avt_token.as_ref(),
 
     creator_ip_address: &ip_address,
-    creator_set_visibility: Visibility::Private,
+    creator_set_visibility: creator_set_visibility,
     priority_level,
     requires_keepalive: false, //reverse ...  TODO fix this. we set it base on account is premium or not ...
     is_debug_request,

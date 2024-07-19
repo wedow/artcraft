@@ -44,7 +44,7 @@ impl ScopedModelTypeExecution {
   #[deprecated(note="Use ScopedJobTypeExecution instead.")]
   pub fn can_run_job(&self, job_model_type: InferenceModelType) -> bool {
     match self.scoped_types {
-      None => true,
+      None => false,
       Some(ref types) => types.contains(&job_model_type),
     }
   }

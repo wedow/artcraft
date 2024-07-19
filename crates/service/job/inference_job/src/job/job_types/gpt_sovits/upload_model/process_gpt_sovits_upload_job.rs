@@ -1,8 +1,10 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Result};
-use log::info;
+use log::{info, warn};
 
+use buckets::public::weight_files::bucket_directory::WeightFileBucketDirectory;
+use buckets::public::weight_files::bucket_file_path::WeightFileBucketPath;
 use cloud_storage::remote_file_manager::remote_cloud_file_manager::RemoteCloudFileClient;
 use cloud_storage::remote_file_manager::weights_descriptor::WeightsWorkflowDescriptor;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
@@ -10,7 +12,10 @@ use enums::by_table::model_weights::weights_category::WeightsCategory;
 use enums::by_table::model_weights::weights_types::WeightsType;
 use enums::common::visibility::Visibility;
 use filesys::file_exists::file_exists;
+use filesys::file_read_bytes::file_read_bytes;
+use filesys::file_size::file_size;
 use google_drive_common::google_drive_download_command::GoogleDriveDownloadCommand;
+use hashing::sha256::sha256_hash_file::sha256_hash_file;
 use mysql_queries::queries::generic_inference::job::list_available_generic_inference_jobs::AvailableInferenceJob;
 use mysql_queries::queries::model_weights::create::create_weight;
 use mysql_queries::queries::model_weights::create::create_weight::CreateModelWeightsArgs;
@@ -110,11 +115,34 @@ pub async fn process_gpt_sovits_upload_job(deps: &JobDependencies, job: &Availab
   const SUFFIX: Option<&str> = Some(".bin");
 
   let mut file_bytes = Vec::new();
+  file_bytes = file_read_bytes(&download_file_path)
+    .map_err(|e| ProcessSingleJobError::from_anyhow_error(anyhow!("Processing archive failed")))?;
 
-  let gpt_sovits_package_details = extract_and_verify_gpt_sovits_package(&file_bytes, bucket_client, PREFIX, SUFFIX)
-    .await;
+  let weight_file_bucket_directory = WeightFileBucketDirectory::generate_new();
 
-  let model_weight_token: &ModelWeightToken = &ModelWeightToken::generate();
+  let gpt_sovits_package_details = extract_and_verify_gpt_sovits_package(&file_bytes, bucket_client, &weight_file_bucket_directory, PREFIX, SUFFIX)
+    .await.map_err(|easyenv| {
+    warn!("Failed to extract and verify GPT-SoViTS package: {:?}", easyenv);
+    ProcessSingleJobError::from_anyhow_error(anyhow!("Failed to extract and verify GPT-SoViTS package"))
+  })?;
+
+  let bucket_public_upload_path = WeightFileBucketPath::from_object_hash(
+    weight_file_bucket_directory.get_object_hash(),
+    Some("weight_"),
+    Some(".zip"),
+  );
+
+  bucket_client.upload_filename(
+    &bucket_public_upload_path.to_full_object_pathbuf(),&download_file_path)
+    .await
+    .map_err(|e| ProcessSingleJobError::from_anyhow_error(anyhow!("Failed to upload file")))?;
+
+  let file_size_bytes = file_size(&download_file_path)
+    .map_err(|e| ProcessSingleJobError::from_anyhow_error(anyhow!("Failed to get file size")))?;
+  let file_checksum = sha256_hash_file(&download_file_path)
+    .map_err(|e| ProcessSingleJobError::from_anyhow_error(anyhow!("Failed to process archive checksum")))?;
+
+  let model_weight_token: &ModelWeightToken = &ModelWeightToken::new_from_str(weight_file_bucket_directory.get_object_hash());
 
   let model_weight_token_result = create_weight::create_weight(CreateModelWeightsArgs {
     token: &model_weight_token,
@@ -126,16 +154,16 @@ pub async fn process_gpt_sovits_upload_job(deps: &JobDependencies, job: &Availab
     maybe_description_rendered_html: None,
     creator_user_token: Some(&creator_user_token),
     creator_ip_address,
-    creator_set_visibility:visibility,
+    creator_set_visibility: visibility,
     maybe_last_update_user_token: None,
     original_download_url: Some(download_url),
     original_filename: None,
     // file_size_bytes: metadata.file_size_bytes, // TODO(bt,2024-02-03): We need to migrate the column to be BIGINT
     file_size_bytes: 0,
-    file_checksum_sha2: "".to_string(), // TODO(kasisnu): How does this fit in?
-    public_bucket_hash: "".to_string(),
-    maybe_public_bucket_prefix: Some("".to_string()),
-    maybe_public_bucket_extension: Some("".to_string()),
+    file_checksum_sha2: file_checksum,
+    public_bucket_hash: bucket_public_upload_path.get_object_hash().to_string(),
+    maybe_public_bucket_prefix: Some(PREFIX.unwrap().to_string()),
+    maybe_public_bucket_extension: Some(SUFFIX.unwrap().to_string()),
     version: 0,
     mysql_pool,
   }).await?;
