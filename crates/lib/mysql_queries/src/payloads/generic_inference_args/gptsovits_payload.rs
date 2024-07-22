@@ -1,10 +1,4 @@
-use std::collections::HashMap;
-
 use enums::common::visibility::Visibility;
-use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
-use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::model_weights::ModelWeightToken;
-
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct GptSovitsPayload {
@@ -20,3 +14,4 @@ pub struct GptSovitsPayload {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub creator_visibility: Option<Visibility>,
 }
+

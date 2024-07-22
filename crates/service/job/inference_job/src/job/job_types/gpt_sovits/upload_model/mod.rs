@@ -1,3 +1,3 @@
 pub mod process_gpt_sovits_upload_job;
-mod extract_gpt_sovits_payload_from_job;
-mod extract_and_verify_gpt_sovits_package;
+pub mod extract_gpt_sovits_payload_from_job;
+mod extract_and_upload_gpt_sovits_package;

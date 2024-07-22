@@ -5,8 +5,6 @@ use log::{info, warn};
 
 use buckets::public::weight_files::bucket_directory::WeightFileBucketDirectory;
 use buckets::public::weight_files::bucket_file_path::WeightFileBucketPath;
-use cloud_storage::remote_file_manager::remote_cloud_file_manager::RemoteCloudFileClient;
-use cloud_storage::remote_file_manager::weights_descriptor::WeightsWorkflowDescriptor;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
 use enums::by_table::model_weights::weights_category::WeightsCategory;
 use enums::by_table::model_weights::weights_types::WeightsType;
@@ -24,9 +22,9 @@ use tokens::tokens::users::UserToken;
 
 use crate::job::job_loop::job_success_result::{JobSuccessResult, ResultEntity};
 use crate::job::job_loop::process_single_job_error::ProcessSingleJobError;
-use crate::job::job_types::gpt_sovits::upload_model::extract_and_verify_gpt_sovits_package::{extract_and_verify_gpt_sovits_package, GptSovitsPackageError};
+use crate::job::job_types::gpt_sovits::model_package::model_package::SUFFIX;
+use crate::job::job_types::gpt_sovits::upload_model::extract_and_upload_gpt_sovits_package::extract_and_upload_gpt_sovits_package_files;
 use crate::job::job_types::gpt_sovits::upload_model::extract_gpt_sovits_payload_from_job::extract_gpt_sovits_payload_from_job;
-use crate::job::job_types::workflow::video_style_transfer::extract_vst_workflow_payload_from_job::extract_vst_workflow_payload_from_job;
 use crate::state::job_dependencies::JobDependencies;
 
 pub async fn process_gpt_sovits_upload_job(deps: &JobDependencies, job: &AvailableInferenceJob) -> Result<JobSuccessResult, ProcessSingleJobError>{
@@ -112,15 +110,16 @@ pub async fn process_gpt_sovits_upload_job(deps: &JobDependencies, job: &Availab
   info!("File Retrieved at {}", download_file_path.display());
 
   const PREFIX: Option<&str> = Some("weight_");
-  const SUFFIX: Option<&str> = Some(".bin");
 
   let mut file_bytes = Vec::new();
   file_bytes = file_read_bytes(&download_file_path)
     .map_err(|e| ProcessSingleJobError::from_anyhow_error(anyhow!("Processing archive failed")))?;
 
-  let weight_file_bucket_directory = WeightFileBucketDirectory::generate_new();
+  let model_weight_token: &ModelWeightToken = &ModelWeightToken::generate();
+  let weight_file_bucket_directory = WeightFileBucketDirectory::from_object_hash(model_weight_token.entropy_suffix());
 
-  let gpt_sovits_package_details = extract_and_verify_gpt_sovits_package(&file_bytes, bucket_client, &weight_file_bucket_directory, PREFIX, SUFFIX)
+  // TODO(KS, 22-07-2023): We should decide if these details are worth persisting anywhere
+  let _ = extract_and_upload_gpt_sovits_package_files(&file_bytes, bucket_client, &weight_file_bucket_directory)
     .await.map_err(|easyenv| {
     warn!("Failed to extract and verify GPT-SoViTS package: {:?}", easyenv);
     ProcessSingleJobError::from_anyhow_error(anyhow!("Failed to extract and verify GPT-SoViTS package"))
@@ -142,12 +141,10 @@ pub async fn process_gpt_sovits_upload_job(deps: &JobDependencies, job: &Availab
   let file_checksum = sha256_hash_file(&download_file_path)
     .map_err(|e| ProcessSingleJobError::from_anyhow_error(anyhow!("Failed to process archive checksum")))?;
 
-  let model_weight_token: &ModelWeightToken = &ModelWeightToken::new_from_str(weight_file_bucket_directory.get_object_hash());
-
   let model_weight_token_result = create_weight::create_weight(CreateModelWeightsArgs {
     token: &model_weight_token,
-    weights_type: WeightsType::ComfyUi,
-    weights_category: WeightsCategory::WorkflowConfig,
+    weights_type: WeightsType::GptSoVits,
+    weights_category: WeightsCategory::TextToSpeech,
     title,
     maybe_cover_image_media_file_token: job.maybe_cover_image_media_file_token.clone(),
     maybe_description_markdown: Some(description),
@@ -163,7 +160,7 @@ pub async fn process_gpt_sovits_upload_job(deps: &JobDependencies, job: &Availab
     file_checksum_sha2: file_checksum,
     public_bucket_hash: bucket_public_upload_path.get_object_hash().to_string(),
     maybe_public_bucket_prefix: Some(PREFIX.unwrap().to_string()),
-    maybe_public_bucket_extension: Some(SUFFIX.unwrap().to_string()),
+    maybe_public_bucket_extension: Some(".zip".to_string()),
     version: 0,
     mysql_pool,
   }).await?;

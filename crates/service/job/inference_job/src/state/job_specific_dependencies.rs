@@ -3,6 +3,7 @@ use enums::by_table::generic_inference_jobs::inference_model_type::InferenceMode
 use errors::AnyhowResult;
 
 use crate::job::job_types::format_conversion::fbx_to_gltf::dependencies::FbxToGltfDependencies;
+use crate::job::job_types::gpt_sovits::gpt_sovits_dependencies::GptSovitsDependencies;
 use crate::job::job_types::image_generation::sd::stable_diffusion_dependencies::StableDiffusionDependencies;
 use crate::job::job_types::lipsync::sad_talker::sad_talker_dependencies::SadTalkerDependencies;
 use crate::job::job_types::mocap::mocap_net::mocapnet_dependencies::MocapNetDependencies;
@@ -32,6 +33,7 @@ pub struct JobSpecificDependencies {
   pub maybe_comfy_ui_dependencies: Option<ComfyDependencies>,
   pub maybe_convert_fbx_to_gltf_dependencies: Option<FbxToGltfDependencies>,
   pub maybe_convert_bvh_to_workflow_dependencies: Option<RenderEngineSceneToVideoDependencies>,
+  pub maybe_gpt_sovits_dependencies: Option<GptSovitsDependencies>,
 }
 
 impl JobSpecificDependencies {
@@ -53,6 +55,7 @@ impl JobSpecificDependencies {
     let mut maybe_comfy_ui_dependencies = None;
     let mut maybe_convert_fbx_to_gltf_dependencies = None;
     let mut maybe_convert_bvh_to_workflow_dependencies = None;
+    let mut maybe_gpt_sovits_dependencies = None;
 
     if scoped_model_type_execution.can_run_job(InferenceModelType::ComfyUi)
         || scoped_job_type_execution.can_run_job(InferenceJobType::LivePortrait)
@@ -61,6 +64,11 @@ impl JobSpecificDependencies {
     {
       print_with_space("Setting ComfyUI dependencies...");
       maybe_comfy_ui_dependencies = Some(ComfyDependencies::setup().await?);
+    }
+
+    if scoped_job_type_execution.can_run_job(InferenceJobType::GptSovits) {
+      print_with_space("Setting GPT-SoViTS dependencies...");
+      maybe_gpt_sovits_dependencies = Some(GptSovitsDependencies::setup()?);
     }
 
     if scoped_model_type_execution.can_run_job(InferenceModelType::RvcV2) {
@@ -137,6 +145,7 @@ impl JobSpecificDependencies {
       maybe_comfy_ui_dependencies,
       maybe_convert_fbx_to_gltf_dependencies,
       maybe_convert_bvh_to_workflow_dependencies,
+      maybe_gpt_sovits_dependencies,
     })
   }
 }

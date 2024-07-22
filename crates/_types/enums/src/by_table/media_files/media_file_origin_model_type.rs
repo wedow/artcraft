@@ -47,6 +47,9 @@ pub enum MediaFileOriginModelType {
 
   #[serde(rename = "stable_diffusion_1_5")]
   StableDiffusion15,
+
+  #[serde(rename = "gpt_sovits")]
+  GptSovits,
 }
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
@@ -67,7 +70,8 @@ impl MediaFileOriginModelType {
       Self::MocapNet => "mocap_net",
       Self::ComfyUi => "comfy_ui",
       Self::StyleTTS2 => "styletts2",
-      Self::StableDiffusion15 => "stable_diffusion_1_5"
+      Self::StableDiffusion15 => "stable_diffusion_1_5",
+      Self::GptSovits => "gpt_sovits",
     }
   }
 
@@ -83,6 +87,7 @@ impl MediaFileOriginModelType {
       "comfy_ui" => Ok(Self::ComfyUi),
       "styletts2" => Ok(Self::StyleTTS2),
       "stable_diffusion_1_5" => Ok(Self::StableDiffusion15),
+      "gpt_sovits" => Ok(Self::GptSovits),
       _ => Err(format!("invalid value: {:?}", value)),
     }
   }
@@ -100,7 +105,8 @@ impl MediaFileOriginModelType {
       Self::MocapNet,
       Self::ComfyUi,
       Self::StyleTTS2,
-      Self::StableDiffusion15
+      Self::StableDiffusion15,
+      Self::GptSovits,
     ])
   }
 }
@@ -130,6 +136,7 @@ mod tests {
       assert_eq!(MediaFileOriginModelType::ComfyUi.to_str(), "comfy_ui");
       assert_eq!(MediaFileOriginModelType::StyleTTS2.to_str(), "styletts2");
       assert_eq!(MediaFileOriginModelType::StableDiffusion15.to_str(), "stable_diffusion_1_5");
+      assert_eq!(MediaFileOriginModelType::GptSovits.to_str(), "gpt_sovits");
   }
 
     #[test]
@@ -144,13 +151,14 @@ mod tests {
       assert_eq!(MediaFileOriginModelType::from_str("comfy_ui").unwrap(), MediaFileOriginModelType::ComfyUi);
       assert_eq!(MediaFileOriginModelType::from_str("styletts2").unwrap(), MediaFileOriginModelType::StyleTTS2);
       assert_eq!(MediaFileOriginModelType::from_str("stable_diffusion_1_5").unwrap(), MediaFileOriginModelType::StableDiffusion15);
+      assert_eq!(MediaFileOriginModelType::from_str("gpt_sovits").unwrap(), MediaFileOriginModelType::GptSovits);
       assert!(MediaFileOriginModelType::from_str("foo").is_err());
     }
 
     #[test]
     fn all_variants() {
       let mut variants = MediaFileOriginModelType::all_variants();
-      assert_eq!(variants.len(), 10);
+      assert_eq!(variants.len(), 11);
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::RvcV2));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::SadTalker));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::SoVitsSvc));
@@ -161,6 +169,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::ComfyUi));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::StyleTTS2));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::StableDiffusion15));
+      assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::GptSovits));
       assert_eq!(variants.pop_first(), None);
     }
   }

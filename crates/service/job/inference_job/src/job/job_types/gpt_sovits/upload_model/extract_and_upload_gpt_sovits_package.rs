@@ -1,9 +1,7 @@
-use std::collections::{BTreeSet, HashSet};
 use std::io::{BufReader, Cursor, Read};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use log::{error, info, warn};
-use once_cell::sync::Lazy;
 use zip::ZipArchive;
 
 use buckets::public::weight_files::bucket_directory::WeightFileBucketDirectory;
@@ -12,107 +10,16 @@ use cloud_storage::bucket_client::BucketClient;
 use filesys::path_to_string::path_to_string;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 
-static ALLOWED_TYPES_GPT : Lazy<HashSet<&'static str>> = Lazy::new(|| {
-  HashSet::from([
-    "pth",
-  ])
-});
+use crate::job::job_types::gpt_sovits::model_package::model_package::{GptSovitsPackageDetails, GptSovitsPackageError, GptSovitsPackageFile, GptSovitsPackageFileType};
 
-static ALLOWED_TYPES_SOVITS : Lazy<HashSet<&'static str>> = Lazy::new(|| {
-  HashSet::from([
-    "ckpt",
-  ])
-});
-
-static ALLOWED_TYPES_REF_AUDIO : Lazy<HashSet<&'static str>> = Lazy::new(|| {
-  HashSet::from([
-    "wav",
-  ])
-});
-
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
-pub enum GptSovitsPackageFileType {
-  GptModel,
-  SovitsCheckpoint,
-  ReferenceAudio,
-}
-
-impl GptSovitsPackageFileType {
-  pub fn for_extension(extension: &str) -> Option<Self> {
-    if ALLOWED_TYPES_GPT.contains(extension) {
-      Some(GptSovitsPackageFileType::GptModel)
-    } else if ALLOWED_TYPES_SOVITS.contains(extension) {
-      Some(GptSovitsPackageFileType::SovitsCheckpoint)
-    } else if ALLOWED_TYPES_REF_AUDIO.contains(extension) {
-      Some(GptSovitsPackageFileType::ReferenceAudio)
-    } else {
-      None
-    }
-  }
-
-  pub fn extension_is_allowed(&self, extension: &str) -> bool {
-    match self {
-      GptSovitsPackageFileType::GptModel => ALLOWED_TYPES_GPT.contains(extension),
-      GptSovitsPackageFileType::SovitsCheckpoint => ALLOWED_TYPES_SOVITS.contains(extension),
-      GptSovitsPackageFileType::ReferenceAudio => ALLOWED_TYPES_REF_AUDIO.contains(extension),
-    }
-  }
-
-
-  pub fn all_variants() -> BTreeSet<Self> {
-    // NB: BTreeSet is sorted
-    // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
-    BTreeSet::from([
-      Self::GptModel,
-      Self::SovitsCheckpoint,
-      Self::ReferenceAudio,
-    ])
-  }
-
-  pub fn package_identifier(&self) -> &str {
-    match self {
-      GptSovitsPackageFileType::GptModel => "gpt_model",
-      GptSovitsPackageFileType::SovitsCheckpoint => "sovits_checkpoint",
-      GptSovitsPackageFileType::ReferenceAudio => "reference_audio",
-    }
-  }
-}
-
-#[derive(Debug)]
-pub enum GptSovitsPackageError {
-  InvalidArchive,
-  InvalidGPTModel(String),
-  InvalidSovitsCheckpoint(String),
-  InvalidReferenceAudio(String),
-  UploadError,
-  TooManyFiles,
-  ExtractionError,
-  FileError,
-}
-
-pub struct GptSovitsPackageFile {
-  pub public_upload_path: WeightFileBucketPath,
-  pub sha256_checksum: String,
-  pub file_size_bytes: u64,
-}
-
-pub struct GptSovitsPackageDetails {
-  pub gpt_model: GptSovitsPackageFile,
-  pub sovits_checkpoint: GptSovitsPackageFile,
-  pub reference_audio: GptSovitsPackageFile,
-}
-
-
-pub async fn extract_and_verify_gpt_sovits_package(
+pub async fn extract_and_upload_gpt_sovits_package_files(
   zip_container_file_bytes: &[u8],
   bucket_client: &BucketClient,
   weights_file_bucket_directory: &WeightFileBucketDirectory,
-  prefix: Option<&str>,
-  suffix: Option<&str>
 ) -> Result<GptSovitsPackageDetails, GptSovitsPackageError> {
-  let mut cursor = Cursor::new(zip_container_file_bytes);
-  let reader = std::io::BufReader::new(cursor);
-  let mut archive = zip::ZipArchive::new(reader)
+  let cursor = Cursor::new(zip_container_file_bytes);
+  let reader = BufReader::new(cursor);
+  let mut archive = ZipArchive::new(reader)
     .map_err(|err| {
       error!("Error reading zip archive: {:?}", err);
       GptSovitsPackageError::InvalidArchive
@@ -127,7 +34,6 @@ pub async fn extract_and_verify_gpt_sovits_package(
   let mut reference_audio: Option<GptSovitsPackageFile> = None;
 
   let entries = get_relevant_zip_entries(&mut archive)?;
-
 
   for entry in entries.iter() {
     info!("Entry: {:?}", entry);
@@ -150,17 +56,15 @@ pub async fn extract_and_verify_gpt_sovits_package(
 
     match entry.package_type {
       GptSovitsPackageFileType::GptModel => {
-        let suffix_with_package_identifier = format!(".{}{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
         let bucket_public_upload_path = WeightFileBucketPath::from_object_hash(
           weights_file_bucket_directory.get_object_hash(),
           Some("weight_"),
-          Some(&suffix_with_package_identifier),
+          Some(&entry.package_type.get_expected_package_suffix()),
         );
         info!("Uploading GPT model to: {}", bucket_public_upload_path.get_full_object_path_str());
-        bucket_client.upload_file_with_content_type(
+        bucket_client.upload_file(
           bucket_public_upload_path.get_full_object_path_str(),
-          zip_item_bytes.as_ref(),
-          "application/octet-stream")
+          zip_item_bytes.as_ref())
           .await
           .map_err(|e| {
             warn!("Upload gpt package to bucket error: {:?}", e);
@@ -182,17 +86,15 @@ pub async fn extract_and_verify_gpt_sovits_package(
         });
       },
       GptSovitsPackageFileType::SovitsCheckpoint => {
-        let suffix_with_package_identifier = format!(".{}{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
         let bucket_public_upload_path = WeightFileBucketPath::from_object_hash(
           weights_file_bucket_directory.get_object_hash(),
           Some("weight_"),
-          Some(&suffix_with_package_identifier),
+          Some(&entry.package_type.get_expected_package_suffix()),
         );
         info!("Uploading sovits checkpoint to {:?}", bucket_public_upload_path.get_full_object_path_str());
-        bucket_client.upload_file_with_content_type(
+        bucket_client.upload_file(
           bucket_public_upload_path.get_full_object_path_str(),
-          zip_item_bytes.as_ref(),
-          "application/octet-stream")
+          zip_item_bytes.as_ref())
           .await
           .map_err(|e| {
             warn!("Upload sovits package to bucket error: {:?}", e);
@@ -214,17 +116,15 @@ pub async fn extract_and_verify_gpt_sovits_package(
         });
       },
       GptSovitsPackageFileType::ReferenceAudio => {
-        let suffix_with_package_identifier = format!(".{}{}", entry.package_type.package_identifier(), suffix.unwrap_or(""));
         let bucket_public_upload_path = WeightFileBucketPath::from_object_hash(
           weights_file_bucket_directory.get_object_hash(),
           Some("weight_"),
-          Some(&suffix_with_package_identifier),
+          Some(&entry.package_type.get_expected_package_suffix()),
         );
         info!("Uploading reference audio package to {:?}", bucket_public_upload_path.get_full_object_path_str());
-        bucket_client.upload_file_with_content_type(
+        bucket_client.upload_file(
           bucket_public_upload_path.get_full_object_path_str(),
-          zip_item_bytes.as_ref(),
-          "application/octet-stream")
+          zip_item_bytes.as_ref())
           .await
           .map_err(|e| {
             warn!("Upload reference audio package to bucket error: {:?}", e);
@@ -267,10 +167,10 @@ struct PackageZipEntryDetails {
 fn get_relevant_zip_entries(archive: &mut ZipArchive<BufReader<Cursor<&[u8]>>>) -> Result<Vec<PackageZipEntryDetails>, GptSovitsPackageError> {
   let mut entries: Vec<PackageZipEntryDetails> = Vec::new();
 
-  for i in 0..(archive.len()) {
+  for i in 0..archive.len() {
     info!("Reading file {}...", i);
 
-    let mut file = archive.by_index(i)
+    let file = archive.by_index(i)
       .map_err(|err| {
         error!("Problem reading file from archive: {:?}", err);
         GptSovitsPackageError::InvalidArchive

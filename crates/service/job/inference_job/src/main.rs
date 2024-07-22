@@ -51,12 +51,12 @@ use crate::http_server::run_http_server::launch_http_server;
 use crate::job::job_loop::main_loop::main_loop;
 use crate::state::job_dependencies::{BucketDependencies, ClientDependencies, DatabaseDependencies, FileSystemDetails, JobCaches, JobDependencies, JobInstanceInfo, JobSystemControls, JobSystemDependencies};
 use crate::state::job_specific_dependencies::JobSpecificDependencies;
+use crate::state::scoped_job_type_execution::ScopedJobTypeExecution;
+use crate::state::scoped_model_type_execution::ScopedModelTypeExecution;
 use crate::util::filesystem::scoped_temp_dir_creator::ScopedTempDirCreator;
 use crate::util::instrumentation::{init_otel_metrics_pipeline, JobInstrumentLabels};
 use crate::util::instrumentation::JobInstruments;
 use crate::util::model_weights_cache::model_weights_cache_directory::ModelWeightsCacheDirectory;
-use crate::state::scoped_job_type_execution::ScopedJobTypeExecution;
-use crate::state::scoped_model_type_execution::ScopedModelTypeExecution;
 
 pub mod http_server;
 pub mod job;
@@ -367,6 +367,7 @@ fn set_up_directories(job_dependencies: &JobDependencies) -> AnyhowResult<()> {
   fs.semi_persistent_cache.create_tts_pretrained_vocoder_model_path()?;
   fs.semi_persistent_cache.create_tts_synthesizer_model_path()?;
   fs.semi_persistent_cache.create_voice_conversion_model_path()?;
+  fs.semi_persistent_cache.create_gpt_sovits_model_path()?;
 
   Ok(())
 }

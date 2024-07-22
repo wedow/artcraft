@@ -10,6 +10,7 @@ pub struct SemiPersistentCacheDir {
   tts_synthesizer_model_root: PathBuf,
   tts_pretrained_vocoder_model_root: PathBuf, // Pretrained, non-user uploaded vocoders
   vocoder_model_root: PathBuf, // User-uploaded vocoders
+  gpt_sovits_model_root: PathBuf, // GPT-SoViT models
 
   voice_conversion_model_root: PathBuf,
 
@@ -37,6 +38,7 @@ impl SemiPersistentCacheDir {
       tts_synthesizer_model_root: cache_root.join("tts/synthesizer_models/"),
       tts_pretrained_vocoder_model_root: cache_root.join("tts/vocoder_models_pretrained/"),
       vocoder_model_root: cache_root.join("tts/user_uploaded_vocoder_models/"),
+      gpt_sovits_model_root: cache_root.join("tts/gpt_sovits_models/"),
 
       voice_conversion_model_root: cache_root.join("voice_conversion/models/"),
 
@@ -188,6 +190,20 @@ impl SemiPersistentCacheDir {
 
   pub fn create_video_asset_path(&self) -> AnyhowResult<()> {
     let _ = fs::create_dir_all(self.video_asset_path())?;
+    Ok(())
+  }
+
+  // ==================== GPT SOVITS MODELS ====================
+  pub fn gpt_sovits_model_path(&self, model_filename: &str) -> PathBuf {
+    self.gpt_sovits_model_root.join(model_filename)
+  }
+
+  pub fn gpt_sovits_model_directory(&self) -> &Path {
+    &self.gpt_sovits_model_root
+  }
+
+  pub fn create_gpt_sovits_model_path(&self) -> AnyhowResult<()> {
+    let _ = fs::create_dir_all(self.gpt_sovits_model_directory())?;
     Ok(())
   }
 
