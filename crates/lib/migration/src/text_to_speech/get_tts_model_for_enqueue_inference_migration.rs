@@ -2,6 +2,8 @@ use serde_derive::{Deserialize, Serialize};
 use sqlx::MySql;
 use sqlx::pool::PoolConnection;
 
+use enums::by_table::generic_inference_jobs::inference_job_type::InferenceJobType;
+use enums::by_table::model_weights::weights_types::WeightsType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
 use mysql_queries::queries::model_weights::get::get_weight_for_legacy_tts_enqueue::{get_weight_for_legacy_tts_enqueue_with_connection, ModelWeightForLegacyTtsEnqueue};
@@ -70,6 +72,17 @@ impl TtsModelForEnqueueInferenceMigrationWrapper {
     match self {
       Self::LegacyTts(ref model) => model.creator_set_visibility,
       Self::ModelWeight(ref model) => model.creator_set_visibility,
+    }
+  }
+
+  pub fn job_type(&self) -> InferenceJobType {
+    match self {
+      Self::LegacyTts(_) => InferenceJobType::Tacotron2,
+      Self::ModelWeight(ref model) => match model.weights_type {
+        WeightsType::Tacotron2 => InferenceJobType::Tacotron2,
+        WeightsType::GptSoVits => InferenceJobType::GptSovits,
+        _ => InferenceJobType::Tacotron2,
+      }
     }
   }
 }

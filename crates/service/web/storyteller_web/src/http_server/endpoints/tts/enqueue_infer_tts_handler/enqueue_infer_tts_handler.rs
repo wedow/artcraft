@@ -30,13 +30,13 @@ use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::users::UserToken;
 use tts_common::priority::{FAKEYOU_DEFAULT_VALID_API_TOKEN_PRIORITY_LEVEL, FAKEYOU_INVESTOR_PRIORITY_LEVEL};
 use user_input_common::check_for_slurs::contains_slurs;
-use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 
 use crate::configs::app_startup::username_set::UsernameSet;
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::configs::plans::plan::Plan;
 use crate::http_server::endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
 use crate::http_server::endpoints::tts::enqueue_infer_tts_handler::get_tts_model_with_caching::get_tts_model_with_caching;
+use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
 
@@ -383,7 +383,6 @@ pub async fn enqueue_infer_tts_handler(
 
   // ==================== ENQUEUE APPROPRIATE TTS TYPE ==================== //
 
-  let model_type = InferenceModelType::Tacotron2;
 
   let max_duration_seconds = plan.tts_max_duration_seconds();
 
@@ -395,12 +394,16 @@ pub async fn enqueue_infer_tts_handler(
       .map(|token| UserToken::new_from_str(token));
 
   let maybe_avt_token = server_state.avt_cookie_manager.get_avt_token_from_request(&http_request);
+  let maybe_model_type = match tts_model.job_type() {
+    InferenceJobType::GptSovits => None,
+    _ => Some(InferenceModelType::Tacotron2)
+  };
 
   let query_result = insert_generic_inference_job(InsertGenericInferenceArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,
-    job_type: InferenceJobType::Tacotron2,
+    job_type: tts_model.job_type(),
     inference_category: InferenceCategory::TextToSpeech,
-    maybe_model_type: Some(model_type),
+    maybe_model_type: maybe_model_type,
     maybe_model_token: Some(request.tts_model_token.as_str()),
     maybe_input_source_token: None, // NB: TTS doesn't have input media
     maybe_input_source_token_type: None, // NB: TTS doesn't have input media
