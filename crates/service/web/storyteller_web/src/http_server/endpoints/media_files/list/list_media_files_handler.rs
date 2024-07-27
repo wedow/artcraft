@@ -13,20 +13,20 @@ use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationT
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
-use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::view_as::ViewAs;
 use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
 use mysql_queries::queries::media_files::list::list_media_files::{list_media_files, ListMediaFilesArgs};
 use tokens::tokens::media_files::MediaFileToken;
-use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 
 use crate::http_server::common_responses::media_file_cover_image_details::{MediaFileCoverImageDetails, MediaFileDefaultCover};
 use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
+use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::endpoints::media_files::helpers::get_scoped_engine_categories::get_scoped_engine_categories;
 use crate::http_server::endpoints::media_files::helpers::get_scoped_media_classes::get_scoped_media_classes;
 use crate::http_server::endpoints::media_files::helpers::get_scoped_media_types::get_scoped_media_types;
@@ -106,7 +106,7 @@ pub struct MediaFileListItem {
   pub origin_product_category: MediaFileOriginProductCategory,
 
   #[deprecated(note="Use MediaFileOriginDetails instead")]
-  pub maybe_origin_model_type: Option<MediaFileOriginModelType>,
+  pub maybe_origin_model_type: Option<PublicMediaFileModelType>,
 
   #[deprecated(note="Use MediaFileOriginDetails instead")]
   pub maybe_origin_model_token: Option<String>,
@@ -306,7 +306,8 @@ pub async fn list_media_files_handler(
           record.maybe_origin_model_title.as_deref()),
         origin_category: record.origin_category,
         origin_product_category: record.origin_product_category,
-        maybe_origin_model_type: record.maybe_origin_model_type,
+        maybe_origin_model_type: record.maybe_origin_model_type
+            .map(|m| PublicMediaFileModelType::from_enum(m)),
         maybe_origin_model_token: record.maybe_origin_model_token,
         public_bucket_path: MediaFileBucketPath::from_object_hash(
           &record.public_bucket_directory_hash,

@@ -14,11 +14,11 @@ use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationT
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
-use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::view_as::ViewAs;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::batch_get_media_files_by_tokens;
 use mysql_queries::queries::media_files::list::list_featured_media_files::{FeaturedMediaFileListPage, list_featured_media_files, ListFeaturedMediaFilesArgs};
 use tokens::tokens::media_files::MediaFileToken;
@@ -113,7 +113,7 @@ pub struct FeaturedMediaFile {
   pub origin_product_category: MediaFileOriginProductCategory,
 
   #[deprecated(note="Use MediaFileOriginDetails instead")]
-  pub maybe_origin_model_type: Option<MediaFileOriginModelType>,
+  pub maybe_origin_model_type: Option<PublicMediaFileModelType>,
 
   #[deprecated(note="Use MediaFileOriginDetails instead")]
   pub maybe_origin_model_token: Option<String>,
@@ -256,7 +256,8 @@ pub async fn list_featured_media_files_handler(
             m.maybe_origin_model_title.as_deref()),
           origin_category: m.origin_category,
           origin_product_category: m.origin_product_category,
-          maybe_origin_model_type: m.maybe_origin_model_type,
+          maybe_origin_model_type: m.maybe_origin_model_type
+              .map(|t| PublicMediaFileModelType::from_enum(t)),
           maybe_origin_model_token: m.maybe_origin_model_token,
           maybe_creator: UserDetailsLight::from_optional_db_fields_owned(
             m.maybe_creator_user_token,

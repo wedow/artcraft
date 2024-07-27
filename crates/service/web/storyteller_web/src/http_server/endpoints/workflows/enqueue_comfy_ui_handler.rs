@@ -245,6 +245,7 @@ pub async fn enqueue_comfy_ui_handler(
     }
 
     let inference_args = WorkflowArgs {
+        workflow_type: None, // Is this endpoint even used anymore?
         maybe_lora_model: request.maybe_lora_model.clone(),
         maybe_json_modifications: request.maybe_json_modifications.clone(),
         maybe_workflow_config: request.maybe_workflow_config.clone(),
@@ -286,6 +287,7 @@ pub async fn enqueue_comfy_ui_handler(
         use_cinematic: None,
         strength: None,
         frame_skip: None,
+        watermark_type: None,
     };
 
     info!("Creating ComfyUI job record...");

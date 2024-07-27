@@ -4,6 +4,7 @@ pub mod cookies;
 pub mod endpoints;
 pub mod headers;
 pub mod middleware;
+pub mod requests;
 pub mod routes;
 pub mod session;
 pub mod validations;

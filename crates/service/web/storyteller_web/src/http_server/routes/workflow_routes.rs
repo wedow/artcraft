@@ -22,7 +22,11 @@ where
     >,
 {
   let app = app.service(web::scope("/v1/workflows")
-      .service(web::resource("/enqueue_acting_face")
+      //.service(web::resource("/enqueue_acting_face")
+      //    .route(web::post().to(enqueue_live_portrait_workflow_handler)) // TODO: Rename to below
+      //    .route(web::head().to(|| HttpResponse::Ok()))
+      //)
+      .service(web::resource("/enqueue_face_mirror")
           .route(web::post().to(enqueue_live_portrait_workflow_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
@@ -50,15 +54,16 @@ where
       InitError = (),
     >,
 {
+  //app.service(
+  //  // NB: We don't want this to live alongside the older endpoints for comfy and workflows -
+  //  // We don't want to give away that we're using Comfy or ComfyUI workflows as a technique.
+  //  web::scope("/v1/video")
+  //      .service(web::resource("/enqueue_vst")
+  //          .route(web::post().to(enqueue_video_style_transfer_handler))
+  //          .route(web::head().to(|| HttpResponse::Ok()))
+  //      )
+  //)
   app.service(
-    // NB: We don't want this to live alongside the older endpoints for comfy and workflows -
-    // We don't want to give away that we're using Comfy or ComfyUI workflows as a technique.
-    web::scope("/v1/video")
-        .service(web::resource("/enqueue_vst")
-            .route(web::post().to(enqueue_video_style_transfer_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
-        )
-  ).service(
     web::scope("/v1/workflow")
         .service(
           web::scope("/upload")

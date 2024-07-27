@@ -1,3 +1,4 @@
+pub mod common;
 pub mod generic_inference_args;
 pub mod image_generation_payload;
 pub mod lipsync_payload;

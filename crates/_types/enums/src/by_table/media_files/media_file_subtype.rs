@@ -14,7 +14,12 @@ use utoipa::ToSchema;
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
+#[deprecated(note = "This was primarily for Bevy")]
 pub enum MediaFileSubtype {
+  /// NB: MediaFileSubtype is deprecated.
+  /// This should signal that the field / enum is fully deprecated.
+  Deprecated,
+
   // TODO(bt,2024-04-22): Deprecated (migrate)
   /// Animation file from Mixamo
   /// Primarily used for FBX and GLB.
@@ -65,6 +70,7 @@ impl_mysql_from_row!(MediaFileSubtype);
 impl MediaFileSubtype {
   pub fn to_str(&self) -> &'static str {
     match self {
+      Self::Deprecated => "deprecated",
       Self::Mixamo => "mixamo",
       Self::MocapNet => "mocap_net",
       Self::AnimationOnly => "animation_only",
@@ -80,6 +86,7 @@ impl MediaFileSubtype {
 
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
+      "deprecated" => Ok(Self::Deprecated),
       "mixamo" => Ok(Self::Mixamo),
       "mocap_net" => Ok(Self::MocapNet),
       "animation_only" => Ok(Self::AnimationOnly),
@@ -98,6 +105,7 @@ impl MediaFileSubtype {
     // NB: BTreeSet is sorted
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
+      Self::Deprecated,
       Self::Mixamo,
       Self::MocapNet,
       Self::AnimationOnly,
@@ -122,6 +130,7 @@ mod tests {
 
     #[test]
     fn test_serialization() {
+      assert_serialization(MediaFileSubtype::Deprecated, "deprecated");
       assert_serialization(MediaFileSubtype::Mixamo, "mixamo");
       assert_serialization(MediaFileSubtype::MocapNet, "mocap_net");
       assert_serialization(MediaFileSubtype::AnimationOnly, "animation_only");
@@ -136,6 +145,7 @@ mod tests {
 
     #[test]
     fn test_to_str() {
+      assert_eq!(MediaFileSubtype::Deprecated.to_str(), "deprecated");
       assert_eq!(MediaFileSubtype::Mixamo.to_str(), "mixamo");
       assert_eq!(MediaFileSubtype::MocapNet.to_str(), "mocap_net");
       assert_eq!(MediaFileSubtype::AnimationOnly.to_str(), "animation_only");
@@ -150,6 +160,7 @@ mod tests {
 
     #[test]
     fn test_from_str() {
+      assert_eq!(MediaFileSubtype::from_str("deprecated").unwrap(), MediaFileSubtype::Deprecated);
       assert_eq!(MediaFileSubtype::from_str("mixamo").unwrap(), MediaFileSubtype::Mixamo);
       assert_eq!(MediaFileSubtype::from_str("mocap_net").unwrap(), MediaFileSubtype::MocapNet);
       assert_eq!(MediaFileSubtype::from_str("animation_only").unwrap(), MediaFileSubtype::AnimationOnly);
@@ -166,7 +177,8 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = MediaFileSubtype::all_variants();
-      assert_eq!(variants.len(), 10);
+      assert_eq!(variants.len(), 11);
+      assert_eq!(variants.pop_first(), Some(MediaFileSubtype::Deprecated));
       assert_eq!(variants.pop_first(), Some(MediaFileSubtype::Mixamo));
       assert_eq!(variants.pop_first(), Some(MediaFileSubtype::MocapNet));
       assert_eq!(variants.pop_first(), Some(MediaFileSubtype::AnimationOnly));

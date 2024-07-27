@@ -204,16 +204,14 @@ impl std::fmt::Display for EnqueueVideoStyleTransferError {
     }
 }
 
+/// DEPRECATED. Use /v1/workflows/enqueue_studio or /v1/workflows/enqueue_vst
+#[deprecated(note = "Use /v1/workflows/enqueue_studio")]
 #[utoipa::path(
     post,
     tag = "Video Style Transfer",
     path = "/v1/video/enqueue_vst",
     responses(
-    (
-        status = 200,
-        description = "Enqueue Video Style Transfer",
-        body = EnqueueVideoStyleTransferSuccessResponse,
-    ),
+        (status = 200, description = "Success", body = EnqueueVideoStyleTransferSuccessResponse),
         (status = 400, description = "Bad input", body = EnqueueVideoStyleTransferError),
         (status = 401, description = "Not authorized", body = EnqueueVideoStyleTransferError),
         (status = 429, description = "Rate limited", body = EnqueueVideoStyleTransferError),
@@ -391,6 +389,9 @@ pub async fn enqueue_video_style_transfer_handler(
     let coordinated_args = coordinate_workflow_args(coordinated_args, is_allowed_expensive_generation);
 
     let inference_args = WorkflowArgs {
+        // Type of workflow left blank since this is a legacy endpoint.
+        workflow_type: None,
+
         // Main text prompts
         positive_prompt: coordinated_args.prompt.new_string_trim_or_empty(),
         negative_prompt: request.negative_prompt.new_string_trim_or_empty(),
@@ -439,6 +440,7 @@ pub async fn enqueue_video_style_transfer_handler(
         trim_start_seconds: None,
         trim_end_seconds: None,
         target_fps: None,
+        watermark_type: None,
     };
 
     info!("Creating ComfyUI job record...");

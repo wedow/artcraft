@@ -14,6 +14,8 @@ use buckets::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::remote_file_manager::remote_cloud_bucket_details::RemoteCloudBucketDetails;
 use cloud_storage::remote_file_manager::remote_cloud_file_manager::RemoteCloudFileClient;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
+use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
+use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::by_table::prompts::prompt_type::PromptType;
 use errors::AnyhowResult;
@@ -283,6 +285,8 @@ pub async fn process_live_portrait_job(
   let (media_file_token, id) = insert_media_file_from_comfy_ui(InsertArgs {
     pool: &deps.db.mysql_pool,
     job: &job,
+    maybe_product_category: Some(MediaFileOriginProductCategory::FaceMirror), // Live Portrait named "Face Mirror" on the site
+    maybe_model_type: Some(MediaFileOriginModelType::LivePortrait),
     maybe_mime_type: Some(&mimetype),
     maybe_title: None,
     maybe_style_transfer_source_media_file_token: Some(&portrait_media_token),

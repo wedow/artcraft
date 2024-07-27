@@ -3,6 +3,7 @@ use utoipa::ToSchema;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
+use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
 use tokens::tokens::model_weights::ModelWeightToken;
 
 /// Fields useful for enriching media file listings
@@ -27,13 +28,13 @@ pub enum MediaFileModelDetails {
   /// eg. SadTalker, Wav2Lip, MocapNet, etc.
   SystemModel {
     /// The type of model weight
-    model_type: MediaFileOriginModelType,
+    model_type: PublicMediaFileModelType,
   },
   /// A model weight is typically a user-submitted model.
   /// We store lots of these.
   ModelWeight {
     /// The type of model weight
-    model_type: MediaFileOriginModelType,
+    model_type: PublicMediaFileModelType,
     /// The model token
     token: ModelWeightToken,
     /// The model title (typically only populated for `model_weights` models, not legacy tables such as `tts_models`.)
@@ -52,14 +53,14 @@ impl MediaFileOriginDetails {
     let maybe_model = match (maybe_model_type, maybe_model_token, maybe_model_title) {
       (Some(model_type), Some(model_token), Some(model_title)) => {
         Some(MediaFileModelDetails::ModelWeight {
-          model_type,
+          model_type: PublicMediaFileModelType::from_enum(model_type),
           token: model_token,
           title: model_title,
         })
       },
       (Some(model_type), None, None) => {
         Some(MediaFileModelDetails::SystemModel {
-          model_type,
+          model_type: PublicMediaFileModelType::from_enum(model_type),
         })
       },
       _ => None,

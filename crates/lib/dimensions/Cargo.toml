@@ -1,5 +1,5 @@
 [package]
-name = "password"
+name = "dimensions"
 edition = "2018"
 version = "0.0.1"
 authors = [
@@ -9,8 +9,8 @@ authors = [
 publish = false
 
 [lib]
-# NB: Public "password" crate is squatted for over eight years
-name = "password"
+# NB: Public "dimensions" crate is not relevant / abandoned, so we're fine to use this internally.
+name = "dimensions"
 path = "src/lib.rs"
 
 [package.metadata.cargo-udeps.ignore]
@@ -24,10 +24,7 @@ my-workspace-hack = { version = "0.1", path = "../../my-workspace-hack" }
 errors = { path = "../errors" }
 
 # External
-bcrypt = "0.15" # password hashes
-#hmac = "0.10.0" # jwt signing
-#jwt = "0.13.0"
-#sha2 = "0.9.5" # hmac signing
+# (None Yet)
 
 [dev-dependencies]
 # None yet

@@ -26,6 +26,10 @@ pub struct InsertArgs<'a> {
     // TODO: Media duration.
     //pub duration_millis: u64,
 
+    /// What product generated the result.
+    pub maybe_product_category: Option<MediaFileOriginProductCategory>,
+    pub maybe_model_type: Option<MediaFileOriginModelType>,
+
     pub maybe_title: Option<&'a str>,
     pub maybe_style_transfer_source_media_file_token: Option<&'a MediaFileToken>,
     pub maybe_scene_source_media_file_token: Option<&'a MediaFileToken>,
@@ -72,8 +76,11 @@ pub async fn insert_media_file_from_comfy_ui(args: InsertArgs<'_>) -> AnyhowResu
     }
 
     const ORIGIN_CATEGORY : MediaFileOriginCategory = MediaFileOriginCategory::Inference;
-    const ORIGIN_PRODUCT_CATEGORY : MediaFileOriginProductCategory = MediaFileOriginProductCategory::Workflow;
-    const ORIGIN_MODEL_TYPE : MediaFileOriginModelType = MediaFileOriginModelType::ComfyUi;
+
+    let product = args.maybe_product_category
+        .unwrap_or(MediaFileOriginProductCategory::Unknown);
+
+    let maybe_model_type = args.maybe_model_type.map(|m| m.to_str());
 
     let record_id = {
         let query_result = sqlx::query!(
@@ -125,8 +132,8 @@ SET
       MediaFileType::Video.to_str(), // TODO(bt,2024-04-30): This needs to become "mp4" after a frontend migration
 
       ORIGIN_CATEGORY.to_str(),
-      ORIGIN_PRODUCT_CATEGORY.to_str(),
-      ORIGIN_MODEL_TYPE.to_str(),
+      product.to_str(),
+      maybe_model_type,
 
       args.maybe_mime_type,
       args.file_size_bytes,

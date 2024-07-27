@@ -7,7 +7,6 @@ use log::warn;
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
-use enums::by_table::media_files::media_file_subtype::MediaFileSubtype;
 use errors::AnyhowResult;
 use tokens::tokens::zs_voice_datasets::ZsVoiceDatasetToken;
 
@@ -68,19 +67,6 @@ pub async fn drain_multipart_request(mut multipart_payload: Multipart) -> Anyhow
               err
             })?;
       },
-      //Some("media_file_subtype") => {
-      //  media_file_subtype = read_multipart_field_as_text(&mut field).await
-      //      .map_err(|err| {
-      //        warn!("Error reading source: {:?}", &err);
-      //        err
-      //      })?
-      //      .map(|field| MediaFileSubtype::from_str(&field))
-      //      .transpose()
-      //      .map_err(|err| {
-      //        warn!("Wrong MediaFileSubtype: {:?}", &err);
-      //        anyhow!("Wrong MediaFileSubtype: {:?}", &err)
-      //      })?;
-      //},
       Some("engine_category") => {
         maybe_engine_category = read_multipart_field_as_text(&mut field).await
             .map_err(|err| {

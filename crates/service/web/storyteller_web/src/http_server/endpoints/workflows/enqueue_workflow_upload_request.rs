@@ -217,6 +217,7 @@ pub async fn enqueue_workflow_upload_request(
     let commit_hash = request.commit_hash.clone();
 
     let inference_args = WorkflowArgs {
+        workflow_type: None, // Is this endpoint even used anymore?
         maybe_google_drive_link: Some(google_drive_link),
         maybe_title: Some(title),
         maybe_description: Some(description),
@@ -256,6 +257,7 @@ pub async fn enqueue_workflow_upload_request(
         use_cinematic: None,
         strength: None,
         frame_skip: None,
+        watermark_type: None,
     };
    
     // create the inference args here

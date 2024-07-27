@@ -4,6 +4,7 @@ use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
+use crate::payloads::generic_inference_args::common::watermark_type::WatermarkType;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -40,8 +41,23 @@ impl NewValue {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub enum WorkflowType {
+    /// For jobs that power Storyteller Studio
+    #[serde(rename = "s")]
+    StorytellerStudio,
+
+    /// For jobs that power video style transfer
+    #[serde(rename = "vst")]
+    VideoStyleTransfer,
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct WorkflowArgs {
+    #[serde(rename = "w")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub workflow_type: Option<WorkflowType>,
+
     #[serde(rename = "lora")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maybe_lora_model: Option<ModelWeightToken>,
@@ -153,6 +169,10 @@ pub struct WorkflowArgs {
     #[serde(rename = "rm")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub remove_watermark: Option<bool>,
+
+    #[serde(rename = "wt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub watermark_type: Option<WatermarkType>,
 
     // TODO(bt,2024-05-13): This is a temporary rollout flag to enable us to do Python-side mapping of job args
     #[deprecated(note = "This has been rolled out and is effectively dead.")]

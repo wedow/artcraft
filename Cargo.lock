@@ -2007,6 +2007,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "dimensions"
+version = "0.0.1"
+dependencies = [
+ "errors",
+ "my-workspace-hack",
+]
+
+[[package]]
 name = "displaydoc"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

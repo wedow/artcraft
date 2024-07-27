@@ -28,9 +28,11 @@ pub async fn process_single_workflow_job(
 
   let job_success_result = match workflow_args.maybe_google_drive_link {
     Some(_link) => {
+      // NB(bt,2024-07-25): I don't think we enqueue jobs to do this anymore. This code path might be dead.
       process_upload_workflow_job(job_dependencies, job).await?
     }
     None => {
+      // This services both Storyteller Studio and "Video Style Transfer" products.
       process_video_style_transfer_job(job_dependencies, job).await?
     }
   };

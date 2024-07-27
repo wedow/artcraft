@@ -22,6 +22,10 @@ pub enum UserFeatureFlag {
   /// Access to studio features
   Studio,
 
+  /// Whether users are allowed to upload 3D models
+  #[serde(rename = "upload_3d")]
+  Upload3d,
+
   /// Access to video style transfer
   VideoStyleTransfer,
 }
@@ -37,6 +41,7 @@ impl UserFeatureFlag {
     match self {
       Self::ExploreMedia => "explore_media",
       Self::Studio => "studio",
+      Self::Upload3d => "upload_3d",
       Self::VideoStyleTransfer => "video_style_transfer",
     }
   }
@@ -45,6 +50,7 @@ impl UserFeatureFlag {
     match value {
       "explore_media" => Ok(Self::ExploreMedia),
       "studio" => Ok(Self::Studio),
+      "upload_3d" => Ok(Self::Upload3d),
       "video_style_transfer" => Ok(Self::VideoStyleTransfer),
       _ => Err(format!("invalid value: {:?}", value)),
     }
@@ -56,6 +62,7 @@ impl UserFeatureFlag {
     BTreeSet::from([
       Self::ExploreMedia,
       Self::Studio,
+      Self::Upload3d,
       Self::VideoStyleTransfer,
     ])
   }
@@ -73,6 +80,7 @@ mod tests {
     fn test_serialization() {
       assert_serialization(UserFeatureFlag::ExploreMedia, "explore_media");
       assert_serialization(UserFeatureFlag::Studio, "studio");
+      assert_serialization(UserFeatureFlag::Upload3d, "upload_3d");
       assert_serialization(UserFeatureFlag::VideoStyleTransfer, "video_style_transfer");
     }
 
@@ -80,6 +88,7 @@ mod tests {
     fn test_to_str() {
       assert_eq!(UserFeatureFlag::ExploreMedia.to_str(), "explore_media");
       assert_eq!(UserFeatureFlag::Studio.to_str(), "studio");
+      assert_eq!(UserFeatureFlag::Upload3d.to_str(), "upload_3d");
       assert_eq!(UserFeatureFlag::VideoStyleTransfer.to_str(), "video_style_transfer");
     }
 
@@ -87,6 +96,7 @@ mod tests {
     fn test_from_str() {
       assert_eq!(UserFeatureFlag::from_str("explore_media").unwrap(), UserFeatureFlag::ExploreMedia);
       assert_eq!(UserFeatureFlag::from_str("studio").unwrap(), UserFeatureFlag::Studio);
+      assert_eq!(UserFeatureFlag::from_str("upload_3d").unwrap(), UserFeatureFlag::Upload3d);
       assert_eq!(UserFeatureFlag::from_str("video_style_transfer").unwrap(), UserFeatureFlag::VideoStyleTransfer);
       assert!(UserFeatureFlag::from_str("foo").is_err());
     }
@@ -94,9 +104,10 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = UserFeatureFlag::all_variants();
-      assert_eq!(variants.len(), 3);
+      assert_eq!(variants.len(), 4);
       assert_eq!(variants.pop_first(), Some(UserFeatureFlag::ExploreMedia));
       assert_eq!(variants.pop_first(), Some(UserFeatureFlag::Studio));
+      assert_eq!(variants.pop_first(), Some(UserFeatureFlag::Upload3d));
       assert_eq!(variants.pop_first(), Some(UserFeatureFlag::VideoStyleTransfer));
       assert_eq!(variants.pop_first(), None);
     }

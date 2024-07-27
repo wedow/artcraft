@@ -31,20 +31,10 @@ and m.created_at > (CURDATE() - INTERVAL 1 DAY)
 and m.is_intermediate_system_file = false
 and m.media_class = 'video'
 and u.username NOT IN (
-  'bflat',
-  'candyfoxxx',
-  'crossproduct1',
-  'echelon',
-  'endtimes',
-  'heart_ribbon',
-  'kasisnu',
-  'mechacosm',
-  'moonchamp',
-  'olivicmic',
-  'printrman',
-  'vegito1089',
-  'wilwong',
-  'yae_ph'
+  'bflat', 'candyfoxxx', 'crossproduct1', 'echelon',
+  'endtimes', 'heart_ribbon', 'kasisnu', 'mechacosm',
+  'moonchamp', 'olivicmic', 'printrman', 'vegito1089',
+  'wilwong', 'yae_ph'
 )
 group by u.token
 order by created_at desc;

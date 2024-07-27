@@ -13,21 +13,18 @@ use elasticsearch_schema::searches::search_media_files::{search_media_files, Sea
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
-use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
-use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
-use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::view_as::ViewAs;
 use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::users::UserToken;
-use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 
 use crate::http_server::common_responses::media_file_cover_image_details::{MediaFileCoverImageDetails, MediaFileDefaultCover};
 use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
+use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::endpoints::media_files::helpers::get_scoped_engine_categories::get_scoped_engine_categories;
 use crate::http_server::endpoints::media_files::helpers::get_scoped_media_classes::get_scoped_media_classes;
 use crate::http_server::endpoints::media_files::helpers::get_scoped_media_types::get_scoped_media_types;
@@ -98,21 +95,6 @@ pub struct SearchMediaFileListItem {
   /// be animated with either (or both) skeletal or blend shape animations,
   /// this describes the animation regime used or supported.
   pub maybe_animation_type: Option<MediaFileAnimationType>,
-
-  //  #[deprecated(note="Use MediaFileOriginDetails instead")]
-  //  pub origin_category: MediaFileOriginCategory,
-
-  //  #[deprecated(note="Use MediaFileOriginDetails instead")]
-  //  pub origin_product_category: MediaFileOriginProductCategory,
-
-  //  #[deprecated(note="Use MediaFileOriginDetails instead")]
-  //  pub maybe_origin_model_type: Option<MediaFileOriginModelType>,
-
-  //  #[deprecated(note="Use MediaFileOriginDetails instead")]
-  //  pub maybe_origin_model_token: Option<String>,
-
-  //  /// Details where the media file came from.
-  //  pub origin: MediaFileOriginDetails,
 
   /// URL to the media file.
   pub public_bucket_path: String,

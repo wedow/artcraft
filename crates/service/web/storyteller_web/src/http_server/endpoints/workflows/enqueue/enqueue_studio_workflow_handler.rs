@@ -20,7 +20,7 @@ use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::{GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
-use mysql_queries::payloads::generic_inference_args::workflow_payload::WorkflowArgs;
+use mysql_queries::payloads::generic_inference_args::workflow_payload::{WorkflowArgs, WorkflowType};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use primitives::lazy_any_option_true::lazy_any_option_true;
@@ -245,6 +245,9 @@ pub async fn enqueue_studio_workflow_handler(
   let coordinated_args = coordinate_workflow_args(coordinated_args, is_allowed_expensive_generation);
 
   let inference_args = WorkflowArgs {
+    // Type of workflow
+    workflow_type: Some(WorkflowType::StorytellerStudio),
+
     // Main text prompts
     positive_prompt: coordinated_args.prompt.new_string_trim_or_empty(),
     negative_prompt: request.negative_prompt.new_string_trim_or_empty(),
@@ -270,9 +273,10 @@ pub async fn enqueue_studio_workflow_handler(
     use_cinematic: coordinated_args.use_cinematic,
     use_face_detailer: coordinated_args.use_face_detailer,
     use_upscaler: coordinated_args.use_upscaler,
-    remove_watermark: coordinated_args.remove_watermark,
     lipsync_enabled: coordinated_args.use_lipsync,
     enable_lipsync: coordinated_args.use_lipsync, // TODO(bt): We can stop writing this flag after we re-deploy the job.
+    remove_watermark: coordinated_args.remove_watermark,
+    watermark_type: None,
 
     // TODO: Get rid of the temporary flags.
     rollout_python_workflow_args: None,

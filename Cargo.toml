@@ -40,6 +40,7 @@ members = [
   "crates/lib/deprecated/config", # TODO(bt, 2023-02-13): Deprecate or repurpose
   "crates/lib/deprecated/container_common", # TODO(bt, 2023-02-13): Pull apart and rehome pieces
   "crates/lib/deprecated/http_server_common", # TODO(bt, 2023-03-20): Move useful pieces to actix_helpers
+  "crates/lib/dimensions",
   "crates/lib/easyenv", # NB: Vendored version of https://github.com/echelon/easyenv.rs that we'll improve.
   "crates/lib/elasticsearch_schema",
   "crates/lib/email_sender",

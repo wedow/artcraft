@@ -19,8 +19,9 @@ use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
+use mysql_queries::payloads::generic_inference_args::common::watermark_type::WatermarkType;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::{GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
-use mysql_queries::payloads::generic_inference_args::workflow_payload::WorkflowArgs;
+use mysql_queries::payloads::generic_inference_args::workflow_payload::{WorkflowArgs, WorkflowType};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use primitives::lazy_any_option_true::lazy_any_option_true;
@@ -38,6 +39,7 @@ use crate::http_server::endpoints::workflows::enqueue::vst_common::vst_request::
 use crate::http_server::endpoints::workflows::enqueue::vst_common::vst_response::VstSuccessResponse;
 use crate::http_server::headers::get_routing_tag_header::get_routing_tag_header;
 use crate::http_server::headers::has_debug_header::has_debug_header;
+use crate::http_server::requests::get_request_domain_branding::{DomainBranding, get_request_domain_branding};
 use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
@@ -241,10 +243,26 @@ pub async fn enqueue_video_style_transfer_workflow_handler(
   };
 
   let is_allowed_expensive_generation = is_staff || has_paid_plan;
+  let is_allowed_no_watermark = is_staff || has_paid_plan;
 
   let coordinated_args = coordinate_workflow_args(coordinated_args, is_allowed_expensive_generation);
 
+  let branding = get_request_domain_branding(&http_request);
+
+  let mut watermark_type = match branding {
+    Some(DomainBranding::FakeYou) => Some(WatermarkType::FakeYou),
+    Some(DomainBranding::Storyteller) => Some(WatermarkType::Storyteller),
+    None => Some(WatermarkType::Storyteller),
+  };
+
+  if request.remove_watermark.unwrap_or(false) && is_allowed_no_watermark {
+    watermark_type = None;
+  }
+
   let inference_args = WorkflowArgs {
+    // Type of workflow
+    workflow_type: Some(WorkflowType::VideoStyleTransfer),
+
     // Main text prompts
     positive_prompt: coordinated_args.prompt.new_string_trim_or_empty(),
     negative_prompt: request.negative_prompt.new_string_trim_or_empty(),
@@ -270,9 +288,10 @@ pub async fn enqueue_video_style_transfer_workflow_handler(
     use_cinematic: coordinated_args.use_cinematic,
     use_face_detailer: coordinated_args.use_face_detailer,
     use_upscaler: coordinated_args.use_upscaler,
-    remove_watermark: coordinated_args.remove_watermark,
     lipsync_enabled: coordinated_args.use_lipsync,
     enable_lipsync: coordinated_args.use_lipsync, // TODO(bt): We can stop writing this flag after we re-deploy the job.
+    remove_watermark: coordinated_args.remove_watermark,
+    watermark_type,
 
     // TODO: Get rid of the temporary flags.
     rollout_python_workflow_args: None,

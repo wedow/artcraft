@@ -69,7 +69,7 @@ pub async fn upsert_media_file_from_file_upload(
   let origin_category = match args.upload_type {
     UploadType::Filesystem => MediaFileOriginCategory::Upload,
     UploadType::DeviceCaptureApi => MediaFileOriginCategory::DeviceApi,
-    UploadType::StorytellerEngine => MediaFileOriginCategory::StoryEngine,
+    UploadType::StorytellerEngine => MediaFileOriginCategory::StorytellerStudio,
   };
 
   let mut maybe_creator_file_synthetic_id : Option<u64> = None;

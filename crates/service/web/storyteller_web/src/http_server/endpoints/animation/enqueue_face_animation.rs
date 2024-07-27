@@ -14,7 +14,6 @@ use enums::by_table::generic_inference_jobs::inference_category::InferenceCatego
 use enums::by_table::generic_inference_jobs::inference_job_type::InferenceJobType;
 use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
 use enums::common::visibility::Visibility;
-use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::{GenericInferenceArgs, InferenceCategoryAbbreviated, PolymorphicInferenceArgs};
 use mysql_queries::payloads::generic_inference_args::lipsync_payload::{FaceEnhancer, LipsyncAnimationAudioSource, LipsyncAnimationImageSource, LipsyncArgs};
@@ -24,19 +23,13 @@ use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::media_uploads::MediaUploadToken;
 use tokens::tokens::users::UserToken;
 use tokens::tokens::voice_conversion_results::VoiceConversionResultToken;
-use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
+use crate::http_server::headers::get_routing_tag_header::get_routing_tag_header;
+use crate::http_server::headers::has_debug_header::has_debug_header;
+use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
-
-/// Debug requests can get routed to special "debug-only" workers, which can
-/// be used to trial new code, run debugging, etc.
-const DEBUG_HEADER_NAME : &str = "enable-debug-mode";
-
-/// The routing tag header can send workloads to particular k8s hosts.
-/// This is useful for catching the live logs or intercepting the job.
-const ROUTING_TAG_HEADER_NAME : &str = "routing-tag";
 
 #[derive(Deserialize)]
 pub struct EnqueueFaceAnimationRequest {
@@ -203,13 +196,8 @@ pub async fn enqueue_face_animation_handler(
 
   // ==================== DEBUG MODE + ROUTING TAG ==================== //
 
-  let is_debug_request =
-      get_request_header_optional(&http_request, DEBUG_HEADER_NAME)
-          .is_some();
-
-  let maybe_routing_tag=
-      get_request_header_optional(&http_request, ROUTING_TAG_HEADER_NAME)
-          .map(|routing_tag| routing_tag.trim().to_string());
+  let is_debug_request = has_debug_header(&http_request);
+  let maybe_routing_tag = get_routing_tag_header(&http_request);
 
   // ==================== BANNED USERS ==================== //
 
