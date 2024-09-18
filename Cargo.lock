@@ -1366,8 +1366,8 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sqlx",
- "sqlx-core 0.7.4",
- "sqlx-mysql 0.7.4",
+ "sqlx-core",
+ "sqlx-mysql",
  "tokens",
  "utoipa",
 ]
@@ -2334,8 +2334,8 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sqlx",
- "sqlx-core 0.7.4",
- "sqlx-mysql 0.7.4",
+ "sqlx-core",
+ "sqlx-mysql",
  "strum",
  "toml 0.8.19",
  "utoipa",
@@ -2901,15 +2901,6 @@ dependencies = [
  "md-5 0.10.6",
  "my-workspace-hack",
  "ring",
-]
-
-[[package]]
-name = "hashlink"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8094feaf31ff591f651a2664fb9cfd92bba7a60ce3197265e9482ebe753c8f7"
-dependencies = [
- "hashbrown 0.14.5",
 ]
 
 [[package]]
@@ -4389,10 +4380,10 @@ dependencies = [
  "socket2",
  "spin",
  "sqlx",
- "sqlx-core 0.8.2",
+ "sqlx-core",
  "sqlx-macros",
  "sqlx-macros-core",
- "sqlx-mysql 0.8.2",
+ "sqlx-mysql",
  "sqlx-sqlite",
  "stable_deref_trait",
  "syn 1.0.109",
@@ -6595,44 +6586,11 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93334716a037193fac19df402f8571269c84a00852f6a7066b5d2616dcd64d3e"
 dependencies = [
- "sqlx-core 0.8.2",
+ "sqlx-core",
  "sqlx-macros",
- "sqlx-mysql 0.8.2",
+ "sqlx-mysql",
  "sqlx-postgres",
  "sqlx-sqlite",
-]
-
-[[package]]
-name = "sqlx-core"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24ba59a9342a3d9bab6c56c118be528b27c9b60e490080e9711a04dccac83ef6"
-dependencies = [
- "ahash",
- "atoi",
- "byteorder",
- "bytes 1.7.1",
- "crossbeam-queue",
- "either",
- "event-listener 2.5.3",
- "futures-channel",
- "futures-core",
- "futures-intrusive",
- "futures-io",
- "futures-util",
- "hashlink 0.8.4",
- "hex",
- "indexmap 2.5.0",
- "log",
- "memchr",
- "once_cell",
- "paste",
- "percent-encoding",
- "smallvec 1.13.2",
- "sqlformat",
- "thiserror",
- "tracing",
- "url",
 ]
 
 [[package]]
@@ -6656,7 +6614,7 @@ dependencies = [
  "futures-io",
  "futures-util",
  "hashbrown 0.14.5",
- "hashlink 0.9.1",
+ "hashlink",
  "hex",
  "indexmap 2.5.0",
  "log",
@@ -6688,7 +6646,7 @@ checksum = "cac0692bcc9de3b073e8d747391827297e075c7710ff6276d9f7a1f3d58c6657"
 dependencies = [
  "proc-macro2",
  "quote",
- "sqlx-core 0.8.2",
+ "sqlx-core",
  "sqlx-macros-core",
  "syn 2.0.77",
 ]
@@ -6709,55 +6667,14 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.8",
- "sqlx-core 0.8.2",
- "sqlx-mysql 0.8.2",
+ "sqlx-core",
+ "sqlx-mysql",
  "sqlx-postgres",
  "sqlx-sqlite",
  "syn 2.0.77",
  "tempfile",
  "tokio",
  "url",
-]
-
-[[package]]
-name = "sqlx-mysql"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ed31390216d20e538e447a7a9b959e06ed9fc51c37b514b46eb758016ecd418"
-dependencies = [
- "atoi",
- "base64 0.21.7",
- "bitflags 2.6.0",
- "byteorder",
- "bytes 1.7.1",
- "crc",
- "digest 0.10.7",
- "dotenvy",
- "either",
- "futures-channel",
- "futures-core",
- "futures-io",
- "futures-util",
- "generic-array",
- "hex",
- "hkdf",
- "hmac 0.12.1",
- "itoa 1.0.11",
- "log",
- "md-5 0.10.6",
- "memchr",
- "once_cell",
- "percent-encoding",
- "rand 0.8.5",
- "rsa",
- "sha1 0.10.6",
- "sha2 0.10.8",
- "smallvec 1.13.2",
- "sqlx-core 0.7.4",
- "stringprep",
- "thiserror",
- "tracing",
- "whoami",
 ]
 
 [[package]]
@@ -6797,7 +6714,7 @@ dependencies = [
  "sha1 0.10.6",
  "sha2 0.10.8",
  "smallvec 1.13.2",
- "sqlx-core 0.8.2",
+ "sqlx-core",
  "stringprep",
  "thiserror",
  "tracing",
@@ -6838,7 +6755,7 @@ dependencies = [
  "serde_json",
  "sha2 0.10.8",
  "smallvec 1.13.2",
- "sqlx-core 0.8.2",
+ "sqlx-core",
  "stringprep",
  "thiserror",
  "tracing",
@@ -6864,7 +6781,7 @@ dependencies = [
  "percent-encoding",
  "serde",
  "serde_urlencoded",
- "sqlx-core 0.8.2",
+ "sqlx-core",
  "tracing",
  "url",
 ]
@@ -7575,8 +7492,8 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sqlx",
- "sqlx-core 0.7.4",
- "sqlx-mysql 0.7.4",
+ "sqlx-core",
+ "sqlx-mysql",
  "strum",
  "toml 0.8.19",
  "utoipa",

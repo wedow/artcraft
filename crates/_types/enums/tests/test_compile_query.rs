@@ -75,11 +75,8 @@ impl FromRow<'_, MySqlRow> for MediaFileListItemInternal {
     Ok(Self {
       id: row.try_get("id")?,
       media_class: MediaFileClass::try_from_mysql_row(row, "media_class")?,
-      //media_type: MediaFileType::try_from_mysql_row(row, "media_type")?,
-      //creator_set_visibility: Visibility::try_from_mysql_row(row, "creator_set_visibility")?,
-      //media_class: MediaFileClass::Video,
-      media_type: MediaFileType::Mp4,
-      creator_set_visibility: Visibility::Public,
+      media_type: MediaFileType::try_from_mysql_row(row, "media_type")?,
+      creator_set_visibility: Visibility::try_from_mysql_row(row, "creator_set_visibility")?,
     })
   }
 }
