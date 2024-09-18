@@ -2329,6 +2329,8 @@ dependencies = [
 name = "enums"
 version = "0.0.1"
 dependencies = [
+ "chrono",
+ "errors",
  "my-workspace-hack",
  "serde",
  "serde_derive",
