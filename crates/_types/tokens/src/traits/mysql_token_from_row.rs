@@ -1,5 +1,5 @@
-//use sqlx_mysql::MySqlRow;
-use sqlx::mysql::MySqlRow;
+use sqlx_mysql::MySqlRow;
+//use sqlx::mysql::MySqlRow;
 
 // UPGRADE NOTES
 //   sqlx 0.7.2 --> 0.8.2
