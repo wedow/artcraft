@@ -51,7 +51,7 @@ subprocess = "0.2.9"
 tempdir = "0.3.7"
 zip = "0.6.6"
 
-sqlx = { version = "0.7.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
+sqlx = { version = "0.8.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
 
 # Redis
 r2d2_redis = "0.14.0"

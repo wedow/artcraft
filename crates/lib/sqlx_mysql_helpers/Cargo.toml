@@ -23,7 +23,7 @@ errors = { path = "../errors" }
 my-workspace-hack = { version = "0.1", path = "../../my-workspace-hack" }
 
 # External
-sqlx = { version = "0.7.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
+sqlx = { version = "0.8.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
 
 [dev-dependencies]
 # None yet

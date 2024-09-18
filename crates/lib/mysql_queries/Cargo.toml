@@ -52,6 +52,6 @@ num-traits = "0.2.19"
 
 tokio = { version = "1.38.0", features = ["full"] }
 rand = "0.8"
-sqlx = { version = "0.7.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono", "bigdecimal" ] }
+sqlx = { version = "0.8.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono", "bigdecimal" ] }
 
 

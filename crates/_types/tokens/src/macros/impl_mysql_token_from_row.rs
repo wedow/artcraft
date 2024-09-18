@@ -1,3 +1,8 @@
+// UPGRADE NOTES
+//   sqlx 0.7.2 --> 0.8.2
+//     - sqlx::Row --> sqlx_core::row::Row
+//     - sqlx::Error --> sqlx_core::Error
+//     - sqlx_mysql::MySqlRow --> sqlx::mysql::MySqlRow
 
 /// Implement `MySqlTokenFromRow` on a type.
 macro_rules! impl_mysql_token_from_row {
@@ -5,7 +10,10 @@ macro_rules! impl_mysql_token_from_row {
 
     // Try to convert a MySQL row and named field into the value type (for non-nullable fields).
     impl crate::traits::mysql_token_from_row::MySqlTokenFromRow<$t> for $t {
-      fn try_from_mysql_row(row: &sqlx_mysql::MySqlRow, field_name: &str) -> Result<$t, sqlx::Error> {
+      fn try_from_mysql_row(row: &sqlx::mysql::MySqlRow, field_name: &str) -> Result<$t, sqlx_core::Error> {
+        #[allow(unused_imports)]
+        //use sqlx::Row;
+        use sqlx_core::row::Row as OtherRow;
         use sqlx::Row;
 
         // NB(bt,2023-12-05): For now only string encodings are considered.
@@ -16,7 +24,10 @@ macro_rules! impl_mysql_token_from_row {
       }
 
       // Try to convert a MySQL row and named field into the value type (for nullable fields).
-      fn try_from_mysql_row_nullable(row: &sqlx_mysql::MySqlRow, field_name: &str) -> Result<Option<$t>, sqlx::Error> {
+      fn try_from_mysql_row_nullable(row: &sqlx::mysql::MySqlRow, field_name: &str) -> Result<Option<$t>, sqlx_core::Error> {
+        #[allow(unused_imports)]
+        //use sqlx::Row;
+        use sqlx_core::row::Row as OtherRow;
         use sqlx::Row;
 
         // NB(bt,2023-12-05): For now only string encodings are considered.

@@ -1,3 +1,12 @@
+// UPGRADE NOTES
+//   sqlx 0.7.2 --> 0.8.2
+//     - sqlx_mysql::MySqlTypeInfo --> sqlx::mysql::MySqlTypeInfo
+//     - sqlx_mysql::MySqlValueRef<'r> --> sqlx::mysql::MySqlValueRef<'r>
+//     - encode_by_ref(...) took &mut <sqlx::MySql as sqlx_core::database::HasArguments<'q>>::ArgumentBuffer
+//           --> now takes &mut <sqlx::MySql as sqlx::database::Database>::ArgumentBuffer<'q>
+//     - encode_by_ref(...) returned sqlx_core::encode::IsNull
+//           --> now returns Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError>
+
 /// This overt approach is being taken because of the following error:
 ///
 ///   `MySqlDatabaseError { code: Some("HY000"), number: 1210, message: "Incorrect arguments to mysqld_stmt_execute" }`
@@ -13,7 +22,7 @@ macro_rules! impl_mysql_enum_coders {
   ($t:ident) => {
 
     impl sqlx::Type<sqlx::MySql> for $t {
-      fn type_info() -> sqlx_mysql::MySqlTypeInfo {
+      fn type_info() -> sqlx::mysql::MySqlTypeInfo {
         // // 0.4.x series:
         // String::type_info()
 
@@ -25,8 +34,8 @@ macro_rules! impl_mysql_enum_coders {
     impl<'q> sqlx::Encode<'q, sqlx::MySql> for $t {
       fn encode_by_ref(
         &self,
-        buf: &mut <sqlx::MySql as sqlx_core::database::HasArguments<'q>>::ArgumentBuffer
-      ) -> sqlx_core::encode::IsNull {
+        buf: &mut <sqlx::MySql as sqlx::database::Database>::ArgumentBuffer<'q>,
+      ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         // // 0.4.x series:
         // // NB: In the absence of `#[derive(sqlx::Type)]` and `#sqlx(rename_all="lowercase")]`,
         // // this controls the casing of the variants when sent to MySQL.
@@ -41,7 +50,7 @@ macro_rules! impl_mysql_enum_coders {
 
     impl<'r> sqlx::Decode<'r, sqlx::MySql> for $t {
       fn decode(
-        value: sqlx_mysql::MySqlValueRef<'r>,
+        value: sqlx::mysql::MySqlValueRef<'r>,
       ) -> Result<Self, sqlx_core::error::BoxDynError> {
         // // 0.4.x series:
         // let string = String::decode(value)?;

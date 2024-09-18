@@ -1,3 +1,7 @@
+// UPGRADE NOTES
+//   sqlx 0.7.2 --> 0.8.2
+//     - use sqlx::Error --> use sqlx_core::Error
+//     - use sqlx::Row --> use sqlx_core::row::Row
 
 /// Implement `MySqlFromRow` on a type.
 macro_rules! impl_mysql_from_row {
@@ -5,8 +9,9 @@ macro_rules! impl_mysql_from_row {
 
     // Try to convert a MySQL row and named field into the value type (for non-nullable fields).
     impl crate::traits::mysql_from_row::MySqlFromRow<$t> for $t {
-      fn try_from_mysql_row(row: &sqlx_mysql::MySqlRow, field_name: &str) -> Result<$t, sqlx::Error> {
-        use sqlx::{Error, Row};
+      fn try_from_mysql_row(row: &sqlx_mysql::MySqlRow, field_name: &str) -> Result<$t, sqlx_core::Error> {
+        use sqlx_core::Error;
+        use sqlx_core::row::Row;
 
         // NB(bt,2023-12-05): For now only string encodings are considered.
         // We may want to revisit in the future if we deal with binary data.
@@ -24,8 +29,9 @@ macro_rules! impl_mysql_from_row {
       }
 
       // Try to convert a MySQL row and named field into the value type (for nullable fields).
-      fn try_from_mysql_row_nullable(row: &sqlx_mysql::MySqlRow, field_name: &str) -> Result<Option<$t>, sqlx::Error> {
-        use sqlx::{Error, Row};
+      fn try_from_mysql_row_nullable(row: &sqlx_mysql::MySqlRow, field_name: &str) -> Result<Option<$t>, sqlx_core::Error> {
+        use sqlx_core::Error;
+        use sqlx_core::row::Row;
 
         // NB(bt,2023-12-05): For now only string encodings are considered.
         // We may want to revisit in the future if we deal with binary data.

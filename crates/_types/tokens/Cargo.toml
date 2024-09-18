@@ -32,7 +32,7 @@ rand = {  version = "0.8.5", features = ["std_rng"] }
 
 once_cell = { version = "1.18.0", features = [] }
 
-sqlx = { version = "0.7.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
+sqlx = { version = "0.8.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
 sqlx-core = { version = "0.7.2" }
 sqlx-mysql= { version = "0.7.2" }
 
