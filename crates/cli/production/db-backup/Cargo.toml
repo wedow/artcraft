@@ -16,12 +16,15 @@ path = "src/main.rs"
 normal = ["my-workspace-hack"]
 
 [dependencies]
+# Workspace hack (faster compile times)
+my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
+
 # Internal
 easyenv = { path = "../../../lib/easyenv" }
 errors = { path = "../../../lib/errors" }
 
-# Workspace hack (faster compile times)
-my-workspace-hack = { version = "0.1", path = "../../../my-workspace-hack" }
+sqlx = { version = "0.8.2", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
+tokio = { version = "1.38.0", features = ["macros"] }
 
 # External
 anyhow = "1.0.86"

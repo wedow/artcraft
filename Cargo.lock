@@ -1776,6 +1776,8 @@ dependencies = [
  "my-workspace-hack",
  "serde",
  "serde_derive",
+ "sqlx",
+ "tokio",
 ]
 
 [[package]]

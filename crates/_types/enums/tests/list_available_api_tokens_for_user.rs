@@ -1,5 +1,9 @@
 use chrono::Utc;
 use sqlx::MySqlPool;
+use sqlx_core::any::AnyConnectionBackend;
+use sqlx_core::connection::Connection;
+
+use sqlx::{MySqlConnection, Executor};
 
 use errors::AnyhowResult;
 
