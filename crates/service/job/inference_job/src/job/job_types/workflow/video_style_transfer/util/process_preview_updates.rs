@@ -338,7 +338,7 @@ impl PreviewProcessor {
             expected_frame_count: self.expected_frame_count,
             stage_complete: state.all_frames_uploaded(),
             frames: state.all_object_paths().iter().map(|object_path| {
-              let url_str = format!("{}/{}", base_url, object_path.get_full_object_path_str());
+              let url_str = format!("{}{}", base_url, object_path.get_full_object_path_str());
               Url::parse(&url_str).unwrap()
             }).collect()
           }
