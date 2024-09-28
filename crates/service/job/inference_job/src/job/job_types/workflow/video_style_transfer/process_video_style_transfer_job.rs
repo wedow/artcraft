@@ -39,7 +39,7 @@ use mysql_queries::payloads::generic_inference_args::inner_payloads::workflow_pa
 use mysql_queries::payloads::prompt_args::encoded_style_transfer_name::EncodedStyleTransferName;
 use mysql_queries::payloads::prompt_args::prompt_inner_payload::{PromptInnerPayload, PromptInnerPayloadBuilder};
 use mysql_queries::queries::generic_inference::job::list_available_generic_inference_jobs::AvailableInferenceJob;
-use mysql_queries::queries::generic_inference::web::get_inference_job_status::get_inference_job_status;
+use mysql_queries::queries::generic_inference::web::get_inference_job_status::{get_inference_job_status, get_inference_job_status_from_connection};
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use mysql_queries::queries::model_weights::get::get_weight::{get_weight_by_token, get_weight_by_token_with_transactor};
@@ -372,20 +372,34 @@ pub async fn process_video_style_transfer_job(deps: &JobDependencies, job: &Avai
     let mut interval = tokio::time::interval(Duration::from_millis(30_000));
     let job_token = job.inference_job_token.clone();
 
-    let cancellation_watcher = tokio::spawn(async move {
+    let _cancellation_watcher = tokio::spawn(async move {
+        let mut connection = match mysql_pool.acquire().await {
+            Ok(connection) => connection,
+            Err(e) => {
+                error!("Error acquiring mysql connection: {:?}", e);
+                return
+            }
+        };
+        let mut fail_count = 0;
         loop {
             interval.tick().await;
-            let current_status = get_inference_job_status(
+            let current_status = get_inference_job_status_from_connection(
                 &job_token,
-                &mysql_pool
+                &mut connection
             ).await;
             let current_status = match current_status {
                 Ok(status) => status,
                 Err(e) => {
-                    error!("Error getting job status: {:?}", e);
+                    fail_count += 1;
+                    error!("Error #{fail_count} getting job status: {:?}", e);
+                    if fail_count > 5 {
+                        break;
+                    }
+                    tokio::time::sleep(Duration::from_secs(5)).await;
                     continue
                 }
             };
+            fail_count = 0;
             match current_status {
                 Some(status) => {
                     if status.status == JobStatusPlus::CancelledByUser {
