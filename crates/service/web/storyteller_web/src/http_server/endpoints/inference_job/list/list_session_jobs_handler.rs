@@ -326,7 +326,9 @@ fn records_to_response(
     match record.request.inference_category {
       // Show all audio results
       InferenceCategory::TextToSpeech
-      | InferenceCategory::VoiceConversion => return true,
+      | InferenceCategory::VoiceConversion
+      | InferenceCategory::SeedVc
+      | InferenceCategory::F5TTS => return true,
       // Fall through for everything else
       _ => {},
     }
