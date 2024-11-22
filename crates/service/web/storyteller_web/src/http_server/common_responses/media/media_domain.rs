@@ -4,7 +4,7 @@ use url::Url;
 //const FAKEYOU_CDN_STR: &str = "https://storage.googleapis.com/dev-vocodes-public";
 const FAKEYOU_CDN_STR: &str = "https://cdn-2.fakeyou.com";
 
-const STORYTELLER_CDN_STR: &str = "https://cdn.storyteller.ai";
+const STORYTELLER_CDN_STR: &str = "https://cdn-2.fakeyou.com";
 
 const FAKEYOU_CDN: Lazy<Url> = Lazy::new(|| Url::parse(FAKEYOU_CDN_STR)
     .expect("should never fail"));
