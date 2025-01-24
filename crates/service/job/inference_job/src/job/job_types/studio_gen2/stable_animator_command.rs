@@ -24,17 +24,17 @@ python inference_advanced.py \
  --gradient_checkpointing
  */
 
+use crate::util::get_filtered_env_vars::get_filtered_env_vars_hashmap;
+use errors::AnyhowResult;
+use filesys::path_to_string::path_to_string;
+use log::{debug, info, warn};
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::time::Duration;
-use log::{debug, info, warn};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::process::Command;
-use errors::AnyhowResult;
-use filesys::path_to_string::path_to_string;
 use subprocess_common::command_exit_status::CommandExitStatus;
 use subprocess_common::docker_options::DockerOptions;
-use crate::util::get_filtered_env_vars::get_filtered_env_vars_hashmap;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::process::Command;
 
 #[derive(Clone)]
 pub struct StableAnimatorCommand {
@@ -88,9 +88,9 @@ pub struct InferenceArgs<'s> {
 impl StableAnimatorCommand {
   pub fn new_from_env() -> AnyhowResult<Self> {
     Ok(Self {
-      root_code_directory: PathBuf::from("/home/bt/dev/storyteller/storyteller-ml/animation/StableAnimator"),
+      root_code_directory: PathBuf::from("/model_code"),
       executable_or_command: ExecutableOrCommand::Command("python inference_advanced.py".to_string()),
-      maybe_virtual_env_activation_command: Some(String::from("source venv/bin/activate")),
+      maybe_virtual_env_activation_command: Some(String::from("source /python_install/python/bin/activate")),
       maybe_docker_options: None,
       maybe_execution_timeout: None,
     })
