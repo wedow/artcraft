@@ -3,9 +3,11 @@ import Konva from "konva";
 import { SelectionManager } from "../NodesManagers";
 import { highlightStrokeWidth, primaryOrange } from "./constants";
 import { NodeData, Position } from "../types";
+import { RealTimeDrawEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
 
 export abstract class BaseNode {
   protected selectionManagerRef: SelectionManager;
+  protected realTimeDrawEngineRef: RealTimeDrawEngine;
   public kNode: Konva.Image | Konva.Group;
   protected mediaLayerRef: Konva.Layer;
 
@@ -25,16 +27,19 @@ export abstract class BaseNode {
     selectionManagerRef,
     mediaLayerRef,
     kNode,
+    realTimeDrawEngineRef,
   }: {
     selectionManagerRef: SelectionManager;
     mediaLayerRef: Konva.Layer;
     kNode: Konva.Image | Konva.Group;
+    realTimeDrawEngineRef: RealTimeDrawEngine;
   }) {
     // console.log("Node constructed");
     // this.uuid = uuidv4();
     this.mediaLayerRef = mediaLayerRef;
     this.selectionManagerRef = selectionManagerRef;
     this.kNode = kNode;
+    this.realTimeDrawEngineRef = realTimeDrawEngineRef;
   }
 
   protected delete() {
@@ -170,24 +175,26 @@ export abstract class BaseNode {
     this._areBaseEventsListening = false;
     this.kNode.removeEventListener("mousedown mouseup");
   }
-  public listenToBaseKNodeDrags() {
-    this.kNode.on("dragstart", () => {
-      // console.log("Drag start", this.kNode._id);
-      if (this.isProcessing) {
-        return;
-      }
-      this.selectionManagerRef.dragStart();
-    });
+  private handleDragStart = () => {
+    console.log("Drag start", this.kNode._id);
+    if (this.isProcessing) {
+      return;
+    }
+    this.selectionManagerRef.dragStart();
+  };
 
-    this.kNode.on("dragend", () => {
-      // console.log("Drag End", this.kNode._id);
-      this.selectionManagerRef.dragEnd();
-    });
+  private handleDragEnd = () => {
+    this.selectionManagerRef.dragEnd();
+  };
+
+  public listenToBaseKNodeDrags() {
+    this.kNode.on("dragstart", this.handleDragStart);
+    this.kNode.on("dragend", this.handleDragEnd);
   }
 
   public removeListenToBaseKNodeDrags() {
-    this.kNode.removeEventListener("dragstart");
-    this.kNode.removeEventListener("dragend");
+    this.kNode.off("dragstart", this.handleDragStart);
+    this.kNode.off("dragend", this.handleDragEnd);
   }
   public listenToBaseKNodeTransformations() {
     this.kNode.on("transformstart", (event) => {

@@ -152,16 +152,9 @@ export class RealTimeDrawEngine {
     this.previewCanvas.setZIndex(0);
 
     this.canUseSharedWorker = false;
-    this.setupSharedWorker();
+
     //this.debug();
   }
-
-  private onRenderingSystemMessageRecieved: (
-    response: SharedWorkerResponse<
-      DiffusionSharedWorkerResponseData,
-      DiffusionSharedWorkerProgressData
-    >,
-  ) => void;
 
   async updateCaptureCanvas(
     width: number | undefined,
@@ -257,23 +250,6 @@ export class RealTimeDrawEngine {
     this.port.postMessage(renderTask);
   }
 
-  setupSharedWorker() {
-    if (typeof SharedWorker !== "undefined") {
-      console.log("Shared Workers are supported in this browser.");
-      // Debug chrome://inspect/#workers
-      //  "src\\KonvaApp\\SharedWorkers\\Diffusion\\DiffusionSharedWorker.ts",
-      this.diffusionWorker = new DiffusionSharedWorkerClient(
-        this.onRenderingSystemMessageRecieved,
-      );
-
-      this.canUseSharedWorker = true;
-    } else {
-      console.log("Shared Workers are not supported in this browser.");
-      // Handle the lack of Shared Worker support (e.g., fallback to another solution)
-      this.canUseSharedWorker = false;
-    }
-  }
-
   public placeDebugRect(
     x: number,
     y: number,
@@ -312,27 +288,18 @@ export class RealTimeDrawEngine {
     return canvas;
   }
 
-  private findLongestVideoLength(): number {
-    let maxLength = 0;
-    // could simplify this logic to ensure that imageNodes has number of frames.
-    if (this.imageNodes.length > 0 && this.videoNodes.length === 0) {
-      return this.fps * 3; // three seconds determine whether to change this
-    }
-
-    this.videoNodes.forEach((node) => {
-      const videoLength = node.getNumberFrames();
-      if (videoLength > maxLength) {
-        maxLength = videoLength;
-      }
-    });
-    return maxLength;
-  }
-
+  private handleNodeDragEnd = () => {
+    // Clean up any existing state
+    console.log("Node drag ended");
+    this.render();
+  };
   public addNodes(node: MediaNode) {
     if (node instanceof VideoNode) {
       this.videoNodes.push(node);
+      node.kNode.on("dragend", this.handleNodeDragEnd);
     } else if (node instanceof ImageNode || node instanceof TextNode) {
       this.imageNodes.push(node);
+      node.kNode.on("dragend", this.handleNodeDragEnd);
     }
   }
 
@@ -340,11 +307,13 @@ export class RealTimeDrawEngine {
     if (node instanceof VideoNode) {
       const index = this.videoNodes.indexOf(node);
       if (index > -1) {
+        node.kNode.off("dragend", this.handleNodeDragEnd);
         this.videoNodes.splice(index, 1);
       }
     } else if (node instanceof ImageNode || node instanceof TextNode) {
       const index = this.imageNodes.indexOf(node);
       if (index > -1) {
+        node.kNode.off("dragend", this.handleNodeDragEnd);
         this.imageNodes.splice(index, 1);
       }
     }
@@ -431,16 +400,11 @@ export class RealTimeDrawEngine {
       throw error;
     }
   }
-  /** 
-  find longest video
-  then seek through each node 1 step.
-  stop ignore stepping if the duration is less.
-  **/
-  private async render() {
+
+  public async render() {
     // only pick nodes that intersect with the canvas on screen bounds to freeze.
 
     this.mediaLayerRef.draw();
-
     console.log(
       `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
     );
