@@ -7,7 +7,6 @@ import { RealTimeDrawEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
 
 export abstract class BaseNode {
   protected selectionManagerRef: SelectionManager;
-  protected realTimeDrawEngineRef: RealTimeDrawEngine;
   public kNode: Konva.Image | Konva.Group;
   protected mediaLayerRef: Konva.Layer;
 
@@ -27,19 +26,16 @@ export abstract class BaseNode {
     selectionManagerRef,
     mediaLayerRef,
     kNode,
-    realTimeDrawEngineRef,
   }: {
     selectionManagerRef: SelectionManager;
     mediaLayerRef: Konva.Layer;
     kNode: Konva.Image | Konva.Group;
-    realTimeDrawEngineRef: RealTimeDrawEngine;
   }) {
     // console.log("Node constructed");
     // this.uuid = uuidv4();
     this.mediaLayerRef = mediaLayerRef;
     this.selectionManagerRef = selectionManagerRef;
     this.kNode = kNode;
-    this.realTimeDrawEngineRef = realTimeDrawEngineRef;
   }
 
   protected delete() {
