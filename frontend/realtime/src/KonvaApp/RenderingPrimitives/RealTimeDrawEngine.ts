@@ -45,6 +45,8 @@ export class RealTimeDrawEngine {
   private width: number;
   private positionX: number;
   private positionY: number;
+  private positionPreviewX: number;
+  private positionPreviewY: number;
 
   private canUseSharedWorker: boolean;
 
@@ -52,6 +54,7 @@ export class RealTimeDrawEngine {
   private upperMaxFrames: number;
 
   public captureCanvas: Konva.Rect;
+  public previewCanvas: Konva.Rect;
 
   public videoLoadingCanvas: VideoNode | undefined;
 
@@ -62,7 +65,6 @@ export class RealTimeDrawEngine {
     bgLayerRef,
     mediaLayerRef,
     offScreenCanvas,
-    previewLayerRef,
     onRenderingSystemMessageRecieved,
   }: {
     width: number;
@@ -88,8 +90,12 @@ export class RealTimeDrawEngine {
 
     this.width = width;
     this.height = height;
-    this.positionX = window.innerWidth / 2 - this.width / 2;
+
+    this.positionX = window.innerWidth / 2 - this.width / 2 - this.width;
     this.positionY = window.innerHeight / 2 - this.height / 2;
+
+    this.positionPreviewX = window.innerWidth / 2 - this.width / 2 + this.width;
+    this.positionPreviewY = window.innerHeight / 2 - this.height / 2;
 
     this.offScreenCanvas = offScreenCanvas;
     this.offScreenCanvas.width = this.width;
@@ -99,12 +105,18 @@ export class RealTimeDrawEngine {
     // this.frames = [];
 
     this.bgLayerRef = bgLayerRef;
+
+    // this is the whole canvas
     this.mediaLayerRef = mediaLayerRef;
-    this.previewLayerRef = previewLayerRef;
+
+    // this.previewLayerRef = previewLayerRef;
+    // Set background layer to red and media layer to green for visibility
 
     this.port = undefined;
 
     this.fps = 24;
+
+    // This is captures a subset of the medialayer ref
     this.captureCanvas = new Konva.Rect({
       name: "CaptureCanvas",
       x: this.positionX,
@@ -117,15 +129,30 @@ export class RealTimeDrawEngine {
       draggable: false,
     });
 
+    // Add preview canvas with same dimensions but different style
+    this.previewCanvas = new Konva.Rect({
+      name: "PreviewCanvas",
+      x: this.positionX,
+      y: this.positionY,
+      width: this.width,
+      height: this.height,
+      fill: "white",
+      stroke: "blue",
+      strokeWidth: 1,
+      dash: [5, 5],
+      draggable: false,
+    });
+
     this.upperMaxFrames = 7 * this.fps; // seconds by fps
 
     this.bgLayerRef.add(this.captureCanvas);
+    this.bgLayerRef.add(this.previewCanvas);
     // send back
     this.captureCanvas.setZIndex(0);
+    this.previewCanvas.setZIndex(0);
 
     this.canUseSharedWorker = false;
     this.setupSharedWorker();
-
     //this.debug();
   }
 
@@ -136,19 +163,11 @@ export class RealTimeDrawEngine {
     >,
   ) => void;
 
-  private diffusionWorker:
-    | DiffusionSharedWorkerClient<
-        DiffusionSharedWorkerItemData,
-        DiffusionSharedWorkerResponseData,
-        DiffusionSharedWorkerProgressData
-      >
-    | undefined;
-
   async updateCaptureCanvas(
     width: number | undefined,
     height: number | undefined,
   ) {
-    if (!this.captureCanvas) {
+    if (!this.captureCanvas || !this.previewCanvas) {
       return;
     }
     if (width) {
@@ -167,11 +186,32 @@ export class RealTimeDrawEngine {
     const oldPositionY = this.positionY;
 
     // recompute the position
-    this.positionX = window.innerWidth / 2 - this.width / 2;
+    const padBetweenCaptureAndPreview = 10;
+    this.positionX =
+      window.innerWidth / 2 -
+      this.width / 2 -
+      this.width / 2 -
+      padBetweenCaptureAndPreview;
     this.positionY = window.innerHeight / 2 - this.height / 2;
 
-    this.captureCanvas.setPosition({ x: this.positionX, y: this.positionY });
+    this.positionPreviewX =
+      window.innerWidth / 2 -
+      this.width / 2 +
+      this.width / 2 +
+      padBetweenCaptureAndPreview;
+    this.positionPreviewY = window.innerHeight / 2 - this.height / 2;
+
+    this.captureCanvas.setPosition({
+      x: this.positionX,
+      y: this.positionY,
+    });
     this.captureCanvas.size({ width: this.width, height: this.height });
+
+    this.previewCanvas.setPosition({
+      x: this.positionPreviewX,
+      y: this.positionPreviewY,
+    });
+    this.previewCanvas.size({ width: this.width, height: this.height });
 
     // this is the change in positions
     const deltaX = this.positionX - oldPositionX;
@@ -181,8 +221,8 @@ export class RealTimeDrawEngine {
     for (let i = 0; i < children.length; i++) {
       let node = children[i];
 
-      // skip the capture canvas update.
-      if (node.name() === "CaptureCanvas") {
+      // skip the capture canvas and preview canvas update.
+      if (node.name() === "CaptureCanvas" || node.name() === "PreviewCanvas") {
         continue;
       }
       const pos = node.getPosition();
@@ -191,12 +231,6 @@ export class RealTimeDrawEngine {
         y: pos.y + deltaY,
       });
     }
-
-    // update the context menu
-    // TODO: find selected node and update that position
-    // this.videoNodes.forEach((node) => {
-    //   node.updateContextComponents();
-    // });
 
     this.mediaLayerRef.batchDraw();
   }
@@ -316,84 +350,6 @@ export class RealTimeDrawEngine {
     }
   }
 
-  // Do a bunch of precondition checks and error out early on.
-  public async startProcessing(renderingOptions?: RenderingOptions) {
-    // Start processing and lock everything
-
-    this.isProcessing = true;
-
-    try {
-      // or not loaded
-      if (this.videoNodes.length + this.imageNodes.length < 1) {
-        throw Error("Must at least have 1 item on the board.");
-      }
-      // error out if nodes are not all loaded.
-      // todo remove when we have error handling + and ui
-      var failed = false;
-
-      // if there are atleast 1 video node images are all covered.
-      for (let i = 0; i < this.videoNodes.length; i++) {
-        const item = this.videoNodes[i];
-        if (!item.kNode) {
-          return;
-        }
-        item.kNode.listening(false);
-        item.unhighlight();
-        if (item.didFinishLoading == false) {
-          // error out and show error message
-          //this.startProcessing();
-          failed = true;
-          setTimeout(this.startProcessing.bind(this), 1000);
-          break;
-        }
-        item.setProcessing(true);
-      }
-
-      // todo remove
-      if (failed) {
-        // throw error
-        throw Error("Wait For Items to Finish Processing.");
-      }
-
-      //this.videoNodes.forEach((item: VideoNode) => {});
-
-      // find the longest video node
-      let numberOfFrames = this.findLongestVideoLength();
-      numberOfFrames = Math.min(numberOfFrames, this.upperMaxFrames);
-      console.log(`Number Of Frames: ${numberOfFrames}`);
-
-      await this.render(numberOfFrames, renderingOptions);
-    } catch (error) {
-      console.log(error);
-      throw error;
-    } finally {
-      this.isProcessing = false;
-
-      // enable all nodes again.
-      for (let i = 0; i < this.videoNodes.length; i++) {
-        const item = this.videoNodes[i];
-        if (!item.kNode) {
-          return;
-        }
-        item.setProcessing(false);
-        item.kNode.listening(true);
-      }
-    }
-  }
-
-  // public stopProcessing() {
-  //   this.isProcessing = false;
-  // }
-
-  // find the frame time given the frame number
-  private calculateFrameTime(frameNumber: number, frameRate: number): number {
-    return frameNumber / frameRate;
-  }
-
-  /**
-   *
-   * @param config
-   */
   private async renderFrame(config: {
     layerOfInterest: Konva.Layer; // layer where the element that you want to clip lives.
     // XY and height of a captureCanvas ( region of interest )
@@ -480,131 +436,25 @@ export class RealTimeDrawEngine {
   then seek through each node 1 step.
   stop ignore stepping if the duration is less.
   **/
-  private async render(
-    largestNumberOfFrames: number,
-    renderingOptions?: RenderingOptions,
-  ) {
-    if (!this.isProcessing) return;
-
-    // Stop all nodes first
-    console.log(`LargestNumberOfFrames:${largestNumberOfFrames}`);
-    for (let k = 0; k < this.videoNodes.length; k++) {
-      const videoNode = this.videoNodes[k];
-      if (videoNode.didFinishLoading === false) {
-        throw Error("Videos Did Not Finish Loading Please Try Again.");
-      }
-      await videoNode.reset();
-    }
-
+  private async render() {
     // only pick nodes that intersect with the canvas on screen bounds to freeze.
-    for (let j = 0; j < largestNumberOfFrames; j++) {
-      // Seek Video Nodes first then draw
-      let frameTime = undefined;
 
-      for (let i = 0; i < this.videoNodes.length; i++) {
-        const currentVideoNode = this.videoNodes[i];
-        frameTime = this.calculateFrameTime(j, currentVideoNode.fps);
-        frameTime = parseFloat(frameTime.toFixed(2));
-        if (frameTime < currentVideoNode.duration) {
-          // console.log(`CurrentFrame:${j}`);
-          // console.log(`FrameTime:${frameTime}`);
-          // console.log(`Duration:${currentVideoNode.duration}`);
-          await currentVideoNode.seek(frameTime);
-        } // end of if context
-      } // End frame time
-      this.mediaLayerRef.draw();
+    this.mediaLayerRef.draw();
 
-      // use main thread
-      if (this.canUseSharedWorker === false) {
-        // SCOPES the capture for the context
-        // Correct size for the mobile canvas.
-        this.offScreenCanvas.width = this.width;
-        this.offScreenCanvas.height = this.height;
-        if (this.context) {
-          // This crops it starting at position X / Y where the mobile canvas is
-          // Then picks the height and width range
-          // then we draw it at 0,0,width and height of the canvas
-          this.context.drawImage(
-            this.mediaLayerRef.canvas._canvas,
-            this.positionX,
-            this.positionY,
-            this.width,
-            this.height,
-            0,
-            0,
-            this.width,
-            this.height,
-          );
-          //TODO write the non webworker version
-          const blob = await this.offScreenCanvas.convertToBlob({
-            quality: 1.0,
-            type: "image/jpeg",
-          });
-          await FileUtilities.blobToFileJpeg(blob, "1");
-
-          break;
-        } // end of for each frame
-      } else {
-        // decode on the shared webworker.
-        if (!this.context) {
-          console.log("Context Didn't Initialize");
-          return;
-        }
-
-        if (!this.diffusionWorker) {
-          console.log("Didn't Initialize Diffusion");
-          return;
-        }
-
-        console.log(
-          `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
-        );
-
-        const bitmap = await this.renderFrame({
-          layerOfInterest: this.mediaLayerRef,
-          x: this.captureCanvas.x(),
-          y: this.captureCanvas.y(),
-          width: this.width,
-          height: this.height,
-          mimeType: "image/jpeg",
-          pixelRatio: 1,
-          quality: 1.0,
-          test: false,
-        });
-
-        const data: DiffusionSharedWorkerItemData = {
-          height: this.height,
-          width: this.width,
-          imageBitmap: bitmap as ImageBitmap,
-          frame: j,
-          totalFrames: largestNumberOfFrames,
-          prompt: renderingOptions,
-        };
-        console.log(
-          `Processing Frame:${j + 1} out of ${largestNumberOfFrames}`,
-        );
-        this.diffusionWorker.sendData(1, data, false);
-      }
-    } // end of largest number of frames loop
-
-    // finished looping
-    if (!this.diffusionWorker) {
-      console.log("Didn't Initialize Diffusion");
-      return;
-    }
-
-    const jobID = 1;
-    this.diffusionWorker.sendData(
-      jobID,
-      {
-        height: this.height,
-        width: this.width,
-        imageBitmap: undefined,
-        frame: -1,
-        totalFrames: largestNumberOfFrames,
-        prompt: renderingOptions,
-      },
-      true,
+    console.log(
+      `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
     );
+
+    const bitmap = await this.renderFrame({
+      layerOfInterest: this.mediaLayerRef,
+      x: this.captureCanvas.x(),
+      y: this.captureCanvas.y(),
+      width: this.width,
+      height: this.height,
+      mimeType: "image/jpeg",
+      pixelRatio: 1,
+      quality: 1.0,
+      test: true,
+    });
   }
 }
