@@ -31,13 +31,15 @@ export const withProtectionRoute = <P extends object>(
       );
     }
 
-    if (
-      status.value === AUTH_STATUS.LOGGED_IN &&
-      userInfo.value &&
-      userInfo.value.can_access_studio
-    ) {
-      return <Component {...rest} />;
-    }
+    // if (
+    //   status.value === AUTH_STATUS.LOGGED_IN &&
+    //   userInfo.value &&
+    //   userInfo.value.can_access_studio
+    // ) {
+    //   return <Component {...rest} />;
+    // }
+
+    return <Component {...rest} />;
 
     return <RedirectToLanding />;
   };

@@ -34,6 +34,7 @@ import { NavigateFunction } from "react-router-dom";
 import { LoadingVideosProvider } from "./EngineUtitlities/LoadingVideosProvider";
 import { MediaFile } from "~/Classes/ApiManager/models/MediaFile";
 import { VideoExtractionHandler } from "./EngineUtitlities/VideoExtractionHandler/VideoExtractionHandler";
+import { RealTimeDrawEngine } from "./RenderingPrimitives/RealTimeDrawEngine";
 
 // for testing loading files from system
 // import { FileUtilities } from "./FileUtilities/FileUtilities";
@@ -59,9 +60,10 @@ export class Engine {
   private mediaLayer: Konva.Layer;
   private nodeIsolationLayer: Konva.Layer;
   private uiLayer: Konva.Layer;
+  private previewLayer: Konva.Layer;
   private renderEngine: RenderEngine;
   private offScreenCanvas: OffscreenCanvas;
-
+  private realTimeDrawEngine: RealTimeDrawEngine;
   private nodesManager: NodesManager;
   private nodeIsolator: NodeIsolator;
   private nodeTransformer: NodeTransformer;
@@ -91,10 +93,15 @@ export class Engine {
       height: window.innerHeight,
     });
     this.bgLayer = new Konva.Layer();
+
     this.mediaLayer = new Konva.Layer();
+    this.previewLayer = new Konva.Layer();
+
     this.nodeIsolationLayer = new Konva.Layer();
     this.uiLayer = new Konva.Layer();
+
     this.stage.add(this.bgLayer);
+    this.stage.add(this.previewLayer);
     this.stage.add(this.mediaLayer);
     this.stage.add(this.nodeIsolationLayer);
     this.stage.add(this.uiLayer);
@@ -114,12 +121,13 @@ export class Engine {
 
     this.offScreenCanvas = new OffscreenCanvas(0, 0);
 
-    this.renderEngine = new RenderEngine({
-      width: VideoResolutions.VERTICAL_720.width,
-      height: VideoResolutions.VERTICAL_720.height,
+    this.realTimeDrawEngine = new RealTimeDrawEngine({
+      width: VideoResolutions.SQUARE_1024.width,
+      height: VideoResolutions.SQUARE_1024.height,
       mediaLayerRef: this.mediaLayer,
       bgLayerRef: this.bgLayer,
       offScreenCanvas: this.offScreenCanvas,
+      previewLayerRef: this.previewLayer,
       onRenderingSystemMessageRecieved:
         this.onRenderingSystemReceived.bind(this),
     });
@@ -133,7 +141,7 @@ export class Engine {
     });
     // Selector Square to select Nodes
     this.selectorSquare = new SelectorSquare({
-      captureCanvasRef: this.renderEngine.captureCanvas,
+      captureCanvasRef: this.realTimeDrawEngine.captureCanvas,
       mediaLayerRef: this.mediaLayer,
       nodesManagerRef: this.nodesManager,
       selectionManagerRef: this.selectionManager,
@@ -141,14 +149,14 @@ export class Engine {
     });
     this.uiLayer.add(this.selectorSquare.getKonvaNode());
 
-    // Collection of commands for undo-redo
+    //Collection of commands for undo-redo
     this.undoStackManager = new UndoStackManager();
     this.commandManager = new CommandManager({
       mediaLayerRef: this.mediaLayer,
       nodesManagerRef: this.nodesManager,
       nodeTransformerRef: this.nodeTransformer,
       selectionManagerRef: this.selectionManager,
-      renderEngineRef: this.renderEngine,
+      renderEngineRef: this.realTimeDrawEngine,
       undoStackManagerRef: this.undoStackManager,
     });
 
@@ -159,7 +167,7 @@ export class Engine {
       mediaLayerRef: this.mediaLayer,
       nodesManagerRef: this.nodesManager,
       selectionManagerRef: this.selectionManager,
-      renderEngineRef: this.renderEngine,
+      renderEngineRef: this.realTimeDrawEngine,
     });
     this.videoExtractionHandler = new VideoExtractionHandler({
       nodeIsolatorRef: this.nodeIsolator,
@@ -173,7 +181,7 @@ export class Engine {
         width: this.boardCanvasRef.clientWidth,
         height: this.boardCanvasRef.clientHeight,
       },
-      captureCanvasSize: this.renderEngine.captureCanvas.getSize(),
+      captureCanvasSize: this.realTimeDrawEngine.captureCanvas.getSize(),
       uiLayerRef: this.uiLayer,
     });
 
@@ -231,7 +239,7 @@ export class Engine {
       }
 
       // hide the loader
-      //this.renderEngine.videoLoadingCanvas.kNode.hide();
+      //this.realTimeDrawEngine.videoLoadingCanvas.kNode.hide();
       uiAccess.toolbarMain.loadingBar.hide();
       this.setAppMode(AppModes.SELECT);
       return;
@@ -240,7 +248,7 @@ export class Engine {
     if (response.responseType === ResponseType.progress) {
       const data = response.data as DiffusionSharedWorkerProgressData;
       // TODO wil fix this ?!?! parameter issue
-      //this.renderEngine.videoLoadingCanvas.kNode.show();
+      //this.realTimeDrawEngine.videoLoadingCanvas.kNode.show();
       uiAccess.toolbarMain.loadingBar.update({
         message: "Rendering Frames...",
         progress: data.progress * 100,
@@ -446,7 +454,7 @@ export class Engine {
       console.log("Toolbar Main >> Render Download");
       try {
         this.setAppMode(AppModes.RENDERING);
-        await this.renderEngine.startProcessing();
+        await this.realTimeDrawEngine.startProcessing();
       } catch (error) {
         // throw error to retry
         uiAccess.dialogError.show({
@@ -504,7 +512,7 @@ export class Engine {
 
       try {
         this.setAppMode(AppModes.RENDERING);
-        await this.renderEngine.startProcessing(data);
+        await this.realTimeDrawEngine.startProcessing(data);
       } catch (error) {
         // throw error to retry
         uiAccess.dialogError.show({
@@ -535,7 +543,7 @@ export class Engine {
   }
 
   private onBoardCanvasResize() {
-    this.renderEngine.updateCaptureCanvas(undefined, undefined);
+    this.realTimeDrawEngine.updateCaptureCanvas(undefined, undefined);
     this.matteBox.updateSize({
       boardCanvasSize: {
         width: this.boardCanvasRef.offsetWidth,
@@ -601,8 +609,8 @@ export class Engine {
       textNodeData: textNodeData,
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
-      canvasPosition: this.renderEngine.captureCanvas.position(),
-      canvasSize: this.renderEngine.captureCanvas.size(),
+      canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
+      canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
     });
     this.commandManager.createNode(textNode);
   }
@@ -610,14 +618,14 @@ export class Engine {
   public addImage(imageFile: File) {
     const imageNode = new ImageNode({
       mediaLayerRef: this.mediaLayer,
-      canvasPosition: this.renderEngine.captureCanvas.position(),
-      canvasSize: this.renderEngine.captureCanvas.size(),
+      canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
+      canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
       imageFile: imageFile,
       selectionManagerRef: this.selectionManager,
     });
 
     this.commandManager.createNode(imageNode);
-    this.renderEngine.addNodes(imageNode);
+    this.realTimeDrawEngine.addNodes(imageNode);
   }
 
   public addVideo(
@@ -627,8 +635,8 @@ export class Engine {
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
       loadingVideosProviderRef: this.loadingVideosProvider,
-      canvasPosition: this.renderEngine.captureCanvas.position(),
-      canvasSize: this.renderEngine.captureCanvas.size(),
+      canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
+      canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
       videoNodeData: videNodeData,
     });
     this.commandManager.createNode(videoNode);
