@@ -3,14 +3,9 @@ import { Container } from "konva/lib/Container";
 import { Shape } from "konva/lib/Shape";
 import { Group } from "konva/lib/Group";
 
-import {
-  // SharedWorkerRequest,
-  SharedWorkerResponse,
-} from "../WorkerPrimitives/SharedWorkerBase";
-import {
-  DiffusionSharedWorkerProgressData,
-  DiffusionSharedWorkerResponseData,
-} from "../SharedWorkers/Diffusion/DiffusionSharedWorker";
+
+import { invoke } from "@tauri-apps/api/core";
+
 
 import { FileUtilities } from "../FileUtilities/FileUtilities";
 import { ImageNode, VideoNode, TextNode } from "../Nodes";
@@ -274,10 +269,15 @@ export class RealTimeDrawEngine {
     return canvas;
   }
 
-  private handleNodeDragEnd = () => {
+  public isProcessing = false;
+  private handleNodeDragEnd = async () => {
     // Clean up any existing state
+    if (this.isProcessing) {
+      return;
+    }
     console.log("Node drag ended");
-    this.render();
+    this.isProcessing = true;
+    await this.render();
   };
   public addNodes(node: MediaNode) {
     if (node instanceof VideoNode) {
@@ -379,6 +379,59 @@ export class RealTimeDrawEngine {
     }
   }
 
+
+
+  private async imageBitmapToBase64(imageBitmap: ImageBitmap): Promise<string> {
+    // Create a temporary canvas
+    const canvas = document.createElement("canvas");
+    canvas.width = imageBitmap.width;
+    canvas.height = imageBitmap.height;
+
+    // Draw the ImageBitmap onto the canvas
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Failed to get 2D context");
+
+    ctx.drawImage(imageBitmap, 0, 0);
+
+    // Convert to base64
+    const base64String = canvas.toDataURL("image/png");
+
+    // Clean up
+    canvas.remove();
+
+    // Remove the data:image/png;base64, prefix if you want just the base64 string
+    return base64String.split(",")[1];
+  }
+
+  private async base64ToImageBitmap(
+    base64String: string,
+  ): Promise<ImageBitmap> {
+    // Create an image element
+    const img = new Image();
+
+    // Convert base64 to data URL if it doesn't include the prefix
+    const dataUrl = base64String.startsWith("data:")
+      ? base64String
+      : `data:image/png;base64,${base64String}`;
+
+    // Create a promise to handle the image loading
+    return new Promise((resolve, reject) => {
+      img.onload = async () => {
+        try {
+          const bitmap = await createImageBitmap(img);
+          resolve(bitmap);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      img.onerror = () => reject(new Error("Failed to load image"));
+
+      // Set the source to trigger loading
+      img.src = dataUrl;
+    });
+  }
+
   public async render() {
     // only pick nodes that intersect with the canvas on screen bounds to freeze.
     this.mediaLayerRef.draw();
@@ -399,6 +452,22 @@ export class RealTimeDrawEngine {
       test: false,
     })) as ImageBitmap;
 
-    this.previewCanvas.image(bitmap);
+    try {
+      const base64Bitmap = await this.imageBitmapToBase64(bitmap);
+      console.log("Sending to server");
+      const base64BitmapResponse = await invoke("infer_image", {
+        image: base64Bitmap,
+      });
+      console.log("RESPONSE IS");
+      console.log(base64BitmapResponse);
+      const decoded = await this.base64ToImageBitmap(
+        base64BitmapResponse as string,
+      );
+      this.previewCanvas.image(decoded);
+    } catch (error) {
+      console.error("Error during image processing:", error);
+    } finally {
+      this.isProcessing = false;
+    }
   }
 }
