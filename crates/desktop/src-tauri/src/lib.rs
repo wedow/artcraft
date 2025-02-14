@@ -2,6 +2,7 @@ mod flip_image;
 mod image_endpoint;
 mod sd;
 pub mod model;
+pub mod ml;
 
 use std::sync::{Arc, RwLock};
 use once_cell::sync::Lazy;

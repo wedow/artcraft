@@ -32,7 +32,7 @@ impl UNetModel {
     device: &Device,
     dtype: DType,
   ) -> anyhow::Result<Self> {
-    debug!("building unet model...");
+    println!("building unet model... (2)");
     
     let unet = sd_config.build_unet(
       unet_weights_file, 
