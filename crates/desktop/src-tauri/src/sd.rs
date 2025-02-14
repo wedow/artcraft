@@ -6,9 +6,9 @@ extern crate intel_mkl_src;
 use std::sync::{Arc, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use candle_transformers::models::stable_diffusion;
 
-use crate::model::infer_clip_text_embeddings::infer_clip_text_embeddings;
-use crate::model::model_file::StableDiffusionVersion;
-use crate::model::save_image_from_tensor::save_image_from_tensor;
+use crate::ml::infer_clip_text_embeddings::infer_clip_text_embeddings;
+use crate::ml::model_file::StableDiffusionVersion;
+use crate::ml::save_image_from_tensor::save_image_from_tensor;
 use anyhow::{Error as E, Result};
 use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
 use hf_hub::api::sync::Api;

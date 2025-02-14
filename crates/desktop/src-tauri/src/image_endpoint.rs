@@ -1,6 +1,6 @@
 use std::env::args;
 use std::sync::{Arc, RwLock};
-use crate::model::model_file::StableDiffusionVersion;
+use crate::ml::model_file::StableDiffusionVersion;
 use crate::sd::{self, Args};
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};

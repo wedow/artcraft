@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use candle_transformers::models::stable_diffusion::vae::AutoEncoderKL;
 use hf_hub::api::sync::Api;
 use crate::ml::models::unet_model::UNetModel;
-use crate::model::model_file::StableDiffusionVersion;
+use crate::ml::model_file::StableDiffusionVersion;
 
 pub struct LazyLoadVaeModel {
   lazy_model: Arc<RwLock<Option<AutoEncoderKL>>>,

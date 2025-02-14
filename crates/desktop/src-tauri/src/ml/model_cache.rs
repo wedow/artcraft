@@ -1,5 +1,5 @@
 use crate::ml::models::unet_model::UNetModel;
-use crate::model::model_file::StableDiffusionVersion;
+use crate::ml::model_file::StableDiffusionVersion;
 use anyhow::anyhow;
 use candle_core::{DType, Device, Tensor};
 use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
