@@ -1,9 +1,8 @@
 
 import { useSignalEffect } from "@preact/signals-react";
-import { useCallback, useRef, useState } from "react";
 import { Slider } from "~/components/ui"
-import { dispatchUiEvents, uiEvents } from "~/signals"
-import { DEFAULT_PROMPT_STRENGTH, promptStrength } from "~/signals/uiEvents/promptSettings";
+import { dispatchUiEvents } from "~/signals"
+import { promptStrength } from "~/signals/uiEvents/promptSettings";
 
 export const SignaledPromptSlider = () => {
 
