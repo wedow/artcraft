@@ -1,7 +1,7 @@
+use crate::model::model_file::StableDiffusionVersion;
+use crate::sd::{self, Args};
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
-use std::io::Cursor;
-use crate::sd::{self, StableDiffusionVersion, Args};
 use candle_core::Device;
 
 const PROMPT: &str = "A beautiful landscape with mountains and a lake";

@@ -1,55 +1,16 @@
 #[cfg(feature = "accelerate")]
 extern crate accelerate_src;
-
 #[cfg(feature = "mkl")]
 extern crate intel_mkl_src;
 
 use candle_transformers::models::stable_diffusion;
-use std::ops::Div;
 
+use crate::model::infer_clip_text_embeddings::infer_clip_text_embeddings;
+use crate::model::model_file::StableDiffusionVersion;
+use crate::model::save_image_from_tensor::save_image_from_tensor;
 use anyhow::{Error as E, Result};
-use candle_core::{DType, Device, IndexOp, Tensor, D, Module};
-use image::{ImageBuffer, Rgb};
+use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
 use rand::Rng;
-use stable_diffusion::vae::AutoEncoderKL;
-use tokenizers::Tokenizer;
-
-// Helper function to save image
-fn save_image<P: AsRef<std::path::Path>>(img: &Tensor, p: P) -> Result<()> {
-    println!("Saving image to {:?}", p.as_ref());
-    let p = p.as_ref();
-    let (channel, height, width) = img.dims3()?;
-    println!("Image dimensions: {}x{} with {} channels", width, height, channel);
-    
-    if channel != 3 {
-        anyhow::bail!("save_image expects an input of shape (3, height, width)")
-    }
-    let img = img.permute((1, 2, 0))?.flatten_all()?;
-    let pixels = img.to_vec1::<u8>()?;
-    println!("Converting tensor to image buffer...");
-    
-    let image: ImageBuffer<Rgb<u8>, Vec<u8>> =
-        match ImageBuffer::from_raw(width as u32, height as u32, pixels) {
-            Some(image) => image,
-            None => anyhow::bail!("error saving image {p:?}"),
-        };
-    println!("Successfully created image buffer");
-    
-    image.save(p).map_err(E::from)?;
-    println!("Successfully saved image to disk");
-    Ok(())
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StableDiffusionVersion {
-    V1_5,
-    V1_5Inpaint,
-    V2_1,
-    V2Inpaint,
-    Xl,
-    XlInpaint,
-    Turbo,
-}
 
 pub struct Args {
     pub prompt: String,
@@ -62,71 +23,6 @@ pub struct Args {
     pub seed: Option<u64>,
     pub sd_version: StableDiffusionVersion,
     pub guidance_scale: Option<f64>,
-}
-
-impl StableDiffusionVersion {
-    fn repo(&self) -> &'static str {
-        match self {
-            Self::XlInpaint => "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
-            Self::Xl => "stabilityai/stable-diffusion-xl-base-1.0",
-            Self::V2Inpaint => "stabilityai/stable-diffusion-2-inpainting",
-            Self::V2_1 => "stabilityai/stable-diffusion-2-1",
-            Self::V1_5 => "runwayml/stable-diffusion-v1-5",
-            Self::V1_5Inpaint => "stable-diffusion-v1-5/stable-diffusion-inpainting",
-            Self::Turbo => "stabilityai/sdxl-turbo",
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum ModelFile {
-    Tokenizer,
-    Tokenizer2,
-    Clip,
-    Clip2,
-    Unet,
-    Vae,
-}
-
-impl ModelFile {
-    fn get(
-        &self,
-        filename: Option<String>,
-        version: StableDiffusionVersion,
-        use_f16: bool,
-    ) -> Result<std::path::PathBuf> {
-        use hf_hub::api::sync::Api;
-        match filename {
-            Some(filename) => Ok(std::path::PathBuf::from(filename)),
-            None => {
-                let (repo, path) = match self {
-                    Self::Tokenizer => {
-                        let tokenizer_repo = match version {
-                            StableDiffusionVersion::V1_5
-                            | StableDiffusionVersion::V2_1
-                            | StableDiffusionVersion::V1_5Inpaint
-                            | StableDiffusionVersion::V2Inpaint => "openai/clip-vit-base-patch32",
-                            StableDiffusionVersion::Xl
-                            | StableDiffusionVersion::XlInpaint
-                            | StableDiffusionVersion::Turbo => {
-                                "openai/clip-vit-large-patch14"
-                            }
-                        };
-                        (tokenizer_repo, "tokenizer.json")
-                    }
-                    Self::Tokenizer2 => {
-                        ("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k", "tokenizer.json")
-                    }
-                    Self::Clip => (version.repo(), "text_encoder/model.safetensors"),
-                    Self::Clip2 => (version.repo(), "text_encoder_2/model.safetensors"),
-                    Self::Unet => (version.repo(), "unet/diffusion_pytorch_model.safetensors"),
-                    Self::Vae => (version.repo(), "vae/diffusion_pytorch_model.safetensors"),
-                };
-                let filename = Api::new()?.model(repo.to_string()).get(path)?;
-                Ok(filename)
-            }
-        }
-    }
 }
 
 pub fn run(args: Args) -> Result<()> {
@@ -213,7 +109,7 @@ pub fn run(args: Args) -> Result<()> {
     let text_embeddings = which
         .iter()
         .map(|first| {
-            text_embeddings(
+            infer_clip_text_embeddings(
                 &args.prompt,
                 &args.uncond_prompt,
                 None, // tokenizer
@@ -281,105 +177,8 @@ pub fn run(args: Args) -> Result<()> {
     let image = (image.clamp(0f32, 1.)? * 255.)?.to_dtype(DType::U8)?;
     println!("Converted to 8-bit format");
     
-    save_image(&image.i(0)?, "temp.png")?;
+    save_image_from_tensor(&image.i(0)?, "temp.png")?;
     println!("Image generation completed successfully");
 
     Ok(())
 }
-
-#[allow(clippy::too_many_arguments)]
-fn text_embeddings(
-    prompt: &str,
-    uncond_prompt: &str,
-    tokenizer: Option<String>,
-    clip_weights: Option<String>,
-    clip2_weights: Option<String>,
-    sd_version: StableDiffusionVersion,
-    sd_config: &stable_diffusion::StableDiffusionConfig,
-    use_f16: bool,
-    device: &Device,
-    dtype: DType,
-    use_guide_scale: bool,
-    first: bool,
-) -> Result<Tensor> {
-    let tokenizer_file = if first {
-        ModelFile::Tokenizer
-    } else {
-        ModelFile::Tokenizer2
-    };
-    let tokenizer = tokenizer_file.get(tokenizer, sd_version, use_f16)?;
-    let tokenizer = Tokenizer::from_file(tokenizer).map_err(E::msg)?;
-    let pad_id = match &sd_config.clip.pad_with {
-        Some(padding) => *tokenizer.get_vocab(true).get(padding.as_str()).unwrap(),
-        None => *tokenizer.get_vocab(true).get("<|endoftext|>").unwrap(),
-    };
-    
-    println!("Running with prompt \"{prompt}\".");
-    let mut tokens = tokenizer
-        .encode(prompt, true)
-        .map_err(E::msg)?
-        .get_ids()
-        .to_vec();
-    if tokens.len() > sd_config.clip.max_position_embeddings {
-        anyhow::bail!(
-            "the prompt is too long, {} > max-tokens ({})",
-            tokens.len(),
-            sd_config.clip.max_position_embeddings
-        )
-    }
-    while tokens.len() < sd_config.clip.max_position_embeddings {
-        tokens.push(pad_id)
-    }
-    let tokens = Tensor::new(tokens.as_slice(), device)?.unsqueeze(0)?;
-
-    println!("Building the Clip transformer.");
-    let clip_weights_file = if first {
-        ModelFile::Clip
-    } else {
-        ModelFile::Clip2
-    };
-    let clip_weights = if first {
-        clip_weights_file.get(clip_weights, sd_version, use_f16)?
-    } else {
-        clip_weights_file.get(clip2_weights, sd_version, use_f16)?
-    };
-    let clip_config = if first {
-        &sd_config.clip
-    } else {
-        sd_config.clip2.as_ref().unwrap()
-    };
-    let text_model = stable_diffusion::build_clip_transformer(clip_config, clip_weights, device, DType::F32)?;
-    
-    let text_embeddings = text_model.forward(&tokens)?;
-
-    let text_embeddings = if use_guide_scale {
-        let mut uncond_tokens = tokenizer
-            .encode(uncond_prompt, true)
-            .map_err(E::msg)?
-            .get_ids()
-            .to_vec();
-        if uncond_tokens.len() > sd_config.clip.max_position_embeddings {
-            anyhow::bail!(
-                "the negative prompt is too long, {} > max-tokens ({})",
-                uncond_tokens.len(),
-                sd_config.clip.max_position_embeddings
-            )
-        }
-        while uncond_tokens.len() < sd_config.clip.max_position_embeddings {
-            uncond_tokens.push(pad_id)
-        }
-
-        let uncond_tokens = Tensor::new(uncond_tokens.as_slice(), device)?.unsqueeze(0)?;
-        let uncond_embeddings = text_model.forward(&uncond_tokens)?;
-
-        Tensor::cat(&[uncond_embeddings, text_embeddings], 0)?.to_dtype(dtype)?
-    } else {
-        text_embeddings.to_dtype(dtype)?
-    };
-    Ok(text_embeddings)
-}
-
-// fn main() -> Result<()> {
-//     let args = Args::parse();
-//     run(args)
-// }
