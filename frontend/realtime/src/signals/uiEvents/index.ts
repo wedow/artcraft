@@ -24,6 +24,10 @@ import {
   dispatchers as toolbarVideoExtractionDispatchers,
   eventsHandlers as toolbarVideoExtractionEvents,
 } from "./toolbarVideoExtraction";
+import {
+  dispatchers as promptDispatchers,
+  events as promptEvents,
+} from "./promptSettings";
 
 export const uiEvents = {
   ...addMediaEvents,
@@ -34,6 +38,7 @@ export const uiEvents = {
   toolbarMain: toolbarMainEvents,
   toolbarNode: toolbarNodeEvents,
   toolbarVideoExtraction: toolbarVideoExtractionEvents,
+  promptEvents: promptEvents,
 };
 export const dispatchUiEvents = {
   ...addMediaDispatchers,
@@ -44,4 +49,5 @@ export const dispatchUiEvents = {
   toolbarMain: toolbarMainDispatchers,
   toolbarNode: toolbarNodeDispatchers,
   toolbarVideoExtraction: toolbarVideoExtractionDispatchers,
+  promptSettings: promptDispatchers,
 };
