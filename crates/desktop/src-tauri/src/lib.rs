@@ -1,3 +1,4 @@
+mod flip_image;
 mod image_endpoint;
 mod sd;
 
