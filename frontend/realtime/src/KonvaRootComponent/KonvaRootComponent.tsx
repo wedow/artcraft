@@ -24,6 +24,7 @@ import { useRenderCounter } from "~/hooks/useRenderCounter";
 import { useNavigate } from "react-router-dom";
 import { SignaledMagicBox } from "./SignaledMagicBox";
 import { SignaledPromptSlider } from "./SignaledPromptSlider";
+import { SignaledPromptText } from "./SignaledPromptText";
 
 export const KonvaRootComponent = ({
   className,
@@ -63,6 +64,7 @@ export const KonvaRootComponent = ({
         openAddVideo={appUiContext.openAddVideo}
       />
       <SignaledPromptSlider />
+      <SignaledPromptText />
       <SignaledToolbarMain
         layoutSignal={layoutContext.signal}
         appUiContext={appUiContext}
