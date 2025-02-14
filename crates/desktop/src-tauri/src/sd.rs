@@ -3,6 +3,7 @@ extern crate accelerate_src;
 #[cfg(feature = "mkl")]
 extern crate intel_mkl_src;
 
+use std::sync::{Arc, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use candle_transformers::models::stable_diffusion;
 
 use crate::model::infer_clip_text_embeddings::infer_clip_text_embeddings;
@@ -10,8 +11,13 @@ use crate::model::model_file::StableDiffusionVersion;
 use crate::model::save_image_from_tensor::save_image_from_tensor;
 use anyhow::{Error as E, Result};
 use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
+use once_cell::sync::Lazy;
 use rand::Rng;
+use crate::model::model_cache::ModelCache;
 use crate::model::unet_model::UNetModel;
+
+// TODO: Clean up
+static UNET_MODEL: Lazy<Arc<RwLock<Option<UNetModel>>>> = Lazy::new(|| Arc::new(RwLock::new(None)));
 
 pub struct Args {
     pub prompt: String,
@@ -93,9 +99,7 @@ pub fn run(args: Args) -> Result<()> {
     println!("Building VAE model...");
     let vae = sd_config.build_vae(vae_file, &device, dtype)?;
     
-    println!("Building UNET model...");
-    //let unet = sd_config.build_unet(unet_file, &device, 4, false, dtype)?;
-    let unet = UNetModel::new(&sd_config, unet_file, &device, dtype)?;
+    
     
     // Build text encoders
     println!("Building text encoders...");
@@ -149,8 +153,30 @@ pub fn run(args: Args) -> Result<()> {
     let latents = (latents * scheduler.init_noise_sigma())?;
     println!("Initial noise shape: {:?}", latents.shape());
 
+    match UNET_MODEL.write() {
+        Err(err) => return Err(anyhow::Error::msg(err.to_string())),
+        Ok(mut maybe_model) => {
+            match &*maybe_model {
+                None => {
+                    println!("Building UNET model...");
+                    //let unet = sd_config.build_unet(unet_file, &device, 4, false, dtype)?;
+                    let unet = UNetModel::new(&sd_config, unet_file, &device, dtype)?;
+                    *maybe_model = Some(unet);
+                }
+                Some(_model) => {
+                    println!("Model already exists");
+                }
+            }
+            
+        }
+    }
+    
+
     println!("Starting diffusion process...");
     let mut latents = latents;
+    
+    
+    
     for (timestep_index, &timestep) in timesteps.iter().enumerate() {
         println!("Processing step {}/{}", timestep_index + 1, timesteps.len());
         let latent_model_input = latents.clone();
@@ -162,7 +188,22 @@ pub fn run(args: Args) -> Result<()> {
         
         println!("Running UNet inference with timestep {}...", timestep);
         
-        let noise_pred = unet.inference(&latent_model_input, timestep as f64, &text_embeddings)?;
+        let noise_pred;
+        
+        match UNET_MODEL.read() {
+            Err(err) => return Err(anyhow::Error::msg(err.to_string())),
+            Ok(maybe_model) => {
+                match &*maybe_model {
+                    None => {
+                        return Err(anyhow::Error::msg("Model does not exist"));
+                    }
+                    Some(unet) => {
+                        noise_pred = unet.inference(&latent_model_input, timestep as f64, &text_embeddings)?;
+                    }
+                }
+            }
+        }
+        
         
         //let noise_pred = match unet.forward(&latent_model_input, timestep as f64, &text_embeddings) {
         //    Ok(pred) => {
