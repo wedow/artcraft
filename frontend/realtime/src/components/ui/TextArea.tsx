@@ -7,9 +7,15 @@ export type ResizeType =
   | "both"
   | "horizontal"
   | "vertical"
-  | "block"
-  | "inline"
   | undefined;
+
+const resizeStyles = {
+  none: "resize-none",
+  both: "resize",
+  horizontal: "resize-x",
+  vertical: "resize-y",
+  undefined: "",
+}
 
 export interface TextareaInterface
   extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -21,6 +27,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaInterface>(
     { className, label, resize = "vertical", id, ...rest }: TextareaInterface,
     ref,
   ) => {
+
+    const resizeStyle = resizeStyles[resize];
+
     return (
       <div className="flex flex-col">
         {label && <label htmlFor={id ? id : kebabCase(label)}>{label}</label>}
@@ -31,11 +40,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaInterface>(
           className={twMerge(
             "border-ui-panel-border bg-ui-controls rounded-lg border px-3 py-2",
             className,
+            resizeStyle,
           )}
           style={{
             outline: "2px solid transparent",
             transition: "outline-color 0.15s ease-in-out",
-            resize: resize,
           }}
           onFocus={(e) => {
             // disableHotkeyInput(DomLevels.INPUT);
