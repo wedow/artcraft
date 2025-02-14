@@ -351,15 +351,7 @@ export class RealTimeDrawEngine {
         pixelRatio: pixelRatio,
       });
 
-      // TODO: fill canvas white properly
       const context = offScreenSceneCanvas.getContext();
-      // context.fillStyle = "white";
-      // context.fillRect(
-      //   0,
-      //   0,
-      //   offScreenSceneCanvas.width,
-      //   offScreenSceneCanvas.height,
-      // );
 
       const buffer = new OffScreenSceneCanvas({
         width:
@@ -418,7 +410,7 @@ export class RealTimeDrawEngine {
       mimeType: "image/jpeg",
       pixelRatio: 1,
       quality: 1.0,
-      test: true,
+      test: false,
     });
   }
 }

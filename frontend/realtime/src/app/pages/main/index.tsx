@@ -25,7 +25,7 @@ export const Main = withProtectionRoute(() => {
       />
       <div className="absolute top-0 flex w-full justify-between px-2">
         <ToolbarTopLeft />
-        <ToolbarUserProfile />
+        {/* <ToolbarUserProfile /> */}
       </div>
     </div>
   );

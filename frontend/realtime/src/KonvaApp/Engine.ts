@@ -512,7 +512,7 @@ export class Engine {
 
       try {
         this.setAppMode(AppModes.RENDERING);
-        await this.realTimeDrawEngine.startProcessing(data);
+        //await this.realTimeDrawEngine.startProcessing(data);
       } catch (error) {
         // throw error to retry
         uiAccess.dialogError.show({
