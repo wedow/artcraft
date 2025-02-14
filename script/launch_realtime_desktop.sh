@@ -8,4 +8,4 @@
 root_dir=$(pwd)
 export TAURI_FRONTEND_PATH="${root_dir}/frontend/realtime"
 
-cargo tauri dev
+cargo tauri dev --no-watch

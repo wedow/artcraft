@@ -11,6 +11,7 @@ use crate::model::save_image_from_tensor::save_image_from_tensor;
 use anyhow::{Error as E, Result};
 use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
 use rand::Rng;
+use crate::model::unet_model::UNetModel;
 
 pub struct Args {
     pub prompt: String,
@@ -65,12 +66,14 @@ pub fn run(args: Args) -> Result<()> {
 
     println!("Building scheduler...");
     let mut scheduler = sd_config.build_scheduler(args.n_steps.unwrap_or(1))?;
+    
     let seed = args.seed.unwrap_or_else(|| rand::thread_rng().gen());
     println!("Using seed: {}", seed);
     device.set_seed(seed)?;
 
     println!("Initializing Hugging Face API...");
     let api = hf_hub::api::sync::Api::new()?;
+    
     let repo = args.sd_version.repo();
     println!("Downloading model files from: {}", repo);
     
@@ -78,15 +81,21 @@ pub fn run(args: Args) -> Result<()> {
     let vae_file = api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
     let unet_file = api.model(repo.to_string()).get("unet/diffusion_pytorch_model.safetensors")?;
     
+    println!("VAE Path: {:?}", &vae_file);
+    println!("UNET Path: {:?}", &unet_file);
+    
     println!("Downloading text encoders...");
     let clip_file = api.model(repo.to_string()).get("text_encoder/model.safetensors")?;
     let clip2_file = api.model(repo.to_string()).get("text_encoder_2/model.safetensors")?;
     let tokenizer = api.model("openai/clip-vit-large-patch14".to_string()).get("tokenizer.json")?;
     let tokenizer2 = api.model("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k".to_string()).get("tokenizer.json")?;
 
-    println!("Building models...");
+    println!("Building VAE model...");
     let vae = sd_config.build_vae(vae_file, &device, dtype)?;
-    let unet = sd_config.build_unet(unet_file, &device, 4, false, dtype)?;
+    
+    println!("Building UNET model...");
+    //let unet = sd_config.build_unet(unet_file, &device, 4, false, dtype)?;
+    let unet = UNetModel::new(&sd_config, unet_file, &device, dtype)?;
     
     // Build text encoders
     println!("Building text encoders...");
@@ -152,16 +161,20 @@ pub fn run(args: Args) -> Result<()> {
         println!("Scaled input shape: {:?}", latent_model_input.shape());
         
         println!("Running UNet inference with timestep {}...", timestep);
-        let noise_pred = match unet.forward(&latent_model_input, timestep as f64, &text_embeddings) {
-            Ok(pred) => {
-                println!("UNet inference successful");
-                pred
-            }
-            Err(e) => {
-                println!("UNet inference failed with error: {}", e);
-                return Err(anyhow::anyhow!("UNet inference failed: {}", e));
-            }
-        };
+        
+        let noise_pred = unet.inference(&latent_model_input, timestep as f64, &text_embeddings)?;
+        
+        //let noise_pred = match unet.forward(&latent_model_input, timestep as f64, &text_embeddings) {
+        //    Ok(pred) => {
+        //        println!("UNet inference successful");
+        //        pred
+        //    }
+        //    Err(e) => {
+        //        println!("UNet inference failed with error: {}", e);
+        //        return Err(anyhow::anyhow!("UNet inference failed: {}", e));
+        //    }
+        //};
+        
         println!("Noise prediction shape: {:?}", noise_pred.shape());
         
         println!("Applying scheduler step...");
