@@ -454,7 +454,6 @@ export class Engine {
       console.log("Toolbar Main >> Render Download");
       try {
         this.setAppMode(AppModes.RENDERING);
-        await this.realTimeDrawEngine.startProcessing();
       } catch (error) {
         // throw error to retry
         uiAccess.dialogError.show({

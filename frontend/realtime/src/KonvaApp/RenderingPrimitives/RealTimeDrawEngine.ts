@@ -3,7 +3,6 @@ import { Container } from "konva/lib/Container";
 import { Shape } from "konva/lib/Shape";
 import { Group } from "konva/lib/Group";
 
-import { DiffusionSharedWorkerClient } from "../SharedWorkers/Diffusion/DiffusionSharedWorkerClient";
 import {
   // SharedWorkerRequest,
   SharedWorkerResponse,
@@ -11,11 +10,8 @@ import {
 import {
   DiffusionSharedWorkerProgressData,
   DiffusionSharedWorkerResponseData,
-  // DiffusionSharedWorker,
-  DiffusionSharedWorkerItemData,
 } from "../SharedWorkers/Diffusion/DiffusionSharedWorker";
 
-import { RenderingOptions } from "../Engine";
 import { FileUtilities } from "../FileUtilities/FileUtilities";
 import { ImageNode, VideoNode, TextNode } from "../Nodes";
 import { MediaNode } from "../types";
@@ -30,16 +26,12 @@ export class RealTimeDrawEngine {
   private imageNodes: (ImageNode | TextNode)[];
 
   private offScreenCanvas: OffscreenCanvas;
-  private context: OffscreenCanvasRenderingContext2D | null;
-
-  private isProcessing: boolean;
 
   // private frames: ImageBitmap[];
 
   // capturing composite within window
   private bgLayerRef: Konva.Layer;
   private mediaLayerRef: Konva.Layer;
-  private previewLayerRef: Konva.Layer;
 
   private height: number;
   private width: number;
@@ -48,13 +40,10 @@ export class RealTimeDrawEngine {
   private positionPreviewX: number;
   private positionPreviewY: number;
 
-  private canUseSharedWorker: boolean;
-
   private port: MessagePort | undefined;
-  private upperMaxFrames: number;
 
   public captureCanvas: Konva.Rect;
-  public previewCanvas: Konva.Rect;
+  public previewCanvas: Konva.Image;
 
   public videoLoadingCanvas: VideoNode | undefined;
 
@@ -65,7 +54,6 @@ export class RealTimeDrawEngine {
     bgLayerRef,
     mediaLayerRef,
     offScreenCanvas,
-    onRenderingSystemMessageRecieved,
   }: {
     width: number;
     height: number;
@@ -73,19 +61,11 @@ export class RealTimeDrawEngine {
     mediaLayerRef: Konva.Layer;
     previewLayerRef: Konva.Layer;
     offScreenCanvas: OffscreenCanvas;
-    onRenderingSystemMessageRecieved: (
-      response: SharedWorkerResponse<
-        DiffusionSharedWorkerResponseData,
-        DiffusionSharedWorkerProgressData
-      >,
-    ) => void;
   }) {
     this.videoLoadingCanvas = undefined;
     this.videoNodes = [];
     this.imageNodes = [];
 
-    this.isProcessing = false;
-    this.onRenderingSystemMessageRecieved = onRenderingSystemMessageRecieved;
     // TODO: Make this dynamic and update this on change of canvas.
 
     this.width = width;
@@ -100,9 +80,6 @@ export class RealTimeDrawEngine {
     this.offScreenCanvas = offScreenCanvas;
     this.offScreenCanvas.width = this.width;
     this.offScreenCanvas.height = this.height;
-    this.context = this.offScreenCanvas.getContext("2d");
-
-    // this.frames = [];
 
     this.bgLayerRef = bgLayerRef;
 
@@ -130,28 +107,37 @@ export class RealTimeDrawEngine {
     });
 
     // Add preview canvas with same dimensions but different style
-    this.previewCanvas = new Konva.Rect({
+    // this.previewCanvas = new Konva.Rect({
+    //   name: "PreviewCanvas",
+    //   x: this.positionX,
+    //   y: this.positionY,
+    //   width: this.width,
+    //   height: this.height,
+    //   fill: "white",
+    //   stroke: "blue",
+    //   strokeWidth: 1,
+    //   dash: [5, 5],
+    //   draggable: false,
+    // });
+
+    this.previewCanvas = new Konva.Image({
       name: "PreviewCanvas",
       x: this.positionX,
       y: this.positionY,
       width: this.width,
       height: this.height,
-      fill: "white",
+      image: undefined,
       stroke: "blue",
       strokeWidth: 1,
       dash: [5, 5],
       draggable: false,
     });
 
-    this.upperMaxFrames = 7 * this.fps; // seconds by fps
-
     this.bgLayerRef.add(this.captureCanvas);
     this.bgLayerRef.add(this.previewCanvas);
     // send back
     this.captureCanvas.setZIndex(0);
     this.previewCanvas.setZIndex(0);
-
-    this.canUseSharedWorker = false;
 
     //this.debug();
   }
@@ -395,13 +381,13 @@ export class RealTimeDrawEngine {
 
   public async render() {
     // only pick nodes that intersect with the canvas on screen bounds to freeze.
-
     this.mediaLayerRef.draw();
+
     console.log(
       `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
     );
 
-    const bitmap = await this.renderFrame({
+    const bitmap = (await this.renderFrame({
       layerOfInterest: this.mediaLayerRef,
       x: this.captureCanvas.x(),
       y: this.captureCanvas.y(),
@@ -411,6 +397,8 @@ export class RealTimeDrawEngine {
       pixelRatio: 1,
       quality: 1.0,
       test: false,
-    });
+    })) as ImageBitmap;
+
+    this.previewCanvas.image(bitmap);
   }
 }
