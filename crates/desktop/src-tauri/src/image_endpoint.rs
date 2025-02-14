@@ -49,6 +49,7 @@ pub fn infer_image(image: &str) -> Result<String, String> {
     let api = hf_hub::api::sync::Api::new()
       .map_err(|err| err.to_string())?;
 
+    let dtype = DType::F32;
 
     match MODEL_CACHE.write() {
         Err(err) => return Err(err.to_string()),
@@ -72,7 +73,7 @@ pub fn infer_image(image: &str) -> Result<String, String> {
                         }
                     };
                     
-                    let cache = ModelCache::new(device, sd_version.clone(), sd_config.clone())
+                    let cache = ModelCache::new(device, dtype, sd_version.clone(), sd_config.clone())
                       .map_err(|err| err.to_string())?;
 
                     *maybe_cache = Some(cache);

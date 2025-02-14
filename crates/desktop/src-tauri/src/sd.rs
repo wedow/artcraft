@@ -19,8 +19,6 @@ use crate::ml::models::unet_model::UNetModel;
 
 // TODO: Clean up
 
-static UNET_MODEL: Lazy<Arc<RwLock<Option<UNetModel>>>> = Lazy::new(|| Arc::new(RwLock::new(None)));
-
 // Note for Kasisnu: I'm going to start using lifetimes as long as that doesn't slow your velocity
 // Basically the args o this telescopic args struct are guaranteed to live as long as the struct 
 // itself with the 'a lifetime.
@@ -89,29 +87,29 @@ pub fn run(args: Args<'_>) -> Result<()> {
     let repo = args.sd_version.repo();
     println!("Downloading model files from: {}", repo);
     
-    println!("Downloading VAE ...");
-    let vae_file = args.api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
+    //println!("Downloading VAE ...");
+    //let vae_file = args.api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
 
-    println!("VAE Path: {:?}", &vae_file);
+    //println!("VAE Path: {:?}", &vae_file);
 
-    println!("Downloading text encoders...");
-    let clip_file = args.api.model(repo.to_string()).get("text_encoder/model.safetensors")?;
-    let clip2_file = args.api.model(repo.to_string()).get("text_encoder_2/model.safetensors")?;
-    let tokenizer = args.api.model("openai/clip-vit-large-patch14".to_string()).get("tokenizer.json")?;
-    let tokenizer2 = args.api.model("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k".to_string()).get("tokenizer.json")?;
+    //println!("Downloading text encoders...");
+    //let clip_file = args.api.model(repo.to_string()).get("text_encoder/model.safetensors")?;
+    //let clip2_file = args.api.model(repo.to_string()).get("text_encoder_2/model.safetensors")?;
+    //let tokenizer = args.api.model("openai/clip-vit-large-patch14".to_string()).get("tokenizer.json")?;
+    //let tokenizer2 = args.api.model("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k".to_string()).get("tokenizer.json")?;
 
-    println!("Building VAE model...");
-    let vae = sd_config.build_vae(vae_file, &device, dtype)?;
+    //println!("Building VAE model...");
+    //let vae = sd_config.build_vae(vae_file, &device, dtype)?;
 
-    // Build text encoders
-    println!("Building text encoders...");
-    let text_model = stable_diffusion::build_clip_transformer(&sd_config.clip, clip_file, &device, dtype)?;
-    let text_model2 = stable_diffusion::build_clip_transformer(sd_config.clip2.as_ref().unwrap(), clip2_file, &device, dtype)?;
-    
-    // Tokenize and encode text
-    println!("Processing text prompt...");
-    let tokenizer = tokenizers::Tokenizer::from_file(tokenizer).map_err(E::msg)?;
-    let tokenizer2 = tokenizers::Tokenizer::from_file(tokenizer2).map_err(E::msg)?;
+    //// Build text encoders
+    //println!("Building text encoders...");
+    //let text_model = stable_diffusion::build_clip_transformer(&sd_config.clip, clip_file, &device, dtype)?;
+    //let text_model2 = stable_diffusion::build_clip_transformer(sd_config.clip2.as_ref().unwrap(), clip2_file, &device, dtype)?;
+    //
+    //// Tokenize and encode text
+    //println!("Processing text prompt...");
+    //let tokenizer = tokenizers::Tokenizer::from_file(tokenizer).map_err(E::msg)?;
+    //let tokenizer2 = tokenizers::Tokenizer::from_file(tokenizer2).map_err(E::msg)?;
     
     println!("Preparing text embeddings...");
     let which = match args.sd_version {
@@ -155,24 +153,6 @@ pub fn run(args: Args<'_>) -> Result<()> {
     let latents = (latents * scheduler.init_noise_sigma())?;
     println!("Initial noise shape: {:?}", latents.shape());
 
-    //match UNET_MODEL.write() {
-    //    Err(err) => return Err(anyhow::Error::msg(err.to_string())),
-    //    Ok(mut maybe_model) => {
-    //        match &*maybe_model {
-    //            None => {
-    //                println!("Building UNET model...");
-    //                //let unet = sd_config.build_unet(unet_file, &device, 4, false, dtype)?;
-    //                let unet = UNetModel::new(&sd_config, unet_file, &device, dtype)?;
-    //                *maybe_model = Some(unet);
-    //            }
-    //            Some(_model) => {
-    //                println!("Model already exists");
-    //            }
-    //        }
-    //
-    //    }
-    //}
-
 
     println!("Starting diffusion process...");
     let mut latents = latents;
@@ -190,21 +170,7 @@ pub fn run(args: Args<'_>) -> Result<()> {
         
         println!("Running UNet inference with timestep {}...", timestep);
 
-        let noise_pred;
-
-        noise_pred = args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings)?;
-
-
-        //let noise_pred = match unet.forward(&latent_model_input, timestep as f64, &text_embeddings) {
-        //    Ok(pred) => {
-        //        println!("UNet inference successful");
-        //        pred
-        //    }
-        //    Err(e) => {
-        //        println!("UNet inference failed with error: {}", e);
-        //        return Err(anyhow::anyhow!("UNet inference failed: {}", e));
-        //    }
-        //};
+        let noise_pred = args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings)?;
 
         println!("Noise prediction shape: {:?}", noise_pred.shape());
         
@@ -214,7 +180,7 @@ pub fn run(args: Args<'_>) -> Result<()> {
     }
 
     println!("Diffusion process completed, decoding image...");
-    let image = vae.decode(&(latents / 0.13025)?)?;
+    let image = args.model_cache.vae_decode(&(latents / 0.13025)?)?;
     println!("VAE decode completed");
     let image = ((image / 2.)? + 0.5)?.to_device(&Device::Cpu)?;
     println!("Normalized image values");

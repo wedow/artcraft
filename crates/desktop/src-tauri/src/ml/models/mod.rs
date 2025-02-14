@@ -1,2 +1,2 @@
 pub mod unet_model;
-pub mod unet_model_cached;
+pub mod lazy_load_vae_model;
