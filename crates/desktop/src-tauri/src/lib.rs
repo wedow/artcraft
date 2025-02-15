@@ -1,9 +1,8 @@
-mod flip_image;
-mod image_endpoint;
-mod sd;
 pub mod ml;
+pub mod endpoints;
+pub mod model_config;
 
-use image_endpoint::infer_image;
+use endpoints::image_endpoint::infer_image;
 use once_cell::sync::Lazy;
 use std::sync::{Arc, RwLock};
 
