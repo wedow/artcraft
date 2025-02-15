@@ -5,6 +5,7 @@ use candle_core::{DType, Device, Tensor};
 use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
 use hf_hub::api::sync::Api;
 use std::sync::{Arc, RwLock};
+use candle_transformers::models::stable_diffusion::vae::DiagonalGaussianDistribution;
 use crate::ml::models::lazy_load_vae_model::LazyLoadVaeModel;
 // TODO: This data structure is gross. Generalize the locking and loading semantics for reuse.
 
@@ -47,7 +48,11 @@ impl ModelCache {
       sd_version,
     })
   }
-  
+
+  pub fn vae_encode(&self, xs: &Tensor) -> anyhow::Result<DiagonalGaussianDistribution> {
+    self.lazy_vae.encode(xs)
+  }
+
   pub fn vae_decode(&self, xs: &Tensor) -> anyhow::Result<Tensor> {
     self.lazy_vae.decode(xs)
   }

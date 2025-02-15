@@ -1,7 +1,7 @@
 use crate::ml::model_file::StableDiffusionVersion;
 use anyhow::anyhow;
 use candle_core::{DType, Device, Tensor};
-use candle_transformers::models::stable_diffusion::vae::AutoEncoderKL;
+use candle_transformers::models::stable_diffusion::vae::{AutoEncoderKL, DiagonalGaussianDistribution};
 use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
 use hf_hub::api::sync::Api;
 use std::sync::{Arc, RwLock};
@@ -41,6 +41,20 @@ impl LazyLoadVaeModel {
       }
     })
   }
+
+  pub fn encode(&self, xs: &Tensor) -> anyhow::Result<DiagonalGaussianDistribution> {
+    println!("vae encode...");
+    match self.try_encode(xs) {
+      Err(err) => Err(err),
+      Ok(Some(result)) => Ok(result),
+      Ok(None) => {
+        // Model wasn't previously loaded
+        self.load_model()?;
+        self.try_encode(xs)?
+          .ok_or(anyhow!("model was not previously loaded"))
+      }
+    }
+  }
   
   pub fn decode(&self, xs: &Tensor) -> anyhow::Result<Tensor> {
     println!("vae decode...");
@@ -55,7 +69,21 @@ impl LazyLoadVaeModel {
       }
     }
   }
-  
+
+  fn try_encode(&self, xs: &Tensor) -> anyhow::Result<Option<DiagonalGaussianDistribution>> {
+    match self.lazy_model.read() {
+      Err(err) => Err(anyhow!("lock error: {:?}", err)),
+      Ok(model) => {
+        match &*model {
+          None => Ok(None), // Model is not yet loaded
+          Some(model) => {
+            Ok(Some(model.encode(xs)?))
+          }
+        }
+      }
+    }
+  }
+
   fn try_decode(&self, xs: &Tensor) -> anyhow::Result<Option<Tensor>> {
     match self.lazy_model.read() {
       Err(err) => Err(anyhow!("lock error: {:?}", err)),
@@ -98,5 +126,5 @@ impl LazyLoadVaeModel {
     }
     Ok(())
   }
-  
+ 
 }

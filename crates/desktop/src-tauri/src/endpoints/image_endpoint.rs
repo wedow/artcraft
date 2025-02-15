@@ -1,8 +1,11 @@
+use std::io::Cursor;
+use std::path::PathBuf;
 use crate::endpoints::sd::{run, Args};
 use crate::ml::model_cache::ModelCache;
 use crate::model_config::ModelConfig;
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
+use image::ImageReader;
 use tauri::State;
 
 const PROMPT: &str = "A beautiful landscape with mountains and a lake";
@@ -12,13 +15,30 @@ const WIDTH: usize = 512;
 
 #[tauri::command]
 pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: State<ModelCache>) -> Result<String, String> {
-  do_infer_image(image, &model_config, &model_cache)
+
+  let bytes = BASE64_STANDARD.decode(image)
+    .map_err(|err| format!("Base64 decode error: {}", err))?;
+
+  let image = ImageReader::new(Cursor::new(bytes))
+    .with_guessed_format()
+    .map_err(|err| format!("Image format error: {}", err))?
+    .decode()
+    .map_err(|err| format!("Image decode error: {}", err))?;
+  
+  // TODO(bt,2025-02-14): Use byte buffers instead of hitting the filesystem.
+  let image_path = PathBuf::from("input_image.png");
+  
+  image.save(&image_path)
+    .map_err(|err| format!("Failed to save image: {}", err))?;
+  
+  do_infer_image(&image_path, &model_config, &model_cache)
 }
 
-fn do_infer_image(image: &str, config: &ModelConfig, model_cache: &ModelCache) -> Result<String, String> {
+fn do_infer_image(image_path: &PathBuf, config: &ModelConfig, model_cache: &ModelCache) -> Result<String, String> {
   println!("infer_image called; generating image with SDXL Turbo...");
   
   let args = Args {
+    image_path,
     api: config.hf_api.clone(),
     prompt: PROMPT.to_string(),
     uncond_prompt: "".to_string(),

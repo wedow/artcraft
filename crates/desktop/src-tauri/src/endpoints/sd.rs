@@ -3,6 +3,8 @@ extern crate accelerate_src;
 #[cfg(feature = "mkl")]
 extern crate intel_mkl_src;
 
+use std::mem::forget;
+use std::path::Path;
 use std::sync::{Arc, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use candle_transformers::models::stable_diffusion;
 
@@ -14,15 +16,18 @@ use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
 use hf_hub::api::sync::Api;
 use once_cell::sync::Lazy;
 use rand::Rng;
+use crate::ml::create_inpainting_tensors::create_inpainting_tensors;
+use crate::ml::load_image_file_to_tensor::load_image_file_to_tensor;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::models::unet_model::UNetModel;
 use crate::model_config::ModelConfig;
 // TODO: Clean up
 
 // Note for Kasisnu: I'm going to start using lifetimes as long as that doesn't slow your velocity
-// Basically the args o this telescopic args struct are guaranteed to live as long as the struct 
+// Basically the args o this telescopic args struct are guaranteed to live as long as the struct
 // itself with the 'a lifetime.
 pub struct Args<'a> {
+    pub image_path: &'a Path,
     pub api: Api,
     pub prompt: String,
     pub uncond_prompt: String,
@@ -44,8 +49,8 @@ pub fn run(args: Args<'_>) -> Result<()> {
     println!("  Prompt: {}", args.prompt);
     println!("  Steps: {}", args.n_steps.unwrap_or(1));
     println!("  Using CPU: {}", args.cpu);
-    
-    
+
+
     println!("Model dimensions: {}x{}", args.model_configs.sd_config.width, args.model_configs.sd_config.height);
 
     println!("Building scheduler...");
@@ -53,7 +58,7 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     let seed = args.seed.unwrap_or_else(|| rand::thread_rng().gen());
     println!("Using seed: {}", seed);
-    
+
     args.model_configs.device.set_seed(seed)?;
 
     println!("Initializing Hugging Face API...");
@@ -116,9 +121,41 @@ pub fn run(args: Args<'_>) -> Result<()> {
     let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
     println!("Text embeddings shape: {:?}", text_embeddings.shape());
 
+    println!("Loading input image into tensor...");
+
+    let input_image = load_image_file_to_tensor(args.image_path, &args.model_configs.device)?;
+
+
+    let use_guide_scale = false; // TODO
+
+    let vae_scale = match args.model_configs.sd_version {
+        StableDiffusionVersion::V1_5
+        | StableDiffusionVersion::V1_5Inpaint
+        | StableDiffusionVersion::V2_1
+        | StableDiffusionVersion::V2Inpaint
+        | StableDiffusionVersion::XlInpaint
+        | StableDiffusionVersion::Xl => 0.18215,
+        StableDiffusionVersion::Turbo => 0.13025,
+    };
+
+    // TODO: Just to trip the conditionals that force mask/inpaint generation
+    // TODO: Set this to turbo to turn off inpaint, anything else will turn it on.
+    const HACK_INPAINT_SD_VERSION : StableDiffusionVersion = StableDiffusionVersion::Turbo;
+
+    let (mask_latents, mask, mask_4) = create_inpainting_tensors(
+        HACK_INPAINT_SD_VERSION, // TODO: This is a hack
+        Some(args.image_path.to_path_buf()), // TODO: Mask needs hardcoding
+        args.model_configs.dtype,
+        &args.model_configs.device,
+        use_guide_scale,
+        &args.model_cache,
+        Some(input_image),
+        vae_scale,
+    )?;
+
     println!("Generating initial noise...");
     let timesteps = scheduler.timesteps().to_vec();
-    
+
     let latents = Tensor::randn(
         0f32,
         1f32,
@@ -127,22 +164,41 @@ pub fn run(args: Args<'_>) -> Result<()> {
     )?;
 
     let mut latents = (latents * scheduler.init_noise_sigma())?;
-    
+
     println!("Initial noise shape: {:?}", latents.shape());
 
     println!("Starting diffusion process...");
 
     for (timestep_index, &timestep) in timesteps.iter().enumerate() {
         println!("Processing step {}/{}", timestep_index + 1, timesteps.len());
-        
+
         let latent_model_input = latents.clone();
-        
+
         println!("Latent input shape: {:?}", latent_model_input.shape());
         
         println!("Scaling model input...");
         let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
-        
+
         println!("Scaled input shape: {:?}", latent_model_input.shape());
+
+
+        // TODO: THIS IS A HACK
+        let latent_model_input = match HACK_INPAINT_SD_VERSION {
+            StableDiffusionVersion::XlInpaint
+            | StableDiffusionVersion::V2Inpaint
+            | StableDiffusionVersion::V1_5Inpaint => Tensor::cat(
+                &[
+                    &latent_model_input,
+                    mask.as_ref().unwrap(),
+                    mask_latents.as_ref().unwrap(),
+                ],
+                1,
+            )?,
+            _ => latent_model_input,
+        }
+          .to_device(&args.model_configs.device)?;
+
+
         
         println!("Running UNet inference with timestep {}...", timestep);
 
@@ -152,19 +208,19 @@ pub fn run(args: Args<'_>) -> Result<()> {
         
         println!("Applying scheduler step...");
         latents = scheduler.step(&noise_pred, timestep, &latents)?;
-        
+
         println!("Step {}/{} completed", timestep_index + 1, timesteps.len());
     }
 
     println!("Diffusion process completed, decoding image...");
     let image = args.model_cache.vae_decode(&(latents / 0.13025)?)?;
-    
+
     println!("VAE decode completed");
     let image = ((image / 2.)? + 0.5)?.to_device(&Device::Cpu)?;
-    
+
     println!("Normalized image values");
     let image = (image.clamp(0f32, 1.)? * 255.)?.to_dtype(DType::U8)?;
-    
+
     println!("Converted to 8-bit format");
     
     save_image_from_tensor(&image.i(0)?, "temp.png")?;
