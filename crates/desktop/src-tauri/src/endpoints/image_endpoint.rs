@@ -6,6 +6,7 @@ use crate::model_config::ModelConfig;
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use image::ImageReader;
+use log::error;
 use tauri::State;
 
 const PROMPT: &str = "A beautiful landscape with mountains and a lake";
@@ -31,7 +32,13 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
   image.save(&image_path)
     .map_err(|err| format!("Failed to save image: {}", err))?;
   
-  do_infer_image(&image_path, &model_config, &model_cache)
+  let result = do_infer_image(&image_path, &model_config, &model_cache);
+  
+  if let Err(err) = result.as_deref() {
+    error!("There was an error: {:?}", err);
+  }
+  
+  result
 }
 
 fn do_infer_image(image_path: &PathBuf, config: &ModelConfig, model_cache: &ModelCache) -> Result<String, String> {
