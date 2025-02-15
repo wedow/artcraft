@@ -5,41 +5,18 @@ use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use once_cell::sync::Lazy;
 use std::sync::{Arc, Mutex, RwLock};
+use tauri::State;
 
 const PROMPT: &str = "A beautiful landscape with mountains and a lake";
 
 const HEIGHT: usize = 512;
 const WIDTH: usize = 512;
 
-static MODEL_CONFIG: Lazy<Arc<Mutex<Option<ModelConfig>>>> = Lazy::new(|| Arc::new(Mutex::new(None)));
-
 static MODEL_CACHE: Lazy<Arc<RwLock<Option<ModelCache>>>> = Lazy::new(|| Arc::new(RwLock::new(None)));
 
 #[tauri::command]
-pub fn infer_image(image: &str) -> Result<String, String> {
-    // TODO(bt,2025-02-14): There has to be a better way to inject dependencies.
-    
-    match MODEL_CONFIG.lock() {
-        Err(err) => Err(err.to_string()),
-        Ok(mut model_config) => {
-            match &*model_config {
-                Some(config) => {
-                    do_infer_image(image, config)
-                }
-                None => {
-                    // TODO(bt,2025-02-14): This is awful.
-                    let config = ModelConfig::init()
-                      .map_err(|err| err.to_string())?;
-
-                    let result = do_infer_image(image, &config)?;
-                      
-                    *model_config = Some(config);
-                    
-                    Ok(result)
-                }
-            }
-        }
-    }
+pub fn infer_image(image: &str, model_config: State<ModelConfig>) -> Result<String, String> {
+    do_infer_image(image, &model_config)
 }
 
 fn do_infer_image(image: &str, config: &ModelConfig) -> Result<String, String> {

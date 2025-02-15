@@ -5,9 +5,17 @@ pub mod model_config;
 use endpoints::image_endpoint::infer_image;
 use once_cell::sync::Lazy;
 use std::sync::{Arc, RwLock};
+use crate::model_config::ModelConfig;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+  info!("Loading model config...");
+  
+  let model_config = ModelConfig::init()
+    .expect("config should load");
+
+  info!("Initializing backend runtime...");
+  
   tauri::Builder::default()
     .setup(|app| {
       if cfg!(debug_assertions) {
@@ -19,6 +27,7 @@ pub fn run() {
       }
       Ok(())
     })
+    .manage(model_config)
     .invoke_handler(tauri::generate_handler![
       my_custom_command, 
       test_round_trip, 
