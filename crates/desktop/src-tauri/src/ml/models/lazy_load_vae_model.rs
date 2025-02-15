@@ -1,12 +1,10 @@
-use candle_core::{DType, Device, Tensor};
-use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, RwLock};
-use anyhow::anyhow;
-use candle_transformers::models::stable_diffusion::vae::AutoEncoderKL;
-use hf_hub::api::sync::Api;
-use crate::ml::models::unet_model::UNetModel;
 use crate::ml::model_file::StableDiffusionVersion;
+use anyhow::anyhow;
+use candle_core::{DType, Device, Tensor};
+use candle_transformers::models::stable_diffusion::vae::AutoEncoderKL;
+use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
+use hf_hub::api::sync::Api;
+use std::sync::{Arc, RwLock};
 
 pub struct LazyLoadVaeModel {
   lazy_model: Arc<RwLock<Option<AutoEncoderKL>>>,

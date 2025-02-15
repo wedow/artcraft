@@ -16,7 +16,7 @@ use once_cell::sync::Lazy;
 use rand::Rng;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::models::unet_model::UNetModel;
-
+use crate::model_config::ModelConfig;
 // TODO: Clean up
 
 // Note for Kasisnu: I'm going to start using lifetimes as long as that doesn't slow your velocity
@@ -35,6 +35,7 @@ pub struct Args<'a> {
     pub sd_version: StableDiffusionVersion,
     pub guidance_scale: Option<f64>,
     pub model_cache: &'a ModelCache,
+    pub model_configs: &'a ModelConfig,
 }
 
 pub fn run(args: Args<'_>) -> Result<()> {
@@ -44,43 +45,16 @@ pub fn run(args: Args<'_>) -> Result<()> {
     println!("  Steps: {}", args.n_steps.unwrap_or(1));
     println!("  Using CPU: {}", args.cpu);
     
-    let device = if args.cpu { 
-        println!("Using CPU for computation");
-        Device::Cpu 
-    } else { 
-        println!("Attempting to use CUDA device");
-        match Device::new_cuda(0) {
-            Ok(cuda_device) => {
-                println!("Successfully initialized CUDA device");
-                cuda_device
-            }
-            Err(e) => {
-                println!("Failed to initialize CUDA device: {}. Falling back to CPU", e);
-                Device::Cpu
-            }
-        }
-    };
-    let dtype = DType::F32;
-    println!("Using {:?} data type", dtype);
-
-    let sd_config = match args.sd_version {
-        StableDiffusionVersion::Turbo => {
-            println!("Configuring SDXL Turbo");
-            stable_diffusion::StableDiffusionConfig::sdxl_turbo(None, args.height, args.width)
-        }
-        _ => {
-            println!("Configuring SD v2.1");
-            stable_diffusion::StableDiffusionConfig::v2_1(None, args.height, args.width)
-        }
-    };
-    println!("Model dimensions: {}x{}", sd_config.width, sd_config.height);
+    
+    println!("Model dimensions: {}x{}", args.model_configs.sd_config.width, args.model_configs.sd_config.height);
 
     println!("Building scheduler...");
-    let mut scheduler = sd_config.build_scheduler(args.n_steps.unwrap_or(1))?;
+    let mut scheduler = args.model_configs.sd_config.build_scheduler(args.n_steps.unwrap_or(1))?;
 
     let seed = args.seed.unwrap_or_else(|| rand::thread_rng().gen());
     println!("Using seed: {}", seed);
-    device.set_seed(seed)?;
+    
+    args.model_configs.device.set_seed(seed)?;
 
     println!("Initializing Hugging Face API...");
 
@@ -129,10 +103,10 @@ pub fn run(args: Args<'_>) -> Result<()> {
                 None, // clip_weights
                 None, // clip2_weights
                 args.sd_version,
-                &sd_config,
+                &args.model_configs.sd_config,
                 false, // use_f16
-                &device,
-                dtype,
+                &args.model_configs.device,
+                args.model_configs.dtype,
                 false, // use_guide_scale
                 *first,
             )
@@ -144,28 +118,30 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     println!("Generating initial noise...");
     let timesteps = scheduler.timesteps().to_vec();
+    
     let latents = Tensor::randn(
         0f32,
         1f32,
-        (1, 4, sd_config.height / 8, sd_config.width / 8),
-        &device,
+        (1, 4, args.model_configs.sd_config.height / 8, args.model_configs.sd_config.width / 8),
+        &args.model_configs.device,
     )?;
-    let latents = (latents * scheduler.init_noise_sigma())?;
+
+    let mut latents = (latents * scheduler.init_noise_sigma())?;
+    
     println!("Initial noise shape: {:?}", latents.shape());
 
-
     println!("Starting diffusion process...");
-    let mut latents = latents;
-
-
 
     for (timestep_index, &timestep) in timesteps.iter().enumerate() {
         println!("Processing step {}/{}", timestep_index + 1, timesteps.len());
+        
         let latent_model_input = latents.clone();
+        
         println!("Latent input shape: {:?}", latent_model_input.shape());
         
         println!("Scaling model input...");
         let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
+        
         println!("Scaled input shape: {:?}", latent_model_input.shape());
         
         println!("Running UNet inference with timestep {}...", timestep);
@@ -176,15 +152,19 @@ pub fn run(args: Args<'_>) -> Result<()> {
         
         println!("Applying scheduler step...");
         latents = scheduler.step(&noise_pred, timestep, &latents)?;
+        
         println!("Step {}/{} completed", timestep_index + 1, timesteps.len());
     }
 
     println!("Diffusion process completed, decoding image...");
     let image = args.model_cache.vae_decode(&(latents / 0.13025)?)?;
+    
     println!("VAE decode completed");
     let image = ((image / 2.)? + 0.5)?.to_device(&Device::Cpu)?;
+    
     println!("Normalized image values");
     let image = (image.clamp(0f32, 1.)? * 255.)?.to_dtype(DType::U8)?;
+    
     println!("Converted to 8-bit format");
     
     save_image_from_tensor(&image.i(0)?, "temp.png")?;

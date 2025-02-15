@@ -31,6 +31,7 @@ fn do_infer_image(image: &str, config: &ModelConfig, model_cache: &ModelCache) -
     sd_version: config.sd_version.clone(),
     guidance_scale: Some(0.0),
     model_cache,
+    model_configs: config,
   };
 
   match run(args) {
