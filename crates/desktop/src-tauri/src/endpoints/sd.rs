@@ -13,6 +13,7 @@ use crate::ml::model_file::StableDiffusionVersion;
 use crate::ml::save_image_from_tensor::save_image_from_tensor;
 use anyhow::{Error as E, Result};
 use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
+use candle_transformers::models::stable_diffusion::vae::DiagonalGaussianDistribution;
 use hf_hub::api::sync::Api;
 use log::info;
 use once_cell::sync::Lazy;
@@ -126,6 +127,8 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     let input_image = load_image_file_to_tensor(args.image_path, &args.model_configs.device)?;
 
+    // REFERENCE IMAGE shape: [1, 3, 1024, 1024]
+    println!("REFERENCE IMAGE shape: {:?}", input_image.shape());
 
     let use_guide_scale = false; // TODO
 
@@ -139,6 +142,20 @@ pub fn run(args: Args<'_>) -> Result<()> {
         StableDiffusionVersion::Turbo => 0.13025,
     };
 
+
+
+    let encoded_image : DiagonalGaussianDistribution = args.model_cache.vae_encode(&input_image)?;
+
+    let encoded_sample = encoded_image.sample()?;
+
+    // Encoded sample shape: [1, 4, 128, 128] ... so close. Just needs to be smaller.
+    println!("Encoded sample shape: {:?}", encoded_sample.shape());
+
+    let mask_latents = (encoded_sample * vae_scale)?.to_device(&args.model_configs.device)?;
+
+    println!("Mask latents shape: {:?}", mask_latents.shape());
+
+
     // TODO: Just to trip the conditionals that force mask/inpaint generation
     // TODO: Set this to turbo to turn off inpaint, anything else will turn it on.
     // TODO: THIS MIGHT NOT BE POSSIBLE WITH TURBO: https://huggingface.co/stabilityai/sdxl-turbo/discussions/7
@@ -147,19 +164,19 @@ pub fn run(args: Args<'_>) -> Result<()> {
     // TODO/SEE ALSO: https://huggingface.co/spaces/OzzyGT/diffusers-fast-inpaint (THIS LOOKS AWFUL THOUGH -- let's not use this)
     //
     // TODO: Referencing this code: https://github.com/placrosse/candle/blob/43017539ab4f9ccb43015b456136b704ebf693e0/candle-examples/examples/stable-diffusion/main.rs#L491
-    const HACK_INPAINT_SD_VERSION : StableDiffusionVersion = StableDiffusionVersion::XlInpaint;
+    const HACK_INPAINT_SD_VERSION : StableDiffusionVersion = StableDiffusionVersion::Turbo;
 
     // TODO: This is inpainting. It doesn't work yet.
-    let (mask_latents, mask, mask_4) = create_inpainting_tensors(
-        HACK_INPAINT_SD_VERSION, // TODO: This is a hack
-        Some(args.image_path.to_path_buf()), // TODO: Mask needs hardcoding
-        args.model_configs.dtype,
-        &args.model_configs.device,
-        use_guide_scale,
-        &args.model_cache,
-        Some(input_image),
-        vae_scale,
-    )?;
+    //let (mask_latents, mask, mask_4) = create_inpainting_tensors(
+    //    HACK_INPAINT_SD_VERSION, // TODO: This is a hack
+    //    Some(args.image_path.to_path_buf()), // TODO: Mask needs hardcoding
+    //    args.model_configs.dtype,
+    //    &args.model_configs.device,
+    //    use_guide_scale,
+    //    &args.model_cache,
+    //    Some(input_image),
+    //    vae_scale,
+    //)?;
 
     println!("Generating initial noise...");
     let timesteps = scheduler.timesteps().to_vec();
@@ -172,8 +189,10 @@ pub fn run(args: Args<'_>) -> Result<()> {
         &args.model_configs.device,
     )?;
 
-    let mut latents = (latents * scheduler.init_noise_sigma())?;
+    //let mut latents = (latents * scheduler.init_noise_sigma())?;
+    let mut latents = (mask_latents * scheduler.init_noise_sigma())?;
 
+    // Initial noise shape: [1, 4, 64, 64]
     println!("Initial noise shape: {:?}", latents.shape());
 
     println!("Starting diffusion process...");
@@ -183,35 +202,37 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
         let latent_model_input = latents.clone();
 
+        // Latent input shape: [1, 4, 64, 64]
         println!("Latent input shape: {:?}", latent_model_input.shape());
         
         println!("Scaling model input...");
         let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
 
+        // Scaled input shape: [1, 4, 64, 64]
         println!("Scaled input shape: {:?}", latent_model_input.shape());
 
 
         // TODO: THIS IS A HACK
-        let latent_model_input = match HACK_INPAINT_SD_VERSION {
-            StableDiffusionVersion::XlInpaint
-            | StableDiffusionVersion::V2Inpaint
-            | StableDiffusionVersion::V1_5Inpaint => {
-                info!("Concatenating input shape: {:?}", latent_model_input.shape());
-                info!("Mask shape: {:?}", mask.as_ref().unwrap().shape());
-                info!("Mask latents shape: {:?}", mask_latents.as_ref().unwrap().shape());
-                info!("IF THIS FAILS, REVERT THE `HACK_INPAINT_SD_VERSION` 'flag'");
-                Tensor::cat(
-                    &[
-                        &latent_model_input,
-                        mask.as_ref().unwrap(),
-                        mask_latents.as_ref().unwrap(),
-                    ],
-                    1,
-                )?
-            },
-            _ => latent_model_input,
-        }
-          .to_device(&args.model_configs.device)?;
+        //let latent_model_input = match HACK_INPAINT_SD_VERSION {
+        //    StableDiffusionVersion::XlInpaint
+        //    | StableDiffusionVersion::V2Inpaint
+        //    | StableDiffusionVersion::V1_5Inpaint => {
+        //        info!("Concatenating input shape: {:?}", latent_model_input.shape());
+        //        info!("Mask shape: {:?}", mask.as_ref().unwrap().shape());
+        //        info!("Mask latents shape: {:?}", mask_latents.as_ref().unwrap().shape());
+        //        info!("IF THIS FAILS, REVERT THE `HACK_INPAINT_SD_VERSION` 'flag'");
+        //        Tensor::cat(
+        //            &[
+        //                &latent_model_input,
+        //                mask.as_ref().unwrap(),
+        //                mask_latents.as_ref().unwrap(),
+        //            ],
+        //            1,
+        //        )?
+        //    },
+        //    _ => latent_model_input,
+        //}
+        //  .to_device(&args.model_configs.device)?;
 
 
         
