@@ -20,6 +20,7 @@ use once_cell::sync::Lazy;
 use rand::Rng;
 use crate::ml::create_inpainting_tensors::create_inpainting_tensors;
 use crate::ml::load_image_file_to_tensor::load_image_file_to_tensor;
+use crate::ml::load_image_file_to_tensor_2::load_image_file_to_tensor_2;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::models::unet_model::UNetModel;
 use crate::model_config::ModelConfig;
@@ -125,10 +126,26 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     println!("Loading input image into tensor...");
 
-    let input_image = load_image_file_to_tensor(args.image_path, &args.model_configs.device)?;
+    let input_image = load_image_file_to_tensor_2(args.image_path)?;
+
+    let input_image = input_image.to_device(&args.model_configs.device)?
+      .to_dtype(args.model_configs.dtype)?;
 
     // REFERENCE IMAGE shape: [1, 3, 1024, 1024]
     println!("REFERENCE IMAGE shape: {:?}", input_image.shape());
+
+
+
+
+    println!("Calculating start step for diffusion process...");
+    let img2img_strength = 0.75f64;
+    
+    let t_start = {
+        let start = args.n_steps.unwrap_or(1) - (args.n_steps.unwrap_or(1) as f64 * img2img_strength) as usize;
+        
+        println!("Starting from step {} of {} (strength: {})", start, args.n_steps.unwrap_or(1), img2img_strength);
+        start
+    };
 
     let use_guide_scale = false; // TODO
 
@@ -145,120 +162,172 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
 
     let encoded_image : DiagonalGaussianDistribution = args.model_cache.vae_encode(&input_image)?;
+    let init_latent_dist = encoded_image;
 
-    let encoded_sample = encoded_image.sample()?;
+    println!("Generating latents from input image...");
+    let latents = (init_latent_dist.sample()? * vae_scale)?.to_device(&args.model_configs.device)?;
+    
+    println!("Initial latents shape: {:?}", latents.shape());
+
+    let latents = if t_start < scheduler.timesteps().len() {
+        println!("Adding noise to latents...");
+        let noise = latents.randn_like(0f64, 1f64)?;
+        scheduler.add_noise(&latents, noise, scheduler.timesteps()[t_start])?
+    } else {
+        println!("Using latents directly (no noise addition needed)");
+        latents
+    };
+
+    println!("Latents initialized successfully");
+
+
+
+    let vae_scale = match args.sd_version {
+        StableDiffusionVersion::V1_5 | StableDiffusionVersion::V1_5Inpaint | StableDiffusionVersion::V2_1 | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::XlInpaint | StableDiffusionVersion::Xl => 0.18215,
+        StableDiffusionVersion::Turbo => 0.13025,
+    };
+    
+    
+
+    //let encoded_sample = encoded_image.sample()?;
 
     // Encoded sample shape: [1, 4, 128, 128] ... so close. Just needs to be smaller.
-    println!("Encoded sample shape: {:?}", encoded_sample.shape());
+    //println!("Encoded sample shape: {:?}", encoded_sample.shape());
 
-    let mask_latents = (encoded_sample * vae_scale)?.to_device(&args.model_configs.device)?;
+    //let mask_latents = (encoded_sample * vae_scale)?.to_device(&args.model_configs.device)?;
 
-    println!("Mask latents shape: {:?}", mask_latents.shape());
+    //println!("Mask latents shape: {:?}", mask_latents.shape());
 
 
-    // TODO: Just to trip the conditionals that force mask/inpaint generation
-    // TODO: Set this to turbo to turn off inpaint, anything else will turn it on.
-    // TODO: THIS MIGHT NOT BE POSSIBLE WITH TURBO: https://huggingface.co/stabilityai/sdxl-turbo/discussions/7
-    // TODO/SEE ALSO: https://www.reddit.com/r/StableDiffusion/comments/198cl08/major_inpainting_issues_with_sdxl_xl_turbo/
-    // TODO/SEE ALSO: Alternate weights/issue: https://github.com/huggingface/diffusers/issues/6529
-    // TODO/SEE ALSO: https://huggingface.co/spaces/OzzyGT/diffusers-fast-inpaint (THIS LOOKS AWFUL THOUGH -- let's not use this)
-    //
-    // TODO: Referencing this code: https://github.com/placrosse/candle/blob/43017539ab4f9ccb43015b456136b704ebf693e0/candle-examples/examples/stable-diffusion/main.rs#L491
-    const HACK_INPAINT_SD_VERSION : StableDiffusionVersion = StableDiffusionVersion::Turbo;
+    
+    //let timesteps = scheduler.timesteps().to_vec();
+    let timesteps: Vec<_> = scheduler.timesteps().iter().copied().collect();
 
-    // TODO: This is inpainting. It doesn't work yet.
-    //let (mask_latents, mask, mask_4) = create_inpainting_tensors(
-    //    HACK_INPAINT_SD_VERSION, // TODO: This is a hack
-    //    Some(args.image_path.to_path_buf()), // TODO: Mask needs hardcoding
-    //    args.model_configs.dtype,
+    //// TODO: This shape may need to change for inpainting.
+    //let latents = Tensor::randn(
+    //    0f32,
+    //    1f32,
+    //    (1, 4, args.model_configs.sd_config.height / 8, args.model_configs.sd_config.width / 8),
     //    &args.model_configs.device,
-    //    use_guide_scale,
-    //    &args.model_cache,
-    //    Some(input_image),
-    //    vae_scale,
     //)?;
 
-    println!("Generating initial noise...");
-    let timesteps = scheduler.timesteps().to_vec();
-
-    // TODO: This shape may need to change for inpainting.
-    let latents = Tensor::randn(
-        0f32,
-        1f32,
-        (1, 4, args.model_configs.sd_config.height / 8, args.model_configs.sd_config.width / 8),
-        &args.model_configs.device,
-    )?;
-
     //let mut latents = (latents * scheduler.init_noise_sigma())?;
-    let mut latents = (mask_latents * scheduler.init_noise_sigma())?;
+    //let mut latents = (mask_latents * scheduler.init_noise_sigma())?;
 
     // Initial noise shape: [1, 4, 64, 64]
     println!("Initial noise shape: {:?}", latents.shape());
 
     println!("Starting diffusion process...");
+    
+    let mut latents = latents;
 
     for (timestep_index, &timestep) in timesteps.iter().enumerate() {
-        println!("Processing step {}/{}", timestep_index + 1, timesteps.len());
-
-        let latent_model_input = latents.clone();
-
-        // Latent input shape: [1, 4, 64, 64]
-        println!("Latent input shape: {:?}", latent_model_input.shape());
+        if timestep_index < t_start {
+            continue;
+        }
         
+        //   println!("Processing step {}/{}", timestep_index + 1, timesteps.len());
+
+        //   let latent_model_input = latents.clone();
+
+        //   // Latent input shape: [1, 4, 64, 64]
+        //   println!("Latent input shape: {:?}", latent_model_input.shape());
+        //   
+        //   println!("Scaling model input...");
+        //   let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
+
+        //   // Scaled input shape: [1, 4, 64, 64]
+        //   println!("Scaled input shape: {:?}", latent_model_input.shape());
+
+
+        //   // TODO: THIS IS A HACK
+        //   //let latent_model_input = match HACK_INPAINT_SD_VERSION {
+        //   //    StableDiffusionVersion::XlInpaint
+        //   //    | StableDiffusionVersion::V2Inpaint
+        //   //    | StableDiffusionVersion::V1_5Inpaint => {
+        //   //        info!("Concatenating input shape: {:?}", latent_model_input.shape());
+        //   //        info!("Mask shape: {:?}", mask.as_ref().unwrap().shape());
+        //   //        info!("Mask latents shape: {:?}", mask_latents.as_ref().unwrap().shape());
+        //   //        info!("IF THIS FAILS, REVERT THE `HACK_INPAINT_SD_VERSION` 'flag'");
+        //   //        Tensor::cat(
+        //   //            &[
+        //   //                &latent_model_input,
+        //   //                mask.as_ref().unwrap(),
+        //   //                mask_latents.as_ref().unwrap(),
+        //   //            ],
+        //   //            1,
+        //   //        )?
+        //   //    },
+        //   //    _ => latent_model_input,
+        //   //}
+        //   //  .to_device(&args.model_configs.device)?;
+
+
+        //   
+        //   println!("Running UNet inference with timestep {}...", timestep);
+
+        //   let noise_pred = args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings)?;
+
+        //   println!("Noise prediction shape: {:?}", noise_pred.shape());
+        //   
+        //   println!("Applying scheduler step...");
+        //   latents = scheduler.step(&noise_pred, timestep, &latents)?;
+
+        //   println!("Step {}/{} completed", timestep_index + 1, timesteps.len());
+
+
+        println!("Processing step {}/{}", timestep_index + 1, timesteps.len());
+        let latent_model_input = latents.clone();
+        println!("Latent input shape: {:?}", latent_model_input.shape());
+
         println!("Scaling model input...");
         let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
-
-        // Scaled input shape: [1, 4, 64, 64]
         println!("Scaled input shape: {:?}", latent_model_input.shape());
 
-
-        // TODO: THIS IS A HACK
-        //let latent_model_input = match HACK_INPAINT_SD_VERSION {
-        //    StableDiffusionVersion::XlInpaint
-        //    | StableDiffusionVersion::V2Inpaint
-        //    | StableDiffusionVersion::V1_5Inpaint => {
-        //        info!("Concatenating input shape: {:?}", latent_model_input.shape());
-        //        info!("Mask shape: {:?}", mask.as_ref().unwrap().shape());
-        //        info!("Mask latents shape: {:?}", mask_latents.as_ref().unwrap().shape());
-        //        info!("IF THIS FAILS, REVERT THE `HACK_INPAINT_SD_VERSION` 'flag'");
-        //        Tensor::cat(
-        //            &[
-        //                &latent_model_input,
-        //                mask.as_ref().unwrap(),
-        //                mask_latents.as_ref().unwrap(),
-        //            ],
-        //            1,
-        //        )?
-        //    },
-        //    _ => latent_model_input,
-        //}
-        //  .to_device(&args.model_configs.device)?;
-
-
-        
         println!("Running UNet inference with timestep {}...", timestep);
-
-        let noise_pred = args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings)?;
-
+        let noise_pred = match args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings) {
+            Ok(pred) => {
+                println!("UNet inference successful");
+                pred
+            },
+            Err(e) => {
+                println!("UNet inference failed with error: {}", e);
+                return Err(anyhow::anyhow!("UNet inference failed: {}", e));
+            },
+        };
         println!("Noise prediction shape: {:?}", noise_pred.shape());
-        
+
         println!("Applying scheduler step...");
         latents = scheduler.step(&noise_pred, timestep, &latents)?;
-
         println!("Step {}/{} completed", timestep_index + 1, timesteps.len());
     }
 
+    //println!("Diffusion process completed, decoding image...");
+    //let image = args.model_cache.vae_decode(&(latents / 0.13025)?)?;
+
+    //println!("VAE decode completed");
+    //let image = ((image / 2.)? + 0.5)?.to_device(&Device::Cpu)?;
+
+    //println!("Normalized image values");
+    //let image = (image.clamp(0f32, 1.)? * 255.)?.to_dtype(DType::U8)?;
+
+    //println!("Converted to 8-bit format");
+    //
+    //save_image_from_tensor(&image.i(0)?, "temp.png")?;
+    //println!("Image generation completed successfully");
+
+
+
     println!("Diffusion process completed, decoding image...");
-    let image = args.model_cache.vae_decode(&(latents / 0.13025)?)?;
-
+    let image = args.model_cache.vae_decode(&(latents / vae_scale)?)?;
+    //let image = args.model_cache.vae_decode(&(latents.div(vae_scale)?))?;
     println!("VAE decode completed");
+    //let image = ((image.div(2.))? + 0.5)?.to_device(&Device::Cpu)?;
     let image = ((image / 2.)? + 0.5)?.to_device(&Device::Cpu)?;
-
     println!("Normalized image values");
     let image = (image.clamp(0f32, 1.)? * 255.)?.to_dtype(DType::U8)?;
-
     println!("Converted to 8-bit format");
-    
+
     save_image_from_tensor(&image.i(0)?, "temp.png")?;
     println!("Image generation completed successfully");
 

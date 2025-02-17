@@ -5,6 +5,7 @@ use crate::ml::model_cache::ModelCache;
 use crate::model_config::ModelConfig;
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
+use image::imageops::FilterType;
 use image::ImageReader;
 use log::error;
 use tauri::State;
@@ -25,6 +26,9 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
     .map_err(|err| format!("Image format error: {}", err))?
     .decode()
     .map_err(|err| format!("Image decode error: {}", err))?;
+  
+  // Running out of vram
+  let image = image.resize(400, 400, FilterType::CatmullRom);
   
   // TODO(bt,2025-02-14): Use byte buffers instead of hitting the filesystem.
   let image_path = PathBuf::from("input_image.png");
@@ -52,11 +56,12 @@ fn do_infer_image(image_path: &PathBuf, config: &ModelConfig, model_cache: &Mode
     cpu: config.device.is_cpu(),
     height: Some(HEIGHT),
     width: Some(WIDTH),
-    n_steps: Some(1),
+    n_steps: Some(15),
     num_samples: 1,
     seed: None,
     sd_version: config.sd_version.clone(),
-    guidance_scale: Some(0.0),
+    //guidance_scale: Some(0.0),
+    guidance_scale: None,
     model_cache,
     model_configs: config,
   };
