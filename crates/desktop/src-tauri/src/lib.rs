@@ -3,18 +3,25 @@ pub mod endpoints;
 pub mod model_config;
 
 use crate::ml::model_cache::ModelCache;
+use crate::ml::prompt_cache::PromptCache;
 use crate::model_config::ModelConfig;
 use endpoints::image_endpoint::infer_image;
+use env_logger;
 use log::info;
 use once_cell::sync::Lazy;
 use std::sync::{Arc, RwLock};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+  env_logger::init();
+
   info!("Loading model config...");
 
   let model_config = ModelConfig::init()
     .expect("config should load");
+
+  let prompt_cache = PromptCache::with_capacity(8)
+    .expect("prompt cache should load");
 
   info!("Creating model cache...");
   
@@ -39,6 +46,7 @@ pub fn run() {
       Ok(())
     })
     .manage(model_config)
+    .manage(prompt_cache)
     .manage(model_cache)
     .invoke_handler(tauri::generate_handler![
       my_custom_command, 

@@ -5,4 +5,5 @@ pub mod load_image_file_to_tensor_2;
 pub mod model_cache;
 pub mod model_file;
 pub mod models;
+pub mod prompt_cache;
 pub mod save_image_from_tensor;

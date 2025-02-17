@@ -9,6 +9,7 @@ use image::imageops::FilterType;
 use image::ImageReader;
 use log::error;
 use tauri::State;
+use crate::ml::prompt_cache::PromptCache;
 
 const PROMPT: &str = "A beautiful landscape with mountains and a lake";
 
@@ -16,7 +17,12 @@ const HEIGHT: usize = 512;
 const WIDTH: usize = 512;
 
 #[tauri::command]
-pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: State<ModelCache>) -> Result<String, String> {
+pub fn infer_image(
+  image: &str, 
+  model_config: State<ModelConfig>, 
+  model_cache: State<ModelCache>,
+  prompt_cache: State<PromptCache>,
+) -> Result<String, String> {
 
   let bytes = BASE64_STANDARD.decode(image)
     .map_err(|err| format!("Base64 decode error: {}", err))?;
@@ -48,7 +54,7 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
   image.save(&image_path)
     .map_err(|err| format!("Failed to save image: {}", err))?;
   
-  let result = do_infer_image(&prompt, &image_path, &model_config, &model_cache);
+  let result = do_infer_image(&prompt, &image_path, &model_config, &model_cache, prompt_cache);
   
   if let Err(err) = result.as_deref() {
     error!("There was an error: {:?}", err);
@@ -57,7 +63,13 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
   result
 }
 
-fn do_infer_image(prompt: &str, image_path: &PathBuf, config: &ModelConfig, model_cache: &ModelCache) -> Result<String, String> {
+fn do_infer_image(
+  prompt: &str, 
+  image_path: &PathBuf, 
+  config: &ModelConfig, 
+  model_cache: &ModelCache,
+  prompt_cache: State<PromptCache>,
+) -> Result<String, String> {
   println!("infer_image called; generating image with SDXL Turbo...");
   
   let args = Args {
@@ -76,6 +88,7 @@ fn do_infer_image(prompt: &str, image_path: &PathBuf, config: &ModelConfig, mode
     guidance_scale: None,
     model_cache,
     model_configs: config,
+    prompt_cache: &prompt_cache,
   };
 
   match run(args) {

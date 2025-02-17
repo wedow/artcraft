@@ -23,6 +23,7 @@ use crate::ml::load_image_file_to_tensor::load_image_file_to_tensor;
 use crate::ml::load_image_file_to_tensor_2::load_image_file_to_tensor_2;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::models::unet_model::UNetModel;
+use crate::ml::prompt_cache::PromptCache;
 use crate::model_config::ModelConfig;
 // TODO: Clean up
 
@@ -44,6 +45,7 @@ pub struct Args<'a> {
     pub guidance_scale: Option<f64>,
     pub model_cache: &'a ModelCache,
     pub model_configs: &'a ModelConfig,
+    pub prompt_cache: &'a PromptCache,
 }
 
 pub fn run(args: Args<'_>) -> Result<()> {
@@ -93,19 +95,32 @@ pub fn run(args: Args<'_>) -> Result<()> {
     //let tokenizer = tokenizers::Tokenizer::from_file(tokenizer).map_err(E::msg)?;
     //let tokenizer2 = tokenizers::Tokenizer::from_file(tokenizer2).map_err(E::msg)?;
     
-    let text_embeddings = infer_clip_text_embeddings(
-          &args.prompt,
-          &args.uncond_prompt,
-          None, // tokenizer
-          None, // clip_weights
-          None, // clip2_weights
-          args.sd_version,
-          &args.model_configs.sd_config,
-          false, // use_f16
-          &args.model_configs.device,
-          args.model_configs.dtype,
-          false, // use_guide_scale
-      )?;
+    info!("Checking if prompt is cached");
+    let maybe_cached = args.prompt_cache.get_copy(&args.prompt)?;
+    
+    let text_embeddings = if let Some(tensor) = maybe_cached {
+        info!("Prompt is cached!");
+        tensor
+    } else {
+        info!("Prompt is NOT cached!");
+        let tensor = infer_clip_text_embeddings(
+            &args.prompt,
+            &args.uncond_prompt,
+            None, // tokenizer
+            None, // clip_weights
+            None, // clip2_weights
+            args.sd_version,
+            &args.model_configs.sd_config,
+            false, // use_f16
+            &args.model_configs.device,
+            args.model_configs.dtype,
+            false, // use_guide_scale
+        )?;
+        
+        args.prompt_cache.store_copy(&args.prompt, &tensor)?;
+        
+        tensor
+    };
     
     println!("Text embeddings shape: {:?}", text_embeddings.shape());
 
