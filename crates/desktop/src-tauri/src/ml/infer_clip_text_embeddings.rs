@@ -7,7 +7,8 @@ use candle_transformers::models::stable_diffusion;
 
 use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
 use anyhow::Error as E;
-use candle_core::{DType, Device, Module, Tensor};
+use candle_core::{DType, Device, Module, Tensor, D};
+use log::info;
 use tokenizers::Tokenizer;
 
 #[allow(clippy::too_many_arguments)]
@@ -23,8 +24,57 @@ pub fn infer_clip_text_embeddings(
   device: &Device,
   dtype: DType,
   use_guide_scale: bool,
-  first: bool,
 ) -> anyhow::Result<Tensor> {
+  info!("Preparing text embeddings...");
+
+  let which = match sd_version {
+    StableDiffusionVersion::Xl
+    | StableDiffusionVersion::XlInpaint
+    | StableDiffusionVersion::Turbo => vec![true, false],
+    _ => vec![true],
+  };
+
+  let text_embeddings = which
+    .iter()
+    .map(|first| {
+      do_infer_clip_text_embeddings(
+        &prompt,
+        &uncond_prompt,
+        None, // tokenizer
+        None, // clip_weights
+        None, // clip2_weights
+        sd_version,
+        &sd_config,
+        false, // use_f16
+        &device,
+        dtype,
+        false, // use_guide_scale
+        *first,
+      )
+    })
+    .collect::<anyhow::Result<Vec<_>>>()?;
+
+  let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
+  
+  Ok(text_embeddings)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn do_infer_clip_text_embeddings(
+    prompt: &str,
+    uncond_prompt: &str,
+    tokenizer: Option<String>,
+    clip_weights: Option<String>,
+    clip2_weights: Option<String>,
+    sd_version: StableDiffusionVersion,
+    sd_config: &stable_diffusion::StableDiffusionConfig,
+    use_f16: bool,
+    device: &Device,
+    dtype: DType,
+    use_guide_scale: bool,
+    first: bool,
+  ) -> anyhow::Result<Tensor> {
+  
   let tokenizer_file = if first {
     ModelFile::Tokenizer
   } else {

@@ -20,6 +20,18 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
 
   let bytes = BASE64_STANDARD.decode(image)
     .map_err(|err| format!("Base64 decode error: {}", err))?;
+  
+  let prompt_file = PathBuf::from("prompt.txt").canonicalize()
+    .unwrap_or_else(|_| PathBuf::from("prompt.txt"));
+  
+  let prompt = std::fs::read_to_string(&prompt_file)
+    .map_err(|err| format!("Failed to read prompt file: {}", err))
+    .unwrap_or_else(|_| {
+      error!("Failed to read prompt file: {:?}", prompt_file);
+      PROMPT.to_string()
+    })
+    .trim()
+    .to_string();
 
   let image = ImageReader::new(Cursor::new(bytes))
     .with_guessed_format()
@@ -27,8 +39,8 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
     .decode()
     .map_err(|err| format!("Image decode error: {}", err))?;
   
-  // Running out of vram
-  let image = image.resize(400, 400, FilterType::CatmullRom);
+  // TODO(bt,2025-02-17): Running out of vram with full image buffer size
+  let image = image.resize(512, 512, FilterType::CatmullRom);
   
   // TODO(bt,2025-02-14): Use byte buffers instead of hitting the filesystem.
   let image_path = PathBuf::from("input_image.png");
@@ -36,7 +48,7 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
   image.save(&image_path)
     .map_err(|err| format!("Failed to save image: {}", err))?;
   
-  let result = do_infer_image(&image_path, &model_config, &model_cache);
+  let result = do_infer_image(&prompt, &image_path, &model_config, &model_cache);
   
   if let Err(err) = result.as_deref() {
     error!("There was an error: {:?}", err);
@@ -45,13 +57,13 @@ pub fn infer_image(image: &str, model_config: State<ModelConfig>, model_cache: S
   result
 }
 
-fn do_infer_image(image_path: &PathBuf, config: &ModelConfig, model_cache: &ModelCache) -> Result<String, String> {
+fn do_infer_image(prompt: &str, image_path: &PathBuf, config: &ModelConfig, model_cache: &ModelCache) -> Result<String, String> {
   println!("infer_image called; generating image with SDXL Turbo...");
   
   let args = Args {
     image_path,
     api: config.hf_api.clone(),
-    prompt: PROMPT.to_string(),
+    prompt: prompt.to_string(),
     uncond_prompt: "".to_string(),
     cpu: config.device.is_cpu(),
     height: Some(HEIGHT),

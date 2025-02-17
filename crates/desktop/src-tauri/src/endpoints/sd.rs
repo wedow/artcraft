@@ -93,35 +93,20 @@ pub fn run(args: Args<'_>) -> Result<()> {
     //let tokenizer = tokenizers::Tokenizer::from_file(tokenizer).map_err(E::msg)?;
     //let tokenizer2 = tokenizers::Tokenizer::from_file(tokenizer2).map_err(E::msg)?;
     
-    println!("Preparing text embeddings...");
-    let which = match args.sd_version {
-        StableDiffusionVersion::Xl
-        | StableDiffusionVersion::XlInpaint
-        | StableDiffusionVersion::Turbo => vec![true, false],
-        _ => vec![true],
-    };
+    let text_embeddings = infer_clip_text_embeddings(
+          &args.prompt,
+          &args.uncond_prompt,
+          None, // tokenizer
+          None, // clip_weights
+          None, // clip2_weights
+          args.sd_version,
+          &args.model_configs.sd_config,
+          false, // use_f16
+          &args.model_configs.device,
+          args.model_configs.dtype,
+          false, // use_guide_scale
+      )?;
     
-    let text_embeddings = which
-        .iter()
-        .map(|first| {
-            infer_clip_text_embeddings(
-                &args.prompt,
-                &args.uncond_prompt,
-                None, // tokenizer
-                None, // clip_weights
-                None, // clip2_weights
-                args.sd_version,
-                &args.model_configs.sd_config,
-                false, // use_f16
-                &args.model_configs.device,
-                args.model_configs.dtype,
-                false, // use_guide_scale
-                *first,
-            )
-        })
-        .collect::<Result<Vec<_>>>()?;
-
-    let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
     println!("Text embeddings shape: {:?}", text_embeddings.shape());
 
     println!("Loading input image into tensor...");
