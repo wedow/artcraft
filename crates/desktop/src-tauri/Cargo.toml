@@ -25,6 +25,7 @@ memory_caching = { path = "../../lib/caching/memory_caching" }
 
 # External
 anyhow = "1.0"
+bytes = "1.10"
 base64 = "0.22.1"
 candle-core = { version = "0.8.2", features = ["cuda"] }
 candle-nn = { version = "0.8.2", features = ["cuda"] }

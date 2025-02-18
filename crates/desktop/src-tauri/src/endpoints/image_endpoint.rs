@@ -5,8 +5,9 @@ use crate::state::app_config::AppConfig;
 use crate::state::yaml_config::YamlConfig;
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
+use bytes::{BufMut, BytesMut};
 use image::imageops::FilterType;
-use image::{DynamicImage, EncodableLayout, ImageReader};
+use image::{DynamicImage, EncodableLayout, ImageFormat, ImageReader};
 use log::{error, info};
 use std::io::Cursor;
 use std::path::PathBuf;
@@ -77,23 +78,12 @@ fn do_infer_image(
 
   match run(args) {
     Ok(image) => {
-      //info!("Image len: {:?}", image.len());
-      //let bytes = BASE64_STANDARD.encode(image.as_bytes());
-      //// [2025-02-18][04:14:15][app_lib::endpoints::image_endpoint][INFO] First bytes: "DAwODAwNDA"
-      //info!("First bytes: {:?}", bytes.split_at(10).0);
-
+      let mut bytes = Vec::with_capacity(1024*1024);
       
-      let img_data = std::fs::read("temp.png")
-        .map_err(|e| format!("Failed to read generated image: {}", e))?;
+      image.write_to(&mut Cursor::new(&mut bytes), ImageFormat::Png)
+        .map_err(|err| format!("failure to encode image: {:?}", err))?;
 
-      let bytes = BASE64_STANDARD.encode(&img_data);
-      println!("Generated image encoded successfully");
-
-      let _ = std::fs::remove_file("temp.png");
-
-
-
-
+      let bytes = BASE64_STANDARD.encode(bytes);
 
       Ok(bytes)
     },

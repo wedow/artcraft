@@ -110,7 +110,7 @@ pub fn run(args: Args<'_>) -> Result<RgbImage> {
     println!("Loading input image into tensor...");
 
     let input_image = dynamic_image_to_tensor(
-        args.image, 
+        args.image,
         &args.configs.device,
         args.configs.dtype)?;
 
@@ -158,7 +158,7 @@ pub fn run(args: Args<'_>) -> Result<RgbImage> {
     //let mask_latents = (encoded_sample * vae_scale)?.to_device(&args.model_configs.device)?;
 
     //println!("Mask latents shape: {:?}", mask_latents.shape());
-    
+
     //let timesteps = scheduler.timesteps().to_vec();
     let timesteps: Vec<_> = scheduler.timesteps().iter().copied().collect();
 
@@ -289,10 +289,8 @@ pub fn run(args: Args<'_>) -> Result<RgbImage> {
 
     //save_image_from_tensor(&image.i(0)?, "temp.png")?;
     //println!("Image generation completed successfully");
-    
+
     let image = tensor_to_image_buffer(&image.i(0)?)?;
 
-    image.save("temp.png").map_err(E::from)?;
-    
     Ok(image)
 }
