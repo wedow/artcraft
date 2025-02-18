@@ -88,8 +88,11 @@ pub fn run(args: Args<'_>) -> Result<RgbImage> {
 
     let init_latent_dist : DiagonalGaussianDistribution = args.model_cache.vae_encode(&input_image)?;
 
+    // TODO(bt,2025-02-18): This takes a little bit to generate.
     println!("Generating latents from input image...");
-    let latents = (init_latent_dist.sample()? * vae_scale)?.to_device(&args.configs.device)?;
+    let latents = (init_latent_dist.sample()? * vae_scale)?;
+    
+    //.to_device(&args.configs.device)?;
     
     println!("Initial latents shape: {:?}", latents.shape());
 
@@ -128,21 +131,13 @@ pub fn run(args: Args<'_>) -> Result<RgbImage> {
             continue;
         }
 
-        println!("Processing step {}/{}", timestep_index + 1, timesteps.len());
-        let latent_model_input = latents.clone();
+        println!("Processing step {}/{} @ timestamp = {}", timestep_index + 1, timesteps.len(), timestep);
         
-        println!("Latent input shape: {:?}", latent_model_input.shape());
-
-        println!("Scaling model input...");
-        let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
-        
-        println!("Scaled input shape: {:?}", latent_model_input.shape());
-
-        println!("Running UNet inference with timestep {}...", timestep);
+        // TODO(bt,2025-08-18): Do we have to clone the tensor?
+        let latent_model_input = scheduler.scale_model_input(latents.clone(), timestep)?;
         
         let noise_pred = match args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings) {
             Ok(pred) => {
-                println!("UNet inference successful");
                 pred
             },
             Err(e) => {
@@ -150,11 +145,8 @@ pub fn run(args: Args<'_>) -> Result<RgbImage> {
                 return Err(anyhow::anyhow!("UNet inference failed: {}", e));
             },
         };
-        println!("Noise prediction shape: {:?}", noise_pred.shape());
 
-        println!("Applying scheduler step...");
         latents = scheduler.step(&noise_pred, timestep, &latents)?;
-        println!("Step {}/{} completed", timestep_index + 1, timesteps.len());
     }
 
     println!("Diffusion process completed, decoding image...");
