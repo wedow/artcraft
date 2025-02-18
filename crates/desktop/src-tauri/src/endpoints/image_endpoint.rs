@@ -1,13 +1,13 @@
 use crate::endpoints::sd::{run, Args};
-use crate::state::yaml_config::YamlConfig;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::prompt_cache::PromptCache;
 use crate::state::app_config::AppConfig;
+use crate::state::yaml_config::YamlConfig;
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use image::imageops::FilterType;
-use image::ImageReader;
-use log::error;
+use image::{DynamicImage, EncodableLayout, ImageReader};
+use log::{error, info};
 use std::io::Cursor;
 use std::path::PathBuf;
 use tauri::State;
@@ -46,13 +46,7 @@ pub fn infer_image(
   // TODO(bt,2025-02-17): Running out of vram with full image buffer size
   let image = image.resize(512, 512, FilterType::CatmullRom);
   
-  // TODO(bt,2025-02-14): Use byte buffers instead of hitting the filesystem.
-  let image_path = PathBuf::from("input_image.png");
-  
-  image.save(&image_path)
-    .map_err(|err| format!("Failed to save image: {}", err))?;
-  
-  let result = do_infer_image(&prompt, &image_path, &model_config, &model_cache, prompt_cache);
+  let result = do_infer_image(&prompt, image, &model_config, &model_cache, prompt_cache);
   
   if let Err(err) = result.as_deref() {
     error!("There was an error: {:?}", err);
@@ -63,7 +57,7 @@ pub fn infer_image(
 
 fn do_infer_image(
   prompt: &str,
-  image_path: &PathBuf,
+  image: DynamicImage,
   config: &AppConfig,
   model_cache: &ModelCache,
   prompt_cache: State<PromptCache>,
@@ -71,7 +65,7 @@ fn do_infer_image(
   println!("infer_image called; generating image with SDXL Turbo...");
   
   let args = Args {
-    image_path,
+    image: &image,
     prompt: prompt.to_string(),
     uncond_prompt: "".to_string(),
     //guidance_scale: Some(0.0),
@@ -82,17 +76,27 @@ fn do_infer_image(
   };
 
   match run(args) {
-    Ok(_) => {
+    Ok(image) => {
+      //info!("Image len: {:?}", image.len());
+      //let bytes = BASE64_STANDARD.encode(image.as_bytes());
+      //// [2025-02-18][04:14:15][app_lib::endpoints::image_endpoint][INFO] First bytes: "DAwODAwNDA"
+      //info!("First bytes: {:?}", bytes.split_at(10).0);
+
+      
       let img_data = std::fs::read("temp.png")
         .map_err(|e| format!("Failed to read generated image: {}", e))?;
-        
-      let encoded = BASE64_STANDARD.encode(&img_data);
+
+      let bytes = BASE64_STANDARD.encode(&img_data);
       println!("Generated image encoded successfully");
 
       let _ = std::fs::remove_file("temp.png");
 
-      Ok(encoded)
-    }
-    Err(e) => Err(format!("Failed to generate image: {}", e))
+
+
+
+
+      Ok(bytes)
+    },
+    Err(e) => Err(format!("Failed to generate image: {}", e)),
   }
 }

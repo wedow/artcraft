@@ -1,10 +1,3 @@
-#[cfg(feature = "accelerate")]
-extern crate accelerate_src;
-#[cfg(feature = "mkl")]
-extern crate intel_mkl_src;
-
-use candle_transformers::models::stable_diffusion;
-
 use anyhow::Result;
 use candle_core::{DType, Device, Tensor};
 

@@ -40,10 +40,9 @@ pub struct AppConfig {
 impl AppConfig {
   
   pub fn init() -> anyhow::Result<Self> {
-    
+    println!("Configuration filename: {}", CONFIG_FILENAME);
     let yaml_configs = load_yaml_configs();
     
-    println!("Configured filename {}", CONFIG_FILENAME);
     println!("Configs: {:?}", yaml_configs);
     
     let device = Device::new_cuda(0)
@@ -83,6 +82,7 @@ fn load_yaml_configs() -> YamlConfig {
     .ok()
     .flatten();
   if let Some(path) = maybe_path {
+    let path = path.canonicalize().unwrap_or(path);
     println!("Attempting to load configs from: {:?}", &path);
     if let Ok(config) = YamlConfig::read_from_file(path) {
       return config;

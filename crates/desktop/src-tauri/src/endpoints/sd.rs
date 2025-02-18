@@ -1,37 +1,27 @@
-#[cfg(feature = "accelerate")]
-extern crate accelerate_src;
-#[cfg(feature = "mkl")]
-extern crate intel_mkl_src;
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use std::mem::forget;
-use std::path::Path;
-use std::sync::{Arc, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard};
-use candle_transformers::models::stable_diffusion;
-
+use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
+use crate::ml::image::save_image_from_tensor::save_image_from_tensor;
+use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
 use crate::ml::infer_clip_text_embeddings::infer_clip_text_embeddings;
-use crate::ml::model_file::StableDiffusionVersion;
-use crate::ml::save_image_from_tensor::save_image_from_tensor;
-use anyhow::{Error as E, Result};
-use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
-use candle_transformers::models::stable_diffusion::vae::DiagonalGaussianDistribution;
-use hf_hub::api::sync::Api;
-use log::info;
-use once_cell::sync::Lazy;
-use rand::Rng;
-use crate::ml::create_inpainting_tensors::create_inpainting_tensors;
-use crate::ml::load_image_file_to_tensor::load_image_file_to_tensor;
-use crate::ml::load_image_file_to_tensor_2::load_image_file_to_tensor_2;
 use crate::ml::model_cache::ModelCache;
-use crate::ml::models::unet_model::UNetModel;
 use crate::ml::prompt_cache::PromptCache;
+use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
 use crate::state::app_config::AppConfig;
+use anyhow::{Error as E, Result};
+use candle_core::{DType, Device, IndexOp, D};
+use candle_transformers::models::stable_diffusion::vae::DiagonalGaussianDistribution;
+use image::DynamicImage;
+use log::info;
+use rand::Rng;
+
 // TODO: Clean up
 
 // Note for Kasisnu: I'm going to start using lifetimes as long as that doesn't slow your velocity
 // Basically the args o this telescopic args struct are guaranteed to live as long as the struct
 // itself with the 'a lifetime.
 pub struct Args<'a> {
-    pub image_path: &'a Path,
+    pub image: &'a DynamicImage,
     pub prompt: String,
     pub uncond_prompt: String,
     pub guidance_scale: Option<f64>,
@@ -40,7 +30,7 @@ pub struct Args<'a> {
     pub prompt_cache: &'a PromptCache,
 }
 
-pub fn run(args: Args<'_>) -> Result<()> {
+pub fn run(args: Args<'_>) -> Result<RgbImage> {
     println!("Starting image generation with the following configuration:");
     println!("  Model: {:?}", args.configs.sd_version);
     println!("  Prompt: {}", args.prompt);
@@ -119,16 +109,13 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     println!("Loading input image into tensor...");
 
-    let input_image = load_image_file_to_tensor_2(args.image_path)?;
-
-    let input_image = input_image.to_device(&args.configs.device)?
-      .to_dtype(args.configs.dtype)?;
+    let input_image = dynamic_image_to_tensor(
+        args.image, 
+        &args.configs.device,
+        args.configs.dtype)?;
 
     // REFERENCE IMAGE shape: [1, 3, 1024, 1024]
     println!("REFERENCE IMAGE shape: {:?}", input_image.shape());
-
-
-
 
     println!("Calculating start step for diffusion process...");
     let img2img_strength = 0.75f64;
@@ -142,17 +129,7 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     let use_guide_scale = false; // TODO
 
-    let vae_scale = match args.configs.sd_version {
-        StableDiffusionVersion::V1_5
-        | StableDiffusionVersion::V1_5Inpaint
-        | StableDiffusionVersion::V2_1
-        | StableDiffusionVersion::V2Inpaint
-        | StableDiffusionVersion::XlInpaint
-        | StableDiffusionVersion::Xl => 0.18215,
-        StableDiffusionVersion::Turbo => 0.13025,
-    };
-
-
+    let vae_scale = get_vae_scale(args.configs.sd_version);
 
     let encoded_image : DiagonalGaussianDistribution = args.model_cache.vae_encode(&input_image)?;
     let init_latent_dist = encoded_image;
@@ -173,15 +150,6 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     println!("Latents initialized successfully");
 
-
-
-    let vae_scale = match args.configs.sd_version {
-        StableDiffusionVersion::V1_5 | StableDiffusionVersion::V1_5Inpaint | StableDiffusionVersion::V2_1 | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::XlInpaint | StableDiffusionVersion::Xl => 0.18215,
-        StableDiffusionVersion::Turbo => 0.13025,
-    };
-    
-    
-
     //let encoded_sample = encoded_image.sample()?;
 
     // Encoded sample shape: [1, 4, 128, 128] ... so close. Just needs to be smaller.
@@ -190,8 +158,6 @@ pub fn run(args: Args<'_>) -> Result<()> {
     //let mask_latents = (encoded_sample * vae_scale)?.to_device(&args.model_configs.device)?;
 
     //println!("Mask latents shape: {:?}", mask_latents.shape());
-
-
     
     //let timesteps = scheduler.timesteps().to_vec();
     let timesteps: Vec<_> = scheduler.timesteps().iter().copied().collect();
@@ -321,8 +287,12 @@ pub fn run(args: Args<'_>) -> Result<()> {
     let image = (image.clamp(0f32, 1.)? * 255.)?.to_dtype(DType::U8)?;
     println!("Converted to 8-bit format");
 
-    save_image_from_tensor(&image.i(0)?, "temp.png")?;
-    println!("Image generation completed successfully");
+    //save_image_from_tensor(&image.i(0)?, "temp.png")?;
+    //println!("Image generation completed successfully");
+    
+    let image = tensor_to_image_buffer(&image.i(0)?)?;
 
-    Ok(())
+    image.save("temp.png").map_err(E::from)?;
+    
+    Ok(image)
 }
