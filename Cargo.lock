@@ -608,7 +608,6 @@ dependencies = [
  "candle-core",
  "candle-nn",
  "candle-transformers",
- "env_logger",
  "filesys",
  "hf-hub",
  "image",

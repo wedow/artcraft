@@ -29,7 +29,6 @@ base64 = "0.22.1"
 candle-core = { version = "0.8.2", features = ["cuda"] }
 candle-nn = { version = "0.8.2", features = ["cuda"] }
 candle-transformers = { version = "0.8.2", features = ["cuda"] }
-env_logger = "0.11.6"
 hf-hub = "0.3.2"
 image = "0.25.5"
 serde_yaml = "0.9"
@@ -39,7 +38,7 @@ rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tauri = { version = "2.2.4", features = [] }
-tauri-plugin-log = "2.0.0-rc"
+tauri-plugin-log = "2"
 tokenizers = "0.15.2"
 
 [features]

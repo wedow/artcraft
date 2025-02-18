@@ -1,0 +1,5 @@
+image_width: 512
+image_height: 512
+scheduler_steps: 15
+scheduler_samples: 1
+

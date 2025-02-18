@@ -1,10 +1,12 @@
 use crate::ml::model_file::StableDiffusionVersion;
+use crate::state::yaml_config::YamlConfig;
 use candle_core::{DType, Device};
 use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
+use filesys::recursively_find_file_by_name::recursively_find_file_by_name;
 use hf_hub::api::sync::Api;
 use log::info;
-use filesys::recursively_find_file_by_name::recursively_find_file_by_name;
-use crate::state::yaml_config::YamlConfig;
+
+const CONFIG_FILENAME : &str = "app_config.yaml";
 
 const DEFAULT_SD_IMAGE_WIDTH: usize = 512;
 const DEFAULT_SD_IMAGE_HEIGHT: usize = 512;
@@ -41,6 +43,9 @@ impl AppConfig {
     
     let yaml_configs = load_yaml_configs();
     
+    println!("Configured filename {}", CONFIG_FILENAME);
+    println!("Configs: {:?}", yaml_configs);
+    
     let device = Device::new_cuda(0)
       .unwrap_or_else(|e| {
           info!("CUDA not available ({}), falling back to CPU", e);
@@ -74,15 +79,15 @@ impl AppConfig {
 }
 
 fn load_yaml_configs() -> YamlConfig {
-  let maybe_path = recursively_find_file_by_name("app_config.yaml", "../../../", 5)
+  let maybe_path = recursively_find_file_by_name(CONFIG_FILENAME, "../../../", 5)
     .ok()
     .flatten();
   if let Some(path) = maybe_path {
-    info!("Attempting to load configs from: {:?}", &path);
+    println!("Attempting to load configs from: {:?}", &path);
     if let Ok(config) = YamlConfig::read_from_file(path) {
       return config;
     }
   }
-  info!("Loading default configs.");
+  println!("Loading default configs.");
   YamlConfig::default()
 }
