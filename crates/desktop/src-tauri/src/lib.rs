@@ -1,14 +1,15 @@
-pub mod ml;
 pub mod endpoints;
-pub mod model_config;
+pub mod ml;
+pub mod state;
 
 use crate::ml::model_cache::ModelCache;
 use crate::ml::prompt_cache::PromptCache;
-use crate::model_config::ModelConfig;
+use crate::state::app_config::AppConfig;
 use endpoints::image_endpoint::infer_image;
 use env_logger;
 use log::info;
 use once_cell::sync::Lazy;
+use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -17,7 +18,7 @@ pub fn run() {
 
   info!("Loading model config...");
 
-  let model_config = ModelConfig::init()
+  let model_config = AppConfig::init()
     .expect("config should load");
 
   let prompt_cache = PromptCache::with_capacity(8)

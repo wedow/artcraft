@@ -24,7 +24,7 @@ use crate::ml::load_image_file_to_tensor_2::load_image_file_to_tensor_2;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::models::unet_model::UNetModel;
 use crate::ml::prompt_cache::PromptCache;
-use crate::model_config::ModelConfig;
+use crate::state::app_config::AppConfig;
 // TODO: Clean up
 
 // Note for Kasisnu: I'm going to start using lifetimes as long as that doesn't slow your velocity
@@ -32,43 +32,36 @@ use crate::model_config::ModelConfig;
 // itself with the 'a lifetime.
 pub struct Args<'a> {
     pub image_path: &'a Path,
-    pub api: Api,
     pub prompt: String,
     pub uncond_prompt: String,
-    pub cpu: bool,
-    pub height: Option<usize>,
-    pub width: Option<usize>,
-    pub n_steps: Option<usize>,
-    pub num_samples: usize,
-    pub seed: Option<u64>,
-    pub sd_version: StableDiffusionVersion,
     pub guidance_scale: Option<f64>,
     pub model_cache: &'a ModelCache,
-    pub model_configs: &'a ModelConfig,
+    pub configs: &'a AppConfig,
     pub prompt_cache: &'a PromptCache,
 }
 
 pub fn run(args: Args<'_>) -> Result<()> {
     println!("Starting image generation with the following configuration:");
-    println!("  Model: {:?}", args.sd_version);
+    println!("  Model: {:?}", args.configs.sd_version);
     println!("  Prompt: {}", args.prompt);
-    println!("  Steps: {}", args.n_steps.unwrap_or(1));
-    println!("  Using CPU: {}", args.cpu);
+    println!("  Steps: {}", args.configs.scheduler_steps);
+    println!("  Device: {:?}", args.configs.device);
 
 
-    println!("Model dimensions: {}x{}", args.model_configs.sd_config.width, args.model_configs.sd_config.height);
+    println!("Model dimensions: {}x{}", args.configs.sd_config.width, args.configs.sd_config.height);
 
     println!("Building scheduler...");
-    let mut scheduler = args.model_configs.sd_config.build_scheduler(args.n_steps.unwrap_or(1))?;
+    let mut scheduler = args.configs.sd_config.build_scheduler(
+        args.configs.scheduler_steps)?;
 
-    let seed = args.seed.unwrap_or_else(|| rand::thread_rng().gen());
+    let seed = args.configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
     println!("Using seed: {}", seed);
 
-    args.model_configs.device.set_seed(seed)?;
+    args.configs.device.set_seed(seed)?;
 
     println!("Initializing Hugging Face API...");
 
-    let repo = args.sd_version.repo();
+    let repo = args.configs.sd_version.repo();
     println!("Downloading model files from: {}", repo);
     
     //println!("Downloading VAE ...");
@@ -109,11 +102,11 @@ pub fn run(args: Args<'_>) -> Result<()> {
             None, // tokenizer
             None, // clip_weights
             None, // clip2_weights
-            args.sd_version,
-            &args.model_configs.sd_config,
+            args.configs.sd_version,
+            &args.configs.sd_config,
             false, // use_f16
-            &args.model_configs.device,
-            args.model_configs.dtype,
+            &args.configs.device,
+            args.configs.dtype,
             false, // use_guide_scale
         )?;
         
@@ -128,8 +121,8 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
     let input_image = load_image_file_to_tensor_2(args.image_path)?;
 
-    let input_image = input_image.to_device(&args.model_configs.device)?
-      .to_dtype(args.model_configs.dtype)?;
+    let input_image = input_image.to_device(&args.configs.device)?
+      .to_dtype(args.configs.dtype)?;
 
     // REFERENCE IMAGE shape: [1, 3, 1024, 1024]
     println!("REFERENCE IMAGE shape: {:?}", input_image.shape());
@@ -141,15 +134,15 @@ pub fn run(args: Args<'_>) -> Result<()> {
     let img2img_strength = 0.75f64;
     
     let t_start = {
-        let start = args.n_steps.unwrap_or(1) - (args.n_steps.unwrap_or(1) as f64 * img2img_strength) as usize;
+        let start = args.configs.scheduler_steps - (args.configs.scheduler_steps as f64 * img2img_strength) as usize;
         
-        println!("Starting from step {} of {} (strength: {})", start, args.n_steps.unwrap_or(1), img2img_strength);
+        println!("Starting from step {} of {} (strength: {})", start, args.configs.scheduler_steps, img2img_strength);
         start
     };
 
     let use_guide_scale = false; // TODO
 
-    let vae_scale = match args.model_configs.sd_version {
+    let vae_scale = match args.configs.sd_version {
         StableDiffusionVersion::V1_5
         | StableDiffusionVersion::V1_5Inpaint
         | StableDiffusionVersion::V2_1
@@ -165,7 +158,7 @@ pub fn run(args: Args<'_>) -> Result<()> {
     let init_latent_dist = encoded_image;
 
     println!("Generating latents from input image...");
-    let latents = (init_latent_dist.sample()? * vae_scale)?.to_device(&args.model_configs.device)?;
+    let latents = (init_latent_dist.sample()? * vae_scale)?.to_device(&args.configs.device)?;
     
     println!("Initial latents shape: {:?}", latents.shape());
 
@@ -182,7 +175,7 @@ pub fn run(args: Args<'_>) -> Result<()> {
 
 
 
-    let vae_scale = match args.sd_version {
+    let vae_scale = match args.configs.sd_version {
         StableDiffusionVersion::V1_5 | StableDiffusionVersion::V1_5Inpaint | StableDiffusionVersion::V2_1 | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::XlInpaint | StableDiffusionVersion::Xl => 0.18215,
         StableDiffusionVersion::Turbo => 0.13025,
     };

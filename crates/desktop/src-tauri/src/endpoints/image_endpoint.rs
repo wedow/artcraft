@@ -1,25 +1,23 @@
-use std::io::Cursor;
-use std::path::PathBuf;
 use crate::endpoints::sd::{run, Args};
+use crate::state::yaml_config::YamlConfig;
 use crate::ml::model_cache::ModelCache;
-use crate::model_config::ModelConfig;
+use crate::ml::prompt_cache::PromptCache;
+use crate::state::app_config::AppConfig;
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use image::imageops::FilterType;
 use image::ImageReader;
 use log::error;
+use std::io::Cursor;
+use std::path::PathBuf;
 use tauri::State;
-use crate::ml::prompt_cache::PromptCache;
 
 const PROMPT: &str = "A beautiful landscape with mountains and a lake";
 
-const HEIGHT: usize = 512;
-const WIDTH: usize = 512;
-
 #[tauri::command]
 pub fn infer_image(
-  image: &str, 
-  model_config: State<ModelConfig>, 
+  image: &str,
+  model_config: State<AppConfig>,
   model_cache: State<ModelCache>,
   prompt_cache: State<PromptCache>,
 ) -> Result<String, String> {
@@ -64,9 +62,9 @@ pub fn infer_image(
 }
 
 fn do_infer_image(
-  prompt: &str, 
-  image_path: &PathBuf, 
-  config: &ModelConfig, 
+  prompt: &str,
+  image_path: &PathBuf,
+  config: &AppConfig,
   model_cache: &ModelCache,
   prompt_cache: State<PromptCache>,
 ) -> Result<String, String> {
@@ -74,20 +72,12 @@ fn do_infer_image(
   
   let args = Args {
     image_path,
-    api: config.hf_api.clone(),
     prompt: prompt.to_string(),
     uncond_prompt: "".to_string(),
-    cpu: config.device.is_cpu(),
-    height: Some(HEIGHT),
-    width: Some(WIDTH),
-    n_steps: Some(15),
-    num_samples: 1,
-    seed: None,
-    sd_version: config.sd_version.clone(),
     //guidance_scale: Some(0.0),
     guidance_scale: None,
     model_cache,
-    model_configs: config,
+    configs: config,
     prompt_cache: &prompt_cache,
   };
 
