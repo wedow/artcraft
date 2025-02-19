@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui";
+import { useIsMobile } from "~/hooks/useIsMobile";
 
 const Navbar = () => {
   const navigate = useNavigate();
-
+  const isMobile = useIsMobile();
   return (
     <nav className="fixed top-0 z-50 w-full bg-[rgba(16,16,20,0.7)] backdrop-blur-3xl">
       <div className="mx-auto max-w-[1920px] px-4 sm:px-24 lg:px-32">
@@ -19,6 +20,7 @@ const Navbar = () => {
             <Button
               className="bg-[#2D81FF] hover:bg-[#438AF6]"
               onClick={() => navigate("/download")}
+              disabled={isMobile}
             >
               Download
             </Button>

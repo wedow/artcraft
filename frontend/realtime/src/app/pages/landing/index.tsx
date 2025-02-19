@@ -1,7 +1,12 @@
 import Navbar from "../../../components/landing/Navbar";
 import Footer from "../../../components/landing/Footer";
+import { Button } from "~/components/ui";
+import { faApple } from "@fortawesome/free-brands-svg-icons";
+import { faDesktop } from "@fortawesome/pro-solid-svg-icons";
+import { useIsMobile } from "~/hooks/useIsMobile";
 
 const Landing = () => {
+  const isMobile = useIsMobile();
   const features = [
     {
       title: "Lorem ipsum dolor sit",
@@ -56,16 +61,24 @@ const Landing = () => {
               </p>
 
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button className="w-full transform rounded-lg bg-[#2D81FF] px-8 py-4 font-semibold transition hover:scale-105 hover:bg-[#438AF6] sm:w-auto">
-                  Download for MacOS
-                </button>
+                <Button
+                  className={`w-full transform rounded-lg px-8 py-4 font-semibold transition sm:w-auto ${
+                    isMobile
+                      ? "cursor-not-allowed bg-[#2D81FF]"
+                      : "bg-[#2D81FF] hover:scale-105 hover:bg-[#438AF6]"
+                  }`}
+                  disabled={isMobile}
+                  icon={isMobile ? faDesktop : faApple}
+                >
+                  {isMobile ? "Download on desktop" : "Download for MacOS"}
+                </Button>
                 <button className="w-full transform rounded-lg border border-white/30 px-8 py-4 font-semibold transition hover:scale-105 hover:bg-white/10 sm:w-auto">
                   Learn more
                 </button>
               </div>
             </div>
           </div>
-          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl border border-white/[12%] bg-transparent md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
+          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl border border-white/[15%] bg-transparent md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
             <img
               src="/images/landing_hero.png"
               alt="AI Video Creation"
