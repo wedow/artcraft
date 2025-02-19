@@ -5,13 +5,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRotateLeft,
   faArrowRotateRight,
+  faCircle,
   faFilePlus,
   faFilm,
   faFloppyDisk,
   faImage,
   faLocationArrow,
   faMagicWandSparkles,
+  faShapes,
+  faSquare,
   faText,
+  faTriangle,
 } from "@fortawesome/pro-solid-svg-icons";
 
 import { ToolbarButton } from "../ToolbarButton";
@@ -41,7 +45,7 @@ export const ToolbarMain = ({
           "flex w-fit items-center divide-x divide-ui-border",
           paperWrapperStyles,
           disabled &&
-            "pointer-events-none cursor-default bg-ui-border shadow-md",
+          "pointer-events-none cursor-default bg-ui-border shadow-md",
         )}
       >
         <div className="flex items-center gap-2 pr-2">
@@ -56,6 +60,33 @@ export const ToolbarMain = ({
             buttonProps={buttonProps.ADD_TEXT}
             tooltip="Add Text"
           />
+
+          <Popover className="relative">
+            <PopoverButton as={Fragment}>
+              <button
+                data-tooltip="Add Shapes"
+                className={twMerge(
+                  "size-10 rounded-lg p-2 hover:bg-gray-200/50",
+                  toolTipStyles,
+                )}
+              >
+                <FontAwesomeIcon icon={faShapes} />
+              </button>
+            </PopoverButton>
+            <PopoverPanel
+              anchor="bottom"
+              className={twMerge(
+                // "absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2",
+                "flex flex-col [--anchor-gap:16px]",
+                paperWrapperStyles,
+              )}
+            >
+              <ToolbarButton icon={faSquare} buttonProps={buttonProps.ADD_SQUARE} />
+              <ToolbarButton icon={faCircle} buttonProps={buttonProps.ADD_CIRCLE} />
+              <ToolbarButton icon={faTriangle} buttonProps={buttonProps.ADD_TRIANGLE} />
+            </PopoverPanel>
+          </Popover>
+
           <Popover className="relative">
             <PopoverButton as={Fragment}>
               <button
