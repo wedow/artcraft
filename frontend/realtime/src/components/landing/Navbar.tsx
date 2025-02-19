@@ -16,14 +16,23 @@ const Navbar = () => {
               className="h-[34px] pb-1"
             />
           </a>
-          <div className="flex items-center space-x-5">
+          <div className="flex items-center space-x-3">
             <Button
-              className="bg-[#2D81FF] hover:bg-[#438AF6]"
-              onClick={() => navigate("/download")}
-              disabled={isMobile}
+              variant="secondary"
+              className=""
+              onClick={() => navigate("/signup")}
             >
-              Download
+              Sign up
             </Button>
+            {!isMobile && (
+              <Button
+                className="bg-[#2D81FF] hover:bg-[#438AF6]"
+                onClick={() => []}
+                disabled={isMobile}
+              >
+                Download
+              </Button>
+            )}
           </div>
         </div>
       </div>
