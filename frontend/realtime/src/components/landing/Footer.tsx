@@ -9,18 +9,18 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="border-t border-gray-100 bg-gray-50">
+    <footer className="bg-[#18181C]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center space-y-10 text-center">
           <img
-            src="/brand/Storyteller-Logo-Black.png"
+            src="/brand/Storyteller-Logo.png"
             alt="Storyteller Board"
-            className="h-9"
+            className="h-[34px]"
           />
 
           <Button
             onClick={() => navigate("/signup")}
-            className="group rounded-xl px-8 py-4 text-lg"
+            className="text-md group rounded-xl px-8 py-4"
           >
             <span className="relative flex items-center">
               Start Creating for Free

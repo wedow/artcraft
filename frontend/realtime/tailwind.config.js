@@ -54,6 +54,10 @@ export default {
         border: colors.zinc[200],
       },
     },
+    backgroundImage: {
+      "radial-gradient":
+        "radial-gradient(circle at left, var(--tw-gradient-stops))",
+    },
   },
   plugins: [],
 };

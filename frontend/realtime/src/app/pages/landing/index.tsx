@@ -1,107 +1,109 @@
 import Navbar from "../../../components/landing/Navbar";
-import Hero from "../../../components/landing/Hero";
-import FeatureCard from "../../../components/landing/FeatureCard";
 import Footer from "../../../components/landing/Footer";
 
 const Landing = () => {
   const features = [
     {
-      title: "Step 1: Compose Your Scene",
+      title: "Lorem ipsum dolor sit",
       description:
-        "Begin your story on our intuitive canvas. Drop and arrange photos and videos to create layered scenes. Position, scale, and transform elements with precision to build your perfect composition. Our dynamic canvas makes it easy to bring your vision to life.",
-      image: "/images/feature_compositing.png",
-      gradient: "bg-gradient-to-br from-purple-500/20 to-blue-500/20",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.",
+      image: "/images/features/ai-creation.jpg",
+      tag: "Core",
     },
     {
-      title: "Step 2: Smart Segmentation",
+      title: "Ut enim ad minim",
       description:
-        "Clean up your scenes with powerful AI segmentation. Remove green screens instantly, isolate subjects from any background, and perfect your layer masks with intelligent tools. Create professional-quality compositions with just a few clicks.",
-      image: "/images/feature_segmentation.png",
-      gradient: "bg-gradient-to-br from-emerald-500/20 to-cyan-500/20",
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea.",
+      image: "/images/features/collaboration.jpg",
+      tag: "Workflow",
     },
     {
-      title: "Step 3: AI Style Transfer",
+      title: "Duis aute irure dolor",
       description:
-        "Transform your composition with AI style transfer magic. Choose from our curated collection of artistic styles. Apply consistent styling across your entire scene to create a cohesive visual masterpiece.",
-      image: "/images/feature_ai_stylize.png",
-      gradient: "bg-gradient-to-br from-rose-500/20 to-orange-500/20",
-    },
-    {
-      title: "Step 4: Render Your Video",
-      description:
-        "Render your styled composition into a stunning final movie. Export in high quality, ready to share with the world.",
-      image: "/images/feature_render.png",
-      gradient: "bg-gradient-to-br from-blue-500/20 to-indigo-500/20",
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla.",
+      image: "/images/features/style-models.jpg",
+      tag: "Tools",
     },
   ];
 
-  const scrollToFeature = (index: number) => {
-    const element = document.getElementById(`feature-${index + 1}`);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#101014] text-white">
       <Navbar />
 
-      <div>
-        <Hero onFeatureClick={scrollToFeature} />
-
-        <section className="relative overflow-hidden py-32">
-          {/* Decorative elements */}
-          <div className="dotted-pattern absolute inset-0 opacity-50" />
-
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {/* Section header with enhanced styling */}
-            <div className="mx-auto mb-24 max-w-3xl text-center">
-              <div className="mb-6 inline-flex items-center rounded-full bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10 px-8 py-2.5">
-                <span className="whitespace-nowrap bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-sm font-semibold text-transparent">
-                  AI-POWERED WORKFLOW
+      {/* Hero Section */}
+      <div className="relative flex overflow-hidden pt-24 xl:min-h-[1000px] xl:items-center xl:pt-0">
+        {/* Content Container */}
+        <div className="relative z-10 mx-auto grid h-full w-full max-w-[1920px] grid-cols-12 items-center px-6 md:px-16 xl:px-32">
+          <div className="before:xl:border-radius-full z-10 col-span-12 w-full xl:absolute xl:left-0 xl:top-1/2 xl:max-w-4xl xl:-translate-y-1/2 xl:pl-32 before:xl:absolute before:xl:-inset-0 before:xl:-z-10 before:xl:bg-black before:xl:to-transparent before:xl:blur-[180px]">
+            <div className="max-w-2xl">
+              <div className="mb-6">
+                <span className="text-lg font-semibold uppercase tracking-widest text-gray-400">
+                  LOREM IPSUM
                 </span>
               </div>
-              <h2 className="mb-6 text-4xl font-bold tracking-tight text-gray-900">
-                Create Stunning Videos in
-                <span className="relative">
-                  <span className="gradient-text relative z-10">
-                    {" "}
-                    Four Simple Steps
-                  </span>
-                  <span className="bg-rose-200/50 absolute -bottom-2 left-0 z-0 h-3 w-full" />
-                </span>
-              </h2>
-              <p className="text-xl leading-relaxed text-gray-600">
-                From composition to final render, transform your media into
-                cinematic stories with our powerful AI-enhanced workflow.
+
+              <h1 className="mb-6 font-bold leading-tight lg:text-6xl">
+                Lorem ipsum dolor
+                <br />
+                Sit amet consectetur
+              </h1>
+
+              <p className="mb-10 max-w-xl text-lg leading-relaxed">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam, quis nostrud exercitation.
               </p>
-            </div>
 
-            {/* Features stack with enhanced visual separation */}
-            <div className="relative space-y-32">
-              {/* Vertical timeline line */}
-              <div className="to-rose-500/20 absolute left-1/2 top-0 h-full w-px bg-gradient-to-b from-purple-500/20 via-blue-500/20" />
-
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  id={`feature-${index + 1}`}
-                  className="relative"
-                >
-                  {/* Step number bubble */}
-                  <div className="absolute left-1/2 -translate-x-1/2 -translate-y-16">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-white shadow-lg">
-                      <span className="bg-gradient-to-br from-purple-600 to-purple-600 bg-clip-text text-xl font-bold text-transparent">
-                        {index + 1}
-                      </span>
-                    </div>
-                  </div>
-                  <FeatureCard {...feature} isReversed={index % 2 === 1} />
-                </div>
-              ))}
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <button className="w-full transform rounded-lg bg-primary px-8 py-4 font-semibold transition hover:scale-105 sm:w-auto">
+                  Download for MacOS
+                </button>
+                <button className="w-full transform rounded-lg border border-white/30 px-8 py-4 font-semibold transition hover:scale-105 hover:bg-white/10 sm:w-auto">
+                  Learn more
+                </button>
+              </div>
             </div>
           </div>
-        </section>
+          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl bg-white/80 md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
+            <img
+              src="/your-image-path.jpg"
+              alt="AI Video Creation"
+              className="h-full w-full object-cover object-left opacity-90"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="mx-auto mb-32 max-w-[1920px] px-4 py-20 sm:px-24 lg:px-32">
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-4xl font-bold">Features</h1>
+          {/* <button className="text-sm text-[#0096CE] hover:text-[#0084B5]">
+            View all
+          </button> */}
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {features.map((item, index) => (
+            <div
+              key={index}
+              className="group cursor-pointer overflow-hidden rounded-xl bg-[#1C1C20] transition hover:bg-[#27272B]"
+            >
+              <div className="aspect-video overflow-hidden">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="h-full w-full object-cover transition group-hover:scale-105"
+                />
+              </div>
+              <div className="p-6">
+                {/* <div className="mb-4 text-sm text-[#0096CE]">{item.tag}</div> */}
+                <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
+                <p className="text-gray-400">{item.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <Footer />
