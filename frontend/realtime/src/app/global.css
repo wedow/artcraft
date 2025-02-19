@@ -54,10 +54,10 @@
   .dotted-pattern {
     background-image: radial-gradient(
       circle at 1px 1px,
-      rgb(0 0 0 / 0.25) 1px,
+      rgb(255 255 255 / 0.25) 1px,
       transparent 0
     );
-    background-size: 32px 32px;
+    background-size: 40px 40px;
   }
 
   .gradient-text {

@@ -9,7 +9,7 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-[#18181C]">
+    <footer className="relative z-10 bg-[#18181C]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center space-y-10 text-center">
           <img
@@ -20,7 +20,7 @@ const Footer = () => {
 
           <Button
             onClick={() => navigate("/signup")}
-            className="text-md group rounded-xl px-8 py-4"
+            className="text-md group rounded-xl bg-[#2D81FF] px-8 py-4 hover:bg-[#438AF6]"
           >
             <span className="relative flex items-center">
               Start Creating for Free

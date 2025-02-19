@@ -16,7 +16,10 @@ const Navbar = () => {
             />
           </a>
           <div className="flex items-center space-x-5">
-            <Button className="" onClick={() => navigate("/download")}>
+            <Button
+              className="bg-[#2D81FF] hover:bg-[#438AF6]"
+              onClick={() => navigate("/download")}
+            >
               Download
             </Button>
           </div>

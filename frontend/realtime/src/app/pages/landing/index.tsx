@@ -27,25 +27,26 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#101014] text-white">
+    <div className="relative min-h-screen bg-[#101014] text-white">
       <Navbar />
 
+      <div className="dotted-pattern absolute inset-0 z-[0] opacity-50" />
       {/* Hero Section */}
       <div className="relative flex overflow-hidden pt-24 xl:min-h-[1000px] xl:items-center xl:pt-0">
         {/* Content Container */}
         <div className="relative z-10 mx-auto grid h-full w-full max-w-[1920px] grid-cols-12 items-center px-6 md:px-16 xl:px-32">
-          <div className="before:xl:border-radius-full z-10 col-span-12 w-full xl:absolute xl:left-0 xl:top-1/2 xl:max-w-4xl xl:-translate-y-1/2 xl:pl-32 before:xl:absolute before:xl:-inset-0 before:xl:-z-10 before:xl:bg-black before:xl:to-transparent before:xl:blur-[180px]">
+          <div className="z-10 col-span-12 w-full xl:absolute xl:left-0 xl:top-1/2 xl:max-w-4xl xl:-translate-y-1/2 xl:pl-32 before:xl:absolute before:xl:-inset-0 before:xl:-z-10 before:xl:mr-40 before:xl:rounded-full before:xl:bg-black/90 before:xl:to-transparent before:xl:blur-[180px]">
             <div className="max-w-2xl">
               <div className="mb-6">
                 <span className="text-lg font-semibold uppercase tracking-widest text-gray-400">
-                  LOREM IPSUM
+                  MIRA
                 </span>
               </div>
 
               <h1 className="mb-6 font-bold leading-tight lg:text-6xl">
-                Lorem ipsum dolor
+                Realtime AI editor.
                 <br />
-                Sit amet consectetur
+                On your local machine.
               </h1>
 
               <p className="mb-10 max-w-xl text-lg leading-relaxed">
@@ -55,7 +56,7 @@ const Landing = () => {
               </p>
 
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button className="w-full transform rounded-lg bg-primary px-8 py-4 font-semibold transition hover:scale-105 sm:w-auto">
+                <button className="w-full transform rounded-lg bg-[#2D81FF] px-8 py-4 font-semibold transition hover:scale-105 hover:bg-[#438AF6] sm:w-auto">
                   Download for MacOS
                 </button>
                 <button className="w-full transform rounded-lg border border-white/30 px-8 py-4 font-semibold transition hover:scale-105 hover:bg-white/10 sm:w-auto">
@@ -64,18 +65,18 @@ const Landing = () => {
               </div>
             </div>
           </div>
-          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl bg-white/80 md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
+          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl border border-white/[12%] bg-transparent md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
             <img
-              src="/your-image-path.jpg"
+              src="/images/landing_hero.png"
               alt="AI Video Creation"
-              className="h-full w-full object-cover object-left opacity-90"
+              className="h-full w-full object-cover object-top opacity-90"
             />
           </div>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className="mx-auto mb-32 max-w-[1920px] px-4 py-20 sm:px-24 lg:px-32">
+      <div className="relative z-10 mx-auto mb-32 max-w-[1920px] px-4 py-20 sm:px-24 lg:px-32">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-4xl font-bold">Features</h1>
           {/* <button className="text-sm text-[#0096CE] hover:text-[#0084B5]">
