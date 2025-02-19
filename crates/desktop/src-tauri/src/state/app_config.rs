@@ -32,6 +32,8 @@ pub struct AppConfig {
   pub scheduler_samples: usize,
   
   pub seed: Option<u64>,
+
+  pub cfg_scale: Option<f64>,
   
   /// Probably shouldn't be here.
   pub hf_api: Api,
@@ -72,6 +74,7 @@ impl AppConfig {
       scheduler_steps: yaml_configs.scheduler_steps.unwrap_or(1),
       scheduler_samples: yaml_configs.scheduler_samples.unwrap_or(15),
       seed: yaml_configs.seed,
+      cfg_scale: yaml_configs.cfg_scale,
       hf_api,
     })
   }

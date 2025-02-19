@@ -3,27 +3,27 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
 use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
 use crate::ml::model_cache::ModelCache;
+use crate::ml::model_file::StableDiffusionVersion;
 use crate::ml::prompt_cache::PromptCache;
 use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
 use crate::ml::stable_diffusion::infer_clip_text_embeddings::infer_clip_text_embeddings;
 use crate::state::app_config::AppConfig;
-use anyhow::{Error as E, Result};
-use candle_core::{DType, IndexOp, D};
+use anyhow::{anyhow, Error as E, Result};
+use candle_core::{DType, IndexOp, Tensor, D};
 use candle_transformers::models::stable_diffusion::vae::DiagonalGaussianDistribution;
 use image::DynamicImage;
 use log::info;
 use rand::Rng;
 
-
 pub struct Args<'a> {
     pub image: &'a DynamicImage,
     pub prompt: String,
     pub uncond_prompt: String,
-    pub guidance_scale: Option<f64>,
+    pub cfg_scale: Option<f64>,
+    pub i2i_strength: Option<u8>,
     pub configs: &'a AppConfig,
     pub model_cache: &'a ModelCache,
     pub prompt_cache: &'a PromptCache,
-    pub strength: Option<u8>,
 }
 
 pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
@@ -38,20 +38,33 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
     // TODO(bt,2025-02-18): The scheduler is `EulerAncestralDiscreteScheduler`, but we may want to port an LCM scheduler.
     //  This is a target for performance improvement
     //  See: https://github.com/huggingface/candle/issues/1331
-    println!("Building scheduler...");
     let mut scheduler = args.configs.sd_config.build_scheduler(
         args.configs.scheduler_steps)?;
 
     let seed = args.configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
+    args.configs.device.set_seed(seed)?;
 
     println!("Using seed: {}", seed);
-    args.configs.device.set_seed(seed)?;
+
+    let guidance_scale = match args.cfg_scale {
+        Some(guidance_scale) => guidance_scale,
+        None => match args.configs.sd_version {
+            StableDiffusionVersion::V1_5
+            | StableDiffusionVersion::V2_1
+            | StableDiffusionVersion::Xl => 7.5,
+            StableDiffusionVersion::Turbo => 0.,
+            _ => 0., // NB: Not sure what the other model families should use, so sticking with "0"
+        },
+    };
+
+    let use_guide_scale = guidance_scale > 1.0;
+
+    println!("Using guide scale: {}", use_guide_scale);
 
     info!("Checking if prompt is cached");
     let maybe_cached = args.prompt_cache.get_copy(&args.prompt)?;
-    
-    let text_embeddings = if let Some(tensor) = maybe_cached {
-        info!("Prompt is cached!");
+
+    let mut text_embeddings = if let Some(tensor) = maybe_cached {
         tensor
     } else {
         info!("Prompt is NOT cached! Calculating embedding...");
@@ -66,12 +79,12 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
             false, // use_f16
             &args.configs.device,
             args.configs.dtype,
-            false, // use_guide_scale
+            use_guide_scale,
         )?;
         args.prompt_cache.store_copy(&args.prompt, &tensor)?;
         tensor
     };
-    
+
     println!("Text embeddings shape: {:?}", text_embeddings.shape());
 
     println!("Loading input image into tensor...");
@@ -97,8 +110,8 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
     println!("Initial latents shape: {:?}", latents.shape());
 
     println!("Calculating start step for diffusion process...");
-    
-    let img2img_strength = match args.strength {
+
+    let img2img_strength = match args.i2i_strength {
         None => 0.75f64,
         Some(strength) => (strength as f64) / 100.0f64,
     };
@@ -136,19 +149,28 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         }
 
         println!("Processing step {}/{} @ timestamp = {}", timestep_index + 1, timesteps.len(), timestep);
-        
-        // TODO(bt,2025-08-18): Do we have to clone the tensor?
-        let latent_model_input = scheduler.scale_model_input(latents.clone(), timestep)?;
-        
-        let noise_pred = match args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings) {
-            Ok(pred) => {
-                pred
-            },
+
+        let latent_model_input = if use_guide_scale {
+            Tensor::cat(&[&latents, &latents], 0)?
+        } else {
+            latents.clone() // TODO(bt,2025-08-18): Do we have to clone the tensor? `scale_model_input` requires ownership
+        };
+
+        let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
+
+        let mut noise_pred = match args.model_cache.unet_inference(&latent_model_input, timestep as f64, &text_embeddings) {
+            Ok(pred) => pred,
             Err(e) => {
                 println!("UNet inference failed with error: {}", e);
                 return Err(anyhow::anyhow!("UNet inference failed: {}", e));
             },
         };
+
+        if use_guide_scale {
+            let chunks = noise_pred.chunk(2, 0)?;
+            let (noise_pred_uncond, noise_pred_text) = (&chunks[0], &chunks[1]);
+            noise_pred = (noise_pred_uncond + (guidance_scale * (noise_pred_text - noise_pred_uncond)?)?)?;
+        }
 
         latents = scheduler.step(&noise_pred, timestep, &latents)?;
     }

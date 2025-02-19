@@ -48,7 +48,7 @@ pub fn infer_clip_text_embeddings(
         false, // use_f16
         &device,
         dtype,
-        false, // use_guide_scale
+        use_guide_scale,
         *first,
       )
     })

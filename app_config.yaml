@@ -4,4 +4,4 @@ image_height: 512
 # NB(bt): It looks like we can get down to 2 sampling steps, perhaps ?
 scheduler_steps: 2
 scheduler_samples: 1
-
+cfg_scale: 1.1

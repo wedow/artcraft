@@ -59,11 +59,11 @@ fn do_infer_image(
     prompt: prompt.to_string(),
     uncond_prompt: NEGATIVE_PROMPT.to_string(),
     //guidance_scale: Some(0.0),
-    guidance_scale: None,
     model_cache,
     configs: config,
     prompt_cache: &prompt_cache,
-    strength: strength,
+    i2i_strength: strength,
+    cfg_scale: config.cfg_scale,
   };
 
   match stable_diffusion_pipeline(args) {

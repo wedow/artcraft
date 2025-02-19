@@ -12,6 +12,7 @@ pub struct YamlConfig {
   pub scheduler_steps: Option<usize>,
   pub scheduler_samples: Option<usize>,
   pub seed: Option<u64>,
+  pub cfg_scale: Option<f64>,
 }
 
 impl YamlConfig {
