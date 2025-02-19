@@ -43,6 +43,11 @@ export const SignaledToolbarMain = ({
         return () => appUiContext.openAddImage();
       case ToolbarMainButtonNames.ADD_VIDEO:
         return () => appUiContext.openAddVideo();
+      case ToolbarMainButtonNames.ADD_CIRCLE:
+      case ToolbarMainButtonNames.ADD_TRIANGLE:
+      case ToolbarMainButtonNames.ADD_SQUARE:
+        // TODO: Add shape?
+        return () => { };
       default:
         return dispatchers[buttonName];
     }
