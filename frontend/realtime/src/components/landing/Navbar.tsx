@@ -10,9 +10,9 @@ const Navbar = () => {
         <div className="flex h-[72px] items-center justify-between">
           <a href="/" className="flex items-center">
             <img
-              src="/brand/Storyteller-Logo.png"
-              alt="Storyteller Board"
-              className="h-[34px]"
+              src="/brand/mira-logo.png"
+              alt="Mira Realtime AI Editor"
+              className="h-[34px] pb-1"
             />
           </a>
           <div className="flex items-center space-x-5">

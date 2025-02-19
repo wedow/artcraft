@@ -13,9 +13,9 @@ const Footer = () => {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center space-y-10 text-center">
           <img
-            src="/brand/Storyteller-Logo.png"
-            alt="Storyteller Board"
-            className="h-[34px]"
+            src="/brand/mira-logo.png"
+            alt="Mira Realtime AI Editor"
+            className="h-[34px] pb-1"
           />
 
           <Button
