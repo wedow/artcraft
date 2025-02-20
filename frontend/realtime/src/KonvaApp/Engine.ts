@@ -28,6 +28,7 @@ import { LoadingVideosProvider } from "./EngineUtitlities/LoadingVideosProvider"
 
 import { VideoExtractionHandler } from "./EngineUtitlities/VideoExtractionHandler/VideoExtractionHandler";
 import { RealTimeDrawEngine, ShapeType } from "./RenderingPrimitives/RealTimeDrawEngine";
+import { NodeColor } from "~/signals/uiEvents/toolbarNode";
 
 // for testing loading files from system
 // import { FileUtilities } from "./FileUtilities/FileUtilities";
@@ -180,8 +181,8 @@ export class Engine {
     this.setupEventSystem();
     this.setAppMode(AppModes.SELECT);
 
-    
- 
+
+
   }
 
 
@@ -398,7 +399,7 @@ export class Engine {
       this.addImage(image);
     });
 
-  
+
 
     uiEvents.onAddTextToEngine((textdata) => {
       this.addText(textdata);
@@ -439,13 +440,12 @@ export class Engine {
       this.realTimeDrawEngine.currentPrompt = prompt;
     });
 
-    uiEvents.onAddShapeToEngine((shapeData)=> {
-
+    uiEvents.onAddShapeToEngine((shapeData) => {
       switch (shapeData.shape) {
         case "circle":
           this.addShape(ShapeType.Circle, 100);
           break;
-        case "square": 
+        case "square":
           this.addShape(ShapeType.Square, 100);
           break;
         case "triangle":
@@ -454,6 +454,9 @@ export class Engine {
       }
     });
 
+    uiEvents.toolbarNode.color.onConfirmChanged((nodeColor) => {
+      this.changeNodeColor(nodeColor);
+    })
   }
 
   disableAllButtons() {
@@ -536,6 +539,15 @@ export class Engine {
     this.addKeyboardShortcuts();
   }
 
+  private changeNodeColor(nodeColor: NodeColor) {
+    // Find the node that is selected with the id
+    const idSelector = '#' + nodeColor.kNodeId;
+    const selectedNode = this.mediaLayer.findOne(idSelector);
+
+    // TODO: Change the color of the node
+    // Turns out shapes are image nodes... how do we change the image's fill??
+  }
+
   public addText(textNodeData: TextNodeData) {
     const textNode = new TextNode({
       textNodeData: textNodeData,
@@ -558,8 +570,10 @@ export class Engine {
       selectionManagerRef: this.selectionManager
     });
     shapeNode.kNode.zIndex(1); // Replace desiredZIndex with a number
-   
+
     this.commandManager.createNode(shapeNode);
+    console.debug("Added shapenode:", shapeNode);
+    console.debug("Added node's ID:", shapeNode.kNode._id);
     //this.realTimeDrawEngine.addNodes(shapeNode);
   }
 
