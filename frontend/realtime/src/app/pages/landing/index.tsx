@@ -78,7 +78,7 @@ const Landing = () => {
               </div>
             </div>
           </div>
-          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl border border-white/[15%] bg-transparent md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
+          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl border border-white/[16%] bg-transparent md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
             <img
               src="/images/landing_hero.png"
               alt="AI Video Creation"
@@ -117,6 +117,52 @@ const Landing = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Installation Steps Section */}
+        <div className="mt-36">
+          <h1 className="mb-12 text-5xl font-bold">
+            How to install Mira AI Editor
+          </h1>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-xl bg-[#1C1C20] p-8">
+              <div className="mb-4 w-fit rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white">
+                STEP 1
+              </div>
+              <h3 className="mb-4 text-2xl font-semibold">Download the app</h3>
+              <p className="mb-6 text-gray-400">
+                Download and install our application to start creating amazing
+                AI-powered content.
+              </p>
+              <Button className="rounded-lg bg-[#2D81FF] px-4 py-2 text-sm font-medium hover:bg-[#438AF6]">
+                Download App
+              </Button>
+            </div>
+
+            <div className="rounded-xl bg-[#1C1C20] p-8">
+              <div className="mb-4 w-fit rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white">
+                STEP 2
+              </div>
+              <h3 className="mb-4 text-2xl font-semibold">Create an account</h3>
+              <p className="mb-6 text-gray-400">
+                Sign up for an account to access all features and start your
+                journey.
+              </p>
+              <Button className="text-sm font-medium" variant="secondary">
+                Sign up
+              </Button>
+            </div>
+
+            <div className="rounded-xl bg-[#1C1C20] p-8">
+              <div className="mb-4 w-fit rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white">
+                STEP 3
+              </div>
+              <h3 className="mb-4 text-2xl font-semibold">Start creating</h3>
+              <p className="mb-6 text-gray-400">
+                Begin creating with our realtime AI editor!
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
