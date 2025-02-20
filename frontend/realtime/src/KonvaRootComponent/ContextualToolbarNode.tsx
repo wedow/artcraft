@@ -71,6 +71,8 @@ export const ContextualToolbarNode = () => {
         onLockClicked={(e) => {
           dispatchUiEvents.toolbarNode.lock(e);
         }}
+        color={uiAccess.toolbarNode.signal.value.color}
+        onColorChange={(color) => { uiAccess.toolbarNode.setColor(color) }}
       />
     </Transition>
   );

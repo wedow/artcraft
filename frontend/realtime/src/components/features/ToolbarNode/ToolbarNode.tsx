@@ -4,14 +4,19 @@ import {
   faLockKeyholeOpen,
   faLockKeyhole,
   faUnlockKeyhole,
+  faPalette,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   ToolbarButton,
   ToolbarButtonProps,
 } from "~/components/features/ToolbarButton";
-import { paperWrapperStyles } from "~/components/styles";
+import { paperWrapperStyles, toolTipStyles } from "~/components/styles";
 import { ToolbarNodeButtonNames } from "./enums";
 import { ToolbarNodeButtonData } from "./data";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Fragment } from "react/jsx-runtime";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
 
 export interface ToolbarNodeProps {
   disabled?: boolean;
@@ -24,6 +29,8 @@ export interface ToolbarNodeProps {
   buttonsProps?: {
     [key in ToolbarNodeButtonNames]: ToolbarButtonProps;
   };
+  color?: string;
+  onColorChange?: (color: string) => void;
 }
 export const ToolbarNode = ({
   disabled,
@@ -31,6 +38,8 @@ export const ToolbarNode = ({
   lockDisabled,
   onLockClicked,
   buttonsProps,
+  color = "#000000",
+  onColorChange = () => { },
 }: ToolbarNodeProps) => {
   const handleOnLockClicked: React.MouseEventHandler<HTMLButtonElement> = (
     e,
@@ -53,7 +62,7 @@ export const ToolbarNode = ({
           className: twMerge(
             locked && "text-primary hover:bg-primary hover:text-white",
             lockDisabledOrUnknown &&
-              "text-secondary-300 hover:text-secondary-300",
+            "text-secondary-300 hover:text-secondary-300",
           ),
           disabled: lockDisabledOrUnknown,
         }}
@@ -73,14 +82,24 @@ export const ToolbarNode = ({
       {ToolbarNodeButtonData.map((buttonDatum, idx) => {
         const buttonProps = buttonsProps?.[buttonDatum.name];
 
-        return (
-          <ToolbarButton
-            icon={buttonDatum.icon}
-            tooltip={buttonDatum.tooltip}
-            key={idx}
-            buttonProps={buttonProps}
-          />
-        );
+        if (!buttonProps || buttonProps.hidden) {
+          return;
+        }
+
+        if (buttonDatum.name !== ToolbarNodeButtonNames.COLOR) {
+          return (
+            <ToolbarButton
+              icon={buttonDatum.icon}
+              tooltip={buttonDatum.tooltip}
+              key={idx}
+              buttonProps={buttonProps}
+            />
+          );
+        } else {
+          return (
+            <ColorPicker color={color} onChange={onColorChange} faIcon={faPalette} borderStyle="" />
+          )
+        }
       })}
     </div>
   );

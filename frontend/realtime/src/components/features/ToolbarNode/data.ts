@@ -8,6 +8,7 @@ import {
   faTrashCan,
   faVectorSquare,
   faDownload,
+  faPalette,
 } from "@fortawesome/pro-solid-svg-icons";
 
 export const ToolbarNodeButtonData = [
@@ -15,6 +16,11 @@ export const ToolbarNodeButtonData = [
     name: ButtonNames.TRANSFORM,
     icon: faVectorSquare,
     tooltip: "Move",
+  },
+  {
+    name: ButtonNames.COLOR,
+    icon: faPalette,
+    tooltip: "Color",
   },
   {
     name: ButtonNames.CHROMA,

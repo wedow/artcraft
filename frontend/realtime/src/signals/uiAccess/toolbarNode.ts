@@ -16,6 +16,7 @@ export interface ContextualToolbarProps extends ContextualUi {
   locked: boolean | "unknown";
   lockDisabled: boolean;
   buttonStates: ButtonStates;
+  color: string;
 }
 interface PartialContextualToolbarProps
   extends Partial<Omit<ContextualToolbarProps, "buttonStates">> {
@@ -32,6 +33,7 @@ const toolbarNodeSignal = signal<ContextualToolbarProps>({
   locked: false,
   lockDisabled: false,
   buttonStates: initButtonStates(),
+  color: "#000000",
 });
 
 export const toolbarNode = {
@@ -76,6 +78,11 @@ export const toolbarNode = {
           disabled: locked,
           hidden: false,
           active: buttonStates[ButtonNames.TRANSFORM].active,
+        },
+        [ButtonNames.COLOR]: {
+          disabled: locked,
+          hidden: false,
+          active: buttonStates[ButtonNames.COLOR].active,
         },
       },
       locked: locked,
@@ -134,6 +141,12 @@ export const toolbarNode = {
         },
       },
     };
+  },
+  setColor(color: string) {
+    toolbarNodeSignal.value = {
+      ...toolbarNodeSignal.value,
+      color,
+    }
   },
   batchButtonStates({ buttonStates }: { buttonStates: Partial<ButtonStates> }) {
     const prevButtonStates = toolbarNodeSignal.value.buttonStates;

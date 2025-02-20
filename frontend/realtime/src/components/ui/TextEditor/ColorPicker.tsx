@@ -1,6 +1,6 @@
 import { ChangeEvent, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { faFont, faHashtag } from "@fortawesome/pro-solid-svg-icons";
+import { faFont, faHashtag, IconDefinition } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { HexColorPicker } from "react-colorful";
@@ -12,9 +12,15 @@ import { paperWrapperStyles } from "~/components/styles";
 export const ColorPicker = ({
   color: prevColor,
   onChange,
+  faIcon = faFont,
+  borderStyle = "border",
+  showBar = true,
 }: {
   color: string;
   onChange: (newColor: string) => void;
+  faIcon?: IconDefinition;
+  borderStyle?: string;
+  showBar?: boolean;
 }) => {
   const [{ currColor, textInput }, setStates] = useState<{
     currColor: string;
@@ -44,11 +50,15 @@ export const ColorPicker = ({
       }));
     }
   };
+
   return (
     <Popover className="relative">
-      <PopoverButton className="flex size-10 flex-col items-center gap-1 rounded-md border p-2">
-        <FontAwesomeIcon icon={faFont} />
-        <span className="h-1 w-full" style={{ backgroundColor: prevColor }} />
+      <PopoverButton className={twMerge(
+        "flex size-10 flex-col items-center gap-1 rounded-md p-2",
+        borderStyle
+      )}>
+        <FontAwesomeIcon icon={faIcon} color={prevColor} />
+        {showBar && <span className="h-1 w-full" style={{ backgroundColor: prevColor }} />}
       </PopoverButton>
       <PopoverPanel
         anchor="bottom"
