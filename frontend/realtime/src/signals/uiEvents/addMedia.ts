@@ -1,5 +1,5 @@
 import { signal, effect } from "@preact/signals-react";
-import { TextNodeData } from "~/KonvaApp/types";
+import { ShapeNodeData, TextNodeData } from "~/KonvaApp/types";
 
 // ADDING IMAGES
 const stagedImage = signal<File | null>(null);
@@ -50,8 +50,6 @@ const onAddTextToEngine = (callback: (data: TextNodeData) => void) => {
 };
 
 // Add shapes
-// TODO: Remove this line and replace with actual shape data that engine needs
-type ShapeNodeData = any;
 const stagedShape = signal<ShapeNodeData | null>(null);
 const addShapeToEngine = (data: ShapeNodeData) => {
   stagedShape.value = data;

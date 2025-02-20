@@ -50,6 +50,20 @@ export const ContextualToolbarNode = () => {
     };
   }, []);
 
+  const handleColorChange = (color: string) => {
+    // Don't do anything if no node is known to be bound
+    if (uiAccess.toolbarNode.signal.value.knodeIds.length < 1) {
+      return;
+    }
+
+    // Update the UI component
+    uiAccess.toolbarNode.setColor(color);
+
+    // Signal the engine with the node ID (just grab the first -and expected only- node)
+    const nodeID = uiAccess.toolbarNode.signal.value.knodeIds[0];
+    dispatchUiEvents.toolbarNode.setSelectedColor({ kNodeId: nodeID, color });
+  }
+
   const boundedTopPosition = Math.min(position.y, winSize.height - 164);
   return (
     <Transition
@@ -72,7 +86,7 @@ export const ContextualToolbarNode = () => {
           dispatchUiEvents.toolbarNode.lock(e);
         }}
         color={uiAccess.toolbarNode.signal.value.color}
-        onColorChange={(color) => { uiAccess.toolbarNode.setColor(color) }}
+        onColorChange={handleColorChange}
       />
     </Transition>
   );

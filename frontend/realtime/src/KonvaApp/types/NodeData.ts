@@ -26,6 +26,10 @@ export type VideoNodeData = {
   extractionUrl?: string;
 };
 
+export type ShapeNodeData = {
+  shape: "triangle" | "square" | "circle";
+}
+
 export type NodeData = {
   type: NodeType;
   transform: TransformationData;

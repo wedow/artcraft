@@ -152,6 +152,50 @@ export function getVideoNodeButtonStates(
     {} as ContextualToolbarProps["buttonStates"],
   );
 }
+
+export function getShapeNodeButtonStates(
+  props: { locked?: boolean | "unknown" } = {},
+) {
+  const ButtonNames = ToolbarNodeButtonNames;
+  return Object.values(ButtonNames).reduce(
+    (buttonStates, buttonName) => {
+      // transform button depends on locked state
+      if (props.locked !== undefined && buttonName === ButtonNames.TRANSFORM) {
+        buttonStates.TRANSFORM = {
+          disabled: props.locked === "unknown" || props.locked === true,
+          hidden: false,
+          active: true,
+        };
+        return buttonStates;
+      }
+
+      // hidden buttons
+      if (
+        buttonName === ButtonNames.AI_STYLIZE ||
+        buttonName === ButtonNames.SEGMENTATION ||
+        buttonName === ButtonNames.DOWNLOAD ||
+        buttonName === ButtonNames.CHROMA
+      ) {
+        buttonStates[buttonName] = {
+          disabled: true,
+          hidden: true,
+          active: false,
+        };
+        return buttonStates;
+      }
+
+      // all other buttons
+      buttonStates[buttonName] = {
+        disabled: false,
+        hidden: false,
+        active: false,
+      };
+      return buttonStates;
+    },
+    {} as ContextualToolbarProps["buttonStates"],
+  );
+}
+
 export function getMultiSelectButtonStates(
   props: { locked?: boolean | "unknown" } = {},
 ) {

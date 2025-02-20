@@ -44,6 +44,11 @@ const buttonEventsRecords = Object.values(ButtonNames).reduce(
 
 const buttonEventsHandlers = Object.values(ButtonNames).reduce(
   (acc, buttonName) => {
+    // We define custom events/handlers for color changes
+    if (buttonName === ButtonNames.COLOR) {
+      return acc;
+    }
+
     acc[buttonName] = {
       onClick: (callback: MouseEventHandler<HTMLButtonElement>) => {
         const { eventSignal, effectCleanup, lastEventTimestamp } =
@@ -111,9 +116,27 @@ const retryEventHandler = (callback: MouseEventHandler<HTMLButtonElement>) => {
 const retryDispatcher = (e: React.MouseEvent<HTMLButtonElement>) => {
   retryEvent.value = e;
 };
+
+export type NodeColor = {
+  kNodeId: string;
+  color: string;
+}
+const selectedColorEvent = signal<NodeColor | null>();
+const setSelectedColor = (nodeColor: NodeColor) => {
+  selectedColorEvent.value = nodeColor;
+}
+const onSelectedColorChanged = (callback: (color: NodeColor) => void) => {
+  effect(() => {
+    if (selectedColorEvent.value) {
+      callback(selectedColorEvent.value);
+    }
+  });
+};
+
 export const dispatchers = {
   lock: lockDispatcher,
   retry: retryDispatcher,
+  setSelectedColor,
   ...buttonDispatchers,
 };
 export const eventsHandlers = {
@@ -122,6 +145,9 @@ export const eventsHandlers = {
   },
   retry: {
     onClick: retryEventHandler,
+  },
+  color: {
+    onConfirmChanged: onSelectedColorChanged,
   },
   ...buttonEventsHandlers,
 };
