@@ -359,7 +359,7 @@ export class Engine {
     // Listen to Toolbar Main
     uiEvents.toolbarMain.UNDO.onClick(() => this.undoStackManager.undo());
     uiEvents.toolbarMain.REDO.onClick(() => this.undoStackManager.redo());
-    
+
     uiEvents.toolbarMain.SAVE.onClick(async (/*event*/) => {
       await this.realTimeDrawEngine.saveOutput();
 
@@ -393,7 +393,7 @@ export class Engine {
       this.addImage(image);
     });
 
-  
+
     uiEvents.onAddTextToEngine((textdata) => {
       this.addText(textdata);
     });
@@ -424,7 +424,7 @@ export class Engine {
         }
       }
     });
-    
+
     uiEvents.promptEvents.onPromptStrengthChanged((strength) => {
       this.realTimeDrawEngine.currentStrength = strength;
     });
@@ -432,6 +432,11 @@ export class Engine {
     uiEvents.promptEvents.onPromptTextChanged((prompt) => {
       this.realTimeDrawEngine.currentPrompt = prompt;
     });
+
+    uiEvents.onAddShapeToEngine((shapeData) => {
+      // TODO: Do something with shapes
+      console.log("Shape Data", shapeData);
+    })
   }
 
   disableAllButtons() {
@@ -467,7 +472,7 @@ export class Engine {
   }
 
   // Sandbox is quickly a way to test your idea.
-  public async sandbox() {}
+  public async sandbox() { }
 
   public onMessage(event: MessageEvent) {
     console.log("Message From Shared Worker");
@@ -579,7 +584,7 @@ export class Engine {
           if (
             longestVideoNode === undefined ||
             node.videoComponent.duration >
-              longestVideoNode.videoComponent.duration
+            longestVideoNode.videoComponent.duration
           ) {
             longestVideoNode = node;
           }

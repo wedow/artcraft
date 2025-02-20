@@ -48,15 +48,32 @@ const onAddTextToEngine = (callback: (data: TextNodeData) => void) => {
   });
 };
 
+// Add shapes
+// TODO: Remove this line and replace with actual shape data that engine needs
+type ShapeNodeData = any;
+const stagedShape = signal<ShapeNodeData | null>(null);
+const addShapeToEngine = (data: ShapeNodeData) => {
+  stagedShape.value = data;
+}
+const onAddShapeToEngine = (callback: (data: ShapeNodeData) => void) => {
+  effect(() => {
+    if (stagedShape.value) {
+      callback(stagedShape.value);
+    }
+  });
+};
+
 //EXPORTS
 export const dispatchers = {
   addImageToEngine,
   addVideoToEngine,
   addTextToEngine,
+  addShapeToEngine,
 };
 
 export const events = {
   onGetStagedImage,
   onGetStagedVideo,
   onAddTextToEngine,
+  onAddShapeToEngine,
 };
