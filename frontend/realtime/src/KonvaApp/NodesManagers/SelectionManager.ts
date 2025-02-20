@@ -9,6 +9,7 @@ import {
   calculateContextualsPosition,
   getImageNodeButtonStates,
   getMultiSelectButtonStates,
+  getShapeNodeButtonStates,
   getTextNodeButtonStates,
   getVideoNodeButtonStates,
 } from "./ToolbarNodeUtilities";
@@ -271,22 +272,31 @@ export class SelectionManager {
       return; // no node
     }
     if (this.selectedNodes.size === 1) {
-      if (node instanceof ImageNode || node instanceof ShapeNode) {
+      if (node instanceof ImageNode) {
         showOrUpdate({
+          knodeIds: [node.kNode.id()],
           locked: node.isLocked(),
           buttonStates: getImageNodeButtonStates({ locked: node.isLocked() }),
+        });
+      }
+      else if (node instanceof ShapeNode) {
+        console.debug("Selected node is of type ShapeNode", node.kNode.id())
+        showOrUpdate({
+          knodeIds: [node.kNode.id()],
+          locked: node.isLocked(),
+          buttonStates: getShapeNodeButtonStates({ locked: node.isLocked() }),
           color: node.getNodeData({ x: 0, y: 0 })?.textNodeData?.color ?? "#000000",
         });
       }
-      if (node instanceof TextNode) {
+      else if (node instanceof TextNode) {
         showOrUpdate({
-          // TODO: Add ID to identify/mutate the color?
+          knodeIds: [node.kNode.id()],
           locked: node.isLocked(),
           buttonStates: getTextNodeButtonStates({ locked: node.isLocked() }),
-        
+          color: node.getNodeData({ x: 0, y: 0 })?.textNodeData?.color ?? "#000000",
         });
       }
-      if (node instanceof VideoNode) {
+      else if (node instanceof VideoNode) {
         showOrUpdate({
           locked: node.isLocked(),
           buttonStates: getVideoNodeButtonStates({ locked: node.isLocked() }),
@@ -317,7 +327,7 @@ export class SelectionManager {
       this.hideContextComponents();
       return; // no nodes
     }
-  
+
     // console.log("SelectionManager > updateContextComponents for node:", node);
     const coord = calculateContextualsPosition(
       this.nodeTransformerRef.getKonvaNode(),
