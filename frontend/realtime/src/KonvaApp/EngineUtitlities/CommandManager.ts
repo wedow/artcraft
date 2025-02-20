@@ -58,6 +58,10 @@ export class CommandManager {
       renderEngineRef: this.renderEngineRef,
     });
     this.undoStackManagerRef.executeCommand(command);
+
+    // Set the kNode's manual id to same as kNode's internal _id
+    // This helps identify the kNode in the Konva layer with find
+    node.kNode.id(node.kNode._id.toString());
   }
   deleteNodes() {
     const nodes = this.selectionManagerRef.getSelectedNodes();
