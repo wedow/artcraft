@@ -2,6 +2,7 @@ import Konva from "konva";
 
 
 import { uiAccess, uiEvents } from "~/signals";
+import { ShapeNode } from "./Nodes";
 
 import { UndoStackManager } from "./UndoRedo";
 import { CommandManager, MatteBox, SceneManager } from "./EngineUtitlities";
@@ -26,7 +27,7 @@ import { NavigateFunction } from "react-router-dom";
 import { LoadingVideosProvider } from "./EngineUtitlities/LoadingVideosProvider";
 
 import { VideoExtractionHandler } from "./EngineUtitlities/VideoExtractionHandler/VideoExtractionHandler";
-import { RealTimeDrawEngine } from "./RenderingPrimitives/RealTimeDrawEngine";
+import { RealTimeDrawEngine, ShapeType } from "./RenderingPrimitives/RealTimeDrawEngine";
 
 // for testing loading files from system
 // import { FileUtilities } from "./FileUtilities/FileUtilities";
@@ -96,6 +97,7 @@ export class Engine {
     this.stage.add(this.mediaLayer);
     this.stage.add(this.nodeIsolationLayer);
     this.stage.add(this.uiLayer);
+
 
     // Konva Transformer
     this.nodeTransformer = new NodeTransformer();
@@ -177,6 +179,11 @@ export class Engine {
     // hence, lastly, setup these events
     this.setupEventSystem();
     this.setAppMode(AppModes.SELECT);
+
+  
+    this.addShape(ShapeType.Circle,100);
+    this.addShape(ShapeType.Square,100);
+    this.addShape(ShapeType.Triangle,100);
   }
 
 
@@ -530,6 +537,22 @@ export class Engine {
     this.commandManager.createNode(textNode);
   }
 
+  public addShape(type: ShapeType, size: number, color?: string) {
+    const shapeNode = new ShapeNode({
+      canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
+      canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
+      shapeType: type,
+      size: size,
+      color: color,
+      mediaLayerRef: this.mediaLayer,
+      selectionManagerRef: this.selectionManager
+    });
+    shapeNode.kNode.zIndex(1); // Replace desiredZIndex with a number
+   
+    this.commandManager.createNode(shapeNode);
+    //this.realTimeDrawEngine.addNodes(shapeNode);
+  }
+
   public addImage(imageFile: File) {
     const imageNode = new ImageNode({
       mediaLayerRef: this.mediaLayer,
@@ -538,9 +561,9 @@ export class Engine {
       imageFile: imageFile,
       selectionManagerRef: this.selectionManager,
     });
-
+    imageNode.kNode.zIndex(1);
     this.commandManager.createNode(imageNode);
-    this.realTimeDrawEngine.addNodes(imageNode);
+    //this.realTimeDrawEngine.addNodes(imageNode);
   }
 
   public addVideo(

@@ -83,8 +83,10 @@ export class ImageNode extends NetworkedNode {
   }) {
     const imageComponent = new Image();
     imageComponent.crossOrigin = "anonymous";
+    // this.setProgress({ progress: 100, status: UploadStatus.SUCCESS });
+
     imageComponent.onload = () => {
-      this.setProgress({ progress: 0, status: UploadStatus.FILE_STAGED });
+      //this.setProgress({ progress: 0, status: UploadStatus.FILE_STAGED });
       this.imageSize = {
         width: imageComponent.width,
         height: imageComponent.height,
@@ -105,33 +107,33 @@ export class ImageNode extends NetworkedNode {
       this.kNode.fill(transparent);
       this.listenToBaseKNode();
       this.mediaLayerRef.draw();
-      this.uploadImage(imageFile);
+      //this.uploadImage(imageFile);
     };
     imageComponent.onerror = () => {
-      this.setProgress({ progress: 0, status: UploadStatus.ERROR_ON_FILE });
+      //this.setProgress({ progress: 0, status: UploadStatus.ERROR_ON_FILE });
     };
     imageComponent.src = URL.createObjectURL(imageFile);
   }
   private async loadImageFromUrl(mediaFileUrl: string) {
-    this.setProgress({ progress: 75, status: UploadStatus.LOADING });
+    //this.setProgress({ progress: 75, status: UploadStatus.LOADING });
 
     const newImage = new Image();
     newImage.crossOrigin = "anonymous";
     newImage.onerror = () => {
-      this.setProgress({ progress: 90, status: UploadStatus.ERROR_ON_LOAD });
+      //this.setProgress({ progress: 90, status: UploadStatus.ERROR_ON_LOAD });
     };
     newImage.onload = () => {
       // console.log("network image", newImage);
       this.kNode.image(newImage);
       this.kNode.draw();
-      this.setProgress({ progress: 100, status: UploadStatus.SUCCESS });
+      //this.setProgress({ progress: 100, status: UploadStatus.SUCCESS });
     };
     newImage.src = mediaFileUrl;
     this.listenToBaseKNode();
   }
 
   private async uploadImage(imageFile: File) {
-    this.setProgress({ progress: 10, status: UploadStatus.UPLOADING });
+    //this.setProgress({ progress: 10, status: UploadStatus.UPLOADING });
 
     const mediaUploadApi = new MediaUploadApi();
     const uploadResponse = await mediaUploadApi.UploadImage({
@@ -149,7 +151,7 @@ export class ImageNode extends NetworkedNode {
   }
 
   private async retreiveImage(mediaFileToken: string) {
-    this.setProgress({ progress: 50, status: UploadStatus.RETREIVING });
+    //this.setProgress({ progress: 50, status: UploadStatus.RETREIVING });
     const mediaFileApi = new MediaFilesApi();
     const mediaFileResponse = await mediaFileApi.GetMediaFileByToken({
       mediaFileToken: mediaFileToken,

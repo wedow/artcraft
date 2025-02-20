@@ -42,12 +42,6 @@ export const DialogAddImage = ({
     closeCallback();
   }
 
-  function handleEnter() {
-    if (currFile) {
-      onAddImage(currFile);
-    }
-    handleClose();
-  }
   return (
     <Dialog open={isOpen} onClose={closeCallback} className="relative z-50">
       <div className={dialogBackgroundStyles}>
@@ -66,6 +60,10 @@ export const DialogAddImage = ({
               file={currFile}
               setFile={(file: File | null) => {
                 setAssetFile(file);
+                if (file) {
+                  onAddImage(file);
+                  handleClose();
+                }
               }}
             />
             {currFile && (
@@ -83,9 +81,6 @@ export const DialogAddImage = ({
           <div className="flex w-full justify-end gap-2">
             <Button onClick={handleClose} variant="secondary">
               Cancel
-            </Button>
-            <Button onClick={handleEnter} disabled={currFile === null}>
-              Enter
             </Button>
           </div>
         </DialogPanel>

@@ -3,22 +3,24 @@ import { Container } from "konva/lib/Container";
 import { Shape } from "konva/lib/Shape";
 import { Group } from "konva/lib/Group";
 
-
 import { invoke } from "@tauri-apps/api/core";
 
-
 import { FileUtilities } from "../FileUtilities/FileUtilities";
-import { ImageNode, VideoNode, TextNode } from "../Nodes";
+import { ImageNode, VideoNode, TextNode, ShapeNode } from "../Nodes";
 import { MediaNode } from "../types";
 
 import { RenderTask } from "./RenderTask";
 import { OffScreenSceneCanvas } from "./OffScreenSceneCanvas";
 
 // https://www.aiseesoft.com/resource/phone-aspect-ratio-screen-resolution.html#:~:text=16%3A9%20Aspect%20Ratio
-
+export enum ShapeType {
+  Square = "square",
+  Triangle = "triangle", 
+  Circle = "circle"
+}
 export class RealTimeDrawEngine {
   private videoNodes: VideoNode[];
-  private imageNodes: (ImageNode | TextNode)[];
+  private imageNodes: (ImageNode | TextNode | ShapeNode)[];
 
   private offScreenCanvas: OffscreenCanvas;
   private outputBitmap: ImageBitmap | undefined;
@@ -26,7 +28,7 @@ export class RealTimeDrawEngine {
   // private frames: ImageBitmap[];
 
   // capturing composite within window
-  private bgLayerRef: Konva.Layer;
+
   private mediaLayerRef: Konva.Layer;
 
   private height: number;
@@ -51,13 +53,11 @@ export class RealTimeDrawEngine {
   constructor({
     width,
     height,
-    bgLayerRef,
     mediaLayerRef,
     offScreenCanvas,
   }: {
     width: number;
     height: number;
-    bgLayerRef: Konva.Layer;
     mediaLayerRef: Konva.Layer;
     offScreenCanvas: OffscreenCanvas;
   }) {
@@ -80,7 +80,6 @@ export class RealTimeDrawEngine {
     this.offScreenCanvas.width = this.width;
     this.offScreenCanvas.height = this.height;
 
-    this.bgLayerRef = bgLayerRef;
 
     // this is the whole canvas
     this.mediaLayerRef = mediaLayerRef;
@@ -90,7 +89,7 @@ export class RealTimeDrawEngine {
     this.port = undefined;
 
     this.fps = 24;
-    
+
     this.currentPrompt = "";
     this.currentStrength = 100;
     // This is captures a subset of the medialayer ref
@@ -106,20 +105,6 @@ export class RealTimeDrawEngine {
       draggable: false,
     });
 
-    // Add preview canvas with same dimensions but different style
-    // this.previewCanvas = new Konva.Rect({
-    //   name: "PreviewCanvas",
-    //   x: this.positionX,
-    //   y: this.positionY,
-    //   width: this.width,
-    //   height: this.height,
-    //   fill: "white",
-    //   stroke: "blue",
-    //   strokeWidth: 1,
-    //   dash: [5, 5],
-    //   draggable: false,
-    // });
-
     this.previewCanvas = new Konva.Image({
       name: "PreviewCanvas",
       x: this.positionX,
@@ -127,19 +112,17 @@ export class RealTimeDrawEngine {
       width: this.width,
       height: this.height,
       image: undefined,
-      stroke: "blue",
+      stroke: "black",
       strokeWidth: 1,
-      dash: [5, 5],
       draggable: false,
+      fill: "white",
     });
 
-    this.bgLayerRef.add(this.captureCanvas);
-    this.bgLayerRef.add(this.previewCanvas);
+    this.mediaLayerRef.add(this.captureCanvas);
+    this.mediaLayerRef.add(this.previewCanvas);
     // send back
     this.captureCanvas.setZIndex(0);
-    this.previewCanvas.setZIndex(0);
-
-    //this.debug();
+    this.previewCanvas.setZIndex(1);
   }
 
   async updateCaptureCanvas(
@@ -284,12 +267,13 @@ export class RealTimeDrawEngine {
     this.isProcessing = true;
     await this.render();
   };
+  
   public addNodes(node: MediaNode) {
-    if (node instanceof VideoNode) {
-      this.videoNodes.push(node);
-      node.kNode.on("dragend", this.handleNodeDragEnd);
-    } else if (node instanceof ImageNode || node instanceof TextNode) {
+   
+    if (node instanceof ImageNode || node instanceof TextNode || node instanceof ShapeNode) {
+      console.debug("Adding node:", node);
       this.imageNodes.push(node);
+      console.log(this.imageNodes)
       node.kNode.on("dragend", this.handleNodeDragEnd);
     }
   }
@@ -325,6 +309,7 @@ export class RealTimeDrawEngine {
     try {
       const box = config.layerOfInterest.getClientRect();
       const stage = config.layerOfInterest.getStage();
+      
 
       const x = config.x !== undefined ? config.x : Math.floor(box.x);
       const y = config.y !== undefined ? config.y : Math.floor(box.y);
@@ -383,8 +368,6 @@ export class RealTimeDrawEngine {
       throw error;
     }
   }
-
-
 
   private async imageBitmapToBase64(imageBitmap: ImageBitmap): Promise<string> {
     // Create a temporary canvas
@@ -462,9 +445,11 @@ export class RealTimeDrawEngine {
   }
 
   public async render() {
-    // only pick nodes that intersect with the canvas on screen bounds to freeze.
+    // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
     this.mediaLayerRef.draw();
-
+    // Output all nodes in mediaLayerRef
+    const nodes = this.mediaLayerRef.getChildren();
+    console.log("All nodes in mediaLayer:", nodes);
     console.log(
       `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
     );
@@ -482,20 +467,20 @@ export class RealTimeDrawEngine {
     })) as ImageBitmap;
 
     // Test code
-    if (false) {
+    if (true) {
       this.outputBitmap = bitmap;
       this.previewCanvas.image(bitmap);
       this.isProcessing = false;
-      return
-    } 
+      return;
+    }
 
     try {
       const base64Bitmap = await this.imageBitmapToBase64(bitmap);
 
       const base64BitmapResponse = await invoke("infer_image", {
         image: base64Bitmap,
-        prompt:this.currentPrompt,
-        strength:this.currentStrength,
+        prompt: this.currentPrompt,
+        strength: this.currentStrength,
       });
 
       console.log(base64BitmapResponse);
@@ -510,6 +495,5 @@ export class RealTimeDrawEngine {
     } finally {
       this.isProcessing = false;
     }
-
   }
 }

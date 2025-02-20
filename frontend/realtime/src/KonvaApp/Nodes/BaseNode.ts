@@ -29,7 +29,7 @@ export abstract class BaseNode {
   }: {
     selectionManagerRef: SelectionManager;
     mediaLayerRef: Konva.Layer;
-    kNode: Konva.Image | Konva.Group;
+    kNode: Konva.Image | Konva.Group | Konva.Shape;
   }) {
     // console.log("Node constructed");
     // this.uuid = uuidv4();
@@ -67,8 +67,11 @@ export abstract class BaseNode {
     }
     if (this.kNode instanceof Konva.Group) {
       const wrapperRect = this.kNode.findOne(".wrapper") as Konva.Rect;
-      wrapperRect.stroke(primaryOrange);
-      wrapperRect.strokeWidth(highlightStrokeWidth);
+      console.log("Wrapper rect:", wrapperRect);
+      if (wrapperRect !=null) {
+        wrapperRect.stroke(primaryOrange);
+        wrapperRect.strokeWidth(highlightStrokeWidth);
+      }
       return;
     }
     if (import.meta.env.DEV) {
@@ -86,7 +89,11 @@ export abstract class BaseNode {
     }
     if (this.kNode instanceof Konva.Group) {
       const wrapperRect = this.kNode.findOne(".wrapper") as Konva.Rect;
-      wrapperRect.strokeWidth(0);
+      console.log("Wrapper rect:", wrapperRect); 
+      if (wrapperRect !=null) {
+        // Issue investigate
+        wrapperRect.strokeWidth(0);
+      }
       return;
     }
     if (import.meta.env.DEV) {

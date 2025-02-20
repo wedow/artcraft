@@ -4,6 +4,7 @@ export enum NodeType {
   IMAGE = "image",
   TEXT = "text",
   VIDEO = "video",
+  SHAPE = "shape"
 }
 export const transparent = Colors.transparent;
 export const primaryOrange = Colors.primaryOrange;

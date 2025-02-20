@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { ImageNode, TextNode, VideoNode } from "../Nodes";
+import { ImageNode, ShapeNode, TextNode, VideoNode } from "../Nodes";
 import { MediaNode, Position, RGBColor, Transformation } from "../types";
 import {
   AddChromaKey,
@@ -48,7 +48,7 @@ export class CommandManager {
     this.undoStackManagerRef = engineRefs.undoStackManagerRef;
   }
 
-  createNode(node: VideoNode | ImageNode | TextNode) {
+  createNode(node: VideoNode | ImageNode | TextNode | ShapeNode) {
     const command = new CreateCommand({
       nodes: new Set<MediaNode>([node]),
       mediaLayerRef: this.mediaLayerRef,

@@ -6,6 +6,7 @@ const stagedImage = signal<File | null>(null);
 const addImageToEngine = (image: File) => {
   stagedImage.value = image;
 };
+
 const onGetStagedImage = (callback: (file: File) => void) => {
   effect(() => {
     if (stagedImage.value) {
