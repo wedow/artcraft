@@ -4,6 +4,7 @@ import { Position, Size, NodeData, TransformationData } from "../types";
 import { BaseNode } from "./BaseNode";
 import { NodeType } from "./constants";
 import { NodeUtilities } from "./NodeUtilities";
+import { NetworkedNode } from "./NetworkedNode";
 
 export enum ShapeType {
   CIRCLE = "circle",
@@ -22,8 +23,7 @@ interface ShapeNodeConstructor {
   selectionManagerRef: SelectionManager;
 }
 
-export class ShapeNode extends BaseNode {
-  public kNode: Konva.Group;
+export class ShapeNode extends NetworkedNode {
 
   constructor({
     canvasPosition,
@@ -41,7 +41,9 @@ export class ShapeNode extends BaseNode {
       canvasPosition,
       canvasSize,
     });
+
     let shape = null;
+    
     switch (shapeType) {
       case ShapeType.CIRCLE:
         const circleShape = new Konva.Circle({
@@ -156,9 +158,6 @@ export class ShapeNode extends BaseNode {
       mediaLayerRef: mediaLayerRef,
       kNode: shape,
     });
-
-    this.kNode = shape;
-    this.shapeType = shapeType;
 
     // Add shape to group
     const centerPosition = NodeUtilities.positionNodeOnCanvasCenter({
