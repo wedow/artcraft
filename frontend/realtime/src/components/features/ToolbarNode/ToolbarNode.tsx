@@ -97,7 +97,7 @@ export const ToolbarNode = ({
           );
         } else {
           return (
-            <ColorPicker color={color} onChange={onColorChange} faIcon={faPalette} borderStyle="" />
+            <ColorPicker color={color} onChange={onColorChange} faIcon={faPalette} borderStyle="" key={idx} />
           )
         }
       })}
