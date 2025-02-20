@@ -10,7 +10,7 @@ type ButtonStates = {
   };
 };
 export interface ContextualToolbarProps extends ContextualUi {
-  knodeIds: number[];
+  knodeIds: string[];
   disabled: boolean;
   downloadUrl?: string;
   locked: boolean | "unknown";
