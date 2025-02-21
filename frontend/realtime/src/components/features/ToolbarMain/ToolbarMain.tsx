@@ -7,6 +7,7 @@ import {
   faFloppyDisk,
   faImage,
   faLocationArrow,
+  faPaintbrush,
   faShapes,
   faSquare,
   faText,
@@ -117,6 +118,11 @@ export const ToolbarMain = ({
 
         </div>
         <div className="flex flex-col items-center gap-2">
+          <ToolbarButton
+            icon={faPaintbrush}
+            buttonProps={buttonProps.PAINT}
+            tooltip="Paint Brush"
+          />
           <ToolbarButton
             icon={faEraser}
             buttonProps={buttonProps.ERASER}
