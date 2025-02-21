@@ -40,15 +40,16 @@ export const ToolbarMain = ({
 }) => {
   return (
     <>
+      { /* TODO: Figure out why divider shows up after the grid gap */}
       <div
         className={twMerge(
-          "flex w-fit items-center divide-x divide-ui-border",
+          "flex flex-col h-fit items-center divide-y divide-ui-border gap-y-2",
           paperWrapperStyles,
           disabled &&
           "pointer-events-none cursor-default bg-ui-border shadow-md",
         )}
       >
-        <div className="flex items-center gap-2 pr-2">
+        <div className="flex flex-col items-center gap-2">
           <ToolbarButton
             icon={faLocationArrow}
             iconProps={{ className: "fa-flip-horizontal" }}
@@ -74,10 +75,10 @@ export const ToolbarMain = ({
               </button>
             </PopoverButton>
             <PopoverPanel
-              anchor="bottom"
+              anchor="right"
               className={twMerge(
                 // "absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2",
-                "flex flex-col [--anchor-gap:16px]",
+                "flex flex-row [--anchor-gap:16px]",
                 paperWrapperStyles,
               )}
             >
@@ -100,10 +101,10 @@ export const ToolbarMain = ({
               </button>
             </PopoverButton>
             <PopoverPanel
-              anchor="bottom"
+              anchor="right"
               className={twMerge(
                 // "absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2",
-                "flex flex-col [--anchor-gap:16px]",
+                "flex [--anchor-gap:16px]",
                 paperWrapperStyles,
               )}
             >
@@ -117,7 +118,7 @@ export const ToolbarMain = ({
           </Popover>
 
         </div>
-        <div className="flex items-center gap-2 pl-2">
+        <div className="flex flex-col items-center gap-2">
           <ToolbarButton
             icon={faArrowRotateLeft}
             buttonProps={buttonProps.UNDO}
@@ -132,10 +133,6 @@ export const ToolbarMain = ({
             icon={faFloppyDisk}
             buttonProps={buttonProps.SAVE}
             tooltip="Save"
-          />
-          <ButtonPreviewAndRender
-            buttonPreviewProps={buttonProps.PREVIEW}
-            buttonRenderProps={buttonProps.DOWNLOAD}
           />
         </div>
       </div>

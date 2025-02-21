@@ -76,7 +76,7 @@ export const SignaledToolbarMain = ({
     dispatchers.loadingBarRetry(e);
   };
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
+    <div className="fixed top-1/2 left-4 -translate-y-1/2">
       <Transition
         as="div"
         className={twMerge(
