@@ -1,29 +1,27 @@
-import { Fragment, MouseEventHandler } from "react";
-import { twMerge } from "tailwind-merge";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRotateLeft,
   faArrowRotateRight,
   faCircle,
+  faEraser,
   faFilePlus,
-  faFilm,
   faFloppyDisk,
   faImage,
   faLocationArrow,
-  faMagicWandSparkles,
   faShapes,
   faSquare,
   faText,
-  faTriangle,
+  faTriangle
 } from "@fortawesome/pro-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Fragment, MouseEventHandler } from "react";
+import { twMerge } from "tailwind-merge";
 
 import { ToolbarButton } from "../ToolbarButton";
 
 // style and constants
 import { paperWrapperStyles, toolTipStyles } from "~/components/styles";
 import { ToolbarMainButtonNames } from "./enum";
-import { ButtonPreviewAndRender } from "./ButtonPreviewAndRender";
 
 export const ToolbarMain = ({
   disabled = false,
@@ -118,6 +116,14 @@ export const ToolbarMain = ({
           </Popover>
 
         </div>
+        <div className="flex flex-col items-center gap-2">
+          <ToolbarButton
+            icon={faEraser}
+            buttonProps={buttonProps.ERASER}
+            tooltip="Eraser"
+          />
+        </div>
+
         <div className="flex flex-col items-center gap-2">
           <ToolbarButton
             icon={faArrowRotateLeft}
