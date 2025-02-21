@@ -39,10 +39,9 @@ export const ToolbarMain = ({
 }) => {
   return (
     <>
-      { /* TODO: Figure out why divider shows up after the grid gap */}
       <div
         className={twMerge(
-          "flex flex-col h-fit items-center divide-y divide-ui-border gap-y-2",
+          "flex flex-col h-fit items-center gap-y-2",
           paperWrapperStyles,
           disabled &&
           "pointer-events-none cursor-default bg-ui-border shadow-md",
@@ -117,6 +116,9 @@ export const ToolbarMain = ({
           </Popover>
 
         </div>
+
+        <hr className="w-full border-t border-ui-border" />
+
         <div className="flex flex-col items-center gap-2">
           <ToolbarButton
             icon={faPaintbrush}
@@ -129,6 +131,8 @@ export const ToolbarMain = ({
             tooltip="Eraser"
           />
         </div>
+
+        <hr className="w-full border-t border-ui-border" />
 
         <div className="flex flex-col items-center gap-2">
           <ToolbarButton
