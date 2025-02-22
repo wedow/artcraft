@@ -31,14 +31,14 @@ export const Button = ({
         return "bg-tertiary hover:bg-tertiary-400 text-white focus-visible:outline-tertiary-600";
       }
       case "secondary": {
-        return "bg-gray-600 hover:bg-gray-500 text-white focus-visible:outline-secondary";
+        return "bg-ui-controls hover:bg-ui-controls/80 text-white focus-visible:outline-secondary";
       }
       case "action": {
         return " bg-action hover:bg-action-500 text-white focus-visible:outline-action";
       }
       case "primary":
       default: {
-        return "bg-primary hover:bg-primary-400 text-white focus-visible:outline-primary-600";
+        return "bg-primary hover:bg-primary-600 text-white focus-visible:outline-primary-600";
       }
     }
   }

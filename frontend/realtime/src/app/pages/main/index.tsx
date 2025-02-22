@@ -8,6 +8,7 @@ import { ToolbarUserProfile } from "~/components/features";
 //Components of the Konva App are all in the KonvaComponent
 import { KonvaRootComponent } from "~/KonvaRootComponent";
 import { ToolbarTopLeft } from "~/components/features/ToolbarTopLeft";
+import { ToolbarTopRight } from "~/components/features/ToolbarTopRight";
 
 export const Main = withProtectionRoute(() => {
   // This is a hook that will log the number of times the component has rerendered
@@ -25,6 +26,7 @@ export const Main = withProtectionRoute(() => {
       />
       <div className="absolute top-0 flex w-full justify-between px-2">
         <ToolbarTopLeft />
+        <ToolbarTopRight />
         {/* <ToolbarUserProfile /> */}
       </div>
     </div>

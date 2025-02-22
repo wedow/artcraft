@@ -1,6 +1,10 @@
 import { ChangeEvent, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { faFont, faHashtag, IconDefinition } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faFont,
+  faHashtag,
+  IconDefinition,
+} from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { HexColorPicker } from "react-colorful";
@@ -13,7 +17,7 @@ export const ColorPicker = ({
   color: prevColor,
   onChange,
   faIcon = faFont,
-  borderStyle = "border",
+  borderStyle,
   showBar = true,
 }: {
   color: string;
@@ -53,12 +57,16 @@ export const ColorPicker = ({
 
   return (
     <Popover className="relative">
-      <PopoverButton className={twMerge(
-        "flex size-10 flex-col items-center gap-1 rounded-md p-2",
-        borderStyle
-      )}>
+      <PopoverButton
+        className={twMerge(
+          "bg-ui-controls flex size-10 flex-col items-center gap-1 rounded-md p-2",
+          borderStyle,
+        )}
+      >
         <FontAwesomeIcon icon={faIcon} color={prevColor} />
-        {showBar && <span className="h-1 w-full" style={{ backgroundColor: prevColor }} />}
+        {showBar && (
+          <span className="h-1 w-full" style={{ backgroundColor: prevColor }} />
+        )}
       </PopoverButton>
       <PopoverPanel
         anchor="bottom"

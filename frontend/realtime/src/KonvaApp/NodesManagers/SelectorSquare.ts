@@ -40,8 +40,9 @@ export class SelectorSquare {
     stageRef: Konva.Stage;
   }) {
     this.kSquare = new Konva.Rect({
-      fill: "	rgb(250, 128, 114, 0.3)",
-      stroke: "salmon",
+      fill: "rgba(45, 129, 255, 0.3)",
+      stroke: "#00a1ff",
+      strokeWidth: 1,
       visible: false,
       // disable events to not interrupt with events
       listening: false,

@@ -1,19 +1,19 @@
 export const storytellerColors = {
-  sunglo: {
-    //sunglo
-    DEFAULT: "#e66462", //=500
-    50: "#fdf3f3",
-    100: "#fce4e4",
-    200: "#facfce",
-    300: "#f6acab",
-    400: "#ef7c7a",
-    500: "#e66462",
-    600: "#cf3533",
-    700: "#ae2927",
-    800: "#902624",
-    900: "#782524",
-    950: "#410f0e",
+  azureRadiance: {
+    DEFAULT: "#2d81ff", //=500
+    50: "#eef6ff",
+    100: "#d9ebff",
+    200: "#bcdcff",
+    300: "#8ec7ff",
+    400: "#59a7ff",
+    500: "#2d81ff",
+    600: "#1b63f5",
+    700: "#144ee1",
+    800: "#173fb6",
+    900: "#19398f",
+    950: "#142457",
   },
+
   gunpowder: {
     DEFAULT: "#39394c", //=950
     50: "#f5f6f9",

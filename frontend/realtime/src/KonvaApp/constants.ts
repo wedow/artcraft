@@ -16,5 +16,5 @@ export const VideoResolutions = {
 export const Colors = {
   transparent: "rgba(0,0,0,0)",
   translucentBlack: "rgba(0,0,0,0.3)",
-  primaryOrange: "rgba(230,100,98,1)",
+  primaryOrange: "rgba(45, 129, 255, 1)",
 };

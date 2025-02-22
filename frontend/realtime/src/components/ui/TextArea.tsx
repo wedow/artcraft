@@ -15,7 +15,7 @@ const resizeStyles = {
   horizontal: "resize-x",
   vertical: "resize-y",
   undefined: "",
-}
+};
 
 export interface TextareaInterface
   extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -27,7 +27,6 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaInterface>(
     { className, label, resize = "vertical", id, ...rest }: TextareaInterface,
     ref,
   ) => {
-
     const resizeStyle = resizeStyles[resize];
 
     return (
@@ -38,17 +37,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaInterface>(
           ref={ref}
           id={id ? id : label ? kebabCase(label) : undefined}
           className={twMerge(
-            "border-ui-panel-border bg-ui-controls rounded-lg border px-3 py-2",
+            "rounded-lg border border-ui-border px-4 py-2.5 text-white outline-none focus:outline-none",
             className,
             resizeStyle,
           )}
           style={{
             outline: "2px solid transparent",
-            transition: "outline-color 0.15s ease-in-out",
           }}
           onFocus={(e) => {
             // disableHotkeyInput(DomLevels.INPUT);
-            e.currentTarget.style.outlineColor = "#e66462";
+            e.currentTarget.style.outlineColor = "#2d81ff";
           }}
           onBlur={(e) => {
             // enableHotkeyInput(DomLevels.INPUT);

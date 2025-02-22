@@ -4,14 +4,13 @@ import {
   faCircle,
   faEraser,
   faFilePlus,
-  faFloppyDisk,
   faImage,
   faLocationArrow,
   faPaintbrush,
   faShapes,
   faSquare,
   faText,
-  faTriangle
+  faTriangle,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
@@ -41,10 +40,11 @@ export const ToolbarMain = ({
     <>
       <div
         className={twMerge(
-          "flex flex-col h-fit items-center gap-y-2",
+          "flex h-fit flex-col items-center gap-y-2",
           paperWrapperStyles,
+          "glass",
           disabled &&
-          "pointer-events-none cursor-default bg-ui-border shadow-md",
+            "pointer-events-none cursor-default bg-ui-border shadow-md",
         )}
       >
         <div className="flex flex-col items-center gap-2">
@@ -61,38 +61,70 @@ export const ToolbarMain = ({
           />
 
           <Popover className="relative">
-            <PopoverButton as={Fragment}>
-              <button
-                data-tooltip="Add Shapes"
-                className={twMerge(
-                  "size-10 rounded-lg p-2 hover:bg-gray-200/50",
-                  toolTipStyles,
-                )}
-              >
-                <FontAwesomeIcon icon={faShapes} />
-              </button>
-            </PopoverButton>
-            <PopoverPanel
-              anchor="right"
-              className={twMerge(
-                // "absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2",
-                "flex flex-row [--anchor-gap:16px]",
-                paperWrapperStyles,
-              )}
-            >
-              <ToolbarButton icon={faSquare} buttonProps={buttonProps.ADD_SQUARE} />
-              <ToolbarButton icon={faCircle} buttonProps={buttonProps.ADD_CIRCLE} />
-              <ToolbarButton icon={faTriangle} buttonProps={buttonProps.ADD_TRIANGLE} />
-            </PopoverPanel>
+            {({ close }) => (
+              <>
+                <PopoverButton as={Fragment}>
+                  <button
+                    data-tooltip="Add Shapes"
+                    className={twMerge(
+                      "size-10 rounded-lg border-2 border-transparent text-white/80 transition-all duration-100 hover:bg-white/15",
+                      toolTipStyles.base,
+                      toolTipStyles.right,
+                    )}
+                  >
+                    <FontAwesomeIcon icon={faShapes} />
+                  </button>
+                </PopoverButton>
+                <PopoverPanel
+                  anchor="right"
+                  className={twMerge(
+                    "flex flex-row [--anchor-gap:12px]",
+                    paperWrapperStyles,
+                  )}
+                >
+                  <ToolbarButton
+                    icon={faSquare}
+                    buttonProps={{
+                      ...buttonProps.ADD_SQUARE,
+                      onClick: (e) => {
+                        buttonProps.ADD_SQUARE.onClick?.(e);
+                        close();
+                      },
+                    }}
+                  />
+                  <ToolbarButton
+                    icon={faCircle}
+                    buttonProps={{
+                      ...buttonProps.ADD_CIRCLE,
+                      onClick: (e) => {
+                        buttonProps.ADD_CIRCLE.onClick?.(e);
+                        close();
+                      },
+                    }}
+                  />
+                  <ToolbarButton
+                    icon={faTriangle}
+                    buttonProps={{
+                      ...buttonProps.ADD_TRIANGLE,
+                      onClick: (e) => {
+                        buttonProps.ADD_TRIANGLE.onClick?.(e);
+                        close();
+                      },
+                    }}
+                  />
+                </PopoverPanel>
+              </>
+            )}
           </Popover>
 
           <Popover className="relative">
             <PopoverButton as={Fragment}>
               <button
-                data-tooltip="Add..."
+                data-tooltip="Add Media"
                 className={twMerge(
-                  "size-10 rounded-lg p-2 hover:bg-gray-200/50",
-                  toolTipStyles,
+                  "size-10 rounded-lg border-2 border-transparent text-white/80 transition-all duration-100 hover:bg-white/15",
+                  toolTipStyles.base,
+                  toolTipStyles.right,
                 )}
               >
                 <FontAwesomeIcon icon={faFilePlus} />
@@ -102,22 +134,21 @@ export const ToolbarMain = ({
               anchor="right"
               className={twMerge(
                 // "absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2",
-                "flex [--anchor-gap:16px]",
+                "flex [--anchor-gap:12px]",
                 paperWrapperStyles,
               )}
             >
               <ToolbarButton icon={faImage} buttonProps={buttonProps.ADD_IMAGE}>
-                Add Image
+                <span className="text-[16px]">Add Image</span>
               </ToolbarButton>
               {/* <ToolbarButton icon={faFilm} buttonProps={buttonProps.ADD_VIDEO}>
                 Add Video
               </ToolbarButton> */}
             </PopoverPanel>
           </Popover>
-
         </div>
 
-        <hr className="w-full border-t border-ui-border" />
+        <hr className="w-full border-t border-white/15" />
 
         <div className="flex flex-col items-center gap-2">
           <ToolbarButton
@@ -132,7 +163,7 @@ export const ToolbarMain = ({
           />
         </div>
 
-        <hr className="w-full border-t border-ui-border" />
+        <hr className="w-full border-t border-white/15" />
 
         <div className="flex flex-col items-center gap-2">
           <ToolbarButton
@@ -145,11 +176,11 @@ export const ToolbarMain = ({
             buttonProps={buttonProps.REDO}
             tooltip="Redo"
           />
-          <ToolbarButton
+          {/* <ToolbarButton
             icon={faFloppyDisk}
             buttonProps={buttonProps.SAVE}
             tooltip="Save"
-          />
+          /> */}
         </div>
       </div>
     </>

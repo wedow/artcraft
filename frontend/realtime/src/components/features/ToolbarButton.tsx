@@ -44,12 +44,12 @@ export const ToolbarButton = ({
   }
 
   const mergedButtonClasses = twMerge(
-    "rounded-lg py-2 px-3 hover:bg-gray-200/50 transition-all duration-100",
-    children ? "w-fit flex items-center gap-2 text-nowrap" : "size-10",
-    active && "pointer-events-none text-primary ",
+    "rounded-lg hover:bg-white/15 transition-all duration-100 border-2 border-transparent text-white/80 px-2",
+    children ? "w-fit flex items-center gap-2.5 text-nowrap" : "size-10",
+    active && "bg-primary/30 border-2 border-primary hover:bg-primary/30",
     disabled && "pointer-events-none text-secondary-300",
     buttonProps.prominent &&
-      "highlight-button border border-primary-400/30 text-primary-500 hover:bg-primary-100/40 hover:border-primary-400/60",
+      "border border-primary-400/30 text-primary-500 hover:bg-primary-100/40 hover:border-primary-400/60",
     customButtonClassNames,
   );
 
@@ -57,6 +57,7 @@ export const ToolbarButton = ({
     <button
       className={mergedButtonClasses}
       disabled={disabled}
+      autoFocus={false}
       {...restButtonProps}
       onClick={(e) => {
         e.preventDefault();
@@ -73,7 +74,11 @@ export const ToolbarButton = ({
     </button>
   );
   if (tooltip) {
-    return <Tooltip tip={tooltip}>{Button}</Tooltip>;
+    return (
+      <Tooltip position="right" tip={tooltip}>
+        {Button}
+      </Tooltip>
+    );
   }
   return Button;
 };
