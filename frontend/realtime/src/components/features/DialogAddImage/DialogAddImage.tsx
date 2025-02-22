@@ -52,7 +52,7 @@ export const DialogAddImage = ({
             "w-full max-w-2xl",
           )}
         >
-          <DialogTitle className="text-3xl font-bold">Upload Image</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Upload Image</DialogTitle>
           <div className="flex flex-col rounded-lg border-2 border-dashed border-ui-border">
             <FileUploader
               title=""

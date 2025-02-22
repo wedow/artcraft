@@ -24,7 +24,7 @@ export const DragAndDropZone = ({ file, fileTypes }: Props) => {
 
   // const fileName = file && getFileName(file).toUpperCase();
   const wrapperClassName = twMerge(
-    "group cursor-pointer px-6 py-12 bg-gray-100 hover:bg-gray-200/60 transition-colors duration-150 ease-in-out",
+    "group cursor-pointer px-6 py-12 bg-ui-controls hover:bg-white/25 transition-colors duration-150 ease-in-out rounded-lg",
     !file && "flex flex-col items-center justify-center gap-",
     file && "flex items-center gap-2 py-6",
     // "rounded-lg border-2 border-dashed border-ui-border",

@@ -12,6 +12,7 @@ interface SliderProps {
   showTooltip?: boolean;
   tooltipContent?: ReactNode;
   suffix?: string;
+  innerLabel?: string;
 }
 
 export const Slider = ({
@@ -24,6 +25,7 @@ export const Slider = ({
   showTooltip,
   tooltipContent,
   suffix,
+  innerLabel,
 }: SliderProps) => {
   const [localValue, setLocalValue] = useState(value);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -88,25 +90,40 @@ export const Slider = ({
     <div
       ref={sliderRef}
       className={twMerge(
-        "relative h-2.5 w-full cursor-pointer rounded-full bg-gray-500",
+        "glass group relative h-7 w-full cursor-pointer overflow-hidden rounded-lg border border-ui-border",
+        isDragging && "!bg-ui-controls/90",
         className,
       )}
       onMouseDown={handleMouseDown}
     >
       <div
-        className="absolute h-2.5 rounded-full bg-primary"
-        style={{ width: `${percentage}%` }}
-      ></div>
-      <div
         className={twMerge(
-          "absolute -top-1 h-[18px] w-[18px] -translate-x-1/2 transform rounded-full bg-gray-200 transition-colors",
-          isDragging ? "bg-white" : "bg-gray-300 hover:bg-white",
+          "absolute h-7 bg-primary/30 transition-colors duration-300 group-hover:bg-primary/50",
+          isDragging && "!bg-primary/50",
         )}
-        style={{ left: `${percentage}%` }}
-        onMouseDown={handleMouseDown}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      />
+        style={{ width: `${percentage}%` }}
+      >
+        {innerLabel && (
+          <span
+            className={twMerge(
+              "absolute top-1/2 ml-2.5 -translate-y-1/2 text-nowrap text-sm font-medium text-white/60 transition-colors duration-300 group-hover:text-white",
+              isDragging && "!text-white",
+            )}
+          >
+            {innerLabel}
+          </span>
+        )}
+        <div
+          className={twMerge(
+            "absolute right-0 top-1/2 mr-1.5 h-3.5 w-0.5 -translate-y-1/2",
+            isDragging ? "bg-white" : "bg-white/50",
+          )}
+          onMouseDown={handleMouseDown}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        />
+      </div>
+
       {showTooltip && (
         <Transition
           as={"div"}

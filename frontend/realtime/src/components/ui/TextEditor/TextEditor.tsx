@@ -151,7 +151,11 @@ export const TextEditor = ({
           onChangeTextDecoration={onChangeTextDecoration}
         />
       </div>
-      <Textarea {...unionedTextAreaProps} ref={textAreaRef} />
+      <Textarea
+        className="bg-white"
+        {...unionedTextAreaProps}
+        ref={textAreaRef}
+      />
     </div>
   );
 };

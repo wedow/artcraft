@@ -44,14 +44,15 @@ export default {
       info: colors.sky[500],
 
       // brand colors
-      primary: storytellerColors.sunglo,
+      primary: storytellerColors.azureRadiance,
       secondary: storytellerColors.gunpowder,
       tertiary: storytellerColors.aquamarineBlue,
 
       ui: {
-        background: colors.zinc[100],
-        panel: colors.white,
-        border: colors.zinc[200],
+        background: "#101014",
+        panel: "#3E3E41",
+        border: "#FFFFFF0D",
+        controls: "#3E3E41",
       },
     },
     backgroundImage: {

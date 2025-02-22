@@ -73,7 +73,7 @@ export const DialogEditText = ({
     <Dialog open={isOpen} onClose={closeCallback} className="relative z-50">
       <div className={dialogBackgroundStyles}>
         <DialogPanel className={twMerge(paperWrapperStyles, dialogPanelStyles)}>
-          <DialogTitle className="text-3xl font-bold">Edit Text</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Edit Text</DialogTitle>
           <TextEditor
             text={text}
             formatData={textFormatData}

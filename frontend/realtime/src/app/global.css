@@ -4,10 +4,11 @@
 
 @layer base {
   :root {
-    @apply bg-ui-background font-sans text-[#222222];
+    @apply bg-ui-background font-sans text-white;
   }
   .pegboard {
-    background-image: radial-gradient(#3f3f466b 1px, transparent 0);
+    background-image: radial-gradient(#ffffff25 1px, transparent 0);
+    background-color: #1b1b1f;
     background-size: 36px 36px;
     @apply bg-center;
   }
@@ -41,7 +42,24 @@
   }
 
   input {
-    @apply border-0 px-2 py-1 outline-none -outline-offset-2 focus:outline-primary-500 focus:ring-0;
+    @apply bg-ui-controls border-0 px-2 py-1 outline-none -outline-offset-2 focus:outline-primary-500 focus:ring-0;
+  }
+
+  textarea {
+    @apply bg-ui-controls placeholder:text-white/50;
+
+    /* Webkit scrollbar styles */
+    &::-webkit-scrollbar {
+      @apply w-1;
+    }
+
+    &::-webkit-scrollbar-track {
+      @apply bg-transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      @apply rounded-full bg-white/20 hover:bg-white/30;
+    }
   }
 }
 
@@ -86,6 +104,11 @@
     background-size: 200% 100%;
     background-position: 100% 0;
     animation: highlight-sweep 3s infinite linear;
+  }
+
+  .glass {
+    @apply relative border border-ui-border shadow-lg backdrop-blur-xl transition-colors duration-300;
+    @apply bg-ui-controls/50 hover:bg-ui-controls/90 !important;
   }
 }
 

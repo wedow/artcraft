@@ -23,7 +23,6 @@ interface ShapeNodeConstructor {
 }
 
 export class ShapeNode extends NetworkedNode {
-  
   retry(): void {
     throw new Error("Method not implemented.");
   }
@@ -36,7 +35,7 @@ export class ShapeNode extends NetworkedNode {
     canvasSize,
     shapeType,
     size,
-    color = "#ff0000", // Default red if no color provided
+    color = "#2D81FF", // Default red if no color provided
     transform: existingTransform,
     mediaLayerRef,
     selectionManagerRef,
@@ -49,7 +48,7 @@ export class ShapeNode extends NetworkedNode {
     });
 
     let shape = null;
-    
+
     switch (shapeType) {
       case ShapeType.CIRCLE:
         const circleShape = new Konva.Circle({
@@ -72,7 +71,7 @@ export class ShapeNode extends NetworkedNode {
           width: circleShape.width(),
           height: circleShape.height(),
           ...transform,
-          fill: 'transparent',
+          fill: "transparent",
           strokeScaleEnabled: false,
           draggable: true,
         });
@@ -107,7 +106,7 @@ export class ShapeNode extends NetworkedNode {
           width: squareShape.width(),
           height: squareShape.height(),
           ...transform,
-          fill: 'transparent',
+          fill: "transparent",
           strokeScaleEnabled: false,
           draggable: true,
         });
@@ -142,7 +141,7 @@ export class ShapeNode extends NetworkedNode {
           width: triangleShape.width(),
           height: triangleShape.height(),
           ...transform,
-          fill: 'transparent',
+          fill: "transparent",
           strokeScaleEnabled: false,
           draggable: true,
         });
