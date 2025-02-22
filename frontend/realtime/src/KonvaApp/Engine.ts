@@ -371,6 +371,18 @@ export class Engine {
 
     });
 
+    uiEvents.toolbarMain.SELECT.onClick(() => {
+      console.log("Toolbar Main >> Select");
+    });
+
+    uiEvents.toolbarMain.PAINT.onClick(() => {
+      console.log("Toolbar Main >> Paint");
+    });
+
+    uiEvents.toolbarMain.ERASER.onClick(() => {
+      console.log("Toolbar Main >> Eraser");
+    });
+
     uiEvents.toolbarMain.PREVIEW.onClick(async () => {
       console.log("Toolbar Main >> Preview");
       this.setAppMode(AppModes.PREVIEW);
@@ -565,7 +577,7 @@ export class Engine {
         // Create new shape node with updated color
         const newShapeNode = new ShapeNode({
           canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
-          canvasSize: this.realTimeDrawEngine.captureCanvas.size(), 
+          canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
           shapeType: shapeNode.shapeType,
           size: shapeNode.size,
           color: nodeColor.color,
@@ -574,7 +586,7 @@ export class Engine {
         });
         newShapeNode.kNode.position(shapeNode.kNode.position());
         newShapeNode.kNode.zIndex(shapeNode.kNode.zIndex());
-        
+
         // Remove old node and add new one
         shapeNode.kNode.destroy();
         this.commandManager.createNode(newShapeNode);
