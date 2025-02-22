@@ -50,6 +50,10 @@ export const SignaledToolbarMain = ({
         return () => dispatchUiEvents.addShapeToEngine({ shape: "triangle" });
       case ToolbarMainButtonNames.ADD_SQUARE:
         return () => dispatchUiEvents.addShapeToEngine({ shape: "square" });
+      case ToolbarMainButtonNames.SELECT:
+      case ToolbarMainButtonNames.ERASER:
+      case ToolbarMainButtonNames.PAINT:
+        return (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => { toolbarMain.setMode(buttonName); dispatchers[buttonName](e); };
       default:
         return dispatchers[buttonName];
     }

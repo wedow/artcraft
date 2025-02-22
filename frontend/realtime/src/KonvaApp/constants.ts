@@ -2,6 +2,8 @@ export enum AppModes {
   INIT = "INIT",
   PREVIEW = "PREVIEW",
   SELECT = "SELECT",
+  PAINT = "PAINT",
+  ERASER = "ERASER",
   RENDERING = "RENDERING",
 }
 

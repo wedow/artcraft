@@ -1,5 +1,6 @@
 import { signal } from "@preact/signals-react";
 import { ToolbarMainButtonNames } from "~/components/features/ToolbarMain/enum";
+import { isToolbarMode } from "~/signals/uiEvents/toolbarMain/toolbarMain";
 
 interface ToolbarMainSignalInterface {
   disabled: boolean;
@@ -42,6 +43,17 @@ export const toolbarMain = {
       },
     };
   },
+
+  setMode(mode: ToolbarMainButtonNames) {
+    if (!isToolbarMode(mode)) {
+      return;
+    }
+
+    this.changeButtonState(ToolbarMainButtonNames.SELECT, { active: false });
+    this.changeButtonState(ToolbarMainButtonNames.ERASER, { active: false });
+    this.changeButtonState(ToolbarMainButtonNames.PAINT, { active: false });
+    this.changeButtonState(mode, { active: true });
+  }
 };
 
 function initButtonStates() {
