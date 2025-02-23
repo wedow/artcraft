@@ -22,6 +22,9 @@ import { ToolbarButton } from "../ToolbarButton";
 // style and constants
 import { paperWrapperStyles, toolTipStyles } from "~/components/styles";
 import { ToolbarMainButtonNames } from "./enum";
+import { dispatchUiEvents, uiEvents } from "~/signals/uiEvents";
+import { paintColor } from "~/signals/uiEvents/toolbarMain/paintMode";
+import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
 
 export const ToolbarMain = ({
   disabled = false,
@@ -44,7 +47,7 @@ export const ToolbarMain = ({
           paperWrapperStyles,
           "glass",
           disabled &&
-            "pointer-events-none cursor-default bg-ui-border shadow-md",
+          "pointer-events-none cursor-default bg-ui-border shadow-md",
         )}
       >
         <div className="flex flex-col items-center gap-2">
@@ -151,11 +154,18 @@ export const ToolbarMain = ({
         <hr className="w-full border-t border-white/15" />
 
         <div className="flex flex-col items-center gap-2">
-          <ToolbarButton
-            icon={faPaintbrush}
-            buttonProps={buttonProps.PAINT}
-            tooltip="Paint Brush"
-          />
+          {buttonProps.PAINT.active ?
+            <ColorPicker color={paintColor.value} onChange={dispatchUiEvents.toolbarMain.setPaintColor} faIcon={faPaintbrush} borderStyle="" showBar={false} fillBg streamChanges />
+            :
+            <ToolbarButton
+              icon={faPaintbrush}
+              buttonProps={{
+                style: { backgroundColor: paintColor.value },
+                ...buttonProps.PAINT
+              }}
+              tooltip="Paint Brush"
+            />
+          }
           <ToolbarButton
             icon={faEraser}
             buttonProps={buttonProps.ERASER}
