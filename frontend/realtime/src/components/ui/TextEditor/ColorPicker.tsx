@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useState, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 import {
   faFont,
@@ -20,9 +20,12 @@ export const ColorPicker = ({
   borderStyle,
   showBar = true,
   anchor = "bottom",
+  anchorGap = 0,
   fillBg = false,
   staticIconColor,
-  streamChanges = false
+  streamChanges = false,
+  defaultOpen = false,
+  closeOnMouseLeave = false,
 }: {
   color: string;
   onChange: (newColor: string) => void;
@@ -30,10 +33,14 @@ export const ColorPicker = ({
   borderStyle?: string;
   showBar?: boolean;
   anchor?: "top" | "right" | "bottom" | "left";
+  anchorGap?: number;
   fillBg?: boolean;
-  staticIconColor?: string,
-  streamChanges?: boolean
+  staticIconColor?: string;
+  streamChanges?: boolean;
+  defaultOpen?: boolean;
+  closeOnMouseLeave?: boolean;
 }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [{ currColor, textInput }, setStates] = useState<{
     currColor: string;
     textInput: string;
@@ -42,16 +49,18 @@ export const ColorPicker = ({
     textInput: prevColor.substring(1),
   });
 
-  const handleSelectColor = (newColor: string) => {
-    if (streamChanges) {
-      onChange(newColor);
+  useEffect(() => {
+    setIsOpen(defaultOpen);
+  }, [defaultOpen]);
+
+  const handleMouseLeave = (close: () => void) => {
+    if (closeOnMouseLeave) {
+      onChange(currColor);
+      setIsOpen(false);
+      close();
     }
-    setStates({ currColor: newColor, textInput: newColor.substring(1) });
   };
-  const isHexColorCode = (color: string) => {
-    const hexColorRegex = /^(?:[0-9a-fA-F]{3}){1,2}$/;
-    return hexColorRegex.test(color);
-  };
+
   const handleTextInput = (e: ChangeEvent<HTMLInputElement>) => {
     if (isHexColorCode(e.target.value)) {
       setStates({
@@ -66,64 +75,100 @@ export const ColorPicker = ({
     }
   };
 
+  const isHexColorCode = (color: string) => {
+    const hexColorRegex = /^(?:[0-9a-fA-F]{3}){1,2}$/;
+    return hexColorRegex.test(color);
+  };
+
   return (
     <Popover className="relative">
-      <PopoverButton
-        className={twMerge(
-          "bg-ui-controls flex size-10 items-center gap-1 rounded-md p-2",
-          borderStyle,
-          showBar ? "flex-col" : "justify-center"
-        )}
-        style={fillBg ? { backgroundColor: prevColor } : {}}
-      >
-        <FontAwesomeIcon icon={faIcon} color={fillBg ? staticIconColor : prevColor} />
-        {showBar && (
-          <span className="h-1 w-full" style={{ backgroundColor: prevColor }} />
-        )}
-      </PopoverButton>
-      <PopoverPanel
-        anchor={anchor}
-        className={twMerge(
-          paperWrapperStyles,
-          "flex flex-col items-center gap-2 overflow-hidden",
-        )}
-      >
-        {({ close }) => {
-          return (
-            <>
-              <HexColorPicker color={currColor} onChange={handleSelectColor} />
-              <Input
-                style={{ width: "198px" }}
-                icon={faHashtag}
-                value={textInput}
-                onChange={handleTextInput}
+      {({ open, close }) => (
+        <>
+          <PopoverButton
+            className={twMerge(
+              "flex size-10 items-center gap-1 rounded-lg bg-ui-controls p-2",
+              borderStyle,
+              showBar ? "flex-col" : "justify-center",
+            )}
+            style={fillBg ? { backgroundColor: prevColor } : {}}
+            onMouseEnter={() => defaultOpen && setIsOpen(true)}
+          >
+            <FontAwesomeIcon
+              icon={faIcon}
+              color={staticIconColor ?? (fillBg ? undefined : prevColor)}
+            />
+            {showBar && (
+              <span
+                className="h-1 w-full"
+                style={{ backgroundColor: prevColor }}
               />
-              <div className="flex w-full justify-center gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
+            )}
+          </PopoverButton>
+          {(open || isOpen) && (
+            <div onMouseLeave={() => handleMouseLeave(close)}>
+              <PopoverPanel
+                anchor={anchor}
+                className={twMerge(
+                  paperWrapperStyles,
+                  "flex flex-col items-center gap-2 overflow-hidden",
+                )}
+                style={
+                  {
+                    "--anchor-gap": `${anchorGap}px`,
+                  } as React.CSSProperties
+                }
+                static
+              >
+                <HexColorPicker
+                  className="overflow-hidden"
+                  color={currColor}
+                  onChange={(color) => {
                     setStates({
-                      currColor: prevColor,
-                      textInput: prevColor.substring(1),
+                      currColor: color,
+                      textInput: color.substring(1),
                     });
-                    close();
+                    if (streamChanges) {
+                      onChange(color);
+                    }
                   }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    onChange(currColor);
-                    close();
-                  }}
-                >
-                  OK
-                </Button>
-              </div>
-            </>
-          );
-        }}
-      </PopoverPanel>
-    </Popover >
+                />
+                <Input
+                  style={{ width: "198px" }}
+                  icon={faHashtag}
+                  value={textInput}
+                  onChange={handleTextInput}
+                />
+                {!closeOnMouseLeave && (
+                  <div className="flex w-full justify-center gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setStates({
+                          currColor: prevColor,
+                          textInput: prevColor.substring(1),
+                        });
+                        setIsOpen(false);
+                        close();
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        onChange(currColor);
+                        setIsOpen(false);
+                        close();
+                      }}
+                    >
+                      OK
+                    </Button>
+                  </div>
+                )}
+              </PopoverPanel>
+            </div>
+          )}
+        </>
+      )}
+    </Popover>
   );
 };
