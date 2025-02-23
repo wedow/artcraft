@@ -54,7 +54,7 @@ export const ToolbarNode = ({
       className={twMerge(
         paperWrapperStyles,
         disabled && "pointer-events-none cursor-default bg-ui-border shadow-md",
-        "flex gap-2 transition",
+        "flex flex-col gap-2 transition",
       )}
     >
       <ToolbarButton
