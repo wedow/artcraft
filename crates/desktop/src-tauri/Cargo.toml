@@ -47,4 +47,10 @@ tokenizers = "0.15.2"
 
 [features]
 default = ["cuda"]
-cuda = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]
+cuda = [
+  "candle-core/cuda",
+  # TODO(bt,2025-02-22): cuDNN might speed up Stable Diffusion
+  # "candle-core/cudnn",
+  "candle-nn/cuda",
+  "candle-transformers/cuda",
+]

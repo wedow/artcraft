@@ -533,7 +533,7 @@ export class RealTimeDrawEngine {
     })) as ImageBitmap;
 
     // Test code
-    if (true) {
+    if (false) {
       this.outputBitmap = bitmap;
       this.previewCanvas.image(bitmap);
       this.isProcessing = false;
