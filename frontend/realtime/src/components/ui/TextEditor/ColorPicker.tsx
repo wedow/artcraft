@@ -19,12 +19,20 @@ export const ColorPicker = ({
   faIcon = faFont,
   borderStyle,
   showBar = true,
+  anchor = "bottom",
+  fillBg = false,
+  staticIconColor,
+  streamChanges = false
 }: {
   color: string;
   onChange: (newColor: string) => void;
   faIcon?: IconDefinition;
   borderStyle?: string;
   showBar?: boolean;
+  anchor?: "top" | "right" | "bottom" | "left";
+  fillBg?: boolean;
+  staticIconColor?: string,
+  streamChanges?: boolean
 }) => {
   const [{ currColor, textInput }, setStates] = useState<{
     currColor: string;
@@ -35,6 +43,9 @@ export const ColorPicker = ({
   });
 
   const handleSelectColor = (newColor: string) => {
+    if (streamChanges) {
+      onChange(newColor);
+    }
     setStates({ currColor: newColor, textInput: newColor.substring(1) });
   };
   const isHexColorCode = (color: string) => {
@@ -59,20 +70,22 @@ export const ColorPicker = ({
     <Popover className="relative">
       <PopoverButton
         className={twMerge(
-          "bg-ui-controls flex size-10 flex-col items-center gap-1 rounded-md p-2",
+          "bg-ui-controls flex size-10 items-center gap-1 rounded-md p-2",
           borderStyle,
+          showBar ? "flex-col" : "justify-center"
         )}
+        style={fillBg ? { backgroundColor: prevColor } : {}}
       >
-        <FontAwesomeIcon icon={faIcon} color={prevColor} />
+        <FontAwesomeIcon icon={faIcon} color={fillBg ? staticIconColor : prevColor} />
         {showBar && (
           <span className="h-1 w-full" style={{ backgroundColor: prevColor }} />
         )}
       </PopoverButton>
       <PopoverPanel
-        anchor="bottom"
+        anchor={anchor}
         className={twMerge(
           paperWrapperStyles,
-          "flex flex-col items-center gap-2",
+          "flex flex-col items-center gap-2 overflow-hidden",
         )}
       >
         {({ close }) => {
@@ -111,6 +124,6 @@ export const ColorPicker = ({
           );
         }}
       </PopoverPanel>
-    </Popover>
+    </Popover >
   );
 };
