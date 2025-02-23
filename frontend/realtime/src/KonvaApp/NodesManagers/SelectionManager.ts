@@ -80,7 +80,7 @@ export class SelectionManager {
   public isDisabled() {
     return this.disable;
   }
-  public selectNode(node: MediaNode, doNotDraw?: boolean): boolean {
+  public selectNode(node: MediaNode, doNotDraw?: boolean, showContextMenu = false): boolean {
     if (
       this.disabled || // no-op when disabled
       this.selectedNodes.has(node) || // if the node is already selected
@@ -100,7 +100,11 @@ export class SelectionManager {
     this.selectedNodes.add(node);
     this.updateNodeTransformer();
     this.updateContextComponents();
-    this.showContextComponents();
+
+    console.log("SelectionManager > selectNode > showContextMenu", showContextMenu);
+    if (showContextMenu) {
+      this.showContextComponents();
+    }
 
     if (!doNotDraw) {
       this.mediaLayerRef.batchDraw();
@@ -189,8 +193,8 @@ export class SelectionManager {
     // done, clear data and show menu
     this.initialPositions.clear();
     this.updateContextComponents();
-    this.showContextComponents();
   }
+
   private getKNodeTransformation(kNode: Konva.Node) {
     return {
       kNodeId: kNode._id,

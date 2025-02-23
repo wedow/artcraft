@@ -68,7 +68,7 @@ export abstract class BaseNode {
     if (this.kNode instanceof Konva.Group) {
       const wrapperRect = this.kNode.findOne(".wrapper") as Konva.Rect;
       console.log("Wrapper rect:", wrapperRect);
-      if (wrapperRect !=null) {
+      if (wrapperRect != null) {
         wrapperRect.stroke(primaryOrange);
         wrapperRect.strokeWidth(highlightStrokeWidth);
       }
@@ -89,8 +89,8 @@ export abstract class BaseNode {
     }
     if (this.kNode instanceof Konva.Group) {
       const wrapperRect = this.kNode.findOne(".wrapper") as Konva.Rect;
-      console.log("Wrapper rect:", wrapperRect); 
-      if (wrapperRect !=null) {
+      console.log("Wrapper rect:", wrapperRect);
+      if (wrapperRect != null) {
         // Issue investigate
         wrapperRect.strokeWidth(0);
       }
@@ -138,7 +138,7 @@ export abstract class BaseNode {
       // console.log("handle select");
       if (!isMultiSelect) {
         // clear selection if not multislect
-        //console.log("No Shift >> no multiselect");
+        console.log("No Shift >> no multiselect");
         this.selectionManagerRef.clearSelection();
       }
       if (this.selectionManagerRef.isNodeSelected(this)) {
@@ -151,8 +151,25 @@ export abstract class BaseNode {
       }
     };
 
+    const handleRightClick = () => {
+      this.selectionManagerRef.clearSelection();
+      this.selectionManagerRef.selectNode(this, undefined, true);
+    }
+
+    this.kNode.on("contextmenu", (e) => {
+      console.log("CONTEXT MENU", e);
+      e.evt.preventDefault();
+      handleRightClick();
+    });
+
     this.kNode.on("mousedown", (e) => {
-      // console.log("MOUSE DOWN");
+      // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/which
+      // 3: Right mouse button
+      // If right click, let context event handle it
+      if (e.evt.button === 3) {
+        return;
+      }
+
       // Selection of Node
       if (!this.selectionManagerRef.isNodeSelected(this)) {
         this.isSelecting = true;
@@ -162,7 +179,13 @@ export abstract class BaseNode {
     });
 
     this.kNode.on("mouseup", (e) => {
-      // console.log("MOUSE UP");
+      // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/which
+      // 3: Right mouse button
+      // If right click, let context event handle it
+      if (e.evt.button === 3) {
+        return;
+      }
+
       // just coming out of dragging or selecting mode
       // no need to handle select
       if (this.selectionManagerRef.isDragging() || this.isSelecting) {
