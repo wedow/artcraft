@@ -131,7 +131,7 @@ impl LcmScheduler {
     // NB: This is generating a range and reversing it.
     // self.timesteps = torch.from_numpy(np.arange(0, num_train_timesteps)[::-1].copy().astype(np.int64))
 
-    let timesteps = Tensor::arange(0i64, num_train_timestamps, device)?;
+    let timesteps = initialize_timesteps(num_train_timestamps, device)?;
 
     /*
         ##### All instance variables: ####
@@ -347,23 +347,39 @@ impl Scheduler for LcmScheduler {
   }
 }
 
+
+// TODO(bt,2025-02-23): Use native implementations
+fn initialize_timesteps(num_train_timesteps: i64, device: &Device) -> anyhow::Result<Tensor> {
+  // Testing LCM scheduler assumptions:
+  // [::-1] is shorthand for reversing a numpy vector, eg. [0, 1,2,3,4] -> [4, 3, 2, 1, 0]
+  // self.timesteps = torch.from_numpy(np.arange(0, num_train_timesteps)[::-1].copy().astype(np.int64))
+  //let tensor = Tensor::arange::<i64>(0, 5, &Device::Cpu)?; // This works, but we can't reverse/flip it!
+
+  // https://github.com/tracel-ai/burn/pull/1468 flip impl? Will this work in place?
+  // https://github.com/huggingface/candle/issues/1875
+  
+  let data = (0..num_train_timesteps)
+    .map(i64::from)
+    .rev()
+    .collect();
+  
+  let shape = Shape::from_dims(&[num_train_timesteps as usize]);
+  
+  let tensor = Tensor::from_vec(data, shape, device)?;
+  
+  Ok(tensor)
+}
+
 // The Candle sources, and moreover, the Candle tests, are a great source of information for how the library works.
 #[cfg(test)]
 mod tests {
   use candle_core::{Device, Tensor};
+  use crate::ml::lcm_scheduler::initialize_timesteps;
 
   #[test]
   fn test_implementation_of_reverse() -> anyhow::Result<()> {
-    // Testing LCM scheduler assumptions:
-    // [::-1] is shorthand for reversing a numpy vector, eg. [0, 1,2,3,4] -> [4, 3, 2, 1, 0]
-    // self.timesteps = torch.from_numpy(np.arange(0, num_train_timesteps)[::-1].copy().astype(np.int64))
-
-    let tensor = Tensor::arange::<i64>(0, 5, &Device::Cpu)?;
-
-    assert_eq!(tensor.to_vec1::<i64>()?, &[0,1,2,3,4]);
-    
-    // TODO: Reverse the shape
-    
+    let tensor = initialize_timesteps(5, &Device::Cpu)?;
+    assert_eq!(tensor.to_vec1::<i64>()?, &[4,3,2,1,0]);
     Ok(())
   }
 }
