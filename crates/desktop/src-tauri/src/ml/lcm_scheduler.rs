@@ -42,22 +42,12 @@ struct LcmScheduler {
   // TODO: This is set by the set_timesteps() method after construction in python.
   //  We might want to handle this upfront in the constructor ourselves
   num_inference_steps: Option<usize>,
-  step_index: Option<usize>,
+
+  _step_index: Option<usize>,
+  _begin_index: Option<usize>,
 }
 
 impl LcmScheduler {
-  /*
-        # Python __init__ CTOR args
-        # (Other args removed for not being used)
-
-        num_train_timesteps: int = 1000,
-        beta_start: float = 0.00085,
-        beta_end: float = 0.012,
-        beta_schedule: str = "scaled_linear",
-        trained_betas: Optional[Union[np.ndarray, List[float]]] = None,
-        set_alpha_to_one: bool = True,
-        rescale_betas_zero_snr: bool = False,
-   */
   pub fn new(
     num_train_timestamps: i64,
     beta_start: f64,
@@ -88,17 +78,22 @@ impl LcmScheduler {
       betas = trained;
     } else {
       betas = match beta_schedule {
-        "linear" => {
-          let t = linspace(beta_start, beta_end, num_train_timestamps as usize)?;
-          t.to_device(device)?
-        },
         "scaled_linear" => {
           // this schedule is very specific to the latent diffusion model.
-          let t = linspace(beta_start.powf(0.5), beta_end.powf(0.5), num_train_timestamps as usize)?;
+          let t = linspace(
+            beta_start.powf(0.5),
+            beta_end.powf(0.5),
+            num_train_timestamps as usize
+          )?;
           t.to_device(device)?
         }
+        "linear" => {
+          //let t = linspace(beta_start, beta_end, num_train_timestamps as usize)?;
+          //t.to_device(device)?
+          return Err(anyhow!("linear is not used upstream"));
+        },
         "squaredcos_cap_v2" => {
-          todo!("TODO: Need to implement squaredcos_cap_v2 beta schedule")
+          return Err(anyhow!("squaredcos_cap_v2 is not used upstream"));
         }
         _ => {
           return Err(anyhow!("schedule {beta_schedule} is not implemented"))
@@ -111,11 +106,10 @@ impl LcmScheduler {
      //     self.betas = rescale_zero_terminal_snr(self.betas)
 
     if rescale_betas_zero_snr {
-      todo!("TODO: implement rescale_betas_zero_snr")
+      return Err(anyhow!("rescale_betas_zero_snr is not used upstream"));
     }
 
     // self.alphas = 1.0 - self.betas
-
     let alphas = (1.0 - &betas)?;
 
     // self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
@@ -133,14 +127,13 @@ impl LcmScheduler {
 
     // TODO: Check implementation
     let final_alpha_cumprod = if set_alpha_to_one {
-      initialize_scalar_tensor(1.0, device)?
+      initialize_scalar_tensor(1.0, device)? // NB: `set_alpha_to_one` is false in python
     } else {
       alphas_cumprod.get(0)?
     };
 
     // # standard deviation of the initial noise distribution
     // self.init_noise_sigma = 1.0
-
     let init_noise_sigma = 1.0;
 
 
@@ -156,36 +149,6 @@ impl LcmScheduler {
 
     let timesteps = initialize_timesteps(num_train_timestamps, device)?;
 
-    /*
-        ##### All instance variables: ####
-
-        # Python
-
-        [ ] self._begin_index
-        [ ] self._step_index
-        [x] self.alphas
-        [x] self.alphas_cumprod
-        [x] self.betas
-        [ ] self.custom_timesteps
-        [x] self.final_alpha_cumprod
-        [x] self.init_noise_sigma
-        [x] self.num_inference_steps
-        [x] self.timesteps = None
-
-        # Swift Implementation
-        # https://github.com/GuernikaCore/Schedulers/blob/main/Sources/Schedulers/LCMScheduler.swift
-
-        [ ] public let trainStepCount: Int
-        [ ] public let inferenceStepCount: Int
-        [x] public let betas: [Float]
-        [x] public let alphas: [Float]
-        [x] public let alphasCumProd: [Float]
-        [x] public let finalAlphaCumProd: Float
-        [x] public let timeSteps: [Double]
-        [ ] public let predictionType: PredictionType
-        [ ] public private(set) var modelOutputs: [MLShapedArray<Float32>] = []
-     */
-
     Ok(Self {
       alphas,
       alphas_cumprod,
@@ -194,9 +157,27 @@ impl LcmScheduler {
       init_noise_sigma,
       timesteps,
       num_inference_steps: None,
-      step_index: None,
+      _step_index: None,
+      _begin_index: None,
     })
   }
+
+  pub fn set_begin_index(&mut self, begin_index: usize) {
+    self._begin_index = Some(begin_index);
+  }
+
+  pub fn init_step_index(&mut self, timestep: usize) -> candle_core::Result<()> {
+    match self._begin_index {
+      None => {
+        todo!("implement begin index none branch")
+      }
+      Some(begin_index) => {
+        self._step_index = Some(begin_index);
+      }
+    }
+    Ok(())
+  }
+
 }
 
 impl Scheduler for LcmScheduler {
@@ -281,6 +262,9 @@ impl Scheduler for LcmScheduler {
     Ok(sample) // NB: The diffusers scheduling_lcm.py implementation is a pass through no-op !
   }
 
+  /// Predict the sample from the previous timestep by reversing the SDE. This function
+  /// propagates the diffusion process from the learned model outputs (most often the
+  /// predicted noise).
   fn step(&mut self, model_output: &Tensor, timestep: usize, sample: &Tensor) -> candle_core::Result<Tensor> {
 
     if self.num_inference_steps.is_none() {
@@ -288,10 +272,36 @@ impl Scheduler for LcmScheduler {
         "Number of inference steps is 'None', you need to run 'set_timesteps' after creating the scheduler"
           .to_string()));
     }
-    
-    if self.step_index.is_none() {
-      //self.init_step_index(); // TODO
+
+    if self._step_index.is_none() {
+      self.init_step_index(timestep)?;
     }
+
+    let step_index = self._step_index.clone().expect("unsafe unwrap; should exist per above");
+
+    // 1. Get previous step value
+    let prev_step_index = step_index + 1;
+    let prev_timestep;
+
+    if prev_step_index < self.timesteps.elem_count() {
+      prev_timestep = self.timesteps.get(timestep)?.to_scalar::<i64>()? as usize;
+    } else {
+      prev_timestep = timestep;
+    }
+
+    // 2. Compute alphas, betas
+    let alpha_prod_t = self.alphas_cumprod.get(timestep)?;
+    let alpha_prod_t_prev = if prev_timestep >= 0 {
+      self.alphas_cumprod.get(prev_timestep)?
+    } else {
+      self.final_alpha_cumprod.clone()
+    };
+
+    let beta_prod_t = (1. - alpha_prod_t)?;
+    let beta_prod_t_prev = (1. - alpha_prod_t_prev)?;
+    
+    // TODO: Implment rest of step
+    // TODO: Implment rest of step
 
     /*
         # NB: This is from scheduling_lcm.py:
@@ -393,7 +403,6 @@ impl Scheduler for LcmScheduler {
             return LCMSchedulerOutput(prev_sample=prev_sample, denoised=denoised)
          */
         todo!()
-    }
   }
 }
 
@@ -424,32 +433,72 @@ fn initialize_timesteps(num_train_timesteps: i64, device: &Device) -> anyhow::Re
   Ok(tensor)
 }
 
+fn get_scalings_for_boundary_condition_discrete(timestep: usize, timestep_scaling: f64) -> (f64, f64) {
+  let sigma_data = 0.5f64; // Default 0.5
+  let scaled_timestep = timestep as f64 * timestep_scaling;
+
+  let c_skip = sigma_data.powf(2.0) / (scaled_timestep.powf(2.0) + sigma_data.powf(2.0));
+  let c_out = scaled_timestep / (scaled_timestep.powf(2.0) + sigma_data.powf(2.0)).powf(0.5);
+
+  (c_skip, c_out)
+}
+
 // The Candle sources, and moreover, the Candle tests, are a great source of information for how the library works.
 //assert_eq!(t.i(..-1)?, 1.0);
 #[cfg(test)]
 mod tests {
   use crate::ml::lcm_scheduler::{initialize_scalar_tensor, initialize_timesteps};
-  use crate::ml::lcm_scheduler::tests::helper_fn::*;
+  use crate::ml::lcm_scheduler::tests::test_helper_fn::*;
   use candle_core::Device;
 
-  #[test]
-  fn test_scalar_tensor() -> anyhow::Result<()> {
-    let t = initialize_scalar_tensor(1.0, &Device::Cpu)?;
-    let empty : [usize; 0] = [];
-    assert_eq!(t.dims(), &empty);
-    assert_eq!(t.to_vec0::<f64>()?, 1.0);
-    Ok(())
+  mod helper_function_unit_tests {
+    use crate::ml::lcm_scheduler::get_scalings_for_boundary_condition_discrete;
+    use super::*;
+
+    #[test]
+    fn test_initialize_scalar_tensor() -> anyhow::Result<()> {
+      let t = initialize_scalar_tensor(1.0, &Device::Cpu)?;
+      let empty: [usize; 0] = [];
+      assert_eq!(t.dims(), &empty);
+      assert_eq!(t.to_vec0::<f64>()?, 1.0);
+      Ok(())
+    }
+
+    #[test]
+    fn test_initialize_timesteps() -> anyhow::Result<()> {
+      let tensor = initialize_timesteps(5, &Device::Cpu)?;
+      assert_eq!(tensor.to_vec1::<i64>()?, &[4, 3, 2, 1,0]);
+      Ok(())
+    }
+
+    #[test]
+    fn test_get_scalings_for_boundary_condition_discrete() -> anyhow::Result<()> {
+      // Base cases
+      let v = get_scalings_for_boundary_condition_discrete(0, 0.0);
+      assert_eq!(v, (1.0, 0.0));
+      let v = get_scalings_for_boundary_condition_discrete(1, 0.0);
+      assert_eq!(v, (1.0, 0.0));
+      let v = get_scalings_for_boundary_condition_discrete(0, 1.0);
+      assert_eq!(v, (1.0, 0.0));
+
+      // Production code has "timestep_scaling" = 10.0
+      let v = get_scalings_for_boundary_condition_discrete(0, 10.0);
+      assert_eq!(v, (1.0, 0.0));
+
+      // Production code has "timestep_scaling" = 10.0
+      let v = get_scalings_for_boundary_condition_discrete(1, 10.0);
+      assert!((v.0 - 0.0024937655860349127).abs() < 0.01);
+      assert!((v.1 - 0.9987523388778445).abs() < 0.01);
+
+      // TODO: More test cases - 
+      //let v = get_scalings_for_boundary_condition_discrete(10, 10.0);
+      //let v = get_scalings_for_boundary_condition_discrete(100, 10.0);
+
+      Ok(())
+    }
   }
 
-  #[test]
-  fn test_implementation_of_reverse() -> anyhow::Result<()> {
-    let tensor = initialize_timesteps(5, &Device::Cpu)?;
-    assert_eq!(tensor.to_vec1::<i64>()?, &[4,3,2,1,0]);
-    Ok(())
-  }
-
-  mod various_pytorch_behaviors {
-    use candle_core::{Shape, Tensor};
+  mod confirm_various_pytorch_behaviors {
     use super::*;
 
     // NB: Non-unit tests, just to test understanding while porting code
@@ -482,7 +531,7 @@ mod tests {
     }
   }
 
-  pub mod helper_fn {
+  pub mod test_helper_fn {
     use candle_core::{Device, Shape, Tensor};
 
     pub fn tensor_1234() -> anyhow::Result<Tensor> {
