@@ -327,6 +327,7 @@ export class RealTimeDrawEngine {
   private handleNodeDragEnd = async () => {
     // Clean up any existing state
     if (this.isProcessing) {
+      console.log("isProcessing Returning")
       return;
     }
     console.log("Node drag ended");
@@ -334,7 +335,7 @@ export class RealTimeDrawEngine {
     await this.render();
   };
   
-  public addNodes(node: MediaNode) {
+  public async addNodes(node: MediaNode) {
    
     if (node instanceof ImageNode || node instanceof TextNode || node instanceof ShapeNode) {
       console.debug("Adding node:", node);
@@ -342,6 +343,7 @@ export class RealTimeDrawEngine {
       console.log(this.imageNodes)
       node.kNode.on("dragend", this.handleNodeDragEnd);
     }
+   
   }
 
   public removeNodes(node: MediaNode) {
@@ -512,6 +514,7 @@ export class RealTimeDrawEngine {
 
   public async render() {
     // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
+    
     this.mediaLayerRef.draw();
     // Output all nodes in mediaLayerRef
     const nodes = this.mediaLayerRef.getChildren();

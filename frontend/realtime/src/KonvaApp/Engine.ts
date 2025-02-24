@@ -578,7 +578,7 @@ export class Engine {
         });
         newShapeNode.kNode.position(shapeNode.kNode.position());
         newShapeNode.kNode.zIndex(shapeNode.kNode.zIndex());
-
+        
         // Remove old node and add new one
         shapeNode.kNode.destroy();
         this.commandManager.createNode(newShapeNode);
@@ -606,13 +606,19 @@ export class Engine {
       color: color,
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
+      loaded: async () => {
+        await this.realTimeDrawEngine.render();
+    },
     });
     shapeNode.kNode.zIndex(1); // Replace desiredZIndex with a number
 
     this.commandManager.createNode(shapeNode);
+
+
     console.debug("Added shapenode:", shapeNode);
     console.debug("Added node's ID:", shapeNode.kNode._id);
-    //this.realTimeDrawEngine.addNodes(shapeNode);
+
+    this.realTimeDrawEngine.addNodes(shapeNode);
   }
 
   public addImage(imageFile: File) {
@@ -622,10 +628,14 @@ export class Engine {
       canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
       imageFile: imageFile,
       selectionManagerRef: this.selectionManager,
+      loaded: async () => {
+        await this.realTimeDrawEngine.render();
+      },
     });
     imageNode.kNode.zIndex(1);
     this.commandManager.createNode(imageNode);
-    //this.realTimeDrawEngine.addNodes(imageNode);
+
+    this.realTimeDrawEngine.addNodes(imageNode);
   }
 
   public addVideo(

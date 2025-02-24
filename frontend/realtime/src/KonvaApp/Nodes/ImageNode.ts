@@ -17,12 +17,13 @@ interface ImageNodeContructor {
   transform?: TransformationData;
   mediaLayerRef: Konva.Layer;
   selectionManagerRef: SelectionManager;
+  loaded: () => Promise<void>;
 }
 
 export class ImageNode extends NetworkedNode {
   public kNode: Konva.Image;
   public imageSize?: Size;
-
+  private loaded!: () => Promise<void>;
   constructor({
     canvasPosition,
     canvasSize,
@@ -32,6 +33,7 @@ export class ImageNode extends NetworkedNode {
     transform: existingTransform,
     mediaLayerRef,
     selectionManagerRef,
+    loaded,
   }: ImageNodeContructor) {
     // kNodes need to be created first to guaruntee
     // that it is not undefined in parent's context
@@ -53,6 +55,7 @@ export class ImageNode extends NetworkedNode {
       localFile: imageFile,
     });
     this.kNode = kNode;
+    this.loaded = loaded;
     // this.imageSize = minNodeSize;
     this.mediaLayerRef.add(this.kNode);
 
@@ -108,6 +111,7 @@ export class ImageNode extends NetworkedNode {
       this.listenToBaseKNode();
       this.mediaLayerRef.draw();
       //this.uploadImage(imageFile);
+      this.loaded();
     };
     imageComponent.onerror = () => {
       //this.setProgress({ progress: 0, status: UploadStatus.ERROR_ON_FILE });

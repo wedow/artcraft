@@ -20,6 +20,7 @@ interface ShapeNodeConstructor {
   transform?: TransformationData;
   mediaLayerRef: Konva.Layer;
   selectionManagerRef: SelectionManager;
+  loaded: () => Promise<void>;
 }
 
 export class ShapeNode extends NetworkedNode {
@@ -39,6 +40,7 @@ export class ShapeNode extends NetworkedNode {
     transform: existingTransform,
     mediaLayerRef,
     selectionManagerRef,
+    loaded,
   }: ShapeNodeConstructor) {
     // Create the actual shape inside the group
     const transform = NodeUtilities.getInitialTransform({
@@ -78,6 +80,7 @@ export class ShapeNode extends NetworkedNode {
 
         imageObj.onload = () => {
           this.mediaLayerRef.draw();
+          loaded();
         };
 
         // Clean up the temporary circle
@@ -113,6 +116,7 @@ export class ShapeNode extends NetworkedNode {
 
         squareImageObj.onload = () => {
           this.mediaLayerRef.draw();
+          loaded()
         };
 
         // Clean up the temporary square
@@ -148,6 +152,7 @@ export class ShapeNode extends NetworkedNode {
 
         triangleImageObj.onload = () => {
           this.mediaLayerRef.draw();
+          loaded()
         };
 
         // Clean up the temporary triangle
