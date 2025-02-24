@@ -11,12 +11,15 @@ import { MediaNode } from "../types";
 
 import { RenderTask } from "./RenderTask";
 import { OffScreenSceneCanvas } from "./OffScreenSceneCanvas";
+import { Image } from "@tauri-apps/api/image";
+import { SelectionManager } from "../NodesManagers";
+import { PaintNode } from "../Nodes/PaintNode";
 
 // https://www.aiseesoft.com/resource/phone-aspect-ratio-screen-resolution.html#:~:text=16%3A9%20Aspect%20Ratio
 
 export class RealTimeDrawEngine {
   private videoNodes: VideoNode[];
-  private imageNodes: (ImageNode | TextNode | ShapeNode)[];
+  private imageNodes: (ImageNode | TextNode | ShapeNode | PaintNode)[];
 
   private offScreenCanvas: OffscreenCanvas;
   private outputBitmap: ImageBitmap | undefined;
@@ -48,7 +51,6 @@ export class RealTimeDrawEngine {
   public currentStrength: number;
 
 
-
   // Paint Color
   // paint Brush Size
   // has to exit out of paint mode when shape or image are used.
@@ -56,20 +58,26 @@ export class RealTimeDrawEngine {
   public paintBrushSize: number = 5;
   public isPaintMode: boolean = false;
 
+  private selectionManagerRef: SelectionManager;
+
   constructor({
     width,
     height,
     mediaLayerRef,
     offScreenCanvas,
+    selectionManagerRef,
   }: {
     width: number;
     height: number;
     mediaLayerRef: Konva.Layer;
     offScreenCanvas: OffscreenCanvas;
+    selectionManagerRef: SelectionManager;
   }) {
     this.videoLoadingCanvas = undefined;
     this.videoNodes = [];
     this.imageNodes = [];
+    
+    this.selectionManagerRef = selectionManagerRef;
 
     // TODO: Make this dynamic and update this on change of canvas.
 
@@ -210,26 +218,11 @@ export class RealTimeDrawEngine {
         height: lineBounds.height,
         pixelRatio: 1,
       });
-
-      // Create a new Konva Image with the drawn content
-      const drawingImage = new Konva.Image({
-        x: lineBounds.x,
-        y: lineBounds.y,
-        width: lineBounds.width,
-        height: lineBounds.height,
-        image: lineCanvas,
-        listening: false, // Disable event listening to allow captureCanvas to receive events
-        draggable: true,
-        stroke: '#000000',
-        strokeWidth: 2,
-        dash: [5, 5], // Creates dotted outline
-        globalCompositeOperation: 'source-over',
-        fill: 'transparent' // Add green background
-      });
-
+      
+      this.createPaintNode(lineCanvas,lineBounds)
 
       // Add the image to the drawingsLayer
-      this.drawingsLayer.add(drawingImage);
+      // this.drawingsLayer.add(drawingImage);
 
       // Clean up
       lineToConvert.destroy();
@@ -491,15 +484,36 @@ export class RealTimeDrawEngine {
     await this.render();
   };
   
+  public async createPaintNode(canvasElement: HTMLCanvasElement, lineBounds:{
+    width: number;
+    height: number;
+    x: number;
+    y: number;}){
+    // Create an ImageNode from the Konva.Image
+    var node = new PaintNode({
+      canvasElement:canvasElement,
+      lineBounds:lineBounds,
+      canvasPosition: this.captureCanvas.position(),
+      canvasSize: this.captureCanvas.size(),
+      mediaLayerRef: this.mediaLayerRef,
+      selectionManagerRef: this.selectionManagerRef,
+      loaded: async () => {
+       await this.render();
+      }})
+      await this.addNodes(node);
+  }
+
   public async addNodes(node: MediaNode) {
-   
-    if (node instanceof ImageNode || node instanceof TextNode || node instanceof ShapeNode) {
+    if (node instanceof ImageNode || 
+      node instanceof TextNode || 
+      node instanceof ShapeNode || 
+      node instanceof PaintNode) 
+      {
       console.debug("Adding node:", node);
       this.imageNodes.push(node);
       console.log(this.imageNodes)
       node.kNode.on("dragend", this.handleNodeDragEnd);
     }
-   
   }
 
   public removeNodes(node: MediaNode) {

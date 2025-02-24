@@ -113,13 +113,7 @@ export class Engine {
 
     this.offScreenCanvas = new OffscreenCanvas(0, 0);
 
-    this.realTimeDrawEngine = new RealTimeDrawEngine({
-      width: VideoResolutions.SQUARE_1024.width,
-      height: VideoResolutions.SQUARE_1024.height,
-      mediaLayerRef: this.mediaLayer,
-      bgLayerRef: this.bgLayer,
-      offScreenCanvas: this.offScreenCanvas,
-    });
+   
 
     // Collection of all Nodes
     this.nodesManager = new NodesManager();
@@ -127,6 +121,14 @@ export class Engine {
     this.selectionManager = new SelectionManager({
       nodeTransformerRef: this.nodeTransformer,
       mediaLayerRef: this.mediaLayer,
+    });
+
+    this.realTimeDrawEngine = new RealTimeDrawEngine({
+      width: VideoResolutions.SQUARE_1024.width,
+      height: VideoResolutions.SQUARE_1024.height,
+      mediaLayerRef: this.mediaLayer,
+      offScreenCanvas: this.offScreenCanvas,
+      selectionManagerRef:this.selectionManager
     });
 
     // Selector Square to select Nodes
