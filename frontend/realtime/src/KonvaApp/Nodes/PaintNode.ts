@@ -49,7 +49,7 @@ export class PaintNode extends NetworkedNode {
         draggable: true,
         stroke: '#000000',
         strokeWidth: 2,
-        dash: [5, 5], // Creates dotted outline
+        dash: [5, 5], // Creates dotted outline THIS IS FOR DEBUG
         globalCompositeOperation: 'source-over',
         fill: 'transparent' 
       });

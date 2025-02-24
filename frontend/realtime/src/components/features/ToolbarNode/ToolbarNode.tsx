@@ -13,9 +13,6 @@ import {
 import { paperWrapperStyles, toolTipStyles } from "~/components/styles";
 import { ToolbarNodeButtonNames } from "./enums";
 import { ToolbarNodeButtonData } from "./data";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { Fragment } from "react/jsx-runtime";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
 
 export interface ToolbarNodeProps {

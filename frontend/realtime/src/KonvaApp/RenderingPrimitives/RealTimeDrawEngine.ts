@@ -12,7 +12,7 @@ import { MediaNode } from "../types";
 import { RenderTask } from "./RenderTask";
 import { OffScreenSceneCanvas } from "./OffScreenSceneCanvas";
 import { Image } from "@tauri-apps/api/image";
-import { SelectionManager } from "../NodesManagers";
+
 import { PaintNode } from "../Nodes/PaintNode";
 
 // https://www.aiseesoft.com/resource/phone-aspect-ratio-screen-resolution.html#:~:text=16%3A9%20Aspect%20Ratio
@@ -151,14 +151,18 @@ export class RealTimeDrawEngine {
     this.previewCanvas.setZIndex(1);
     // Add mouse events for preview canvas copying
     //this.previewCopyListener();
-    this.paintMode();
+
   }
+
+  private isEnabled: boolean = false;
+  private cleanupFunction: (() => void) | null = null;
 
   public paintMode() {
     let isDrawing = false;
     let currentLine: Konva.Line | null = null;
 
     const startDrawing = (pos: { x: number; y: number }) => {
+      if (!this.isEnabled) return;
       const stage = this.mediaLayerRef.getStage();
       if (!stage) return;
 
@@ -183,6 +187,7 @@ export class RealTimeDrawEngine {
     };
 
     const draw = (pos: { x: number; y: number }) => {
+      if (!this.isEnabled) return;
       if (!isDrawing || !currentLine) return;
 
       // Convert pointer position to relative position
@@ -196,6 +201,7 @@ export class RealTimeDrawEngine {
     };
 
     const stopDrawing = () => {
+      if (!this.isEnabled) return;
       if (!isDrawing || !currentLine) return;
 
       // Store current line before resetting state
@@ -228,10 +234,6 @@ export class RealTimeDrawEngine {
       if (this.onDrawCallback) {
         this.onDrawCallback(lineCanvas, lineBounds);
       }
-      //this.createPaintNode(lineCanvas,lineBounds)
-
-      // Add the image to the drawingsLayer
-      // this.drawingsLayer.add(drawingImage);
 
       // Clean up
       lineToConvert.destroy();
@@ -274,12 +276,45 @@ export class RealTimeDrawEngine {
       await this.render();
     });
 
-    // Return cleanup function
-    return () => {
+    // Store cleanup function
+    this.cleanupFunction = () => {
       stage.off("mousedown touchstart");
       stage.off("mousemove touchmove");
       stage.off("mouseup touchend");
     };
+  }
+
+  public enablePaintMode() {
+    this.isEnabled = true;
+    if (!this.cleanupFunction) {
+      this.paintMode();
+    }
+  }
+
+  public enableDragging() {
+    // Enable dragging for all nodes in media layer
+    this.imageNodes?.forEach((node) => {
+      node.kNode.draggable(true); 
+      node.kNode.listening(true);
+    });
+    this.mediaLayerRef.batchDraw();
+  }
+
+  public disableDragging() {
+    // Disable dragging for all nodes in media layer
+    this.imageNodes?.forEach((node) => {
+      node.kNode.draggable(false);
+      node.kNode.listening(false);
+    });
+    this.mediaLayerRef.batchDraw();
+  }
+
+  public disablePaintMode() {
+    this.isEnabled = false;
+    if (this.cleanupFunction) {
+      this.cleanupFunction();
+      this.cleanupFunction = null;
+    }
   }
 
   public previewCopyListener() {

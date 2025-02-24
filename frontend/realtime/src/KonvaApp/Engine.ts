@@ -77,7 +77,7 @@ export class Engine {
       console.log("Engine Created");
     }
     this.navigateRef = options.navigate;
-    this.appMode = AppModes.PAINT;
+    this.appMode = AppModes.SELECT;
 
     this.boardCanvasRef = boardCanvasRef;
     this.stage = new Konva.Stage({
@@ -189,8 +189,11 @@ export class Engine {
     switch (this.appMode) {
       case AppModes.PAINT: {
         console.log("APPMODE: PAINT");
-        //this.selectorSquare.disable(); // this breaks the paint?
+        this.selectorSquare.disable(); // this breaks the paint if you use it in the wrong spot
         this.selectionManager.disable(); // this prevents selection.
+        this.realTimeDrawEngine.enablePaintMode();
+        this.realTimeDrawEngine.disableDragging();
+
         uiAccess.toolbarMain.enable();
         uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.SELECT, {
           active: false,  
@@ -200,6 +203,9 @@ export class Engine {
       }
       case AppModes.SELECT: {
         console.log("APPMODE: SELECT");
+        this.realTimeDrawEngine.disablePaintMode();
+        this.realTimeDrawEngine.enableDragging();
+
         this.selectorSquare.enable();
         this.selectionManager.enable();
         uiAccess.toolbarMain.enable();
@@ -658,7 +664,6 @@ export class Engine {
     });
     imageNode.kNode.zIndex(1);
     this.commandManager.createNode(imageNode);
-
     this.realTimeDrawEngine.addNodes(imageNode);
   }
   public addPaintNode(canvas: HTMLCanvasElement,lineBounds:{
@@ -666,7 +671,6 @@ export class Engine {
     height: number;
     x: number;
     y: number;}) {
-
       var node = new PaintNode({
         canvasElement:canvas,
         lineBounds:lineBounds,
@@ -676,6 +680,7 @@ export class Engine {
          await this.realTimeDrawEngine.render()
         }})
       this.commandManager.createNode(node);
+      this.realTimeDrawEngine.addNodes(node);
     }
 
   public addVideo(
