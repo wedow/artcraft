@@ -493,8 +493,6 @@ export class RealTimeDrawEngine {
     var node = new PaintNode({
       canvasElement:canvasElement,
       lineBounds:lineBounds,
-      canvasPosition: this.captureCanvas.position(),
-      canvasSize: this.captureCanvas.size(),
       mediaLayerRef: this.mediaLayerRef,
       selectionManagerRef: this.selectionManagerRef,
       loaded: async () => {
