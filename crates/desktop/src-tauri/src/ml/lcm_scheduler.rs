@@ -253,7 +253,7 @@ impl Scheduler for LcmScheduler {
 
     let sqrt_one_minus_alpha_prod = (1.0 - alphas_cumprod.get(timestep)?)?.powf(0.5)?;
     let mut sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.flatten_all()?; // TODO: Verify flatten all works here.
-    
+
     while sqrt_one_minus_alpha_prod.dims().len() < original_samples.dims().len() {
       // TODO: Verify that this works for `unsqueeze(-1)`
       sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.unsqueeze(sqrt_one_minus_alpha_prod.dims().len())?;
@@ -268,25 +268,10 @@ impl Scheduler for LcmScheduler {
     self.init_noise_sigma
   }
 
+  /// Ensures interchangeability with schedulers that need to scale the denoising model input 
+  /// depending on the current timestep. (For LCM, this is a pass through no-op!)
   fn scale_model_input(&self, sample: Tensor, _timestep: usize) -> candle_core::Result<Tensor> {
-    /*
-        """
-        Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
-        current timestep.
-
-        Args:
-            sample (`torch.Tensor`):
-                The input sample.
-            timestep (`int`, *optional*):
-                The current timestep in the diffusion chain.
-        Returns:
-            `torch.Tensor`:
-                A scaled input sample.
-        """
-        return sample
-     */
-
-    Ok(sample)
+    Ok(sample) // NB: The diffusers scheduling_lcm.py implementation is a pass through no-op !
   }
 
   fn step(&mut self, model_output: &Tensor, timestep: usize, sample: &Tensor) -> candle_core::Result<Tensor> {
@@ -477,7 +462,7 @@ mod tests {
       Ok(())
     }
   }
-  
+
   pub mod helper_fn {
     use candle_core::{Device, Shape, Tensor};
 
