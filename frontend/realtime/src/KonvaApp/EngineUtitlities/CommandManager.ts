@@ -21,6 +21,7 @@ import {
   SelectionManager,
 } from "../NodesManagers";
 import { RenderEngine } from "../RenderingPrimitives/RenderEngine";
+import { PaintNode } from "../Nodes/PaintNode";
 
 interface EngineReferences {
   mediaLayerRef: Konva.Layer;
@@ -48,7 +49,7 @@ export class CommandManager {
     this.undoStackManagerRef = engineRefs.undoStackManagerRef;
   }
 
-  createNode(node: VideoNode | ImageNode | TextNode | ShapeNode) {
+  createNode(node: VideoNode | ImageNode | TextNode | ShapeNode | PaintNode) {
     const command = new CreateCommand({
       nodes: new Set<MediaNode>([node]),
       mediaLayerRef: this.mediaLayerRef,

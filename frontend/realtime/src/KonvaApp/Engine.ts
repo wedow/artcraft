@@ -2,6 +2,7 @@ import Konva from "konva";
 
 import { uiAccess, uiEvents } from "~/signals";
 import { ShapeNode } from "./Nodes";
+import { PaintNode } from "./Nodes/PaintNode";
 
 import { UndoStackManager } from "./UndoRedo";
 import { CommandManager, MatteBox, SceneManager } from "./EngineUtitlities";
@@ -110,10 +111,7 @@ export class Engine {
     });
 
     // core layer for all the work done.
-
     this.offScreenCanvas = new OffscreenCanvas(0, 0);
-
-   
 
     // Collection of all Nodes
     this.nodesManager = new NodesManager();
@@ -128,7 +126,10 @@ export class Engine {
       height: VideoResolutions.SQUARE_1024.height,
       mediaLayerRef: this.mediaLayer,
       offScreenCanvas: this.offScreenCanvas,
-      selectionManagerRef:this.selectionManager
+      onDraw:async (canvas, lineBounds)  => {
+        await this.addPaintNode(canvas, lineBounds);
+        
+      },
     });
 
     // Selector Square to select Nodes
@@ -660,6 +661,22 @@ export class Engine {
 
     this.realTimeDrawEngine.addNodes(imageNode);
   }
+  public addPaintNode(canvas: HTMLCanvasElement,lineBounds:{
+    width: number;
+    height: number;
+    x: number;
+    y: number;}) {
+
+      var node = new PaintNode({
+        canvasElement:canvas,
+        lineBounds:lineBounds,
+        mediaLayerRef: this.mediaLayer,
+        selectionManagerRef: this.selectionManager,
+        loaded: async () => {
+         await this.realTimeDrawEngine.render()
+        }})
+      this.commandManager.createNode(node);
+    }
 
   public addVideo(
     videNodeData: Partial<VideoNodeData> & { mediaFileUrl: string },

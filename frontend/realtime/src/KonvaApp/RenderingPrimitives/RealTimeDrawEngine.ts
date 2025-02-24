@@ -50,7 +50,6 @@ export class RealTimeDrawEngine {
   public currentPrompt: string;
   public currentStrength: number;
 
-
   // Paint Color
   // paint Brush Size
   // has to exit out of paint mode when shape or image are used.
@@ -58,26 +57,33 @@ export class RealTimeDrawEngine {
   public paintBrushSize: number = 5;
   public isPaintMode: boolean = false;
 
-  private selectionManagerRef: SelectionManager;
+  private onDrawCallback?: (canvas: HTMLCanvasElement,lineBounds:{
+    width: number;
+    height: number;
+    x: number;
+    y: number;}) => void;
 
   constructor({
     width,
     height,
     mediaLayerRef,
     offScreenCanvas,
-    selectionManagerRef,
+    onDraw,
   }: {
     width: number;
     height: number;
     mediaLayerRef: Konva.Layer;
     offScreenCanvas: OffscreenCanvas;
-    selectionManagerRef: SelectionManager;
+    onDraw?: (canvas: HTMLCanvasElement,lineBounds:{
+      width: number;
+      height: number;
+      x: number;
+      y: number;}) => void;
   }) {
     this.videoLoadingCanvas = undefined;
     this.videoNodes = [];
     this.imageNodes = [];
-    
-    this.selectionManagerRef = selectionManagerRef;
+    this.onDrawCallback = onDraw
 
     // TODO: Make this dynamic and update this on change of canvas.
 
@@ -218,8 +224,11 @@ export class RealTimeDrawEngine {
         height: lineBounds.height,
         pixelRatio: 1,
       });
-      
-      this.createPaintNode(lineCanvas,lineBounds)
+
+      if (this.onDrawCallback) {
+        this.onDrawCallback(lineCanvas, lineBounds);
+      }
+      //this.createPaintNode(lineCanvas,lineBounds)
 
       // Add the image to the drawingsLayer
       // this.drawingsLayer.add(drawingImage);
@@ -484,22 +493,7 @@ export class RealTimeDrawEngine {
     await this.render();
   };
   
-  public async createPaintNode(canvasElement: HTMLCanvasElement, lineBounds:{
-    width: number;
-    height: number;
-    x: number;
-    y: number;}){
-    // Create an ImageNode from the Konva.Image
-    var node = new PaintNode({
-      canvasElement:canvasElement,
-      lineBounds:lineBounds,
-      mediaLayerRef: this.mediaLayerRef,
-      selectionManagerRef: this.selectionManagerRef,
-      loaded: async () => {
-       await this.render();
-      }})
-      await this.addNodes(node);
-  }
+
 
   public async addNodes(node: MediaNode) {
     if (node instanceof ImageNode || 

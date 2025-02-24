@@ -1,8 +1,8 @@
 import Konva from "konva";
 import { SelectionManager } from "../NodesManagers";
-import { Position, Size, NodeData, TransformationData } from "../types";
+import { Position, NodeData } from "../types";
 import { NodeType } from "./constants";
-import { NodeUtilities } from "./NodeUtilities";
+
 import { NetworkedNode } from "./NetworkedNode";
 
 interface PaintNodeConstructor {
