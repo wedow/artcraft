@@ -76,7 +76,7 @@ export class Engine {
       console.log("Engine Created");
     }
     this.navigateRef = options.navigate;
-    this.appMode = AppModes.SELECT;
+    this.appMode = AppModes.PAINT;
 
     this.boardCanvasRef = boardCanvasRef;
     this.stage = new Konva.Stage({
@@ -178,8 +178,7 @@ export class Engine {
     // some of the managers has events
     // hence, lastly, setup these events
     this.setupEventSystem();
-    this.setAppMode(AppModes.SELECT);
-    
+    this.setAppMode(this.appMode);
   }
 
   private setAppMode(newAppMode: AppModes) {
@@ -187,13 +186,13 @@ export class Engine {
     switch (this.appMode) {
       case AppModes.PAINT: {
         console.log("APPMODE: PAINT");
-        this.selectorSquare.disable();
-        this.selectionManager.disable();
-        // uiAccess.toolbarMain.enable();
-        // uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.SELECT, {
-        //   active: true,
-        // });
-        // this.matteBox.disable();
+        //this.selectorSquare.disable(); // this breaks the paint?
+        this.selectionManager.disable(); // this prevents selection.
+        uiAccess.toolbarMain.enable();
+        uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.SELECT, {
+          active: false,  
+        });
+        this.matteBox.disable();
         return;
       }
       case AppModes.SELECT: {
@@ -378,14 +377,17 @@ export class Engine {
 
     uiEvents.toolbarMain.SELECT.onClick(() => {
       console.log("Toolbar Main >> Select");
+      this.setAppMode(AppModes.SELECT)
     });
 
     uiEvents.toolbarMain.PAINT.onClick(() => {
       console.log("Toolbar Main >> Paint");
+      this.setAppMode(AppModes.PAINT)
     });
 
     uiEvents.toolbarMain.ERASER.onClick(() => {
       console.log("Toolbar Main >> Eraser");
+      
     });
 
     uiEvents.toolbarMain.PREVIEW.onClick(async () => {
@@ -480,6 +482,9 @@ export class Engine {
         return;
       }
       this.changeNodeColor(nodeColor);
+    });
+    uiEvents.toolbarMain.onPaintColorChanged((color)=> {
+      this.realTimeDrawEngine.paintColor = color;
     });
   }
 

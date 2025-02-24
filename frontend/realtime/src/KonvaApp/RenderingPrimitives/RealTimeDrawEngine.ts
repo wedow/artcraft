@@ -47,6 +47,15 @@ export class RealTimeDrawEngine {
   public currentPrompt: string;
   public currentStrength: number;
 
+
+
+  // Paint Color
+  // paint Brush Size
+  // has to exit out of paint mode when shape or image are used.
+  public paintColor: string = "#000000";
+  public paintBrushSize: number = 5;
+  public isPaintMode: boolean = false;
+
   constructor({
     width,
     height,
@@ -85,7 +94,7 @@ export class RealTimeDrawEngine {
     this.drawingsLayer = new Konva.Layer({
       clearBeforeDraw: true, // Ensures transparent background
     });
-    this.mediaLayerRef.getStage()?.add(this.drawingsLayer);
+    this.mediaLayerRef.getStage()?.add(this.drawingsLayer);// to od pass in stage
 
     // Set background layer to red and media layer to green for visibility
 
@@ -128,7 +137,7 @@ export class RealTimeDrawEngine {
     this.previewCanvas.setZIndex(1);
     // Add mouse events for preview canvas copying
     //this.previewCopyListener();
-    //this.paintMode();
+    this.paintMode();
   }
 
   public paintMode() {
@@ -146,7 +155,7 @@ export class RealTimeDrawEngine {
 
       currentLine = new Konva.Line({
         points: [relativeX, relativeY],
-        stroke: "#df4b26",
+        stroke: this.paintColor,
         strokeWidth: 5,
         lineCap: "round",
         lineJoin: "round",
@@ -215,8 +224,9 @@ export class RealTimeDrawEngine {
         strokeWidth: 2,
         dash: [5, 5], // Creates dotted outline
         globalCompositeOperation: 'source-over',
-        fill: 'green' // Add green background
+        fill: 'transparent' // Add green background
       });
+
 
       // Add the image to the drawingsLayer
       this.drawingsLayer.add(drawingImage);
