@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use candle_core::{Device, Shape, Tensor};
+use candle_core::{Device, Shape, Tensor, WithDType};
 use candle_transformers::models::stable_diffusion::schedulers::Scheduler;
 use log::error;
 // Robust technical comparison of samplers: https://stable-diffusion-art.com/samplers/
@@ -110,7 +110,7 @@ impl LcmScheduler {
 
     // TODO: Check implementation
     let final_alpha_cumprod = if set_alpha_to_one {
-      Tensor::from_vec(vec![1.0], Shape::from(vec![1]), device)?
+      initialize_scalar_tensor(1.0, device)?
     } else {
       alphas_cumprod.get(0)?
     };
@@ -347,6 +347,10 @@ impl Scheduler for LcmScheduler {
   }
 }
 
+fn initialize_scalar_tensor<D: WithDType>(value: D, device: &Device) -> anyhow::Result<Tensor> {
+  let scalar = Tensor::from_vec(vec![value], Shape::from(vec![]), device)?;
+  Ok(scalar)
+}
 
 // TODO(bt,2025-02-23): Use native implementations
 fn initialize_timesteps(num_train_timesteps: i64, device: &Device) -> anyhow::Result<Tensor> {
@@ -357,25 +361,34 @@ fn initialize_timesteps(num_train_timesteps: i64, device: &Device) -> anyhow::Re
 
   // https://github.com/tracel-ai/burn/pull/1468 flip impl? Will this work in place?
   // https://github.com/huggingface/candle/issues/1875
-  
+
   let data = (0..num_train_timesteps)
     .map(i64::from)
     .rev()
     .collect();
-  
+
   let shape = Shape::from_dims(&[num_train_timesteps as usize]);
-  
+
   let tensor = Tensor::from_vec(data, shape, device)?;
-  
+
   Ok(tensor)
 }
 
 // The Candle sources, and moreover, the Candle tests, are a great source of information for how the library works.
+//assert_eq!(t.i(..-1)?, 1.0);
 #[cfg(test)]
 mod tests {
-  use candle_core::{Device, Tensor};
-  use crate::ml::lcm_scheduler::initialize_timesteps;
+  use candle_core::{Device};
+  use crate::ml::lcm_scheduler::{initialize_scalar_tensor, initialize_timesteps};
 
+  #[test]
+  fn test_scalar_tensor() -> anyhow::Result<()> {
+    let t = initialize_scalar_tensor(1.0, &Device::Cpu)?;
+    let empty : [usize; 0] = [];
+    assert_eq!(t.dims(), &empty);
+    assert_eq!(t.to_vec0::<f64>()?, 1.0);
+    Ok(())
+  }
   #[test]
   fn test_implementation_of_reverse() -> anyhow::Result<()> {
     let tensor = initialize_timesteps(5, &Device::Cpu)?;
