@@ -128,6 +128,7 @@ export class Engine {
       nodeTransformerRef: this.nodeTransformer,
       mediaLayerRef: this.mediaLayer,
     });
+
     // Selector Square to select Nodes
     this.selectorSquare = new SelectorSquare({
       captureCanvasRef: this.realTimeDrawEngine.captureCanvas,
@@ -178,11 +179,23 @@ export class Engine {
     // hence, lastly, setup these events
     this.setupEventSystem();
     this.setAppMode(AppModes.SELECT);
+    
   }
 
   private setAppMode(newAppMode: AppModes) {
     this.appMode = newAppMode;
     switch (this.appMode) {
+      case AppModes.PAINT: {
+        console.log("APPMODE: PAINT");
+        this.selectorSquare.disable();
+        this.selectionManager.disable();
+        // uiAccess.toolbarMain.enable();
+        // uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.SELECT, {
+        //   active: true,
+        // });
+        // this.matteBox.disable();
+        return;
+      }
       case AppModes.SELECT: {
         console.log("APPMODE: SELECT");
         this.selectorSquare.enable();
@@ -575,6 +588,9 @@ export class Engine {
           color: nodeColor.color,
           mediaLayerRef: this.mediaLayer,
           selectionManagerRef: this.selectionManager,
+          loaded: async ()=> {
+            this.realTimeDrawEngine.render();
+          }
         });
         newShapeNode.kNode.position(shapeNode.kNode.position());
         newShapeNode.kNode.zIndex(shapeNode.kNode.zIndex());

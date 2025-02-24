@@ -26,6 +26,7 @@ export class RealTimeDrawEngine {
   // capturing composite within window
 
   private mediaLayerRef: Konva.Layer;
+  private drawingsLayer: Konva.Layer; // New Layer for Drawings
 
   private height: number;
   private width: number;
@@ -69,7 +70,8 @@ export class RealTimeDrawEngine {
     this.positionX = window.innerWidth / 2 - this.width / 2 - this.width;
     this.positionY = window.innerHeight / 2 - this.height / 2;
 
-    this.positionPreviewX = window.innerWidth / 2 - this.width / 2 + this.width;
+    this.positionPreviewX =
+      window.innerWidth / 2 - this.width / 2 + this.width;
     this.positionPreviewY = window.innerHeight / 2 - this.height / 2;
 
     this.offScreenCanvas = offScreenCanvas;
@@ -78,6 +80,12 @@ export class RealTimeDrawEngine {
 
     // this is the whole canvas
     this.mediaLayerRef = mediaLayerRef;
+
+    // Create a separate layer for drawings
+    this.drawingsLayer = new Konva.Layer({
+      clearBeforeDraw: true, // Ensures transparent background
+    });
+    this.mediaLayerRef.getStage()?.add(this.drawingsLayer);
 
     // Set background layer to red and media layer to green for visibility
 
@@ -120,18 +128,157 @@ export class RealTimeDrawEngine {
     this.previewCanvas.setZIndex(1);
     // Add mouse events for preview canvas copying
     //this.previewCopyListener();
+    //this.paintMode();
+  }
 
+  public paintMode() {
+    let isDrawing = false;
+    let currentLine: Konva.Line | null = null;
+
+    const startDrawing = (pos: { x: number; y: number }) => {
+      const stage = this.mediaLayerRef.getStage();
+      if (!stage) return;
+
+      // Convert pointer position to relative position within capture canvas
+      const captureBox = this.captureCanvas.getClientRect();
+      const relativeX = pos.x - captureBox.x;
+      const relativeY = pos.y - captureBox.y;
+
+      currentLine = new Konva.Line({
+        points: [relativeX, relativeY],
+        stroke: "#df4b26",
+        strokeWidth: 5,
+        lineCap: "round",
+        lineJoin: "round",
+        x: this.captureCanvas.x(),
+        y: this.captureCanvas.y(),
+        draggable: false,
+      });
+
+      this.drawingsLayer.add(currentLine); // Add to drawingsLayer
+      isDrawing = true;
+    };
+
+    const draw = (pos: { x: number; y: number }) => {
+      if (!isDrawing || !currentLine) return;
+
+      // Convert pointer position to relative position
+      const captureBox = this.captureCanvas.getClientRect();
+      const relativeX = pos.x - captureBox.x;
+      const relativeY = pos.y - captureBox.y;
+
+      const newPoints = currentLine.points().concat([relativeX, relativeY]);
+      currentLine.points(newPoints);
+      this.drawingsLayer.batchDraw();
+    };
+
+    const stopDrawing = () => {
+      if (!isDrawing || !currentLine) return;
+
+      // Store current line before resetting state
+      const lineToConvert = currentLine;
+
+      // Reset drawing state immediately so we can start a new stroke
+      isDrawing = false;
+      currentLine = null;
+
+      // Create a temporary layer to render the line
+      const tempLayer = new Konva.Layer({
+        clearBeforeDraw: true,
+      });
+      this.mediaLayerRef.getStage()?.add(tempLayer);
+      tempLayer.add(lineToConvert);
+
+      // Get the line canvas with transparent background
+      // Get the bounding box of the line
+      const lineBounds = lineToConvert.getClientRect();
+      
+      // Create canvas with just enough size to contain the line
+      const lineCanvas = tempLayer.toCanvas({
+        x: lineBounds.x,
+        y: lineBounds.y,
+        width: lineBounds.width,
+        height: lineBounds.height,
+        pixelRatio: 1,
+      });
+
+      // Create a new Konva Image with the drawn content
+      const drawingImage = new Konva.Image({
+        x: lineBounds.x,
+        y: lineBounds.y,
+        width: lineBounds.width,
+        height: lineBounds.height,
+        image: lineCanvas,
+        listening: false, // Disable event listening to allow captureCanvas to receive events
+        draggable: true,
+        stroke: '#000000',
+        strokeWidth: 2,
+        dash: [5, 5], // Creates dotted outline
+        globalCompositeOperation: 'source-over',
+        fill: 'green' // Add green background
+      });
+
+      // Add the image to the drawingsLayer
+      this.drawingsLayer.add(drawingImage);
+
+      // Clean up
+      lineToConvert.destroy();
+      tempLayer.destroy();
+
+      this.drawingsLayer.batchDraw();
+    };
+
+    // Check if point is within capture canvas bounds
+    const isWithinCaptureCanvas = (pos: { x: number; y: number }) => {
+      const captureBox = this.captureCanvas.getClientRect();
+      return (
+        pos.x >= captureBox.x &&
+        pos.x <= captureBox.x + captureBox.width &&
+        pos.y >= captureBox.y &&
+        pos.y <= captureBox.y + captureBox.height
+      );
+    };
+
+    // Add event listeners
+    const stage = this.mediaLayerRef.getStage();
+    if (!stage) return;
+
+    stage.on("mousedown touchstart", (e) => {
+      const pos = stage.getPointerPosition();
+      if (pos && isWithinCaptureCanvas(pos)) {
+        startDrawing(pos);
+      }
+    });
+
+    stage.on("mousemove touchmove", (e) => {
+      const pos = stage.getPointerPosition();
+      if (pos && isWithinCaptureCanvas(pos)) {
+        draw(pos);
+      }
+    });
+
+    stage.on("mouseup touchend", async () => {
+      stopDrawing();
+      await this.render();
+    });
+
+    // Return cleanup function
+    return () => {
+      stage.off("mousedown touchstart");
+      stage.off("mousemove touchmove");
+      stage.off("mouseup touchend");
+    };
   }
 
   public previewCopyListener() {
-    this.previewCanvas.on('mousedown touchstart', () => {
+    this.previewCanvas.on("mousedown touchstart", () => {
       if (!this.outputBitmap) {
-        console.log("No preview image to copy"); 
+        console.log("No preview image to copy");
         return;
       }
-      
+
       // TODO create it as a node.
-      
+
       // const imageNode = new ImageNode({
       //   mediaLayerRef: this.mediaLayer,
       //   canvasPosition: this.renderEngine.captureCanvas.position(),
@@ -148,36 +295,35 @@ export class RealTimeDrawEngine {
         height: this.height,
         image: this.outputBitmap,
         draggable: true,
-        listening: true
+        listening: true,
       });
 
-      this.mediaLayerRef.add(previewCopy);
-      previewCopy.moveToTop();
-      this.mediaLayerRef.draw();
+      this.drawingsLayer.add(previewCopy); // Add to drawingsLayer instead of mediaLayerRef
+      this.drawingsLayer.batchDraw();
 
       // Start dragging immediately
       previewCopy.startDrag();
 
       // Handle drag events
-      previewCopy.on('dragmove', () => {
-        this.mediaLayerRef.draw();
+      previewCopy.on("dragmove", () => {
+        this.drawingsLayer.draw();
       });
 
-      previewCopy.on('dragend', () => {
+      previewCopy.on("dragend", () => {
         const previewBox = previewCopy.getClientRect();
         const captureBox = this.captureCanvas.getClientRect();
-        
+
         if (Konva.Util.haveIntersection(previewBox, captureBox)) {
           // Snap to capture canvas position
           previewCopy.position({
             x: this.captureCanvas.x(),
-            y: this.captureCanvas.y()
+            y: this.captureCanvas.y(),
           });
-          this.mediaLayerRef.batchDraw();
+          this.drawingsLayer.batchDraw();
         } else {
           // Remove if dropped outside capture area
           previewCopy.destroy();
-          this.mediaLayerRef.batchDraw();
+          this.drawingsLayer.batchDraw();
         }
       });
     });
