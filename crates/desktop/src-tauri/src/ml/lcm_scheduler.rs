@@ -1,11 +1,26 @@
 use anyhow::anyhow;
 use candle_core::{Device, Shape, Tensor, WithDType};
 use candle_transformers::models::stable_diffusion::schedulers::Scheduler;
+use candle_transformers::models::stable_diffusion::utils::linspace;
 use log::error;
-// Robust technical comparison of samplers: https://stable-diffusion-art.com/samplers/
 
-// https://github.com/apple/ml-stable-diffusion/issues/319
-// https://github.com/GuernikaCore/Schedulers/blob/main/Sources/Schedulers/LCMScheduler.swift
+/*
+Notes on LCM implementation:
+
+  - Robust technical comparison of samplers: https://stable-diffusion-art.com/samplers/
+  - Apple Swift LCM Implementation ticket: https://github.com/apple/ml-stable-diffusion/issues/319
+  - Reference Swift Implementation: https://github.com/GuernikaCore/Schedulers/blob/main/Sources/Schedulers/LCMScheduler.swift
+
+Candle is missing several "batteries" we'll have to implement, and some we might want to upstream:
+
+  - t[::-1] (syntax to reverse the tensor)
+
+  - torch/numpy.cumprod :
+      - https://numpy.org/doc/stable/reference/generated/numpy.cumprod.html
+      - https://pytorch.org/docs/stable/generated/torch.cumprod.html
+
+*/
+
 struct LcmScheduler {
   //alphas: Vec<f64>,
   alphas: Tensor,
@@ -67,12 +82,15 @@ impl LcmScheduler {
     if let Some(trained) = trained_betas {
       betas = trained;
     } else {
-      match beta_schedule {
+      betas = match beta_schedule {
         "linear" => {
-          todo!("TODO: Need to implement linear beta schedule")
+          let t = linspace(beta_start, beta_end, num_train_timestamps as usize)?;
+          t.to_device(device)?
         },
         "scaled_linear" => {
-          todo!("TODO: Need to implement scaled linear beta schedule")
+          // this schedule is very specific to the latent diffusion model.
+          let t = linspace(beta_start.powf(0.5), beta_end.powf(0.5), num_train_timestamps as usize)?;
+          t.to_device(device)?
         }
         "squaredcos_cap_v2" => {
           todo!("TODO: Need to implement squaredcos_cap_v2 beta schedule")
@@ -80,7 +98,7 @@ impl LcmScheduler {
         _ => {
           return Err(anyhow!("schedule {beta_schedule} is not implemented"))
         }
-      }
+      };
     }
 
      // # Rescale for zero SNR
@@ -176,9 +194,10 @@ impl LcmScheduler {
 
 impl Scheduler for LcmScheduler {
   fn timesteps(&self) -> &[usize] {
-    // TODO: Taken from ddpm.rs
-    //self.timesteps.as_slice()
-    todo!()
+    // TODO: We can't use the implementation from DDIM. This method requires
+    //  (1) an infallible response and (2) a reference we can't dynamically allocate. We must
+    //  cache this somewhere.
+    &[]
   }
 
   fn add_noise(&self, original_samples: &Tensor, noise: Tensor, timestep: usize) -> candle_core::Result<Tensor> {
@@ -215,7 +234,34 @@ impl Scheduler for LcmScheduler {
      // TODO: Type errors
       // (original_samples * self.alphas_cumprod[timestep].sqrt())?
       // + noise * (1. - self.alphas_cumprod[timestep]).sqrt()
-    todo!()
+
+    // TODO: Make sure alphas_cumprod and timestep have same device and dtype as original_samples
+    //  Move the self.alphas_cumprod to device to avoid redundant CPU to GPU data movement
+    //  for the subsequent add_noise calls
+    let mut alphas_cumprod = self.alphas_cumprod.to_device(original_samples.device())?;
+    alphas_cumprod = alphas_cumprod.to_dtype(original_samples.dtype())?;
+    //let timesteps = timesteps.to_device(original_samples.device())?;
+
+    let sqrt_alpha_prod = alphas_cumprod.get(timestep)?.powf(0.5)?;
+    let mut sqrt_alpha_prod = sqrt_alpha_prod.flatten_all()?; // TODO: Verify that flatten_all works here
+
+
+    while sqrt_alpha_prod.dims().len() < original_samples.dims().len() {
+      // TODO: Verify that this works for `unsqueeze(-1)`
+      sqrt_alpha_prod = sqrt_alpha_prod.unsqueeze(sqrt_alpha_prod.dims().len())?;
+    }
+
+    let sqrt_one_minus_alpha_prod = (1.0 - alphas_cumprod.get(timestep)?)?.powf(0.5)?;
+    let mut sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.flatten_all()?; // TODO: Verify flatten all works here.
+    
+    while sqrt_one_minus_alpha_prod.dims().len() < original_samples.dims().len() {
+      // TODO: Verify that this works for `unsqueeze(-1)`
+      sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.unsqueeze(sqrt_one_minus_alpha_prod.dims().len())?;
+    }
+
+    let noisy_samples = ((sqrt_alpha_prod * original_samples)? + (sqrt_one_minus_alpha_prod * noise)?)?;
+
+    Ok(noisy_samples)
   }
 
   fn init_noise_sigma(&self) -> f64 {
@@ -378,8 +424,9 @@ fn initialize_timesteps(num_train_timesteps: i64, device: &Device) -> anyhow::Re
 //assert_eq!(t.i(..-1)?, 1.0);
 #[cfg(test)]
 mod tests {
-  use candle_core::{Device};
   use crate::ml::lcm_scheduler::{initialize_scalar_tensor, initialize_timesteps};
+  use crate::ml::lcm_scheduler::tests::helper_fn::*;
+  use candle_core::Device;
 
   #[test]
   fn test_scalar_tensor() -> anyhow::Result<()> {
@@ -389,10 +436,65 @@ mod tests {
     assert_eq!(t.to_vec0::<f64>()?, 1.0);
     Ok(())
   }
+
   #[test]
   fn test_implementation_of_reverse() -> anyhow::Result<()> {
     let tensor = initialize_timesteps(5, &Device::Cpu)?;
     assert_eq!(tensor.to_vec1::<i64>()?, &[4,3,2,1,0]);
     Ok(())
+  }
+
+  mod various_pytorch_behaviors {
+    use candle_core::{Shape, Tensor};
+    use super::*;
+
+    // NB: Non-unit tests, just to test understanding while porting code
+
+    #[test]
+    fn unsqueeze_zero() -> anyhow::Result<()> {
+      let t = tensor_1234()?;
+      let x = t.unsqueeze(0)?;
+      assert_eq!(x.to_vec2::<i64>()?, &[&[1, 2, 3, 4]]);
+      Ok(())
+    }
+
+    #[test]
+    fn unsqueeze_simulating_negative_one() -> anyhow::Result<()> {
+      let t = tensor_1234()?;
+      // NB: It looks like this matches the behavior of unsqueeze(-1)
+      // Per: https://pytorch.org/docs/stable/generated/torch.unsqueeze.html
+      let x = t.unsqueeze(t.dims().len())?;
+      assert_eq!(x.to_vec2::<i64>()?, &[&[1],&[2],&[3],&[4]]);
+      Ok(())
+    }
+
+    #[test]
+    fn one_minus_vector() -> anyhow::Result<()> {
+      let t = tensor_01234()?;
+      let x = (1. - t)?;
+      assert_eq!(x.rank(), 1); // NB: 1-dimensional output
+      assert_eq!(x.to_vec1::<i64>()?, &[1, 0, -1, -2, -3]);
+      Ok(())
+    }
+  }
+  
+  pub mod helper_fn {
+    use candle_core::{Device, Shape, Tensor};
+
+    pub fn tensor_1234() -> anyhow::Result<Tensor> {
+      // Return an example tensor
+      let data: Vec<i64> = vec![1, 2, 3, 4];
+      let t = Tensor::from_vec(data, Shape::from(vec![4]), &Device::Cpu)?;
+      assert_eq!(t.to_vec1::<i64>()?, &[1, 2, 3, 4]);
+      Ok(t)
+    }
+
+    pub fn tensor_01234() -> anyhow::Result<Tensor> {
+      // Return an example tensor
+      let data: Vec<i64> = vec![0, 1, 2, 3, 4];
+      let t = Tensor::from_vec(data, Shape::from(vec![5]), &Device::Cpu)?;
+      assert_eq!(t.to_vec1::<i64>()?, &[0, 1, 2, 3, 4]);
+      Ok(t)
+    }
   }
 }
