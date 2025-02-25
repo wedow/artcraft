@@ -376,7 +376,7 @@ export class RealTimeDrawEngine {
     });
   }
 
-  public findImageNodeById(id: string): (ImageNode | TextNode | ShapeNode | undefined) {
+  public findImageNodeById(id: string): (ImageNode | TextNode | ShapeNode | PaintNode | undefined) {
     return this.imageNodes.find(node => {
       if (node.kNode) {
         return node.kNode.id() === id;
@@ -528,8 +528,6 @@ export class RealTimeDrawEngine {
     await this.render();
   };
   
-
-
   public async addNodes(node: MediaNode) {
     if (node instanceof ImageNode || 
       node instanceof TextNode || 
@@ -541,6 +539,12 @@ export class RealTimeDrawEngine {
       console.log(this.imageNodes)
       node.kNode.on("dragend", this.handleNodeDragEnd);
     }
+
+    // ensure the layer doesn't move if added while painting.
+    if (this.isEnabled) {
+      this.disableDragging();
+    }
+
     await this.render();
   }
 

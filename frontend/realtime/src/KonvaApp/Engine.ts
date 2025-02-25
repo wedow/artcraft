@@ -379,7 +379,7 @@ export class Engine {
     // Listen to Toolbar Main
     uiEvents.toolbarMain.UNDO.onClick(() => this.undoStackManager.undo());
     uiEvents.toolbarMain.REDO.onClick(() => this.undoStackManager.redo());
-
+ 
     uiEvents.toolbarMain.SAVE.onClick(async (/*event*/) => {
       await this.realTimeDrawEngine.saveOutput();
     });
@@ -467,6 +467,7 @@ export class Engine {
     });
 
     uiEvents.onAddShapeToEngine((shapeData) => {
+      this.setAppMode(AppModes.SELECT);
       switch (shapeData.shape) {
         case "circle":
           this.addShape(ShapeType.CIRCLE, 100);

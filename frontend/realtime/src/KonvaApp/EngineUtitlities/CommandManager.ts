@@ -50,7 +50,7 @@ export class CommandManager {
   }
 
   createNode(node: MediaNode) {
-    console.log("CREATE?!?!?!?!")
+
     const command = new CreateCommand({
       nodes: new Set<MediaNode>([node]),
       mediaLayerRef: this.mediaLayerRef,
