@@ -53,6 +53,7 @@ export class CreateCommand implements ICommand {
       this.renderEngineRef.addNodes(node);
     });
     this.mediaLayerRef.draw();
+
   }
 
   undo() {
@@ -71,5 +72,7 @@ export class CreateCommand implements ICommand {
     this.nodeTransformerRef.clear();
     toolbarNode.hide();
     this.mediaLayerRef.draw();
+    this.renderEngineRef.render();
+ 
   }
 }

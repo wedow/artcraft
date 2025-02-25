@@ -3,10 +3,11 @@ import { NodeType, BaseNode, ImageNode, TextNode, VideoNode, ShapeNode } from ".
 import { TransformationData } from "./Transformation";
 
 import { TextNodeData } from "./Text";
+import { PaintNode } from "../Nodes/PaintNode";
 
 export type MediaNode =
   // | NetworkedNode
-  BaseNode | VideoNode | ImageNode | TextNode | ShapeNode;
+  BaseNode | VideoNode | ImageNode | TextNode | ShapeNode | PaintNode;
 
 export type ImageNodeData = {
   mediaFileUrl: string;

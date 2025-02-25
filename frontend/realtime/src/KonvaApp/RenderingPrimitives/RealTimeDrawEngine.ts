@@ -541,6 +541,7 @@ export class RealTimeDrawEngine {
       console.log(this.imageNodes)
       node.kNode.on("dragend", this.handleNodeDragEnd);
     }
+    await this.render();
   }
 
   public removeNodes(node: MediaNode) {
@@ -550,7 +551,7 @@ export class RealTimeDrawEngine {
         node.kNode.off("dragend", this.handleNodeDragEnd);
         this.videoNodes.splice(index, 1);
       }
-    } else if (node instanceof ImageNode || node instanceof TextNode) {
+    } else if (node instanceof ImageNode || node instanceof TextNode || node instanceof ShapeNode || node instanceof PaintNode) {
       const index = this.imageNodes.indexOf(node);
       if (index > -1) {
         node.kNode.off("dragend", this.handleNodeDragEnd);

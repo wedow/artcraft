@@ -49,7 +49,8 @@ export class CommandManager {
     this.undoStackManagerRef = engineRefs.undoStackManagerRef;
   }
 
-  createNode(node: VideoNode | ImageNode | TextNode | ShapeNode | PaintNode) {
+  createNode(node: MediaNode) {
+    console.log("CREATE?!?!?!?!")
     const command = new CreateCommand({
       nodes: new Set<MediaNode>([node]),
       mediaLayerRef: this.mediaLayerRef,
@@ -63,6 +64,7 @@ export class CommandManager {
     // Set the kNode's manual id to same as kNode's internal _id
     // This helps identify the kNode in the Konva layer with find
     node.kNode.id(node.kNode._id.toString());
+    this.renderEngineRef.render();
   }
   deleteNodes() {
     const nodes = this.selectionManagerRef.getSelectedNodes();
@@ -75,6 +77,7 @@ export class CommandManager {
       renderEngineRef: this.renderEngineRef,
     });
     this.undoStackManagerRef.executeCommand(command);
+    this.renderEngineRef.render();
   }
   toggleLockNodes() {
     const nodes = this.selectionManagerRef.getSelectedNodes();
@@ -102,6 +105,7 @@ export class CommandManager {
       mediaLayerRef: this.mediaLayerRef,
     });
     this.undoStackManagerRef.executeCommand(command);
+    this.renderEngineRef.render();
   }
   moveNodesDown() {
     const command = new MoveLayerDown({
@@ -110,6 +114,7 @@ export class CommandManager {
       mediaLayerRef: this.mediaLayerRef,
     });
     this.undoStackManagerRef.executeCommand(command);
+    this.renderEngineRef.render();
   }
   translateNodes(props: {
     nodes: Set<MediaNode>;
@@ -121,6 +126,7 @@ export class CommandManager {
       layerRef: this.mediaLayerRef,
     });
     this.undoStackManagerRef.pushCommand(command);
+
   }
   transformNodes(props: {
     nodes: Set<MediaNode>;
