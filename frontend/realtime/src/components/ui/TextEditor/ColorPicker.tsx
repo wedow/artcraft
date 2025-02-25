@@ -1,5 +1,3 @@
-import { ChangeEvent, useState, useEffect } from "react";
-import { twMerge } from "tailwind-merge";
 import {
   faFont,
   faHashtag,
@@ -7,11 +5,13 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { HexColorPicker } from "react-colorful";
+import { ChangeEvent, useEffect, useState } from "react";
+import { HexAlphaColorPicker } from "react-colorful";
+import { twMerge } from "tailwind-merge";
 
+import { paperWrapperStyles } from "~/components/styles";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import { paperWrapperStyles } from "~/components/styles";
 
 export const ColorPicker = ({
   color: prevColor,
@@ -119,7 +119,7 @@ export const ColorPicker = ({
                 }
                 static
               >
-                <HexColorPicker
+                <HexAlphaColorPicker
                   className="overflow-hidden"
                   color={currColor}
                   onChange={(color) => {
