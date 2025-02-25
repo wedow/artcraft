@@ -1,6 +1,8 @@
 import { Transition } from "@headlessui/react";
 import React, { useState, useRef, useEffect, ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
+import { Button } from "./Button";
+import { faMinus, faPlus } from "@fortawesome/pro-solid-svg-icons";
 
 interface SliderProps {
   min: number;
@@ -13,6 +15,8 @@ interface SliderProps {
   tooltipContent?: ReactNode;
   suffix?: string;
   innerLabel?: string;
+  showDecrement?: boolean,
+  showIncrement?: boolean,
 }
 
 export const Slider = ({
@@ -26,6 +30,8 @@ export const Slider = ({
   tooltipContent,
   suffix,
   innerLabel,
+  showDecrement,
+  showIncrement
 }: SliderProps) => {
   const [localValue, setLocalValue] = useState(value);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -36,15 +42,19 @@ export const Slider = ({
     setLocalValue(value);
   }, [value]);
 
+  const setClampedValue = (value: number) => {
+    const roundedValue = Math.round(value / step) * step;
+    const clampedValue = Math.min(Math.max(roundedValue, min), max);
+    setLocalValue(clampedValue);
+    onChange(clampedValue);
+  }
+
   const updatePosition = (x: number) => {
     if (!sliderRef.current) return;
     const rect = sliderRef.current.getBoundingClientRect();
     const fraction = (x - rect.left) / rect.width;
     const newValue = fraction * (max - min) + min;
-    const roundedValue = Math.round(newValue / step) * step;
-    const clampedValue = Math.min(Math.max(roundedValue, min), max);
-    setLocalValue(clampedValue);
-    onChange(clampedValue);
+    setClampedValue(newValue);
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -81,48 +91,74 @@ export const Slider = ({
     }
   };
 
+  const handleDecrement = () => {
+    setClampedValue(localValue - step);
+  }
+
+  const handleIncrement = () => {
+    setClampedValue(localValue + step);
+  }
+
   const percentage = ((localValue - min) / (max - min)) * 100;
   const displayValue =
     localValue.toFixed(step.toString().split(".")[1]?.length || 0) +
     (suffix || "");
 
   return (
-    <div
-      ref={sliderRef}
-      className={twMerge(
-        "glass group relative h-7 w-full cursor-pointer overflow-hidden rounded-lg border border-ui-border",
-        isDragging && "!bg-ui-controls/90",
-        className,
+    <div className="flex w-full">
+      {showDecrement && (
+        <Button
+          icon={faMinus}
+          className="size-6 text-white/80 bg-transparent rounded-full hover:bg-white/10 focus-visible:outline-primary active:bg-primary/30 my-auto mr-1"
+          onClick={handleDecrement}
+        />
       )}
-      onMouseDown={handleMouseDown}
-    >
+
       <div
+        ref={sliderRef}
         className={twMerge(
-          "absolute h-7 bg-primary/30 transition-colors duration-300 group-hover:bg-primary/50",
-          isDragging && "!bg-primary/50",
+          "glass group relative h-7 w-full cursor-pointer overflow-hidden rounded-lg border border-ui-border",
+          isDragging && "!bg-ui-controls/90",
+          className,
         )}
-        style={{ width: `${percentage}%` }}
+        onMouseDown={handleMouseDown}
       >
-        {innerLabel && (
-          <span
-            className={twMerge(
-              "absolute top-1/2 ml-2.5 -translate-y-1/2 text-nowrap text-sm font-medium text-white/60 transition-colors duration-300 group-hover:text-white",
-              isDragging && "!text-white",
-            )}
-          >
-            {innerLabel}
-          </span>
-        )}
         <div
           className={twMerge(
-            "absolute right-0 top-1/2 mr-1.5 h-3.5 w-0.5 -translate-y-1/2",
-            isDragging ? "bg-white" : "bg-white/50",
+            "absolute h-7 bg-primary/30 transition-colors duration-300 group-hover:bg-primary/50",
+            isDragging && "!bg-primary/50",
           )}
-          onMouseDown={handleMouseDown}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        />
+          style={{ width: `${percentage}%` }}
+        >
+          {innerLabel && (
+            <span
+              className={twMerge(
+                "absolute top-1/2 ml-2.5 -translate-y-1/2 text-nowrap text-sm font-medium text-white/60 transition-colors duration-300 group-hover:text-white",
+                isDragging && "!text-white",
+              )}
+            >
+              {innerLabel}
+            </span>
+          )}
+          <div
+            className={twMerge(
+              "absolute right-0 top-1/2 mr-1.5 h-3.5 w-0.5 -translate-y-1/2",
+              isDragging ? "bg-white" : "bg-white/50",
+            )}
+            onMouseDown={handleMouseDown}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          />
+        </div>
       </div>
+
+      {showIncrement && (
+        <Button
+          icon={faPlus}
+          className="size-6 text-white/80 bg-transparent rounded-full hover:bg-white/10 focus-visible:outline-primary active:bg-primary/30 my-auto ml-1"
+          onClick={handleIncrement}
+        />
+      )}
 
       {showTooltip && (
         <Transition
