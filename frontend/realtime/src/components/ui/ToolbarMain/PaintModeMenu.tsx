@@ -1,5 +1,3 @@
-import { ChangeEvent, useState, useEffect } from "react";
-import { twMerge } from "tailwind-merge";
 import {
   faFont,
   faHashtag,
@@ -7,11 +5,16 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { HexColorPicker } from "react-colorful";
+import { twMerge } from "tailwind-merge";
 
+import { useSignals } from "@preact/signals-react/runtime";
+import { paperWrapperStyles } from "~/components/styles";
+import { BRUSH_MAX_SIZE, BRUSH_MIN_SIZE, paintBrushSize, setPaintBrushSize } from "~/signals/uiEvents/toolbarMain/paintMode";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import { paperWrapperStyles } from "~/components/styles";
+import { Slider } from "../Slider";
 
 export const PaintModeMenu = ({
   color: prevColor,
@@ -80,6 +83,10 @@ export const PaintModeMenu = ({
     return hexColorRegex.test(color);
   };
 
+  // Rerender the component when these signals change:
+  useSignals();
+  const brushSize = paintBrushSize.value;
+
   return (
     <Popover className="relative">
       {({ open, close }) => (
@@ -138,6 +145,19 @@ export const PaintModeMenu = ({
                   value={textInput}
                   onChange={handleTextInput}
                 />
+                <div className="flex flex-col w-full mt-2 gap-2">
+                  <p className="text-white font-medium text-sm w-full justify-start">Brush Size:</p>
+                  <Slider
+                    min={BRUSH_MIN_SIZE}
+                    max={BRUSH_MAX_SIZE}
+                    value={brushSize}
+                    onChange={setPaintBrushSize}
+                    step={1}
+                    innerLabel={brushSize.toString()}
+                    showDecrement
+                    showIncrement
+                  />
+                </div>
                 {!streamChanges && (
                   <div className="flex w-full justify-center gap-2">
                     <Button
