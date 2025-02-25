@@ -138,7 +138,7 @@ export const PaintModeMenu = ({
                   value={textInput}
                   onChange={handleTextInput}
                 />
-                {!closeOnMouseLeave && (
+                {!streamChanges && (
                   <div className="flex w-full justify-center gap-2">
                     <Button
                       variant="secondary"
