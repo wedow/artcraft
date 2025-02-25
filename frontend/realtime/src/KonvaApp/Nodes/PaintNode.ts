@@ -47,9 +47,9 @@ export class PaintNode extends NetworkedNode {
         image: imageObj,
         listening: false, // Disable event listening to allow captureCanvas to receive events
         draggable: true,
-        stroke: '#000000',
-        strokeWidth: 2,
-        dash: [5, 5], // Creates dotted outline THIS IS FOR DEBUG
+        // stroke: '#000000',
+        // strokeWidth: 2,
+        // dash: [5, 5], // Creates dotted outline THIS IS FOR DEBUG
         globalCompositeOperation: 'source-over',
         fill: 'transparent' 
       });

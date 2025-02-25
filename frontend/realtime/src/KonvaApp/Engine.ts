@@ -649,7 +649,6 @@ export class Engine {
     console.debug("Added shapenode:", shapeNode);
     console.debug("Added node's ID:", shapeNode.kNode._id);
 
-    //this.realTimeDrawEngine.addNodes(shapeNode);
   }
 
   public addImage(imageFile: File) {
@@ -665,7 +664,7 @@ export class Engine {
     });
     imageNode.kNode.zIndex(1);
     this.commandManager.createNode(imageNode);
-    //this.realTimeDrawEngine.addNodes(imageNode);
+
   }
   public addPaintNode(canvas: HTMLCanvasElement,lineBounds:{
     width: number;
@@ -681,7 +680,6 @@ export class Engine {
          await this.realTimeDrawEngine.render()
         }})
       this.commandManager.createNode(node);
-      //this.realTimeDrawEngine.addNodes(node);
     }
 
   public addVideo(

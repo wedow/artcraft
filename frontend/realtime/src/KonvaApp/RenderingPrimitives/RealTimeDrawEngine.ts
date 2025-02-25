@@ -738,12 +738,12 @@ export class RealTimeDrawEngine {
     })) as ImageBitmap;
 
     // Test code
-    if (true) {
-      this.outputBitmap = bitmap;
-      this.previewCanvas.image(bitmap);
-      this.isProcessing = false;
-      return;
-    }
+    // if (true) {
+    //   this.outputBitmap = bitmap;
+    //   this.previewCanvas.image(bitmap);
+    //   this.isProcessing = false;
+    //   return;
+    // }
 
     try {
       const base64Bitmap = await this.imageBitmapToBase64(bitmap);
