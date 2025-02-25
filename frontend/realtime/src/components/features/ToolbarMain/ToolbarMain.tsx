@@ -25,6 +25,7 @@ import { ToolbarMainButtonNames } from "./enum";
 import { dispatchUiEvents, uiEvents } from "~/signals/uiEvents";
 import { paintColor } from "~/signals/uiEvents/toolbarMain/paintMode";
 import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
+import { PaintModeMenu } from "~/components/ui/ToolbarMain/PaintModeMenu";
 
 export const ToolbarMain = ({
   disabled = false,
@@ -157,7 +158,7 @@ export const ToolbarMain = ({
           <div className="flex flex-col items-center gap-2">
             {buttonProps.PAINT.active ? (
               <div className="relative">
-                <ColorPicker
+                <PaintModeMenu
                   color={paintColor.value}
                   onChange={dispatchUiEvents.toolbarMain.setPaintColor}
                   faIcon={faPaintbrush}
