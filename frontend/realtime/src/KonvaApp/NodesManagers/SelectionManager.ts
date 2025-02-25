@@ -289,7 +289,7 @@ export class SelectionManager {
           knodeIds: [node.kNode.id()],
           locked: node.isLocked(),
           buttonStates: getShapeNodeButtonStates({ locked: node.isLocked() }),
-          color: node.getNodeData({ x: 0, y: 0 })?.textNodeData?.color ?? "#000000",
+          color: node.color
         });
       }
       else if (node instanceof TextNode) {

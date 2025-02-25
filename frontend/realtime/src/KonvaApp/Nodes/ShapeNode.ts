@@ -30,6 +30,7 @@ export class ShapeNode extends NetworkedNode {
 
   public shapeType: ShapeType;
   public size: number;
+  public color: string;
 
   constructor({
     canvasPosition,
@@ -171,6 +172,7 @@ export class ShapeNode extends NetworkedNode {
 
     this.shapeType = shapeType;
     this.size = size;
+    this.color = color;
 
     // Add shape to group
     const centerPosition = NodeUtilities.positionNodeOnCanvasCenter({
