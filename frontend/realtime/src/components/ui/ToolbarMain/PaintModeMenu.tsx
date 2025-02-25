@@ -6,7 +6,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { ChangeEvent, useEffect, useState } from "react";
-import { HexColorPicker } from "react-colorful";
+import { HexAlphaColorPicker } from "react-colorful";
 import { twMerge } from "tailwind-merge";
 
 import { useSignals } from "@preact/signals-react/runtime";
@@ -126,7 +126,7 @@ export const PaintModeMenu = ({
                 }
                 static
               >
-                <HexColorPicker
+                <HexAlphaColorPicker
                   className="overflow-hidden"
                   color={currColor}
                   onChange={(color) => {
