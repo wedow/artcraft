@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use candle_core::{Device, Shape, Tensor, WithDType};
+use candle_core::{DType, Device, Shape, Tensor, WithDType};
 use candle_transformers::models::stable_diffusion::schedulers::Scheduler;
 use candle_transformers::models::stable_diffusion::utils::linspace;
 use log::error;
@@ -19,20 +19,27 @@ Candle is missing several "batteries" we'll have to implement, and some we might
       - https://numpy.org/doc/stable/reference/generated/numpy.cumprod.html
       - https://pytorch.org/docs/stable/generated/torch.cumprod.html
 
+Remaining work:
+
+  - [ ] implement add_noise
+  - [ ] implement cumprod
+  - [ ] initialize step_index / begin_index
+  - [ ] find out how `set_timestamps` is called in diffusers and see if we want to change it to CTOR param in candle
+  - [ ] try to plug this into candle and run
+  - [ ] fix timesteps() method to cache values
+  - [ ] compare with diffusers
+  - [ ] compare with candle schedulers
+  - [ ] compare with swift schedulers
+  - [ ] test + unit test
 */
 
 struct LcmScheduler {
-  //alphas: Vec<f64>,
   alphas: Tensor,
-  //alphas_cumprod: Vec<f64>,
   alphas_cumprod: Tensor,
-  //final_alpha_cumprod: f64,
   final_alpha_cumprod: Tensor,
 
-  //betas: Vec<f64>,
   betas: Tensor,
 
-  //timesteps: Vec<usize>,
   timesteps: Tensor,
 
   // Standard deviation of the initial noise distribution
@@ -136,6 +143,70 @@ impl LcmScheduler {
     Ok(())
   }
 
+  pub fn set_timesteps(&mut self, num_inference_steps: usize, device: &Device) -> candle_core::Result<()> {
+    // NB: The diffusers version of this method passes `None` for `original_inference_steps` and `timesteps`.
+    // It passes strength = 1.0, and config.original_inference_steps = 50.
+    const STRENGTH : f64 = 1.0;
+    const CONFIG_ORIGINAL_INFERENCE_STEPS : usize = 50;
+    const CONFIG_NUM_TRAIN_TIMESTEPS : usize = 1000;
+
+    let original_steps = CONFIG_ORIGINAL_INFERENCE_STEPS;
+
+    // LCM Timesteps Setting
+    // The skipping step parameter k from the paper.
+    let k = (CONFIG_NUM_TRAIN_TIMESTEPS as f64 / original_steps as f64).floor();
+
+    let end = (original_steps as f64 * STRENGTH) as i64 + 1;
+    let lcm_origin_timesteps = ((Tensor::arange::<i64>(1, end, device)? * k)? - 1.0)?;
+
+    if num_inference_steps > CONFIG_NUM_TRAIN_TIMESTEPS {
+      return Err(candle_core::Error::Msg("num_inference_steps cannot be larger than train timesteps".to_string()));
+    }
+
+    let skipping_step = (lcm_origin_timesteps.dims().len() as f64 / num_inference_steps as f64).floor() as usize;
+
+    self.num_inference_steps = Some(num_inference_steps);
+    
+    // TODO: This is not efficient
+    let lcm_origin_timesteps = lcm_origin_timesteps.to_vec1::<i64>()?
+      .into_iter()
+      .map(i64::from)
+      .rev()
+      .collect::<Vec<i64>>();
+    
+    // TODO: This might not be exact. We should unit test this
+    let inference_indices = linspace(0.0, lcm_origin_timesteps.len() as f64, num_inference_steps)?;
+    
+    let inference_indices = inference_indices.floor()?
+      .to_dtype(DType::I64)?;
+    
+    let timestamps = {
+      // TODO: This code is awful
+      let inference_indices_t: Vec<usize> = inference_indices.to_vec1::<i64>()?
+        .into_iter()
+        .map(|n| n as usize)
+        .collect();
+
+      let mut timesteps: Vec<i64> = Vec::with_capacity(inference_indices.dims().len());
+      
+      for i in inference_indices_t {
+        if let Some(val) = lcm_origin_timesteps.get(i) {
+          timesteps.push(*val);
+        }
+      }
+      
+      let shape = Shape::from_dims(&[timesteps.len()]);
+      
+      Tensor::from_vec(timesteps, shape, device)?
+        .to_dtype(DType::I64)?
+        .to_device(device)?
+    };
+
+    self.timesteps = timestamps;
+
+    Ok(())
+  }
+
 }
 
 impl Scheduler for LcmScheduler {
@@ -147,40 +218,6 @@ impl Scheduler for LcmScheduler {
   }
 
   fn add_noise(&self, original_samples: &Tensor, noise: Tensor, timestep: usize) -> candle_core::Result<Tensor> {
-    /*
-    # NB: This is from scheduling_lcm.py:
-
-    # Copied from diffusers.schedulers.scheduling_ddpm.DDPMScheduler.add_noise
-    def add_noise(
-        self,
-        original_samples: torch.Tensor,
-        noise: torch.Tensor,
-        timesteps: torch.IntTensor,
-    ) -> torch.Tensor:
-        # Make sure alphas_cumprod and timestep have same device and dtype as original_samples
-        # Move the self.alphas_cumprod to device to avoid redundant CPU to GPU data movement
-        # for the subsequent add_noise calls
-        self.alphas_cumprod = self.alphas_cumprod.to(device=original_samples.device)
-        alphas_cumprod = self.alphas_cumprod.to(dtype=original_samples.dtype)
-        timesteps = timesteps.to(original_samples.device)
-
-        sqrt_alpha_prod = alphas_cumprod[timesteps] ** 0.5
-        sqrt_alpha_prod = sqrt_alpha_prod.flatten()
-        while len(sqrt_alpha_prod.shape) < len(original_samples.shape):
-            sqrt_alpha_prod = sqrt_alpha_prod.unsqueeze(-1)
-
-        sqrt_one_minus_alpha_prod = (1 - alphas_cumprod[timesteps]) ** 0.5
-        sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.flatten()
-        while len(sqrt_one_minus_alpha_prod.shape) < len(original_samples.shape):
-            sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.unsqueeze(-1)
-
-        noisy_samples = sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
-        return noisy_samples
-     */
-     // TODO: Type errors
-      // (original_samples * self.alphas_cumprod[timestep].sqrt())?
-      // + noise * (1. - self.alphas_cumprod[timestep]).sqrt()
-
     // TODO: Make sure alphas_cumprod and timestep have same device and dtype as original_samples
     //  Move the self.alphas_cumprod to device to avoid redundant CPU to GPU data movement
     //  for the subsequent add_noise calls
@@ -263,17 +300,17 @@ impl Scheduler for LcmScheduler {
     // via a config object. Hardcoding this for now until we need to change it.
     const TIMESTEP_SCALING : f64 = 10.0;
     let (c_skip, c_out) = get_scalings_for_boundary_condition_discrete(timestep, TIMESTEP_SCALING);
-    
+
     // 4. Compute the predicted original sample x_0 based on the model parameterization
     // NB: Prediction type is "epsilon" in the diffusers examples, but that is configurable.
     // This is the only one we'll implement for now.
     let predicted_original_sample = ((sample - (beta_prod_t.sqrt()? * model_output)?)? / &alpha_prod_t.sqrt()?)?;
-    
+
     // 5. (skip clip/threshold - not used in diffusers example)
-    
+
     // 6. Denoise model output using boundary conditions
     let denoised = ((c_out * predicted_original_sample)? + (c_skip * sample)?)?;
-    
+
     // TODO: Step 7. We have to return the previous example somehow.
     //  Diffusers tolerates it not being sent back, but the quality degrades as if one step is absent.
     Ok(denoised)
@@ -364,7 +401,7 @@ mod tests {
       assert!((v.0 - 0.0024937655860349127).abs() < 0.01);
       assert!((v.1 - 0.9987523388778445).abs() < 0.01);
 
-      // TODO: More test cases - 
+      // TODO: More test cases -
       //let v = get_scalings_for_boundary_condition_discrete(10, 10.0);
       //let v = get_scalings_for_boundary_condition_discrete(100, 10.0);
 
@@ -373,6 +410,7 @@ mod tests {
   }
 
   mod confirm_various_pytorch_behaviors {
+    use candle_core::IndexOp;
     use super::*;
 
     // NB: Non-unit tests, just to test understanding while porting code
@@ -403,6 +441,15 @@ mod tests {
       assert_eq!(x.to_vec1::<i64>()?, &[1, 0, -1, -2, -3]);
       Ok(())
     }
+    
+    // #[test]
+    // fn reverse_vector() -> anyhow::Result<()> {
+    //   let t = tensor_1234()?;
+    //   let x = t.i(5..0)?;
+    //   assert_eq!(x.rank(), 1); // NB: 1-dimensional output
+    //   assert_eq!(x.to_vec1::<i64>()?, &[1, 0, -1, -2, -3]);
+    //   Ok(())
+    // }
   }
 
   pub mod test_helper_fn {
