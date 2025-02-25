@@ -26,6 +26,7 @@ export const ColorPicker = ({
   streamChanges = false,
   defaultOpen = false,
   closeOnMouseLeave = false,
+  children,
 }: {
   color: string;
   onChange: (newColor: string) => void;
@@ -39,6 +40,7 @@ export const ColorPicker = ({
   streamChanges?: boolean;
   defaultOpen?: boolean;
   closeOnMouseLeave?: boolean;
+  children?: React.ReactNode;
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [{ currColor, textInput }, setStates] = useState<{
@@ -87,8 +89,8 @@ export const ColorPicker = ({
           <PopoverButton
             className={twMerge(
               "flex size-10 items-center gap-1 rounded-lg bg-ui-controls p-2",
-              borderStyle,
               showBar ? "flex-col" : "justify-center",
+              borderStyle,
             )}
             style={fillBg ? { backgroundColor: prevColor } : {}}
             onMouseEnter={() => defaultOpen && setIsOpen(true)}
@@ -97,6 +99,7 @@ export const ColorPicker = ({
               icon={faIcon}
               color={staticIconColor ?? (fillBg ? undefined : prevColor)}
             />
+            {children}
             {showBar && (
               <span
                 className="h-1 w-full"

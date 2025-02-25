@@ -14,6 +14,7 @@ import { paperWrapperStyles, toolTipStyles } from "~/components/styles";
 import { ToolbarNodeButtonNames } from "./enums";
 import { ToolbarNodeButtonData } from "./data";
 import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
+import { DEFAULT_PAINT_COLOR } from "~/signals/uiEvents/toolbarMain/paintMode";
 
 export interface ToolbarNodeProps {
   disabled?: boolean;
@@ -35,7 +36,7 @@ export const ToolbarNode = ({
   lockDisabled,
   onLockClicked,
   buttonsProps,
-  color = "#000000",
+  color = DEFAULT_PAINT_COLOR,
   onColorChange = () => { },
 }: ToolbarNodeProps) => {
   const handleOnLockClicked: React.MouseEventHandler<HTMLButtonElement> = (
@@ -46,12 +47,13 @@ export const ToolbarNode = ({
     }
   };
   const lockDisabledOrUnknown = lockDisabled || locked === "unknown";
+  const lockText = locked === "unknown" ? "Unavailable" : locked ? "Unlock" : "Lock"
   return (
     <div
       className={twMerge(
         paperWrapperStyles,
         disabled && "pointer-events-none cursor-default bg-ui-border shadow-md",
-        "flex flex-col gap-2 transition",
+        "flex flex-col gap-1 transition",
       )}
     >
       <ToolbarButton
@@ -60,12 +62,10 @@ export const ToolbarNode = ({
             locked && "text-primary hover:bg-primary hover:text-white",
             lockDisabledOrUnknown &&
             "text-secondary-300 hover:text-secondary-300",
+            "w-full p-2"
           ),
           disabled: lockDisabledOrUnknown,
         }}
-        tooltip={
-          locked === "unknown" ? "Unavailable" : locked ? "Unlock" : "Lock"
-        }
         icon={
           locked === "unknown"
             ? faUnlockKeyhole
@@ -74,7 +74,9 @@ export const ToolbarNode = ({
               : faLockKeyholeOpen
         }
         onClick={handleOnLockClicked}
-      />
+      >
+        <span className="text-[16px]">{lockText}</span>
+      </ToolbarButton>
       <span className="border-r border-r-ui-border" />
       {ToolbarNodeButtonData.map((buttonDatum, idx) => {
         const buttonProps = buttonsProps?.[buttonDatum.name];
@@ -87,14 +89,18 @@ export const ToolbarNode = ({
           return (
             <ToolbarButton
               icon={buttonDatum.icon}
-              tooltip={buttonDatum.tooltip}
               key={idx}
-              buttonProps={buttonProps}
-            />
+              buttonProps={{ ...buttonProps, className: "w-full p-2" }}
+            >
+              <span className="text-[16px]">{buttonDatum.tooltip}</span>
+            </ToolbarButton>
+
           );
         } else {
           return (
-            <ColorPicker color={color} onChange={onColorChange} faIcon={faPalette} borderStyle="" key={idx} />
+            <ColorPicker color={color} onChange={onColorChange} faIcon={faPalette} borderStyle="w-full justify-start h-auto gap-2.5 text-white/80" showBar={false} key={idx}>
+              <span className="text-[16px]">{buttonDatum.tooltip}</span>
+            </ColorPicker>
           )
         }
       })}

@@ -1,6 +1,7 @@
 import { signal } from "@preact/signals-react";
 import { ContextualUi } from "./type";
 import { ToolbarNodeButtonNames as ButtonNames } from "~/components/features/ToolbarNode/enums";
+import { DEFAULT_PAINT_COLOR } from "../uiEvents/toolbarMain/paintMode";
 
 type ButtonStates = {
   [key in ButtonNames]: {
@@ -33,7 +34,7 @@ const toolbarNodeSignal = signal<ContextualToolbarProps>({
   locked: false,
   lockDisabled: false,
   buttonStates: initButtonStates(),
-  color: "#000000",
+  color: DEFAULT_PAINT_COLOR,
 });
 
 export const toolbarNode = {
