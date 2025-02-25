@@ -1,3 +1,4 @@
+pub mod cumprod;
 pub mod image;
 pub mod lcm_scheduler;
 pub mod model_cache;
