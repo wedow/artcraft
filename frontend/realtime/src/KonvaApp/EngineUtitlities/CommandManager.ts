@@ -20,7 +20,7 @@ import {
   NodeTransformer,
   SelectionManager,
 } from "../NodesManagers";
-import { RenderEngine } from "../RenderingPrimitives/RenderEngine";
+import { RealTimeDrawEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
 import { PaintNode } from "../Nodes/PaintNode";
 
 interface EngineReferences {
@@ -28,7 +28,7 @@ interface EngineReferences {
   nodesManagerRef: NodesManager;
   nodeTransformerRef: NodeTransformer;
   selectionManagerRef: SelectionManager;
-  renderEngineRef: RenderEngine;
+  renderEngineRef: RealTimeDrawEngine;
   undoStackManagerRef: UndoStackManager;
 }
 
@@ -37,7 +37,7 @@ export class CommandManager {
   private nodesManagerRef: NodesManager;
   private nodeTransformerRef: NodeTransformer;
   private selectionManagerRef: SelectionManager;
-  private renderEngineRef: RenderEngine;
+  private renderEngineRef: RealTimeDrawEngine;
   private undoStackManagerRef: UndoStackManager;
 
   constructor(engineRefs: EngineReferences) {
@@ -132,6 +132,7 @@ export class CommandManager {
       layerRef: this.mediaLayerRef,
     });
     this.undoStackManagerRef.pushCommand(command);
+    this.renderEngineRef.render();
   }
   addChromaKey(props: { videoNode: VideoNode; newChromaColor: RGBColor }) {
     const command = new AddChromaKey(props);

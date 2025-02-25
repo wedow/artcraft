@@ -6,7 +6,7 @@ import {
   NodeTransformer,
   SelectionManager,
 } from "../NodesManagers";
-import { RenderEngine } from "../RenderingPrimitives/RenderEngine";
+import { RealTimeDrawEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
 
 import { toolbarNode } from "~/signals/uiAccess/toolbarNode";
 
@@ -19,7 +19,7 @@ export class CreateCommand implements ICommand {
   private nodeTransformerRef: NodeTransformer;
   private selectionManagerRef: SelectionManager;
 
-  private renderEngineRef: RenderEngine;
+  private renderEngineRef: RealTimeDrawEngine;
 
   constructor({
     nodes,
@@ -33,7 +33,7 @@ export class CreateCommand implements ICommand {
     mediaLayerRef: Konva.Layer;
     nodesManagerRef: NodesManager;
     nodeTransformerRef: NodeTransformer;
-    renderEngineRef: RenderEngine;
+    renderEngineRef: RealTimeDrawEngine;
     selectionManagerRef: SelectionManager;
   }) {
     this.nodes = nodes;
