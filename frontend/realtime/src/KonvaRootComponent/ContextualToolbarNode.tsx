@@ -8,6 +8,7 @@ import { dispatchUiEvents } from "~/signals/uiEvents";
 import { ToolbarNode } from "~/components/features/ToolbarNode";
 import { ToolbarNodeButtonNames } from "~/components/features/ToolbarNode/enums";
 import { transitionTimingStyles } from "~/components/styles";
+import { useSignals } from "@preact/signals-react/runtime";
 
 export const ContextualToolbarNode = () => {
   const [winSize, setWinSize] = useState<{ width: number; height: number }>({
@@ -64,6 +65,9 @@ export const ContextualToolbarNode = () => {
     dispatchUiEvents.toolbarNode.setSelectedColor({ kNodeId: nodeID, color });
   }
 
+  useSignals();
+  const color = uiAccess.toolbarNode.signal.value.color;
+
   const boundedTopPosition = Math.min(position.y, winSize.height - 164);
   return (
     <Transition
@@ -85,7 +89,7 @@ export const ContextualToolbarNode = () => {
         onLockClicked={(e) => {
           dispatchUiEvents.toolbarNode.lock(e);
         }}
-        color={uiAccess.toolbarNode.signal.value.color}
+        color={color}
         onColorChange={handleColorChange}
       />
     </Transition>
