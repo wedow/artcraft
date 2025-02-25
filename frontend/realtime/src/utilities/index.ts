@@ -10,3 +10,9 @@ export const getFileName = (file: File) => {
 export const getFileExtension = (file: File) => {
   return file.name.substring(file.name.lastIndexOf(".") + 1);
 };
+export const clamp = (num: number, min: number, max: number) => {
+  return Math.min(Math.max(num, min), max);
+}
+export const normalize = (num: number, min: number, max: number) => {
+  return (num - min) / (max - min);
+}
