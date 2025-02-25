@@ -3,14 +3,18 @@ import {
   loadingBarRetryDispatch,
   loadingBarRetryEventHandler,
 } from "./loadingBar";
-import { onPaintColorChanged, setPaintColor } from "./paintMode";
+import { onEraseBrushSizeChanged, setEraseBrushSize } from "./eraseMode";
+import { onPaintColorChanged, setPaintBrushSize, setPaintColor } from "./paintMode";
 export const dispatchers = {
   ...buttonDispatchers,
   loadingBarRetry: loadingBarRetryDispatch,
   setPaintColor,
+  setPaintBrushSize,
+  setEraseBrushSize
 };
 export const eventsHandlers = {
   ...buttonEventsHandlers,
   loadingBarRetry: loadingBarRetryEventHandler,
-  onPaintColorChanged
+  onPaintColorChanged,
+  onEraseBrushSizeChanged
 };
