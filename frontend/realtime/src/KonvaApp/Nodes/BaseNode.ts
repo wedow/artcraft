@@ -166,7 +166,7 @@ export abstract class BaseNode {
       // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/which
       // 3: Right mouse button
       // If right click, let context event handle it
-      if (e.evt.button === 3) {
+      if (e.evt.button === 2) {
         return;
       }
 
@@ -182,7 +182,7 @@ export abstract class BaseNode {
       // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/which
       // 3: Right mouse button
       // If right click, let context event handle it
-      if (e.evt.button === 3) {
+      if (e.evt.button === 2) {
         return;
       }
 
