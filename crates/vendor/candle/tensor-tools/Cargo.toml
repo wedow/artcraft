@@ -1,16 +1,10 @@
 [package]
 name = "tensor-tools"
-version.workspace = true
-edition.workspace = true
-description.workspace = true
-repository.workspace = true
-keywords.workspace = true
-categories.workspace = true
-license.workspace = true
+edition = "2021"
 
 [dependencies]
-anyhow = { workspace = true }
-candle = { workspace = true }
-clap = { workspace = true }
-rayon = { workspace = true }
-safetensors = { workspace = true }
+anyhow = { version = "1", features = ["backtrace"] }
+candle = { path = "../candle-core", package = "candle-core" }
+clap = { version = "4.2.4", features = ["derive"] }
+rayon = "1.7.0"
+safetensors = "0.4.1"

@@ -1496,6 +1496,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "candle-flash-attn"
+version = "0.8.3"
+dependencies = [
+ "anyhow",
+ "bindgen_cuda",
+ "candle-core 0.0.0",
+ "candle-nn 0.0.0",
+ "half",
+]
+
+[[package]]
 name = "candle-kernels"
 version = "0.8.3"
 dependencies = [
@@ -10814,6 +10825,17 @@ dependencies = [
  "futf",
  "mac",
  "utf-8",
+]
+
+[[package]]
+name = "tensor-tools"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "candle-core 0.0.0",
+ "clap",
+ "rayon",
+ "safetensors",
 ]
 
 [[package]]
