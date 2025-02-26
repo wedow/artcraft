@@ -1446,7 +1446,7 @@ dependencies = [
  "anyhow",
  "byteorder",
  "candle-kernels 0.8.3",
- "candle-metal-kernels 0.8.3",
+ "candle-metal-kernels",
  "clap",
  "criterion",
  "cudarc",
@@ -1476,17 +1476,12 @@ version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef79e00300acaaa6b0b33168e2ed5050f06125d1add87e7103c40a119083581"
 dependencies = [
- "accelerate-src",
  "byteorder",
  "candle-kernels 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "candle-metal-kernels 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "cudarc",
  "gemm 0.17.1",
  "half",
- "intel-mkl-src",
- "libc",
  "memmap2",
- "metal 0.27.0",
  "num-traits",
  "num_cpus",
  "rand 0.8.5",
@@ -1496,7 +1491,6 @@ dependencies = [
  "thiserror 1.0.63",
  "ug",
  "ug-cuda",
- "ug-metal",
  "yoke",
  "zip 1.1.4",
 ]
@@ -1533,25 +1527,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "candle-metal-kernels"
-version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2395aa0bb5101ceee667018ee896cf6183ed97539dbf745ed5ae398a54b83d7e"
-dependencies = [
- "metal 0.27.0",
- "once_cell",
- "thiserror 1.0.63",
- "tracing",
-]
-
-[[package]]
 name = "candle-nn"
 version = "0.0.0"
 dependencies = [
  "accelerate-src",
  "anyhow",
- "candle-core 0.8.3",
- "candle-metal-kernels 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "candle-core 0.0.0",
+ "candle-metal-kernels",
  "clap",
  "criterion",
  "half",

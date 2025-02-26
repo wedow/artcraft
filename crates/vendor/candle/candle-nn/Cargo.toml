@@ -4,7 +4,7 @@ edition = "2021"
 
 [dependencies]
 accelerate-src = { version = "0.3.2", optional = true }
-candle = { package = "candle-core", version = "0.8.3" }
+candle = { path = "../candle-core", package = "candle-core" }
 half = { version = "2.3.1", features = ["num-traits", "use-intrinsics", "rand_distr"] }
 thiserror = "1"
 intel-mkl-src = { version = "0.8.1", features = ["mkl-static-lp64-iomp"], optional = true }
@@ -13,7 +13,7 @@ rayon = "1.7.0"
 safetensors = "0.4.1"
 serde = { version = "1.0.171", features = ["derive"] }
 metal = { version = "0.27.0", features = ["mps"], optional = true }
-candle-metal-kernels = { package = "candle-metal-kernels", version = "0.8.3" , optional = true }
+candle-metal-kernels = { path = "../candle-metal-kernels", version = "0.8.3" , optional = true }
 
 [dev-dependencies]
 anyhow = { version = "1", features = ["backtrace"] }
