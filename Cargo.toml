@@ -97,7 +97,9 @@ members = [
 
   # Vendored code
   "crates/vendor/limitation",
+  #"crates/vendor/candle/candle-flash-attn",
   "crates/vendor/candle/candle-kernels",
+  "crates/vendor/candle/candle-nn",
   "crates/vendor/candle/candle-onnx",
   # NB(bt,2023-12-12): Newrelic keeps breaking with upgrades. Kill for now.
   #"crates/vendor/newrelic-telemetry-sdk-rust", 
