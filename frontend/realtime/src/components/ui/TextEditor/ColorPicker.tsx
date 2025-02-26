@@ -12,6 +12,7 @@ import { twMerge } from "tailwind-merge";
 import { paperWrapperStyles } from "~/components/styles";
 import { Button } from "../Button";
 import { Input } from "../Input";
+import { HexEyedropPicker } from "../HexEyedropPicker";
 
 export const ColorPicker = ({
   color: prevColor,
@@ -82,6 +83,16 @@ export const ColorPicker = ({
     return hexColorRegex.test(color);
   };
 
+  const handleColorChange = (color: string) => {
+    setStates({
+      currColor: color,
+      textInput: color.substring(1),
+    });
+    if (streamChanges) {
+      onChange(color);
+    }
+  }
+
   return (
     <Popover className="relative">
       {({ open, close }) => (
@@ -122,18 +133,12 @@ export const ColorPicker = ({
                 }
                 static
               >
-                <HexAlphaColorPicker
-                  className="overflow-hidden"
+                <HexEyedropPicker
+                  pickerClassName="overflow-hidden"
                   color={currColor}
-                  onChange={(color) => {
-                    setStates({
-                      currColor: color,
-                      textInput: color.substring(1),
-                    });
-                    if (streamChanges) {
-                      onChange(color);
-                    }
-                  }}
+                  onPickerChange={handleColorChange}
+                  onDropperChange={handleColorChange}
+                  Picker={HexAlphaColorPicker}
                 />
                 <Input
                   style={{ width: "198px" }}

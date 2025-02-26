@@ -15,6 +15,7 @@ import { BRUSH_MAX_SIZE, BRUSH_MIN_SIZE, paintBrushSize, setPaintBrushSize } fro
 import { Button } from "../Button";
 import { Input } from "../Input";
 import { Slider } from "../Slider";
+import { HexEyedropPicker } from "../HexEyedropPicker";
 
 export const PaintModeMenu = ({
   color: prevColor,
@@ -83,6 +84,16 @@ export const PaintModeMenu = ({
     return hexColorRegex.test(color);
   };
 
+  const handleColorChange = (color: string) => {
+    setStates({
+      currColor: color,
+      textInput: color.substring(1),
+    });
+    if (streamChanges) {
+      onChange(color);
+    }
+  }
+
   // Rerender the component when these signals change:
   useSignals();
   const brushSize = paintBrushSize.value;
@@ -126,18 +137,12 @@ export const PaintModeMenu = ({
                 }
                 static
               >
-                <HexAlphaColorPicker
-                  className="overflow-hidden"
+                <HexEyedropPicker
+                  pickerClassName="overflow-hidden"
                   color={currColor}
-                  onChange={(color) => {
-                    setStates({
-                      currColor: color,
-                      textInput: color.substring(1),
-                    });
-                    if (streamChanges) {
-                      onChange(color);
-                    }
-                  }}
+                  onPickerChange={handleColorChange}
+                  onDropperChange={handleColorChange}
+                  Picker={HexAlphaColorPicker}
                 />
                 <Input
                   style={{ width: "198px" }}
