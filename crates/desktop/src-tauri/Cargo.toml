@@ -30,9 +30,9 @@ cudarc = "0.13.7"
 anyhow = "1.0"
 bytes = "1.10"
 base64 = "0.22.1"
-candle-core = { version = "0.8.2", features = ["cuda"] }
-candle-nn = { version = "0.8.2", features = ["cuda"] }
-candle-transformers = { version = "0.8.2", features = ["cuda"] }
+candle-core = { path = "../../vendor/candle/candle-core", features = ["cuda"] }
+candle-nn = { path = "../../vendor/candle/candle-nn", features = ["cuda"] }
+candle-transformers = { path = "../../vendor/candle/candle-transformers", features = ["cuda"] }
 hf-hub = "0.3.2"
 image = "0.25.5"
 serde_yaml = "0.9"
