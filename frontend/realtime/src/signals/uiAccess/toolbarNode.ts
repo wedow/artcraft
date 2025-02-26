@@ -18,6 +18,7 @@ export interface ContextualToolbarProps extends ContextualUi {
   lockDisabled: boolean;
   buttonStates: ButtonStates;
   color: string;
+  position: { x: number, y: number };
 }
 interface PartialContextualToolbarProps
   extends Partial<Omit<ContextualToolbarProps, "buttonStates">> {

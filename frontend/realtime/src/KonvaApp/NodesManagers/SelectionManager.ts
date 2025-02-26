@@ -80,7 +80,12 @@ export class SelectionManager {
   public isDisabled() {
     return this.disable;
   }
-  public selectNode(node: MediaNode, doNotDraw?: boolean, showContextMenu = false): boolean {
+  public selectNode(node: MediaNode, doNotDraw?: boolean, contextMenu: {
+    show?: boolean,
+    at?: { x: number, y: number }
+  } = {
+      show: false,
+    }): boolean {
     if (
       this.disabled || // no-op when disabled
       this.selectedNodes.has(node) || // if the node is already selected
@@ -101,9 +106,9 @@ export class SelectionManager {
     this.updateNodeTransformer();
     this.updateContextComponents();
 
-    console.log("SelectionManager > selectNode > showContextMenu", showContextMenu);
-    if (showContextMenu) {
-      this.showContextComponents();
+    console.log("SelectionManager > selectNode > showContextMenu", contextMenu.show);
+    if (contextMenu.show) {
+      this.showContextComponents(contextMenu.at);
     }
 
     if (!doNotDraw) {
@@ -266,10 +271,15 @@ export class SelectionManager {
     uiAccess.loadingBar.hide();
   }
 
-  public showContextComponents() {
+  public showContextComponents(at?: { x: number, y: number }) {
     const showOrUpdate = uiAccess.toolbarNode.isShowing()
       ? uiAccess.toolbarNode.update
       : uiAccess.toolbarNode.show;
+
+    // If a position is received, set it
+    // Otherwise use the previous position
+    const position = at ? at : uiAccess.toolbarNode.signal.value.position;
+
     const node = this.selectedNodes.values().next().value;
     if (node === undefined) {
       this.hideContextComponents();
@@ -281,6 +291,7 @@ export class SelectionManager {
           knodeIds: [node.kNode.id()],
           locked: node.isLocked(),
           buttonStates: getImageNodeButtonStates({ locked: node.isLocked() }),
+          position: position
         });
       }
       else if (node instanceof ShapeNode) {
@@ -289,7 +300,8 @@ export class SelectionManager {
           knodeIds: [node.kNode.id()],
           locked: node.isLocked(),
           buttonStates: getShapeNodeButtonStates({ locked: node.isLocked() }),
-          color: node.color
+          color: node.color,
+          position: position
         });
       }
       else if (node instanceof TextNode) {
@@ -298,12 +310,14 @@ export class SelectionManager {
           locked: node.isLocked(),
           buttonStates: getTextNodeButtonStates({ locked: node.isLocked() }),
           color: node.getNodeData({ x: 0, y: 0 })?.textNodeData?.color ?? "#000000",
+          position: position
         });
       }
       else if (node instanceof VideoNode) {
         showOrUpdate({
           locked: node.isLocked(),
           buttonStates: getVideoNodeButtonStates({ locked: node.isLocked() }),
+          position: position
         });
       }
 
@@ -319,6 +333,7 @@ export class SelectionManager {
         showOrUpdate({
           locked: node.isLocked(),
           buttonStates: getMultiSelectButtonStates({ locked: node.isLocked() }),
+          position: position
         });
       }
     }
@@ -348,6 +363,7 @@ export class SelectionManager {
       // console.log("setting lock");
       uiAccess.toolbarNode.setLocked(node.isLocked());
     }
+    console.debug("Setting context position to:", coord)
     uiAccess.toolbarNode.setPosition({
       x: coord.x,
       y: coord.y,

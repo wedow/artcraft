@@ -4,6 +4,8 @@ import { SelectionManager } from "../NodesManagers";
 import { highlightStrokeWidth, primaryOrange } from "./constants";
 import { NodeData, Position } from "../types";
 import { RealTimeDrawEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
+import { MouseEventHandler } from "react";
+import { KonvaEventObject } from "konva/lib/Node";
 
 export abstract class BaseNode {
   protected selectionManagerRef: SelectionManager;
@@ -151,15 +153,18 @@ export abstract class BaseNode {
       }
     };
 
-    const handleRightClick = () => {
+    const handleRightClick = (e: KonvaEventObject<MouseEvent>) => {
       this.selectionManagerRef.clearSelection();
-      this.selectionManagerRef.selectNode(this, undefined, true);
+      this.selectionManagerRef.selectNode(this, undefined, {
+        show: true,
+        at: { x: e.evt.x, y: e.evt.y }
+      });
     }
 
     this.kNode.on("contextmenu", (e) => {
       console.log("CONTEXT MENU", e);
       e.evt.preventDefault();
-      handleRightClick();
+      handleRightClick(e);
     });
 
     this.kNode.on("mousedown", (e) => {
