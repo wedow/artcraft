@@ -96,14 +96,15 @@ members = [
   "crates/service/plugins/user_traits_component",
 
   # Vendored code
-  "crates/vendor/limitation",
+  "crates/vendor/candle/candle-core",
+  "crates/vendor/candle/candle-datasets",
   "crates/vendor/candle/candle-flash-attn",
   "crates/vendor/candle/candle-kernels",
   "crates/vendor/candle/candle-metal-kernels",
   "crates/vendor/candle/candle-nn",
-  "crates/vendor/candle/candle-core",
   "crates/vendor/candle/candle-onnx",
   "crates/vendor/candle/tensor-tools",
+  "crates/vendor/limitation",
   # NB(bt,2023-12-12): Newrelic keeps breaking with upgrades. Kill for now.
   #"crates/vendor/newrelic-telemetry-sdk-rust", 
 
