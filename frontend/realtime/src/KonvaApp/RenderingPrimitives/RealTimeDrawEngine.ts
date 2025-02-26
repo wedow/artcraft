@@ -774,7 +774,7 @@ export class RealTimeDrawEngine {
     base64String: string,
   ): Promise<ImageBitmap> {
     // Create an image element
-    const img = new Image();
+    const img = document.createElement("img");
 
     // Convert base64 to data URL if it doesn't include the prefix
     const dataUrl = base64String.startsWith("data:")
@@ -854,26 +854,26 @@ export class RealTimeDrawEngine {
       return;
     }
 
-    //   try {
-    //     const base64Bitmap = await this.imageBitmapToBase64(bitmap);
+    try {
+      const base64Bitmap = await this.imageBitmapToBase64(bitmap);
 
-    //     const base64BitmapResponse = await invoke("infer_image", {
-    //       image: base64Bitmap,
-    //       prompt: this.currentPrompt,
-    //       strength: this.currentStrength,
-    //     });
+      const base64BitmapResponse = await invoke("infer_image", {
+        image: base64Bitmap,
+        prompt: this.currentPrompt,
+        strength: this.currentStrength,
+      });
 
-    //     console.log(base64BitmapResponse);
-    //     const decoded = await this.base64ToImageBitmap(
-    //       base64BitmapResponse as string,
-    //     );
+      console.log(base64BitmapResponse);
+      const decoded = await this.base64ToImageBitmap(
+        base64BitmapResponse as string,
+      );
 
-    //     this.outputBitmap = decoded;
-    //     this.previewCanvas.image(decoded);
-    //   } catch (error) {
-    //     console.error("Error during image processing:", error);
-    //   } finally {
-    //     this.isProcessing = false;
-    //   }
+      this.outputBitmap = decoded;
+      this.previewCanvas.image(decoded);
+    } catch (error) {
+      console.error("Error during image processing:", error);
+    } finally {
+      this.isProcessing = false;
+    }
   }
 }
