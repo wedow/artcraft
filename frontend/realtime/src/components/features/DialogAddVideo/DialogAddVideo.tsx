@@ -1,14 +1,9 @@
 import { useCallback, useRef, useState, useEffect } from "react";
 import { signal } from "@preact/signals-react";
 import { twMerge } from "tailwind-merge";
-import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-
-import {
-  dialogBackgroundStyles,
-  paperWrapperStyles,
-  dialogPanelStyles,
-} from "~/components/styles";
+import { DialogTitle } from "@headlessui/react";
 import { Button } from "~/components/ui";
+import { BaseDialog } from "~/components/ui/BaseDialog";
 
 import {
   QuickTrimVideoUploader,
@@ -108,78 +103,72 @@ export const DialogAddVideo = ({
   );
 
   return (
-    <Dialog open={isOpen} onClose={closeCallback} className="relative z-50">
-      <div className={dialogBackgroundStyles}>
-        <DialogPanel
-          className={twMerge("w-full", file ? "max-w-5xl" : "max-w-2xl")}
-        >
-          <div className={twMerge(paperWrapperStyles, dialogPanelStyles)}>
-            <DialogTitle className="text-3xl font-bold">
-              Upload Video
-            </DialogTitle>
-            {dialogStatus === DialogAddMediaStatuses.STAGING_FILE && (
-              <>
-                <QuickTrimVideoUploader
-                  file={currFile}
-                  onFileStaged={(file) => {
-                    setStates((curr) => ({ ...curr, file }));
-                  }}
-                  videoPropsSignal={videoProps}
-                  trimDataSignal={trimData}
-                  onTrimChange={(newTrimData: TrimData) => {
-                    trimData.value = newTrimData;
-                  }}
-                />
-                <span className="grow" />
-              </>
-            )}
-            <LoadingScreens
-              currStatus={dialogStatus}
-              retryButton={
-                <ButtonSubmitAdd
-                  file={file}
-                  trimData={trimData}
-                  onStatusChanged={changeDialogStatus}
-                  onUploadedVideo={handleOnUploadedVideo}
-                  retry
-                />
-              }
-            />
+    <BaseDialog
+      isOpen={isOpen}
+      onClose={closeCallback}
+      className={twMerge("w-full", file ? "max-w-5xl" : "max-w-2xl")}
+    >
+      <DialogTitle className="text-3xl font-bold">Upload Video</DialogTitle>
+      {dialogStatus === DialogAddMediaStatuses.STAGING_FILE && (
+        <>
+          <QuickTrimVideoUploader
+            file={currFile}
+            onFileStaged={(file) => {
+              setStates((curr) => ({ ...curr, file }));
+            }}
+            videoPropsSignal={videoProps}
+            trimDataSignal={trimData}
+            onTrimChange={(newTrimData: TrimData) => {
+              trimData.value = newTrimData;
+            }}
+          />
+          <span className="grow" />
+        </>
+      )}
+      <LoadingScreens
+        currStatus={dialogStatus}
+        retryButton={
+          <ButtonSubmitAdd
+            file={file}
+            trimData={trimData}
+            onStatusChanged={changeDialogStatus}
+            onUploadedVideo={handleOnUploadedVideo}
+            retry
+          />
+        }
+      />
 
-            <div className="-mt-2 flex w-full justify-end gap-2">
-              <Button
-                onClick={handleClose}
-                variant="secondary"
-                disabled={
-                  dialogStatus === DialogAddMediaStatuses.FILE_UPLOADING ||
-                  dialogStatus === DialogAddMediaStatuses.FILE_RECORD_REQUESTING
-                }
-              >
-                Close
-              </Button>
-              {dialogStatus === DialogAddMediaStatuses.STAGING_FILE && (
-                <ButtonSubmitAdd
-                  file={currFile}
-                  trimData={trimData}
-                  onStatusChanged={changeDialogStatus}
-                  onUploadedVideo={handleOnUploadedVideo}
-                />
-              )}
-              {(dialogStatus === DialogAddMediaStatuses.ERROR_FILE_UPLOAD ||
-                dialogStatus ===
-                  DialogAddMediaStatuses.ERROR_FILE_RECORD_REQUEST) && (
-                <Button
-                  onClick={() => {
-                    setStates(initialState);
-                  }}
-                >
-                  Add Another Video
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogPanel>
+      <div className="-mt-2 flex w-full justify-end gap-2">
+        <Button
+          onClick={handleClose}
+          variant="secondary"
+          disabled={
+            dialogStatus === DialogAddMediaStatuses.FILE_UPLOADING ||
+            dialogStatus === DialogAddMediaStatuses.FILE_RECORD_REQUESTING
+          }
+        >
+          Close
+        </Button>
+        {dialogStatus === DialogAddMediaStatuses.STAGING_FILE && (
+          <ButtonSubmitAdd
+            file={currFile}
+            trimData={trimData}
+            onStatusChanged={changeDialogStatus}
+            onUploadedVideo={handleOnUploadedVideo}
+          />
+        )}
+        {(dialogStatus === DialogAddMediaStatuses.ERROR_FILE_UPLOAD ||
+          dialogStatus ===
+            DialogAddMediaStatuses.ERROR_FILE_RECORD_REQUEST) && (
+          <Button
+            onClick={() => {
+              setStates(initialState);
+            }}
+          >
+            Add Another Video
+          </Button>
+        )}
       </div>
-    </Dialog>
+    </BaseDialog>
   );
 };

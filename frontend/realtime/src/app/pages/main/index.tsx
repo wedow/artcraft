@@ -9,6 +9,7 @@ import { ToolbarUserProfile } from "~/components/features";
 import { KonvaRootComponent } from "~/KonvaRootComponent";
 import { ToolbarTopLeft } from "~/components/features/ToolbarTopLeft";
 import { ToolbarTopRight } from "~/components/features/ToolbarTopRight";
+import { ToolbarTopCenter } from "~/components/features/ToolbarTopCenter";
 
 export const Main = withProtectionRoute(() => {
   // This is a hook that will log the number of times the component has rerendered
@@ -24,10 +25,18 @@ export const Main = withProtectionRoute(() => {
         sceneToken={sceneToken}
         className="col-span-12 col-start-1 row-span-12 row-start-1"
       />
-      <div className="absolute top-0 flex w-full justify-between px-2">
-        <ToolbarTopLeft />
-        <ToolbarTopRight />
-        {/* <ToolbarUserProfile /> */}
+      <div className="absolute top-0 w-full p-3.5">
+        <div className="relative flex w-full">
+          <div className="absolute left-0">
+            <ToolbarTopLeft />
+          </div>
+          <div className="flex w-full justify-center">
+            <ToolbarTopCenter />
+          </div>
+          <div className="absolute right-0">
+            <ToolbarTopRight />
+          </div>
+        </div>
       </div>
     </div>
   );

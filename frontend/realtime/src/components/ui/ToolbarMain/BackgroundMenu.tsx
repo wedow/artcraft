@@ -11,7 +11,12 @@ import { twMerge } from "tailwind-merge";
 
 import { useSignals } from "@preact/signals-react/runtime";
 import { paperWrapperStyles } from "~/components/styles";
-import { BRUSH_MAX_SIZE, BRUSH_MIN_SIZE, paintBrushSize, setPaintBrushSize } from "~/signals/uiEvents/toolbarMain/paintMode";
+import {
+  BRUSH_MAX_SIZE,
+  BRUSH_MIN_SIZE,
+  paintBrushSize,
+  setPaintBrushSize,
+} from "~/signals/uiEvents/toolbarMain/paintMode";
 import { Button } from "../Button";
 import { Input } from "../Input";
 import { Slider } from "../Slider";
@@ -92,7 +97,7 @@ export const BackgroundMenu = ({
         <>
           <PopoverButton
             className={twMerge(
-              "flex size-10 items-center gap-1 rounded-lg bg-ui-controls p-2",
+              "flex size-10 items-center gap-1 rounded-lg bg-ui-controls p-2 transition-all duration-100",
               borderStyle,
               showBar ? "flex-col" : "justify-center",
             )}

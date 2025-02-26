@@ -19,6 +19,7 @@ import { Fragment, MouseEventHandler } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { ToolbarButton } from "../ToolbarButton";
+import { Tooltip } from "~/components/ui/Tooltip";
 
 // style and constants
 import { paperWrapperStyles, toolTipStyles } from "~/components/styles";
@@ -52,7 +53,7 @@ export const ToolbarMain = ({
           paperWrapperStyles,
           "glass",
           disabled &&
-          "pointer-events-none cursor-default bg-ui-border shadow-md",
+            "pointer-events-none cursor-default bg-ui-border shadow-md",
         )}
       >
         <div className="flex flex-col items-center gap-2">
@@ -160,7 +161,7 @@ export const ToolbarMain = ({
 
         <div className="flex flex-col items-center gap-2">
           <div className="flex flex-col items-center gap-2">
-            { /* Conditionally show paint menu on mode selection */}
+            {/* Conditionally show paint menu on mode selection */}
             {buttonProps.PAINT.active ? (
               <div className="relative">
                 <PaintModeMenu
@@ -178,7 +179,12 @@ export const ToolbarMain = ({
                 />
                 <div
                   className="pointer-events-none absolute -bottom-1.5 -right-1.5 h-[18px] w-[18px] rounded-full border border-gray-400"
-                  style={{ backgroundColor: paintColor.value }}
+                  style={{
+                    background: `
+                      linear-gradient(${paintColor.value}, ${paintColor.value}),
+                      conic-gradient(rgb(204, 204, 204) 25%, rgb(255, 255, 255) 0deg, rgb(255, 255, 255) 50%, rgb(204, 204, 204) 0deg, rgb(204, 204, 204) 75%, rgb(255, 255, 255) 0deg) 0% 0% / 8px 8px
+                    `,
+                  }}
                 />
               </div>
             ) : (
@@ -189,7 +195,7 @@ export const ToolbarMain = ({
               />
             )}
 
-            { /* Conditionally show eraser menu on mode selection */}
+            {/* Conditionally show eraser menu on mode selection */}
             {buttonProps.ERASER.active ? (
               <EraseModeMenu
                 faIcon={faEraser}
@@ -199,14 +205,13 @@ export const ToolbarMain = ({
                 anchorGap={12}
                 closeOnMouseLeave={true}
               />
-            )
-              : (
-                <ToolbarButton
-                  icon={faEraser}
-                  buttonProps={buttonProps.ERASER}
-                  tooltip="Eraser"
-                />
-              )}
+            ) : (
+              <ToolbarButton
+                icon={faEraser}
+                buttonProps={buttonProps.ERASER}
+                tooltip="Eraser"
+              />
+            )}
           </div>
         </div>
 
@@ -232,26 +237,29 @@ export const ToolbarMain = ({
 
         <hr className="w-full border-t border-white/15" />
 
-
         <div className="flex flex-col items-center gap-2">
           <div className="relative">
-            <BackgroundMenu
-              color={bgColor.value}
-              onChange={dispatchUiEvents.toolbarMain.setBgColor}
-              faIcon={faImage}
-              borderStyle="bg-transparent hover:bg-white/15 text-white"
-              showBar={false}
-              staticIconColor="white"
-              streamChanges
-              defaultOpen={false}
-              anchor="right"
-              anchorGap={12}
-              closeOnMouseLeave={true}
-            />
-            <div
-              className="pointer-events-none absolute -bottom-1.5 -right-1.5 h-[18px] w-[18px] rounded-full border border-gray-400"
-              style={{ backgroundColor: bgColor.value }}
-            />
+            <Tooltip tip="Background Color" position="right">
+              <div>
+                <BackgroundMenu
+                  color={bgColor.value}
+                  onChange={dispatchUiEvents.toolbarMain.setBgColor}
+                  faIcon={faImage}
+                  borderStyle="bg-transparent hover:bg-white/15 text-white"
+                  showBar={false}
+                  staticIconColor="white"
+                  streamChanges
+                  defaultOpen={false}
+                  anchor="right"
+                  anchorGap={12}
+                  closeOnMouseLeave={true}
+                />
+                <div
+                  className="pointer-events-none absolute -bottom-1.5 -right-1.5 h-[18px] w-[18px] rounded-full border border-gray-400"
+                  style={{ backgroundColor: bgColor.value }}
+                />
+              </div>
+            </Tooltip>
           </div>
         </div>
       </div>

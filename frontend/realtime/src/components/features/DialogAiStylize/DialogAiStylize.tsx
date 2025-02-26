@@ -1,14 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { twMerge } from "tailwind-merge";
-import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { DialogTitle } from "@headlessui/react";
 import { faWandSparkles } from "@fortawesome/pro-solid-svg-icons";
 
 import { Button } from "~/components/ui";
-import {
-  dialogBackgroundStyles,
-  paperWrapperStyles,
-  dialogPanelStyles,
-} from "~/components/styles";
+import { BaseDialog } from "~/components/ui/BaseDialog";
 
 import { ArtStyleNames, SubPanelNames } from "./enums";
 import {
@@ -104,52 +99,46 @@ export const DialogAiStylize = ({
   }, [isOpen]);
 
   return (
-    <Dialog open={isOpen} onClose={closeCallback} className="relative z-50">
-      <div className={dialogBackgroundStyles}>
-        <DialogPanel
-          className={twMerge(
-            paperWrapperStyles,
-            dialogPanelStyles,
-            "min-h-[calc(100vh-300px)] max-w-7xl",
-          )}
+    <BaseDialog
+      isOpen={isOpen}
+      onClose={closeCallback}
+      className="min-h-[calc(100vh-300px)] max-w-7xl"
+    >
+      <DialogTitle className="text-3xl font-bold">
+        Use AI to Stylize
+      </DialogTitle>
+
+      {panelState === SubPanelNames.BASIC && (
+        <SubPanelBasic
+          selectedArtStyle={selectedArtStyle}
+          positivePrompt={positivePrompt}
+          negativePrompt={negativePrompt}
+          onSelectedArtStyle={onSelectedArtStyle}
+          onChangeNegativePrompt={onChangeNegativePrompt}
+          onChangePositivePrompt={onChangePositivePrompt}
+          onChangePanel={onChangePanel}
+        />
+      )}
+      {panelState === SubPanelNames.ADVANCED && (
+        <SubPanelAdvance
+          aiStylizeProps={aiStylizeProps}
+          onStylizeOptionsChanged={setStylizeOptions}
+          onChangePanel={onChangePanel}
+        />
+      )}
+      <div className="flex w-full justify-end gap-2">
+        <Button onClick={closeCallback} variant="secondary">
+          Cancel
+        </Button>
+
+        <Button
+          className="hover:animate-pulse"
+          icon={faWandSparkles}
+          onClick={handleGenerate}
         >
-          <DialogTitle className="text-3xl font-bold">
-            Use AI to Stylize
-          </DialogTitle>
-
-          {panelState === SubPanelNames.BASIC && (
-            <SubPanelBasic
-              selectedArtStyle={selectedArtStyle}
-              positivePrompt={positivePrompt}
-              negativePrompt={negativePrompt}
-              onSelectedArtStyle={onSelectedArtStyle}
-              onChangeNegativePrompt={onChangeNegativePrompt}
-              onChangePositivePrompt={onChangePositivePrompt}
-              onChangePanel={onChangePanel}
-            />
-          )}
-          {panelState === SubPanelNames.ADVANCED && (
-            <SubPanelAdvance
-              aiStylizeProps={aiStylizeProps}
-              onStylizeOptionsChanged={setStylizeOptions}
-              onChangePanel={onChangePanel}
-            />
-          )}
-          <div className="flex w-full justify-end gap-2">
-            <Button onClick={closeCallback} variant="secondary">
-              Cancel
-            </Button>
-
-            <Button
-              className="hover:animate-pulse"
-              icon={faWandSparkles}
-              onClick={handleGenerate}
-            >
-              Generate
-            </Button>
-          </div>
-        </DialogPanel>
+          Generate
+        </Button>
       </div>
-    </Dialog>
+    </BaseDialog>
   );
 };

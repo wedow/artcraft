@@ -1,14 +1,9 @@
 import { useState } from "react";
-import { twMerge } from "tailwind-merge";
-import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+
+import { DialogTitle } from "@headlessui/react";
 import { Button, TextEditor } from "~/components/ui";
 import { TextNodeData } from "~/KonvaApp/types";
-
-import {
-  dialogBackgroundStyles,
-  dialogPanelStyles,
-  paperWrapperStyles,
-} from "~/components/styles";
+import { BaseDialog } from "~/components/ui/BaseDialog";
 
 import {
   TextFormatData,
@@ -70,31 +65,26 @@ export const DialogEditText = ({
     closeCallback();
   };
   return (
-    <Dialog open={isOpen} onClose={closeCallback} className="relative z-50">
-      <div className={dialogBackgroundStyles}>
-        <DialogPanel className={twMerge(paperWrapperStyles, dialogPanelStyles)}>
-          <DialogTitle className="text-2xl font-bold">Edit Text</DialogTitle>
-          <TextEditor
-            text={text}
-            formatData={textFormatData}
-            onChangeText={handleOnChangeText}
-            onChangeFormatting={handleOnChangeFormatting}
-          />
-          <div className="flex w-full justify-end gap-2">
-            <Button onClick={closeCallback} variant="secondary">
-              Cancel
-            </Button>
-
-            <Button
-              className="hover:animate-pulse"
-              onClick={handleOnDoneEditText}
-              disabled={text === ""}
-            >
-              Enter
-            </Button>
-          </div>
-        </DialogPanel>
+    <BaseDialog isOpen={isOpen} onClose={closeCallback} className="w-fit">
+      <DialogTitle className="text-2xl font-bold">Edit Text</DialogTitle>
+      <TextEditor
+        text={text}
+        formatData={textFormatData}
+        onChangeText={handleOnChangeText}
+        onChangeFormatting={handleOnChangeFormatting}
+      />
+      <div className="flex w-full justify-end gap-2">
+        <Button onClick={closeCallback} variant="secondary">
+          Cancel
+        </Button>
+        <Button
+          className="hover:animate-pulse"
+          onClick={handleOnDoneEditText}
+          disabled={text === ""}
+        >
+          Enter
+        </Button>
       </div>
-    </Dialog>
+    </BaseDialog>
   );
 };

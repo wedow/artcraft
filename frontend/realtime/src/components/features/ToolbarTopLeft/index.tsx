@@ -6,11 +6,7 @@ import { twMerge } from "tailwind-merge";
 
 export const ToolbarTopLeft = () => {
   return (
-    <div
-      className={twMerge(
-        "z-20 mt-2 flex h-fit w-fit items-center gap-1 py-2.5 pl-4",
-      )}
-    >
+    <div className={twMerge("z-20 flex h-fit w-fit items-center gap-1")}>
       <img
         src="/brand/mira-logo.png"
         alt="logo"

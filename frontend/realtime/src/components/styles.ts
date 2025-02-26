@@ -5,9 +5,6 @@ export const paperWrapperStyles =
 
 export const transitionTimingStyles = "transition duration-150 ease-in-out";
 
-export const dialogBackgroundStyles =
-  "fixed inset-0 flex w-screen items-center justify-center bg-black/50";
-
 export const toolTipStyles = {
   base: twMerge(
     "relative",

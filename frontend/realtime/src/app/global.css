@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    @apply bg-ui-background font-sans text-white;
+    @apply select-none bg-ui-background font-sans text-white;
   }
   .pegboard {
     background-image: radial-gradient(#ffffff25 1px, transparent 0);
@@ -42,7 +42,7 @@
   }
 
   input {
-    @apply bg-ui-controls border-0 px-2 py-1 outline-none -outline-offset-2 focus:outline-primary-500 focus:ring-0;
+    @apply border-0 bg-ui-controls px-2 py-1 outline-none -outline-offset-2 focus:outline-primary-500 focus:ring-0;
   }
 
   textarea {
