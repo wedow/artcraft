@@ -624,7 +624,7 @@ dependencies = [
  "bytes 1.10.0",
  "candle-core 0.8.3",
  "candle-nn 0.8.3",
- "candle-transformers",
+ "candle-transformers 0.8.2",
  "cudarc",
  "filesys",
  "hf-hub 0.3.2",
@@ -1730,6 +1730,26 @@ dependencies = [
  "intel-mkl-src",
  "pyo3",
  "pyo3-build-config",
+]
+
+[[package]]
+name = "candle-transformers"
+version = "0.0.0"
+dependencies = [
+ "accelerate-src",
+ "byteorder",
+ "candle-core 0.0.0",
+ "candle-flash-attn",
+ "candle-nn 0.0.0",
+ "fancy-regex",
+ "intel-mkl-src",
+ "num-traits",
+ "rand 0.8.5",
+ "rayon",
+ "serde",
+ "serde_json",
+ "serde_plain",
+ "tracing",
 ]
 
 [[package]]

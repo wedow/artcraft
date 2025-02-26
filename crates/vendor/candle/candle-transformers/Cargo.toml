@@ -1,29 +1,22 @@
 [package]
 name = "candle-transformers"
-version.workspace = true
-edition.workspace = true
-description.workspace = true
-repository.workspace = true
-keywords.workspace = true
-categories.workspace = true
-license.workspace = true
-readme = "README.md"
+edition = "2021"
 
 [dependencies]
-accelerate-src = { workspace = true, optional = true }
-byteorder = { workspace = true }
-candle = { workspace = true }
-candle-flash-attn = { workspace = true, optional = true }
-candle-nn = { workspace = true }
-fancy-regex = { workspace = true }
-intel-mkl-src = { workspace = true, optional = true }
-num-traits = { workspace = true }
-rand = { workspace = true }
-rayon = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-serde_plain = { workspace = true }
-tracing = { workspace = true }
+accelerate-src = { version = "0.3.2", optional = true }
+byteorder = "1.4.3"
+candle = { path = "../candle-core", package = "candle-core" }
+candle-flash-attn = { path = "../candle-flash-attn", optional = true }
+candle-nn = { path = "../candle-nn", package = "candle-nn" }
+fancy-regex = "0.13.0"
+intel-mkl-src = { version = "0.8.1", features = ["mkl-static-lp64-iomp"], optional = true }
+num-traits = "0.2.15"
+rand = "0.8.5"
+rayon = "1.7.0"
+serde = { version = "1.0.171", features = ["derive"] }
+serde_json = "1.0.99"
+serde_plain = "1.0.2"
+tracing = "0.1.37"
 
 [features]
 default = []
