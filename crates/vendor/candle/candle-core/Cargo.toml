@@ -5,8 +5,8 @@ edition = "2021"
 [dependencies]
 accelerate-src = { version = "0.3.2" , optional = true }
 byteorder = "1.4.3"
-candle-kernels = { package = "candle-kernels", version = "0.8.3", optional = true }
-candle-metal-kernels = { package = "candle-metal-kernels", version = "0.8.3" , optional = true }
+candle-kernels = { path = "../candle-kernels", version = "0.8.3", optional = true }
+candle-metal-kernels = { path = "../candle-metal-kernels", version = "0.8.3" , optional = true }
 metal = { version = "0.27.0", features = ["mps"], optional = true }
 cudarc = { version = "0.13.5", features = ["std", "cublas", "cublaslt", "curand", "driver", "nvrtc", "f16", "cuda-version-from-build-system", "dynamic-linking"], default-features=false, optional = true }
 gemm = { version = "0.17.0", features = ["wasm-simd128-enable"] }

@@ -99,6 +99,7 @@ members = [
   "crates/vendor/limitation",
   #"crates/vendor/candle/candle-flash-attn",
   "crates/vendor/candle/candle-kernels",
+  "crates/vendor/candle/candle-metal-kernels",
   "crates/vendor/candle/candle-nn",
   "crates/vendor/candle/candle-core",
   "crates/vendor/candle/candle-onnx",
