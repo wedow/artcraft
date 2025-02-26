@@ -15,4 +15,5 @@ export enum ToolbarMainButtonNames {
   SAVE = "SAVE",
   PREVIEW = "PREVIEW",
   DOWNLOAD = "DOWNLOAD",
+  BACKGROUND = "BACKGROUND",
 }

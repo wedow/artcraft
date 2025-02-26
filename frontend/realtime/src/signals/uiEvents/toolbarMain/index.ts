@@ -5,16 +5,19 @@ import {
 } from "./loadingBar";
 import { onEraseBrushSizeChanged, setEraseBrushSize } from "./eraseMode";
 import { onPaintColorChanged, setPaintBrushSize, setPaintColor } from "./paintMode";
+import { onBgColorChanged, setBgColor } from "./backgroundMenu";
 export const dispatchers = {
   ...buttonDispatchers,
   loadingBarRetry: loadingBarRetryDispatch,
   setPaintColor,
   setPaintBrushSize,
-  setEraseBrushSize
+  setEraseBrushSize,
+  setBgColor
 };
 export const eventsHandlers = {
   ...buttonEventsHandlers,
   loadingBarRetry: loadingBarRetryEventHandler,
   onPaintColorChanged,
-  onEraseBrushSizeChanged
+  onEraseBrushSizeChanged,
+  onBgColorChanged
 };

@@ -5,6 +5,7 @@ import {
   faEraser,
   faFilePlus,
   faImage,
+  faImages,
   faLocationArrow,
   faPaintbrush,
   faShapes,
@@ -27,6 +28,8 @@ import { paintColor } from "~/signals/uiEvents/toolbarMain/paintMode";
 import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
 import { PaintModeMenu } from "~/components/ui/ToolbarMain/PaintModeMenu";
 import { EraseModeMenu } from "~/components/ui/ToolbarMain/EraseModeMenu";
+import { BackgroundMenu } from "~/components/ui/ToolbarMain/BackgroundMenu";
+import { bgColor } from "~/signals/uiEvents/toolbarMain/backgroundMenu";
 
 export const ToolbarMain = ({
   disabled = false,
@@ -225,6 +228,31 @@ export const ToolbarMain = ({
             buttonProps={buttonProps.SAVE}
             tooltip="Save"
           /> */}
+        </div>
+
+        <hr className="w-full border-t border-white/15" />
+
+
+        <div className="flex flex-col items-center gap-2">
+          <div className="relative">
+            <BackgroundMenu
+              color={bgColor.value}
+              onChange={dispatchUiEvents.toolbarMain.setBgColor}
+              faIcon={faImage}
+              borderStyle="bg-transparent hover:bg-white/15 text-white"
+              showBar={false}
+              staticIconColor="white"
+              streamChanges
+              defaultOpen={false}
+              anchor="right"
+              anchorGap={12}
+              closeOnMouseLeave={true}
+            />
+            <div
+              className="pointer-events-none absolute -bottom-1.5 -right-1.5 h-[18px] w-[18px] rounded-full border border-gray-400"
+              style={{ backgroundColor: bgColor.value }}
+            />
+          </div>
         </div>
       </div>
     </>
