@@ -114,10 +114,12 @@ async def load_model(model_path: str, lora_path: str = None) -> StableDiffusionX
         # Load LCM-LoRA weights if provided
         if lora_path:
             pipe.load_lora_weights(
-                lora_path,
+                "F:/ComfyUI_windows_portable_nvidia/ComfyUI_windows_portable/ComfyUI/models/loras/LCM_LoRA_Weights_SDXL.safetensors",
                 adapter_name="lcm"
             )
-            pipe.set_adapters(["lcm"], adapter_weights=[1.0])
+            pipe.load_lora_weights(lora_path, adapter_name="lora")
+            pipe.set_adapters(["lcm", "lora"], adapter_weights=[1.0, 0.8])
+            #pipe.set_adapters(["lcm"], adapter_weights=[1.0])
         #pipe.unet = torch.compile(pipe.unet, mode="reduce-overhead", fullgraph=True)
         return pipe
     except Exception as e:

@@ -229,10 +229,8 @@ export class RealTimeDrawEngine {
 
       // Load initial model
       await this.loadModel({
-        model_path:
-          "C:/Users/Tensor/Downloads/animagineXL40_v4Opt.safetensors",
-        lora_path:
-          "F:/ComfyUI_windows_portable_nvidia/ComfyUI_windows_portable/ComfyUI/models/loras/LCM_LoRA_Weights_SDXL.safetensors",
+        model_path: "C:/Users/Tensor/Downloads/animagineXL40_v4Opt.safetensors",
+        lora_path: "C:/Users/Tensor/Downloads/anyu_all.safetensors",
       });
     } catch (error) {
       console.error("Failed to start server:", error);
@@ -441,7 +439,7 @@ export class RealTimeDrawEngine {
             y: this.captureCanvas.y(),
           });
           e.target.off("dragend");
-          previewCopy.setZIndex(1); // send back after drop.
+          previewCopy.moveToTop();
         } else {
           // Start Generation Here
           previewCopy.destroy();
@@ -631,7 +629,7 @@ export class RealTimeDrawEngine {
   public isProcessing = false;
   private handleNodeDragEnd = async () => {
     // Clean up any existing state
-  
+
     await this.render();
   };
 
@@ -858,7 +856,8 @@ export class RealTimeDrawEngine {
 
     // Test code
     if (true) {
-      this.outputBitmap = bitmap;
+      //this.outputBitmap = bitmap;
+      //this.previewCanvas.image(bitmap);
       const base64Bitmap = await this.imageBitmapToBase64(bitmap);
       console.log(this.currentStrength);
       await this.client?.generateImage({
@@ -866,11 +865,8 @@ export class RealTimeDrawEngine {
         prompt: this.currentPrompt,
         strength: this.currentStrength,
         guidance_scale: 2.0,
-        num_inference_steps: 4
+        num_inference_steps: 4,
       });
-
-      this.previewCanvas.image(bitmap);
-     
       return;
     }
 
