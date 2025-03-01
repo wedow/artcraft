@@ -1,7 +1,10 @@
 import { effect, signal } from "@preact/signals-react";
+import { models } from "~/data/models";
 
 // Define the signals for selected models and download states
-export const selectedModel = signal<string | null>(null);
+export const selectedModel = signal<string | null>(
+  models.length > 0 ? models[0].id : null,
+);
 export const selectedLora = signal<string | null>(null);
 
 // Replace single download tracking with a map to track multiple downloads

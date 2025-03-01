@@ -3,6 +3,7 @@ import { useSignalEffect } from "@preact/signals-react";
 import { ModelCard } from "./ModelCard";
 import { models } from "~/data/models";
 import { selectedModel, dispatchers } from "~/signals/uiEvents/modelSelection";
+import { useEffect } from "react";
 
 interface ModelSelectionDialogProps {
   onClose: () => void;
@@ -15,6 +16,13 @@ export const ModelSelectionDialog = ({
   useSignalEffect(() => {
     selectedModel.value;
   });
+
+  // Ensure a model is selected when the dialog opens
+  useEffect(() => {
+    if (selectedModel.value === null && models.length > 0) {
+      dispatchers.setSelectedModel(models[0].id);
+    }
+  }, []);
 
   const handleSelectModel = (modelId: string) => {
     dispatchers.setSelectedModel(modelId);
