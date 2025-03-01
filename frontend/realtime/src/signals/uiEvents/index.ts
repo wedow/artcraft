@@ -28,6 +28,14 @@ import {
   dispatchers as promptDispatchers,
   events as promptEvents,
 } from "./promptSettings";
+import {
+  dispatchers as loadingIndicatorDispatchers,
+  events as loadingIndicatorEvents,
+} from "./loadingIndicator";
+import {
+  dispatchers as modelSelectionDispatchers,
+  events as modelSelectionEvents,
+} from "./modelSelection";
 
 export const uiEvents = {
   ...addMediaEvents,
@@ -39,6 +47,8 @@ export const uiEvents = {
   toolbarNode: toolbarNodeEvents,
   toolbarVideoExtraction: toolbarVideoExtractionEvents,
   promptEvents: promptEvents,
+  loadingIndicator: loadingIndicatorEvents,
+  modelSelection: modelSelectionEvents,
 };
 export const dispatchUiEvents = {
   ...addMediaDispatchers,
@@ -50,4 +60,6 @@ export const dispatchUiEvents = {
   toolbarNode: toolbarNodeDispatchers,
   toolbarVideoExtraction: toolbarVideoExtractionDispatchers,
   promptSettings: promptDispatchers,
+  loadingIndicator: loadingIndicatorDispatchers,
+  modelSelection: modelSelectionDispatchers,
 };
