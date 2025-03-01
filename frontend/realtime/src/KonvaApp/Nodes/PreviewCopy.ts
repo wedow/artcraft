@@ -30,7 +30,7 @@ export class PreviewCopyNode extends NetworkedNode {
       mediaLayerRef: mediaLayerRef,
       kNode: image,
     });
-
+    this.kNode.moveToTop();
     this.mediaLayerRef.add(this.kNode);
     this.listenToBaseKNode();
     this.mediaLayerRef.draw();

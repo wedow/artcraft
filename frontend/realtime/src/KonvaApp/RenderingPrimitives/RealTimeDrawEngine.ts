@@ -16,6 +16,7 @@ import { Image } from "@tauri-apps/api/image";
 import { PaintNode } from "../Nodes/PaintNode";
 
 import { WebSocketClient } from "../../PyServer/DrawServer";
+import { PreviewCopyNode } from "../Nodes/PreviewCopy";
 
 // https://www.aiseesoft.com/resource/phone-aspect-ratio-screen-resolution.html#:~:text=16%3A9%20Aspect%20Ratio
 
@@ -374,6 +375,7 @@ export class RealTimeDrawEngine {
 
   public enablePaintMode() {
     this.isEnabled = true;
+    this.disableDragging();
     if (!this.cleanupFunction) {
       this.paintMode();
     }
@@ -382,9 +384,12 @@ export class RealTimeDrawEngine {
   public enableDragging() {
     // Enable dragging for all nodes in media layer
     this.imageNodes?.forEach((node) => {
+      console.log("Image Nodes Enable");
+      console.log(node);
       node.kNode.draggable(true);
       node.kNode.listening(true);
     });
+
     this.mediaLayerRef.batchDraw();
   }
 
@@ -399,9 +404,9 @@ export class RealTimeDrawEngine {
 
   public disablePaintMode() {
     this.isEnabled = false;
+    this.enableDragging();
     if (this.cleanupFunction) {
       this.cleanupFunction();
-      this.cleanupFunction = null;
     }
   }
 
@@ -438,8 +443,8 @@ export class RealTimeDrawEngine {
             x: this.captureCanvas.x(),
             y: this.captureCanvas.y(),
           });
+
           e.target.off("dragend");
-          previewCopy.moveToTop();
         } else {
           // Start Generation Here
           previewCopy.destroy();
@@ -638,13 +643,12 @@ export class RealTimeDrawEngine {
       node instanceof ImageNode ||
       node instanceof TextNode ||
       node instanceof ShapeNode ||
-      node instanceof PaintNode
+      node instanceof PaintNode ||
+      node instanceof PreviewCopyNode
     ) {
       console.debug("Adding node:", node);
       this.imageNodes.push(node);
       console.log(this.imageNodes);
-
-      //node.kNode.on("dragend", this.handleNodeDragEnd);
     }
 
     // ensure the layer doesn't move if added while painting.
@@ -666,7 +670,7 @@ export class RealTimeDrawEngine {
       node instanceof ImageNode ||
       node instanceof TextNode ||
       node instanceof ShapeNode ||
-      node instanceof PaintNode
+      node instanceof PreviewCopyNode
     ) {
       const index = this.imageNodes.indexOf(node);
       if (index > -1) {

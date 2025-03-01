@@ -196,7 +196,6 @@ export class Engine {
         this.selectorSquare.disable(); // this breaks the paint if you use it in the wrong spot
         this.selectionManager.disable(); // this prevents selection.
         this.realTimeDrawEngine.enablePaintMode();
-        this.realTimeDrawEngine.disableDragging();
 
         uiAccess.toolbarMain.enable();
         uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.SELECT, {
@@ -208,7 +207,6 @@ export class Engine {
       case AppModes.SELECT: {
         console.log("APPMODE: SELECT");
         this.realTimeDrawEngine.disablePaintMode();
-        this.realTimeDrawEngine.enableDragging();
 
         this.selectorSquare.enable();
         this.selectionManager.enable();
