@@ -138,6 +138,7 @@ export class RealTimeDrawEngine {
     this.drawingsLayer = new Konva.Layer({
       clearBeforeDraw: true, // Ensures transparent background
     });
+ 
     this.mediaLayerRef.getStage()?.add(this.drawingsLayer); // to od pass in stage
 
     // Set background layer to red and media layer to green for visibility
@@ -270,7 +271,7 @@ export class RealTimeDrawEngine {
         y: this.captureCanvas.y(),
         draggable: false,
       });
-
+      this.drawingsLayer.moveToTop();
       this.drawingsLayer.add(currentLine); // Add to drawingsLayer
       isDrawing = true;
     };
@@ -407,6 +408,7 @@ export class RealTimeDrawEngine {
     this.enableDragging();
     if (this.cleanupFunction) {
       this.cleanupFunction();
+      this.cleanupFunction = null;
     }
   }
 

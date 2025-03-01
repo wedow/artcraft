@@ -466,12 +466,12 @@ export class Engine {
 
     uiEvents.promptEvents.onPromptStrengthChanged(async (strength) => {
       this.realTimeDrawEngine.currentStrength = strength / 100.0;
-      this.realTimeDrawEngine.render();
+      // this.realTimeDrawEngine.render();
     });
 
     uiEvents.promptEvents.onPromptTextChanged(async (prompt) => {
       this.realTimeDrawEngine.currentPrompt = prompt;
-      this.realTimeDrawEngine.render();
+      // this.realTimeDrawEngine.render();
     });
 
     uiEvents.onAddShapeToEngine((shapeData) => {
@@ -681,7 +681,7 @@ export class Engine {
         await this.realTimeDrawEngine.render();
       },
     });
-    imageNode.kNode.zIndex(1);
+
     this.commandManager.createNode(imageNode);
   }
   public addPaintNode(
