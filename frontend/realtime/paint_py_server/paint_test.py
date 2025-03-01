@@ -103,6 +103,7 @@ async def load_model(model_path: str, lora_path: str = None) -> StableDiffusionX
             model_path,
             torch_dtype=torch.float16,
             use_safetensors=True,
+            height=1024, width=1024,
         ).to("cuda")
         
         # Convert to img2img pipeline

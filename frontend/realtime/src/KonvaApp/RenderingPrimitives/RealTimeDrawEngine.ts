@@ -657,7 +657,8 @@ export class RealTimeDrawEngine {
     if (this.isEnabled) {
       this.disableDragging();
     }
-
+    // ensure this goes to the top.
+    this.previewCanvas.moveToTop();
     await this.render();
   }
 
