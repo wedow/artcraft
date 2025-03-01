@@ -93,8 +93,7 @@ def test():
 async def start_server():
     async with websockets.serve(
         "localhost", 
-        8765, 
-        max_message_size=10*1024*1024  # Increase to 10MB
+        8765 # Increase to 10MB
     ):
         await asyncio.Future()  # run forever
 

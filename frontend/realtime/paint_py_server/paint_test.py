@@ -118,7 +118,7 @@ async def load_model(model_path: str, lora_path: str = None) -> StableDiffusionX
                 adapter_name="lcm"
             )
             pipe.set_adapters(["lcm"], adapter_weights=[1.0])
-        
+        #pipe.unet = torch.compile(pipe.unet, mode="reduce-overhead", fullgraph=True)
         return pipe
     except Exception as e:
         raise Exception(f"Error loading model: {str(e)}")
@@ -130,15 +130,8 @@ async def generate_image(
 ) -> str:
     """Generate image and return base64 string."""
     try:
-        # Decode base64 image
-        # image_bytes = base64.b64decode(request.image.split(',')[1] if ',' in request.image else request.image)
-        # init_image = Image.open(BytesIO(image_bytes))
-        
-        #url = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/7462a0ac-637d-467b-baa9-34c5f54696b4/original=true,quality=90/60277788.jpeg"
-        # init_image = load_image(image=request.image)
-        # # Decode the base64 string into raw image data
+
         image_stream = io.BytesIO(base64.b64decode(request.image))
-        # Wrap the decoded bytes in a BytesIO object and open it with PIL
 
         init_image = Image.open(image_stream).convert('RGB')
         init_image = transform(init_image)  # Now it's a torch tensor
@@ -206,7 +199,7 @@ async def handle_client(websocket):
 
 async def server():
     """Start WebSocket server."""
-    async with websockets.serve(handle_client, "localhost", 8765, max_message_size=10*1024*1024):
+    async with websockets.serve(handle_client, "localhost", 8765,max_size=None):
         print("Server started on ws://localhost:8765")
         await asyncio.Future()  # run forever
 
