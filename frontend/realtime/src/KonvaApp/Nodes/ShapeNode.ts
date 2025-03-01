@@ -117,7 +117,7 @@ export class ShapeNode extends NetworkedNode {
 
         squareImageObj.onload = () => {
           this.mediaLayerRef.draw();
-          loaded()
+          loaded();
         };
 
         // Clean up the temporary square
@@ -153,7 +153,7 @@ export class ShapeNode extends NetworkedNode {
 
         triangleImageObj.onload = () => {
           this.mediaLayerRef.draw();
-          loaded()
+          loaded();
         };
 
         // Clean up the temporary triangle
@@ -180,6 +180,8 @@ export class ShapeNode extends NetworkedNode {
       componentSize: canvasSize,
       maxSize: canvasSize,
     });
+    // bring to the front
+    this.kNode.moveToTop();
     this.kNode.setPosition(centerPosition);
     this.mediaLayerRef.add(this.kNode);
     this.listenToBaseKNode();

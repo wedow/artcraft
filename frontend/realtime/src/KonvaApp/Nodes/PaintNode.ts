@@ -6,16 +6,16 @@ import { NodeType } from "./constants";
 import { NetworkedNode } from "./NetworkedNode";
 
 interface PaintNodeConstructor {
-  canvasElement:HTMLCanvasElement;
+  canvasElement: HTMLCanvasElement;
   lineBounds: {
     width: number;
     height: number;
     x: number;
     y: number;
-    };
+  };
   mediaLayerRef: Konva.Layer;
   selectionManagerRef: SelectionManager;
-  
+
   loaded: () => Promise<void>;
 }
 
@@ -31,8 +31,7 @@ export class PaintNode extends NetworkedNode {
     selectionManagerRef,
     loaded,
   }: PaintNodeConstructor) {
-
-    const cl = canvasElement
+    const cl = canvasElement;
 
     // Convert circle to image
     const dataURL = cl.toDataURL();
@@ -40,31 +39,31 @@ export class PaintNode extends NetworkedNode {
     imageObj.src = dataURL;
 
     const paintShape = new Konva.Image({
-        x: lineBounds.x,
-        y: lineBounds.y,
-        width: lineBounds.width,
-        height: lineBounds.height,
-        image: imageObj,
-        listening: false, // Disable event listening to allow captureCanvas to receive events
-        draggable: true,
-        // stroke: '#000000',
-        // strokeWidth: 2,
-        // dash: [5, 5], // Creates dotted outline THIS IS FOR DEBUG
-        globalCompositeOperation: 'source-over',
-        fill: 'transparent' 
-      });
+      x: lineBounds.x,
+      y: lineBounds.y,
+      width: lineBounds.width,
+      height: lineBounds.height,
+      image: imageObj,
+      listening: false, // Disable event listening to allow captureCanvas to receive events
+      draggable: true,
+      // stroke: '#000000',
+      // strokeWidth: 2,
+      // dash: [5, 5], // Creates dotted outline THIS IS FOR DEBUG
+      globalCompositeOperation: "source-over",
+      fill: "transparent",
+    });
 
     imageObj.onload = () => {
-        this.mediaLayerRef.draw();
-        loaded();
+      this.mediaLayerRef.draw();
+      loaded();
     };
-  
+
     super({
       selectionManagerRef: selectionManagerRef,
       mediaLayerRef: mediaLayerRef,
       kNode: paintShape,
     });
-
+    this.kNode.moveToTop();
     this.mediaLayerRef.add(this.kNode);
     this.listenToBaseKNode();
     this.mediaLayerRef.draw();

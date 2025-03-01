@@ -464,12 +464,14 @@ export class Engine {
       }
     });
 
-    uiEvents.promptEvents.onPromptStrengthChanged((strength) => {
+    uiEvents.promptEvents.onPromptStrengthChanged(async (strength) => {
       this.realTimeDrawEngine.currentStrength = strength / 100.0;
+      this.realTimeDrawEngine.render();
     });
 
-    uiEvents.promptEvents.onPromptTextChanged((prompt) => {
+    uiEvents.promptEvents.onPromptTextChanged(async (prompt) => {
       this.realTimeDrawEngine.currentPrompt = prompt;
+      this.realTimeDrawEngine.render();
     });
 
     uiEvents.onAddShapeToEngine((shapeData) => {
@@ -650,7 +652,6 @@ export class Engine {
         await this.realTimeDrawEngine.render();
       },
     });
-    shapeNode.kNode.zIndex(1); // Replace desiredZIndex with a number
 
     this.commandManager.createNode(shapeNode);
 

@@ -670,6 +670,7 @@ export class RealTimeDrawEngine {
       node instanceof ImageNode ||
       node instanceof TextNode ||
       node instanceof ShapeNode ||
+      node instanceof PaintNode ||
       node instanceof PreviewCopyNode
     ) {
       const index = this.imageNodes.indexOf(node);

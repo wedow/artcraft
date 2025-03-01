@@ -106,7 +106,7 @@ export class ImageNode extends NetworkedNode {
       this.kNode.image(imageComponent);
       this.kNode.setSize(adjustedSize);
       this.kNode.setPosition(centerPosition);
-
+      this.kNode.moveToTop();
       this.kNode.fill(transparent);
       this.listenToBaseKNode();
       this.mediaLayerRef.draw();
