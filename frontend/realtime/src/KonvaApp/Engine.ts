@@ -467,7 +467,7 @@ export class Engine {
     });
 
     uiEvents.promptEvents.onPromptStrengthChanged((strength) => {
-      this.realTimeDrawEngine.currentStrength = strength;
+      this.realTimeDrawEngine.currentStrength = strength / 100.0;
     });
 
     uiEvents.promptEvents.onPromptTextChanged((prompt) => {

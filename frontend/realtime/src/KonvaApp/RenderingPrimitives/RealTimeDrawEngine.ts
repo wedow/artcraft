@@ -146,7 +146,7 @@ export class RealTimeDrawEngine {
     this.fps = 24;
 
     this.currentPrompt = "";
-    this.currentStrength = 100;
+    this.currentStrength = 1;
     // This is captures a subset of the medialayer ref
     this.captureCanvas = new Konva.Rect({
       name: "CaptureCanvas",
@@ -202,13 +202,18 @@ export class RealTimeDrawEngine {
         }
       });
 
-      this.client.onResult((response) => {
-        // Convert the base64 image to ImageBitmap and update the preview
-        this.base64ToImageBitmap(response.image).then((bitmap) => {
+      this.client.onResult(async (response) => {
+        try {
+          // Convert the base64 image to ImageBitmap and update the preview
+          const bitmap = await this.base64ToImageBitmap(response.image);
           this.outputBitmap = bitmap;
           this.previewCanvas.image(bitmap);
           this.mediaLayerRef.batchDraw();
-        });
+        } catch (error) {
+          console.error("Error processing result image:", error);
+        } finally {
+          this.isProcessing = false;
+        }
       });
 
       // Wait for connection to be established
@@ -225,7 +230,7 @@ export class RealTimeDrawEngine {
       // Load initial model
       await this.loadModel({
         model_path:
-          "F:/ComfyUI_windows_portable_nvidia/ComfyUI_windows_portable/ComfyUI/models/checkpoints/ponyDiffusionV6XL_v6StartWithThisOne.safetensors",
+          "C:/Users/Tensor/Downloads/animagineXL40_v4Opt.safetensors",
         lora_path:
           "F:/ComfyUI_windows_portable_nvidia/ComfyUI_windows_portable/ComfyUI/models/loras/LCM_LoRA_Weights_SDXL.safetensors",
       });
@@ -626,12 +631,7 @@ export class RealTimeDrawEngine {
   public isProcessing = false;
   private handleNodeDragEnd = async () => {
     // Clean up any existing state
-    if (this.isProcessing) {
-      console.log("isProcessing Returning");
-      return;
-    }
-    console.log("Node drag ended");
-    this.isProcessing = true;
+  
     await this.render();
   };
 
@@ -645,6 +645,7 @@ export class RealTimeDrawEngine {
       console.debug("Adding node:", node);
       this.imageNodes.push(node);
       console.log(this.imageNodes);
+
       //node.kNode.on("dragend", this.handleNodeDragEnd);
     }
 
@@ -828,6 +829,12 @@ export class RealTimeDrawEngine {
 
   public async render() {
     // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
+    if (this.isProcessing) {
+      console.log("isProcessing Returning");
+      return;
+    }
+    console.log("Calling Render");
+    this.isProcessing = true;
 
     this.mediaLayerRef.draw();
     // Output all nodes in mediaLayerRef
@@ -852,8 +859,18 @@ export class RealTimeDrawEngine {
     // Test code
     if (true) {
       this.outputBitmap = bitmap;
+      const base64Bitmap = await this.imageBitmapToBase64(bitmap);
+      console.log(this.currentStrength);
+      await this.client?.generateImage({
+        image: base64Bitmap,
+        prompt: this.currentPrompt,
+        strength: this.currentStrength,
+        guidance_scale: 2.0,
+        num_inference_steps: 4
+      });
+
       this.previewCanvas.image(bitmap);
-      this.isProcessing = false;
+     
       return;
     }
 

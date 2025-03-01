@@ -89,7 +89,14 @@ def test():
     grid = make_image_grid([init_image, output_image], rows=1, cols=2)
     grid_path = save_image(grid, "outputs/grid")
     print(f"Grid image saved to: {grid_path}")
-def server():
-    pass
+
+async def start_server():
+    async with websockets.serve(
+        "localhost", 
+        8765, 
+        max_message_size=10*1024*1024  # Increase to 10MB
+    ):
+        await asyncio.Future()  # run forever
+
 if __name__ == "__main__":
     test()

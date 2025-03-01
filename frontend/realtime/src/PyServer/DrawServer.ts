@@ -9,6 +9,7 @@ import {
 export class WebSocketClient {
   public ws: WebSocket;
   private messageHandlers: Map<string, (data: any) => void>;
+  private isConnected: boolean = false;
 
   constructor(url: string = "ws://localhost:8765") {
     this.ws = new WebSocket(url);
@@ -16,11 +17,14 @@ export class WebSocketClient {
 
     this.ws.onmessage = (event) => this.handleMessage(event);
     this.ws.onerror = (error) => console.error("WebSocket error:", error);
+    this.ws.onopen = () => this.isConnected = true;
+    this.ws.onclose = () => this.isConnected = false;
   }
 
   private handleMessage(event: MessageEvent) {
     const data = JSON.parse(event.data);
     const handler = this.messageHandlers.get(data.type);
+    console.log(data);
     if (handler) {
       handler(data);
     }
@@ -55,5 +59,9 @@ export class WebSocketClient {
       ...request,
     };
     this.ws.send(JSON.stringify(message));
+  }
+
+  public isServerConnected(): boolean {
+    return this.isConnected && this.ws.readyState === WebSocket.OPEN;
   }
 }

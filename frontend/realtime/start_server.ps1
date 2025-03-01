@@ -1,5 +1,2 @@
-# Activate virtual environment
-deactivate conda
-.\.venv\Scripts\activate.bat
-cd .\paint_py_server
-python server.py
+.\.venv\Scripts\Activate.ps1
+python paint_py_server\paint_test.py

@@ -9,7 +9,9 @@ from typing import Dict, Any, Optional, Tuple, Callable, List
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from enum import Enum, auto
-
+import base64
+from PIL import Image
+import io
 import torch
 from diffusers import AutoPipelineForImage2Image, LCMScheduler
 from diffusers.utils import make_image_grid, load_image
@@ -24,6 +26,12 @@ from diffusers import (
     LCMScheduler,
     UNet2DConditionModel,
 )
+import torch
+import torchvision.transforms as transforms
+
+transform = transforms.Compose([
+    transforms.ToTensor(),  # This converts PIL Image to tensor and scales to [0, 1]
+])
 
 @dataclass_json
 @dataclass
@@ -115,6 +123,7 @@ async def load_model(model_path: str, lora_path: str = None) -> StableDiffusionX
     except Exception as e:
         raise Exception(f"Error loading model: {str(e)}")
 
+#https://huggingface.co/blog/simple_sdxl_optimizations
 async def generate_image(
     pipe: StableDiffusionXLImg2ImgPipeline,
     request: GenerateRequest
@@ -122,9 +131,27 @@ async def generate_image(
     """Generate image and return base64 string."""
     try:
         # Decode base64 image
-        image_bytes = base64.b64decode(request.image.split(',')[1] if ',' in request.image else request.image)
-        init_image = Image.open(BytesIO(image_bytes))
+        # image_bytes = base64.b64decode(request.image.split(',')[1] if ',' in request.image else request.image)
+        # init_image = Image.open(BytesIO(image_bytes))
         
+        #url = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/7462a0ac-637d-467b-baa9-34c5f54696b4/original=true,quality=90/60277788.jpeg"
+        # init_image = load_image(image=request.image)
+        # # Decode the base64 string into raw image data
+        image_stream = io.BytesIO(base64.b64decode(request.image))
+        # Wrap the decoded bytes in a BytesIO object and open it with PIL
+
+        init_image = Image.open(image_stream).convert('RGB')
+        init_image = transform(init_image)  # Now it's a torch tensor
+
+        # If you need it on GPU
+        init_image = init_image.to('cuda')  # Shape will be [3, H, W]
+
+        # If you need to match SDXL's expected format (batch dimension)
+        init_image = init_image.unsqueeze(0)  # Shape will be [1, 3, H, W]
+        prompt = "safe_pos, 1girl, solo, solo focus, 8k, masterpiece, hires, absurdres, splash art, gradient, looking at viewer, medium breasts, vibrant yellow hair, purple hair tips, (shoulder freckles:1.2), nude, athletic, confident, hand on waist, extremely long hair, dancing, delicate gold jewelry, thin gold bangles, belly button chain, action shot,, head tilt, hair censor, spotlight, tottotonero"
+        if len(request.prompt) == 0:
+            request.prompt = prompt
+
         # Generate image
         output_image = pipe(
             request.prompt,
@@ -138,11 +165,12 @@ async def generate_image(
         # Convert to base64
         buffered = BytesIO()
         output_image.save(buffered, format="PNG")
+        buffered.seek(0) 
         img_str = base64.b64encode(buffered.getvalue()).decode()
         
         return f"data:image/png;base64,{img_str}"
     except Exception as e:
-        raise Exception(f"Error generating image: {str(e)}")
+        raise Exception(f"Error generating image: {str(e)} at line {e.__traceback__.tb_lineno}")
 
 async def handle_client(websocket):
     """Handle WebSocket client connection."""
@@ -151,14 +179,13 @@ async def handle_client(websocket):
         async for message in websocket:
             data = json.loads(message)
             command = data.get("command")
-            
+
             if command == "load_model":
                 await send_progress(websocket, "Loading model...", 0.0)
                 request = LoadModelRequest.from_json(message)
                 
                 pipe = await load_model(request.model_path, request.lora_path)
                 await send_progress(websocket, "Model loaded successfully", 1.0)
-            
             elif command == "generate":
                 if not pipe:
                     raise Exception("Model not loaded. Please load model first.")
@@ -179,7 +206,7 @@ async def handle_client(websocket):
 
 async def server():
     """Start WebSocket server."""
-    async with websockets.serve(handle_client, "localhost", 8765):
+    async with websockets.serve(handle_client, "localhost", 8765, max_message_size=10*1024*1024):
         print("Server started on ws://localhost:8765")
         await asyncio.Future()  # run forever
 
