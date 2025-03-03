@@ -5,6 +5,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
 import { posthog } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
+import { Toaster } from "~/components/ui/Toast";
 
 import "./global.css";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
@@ -31,11 +32,17 @@ const App = () => {
       <StrictMode>
         <PostHogProvider client={posthog}>
           <RouterProvider router={router} />
+          <Toaster />
         </PostHogProvider>
       </StrictMode>
     );
   }
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+    </>
+  );
 };
 
 createRoot(document.getElementById("root")!).render(<App />);
