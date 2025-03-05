@@ -9,12 +9,16 @@ use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
 use crate::ml::stable_diffusion::infer_clip_text_embeddings::infer_clip_text_embeddings;
 use crate::state::app_config::AppConfig;
 use anyhow::{anyhow, Error as E, Result};
+use hf_hub::api::sync::Api;
 use candle_core::{DType, IndexOp, Tensor, D};
 use candle_transformers::models::stable_diffusion::vae::{AutoEncoderKL, DiagonalGaussianDistribution};
 use image::DynamicImage;
 use log::info;
 use rand::Rng;
 use tauri::{AppHandle, Emitter};
+use candle_nn::VarBuilder;
+use candle_transformers::models::stable_diffusion::lcm::{LCMScheduler, LCMSchedulerConfig};
+use candle_transformers::models::stable_diffusion::unet_2d::{BlockConfig, UNet2DConditionModel, UNet2DConditionModelConfig};
 use crate::events::notification_event::{ModelType, NotificationEvent};
 use crate::ml::models::unet_model::UNetModel;
 
@@ -54,8 +58,11 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
     // TODO(bt,2025-02-18): The scheduler is `EulerAncestralDiscreteScheduler`, but we may want to port an LCM scheduler.
     //  This is a target for performance improvement
     //  See: https://github.com/huggingface/candle/issues/1331
-    let mut scheduler = configs.sd_config.build_scheduler(
-        configs.scheduler_steps)?;
+    //let mut scheduler = configs.sd_config.build_scheduler(
+    //    configs.scheduler_steps)?;
+
+    let config = LCMSchedulerConfig::default();
+    let mut scheduler = LCMScheduler::new(4, config)?;
 
     let seed = configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
     configs.device.set_seed(seed)?;
@@ -74,6 +81,11 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
     };
 
     let use_guide_scale = guidance_scale > 1.0;
+
+    // The embedding dimension should match the UNet time embedding dimension
+    // For LCM Dreamshaper, this is typically 1280 (not 320)
+    // Use a hardcoded value since we don't have direct access to the config
+    let embedding_dim = 1280; // Standard for SD models based on UNet config
 
     info!("Using guide scale: {}", use_guide_scale);
 
@@ -122,12 +134,18 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         None => {
             info!("No vae found in cache; loading...");
             
-            let repo = configs.sd_version.repo();
+            //let repo = configs.sd_version.repo();
 
-            println!("Building VAE model from : {:?} ... (3)", repo);
+            //println!("Building VAE model from : {:?} ... (3)", repo);
 
-            let vae_file = configs.hf_api.model(repo.to_string())
-              .get("vae/diffusion_pytorch_model.safetensors")?;
+            //let vae_file = configs.hf_api.model(repo.to_string())
+            //  .get("vae/diffusion_pytorch_model.safetensors")?;
+
+
+            let use_f16 = true;
+            let base_model_repo = "Lykon/dreamshaper-7";
+            let api = Api::new()?;
+            let vae_file = api.model(base_model_repo.to_string()).get(if use_f16 { "vae/diffusion_pytorch_model.fp16.safetensors" } else { "vae/diffusion_pytorch_model.safetensors" })?;
 
             println!("Building VAE model from file {:?}...", &vae_file);
 
@@ -136,7 +154,8 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
             if true {
                 notify_download_complete = true;
                 app.emit("notification", NotificationEvent::ModelDownloadStarted {
-                    model_name: repo,
+                    //model_name: repo,
+                    model_name: base_model_repo,
                     model_type: ModelType::Vae,
                 })?;
             }
@@ -151,7 +170,8 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
             
             if notify_download_complete {
                 app.emit("notification", NotificationEvent::ModelDownloadComplete {
-                    model_name: repo,
+                    //model_name: repo,
+                    model_name: base_model_repo,
                     model_type: ModelType::Vae,
                 })?;
             }
@@ -167,34 +187,75 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         None => {
             info!("No unet found in cache; loading...");
 
-            let repo = configs.sd_version.repo();
+            //let repo = configs.sd_version.repo();
+            //info!("Downloading UNET model files from: {} ...", repo);
 
-            info!("Downloading UNET model files from: {} ...", repo);
+            //let unet_file = configs.hf_api.model(repo.to_string())
+            //  .get("unet/diffusion_pytorch_model.safetensors")
+            //  .map_err(|err| anyhow!("error fetching model: {:?}", err))?;
 
-            let unet_file = configs.hf_api.model(repo.to_string())
-              .get("unet/diffusion_pytorch_model.safetensors")
-              .map_err(|err| anyhow!("error fetching model: {:?}", err))?;
+            let use_f16 = true;
+            let api = Api::new()?;
+            let lcm_model_repo = "SimianLuo/LCM_Dreamshaper_v7"; // LCM UNet
+            let unet_file = api.model(lcm_model_repo.to_string()).get(if use_f16 {
+                if lcm_model_repo == "SimianLuo/LCM_Dreamshaper_v7" {
+                    "unet/diffusion_pytorch_model.safetensors"
+                } else {
+                    "unet/diffusion_pytorch_model.fp16.safetensors"
+                }
+            } else {
+                "unet/diffusion_pytorch_model.safetensors"
+            })?;
 
             let mut notify_download_complete = false;
             //if !unet_file.exists() {
             if true {
                 notify_download_complete = true;
                 app.emit("notification", NotificationEvent::ModelDownloadStarted {
-                    model_name: repo,
+                    //model_name: repo,
+                    model_name: lcm_model_repo,
                     model_type: ModelType::Unet,
                 })?;
             }
 
-            let unet = UNetModel::new(&configs.sd_config, unet_file, &configs.device, configs.dtype)
-              .map_err(|err| anyhow!("error initializing unet model: {:?}", err))?;
-            
+
+            info!("Loading unet model ...");
+            let vs_unet = unsafe { VarBuilder::from_mmaped_safetensors(&[unet_file], configs.dtype, &configs.device)? };
+
+            let in_channels = 4;
+            let use_flash_attn = false;
+
+            let unet_config = UNet2DConditionModelConfig {
+                // LCM specific config values
+                cross_attention_dim: 768, // Dreamshaper v7 uses 768
+                // Rest of configuration...
+                center_input_sample: false,
+                flip_sin_to_cos: true,
+                freq_shift: 0.0,
+                blocks: vec![BlockConfig { out_channels: 320, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 640, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: None, attention_head_dim: 8 }],
+                layers_per_block: 2,
+                downsample_padding: 1,
+                mid_block_scale_factor: 1.0,
+                norm_num_groups: 32,
+                norm_eps: 1e-5,
+                sliced_attention_size: None,
+                use_linear_projection: false,
+            };
+            let unet = UNet2DConditionModel::new(vs_unet, in_channels, 4, use_flash_attn, unet_config)?;
+
+            //let unet = UNetModel::new(&configs.sd_config, unet_file, &configs.device, configs.dtype)
+            //  .map_err(|err| anyhow!("error initializing unet model: {:?}", err))?;
+
+            info!("Unet loaded.");
+
             let unet = Arc::new(unet);
 
             model_cache.set_unet(unet.clone())?;
 
             if notify_download_complete {
                 app.emit("notification", NotificationEvent::ModelDownloadComplete {
-                    model_name: repo,
+                    //model_name: repo,
+                    model_name: lcm_model_repo,
                     model_type: ModelType::Unet,
                 })?;
             }
@@ -261,22 +322,42 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
             latents.clone() // TODO(bt,2025-08-18): Do we have to clone the tensor? `scale_model_input` requires ownership
         };
 
-        let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
+        //let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
+        let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep);
 
-        let mut noise_pred = match unet.inference(&latent_model_input, timestep as f64, &text_embeddings) {
-            Ok(pred) => pred,
-            Err(e) => {
-                println!("UNet inference failed with error: {}", e);
-                return Err(anyhow::anyhow!("UNet inference failed: {}", e));
-            },
+
+        let guidance_emb = if use_guide_scale {
+            // For LCM/Dreamshaper, the time embedding dimension is 1280
+            let time_embed_dim = 1280; // Standard for SD models (320 base channels * 4)
+
+            println!("Generating guidance scale embedding (scale={})", guidance_scale);
+            Some(scheduler.get_guidance_scale_embedding(guidance_scale, time_embed_dim, &configs.device, configs.dtype)?)
+        } else {
+            None
         };
 
+
+
+        info!("Running unet forward pass");
+        let mut noise_pred = unet.forward_with_guidance(&latent_model_input, timestep as f64, &text_embeddings, guidance_emb.as_ref())?;
+
+        //let mut noise_pred = match unet.inference(&latent_model_input, timestep as f64, &text_embeddings) {
+        //    Ok(pred) => pred,
+        //    Err(e) => {
+        //        println!("UNet inference failed with error: {}", e);
+        //        return Err(anyhow::anyhow!("UNet inference failed: {}", e));
+        //    },
+        //};
+
         if use_guide_scale {
+            info!("use guide scale");
             let chunks = noise_pred.chunk(2, 0)?;
             let (noise_pred_uncond, noise_pred_text) = (&chunks[0], &chunks[1]);
+            info!("calculate noise prediction");
             noise_pred = (noise_pred_uncond + (guidance_scale * (noise_pred_text - noise_pred_uncond)?)?)?;
         }
 
+        info!("scheduler step");
         latents = scheduler.step(&noise_pred, timestep, &latents)?;
     }
 

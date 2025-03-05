@@ -9,6 +9,7 @@ use candle::{Result, Tensor, Device, DType};
 use candle_nn as nn;
 use candle_nn::Module;
 use std::collections::HashMap;
+use tracing::info;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BlockConfig {

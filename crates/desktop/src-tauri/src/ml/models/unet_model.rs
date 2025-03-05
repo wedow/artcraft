@@ -4,7 +4,7 @@ use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
 use std::path::Path;
 
 pub struct UNetModel {
-  model: UNet2DConditionModel,
+  pub model: UNet2DConditionModel,
 }
 
 impl UNetModel {

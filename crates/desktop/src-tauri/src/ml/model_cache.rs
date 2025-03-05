@@ -2,14 +2,14 @@ use crate::ml::models::unet_model::UNetModel;
 use anyhow::anyhow;
 use candle_transformers::models::stable_diffusion::vae::AutoEncoderKL;
 use std::sync::{Arc, RwLock};
-
+use candle_transformers::models::stable_diffusion::unet_2d::UNet2DConditionModel;
 // TODO: This data structure is gross. Generalize the locking and loading semantics for reuse.
 
 // Simple registry for now. We can build complex machinery that aids in 
 // VRAM utilization, disk space saving, intelligent scheduling, etc. in the future.
 pub struct ModelCache {
   vae: RwLock<Option<Arc<AutoEncoderKL>>>,
-  unet2: RwLock<Option<Arc<UNetModel>>>,
+  unet2: RwLock<Option<Arc<UNet2DConditionModel>>>,
 }
 
 impl ModelCache {
@@ -39,17 +39,17 @@ impl ModelCache {
     }
   }
 
-  pub fn set_unet(&self, vae: Arc<UNetModel>) -> anyhow::Result<()> {
+  pub fn set_unet(&self, unet: Arc<UNet2DConditionModel>) -> anyhow::Result<()> {
     match self.unet2.write() {
       Err(err) => Err(anyhow!("{}", err)),
       Ok(mut lock) => {
-        *lock = Some(vae);
+        *lock = Some(unet);
         Ok(())
       }
     }
   }
 
-  pub fn get_unet(&self) -> anyhow::Result<Option<Arc<UNetModel>>> {
+  pub fn get_unet(&self) -> anyhow::Result<Option<Arc<UNet2DConditionModel>>> {
     match self.unet2.read() {
       Err(err) => Err(anyhow!("{}", err)),
       Ok(ref lock) => {
