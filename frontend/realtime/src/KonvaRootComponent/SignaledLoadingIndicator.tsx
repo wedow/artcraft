@@ -3,6 +3,7 @@ import { LoadingBar, LoadingBarStatus } from "~/components/ui";
 import {
   isLoadingVisible,
   loadingProgress,
+  loadingText,
 } from "~/signals/uiEvents/loadingIndicator";
 
 export const SignaledLoadingIndicator = () => {
@@ -10,6 +11,7 @@ export const SignaledLoadingIndicator = () => {
   useSignalEffect(() => {
     isLoadingVisible.value;
     loadingProgress.value;
+    loadingText.value;
   });
 
   if (!isLoadingVisible.value) {
@@ -47,7 +49,7 @@ export const SignaledLoadingIndicator = () => {
             className="text-white/90"
           ></path>
         </svg>
-        Downloading models - {loadingProgress.value}%
+        {loadingText.value} - {loadingProgress.value}%
       </div>
     </div>
   );

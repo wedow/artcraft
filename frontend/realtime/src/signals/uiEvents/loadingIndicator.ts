@@ -28,13 +28,28 @@ const onLoadingProgressChanged = (callback: (progress: number) => void) => {
   });
 };
 
+// Loading text signal
+export const DEFAULT_LOADING_TEXT = "Downloading";
+export const loadingText = signal<string>(DEFAULT_LOADING_TEXT);
+const setLoadingText = (text: string) => {
+  loadingText.value = text;
+};
+
+const onLoadingTextChanged = (callback: (text: string) => void) => {
+  effect(() => {
+    callback(loadingText.value);
+  });
+};
+
 // EXPORTS
 export const dispatchers = {
   setIsLoadingVisible,
   setLoadingProgress,
+  setLoadingText,
 };
 
 export const events = {
   onIsLoadingVisibleChanged,
   onLoadingProgressChanged,
+  onLoadingTextChanged,
 };
