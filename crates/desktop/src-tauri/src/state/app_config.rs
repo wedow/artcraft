@@ -71,7 +71,7 @@ impl AppConfig {
       sd_config,
       image_height: yaml_configs.image_height.unwrap_or(DEFAULT_SD_IMAGE_HEIGHT),
       image_width: yaml_configs.image_width.unwrap_or(DEFAULT_SD_IMAGE_WIDTH),
-      scheduler_steps: yaml_configs.scheduler_steps.unwrap_or(1),
+      scheduler_steps: yaml_configs.scheduler_steps.unwrap_or(4),
       scheduler_samples: yaml_configs.scheduler_samples.unwrap_or(15),
       seed: yaml_configs.seed,
       cfg_scale: yaml_configs.cfg_scale,

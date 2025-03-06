@@ -1,6 +1,6 @@
 use crate::ml::model_cache::ModelCache;
 use crate::ml::prompt_cache::PromptCache;
-use crate::ml::stable_diffusion::stable_diffusion_pipeline::{stable_diffusion_pipeline, Args};
+use crate::ml::stable_diffusion::lcm_pipeline::{lcm_pipeline, Args};
 use crate::state::app_config::AppConfig;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use bytes::BytesMut;
@@ -79,7 +79,7 @@ async fn do_infer_image(
     app: &app,
   };
 
-  match stable_diffusion_pipeline(args) {
+  match lcm_pipeline(args) {
     Ok(image) => {
       let mut bytes = Vec::with_capacity(1024*1024);
       

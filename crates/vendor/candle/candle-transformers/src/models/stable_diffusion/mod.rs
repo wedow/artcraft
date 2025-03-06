@@ -84,6 +84,8 @@ impl StableDiffusionConfig {
         };
         // https://huggingface.co/runwayml/stable-diffusion-v1-5/blob/main/unet/config.json
         let unet = unet_2d::UNet2DConditionModelConfig {
+            time_embed_dim: None,
+            time_cond_proj_dim: None,
             blocks: vec![
                 bc(320, Some(1), 8),
                 bc(640, Some(1), 8),
@@ -153,6 +155,8 @@ impl StableDiffusionConfig {
         };
         // https://huggingface.co/stabilityai/stable-diffusion-2-1/blob/main/unet/config.json
         let unet = unet_2d::UNet2DConditionModelConfig {
+            time_cond_proj_dim: None,
+            time_embed_dim: None,
             blocks: vec![
                 bc(320, Some(1), 5),
                 bc(640, Some(1), 10),
@@ -237,6 +241,8 @@ impl StableDiffusionConfig {
         };
         // https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/main/unet/config.json
         let unet = unet_2d::UNet2DConditionModelConfig {
+            time_cond_proj_dim: None,
+            time_embed_dim: None,
             blocks: vec![
                 bc(320, None, 5),
                 bc(640, Some(2), 10),
@@ -306,6 +312,8 @@ impl StableDiffusionConfig {
         };
         // https://huggingface.co/stabilityai/sdxl-turbo/blob/main/unet/config.json
         let unet = unet_2d::UNet2DConditionModelConfig {
+            time_cond_proj_dim: None,
+            time_embed_dim: None,
             blocks: vec![
                 bc(320, None, 5),
                 bc(640, Some(2), 10),
@@ -405,6 +413,8 @@ impl StableDiffusionConfig {
         };
         // https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/main/unet/config.json
         let unet = unet_2d::UNet2DConditionModelConfig {
+            time_cond_proj_dim: None,
+            time_embed_dim: None,
             blocks: vec![
                 bc(320, None, 5),
                 bc(640, Some(2), 10),

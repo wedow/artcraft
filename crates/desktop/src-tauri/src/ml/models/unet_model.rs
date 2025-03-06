@@ -8,28 +8,19 @@ pub struct UNetModel {
 }
 
 impl UNetModel {
-  pub fn new<P: AsRef<Path>>(
-    sd_config: &StableDiffusionConfig,
-    unet_weights_file: P,
-    device: &Device,
-    dtype: DType,
-  ) -> anyhow::Result<Self> {
+  pub fn new<P: AsRef<Path>>(sd_config: &StableDiffusionConfig, unet_weights_file: P, device: &Device, dtype: DType) -> anyhow::Result<Self> {
     println!("building unet model... (1)");
-    
-    let model = sd_config.build_unet(
-      unet_weights_file, 
-      &device, 
-      4, 
-      false, 
-      dtype
-    )?;
-    
-    Ok(Self {
-      model,
-    })
+
+    let model = sd_config.build_unet(unet_weights_file, &device, 4, true, dtype)?;
+
+    Ok(Self { model })
   }
-  
+
   pub fn inference(&self, latent_model_input: &Tensor, timestep: f64, text_embeddings: &Tensor) -> anyhow::Result<Tensor> {
     Ok(self.model.forward(&latent_model_input, timestep, &text_embeddings)?)
+  }
+
+  pub fn forward_with_guidance(&self, latent_model_input: &Tensor, timestep: f64, text_embeddings: &Tensor, guidance_scale_embedding: &Tensor) -> anyhow::Result<Tensor> {
+    Ok(self.model.forward_with_guidance(&latent_model_input, timestep, &text_embeddings, Some(guidance_scale_embedding))?)
   }
 }

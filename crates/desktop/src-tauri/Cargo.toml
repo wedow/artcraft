@@ -48,7 +48,7 @@ tokenizers = "0.15.2"
 
 [features]
 default = ["cuda"]
-cuda = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]
+cuda = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda", "candle-transformers/flash-attn", "candle-core/cudnn"]
 
 [dev-dependencies]
 libloading = "0.8.6"

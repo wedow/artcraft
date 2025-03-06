@@ -86,6 +86,8 @@ fn main() -> Result<()> {
         .arg("--expt-relaxed-constexpr")
         .arg("--expt-extended-lambda")
         .arg("--use_fast_math")
+        .arg("--compiler-options")
+        .arg("-fPIC")
         .arg("--verbose");
 
     if let Ok(target) = std::env::var("TARGET") {
