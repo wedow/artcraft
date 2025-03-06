@@ -1,12 +1,13 @@
-import { MouseEvent, MouseEventHandler, useState } from "react";
-import { HexColorPicker } from "react-colorful";
-import { EyeDropper } from "react-eyedrop";
 import { Button } from "./Button";
 import { faEyedropper } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 
-type ColorPickerHTMLAttributes = Omit<React.HTMLAttributes<HTMLDivElement>, "color" | "onChange" | "onChangeCapture">;
-interface ColorPickerBaseProps<T extends string> extends ColorPickerHTMLAttributes {
+type ColorPickerHTMLAttributes = Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "color" | "onChange" | "onChangeCapture"
+>;
+interface ColorPickerBaseProps<T extends string>
+  extends ColorPickerHTMLAttributes {
   color: T;
   onChange: (newColor: T) => void;
 }
@@ -17,7 +18,7 @@ export const HexEyedropPicker = ({
   dropperClassName,
   pickerClassName,
   onPickerChange,
-  Picker
+  Picker,
 }: {
   color: string;
   onDropperChange?: (newColor: string) => void;
@@ -26,9 +27,8 @@ export const HexEyedropPicker = ({
   onPickerChange: (newColor: string) => void;
   Picker: (props: Partial<ColorPickerBaseProps<string>>) => JSX.Element;
 }) => {
-
   const handleDropperClick = () => {
-    if (!('EyeDropper' in window)) {
+    if (!("EyeDropper" in window)) {
       // NOTE: This shouldn't happen cuz we're using Chromium
       console.error("EyeDropper not found in window");
       return;
@@ -46,42 +46,40 @@ export const HexEyedropPicker = ({
         // User cancelled the picker
         return null;
       }
-    }
+    };
 
     startEyeDrop().then((newColor) => {
       if (newColor) {
         onDropperChange?.(newColor);
       }
     });
-  }
+  };
 
-  const [isDragging, setIsDragging] = useState(false);
-  const handleOnMouseDown = () => {
-    setIsDragging(true);
-  }
-  const handleOnMouseUp = () => {
-    setIsDragging(false);
-  }
+  // const [isDragging, setIsDragging] = useState(false);
+  // const handleOnMouseDown = () => {
+  //   setIsDragging(true);
+  // };
+  // const handleOnMouseUp = () => {
+  //   setIsDragging(false);
+  // };
 
   return (
     <div className={"relative"}>
-      <Picker
-        className={pickerClassName}
-        color={color}
-        onChange={onPickerChange}
-        onMouseDown={handleOnMouseDown}
-        onMouseUp={handleOnMouseUp}
-      />
       <Button
         className={twMerge([
-          "rounded-full m-1 size-8 text-ui-controls bg-transparent hover:bg-black/70 hover:text-white z-20 shadow-none hover:shadow-xl duration-200",
+          "z-20 size-8 rounded-xl bg-ui-background/30 text-white shadow-none duration-200 hover:bg-white/10 hover:text-white hover:shadow-xl",
           dropperClassName,
-          "absolute left-0 top-0",
-          isDragging ? "opacity-0 -z-10" : ""
         ])}
         icon={faEyedropper}
         onClick={handleDropperClick}
       />
+      <Picker
+        className={pickerClassName}
+        color={color}
+        onChange={onPickerChange}
+        // onMouseDown={handleOnMouseDown}
+        // onMouseUp={handleOnMouseUp}
+      />
     </div>
-  )
-}
+  );
+};

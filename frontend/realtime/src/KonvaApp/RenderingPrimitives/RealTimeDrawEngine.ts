@@ -4,7 +4,7 @@ import { Shape } from "konva/lib/Shape";
 import { Group } from "konva/lib/Group";
 
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from '@tauri-apps/api/event';
+import { listen } from "@tauri-apps/api/event";
 
 import { FileUtilities } from "../FileUtilities/FileUtilities";
 import { ImageNode, VideoNode, TextNode, ShapeNode, ShapeType } from "../Nodes";
@@ -30,7 +30,6 @@ interface ServerSettings {
   model_path: string;
   lora_path?: string;
 }
-
 
 interface GenerateImageParams {
   image: string;
@@ -210,16 +209,18 @@ export class RealTimeDrawEngine {
       console.log(event);
       // Handle model download events
       const payload = event.payload as any;
-      
+
       // Model download started
       if (payload.model_download_started) {
         const modelInfo = payload.model_download_started;
-        console.log(`Model download started: ${modelInfo.model_name} (${modelInfo.model_type})`);
-        
+        console.log(
+          `Model download started: ${modelInfo.model_name} (${modelInfo.model_type})`,
+        );
+
         // Set up loading indicator
         isLoadingVisible.value = true;
         loadingProgress.value = 0;
-        
+
         // Create fake progress updates
         const downloadTimer = setInterval(() => {
           loadingProgress.value += 2;
@@ -230,23 +231,23 @@ export class RealTimeDrawEngine {
           }
         }, 500);
       }
-      
+
       // Model download completed
       if (payload.model_download_complete) {
         const modelInfo = payload.model_download_complete;
-        console.log(`Model download completed: ${modelInfo.model_name} (${modelInfo.model_type})`);
-        
+        console.log(
+          `Model download completed: ${modelInfo.model_name} (${modelInfo.model_type})`,
+        );
+
         // Complete the loading progress
         loadingProgress.value = 100;
-        
+
         // Hide loading indicator after a short delay
         setTimeout(() => {
           isLoadingVisible.value = false;
         }, 1000);
       }
-  
     });
-    
   }
 
   private isEnabled: boolean = false;
@@ -320,9 +321,16 @@ export class RealTimeDrawEngine {
     const ctx = cursorCanvas.getContext("2d");
     if (!ctx) return;
 
-    // Draw the circle
+    // Draw the outer circle with a light stroke
     ctx.beginPath();
     ctx.arc(size, size, size / 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Draw the inner circle with a dark stroke
+    ctx.beginPath();
+    ctx.arc(size, size, size / 2 - 1, 0, Math.PI * 2);
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
     ctx.stroke();
