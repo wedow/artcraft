@@ -88,6 +88,7 @@ export class RealTimeDrawEngine {
       y: number;
     },
   ) => void;
+  private offscreenRenderDiv: HTMLDivElement;
 
   private onPreviewCopyCallback?: (previewCopy: Konva.Image) => void; // New Callback
 
@@ -183,6 +184,8 @@ export class RealTimeDrawEngine {
       draggable: false,
       fill: "white",
     });
+
+    this.offscreenRenderDiv = document.createElement("div");
 
     this.mediaLayerRef.add(this.captureCanvas);
     this.mediaLayerRef.add(this.previewCanvas);
@@ -785,6 +788,27 @@ export class RealTimeDrawEngine {
     }
   }
 
+  private cloneStageForRender(stage: Konva.Stage, layerOfInterest: Konva.Layer): Konva.Stage {
+    const stageClone = new Konva.Stage({
+      width: stage.width(),
+      height: stage.height(),
+      container: this.offscreenRenderDiv,
+    });
+
+    const renderLayer = new Konva.Layer();
+
+    // Clone all the nodes then reset them to render right
+    layerOfInterest.getChildren().forEach((node) => {
+      const dupNode = node.clone();
+      dupNode.strokeWidth(0);
+      renderLayer.add(dupNode);
+    });
+
+    stageClone.add(renderLayer);
+
+    return stageClone;
+  }
+
   private async renderFrame(config: {
     layerOfInterest: Konva.Layer; // layer where the element that you want to clip lives.
     // XY and height of a captureCanvas ( region of interest )
@@ -805,54 +829,25 @@ export class RealTimeDrawEngine {
       const y = config.y !== undefined ? config.y : Math.floor(box.y);
       const pixelRatio = config.pixelRatio || 1;
 
-      const container = config.layerOfInterest as Container<Group | Shape>;
-
-      const offScreenSceneCanvas = new OffScreenSceneCanvas({
-        width:
-          config.width || Math.ceil(box.width) || (stage ? stage.width() : 0),
-        height:
-          config.height ||
-          Math.ceil(box.height) ||
-          (stage ? stage.height() : 0),
+      // Clone the required layer from the stage
+      // Set the right details (like removing highlight stroke)
+      // Then render the cloned stage to a bitmap
+      const stageClone = this.cloneStageForRender(stage, config.layerOfInterest);
+      const stageBlob = await stageClone.toBlob({
+        x: x,
+        y: y,
+        width: config.width || Math.ceil(box.width),
+        height: config.height || Math.ceil(box.height),
         pixelRatio: pixelRatio,
-      });
-
-      const context = offScreenSceneCanvas.getContext();
-
-      const buffer = new OffScreenSceneCanvas({
-        width:
-          offScreenSceneCanvas.width / offScreenSceneCanvas.pixelRatio +
-          Math.abs(x),
-        height:
-          offScreenSceneCanvas.height / offScreenSceneCanvas.pixelRatio +
-          Math.abs(y),
-        pixelRatio: offScreenSceneCanvas.pixelRatio,
-      });
-
-      context.save();
-
-      if (x || y) {
-        context.translate(-1 * x, -1 * y);
-      }
-      container.drawScene(offScreenSceneCanvas, undefined, buffer);
-      // Not a type mistake ... DO NOT FIX
-      // @ts-ignore
-      const offscreenCanvas = offScreenSceneCanvas._canvas as OffscreenCanvas;
-      let result = undefined;
+      }) as Blob;
 
       // if config.test is true, the result is downloaded to the local files
       // config.test = true;
       if (config.test) {
-        const blob = await offscreenCanvas.convertToBlob({
-          quality: config.quality ?? 1.0,
-          type: "image/jpeg",
-        });
-        await FileUtilities.blobToFileJpeg(blob, "1");
-        result = blob;
-      } else {
-        result = offscreenCanvas.transferToImageBitmap();
+        await FileUtilities.blobToFileJpeg(stageBlob, "1");
       }
-      context.restore();
+
+      const result = await createImageBitmap(stageBlob);
       return result;
     } catch (error) {
       throw error;
