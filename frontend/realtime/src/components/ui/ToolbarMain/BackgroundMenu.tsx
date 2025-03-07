@@ -11,17 +11,9 @@ import { twMerge } from "tailwind-merge";
 
 import { useSignals } from "@preact/signals-react/runtime";
 import { paperWrapperStyles } from "~/components/styles";
-import {
-  BRUSH_MAX_SIZE,
-  BRUSH_MIN_SIZE,
-  paintBrushSize,
-  setPaintBrushSize,
-} from "~/signals/uiEvents/toolbarMain/paintMode";
 import { Button } from "../Button";
-import { Input } from "../Input";
-import { Slider } from "../Slider";
-import { EyeDropper } from "react-eyedrop";
 import { HexEyedropPicker } from "../HexEyedropPicker";
+import { Input } from "../Input";
 
 export const BackgroundMenu = ({
   color: prevColor,
