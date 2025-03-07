@@ -7,9 +7,11 @@ import { RealTimeDrawEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
 import { MouseEventHandler } from "react";
 import { KonvaEventObject } from "konva/lib/Node";
 
+export type SupportedNode = Konva.Image | Konva.Group | Konva.Shape;
+
 export abstract class BaseNode {
   protected selectionManagerRef: SelectionManager;
-  public kNode: Konva.Image | Konva.Group;
+  public kNode: SupportedNode;
   protected mediaLayerRef: Konva.Layer;
 
   // Internal State members
@@ -31,7 +33,7 @@ export abstract class BaseNode {
   }: {
     selectionManagerRef: SelectionManager;
     mediaLayerRef: Konva.Layer;
-    kNode: Konva.Image | Konva.Group | Konva.Shape;
+    kNode: SupportedNode;
   }) {
     // console.log("Node constructed");
     // this.uuid = uuidv4();
@@ -62,7 +64,7 @@ export abstract class BaseNode {
   }
   public highlight() {
     // console.log("Highlight", this.kNode._id);
-    if (this.kNode instanceof Konva.Image) {
+    if (this.kNode instanceof Konva.Image || this.kNode instanceof Konva.Shape) {
       this.kNode.stroke(primaryOrange);
       this.kNode.strokeWidth(highlightStrokeWidth);
       return;
@@ -85,7 +87,7 @@ export abstract class BaseNode {
 
   public unhighlight() {
     // console.log("unHighlight", this.kNode._id);
-    if (this.kNode instanceof Konva.Image) {
+    if (this.kNode instanceof Konva.Image || this.kNode instanceof Konva.Shape) {
       this.kNode.strokeWidth(0);
       return;
     }
