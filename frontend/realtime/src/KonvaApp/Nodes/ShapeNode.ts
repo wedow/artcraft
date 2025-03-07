@@ -15,7 +15,7 @@ interface ShapeNodeConstructor {
   canvasPosition: Position;
   canvasSize: Size;
   shapeType: ShapeType;
-  size: number;
+  size: Size;
   color?: string; // Hex color string
   transform?: TransformationData;
   mediaLayerRef: Konva.Layer;
@@ -29,7 +29,7 @@ export class ShapeNode extends NetworkedNode {
   }
 
   public shapeType: ShapeType;
-  public size: number;
+  public size: Size;
   public color: string;
 
   constructor({
@@ -46,6 +46,7 @@ export class ShapeNode extends NetworkedNode {
     // Create the actual shape inside the group
     const transform = NodeUtilities.getInitialTransform({
       existingTransform,
+      mediaFileSize: size,
       canvasPosition,
       canvasSize,
     });
@@ -55,10 +56,10 @@ export class ShapeNode extends NetworkedNode {
     switch (shapeType) {
       case ShapeType.CIRCLE:
         shape = new Konva.Ellipse({
-          x: 50,
-          y: 50,
-          radiusX: 50,
-          radiusY: 50,
+          x: size.width,
+          y: size.height,
+          radiusX: size.width,
+          radiusY: size.height,
           ...transform,
           fill: color,
           strokeScaleEnabled: false,
@@ -68,8 +69,8 @@ export class ShapeNode extends NetworkedNode {
 
       case ShapeType.SQUARE:
         shape = new Konva.Rect({
-          width: 100,
-          height: 100,
+          width: size.width,
+          height: size.height,
           ...transform,
           fill: color,
           strokeScaleEnabled: false,
@@ -81,8 +82,8 @@ export class ShapeNode extends NetworkedNode {
         shape = new Konva.Shape({
           x: 0,
           y: 0,
-          width: 25,
-          height: 50,
+          width: size.width,
+          height: size.height,
           ...transform,
           fill: color,
           strokeScaleEnabled: false,
