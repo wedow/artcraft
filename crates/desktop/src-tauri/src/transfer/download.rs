@@ -4,12 +4,8 @@ use crate::transfer::error::Error;
 use crate::transfer::util::{exponential_backoff, BASE_WAIT_TIME, MAX_WAIT_TIME};
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
-use pyo3::exceptions::PyException;
-use pyo3::prelude::*;
-use pyo3::types::PyAny;
-use rand::{thread_rng, Rng};
 use reqwest::header::{
-  HeaderMap, HeaderName, HeaderValue, ToStrError, AUTHORIZATION, CONTENT_LENGTH, CONTENT_RANGE,
+  HeaderMap, HeaderName, HeaderValue, AUTHORIZATION, CONTENT_RANGE,
   RANGE,
 };
 use reqwest::Url;
@@ -22,10 +18,9 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
-use tokio::io::{AsyncReadExt, AsyncSeekExt};
+use tokio::io::AsyncSeekExt;
 use tokio::sync::Semaphore;
 use tokio::time::sleep;
-use tokio_util::codec::{BytesCodec, FramedRead};
 
 
 /// max_files: Number of open file handles, which determines the maximum number of parallel downloads
@@ -35,8 +30,6 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 /// The number of threads can be tuned by the environment variable `TOKIO_WORKER_THREADS` as documented in
 /// https://docs.rs/tokio/latest/tokio/runtime/struct.Builder.html#method.worker_threads
 #[allow(clippy::too_many_arguments)]
-#[pyfunction]
-#[pyo3(signature = (url, filename, max_files, chunk_size, parallel_failures=0, max_retries=0, headers=None, callback=None))]
 fn download(
   url: String,
   filename: String,
@@ -45,15 +38,14 @@ fn download(
   parallel_failures: usize,
   max_retries: usize,
   headers: Option<HashMap<String, String>>,
-  callback: Option<Bound<'_, PyAny>>,
-) -> PyResult<()> {
+) -> Result<(), Error> {
   if parallel_failures > max_files {
-    return Err(PyException::new_err(
+    return Err(Error::new_err(
       "Error parallel_failures cannot be > max_files".to_string(),
     ));
   }
   if (parallel_failures == 0) != (max_retries == 0) {
-    return Err(PyException::new_err(
+    return Err(Error::new_err(
       "For retry mechanism you need to set both `parallel_failures` and `max_retries`"
         .to_string(),
     ));
@@ -70,7 +62,6 @@ fn download(
         parallel_failures,
         max_retries,
         headers,
-        callback,
       )
         .await
     })
@@ -80,7 +71,7 @@ fn download(
         match remove_file(filename) {
           Ok(_) => err,
           Err(err) => {
-            PyException::new_err(format!("Error while removing corrupted file: {err}"))
+            Error::new_err(format!("Error while removing corrupted file: {err}"))
           }
         }
       } else {
@@ -99,8 +90,7 @@ async fn download_async(
   parallel_failures: usize,
   max_retries: usize,
   input_headers: Option<HashMap<String, String>>,
-  callback: Option<Bound<'_, PyAny>>,
-) -> PyResult<()> {
+) -> Result<(), Error> {
   let client = reqwest::Client::builder()
     // https://github.com/hyperium/hyper/issues/2136#issuecomment-589488526
     .http2_keep_alive_timeout(Duration::from_secs(15))
@@ -114,10 +104,10 @@ async fn download_async(
     for (k, v) in input_headers {
       let name: HeaderName = k
         .try_into()
-        .map_err(|err| PyException::new_err(format!("Invalid header: {err}")))?;
+        .map_err(|err| Error::new_err(format!("Invalid header: {err}")))?;
       let value: HeaderValue = AsRef::<str>::as_ref(&v)
         .try_into()
-        .map_err(|err| PyException::new_err(format!("Invalid header value: {err}")))?;
+        .map_err(|err| Error::new_err(format!("Invalid header value: {err}")))?;
       if name == AUTHORIZATION {
         auth_token = Some(value);
       } else {
@@ -135,15 +125,15 @@ async fn download_async(
     .header(RANGE, "bytes=0-0")
     .send()
     .await
-    .map_err(|err| PyException::new_err(format!("Error while downloading: {err}")))?
+    .map_err(|err| Error::new_err(format!("Error while downloading: {err}")))?
     .error_for_status()
-    .map_err(|err| PyException::new_err(err.to_string()))?;
+    .map_err(|err| Error::new_err(err.to_string()))?;
 
   // Only call the final redirect URL to avoid overloading the Hub with requests and also
   // altering the download count
   let redirected_url = response.url();
   if Url::parse(&url)
-    .map_err(|err| PyException::new_err(format!("failed to parse url: {err}")))?
+    .map_err(|err| Error::new_err(format!("failed to parse url: {err}")))?
     .host()
     == redirected_url.host()
   {
@@ -155,20 +145,20 @@ async fn download_async(
   let content_range = response
     .headers()
     .get(CONTENT_RANGE)
-    .ok_or(PyException::new_err("No content length"))?
+    .ok_or(Error::new_err("No content length".to_string()))?
     .to_str()
-    .map_err(|err| PyException::new_err(format!("Error while downloading: {err}")))?;
+    .map_err(|err| Error::new_err(format!("Error while downloading: {err}")))?;
 
   let size: Vec<&str> = content_range.split('/').collect();
   // Content-Range: bytes 0-0/702517648
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range
   let length: usize = size
     .last()
-    .ok_or(PyException::new_err(
-      "Error while downloading: No size was detected",
+    .ok_or(Error::new_err(
+      "Error while downloading: No size was detected".to_string(),
     ))?
     .parse()
-    .map_err(|err| PyException::new_err(format!("Error while downloading: {err}")))?;
+    .map_err(|err| Error::new_err(format!("Error while downloading: {err}")))?;
 
   let mut handles = FuturesUnordered::new();
   let semaphore = Arc::new(Semaphore::new(max_files));
@@ -187,18 +177,18 @@ async fn download_async(
       let permit = semaphore
         .acquire_owned()
         .await
-        .map_err(|err| PyException::new_err(format!("Error while downloading: {err}")))?;
+        .map_err(|err| Error::new_err(format!("Error while downloading: {err}")))?;
       let mut chunk = download_chunk(&client, &url, &filename, start, stop, headers.clone()).await;
       let mut i = 0;
       if parallel_failures > 0 {
         while let Err(dlerr) = chunk {
           if i >= max_retries {
-            return Err(PyException::new_err(format!(
+            return Err(Error::new_err(format!(
               "Failed after too many retries ({max_retries}): {dlerr}"
             )));
           }
           let parallel_failure_permit = parallel_failures_semaphore.clone().try_acquire_owned().map_err(|err| {
-            PyException::new_err(format!(
+            Error::new_err(format!(
               "Failed too many failures in parallel ({parallel_failures}): {dlerr} ({err})"
             ))
           })?;
@@ -212,7 +202,7 @@ async fn download_async(
         }
       }
       drop(permit);
-      chunk.map_err(|e| PyException::new_err(format!("Downloading error {e}"))).and(Ok(stop - start))
+      chunk.map_err(|e| Error::new_err(format!("Downloading error {e}"))).and(Ok(stop - start))
     }));
   }
 
@@ -220,15 +210,15 @@ async fn download_async(
   while let Some(result) = handles.next().await {
     match result {
       Ok(Ok(size)) => {
-        if let Some(ref callback) = callback {
-          callback.call((size,), None)?;
-        }
+        //if let Some(ref callback) = callback {
+        //  callback.call((size,), None)?;
+        //}
       }
       Ok(Err(py_err)) => {
         return Err(py_err);
       }
       Err(err) => {
-        return Err(PyException::new_err(format!(
+        return Err(Error::new_err(format!(
           "Error while downloading: {err}"
         )));
       }
@@ -265,4 +255,3 @@ async fn download_chunk(
   file.write_all(&content).await?;
   Ok(())
 }
-

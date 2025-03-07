@@ -4,24 +4,13 @@ use crate::transfer::error::Error;
 use crate::transfer::util::{exponential_backoff, BASE_WAIT_TIME, MAX_WAIT_TIME};
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
-use pyo3::exceptions::PyException;
-use pyo3::prelude::*;
-use pyo3::types::PyAny;
-use rand::{thread_rng, Rng};
-use reqwest::header::{
-  HeaderMap, HeaderName, HeaderValue, ToStrError, AUTHORIZATION, CONTENT_LENGTH, CONTENT_RANGE,
-  RANGE,
-};
-use reqwest::Url;
+use reqwest::header::CONTENT_LENGTH;
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::fs::remove_file;
 use std::io::SeekFrom;
-use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::fs::OpenOptions;
-use tokio::io::AsyncWriteExt;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tokio::sync::Semaphore;
 use tokio::time::sleep;
@@ -39,8 +28,6 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 /// See https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html for more information
 /// on the multipart upload
 #[allow(clippy::too_many_arguments)]
-#[pyfunction]
-#[pyo3(signature = (file_path, parts_urls, chunk_size, max_files, parallel_failures=0, max_retries=0, callback=None))]
 fn multipart_upload(
   file_path: String,
   parts_urls: Vec<String>,
@@ -48,15 +35,14 @@ fn multipart_upload(
   max_files: usize,
   parallel_failures: usize,
   max_retries: usize,
-  callback: Option<Bound<'_, PyAny>>,
-) -> PyResult<Vec<HashMap<String, String>>> {
+) -> Result<Vec<HashMap<String, String>>, Error> {
   if parallel_failures > max_files {
-    return Err(PyException::new_err(
+    return Err(Error::new_err(
       "Error parallel_failures cannot be > max_files".to_string(),
     ));
   }
   if (parallel_failures == 0) != (max_retries == 0) {
-    return Err(PyException::new_err(
+    return Err(Error::new_err(
       "For retry mechanism you need to set both `parallel_failures` and `max_retries`"
         .to_string(),
     ));
@@ -73,7 +59,6 @@ fn multipart_upload(
         max_files,
         parallel_failures,
         max_retries,
-        callback,
       )
         .await
     })
@@ -89,8 +74,7 @@ async fn upload_async(
   max_files: usize,
   parallel_failures: usize,
   max_retries: usize,
-  callback: Option<Bound<'_, PyAny>>,
-) -> PyResult<Vec<HashMap<String, String>>> {
+) -> Result<Vec<HashMap<String, String>>, Error> {
   let client = reqwest::Client::new();
 
   let mut handles = FuturesUnordered::new();
@@ -110,19 +94,19 @@ async fn upload_async(
         .clone()
         .acquire_owned()
         .await
-        .map_err(|err| PyException::new_err(format!("Error acquiring semaphore: {err}")))?;
+        .map_err(|err| Error::new_err(format!("Error acquiring semaphore: {err}")))?;
       let mut chunk = upload_chunk(&client, &url, &path, start, chunk_size).await;
       let mut i = 0;
       if parallel_failures > 0 {
         while let Err(ul_err) = chunk {
           if i >= max_retries {
-            return Err(PyException::new_err(format!(
+            return Err(Error::new_err(format!(
               "Failed after too many retries ({max_retries}): {ul_err}"
             )));
           }
 
           let parallel_failure_permit = parallel_failures_semaphore.clone().try_acquire_owned().map_err(|err| {
-            PyException::new_err(format!(
+            Error::new_err(format!(
               "Failed too many failures in parallel ({parallel_failures}): {ul_err} ({err})"
             ))
           })?;
@@ -137,11 +121,12 @@ async fn upload_async(
       }
       drop(permit);
       chunk.map_err(|e|{
-        match e {
-          Error::Io(io) => PyException::new_err(format!("Io error {io}")),
-          Error::Request(req) => PyException::new_err(format!("Error while sending chunk {req}")),
-          Error::ToStrError(req) => PyException::new_err(format!("Response header contains non ASCII chars: {req}")),
-        }
+        //match e {
+        //  Error::Io(io) => Error::new_err(format!("Io error {io}")),
+        //  Error::Request(req) => Error::new_err(format!("Error while sending chunk {req}")),
+        //  Error::ToStrError(req) => Error::new_err(format!("Response header contains non ASCII chars: {req}")),
+        //}
+        e
       }).map(|chunk| (part_number, chunk, chunk_size))
     }));
   }
@@ -151,16 +136,16 @@ async fn upload_async(
   while let Some(result) = handles.next().await {
     match result {
       Ok(Ok((part_number, headers, size))) => {
-        if let Some(ref callback) = callback {
-          callback.call((size,), None)?;
-        }
+        //if let Some(ref callback) = callback {
+        //  callback.call((size,), None)?;
+        //}
         results[part_number] = headers;
       }
       Ok(Err(py_err)) => {
         return Err(py_err);
       }
       Err(err) => {
-        return Err(PyException::new_err(format!(
+        return Err(Error::new_err(format!(
           "Error occurred while uploading: {err}"
         )));
       }

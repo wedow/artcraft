@@ -8,6 +8,7 @@ pub enum Error {
   Io(std::io::Error),
   Request(reqwest::Error),
   ToStrError(ToStrError),
+  Misc(String),
 }
 
 impl From<std::io::Error> for Error {
@@ -34,8 +35,15 @@ impl Display for Error {
       Self::Io(io) => write!(f, "Io: {io}"),
       Self::Request(req) => write!(f, "Request: {req}"),
       Self::ToStrError(req) => write!(f, "Response non ascii: {req}"),
+      Self::Misc(err) => write!(f, "Misc error: {err}"),
     }
   }
 }
 
 impl std::error::Error for Error {}
+
+impl Error {
+  pub fn new_err(reason: String) -> Self {
+    Self::Misc(reason)
+  }
+}
