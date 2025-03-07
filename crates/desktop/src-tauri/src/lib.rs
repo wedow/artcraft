@@ -2,12 +2,15 @@ pub mod endpoints;
 pub mod events;
 pub mod ml;
 pub mod state;
+pub mod threads;
 
+use crate::endpoints::download_models::download_models;
+use crate::endpoints::image_endpoint::infer_image;
+use crate::endpoints::test_counter::test_counter;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::prompt_cache::PromptCache;
 use crate::state::app_config::AppConfig;
-use endpoints::image_endpoint::infer_image;
-use endpoints::test_counter::test_counter;
+use crate::threads::downloader_thread::downloader_thread;
 use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
 
@@ -26,6 +29,9 @@ pub fn run() {
   println!("Creating model cache...");
   
   let model_cache = ModelCache::new();
+  
+  let app_data_root = config.app_data_root.clone();
+  let app_data_root2 = config.app_data_root.clone();
 
   println!("Initializing backend runtime...");
 
@@ -42,14 +48,20 @@ pub fn run() {
       //      .build(),
       //  )?;
       //}
+      let app = app.handle().clone();
+
+      tauri::async_runtime::spawn(downloader_thread(app_data_root2, app));
+
       Ok(())
     })
     .manage(config)
     .manage(prompt_cache)
     .manage(model_cache)
+    .manage(app_data_root)
     .invoke_handler(tauri::generate_handler![
       test_counter, 
       infer_image,
+      download_models,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

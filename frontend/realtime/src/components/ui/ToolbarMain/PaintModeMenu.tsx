@@ -5,13 +5,18 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState, useRef } from "react";
 import { HexAlphaColorPicker } from "react-colorful";
 import { twMerge } from "tailwind-merge";
 
 import { useSignals } from "@preact/signals-react/runtime";
 import { paperWrapperStyles } from "~/components/styles";
-import { BRUSH_MAX_SIZE, BRUSH_MIN_SIZE, paintBrushSize, setPaintBrushSize } from "~/signals/uiEvents/toolbarMain/paintMode";
+import {
+  BRUSH_MAX_SIZE,
+  BRUSH_MIN_SIZE,
+  paintBrushSize,
+  setPaintBrushSize,
+} from "~/signals/uiEvents/toolbarMain/paintMode";
 import { Button } from "../Button";
 import { Input } from "../Input";
 import { Slider } from "../Slider";
@@ -52,16 +57,58 @@ export const PaintModeMenu = ({
     currColor: prevColor,
     textInput: prevColor.substring(1),
   });
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [isMouseOutside, setIsMouseOutside] = useState(false);
+  const closeRef = useRef<(() => void) | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setIsOpen(defaultOpen);
   }, [defaultOpen]);
 
+  // Global mouse up handler
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isMouseDown) {
+        setIsMouseDown(false);
+
+        // If mouse is outside when released, close the panel after a short delay
+        if (isMouseOutside && closeOnMouseLeave && closeRef.current) {
+          closeTimeoutRef.current = setTimeout(() => {
+            onChange(currColor);
+            setIsOpen(false);
+            closeRef.current?.();
+          }, 500);
+        }
+      }
+    };
+
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+
+    return () => {
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
+  }, [isMouseDown, isMouseOutside, closeOnMouseLeave, currColor, onChange]);
+
   const handleMouseLeave = (close: () => void) => {
-    if (closeOnMouseLeave) {
-      onChange(currColor);
-      setIsOpen(false);
-      close();
+    closeRef.current = close;
+    setIsMouseOutside(true);
+
+    // Only close if mouse is not down and closeOnMouseLeave is true
+    if (closeOnMouseLeave && !isMouseDown) {
+      closeTimeoutRef.current = setTimeout(() => {
+        onChange(currColor);
+        setIsOpen(false);
+        close();
+      }, 200);
+    }
+  };
+
+  const handleMouseEnter = () => {
+    setIsMouseOutside(false);
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
     }
   };
 
@@ -92,7 +139,7 @@ export const PaintModeMenu = ({
     if (streamChanges) {
       onChange(color);
     }
-  }
+  };
 
   // Rerender the component when these signals change:
   useSignals();
@@ -123,12 +170,16 @@ export const PaintModeMenu = ({
             )}
           </PopoverButton>
           {(open || isOpen) && (
-            <div onMouseLeave={() => handleMouseLeave(close)}>
+            <div
+              onMouseLeave={() => handleMouseLeave(close)}
+              onMouseEnter={handleMouseEnter}
+              onMouseDown={() => setIsMouseDown(true)}
+            >
               <PopoverPanel
                 anchor={anchor}
                 className={twMerge(
                   paperWrapperStyles,
-                  "flex flex-col items-center gap-2 overflow-hidden",
+                  "flex flex-col items-center gap-2 overflow-hidden p-4",
                 )}
                 style={
                   {
@@ -138,20 +189,23 @@ export const PaintModeMenu = ({
                 static
               >
                 <HexEyedropPicker
-                  pickerClassName="overflow-hidden"
                   color={currColor}
                   onPickerChange={handleColorChange}
                   onDropperChange={handleColorChange}
                   Picker={HexAlphaColorPicker}
                 />
                 <Input
+                  className="mt-2"
+                  inputClassName="bg-ui-background/30"
                   style={{ width: "198px" }}
                   icon={faHashtag}
                   value={textInput}
                   onChange={handleTextInput}
                 />
-                <div className="flex flex-col w-full mt-2 gap-2">
-                  <p className="text-white font-medium text-sm w-full justify-start">Brush Size:</p>
+                <div className="mt-2 flex w-full flex-col gap-2">
+                  <p className="w-full justify-start text-sm font-medium text-white">
+                    Brush Size:
+                  </p>
                   <Slider
                     min={BRUSH_MIN_SIZE}
                     max={BRUSH_MAX_SIZE}

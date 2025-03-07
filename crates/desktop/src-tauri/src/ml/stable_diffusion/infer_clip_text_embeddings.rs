@@ -3,6 +3,7 @@ extern crate accelerate_src;
 #[cfg(feature = "mkl")]
 extern crate intel_mkl_src;
 
+use std::path::PathBuf;
 use candle_transformers::models::stable_diffusion;
 
 use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
@@ -10,6 +11,8 @@ use anyhow::Error as E;
 use candle_core::{DType, Device, Module, Tensor, D};
 use log::info;
 use tokenizers::Tokenizer;
+use crate::ml::model_type::ModelType;
+use crate::state::app_dir::AppWeightsDir;
 
 #[allow(clippy::too_many_arguments)]
 pub fn infer_clip_text_embeddings(
@@ -24,6 +27,7 @@ pub fn infer_clip_text_embeddings(
   device: &Device,
   dtype: DType,
   use_guide_scale: bool,
+  weights_dir: &AppWeightsDir,
 ) -> anyhow::Result<Tensor> {
   info!("Preparing text embeddings...");
 
@@ -50,6 +54,7 @@ pub fn infer_clip_text_embeddings(
         dtype,
         use_guide_scale,
         *first,
+        weights_dir,
       )
     })
     .collect::<anyhow::Result<Vec<_>>>()?;
@@ -73,15 +78,25 @@ fn do_infer_clip_text_embeddings(
     dtype: DType,
     use_guide_scale: bool,
     first: bool,
+    weights_dir: &AppWeightsDir,
   ) -> anyhow::Result<Tensor> {
   
   let tokenizer_file = if first {
+    info!("ModelFile::Tokenizer");
     ModelFile::Tokenizer
   } else {
+    info!("ModelFile::Tokenizer2");
     ModelFile::Tokenizer2
   };
-  let tokenizer = tokenizer_file.get(tokenizer, sd_version, use_f16)?;
+  
+  info!("Loading clip from download");
+  //let tokenizer = tokenizer_file.get(tokenizer, sd_version, use_f16)?;
+  let tokenizer = weights_dir.model_path(&ModelType::ClipJson);
+  
+  info!("Tokenizer path: {:?}", tokenizer);
+  
   let tokenizer = Tokenizer::from_file(tokenizer).map_err(E::msg)?;
+  
   let pad_id = match &sd_config.clip.pad_with {
     Some(padding) => *tokenizer.get_vocab(true).get(padding.as_str()).unwrap(),
     None => *tokenizer.get_vocab(true).get("<|endoftext|>").unwrap(),
@@ -112,9 +127,11 @@ fn do_infer_clip_text_embeddings(
     ModelFile::Clip2
   };
   let clip_weights = if first {
-    clip_weights_file.get(clip_weights, sd_version, use_f16)?
+    //clip_weights_file.get(clip_weights, sd_version, use_f16)?
+    weights_dir.model_path(&ModelType::SdxlTurboClipEncoder)
   } else {
-    clip_weights_file.get(clip2_weights, sd_version, use_f16)?
+    //clip_weights_file.get(clip2_weights, sd_version, use_f16)?
+    weights_dir.model_path(&ModelType::SdxlTurboClipEncoder2)
   };
   let clip_config = if first {
     &sd_config.clip

@@ -10,6 +10,10 @@ use candle_nn as nn;
 use candle_nn::Module;
 use std::collections::HashMap;
 
+// fn save_tensor_as_numpy(tensor: &Tensor, filename: &str) -> Result<()> {
+//     // Use Candle's built-in NPY serialization
+//     tensor.write_npy(filename).map_err(|e| anyhow::anyhow!("{}", e))
+// }
 #[derive(Debug, Clone, Copy)]
 pub struct BlockConfig {
   pub out_channels: usize,
@@ -33,11 +37,13 @@ pub struct UNet2DConditionModelConfig {
   pub cross_attention_dim: usize,
   pub sliced_attention_size: Option<usize>,
   pub use_linear_projection: bool,
+  pub time_cond_proj_dim: Option<usize>,
+  pub time_embed_dim: Option<usize>,
 }
 
 impl Default for UNet2DConditionModelConfig {
   fn default() -> Self {
-    Self { center_input_sample: false, flip_sin_to_cos: true, freq_shift: 0., blocks: vec![BlockConfig { out_channels: 320, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 640, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: None, attention_head_dim: 8 }], layers_per_block: 2, downsample_padding: 1, mid_block_scale_factor: 1., norm_num_groups: 32, norm_eps: 1e-5, cross_attention_dim: 1280, sliced_attention_size: None, use_linear_projection: false }
+    Self { center_input_sample: false, flip_sin_to_cos: true, freq_shift: 0., blocks: vec![BlockConfig { out_channels: 320, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 640, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: None, attention_head_dim: 8 }], layers_per_block: 2, downsample_padding: 1, mid_block_scale_factor: 1., norm_num_groups: 32, norm_eps: 1e-5, cross_attention_dim: 1280, sliced_attention_size: None, use_linear_projection: false, time_cond_proj_dim: Some(256), time_embed_dim: None }
   }
 }
 
@@ -73,8 +79,16 @@ impl UNet2DConditionModel {
     let b_channels = config.blocks[0].out_channels;
     let bl_channels = config.blocks.last().unwrap().out_channels;
     let bl_attention_head_dim = config.blocks.last().unwrap().attention_head_dim;
-    let time_embed_dim = b_channels * 4;
+    let time_embed_dim = config.time_embed_dim.unwrap_or(b_channels * 4);
     let conv_cfg = nn::Conv2dConfig { padding: 1, ..Default::default() };
+
+    // Log important configuration details
+    println!("Creating UNet2DConditionModel with {} blocks", n_blocks);
+    if let Some(proj_dim) = config.time_cond_proj_dim {
+      println!("UNet configured with time_cond_proj_dim: {}", proj_dim);
+      println!("This means the model expects guidance embeddings of dimension {}", proj_dim);
+    }
+
     let conv_in = conv2d(in_channels, b_channels, 3, conv_cfg, vs.pp("conv_in"))?;
 
     let time_proj = Timesteps::new(b_channels, config.flip_sin_to_cos, config.freq_shift);
@@ -241,18 +255,138 @@ impl UNet2DConditionModel {
 
     // Add guidance embedding if provided
     if let Some(guidance_emb) = guidance_embedding {
-      // Print shapes for debugging
-      println!("Guidance embedding shape: {:?}", guidance_emb.shape());
-      println!("Time embedding shape: {:?}", time_emb.shape());
+      // Get dimensions of both embeddings
+      let (batch_size, time_emb_dim) = time_emb.dims2()?;
+      let (guidance_batch, guidance_emb_dim) = guidance_emb.dims2()?;
 
-      // Get the batch size and embedding dimension
-      let (batch_size, emb_dim) = time_emb.dims2()?;
+      println!("==== Guidance Embedding Integration ====");
+      println!("Time embedding dims: [{}, {}]", batch_size, time_emb_dim);
+      println!("Guidance embedding dims: [{}, {}]", guidance_batch, guidance_emb_dim);
 
-      // Reshape guidance embedding to match time embedding dimensions
-      let guidance_emb = guidance_emb.reshape(&[1, emb_dim])?.expand(&[batch_size, emb_dim])?;
+      // Use time_cond_proj_dim from config to determine expected guidance embedding dimension
+      let expected_guidance_dim = self.config.time_cond_proj_dim.unwrap_or(time_emb_dim);
+      println!("Expected guidance dimension from config: {}", expected_guidance_dim);
+
+      // Check if dimensions match the expected projection dimension
+      let processed_guidance_emb = if guidance_emb_dim != time_emb_dim {
+        // Convert guidance_emb to f32 for calculations
+        let guidance_emb_f32 = guidance_emb.to_dtype(DType::F32)?;
+        println!("Converting guidance embedding to F32 for processing");
+
+        // If the guidance embedding dimension matches the expected projection dimension,
+        // we need to project it to match the time embedding dimension
+        if guidance_emb_dim == expected_guidance_dim {
+          println!("Projecting guidance embedding from {} to {}", guidance_emb_dim, time_emb_dim);
+
+          // Use linear interpolation
+          let src_positions: Vec<f32> = (0..guidance_emb_dim).map(|i| i as f32 / (guidance_emb_dim - 1) as f32).collect();
+          let dst_positions: Vec<f32> = (0..time_emb_dim).map(|i| i as f32 / (time_emb_dim - 1) as f32).collect();
+
+          // Get guidance embedding data (now f32)
+          let guidance_data = guidance_emb_f32.reshape((guidance_emb_dim,))?.to_vec1::<f32>()?;
+          println!("Reshaping guidance data to vector of length {}", guidance_data.len());
+
+          // Perform linear interpolation
+          let mut interpolated_data = Vec::with_capacity(time_emb_dim);
+          for &t in &dst_positions {
+            // Find the two source positions that surround the target position
+            let mut i = 0;
+            while i < src_positions.len() - 1 && src_positions[i + 1] < t {
+              i += 1;
+            }
+
+            if i == src_positions.len() - 1 {
+              // At or beyond the last position
+              interpolated_data.push(guidance_data[i]);
+            } else if t <= src_positions[0] {
+              // At or before the first position
+              interpolated_data.push(guidance_data[0]);
+            } else {
+              // Linear interpolation between two points
+              let t_norm = (t - src_positions[i]) / (src_positions[i + 1] - src_positions[i]);
+              let value = guidance_data[i] * (1.0 - t_norm) + guidance_data[i + 1] * t_norm;
+              interpolated_data.push(value);
+            }
+          }
+
+          println!("Created interpolated data of length {}", interpolated_data.len());
+
+          // Create tensor and convert to time_emb's dtype
+          let tensor = Tensor::from_vec(interpolated_data, (1, time_emb_dim), device)?;
+          let result = tensor.to_dtype(time_emb.dtype())?;
+          println!("Final projected guidance embedding shape: {:?}", result.shape());
+          result
+        } else {
+          // Unusual case - dimensions don't match expected pattern
+          println!("Warning: Guidance embedding dimension ({}) doesn't match expected projection dimension ({})", guidance_emb_dim, expected_guidance_dim);
+
+          // Fallback to generic interpolation
+          let guidance_data = guidance_emb_f32.reshape((guidance_emb_dim,))?.to_vec1::<f32>()?;
+
+          let src_positions: Vec<f32> = (0..guidance_emb_dim).map(|i| i as f32 / (guidance_emb_dim - 1) as f32).collect();
+          let dst_positions: Vec<f32> = (0..time_emb_dim).map(|i| i as f32 / (time_emb_dim - 1) as f32).collect();
+
+          let mut interpolated_data = Vec::with_capacity(time_emb_dim);
+          for &t in &dst_positions {
+            let mut i = 0;
+            while i < src_positions.len() - 1 && src_positions[i + 1] < t {
+              i += 1;
+            }
+
+            if i == src_positions.len() - 1 {
+              interpolated_data.push(guidance_data[i]);
+            } else if t <= src_positions[0] {
+              interpolated_data.push(guidance_data[0]);
+            } else {
+              let t_norm = (t - src_positions[i]) / (src_positions[i + 1] - src_positions[i]);
+              let value = guidance_data[i] * (1.0 - t_norm) + guidance_data[i + 1] * t_norm;
+              interpolated_data.push(value);
+            }
+          }
+
+          println!("Created interpolated data of length {}", interpolated_data.len());
+          let tensor = Tensor::from_vec(interpolated_data, (1, time_emb_dim), device)?;
+          let result = tensor.to_dtype(time_emb.dtype())?;
+          println!("Final fallback guidance embedding shape: {:?}", result.shape());
+          result
+        }
+      } else {
+        // Dimensions match, no processing needed
+        println!("Guidance dimension already matches time embedding dimension, no interpolation needed");
+        let result = guidance_emb.reshape((1, time_emb_dim))?.to_dtype(time_emb.dtype())?;
+        println!("Reshaped guidance embedding shape: {:?}", result.shape());
+        result
+      };
+
+      // Expand to match batch size if needed
+      let expanded_guidance = processed_guidance_emb.broadcast_as(time_emb.shape())?;
+      println!("Expanded guidance embedding shape: {:?}", expanded_guidance.shape());
+
+      // Save the processed and expanded guidance embeddings to disk if requested
+      if let Ok(save_dir) = std::env::var("CANDLE_SAVE_TENSORS_DIR") {
+        // Save pre-expansion (original projection)
+        let proc_path = format!("{}/unet_processed_guidance_embedding.npy", save_dir);
+        println!("Saving processed guidance embedding to {}", proc_path);
+        if let Err(e) = processed_guidance_emb.write_npy(&proc_path) {
+          println!("Error saving processed guidance embedding: {}", e);
+        } else {
+          println!("Successfully saved processed guidance embedding to {}", proc_path);
+        }
+
+        // Save post-expansion (final tensor used for addition to time_emb)
+        let exp_path = format!("{}/unet_expanded_guidance_embedding.npy", save_dir);
+        println!("Saving expanded guidance embedding to {}", exp_path);
+        if let Err(e) = expanded_guidance.write_npy(&exp_path) {
+          println!("Error saving expanded guidance embedding: {}", e);
+        } else {
+          println!("Successfully saved expanded guidance embedding to {}", exp_path);
+        }
+      }
 
       // Add to time embeddings
-      time_emb = (time_emb + guidance_emb)?;
+      time_emb = (time_emb + expanded_guidance)?;
+      println!("Final time embedding with guidance shape: {:?}", time_emb.shape());
+      println!("==== End Guidance Integration ====");
     }
 
     // 2. pre-process

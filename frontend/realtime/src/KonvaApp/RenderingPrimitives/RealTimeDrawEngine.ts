@@ -4,7 +4,7 @@ import { Shape } from "konva/lib/Shape";
 import { Group } from "konva/lib/Group";
 
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from '@tauri-apps/api/event';
+import { listen } from "@tauri-apps/api/event";
 
 import { FileUtilities } from "../FileUtilities/FileUtilities";
 import { ImageNode, VideoNode, TextNode, ShapeNode, ShapeType } from "../Nodes";
@@ -12,7 +12,7 @@ import { MediaNode } from "../types";
 
 import { RenderTask } from "./RenderTask";
 import { OffScreenSceneCanvas } from "./OffScreenSceneCanvas";
-import { Image } from "@tauri-apps/api/image";
+
 
 import { PaintNode } from "../Nodes/PaintNode";
 
@@ -30,7 +30,6 @@ interface ServerSettings {
   model_path: string;
   lora_path?: string;
 }
-
 
 interface GenerateImageParams {
   image: string;
@@ -62,9 +61,13 @@ export class RealTimeDrawEngine {
   private positionPreviewY: number;
 
   private port: MessagePort | undefined;
-
   public captureCanvas: Konva.Rect;
+  public backgroundRasterRect: Konva.Image;
+  
+
   public previewCanvas: Konva.Image;
+  
+
 
   public videoLoadingCanvas: VideoNode | undefined;
 
@@ -95,7 +98,8 @@ export class RealTimeDrawEngine {
   private client: WebSocketClient | null = null;
   private isConnected: boolean = false;
 
-  private backgroundNode: ShapeNode | null = null;
+
+
   public backgroundColor: string = "#d2d2d2";
   constructor({
     width,
@@ -187,25 +191,31 @@ export class RealTimeDrawEngine {
 
     this.offscreenRenderDiv = document.createElement("div");
 
+    this.backgroundRasterRect = new Konva.Image({
+      name: "backgroundRasterRect",
+      x: this.positionX,
+      y: this.positionY,
+      width: this.width,
+      height: this.height,
+      fill: this.backgroundColor,
+      image: undefined,
+      stroke: "black",
+      strokeWidth: 1,
+      draggable: false,
+    });
+ 
     this.mediaLayerRef.add(this.captureCanvas);
+    this.mediaLayerRef.add(this.backgroundRasterRect);
     this.mediaLayerRef.add(this.previewCanvas);
     // send back
     this.captureCanvas.setZIndex(0);
+    this.backgroundRasterRect.setZIndex(0);
     this.previewCanvas.setZIndex(1);
     // Add mouse events for preview canvas copying
     this.previewCopyListener();
-
-    //this.startServer();
-    // isLoadingVisible.value = true;
-    // const fakeTimer = setInterval(() => {
-    //   loadingProgress.value += 1;
-    //   if (loadingProgress.value >= 100) {
-    //     clearInterval(fakeTimer);
-    //     isLoadingVisible.value = false;
-    //   }
-    // }, 1000);
-
-    this.listenToServerEvents();
+    
+    //this.listenToServerEvents();
+   
   }
 
   public async listenToServerEvents() {
@@ -213,16 +223,18 @@ export class RealTimeDrawEngine {
       console.log(event);
       // Handle model download events
       const payload = event.payload as any;
-      
+
       // Model download started
       if (payload.model_download_started) {
         const modelInfo = payload.model_download_started;
-        console.log(`Model download started: ${modelInfo.model_name} (${modelInfo.model_type})`);
-        
+        console.log(
+          `Model download started: ${modelInfo.model_name} (${modelInfo.model_type})`,
+        );
+
         // Set up loading indicator
         isLoadingVisible.value = true;
         loadingProgress.value = 0;
-        
+
         // Create fake progress updates
         const downloadTimer = setInterval(() => {
           loadingProgress.value += 2;
@@ -233,23 +245,23 @@ export class RealTimeDrawEngine {
           }
         }, 500);
       }
-      
+
       // Model download completed
       if (payload.model_download_complete) {
         const modelInfo = payload.model_download_complete;
-        console.log(`Model download completed: ${modelInfo.model_name} (${modelInfo.model_type})`);
-        
+        console.log(
+          `Model download completed: ${modelInfo.model_name} (${modelInfo.model_type})`,
+        );
+
         // Complete the loading progress
         loadingProgress.value = 100;
-        
+
         // Hide loading indicator after a short delay
         setTimeout(() => {
           isLoadingVisible.value = false;
         }, 1000);
       }
-  
     });
-    
   }
 
   private isEnabled: boolean = false;
@@ -323,9 +335,16 @@ export class RealTimeDrawEngine {
     const ctx = cursorCanvas.getContext("2d");
     if (!ctx) return;
 
-    // Draw the circle
+    // Draw the outer circle with a light stroke
     ctx.beginPath();
     ctx.arc(size, size, size / 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Draw the inner circle with a dark stroke
+    ctx.beginPath();
+    ctx.arc(size, size, size / 2 - 1, 0, Math.PI * 2);
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
     ctx.stroke();
@@ -960,8 +979,8 @@ export class RealTimeDrawEngine {
 
     // Test code
     if (false) {
-      //this.outputBitmap = bitmap;
-      //this.previewCanvas.image(bitmap);
+      this.outputBitmap = bitmap;
+      this.previewCanvas.image(bitmap);
       const base64Bitmap = await this.imageBitmapToBase64(bitmap);
       console.log(this.currentStrength);
       await this.client?.generateImage({
@@ -974,6 +993,7 @@ export class RealTimeDrawEngine {
         width: 1024,
         lora_strength: 1.0,
       });
+      this.isProcessing = false
       return;
     }
 
@@ -1029,6 +1049,19 @@ export class RealTimeDrawEngine {
   // Add method to create or update background
   public updateBackground(color: string) {
     this.captureCanvas.fill(color);
-    this.mediaLayerRef.batchDraw();
+
+    const captureCanvasImage = this.captureCanvas.toDataURL();
+    const imageSource = new Image();
+    imageSource.src = captureCanvasImage;
+
+    imageSource.onload = () => {      
+      this.backgroundRasterRect.fill(color);
+      this.backgroundRasterRect.image(imageSource)
+
+      this.mediaLayerRef.batchDraw();
+      this.render();
+    };
+
+
   }
 }

@@ -91,7 +91,7 @@ export const ColorPicker = ({
     if (streamChanges) {
       onChange(color);
     }
-  }
+  };
 
   return (
     <Popover className="relative">
@@ -124,7 +124,7 @@ export const ColorPicker = ({
                 anchor={anchor}
                 className={twMerge(
                   paperWrapperStyles,
-                  "flex flex-col items-center gap-2 overflow-hidden",
+                  "flex flex-col items-center gap-2 overflow-hidden p-4",
                 )}
                 style={
                   {
@@ -134,13 +134,14 @@ export const ColorPicker = ({
                 static
               >
                 <HexEyedropPicker
-                  pickerClassName="overflow-hidden"
                   color={currColor}
                   onPickerChange={handleColorChange}
                   onDropperChange={handleColorChange}
                   Picker={HexAlphaColorPicker}
                 />
                 <Input
+                  className="mt-2"
+                  inputClassName="bg-ui-background/30"
                   style={{ width: "198px" }}
                   icon={faHashtag}
                   value={textInput}

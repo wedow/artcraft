@@ -14,6 +14,7 @@ use crate::state::app_config::AppConfig;
 use anyhow::{anyhow, Error as E, Result};
 use candle_core::{DType, IndexOp, Tensor, D};
 use candle_transformers::models::stable_diffusion::vae::{AutoEncoderKL, DiagonalGaussianDistribution};
+use candle_transformers::models::stable_diffusion::lcm::LCMScheduler;
 use image::DynamicImage;
 use log::info;
 use rand::Rng;
@@ -33,7 +34,7 @@ pub struct Args<'a> {
     pub app: &'a AppHandle,
 }
 
-pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
+pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     let Args { 
         prompt, 
         uncond_prompt, 
@@ -43,10 +44,10 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         model_cache, 
         prompt_cache, 
         app, 
-        image,
+        image,  
         app_data_root,
     } = args;
-    
+
     let weights_dir = app_data_root.weights_dir();
     
     println!("Starting image generation with the following configuration:");
@@ -57,11 +58,11 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
 
     println!("Model dimensions: {}x{}", configs.sd_config.width, configs.sd_config.height);
 
-    // TODO(bt,2025-02-18): The scheduler is `EulerAncestralDiscreteScheduler`, but we may want to port an LCM scheduler.
-    //  This is a target for performance improvement
-    //  See: https://github.com/huggingface/candle/issues/1331
-    let mut scheduler = configs.sd_config.build_scheduler(
-        configs.scheduler_steps)?;
+    // Use LCM Scheduler instead of Euler Ancestral for better speed and quality
+    let mut scheduler = LCMScheduler::new(
+        configs.scheduler_steps,
+        candle_transformers::models::stable_diffusion::lcm::LCMSchedulerConfig::default(),
+    )?;
 
     let seed = configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
     configs.device.set_seed(seed)?;
@@ -138,7 +139,7 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
                     model_type: NotificationModelType::Vae,
                 })?;
             }
-            
+
             let vae_file = weights_dir.model_path(&ModelType::SdxlTurboVae);
             
             let vae = configs
@@ -199,65 +200,60 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
 
     let init_latent_dist : DiagonalGaussianDistribution = vae.encode(&input_image)?;
 
-    // TODO(bt,2025-02-18): This takes a little bit to generate the sample.
-    //  This is a target for performance improvement
-    println!("Generating latents from input image...");
-    let latents = (init_latent_dist.sample()? * vae_scale)?;
-    
-    //.to_device(&configs.device)?;
-    
-    println!("Initial latents shape: {:?}", latents.shape());
-
-    println!("Calculating start step for diffusion process...");
-
+    // Parse and calculate the img2img strength
     let img2img_strength = match i2i_strength {
         None => 0.75f64,
         Some(strength) => (strength as f64) / 100.0f64,
     };
 
-    let t_start = {
-        let start = configs.scheduler_steps - (configs.scheduler_steps as f64 * img2img_strength) as usize;
+    // Create LCM guidance scale embeddings
+    let embedding_dim = 256;
+    let guidance_scale_embedding = scheduler.get_guidance_scale_embedding(
+        guidance_scale, 
+        embedding_dim, 
+        &configs.device, 
+        configs.dtype
+    )?;
 
-        println!("Starting from step {} of {} (strength: {})", start, configs.scheduler_steps, img2img_strength);
-        start
-    };
+    // Generate latents from input image using the LCM approach
+    println!("Generating latents from input image...");
+    let init_latents = (init_latent_dist.sample()? * vae_scale)?;
+    println!("Initial latents shape: {:?}", init_latents.shape());
 
-    let latents = if t_start < scheduler.timesteps().len() {
-        println!("Adding noise to latents...");
-        let noise = latents.randn_like(0f64, 1f64)?;
-        scheduler.add_noise(&latents, noise, scheduler.timesteps()[t_start])?
-    } else {
-        println!("Using latents directly (no noise addition needed)");
-        latents
-    };
+    // Calculate timesteps for LCM with proper img2img handling
+    let timesteps = LCMScheduler::get_timesteps_for_steps(configs.scheduler_steps, img2img_strength);
+    let t_start = timesteps[0]; // First denoising step
+
+    // Add noise at the appropriate timestep for img2img
+    println!("Adding noise to latents for t_start={}", t_start);
+    let noise = init_latents.randn_like(0f64, 1f64)?;
+    let latents = scheduler.add_noise(&init_latents, noise, t_start)?;
 
     println!("Latents initialized successfully");
-
-    let timesteps: Vec<_> = scheduler.timesteps().iter().copied().collect();
-
-    // Initial noise shape: [1, 4, 64, 64]
     println!("Initial noise shape: {:?}", latents.shape());
 
     println!("Starting diffusion process...");
     
     let mut latents = latents;
+    let timesteps: Vec<_> = scheduler.timesteps().iter().copied().collect();
 
     for (timestep_index, &timestep) in timesteps.iter().enumerate() {
-        if timestep_index < t_start {
-            continue;
-        }
-
         println!("Processing step {}/{} @ timestamp = {}", timestep_index + 1, timesteps.len(), timestep);
 
         let latent_model_input = if use_guide_scale {
             Tensor::cat(&[&latents, &latents], 0)?
         } else {
-            latents.clone() // TODO(bt,2025-08-18): Do we have to clone the tensor? `scale_model_input` requires ownership
+            latents.clone()
         };
 
-        let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep)?;
+        let latent_model_input = scheduler.scale_model_input(latent_model_input, timestep);
 
-        let mut noise_pred = match unet.inference(&latent_model_input, timestep as f64, &text_embeddings) {
+        // Use the guidance scale embedding in the UNet inference with the proper method name
+        let mut noise_pred = match unet.forward_with_guidance(
+            &latent_model_input, 
+            timestep as f64, 
+            &text_embeddings,
+            &guidance_scale_embedding) {
             Ok(pred) => pred,
             Err(e) => {
                 println!("UNet inference failed with error: {}", e);
@@ -271,7 +267,8 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
             noise_pred = (noise_pred_uncond + (guidance_scale * (noise_pred_text - noise_pred_uncond)?)?)?;
         }
 
-        latents = scheduler.step(&noise_pred, timestep, &latents)?;
+        // Apply the LCM scheduler step
+        latents = scheduler.step(&noise_pred, timestep, &latents, timestep_index, configs.scheduler_steps)?;
     }
 
     println!("Diffusion process completed, decoding image...");
@@ -282,8 +279,6 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
     println!("Scaling image back");
     let image = ((image / 2.)? + 0.5)?;
     
-    // TODO(bt,2025-08-18): This normalization is slow.
-    //  This is a target for performance improvement
     println!("Normalized image values");
     let image = (image.clamp(0f32, 1.)? * 255.)?;
 
