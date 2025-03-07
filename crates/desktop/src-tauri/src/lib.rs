@@ -3,6 +3,7 @@ pub mod events;
 pub mod ml;
 pub mod state;
 pub mod threads;
+pub mod transfer;
 
 use crate::endpoints::download_models::download_models;
 use crate::endpoints::image_endpoint::infer_image;

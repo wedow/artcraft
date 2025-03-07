@@ -666,12 +666,14 @@ dependencies = [
  "cudarc",
  "expanduser",
  "filesys",
+ "futures 0.3.29",
  "hf-hub 0.3.2",
  "image",
  "libloading 0.8.6",
  "log",
  "memory_caching",
  "once_cell",
+ "openssl",
  "rand 0.8.5",
  "reqwest 0.12.12",
  "serde",
@@ -681,6 +683,8 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-log",
  "tokenizers 0.15.2",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]
