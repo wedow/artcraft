@@ -30,7 +30,7 @@ use tokio::time::sleep;
 /// The number of threads can be tuned by the environment variable `TOKIO_WORKER_THREADS` as documented in
 /// https://docs.rs/tokio/latest/tokio/runtime/struct.Builder.html#method.worker_threads
 #[allow(clippy::too_many_arguments)]
-fn download(
+pub fn download(
   url: String,
   filename: String,
   max_files: usize,
@@ -82,7 +82,7 @@ fn download(
 
 
 #[allow(clippy::too_many_arguments)]
-async fn download_async(
+pub async fn download_async(
   url: String,
   filename: String,
   max_files: usize,
