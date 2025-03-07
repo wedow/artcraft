@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { SelectionManager } from "../NodesManagers";
-import { BaseNode } from "./BaseNode";
+import { BaseNode, SupportedNode } from "./BaseNode";
 import { Size } from "../types";
 import { LoadingVideosProvider } from "../EngineUtitlities/LoadingVideosProvider";
 import { NodeProgressEventDetail } from "../types/events";
@@ -20,7 +20,7 @@ export enum UploadStatus {
 }
 
 export abstract class NetworkedNode extends BaseNode {
-  public kNode: Konva.Image;
+  public kNode: SupportedNode;
 
   // members to deal with loading progress
   public didFinishLoading: boolean = false;
@@ -49,7 +49,7 @@ export abstract class NetworkedNode extends BaseNode {
     localFile,
     loadingVideosProviderRef,
   }: {
-    kNode: Konva.Image;
+    kNode: SupportedNode;
     selectionManagerRef: SelectionManager;
     mediaLayerRef: Konva.Layer;
     loadingVideosProviderRef?: LoadingVideosProvider;
