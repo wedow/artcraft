@@ -9,11 +9,11 @@ use hf_hub::api::sync::Api;
 use log::info;
 use std::path::PathBuf;
 
-const DEFAULT_SD_IMAGE_WIDTH: usize = 512;
-const DEFAULT_SD_IMAGE_HEIGHT: usize = 512;
+const DEFAULT_SD_IMAGE_WIDTH: usize = 1024;
+const DEFAULT_SD_IMAGE_HEIGHT: usize = 1024;
 
 const DEFAULT_SD_NUMERIC_DATATYPE: DType = DType::F32;
-const SD_VERSION: StableDiffusionVersion = StableDiffusionVersion::Turbo;
+const SD_VERSION: StableDiffusionVersion = StableDiffusionVersion::V1_5;
 
 const DEFAULT_DATA_DIR_UNIX : &str = "~/artcraft";
 
@@ -57,13 +57,20 @@ impl AppConfig {
           info!("CUDA not available ({}), falling back to CPU", e);
           Device::Cpu
         });
+
     
     let sd_config = match SD_VERSION {
       StableDiffusionVersion::Turbo => {
         StableDiffusionConfig::sdxl_turbo(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
       }
-      _ => {
+      StableDiffusionVersion::V1_5 | StableDiffusionVersion::V1_5Inpaint => {
+        StableDiffusionConfig::v1_5(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
+      }
+      StableDiffusionVersion::V2_1 | StableDiffusionVersion::V2Inpaint => {
         StableDiffusionConfig::v2_1(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
+      }
+      StableDiffusionVersion::Xl | StableDiffusionVersion::XlInpaint => {
+        StableDiffusionConfig::sdxl(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
       }
     };
     

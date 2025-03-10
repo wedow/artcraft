@@ -16,6 +16,10 @@ impl UNetModel {
     Ok(Self { model })
   }
 
+  pub fn new_with_inner(model: UNet2DConditionModel) -> Self {
+    Self { model }
+  }
+
   pub fn inference(&self, latent_model_input: &Tensor, timestep: f64, text_embeddings: &Tensor) -> anyhow::Result<Tensor> {
     Ok(self.model.forward(&latent_model_input, timestep, &text_embeddings)?)
   }

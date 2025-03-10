@@ -1,6 +1,6 @@
 use super::schedulers::{betas_for_alpha_bar, BetaSchedule, PredictionType};
 use candle::{DType, Device, IndexOp, Result, Tensor};
-
+const FINAL_ALPHA_CUMPROD: f64 = 0.9991499781608582;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LCMVarianceType {
     FixedSmall,
@@ -60,7 +60,7 @@ pub struct LCMScheduler {
 }
 
 impl LCMScheduler {
-    pub fn new(inference_steps: usize, config: LCMSchedulerConfig) -> Result<Self> {
+    pub fn new(inference_steps: usize, strength: f64, config: LCMSchedulerConfig) -> Result<Self> {
         let betas = match config.beta_schedule {
             BetaSchedule::ScaledLinear => super::utils::linspace(
                 config.beta_start.sqrt(),
@@ -84,7 +84,6 @@ impl LCMScheduler {
         }
 
         // Create proper LCM timesteps to match diffusers
-        let strength = 0.8;
         let timesteps = LCMScheduler::get_timesteps_for_steps(inference_steps, strength);
         let step_ratio = config.train_timesteps / inference_steps;
 
@@ -335,7 +334,7 @@ impl LCMScheduler {
 
         let alpha_prod_t = self.alphas_cumprod[timestep];
         let alpha_prod_t_prev = if prev_timestep == 0 {
-            1.0
+            FINAL_ALPHA_CUMPROD
         } else {
             self.alphas_cumprod[prev_timestep]
         };
@@ -355,7 +354,7 @@ impl LCMScheduler {
             }
         };
 
-        let denoised = ((pred_original_sample * c_out)? + (sample * c_skip)?)?;
+        let denoised = ((c_out * pred_original_sample )? + (c_skip * sample)?)?;
 
         let pred_prev_sample = if step_index != self.timesteps.len() - 1 {
             println!("Adding noise at intermediate step {}", timestep);
@@ -470,6 +469,7 @@ impl LCMScheduler {
     // }
 
     pub fn add_noise(&self, original: &Tensor, noise: Tensor, timestep: usize) -> Result<Tensor> {
+        println!("Adding noise at timestep {}", timestep);
         let timestep = if timestep >= self.alphas_cumprod.len() {
             self.alphas_cumprod.len() - 1 // Ensure valid range
         } else {
