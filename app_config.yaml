@@ -1,7 +1,8 @@
-image_width: 512
-image_height: 512
+image_width: 1024
+image_height: 1024
 #scheduler_steps: 15
 # NB(bt): It looks like we can get down to 2 sampling steps, perhaps ?
-scheduler_steps: 4
+scheduler_steps: 8
 scheduler_samples: 1
-cfg_scale: 1.1
+cfg_scale: 15.0
+seed: 42

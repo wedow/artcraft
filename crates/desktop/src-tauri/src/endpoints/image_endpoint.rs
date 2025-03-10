@@ -13,9 +13,11 @@ use tauri::{AppHandle, State};
 use crate::ml::downloads::download_all_models::download_all_models;
 
 const PROMPT_FILENAME : &str = "prompt.txt";
-const PROMPT: &str = "A beautiful landscape with mountains and a lake";
+const PROMPT: &str = "green goblin, blood dripping from lips, detailed, photorealistic, 8k";
 
 const NEGATIVE_PROMPT: &str = "bad quality, bad faces, poor quality, blurry faces, watermark";
+
+const RANDOM_SEED: u32 = 42;
 
 // TODO: Mark async https://github.com/tauri-apps/tauri/discussions/7737
 
@@ -77,6 +79,7 @@ async fn do_infer_image(
     i2i_strength: strength,
     cfg_scale: config.cfg_scale,
     app: &app,
+    use_flash_attn: true,
   };
 
   match lcm_pipeline(args) {

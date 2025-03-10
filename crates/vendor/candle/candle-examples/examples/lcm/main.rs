@@ -623,6 +623,7 @@ fn run(args: Args) -> Result<()> {
 
     let mut scheduler = stable_diffusion::lcm::LCMScheduler::new(
         n_steps,
+        strength,
         stable_diffusion::lcm::LCMSchedulerConfig::default(),
     )?;
 
@@ -631,7 +632,8 @@ fn run(args: Args) -> Result<()> {
     let seed = seed.unwrap_or(rand::thread_rng().gen_range(0u64..u64::MAX));
     println!("Using seed {seed}");
     device.set_seed(seed)?;
-    let use_guide_scale = guidance_scale > 1.0;
+    // let use_guide_scale = guidance_scale > 1.0;
+    let use_guide_scale = false;
 
     let which = match sd_version {
         StableDiffusionVersion::Xl
@@ -984,7 +986,7 @@ fn run(args: Args) -> Result<()> {
         println!("Starting LCM sampling");
         let start_time = std::time::Instant::now();
 
-        let embedding_dim = 256;
+        let embedding_dim = 1280;
         let guidance_scale_embedding = scheduler.get_guidance_scale_embedding(guidance_scale, embedding_dim, &device, dtype)?;
 
         for (timestep_index, &timestep) in timesteps.iter().enumerate() {

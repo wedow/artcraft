@@ -27,7 +27,7 @@ pub fn infer_clip_text_embeddings(
   dtype: DType,
   use_guide_scale: bool,
 ) -> anyhow::Result<Tensor> {
-  info!("Preparing text embeddings...");
+  info!("Preparing text embeddings... for {:?}", sd_version);
 
   let which = match sd_version {
     StableDiffusionVersion::Xl
@@ -43,7 +43,7 @@ pub fn infer_clip_text_embeddings(
         &prompt,
         &uncond_prompt,
         None, // tokenizer
-        None, // clip_weights
+        clip_weights.clone(),
         None, // clip2_weights
         sd_version,
         &sd_config,
@@ -76,6 +76,7 @@ fn do_infer_clip_text_embeddings(
     use_guide_scale: bool,
     first: bool,
   ) -> anyhow::Result<Tensor> {
+    info!("do_infer_clip_text_embeddings called with args {:?}", (prompt, uncond_prompt, tokenizer.clone().unwrap_or_else(|| "None".to_string()), clip_weights.clone().unwrap_or_else(|| "None".to_string()), clip2_weights.clone().unwrap_or_else(|| "None".to_string()), sd_version, sd_config, use_f16, device, dtype, use_guide_scale, first));
   
   let tokenizer_file = if first {
     info!("ModelFile::Tokenizer");
@@ -85,9 +86,9 @@ fn do_infer_clip_text_embeddings(
     ModelFile::Tokenizer2
   };
   
+  let tokenizer = tokenizer_file.get(tokenizer, sd_version, use_f16)?;
   info!("Loading clip from download");
-  //let tokenizer = tokenizer_file.get(tokenizer, sd_version, use_f16)?;
-  let tokenizer = PathBuf::from(ModelRegistry::Clip.get_filename());
+
   
   info!("Tokenizer path: {:?}", tokenizer);
   
