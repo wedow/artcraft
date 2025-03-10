@@ -15,6 +15,8 @@ use std::fs::remove_file;
 use std::io::SeekFrom;
 use std::path::Path;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::mpsc::Sender;
 use std::time::Duration;
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
@@ -22,6 +24,10 @@ use tokio::io::AsyncSeekExt;
 use tokio::sync::Semaphore;
 use tokio::time::sleep;
 
+pub struct ProgressUpdate {
+  pub complete: usize,
+  pub total_length: usize,
+}
 
 /// max_files: Number of open file handles, which determines the maximum number of parallel downloads
 /// parallel_failures:  Number of maximum failures of different chunks in parallel (cannot exceed max_files)
@@ -62,6 +68,7 @@ pub fn download(
         parallel_failures,
         max_retries,
         headers,
+        None,
       )
         .await
     })
@@ -82,20 +89,20 @@ pub fn download(
 
 
 #[allow(clippy::too_many_arguments)]
-pub async fn download_async(
+pub async fn download_async<P: AsRef<Path>>(
   url: String,
-  filename: String,
+  filename: P,
   max_files: usize,
   chunk_size: usize,
   parallel_failures: usize,
   max_retries: usize,
   input_headers: Option<HashMap<String, String>>,
+  maybe_progress_sender: Option<Sender<ProgressUpdate>>,
 ) -> Result<(), Error> {
   let client = reqwest::Client::builder()
     // https://github.com/hyperium/hyper/issues/2136#issuecomment-589488526
     .http2_keep_alive_timeout(Duration::from_secs(15))
-    .build()
-    .unwrap();
+    .build()?;
 
   let mut headers = HeaderMap::new();
   let mut auth_token = None;
@@ -163,16 +170,19 @@ pub async fn download_async(
   let mut handles = FuturesUnordered::new();
   let semaphore = Arc::new(Semaphore::new(max_files));
   let parallel_failures_semaphore = Arc::new(Semaphore::new(parallel_failures));
+  let max_chunk_complete = Arc::new(AtomicUsize::new(0));
 
   for start in (0..length).step_by(chunk_size) {
     let url = redirected_url.to_string();
-    let filename = filename.clone();
+    let filename = filename.as_ref().to_owned();
     let client = client.clone();
     let headers = headers.clone();
 
     let stop = std::cmp::min(start + chunk_size - 1, length);
     let semaphore = semaphore.clone();
     let parallel_failures_semaphore = parallel_failures_semaphore.clone();
+    let maybe_progress = maybe_progress_sender.clone();
+    let max_chunk_complete = max_chunk_complete.clone();
     handles.push(tokio::spawn(async move {
       let permit = semaphore
         .acquire_owned()
@@ -199,6 +209,19 @@ pub async fn download_async(
           chunk = download_chunk(&client, &url, &filename, start, stop, headers.clone()).await;
           i += 1;
           drop(parallel_failure_permit);
+          
+          if let Some(sender) = maybe_progress.as_ref() {
+            // NB: Calling fetch_max twice. First call will return the lower value.
+            let _old = max_chunk_complete.fetch_max(stop, Ordering::SeqCst);
+            let max_chunk = max_chunk_complete.fetch_max(stop, Ordering::SeqCst);
+            let progress_update = ProgressUpdate { 
+              complete: max_chunk,
+              total_length: length,
+            };
+            if let Err(_err) = sender.send(progress_update) {
+              // Fail silently, not essential to issue progress updates
+            }
+          }
         }
       }
       drop(permit);
@@ -227,10 +250,10 @@ pub async fn download_async(
   Ok(())
 }
 
-async fn download_chunk(
+async fn download_chunk<P: AsRef<Path>>(
   client: &reqwest::Client,
   url: &str,
-  filename: &str,
+  filename: P,
   start: usize,
   stop: usize,
   headers: HeaderMap,

@@ -15,10 +15,13 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
   let url = model.get_download_url().to_string();
 
   let filename = "temp.obj".to_string();
+  
+  let filename = app_data_root.weights_dir().path().join(filename);
 
   let headers = None;
 
-  let result = download_async(url, filename, MAX_FILES, CHUNK_SIZE, PARALLEL_FAILURES, MAX_RETRIES, headers).await;
+  let result = download_async(url, filename, MAX_FILES, CHUNK_SIZE, 
+                              PARALLEL_FAILURES, MAX_RETRIES, headers, None).await;
   
   match result {
     Ok(_) => {
