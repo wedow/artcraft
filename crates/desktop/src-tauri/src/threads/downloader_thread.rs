@@ -1,16 +1,58 @@
 use crate::ml::model_type::ModelType;
 use crate::state::app_dir::AppDataRoot;
-use crate::transfer::download::download_async;
-use tauri::AppHandle;
+use crate::transfer::download::{download_async, ProgressUpdate};
+use tauri::{AppHandle, Emitter};
 use std::collections::VecDeque;
+use std::sync::{Arc, Mutex};
+use std::sync::mpsc::Receiver;
+use log::error;
+use tokio::task::JoinHandle;
+use crate::events::notification_event::{NotificationEvent, NotificationModelType};
 
 const MAX_FILES : usize = 8;
 const CHUNK_SIZE : usize = 1024 * 1024;
 const PARALLEL_FAILURES : usize = 8;
 const MAX_RETRIES : usize = 30;
 
+struct TaskAndStatus<H> {
+  pub task: JoinHandle<H>,
+  pub receiver: Receiver<ProgressUpdate>,
+}
+
 pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! {
-  
+
+  let mut status_check_queue : Arc<Mutex<Vec<TaskAndStatus<_>>>> = Arc::new(Mutex::new(Vec::new()));
+  let mut status_check_queue2 = status_check_queue.clone();
+
+  tokio::spawn(async move {
+    loop {
+
+      match status_check_queue2.lock() {
+        Err(err) => error!("Could not unlock: {:?}", err),
+        Ok(lock) => {
+          
+          for item in &*lock {
+            if let Ok(item) = item.receiver.try_recv() {
+              let result = app.emit("notification", NotificationEvent::ModelDownloadStarted { 
+                model_name: "model", 
+                model_type: NotificationModelType::Unet 
+              });
+              
+              if let Err(err) = result {
+                error!("Could not emit event: {}", err);
+              }
+            }
+          }
+        }
+      }
+
+      std::thread::sleep(std::time::Duration::from_millis(500));
+    }
+  });
+
+
+
+
   let mut download_queue = VecDeque::new();
   
   // TODO: Automatic enqueue
@@ -23,9 +65,7 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
   while let Some(model) = download_queue.pop_front() {
     let url = model.get_download_url().to_string();
 
-    let filename = "temp.obj".to_string();
-
-    let filename = app_data_root.weights_dir().path().join(filename);
+    let filename = app_data_root.weights_dir().model_path(&model);
 
     let headers = None;
     
@@ -34,6 +74,15 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
     let task = tokio::spawn(download_async(url, filename, MAX_FILES, CHUNK_SIZE,
                                 PARALLEL_FAILURES, MAX_RETRIES, headers, Some(tx)));
     
+    match status_check_queue.lock() {
+      Err(err) => error!("Could not unlock: {:?}", err),
+      Ok(mut lock) => {
+        lock.push(TaskAndStatus {
+          task,
+          receiver: rx,
+        })
+      }
+    }
   }
 
   
@@ -58,3 +107,4 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
     std::thread::sleep(std::time::Duration::from_millis(500));
   }
 }
+
