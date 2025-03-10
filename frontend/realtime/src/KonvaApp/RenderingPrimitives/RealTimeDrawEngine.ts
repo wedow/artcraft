@@ -212,7 +212,7 @@ export class RealTimeDrawEngine {
     // Add mouse events for preview canvas copying
     this.previewCopyListener();
     
-    //this.listenToServerEvents();
+    this.listenToServerEvents();
    
   }
 

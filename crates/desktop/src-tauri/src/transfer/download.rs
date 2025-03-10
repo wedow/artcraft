@@ -18,6 +18,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::Sender;
 use std::time::Duration;
+use log::info;
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 use tokio::io::AsyncSeekExt;
@@ -36,59 +37,6 @@ pub struct ProgressUpdate {
 /// The number of threads can be tuned by the environment variable `TOKIO_WORKER_THREADS` as documented in
 /// https://docs.rs/tokio/latest/tokio/runtime/struct.Builder.html#method.worker_threads
 #[allow(clippy::too_many_arguments)]
-pub fn download(
-  url: String,
-  filename: String,
-  max_files: usize,
-  chunk_size: usize,
-  parallel_failures: usize,
-  max_retries: usize,
-  headers: Option<HashMap<String, String>>,
-) -> Result<(), Error> {
-  if parallel_failures > max_files {
-    return Err(Error::new_err(
-      "Error parallel_failures cannot be > max_files".to_string(),
-    ));
-  }
-  if (parallel_failures == 0) != (max_retries == 0) {
-    return Err(Error::new_err(
-      "For retry mechanism you need to set both `parallel_failures` and `max_retries`"
-        .to_string(),
-    ));
-  }
-  tokio::runtime::Builder::new_multi_thread()
-    .enable_all()
-    .build()?
-    .block_on(async {
-      download_async(
-        url,
-        filename.clone(),
-        max_files,
-        chunk_size,
-        parallel_failures,
-        max_retries,
-        headers,
-        None,
-      )
-        .await
-    })
-    .map_err(|err| {
-      let path = Path::new(&filename);
-      if path.exists() {
-        match remove_file(filename) {
-          Ok(_) => err,
-          Err(err) => {
-            Error::new_err(format!("Error while removing corrupted file: {err}"))
-          }
-        }
-      } else {
-        err
-      }
-    })
-}
-
-
-#[allow(clippy::too_many_arguments)]
 pub async fn download_async<P: AsRef<Path>>(
   url: String,
   filename: P,
@@ -99,6 +47,8 @@ pub async fn download_async<P: AsRef<Path>>(
   input_headers: Option<HashMap<String, String>>,
   maybe_progress_sender: Option<Sender<ProgressUpdate>>,
 ) -> Result<(), Error> {
+  info!(">>> Downloading: {}", filename.as_ref().display());
+
   let client = reqwest::Client::builder()
     // https://github.com/hyperium/hyper/issues/2136#issuecomment-589488526
     .http2_keep_alive_timeout(Duration::from_secs(15))
@@ -166,6 +116,9 @@ pub async fn download_async<P: AsRef<Path>>(
     ))?
     .parse()
     .map_err(|err| Error::new_err(format!("Error while downloading: {err}")))?;
+
+
+  info!("File {:?} is {:?} length", filename.as_ref(), length);
 
   let mut handles = FuturesUnordered::new();
   let semaphore = Arc::new(Semaphore::new(max_files));
