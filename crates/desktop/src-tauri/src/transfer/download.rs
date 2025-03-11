@@ -19,6 +19,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 use log::info;
+use tempfile::NamedTempFile;
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 use tokio::io::AsyncSeekExt;
@@ -39,7 +40,8 @@ pub struct ProgressUpdate {
 #[allow(clippy::too_many_arguments)]
 pub async fn download_async<P: AsRef<Path>>(
   url: String,
-  filename: P,
+  filename: NamedTempFile,
+  final_filename: P,
   max_files: usize,
   chunk_size: usize,
   parallel_failures: usize,
@@ -200,6 +202,12 @@ pub async fn download_async<P: AsRef<Path>>(
       }
     }
   }
+
+  let file = filename.persist(final_filename)
+    .map_err(|e| Error::new_err(format!("Could not rename to final filename: {:?}", e)))?;
+
+  file.sync_all()?;
+
   Ok(())
 }
 

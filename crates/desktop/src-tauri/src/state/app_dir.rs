@@ -1,10 +1,14 @@
 use crate::state::os_platform::OsPlatform;
 use expanduser::expanduser;
 use std::path::{Path, PathBuf};
+use tempdir::TempDir;
+use tempfile::{Builder, NamedTempFile};
 use crate::ml::model_type::ModelType;
 
 const ASSETS_SUBDIRECTORY : &str = "assets";
 const WEIGHTS_SUBDIRECTORY : &str = "weights";
+
+const TEMPORARY_SUBDIRECTORY : &str = "temp";
 
 /// The path to the application data directory, which includes "asset" and "weights" data.
 #[derive(Clone)]
@@ -12,6 +16,7 @@ pub struct AppDataRoot {
   path: PathBuf,
   assets_dir: AppAssetsDir,
   weights_dir: AppWeightsDir,
+  temp_dir: TemporaryDir,
 }
 
 #[derive(Clone)]
@@ -21,6 +26,11 @@ pub struct AppAssetsDir {
 
 #[derive(Clone)]
 pub struct AppWeightsDir {
+  path: PathBuf,
+}
+
+#[derive(Clone)]
+pub struct TemporaryDir {
   path: PathBuf,
 }
 
@@ -51,11 +61,13 @@ impl AppDataRoot {
     
     let assets_dir = AppAssetsDir::create_existing(dir.join(ASSETS_SUBDIRECTORY))?;
     let weights_dir = AppWeightsDir::create_existing(dir.join(WEIGHTS_SUBDIRECTORY))?;
-    
+    let temp_dir = TemporaryDir::create_existing(dir.join(TEMPORARY_SUBDIRECTORY))?;
+
     Ok(Self {
       path: dir,
       assets_dir,
       weights_dir,
+      temp_dir,
     })
   }
   
@@ -66,7 +78,11 @@ impl AppDataRoot {
   pub fn weights_dir(&self) -> &AppWeightsDir {
     &self.weights_dir
   }
-  
+
+  pub fn temp_dir(&self) -> &TemporaryDir {
+    &self.temp_dir
+  }
+
   pub fn path(&self) -> &Path {
     &self.path
   }
@@ -119,5 +135,37 @@ impl AppWeightsDir {
   
   pub fn model_path(&self, model_registry: &ModelType) -> PathBuf {
     self.path.join(model_registry.get_filename())
+  }
+}
+
+impl TemporaryDir {
+  pub fn create_existing<P: AsRef<Path>>(dir: P) -> anyhow::Result<Self> {
+    let mut dir = dir.as_ref().to_path_buf();
+    match dir.canonicalize() {
+      Ok(d) => dir = d,
+      Err(err) => {
+        println!("Error canonicalizing {:?}: {}", dir, err);
+      }
+    }
+    if !dir.exists() {
+      println!("Creating directory {:?}", dir);
+      std::fs::create_dir(&dir)?;
+    }
+    Ok(Self {
+      path: dir,
+    })
+  }
+
+  pub fn with_prefix(&self, prefix: &str) -> anyhow::Result<TempDir> {
+    let tempdir = TempDir::new_in(&self.path, prefix)?;
+    Ok(tempdir)
+  }
+
+  pub fn new_named_temp_file(&self) -> anyhow::Result<NamedTempFile> {
+    let tempfile = Builder::new()
+      .prefix("temp_")
+      .suffix(".bin")
+      .tempfile_in(&self.path)?;
+    Ok(tempfile)
   }
 }

@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
+use tempfile::NamedTempFile;
 use tokio::task::JoinHandle;
 
 const MAX_FILES : usize = 8;
@@ -84,8 +85,25 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
 
     info!("Download: {:?}", filename);
 
-    let task = tokio::spawn(download_async(url, filename, MAX_FILES, CHUNK_SIZE,
-                                PARALLEL_FAILURES, MAX_RETRIES, headers, Some(tx)));
+    let temp_file = match app_data_root.temp_dir().new_named_temp_file() {
+      Ok(file) => file,
+      Err(err) => {
+        error!("Couldn't create a temporary file: {:?}", err);
+        continue;
+      }
+    };
+
+    let task = tokio::spawn(download_async(
+      url,
+      temp_file,
+      filename.clone(),
+      MAX_FILES,
+      CHUNK_SIZE,
+      PARALLEL_FAILURES,
+      MAX_RETRIES,
+      headers,
+      Some(tx),
+    ));
 
     match status_check_queue.lock() {
       Err(err) => error!("Could not unlock: {:?}", err),
