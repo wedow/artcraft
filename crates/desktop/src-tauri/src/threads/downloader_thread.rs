@@ -4,7 +4,7 @@ use crate::state::app_dir::AppDataRoot;
 use crate::transfer::download::{download_async, ProgressUpdate};
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
-use log::{error, info};
+use log::{debug, error, info};
 use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
@@ -32,7 +32,7 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
 
   let mut download_queue = VecDeque::new();
   
-  // TODO: Automatic enqueue
+  // TODO: Automatic enqueue of known important models + enqueue new models on-demand
   download_queue.push_back(ModelType::ClipJson);
   download_queue.push_back(ModelType::SdxlTurboUnet);
   download_queue.push_back(ModelType::SdxlTurboVae);
@@ -47,6 +47,7 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
     let filename = app_data_root.weights_dir().model_path(&model);
 
     if filename.exists() {
+      info!("File already exists: {:?}", &filename);
       continue;
     }
 
@@ -106,9 +107,13 @@ pub async fn download_notify_thread(queue: Arc<Mutex<Vec<TaskAndStatus>>>, app: 
   loop {
     match queue.lock() {
       Err(err) => error!("Could not unlock: {:?}", err),
-      Ok(lock) => {
+      Ok(mut lock) => {
 
-        for item in &*lock {
+        debug!(">>>>> Notifier has {} items", lock.len());
+
+        let mut reenqueue = Vec::with_capacity(lock.len());
+
+        for item in (*lock).drain(..) {
           if let Ok(item) = item.receiver.try_recv() {
             let result = app.emit("notification", NotificationEvent::ModelDownloadProgress {
               model_name: "model",
@@ -121,7 +126,15 @@ pub async fn download_notify_thread(queue: Arc<Mutex<Vec<TaskAndStatus>>>, app: 
               error!("Could not emit event: {}", err);
             }
           }
+
+          if item.filename.exists() {
+            debug!("No longer sending notifications for {:?}", &item.filename);
+          } else {
+            reenqueue.push(item);
+          }
         }
+
+        lock.extend(reenqueue);
       }
     }
 
