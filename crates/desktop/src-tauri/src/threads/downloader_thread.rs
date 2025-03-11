@@ -13,6 +13,7 @@ use tauri::{AppHandle, Emitter};
 use tempfile::NamedTempFile;
 use tokio::task::JoinHandle;
 
+const NOTIFICATION_CHANNEL_NAME : &str = "notification";
 const MAX_FILES : usize = 8;
 const CHUNK_SIZE : usize = 1024 * 1024;
 const PARALLEL_FAILURES : usize = 8;
@@ -28,12 +29,16 @@ struct ModelDownloadStatusChannel {
 pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! {
 
   let mut status_check_queue : Arc<Mutex<Vec<ModelDownloadStatusChannel>>> = Arc::new(Mutex::new(Vec::new()));
-  let status_check_queue2 = status_check_queue.clone();
 
-  tokio::spawn(download_notify_thread(status_check_queue2, app));
+  {
+    let status_check_queue2 = status_check_queue.clone();
+    let app2 = app.clone();
+
+    tokio::spawn(download_notify_thread(status_check_queue2, app2));
+  }
 
   let mut download_queue = VecDeque::new();
-  
+
   // TODO: Automatic enqueue of known important models + enqueue new models on-demand
   download_queue.push_back(ModelType::ClipJson);
   download_queue.push_back(ModelType::SdxlTurboUnet);
@@ -66,6 +71,15 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
         continue;
       }
     };
+
+    let result = app.emit(NOTIFICATION_CHANNEL_NAME, NotificationEvent::ModelDownloadStarted {
+      model_name: model.get_name(),
+      model_type: model.get_notification_type(),
+    });
+
+    if let Err(err) = result {
+      error!("Could not emit event: {}", err);
+    }
 
     let task = tokio::spawn(download_async(
       url,
@@ -118,7 +132,7 @@ pub async fn download_notify_thread(queue: Arc<Mutex<Vec<ModelDownloadStatusChan
 
         for item in (*lock).drain(..) {
           if let Ok(update) = item.receiver.try_recv() {
-            let result = app.emit("notification", NotificationEvent::ModelDownloadProgress {
+            let result = app.emit(NOTIFICATION_CHANNEL_NAME, NotificationEvent::ModelDownloadProgress {
               model_name: &item.model_name,
               model_type: item.model_type,
               currently_downloaded_bytes: update.complete,
@@ -133,7 +147,7 @@ pub async fn download_notify_thread(queue: Arc<Mutex<Vec<ModelDownloadStatusChan
           if item.final_file_path.exists() {
             debug!("No longer sending notifications for {:?}", &item.final_file_path);
 
-            let result = app.emit("notification", NotificationEvent::ModelDownloadComplete {
+            let result = app.emit(NOTIFICATION_CHANNEL_NAME, NotificationEvent::ModelDownloadComplete {
               model_name: &item.model_name,
               model_type: item.model_type,
             });
