@@ -6,6 +6,8 @@ use serde::Serialize;
 pub enum NotificationModelType {
   Unet,
   Vae,
+  Json,
+  ClipEncoder,
 }
 
 #[derive(Clone, Serialize)]

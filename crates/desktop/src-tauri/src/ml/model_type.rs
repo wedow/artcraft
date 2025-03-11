@@ -1,5 +1,6 @@
-use std::path::PathBuf;
+use crate::events::notification_event::NotificationModelType;
 use crate::state::app_dir::AppWeightsDir;
+use std::path::PathBuf;
 
 #[derive(Copy, Clone, Debug)]
 pub enum ModelType {
@@ -11,6 +12,26 @@ pub enum ModelType {
 }
 
 impl ModelType {
+  pub fn get_name(&self) -> &'static str {
+    match self {
+      Self::ClipJson => "CLIP (JSON)",
+      Self::SdxlTurboUnet => "SDXL Turbo UNET",
+      Self::SdxlTurboVae => "SDXL Turbo VAE",
+      Self::SdxlTurboClipEncoder => "Clip Encoder #1",
+      Self::SdxlTurboClipEncoder2 => "Clip Encoder #2",
+    }
+  }
+
+  pub fn get_notification_type(&self) -> NotificationModelType {
+    match self {
+      Self::ClipJson => NotificationModelType::Json,
+      Self::SdxlTurboUnet => NotificationModelType::Unet,
+      Self::SdxlTurboVae => NotificationModelType::Vae,
+      Self::SdxlTurboClipEncoder => NotificationModelType::ClipEncoder,
+      Self::SdxlTurboClipEncoder2 => NotificationModelType::ClipEncoder,
+    }
+  }
+
   pub fn get_hf_id(&self) -> Option<&'static str> {
     match self {
       Self::ClipJson => Some("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k"),

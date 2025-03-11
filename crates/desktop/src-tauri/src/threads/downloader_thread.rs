@@ -18,14 +18,16 @@ const CHUNK_SIZE : usize = 1024 * 1024;
 const PARALLEL_FAILURES : usize = 8;
 const MAX_RETRIES : usize = 30;
 
-struct TaskAndStatus {
-  pub filename: PathBuf,
+struct ModelDownloadStatusChannel {
+  pub model_name: String,
+  pub model_type: NotificationModelType,
+  pub final_file_path: PathBuf,
   pub receiver: Receiver<ProgressUpdate>,
 }
 
 pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! {
 
-  let mut status_check_queue : Arc<Mutex<Vec<TaskAndStatus>>> = Arc::new(Mutex::new(Vec::new()));
+  let mut status_check_queue : Arc<Mutex<Vec<ModelDownloadStatusChannel>>> = Arc::new(Mutex::new(Vec::new()));
   let status_check_queue2 = status_check_queue.clone();
 
   tokio::spawn(download_notify_thread(status_check_queue2, app));
@@ -80,9 +82,11 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
     match status_check_queue.lock() {
       Err(err) => error!("Could not unlock: {:?}", err),
       Ok(mut lock) => {
-        lock.push(TaskAndStatus {
-          filename: filename.clone(),
+        lock.push(ModelDownloadStatusChannel {
           receiver: rx,
+          final_file_path: filename.clone(),
+          model_name: model.get_name().to_string(),
+          model_type: model.get_notification_type(),
         })
       }
     }
@@ -103,23 +107,22 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
   }
 }
 
-pub async fn download_notify_thread(queue: Arc<Mutex<Vec<TaskAndStatus>>>, app: AppHandle) -> ! {
+pub async fn download_notify_thread(queue: Arc<Mutex<Vec<ModelDownloadStatusChannel>>>, app: AppHandle) -> ! {
   loop {
     match queue.lock() {
       Err(err) => error!("Could not unlock: {:?}", err),
       Ok(mut lock) => {
-
         debug!(">>>>> Notifier has {} items", lock.len());
 
         let mut reenqueue = Vec::with_capacity(lock.len());
 
         for item in (*lock).drain(..) {
-          if let Ok(item) = item.receiver.try_recv() {
+          if let Ok(update) = item.receiver.try_recv() {
             let result = app.emit("notification", NotificationEvent::ModelDownloadProgress {
-              model_name: "model",
-              model_type: NotificationModelType::Unet,
-              currently_downloaded_bytes: item.complete,
-              total_file_bytes: item.total_length,
+              model_name: &item.model_name,
+              model_type: item.model_type,
+              currently_downloaded_bytes: update.complete,
+              total_file_bytes: update.total_length,
             });
 
             if let Err(err) = result {
@@ -127,8 +130,17 @@ pub async fn download_notify_thread(queue: Arc<Mutex<Vec<TaskAndStatus>>>, app: 
             }
           }
 
-          if item.filename.exists() {
-            debug!("No longer sending notifications for {:?}", &item.filename);
+          if item.final_file_path.exists() {
+            debug!("No longer sending notifications for {:?}", &item.final_file_path);
+
+            let result = app.emit("notification", NotificationEvent::ModelDownloadComplete {
+              model_name: &item.model_name,
+              model_type: item.model_type,
+            });
+
+            if let Err(err) = result {
+              error!("Could not emit event: {}", err);
+            }
           } else {
             reenqueue.push(item);
           }
@@ -141,4 +153,3 @@ pub async fn download_notify_thread(queue: Arc<Mutex<Vec<TaskAndStatus>>>, app: 
     tokio::time::sleep(std::time::Duration::from_millis(500)).await;
   }
 }
-
