@@ -15,6 +15,12 @@ pub enum NotificationEvent<'a> {
     model_name: &'a str, 
     model_type: NotificationModelType,
   },
+  ModelDownloadProgress {
+    model_name: &'a str,
+    model_type: NotificationModelType,
+    currently_downloaded_bytes: usize,
+    total_file_bytes: usize,
+  },
   ModelDownloadComplete {
     model_name: &'a str,
     model_type: NotificationModelType,

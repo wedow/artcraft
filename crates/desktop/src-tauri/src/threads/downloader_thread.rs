@@ -1,15 +1,16 @@
+use crate::events::notification_event::{NotificationEvent, NotificationModelType};
 use crate::ml::model_type::ModelType;
 use crate::state::app_dir::AppDataRoot;
 use crate::transfer::download::{download_async, ProgressUpdate};
-use tauri::{AppHandle, Emitter};
-use std::collections::VecDeque;
-use std::sync::{Arc, Mutex};
-use std::sync::mpsc::Receiver;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use log::{error, info};
+use std::collections::VecDeque;
+use std::path::PathBuf;
+use std::sync::mpsc::Receiver;
+use std::sync::{Arc, Mutex};
+use tauri::{AppHandle, Emitter};
 use tokio::task::JoinHandle;
-use crate::events::notification_event::{NotificationEvent, NotificationModelType};
 
 const MAX_FILES : usize = 8;
 const CHUNK_SIZE : usize = 1024 * 1024;
@@ -17,6 +18,7 @@ const PARALLEL_FAILURES : usize = 8;
 const MAX_RETRIES : usize = 30;
 
 struct TaskAndStatus {
+  pub filename: PathBuf,
   pub receiver: Receiver<ProgressUpdate>,
 }
 
@@ -34,9 +36,11 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
           
           for item in &*lock {
             if let Ok(item) = item.receiver.try_recv() {
-              let result = app.emit("notification", NotificationEvent::ModelDownloadStarted { 
+              let result = app.emit("notification", NotificationEvent::ModelDownloadProgress {
                 model_name: "model", 
-                model_type: NotificationModelType::Unet 
+                model_type: NotificationModelType::Unet,
+                currently_downloaded_bytes: item.complete,
+                total_file_bytes: item.total_length,
               });
               
               if let Err(err) = result {
@@ -87,6 +91,7 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
       Err(err) => error!("Could not unlock: {:?}", err),
       Ok(mut lock) => {
         lock.push(TaskAndStatus {
+          filename: filename.clone(),
           receiver: rx,
         })
       }
