@@ -36,7 +36,6 @@ export const ToolbarTopLeft = () => {
         tabs={tabs}
         activeTab={activeTab.value}
         onTabChange={handleTabChange}
-        className="w-[220px] shadow-md"
       />
 
       {/* <ToolbarButton icon={faPlus}>
