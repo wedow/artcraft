@@ -252,8 +252,6 @@ export class SelectionManager {
         },
       ),
     );
-    this.updateContextComponents();
-    this.showContextComponents();
   }
 
   public updateNodeTransformer() {
