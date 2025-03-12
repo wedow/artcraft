@@ -36,6 +36,7 @@ import {
   dispatchers as modelSelectionDispatchers,
   events as modelSelectionEvents,
 } from "./modelSelection";
+import { appMode, changeAppMode, appModeEvents } from "./appMode";
 
 export const uiEvents = {
   ...addMediaEvents,
@@ -49,6 +50,7 @@ export const uiEvents = {
   promptEvents: promptEvents,
   loadingIndicator: loadingIndicatorEvents,
   modelSelection: modelSelectionEvents,
+  appMode: appModeEvents,
 };
 export const dispatchUiEvents = {
   ...addMediaDispatchers,
@@ -62,4 +64,7 @@ export const dispatchUiEvents = {
   promptSettings: promptDispatchers,
   loadingIndicator: loadingIndicatorDispatchers,
   modelSelection: modelSelectionDispatchers,
+  changeAppMode,
 };
+
+export { appMode };

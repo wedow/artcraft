@@ -8,6 +8,7 @@ export * from "./PanelRight";
 export * from "./Slider";
 export * from "./Spinner";
 export * from "./Switches";
+export * from "./TabSelector";
 export * from "./TextArea";
 export * from "./TextEditor";
 export * from "./Tooltip";
