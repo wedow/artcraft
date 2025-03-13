@@ -23,6 +23,7 @@ use image::DynamicImage;
 use log::info;
 use rand::Rng;
 use tauri::{AppHandle, Emitter};
+use crate::ml::model_type::ModelType;
 use crate::state::app_dir::AppDataRoot;
 
 pub struct Args<'a> {
@@ -119,30 +120,20 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
 
   let maybe_vae = model_cache.get_vae()?;
 
-  let repo = configs.sd_version.repo();
+  //let repo = configs.sd_version.repo();
+  //println!(">>>>> VAE REPO = {:?}", repo);
+  //println!("Building VAE model from : {:?} ... (3)", repo);
+  //let vae_file = configs.hf_api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
 
-  println!("Building VAE model from : {:?} ... (3)", repo);
-
-  let vae_file = configs.hf_api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
+  let vae_file = weights_dir.model_path(&ModelType::LykonDreamshaper7Vae);
 
   println!("Building VAE model from file {:?}...", &vae_file);
-
-  let mut notify_download_complete = false;
-  //if !vae_file.exists() {
-  if true {
-    notify_download_complete = true;
-    app.emit("notification", NotificationEvent::ModelDownloadStarted { model_name: repo, model_type: NotificationModelType::Vae })?;
-  }
 
   let vae = configs.sd_config.build_vae(vae_file, &configs.device, configs.dtype)?;
 
   let vae = Arc::new(vae);
 
   model_cache.set_vae(vae.clone())?;
-
-  if notify_download_complete {
-    app.emit("notification", NotificationEvent::ModelDownloadComplete { model_name: repo, model_type: NotificationModelType::Vae })?;
-  }
 
   let maybe_unet = model_cache.get_unet()?;
 
@@ -160,21 +151,24 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
       //         model_type: ModelType::Unet,
       //     })?;
       // }
-      let unet_weights = {
-        let lcm_model_repo = "SimianLuo/LCM_Dreamshaper_v7"; // LCM UNet
-        let unet_path = configs.hf_api.model(lcm_model_repo.to_string()).get(if use_f16 {
-          if lcm_model_repo == "SimianLuo/LCM_Dreamshaper_v7" {
-            "unet/diffusion_pytorch_model.safetensors"
-          } else {
-            "unet/diffusion_pytorch_model.fp16.safetensors"
-          }
-        } else {
-          "unet/diffusion_pytorch_model.safetensors"
-        })?;
-        unet_path
-      };
+      //let unet_weights = {
+      //  let lcm_model_repo = "SimianLuo/LCM_Dreamshaper_v7"; // LCM UNet
+      //  let unet_path = configs.hf_api.model(lcm_model_repo.to_string()).get(if use_f16 {
+      //    if lcm_model_repo == "SimianLuo/LCM_Dreamshaper_v7" {
+      //      "unet/diffusion_pytorch_model.safetensors"
+      //    } else {
+      //      "unet/diffusion_pytorch_model.fp16.safetensors"
+      //    }
+      //  } else {
+      //    "unet/diffusion_pytorch_model.safetensors"
+      //  })?;
+      //  unet_path
+      //};
+
+      let unet_weights = weights_dir.model_path(&ModelType::SimianLuoLcmDreamshaperV7Unet);
 
       println!(">>>>> UNET WEIGHTS = {:?}", unet_weights);
+      println!(">>>>> USE F16 = {:?}", use_f16);
 
       //let unet_weights = ModelFile::UnetLcm.get(unet_weights, configs.sd_version, use_f16)?;
 

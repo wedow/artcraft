@@ -45,6 +45,8 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
   download_queue.push_back(ModelType::SdxlTurboVae);
   download_queue.push_back(ModelType::SdxlTurboClipEncoder);
   download_queue.push_back(ModelType::SdxlTurboClipEncoder2);
+  download_queue.push_back(ModelType::SimianLuoLcmDreamshaperV7Unet);
+  download_queue.push_back(ModelType::LykonDreamshaper7Vae);
 
   let mut handles = FuturesUnordered::new();
 
