@@ -84,11 +84,20 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let mut text_embeddings = if let Some(tensor) = maybe_cached {
     tensor
   } else {
-    println!("Loading clip weights for {:?} with model {:?}", configs.sd_version, configs.sd_version.repo());
-    let api = configs.hf_api.clone();
-    let clip_path = api.model(configs.sd_version.repo().to_string()).get(if use_f16 { "text_encoder/model.fp16.safetensors" } else { "text_encoder/model.safetensors" })?;
+    info!("Loading clip weights...");
+    //println!("Loading clip weights for {:?} with model {:?}", configs.sd_version, configs.sd_version.repo());
+    //let api = configs.hf_api.clone();
 
-    let clip_weights = Some(clip_path.to_string_lossy().to_string());
+    //let clip_path = api.model(configs.sd_version.repo().to_string()).get(if use_f16 { "text_encoder/model.fp16.safetensors" } else { "text_encoder/model.safetensors" })?;
+
+    //println!(">>>> CLIP REPO = {:?}", configs.sd_version.repo());
+    //println!(">>>> CLIP PATH = {:?}", clip_path);
+    //println!(">>>> USE_FP16 = {:?}", use_f16);
+    //let clip_weights = Some(clip_path.to_string_lossy().to_string());
+
+    let clip_weights = weights_dir.model_path(&ModelType::LykonDreamshaper7TextEncoderFp16);
+    let clip_weights = Some(clip_weights.to_string_lossy().to_string());
+
     info!("Prompt is NOT cached! Calculating embedding...");
     let tensor = infer_clip_text_embeddings(
       &prompt,
@@ -142,44 +151,12 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     None => {
       info!("No unet found in cache; loading...");
 
-      let mut notify_download_complete = false;
-      //if !unet_file.exists() {
-      // if true {
-      //     notify_download_complete = true;
-      //     app.emit("notification", NotificationEvent::ModelDownloadStarted {
-      //         model_name: "sdxl-turbo-unet",
-      //         model_type: ModelType::Unet,
-      //     })?;
-      // }
-      //let unet_weights = {
-      //  let lcm_model_repo = "SimianLuo/LCM_Dreamshaper_v7"; // LCM UNet
-      //  let unet_path = configs.hf_api.model(lcm_model_repo.to_string()).get(if use_f16 {
-      //    if lcm_model_repo == "SimianLuo/LCM_Dreamshaper_v7" {
-      //      "unet/diffusion_pytorch_model.safetensors"
-      //    } else {
-      //      "unet/diffusion_pytorch_model.fp16.safetensors"
-      //    }
-      //  } else {
-      //    "unet/diffusion_pytorch_model.safetensors"
-      //  })?;
-      //  unet_path
-      //};
-
       let unet_weights = weights_dir.model_path(&ModelType::SimianLuoLcmDreamshaperV7Unet);
-
-      println!(">>>>> UNET WEIGHTS = {:?}", unet_weights);
-      println!(">>>>> USE F16 = {:?}", use_f16);
-
-      //let unet_weights = ModelFile::UnetLcm.get(unet_weights, configs.sd_version, use_f16)?;
 
       let in_channels = match configs.sd_version {
         StableDiffusionVersion::XlInpaint | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::V1_5Inpaint => 9,
         _ => 4,
       };
-      //println!("Loading UNet weights from: SimianLuo/LCM_Dreamshaper_v7/unet");
-
-      // Ensure we're loading the correct UNet configuration
-      //println!("Building UNet for LCM (SimianLuo/LCM_Dreamshaper_v7)");
 
       // For LCM models, ensure that:
       // 1. We're using the correct prediction type (epsilon)
@@ -217,18 +194,9 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
 
       let unet = UNetModel::new_with_inner(unet);
 
-      // let unet_file = ModelRegistry::SdxlTurboUnet.get_filename();
-
-      // let unet = UNetModel::new(&configs.sd_config, unet_file, &configs.device, configs.dtype)
-      //   .map_err(|err| anyhow!("error initializing unet model: {:?}", err))?;
-
       let unet = Arc::new(unet);
 
       model_cache.set_unet(unet.clone())?;
-
-      if notify_download_complete {
-        app.emit("notification", NotificationEvent::ModelDownloadComplete { model_name: "sdxl-turbo-unet", model_type: NotificationModelType::Unet })?;
-      }
 
       unet
     },
