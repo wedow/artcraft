@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::events::notification_event::{NotificationModelType, NotificationEvent};
@@ -46,13 +47,13 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let img2img_strength = args.i2i_strength.unwrap_or(75) as f64 / 100.0;
   let use_f16 = true;
 
-  println!("Starting image generation with the following configuration:");
-  println!("  Model: {:?}", configs.sd_version);
-  println!("  Prompt: {}", prompt);
-  println!("  Steps: {}", configs.scheduler_steps);
-  println!("  Device: {:?}", configs.device);
+  //println!("Starting image generation with the following configuration:");
+  //println!("  Model: {:?}", configs.sd_version);
+  //println!("  Prompt: {}", prompt);
+  //println!("  Steps: {}", configs.scheduler_steps);
+  //println!("  Device: {:?}", configs.device);
 
-  println!("Model dimensions: {}x{}", configs.sd_config.width, configs.sd_config.height);
+  //println!("Model dimensions: {}x{}", configs.sd_config.width, configs.sd_config.height);
 
   // Use LCM Scheduler instead of Euler Ancestral for better speed and quality
   let mut scheduler = LCMScheduler::new(configs.scheduler_steps, img2img_strength, candle_transformers::models::stable_diffusion::lcm::LCMSchedulerConfig::default())?;
@@ -60,7 +61,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let seed = configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
   configs.device.set_seed(seed)?;
 
-  info!("Using seed: {}", seed);
+  //info!("Using seed: {}", seed);
 
   let guidance_scale = match cfg_scale {
     Some(guidance_scale) => guidance_scale,
@@ -74,9 +75,9 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   // let use_guide_scale = guidance_scale > 1.0;
   let use_guide_scale = false;
 
-  info!("Using guide scale: {}", use_guide_scale);
+  //info!("Using guide scale: {}", use_guide_scale);
 
-  info!("Checking if prompt is cached");
+  //info!("Checking if prompt is cached");
   let maybe_cached = prompt_cache.get_copy(&prompt)?;
 
   let mut text_embeddings = if let Some(tensor) = maybe_cached {
@@ -85,6 +86,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     println!("Loading clip weights for {:?} with model {:?}", configs.sd_version, configs.sd_version.repo());
     let api = configs.hf_api.clone();
     let clip_path = api.model(configs.sd_version.repo().to_string()).get(if use_f16 { "text_encoder/model.fp16.safetensors" } else { "text_encoder/model.safetensors" })?;
+
     let clip_weights = Some(clip_path.to_string_lossy().to_string());
     info!("Prompt is NOT cached! Calculating embedding...");
     let tensor = infer_clip_text_embeddings(
@@ -169,18 +171,21 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
         } else {
           "unet/diffusion_pytorch_model.safetensors"
         })?;
-        Some(unet_path.to_string_lossy().to_string())
+        unet_path
       };
 
-      let unet_weights = ModelFile::UnetLcm.get(unet_weights, configs.sd_version, use_f16)?;
+      println!(">>>>> UNET WEIGHTS = {:?}", unet_weights);
+
+      //let unet_weights = ModelFile::UnetLcm.get(unet_weights, configs.sd_version, use_f16)?;
+
       let in_channels = match configs.sd_version {
         StableDiffusionVersion::XlInpaint | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::V1_5Inpaint => 9,
         _ => 4,
       };
-      println!("Loading UNet weights from: SimianLuo/LCM_Dreamshaper_v7/unet");
+      //println!("Loading UNet weights from: SimianLuo/LCM_Dreamshaper_v7/unet");
 
       // Ensure we're loading the correct UNet configuration
-      println!("Building UNet for LCM (SimianLuo/LCM_Dreamshaper_v7)");
+      //println!("Building UNet for LCM (SimianLuo/LCM_Dreamshaper_v7)");
 
       // For LCM models, ensure that:
       // 1. We're using the correct prediction type (epsilon)
@@ -194,7 +199,12 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
         center_input_sample: false,
         flip_sin_to_cos: true,
         freq_shift: 0.0,
-        blocks: vec![BlockConfig { out_channels: 320, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 640, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: Some(1), attention_head_dim: 8 }, BlockConfig { out_channels: 1280, use_cross_attn: None, attention_head_dim: 8 }],
+        blocks: vec![
+          BlockConfig { out_channels: 320, use_cross_attn: Some(1), attention_head_dim: 8 },
+          BlockConfig { out_channels: 640, use_cross_attn: Some(1), attention_head_dim: 8 },
+          BlockConfig { out_channels: 1280, use_cross_attn: Some(1), attention_head_dim: 8 },
+          BlockConfig { out_channels: 1280, use_cross_attn: None, attention_head_dim: 8 }
+        ],
         layers_per_block: 2,
         downsample_padding: 1,
         mid_block_scale_factor: 1.0,
