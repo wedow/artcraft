@@ -53,20 +53,19 @@ pub fn infer_clip_text_embeddings(prompt: &str, uncond_prompt: &str, tokenizer: 
 fn do_infer_clip_text_embeddings(prompt: &str, uncond_prompt: &str, tokenizer: Option<String>, clip_weights: Option<String>, clip2_weights: Option<String>, sd_version: StableDiffusionVersion, sd_config: &stable_diffusion::StableDiffusionConfig, use_f16: bool, device: &Device, dtype: DType, use_guide_scale: bool, first: bool, weights_dir: &AppWeightsDir) -> anyhow::Result<Tensor> {
   info!("do_infer_clip_text_embeddings called with args {:?}", (prompt, uncond_prompt, tokenizer.clone().unwrap_or_else(|| "None".to_string()), clip_weights.clone().unwrap_or_else(|| "None".to_string()), clip2_weights.clone().unwrap_or_else(|| "None".to_string()), sd_version, sd_config, use_f16, device, dtype, use_guide_scale, first));
 
-  let tokenizer_file = if first {
-    info!("ModelFile::Tokenizer");
-    ModelFile::Tokenizer
-  } else {
-    info!("ModelFile::Tokenizer2");
-    ModelFile::Tokenizer2
-  };
+  //let tokenizer_file = if first {
+  //  info!("ModelFile::Tokenizer");
+  //  ModelFile::Tokenizer
+  //} else {
+  //  info!("ModelFile::Tokenizer2");
+  //  ModelFile::Tokenizer2
+  //};
 
-  let tokenizer = tokenizer_file.get(tokenizer, sd_version, use_f16)?;
-  info!("Loading clip from download");
   //let tokenizer = tokenizer_file.get(tokenizer, sd_version, use_f16)?;
+
   let tokenizer = weights_dir.model_path(&ModelType::ClipJson);
 
-  info!("Tokenizer path: {:?}", tokenizer);
+  info!("Loading Clip Tokenizer path: {:?}", tokenizer);
 
   let tokenizer = Tokenizer::from_file(tokenizer).map_err(E::msg)?;
 
