@@ -129,20 +129,27 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
 
   let maybe_vae = model_cache.get_vae()?;
 
-  //let repo = configs.sd_version.repo();
-  //println!(">>>>> VAE REPO = {:?}", repo);
-  //println!("Building VAE model from : {:?} ... (3)", repo);
-  //let vae_file = configs.hf_api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
+  let vae = match maybe_vae {
+    Some(vae) => vae,
+    None => {
+      //let repo = configs.sd_version.repo();
+      //println!(">>>>> VAE REPO = {:?}", repo);
+      //println!("Building VAE model from : {:?} ... (3)", repo);
+      //let vae_file = configs.hf_api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
 
-  let vae_file = weights_dir.model_path(&ModelType::LykonDreamshaper7Vae);
+      let vae_file = weights_dir.model_path(&ModelType::LykonDreamshaper7Vae);
 
-  println!("Building VAE model from file {:?}...", &vae_file);
+      println!("Building VAE model from file {:?}...", &vae_file);
 
-  let vae = configs.sd_config.build_vae(vae_file, &configs.device, configs.dtype)?;
+      let vae = configs.sd_config.build_vae(vae_file, &configs.device, configs.dtype)?;
 
-  let vae = Arc::new(vae);
+      let vae = Arc::new(vae);
 
-  model_cache.set_vae(vae.clone())?;
+      model_cache.set_vae(vae.clone())?;
+
+      vae
+    }
+  };
 
   let maybe_unet = model_cache.get_unet()?;
 
