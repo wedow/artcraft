@@ -41,10 +41,10 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
 
   // TODO: Automatic enqueue of known important models + enqueue new models on-demand
   download_queue.push_back(ModelType::ClipJson);
-  download_queue.push_back(ModelType::SdxlTurboUnet);
-  download_queue.push_back(ModelType::SdxlTurboVae);
-  download_queue.push_back(ModelType::SdxlTurboClipEncoder);
-  download_queue.push_back(ModelType::SdxlTurboClipEncoder2);
+  //download_queue.push_back(ModelType::SdxlTurboUnet);
+  //download_queue.push_back(ModelType::SdxlTurboVae);
+  download_queue.push_back(ModelType::SdxlTurboClipEncoder); // TODO(bt): Why is this still needed?
+  //download_queue.push_back(ModelType::SdxlTurboClipEncoder2);
   download_queue.push_back(ModelType::SimianLuoLcmDreamshaperV7Unet);
   download_queue.push_back(ModelType::LykonDreamshaper7Vae);
   download_queue.push_back(ModelType::LykonDreamshaper7TextEncoderFp16);

@@ -1,30 +1,30 @@
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::events::notification_event::{NotificationModelType, NotificationEvent};
-use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
+use crate::events::notification_event::{NotificationEvent, NotificationModelType};
 use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
 use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
 use crate::ml::model_cache::ModelCache;
+use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
+use crate::ml::model_type::ModelType;
 use crate::ml::models::unet_model::UNetModel;
 use crate::ml::prompt_cache::PromptCache;
-use candle_nn::VarBuilder;
-use candle_transformers::models::stable_diffusion::unet_2d::UNet2DConditionModel;
-use candle_transformers::models::stable_diffusion::unet_2d::BlockConfig;
-use candle_transformers::models::stable_diffusion::unet_2d::UNet2DConditionModelConfig;
 use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
 use crate::ml::stable_diffusion::infer_clip_text_embeddings::infer_clip_text_embeddings;
 use crate::state::app_config::AppConfig;
+use crate::state::app_dir::AppDataRoot;
 use anyhow::{anyhow, Error as E, Result};
 use candle_core::{DType, IndexOp, Tensor, D};
-use candle_transformers::models::stable_diffusion::vae::{AutoEncoderKL, DiagonalGaussianDistribution};
+use candle_nn::VarBuilder;
 use candle_transformers::models::stable_diffusion::lcm::LCMScheduler;
+use candle_transformers::models::stable_diffusion::unet_2d::BlockConfig;
+use candle_transformers::models::stable_diffusion::unet_2d::UNet2DConditionModel;
+use candle_transformers::models::stable_diffusion::unet_2d::UNet2DConditionModelConfig;
+use candle_transformers::models::stable_diffusion::vae::{AutoEncoderKL, DiagonalGaussianDistribution};
 use image::DynamicImage;
 use log::info;
 use rand::Rng;
 use tauri::{AppHandle, Emitter};
-use crate::ml::model_type::ModelType;
-use crate::state::app_dir::AppDataRoot;
 
 pub struct Args<'a> {
   pub image: &'a DynamicImage,
