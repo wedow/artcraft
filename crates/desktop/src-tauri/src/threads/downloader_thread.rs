@@ -45,9 +45,9 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
   download_queue.push_back(LYKON_DEAMSHAPER_7_VAE);
   download_queue.push_back(SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
   download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER); // TODO(bt): Why is this still needed?
-  download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER_2); // TODO(bt): REMOVE
-  download_queue.push_back(SDXL_TURBO_VAE); // TODO(bt): REMOVE
-  download_queue.push_back(SDXL_TURBO_UNET); // TODO(bt): REMOVE
+  //download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER_2); // TODO(bt): REMOVE
+  //download_queue.push_back(SDXL_TURBO_VAE); // TODO(bt): REMOVE
+  //download_queue.push_back(SDXL_TURBO_UNET); // TODO(bt): REMOVE
 
   let mut handles = FuturesUnordered::new();
 

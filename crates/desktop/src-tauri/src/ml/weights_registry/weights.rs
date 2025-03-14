@@ -42,12 +42,14 @@ pub const SDXL_TURBO_CLIP_TEXT_ENCODER_2 : WeightDescriptor = weight!(
   WeightFunction::TextEncoder
 );
 
+#[deprecated]
 pub const SDXL_TURBO_VAE : WeightDescriptor = weight!(
   "SDXL Turbo",
   "diffusion_pytorch_model.vae.safetensors",
   WeightFunction::Vae
 );
 
+#[deprecated]
 pub const SDXL_TURBO_UNET : WeightDescriptor = weight!(
   "SDXL Turbo",
   "diffusion_pytorch_model.unet.safetensors",
