@@ -3,18 +3,28 @@ use crate::state::app_dir::AppWeightsDir;
 use std::path::PathBuf;
 
 #[derive(Copy, Clone, Debug)]
+#[deprecated]
 pub enum ModelType {
+  #[deprecated]
   ClipJson,
+  #[deprecated]
   SdxlTurboUnet,
+  #[deprecated]
   SdxlTurboVae,
+  #[deprecated]
   SdxlTurboClipEncoder,
+  #[deprecated]
   SdxlTurboClipEncoder2,
+  #[deprecated]
   SimianLuoLcmDreamshaperV7Unet,
+  #[deprecated]
   LykonDreamshaper7Vae,
+  #[deprecated]
   LykonDreamshaper7TextEncoderFp16,
 }
 
 impl ModelType {
+  #[deprecated]
   pub fn get_name(&self) -> &'static str {
     match self {
       Self::ClipJson => "CLIP (JSON)",
@@ -28,19 +38,21 @@ impl ModelType {
     }
   }
 
+  #[deprecated]
   pub fn get_notification_type(&self) -> NotificationModelType {
     match self {
-      Self::ClipJson => NotificationModelType::Json,
+      Self::ClipJson => NotificationModelType::TextTokenizer,
       Self::SdxlTurboUnet => NotificationModelType::Unet,
       Self::SdxlTurboVae => NotificationModelType::Vae,
-      Self::SdxlTurboClipEncoder => NotificationModelType::ClipEncoder,
-      Self::SdxlTurboClipEncoder2 => NotificationModelType::ClipEncoder,
+      Self::SdxlTurboClipEncoder => NotificationModelType::TextEncoder,
+      Self::SdxlTurboClipEncoder2 => NotificationModelType::TextEncoder,
       Self::SimianLuoLcmDreamshaperV7Unet => NotificationModelType::Unet,
       Self::LykonDreamshaper7Vae => NotificationModelType::Vae,
-      Self::LykonDreamshaper7TextEncoderFp16 => NotificationModelType::ClipEncoder,
+      Self::LykonDreamshaper7TextEncoderFp16 => NotificationModelType::TextEncoder,
     }
   }
 
+  #[deprecated]
   pub fn get_hf_id(&self) -> Option<&'static str> {
     match self {
       Self::ClipJson => Some("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k"),
@@ -54,6 +66,7 @@ impl ModelType {
     }
   }
 
+  #[deprecated]
   pub fn get_download_url(&self) -> &'static str {
     match self {
       Self::ClipJson => "https://pub-bc5e2bc0cdee4bb5ae8fca9d641ca0d6.r2.dev/tokenizer.json",
@@ -67,6 +80,7 @@ impl ModelType {
     }
   }
 
+  #[deprecated]
   pub fn get_filename(&self) -> &'static str {
     match self {
       Self::ClipJson => "clip_vit_bigg_14_lion2b_39b_b160k.tokenizer.json",
@@ -79,7 +93,8 @@ impl ModelType {
       Self::LykonDreamshaper7TextEncoderFp16 => "lykon_dreamshaper_7_text_encoder.fp16.safetensors",
     }
   }
-  
+
+  #[deprecated]
   pub fn get_path(&self, weights_dir: &AppWeightsDir) -> PathBuf {
     weights_dir.model_path(self)
   }

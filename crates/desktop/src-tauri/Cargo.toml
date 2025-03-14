@@ -34,8 +34,9 @@ bytes = "1.10"
 candle-core = { path = "../../vendor/candle/candle-core", features = ["cuda"] }
 candle-nn = { path = "../../vendor/candle/candle-nn", features = ["cuda"] }
 candle-transformers = { path = "../../vendor/candle/candle-transformers", features = ["cuda"] }
-dirs = "6.0.0"
+const_format = "0.2.34"
 directories = "6.0.0"
+dirs = "6.0.0"
 futures = "0.3"
 hf-hub = "0.3.2"
 image = "0.25.5"

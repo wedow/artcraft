@@ -129,16 +129,6 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         None => {
             info!("No vae found in cache; loading...");
             
-            let mut notify_download_complete = false;
-            //if !vae_file.exists() {
-            if true {
-                notify_download_complete = true;
-                app.emit("notification", NotificationEvent::ModelDownloadStarted {
-                    model_name: "sdxl-turbo-vae",
-                    model_type: NotificationModelType::Vae,
-                })?;
-            }
-            
             let vae_file = weights_dir.model_path(&ModelType::SdxlTurboVae);
             
             let vae = configs
@@ -148,14 +138,7 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
             let vae = Arc::new(vae);
             
             model_cache.set_vae(vae.clone())?;
-            
-            if notify_download_complete {
-                app.emit("notification", NotificationEvent::ModelDownloadComplete {
-                    model_name: "sdxl-turbo-vae",
-                    model_type: NotificationModelType::Vae,
-                })?;
-            }
-            
+
             vae
         }
     };
@@ -167,16 +150,6 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         None => {
             info!("No unet found in cache; loading...");
 
-            let mut notify_download_complete = false;
-            //if !unet_file.exists() {
-            if true {
-                notify_download_complete = true;
-                app.emit("notification", NotificationEvent::ModelDownloadStarted {
-                    model_name: "sdxl-turbo-unet",
-                    model_type: NotificationModelType::Unet,
-                })?;
-            }
-            
             let unet_file = weights_dir.model_path(&ModelType::SdxlTurboUnet);
 
             let unet = UNetModel::new(&configs.sd_config, unet_file, &configs.device, configs.dtype)
@@ -185,13 +158,6 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
             let unet = Arc::new(unet);
 
             model_cache.set_unet(unet.clone())?;
-
-            if notify_download_complete {
-                app.emit("notification", NotificationEvent::ModelDownloadComplete {
-                    model_name: "sdxl-turbo-unet",
-                    model_type: NotificationModelType::Unet,
-                })?;
-            }
 
             unet
         }

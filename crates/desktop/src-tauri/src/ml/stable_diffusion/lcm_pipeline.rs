@@ -25,6 +25,7 @@ use image::DynamicImage;
 use log::info;
 use rand::Rng;
 use tauri::{AppHandle, Emitter};
+use crate::ml::weights_registry::weights::{LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 pub struct Args<'a> {
   pub image: &'a DynamicImage,
@@ -95,7 +96,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     //println!(">>>> USE_FP16 = {:?}", use_f16);
     //let clip_weights = Some(clip_path.to_string_lossy().to_string());
 
-    let clip_weights = weights_dir.model_path(&ModelType::LykonDreamshaper7TextEncoderFp16);
+    let clip_weights = weights_dir.model_path_for_descriptor(&LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
     let clip_weights = Some(clip_weights.to_string_lossy().to_string());
 
     info!("Prompt is NOT cached! Calculating embedding...");
@@ -132,12 +133,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let vae = match maybe_vae {
     Some(vae) => vae,
     None => {
-      //let repo = configs.sd_version.repo();
-      //println!(">>>>> VAE REPO = {:?}", repo);
-      //println!("Building VAE model from : {:?} ... (3)", repo);
-      //let vae_file = configs.hf_api.model(repo.to_string()).get("vae/diffusion_pytorch_model.safetensors")?;
-
-      let vae_file = weights_dir.model_path(&ModelType::LykonDreamshaper7Vae);
+      let vae_file = weights_dir.model_path_for_descriptor(&LYKON_DEAMSHAPER_7_VAE);
 
       println!("Building VAE model from file {:?}...", &vae_file);
 
@@ -158,7 +154,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     None => {
       info!("No unet found in cache; loading...");
 
-      let unet_weights = weights_dir.model_path(&ModelType::SimianLuoLcmDreamshaperV7Unet);
+      let unet_weights = weights_dir.model_path_for_descriptor(&SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
 
       let in_channels = match configs.sd_version {
         StableDiffusionVersion::XlInpaint | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::V1_5Inpaint => 9,

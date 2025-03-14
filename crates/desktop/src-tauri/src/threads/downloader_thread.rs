@@ -12,6 +12,8 @@ use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 use tempfile::NamedTempFile;
 use tokio::task::JoinHandle;
+use crate::ml::weights_registry::weight_descriptor::WeightFunction;
+use crate::ml::weights_registry::weights::{CLIP_JSON, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 const NOTIFICATION_CHANNEL_NAME : &str = "notification";
 const MAX_FILES : usize = 8;
@@ -39,22 +41,28 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
 
   let mut download_queue = VecDeque::new();
 
-  // TODO: Automatic enqueue of known important models + enqueue new models on-demand
-  download_queue.push_back(ModelType::ClipJson);
-  //download_queue.push_back(ModelType::SdxlTurboUnet);
-  //download_queue.push_back(ModelType::SdxlTurboVae);
-  download_queue.push_back(ModelType::SdxlTurboClipEncoder); // TODO(bt): Why is this still needed?
-  //download_queue.push_back(ModelType::SdxlTurboClipEncoder2);
-  download_queue.push_back(ModelType::SimianLuoLcmDreamshaperV7Unet);
-  download_queue.push_back(ModelType::LykonDreamshaper7Vae);
-  download_queue.push_back(ModelType::LykonDreamshaper7TextEncoderFp16);
+  //// TODO: Automatic enqueue of known important models + enqueue new models on-demand
+  //download_queue.push_back(ModelType::ClipJson);
+  ////download_queue.push_back(ModelType::SdxlTurboUnet);
+  ////download_queue.push_back(ModelType::SdxlTurboVae);
+  //download_queue.push_back(ModelType::SdxlTurboClipEncoder); // TODO(bt): Why is this still needed?
+  ////download_queue.push_back(ModelType::SdxlTurboClipEncoder2);
+  //download_queue.push_back(ModelType::SimianLuoLcmDreamshaperV7Unet);
+  //download_queue.push_back(ModelType::LykonDreamshaper7Vae);
+  //download_queue.push_back(ModelType::LykonDreamshaper7TextEncoderFp16);
+
+  download_queue.push_back(CLIP_JSON);
+  download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER); // TODO(bt): Why is this still needed?
+  download_queue.push_back(LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
+  download_queue.push_back(LYKON_DEAMSHAPER_7_VAE);
+  download_queue.push_back(SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
 
   let mut handles = FuturesUnordered::new();
 
   while let Some(model) = download_queue.pop_front() {
-    let url = model.get_download_url().to_string();
+    let url = model.r2_download_url.to_string();
 
-    let filename = app_data_root.weights_dir().model_path(&model);
+    let filename = app_data_root.weights_dir().model_path_for_descriptor(&model);
 
     if filename.exists() {
       info!("File already exists: {:?}", &filename);
@@ -75,9 +83,16 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
       }
     };
 
+    let model_type = match model.function {
+      WeightFunction::TextEncoder => NotificationModelType::TextEncoder,
+      WeightFunction::TextTokenizer => NotificationModelType::TextTokenizer,
+      WeightFunction::Unet => NotificationModelType::Unet,
+      WeightFunction::Vae => NotificationModelType::Vae,
+    };
+
     let result = app.emit(NOTIFICATION_CHANNEL_NAME, NotificationEvent::ModelDownloadStarted {
-      model_name: model.get_name(),
-      model_type: model.get_notification_type(),
+      model_name: model.name,
+      model_type,
     });
 
     if let Err(err) = result {
@@ -102,8 +117,8 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
         lock.push(ModelDownloadStatusChannel {
           receiver: rx,
           final_file_path: filename.clone(),
-          model_name: model.get_name().to_string(),
-          model_type: model.get_notification_type(),
+          model_name: model.to_descriptive_name(),
+          model_type,
         })
       }
     }

@@ -6,6 +6,8 @@ use directories::UserDirs;
 use std::path::{Path, PathBuf};
 use tempdir::TempDir;
 use tempfile::{Builder, NamedTempFile};
+use crate::ml::weights_registry::weight_descriptor::WeightDescriptor;
+
 const DEFAULT_DATA_DIR : &str = "artcraft";
 const ASSETS_SUBDIRECTORY : &str = "assets";
 const WEIGHTS_SUBDIRECTORY : &str = "weights";
@@ -139,9 +141,14 @@ impl AppWeightsDir {
   pub fn path(&self) -> &Path {
     &self.path
   }
-  
+
+  #[deprecated]
   pub fn model_path(&self, model_registry: &ModelType) -> PathBuf {
     self.path.join(model_registry.get_filename())
+  }
+
+  pub fn model_path_for_descriptor(&self, descriptor: &WeightDescriptor) -> PathBuf {
+    self.path.join(descriptor.filename)
   }
 }
 
