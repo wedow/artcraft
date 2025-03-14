@@ -4,12 +4,6 @@
 //  as a pattern that will support both compile-time constants and dynamically allocated String-based variants.
 
 #[derive(Clone, Copy)]
-pub enum WeightFiletype {
-  Json,
-  SafeTensors,
-}
-
-#[derive(Clone, Copy)]
 pub enum WeightFunction {
   TextEncoder,
   TextTokenizer,
@@ -27,8 +21,6 @@ pub struct WeightDescriptor {
   /// URL of the file in the R2 bucket,
   /// eg. https://pub-bc5e2bc0cdee4bb5ae8fca9d641ca0d6.r2.dev/lykon_dreamshaper_7_text_encoder.fp16.safetensors
   pub r2_download_url: &'static str,
-
-  pub filetype: WeightFiletype,
 
   pub function: WeightFunction,
 }
