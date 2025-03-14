@@ -7,13 +7,6 @@ pub const CLIP_JSON : WeightDescriptor = weight!(
   WeightFunction::TextTokenizer
 );
 
-#[deprecated]
-pub const SDXL_TURBO_CLIP_TEXT_ENCODER : WeightDescriptor = weight!(
-  "SDXL Turbo CLIP",
-  "clip_text_encoder.safetensors",
-  WeightFunction::TextEncoder
-);
-
 /// For LCM-based image generation
 pub const LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16 : WeightDescriptor = weight!(
   "Lykon Dreamshaper 7",
@@ -32,5 +25,31 @@ pub const LYKON_DEAMSHAPER_7_VAE : WeightDescriptor = weight!(
 pub const SIMIANLUO_LCM_DREAMSHAPER_V7_UNET : WeightDescriptor = weight!(
   "SimianLuo LCM Dreamshaper v7",
   "simianluo_lcm_dreamshaper_v7_unet.safetensors",
+  WeightFunction::Unet
+);
+
+#[deprecated]
+pub const SDXL_TURBO_CLIP_TEXT_ENCODER : WeightDescriptor = weight!(
+  "SDXL Turbo CLIP",
+  "clip_text_encoder.safetensors",
+  WeightFunction::TextEncoder
+);
+
+#[deprecated]
+pub const SDXL_TURBO_CLIP_TEXT_ENCODER_2 : WeightDescriptor = weight!(
+  "SDXL Turbo CLIP #2",
+  "clip_text_encoder_2.safetensors",
+  WeightFunction::TextEncoder
+);
+
+pub const SDXL_TURBO_VAE : WeightDescriptor = weight!(
+  "SDXL Turbo",
+  "diffusion_pytorch_model.vae.safetensors",
+  WeightFunction::Vae
+);
+
+pub const SDXL_TURBO_UNET : WeightDescriptor = weight!(
+  "SDXL Turbo",
+  "diffusion_pytorch_model.unet.safetensors",
   WeightFunction::Unet
 );

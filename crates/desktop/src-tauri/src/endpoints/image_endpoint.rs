@@ -1,8 +1,8 @@
-use crate::ml::downloads::download_all_models::download_all_models;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::prompt_cache::PromptCache;
 use crate::ml::stable_diffusion::lcm_pipeline::{lcm_pipeline, Args};
 use crate::state::app_config::AppConfig;
+use crate::state::app_dir::AppDataRoot;
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use bytes::BytesMut;
 use image::imageops::FilterType;
@@ -11,7 +11,6 @@ use log::{error, info};
 use std::io::Cursor;
 use std::path::PathBuf;
 use tauri::{AppHandle, State};
-use crate::state::app_dir::AppDataRoot;
 
 const PROMPT_FILENAME : &str = "prompt.txt";
 const PROMPT: &str = "green goblin, blood dripping from lips, detailed, photorealistic, 8k";
@@ -44,13 +43,6 @@ pub async fn infer_image(
 
   let image = hydrate_base64_image(image)
     .map_err(|err| format!("Couldn't hydrate image from base64: {}", err))?;
-
-  // TODO(bt): Move this to another endpoint
-  download_all_models(&app_data_root).await
-    .map_err(|err| {
-      error!("couldn't download models: {:?}", err);
-      "Couldn't download models".to_string()
-    })?;
 
   let result = do_infer_image(
     &prompt, 

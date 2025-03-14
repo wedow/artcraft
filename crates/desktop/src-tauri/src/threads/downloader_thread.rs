@@ -1,5 +1,4 @@
 use crate::events::notification_event::{NotificationEvent, NotificationModelType};
-use crate::ml::model_type::ModelType;
 use crate::state::app_dir::AppDataRoot;
 use crate::transfer::download::{download_async, ProgressUpdate};
 use futures::stream::FuturesUnordered;
@@ -13,7 +12,7 @@ use tauri::{AppHandle, Emitter};
 use tempfile::NamedTempFile;
 use tokio::task::JoinHandle;
 use crate::ml::weights_registry::weight_descriptor::WeightFunction;
-use crate::ml::weights_registry::weights::{CLIP_JSON, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
+use crate::ml::weights_registry::weights::{CLIP_JSON, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SDXL_TURBO_CLIP_TEXT_ENCODER_2, SDXL_TURBO_UNET, SDXL_TURBO_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 const NOTIFICATION_CHANNEL_NAME : &str = "notification";
 const MAX_FILES : usize = 8;
@@ -41,28 +40,21 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
 
   let mut download_queue = VecDeque::new();
 
-  //// TODO: Automatic enqueue of known important models + enqueue new models on-demand
-  //download_queue.push_back(ModelType::ClipJson);
-  ////download_queue.push_back(ModelType::SdxlTurboUnet);
-  ////download_queue.push_back(ModelType::SdxlTurboVae);
-  //download_queue.push_back(ModelType::SdxlTurboClipEncoder); // TODO(bt): Why is this still needed?
-  ////download_queue.push_back(ModelType::SdxlTurboClipEncoder2);
-  //download_queue.push_back(ModelType::SimianLuoLcmDreamshaperV7Unet);
-  //download_queue.push_back(ModelType::LykonDreamshaper7Vae);
-  //download_queue.push_back(ModelType::LykonDreamshaper7TextEncoderFp16);
-
   download_queue.push_back(CLIP_JSON);
-  download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER); // TODO(bt): Why is this still needed?
   download_queue.push_back(LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
   download_queue.push_back(LYKON_DEAMSHAPER_7_VAE);
   download_queue.push_back(SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
+  download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER); // TODO(bt): Why is this still needed?
+  download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER_2); // TODO(bt): REMOVE
+  download_queue.push_back(SDXL_TURBO_VAE); // TODO(bt): REMOVE
+  download_queue.push_back(SDXL_TURBO_UNET); // TODO(bt): REMOVE
 
   let mut handles = FuturesUnordered::new();
 
   while let Some(model) = download_queue.pop_front() {
     let url = model.r2_download_url.to_string();
 
-    let filename = app_data_root.weights_dir().model_path_for_descriptor(&model);
+    let filename = app_data_root.weights_dir().weight_path(&model);
 
     if filename.exists() {
       info!("File already exists: {:?}", &filename);

@@ -6,11 +6,11 @@ use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
 use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
 use crate::ml::model_cache::ModelCache;
 use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
-use crate::ml::model_type::ModelType;
 use crate::ml::models::unet_model::UNetModel;
 use crate::ml::prompt_cache::PromptCache;
 use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
 use crate::ml::stable_diffusion::infer_clip_text_embeddings::infer_clip_text_embeddings;
+use crate::ml::weights_registry::weights::{LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 use crate::state::app_config::AppConfig;
 use crate::state::app_dir::AppDataRoot;
 use anyhow::{anyhow, Error as E, Result};
@@ -25,7 +25,6 @@ use image::DynamicImage;
 use log::info;
 use rand::Rng;
 use tauri::{AppHandle, Emitter};
-use crate::ml::weights_registry::weights::{LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 pub struct Args<'a> {
   pub image: &'a DynamicImage,
@@ -49,21 +48,11 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let img2img_strength = args.i2i_strength.unwrap_or(75) as f64 / 100.0;
   let use_f16 = true;
 
-  //println!("Starting image generation with the following configuration:");
-  //println!("  Model: {:?}", configs.sd_version);
-  //println!("  Prompt: {}", prompt);
-  //println!("  Steps: {}", configs.scheduler_steps);
-  //println!("  Device: {:?}", configs.device);
-
-  //println!("Model dimensions: {}x{}", configs.sd_config.width, configs.sd_config.height);
-
   // Use LCM Scheduler instead of Euler Ancestral for better speed and quality
   let mut scheduler = LCMScheduler::new(configs.scheduler_steps, img2img_strength, candle_transformers::models::stable_diffusion::lcm::LCMSchedulerConfig::default())?;
 
   let seed = configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
   configs.device.set_seed(seed)?;
-
-  //info!("Using seed: {}", seed);
 
   let guidance_scale = match cfg_scale {
     Some(guidance_scale) => guidance_scale,
@@ -77,26 +66,14 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   // let use_guide_scale = guidance_scale > 1.0;
   let use_guide_scale = false;
 
-  //info!("Using guide scale: {}", use_guide_scale);
-
-  //info!("Checking if prompt is cached");
   let maybe_cached = prompt_cache.get_copy(&prompt)?;
 
   let mut text_embeddings = if let Some(tensor) = maybe_cached {
     tensor
   } else {
     info!("Loading clip weights...");
-    //println!("Loading clip weights for {:?} with model {:?}", configs.sd_version, configs.sd_version.repo());
-    //let api = configs.hf_api.clone();
 
-    //let clip_path = api.model(configs.sd_version.repo().to_string()).get(if use_f16 { "text_encoder/model.fp16.safetensors" } else { "text_encoder/model.safetensors" })?;
-
-    //println!(">>>> CLIP REPO = {:?}", configs.sd_version.repo());
-    //println!(">>>> CLIP PATH = {:?}", clip_path);
-    //println!(">>>> USE_FP16 = {:?}", use_f16);
-    //let clip_weights = Some(clip_path.to_string_lossy().to_string());
-
-    let clip_weights = weights_dir.model_path_for_descriptor(&LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
+    let clip_weights = weights_dir.weight_path(&LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
     let clip_weights = Some(clip_weights.to_string_lossy().to_string());
 
     info!("Prompt is NOT cached! Calculating embedding...");
@@ -133,7 +110,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let vae = match maybe_vae {
     Some(vae) => vae,
     None => {
-      let vae_file = weights_dir.model_path_for_descriptor(&LYKON_DEAMSHAPER_7_VAE);
+      let vae_file = weights_dir.weight_path(&LYKON_DEAMSHAPER_7_VAE);
 
       println!("Building VAE model from file {:?}...", &vae_file);
 
@@ -154,7 +131,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     None => {
       info!("No unet found in cache; loading...");
 
-      let unet_weights = weights_dir.model_path_for_descriptor(&SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
+      let unet_weights = weights_dir.weight_path(&SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
 
       let in_channels = match configs.sd_version {
         StableDiffusionVersion::XlInpaint | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::V1_5Inpaint => 9,
