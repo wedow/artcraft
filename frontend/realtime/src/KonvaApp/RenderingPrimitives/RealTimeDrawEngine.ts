@@ -25,6 +25,7 @@ import {
   isLoadingVisible,
   loadingProgress,
 } from "~/signals/uiEvents/loadingIndicator";
+import { ensureBase64Prefix } from "../EngineUtitlities/Base64Helpers";
 
 interface ServerSettings {
   model_path: string;
@@ -902,9 +903,7 @@ export class RealTimeDrawEngine {
     const img = document.createElement("img");
 
     // Convert base64 to data URL if it doesn't include the prefix
-    const dataUrl = base64String.startsWith("data:")
-      ? base64String
-      : `data:image/png;base64,${base64String}`;
+    const dataUrl = ensureBase64Prefix(base64String);
 
     // Create a promise to handle the image loading
     return new Promise((resolve, reject) => {
