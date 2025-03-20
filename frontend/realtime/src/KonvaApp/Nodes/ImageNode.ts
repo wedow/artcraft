@@ -12,6 +12,7 @@ interface ImageNodeContructor {
   canvasPosition: Position;
   canvasSize: Size;
   imageFile?: File;
+  imageBitmap?: ImageBitmap;
   mediaFileToken?: string;
   mediaFileUrl?: string;
   transform?: TransformationData;
@@ -34,6 +35,7 @@ export class ImageNode extends NetworkedNode {
     mediaLayerRef,
     selectionManagerRef,
     loaded,
+    imageBitmap,
   }: ImageNodeContructor) {
     // kNodes need to be created first to guaruntee
     // that it is not undefined in parent's context
@@ -71,6 +73,14 @@ export class ImageNode extends NetworkedNode {
       this.mediaFileToken = mediaFileToken;
       this.mediaFileUrl = mediaFileUrl;
       this.loadImageFromUrl(mediaFileUrl);
+      return;
+    }
+    if (imageBitmap) {
+      this.loadImageFromImageBitmap({
+        imageBitmap: imageBitmap,
+        maxSize: canvasSize,
+        refPosition: canvasPosition,
+      });
       return;
     }
     console.log("image node creation is fucked");
@@ -133,6 +143,40 @@ export class ImageNode extends NetworkedNode {
       //this.setProgress({ progress: 100, status: UploadStatus.SUCCESS });
     };
     newImage.src = mediaFileUrl;
+    this.listenToBaseKNode();
+  }
+
+  private loadImageFromImageBitmap({
+    imageBitmap,
+    maxSize,
+    refPosition,
+  }: {
+    imageBitmap: ImageBitmap;
+    maxSize: Size;
+    refPosition: Position;
+  }) {
+    this.imageSize = {
+      width: imageBitmap.width,
+      height: imageBitmap.height,
+    };
+    const adjustedSize = NodeUtilities.adjustNodeSizeToCanvas({
+      componentSize: this.imageSize,
+      maxSize: maxSize, // TODO
+    });
+    const centerPosition = NodeUtilities.positionNodeOnCanvasCenter({
+      canvasOffset: refPosition, // TODO
+      componentSize: adjustedSize, // TODO
+      maxSize: maxSize, // TODO
+    });
+    this.kNode.image(imageBitmap);
+    this.kNode.setSize(adjustedSize);
+    this.kNode.setPosition(centerPosition);
+    this.kNode.moveToTop();
+    this.kNode.fill(transparent);
+    this.listenToBaseKNode();
+    this.mediaLayerRef.draw();
+    //this.uploadImage(imageFile);
+    this.loaded();
     this.listenToBaseKNode();
   }
 

@@ -6,7 +6,7 @@ use crate::state::app_dir::AppDataRoot;
 use crate::utils::image::decode_base64_image::decode_base64_image;
 use crate::utils::image::encode_dynamic_image_base64_png::encode_dynamic_image_base64_png;
 use image::{imageops, DynamicImage};
-use log::error;
+use log::{error, info};
 use ndarray::{Array, CowArray};
 use ort::Value;
 use tauri::{AppHandle, State};
@@ -19,6 +19,7 @@ pub async fn remove_background(
   app_data_root: State<'_, AppDataRoot>,
   app: AppHandle,
 ) -> Result<String, String> {
+  info!("remove_background endpoint called.");
 
   let image = decode_base64_image(image)
     .map_err(|err| format!("Couldn't hydrate image from base64: {}", err))?;

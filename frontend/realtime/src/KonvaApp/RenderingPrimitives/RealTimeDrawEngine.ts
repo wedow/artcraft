@@ -25,6 +25,7 @@ import {
   isLoadingVisible,
   loadingProgress,
 } from "~/signals/uiEvents/loadingIndicator";
+import {DecodeBase64ToImage} from "~/utilities/DecodeBase64ToImage.ts";
 
 interface ServerSettings {
   model_path: string;
@@ -285,7 +286,7 @@ export class RealTimeDrawEngine {
       this.client.onResult(async (response) => {
         try {
           // Convert the base64 image to ImageBitmap and update the preview
-          const bitmap = await this.base64ToImageBitmap(response.image);
+          const bitmap = await DecodeBase64ToImage(response.image);
           this.outputBitmap = bitmap;
           this.previewCanvas.image(bitmap);
           this.mediaLayerRef.batchDraw();
@@ -895,35 +896,6 @@ export class RealTimeDrawEngine {
     return base64String.split(",")[1];
   }
 
-  private async base64ToImageBitmap(
-    base64String: string,
-  ): Promise<ImageBitmap> {
-    // Create an image element
-    const img = document.createElement("img");
-
-    // Convert base64 to data URL if it doesn't include the prefix
-    const dataUrl = base64String.startsWith("data:")
-      ? base64String
-      : `data:image/png;base64,${base64String}`;
-
-    // Create a promise to handle the image loading
-    return new Promise((resolve, reject) => {
-      img.onload = async () => {
-        try {
-          const bitmap = await createImageBitmap(img);
-          resolve(bitmap);
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      img.onerror = () => reject(new Error("Failed to load image"));
-
-      // Set the source to trigger loading
-      img.src = dataUrl;
-    });
-  }
-
   public async saveOutput() {
     if (!this.outputBitmap) {
       console.error("No output bitmap available to save");
@@ -1007,7 +979,7 @@ export class RealTimeDrawEngine {
       });
 
       //console.log(base64BitmapResponse);
-      const decoded = await this.base64ToImageBitmap(
+      const decoded = await DecodeBase64ToImage(
         base64BitmapResponse as string,
       );
 

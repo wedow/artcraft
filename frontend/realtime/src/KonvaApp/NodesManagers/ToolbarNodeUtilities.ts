@@ -94,7 +94,8 @@ export function getTextNodeButtonStates(
         buttonName === ButtonNames.AI_STYLIZE ||
         buttonName === ButtonNames.SEGMENTATION ||
         buttonName === ButtonNames.DOWNLOAD ||
-        buttonName === ButtonNames.CHROMA
+        buttonName === ButtonNames.CHROMA ||
+        buttonName === ButtonNames.REMOVE_BACKGROUND
       ) {
         buttonStates[buttonName] = {
           disabled: true,
@@ -132,7 +133,8 @@ export function getVideoNodeButtonStates(
       }
       // soon to come feature is disabled
       if (buttonName === ButtonNames.AI_STYLIZE ||
-        buttonName === ButtonNames.COLOR
+        buttonName === ButtonNames.COLOR ||
+        buttonName === ButtonNames.REMOVE_BACKGROUND
       ) {
         buttonStates[buttonName] = {
           disabled: true,
@@ -174,7 +176,8 @@ export function getShapeNodeButtonStates(
         buttonName === ButtonNames.AI_STYLIZE ||
         buttonName === ButtonNames.SEGMENTATION ||
         buttonName === ButtonNames.DOWNLOAD ||
-        buttonName === ButtonNames.CHROMA
+        buttonName === ButtonNames.CHROMA ||
+        buttonName === ButtonNames.REMOVE_BACKGROUND
       ) {
         buttonStates[buttonName] = {
           disabled: true,
@@ -218,7 +221,8 @@ export function getMultiSelectButtonStates(
         buttonName === ButtonNames.SEGMENTATION ||
         buttonName === ButtonNames.DOWNLOAD ||
         buttonName === ButtonNames.CHROMA ||
-        buttonName === ButtonNames.COLOR
+        buttonName === ButtonNames.COLOR ||
+        buttonName === ButtonNames.REMOVE_BACKGROUND
       ) {
         buttonStates[buttonName] = {
           disabled: true,

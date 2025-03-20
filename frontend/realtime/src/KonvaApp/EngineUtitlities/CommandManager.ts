@@ -78,6 +78,20 @@ export class CommandManager {
     this.undoStackManagerRef.executeCommand(command);
     this.renderEngineRef.render();
   }
+
+  deleteSpecificNodes(nodes: MediaNode[]) {
+    const command = new DeleteCommand({
+      nodes: nodes,
+      mediaLayerRef: this.mediaLayerRef,
+      nodesManagerRef: this.nodesManagerRef,
+      nodeTransformerRef: this.nodeTransformerRef,
+      selectionManagerRef: this.selectionManagerRef,
+      renderEngineRef: this.renderEngineRef,
+    });
+    this.undoStackManagerRef.executeCommand(command);
+    this.renderEngineRef.render();
+  }
+
   toggleLockNodes() {
     const nodes = this.selectionManagerRef.getSelectedNodes();
     const node = nodes.values().next().value;

@@ -1,35 +1,36 @@
 import Konva from "konva";
 
-import { uiAccess, uiEvents } from "~/signals";
-import { ShapeNode } from "./Nodes";
-import { PaintNode } from "./Nodes/PaintNode";
-import { PreviewCopyNode } from "./Nodes/PreviewCopy";
-import { UndoStackManager } from "./UndoRedo";
-import { CommandManager, MatteBox, SceneManager } from "./EngineUtitlities";
+import {uiAccess, uiEvents} from "~/signals";
+import {ImageNode, ShapeNode, ShapeType, TextNode, VideoNode} from "./Nodes";
+import {PaintNode} from "./Nodes/PaintNode";
+import {PreviewCopyNode} from "./Nodes/PreviewCopy";
+import {UndoStackManager} from "./UndoRedo";
+import {CommandManager, MatteBox, SceneManager} from "./EngineUtitlities";
 import {
-  NodesManager,
   NodeIsolator,
-  NodeTransformer,
+  NodesManager,
   NodesTranslationEventDetails,
   NodeTransformationEventDetails,
+  NodeTransformer,
   SelectionManager,
   SelectionManagerEvents,
   SelectorSquare,
 } from "./NodesManagers";
-import { ImageNode, VideoNode, TextNode } from "./Nodes";
-import { EngineOptions, TextNodeData, VideoNodeData } from "./types";
+import {EngineOptions, TextNodeData, VideoNodeData} from "./types";
 
-import { AppModes, VideoResolutions } from "./constants";
-import { ToolbarMainButtonNames } from "~/components/features/ToolbarMain/enum";
+import {AppModes, VideoResolutions} from "./constants";
+import {ToolbarMainButtonNames} from "~/components/features/ToolbarMain/enum";
 
-import { ToolbarNodeButtonNames } from "~/components/features/ToolbarNode/enums";
-import { NavigateFunction } from "react-router-dom";
-import { LoadingVideosProvider } from "./EngineUtitlities/LoadingVideosProvider";
+import {ToolbarNodeButtonNames} from "~/components/features/ToolbarNode/enums";
+import {NavigateFunction} from "react-router-dom";
+import {LoadingVideosProvider} from "./EngineUtitlities/LoadingVideosProvider";
 
-import { VideoExtractionHandler } from "./EngineUtitlities/VideoExtractionHandler/VideoExtractionHandler";
-import { RealTimeDrawEngine } from "./RenderingPrimitives/RealTimeDrawEngine";
-import { NodeColor } from "~/signals/uiEvents/toolbarNode";
-import { ShapeType } from "./Nodes";
+import {VideoExtractionHandler} from "./EngineUtitlities/VideoExtractionHandler/VideoExtractionHandler";
+import {RealTimeDrawEngine} from "./RenderingPrimitives/RealTimeDrawEngine";
+import {NodeColor} from "~/signals/uiEvents/toolbarNode";
+import {invoke} from "@tauri-apps/api/core";
+import {DecodeBase64ToImage} from "~/utilities/DecodeBase64ToImage.ts";
+import {EncodeImageBitmapToBase64} from "~/utilities/EncodeImageBitmapToBase64.ts";
 
 
 export interface RenderingOptions {
@@ -326,6 +327,9 @@ export class Engine {
     uiEvents.toolbarNode.MOVE_LAYER_UP.onClick(() =>
       this.commandManager.moveNodesUp(),
     );
+    uiEvents.toolbarNode.REMOVE_BACKGROUND.onClick(() =>
+      this.removeBackground(),
+    );
 
     // Listen to Toolbar Main
     uiEvents.toolbarMain.UNDO.onClick(() => {
@@ -443,6 +447,38 @@ export class Engine {
     uiEvents.toolbarMain.onEraseBrushSizeChanged((size: number) => {
       this.realTimeDrawEngine.paintBrushSize = size;
     });
+  }
+
+  removeBackground() {
+    const selectedNodeSet = this.selectionManager.getSelectedNodes();
+
+    if (selectedNodeSet.size !== 1) {
+      return; // Can only remove background from a single image at a time.
+    }
+
+    const [ selectedNode ] = selectedNodeSet;
+
+    const removeBgInvocation
+        = async (selectedNode: ImageNode, callback: (existingImageNode: ImageNode, createdImage: ImageBitmap) => void) => {
+
+      const image : HTMLImageElement = selectedNode.kNode.image();
+      const base64Bitmap = await EncodeImageBitmapToBase64(image);
+      const base64BitmapResponse = await invoke("remove_background", {
+        image: base64Bitmap,
+      });
+
+      const createdImage = await DecodeBase64ToImage(base64BitmapResponse as string);
+
+      callback(selectedNode, createdImage);
+    };
+
+    const _promise = removeBgInvocation(selectedNode, (selectedNode: ImageNode, createdImage: ImageBitmap) => {
+      if (!this.nodesManager.hasNode(selectedNode)) {
+        return;
+      }
+      this.commandManager.deleteSpecificNodes([selectedNode]);
+      this.addImageFromImageBitmap(createdImage);
+    })
   }
 
   disableAllButtons() {
@@ -624,6 +660,23 @@ export class Engine {
 
     this.commandManager.createNode(imageNode);
   }
+
+  public addImageFromImageBitmap(imageBitmap: ImageBitmap) {
+    const imageNode = new ImageNode({
+      mediaLayerRef: this.mediaLayer,
+      canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
+      canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
+      imageBitmap: imageBitmap,
+      selectionManagerRef: this.selectionManager,
+      loaded: async () => {
+        await this.realTimeDrawEngine.render();
+        this.setAppMode(AppModes.SELECT);
+      },
+    });
+
+    this.commandManager.createNode(imageNode);
+  }
+
   public addPaintNode(
     canvas: HTMLCanvasElement,
     lineBounds: {

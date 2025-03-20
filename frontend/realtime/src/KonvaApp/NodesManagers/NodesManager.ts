@@ -44,6 +44,10 @@ export class NodesManager {
     // this.printNodesAndZIndices();
   }
 
+  public hasNode(node: MediaNode): boolean {
+    return this.allNodes.has(node);
+  }
+
   /*************************
    *  For Debugging use
    */

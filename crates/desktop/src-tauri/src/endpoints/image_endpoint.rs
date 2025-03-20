@@ -32,6 +32,7 @@ pub async fn infer_image(
   app_data_root: State<'_, AppDataRoot>,
   app: AppHandle,
 ) -> Result<String, String> {
+  info!("infer_image endpoint called.");
 
   let prompt = get_prompt_or_fallback(prompt);
 

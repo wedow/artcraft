@@ -8,4 +8,5 @@ export enum ToolbarNodeButtonNames {
   MOVE_LAYER_DOWN = "MOVE_LAYER_DOWN",
   DOWNLOAD = "DOWNLOAD",
   COLOR = "COLOR",
+  REMOVE_BACKGROUND = "REMOVE_BACKGROUND",
 }
