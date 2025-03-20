@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Tab, TabGroup, TabList } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
+import { Tooltip } from "./Tooltip";
 
 export interface TabItem {
   id: string;
@@ -12,6 +13,8 @@ interface TabSelectorProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   className?: string;
+  disabled?: boolean;
+  disabledMessage?: string;
 }
 
 export const TabSelector: React.FC<TabSelectorProps> = ({
@@ -19,6 +22,8 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
   activeTab,
   onTabChange,
   className,
+  disabled,
+  disabledMessage,
 }) => {
   // Find the index of the active tab
   const selectedIndex = tabs.findIndex((tab) => tab.id === activeTab);
@@ -46,13 +51,17 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
     }
   }, [selectedIndex, tabs]);
 
-  return (
+  const TabGroupElement = (
     <TabGroup
       selectedIndex={selectedIndex}
       onChange={handleTabChange}
-      className={twMerge("w-full", className)}
+      className={twMerge(
+        "w-full",
+        className,
+        disabled ? "cursor-not-allowed opacity-60" : "",
+      )}
     >
-      <TabList className="glass relative inline-flex min-w-fit overflow-x-auto rounded-lg p-1 shadow-lg">
+      <TabList className="glass relative inline-flex min-w-fit overflow-x-auto rounded-lg p-0.5 py-1 shadow-lg">
         {/* Animated indicator */}
         <div
           className="absolute top-1 z-10 h-[calc(100%-8px)] rounded-md border-2 border-primary bg-primary/30 transition-all duration-200 ease-in-out"
@@ -66,10 +75,12 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
           <Tab
             key={tab.id}
             ref={(el) => (tabsRef.current[index] = el)}
+            disabled={disabled}
             className={({ selected }) =>
               twMerge(
                 "relative z-20 mx-0.5 min-w-max rounded-md border-2 border-transparent px-4 py-0.5 text-center font-semibold transition-all duration-200 ease-in-out",
                 selected ? "text-white" : "text-gray-300 hover:text-white",
+                disabled ? "cursor-not-allowed opacity-60" : "",
               )
             }
           >
@@ -78,5 +89,19 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
         ))}
       </TabList>
     </TabGroup>
+  );
+
+  return (
+    <>
+      {disabled && (
+        <Tooltip
+          tip={disabledMessage ?? "Cannot change tab. Generation in progress."}
+          position="bottom"
+        >
+          {TabGroupElement}
+        </Tooltip>
+      )}
+      {!disabled && TabGroupElement}
+    </>
   );
 };

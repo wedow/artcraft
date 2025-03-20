@@ -119,6 +119,7 @@ export const GenerationRootComponent = () => {
                 target.style.height = "auto";
                 target.style.height = `${target.scrollHeight}px`;
               }}
+              autoFocus={true}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
             />

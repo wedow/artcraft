@@ -1,7 +1,12 @@
 import { twMerge } from "tailwind-merge";
 import { TabSelector, TabItem } from "~/components/ui/TabSelector";
 import { useComputed } from "@preact/signals-react";
-import { appMode, dispatchUiEvents } from "~/signals";
+import {
+  appMode,
+  dispatchUiEvents,
+  GenerationLoadingState,
+  generationSignal,
+} from "~/signals";
 
 // import { paperWrapperStyles } from "~/components/styles";
 // import { faPlus, faQuestion } from "@fortawesome/pro-solid-svg-icons";
@@ -23,6 +28,8 @@ export const ToolbarTopLeft = () => {
     dispatchUiEvents.changeAppMode(tabId as "image" | "edit" | "generate");
   };
 
+  const generationState = generationSignal.value;
+
   console.log(appMode.value);
 
   return (
@@ -41,6 +48,9 @@ export const ToolbarTopLeft = () => {
         tabs={tabs}
         activeTab={activeTab.value}
         onTabChange={handleTabChange}
+        disabled={
+          generationState.loadingState === GenerationLoadingState.GENERATING
+        }
       />
 
       {/* <ToolbarButton icon={faPlus}>
