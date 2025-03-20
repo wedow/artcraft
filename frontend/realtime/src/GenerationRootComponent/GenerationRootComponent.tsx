@@ -23,15 +23,6 @@ export const GenerationRootComponent = () => {
       return;
     }
 
-    // TODO: For testing only!!! Remove when finished
-    if (generationState.loadingState === GenerationLoadingState.GENERATING) {
-      generationSignal.value = {
-        loadingState: GenerationLoadingState.INIT,
-        prompt: "",
-      };
-      return;
-    }
-
     const prompt = inputRef.current.value;
     generationSignal.value = {
       loadingState: GenerationLoadingState.GENERATING,
@@ -129,6 +120,10 @@ export const GenerationRootComponent = () => {
               className="text-md ml-2 self-end"
               onClick={handleGenerate}
               disabled={isButtonDisabled}
+              loading={
+                generationState.loadingState ===
+                GenerationLoadingState.GENERATING
+              }
             >
               Generate
             </Button>
@@ -157,11 +152,29 @@ const GenerationContent = (generationState: {
   imageB64?: string;
   prompt: string;
 }) => {
+  const handleCancel = () => {
+    // TODO: For testing only!!! Remove when finished
+    if (generationState.loadingState === GenerationLoadingState.GENERATING) {
+      generationSignal.value = {
+        loadingState: GenerationLoadingState.INIT,
+        prompt: "",
+      };
+      return;
+    }
+  };
+
   let imgBoxContent;
   if (generationState.loadingState === GenerationLoadingState.GENERATING) {
     imgBoxContent = (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-7">
         <LoadingSpinner isShowing={true} message="Generating image..." />
+        <Button
+          variant="secondary"
+          onClick={handleCancel}
+          className="px-3 py-1 text-sm"
+        >
+          Cancel
+        </Button>
       </div>
     );
   } else if (
