@@ -27,7 +27,9 @@ export const ToolbarTopLeft = () => {
 
   return (
     <div
-      className={twMerge("z-20 flex h-fit w-fit items-center gap-8 pl-1 pr-4")}
+      className={twMerge(
+        "relative z-50 flex h-fit w-fit items-center gap-8 pl-1 pr-4",
+      )}
     >
       <img
         src="/brand/mira-logo.png"

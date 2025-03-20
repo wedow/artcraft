@@ -3,7 +3,10 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { Button, LoadingSpinner } from "~/components/ui";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
 import { GenerationLoadingState, generationSignal } from "~/signals";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import BackgroundGallery from "./BackgroundGallery";
+import { twMerge } from "tailwind-merge";
+import { Transition } from "@headlessui/react";
 
 export const GenerationRootComponent = () => {
   // This is a hook that will log the number of times the component has rerendered
@@ -12,22 +15,29 @@ export const GenerationRootComponent = () => {
   useSignals();
 
   const generationState = generationSignal.value;
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const handleGenerate = () => {
     if (!inputRef.current) {
-      return
-    };
+      return;
+    }
 
     // TODO: For testing only!!! Remove when finished
     if (generationState.loadingState === GenerationLoadingState.GENERATING) {
-      generationSignal.value = { loadingState: GenerationLoadingState.INIT, prompt: "" };
+      generationSignal.value = {
+        loadingState: GenerationLoadingState.INIT,
+        prompt: "",
+      };
       return;
     }
 
     const prompt = inputRef.current.value;
-    generationSignal.value = { loadingState: GenerationLoadingState.GENERATING, prompt };
-    
+    generationSignal.value = {
+      loadingState: GenerationLoadingState.GENERATING,
+      prompt,
+    };
+
     // TODO: Write the signal change effect in generationSignals.ts
     // TODO: Call the server to generate the image
   };
@@ -35,15 +45,17 @@ export const GenerationRootComponent = () => {
   let contentElement;
   switch (generationState.loadingState) {
     case GenerationLoadingState.INIT:
-      contentElement = 
-            <div className="flex flex-col items-center justify-center mb-32">
-            <span className="text-9xl font-bold">Generate Image</span>
-            <span className="text-3xl pt-2">Imagine, Describe, Generate.</span>
-            </div>
-            break;
+      contentElement = null;
+      break;
     case GenerationLoadingState.GENERATING:
     case GenerationLoadingState.GENERATED:
-      contentElement = <GenerationContent loadingState={generationState.loadingState} imageB64={generationState.imageB64} prompt={generationState.prompt} />
+      contentElement = (
+        <GenerationContent
+          loadingState={generationState.loadingState}
+          imageB64={generationState.imageB64}
+          prompt={generationState.prompt}
+        />
+      );
       break;
   }
 
@@ -52,50 +64,129 @@ export const GenerationRootComponent = () => {
 
   return (
     <>
-        <div className="fixed flex flex-col items-center justify-center w-full h-full gap-y-12 transition-all duration-1000">
+      <div className="fixed z-10 flex h-full w-full flex-col items-center justify-center transition-all duration-500">
+        <Transition
+          show={generationState.loadingState !== GenerationLoadingState.INIT}
+          enter="transition-opacity duration-500"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="transition-opacity duration-500"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+          as="div"
+        >
           {contentElement}
-            <div className="glass p-3 rounded-xl flex w-1/2 border-ui-panel border-2">
-                <input ref={inputRef} type="text" placeholder="Describe what you want to see..." className="flex-1 text-lg rounded-md bg-transparent focus:outline-none" />
-                <Button icon={faSparkles} variant="primary" className="text-lg" onClick={handleGenerate} disabled={isButtonDisabled}>Generate</Button>
+        </Transition>
+        <div
+          className={twMerge(
+            "absolute flex w-full flex-col items-center justify-center gap-16 transition-all duration-500",
+            generationState.loadingState === GenerationLoadingState.INIT
+              ? "bottom-1/2 translate-y-1/2 transform"
+              : "bottom-8",
+          )}
+        >
+          <Transition
+            show={generationState.loadingState === GenerationLoadingState.INIT}
+            enter="transition-opacity duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+            as="div"
+          >
+            <div className="flex flex-col items-center justify-center text-center drop-shadow-xl">
+              <span className="text-8xl font-bold">Generate Image</span>
+              <span className="pt-2 text-2xl opacity-80">
+                Imagine, Describe, Generate.
+              </span>
             </div>
+          </Transition>
+          <div
+            className={twMerge(
+              "glass flex min-h-[56px] w-full max-w-[900px] items-end rounded-xl border-2 p-3 shadow-xl transition-all duration-[400ms] ease-in-out",
+              isInputFocused ? "border-primary-400/60" : "border-ui-panel",
+            )}
+          >
+            <textarea
+              ref={inputRef}
+              rows={1}
+              placeholder="Describe what you want to see..."
+              className="max-h-[120px] min-h-[40px] flex-1 resize-none overflow-y-auto rounded-md bg-transparent px-3 py-2 text-lg leading-normal focus:outline-none"
+              style={{ lineHeight: "24px" }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = "auto";
+                target.style.height = `${target.scrollHeight}px`;
+              }}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+            />
+            <Button
+              icon={faSparkles}
+              variant="primary"
+              className="text-md ml-2 self-end"
+              onClick={handleGenerate}
+              disabled={isButtonDisabled}
+            >
+              Generate
+            </Button>
+          </div>
         </div>
+      </div>
+
+      <Transition
+        show={generationState.loadingState === GenerationLoadingState.INIT}
+        enter="transition-opacity duration-700"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity duration-700"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+        as="div"
+      >
+        <BackgroundGallery />
+      </Transition>
     </>
   );
 };
 
-const GenerationContent = (generationState : {
+const GenerationContent = (generationState: {
   loadingState: GenerationLoadingState;
   imageB64?: string;
   prompt: string;
 }) => {
-
-  const imgBoxStyle = {
-    width: "1024px",
-    height: "1024px",
-  }
-
   let imgBoxContent;
   if (generationState.loadingState === GenerationLoadingState.GENERATING) {
     imgBoxContent = (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <LoadingSpinner isShowing={true} message="Generating image..." />
       </div>
-    )
-  } else if (generationState.loadingState === GenerationLoadingState.GENERATED) {
+    );
+  } else if (
+    generationState.loadingState === GenerationLoadingState.GENERATED
+  ) {
     imgBoxContent = (
-        <img src={generationState.imageB64} alt="Generated Image" />
-    )
+      <img
+        src={generationState.imageB64}
+        alt="Generated Image"
+        className="h-full w-full object-contain"
+      />
+    );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center" >
-      <div style={imgBoxStyle} className="bg-ui-border rounded-lg">
-        {imgBoxContent}
+    <>
+      <div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center">
+        <div className="aspect-[1/1] w-[min(80vw,68vh)] rounded-t-lg bg-[#29292D]/60">
+          {imgBoxContent}
+        </div>
+        <div className="mb-16 flex w-[min(80vw,68vh)] rounded-b-lg bg-[#29292D]">
+          <span className="p-3.5 text-sm opacity-50">
+            {generationState.prompt || "No prompt provided"}
+          </span>
+        </div>
       </div>
-      <div className="bg-ui-panel w-full min-h-12 flex items-center justify-center">
-        <span className="text-lg p-4">{generationState.prompt}</span>
-      </div>
-
-    </div>
-  )
-}
+    </>
+  );
+};

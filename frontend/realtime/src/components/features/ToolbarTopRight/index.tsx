@@ -22,7 +22,9 @@ export const ToolbarTopRight = () => {
   const [aspectRatio, setAspectRatio] = useState("1:1");
 
   return (
-    <div className={twMerge("z-20 flex h-fit w-fit items-center gap-2")}>
+    <div
+      className={twMerge("relative z-50 flex h-fit w-fit items-center gap-2")}
+    >
       {import.meta.env.DEV && ( // only show in dev mode for now
         <ToggleButton
           label="Ratio"
