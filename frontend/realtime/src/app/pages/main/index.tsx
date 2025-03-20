@@ -10,6 +10,9 @@ import { KonvaRootComponent } from "~/KonvaRootComponent";
 import { ToolbarTopLeft } from "~/components/features/ToolbarTopLeft";
 import { ToolbarTopRight } from "~/components/features/ToolbarTopRight";
 import { ToolbarTopCenter } from "~/components/features/ToolbarTopCenter";
+import { appMode } from "~/signals";
+import { useSignals } from "@preact/signals-react/runtime";
+import { GenerationRootComponent } from "~/GenerationRootComponent/GenerationRootComponent";
 
 export const Main = withProtectionRoute(() => {
   // This is a hook that will log the number of times the component has rerendered
@@ -19,12 +22,32 @@ export const Main = withProtectionRoute(() => {
   if (import.meta.env.DEV && sceneToken === "debug") {
     sceneToken = "m_p8nkry6m5j22w586xyex0w4a4pznbx";
   }
-  return (
-    <div className="fixed grid h-full w-full grid-cols-12 grid-rows-12">
+
+  useSignals();
+
+  const appModeValue = appMode.value;
+  let childView;
+
+  switch (appModeValue) {
+    case "edit":
+      break;
+    case "generate":
+      childView = <GenerationRootComponent />;
+      break;
+    case "image":
+    default:
+      childView = 
       <KonvaRootComponent
         sceneToken={sceneToken}
         className="col-span-12 col-start-1 row-span-12 row-start-1"
       />
+
+      break;
+  }
+  
+  return (
+    <div className="fixed grid h-full w-full grid-cols-12 grid-rows-12">
+      {childView}
       <div className="absolute top-0 w-full p-3.5">
         <div className="relative flex w-full">
           <div className="absolute left-0">

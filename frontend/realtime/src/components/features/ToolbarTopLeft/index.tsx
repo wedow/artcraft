@@ -14,12 +14,13 @@ export const ToolbarTopLeft = () => {
   const tabs: TabItem[] = [
     { id: "image", label: "Image" },
     { id: "edit", label: "Edit" },
+    { id: "generate", label: "Generate" },
     // { id: "video", label: "Video" },
   ];
 
   const handleTabChange = (tabId: string) => {
     // Update the global signal
-    dispatchUiEvents.changeAppMode(tabId as "image" | "edit");
+    dispatchUiEvents.changeAppMode(tabId as "image" | "edit" | "generate");
   };
 
   console.log(appMode.value);
