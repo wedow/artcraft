@@ -17,7 +17,7 @@ export const ToolbarTopLeft = () => {
   const activeTab = useComputed(() => appMode.value);
 
   const tabs: TabItem[] = [
-    { id: "image", label: "Image" },
+    { id: "realtime", label: "Realtime" },
     { id: "edit", label: "Edit" },
     { id: "generate", label: "Generate" },
     // { id: "video", label: "Video" },
@@ -25,7 +25,7 @@ export const ToolbarTopLeft = () => {
 
   const handleTabChange = (tabId: string) => {
     // Update the global signal
-    dispatchUiEvents.changeAppMode(tabId as "image" | "edit" | "generate");
+    dispatchUiEvents.changeAppMode(tabId as "realtime" | "edit" | "generate");
   };
 
   const generationState = generationSignal.value;

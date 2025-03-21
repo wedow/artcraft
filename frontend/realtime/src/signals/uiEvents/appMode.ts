@@ -3,10 +3,10 @@ import { signal, effect } from "@preact/signals-core";
 // this is to control the app mode - BFlat
 
 // Define the app mode types
-export type AppModeType = "image" | "edit" | "generate";
+export type AppModeType = "realtime" | "edit" | "generate";
 
 // Create a signal for the current app mode
-export const appMode = signal<AppModeType>("image");
+export const appMode = signal<AppModeType>("realtime");
 
 // Create a function to change the app mode
 export const changeAppMode = (mode: AppModeType) => {
