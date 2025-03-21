@@ -23,6 +23,11 @@ export const ToolbarNodeButtonData = [
     tooltip: "Color",
   },
   {
+    name: ButtonNames.REMOVE_BACKGROUND,
+    icon: faScalpelLineDashed,
+    tooltip: "Remove Background",
+  },
+  {
     name: ButtonNames.CHROMA,
     icon: faTransporter,
     tooltip: "Green Screen Removal",

@@ -46,29 +46,29 @@ export function getImageNodeButtonStates(
         return buttonStates;
       }
 
-      // hidden buttons
-      if (
-        buttonName === ButtonNames.AI_STYLIZE ||
-        buttonName === ButtonNames.SEGMENTATION ||
-        buttonName === ButtonNames.DOWNLOAD ||
-        buttonName === ButtonNames.CHROMA ||
-        buttonName === ButtonNames.COLOR
-      ) {
-        buttonStates[buttonName] = {
-          disabled: true,
-          hidden: true,
-          active: false,
-        };
-        return buttonStates;
-      }
+      switch (buttonName) {
+        case ButtonNames.AI_STYLIZE:
+        case ButtonNames.SEGMENTATION:
+        case ButtonNames.DOWNLOAD:
+        case ButtonNames.CHROMA:
+        case ButtonNames.COLOR:
+          // hidden buttons
+          buttonStates[buttonName] = {
+            disabled: true,
+            hidden: true,
+            active: false,
+          };
+          return buttonStates;
 
-      // all other buttons
-      buttonStates[buttonName] = {
-        disabled: false,
-        hidden: false,
-        active: false,
-      };
-      return buttonStates;
+        default:
+          // all other buttons
+          buttonStates[buttonName] = {
+            disabled: false,
+            hidden: false,
+            active: false,
+          };
+          return buttonStates;
+      }
     },
     {} as ContextualToolbarProps["buttonStates"],
   );
@@ -89,28 +89,29 @@ export function getTextNodeButtonStates(
         return buttonStates;
       }
 
-      // hidden buttons
-      if (
-        buttonName === ButtonNames.AI_STYLIZE ||
-        buttonName === ButtonNames.SEGMENTATION ||
-        buttonName === ButtonNames.DOWNLOAD ||
-        buttonName === ButtonNames.CHROMA
-      ) {
-        buttonStates[buttonName] = {
-          disabled: true,
-          hidden: true,
-          active: false,
-        };
-        return buttonStates;
-      }
+      switch (buttonName) {
+        case ButtonNames.AI_STYLIZE:
+        case ButtonNames.SEGMENTATION:
+        case ButtonNames.DOWNLOAD:
+        case ButtonNames.CHROMA:
+        case ButtonNames.REMOVE_BACKGROUND:
+          // hidden buttons
+          buttonStates[buttonName] = {
+            disabled: true,
+            hidden: true,
+            active: false,
+          };
+          return buttonStates;
 
-      // all other buttons
-      buttonStates[buttonName] = {
-        disabled: false,
-        hidden: false,
-        active: false,
-      };
-      return buttonStates;
+        default:
+          // all other buttons
+          buttonStates[buttonName] = {
+            disabled: false,
+            hidden: false,
+            active: false,
+          };
+          return buttonStates;
+      }
     },
     {} as ContextualToolbarProps["buttonStates"],
   );
@@ -130,24 +131,26 @@ export function getVideoNodeButtonStates(
         };
         return buttonStates;
       }
-      // soon to come feature is disabled
-      if (buttonName === ButtonNames.AI_STYLIZE ||
-        buttonName === ButtonNames.COLOR
-      ) {
-        buttonStates[buttonName] = {
-          disabled: true,
-          hidden: true,
-          active: false,
-        };
-        return buttonStates;
+      switch (buttonName) {
+        case ButtonNames.AI_STYLIZE:
+        case ButtonNames.COLOR:
+        case ButtonNames.REMOVE_BACKGROUND:
+          // soon to come feature is disabled
+          buttonStates[buttonName] = {
+              disabled: true,
+              hidden: true,
+              active: false,
+          };
+          return buttonStates;
+        default:
+          // all other buttons
+          buttonStates[buttonName] = {
+              disabled: false,
+              hidden: false,
+              active: false,
+          };
+          return buttonStates;
       }
-      // all other buttons
-      buttonStates[buttonName] = {
-        disabled: false,
-        hidden: false,
-        active: false,
-      };
-      return buttonStates;
     },
     {} as ContextualToolbarProps["buttonStates"],
   );
@@ -169,28 +172,28 @@ export function getShapeNodeButtonStates(
         return buttonStates;
       }
 
-      // hidden buttons
-      if (
-        buttonName === ButtonNames.AI_STYLIZE ||
-        buttonName === ButtonNames.SEGMENTATION ||
-        buttonName === ButtonNames.DOWNLOAD ||
-        buttonName === ButtonNames.CHROMA
-      ) {
-        buttonStates[buttonName] = {
-          disabled: true,
-          hidden: true,
-          active: false,
-        };
-        return buttonStates;
+      switch (buttonName) {
+        case ButtonNames.AI_STYLIZE:
+        case ButtonNames.SEGMENTATION:
+        case ButtonNames.DOWNLOAD:
+        case ButtonNames.CHROMA:
+        case ButtonNames.REMOVE_BACKGROUND:
+          // hidden buttons
+          buttonStates[buttonName] = {
+              disabled: true,
+              hidden: true,
+              active: false,
+          };
+          return buttonStates;
+        default:
+          // all other buttons
+          buttonStates[buttonName] = {
+              disabled: false,
+              hidden: false,
+              active: false,
+          };
+          return buttonStates;
       }
-
-      // all other buttons
-      buttonStates[buttonName] = {
-        disabled: false,
-        hidden: false,
-        active: false,
-      };
-      return buttonStates;
     },
     {} as ContextualToolbarProps["buttonStates"],
   );
@@ -212,29 +215,29 @@ export function getMultiSelectButtonStates(
         return buttonStates;
       }
 
-      // hidden buttons
-      if (
-        buttonName === ButtonNames.AI_STYLIZE ||
-        buttonName === ButtonNames.SEGMENTATION ||
-        buttonName === ButtonNames.DOWNLOAD ||
-        buttonName === ButtonNames.CHROMA ||
-        buttonName === ButtonNames.COLOR
-      ) {
-        buttonStates[buttonName] = {
-          disabled: true,
-          hidden: true,
-          active: false,
-        };
-        return buttonStates;
+      switch (buttonName) {
+        case ButtonNames.AI_STYLIZE:
+        case ButtonNames.SEGMENTATION:
+        case ButtonNames.DOWNLOAD:
+        case ButtonNames.CHROMA:
+        case ButtonNames.COLOR:
+        case ButtonNames.REMOVE_BACKGROUND:
+          // hidden buttons
+          buttonStates[buttonName] = {
+              disabled: true,
+              hidden: true,
+              active: false,
+          };
+          return buttonStates;
+        default:
+          // all other buttons
+          buttonStates[buttonName] = {
+              disabled: false,
+              hidden: false,
+              active: false,
+          };
+          return buttonStates;
       }
-
-      // all other buttons
-      buttonStates[buttonName] = {
-        disabled: false,
-        hidden: false,
-        active: false,
-      };
-      return buttonStates;
     },
     {} as ContextualToolbarProps["buttonStates"],
   );

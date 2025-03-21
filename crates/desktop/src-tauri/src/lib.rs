@@ -7,13 +7,15 @@ pub mod transfer;
 pub mod utils;
 
 use crate::endpoints::download_models::download_models;
-use crate::endpoints::image_endpoint::infer_image;
+use crate::endpoints::realtime_image_endpoint::infer_image;
 use crate::endpoints::remove_background_endpoint::remove_background;
 use crate::endpoints::test_counter::test_counter;
+use crate::endpoints::text_to_image_endpoint::text_to_image;
 use crate::ml::model_cache::ModelCache;
 use crate::ml::prompt_cache::PromptCache;
 use crate::state::app_config::AppConfig;
 use crate::threads::downloader_thread::downloader_thread;
+use crate::utils::log_environment_details::log_environment_details;
 use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
 
@@ -44,6 +46,7 @@ pub fn run() {
       .targets(vec![Target::new(TargetKind::Stdout)])
       .build())
     .setup(|app| {
+      log_environment_details();
       //if cfg!(debug_assertions) {
       //  app.handle().plugin(
       //    tauri_plugin_log::Builder::default()
@@ -65,7 +68,8 @@ pub fn run() {
       download_models,
       infer_image,
       remove_background,
-      test_counter, 
+      test_counter,
+      text_to_image,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

@@ -12,7 +12,7 @@ use tauri::{AppHandle, Emitter};
 use tempfile::NamedTempFile;
 use tokio::task::JoinHandle;
 use crate::ml::weights_registry::weight_descriptor::WeightFunction;
-use crate::ml::weights_registry::weights::{CLIP_JSON, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SDXL_TURBO_CLIP_TEXT_ENCODER_2, SDXL_TURBO_UNET, SDXL_TURBO_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
+use crate::ml::weights_registry::weights::{CLIP_JSON, DIS_MEDIUM_ONNX, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SDXL_TURBO_CLIP_TEXT_ENCODER_2, SDXL_TURBO_UNET, SDXL_TURBO_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 const NOTIFICATION_CHANNEL_NAME : &str = "notification";
 const MAX_FILES : usize = 8;
@@ -45,6 +45,7 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
   download_queue.push_back(LYKON_DEAMSHAPER_7_VAE);
   download_queue.push_back(SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
   download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER); // TODO(bt): Why is this still needed?
+  download_queue.push_back(DIS_MEDIUM_ONNX);
   //download_queue.push_back(SDXL_TURBO_CLIP_TEXT_ENCODER_2); // TODO(bt): REMOVE
   //download_queue.push_back(SDXL_TURBO_VAE); // TODO(bt): REMOVE
   //download_queue.push_back(SDXL_TURBO_UNET); // TODO(bt): REMOVE
@@ -80,6 +81,7 @@ pub async fn downloader_thread(app_data_root: AppDataRoot, app: AppHandle) -> ! 
       WeightFunction::TextTokenizer => NotificationModelType::TextTokenizer,
       WeightFunction::Unet => NotificationModelType::Unet,
       WeightFunction::Vae => NotificationModelType::Vae,
+      WeightFunction::ImageSegmentation => NotificationModelType::ImageSegmentation,
     };
 
     let result = app.emit(NOTIFICATION_CHANNEL_NAME, NotificationEvent::ModelDownloadStarted {

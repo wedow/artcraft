@@ -6,47 +6,44 @@ use crate::state::app_dir::AppDataRoot;
 use crate::utils::image::decode_base64_image::decode_base64_image;
 use crate::utils::image::encode_rgb_image_base64_png::encode_rgb_image_base64_png;
 use image::imageops::FilterType;
-use image::{DynamicImage, RgbImage};
+use image::{DynamicImage, ImageReader, RgbImage};
 use log::{error, info};
+use once_cell::sync::Lazy;
+use std::io::Cursor;
 use std::path::PathBuf;
 use tauri::{AppHandle, State};
 
-const PROMPT_FILENAME : &str = "prompt.txt";
-const PROMPT: &str = "shiba inu, cute dog, detailed, walking in a wooded forest, photorealistic, 8k";
-
-const NEGATIVE_PROMPT: &str = "bad quality, bad faces, poor quality, blurry faces, watermark";
-
 const RANDOM_SEED: u32 = 42;
 
+const STRENGTH: f64 = 1.0;
+const PNG_BYTES : &[u8] = include_bytes!("../../binary_includes/1024.png");
 
-/// This handler takes an image (as a base64 encoded string) and a prompt and returns
-/// an image (as a base64-encoded string).
+// NB: We're just hacking a temporary "text to image" test endpoint leveraging the existing image to image modality.
+static IMAGE : Lazy<DynamicImage> = Lazy::new(||{
+  ImageReader::new(Cursor::new(PNG_BYTES))
+    .with_guessed_format()
+    .expect("failed to detect png format")
+    .decode()
+    .expect("failed to decode image")
+});
+
 #[tauri::command]
-pub async fn infer_image(
-  image: &str,
-  prompt: Option<String>,
-  strength: Option<f64>,
+pub async fn text_to_image(
+  prompt: String,
   model_config: State<'_, AppConfig>,
   model_cache: State<'_, ModelCache>,
   prompt_cache: State<'_, PromptCache>,
   app_data_root: State<'_, AppDataRoot>,
   app: AppHandle,
 ) -> Result<String, String> {
+  info!("text_to_image endpoint called.");
 
-  let prompt = get_prompt_or_fallback(prompt);
-
-  info!("Strength: {:?}; Prompt: {}", strength, prompt);
-
-  let image = decode_base64_image(image)
-    .map_err(|err| format!("Couldn't hydrate image from base64: {}", err))?;
-  
-  // TODO(bt,2025-02-17): Running out of vram with full image buffer size
-  let image = image.resize(512, 512, FilterType::CatmullRom);
+  let image = IMAGE.resize(512, 512, FilterType::CatmullRom);
 
   let result = do_infer_image(
     &prompt, 
     image, 
-    strength, 
+    Some(STRENGTH), 
     &model_config, 
     &model_cache, 
     prompt_cache, 
@@ -84,7 +81,7 @@ async fn do_infer_image(
   let args = Args {
     image: &image,
     prompt: prompt.to_string(),
-    uncond_prompt: NEGATIVE_PROMPT.to_string(),
+    uncond_prompt: "".to_string(),
     model_cache,
     configs: config,
     prompt_cache: &prompt_cache,
@@ -99,26 +96,4 @@ async fn do_infer_image(
     .map_err(|err| format!("failure to encode image: {:?}", err))?;
 
   Ok(image)
-}
-
-fn get_prompt_or_fallback(user_prompt: Option<String>) -> String {
-  let user_prompt = user_prompt.map(|prompt| prompt.trim().to_string())
-    .filter(|prompt| !prompt.is_empty());
-
-  if let Some(prompt) = user_prompt {
-    return prompt;
-  }
-
-  let prompt_file = PathBuf::from(PROMPT_FILENAME)
-    .canonicalize()
-    .unwrap_or_else(|_| PathBuf::from(PROMPT_FILENAME));
-
-  std::fs::read_to_string(&prompt_file)
-    .map_err(|err| format!("Failed to read prompt file: {}", err))
-    .unwrap_or_else(|_| {
-      error!("Failed to read prompt file: {:?}", prompt_file);
-      PROMPT.to_string()
-    })
-    .trim()
-    .to_string()
 }

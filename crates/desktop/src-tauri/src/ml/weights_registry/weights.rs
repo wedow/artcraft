@@ -28,6 +28,14 @@ pub const SIMIANLUO_LCM_DREAMSHAPER_V7_UNET : WeightDescriptor = weight!(
   WeightFunction::Unet
 );
 
+/// Image segmentation and background removal
+/// dis_medium.onnx
+pub const DIS_MEDIUM_ONNX : WeightDescriptor = weight!(
+  "Dichotomous Image Segmentation Medium",
+  "dis_medium.onnx",
+  WeightFunction::ImageSegmentation
+);
+
 #[deprecated]
 pub const SDXL_TURBO_CLIP_TEXT_ENCODER : WeightDescriptor = weight!(
   "SDXL Turbo CLIP",

@@ -5,6 +5,7 @@
 
 #[derive(Clone, Copy)]
 pub enum WeightFunction {
+  ImageSegmentation,
   TextEncoder,
   TextTokenizer,
   Unet,
@@ -28,6 +29,7 @@ pub struct WeightDescriptor {
 impl WeightFunction {
   pub fn as_descriptive_str(&self) -> &'static str {
     match self {
+      WeightFunction::ImageSegmentation => "image segmentation",
       WeightFunction::TextEncoder => "text encoder",
       WeightFunction::TextTokenizer => "text tokenizer",
       WeightFunction::Unet => "UNET",
