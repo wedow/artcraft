@@ -35,9 +35,9 @@ function ImageColumn({
         direction="up"
         reverse={reverse}
         pauseOnHover={false}
-        className={`h-full`}
+        className={`h-full gap-[24px]`}
         style={{ "--duration": `${duration}s` } as React.CSSProperties}
-        innerClassName="gap-6 [--gap:24px]"
+        innerClassName="gap-[24px] [--gap:24px]"
         numberOfCopies={2}
       >
         {images.map((image, i) => (
