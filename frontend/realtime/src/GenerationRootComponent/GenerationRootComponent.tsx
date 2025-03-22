@@ -200,7 +200,7 @@ const GenerationContent = (generationState: {
   return (
     <>
       <div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center">
-        <div className="aspect-[1/1] w-[min(80vw,68vh)] rounded-t-lg bg-[#29292D]/60">
+        <div className="aspect-[1/1] w-[min(80vw,68vh)] overflow-clip rounded-t-lg bg-[#29292D]/60">
           {imgBoxContent}
         </div>
         <div className="mb-16 flex w-[min(80vw,68vh)] rounded-b-lg bg-[#29292D]">
