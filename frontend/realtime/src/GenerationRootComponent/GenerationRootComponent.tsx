@@ -7,6 +7,8 @@ import { useRef, useState } from "react";
 import BackgroundGallery from "./BackgroundGallery";
 import { twMerge } from "tailwind-merge";
 import { Transition } from "@headlessui/react";
+import { GenerationEngine } from "~/KonvaApp/GenerationEngine";
+import { ensureBase64Prefix } from "~/KonvaApp/EngineUtitlities/Base64Helpers";
 
 export const GenerationRootComponent = () => {
   // This is a hook that will log the number of times the component has rerendered
@@ -17,6 +19,11 @@ export const GenerationRootComponent = () => {
   const generationState = generationSignal.value;
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const generationEngineRef = useRef<GenerationEngine | null>(null);
+
+  if (generationEngineRef.current === null) {
+    generationEngineRef.current = new GenerationEngine();
+  }
 
   const handleGenerate = () => {
     if (!inputRef.current) {
@@ -28,9 +35,6 @@ export const GenerationRootComponent = () => {
       loadingState: GenerationLoadingState.GENERATING,
       prompt,
     };
-
-    // TODO: Write the signal change effect in generationSignals.ts
-    // TODO: Call the server to generate the image
   };
 
   let contentElement;
@@ -178,11 +182,12 @@ const GenerationContent = (generationState: {
       </div>
     );
   } else if (
-    generationState.loadingState === GenerationLoadingState.GENERATED
+    generationState.loadingState === GenerationLoadingState.GENERATED &&
+    generationState.imageB64
   ) {
     imgBoxContent = (
       <img
-        src={generationState.imageB64}
+        src={ensureBase64Prefix(generationState.imageB64)}
         alt="Generated Image"
         className="h-full w-full object-contain"
       />

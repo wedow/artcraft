@@ -9,6 +9,7 @@ export class GenerationEngine {
   private isGenerating = false;
 
   constructor() {
+    console.log("GenerationEngine constructor");
     this.attachEventListeners();
   }
 
@@ -27,7 +28,7 @@ export class GenerationEngine {
     console.log("Invoking generation for prompt:", prompt);
 
     try {
-      const base64BitmapResponse = await invoke("infer_image", {
+      const base64BitmapResponse = await invoke("text_to_image", {
         prompt: prompt,
       });
 
