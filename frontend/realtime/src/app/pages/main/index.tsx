@@ -14,6 +14,9 @@ import { appMode } from "~/signals";
 import { useSignals } from "@preact/signals-react/runtime";
 import { GenerationRootComponent } from "~/GenerationRootComponent/GenerationRootComponent";
 import { EditModeRootComponent } from "~/EditModeRootComponent/EditModeRootComponent";
+import { useRef } from "react";
+import { EngineType } from "~/KonvaApp";
+import { GenerationEngine } from "~/KonvaApp/GenerationEngine";
 
 export const Main = withProtectionRoute(() => {
   // This is a hook that will log the number of times the component has rerendered
@@ -26,6 +29,9 @@ export const Main = withProtectionRoute(() => {
 
   useSignals();
 
+  const realtimeEngineRef = useRef<EngineType | null>(null);
+  const generationEngineRef = useRef<GenerationEngine | null>(null);
+
   const appModeValue = appMode.value;
   let childView;
 
@@ -36,7 +42,9 @@ export const Main = withProtectionRoute(() => {
       );
       break;
     case "generate":
-      childView = <GenerationRootComponent />;
+      childView = (
+        <GenerationRootComponent generationEngineRef={generationEngineRef} />
+      );
       break;
     case "realtime":
     default:

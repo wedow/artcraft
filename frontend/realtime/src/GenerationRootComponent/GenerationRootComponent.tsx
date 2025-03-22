@@ -10,7 +10,11 @@ import { Transition } from "@headlessui/react";
 import { GenerationEngine } from "~/KonvaApp/GenerationEngine";
 import { ensureBase64Prefix } from "~/KonvaApp/EngineUtitlities/Base64Helpers";
 
-export const GenerationRootComponent = () => {
+export const GenerationRootComponent = ({
+  generationEngineRef,
+}: {
+  generationEngineRef: React.MutableRefObject<GenerationEngine | null>;
+}) => {
   // This is a hook that will log the number of times the component has rerendered
   // Let's make sure we only log once
   useRenderCounter("GenerationRootComponent");
@@ -19,7 +23,6 @@ export const GenerationRootComponent = () => {
   const generationState = generationSignal.value;
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const generationEngineRef = useRef<GenerationEngine | null>(null);
 
   if (generationEngineRef.current === null) {
     generationEngineRef.current = new GenerationEngine();
