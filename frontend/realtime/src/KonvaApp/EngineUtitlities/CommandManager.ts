@@ -21,14 +21,13 @@ import {
   SelectionManager,
 } from "../NodesManagers";
 import { RealTimeDrawEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
-import { PaintNode } from "../Nodes/PaintNode";
-
+import { EditModeDrawEngine } from "../RenderingPrimitives/EditModeDrawEngine";
 interface EngineReferences {
   mediaLayerRef: Konva.Layer;
   nodesManagerRef: NodesManager;
   nodeTransformerRef: NodeTransformer;
   selectionManagerRef: SelectionManager;
-  renderEngineRef: RealTimeDrawEngine;
+  renderEngineRef: RealTimeDrawEngine | EditModeDrawEngine;
   undoStackManagerRef: UndoStackManager;
 }
 

@@ -20,7 +20,7 @@ import { EditModes, VideoResolutions } from "./constants";
 
 import { ToolbarNodeButtonNames } from "~/components/features/ToolbarNode/enums";
 
-import { RealTimeDrawEngine } from "./RenderingPrimitives/RealTimeDrawEngine";
+import { EditModeDrawEngine } from "./RenderingPrimitives/EditModeDrawEngine";
 
 export interface RenderingOptions {
   artstyle: string;
@@ -43,7 +43,7 @@ export class EditEngine {
   private nodeIsolationLayer: Konva.Layer;
   private uiLayer: Konva.Layer;
   private offScreenCanvas: OffscreenCanvas;
-  private realTimeDrawEngine: RealTimeDrawEngine;
+  private editDrawEngine: EditModeDrawEngine;
   private nodesManager: NodesManager;
   private nodeTransformer: NodeTransformer;
   private selectionManager: SelectionManager;
@@ -94,7 +94,7 @@ export class EditEngine {
       mediaLayerRef: this.mediaLayer,
     });
 
-    this.realTimeDrawEngine = new RealTimeDrawEngine({
+    this.editDrawEngine = new EditModeDrawEngine({
       width: VideoResolutions.SQUARE_1024.width,
       height: VideoResolutions.SQUARE_1024.height,
       mediaLayerRef: this.mediaLayer,
@@ -106,7 +106,7 @@ export class EditEngine {
 
     // Selector Square to select Nodes
     this.selectorSquare = new SelectorSquare({
-      captureCanvasRef: this.realTimeDrawEngine.captureCanvas,
+      captureCanvasRef: this.editDrawEngine.captureCanvas,
       mediaLayerRef: this.mediaLayer,
       nodesManagerRef: this.nodesManager,
       selectionManagerRef: this.selectionManager,
@@ -116,14 +116,14 @@ export class EditEngine {
 
     //Collection of commands for undo-redo
     this.undoStackManager = new UndoStackManager(() => {
-      this.realTimeDrawEngine.render();
+      this.editDrawEngine.render();
     });
     this.commandManager = new CommandManager({
       mediaLayerRef: this.mediaLayer,
       nodesManagerRef: this.nodesManager,
       nodeTransformerRef: this.nodeTransformer,
       selectionManagerRef: this.selectionManager,
-      renderEngineRef: this.realTimeDrawEngine,
+      renderEngineRef: this.editDrawEngine,
       undoStackManagerRef: this.undoStackManager,
     });
 
@@ -132,7 +132,7 @@ export class EditEngine {
         width: this.boardCanvasRef.clientWidth,
         height: this.boardCanvasRef.clientHeight,
       },
-      captureCanvasSize: this.realTimeDrawEngine.captureCanvas.getSize(),
+      captureCanvasSize: this.editDrawEngine.captureCanvas.getSize(),
       uiLayerRef: this.uiLayer,
     });
 
@@ -148,7 +148,7 @@ export class EditEngine {
       case EditModes.SELECT:
       default: {
         console.log("EDITMODE: SELECT");
-        this.realTimeDrawEngine.disablePaintMode();
+        this.editDrawEngine.disablePaintMode();
 
         this.selectorSquare.enable();
         this.selectionManager.enable();
@@ -165,7 +165,7 @@ export class EditEngine {
       }
       case EditModes.EDIT: {
         console.log("EDITMODE: EDIT");
-        this.realTimeDrawEngine.enablePaintMode();
+        this.editDrawEngine.enablePaintMode();
         this.selectorSquare.disable();
         this.selectionManager.disable();
       }
@@ -238,7 +238,7 @@ export class EditEngine {
   }
 
   private onBoardCanvasResize() {
-    this.realTimeDrawEngine.updateCaptureCanvas(undefined, undefined);
+    this.editDrawEngine.updateCaptureCanvas(undefined, undefined);
     this.matteBox.updateSize({
       boardCanvasSize: {
         width: this.boardCanvasRef.offsetWidth,
@@ -298,12 +298,12 @@ export class EditEngine {
   public addImage(imageFile: File) {
     const imageNode = new ImageNode({
       mediaLayerRef: this.mediaLayer,
-      canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
-      canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
+      canvasPosition: this.editDrawEngine.captureCanvas.position(),
+      canvasSize: this.editDrawEngine.captureCanvas.size(),
       imageFile: imageFile,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        await this.realTimeDrawEngine.render();
+        await this.editDrawEngine.render();
         this.setEditMode(EditModes.SELECT);
       },
     });
@@ -314,12 +314,12 @@ export class EditEngine {
   public addImageFromImageBitmap(imageBitmap: ImageBitmap) {
     const imageNode = new ImageNode({
       mediaLayerRef: this.mediaLayer,
-      canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
-      canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
+      canvasPosition: this.editDrawEngine.captureCanvas.position(),
+      canvasSize: this.editDrawEngine.captureCanvas.size(),
       imageBitmap: imageBitmap,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        await this.realTimeDrawEngine.render();
+        await this.editDrawEngine.render();
         this.setEditMode(EditModes.SELECT);
       },
     });
@@ -342,7 +342,7 @@ export class EditEngine {
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        await this.realTimeDrawEngine.render();
+        await this.editDrawEngine.render();
       },
     });
     this.commandManager.createNode(node);
