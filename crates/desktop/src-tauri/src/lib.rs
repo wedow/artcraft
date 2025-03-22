@@ -7,6 +7,7 @@ pub mod transfer;
 pub mod utils;
 
 use crate::endpoints::download_models::download_models;
+use crate::endpoints::inpaint_image_endpoint::inpaint_image;
 use crate::endpoints::realtime_image_endpoint::infer_image;
 use crate::endpoints::remove_background_endpoint::remove_background;
 use crate::endpoints::test_counter::test_counter;
@@ -69,6 +70,7 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
       download_models,
       infer_image,
+      inpaint_image,
       remove_background,
       test_counter,
       text_to_image,
