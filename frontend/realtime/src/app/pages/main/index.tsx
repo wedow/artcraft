@@ -13,6 +13,7 @@ import { ToolbarTopCenter } from "~/components/features/ToolbarTopCenter";
 import { appMode } from "~/signals";
 import { useSignals } from "@preact/signals-react/runtime";
 import { GenerationRootComponent } from "~/GenerationRootComponent/GenerationRootComponent";
+import { EditModeRootComponent } from "~/EditModeRootComponent/EditModeRootComponent";
 
 export const Main = withProtectionRoute(() => {
   // This is a hook that will log the number of times the component has rerendered
@@ -30,21 +31,25 @@ export const Main = withProtectionRoute(() => {
 
   switch (appModeValue) {
     case "edit":
+      childView = (
+        <EditModeRootComponent className="col-span-12 col-start-1 row-span-12 row-start-1" />
+      );
       break;
     case "generate":
       childView = <GenerationRootComponent />;
       break;
-    case "image":
+    case "realtime":
     default:
-      childView = 
-      <KonvaRootComponent
-        sceneToken={sceneToken}
-        className="col-span-12 col-start-1 row-span-12 row-start-1"
-      />
+      childView = (
+        <KonvaRootComponent
+          sceneToken={sceneToken}
+          className="col-span-12 col-start-1 row-span-12 row-start-1"
+        />
+      );
 
       break;
   }
-  
+
   return (
     <div className="fixed grid h-full w-full grid-cols-12 grid-rows-12">
       {childView}
