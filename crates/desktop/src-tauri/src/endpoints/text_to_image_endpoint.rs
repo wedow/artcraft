@@ -15,7 +15,7 @@ use tauri::{AppHandle, State};
 
 const RANDOM_SEED: u32 = 42;
 
-const STRENGTH: f64 = 1.0;
+const STRENGTH: f64 = 100.0;
 const PNG_BYTES : &[u8] = include_bytes!("../../binary_includes/1024.png");
 
 // NB: We're just hacking a temporary "text to image" test endpoint leveraging the existing image to image modality.
