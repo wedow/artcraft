@@ -82,6 +82,8 @@ pub fn lcm_pipeline<P1, P2, P3, P4>(args: Args<'_, P1, P2, P3, P4>) -> Result<Rg
   let mut scheduler = LCMScheduler::new(scheduler_steps, img2img_strength, LCMSchedulerConfig::default())?;
 
   let seed = maybe_seed.unwrap_or_else(|| rand::thread_rng().gen());
+
+  let seed = 42;
   
   device.set_seed(seed)?;
 
@@ -118,7 +120,7 @@ pub fn lcm_pipeline<P1, P2, P3, P4>(args: Args<'_, P1, P2, P3, P4>) -> Result<Rg
       clip_json_path,
       clip_weights_path,
     })?;
-    
+
     prompt_cache.store_copy(&prompt, &tensor)?;
     tensor
   };
