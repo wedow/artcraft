@@ -1,6 +1,5 @@
 pub mod endpoints;
 pub mod events;
-pub mod ml;
 pub mod state;
 pub mod threads;
 pub mod transfer;
@@ -11,11 +10,11 @@ use crate::endpoints::realtime_image_endpoint::infer_image;
 use crate::endpoints::remove_background_endpoint::remove_background;
 use crate::endpoints::test_counter::test_counter;
 use crate::endpoints::text_to_image_endpoint::text_to_image;
-use crate::ml::model_cache::ModelCache;
-use crate::ml::prompt_cache::PromptCache;
 use crate::state::app_config::AppConfig;
 use crate::threads::downloader_thread::downloader_thread;
 use crate::utils::log_environment_details::log_environment_details;
+use ml_models::ml::model_cache::ModelCache;
+use ml_models::ml::prompt_cache::PromptCache;
 use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
 

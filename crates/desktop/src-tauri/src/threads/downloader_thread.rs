@@ -4,6 +4,8 @@ use crate::transfer::download::{download_async, ProgressUpdate};
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use log::{debug, error, info};
+use ml_models::ml::weights_registry::weight_descriptor::WeightFunction;
+use ml_models::ml::weights_registry::weights::{CLIP_JSON, DIS_MEDIUM_ONNX, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SDXL_TURBO_CLIP_TEXT_ENCODER_2, SDXL_TURBO_UNET, SDXL_TURBO_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
@@ -11,8 +13,6 @@ use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 use tempfile::NamedTempFile;
 use tokio::task::JoinHandle;
-use crate::ml::weights_registry::weight_descriptor::WeightFunction;
-use crate::ml::weights_registry::weights::{CLIP_JSON, DIS_MEDIUM_ONNX, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SDXL_TURBO_CLIP_TEXT_ENCODER_2, SDXL_TURBO_UNET, SDXL_TURBO_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 const NOTIFICATION_CHANNEL_NAME : &str = "notification";
 const MAX_FILES : usize = 8;

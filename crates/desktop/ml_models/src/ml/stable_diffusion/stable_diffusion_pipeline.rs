@@ -1,75 +1,86 @@
+use std::path::Path;
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::events::notification_event::{NotificationEvent, NotificationModelType};
 use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
 use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
 use crate::ml::model_cache::ModelCache;
 use crate::ml::model_file::StableDiffusionVersion;
 use crate::ml::prompt_cache::PromptCache;
 use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
-use crate::ml::stable_diffusion::infer_clip_text_embeddings::infer_clip_text_embeddings;
-use crate::ml::weights_registry::weights::{SDXL_TURBO_UNET, SDXL_TURBO_VAE};
-use crate::state::app_config::AppConfig;
-use crate::state::app_dir::AppDataRoot;
+use crate::ml::stable_diffusion::infer_clip_text_embeddings::{infer_clip_text_embeddings, ClipArgs};
 use anyhow::{anyhow, Error as E, Result};
-use candle_core::{DType, IndexOp, Tensor, D};
+use candle_core::{DType, Device, IndexOp, Tensor, D};
 use candle_transformers::models::stable_diffusion::vae::{AutoEncoderKL, DiagonalGaussianDistribution};
+use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
 use image::DynamicImage;
 use log::info;
 use rand::Rng;
-use tauri::{AppHandle, Emitter};
 
-pub struct Args<'a> {
+pub struct Args<'a, P: AsRef<Path>, Q: AsRef<Path>, R: AsRef<Path>, S: AsRef<Path>> {
     pub image: &'a DynamicImage,
     pub prompt: String,
     pub uncond_prompt: String,
     pub cfg_scale: Option<f64>,
     pub i2i_strength: Option<u8>,
-    pub configs: &'a AppConfig,
     pub model_cache: &'a ModelCache,
     pub prompt_cache: &'a PromptCache,
-    pub app_data_root: &'a AppDataRoot,
-    pub app: &'a AppHandle,
+    pub sd_version: StableDiffusionVersion,
+    pub sd_config: StableDiffusionConfig,
+    pub device: &'a Device,
+    pub dtype: DType,
+    pub maybe_seed: Option<u64>,
+    pub scheduler_steps: usize,
+    pub sdxl_turbo_vae_path: P,
+    pub sdxl_turbo_unet_path: Q,
+    pub clip_json_path: R,
+    pub clip_weights_path: S,
 }
 
-pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
+pub fn stable_diffusion_pipeline<P1, P2, P3, P4>(args: Args<'_, P1, P2, P3, P4>) -> Result<RgbImage> 
+  where P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>, P4: AsRef<Path>
+{
     let Args { 
         prompt, 
         uncond_prompt, 
         cfg_scale, 
         i2i_strength, 
-        configs, 
         model_cache, 
         prompt_cache, 
-        app, 
         image,
-        app_data_root,
+        sd_version,
+        sd_config,
+        device,
+        dtype,
+        maybe_seed,
+        scheduler_steps,
+        sdxl_turbo_vae_path,
+        sdxl_turbo_unet_path,
+        clip_json_path,
+        clip_weights_path,
     } = args;
     
-    let weights_dir = app_data_root.weights_dir();
-    
     println!("Starting image generation with the following configuration:");
-    println!("  Model: {:?}", configs.sd_version);
+    println!("  Model: {:?}", sd_version);
     println!("  Prompt: {}", prompt);
-    println!("  Steps: {}", configs.scheduler_steps);
-    println!("  Device: {:?}", configs.device);
+    println!("  Steps: {}", scheduler_steps);
+    println!("  Device: {:?}", device);
 
-    println!("Model dimensions: {}x{}", configs.sd_config.width, configs.sd_config.height);
+    println!("Model dimensions: {}x{}", sd_config.width, sd_config.height);
 
     // TODO(bt,2025-02-18): The scheduler is `EulerAncestralDiscreteScheduler`, but we may want to port an LCM scheduler.
     //  This is a target for performance improvement
     //  See: https://github.com/huggingface/candle/issues/1331
-    let mut scheduler = configs.sd_config.build_scheduler(
-        configs.scheduler_steps)?;
+    let mut scheduler = sd_config.build_scheduler(scheduler_steps)?;
 
-    let seed = configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
-    configs.device.set_seed(seed)?;
+    let seed = maybe_seed.unwrap_or_else(|| rand::thread_rng().gen());
+    
+    device.set_seed(seed)?;
 
     info!("Using seed: {}", seed);
 
     let guidance_scale = match cfg_scale {
         Some(guidance_scale) => guidance_scale,
-        None => match configs.sd_version {
+        None => match sd_version {
             StableDiffusionVersion::V1_5
             | StableDiffusionVersion::V2_1
             | StableDiffusionVersion::Xl => 7.5,
@@ -90,20 +101,21 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
     } else {
         
         info!("Prompt is NOT cached! Calculating embedding...");
-        let tensor = infer_clip_text_embeddings(
-            &prompt,
-            &uncond_prompt,
-            None, // tokenizer
-            None, // clip_weights
-            None, // clip2_weights
-            configs.sd_version,
-            &configs.sd_config,
-            false, // use_f16
-            &configs.device,
-            configs.dtype,
+        let tensor = infer_clip_text_embeddings(ClipArgs {
+            prompt: &prompt,
+            uncond_prompt: &uncond_prompt,
+            tokenizer: None, // tokenizer
+            clip_weights: None, // clip_weights
+            clip2_weights: None, // clip2_weights
+            sd_version: sd_version,
+            sd_config: &sd_config,
+            use_f16: false, // use_f16
+            device: device,
+            dtype: dtype,
             use_guide_scale,
-            weights_dir,
-        )?;
+            clip_json_path: clip_json_path.as_ref(),
+            clip_weights_path: clip_weights_path.as_ref(),
+        })?;
         prompt_cache.store_copy(&prompt, &tensor)?;
         tensor
     };
@@ -112,14 +124,11 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
 
     println!("Loading input image into tensor...");
 
-    let input_image = dynamic_image_to_tensor(
-        image,
-        &configs.device,
-        configs.dtype)?;
+    let input_image = dynamic_image_to_tensor(image, device, dtype)?;
 
     println!("Reference image shape: {:?}", input_image.shape());
 
-    let vae_scale = get_vae_scale(configs.sd_version);
+    let vae_scale = get_vae_scale(sd_version);
 
     let maybe_vae = model_cache.get_vae()?;
     
@@ -128,11 +137,9 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         None => {
             info!("No vae found in cache; loading...");
             
-            let vae_file = weights_dir.weight_path(&SDXL_TURBO_VAE);
+            let vae_file = sdxl_turbo_vae_path.as_ref();
             
-            let vae = configs
-              .sd_config
-              .build_vae(vae_file, &configs.device, configs.dtype)?;
+            let vae = sd_config.build_vae(vae_file, &device, dtype)?;
 
             let vae = Arc::new(vae);
             
@@ -149,9 +156,9 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
         None => {
             info!("No unet found in cache; loading...");
 
-            let unet_weights_file = weights_dir.weight_path(&SDXL_TURBO_UNET);
+            let unet_weights_file = sdxl_turbo_unet_path.as_ref();
 
-            let unet = configs.sd_config.build_unet(unet_weights_file, &configs.device, 4, true, configs.dtype)
+            let unet = sd_config.build_unet(unet_weights_file, &device, 4, true, dtype)
               .map_err(|err| anyhow!("error initializing unet model: {:?}", err))?;
 
             let unet = Arc::new(unet);
@@ -181,9 +188,9 @@ pub fn stable_diffusion_pipeline(args: Args<'_>) -> Result<RgbImage> {
     };
 
     let t_start = {
-        let start = configs.scheduler_steps - (configs.scheduler_steps as f64 * img2img_strength) as usize;
+        let start = scheduler_steps - (scheduler_steps as f64 * img2img_strength) as usize;
 
-        println!("Starting from step {} of {} (strength: {})", start, configs.scheduler_steps, img2img_strength);
+        println!("Starting from step {} of {} (strength: {})", start, scheduler_steps, img2img_strength);
         start
     };
 

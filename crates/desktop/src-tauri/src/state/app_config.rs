@@ -1,4 +1,3 @@
-use crate::ml::model_file::StableDiffusionVersion;
 use crate::state::app_dir::AppDataRoot;
 use crate::state::os_platform::OsPlatform;
 use crate::state::yaml_config::YamlConfig;
@@ -7,6 +6,7 @@ use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
 use filesys::recursively_find_file_by_name::recursively_find_file_by_name;
 use hf_hub::api::sync::Api;
 use log::info;
+use ml_models::ml::model_file::StableDiffusionVersion;
 use std::path::PathBuf;
 
 const DEFAULT_SD_IMAGE_WIDTH: usize = 1024;

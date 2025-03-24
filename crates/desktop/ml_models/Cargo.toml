@@ -1,22 +1,20 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+name = "ml_models"
+edition = "2021"
+version = "0.0.1"
+authors = ["storyteller"]
+publish = false
+description = ""
 license = ""
 repository = ""
-edition = "2021"
-rust-version = "1.77.2"
-publish = false
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "app_lib"
+name = "ml_models"
+path = "src/lib.rs"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
-[build-dependencies]
-tauri-build = { version = "2.0.4", features = [] }
+[package.metadata.cargo-udeps.ignore]
+normal = ["my-workspace-hack"]
 
 [dependencies]
 
@@ -25,15 +23,10 @@ filesys = { path = "../../lib/files/filesys" }
 memory_caching = { path = "../../lib/caching/memory_caching" }
 primitives = { path = "../../lib/data/primitives" }
 
-# Internal ML
-# TODO: Only on Windows and Linux
-ml_models = { path = "../ml_models" }
-
 # Bypass cudarc issues on Windows https://github.com/coreylowman/cudarc/issues/332
 cudarc = "0.13.7"
 
 # External
-#openssl = { version = "0.10", features = ["vendored"] }
 anyhow = "1.0"
 base64 = "0.22.1"
 bytes = "1.10"
@@ -74,7 +67,7 @@ cuda = [
     "candle-core/cuda",
     "candle-nn/cuda",
     "candle-transformers/cuda",
-# NB(bt,2025-03-10): Building without Flash attention on Windows for now to bypass linker issues
+    # NB(bt,2025-03-10): Building without Flash attention on Windows for now to bypass linker issues
     "candle-transformers/flash-attn",
     "candle-core/cudnn"
 ]
@@ -83,13 +76,3 @@ cuda = [
 libloading = "0.8.6"
 serial_test = "3.2.0"
 assertor = "0.0.3"
-
-[profile.dev]
-incremental = true # Compile your binary in smaller steps.
-
-[profile.release]
-codegen-units = 1 # Allows LLVM to perform better optimization.
-lto = true # Enables link-time-optimizations.
-opt-level = 3 # `s` prioritizes small binary size. Use `3` if you prefer speed.
-panic = "abort" # Higher performance by disabling panic handlers.
-strip = true # Ensures debug symbols are removed.

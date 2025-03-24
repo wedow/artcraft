@@ -1,7 +1,6 @@
-use crate::ml::image::tensor_to_image_buffer::RgbImage;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use image::ImageFormat;
+use image::{ImageFormat, RgbImage};
 use std::io::Cursor;
 
 pub fn encode_rgb_image_base64_png(

@@ -4,18 +4,50 @@ extern crate accelerate_src;
 extern crate intel_mkl_src;
 
 use candle_transformers::models::stable_diffusion;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
 use crate::ml::weights_registry::weights::{CLIP_JSON, SDXL_TURBO_CLIP_TEXT_ENCODER, SDXL_TURBO_CLIP_TEXT_ENCODER_2};
-use crate::state::app_dir::AppWeightsDir;
 use anyhow::Error as E;
 use candle_core::{DType, Device, Module, Tensor, D};
 use log::info;
 use tokenizers::Tokenizer;
 
+
+pub struct ClipArgs<'a, P: AsRef<Path>,  Q: AsRef<Path>> {
+  pub prompt: &'a str, 
+  pub uncond_prompt: &'a str, 
+  pub tokenizer: Option<String>, 
+  pub clip_weights: Option<String>, 
+  pub clip2_weights: Option<String>, 
+  pub sd_version: StableDiffusionVersion, 
+  pub sd_config: &'a stable_diffusion::StableDiffusionConfig, 
+  pub use_f16: bool, 
+  pub device: &'a Device, 
+  pub dtype: DType, 
+  pub use_guide_scale: bool, 
+  pub clip_json_path: P,
+  pub clip_weights_path: Q,
+}
+
 #[allow(clippy::too_many_arguments)]
-pub fn infer_clip_text_embeddings(prompt: &str, uncond_prompt: &str, tokenizer: Option<String>, clip_weights: Option<String>, clip2_weights: Option<String>, sd_version: StableDiffusionVersion, sd_config: &stable_diffusion::StableDiffusionConfig, use_f16: bool, device: &Device, dtype: DType, use_guide_scale: bool, weights_dir: &AppWeightsDir) -> anyhow::Result<Tensor> {
+pub fn infer_clip_text_embeddings<P: AsRef<Path>, Q: AsRef<Path>>(args: ClipArgs<'_, P, Q>) -> anyhow::Result<Tensor> {
+  let ClipArgs {
+    prompt, 
+    uncond_prompt, 
+    tokenizer, 
+    clip_weights, 
+    clip2_weights, 
+    sd_version, 
+    sd_config, 
+    use_f16, 
+    device, 
+    dtype, 
+    use_guide_scale, 
+    clip_json_path,
+    clip_weights_path,
+  } = args;
+
   info!("Preparing text embeddings... for {:?}", sd_version);
 
   let which = match sd_version {
@@ -39,7 +71,8 @@ pub fn infer_clip_text_embeddings(prompt: &str, uncond_prompt: &str, tokenizer: 
         dtype,
         use_guide_scale,
         *first,
-        weights_dir,
+        clip_json_path.as_ref(),
+        clip_weights_path.as_ref(),
       )
     })
     .collect::<anyhow::Result<Vec<_>>>()?;
@@ -50,10 +83,25 @@ pub fn infer_clip_text_embeddings(prompt: &str, uncond_prompt: &str, tokenizer: 
 }
 
 #[allow(clippy::too_many_arguments)]
-fn do_infer_clip_text_embeddings(prompt: &str, uncond_prompt: &str, tokenizer: Option<String>, clip_weights: Option<String>, clip2_weights: Option<String>, sd_version: StableDiffusionVersion, sd_config: &stable_diffusion::StableDiffusionConfig, use_f16: bool, device: &Device, dtype: DType, use_guide_scale: bool, first: bool, weights_dir: &AppWeightsDir) -> anyhow::Result<Tensor> {
+fn do_infer_clip_text_embeddings(
+  prompt: &str, 
+  uncond_prompt: &str, 
+  tokenizer: Option<String>, 
+  clip_weights: Option<String>, 
+  clip2_weights: Option<String>, 
+  sd_version: StableDiffusionVersion, 
+  sd_config: &stable_diffusion::StableDiffusionConfig, 
+  use_f16: bool, 
+  device: &Device, 
+  dtype: DType, 
+  use_guide_scale: bool, 
+  first: bool, 
+  clip_json_path: &Path,
+  clip_weights_path: &Path,
+) -> anyhow::Result<Tensor> {
   info!("do_infer_clip_text_embeddings called with args {:?}", (prompt, uncond_prompt, tokenizer.clone().unwrap_or_else(|| "None".to_string()), clip_weights.clone().unwrap_or_else(|| "None".to_string()), clip2_weights.clone().unwrap_or_else(|| "None".to_string()), sd_version, sd_config, use_f16, device, dtype, use_guide_scale, first));
 
-  let tokenizer = weights_dir.weight_path(&CLIP_JSON);
+  let tokenizer = clip_json_path;
 
   info!("Loading Clip Tokenizer path: {:?}", tokenizer);
 
@@ -75,11 +123,14 @@ fn do_infer_clip_text_embeddings(prompt: &str, uncond_prompt: &str, tokenizer: O
   let tokens = Tensor::new(tokens.as_slice(), device)?.unsqueeze(0)?;
 
   println!("Building the Clip transformer.");
+  
+  // TODO(bt,2025-03-23): These used to be two different clip models. We should only need one.
   let clip_weights = if first {
-    weights_dir.weight_path(&SDXL_TURBO_CLIP_TEXT_ENCODER)
+    clip_weights_path
   } else {
-    weights_dir.weight_path(&SDXL_TURBO_CLIP_TEXT_ENCODER_2)
+    clip_weights_path
   };
+  
   let clip_config = if first { &sd_config.clip } else { sd_config.clip2.as_ref().unwrap() };
   let text_model = stable_diffusion::build_clip_transformer(clip_config, clip_weights, device, DType::F32)?;
 

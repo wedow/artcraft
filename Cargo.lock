@@ -676,6 +676,7 @@ dependencies = [
  "libloading 0.8.6",
  "log",
  "memory_caching",
+ "ml_models",
  "ndarray",
  "nvidia-checker",
  "once_cell",
@@ -6802,6 +6803,49 @@ dependencies = [
  "net2",
  "winapi 0.2.8",
  "ws2_32-sys",
+]
+
+[[package]]
+name = "ml_models"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "assertor",
+ "base64 0.22.1",
+ "bytes 1.10.0",
+ "candle-core",
+ "candle-nn",
+ "candle-transformers",
+ "const_format",
+ "cudarc",
+ "directories 6.0.0",
+ "dirs 6.0.0",
+ "filesys",
+ "futures 0.3.29",
+ "half",
+ "hf-hub 0.3.2",
+ "image",
+ "libloading 0.8.6",
+ "log",
+ "memory_caching",
+ "ndarray",
+ "nvidia-checker",
+ "once_cell",
+ "ort",
+ "primitives",
+ "rand 0.8.5",
+ "reqwest 0.12.12",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "serial_test",
+ "tauri",
+ "tauri-plugin-log",
+ "tempdir",
+ "tempfile",
+ "tokenizers 0.15.2",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]

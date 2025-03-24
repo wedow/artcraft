@@ -1,6 +1,3 @@
-use crate::ml::model_cache::ModelCache;
-use crate::ml::prompt_cache::PromptCache;
-use crate::ml::stable_diffusion::lcm_pipeline::{lcm_pipeline, Args};
 use crate::state::app_config::AppConfig;
 use crate::state::app_dir::AppDataRoot;
 use crate::utils::image::decode_base64_image::decode_base64_image;
@@ -8,6 +5,10 @@ use crate::utils::image::encode_rgb_image_base64_png::encode_rgb_image_base64_pn
 use image::imageops::FilterType;
 use image::{DynamicImage, RgbImage};
 use log::{error, info};
+use ml_models::ml::model_cache::ModelCache;
+use ml_models::ml::prompt_cache::PromptCache;
+use ml_models::ml::stable_diffusion::lcm_pipeline::{lcm_pipeline, Args};
+use ml_models::ml::weights_registry::weights::{CLIP_JSON, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 use std::path::PathBuf;
 use tauri::{AppHandle, State};
 
@@ -51,7 +52,6 @@ pub async fn infer_image(
     &model_config, 
     &model_cache, 
     prompt_cache, 
-    app, 
     &app_data_root
   ).await;
   
@@ -78,22 +78,34 @@ async fn do_infer_image(
   config: &AppConfig,
   model_cache: &ModelCache,
   prompt_cache: State<'_, PromptCache>,
-  app: AppHandle,
   app_data_root: &AppDataRoot,
 ) -> Result<RgbImage, String> {
+  
+  let weights_dir = app_data_root.weights_dir();
+  let vae_path = weights_dir.weight_path(&LYKON_DEAMSHAPER_7_VAE);
+  let unet_path = weights_dir.weight_path(&SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
+  let clip_json_path = weights_dir.weight_path(&CLIP_JSON);
+  let clip_weights_path= weights_dir.weight_path(&LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
 
   let args = Args {
     image: &image,
     prompt: prompt.to_string(),
     uncond_prompt: NEGATIVE_PROMPT.to_string(),
     model_cache,
-    configs: config,
     prompt_cache: &prompt_cache,
-    i2i_strength: strength,
+    img2img_strength: strength,
     cfg_scale: config.cfg_scale,
-    app: &app,
-    app_data_root,
     use_flash_attn: true,
+    sd_version: config.sd_version,
+    sd_config: &config.sd_config,
+    device: &config.device,
+    dtype: config.dtype,
+    maybe_seed: None,
+    scheduler_steps: config.scheduler_steps,
+    vae_path: &vae_path,
+    unet_path: &unet_path,
+    clip_json_path: &clip_json_path,
+    clip_weights_path: &clip_weights_path,
   };
 
   let image = lcm_pipeline(args)

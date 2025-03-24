@@ -1,16 +1,16 @@
 //! Adapted from https://github.com/dnanhkhoa/rust-background-removal
 
-use crate::ml::background_removal::onnx_session::onnx_session;
-use crate::ml::model_cache::ModelCache;
 use crate::state::app_dir::AppDataRoot;
 use crate::utils::image::decode_base64_image::decode_base64_image;
 use crate::utils::image::encode_dynamic_image_base64_png::encode_dynamic_image_base64_png;
 use image::{imageops, DynamicImage};
 use log::{error, info};
+use ml_models::ml::background_removal::onnx_session::onnx_session;
+use ml_models::ml::model_cache::ModelCache;
+use ml_models::ml::weights_registry::weights::{DIS_MEDIUM_ONNX, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 use ndarray::{Array, CowArray};
 use ort::Value;
 use tauri::{AppHandle, State};
-use crate::ml::weights_registry::weights::{DIS_MEDIUM_ONNX, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 /// This handler removes the background from an image.
 #[tauri::command]
