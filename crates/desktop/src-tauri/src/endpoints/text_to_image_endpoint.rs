@@ -12,7 +12,7 @@ use once_cell::sync::Lazy;
 use std::io::Cursor;
 use std::path::PathBuf;
 use tauri::{AppHandle, State};
-use ml_models::ml::weights_registry::weights::{CLIP_JSON, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
+use ml_models::ml::weights_registry::weights::{CLIP_JSON, LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SDXL_TURBO_CLIP_TEXT_ENCODER, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 
 const RANDOM_SEED: u32 = 42;
 
@@ -83,7 +83,7 @@ async fn do_infer_image(
   let vae_path = weights_dir.weight_path(&LYKON_DEAMSHAPER_7_VAE);
   let unet_path = weights_dir.weight_path(&SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
   let clip_json_path = weights_dir.weight_path(&CLIP_JSON);
-  let clip_weights_path= weights_dir.weight_path(&LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
+  let clip_weights_path= weights_dir.weight_path(&SDXL_TURBO_CLIP_TEXT_ENCODER);
 
   let args = Args {
     image: &image,

@@ -126,8 +126,10 @@ fn do_infer_clip_text_embeddings(
   
   // TODO(bt,2025-03-23): These used to be two different clip models. We should only need one.
   let clip_weights = if first {
+    println!(">>>>> CLIP 1");
     clip_weights_path
   } else {
+    println!(">>>>> CLIP 2");
     clip_weights_path
   };
   
