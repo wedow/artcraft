@@ -1,5 +1,5 @@
-use crate::ml::weights_registry::weight_descriptor::{WeightDescriptor, WeightFunction};
-use crate::ml::weights_registry::weight_descriptor_builder::weight;
+use crate::weights_registry::weight_descriptor::{WeightDescriptor, WeightFunction};
+use crate::weights_registry::weight_descriptor_builder::weight;
 
 pub const CLIP_JSON : WeightDescriptor = weight!(
   "CLIP",

@@ -1,22 +1,22 @@
 pub mod endpoints;
 pub mod events;
-pub mod ml;
 pub mod state;
+pub mod stubs;
 pub mod threads;
 pub mod transfer;
 pub mod utils;
 
 use crate::endpoints::download_models::download_models;
 use crate::endpoints::inpaint_image_endpoint::inpaint_image;
+use crate::endpoints::flip_image::flip_image;
 use crate::endpoints::realtime_image_endpoint::infer_image;
 use crate::endpoints::remove_background_endpoint::remove_background;
-use crate::endpoints::test_counter::test_counter;
 use crate::endpoints::text_to_image_endpoint::text_to_image;
-use crate::ml::model_cache::ModelCache;
-use crate::ml::prompt_cache::PromptCache;
 use crate::state::app_config::AppConfig;
+use crate::stubs::model_cache::ModelCache;
+use crate::stubs::prompt_cache::PromptCache;
 use crate::threads::downloader_thread::downloader_thread;
-use crate::utils::log_environment_details::log_environment_details;
+
 use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
 
@@ -28,6 +28,7 @@ pub fn run() {
 
   let config = AppConfig::init()
     .expect("config should load");
+
 
   let prompt_cache = PromptCache::with_capacity(8)
     .expect("prompt cache should load");
@@ -69,10 +70,10 @@ pub fn run() {
     .manage(app_data_root)
     .invoke_handler(tauri::generate_handler![
       download_models,
+      flip_image,
       infer_image,
       inpaint_image,
       remove_background,
-      test_counter,
       text_to_image,
     ])
     .run(tauri::generate_context!())

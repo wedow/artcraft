@@ -1,32 +1,14 @@
-use crate::ml::model_file::StableDiffusionVersion;
 use crate::state::app_dir::AppDataRoot;
 use crate::state::os_platform::OsPlatform;
 use crate::state::yaml_config::YamlConfig;
-use candle_core::{DType, Device};
-use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
-use filesys::recursively_find_file_by_name::recursively_find_file_by_name;
-use hf_hub::api::sync::Api;
-use log::info;
-use std::path::PathBuf;
+use crate::stubs::model_config::ModelConfig;
 
 const DEFAULT_SD_IMAGE_WIDTH: usize = 1024;
 const DEFAULT_SD_IMAGE_HEIGHT: usize = 1024;
 
-const DEFAULT_SD_NUMERIC_DATATYPE: DType = DType::F32;
-const SD_VERSION: StableDiffusionVersion = StableDiffusionVersion::V1_5;
 
 /// A central place to configure app-wide details.
 pub struct AppConfig {
-  /// We only support one device type currently, and we can't multiplex 
-  /// over several devices yet.
-  pub device: Device,
-  
-  /// The core numeric type to use for models.
-  pub dtype: DType,
-  
-  pub sd_version: StableDiffusionVersion,
-  pub sd_config: StableDiffusionConfig,
-
   pub image_height: usize,
   pub image_width: usize,
   pub scheduler_steps: usize,
@@ -36,11 +18,10 @@ pub struct AppConfig {
 
   pub cfg_scale: Option<f64>,
   
-  /// Probably shouldn't be here.
-  pub hf_api: Api,
-  
   /// Root location for application data.
   pub app_data_root: AppDataRoot,
+  
+  pub model_config: ModelConfig,
 }
 
 impl AppConfig {
@@ -49,30 +30,6 @@ impl AppConfig {
     let yaml_configs = YamlConfig::load_from_config_file_recursive();
     
     println!("Configs: {:?}", yaml_configs);
-    
-    let device = Device::new_cuda(0)
-      .unwrap_or_else(|e| {
-          info!("CUDA not available ({}), falling back to CPU", e);
-          Device::Cpu
-        });
-
-    
-    let sd_config = match SD_VERSION {
-      StableDiffusionVersion::Turbo => {
-        StableDiffusionConfig::sdxl_turbo(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
-      }
-      StableDiffusionVersion::V1_5 | StableDiffusionVersion::V1_5Inpaint => {
-        StableDiffusionConfig::v1_5(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
-      }
-      StableDiffusionVersion::V2_1 | StableDiffusionVersion::V2Inpaint => {
-        StableDiffusionConfig::v2_1(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
-      }
-      StableDiffusionVersion::Xl | StableDiffusionVersion::XlInpaint => {
-        StableDiffusionConfig::sdxl(None, Some(DEFAULT_SD_IMAGE_HEIGHT), Some(DEFAULT_SD_IMAGE_WIDTH))
-      }
-    };
-    
-    let hf_api = Api::new()?;
     
     let os_platform = OsPlatform::get();
 
@@ -92,18 +49,14 @@ impl AppConfig {
     println!("App data root: {:?}", app_data_root.path());
 
     Ok(Self {
-      device,
-      dtype: DEFAULT_SD_NUMERIC_DATATYPE,
-      sd_version: SD_VERSION,
-      sd_config,
       image_height: yaml_configs.image_height.unwrap_or(DEFAULT_SD_IMAGE_HEIGHT),
       image_width: yaml_configs.image_width.unwrap_or(DEFAULT_SD_IMAGE_WIDTH),
       scheduler_steps: yaml_configs.scheduler_steps.unwrap_or(4),
       scheduler_samples: yaml_configs.scheduler_samples.unwrap_or(15),
       seed: yaml_configs.seed,
       cfg_scale: yaml_configs.cfg_scale,
-      hf_api,
       app_data_root,
+      model_config: ModelConfig::init()?,
     })
   }
 }

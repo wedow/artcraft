@@ -23,6 +23,8 @@ members = [
 
   # Desktop apps
   "crates/desktop/src-tauri",
+  "crates/desktop/ml_models",
+  "crates/desktop/ml_weights_registry",
 
   # Shared libraries
   "crates/lib/actix_cors_configs",

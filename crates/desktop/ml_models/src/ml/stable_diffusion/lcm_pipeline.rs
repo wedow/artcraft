@@ -1,53 +1,80 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::events::notification_event::{NotificationEvent, NotificationModelType};
-use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
-use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
-use crate::ml::model_cache::ModelCache;
-use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
-use crate::ml::prompt_cache::PromptCache;
-use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
-use crate::ml::stable_diffusion::infer_clip_text_embeddings::infer_clip_text_embeddings;
-use crate::ml::stable_diffusion::remap_lcm_strength_range::remap_lcm_strength_range;
-use crate::ml::weights_registry::weights::{LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
-use crate::state::app_config::AppConfig;
-use crate::state::app_dir::AppDataRoot;
 use anyhow::{anyhow, Error as E, Result};
-use candle_core::{DType, IndexOp, Tensor, D};
+use candle_core::{DType, Device, IndexOp, Tensor, D};
 use candle_nn::VarBuilder;
-use candle_transformers::models::stable_diffusion::lcm::LCMScheduler;
+use candle_transformers::models::stable_diffusion::StableDiffusionConfig;
+use candle_transformers::models::stable_diffusion::lcm::{LCMScheduler, LCMSchedulerConfig};
 use candle_transformers::models::stable_diffusion::unet_2d::BlockConfig;
 use candle_transformers::models::stable_diffusion::unet_2d::UNet2DConditionModel;
 use candle_transformers::models::stable_diffusion::unet_2d::UNet2DConditionModelConfig;
 use candle_transformers::models::stable_diffusion::vae::{AutoEncoderKL, DiagonalGaussianDistribution};
+use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
+use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
+use crate::ml::model_cache::ModelCache;
+use crate::ml::model_config::ModelConfig;
+use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
+use crate::ml::prompt_cache::PromptCache;
+use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
+use crate::ml::stable_diffusion::infer_clip_text_embeddings::{infer_clip_text_embeddings, ClipArgs};
+use crate::ml::stable_diffusion::remap_lcm_strength_range::remap_lcm_strength_range;
 use image::DynamicImage;
 use log::info;
+use ml_weights_registry::weights_registry::weights::{LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16, LYKON_DEAMSHAPER_7_VAE, SIMIANLUO_LCM_DREAMSHAPER_V7_UNET};
 use rand::Rng;
-use tauri::{AppHandle, Emitter};
 
 const DEFAULT_STRENGTH : f64 = 75.0;
 
-pub struct Args<'a> {
+pub struct Args<'a, P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>, P4: AsRef<Path>> {
   pub image: &'a DynamicImage,
   pub prompt: String,
   pub uncond_prompt: String,
   pub cfg_scale: Option<f64>,
-  pub i2i_strength: Option<f64>,
-  pub configs: &'a AppConfig,
+  pub img2img_strength: Option<f64>,
   pub model_cache: &'a ModelCache,
   pub prompt_cache: &'a PromptCache,
-  pub app_data_root: &'a AppDataRoot,
-  pub app: &'a AppHandle,
   pub use_flash_attn: bool,
+  pub model_config: &'a ModelConfig,
+  pub maybe_seed: Option<u64>,
+  pub scheduler_steps: usize,
+  pub vae_path: P1,
+  pub unet_path: P2,
+  pub clip_json_path: P3,
+  pub clip_weights_path: P4,
 }
 
-pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
-  let Args { prompt, uncond_prompt, cfg_scale, i2i_strength, configs, model_cache, prompt_cache, app, image, app_data_root, use_flash_attn } = args;
-
-  let weights_dir = app_data_root.weights_dir();
+pub fn lcm_pipeline<P1, P2, P3, P4>(args: Args<'_, P1, P2, P3, P4>) -> Result<RgbImage> 
+  where P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>, P4: AsRef<Path>
+{
+  let Args { 
+    prompt, 
+    uncond_prompt, 
+    cfg_scale,
+    img2img_strength, 
+    model_cache, 
+    prompt_cache, 
+    image, 
+    use_flash_attn ,
+    model_config: ModelConfig {
+      device,
+      dtype,
+      sd_version,
+      sd_config,
+      hf_api,
+    },
+    maybe_seed,
+    scheduler_steps,
+    vae_path,
+    unet_path,
+    clip_json_path,
+    clip_weights_path,
+  } = args;
   
-  let img2img_strength = args.i2i_strength
+  let dtype = *dtype;
+  let sd_version = *sd_version;
+
+  let img2img_strength = img2img_strength
     .map(|s| remap_lcm_strength_range(s))
     .unwrap_or(DEFAULT_STRENGTH);
   
@@ -56,14 +83,17 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let use_f16 = true;
 
   // Use LCM Scheduler instead of Euler Ancestral for better speed and quality
-  let mut scheduler = LCMScheduler::new(configs.scheduler_steps, img2img_strength, candle_transformers::models::stable_diffusion::lcm::LCMSchedulerConfig::default())?;
+  let mut scheduler = LCMScheduler::new(scheduler_steps, img2img_strength, LCMSchedulerConfig::default())?;
 
-  let seed = configs.seed.unwrap_or_else(|| rand::thread_rng().gen());
-  configs.device.set_seed(seed)?;
+  let seed = maybe_seed.unwrap_or_else(|| rand::thread_rng().gen());
+
+  let seed = 42;
+  
+  device.set_seed(seed)?;
 
   let guidance_scale = match cfg_scale {
     Some(guidance_scale) => guidance_scale,
-    None => match configs.sd_version {
+    None => match sd_version {
       StableDiffusionVersion::V1_5 | StableDiffusionVersion::V2_1 | StableDiffusionVersion::Xl => 7.5,
       StableDiffusionVersion::Turbo => 0.,
       _ => 0., // NB: Not sure what the other model families should use, so sticking with "0"
@@ -78,50 +108,45 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let mut text_embeddings = if let Some(tensor) = maybe_cached {
     tensor
   } else {
-    info!("Loading clip weights...");
-
-    let clip_weights = weights_dir.weight_path(&LYKON_DEAMSHAPER_7_TEXT_ENCODER_FP16);
-    let clip_weights = Some(clip_weights.to_string_lossy().to_string());
-
     info!("Prompt is NOT cached! Calculating embedding...");
-    let tensor = infer_clip_text_embeddings(
-      &prompt,
-      &uncond_prompt,
-      None, // tokenizer
-      clip_weights,
-      None, // clip2_weights
-      configs.sd_version,
-      &configs.sd_config,
+    let tensor = infer_clip_text_embeddings(ClipArgs {
+      prompt: & prompt,
+      uncond_prompt: &uncond_prompt,
+      tokenizer: None, // tokenizer
+      clip_weights: None,
+      clip2_weights: None, // clip2_weights
+      sd_version,
+      sd_config: &sd_config,
       use_f16, // use_f16
-      &configs.device,
-      configs.dtype,
+      device,
+      dtype,
       use_guide_scale,
-      weights_dir,
-    )?;
+      clip_json_path,
+      clip_weights_path,
+    })?;
+
     prompt_cache.store_copy(&prompt, &tensor)?;
     tensor
   };
 
-  println!("Text embeddings shape: {:?}", text_embeddings.shape());
+  info!("Text embeddings shape: {:?}", text_embeddings.shape());
 
-  println!("Loading input image into tensor...");
+  info!("Loading input image into tensor...");
 
-  let input_image = dynamic_image_to_tensor(image, &configs.device, configs.dtype)?;
+  let input_image = dynamic_image_to_tensor(image, &device, dtype)?;
 
-  println!("Reference image shape: {:?}", input_image.shape());
+  info!("Reference image shape: {:?}", input_image.shape());
 
-  let vae_scale = get_vae_scale(configs.sd_version);
+  let vae_scale = get_vae_scale(sd_version);
 
   let maybe_vae = model_cache.get_vae()?;
 
   let vae = match maybe_vae {
     Some(vae) => vae,
     None => {
-      let vae_file = weights_dir.weight_path(&LYKON_DEAMSHAPER_7_VAE);
-
-      println!("Building VAE model from file {:?}...", &vae_file);
-
-      let vae = configs.sd_config.build_vae(vae_file, &configs.device, configs.dtype)?;
+      info!("Building VAE model from file {:?}...", vae_path.as_ref());
+      
+      let vae = sd_config.build_vae(vae_path, &device, dtype)?;
 
       let vae = Arc::new(vae);
 
@@ -138,9 +163,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     None => {
       info!("No unet found in cache; loading...");
 
-      let unet_weights = weights_dir.weight_path(&SIMIANLUO_LCM_DREAMSHAPER_V7_UNET);
-
-      let in_channels = match configs.sd_version {
+      let in_channels = match sd_version {
         StableDiffusionVersion::XlInpaint | StableDiffusionVersion::V2Inpaint | StableDiffusionVersion::V1_5Inpaint => 9,
         _ => 4,
       };
@@ -175,7 +198,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
       };
 
       // Load the model directly from the safetensors file
-      let vs_unet = unsafe { VarBuilder::from_mmaped_safetensors(&[unet_weights], configs.dtype, &configs.device)? };
+      let vs_unet = unsafe { VarBuilder::from_mmaped_safetensors(&[unet_path], dtype, &device)? };
 
       let unet = UNet2DConditionModel::new(vs_unet, in_channels, 4, use_flash_attn, unet_config)?;
 
@@ -191,19 +214,19 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
 
   // Create LCM guidance scale embeddings
   let embedding_dim = 1280;
-  let guidance_scale_embedding = scheduler.get_guidance_scale_embedding(guidance_scale, embedding_dim, &configs.device, configs.dtype)?;
+  let guidance_scale_embedding = scheduler.get_guidance_scale_embedding(guidance_scale, embedding_dim, &device, dtype)?;
 
   // Generate latents from input image using the LCM approach
-  println!("Generating latents from input image...");
+  info!("Generating latents from input image...");
   let init_latents = (init_latent_dist.sample()? * vae_scale)?;
-  println!("Initial latents shape: {:?}", init_latents.shape());
+  info!("Initial latents shape: {:?}", init_latents.shape());
 
   // Calculate timesteps for LCM with proper img2img handling
-  let timesteps = LCMScheduler::get_timesteps_for_steps(configs.scheduler_steps, img2img_strength);
+  let timesteps = LCMScheduler::get_timesteps_for_steps(scheduler_steps, img2img_strength);
   let t_start = timesteps[0]; // First denoising step
 
   // Add noise at the appropriate timestep for img2img
-  println!("Adding noise to latents for t_start={}", t_start);
+  info!("Adding noise to latents for t_start={}", t_start);
   let noise = init_latents.randn_like(0f64, 1f64)?;
   let latents = scheduler.add_noise(&init_latents, noise, t_start)?;
 
@@ -211,7 +234,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
   let timesteps: Vec<_> = scheduler.timesteps().iter().copied().collect();
 
   for (timestep_index, &timestep) in timesteps.iter().enumerate() {
-    println!("Processing step {}/{} @ timestamp = {}", timestep_index + 1, timesteps.len(), timestep);
+    info!("Processing step {}/{} @ timestamp = {}", timestep_index + 1, timesteps.len(), timestep);
 
     let latent_model_input = if use_guide_scale { Tensor::cat(&[&latents, &latents], 0)? } else { latents.clone() };
 
@@ -221,7 +244,7 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     let mut noise_pred = match unet.forward_with_guidance(&latent_model_input, timestep as f64, &text_embeddings, Some(&guidance_scale_embedding)) {
       Ok(pred) => pred,
       Err(e) => {
-        println!("UNet inference failed with error: {}", e);
+        info!("UNet inference failed with error: {}", e);
         return Err(anyhow::anyhow!("UNet inference failed: {}", e));
       },
     };
@@ -233,24 +256,24 @@ pub fn lcm_pipeline(args: Args<'_>) -> Result<RgbImage> {
     }
 
     // Apply the LCM scheduler step
-    latents = scheduler.step(&noise_pred, timestep, &latents, timestep_index, configs.scheduler_steps)?;
+    latents = scheduler.step(&noise_pred, timestep, &latents, timestep_index, scheduler_steps)?;
   }
 
-  println!("Diffusion process completed, decoding image...");
+  info!("Diffusion process completed, decoding image...");
   let image = vae.decode(&(latents / vae_scale)?)?;
 
-  println!("VAE decode completed");
+  info!("VAE decode completed");
 
-  println!("Scaling image back");
+  info!("Scaling image back");
   let image = ((image / 2.)? + 0.5)?;
 
-  println!("Normalized image values");
+  info!("Normalized image values");
   let image = (image.clamp(0f32, 1.)? * 255.)?;
 
-  println!("Convert to int8");
+  info!("Convert to int8");
   let image = image.to_dtype(DType::U8)?;
 
-  println!("Converted to 8-bit format");
+  info!("Converted to 8-bit format");
 
   let image = tensor_to_image_buffer(&image.i(0)?)?;
 
