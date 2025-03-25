@@ -4,6 +4,7 @@ use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use crate::ml::image::dynamic_image_to_tensor::dynamic_image_to_tensor;
 use crate::ml::image::tensor_to_image_buffer::{tensor_to_image_buffer, RgbImage};
 use crate::ml::model_cache::ModelCache;
+use crate::ml::model_config::ModelConfig;
 use crate::ml::model_file::{ModelFile, StableDiffusionVersion};
 use crate::ml::prompt_cache::PromptCache;
 use crate::ml::stable_diffusion::get_vae_scale::get_vae_scale;
@@ -34,10 +35,7 @@ pub struct Args<'a, P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>, P4: AsRef
   pub model_cache: &'a ModelCache,
   pub prompt_cache: &'a PromptCache,
   pub use_flash_attn: bool,
-  pub sd_version: StableDiffusionVersion,
-  pub sd_config: &'a StableDiffusionConfig,
-  pub device: &'a Device,
-  pub dtype: DType,
+  pub model_config: &'a ModelConfig,
   pub maybe_seed: Option<u64>,
   pub scheduler_steps: usize,
   pub vae_path: P1,
@@ -58,10 +56,13 @@ pub fn lcm_pipeline<P1, P2, P3, P4>(args: Args<'_, P1, P2, P3, P4>) -> Result<Rg
     prompt_cache, 
     image, 
     use_flash_attn ,
-    sd_version,
-    sd_config,
-    device,
-    dtype,
+    model_config: ModelConfig {
+      device,
+      dtype,
+      sd_version,
+      sd_config,
+      hf_api,
+    },
     maybe_seed,
     scheduler_steps,
     vae_path,
@@ -69,6 +70,9 @@ pub fn lcm_pipeline<P1, P2, P3, P4>(args: Args<'_, P1, P2, P3, P4>) -> Result<Rg
     clip_json_path,
     clip_weights_path,
   } = args;
+  
+  let dtype = *dtype;
+  let sd_version = *sd_version;
 
   let img2img_strength = img2img_strength
     .map(|s| remap_lcm_strength_range(s))
