@@ -91,7 +91,7 @@ export class SelectorSquare {
         x2: stagePointerPos.x,
         y2: stagePointerPos.y,
       };
-      
+
       this.kSquare.size({
         width: 0,
         height: 0,
@@ -141,7 +141,8 @@ export class SelectorSquare {
       var shapes = this.mediaLayerRef.getChildren();
       var box = this.kSquare.getClientRect();
       var foundKNodes = shapes.filter((shape) =>
-        Konva.Util.haveIntersection(box, shape.getClientRect()),
+        Konva.Util.haveIntersection(box, shape.getClientRect())
+        && shape.isVisible()
       );
       if (foundKNodes.length > 0) {
         const kNodeIds = foundKNodes.map((kNode) => kNode._id);
