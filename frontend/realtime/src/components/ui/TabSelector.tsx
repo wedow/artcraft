@@ -2,10 +2,14 @@ import React, { useRef, useEffect, useState } from "react";
 import { Tab, TabGroup, TabList } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
 import { Tooltip } from "./Tooltip";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export interface TabItem {
   id: string;
   label: string;
+  icon?: IconDefinition;
+  iconClassName?: string;
 }
 
 interface TabSelectorProps {
@@ -84,6 +88,9 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
               )
             }
           >
+            {tab.icon && (
+              <FontAwesomeIcon icon={tab.icon} className={tab.iconClassName ?? "mr-1.5"} />
+            )}
             {tab.label}
           </Tab>
         ))}

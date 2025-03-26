@@ -11,21 +11,23 @@ import { BaseDialog } from "~/components/ui/BaseDialog";
 export const DialogAddImage = ({
   stagedImage = null,
   isOpen,
-  closeCallback,
   onAddImage,
+  closeCallback = () => { },
+  cancellable = true,
 }: {
   stagedImage?: File | null;
   isOpen: boolean;
-  closeCallback: () => void;
+  closeCallback?: () => void;
   onAddImage: (file: File) => void;
+  cancellable?: boolean;
 }) => {
   const [assetFile, setAssetFile] = useState<File | null>(null);
   const previouslyStagedImageRef = useRef<File | null>(null);
 
   const currFile =
     stagedImage &&
-    stagedImage !== assetFile &&
-    stagedImage !== previouslyStagedImageRef.current
+      stagedImage !== assetFile &&
+      stagedImage !== previouslyStagedImageRef.current
       ? stagedImage
       : assetFile;
   if (previouslyStagedImageRef.current !== stagedImage) {
@@ -65,11 +67,13 @@ export const DialogAddImage = ({
           </div>
         )}
       </div>
-      <div className="flex w-full justify-end gap-2">
-        <Button onClick={handleClose} variant="secondary">
-          Cancel
-        </Button>
-      </div>
+      {cancellable && (
+        <div className="flex w-full justify-end gap-2">
+          <Button onClick={handleClose} variant="secondary">
+            Cancel
+          </Button>
+        </div>
+      )}
     </BaseDialog>
   );
 };

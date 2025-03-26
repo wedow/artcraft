@@ -16,11 +16,13 @@ import {
 import { UndoStackManager } from "./UndoRedo";
 
 import { ToolbarMainButtonNames } from "~/components/features/ToolbarMain/enum";
-import { EditModes, VideoResolutions } from "./constants";
+import { VideoResolutions } from "./constants";
 
 import { ToolbarNodeButtonNames } from "~/components/features/ToolbarNode/enums";
 
 import { EditModeDrawEngine } from "./RenderingPrimitives/EditModeDrawEngine";
+import { EditMode, editModeState, onEditModeBaseImageChange, onEditModeChange } from "~/signals/editMode";
+import { MediaNode } from "./types";
 
 export interface RenderingOptions {
   artstyle: string;
@@ -35,7 +37,7 @@ export interface RenderingOptions {
 }
 
 export class EditEngine {
-  private editMode: EditModes = EditModes.SELECT;
+  private editMode: EditMode;
   private boardCanvasRef: HTMLDivElement;
   private stage: Konva.Stage;
   private bgLayer: Konva.Layer;
@@ -59,7 +61,7 @@ export class EditEngine {
     if (import.meta.env.DEV) {
       console.log("Engine Created");
     }
-    this.editMode = EditModes.SELECT;
+    this.editMode = EditMode.INIT;
 
     this.boardCanvasRef = boardCanvasRef;
     this.stage = new Konva.Stage({
@@ -100,7 +102,8 @@ export class EditEngine {
       mediaLayerRef: this.mediaLayer,
       offScreenCanvas: this.offScreenCanvas,
       onDraw: async (canvas, lineBounds) => {
-        await this.addPaintNode(canvas, lineBounds);
+        console.log("Drawing Paint Node");
+        this.addPaintNode(canvas, lineBounds);
       },
     });
 
@@ -116,8 +119,9 @@ export class EditEngine {
 
     //Collection of commands for undo-redo
     this.undoStackManager = new UndoStackManager(() => {
-      this.editDrawEngine.render();
+      // this.editDrawEngine.render();
     });
+
     this.commandManager = new CommandManager({
       mediaLayerRef: this.mediaLayer,
       nodesManagerRef: this.nodesManager,
@@ -142,33 +146,36 @@ export class EditEngine {
     this.setEditMode(this.editMode);
   }
 
-  private setEditMode(newEditMode: EditModes) {
-    this.editMode = newEditMode;
-    switch (this.editMode) {
-      case EditModes.SELECT:
-      default: {
-        console.log("EDITMODE: SELECT");
-        this.editDrawEngine.disablePaintMode();
+  private setEditMode(newEditMode: EditMode) {
+    if (this.editMode === newEditMode) {
+      return;
+    }
 
+    this.editMode = newEditMode;
+
+    switch (this.editMode) {
+      case EditMode.EDIT:
+        this.selectorSquare.disable();
+        this.selectionManager.disable();
+        this.inpaintNodeVisibility(true);
+        this.editDrawEngine.enablePaintMode();
+        break;
+      case EditMode.SELECT:
+      default:
+        this.editDrawEngine.disablePaintMode();
+        this.inpaintNodeVisibility(false);
         this.selectorSquare.enable();
         this.selectionManager.enable();
-        uiAccess.toolbarMain.enable();
-        uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.SELECT, {
-          active: true,
-        });
-        uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.PAINT, {
-          active: false,
-        });
+        // uiAccess.toolbarMain.enable();
+        // uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.SELECT, {
+        //   active: true,
+        // });
+        // uiAccess.toolbarMain.changeButtonState(ToolbarMainButtonNames.PAINT, {
+        //   active: false,
+        // });
         this.matteBox.disable();
         document.body.style.cursor = "default";
         return;
-      }
-      case EditModes.EDIT: {
-        console.log("EDITMODE: EDIT");
-        this.editDrawEngine.enablePaintMode();
-        this.selectorSquare.disable();
-        this.selectionManager.disable();
-      }
     }
   }
   private setupEventSystem() {
@@ -195,41 +202,27 @@ export class EditEngine {
       }) as EventListener,
     );
 
-    // Listen to Toolbar Main
-    // uiEvents.toolbarMain.UNDO.onClick(() => {
-    //   this.undoStackManager.undo();
-    // });
-    // uiEvents.toolbarMain.REDO.onClick(() => {
-    //   this.undoStackManager.redo();
-    //   this.realTimeDrawEngine.render();
-    // });
-
-    // uiEvents.toolbarMain.SAVE.onClick(async (/*event*/) => {
-    //   await this.realTimeDrawEngine.saveOutput();
-    // });
-
-    // uiEvents.toolbarMain.SELECT.onClick(() => {
-    //   console.log("Toolbar Main >> Select");
-    //   this.setAppMode(AppModes.SELECT);
-    // });
-
-    // uiEvents.toolbarMain.PAINT.onClick(() => {
-    //   console.log("Toolbar Main >> Paint");
-    //   this.setAppMode(AppModes.PAINT);
-    // });
+    // Listen to edit mode UI
+    onEditModeChange((mode) => {
+      this.setEditMode(mode);
+    });
+    //
+    // onEditModeBaseImageChange((imageFile) => {
+    //   this.addImage(imageFile);
+    // })
   }
 
   disableAllButtons() {
     const buttonNames = Object.values(ToolbarNodeButtonNames);
     for (const name of buttonNames) {
-      uiAccess.toolbarNode.changeButtonState(name, { disabled: true });
+      // uiAccess.toolbarNode.changeButtonState(name, { disabled: true });
     }
   }
 
   async enableAllButtons() {
     const buttonNames = Object.values(ToolbarNodeButtonNames);
     for (const name of buttonNames) {
-      await uiAccess.toolbarNode.changeButtonState(name, { disabled: false });
+      // await uiAccess.toolbarNode.changeButtonState(name, { disabled: false });
     }
   }
 
@@ -252,7 +245,7 @@ export class EditEngine {
   }
 
   // Sandbox is quickly a way to test your idea.
-  public async sandbox() {}
+  public async sandbox() { }
 
   public onMessage(event: MessageEvent) {
     console.log("Message From Shared Worker");
@@ -261,8 +254,8 @@ export class EditEngine {
 
   public initializeStage() {
     // load canvas that was originaly saved TODO Save manager for resharing.
-    uiAccess.toolbarNode.hide();
-    uiAccess.loadingBar.hide();
+    // uiAccess.toolbarNode.hide();
+    // uiAccess.loadingBar.hide();
     this.setupStage();
   }
 
@@ -304,7 +297,7 @@ export class EditEngine {
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
         await this.editDrawEngine.render();
-        this.setEditMode(EditModes.SELECT);
+        this.setEditMode(EditMode.SELECT);
       },
     });
 
@@ -320,7 +313,7 @@ export class EditEngine {
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
         await this.editDrawEngine.render();
-        this.setEditMode(EditModes.SELECT);
+        this.setEditMode(EditMode.SELECT);
       },
     });
 
@@ -347,7 +340,9 @@ export class EditEngine {
     });
     this.commandManager.createNode(node);
   }
+
   // Events for Undo and Redo
+  // FIXME: Doesn't actually work?
   private addKeyboardShortcuts() {
     window.addEventListener("keydown", (event) => {
       if (event.ctrlKey && event.key === "z") {
@@ -359,6 +354,20 @@ export class EditEngine {
         this.undoStackManager.redo();
       } else if (event.key === "Delete") {
         this.commandManager.deleteNodes();
+      }
+    });
+  }
+
+  private inpaintNodeVisibility(show: boolean) {
+    console.log("inpaintNodeVisibility:", show);
+    this.nodesManager.getAllNodes().forEach((node) => {
+      console.log("inpaint:", node);
+      if (node instanceof PaintNode) {
+        if (show) {
+          node.kNode.show();
+        } else {
+          node.kNode.hide();
+        }
       }
     });
   }

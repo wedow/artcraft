@@ -99,8 +99,8 @@ export class EditModeDrawEngine {
     this.width = width;
     this.height = height;
 
-    this.positionX = 0;
-    this.positionY = window.innerHeight / 2 - this.height * 2;
+    this.positionX = window.innerWidth / 2 - this.width / 2;
+    this.positionY = window.innerHeight / 2 - this.height / 2;
 
     this.offScreenCanvas = offScreenCanvas;
     this.offScreenCanvas.width = this.width;
@@ -137,7 +137,7 @@ export class EditModeDrawEngine {
 
     this.backgroundRasterRect = new Konva.Image({
       name: "backgroundRasterRect",
-      x: 0,
+      x: this.positionX,
       y: this.positionY,
       width: this.width,
       height: this.height,
@@ -340,9 +340,10 @@ export class EditModeDrawEngine {
     };
 
     // Add event listeners
-    stage.on("mousedown touchstart", (e) => {
+    stage.on('mousedown touchstart', (e) => {
       const pos = stage.getPointerPosition();
       if (pos && isWithinCaptureCanvas(pos)) {
+        console.log("Start Drawing");
         startDrawing(pos);
       }
     });
@@ -361,6 +362,7 @@ export class EditModeDrawEngine {
 
     // Store cleanup function
     this.cleanupFunction = () => {
+      console.log("Cleaning up listeners")
       stage.off("mousedown touchstart");
       stage.off("mousemove touchmove");
       stage.off("mouseup touchend");
@@ -371,6 +373,7 @@ export class EditModeDrawEngine {
     this.isEnabled = true;
     this.disableDragging();
     if (!this.cleanupFunction) {
+      console.log("Paint Mode Enabled");
       this.paintMode();
     }
     // Update cursor when enabling paint mode
@@ -580,8 +583,24 @@ export class EditModeDrawEngine {
       dupNode.strokeWidth(0);
       renderLayer.add(dupNode);
     });
-
     stageClone.add(renderLayer);
+
+    // Make a white background layer
+    const backgroundLayer = new Konva.Layer({
+      x: renderLayer.x(),
+      y: renderLayer.y(),
+      width: renderLayer.width(),
+      height: renderLayer.height(),
+    });
+
+    // Add a white rectangle to the background layer
+    const backgroundRect = new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: backgroundLayer.width(),
+      height: backgroundLayer.height(),
+      fill: "white",
+    });
 
     return stageClone;
   }
@@ -691,10 +710,10 @@ export class EditModeDrawEngine {
       const base64Bitmap = await imageBitmapToBase64(bitmap);
 
       // TODO: Use the inpaint_image function to inpaint the image.
-      const base64BitmapResponse = await invoke("infer_image", {
+      const base64BitmapResponse = await invoke("inpaint_image", {
         image: base64Bitmap,
+        mask: base64Bitmap,
         prompt: this.currentPrompt,
-        strength: 100,
       });
 
       //console.log(base64BitmapResponse);
