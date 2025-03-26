@@ -19,6 +19,7 @@ import {
 } from "~/signals/uiEvents/loadingIndicator";
 import { DecodeBase64ToImage } from "~/utilities/DecodeBase64ToImage.ts";
 import { imageBitmapToBase64 } from "../EngineUtitlities/Base64Helpers";
+import { EDIT_INIT_BRUSH_SIZE } from "~/signals/editMode";
 
 interface InpaintImageParams {
   image: string;
@@ -55,7 +56,7 @@ export class EditModeDrawEngine {
   // paint Brush Size
   // has to exit out of paint mode when shape or image are used.
   public paintColor: string = "#000000";
-  private brushSize: number = 5; // Default brush size
+  private brushSize: number = EDIT_INIT_BRUSH_SIZE; // Default brush size
 
   private onDrawCallback?: (
     canvas: HTMLCanvasElement,

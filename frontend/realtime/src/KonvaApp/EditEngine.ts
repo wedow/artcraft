@@ -21,7 +21,7 @@ import { VideoResolutions } from "./constants";
 import { ToolbarNodeButtonNames } from "~/components/features/ToolbarNode/enums";
 
 import { EditModeDrawEngine } from "./RenderingPrimitives/EditModeDrawEngine";
-import { EditMode, editModeState, onEditModeBaseImageChange, onEditModeChange } from "~/signals/editMode";
+import { EditMode, editModeState, onEditModeBaseImageChange, onEditModeBrushSizeChange, onEditModeChange, onEditModeInpaintClear } from "~/signals/editMode";
 import { MediaNode } from "./types";
 
 export interface RenderingOptions {
@@ -206,10 +206,18 @@ export class EditEngine {
     onEditModeChange((mode) => {
       this.setEditMode(mode);
     });
-    //
-    // onEditModeBaseImageChange((imageFile) => {
-    //   this.addImage(imageFile);
-    // })
+
+    onEditModeBaseImageChange((imageFile) => {
+      this.addImage(imageFile);
+    })
+
+    onEditModeBrushSizeChange((size) => {
+      this.editDrawEngine.paintBrushSize = size;
+    })
+
+    onEditModeInpaintClear(() => {
+      this.clearInpaintNodes();
+    })
   }
 
   disableAllButtons() {
@@ -370,5 +378,17 @@ export class EditEngine {
         }
       }
     });
+  }
+
+  private clearInpaintNodes() {
+    console.log("clearInpaintNodes");
+    const markedForDelete: MediaNode[] = [];
+    this.nodesManager.getAllNodes().forEach((node) => {
+      if (node instanceof PaintNode) {
+        markedForDelete.push(node);
+      }
+    });
+
+    this.commandManager.deleteSpecificNodes(markedForDelete);
   }
 }
