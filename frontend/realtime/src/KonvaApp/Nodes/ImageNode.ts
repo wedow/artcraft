@@ -18,6 +18,8 @@ interface ImageNodeContructor {
   transform?: TransformationData;
   mediaLayerRef: Konva.Layer;
   selectionManagerRef: SelectionManager;
+  id?: string;
+  name?: string;
   loaded: () => Promise<void>;
 }
 
@@ -36,6 +38,8 @@ export class ImageNode extends NetworkedNode {
     selectionManagerRef,
     loaded,
     imageBitmap,
+    id,
+    name
   }: ImageNodeContructor) {
     // kNodes need to be created first to guaruntee
     // that it is not undefined in parent's context
@@ -49,6 +53,8 @@ export class ImageNode extends NetworkedNode {
       ...transform,
       draggable: true,
       strokeScaleEnabled: false,
+      id: id,
+      name: name,
     });
     super({
       selectionManagerRef: selectionManagerRef,
