@@ -772,7 +772,7 @@ export class EditModeDrawEngine {
       mimeType: "image/jpeg",
       pixelRatio: 1,
       quality: 1.0,
-      test: true,
+      test: false,
     }
 
     const maskBitmap = await this.renderMask(frameConfig);
