@@ -155,6 +155,12 @@ export class EditModeDrawEngine {
     this.captureCanvas.setZIndex(0);
     this.backgroundRasterRect.setZIndex(0);
 
+    // Create a layer clip function that clips the layer to the capture canvas
+    this.mediaLayerRef.clip({
+      ...this.captureCanvas.getPosition(),
+      ...this.captureCanvas.getSize(),
+    });
+
     // this.listenToServerEvents();
   }
 
