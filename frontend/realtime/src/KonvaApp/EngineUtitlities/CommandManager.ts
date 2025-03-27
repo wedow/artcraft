@@ -61,11 +61,18 @@ export class CommandManager {
 
     // Set the kNode's manual id to same as kNode's internal _id
     // This helps identify the kNode in the Konva layer with find
-    node.kNode.id(node.kNode._id.toString());
+    if (node.kNode.id() === "") {
+      node.kNode.id(node.kNode._id.toString());
+    }
     this.renderEngineRef.render();
   }
   deleteNodes() {
     const nodes = this.selectionManagerRef.getSelectedNodes();
+
+    if (nodes.size === 0) {
+      return;
+    }
+
     const command = new DeleteCommand({
       nodes: nodes,
       mediaLayerRef: this.mediaLayerRef,
@@ -79,8 +86,14 @@ export class CommandManager {
   }
 
   deleteSpecificNodes(nodes: MediaNode[]) {
+    if (nodes.length === 0) {
+      return;
+    }
+
+    const nodeSet = new Set<MediaNode>(nodes);
+
     const command = new DeleteCommand({
-      nodes: nodes,
+      nodes: nodeSet,
       mediaLayerRef: this.mediaLayerRef,
       nodesManagerRef: this.nodesManagerRef,
       nodeTransformerRef: this.nodeTransformerRef,
