@@ -28,7 +28,7 @@ interface InpaintImageParams {
 }
 
 export class EditModeDrawEngine {
-  private imageNodes: PaintNode[];
+  private imageNodes: (PaintNode | ImageNode)[];
 
   private offScreenCanvas: OffscreenCanvas;
   private outputBitmap: ImageBitmap | undefined;
@@ -55,7 +55,7 @@ export class EditModeDrawEngine {
   // Paint Color
   // paint Brush Size
   // has to exit out of paint mode when shape or image are used.
-  public paintColor: string = "#000000";
+  public paintColor: string = "#000000"; // "rgba(89, 167, 255, 0.5)";
   private brushSize: number = EDIT_INIT_BRUSH_SIZE; // Default brush size
 
   private onDrawCallback?: (
@@ -358,7 +358,6 @@ export class EditModeDrawEngine {
 
     stage.on("mouseup touchend", async () => {
       stopDrawing();
-      await this.render();
     });
 
     // Store cleanup function
@@ -538,12 +537,10 @@ export class EditModeDrawEngine {
   public isProcessing = false;
   private handleNodeDragEnd = async () => {
     // Clean up any existing state
-
-    await this.render();
   };
 
   public async addNodes(node: MediaNode) {
-    if (node instanceof PaintNode) {
+    if (node instanceof PaintNode || node instanceof ImageNode) {
       console.debug("Adding node:", node);
       this.imageNodes.push(node);
       console.log(this.imageNodes);
@@ -553,11 +550,10 @@ export class EditModeDrawEngine {
     if (this.isEnabled) {
       this.disableDragging();
     }
-    await this.render();
   }
 
   public removeNodes(node: MediaNode) {
-    if (node instanceof PaintNode) {
+    if (node instanceof PaintNode || node instanceof ImageNode) {
       const index = this.imageNodes.indexOf(node);
       if (index > -1) {
         node.kNode.off("dragend", this.handleNodeDragEnd);
@@ -566,7 +562,7 @@ export class EditModeDrawEngine {
     }
   }
 
-  private cloneStageForRender(
+  private cloneStageForMask(
     stage: Konva.Stage,
     layerOfInterest: Konva.Layer,
   ): Konva.Stage {
@@ -576,22 +572,24 @@ export class EditModeDrawEngine {
       container: this.offscreenRenderDiv,
     });
 
+    // Make a white background layer
+    const backgroundLayer = new Konva.Layer();
+    stageClone.add(backgroundLayer);
+
+    // Make a render layer to hold all paint nodes
     const renderLayer = new Konva.Layer();
+    stageClone.add(renderLayer);
 
     // Clone all the nodes then reset them to render right
     layerOfInterest.getChildren().forEach((node) => {
+      if (!(node instanceof Konva.Image) || node.name()) {
+        console.log("Ignoring", node);
+        return;
+      }
+      console.log("Cloning", node);
       const dupNode = node.clone();
       dupNode.strokeWidth(0);
       renderLayer.add(dupNode);
-    });
-    stageClone.add(renderLayer);
-
-    // Make a white background layer
-    const backgroundLayer = new Konva.Layer({
-      x: renderLayer.x(),
-      y: renderLayer.y(),
-      width: renderLayer.width(),
-      height: renderLayer.height(),
     });
 
     // Add a white rectangle to the background layer
@@ -603,10 +601,57 @@ export class EditModeDrawEngine {
       fill: "white",
     });
 
+    backgroundLayer.add(backgroundRect);
+
     return stageClone;
   }
 
-  private async renderFrame(config: {
+  private cloneStageForBackground(
+    stage: Konva.Stage,
+    layerOfInterest: Konva.Layer,
+  ): Konva.Stage {
+    const stageClone = new Konva.Stage({
+      width: stage.width(),
+      height: stage.height(),
+      container: this.offscreenRenderDiv,
+    });
+
+    // Make a white background layer
+    const backgroundLayer = new Konva.Layer();
+    stageClone.add(backgroundLayer);
+
+    // Make a render layer to hold all paint nodes
+    const renderLayer = new Konva.Layer();
+    stageClone.add(renderLayer);
+
+    // Clone all the nodes then reset them to render right
+    layerOfInterest.getChildren().forEach((node) => {
+      if (node.id() !== "background") {
+        console.log("Ignoring", node);
+        return;
+      }
+
+      console.log("Cloning", node);
+      const dupNode = node.clone();
+      dupNode.strokeWidth(0);
+      renderLayer.add(dupNode);
+    });
+
+    // Add a white rectangle to the background layer
+    const backgroundRect = new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: backgroundLayer.width(),
+      height: backgroundLayer.height(),
+      fill: "white",
+    });
+
+    backgroundLayer.add(backgroundRect);
+
+    return stageClone;
+  }
+
+  private async renderMask(config: {
     layerOfInterest: Konva.Layer; // layer where the element that you want to clip lives.
     // XY and height of a captureCanvas ( region of interest )
     x?: number; // x position of the region of interest
@@ -617,7 +662,7 @@ export class EditModeDrawEngine {
     mimeType?: string; // image/jpeg or image/png
     quality?: number; // 1.0 is the best.
     test: boolean; // true == blob else Image Bitmap
-  }): Promise<ImageBitmap | Blob> {
+  }): Promise<ImageBitmap> {
     try {
       const box = config.layerOfInterest.getClientRect();
       const stage = config.layerOfInterest.getStage();
@@ -629,11 +674,11 @@ export class EditModeDrawEngine {
       // Clone the required layer from the stage
       // Set the right details (like removing highlight stroke)
       // Then render the cloned stage to a bitmap
-      const stageClone = this.cloneStageForRender(
+      const stageClone = this.cloneStageForMask(
         stage,
         config.layerOfInterest,
       );
-      const stageBlob = (await stageClone.toBlob({
+      const maskBlob = (await stageClone.toBlob({
         x: x,
         y: y,
         width: config.width || Math.ceil(box.width),
@@ -644,46 +689,114 @@ export class EditModeDrawEngine {
       // if config.test is true, the result is downloaded to the local files
       // config.test = true;
       if (config.test) {
-        await FileUtilities.blobToFileJpeg(stageBlob, "1");
+        await FileUtilities.blobToFileJpeg(maskBlob, "1");
       }
 
-      const result = await createImageBitmap(stageBlob);
+      const result = await createImageBitmap(maskBlob);
       return result;
     } catch (error) {
       throw error;
     }
   }
 
-  public async saveOutput() {
-    if (!this.outputBitmap) {
-      console.error("No output bitmap available to save");
-      return;
-    }
-
+  private async renderBackground(config: {
+    layerOfInterest: Konva.Layer; // layer where the element that you want to clip lives.
+    // XY and height of a captureCanvas ( region of interest )
+    x?: number; // x position of the region of interest
+    y?: number; // y position of the region of interest
+    width?: number; // size of the region of interest
+    height?: number; // size of the region of interest
+    pixelRatio?: number; // higher means higher quality
+    mimeType?: string; // image/jpeg or image/png
+    quality?: number; // 1.0 is the best.
+    test: boolean; // true == blob else Image Bitmap
+  }): Promise<ImageBitmap> {
     try {
-      const canvas = document.createElement("canvas");
-      canvas.width = this.outputBitmap.width;
-      canvas.height = this.outputBitmap.height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Failed to get 2D context");
+      const box = config.layerOfInterest.getClientRect();
+      const stage = config.layerOfInterest.getStage();
 
-      ctx.drawImage(this.outputBitmap, 0, 0);
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((b) => resolve(b!), "image/png");
-      });
+      const x = config.x !== undefined ? config.x : Math.floor(box.x);
+      const y = config.y !== undefined ? config.y : Math.floor(box.y);
+      const pixelRatio = config.pixelRatio || 1;
 
-      await FileUtilities.blobToFileJpeg(blob, "output");
+      // Clone the required layer from the stage
+      // Set the right details (like removing highlight stroke)
+      // Then render the cloned stage to a bitmap
+      const stageClone = this.cloneStageForBackground(
+        stage,
+        config.layerOfInterest,
+      );
+      const backgroundBlob = (await stageClone.toBlob({
+        x: x,
+        y: y,
+        width: config.width || Math.ceil(box.width),
+        height: config.height || Math.ceil(box.height),
+        pixelRatio: pixelRatio,
+      })) as Blob;
+
+      // if config.test is true, the result is downloaded to the local files
+      if (config.test) {
+        await FileUtilities.blobToFileJpeg(backgroundBlob, "1");
+      }
+
+      const result = await createImageBitmap(backgroundBlob);
+      return result;
     } catch (error) {
-      console.error("Error saving output:", error);
+      throw error;
     }
   }
 
-  public async render() {
-    // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
+  public async renderInpainting() {
     if (this.isProcessing) {
       console.log("isProcessing Returning");
       return;
     }
+
+    console.log("Rendering inpainting");
+    this.isProcessing = true;
+
+    this.mediaLayerRef.draw();
+
+    const frameConfig = {
+      layerOfInterest: this.mediaLayerRef,
+      x: this.captureCanvas.x(),
+      y: this.captureCanvas.y(),
+      width: this.width,
+      height: this.height,
+      mimeType: "image/jpeg",
+      pixelRatio: 1,
+      quality: 1.0,
+      test: true,
+    }
+
+    const maskBitmap = await this.renderMask(frameConfig);
+    const backgroundBitmap = await this.renderBackground(frameConfig);
+
+    try {
+      const base64Mask = await imageBitmapToBase64(maskBitmap);
+      const base64Bg = await imageBitmapToBase64(backgroundBitmap);
+
+      const base64BitmapResponse = await invoke("inpaint_image", {
+        image: base64Bg,
+        mask: base64Mask,
+        prompt: this.currentPrompt,
+      });
+
+      const decoded = await DecodeBase64ToImage(base64BitmapResponse as string);
+
+      this.outputBitmap = decoded;
+    } catch (error) {
+      console.error("Error during image processing:", error);
+    } finally {
+      this.isProcessing = false;
+    }
+
+    return;
+  }
+
+  public async render() {
+    // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
+    return;
     console.log("Calling Render");
     this.isProcessing = true;
 

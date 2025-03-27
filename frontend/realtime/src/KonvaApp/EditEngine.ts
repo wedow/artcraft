@@ -208,7 +208,7 @@ export class EditEngine {
     });
 
     onEditModeBaseImageChange((imageFile) => {
-      this.addImage(imageFile);
+      this.addBackgroundImage(imageFile);
     })
 
     onEditModeBrushSizeChange((size) => {
@@ -296,31 +296,16 @@ export class EditEngine {
     this.addKeyboardShortcuts();
   }
 
-  public addImage(imageFile: File) {
+  public addBackgroundImage(imageFile: File) {
     const imageNode = new ImageNode({
       mediaLayerRef: this.mediaLayer,
       canvasPosition: this.editDrawEngine.captureCanvas.position(),
       canvasSize: this.editDrawEngine.captureCanvas.size(),
       imageFile: imageFile,
       selectionManagerRef: this.selectionManager,
+      id: "background",
+      name: "background",
       loaded: async () => {
-        await this.editDrawEngine.render();
-        this.setEditMode(EditMode.SELECT);
-      },
-    });
-
-    this.commandManager.createNode(imageNode);
-  }
-
-  public addImageFromImageBitmap(imageBitmap: ImageBitmap) {
-    const imageNode = new ImageNode({
-      mediaLayerRef: this.mediaLayer,
-      canvasPosition: this.editDrawEngine.captureCanvas.position(),
-      canvasSize: this.editDrawEngine.captureCanvas.size(),
-      imageBitmap: imageBitmap,
-      selectionManagerRef: this.selectionManager,
-      loaded: async () => {
-        await this.editDrawEngine.render();
         this.setEditMode(EditMode.SELECT);
       },
     });
@@ -342,9 +327,7 @@ export class EditEngine {
       lineBounds: lineBounds,
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
-      loaded: async () => {
-        await this.editDrawEngine.render();
-      },
+      loaded: async () => { },
     });
     this.commandManager.createNode(node);
   }
@@ -389,6 +372,14 @@ export class EditEngine {
       }
     });
 
+    if (markedForDelete.length === 0) {
+      return;
+    }
+
     this.commandManager.deleteSpecificNodes(markedForDelete);
+  }
+
+  public triggerInpainting() {
+    this.editDrawEngine.renderInpainting();
   }
 }

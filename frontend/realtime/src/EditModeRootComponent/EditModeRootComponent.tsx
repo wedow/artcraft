@@ -34,6 +34,15 @@ export const EditModeRootComponent = ({ className }: { className: string }) => {
 
   useSignals();
   const editMode = editModeState.value;
+  console.log("Edit Root Components rendered, ", editMode)
+
+  const handleGenerate = useCallback(() => {
+    if (!editEngineRef.current) {
+      return;
+    }
+
+    editEngineRef.current.triggerInpainting();
+  }, []);
 
   return (
     <>
@@ -66,7 +75,7 @@ export const EditModeRootComponent = ({ className }: { className: string }) => {
                 icon={faSparkles}
                 variant="primary"
                 className="text-md ml-2 self-end"
-                onClick={() => { }}
+                onClick={handleGenerate}
                 disabled={false}
                 loading={false}
               >

@@ -11,8 +11,8 @@ export const EDIT_MIN_BRUSH_SIZE = 10;
 export const EDIT_MAX_BRUSH_SIZE = 100;
 export const EDIT_INIT_BRUSH_SIZE = 50;
 export const editModePrompt = signal("");
-export const editModeState = signal<EditMode>(EditMode.SELECT);
 export const editModeBrushSize = signal(EDIT_INIT_BRUSH_SIZE);
+export const editModeState = signal<EditMode>(EditMode.INIT);
 export const editModeClearSignal = signal(false); // Just a signal to trigger a clear, value doesn't matter
 
 export const onEditModeChange = (callback: (mode: EditMode) => void) => {
@@ -47,13 +47,11 @@ export const onEditModeBrushSizeChange = (callback: (size: number) => void) => {
 }
 
 export const triggerEditModeClear = () => {
-  console.log("trigger called!!!")
-  editModeClearSignal.value = !editModeClearSignal.value;
+  editModeClearSignal.value = !editModeClearSignal.peek();
 }
 
 export const onEditModeInpaintClear = (callback: (_: boolean) => void) => {
   effect(() => {
-    console.log("effect called!!!")
     callback(editModeClearSignal.value);
   });
 };
