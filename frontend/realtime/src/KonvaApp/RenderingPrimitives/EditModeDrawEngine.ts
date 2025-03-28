@@ -55,7 +55,7 @@ export class EditModeDrawEngine {
   // Paint Color
   // paint Brush Size
   // has to exit out of paint mode when shape or image are used.
-  public paintColor: string = "#000000"; // "rgba(89, 167, 255, 0.5)";
+  public paintColor: string = "rgba(89, 167, 255, 0.5)";
   private brushSize: number = EDIT_INIT_BRUSH_SIZE; // Default brush size
 
   private onDrawCallback?: (
@@ -347,7 +347,7 @@ export class EditModeDrawEngine {
     };
 
     // Add event listeners
-    stage.on('mousedown touchstart', (e) => {
+    stage.on("mousedown touchstart", (e) => {
       const pos = stage.getPointerPosition();
       if (pos && isWithinCaptureCanvas(pos)) {
         console.log("Start Drawing");
@@ -368,7 +368,7 @@ export class EditModeDrawEngine {
 
     // Store cleanup function
     this.cleanupFunction = () => {
-      console.log("Cleaning up listeners")
+      console.log("Cleaning up listeners");
       stage.off("mousedown touchstart");
       stage.off("mousemove touchmove");
       stage.off("mouseup touchend");
@@ -680,10 +680,7 @@ export class EditModeDrawEngine {
       // Clone the required layer from the stage
       // Set the right details (like removing highlight stroke)
       // Then render the cloned stage to a bitmap
-      const stageClone = this.cloneStageForMask(
-        stage,
-        config.layerOfInterest,
-      );
+      const stageClone = this.cloneStageForMask(stage, config.layerOfInterest);
       const maskBlob = (await stageClone.toBlob({
         x: x,
         y: y,
@@ -772,8 +769,8 @@ export class EditModeDrawEngine {
       mimeType: "image/jpeg",
       pixelRatio: 1,
       quality: 1.0,
-      test: false,
-    }
+      test: true,
+    };
 
     const maskBitmap = await this.renderMask(frameConfig);
     const backgroundBitmap = await this.renderBackground(frameConfig);
@@ -788,6 +785,8 @@ export class EditModeDrawEngine {
         prompt: this.currentPrompt,
       });
 
+      console.log("inpainting response", base64BitmapResponse);
+
       const decoded = await DecodeBase64ToImage(base64BitmapResponse as string);
 
       this.outputBitmap = decoded;
@@ -800,52 +799,9 @@ export class EditModeDrawEngine {
     return;
   }
 
-  public async render() {
-    // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
-    return;
-    console.log("Calling Render");
-    this.isProcessing = true;
-
-    this.mediaLayerRef.draw();
-    // Output all nodes in mediaLayerRef
-    const nodes = this.mediaLayerRef.getChildren();
-    console.log("All nodes in mediaLayer:", nodes);
-    console.log(
-      `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
-    );
-
-    const bitmap = (await this.renderFrame({
-      layerOfInterest: this.mediaLayerRef,
-      x: this.captureCanvas.x(),
-      y: this.captureCanvas.y(),
-      width: this.width,
-      height: this.height,
-      mimeType: "image/jpeg",
-      pixelRatio: 1,
-      quality: 1.0,
-      test: false,
-    })) as ImageBitmap;
-
-    try {
-      const base64Bitmap = await imageBitmapToBase64(bitmap);
-
-      // TODO: Use the inpaint_image function to inpaint the image.
-      const base64BitmapResponse = await invoke("inpaint_image", {
-        image: base64Bitmap,
-        mask: base64Bitmap,
-        prompt: this.currentPrompt,
-      });
-
-      //console.log(base64BitmapResponse);
-      const decoded = await DecodeBase64ToImage(base64BitmapResponse as string);
-
-      this.outputBitmap = decoded;
-    } catch (error) {
-      console.error("Error during image processing:", error);
-    } finally {
-      this.isProcessing = false;
-    }
-  }
+  // NOTE: DO NOT REMOVE, we need this for the interface that commands use
+  // It doesn't actually need to do anything
+  public render() {}
 
   // Add getter/setter for brush size
   public set paintBrushSize(size: number) {
