@@ -20,15 +20,15 @@ export const AnimeTab = () => {
         setSubpage={(newPage) => {
           setCurrSubpage(newPage);
         }}
-        subPageTitles={[TabTitles.CHARACTERS, TabTitles.ANIMATION]}
-        subPageTitleIcons={[faPerson, faRabbitRunning]}
+        subPageTitles={[TabTitles.CHARACTERS]} // , TabTitles.ANIMATION
+        subPageTitleIcons={[faPerson]} // faRabbitRunning
       />
       {currSubpage === TabTitles.CHARACTERS && (
         <CharactersTab animationType={MediaFileAnimationType.MikuMikuDance} />
       )}
-      {currSubpage === TabTitles.ANIMATION && (
+      {/* {currSubpage === TabTitles.ANIMATION && (
         <AnimationsTab animationType={MediaFileAnimationType.MikuMikuDance} />
-      )}
+      )} */}
     </>
   );
 };

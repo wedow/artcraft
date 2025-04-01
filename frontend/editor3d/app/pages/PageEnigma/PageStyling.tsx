@@ -69,11 +69,11 @@ export const PageStyling = () => {
         <div className="mt-4">
           <ControlsVideo />
         </div>
-        <div className="relative h-[120px] w-full overflow-hidden bg-ui-panel">
+        {/* <div className="relative h-[120px] w-full overflow-hidden bg-ui-panel">
           <LowerPanel>
             <Timeline />
           </LowerPanel>
-        </div>
+        </div> */}
         <div className="flex h-full justify-center gap-8 bg-ui-panel pt-4">
           <div className="relative flex w-[292px] flex-col gap-4">
             <div className="absolute -left-[140px] top-[90px] flex flex-col justify-center">

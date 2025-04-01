@@ -37,7 +37,7 @@ export const PageEditor = () => {
   };
 
   useEffect(() => {
-    timelineHeight.value = 208;
+    timelineHeight.value = 0; //timelineHeight.value = 208;
     sidePanelWidth.value = 340;
     window.onbeforeunload = () => {
       return "You may have unsaved changes.";
@@ -153,9 +153,9 @@ export const PageEditor = () => {
       </div>
 
       {/* Timeline */}
-      <div onClick={handleOverlayClick}>
+      {/* <div onClick={handleOverlayClick}>
         <Timeline />
-      </div>
+      </div> */}
     </div>
   );
 };

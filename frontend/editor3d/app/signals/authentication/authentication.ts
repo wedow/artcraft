@@ -5,7 +5,7 @@ import { AUTH_STATUS, LoyaltyProgram, USER_FEATURE_FLAGS } from "~/enums";
 const status = signal<AUTH_STATUS>(AUTH_STATUS.INIT);
 const userInfo = signal<UserInfo | undefined>(undefined);
 const activeSubs = signal<ActiveSubscriptions | undefined>(undefined);
-
+// Return all true for these inorder to remove the login.
 const canUpload3D = computed(() => {
   if (!userInfo.value || !userInfo.value.maybe_feature_flags) {
     return undefined;

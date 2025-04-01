@@ -35,8 +35,8 @@ export const CartoonsTab = () => {
         }}
         subPageTitles={[
           TabTitles.CHARACTERS,
-          TabTitles.ANIMATION,
-          TabTitles.EXPRESSIONS,
+          // TabTitles.ANIMATION,
+          // TabTitles.EXPRESSIONS,
         ]}
         subPageTitleIcons={[faPerson, faRabbitRunning, faFaceSmileWink]}
       />
@@ -45,18 +45,6 @@ export const CartoonsTab = () => {
         <CharactersTab
           animationType={MediaFileAnimationType.Mixamo}
           demoCharacterItems={demoCharacterItems.value}
-        />
-      )}
-      {currSubpage === TabTitles.ANIMATION && (
-        <AnimationsTab
-          animationType={MediaFileAnimationType.Mixamo}
-          demoAnimationItems={demoAnimationItems.value}
-        />
-      )}
-      {currSubpage === TabTitles.EXPRESSIONS && (
-        <ExpressionTab
-        // animationType={MediaFileAnimationType.Mixamo}
-        // demoAnimationItems={demoAnimationItems.value}
         />
       )}
     </>
