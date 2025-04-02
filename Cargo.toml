@@ -32,6 +32,7 @@ members = [
   "crates/lib/api_clients/cloud_storage",
   "crates/lib/api_clients/google_drive_common",
   "crates/lib/api_clients/google_sign_in",
+  "crates/lib/api_clients/openai_client",
   "crates/lib/api_clients/thumbnail_generator",
   "crates/lib/bootstrap",
   "crates/lib/bucket_paths",
@@ -118,3 +119,23 @@ members = [
   # see usage: https://crates.io/crates/cargo-hakari
   "crates/my-workspace-hack",
 ]
+
+[workspace.package]
+publish = false
+
+[workspace.dependencies]
+# Hakari workspace hack (faster compile times)
+my-workspace-hack = { path = "crates/my-workspace-hack" }
+
+# Internal libs
+errors = { path = "crates/lib/errors" }
+
+# External libs
+# Centrally pinned versions so that we can uniformly upgrade/downgrade versions across the workspace
+# If a crate needs to use an older/newer version, the dependency should be managed in that crate's own Cargo.toml
+anyhow = "1.0.97"
+log = "0.4.27"
+reqwest = { version = "0.12.15", features = ["json", "cookies"] }
+serde = "1.0.219"
+serde_derive = "1.0.219"
+serde_json = "1.0.140"
