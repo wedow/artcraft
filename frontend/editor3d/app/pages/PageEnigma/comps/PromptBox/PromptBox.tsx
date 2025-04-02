@@ -7,6 +7,7 @@ import {
   faSparkles,
   faUpload,
   faImages,
+  faDownload,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem, PopoverMenu } from "~/components/reusable/Popover";
@@ -164,6 +165,13 @@ export const PromptBox = () => {
           />
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
+            variant="secondary"
+            icon={faDownload}
+          >
+            Download frame
+          </Button>
           <Button
             className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
             variant="secondary"
