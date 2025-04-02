@@ -27,6 +27,7 @@ import { SceneContainer } from "./comps/SceneContainer";
 import { AspectRatioMenu } from "./comps/AspectRatioMenu";
 import { Outliner } from "./comps/Outliner";
 import { CameraAspectRatio } from "./enums";
+import { PromptBox } from "./comps/PromptBox";
 
 export const PageEditor = () => {
   useSignals();
@@ -134,7 +135,7 @@ export const PageEditor = () => {
                 <Outliner />
                 <PreviewEngineCamera />
               </div>
-              <ControlsVideo />
+              <PromptBox />
               <ControlPanelSceneObject />
             </div>
 

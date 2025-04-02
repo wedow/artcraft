@@ -28,21 +28,21 @@ export default {
 
       "brand-primary": {
         //sunglo
-        DEFAULT: "#e66462", //=500
-        "50": "#fdf3f3",
-        "100": "#fce4e4",
-        "200": "#facfce",
-        "300": "#f6acab",
-        "400": "#ef7c7a",
-        "500": "#e66462",
-        "600": "#cf3533",
-        "700": "#ae2927",
-        "800": "#902624",
-        "900": "#782524",
-        "950": "#410f0e",
+        DEFAULT: "#2d81ff", //=500
+        "50": "#eef6ff",
+        "100": "#d9ebff",
+        "200": "#bcdcff",
+        "300": "#8ec7ff",
+        "400": "#59a7ff",
+        "500": "#2d81ff",
+        "600": "#1b63f5",
+        "700": "#144ee1",
+        "800": "#173fb6",
+        "900": "#19398f",
+        "950": "#142457",
       },
       "brand-secondary": {
-        DEFAULT: "#2E2E2E",
+        DEFAULT: "#3E3E41",
         "50": "#f6f6f6",
         "100": "#e7e7e7",
         "200": "#d1d1d1",
@@ -53,7 +53,7 @@ export default {
         "700": "#4f4f4f",
         "800": "#454545",
         "900": "#3d3d3d",
-        "950": "#2e2e2e",
+        "950": "#3E3E41",
       },
       "brand-tertiary": {
         //Aquamarine Blue
@@ -103,7 +103,7 @@ export default {
       },
 
       action: {
-        DEFAULT: "#2E2E2E",
+        DEFAULT: "#3E3E41",
         "50": "#f6f6f6",
         "100": "#e7e7e7",
         "200": "#d1d1d1",
@@ -114,7 +114,7 @@ export default {
         "700": "#4f4f4f",
         "800": "#454545",
         "900": "#3d3d3d",
-        "950": "#2e2e2e",
+        "950": "#3E3E41",
       },
 
       character: {
@@ -123,7 +123,7 @@ export default {
         clip: "#7E92DA",
         groupBg: "#2B3448",
         titleBg: "#384763",
-        frame: "#6B83D8"
+        frame: "#6B83D8",
       },
       camera: {
         unselected: "#466C7C",
@@ -159,7 +159,7 @@ export default {
       },
       assets: {
         background: "#242424",
-        selectedTab: "#2E2E2E",
+        selectedTab: "#3E3E41",
       },
       dnd: {
         canDrop: "#46936E",
@@ -174,8 +174,8 @@ export default {
         background: "#242424",
         panel: "#1F1F1F",
         "panel-border": "#3F3F3F",
-        controls: "#2E2E2E",
-        "controls-button": "#2E2E2E",
+        controls: "#3E3E41",
+        "controls-button": "#3E3E41",
         divider: "#515168",
       },
 

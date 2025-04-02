@@ -18,6 +18,7 @@ export * from "./LoadingSpinner";
 export * from "./NumberInput";
 export * from "./Pagination";
 export * from "./Pill";
+export * from "./Popover";
 export * from "./SearchFilter";
 export * from "./Select";
 export * from "./Slider";
