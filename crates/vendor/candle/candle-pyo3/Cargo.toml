@@ -13,7 +13,7 @@ candle-nn = { path = "../candle-nn", package = "candle-nn" }
 candle-onnx = { path = "../candle-onnx", optional = true}
 half = { version = "2.3.1", features = ["num-traits", "use-intrinsics", "rand_distr"] }
 intel-mkl-src = { version = "0.8.1", features = ["mkl-static-lp64-iomp"], optional = true }
-pyo3 = { version = "0.22.0", features = ["extension-module", "abi3-py311"] }
+pyo3 = { version = "0.24.1", features = ["extension-module", "abi3-py311"] }
 
 [build-dependencies]
 pyo3-build-config = "0.22"
