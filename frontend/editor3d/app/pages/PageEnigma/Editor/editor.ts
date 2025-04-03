@@ -334,6 +334,20 @@ class Editor {
           aspectRatio: 16 / 9,
         };
       }
+      case CameraAspectRatio.HORIZONTAL_3_2: {
+        return {
+          width: 1200,
+          height: 800,
+          aspectRatio: 3 / 2,
+        };
+      }
+      case CameraAspectRatio.VERTICAL_2_3: {
+        return {
+          width: 800,
+          height: 1200,
+          aspectRatio: 2 / 3,
+        };
+      }
       case CameraAspectRatio.VERTICAL_9_16: {
         return {
           width: 720,
@@ -948,16 +962,28 @@ class Editor {
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 1024
             : this.render_camera_aspect_ratio ===
-              CameraAspectRatio.VERTICAL_9_16
+                CameraAspectRatio.VERTICAL_9_16
               ? 576
-              : 1000;
+              : this.render_camera_aspect_ratio ===
+                  CameraAspectRatio.HORIZONTAL_3_2
+                ? 900
+                : this.render_camera_aspect_ratio ===
+                    CameraAspectRatio.VERTICAL_2_3
+                  ? 600
+                  : 1000;
         const height =
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 576
             : this.render_camera_aspect_ratio ===
-              CameraAspectRatio.VERTICAL_9_16
+                CameraAspectRatio.VERTICAL_9_16
               ? 1024
-              : 1000;
+              : this.render_camera_aspect_ratio ===
+                  CameraAspectRatio.HORIZONTAL_3_2
+                ? 600
+                : this.render_camera_aspect_ratio ===
+                    CameraAspectRatio.VERTICAL_2_3
+                  ? 900
+                  : 1000;
 
         this.rawRenderer.setSize(width, height);
 

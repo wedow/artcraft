@@ -113,7 +113,6 @@ export const PageEditor = () => {
               <div className="grid grid-cols-3 gap-4">
                 <ControlsTopButtons />
                 <Controls3D />
-                <AspectRatioMenu />
               </div>
             </div>
 

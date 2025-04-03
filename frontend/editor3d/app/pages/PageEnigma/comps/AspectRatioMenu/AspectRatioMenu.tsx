@@ -18,13 +18,21 @@ export const AspectRatioMenu = () => {
       ? faRectangle
       : cameraAspectRatio.value === CameraAspectRatio.VERTICAL_9_16
         ? faRectangleVertical
-        : faSquare;
+        : cameraAspectRatio.value === CameraAspectRatio.HORIZONTAL_3_2
+          ? faRectangle
+          : cameraAspectRatio.value === CameraAspectRatio.VERTICAL_2_3
+            ? faRectangleVertical
+            : faSquare;
   const buttonText =
     cameraAspectRatio.value === CameraAspectRatio.HORIZONTAL_16_9
       ? "16:9 Horizontal"
       : cameraAspectRatio.value === CameraAspectRatio.VERTICAL_9_16
         ? "9:16 Vertical"
-        : "1:1 Squared";
+        : cameraAspectRatio.value === CameraAspectRatio.HORIZONTAL_3_2
+          ? "3:2 Horizontal"
+          : cameraAspectRatio.value === CameraAspectRatio.VERTICAL_2_3
+            ? "2:3 Vertical"
+            : "1:1 Squared";
 
   const handleChangeAspectRatio = (newRatio: CameraAspectRatio) => {
     Queue.publish({
@@ -51,6 +59,26 @@ export const AspectRatioMenu = () => {
               cameraAspectRatio.value === CameraAspectRatio.HORIZONTAL_16_9,
             onClick: () =>
               handleChangeAspectRatio(CameraAspectRatio.HORIZONTAL_16_9),
+          },
+          {
+            label: "3:2",
+            icon: faRectangle,
+            className: "pl-4",
+            description: "Horizontal",
+            selected:
+              cameraAspectRatio.value === CameraAspectRatio.HORIZONTAL_3_2,
+            onClick: () =>
+              handleChangeAspectRatio(CameraAspectRatio.HORIZONTAL_3_2),
+          },
+          {
+            label: "2:3",
+            icon: faRectangleVertical,
+            className: "pl-4",
+            description: "Vertical",
+            selected:
+              cameraAspectRatio.value === CameraAspectRatio.VERTICAL_2_3,
+            onClick: () =>
+              handleChangeAspectRatio(CameraAspectRatio.VERTICAL_2_3),
           },
           {
             label: "9:16",
