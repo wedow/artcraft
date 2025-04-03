@@ -47,130 +47,157 @@ export class EngineApi extends ApiManager {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/image_studio/scene_snapshot`;
 
     const formData = new FormData();
-    formData.append("screenshot", screenshot);
+    formData.append("snapshot", screenshot); // Changed from "screenshot" to "snapshot" to match API spec
     if (sceneMediaToken) {
       formData.append("scene_media_token", sceneMediaToken);
     }
 
-    return this.post<
-      FormData,
-      { success?: boolean; snapshot_media_token?: string; BadInput?: string }
-    >({
-      endpoint,
-      body: formData,
+    const response = await fetch(endpoint, {
+      method: "POST",
       headers: {
-        "Content-Type": "multipart/form-data",
+        Accept: "application/json",
       },
-    })
-      .then((response) => {
-        return {
-          success: response.success ?? false,
-          data: response.snapshot_media_token,
-          errorMessage: response.BadInput,
-        };
-      })
-      .catch((err) => {
-        return {
-          success: false,
-          errorMessage: err.message,
-        };
-      });
+      credentials: "include",
+      body: formData,
+    });
+
+    const postResponse = await response.json();
+
+    console.log(postResponse);
+
+    let result: { success: boolean; data?: string; errorMessage?: string };
+
+    if (postResponse.success) {
+      result = {
+        success: true,
+        data: postResponse.snapshot_media_token,
+        errorMessage: undefined,
+      };
+    } else {
+      result = {
+        success: false,
+        errorMessage: postResponse.BadInput,
+      };
+    }
+
+    return result;
   }
 
   public async enqueueImageGeneration({
     prompt,
-    sceneMediaToken,
+    snapshotMediaToken,
     additionalImages,
   }: {
     prompt: string;
-    sceneMediaToken: string;
+    snapshotMediaToken: string;
     additionalImages?: string[];
   }): Promise<ApiResponse<string>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/image_studio/prompt`;
 
     const body = {
       prompt,
-      scene_media_token: sceneMediaToken,
+      snapshot_media_token: snapshotMediaToken, // Changed from scene_media_token to snapshot_media_token
       additional_images: additionalImages,
     };
 
-    return this.post<
+    const postResponse = await this.post<
       {
         prompt: string;
-        scene_media_token: string;
+        snapshot_media_token: string;
         additional_images?: string[];
       },
       { success?: boolean; job_token?: string; BadInput?: string }
     >({
       endpoint,
       body,
-    })
-      .then((response) => {
-        return {
-          success: response.success ?? false,
-          data: response.job_token,
-          errorMessage: response.BadInput,
-        };
-      })
-      .catch((err) => {
-        return {
-          success: false,
-          errorMessage: err.message,
-        };
-      });
+    });
+
+    // Check if the response is successful
+    const isSuccess = postResponse.success ?? false;
+
+    // Prepare the result object
+    const result = {
+      success: isSuccess,
+      data: isSuccess ? postResponse.job_token : undefined,
+      errorMessage: isSuccess ? undefined : postResponse.BadInput,
+    };
+
+    return result;
   }
 
-  public async pollJobSession(jobToken: string): Promise<ApiResponse<any>> {
+  public async pollJobSession(jobToken: string): Promise<
+    ApiResponse<{
+      status: string;
+      result: {
+        generated_images?: string[];
+        error?: string;
+      };
+    }>
+  > {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/session/${jobToken}`;
 
-    return this.get<{
+    const response = await this.get<{
       success?: boolean;
       status?: string;
-      result?: any;
+      result?: {
+        generated_images?: string[];
+        error?: string;
+      };
       BadInput?: string;
     }>({
       endpoint,
-    })
-      .then((response) => {
-        return {
-          success: response.success ?? false,
-          data: response.result,
-          errorMessage: response.BadInput,
-        };
-      })
-      .catch((err) => {
-        return {
-          success: false,
-          errorMessage: err.message,
-        };
-      });
+    });
+
+    const success = response.success ?? false;
+    const status = response.status ?? "";
+    const result = response.result ?? {
+      generated_images: [],
+      error: undefined,
+    };
+    const errorMessage = response.BadInput;
+
+    return {
+      success,
+      data: { status, result },
+      errorMessage,
+    };
   }
 
-  public async pollStudioSessionJobs(
-    jobToken: string,
-  ): Promise<ApiResponse<any>> {
+  public async pollStudioSessionJobs(jobToken: string): Promise<
+    ApiResponse<{
+      status: string;
+      result: {
+        generated_images?: string[];
+        error?: string;
+      };
+    }>
+  > {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/image_studio/session_jobs/${jobToken}`;
 
-    return this.get<{
+    const response = await this.get<{
       success?: boolean;
       status?: string;
-      result?: any;
+      result?: {
+        generated_images?: string[];
+        error?: string;
+      };
       BadInput?: string;
     }>({
       endpoint,
-    })
-      .then((response) => {
-        return {
-          success: response.success ?? false,
-          data: response.result,
-          errorMessage: response.BadInput,
-        };
-      })
-      .catch((err) => {
-        return {
-          success: false,
-          errorMessage: err.message,
-        };
-      });
+    });
+
+    const success = response.success ?? false;
+    const status = response.status ?? "";
+    const result = response.result ?? {
+      generated_images: [],
+      error: undefined,
+    };
+    const errorMessage = response.BadInput;
+
+    return {
+      success,
+      data: { status, result },
+      errorMessage,
+    };
   }
 }

@@ -15,6 +15,8 @@ export const uploadImage = async ({
 }) => {
   const mediaUploadApi = new MediaUploadApi();
 
+  console.log("Uploading image:", assetFile);
+
   progressCallback({ status: UploaderStates.uploadingImage });
 
   const imageResponse = await mediaUploadApi.UploadImage({
@@ -24,7 +26,10 @@ export const uploadImage = async ({
     maybe_title: "char_frame_" + title,
   });
 
+  console.log("Image response:", imageResponse);
+
   if (imageResponse == undefined) {
+    console.log("Error: Could not upload image!");
     progressCallback({
       status: UploaderStates.imageCreateError,
       errorMessage: "Could not upload image!",
@@ -33,6 +38,7 @@ export const uploadImage = async ({
   }
 
   if (!imageResponse.success || !imageResponse.data) {
+    console.log("Error:", imageResponse.errorMessage);
     progressCallback({
       status: UploaderStates.imageCreateError,
       errorMessage: imageResponse.errorMessage,
@@ -40,5 +46,9 @@ export const uploadImage = async ({
     return;
   }
 
-  progressCallback({ status: UploaderStates.success, data: imageResponse.data });
+  console.log("Upload successful:", imageResponse.data);
+  progressCallback({
+    status: UploaderStates.success,
+    data: imageResponse.data,
+  });
 };

@@ -657,14 +657,21 @@ class Editor {
 
   public snapShotOfCurrentFrame(shouldDownload: boolean = true) {
     const snapshot = this.renderer?.domElement.toDataURL("image/png");
+    if (!snapshot) {
+      console.error("Error: Snapshot could not be created.");
+      return null;
+    }
 
-    if (snapshot) {
+    const base64Snapshot = snapshot.split(",")[1];
+
+    if (shouldDownload) {
       const link = document.createElement("a");
       link.download = "scene-snapshot.png";
       link.href = snapshot;
       link.click();
     }
-    return snapshot;
+
+    return base64Snapshot;
   }
 
   public async newScene(sceneTitleInput: string) {
