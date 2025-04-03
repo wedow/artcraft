@@ -35,7 +35,7 @@ mod tests {
   use errors::AnyhowResult;
   use testing::test_file_path::test_file_path;
   use crate::credentials::SoraCredentials;
-  use crate::sora_job_status::sora_job_status;
+  use crate::job::sora_job_status::sora_job_status;
 
   #[ignore]
   #[tokio::test]
@@ -58,7 +58,6 @@ mod tests {
     let task_id = "task_01jqwwrkvgeqp8jsf5mqk1jceh";
 
     let result = sora_job_status(task_id, &creds).await?;
-
 
     Ok(())
   }
