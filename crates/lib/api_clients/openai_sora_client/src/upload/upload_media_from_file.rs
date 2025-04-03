@@ -56,7 +56,7 @@ mod tests {
     let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
     let bearer = bearer.trim().to_string();
 
-    let image_path = test_file_path("test_data/image/mochi.jpg")?;
+    let image_path = test_file_path("test_data/image/juno.jpg")?; // media_01jqyqgqpwf40tkcapq5bmaz5d
 
     let creds = SoraCredentials {
       bearer_token: bearer,

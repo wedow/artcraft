@@ -1,8 +1,8 @@
+use crate::credentials::{SoraCredentials, USER_AGENT};
 use errors::AnyhowResult;
 use reqwest::multipart::{Form, Part};
 use reqwest::Client;
 use serde::Deserialize;
-use crate::credentials::SoraCredentials;
 
 const SORA_UPLOAD_MEDIA_URL: &str = "https://sora.com/backend/uploads";
 
@@ -60,8 +60,12 @@ pub (crate) async fn upload_media_http_request(file_bytes: Vec<u8>, filename: St
 
   // Make API request
   let client = Client::new();
-  let request_builder = client.post(SORA_UPLOAD_MEDIA_URL).multipart(form);
-  let request_builder = credentials.add_credential_headers_to_request(request_builder);
+  let request_builder = client.post(SORA_UPLOAD_MEDIA_URL)
+      .multipart(form)
+      .header("User-Agent", USER_AGENT)
+      .header("Cookie", &credentials.cookie)
+      .header("Authorization", credentials.authorization_header_value());
+
   let response = request_builder.send().await?;
 
   // Check response status

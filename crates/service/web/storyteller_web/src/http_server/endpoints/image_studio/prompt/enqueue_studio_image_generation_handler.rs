@@ -68,6 +68,9 @@ const DEBUG_HEADER_NAME: &str = "enable-debug-mode";
 /// This is useful for catching the live logs or intercepting the job.
 const ROUTING_TAG_HEADER_NAME: &str = "routing-tag";
 
+const SORA_BEARER_HEADER_NAME : &str = "sora-bearer";
+const SORA_COOKIE_HEADER_NAME : &str = "sora-cookie";
+const SORA_SENTINEL_HEADER_NAME : &str = "sora-sentinel";
 
 #[derive(Deserialize, ToSchema)]
 pub struct EnqueueStudioImageGenRequest {
@@ -281,14 +284,30 @@ pub async fn enqueue_studio_image_generation_handler(
 
   // ==================== HANDLE SORA CREDENTIALS ==================== //
 
+  let sora_bearer = get_request_header_optional(&http_request, SORA_BEARER_HEADER_NAME);
+  let sora_cookie = get_request_header_optional(&http_request, SORA_COOKIE_HEADER_NAME);
+  let sora_sentinel = get_request_header_optional(&http_request, SORA_SENTINEL_HEADER_NAME);
 
-  let sora_credentials = match SoraCredentials::from_env() {
-    Ok(creds) => creds,
-    Err(err) => {
-      error!("Failed to load Sora credentials from environment: {:?}", err);
-      return Err(EnqueueImageGenRequestError::ServerError);
+  let sora_credentials;
+
+  match (sora_bearer, sora_cookie, sora_sentinel) {
+    (Some(bearer), Some(cookie), Some(sentinel)) => {
+      sora_credentials = SoraCredentials {
+        bearer_token: bearer,
+        cookie,
+        sentinel: Some(sentinel),
+      };
     }
-  };
+    _ => {
+      sora_credentials = match SoraCredentials::from_env() {
+        Ok(creds) => creds,
+        Err(err) => {
+          error!("Failed to load Sora credentials from environment: {:?}", err);
+          return Err(EnqueueImageGenRequestError::ServerError);
+        }
+      };
+    }
+  }
 
   // ==================== HANDLE SORA UPLOAD ==================== //
 
