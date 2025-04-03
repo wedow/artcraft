@@ -11,7 +11,6 @@ use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, info, warn};
 use once_cell::sync::Lazy;
-use stripe::CreatePaymentLinkShippingAddressCollectionAllowedCountries::Mf;
 use utoipa::ToSchema;
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
@@ -46,32 +45,29 @@ pub struct UploadSnapshotMediaFileForm {
   #[schema(value_type = String, format = Binary)]
   uuid_idempotency_token: Text<String>,
 
-  /// The uploaded screenshot
+  /// The uploaded "screenshot" / "snapshot" of the engine scene
   #[multipart(limit = "512 MiB")]
   #[schema(value_type = Vec<u8>, format = Binary)]
   snapshot: TempFile,
 
-  /// Optional: Title (name) of the scene
+  /// Optional: If an engine scene was used to create this snapshot, provide it here to create a link
   #[multipart(limit = "2 KiB")]
-  #[schema(value_type = Option<String>, format = Binary)]
-  maybe_title: Option<Text<String>>,
+  #[schema(value_type = Option<MediaFileToken>, format = Binary)]
+  scene_media_token: Option<Text<MediaFileToken>>,
 
   /// Optional: Visibility of the scene
   #[multipart(limit = "2 KiB")]
   #[schema(value_type = Option<Visibility>, format = Binary)]
   maybe_visibility: Option<Text<Visibility>>,
-
-  /// Optional: If an engine scene was used to create this snapshot, provide it here to create a link
-  #[multipart(limit = "2 KiB")]
-  #[schema(value_type = Option<MediaFileToken>, format = Binary)]
-  maybe_scene_source_media_token: Option<Text<MediaFileToken>>,
 }
 
 // Unlike the "upload" endpoints, which are pure inserts, these endpoints are *upserts*.
 #[derive(Serialize, ToSchema)]
 pub struct UploadSnapshotMediaFileSuccessResponse {
   pub success: bool,
-  pub media_file_token: MediaFileToken,
+
+  /// The media token of the "screenshot" / "snapshot" we took.
+  pub snapshot_media_token: MediaFileToken,
 }
 
 static ALLOWED_MIME_TYPES : Lazy<HashSet<&'static str>> = Lazy::new(|| {
@@ -143,17 +139,6 @@ pub async fn upload_snapshot_media_file_handler(
     }
   }
 
-  // ==================== RATE LIMIT ==================== //
-
-  let rate_limiter = match maybe_user_session {
-    None => &server_state.redis_rate_limiters.file_upload_logged_out,
-    Some(ref _session) => &server_state.redis_rate_limiters.file_upload_logged_in,
-  };
-
-  if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
-    return Err(MediaFileUploadError::RateLimited);
-  }
-
   // ==================== HANDLE IDEMPOTENCY ==================== //
 
   // TODO(bt, 2024-02-26): This should be a transaction.
@@ -171,8 +156,6 @@ pub async fn upload_snapshot_media_file_handler(
       })?;
 
   // ==================== UPLOAD METADATA ==================== //
-
-  let maybe_title = form.maybe_title.map(|title| title.to_string());
 
   let creator_set_visibility = form.maybe_visibility
       .map(|visibility| visibility.0)
@@ -243,7 +226,7 @@ pub async fn upload_snapshot_media_file_handler(
 
   // ==================== UPLOAD AND SAVE ==================== //
 
-  const PREFIX : Option<&str> = Some("image_");
+  const PREFIX : Option<&str> = Some("snapshot_");
 
   let public_upload_path = MediaFileBucketPath::generate_new(PREFIX, Some(&extension));
 
@@ -259,7 +242,6 @@ pub async fn upload_snapshot_media_file_handler(
         MediaFileUploadError::ServerError
       })?;
 
-
   let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
     maybe_media_class: Some(MediaFileClass::Image),
     media_file_type: MediaFileType::Image,
@@ -274,7 +256,7 @@ pub async fn upload_snapshot_media_file_handler(
     file_size_bytes: file_size_bytes as u64,
     maybe_duration_millis: None,
     sha256_checksum: &hash,
-    maybe_title: maybe_title.as_deref(),
+    maybe_title: Some("Snapshot"),
     maybe_scene_source_media_file_token: None,
     is_intermediate_system_file: true,
     public_bucket_directory_hash: public_upload_path.get_object_hash(),
@@ -292,6 +274,6 @@ pub async fn upload_snapshot_media_file_handler(
 
   Ok(Json(UploadSnapshotMediaFileSuccessResponse {
     success: true,
-    media_file_token: token,
+    snapshot_media_token: token,
   }))
 }

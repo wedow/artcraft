@@ -91,6 +91,10 @@ pub enum PublicInferenceJobType {
   /// Re-render a video is a video style transfer algorithm. We developed code
   /// around it, but chose to develop AnimateDiff / ComfyUI support instead.
   RerenderAVideo,
+
+  /// Sora GPT 4o image gen
+  #[serde(rename = "image_gen_api")]
+  ImageGenApi,
 }
 
 /// NB: Legacy API for older code.
@@ -119,6 +123,7 @@ impl PublicInferenceJobType {
       InferenceJobType::Unknown => Self::Unknown,
       InferenceJobType::BevyToWorkflow => Self::BevyToWorkflow,
       InferenceJobType::RerenderAVideo => Self::RerenderAVideo,
+      InferenceJobType::ImageGenApi => Self::ImageGenApi,
     }
   }
   
@@ -140,6 +145,7 @@ impl PublicInferenceJobType {
       Self::SeedVc => InferenceJobType::SeedVc,
       Self::SoVitsSvc => InferenceJobType::SoVitsSvc,
       Self::StableDiffusion => InferenceJobType::StableDiffusion,
+      Self::ImageGenApi => InferenceJobType::ImageGenApi,
       Self::StyleTTS2 => InferenceJobType::StyleTTS2,
       Self::Tacotron2 => InferenceJobType::Tacotron2,
       Self::Unknown => InferenceJobType::Unknown,

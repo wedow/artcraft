@@ -1,4 +1,5 @@
 
+#[derive(Debug, Clone)]
 pub struct SoraImageGenResponse {
   pub task_id: String,
 }

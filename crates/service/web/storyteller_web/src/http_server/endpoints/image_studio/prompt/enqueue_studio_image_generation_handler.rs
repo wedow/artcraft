@@ -11,10 +11,9 @@ use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::bucket_client::BucketClient;
-use log::error;
+use log::{debug, error};
 use log::warn;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use openai_sora_client::upload::upload_media_http_request::{sora_media_upload, SoraMediaUploadRequest};
 use openai_sora_client::credentials::SoraCredentials;
 use serde::Deserialize;
 use serde::Serialize;
@@ -25,6 +24,7 @@ use web::Data;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::by_table::generic_inference_jobs::inference_job_type::InferenceJobType;
 use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
+use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::{
@@ -32,12 +32,15 @@ use mysql_queries::payloads::generic_inference_args::generic_inference_args::{
   InferenceCategoryAbbreviated,
   PolymorphicInferenceArgs,
 };
-use mysql_queries::payloads::generic_inference_args::inner_payloads::image_generation_payload::SoraImageGenArgs;
+use mysql_queries::payloads::generic_inference_args::inner_payloads::sora_image_gen_args::SoraImageGenArgs;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{
   insert_generic_inference_job,
   InsertGenericInferenceArgs,
 };
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
+use openai_sora_client::image_gen::common::{ImageSize, NumImages};
+use openai_sora_client::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
+use openai_sora_client::upload::upload_media_from_file::{sora_media_upload_from_file, SoraMediaUploadRequest};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
@@ -69,9 +72,16 @@ const ROUTING_TAG_HEADER_NAME: &str = "routing-tag";
 #[derive(Deserialize, ToSchema)]
 pub struct EnqueueStudioImageGenRequest {
   pub uuid_idempotency_token: String,
-  pub scene_media_token: MediaFileToken,
+
+  /// Image media file; the engine or canvas snapshot (screenshot).
+  pub snapshot_media_token: MediaFileToken,
+
+  /// The user's image generation prompt.
   pub prompt: String,
+
+  /// Additional images to include (optional). Up to nine images.
   pub maybe_additional_images: Option<Vec<MediaFileToken>>,
+
   pub maybe_number_of_samples: Option<u32>,
 }
 
@@ -141,12 +151,7 @@ pub async fn enqueue_studio_image_generation_handler(
   server_state: Data<Arc<ServerState>>
 ) -> Result<HttpResponse, EnqueueImageGenRequestError> {
 
-
   validate_request(&request)?;
-
-
-  let mut maybe_user_token: Option<UserToken> = None;
-  let visbility = enums::common::visibility::Visibility::Public;
 
   let mut mysql_connection = server_state.mysql_pool.acquire().await.map_err(|err| {
     warn!("MySql pool error: {:?}", err);
@@ -162,6 +167,7 @@ pub async fn enqueue_studio_image_generation_handler(
       EnqueueImageGenRequestError::ServerError
     })?;
 
+  let mut maybe_user_token: Option<UserToken> = None;
 
   if let Some(user_session) = maybe_user_session.as_ref() {
     maybe_user_token = Some(UserToken::new_from_str(&user_session.user_token));
@@ -225,14 +231,87 @@ pub async fn enqueue_studio_image_generation_handler(
       EnqueueImageGenRequestError::BadInput("invalid idempotency token".to_string())
     })?;
 
-  // ==================== INFERENCE ARGS ==================== //
+  // ==================== DOWNLOAD FILES AND UPLOAD TO SORA ==================== //
 
-
+  // TODO: Maybe this moves to a job.
 
   let work_temp_dir = server_state.temp_dir_creator.new_tempdir("image_studio").unwrap();
   let public_bucket_client = server_state.public_bucket_client.clone();
   let private_bucket_client = server_state.private_bucket_client.clone();
 
+  let scene_media_token = request.snapshot_media_token.clone();
+  let scene_media_name = scene_media_token.to_string();
+  let scene_media_path = work_temp_dir.path().join(scene_media_name.clone());
+
+  let scene_media_path = do_download_media_file(
+    &scene_media_name,
+    &scene_media_token,
+    &scene_media_path,
+    &public_bucket_client,
+    &server_state.mysql_pool
+  ).await.map_err(|err| {
+    error!("Failed to download scene media file: {:?}", err);
+    EnqueueImageGenRequestError::ServerError
+  })?;
+
+  let mut files_to_upload = Vec::with_capacity(1 + request.maybe_additional_images
+      .as_ref().map(|v| v.len()).unwrap_or(0));
+
+  files_to_upload.push(scene_media_path.clone());
+
+  let additional_images = request.maybe_additional_images.clone().unwrap_or_else(|| vec![]);
+
+  for media_file_token in &additional_images {
+    let media_file_name = media_file_token.to_string();
+    let media_file_path = work_temp_dir.path().join(media_file_name.clone());
+
+    let media_file_path = do_download_media_file(
+      &media_file_name,
+      &media_file_token,
+      &media_file_path,
+      &public_bucket_client,
+      &server_state.mysql_pool
+    ).await.map_err(|err| {
+      error!("Failed to download additional media file: {:?}", err);
+      EnqueueImageGenRequestError::ServerError
+    })?;
+
+    files_to_upload.push(media_file_path.clone());
+  }
+
+  // ==================== HANDLE SORA CREDENTIALS ==================== //
+
+
+  let sora_credentials = match SoraCredentials::from_env() {
+    Ok(creds) => creds,
+    Err(err) => {
+      error!("Failed to load Sora credentials from environment: {:?}", err);
+      return Err(EnqueueImageGenRequestError::ServerError);
+    }
+  };
+
+  // ==================== HANDLE SORA UPLOAD ==================== //
+
+  let mut sora_media_tokens = Vec::with_capacity(files_to_upload.len());
+
+  for file_path in files_to_upload {
+    let scene_media_upload_request = SoraMediaUploadRequest {
+      file_path: scene_media_path.to_string_lossy().to_string(),
+      credentials: &sora_credentials,
+    };
+
+    let sora_upload_response = sora_media_upload_from_file(file_path, &sora_credentials)
+        .await
+        .map_err(|err| {
+          error!("Failed to upload scene media to Sora: {:?}", err);
+          EnqueueImageGenRequestError::ServerError
+        })?;
+
+    debug!("Uploaded media to Sora : {:?}", sora_upload_response);
+    sora_media_tokens.push(sora_upload_response.id);
+  }
+
+  // ==================== HANDLE SORA PROMPT ==================== //
 
   let number_of_samples = match request.maybe_number_of_samples {
     Some(val) => if val > MAXIMUM_IMAGE_COUNT {
@@ -245,90 +324,30 @@ pub async fn enqueue_studio_image_generation_handler(
     None => 1,
   };
 
-
-  let additional_images = request.maybe_additional_images.clone().unwrap_or_else(|| vec![]);
   let prompt = request.prompt.clone();
 
-
-  let sora_credentials = match SoraCredentials::from_env() {
-    Ok(creds) => creds,
-    Err(err) => {
-      error!("Failed to load Sora credentials from environment: {:?}", err);
-      return Err(EnqueueImageGenRequestError::ServerError);
-    }
-  };
-
-  let scene_media_token = request.scene_media_token.clone();
-  let scene_media_name = scene_media_token.to_string();
-  let scene_media_path = work_temp_dir.path().join(scene_media_name.clone());
-  let scene_media_path = do_download_media_file(
-    &scene_media_name,
-    &scene_media_token,
-    &scene_media_path,
-    &public_bucket_client,
-    &server_state.mysql_pool
-  ).await.map_err(|err| {
-    error!("Failed to download scene media file: {:?}", err);
-    EnqueueImageGenRequestError::ServerError
-  })?;
-
-  let scene_media_upload_request = SoraMediaUploadRequest {
-    file_path: scene_media_path.to_string_lossy().to_string(),
+  let response = sora_image_gen_remix(SoraImageGenRemixRequest {
+    prompt: prompt.clone(),
+    num_images: NumImages::One,
+    image_size: ImageSize::Square,
+    sora_media_tokens: sora_media_tokens.clone(),
     credentials: &sora_credentials,
-  };
-
-  let scene_media_upload_response = sora_media_upload(scene_media_upload_request).await.map_err(|err| {
-    error!("Failed to upload scene media to Sora: {:?}", err);
-    EnqueueImageGenRequestError::ServerError
-  })?;
-
-
-  let sora_scene_media_id = scene_media_upload_response.id;
-  log::info!("Uploaded scene media to Sora with ID: {}", sora_scene_media_id);
-
-  let mut sora_additional_media_ids: Vec<String> = vec![];
-
-  for media_file_token in &additional_images {
-    let media_file_name = media_file_token.to_string();
-    let media_file_path = work_temp_dir.path().join(media_file_name.clone());
-    let media_file_path = do_download_media_file(
-      &media_file_name,
-      &media_file_token,
-      &media_file_path,
-      &public_bucket_client,
-      &server_state.mysql_pool
-    ).await.map_err(|err| {
-      error!("Failed to download additional media file: {:?}", err);
+  }).await
+    .map_err(|err| {
+      error!("Failed to call Sora image generation: {:?}", err);
       EnqueueImageGenRequestError::ServerError
     })?;
 
-    let sora_media_upload_request = SoraMediaUploadRequest {
-      file_path: media_file_path.to_string_lossy().to_string(),
-      credentials: &sora_credentials,
-    };
-
-    let sora_media_upload_response = sora_media_upload(sora_media_upload_request).await.map_err(|err| {
-      error!("Failed to upload additional media to Sora: {:?}", err);
-      EnqueueImageGenRequestError::ServerError
-    })?;
-
-    let sora_media_id = sora_media_upload_response.id;
-    log::info!("Uploaded additional media to Sora with ID: {}", sora_media_id);
-    sora_additional_media_ids.push(sora_media_id);
-  }
+  debug!("Sora image gen response: {:?}", response);
 
   // Store the actual inference args that will go to the database
   let inference_args = SoraImageGenArgs {
     prompt: Some(prompt),
-    scene_media_token: Some(request.scene_media_token.clone()),
+    scene_snapshot_media_token: Some(request.snapshot_media_token.clone()),
     maybe_additional_media_file_tokens: Some(additional_images),
     maybe_number_of_samples: Some(number_of_samples),
-    maybe_sora_scene_media_token: Some(sora_scene_media_id.clone()),
-    maybe_sora_media_upload_tokens: Some(sora_additional_media_ids),
+    maybe_sora_media_upload_tokens: Some(sora_media_tokens),
   };
-
-  // The Sora API IDs will be used later by the worker from environment variables
-  log::info!("Sora scene media ID: {}", sora_scene_media_id);
 
   // create the inference args here
   let maybe_avt_token = server_state.avt_cookie_manager.get_avt_token_from_request(&http_request);
@@ -336,10 +355,10 @@ pub async fn enqueue_studio_image_generation_handler(
   // create the job record here!
   let query_result = insert_generic_inference_job(InsertGenericInferenceArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,
-    job_type: InferenceJobType::StableDiffusion,
+    job_type: InferenceJobType::ImageGenApi,
     maybe_product_category: None, // This is not a product anymore
     inference_category: InferenceCategory::ImageGeneration,
-    maybe_model_type: Some(InferenceModelType::StableDiffusion), // NB: Model is static during inference
+    maybe_model_type: Some(InferenceModelType::ImageGenApi), // NB: Model is static during inference
     maybe_model_token: None, // NB: Model is static during inference
     maybe_input_source_token: None,
     maybe_input_source_token_type: None,
@@ -354,7 +373,7 @@ pub async fn enqueue_studio_image_generation_handler(
     maybe_creator_user_token: maybe_user_token.as_ref(),
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
-    creator_set_visibility: visbility,
+    creator_set_visibility: Visibility::Public,
     priority_level,
     requires_keepalive: false, //reverse ...  TODO fix this. we set it base on account is premium or not ...
     is_debug_request,
@@ -378,8 +397,7 @@ pub async fn enqueue_studio_image_generation_handler(
     inference_job_token: job_token,
   };
 
-  let body = serde_json
-  ::to_string(&response)
+  let body = serde_json::to_string(&response)
     .map_err(|_e| EnqueueImageGenRequestError::ServerError)?;
 
   // Error handling 101 rust result type returned like so.
@@ -389,9 +407,6 @@ pub async fn enqueue_studio_image_generation_handler(
 fn validate_request(
   request: &Json<EnqueueStudioImageGenRequest>,
 ) -> Result<(), EnqueueImageGenRequestError> {
-
-
-
   Ok(())
 }
 
@@ -417,16 +432,14 @@ impl From<anyhow::Error> for DownloadMediaFileError {
   }
 }
 
-pub async fn do_download_media_file(
+async fn do_download_media_file(
   media_file_name: &str,
   media_file_token: &MediaFileToken,
   download_directory: &Path,
   bucket_client: &BucketClient,
   mysql_pool: &MySqlPool,
 ) -> Result<(PathBuf), DownloadMediaFileError> {
-
   let final_download_path = download_directory.join(format!("{}", media_file_name));
-
 
   if final_download_path.exists() {
     log::debug!("Deleting existing file at {:?}", final_download_path.display().to_string());

@@ -40,6 +40,10 @@ pub enum InferenceJobType {
   #[serde(rename = "studio_gen2")]
   StudioGen2,
 
+  /// Sora GPT 4o image gen
+  #[serde(rename = "image_gen_api")]
+  ImageGenApi,
+
   /// A job that turns "FBX" game engine files into "GLTF" files (Bevy-compatible).
   #[serde(rename = "convert_fbx_gltf")]
   ConvertFbxToGltf,
@@ -108,6 +112,7 @@ impl InferenceJobType {
       Self::GptSovits => "gpt_sovits",
       Self::ComfyUi => "comfy_ui",
       Self::StudioGen2 => "studio_gen2",
+      Self::ImageGenApi => "image_gen_api",
       Self::ConvertFbxToGltf => "convert_fbx_gltf",
       Self::MocapNet => "mocap_net",
       Self::RvcV2 => "rvc_v2",
@@ -132,6 +137,7 @@ impl InferenceJobType {
       "gpt_sovits" => Ok(Self::GptSovits),
       "comfy_ui" => Ok(Self::ComfyUi),
       "studio_gen2" => Ok(Self::StudioGen2),
+      "image_gen_api" => Ok(Self::ImageGenApi),
       "convert_fbx_gltf" => Ok(Self::ConvertFbxToGltf),
       "mocap_net" => Ok(Self::MocapNet),
       "rvc_v2" => Ok(Self::RvcV2),
@@ -159,6 +165,7 @@ impl InferenceJobType {
       Self::GptSovits,
       Self::ComfyUi,
       Self::StudioGen2,
+      Self::ImageGenApi,
       Self::ConvertFbxToGltf,
       Self::MocapNet,
       Self::RvcV2,
@@ -197,6 +204,7 @@ mod tests {
       assert_serialization(InferenceJobType::GptSovits, "gpt_sovits");
       assert_serialization(InferenceJobType::ComfyUi, "comfy_ui");
       assert_serialization(InferenceJobType::StudioGen2, "studio_gen2");
+      assert_serialization(InferenceJobType::ImageGenApi, "image_gen_api");
       assert_serialization(InferenceJobType::ConvertFbxToGltf, "convert_fbx_gltf");
       assert_serialization(InferenceJobType::MocapNet, "mocap_net");
       assert_serialization(InferenceJobType::RvcV2, "rvc_v2");
@@ -220,6 +228,7 @@ mod tests {
       assert_eq!(InferenceJobType::GptSovits.to_str(), "gpt_sovits");
       assert_eq!(InferenceJobType::ComfyUi.to_str(), "comfy_ui");
       assert_eq!(InferenceJobType::StudioGen2.to_str(), "studio_gen2");
+      assert_eq!(InferenceJobType::ImageGenApi.to_str(), "image_gen_api");
       assert_eq!(InferenceJobType::ConvertFbxToGltf.to_str(), "convert_fbx_gltf");
       assert_eq!(InferenceJobType::MocapNet.to_str(), "mocap_net");
       assert_eq!(InferenceJobType::RvcV2.to_str(), "rvc_v2");
@@ -243,6 +252,7 @@ mod tests {
       assert_eq!(InferenceJobType::from_str("gpt_sovits").unwrap(), InferenceJobType::GptSovits);
       assert_eq!(InferenceJobType::from_str("comfy_ui").unwrap(), InferenceJobType::ComfyUi);
       assert_eq!(InferenceJobType::from_str("studio_gen2").unwrap(), InferenceJobType::StudioGen2);
+      assert_eq!(InferenceJobType::from_str("image_gen_api").unwrap(), InferenceJobType::ImageGenApi);
       assert_eq!(InferenceJobType::from_str("convert_fbx_gltf").unwrap(), InferenceJobType::ConvertFbxToGltf);
       assert_eq!(InferenceJobType::from_str("mocap_net").unwrap(), InferenceJobType::MocapNet);
       assert_eq!(InferenceJobType::from_str("rvc_v2").unwrap(), InferenceJobType::RvcV2);
@@ -261,7 +271,7 @@ mod tests {
     fn all_variants() {
       // Static check
       let mut variants = InferenceJobType::all_variants();
-      assert_eq!(variants.len(), 16);
+      assert_eq!(variants.len(), 17);
       assert_eq!(variants.pop_first(), Some(InferenceJobType::VideoRender));
       assert_eq!(variants.pop_first(), Some(InferenceJobType::LivePortrait));
       assert_eq!(variants.pop_first(), Some(InferenceJobType::FaceFusion));
@@ -269,6 +279,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(InferenceJobType::GptSovits));
       assert_eq!(variants.pop_first(), Some(InferenceJobType::ComfyUi));
       assert_eq!(variants.pop_first(), Some(InferenceJobType::StudioGen2));
+      assert_eq!(variants.pop_first(), Some(InferenceJobType::ImageGenApi));
       assert_eq!(variants.pop_first(), Some(InferenceJobType::ConvertFbxToGltf));
       assert_eq!(variants.pop_first(), Some(InferenceJobType::MocapNet));
       assert_eq!(variants.pop_first(), Some(InferenceJobType::RvcV2));

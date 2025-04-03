@@ -1,7 +1,6 @@
 use crate::payloads::generic_inference_args::inner_payloads::f5_tts_payload::F5TTSPayload;
 use crate::payloads::generic_inference_args::inner_payloads::face_fusion_payload::FaceFusionPayload;
 use crate::payloads::generic_inference_args::inner_payloads::gptsovits_payload::GptSovitsPayload;
-use crate::payloads::generic_inference_args::inner_payloads::image_generation_payload::{SoraImageGenArgs, StableDiffusionArgs};
 use crate::payloads::generic_inference_args::inner_payloads::lipsync_payload::LipsyncArgs;
 use crate::payloads::generic_inference_args::inner_payloads::live_portrait_payload::LivePortraitPayload;
 use crate::payloads::generic_inference_args::inner_payloads::mocap_payload::MocapArgs;
@@ -12,6 +11,8 @@ use crate::payloads::generic_inference_args::inner_payloads::tts_payload::TTSArg
 use crate::payloads::generic_inference_args::inner_payloads::videofilter_payload::RerenderArgs;
 use crate::payloads::generic_inference_args::inner_payloads::workflow_payload::WorkflowArgs;
 use errors::AnyhowResult;
+use crate::payloads::generic_inference_args::inner_payloads::image_generation_payload::StableDiffusionArgs;
+use crate::payloads::generic_inference_args::inner_payloads::sora_image_gen_args::SoraImageGenArgs;
 
 /// Used to encode extra state for the `generic_inference_jobs` table.
 /// This should act somewhat like a serialized protobuf stored inside a record.

@@ -33,6 +33,10 @@ pub enum InferenceModelType {
   #[serde(rename = "seed_vc")]
   SeedVc,
 
+  /// NB: This is for Sora GPT 4o image gen
+  #[serde(rename = "image_gen_api")]
+  ImageGenApi,
+
   #[serde(rename = "tacotron2")]
   Tacotron2,
   #[serde(rename = "vits")]
@@ -70,6 +74,7 @@ impl InferenceModelType {
       Self::VallEX => "vall_e_x",
       Self::RerenderAVideo => "rerender_a_video",
       Self::StableDiffusion => "stable_diffusion",
+      Self::ImageGenApi => "image_gen_api",
       Self::SeedVc => "seed_vc",
       Self::MocapNet => "mocap_net",
       Self::StyleTTS2 => "styletts2",
@@ -90,6 +95,7 @@ impl InferenceModelType {
       "vall_e_x" => Ok(Self::VallEX),
       "rerender_a_video" => Ok(Self::RerenderAVideo),
       "stable_diffusion" => Ok(Self::StableDiffusion),
+      "image_gen_api" => Ok(Self::ImageGenApi),
       "mocap_net" => Ok(Self::MocapNet),
       "styletts2" => Ok(Self::StyleTTS2),
       "comfy_ui" => Ok(Self::ComfyUi),
@@ -113,6 +119,7 @@ impl InferenceModelType {
       Self::VallEX,
       Self::RerenderAVideo,
       Self::StableDiffusion,
+      Self::ImageGenApi,
       Self::MocapNet,
       Self::StyleTTS2,
       Self::ConvertFbxToGltf,
@@ -140,6 +147,7 @@ mod tests {
       assert_serialization(InferenceModelType::VallEX, "vall_e_x");
       assert_serialization(InferenceModelType::RerenderAVideo, "rerender_a_video");
       assert_serialization(InferenceModelType::StableDiffusion, "stable_diffusion");
+      assert_serialization(InferenceModelType::ImageGenApi, "image_gen_api");
       assert_serialization(InferenceModelType::MocapNet, "mocap_net");
       assert_serialization(InferenceModelType::ComfyUi, "comfy_ui");
       assert_serialization(InferenceModelType::StyleTTS2, "styletts2");
@@ -159,6 +167,7 @@ mod tests {
       assert_eq!(InferenceModelType::VallEX.to_str(), "vall_e_x");
       assert_eq!(InferenceModelType::RerenderAVideo.to_str(), "rerender_a_video");
       assert_eq!(InferenceModelType::StableDiffusion.to_str(), "stable_diffusion");
+      assert_eq!(InferenceModelType::ImageGenApi.to_str(), "image_gen_api");
       assert_eq!(InferenceModelType::MocapNet.to_str(), "mocap_net");
       assert_eq!(InferenceModelType::StyleTTS2.to_str(), "styletts2");
       assert_eq!(InferenceModelType::ConvertFbxToGltf.to_str(), "convert_fbx_gltf");
@@ -176,6 +185,7 @@ mod tests {
       assert_eq!(InferenceModelType::from_str("vall_e_x").unwrap(), InferenceModelType::VallEX);
       assert_eq!(InferenceModelType::from_str("rerender_a_video").unwrap(), InferenceModelType::RerenderAVideo);
       assert_eq!(InferenceModelType::from_str("stable_diffusion").unwrap(), InferenceModelType::StableDiffusion);
+      assert_eq!(InferenceModelType::from_str("image_gen_api").unwrap(), InferenceModelType::ImageGenApi);
       assert_eq!(InferenceModelType::from_str("mocap_net").unwrap(), InferenceModelType::MocapNet);
       assert_eq!(InferenceModelType::from_str("styletts2").unwrap(), InferenceModelType::StyleTTS2);
       assert_eq!(InferenceModelType::from_str("comfy_ui").unwrap(), InferenceModelType::ComfyUi);
@@ -187,17 +197,18 @@ mod tests {
     fn all_variants() {
       // Static check
       let mut variants = InferenceModelType::all_variants();
-      assert_eq!(variants.len(), 13);
+      assert_eq!(variants.len(), 15);
       assert_eq!(variants.pop_first(), Some(InferenceModelType::ComfyUi));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::RvcV2));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::SadTalker));
-      assert_eq!(variants.pop_first(), Some(InferenceModelType::SeedVc));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::SoVitsSvc));
+      assert_eq!(variants.pop_first(), Some(InferenceModelType::SeedVc));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::Tacotron2));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::Vits));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::VallEX));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::RerenderAVideo));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::StableDiffusion));
+      assert_eq!(variants.pop_first(), Some(InferenceModelType::ImageGenApi));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::MocapNet));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::StyleTTS2));
       assert_eq!(variants.pop_first(), Some(InferenceModelType::ConvertFbxToGltf));
