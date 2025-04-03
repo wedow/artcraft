@@ -123,6 +123,7 @@ use crate::http_server::endpoints::w2l::get_w2l_template_use_count::get_w2l_temp
 use crate::http_server::endpoints::w2l::get_w2l_upload_template_job_status::get_w2l_upload_template_job_status_handler;
 use crate::http_server::endpoints::w2l::list_w2l_templates::list_w2l_templates_handler;
 use crate::http_server::endpoints::w2l::set_w2l_template_mod_approval::set_w2l_template_mod_approval_handler;
+use crate::http_server::routes::add_image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::add_studio_gen2_routes::add_studio_gen2_routes;
 use crate::http_server::routes::beta_key_routes::add_beta_key_routes;
 use crate::http_server::routes::job_routes::add_job_routes;
@@ -171,6 +172,7 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
   app = add_model_download_routes(app);
   app = add_workflow_routes(app);
   app = add_studio_gen2_routes(app);
+  app = add_image_studio_routes(app);
   app = add_job_routes(app);
   app = add_engine_routes(app); /* /v1/engine/... */
 

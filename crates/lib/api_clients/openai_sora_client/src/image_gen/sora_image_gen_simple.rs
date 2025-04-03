@@ -54,7 +54,7 @@ mod tests {
     let creds = SoraCredentials {
       bearer_token: bearer,
       cookie,
-      sentinel,
+      sentinel: Some(sentinel),
     };
 
     let response = sora_image_gen_simple(SoraImageGenSimpleRequest {

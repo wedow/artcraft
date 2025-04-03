@@ -1,3 +1,4 @@
+use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 
 /// Video sources can be one of several:
@@ -52,7 +53,7 @@ pub struct StableDiffusionArgs {
     #[serde(rename = "se")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maybe_seed: Option<i64>,
-  
+
     #[serde(rename = "mu")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maybe_upload_path: Option<String>,
@@ -60,7 +61,7 @@ pub struct StableDiffusionArgs {
     #[serde(rename = "cf")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maybe_cfg_scale: Option<u32>,
-    
+
     #[serde(rename = "lu")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maybe_lora_upload_path: Option<String>,
@@ -87,6 +88,35 @@ pub struct StableDiffusionArgs {
     #[serde(rename = "ve")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maybe_version: Option<u32>
+}
+
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SoraImageGenArgs {
+    #[serde(rename = "p")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt: Option<String>,
+
+    #[serde(rename = "sm")]
+    pub scene_media_token: Option<MediaFileToken>,
+
+    #[serde(rename = "mf")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maybe_additional_media_file_tokens: Option<Vec<MediaFileToken>>,
+
+    #[serde(rename = "sa")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maybe_number_of_samples: Option<u32>,
+
+
+    #[serde(rename = "su")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maybe_sora_media_upload_tokens: Option<Vec<String>>,
+
+
+    #[serde(rename = "ss")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maybe_sora_scene_media_token: Option<String>,
 }
 
 

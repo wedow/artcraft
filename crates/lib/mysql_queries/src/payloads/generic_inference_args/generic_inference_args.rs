@@ -1,7 +1,7 @@
 use crate::payloads::generic_inference_args::inner_payloads::f5_tts_payload::F5TTSPayload;
 use crate::payloads::generic_inference_args::inner_payloads::face_fusion_payload::FaceFusionPayload;
 use crate::payloads::generic_inference_args::inner_payloads::gptsovits_payload::GptSovitsPayload;
-use crate::payloads::generic_inference_args::inner_payloads::image_generation_payload::StableDiffusionArgs;
+use crate::payloads::generic_inference_args::inner_payloads::image_generation_payload::{SoraImageGenArgs, StableDiffusionArgs};
 use crate::payloads::generic_inference_args::inner_payloads::lipsync_payload::LipsyncArgs;
 use crate::payloads::generic_inference_args::inner_payloads::live_portrait_payload::LivePortraitPayload;
 use crate::payloads::generic_inference_args::inner_payloads::mocap_payload::MocapArgs;
@@ -111,7 +111,7 @@ pub enum PolymorphicInferenceArgs {
   Tts(TTSArgs),
     // No arguments yet.
     // It might be best to just not include this when not used.
-    
+
   /// Voice conversion. (Short name to save space when serializing.)
   Vc {
     /// Argument for so-vits-svc
@@ -142,6 +142,10 @@ pub enum PolymorphicInferenceArgs {
 
   /// Image generation. (Short name to save space when serializing.)
   Ig(StableDiffusionArgs),
+
+
+  /// Sora Image Generation. (Short name to save space when serializing.)
+  Sg(SoraImageGenArgs),
 
   /// Mocap (Short name to save space when serializing.)
   Mc(MocapArgs),

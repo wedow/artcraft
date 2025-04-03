@@ -52,7 +52,7 @@ mod tests {
     let creds = SoraCredentials {
       bearer_token: bearer,
       cookie,
-      sentinel,
+      sentinel: Some(sentinel),
     };
 
     let task_id = "task_01jqwwrkvgeqp8jsf5mqk1jceh";

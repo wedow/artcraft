@@ -106,12 +106,15 @@ pub (crate) async fn call_sora_image_gen(sora_request: RawSoraImageGenRequest, c
 
   //let request = credentials.add_credential_headers_to_request(request);
 
-  let request= client.post(URL)
-      .header("OpenAI-Sentinel-Token", &credentials.sentinel)
+  let mut request = client.post(URL)
       .header("User-Agent", USER_AGENT)
       .header("Cookie", &credentials.cookie)
       .header("Authorization", credentials.authorization_header_value())
       .header("Content-Type", "application/json");
+
+  if let Some(sentinel) = &credentials.sentinel {
+    request = request.header("OpenAI-Sentinel-Token", sentinel);
+  }
 
   let request = request.json(&sora_request).build()?;
 

@@ -1,0 +1,489 @@
+#![forbid(unused_mut)]
+
+use std::fmt::Debug;
+use std::fmt::{Display, Formatter};
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
+use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use cloud_storage::bucket_client::BucketClient;
+use log::error;
+use log::warn;
+use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
+use openai_sora_client::upload::sora_media_upload::{sora_media_upload, SoraMediaUploadRequest};
+use openai_sora_client::credentials::SoraCredentials;
+use serde::Deserialize;
+use serde::Serialize;
+use sqlx::MySqlPool;
+use utoipa::ToSchema;
+use web::Data;
+
+use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
+use enums::by_table::generic_inference_jobs::inference_job_type::InferenceJobType;
+use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
+use http_server_common::request::get_request_header_optional::get_request_header_optional;
+use http_server_common::request::get_request_ip::get_request_ip;
+use mysql_queries::payloads::generic_inference_args::generic_inference_args::{
+  GenericInferenceArgs,
+  InferenceCategoryAbbreviated,
+  PolymorphicInferenceArgs,
+};
+use mysql_queries::payloads::generic_inference_args::inner_payloads::image_generation_payload::SoraImageGenArgs;
+use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{
+  insert_generic_inference_job,
+  InsertGenericInferenceArgs,
+};
+use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
+use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::model_weights::ModelWeightToken;
+use tokens::tokens::users::UserToken;
+
+use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
+use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
+use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
+use crate::state::server_state::ServerState;
+use crate::util::allowed_studio_access::allowed_studio_access;
+
+/// This is the number of images (batch size) to generate for each request.
+/// We should allow all users to have multiple images generated at once as this
+/// is what other providers do.
+const MINIMUM_IMAGE_COUNT : u32 = 1;
+
+/// The maximum number of images (batch size) to generate for each request.
+const MAXIMUM_IMAGE_COUNT : u32 = 2;
+
+/// Debug requests can get routed to special "debug-only" workers, which can
+/// be used to trial new code, run debugging, etc.
+const DEBUG_HEADER_NAME: &str = "enable-debug-mode";
+
+/// The routing tag header can send workloads to particular k8s hosts.
+/// This is useful for catching the live logs or intercepting the job.
+const ROUTING_TAG_HEADER_NAME: &str = "routing-tag";
+
+
+#[derive(Deserialize, ToSchema)]
+pub struct EnqueueStudioImageGenRequest {
+  pub uuid_idempotency_token: String,
+  pub scene_media_token: MediaFileToken,
+  pub prompt: String,
+  pub maybe_additional_images: Option<Vec<MediaFileToken>>,
+  pub maybe_number_of_samples: Option<u32>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct EnqueueImageGenRequestSuccessResponse {
+  pub success: bool,
+  pub inference_job_token: InferenceJobToken,
+}
+
+#[derive(Debug, ToSchema)]
+pub enum EnqueueImageGenRequestError {
+  BadInput(String),
+  NotAuthorized,
+  ServerError,
+  RateLimited,
+}
+
+impl ResponseError for EnqueueImageGenRequestError {
+  fn status_code(&self) -> StatusCode {
+    match *self {
+      EnqueueImageGenRequestError::BadInput(_) => StatusCode::BAD_REQUEST,
+      EnqueueImageGenRequestError::NotAuthorized => StatusCode::UNAUTHORIZED,
+      EnqueueImageGenRequestError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+      EnqueueImageGenRequestError::RateLimited => StatusCode::TOO_MANY_REQUESTS,
+    }
+  }
+
+  fn error_response(&self) -> HttpResponse {
+    let error_reason = match self {
+      EnqueueImageGenRequestError::BadInput(reason) => reason.to_string(),
+      EnqueueImageGenRequestError::NotAuthorized => "unauthorized".to_string(),
+      EnqueueImageGenRequestError::ServerError => "server error".to_string(),
+      EnqueueImageGenRequestError::RateLimited => "rate limited".to_string(),
+    };
+
+    to_simple_json_error(&error_reason, self.status_code())
+  }
+}
+
+impl Display for EnqueueImageGenRequestError {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{:?}", self)
+  }
+}
+
+// Implementation for enqueuing a TTS request
+// Reference enqueue_infer_tts_handler.rs for checks: rate limiting / user sessions
+// insert generic inference job.rs
+// Need to convert it to generic inference job.
+#[utoipa::path(
+  post,
+  path = "/v1/image_studio/prompt",
+  responses(
+        (
+            status = 200,
+            description = "Enqueue TTS generically",
+            body = EnqueueImageGenRequestSuccessResponse,
+        ),
+        (status = 400, description = "Bad input", body = EnqueueImageGenRequestError),
+        (status = 401, description = "Not authorized", body = EnqueueImageGenRequestError),
+        (status = 429, description = "Rate limited", body = EnqueueImageGenRequestError),
+        (status = 500, description = "Server error", body = EnqueueImageGenRequestError)
+  ),
+  params(("request" = EnqueueStudioImageGenRequest, description = "Payload for Image Generation Request"))
+)]
+pub async fn enqueue_studio_image_generation_request(
+  http_request: HttpRequest,
+  request: Json<EnqueueStudioImageGenRequest>,
+  server_state: Data<Arc<ServerState>>
+) -> Result<HttpResponse, EnqueueImageGenRequestError> {
+
+
+  validate_request(&request)?;
+
+
+  let mut maybe_user_token: Option<UserToken> = None;
+  let visbility = enums::common::visibility::Visibility::Public;
+
+  let mut mysql_connection = server_state.mysql_pool.acquire().await.map_err(|err| {
+    warn!("MySql pool error: {:?}", err);
+    EnqueueImageGenRequestError::ServerError
+  })?;
+
+  // ==================== USER SESSION ==================== //
+
+  let maybe_user_session = server_state.session_checker
+    .maybe_get_user_session_extended_from_connection(&http_request, &mut mysql_connection).await
+    .map_err(|e| {
+      warn!("Session checker error: {:?}", e);
+      EnqueueImageGenRequestError::ServerError
+    })?;
+
+
+  if let Some(user_session) = maybe_user_session.as_ref() {
+    maybe_user_token = Some(UserToken::new_from_str(&user_session.user_token));
+  }
+
+  // ==================== PLANS ==================== //
+
+  // Plan should handle "first anonymous use" and "investor" cases.
+  let plan = get_correct_plan_for_session(
+    server_state.server_environment_old,
+    maybe_user_session.as_ref()
+  );
+
+  // Separate priority for animation.
+  let priority_level = plan.web_vc_base_priority_level();
+
+  // ==================== DEBUG MODE + ROUTING TAG ==================== //
+
+  let is_debug_request = get_request_header_optional(&http_request, DEBUG_HEADER_NAME).is_some();
+
+  let maybe_routing_tag = get_request_header_optional(&http_request, ROUTING_TAG_HEADER_NAME).map(
+    |routing_tag| routing_tag.trim().to_string()
+  );
+
+
+  // ==================== BANNED USERS ==================== //
+
+  if let Some(ref user) = maybe_user_session {
+    if user.role.is_banned {
+      return Err(EnqueueImageGenRequestError::NotAuthorized);
+    }
+  }
+
+  // DETECT premium user and queue
+
+  // ==================== RATE LIMIT ==================== //
+
+  let rate_limiter = match maybe_user_session {
+    None => &server_state.redis_rate_limiters.logged_out,
+    Some(ref _user) => &server_state.redis_rate_limiters.logged_in,
+  };
+
+  if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+    return Err(EnqueueImageGenRequestError::RateLimited);
+  }
+
+  // Get up IP address
+  let ip_address = get_request_ip(&http_request);
+
+
+  // ==================== HANDLE IDEMPOTENCY ==================== //
+
+  if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
+    return Err(EnqueueImageGenRequestError::BadInput(reason));
+  }
+
+  insert_idempotency_token(&request.uuid_idempotency_token, &mut *mysql_connection)
+    .await
+    .map_err(|err| {
+      error!("Error inserting idempotency token: {:?}", err);
+      EnqueueImageGenRequestError::BadInput("invalid idempotency token".to_string())
+    })?;
+
+  // ==================== INFERENCE ARGS ==================== //
+
+
+
+  let work_temp_dir = server_state.temp_dir_creator.new_tempdir("image_studio").unwrap();
+  let public_bucket_client = server_state.public_bucket_client.clone();
+  let private_bucket_client = server_state.private_bucket_client.clone();
+
+
+  let number_of_samples = match request.maybe_number_of_samples {
+    Some(val) => if val > MAXIMUM_IMAGE_COUNT {
+      MAXIMUM_IMAGE_COUNT
+    } else if val < MINIMUM_IMAGE_COUNT {
+      MINIMUM_IMAGE_COUNT
+    } else {
+      val
+    },
+    None => 1,
+  };
+
+
+  let additional_images = request.maybe_additional_images.clone().unwrap_or_else(|| vec![]);
+  let prompt = request.prompt.clone();
+
+
+  let sora_credentials = match SoraCredentials::from_env() {
+    Ok(creds) => creds,
+    Err(err) => {
+      error!("Failed to load Sora credentials from environment: {:?}", err);
+      return Err(EnqueueImageGenRequestError::ServerError);
+    }
+  };
+
+  let scene_media_token = request.scene_media_token.clone();
+  let scene_media_name = scene_media_token.to_string();
+  let scene_media_path = work_temp_dir.path().join(scene_media_name.clone());
+  let scene_media_path = do_download_media_file(
+    &scene_media_name,
+    &scene_media_token,
+    &scene_media_path,
+    &public_bucket_client,
+    &server_state.mysql_pool
+  ).await.map_err(|err| {
+    error!("Failed to download scene media file: {:?}", err);
+    EnqueueImageGenRequestError::ServerError
+  })?;
+
+  let scene_media_upload_request = SoraMediaUploadRequest {
+    file_path: scene_media_path.to_string_lossy().to_string(),
+    credentials: &sora_credentials,
+  };
+
+  let scene_media_upload_response = sora_media_upload(scene_media_upload_request).await.map_err(|err| {
+    error!("Failed to upload scene media to Sora: {:?}", err);
+    EnqueueImageGenRequestError::ServerError
+  })?;
+
+
+  let sora_scene_media_id = scene_media_upload_response.id;
+  log::info!("Uploaded scene media to Sora with ID: {}", sora_scene_media_id);
+
+  let mut sora_additional_media_ids: Vec<String> = vec![];
+
+  for media_file_token in &additional_images {
+    let media_file_name = media_file_token.to_string();
+    let media_file_path = work_temp_dir.path().join(media_file_name.clone());
+    let media_file_path = do_download_media_file(
+      &media_file_name,
+      &media_file_token,
+      &media_file_path,
+      &public_bucket_client,
+      &server_state.mysql_pool
+    ).await.map_err(|err| {
+      error!("Failed to download additional media file: {:?}", err);
+      EnqueueImageGenRequestError::ServerError
+    })?;
+
+    let sora_media_upload_request = SoraMediaUploadRequest {
+      file_path: media_file_path.to_string_lossy().to_string(),
+      credentials: &sora_credentials,
+    };
+
+    let sora_media_upload_response = sora_media_upload(sora_media_upload_request).await.map_err(|err| {
+      error!("Failed to upload additional media to Sora: {:?}", err);
+      EnqueueImageGenRequestError::ServerError
+    })?;
+
+    let sora_media_id = sora_media_upload_response.id;
+    log::info!("Uploaded additional media to Sora with ID: {}", sora_media_id);
+    sora_additional_media_ids.push(sora_media_id);
+  }
+
+  // Store the actual inference args that will go to the database
+  let inference_args = SoraImageGenArgs {
+    prompt: Some(prompt),
+    scene_media_token: Some(request.scene_media_token.clone()),
+    maybe_additional_media_file_tokens: Some(additional_images),
+    maybe_number_of_samples: Some(number_of_samples),
+    maybe_sora_scene_media_token: Some(sora_scene_media_id.clone()),
+    maybe_sora_media_upload_tokens: Some(sora_additional_media_ids),
+  };
+
+  // The Sora API IDs will be used later by the worker from environment variables
+  log::info!("Sora scene media ID: {}", sora_scene_media_id);
+
+  // create the inference args here
+  let maybe_avt_token = server_state.avt_cookie_manager.get_avt_token_from_request(&http_request);
+
+  // create the job record here!
+  let query_result = insert_generic_inference_job(InsertGenericInferenceArgs {
+    uuid_idempotency_token: &request.uuid_idempotency_token,
+    job_type: InferenceJobType::StableDiffusion,
+    maybe_product_category: None, // This is not a product anymore
+    inference_category: InferenceCategory::ImageGeneration,
+    maybe_model_type: Some(InferenceModelType::StableDiffusion), // NB: Model is static during inference
+    maybe_model_token: None, // NB: Model is static during inference
+    maybe_input_source_token: None,
+    maybe_input_source_token_type: None,
+    maybe_download_url: None,
+    maybe_cover_image_media_file_token: None,
+    maybe_raw_inference_text: None,
+    maybe_max_duration_seconds: None,
+    maybe_inference_args: Some(GenericInferenceArgs {
+      inference_category: Some(InferenceCategoryAbbreviated::ImageGeneration),
+      args: Some(PolymorphicInferenceArgs::Sg(inference_args)),
+    }),
+    maybe_creator_user_token: maybe_user_token.as_ref(),
+    maybe_avt_token: maybe_avt_token.as_ref(),
+    creator_ip_address: &ip_address,
+    creator_set_visibility: visbility,
+    priority_level,
+    requires_keepalive: false, //reverse ...  TODO fix this. we set it base on account is premium or not ...
+    is_debug_request,
+    maybe_routing_tag: maybe_routing_tag.as_deref(),
+    mysql_pool: &server_state.mysql_pool,
+  }).await;
+
+  let job_token = match query_result {
+    Ok((job_token, _id)) => job_token,
+    Err(err) => {
+      warn!("New generic inference job creation DB error: {:?}", err);
+      if err.had_duplicate_idempotency_token() {
+        return Err(EnqueueImageGenRequestError::BadInput("Duplicate idempotency token".to_string()));
+      }
+      return Err(EnqueueImageGenRequestError::ServerError);
+    }
+  };
+
+  let response: EnqueueImageGenRequestSuccessResponse = EnqueueImageGenRequestSuccessResponse {
+    success: true,
+    inference_job_token: job_token,
+  };
+
+  let body = serde_json
+  ::to_string(&response)
+    .map_err(|_e| EnqueueImageGenRequestError::ServerError)?;
+
+  // Error handling 101 rust result type returned like so.
+  Ok(HttpResponse::Ok().content_type("application/json").body(body))
+}
+
+fn validate_request(
+  request: &Json<EnqueueStudioImageGenRequest>,
+) -> Result<(), EnqueueImageGenRequestError> {
+
+
+
+  Ok(())
+}
+
+#[derive(Debug)]
+pub enum DownloadMediaFileError {
+  IoError(std::io::Error),
+  MediaFileNotFound,
+  Other(anyhow::Error),
+}
+
+impl From<GetMediaFileError> for DownloadMediaFileError {
+  fn from(err: GetMediaFileError) -> Self {
+    match err {
+      GetMediaFileError::Other(e) => DownloadMediaFileError::Other(e),
+      GetMediaFileError::NotFound => DownloadMediaFileError::MediaFileNotFound,
+    }
+  }
+}
+
+impl From<anyhow::Error> for DownloadMediaFileError {
+  fn from(err: anyhow::Error) -> Self {
+    DownloadMediaFileError::Other(err)
+  }
+}
+
+pub async fn do_download_media_file(
+  media_file_name: &str,
+  media_file_token: &MediaFileToken,
+  download_directory: &Path,
+  bucket_client: &BucketClient,
+  mysql_pool: &MySqlPool,
+) -> Result<(PathBuf), DownloadMediaFileError> {
+
+  let final_download_path = download_directory.join(format!("{}", media_file_name));
+
+
+  if final_download_path.exists() {
+    log::debug!("Deleting existing file at {:?}", final_download_path.display().to_string());
+    std::fs::remove_file(&final_download_path)
+        .map_err(|err| DownloadMediaFileError::IoError(err))?;
+  }
+
+  let bucket_object_path = get_media_file_details(&media_file_token, mysql_pool).await?;
+
+  log::info!("Downloading media from bucket path: {:?}", &bucket_object_path);
+
+  bucket_client.download_file_to_disk(
+    &bucket_object_path,
+    &final_download_path,
+  ).await?;
+
+  Ok(final_download_path)
+}
+
+
+#[derive(Debug)]
+enum GetMediaFileError {
+  NotFound,
+  Other(anyhow::Error),
+}
+
+
+async fn get_media_file_details(media_file_token: &MediaFileToken, mysql_pool: &MySqlPool) -> Result<PathBuf, GetMediaFileError> {
+  let media_file_result = get_media_file(
+    &media_file_token,
+    false,
+    mysql_pool
+  ).await;
+
+  let media_file_result = match media_file_result {
+    Ok(Some(result)) => result,
+    Ok(None) => {
+      warn!("could not find media file: {:?}", media_file_token);
+      return Err(GetMediaFileError::NotFound)
+    }
+    Err(e) => {
+      error!("could not query media file: {:?}", e);
+      return Err(GetMediaFileError::Other(e))
+    }
+  };
+
+  let media_file_bucket_path = MediaFileBucketPath::from_object_hash(
+    &media_file_result.public_bucket_directory_hash,
+    media_file_result.maybe_public_bucket_prefix.as_deref(),
+    media_file_result.maybe_public_bucket_extension.as_deref());
+
+  Ok(media_file_bucket_path.to_full_object_pathbuf())
+}
+
+
+#[cfg(test)]
+mod tests {
+}

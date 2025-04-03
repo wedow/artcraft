@@ -17,7 +17,9 @@ pub fn test_file_path<P: AsRef<Path>>(path_from_repo_root: P) -> AnyhowResult<Pa
       .to_str()
       .ok_or(anyhow!("path cannot convert to string"))?;
   path.push(format!("../../../{}", file));
+  println!(" >>> path = {:?}", path);
   Ok(path.canonicalize()?)
+
 }
 
 #[cfg(test)]

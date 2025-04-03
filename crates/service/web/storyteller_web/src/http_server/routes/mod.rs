@@ -9,3 +9,4 @@ pub mod user_routes;
 pub mod weights_routes;
 pub mod workflow_routes;
 mod tag_routes;
+mod add_image_studio_routes;

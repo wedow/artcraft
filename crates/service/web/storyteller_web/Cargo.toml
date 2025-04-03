@@ -69,6 +69,7 @@ tts_common = { path = "../../../lib/tts_common" }
 url_config = { path = "../../../lib/url_config" }
 user_input_common = { path = "../../../lib/user_input_common" }
 videos = { path = "../../../lib/files/videos" }
+openai_sora_client = { path = "../../../lib/api_clients/openai_sora_client" }
 
 # Internal Components
 billing_component = { path = "../../plugins/billing" }
