@@ -10,6 +10,7 @@ import {
   faImages,
   faDownload,
   faSpinnerThird,
+  faTimes,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faRectangleWide,
@@ -26,10 +27,17 @@ import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
 
+interface ReferenceImage {
+  id: string;
+  url: string;
+  file: File;
+}
+
 export const PromptBox = () => {
   useSignals();
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
+  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
       label: "3:2",
@@ -150,9 +158,29 @@ export const PromptBox = () => {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log("File uploaded:", file);
+    const files = event.target.files;
+    if (files) {
+      Array.from(files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setReferenceImages((prev) => [
+            ...prev,
+            {
+              id: Math.random().toString(36).substring(7),
+              url: reader.result as string,
+              file,
+            },
+          ]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const handleRemoveReference = (id: string) => {
+    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -192,9 +220,14 @@ export const PromptBox = () => {
 
     setisEnqueueing(true);
     try {
-      // generate logic here
-      console.log("Enqueuing with prompt:", prompt);
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // dummy delay here
+      // Here we would pass both the prompt and reference images to the generation
+      console.log(
+        "Enqueuing with prompt:",
+        prompt,
+        "and reference images:",
+        referenceImages,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     } finally {
       setisEnqueueing(false);
     }
@@ -226,107 +259,133 @@ export const PromptBox = () => {
   };
 
   return (
-    <div className="glass absolute bottom-4 left-1/2 w-[730px] -translate-x-1/2 rounded-xl p-4">
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept="image/*"
-        onChange={handleFileUpload}
-      />
-      <div className="flex justify-center gap-2">
-        <PopoverMenu
-          mode="button"
-          panelTitle="Add Image"
-          items={[
-            {
-              label: "Upload from device",
-              selected: false,
-              icon: <FontAwesomeIcon icon={faUpload} className="h-4 w-4" />,
-              action: "upload",
-            },
-            {
-              label: "Choose from library",
-              selected: false,
-              icon: <FontAwesomeIcon icon={faImages} className="h-4 w-4" />,
-              action: "library",
-            },
-          ]}
-          onAction={handleAction}
-          showIconsInList
-          buttonClassName="backdrop-blur-none bg-transparent hover:bg-transparent py-1.5 px-0 pr-0.5 m-0 hover:opacity-50 transition-opacity duration-100 ring-0 border-none focus:ring-0 outline-none"
-          triggerIcon={<FontAwesomeIcon icon={faPlus} className="text-xl" />}
-        />
-
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          placeholder="Describe your image..."
-          className="text-md mb-2 max-h-[5.5em] flex-1 resize-none overflow-y-auto rounded bg-transparent px-2 pb-2 pt-1 text-white placeholder-white placeholder:text-white/60 focus:outline-none"
-          value={prompt}
-          onChange={handleChange}
-          onPaste={handlePaste}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <PopoverMenu
-            items={aspectRatioList}
-            onSelect={handleAspectRatioSelect}
-            mode="toggle"
-            panelTitle="Aspect Ratio"
-            showIconsInList
-            triggerIcon={
-              <FontAwesomeIcon
-                icon={getCurrentAspectRatioIcon()}
-                className="h-4 w-4"
+    <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col gap-3">
+      {referenceImages.length > 0 && (
+        <div className="flex w-full gap-2">
+          {referenceImages.map((image) => (
+            <div
+              key={image.id}
+              className="glass relative aspect-square w-20 rounded-lg"
+            >
+              <img
+                src={image.url}
+                alt="Reference"
+                className="h-full w-full rounded-lg object-cover"
               />
-            }
-          />
+              <button
+                onClick={() => handleRemoveReference(image.id)}
+                className="absolute right-[2px] top-[2px] flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-colors hover:bg-black"
+              >
+                <FontAwesomeIcon icon={faTimes} className="h-2.5 w-2.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="glass w-[730px] rounded-xl p-4">
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileUpload}
+          multiple
+        />
+        <div className="flex justify-center gap-2">
           <PopoverMenu
-            items={cameraList}
-            onSelect={handleCameraSelect}
-            onAdd={handleAddCamera}
-            triggerIcon={
-              <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />
-            }
-            showAddButton
+            mode="button"
+            panelTitle="Add Image"
+            items={[
+              {
+                label: "Upload from device",
+                selected: false,
+                icon: <FontAwesomeIcon icon={faUpload} className="h-4 w-4" />,
+                action: "upload",
+              },
+              {
+                label: "Choose from library",
+                selected: false,
+                icon: <FontAwesomeIcon icon={faImages} className="h-4 w-4" />,
+                action: "library",
+                disabled: true,
+              },
+            ]}
+            onAction={handleAction}
             showIconsInList
-            mode="toggle"
-            panelTitle="Camera"
+            buttonClassName="backdrop-blur-none bg-transparent hover:bg-transparent py-1.5 px-0 pr-1 m-0 hover:opacity-50 transition-opacity duration-100 ring-0 border-none focus:ring-0 outline-none"
+            triggerIcon={<FontAwesomeIcon icon={faPlus} className="text-xl" />}
+          />
+
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            placeholder="Describe your image..."
+            className="text-md mb-2 max-h-[5.5em] flex-1 resize-none overflow-y-auto rounded bg-transparent pb-2 pr-2 pt-1 text-white placeholder-white placeholder:text-white/60 focus:outline-none"
+            value={prompt}
+            onChange={handleChange}
+            onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
-            variant="secondary"
-            icon={faDownload}
-          >
-            Download frame
-          </Button>
-          <Button
-            className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
-            variant="secondary"
-            icon={faSave}
-          >
-            Save frame
-          </Button>
-          <Button
-            className="flex items-center border-none bg-brand-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
-            icon={!isEnqueueing ? faSparkles : undefined}
-            onClick={handleEnqueue}
-            disabled={isEnqueueing || !prompt.trim()}
-          >
-            {isEnqueueing ? (
-              <FontAwesomeIcon
-                icon={faSpinnerThird}
-                className="animate-spin text-lg"
-              />
-            ) : (
-              "Generate"
-            )}
-          </Button>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <PopoverMenu
+              items={aspectRatioList}
+              onSelect={handleAspectRatioSelect}
+              mode="toggle"
+              panelTitle="Aspect Ratio"
+              showIconsInList
+              triggerIcon={
+                <FontAwesomeIcon
+                  icon={getCurrentAspectRatioIcon()}
+                  className="h-4 w-4"
+                />
+              }
+            />
+            <PopoverMenu
+              items={cameraList}
+              onSelect={handleCameraSelect}
+              onAdd={handleAddCamera}
+              triggerIcon={
+                <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />
+              }
+              showAddButton
+              showIconsInList
+              mode="toggle"
+              panelTitle="Camera"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
+              variant="secondary"
+              icon={faDownload}
+            >
+              Download frame
+            </Button>
+            <Button
+              className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
+              variant="secondary"
+              icon={faSave}
+            >
+              Save frame
+            </Button>
+            <Button
+              className="flex items-center border-none bg-brand-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
+              icon={!isEnqueueing ? faSparkles : undefined}
+              onClick={handleEnqueue}
+              disabled={isEnqueueing || !prompt.trim()}
+            >
+              {isEnqueueing ? (
+                <FontAwesomeIcon
+                  icon={faSpinnerThird}
+                  className="animate-spin text-lg"
+                />
+              ) : (
+                "Generate"
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
