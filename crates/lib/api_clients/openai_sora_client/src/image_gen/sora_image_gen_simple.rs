@@ -1,7 +1,7 @@
 use errors::AnyhowResult;
 use crate::credentials::SoraCredentials;
 use crate::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
-use crate::image_gen::raw_sora_image_gen::{call_sora_image_gen, OperationType, RawSoraImageGenRequest, VideoGenType};
+use crate::image_gen::image_gen_http_request::{image_gen_http_request, OperationType, RawSoraImageGenRequest, VideoGenType};
 
 pub struct SoraImageGenSimpleRequest<'a> {
   pub prompt: String,
@@ -10,20 +10,20 @@ pub struct SoraImageGenSimpleRequest<'a> {
   pub credentials: &'a SoraCredentials,
 }
 
-pub async fn sora_image_gen_simple(request: SoraImageGenSimpleRequest<'_>) -> AnyhowResult<SoraImageGenResponse> {
-  let args = RawSoraImageGenRequest {
+pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> AnyhowResult<SoraImageGenResponse> {
+  let sora_request = RawSoraImageGenRequest {
     r#type: VideoGenType::ImageGen,
     operation: OperationType::SimpleCompose,
-    prompt: request.prompt,
-    n_variants: request.num_images.as_count(),
-    width: request.image_size.as_width(),
-    height: request.image_size.as_height(),
+    prompt: args.prompt,
+    n_variants: args.num_images.as_count(),
+    width: args.image_size.as_width(),
+    height: args.image_size.as_height(),
     n_frames: 1,
     inpaint_items: vec![],
   };
 
   // TODO: Error handling.
-  let result = call_sora_image_gen(args, request.credentials).await?;
+  let result = image_gen_http_request(sora_request, args.credentials).await?;
 
   Ok(SoraImageGenResponse {
     task_id: result.id,
@@ -58,7 +58,7 @@ mod tests {
     };
 
     let response = sora_image_gen_simple(SoraImageGenSimpleRequest {
-      prompt: "A toy F-22 fighter jet attacks a toy giant monster".to_string(),
+      prompt: "A pirate and a ninja fight in a battle inside a UFO. Fully photo realistic, lifelike, lens flare".to_string(),
       num_images: NumImages::One,
       image_size: ImageSize::Square,
       credentials: &creds,

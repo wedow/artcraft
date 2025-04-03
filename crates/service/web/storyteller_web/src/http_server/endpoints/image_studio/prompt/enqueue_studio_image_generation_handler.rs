@@ -14,7 +14,7 @@ use cloud_storage::bucket_client::BucketClient;
 use log::error;
 use log::warn;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use openai_sora_client::upload::sora_media_upload::{sora_media_upload, SoraMediaUploadRequest};
+use openai_sora_client::upload::upload_media_http_request::{sora_media_upload, SoraMediaUploadRequest};
 use openai_sora_client::credentials::SoraCredentials;
 use serde::Deserialize;
 use serde::Serialize;

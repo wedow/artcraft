@@ -1,21 +1,22 @@
+use anyhow::anyhow;
 use serde_derive::{Deserialize, Serialize};
 use errors::AnyhowResult;
 use crate::credentials::SoraCredentials;
 
-const URL : &str = "https://sora.com/backend/video_gen";
+const SORA_IMAGE_GEN_URL: &str = "https://sora.com/backend/video_gen";
 
-
-// https://sora.com/backend/notif?limit=100&before=task_01jqpg8qghenet0rw2a79p0vbn
+/// This user agent is tied to the sentinel generation. If we need to change it, we may need to change sentinel generation too.
+const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum VideoGenType {
+pub (crate) enum VideoGenType {
   ImageGen,
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum OperationType {
+pub (crate) enum OperationType {
   /// Simple prompt without reference images
   SimpleCompose,
   /// Prompt with reference images
@@ -24,7 +25,7 @@ pub enum OperationType {
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum InpaintItemType {
+pub (crate) enum InpaintItemType {
   Image,
 }
 
@@ -89,58 +90,41 @@ pub (crate) struct RawSoraResponse {
 pub (crate) struct RawSoraErrorResponse {
   error: String,
   message: String,
-  type_: String,
+  r#type: String,
   param: Option<String>,
   code: Option<String>,
 }
 
-
-const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
-
-pub (crate) async fn call_sora_image_gen(sora_request: RawSoraImageGenRequest, credentials: &SoraCredentials) -> AnyhowResult<RawSoraResponse> {
+/// Don't expose the internal request implementation as there are only a few "correct" ways to call the API.
+pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest, credentials: &SoraCredentials) -> AnyhowResult<RawSoraResponse> {
   let client = reqwest::Client::new();
 
-  //let request_payload = serde_json::to_string(&request)?;
+  let sentinel = match credentials.sentinel.as_deref() {
+    None => return Err(anyhow!("Calls to image gen require a sentinel in the credentials payload.")),
+    Some(sentinel) => sentinel,
+  };
 
-  //println!("\n\n >>> request_payload = {:?}", request_payload);
-
-  //let request = credentials.add_credential_headers_to_request(request);
-
-  let mut request = client.post(URL)
+  let http_request = client.post(SORA_IMAGE_GEN_URL)
       .header("User-Agent", USER_AGENT)
       .header("Cookie", &credentials.cookie)
       .header("Authorization", credentials.authorization_header_value())
-      .header("Content-Type", "application/json");
+      .header("Content-Type", "application/json")
+      .header("OpenAI-Sentinel-Token", sentinel);
 
-  if let Some(sentinel) = &credentials.sentinel {
-    request = request.header("OpenAI-Sentinel-Token", sentinel);
-  }
+  let http_request = http_request.json(&sora_request).build()?;
 
-  let request = request.json(&sora_request).build()?;
-
-  println!("\n\n >>> raw request = {:?}\n\n", request);
-
-  let response = client.execute(request)
+  let response = client.execute(http_request)
       .await?;
-
-  //let response = request.execute()
-  //    .send()
-  //    .await?;
-  //    //.error_for_status()?;
 
   let status = response.status();
 
-  println!("\n\n >>> status = {:?}", &status);
-
-  let json_response = &response.text().await?;
-
-  println!(" >>> response = {:?}", json_response);
+  let response_body = &response.text().await?;
 
   if status != reqwest::StatusCode::OK {
-    return Err(anyhow::anyhow!("the request failed; improve this message"));
+    return Err(anyhow::anyhow!("the request failed; status = {:?}, message = {:?}", status, response_body));
   }
 
-  let response = serde_json::from_str(json_response)?;
+  let response = serde_json::from_str(response_body)?;
 
   Ok(response)
 }
