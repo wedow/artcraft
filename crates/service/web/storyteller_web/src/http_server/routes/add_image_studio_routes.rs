@@ -1,5 +1,5 @@
 use crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation::enqueue_studio_image_generation_request;
-use crate::http_server::endpoints::image_studio::upload::upload_image_media_file_handler::upload_studio_scene_snapshot_handler;
+use crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::upload_studio_scene_snapshot_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};

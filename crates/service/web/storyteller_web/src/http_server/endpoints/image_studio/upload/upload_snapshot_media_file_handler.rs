@@ -37,10 +37,10 @@ use crate::util::check_creator_tokens::{check_creator_tokens, CheckCreatorTokenA
 
 /// Form-multipart request fields.
 ///
-/// IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadImageMediaFileForm` (Under "Schema") FOR DETAILS ON FIELDS AND NULLABILITY.
+/// IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadSnapshotMediaFileForm` (Under "Schema") FOR DETAILS ON FIELDS AND NULLABILITY.
 #[derive(MultipartForm, ToSchema)]
 #[multipart(duplicate_field = "deny")]
-pub struct UploadImageMediaFileForm {
+pub struct UploadSnapshotMediaFileForm {
   /// UUID for request idempotency
   #[multipart(limit = "2 KiB")]
   #[schema(value_type = String, format = Binary)]
@@ -69,7 +69,7 @@ pub struct UploadImageMediaFileForm {
 
 // Unlike the "upload" endpoints, which are pure inserts, these endpoints are *upserts*.
 #[derive(Serialize, ToSchema)]
-pub struct UploadImageMediaFileSuccessResponse {
+pub struct UploadSnapshotMediaFileSuccessResponse {
   pub success: bool,
   pub media_file_token: MediaFileToken,
 }
@@ -89,7 +89,7 @@ static ALLOWED_MIME_TYPES : Lazy<HashSet<&'static str>> = Lazy::new(|| {
   tag = "Media Files (Upload)",
   path = "/v1/image_studio/scene_snapshot",
   responses(
-    (status = 200, description = "Success Update", body = UploadImageMediaFileSuccessResponse),
+    (status = 200, description = "Success Update", body = UploadSnapshotMediaFileSuccessResponse),
     (status = 400, description = "Bad input", body = MediaFileUploadError),
     (status = 401, description = "Not authorized", body = MediaFileUploadError),
     (status = 429, description = "Too many requests", body = MediaFileUploadError),
@@ -97,16 +97,16 @@ static ALLOWED_MIME_TYPES : Lazy<HashSet<&'static str>> = Lazy::new(|| {
   ),
   params(
     (
-      "request" = UploadImageMediaFileForm,
-      description = "IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadImageMediaFileForm` (Under 'Schema') FOR DETAILS ON FIELDS AND NULLABILITY."
+      "request" = UploadSnapshotMediaFileForm,
+      description = "IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadSnapshotMediaFileForm` (Under 'Schema') FOR DETAILS ON FIELDS AND NULLABILITY."
     ),
   )
 )]
 pub async fn upload_studio_scene_snapshot_handler(
   http_request: HttpRequest,
   server_state: web::Data<Arc<ServerState>>,
-  MultipartForm(mut form): MultipartForm<UploadImageMediaFileForm>,
-) -> Result<Json<UploadImageMediaFileSuccessResponse>, MediaFileUploadError> {
+  MultipartForm(mut form): MultipartForm<UploadSnapshotMediaFileForm>,
+) -> Result<Json<UploadSnapshotMediaFileSuccessResponse>, MediaFileUploadError> {
 
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
@@ -290,7 +290,7 @@ pub async fn upload_studio_scene_snapshot_handler(
 
   info!("new media file id: {} token: {:?}", record_id, &token);
 
-  Ok(Json(UploadImageMediaFileSuccessResponse {
+  Ok(Json(UploadSnapshotMediaFileSuccessResponse {
     success: true,
     media_file_token: token,
   }))

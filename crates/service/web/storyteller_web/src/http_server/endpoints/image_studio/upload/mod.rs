@@ -1,1 +1,1 @@
-pub mod upload_image_media_file_handler;
+pub mod upload_snapshot_media_file_handler;
