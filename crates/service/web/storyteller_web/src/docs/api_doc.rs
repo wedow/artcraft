@@ -124,6 +124,8 @@ use crate::http_server::endpoints::stats::get_unified_queue_stats_handler::*;
 use crate::http_server::endpoints::tags::list_tags_for_entity_handler::*;
 use crate::http_server::endpoints::tags::set_tags_for_entity_handler::*;
 use crate::http_server::endpoints::tts::enqueue_infer_tts_handler::enqueue_infer_tts_handler::*;
+use crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::*;
+use crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::*;
 use crate::http_server::endpoints::user_bookmarks::batch_get_user_bookmarks_handler::*;
 use crate::http_server::endpoints::user_bookmarks::create_user_bookmark_handler::*;
 use crate::http_server::endpoints::user_bookmarks::delete_user_bookmark_handler::*;
@@ -207,6 +209,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::media_files::upload::upload_engine_asset::upload_engine_asset_media_file_handler::upload_engine_asset_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_generic::upload_media_file_handler::upload_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_image_media_file_handler::upload_image_media_file_handler,
+    crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::enqueue_studio_image_generation_handler,
+    crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::upload_snapshot_media_file_handler,
     crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::enqueue_studio_gen2_handler,
     crate::http_server::endpoints::media_files::upload::upload_new_engine_asset_media_file_handler::upload_new_engine_asset_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_new_scene_media_file_handler::upload_new_scene_media_file_handler,
@@ -336,6 +340,9 @@ use crate::http_server::web_utils::response_success_helpers::*;
     AppStateServerInfo,
     AppStateStatusAlertCategory,
     AppStateStatusAlertInfo,
+    EnqueueStudioImageGenRequest,
+    EnqueueImageGenRequestSuccessResponse,
+    EnqueueImageGenRequestError,
     AppStateSubscriptionProductKey,
     AppStateUserInfo,
     AppStateUserLocale,
@@ -347,6 +354,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     BatchGetMediaFilesQueryParams,
     BatchGetMediaFilesSuccessResponse,
     BatchGetUserBookmarksError,
+    UploadSnapshotMediaFileForm,
+    UploadSnapshotMediaFileSuccessResponse,
     BatchGetUserBookmarksQueryParams,
     BatchGetUserBookmarksResponse,
     BatchGetUserRatingError,

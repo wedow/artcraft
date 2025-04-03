@@ -83,10 +83,10 @@ static ALLOWED_MIME_TYPES : Lazy<HashSet<&'static str>> = Lazy::new(|| {
   ])
 });
 
-/// This endpoint is for uploading image files.
+/// Upload snapshots of the scenes created in the 3D image studio.
 #[utoipa::path(
   post,
-  tag = "Media Files (Upload)",
+  tag = "Image Studio",
   path = "/v1/image_studio/scene_snapshot",
   responses(
     (status = 200, description = "Success Update", body = UploadSnapshotMediaFileSuccessResponse),
@@ -102,7 +102,7 @@ static ALLOWED_MIME_TYPES : Lazy<HashSet<&'static str>> = Lazy::new(|| {
     ),
   )
 )]
-pub async fn upload_studio_scene_snapshot_handler(
+pub async fn upload_snapshot_media_file_handler(
   http_request: HttpRequest,
   server_state: web::Data<Arc<ServerState>>,
   MultipartForm(mut form): MultipartForm<UploadSnapshotMediaFileForm>,

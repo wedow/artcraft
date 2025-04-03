@@ -117,12 +117,10 @@ impl Display for EnqueueImageGenRequestError {
   }
 }
 
-// Implementation for enqueuing a TTS request
-// Reference enqueue_infer_tts_handler.rs for checks: rate limiting / user sessions
-// insert generic inference job.rs
-// Need to convert it to generic inference job.
+/// Prompt image generation using image studio
 #[utoipa::path(
   post,
+  tag = "Image Studio",
   path = "/v1/image_studio/prompt",
   responses(
         (
@@ -137,7 +135,7 @@ impl Display for EnqueueImageGenRequestError {
   ),
   params(("request" = EnqueueStudioImageGenRequest, description = "Payload for Image Generation Request"))
 )]
-pub async fn enqueue_studio_image_generation_request(
+pub async fn enqueue_studio_image_generation_handler(
   http_request: HttpRequest,
   request: Json<EnqueueStudioImageGenRequest>,
   server_state: Data<Arc<ServerState>>
