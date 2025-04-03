@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { useSignals } from "@preact/signals-react/runtime";
+import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
+import { useContext } from "react";
 
 import {
   faPlus,
@@ -13,8 +16,11 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem, PopoverMenu } from "~/components/reusable/Popover";
 import { Button } from "~/components";
-
+import { EngineApi } from "~/Classes/ApiManager/EngineApi";
+import { scene } from "~/signals/scene";
 export const PromptBox = () => {
+  useSignals();
+  const editorEngine = useContext(EngineContext);
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
@@ -116,6 +122,18 @@ export const PromptBox = () => {
   const handleEnqueue = async () => {
     if (!prompt.trim()) return;
 
+    if (editorEngine) {
+      editorEngine.positive_prompt = prompt;
+    }
+
+    const engineApi = new EngineApi();
+
+    engineApi.enqueueImageGeneration({
+      prompt: prompt,
+      sceneMediaToken: scene.value.token || "",
+      additionalImages: [],
+    });
+
     setisEnqueueing(true);
     try {
       // generate logic here
@@ -130,6 +148,24 @@ export const PromptBox = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleEnqueue();
+    }
+  };
+
+  const handleSaveFrame = () => {
+    if (editorEngine) {
+      const snapshot = editorEngine.snapShotOfCurrentFrame(false);
+
+      const engineApi = new EngineApi();
+
+      engineApi.uploadSceneSnapshot({
+        screenshot: snapshot || "",
+        sceneMediaToken: scene.value.token || "",
+      });
+    }
+  };
+  const handleDownloadFrame = () => {
+    if (editorEngine) {
+      editorEngine.snapShotOfCurrentFrame(true);
     }
   };
 
@@ -203,6 +239,7 @@ export const PromptBox = () => {
             className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
             variant="secondary"
             icon={faDownload}
+            onClick={handleSaveFrame}
           >
             Download frame
           </Button>
@@ -210,6 +247,7 @@ export const PromptBox = () => {
             className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
             variant="secondary"
             icon={faSave}
+            onClick={handleDownloadFrame}
           >
             Save frame
           </Button>

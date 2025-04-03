@@ -641,6 +641,18 @@ class Editor {
     document.body.appendChild(this.stats.dom);
   }
 
+  public snapShotOfCurrentFrame(shouldDownload: boolean = true) {
+    const snapshot = this.renderer?.domElement.toDataURL("image/png");
+
+    if (snapshot) {
+      const link = document.createElement("a");
+      link.download = "scene-snapshot.png";
+      link.href = snapshot;
+      link.click();
+    }
+    return snapshot;
+  }
+
   public async newScene(sceneTitleInput: string) {
     this.activeScene.clear();
     this.audio_engine = new AudioEngine();
@@ -948,14 +960,14 @@ class Editor {
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 1024
             : this.render_camera_aspect_ratio ===
-              CameraAspectRatio.VERTICAL_9_16
+                CameraAspectRatio.VERTICAL_9_16
               ? 576
               : 1000;
         const height =
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 576
             : this.render_camera_aspect_ratio ===
-              CameraAspectRatio.VERTICAL_9_16
+                CameraAspectRatio.VERTICAL_9_16
               ? 1024
               : 1000;
 
