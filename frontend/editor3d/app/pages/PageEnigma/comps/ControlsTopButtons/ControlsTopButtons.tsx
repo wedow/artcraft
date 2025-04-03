@@ -67,7 +67,7 @@ export const ControlsTopButtons = () => {
   const handleResetScene = () => {
     resetSceneGenerationMetadata();
     editorEngine?.changeRenderCameraAspectRatio(
-      CameraAspectRatio.HORIZONTAL_16_9,
+      CameraAspectRatio.HORIZONTAL_3_2,
     );
   };
 

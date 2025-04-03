@@ -19,7 +19,8 @@ class CdnHostHelper {
 
     let origin;
     if (isLocalDev) {
-      origin = 'https://pub-c8a4a5bdbdb048f286b77bdf9f786ff2.r2.dev';
+      //origin = 'https://pub-c8a4a5bdbdb048f286b77bdf9f786ff2.r2.dev';
+      origin = 'https://cdn-2.fakeyou.com';
     } else {
       origin = 'https://cdn-2.fakeyou.com';
     }

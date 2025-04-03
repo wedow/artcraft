@@ -25,6 +25,16 @@ export const getMatteOrientation = ({
         ? MatteOrientation.TOP_BOTTOM
         : MatteOrientation.LEFT_RIGHT;
     }
+    case CameraAspectRatio.VERTICAL_2_3: {
+      return (height / 3) * 2 - width >= 0
+        ? MatteOrientation.TOP_BOTTOM
+        : MatteOrientation.LEFT_RIGHT;
+    }
+    case CameraAspectRatio.HORIZONTAL_3_2: {
+      return (width / 3) * 2 - height >= 0
+        ? MatteOrientation.LEFT_RIGHT
+        : MatteOrientation.TOP_BOTTOM;
+    }
     case CameraAspectRatio.HORIZONTAL_16_9:
     default: {
       return (width / 16) * 9 - height >= 0
@@ -58,6 +68,12 @@ export const calcMatteWidth = ({
     case CameraAspectRatio.VERTICAL_9_16: {
       return (width - (height / 16) * 9) / 2;
     }
+    case CameraAspectRatio.HORIZONTAL_3_2: {
+      return (width - (height / 2) * 3) / 2;
+    }
+    case CameraAspectRatio.VERTICAL_2_3: {
+      return (width - (height / 3) * 2) / 2;
+    }
     default: {
       return undefined;
     }
@@ -87,6 +103,12 @@ export const calcMatteHeight = ({
     }
     case CameraAspectRatio.VERTICAL_9_16: {
       return (height - (width / 9) * 16) / 2;
+    }
+    case CameraAspectRatio.HORIZONTAL_3_2: {
+      return (height - (width / 3) * 2) / 2;
+    }
+    case CameraAspectRatio.VERTICAL_2_3: {
+      return (height - (width / 2) * 3) / 2;
     }
     default: {
       return undefined;

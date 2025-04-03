@@ -66,7 +66,7 @@ class Editor {
   camera: THREE.PerspectiveCamera | null = null;
   render_camera: THREE.PerspectiveCamera | null = null;
   render_camera_aspect_ratio: CameraAspectRatio =
-    CameraAspectRatio.HORIZONTAL_16_9;
+    CameraAspectRatio.HORIZONTAL_3_2;
   renderer: THREE.WebGLRenderer | undefined;
   rawRenderer: THREE.WebGLRenderer | undefined;
   clock: THREE.Clock | undefined;
@@ -253,7 +253,7 @@ class Editor {
     this.selectedCanvas = false;
     // Audio Engine Test.
 
-    this.render_camera_aspect_ratio = CameraAspectRatio.HORIZONTAL_16_9;
+    this.render_camera_aspect_ratio = CameraAspectRatio.HORIZONTAL_3_2;
     this.render_width = this.getRenderDimensions().width;
     this.render_height = this.getRenderDimensions().height;
 
@@ -332,6 +332,20 @@ class Editor {
           width: 1280,
           height: 720,
           aspectRatio: 16 / 9,
+        };
+      }
+      case CameraAspectRatio.HORIZONTAL_3_2: {
+        return {
+          width: 1200,
+          height: 800,
+          aspectRatio: 3 / 2,
+        };
+      }
+      case CameraAspectRatio.VERTICAL_2_3: {
+        return {
+          width: 800,
+          height: 1200,
+          aspectRatio: 2 / 3,
         };
       }
       case CameraAspectRatio.VERTICAL_9_16: {
@@ -962,14 +976,26 @@ class Editor {
             : this.render_camera_aspect_ratio ===
                 CameraAspectRatio.VERTICAL_9_16
               ? 576
-              : 1000;
+              : this.render_camera_aspect_ratio ===
+                  CameraAspectRatio.HORIZONTAL_3_2
+                ? 900
+                : this.render_camera_aspect_ratio ===
+                    CameraAspectRatio.VERTICAL_2_3
+                  ? 600
+                  : 1000;
         const height =
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 576
             : this.render_camera_aspect_ratio ===
                 CameraAspectRatio.VERTICAL_9_16
               ? 1024
-              : 1000;
+              : this.render_camera_aspect_ratio ===
+                  CameraAspectRatio.HORIZONTAL_3_2
+                ? 600
+                : this.render_camera_aspect_ratio ===
+                    CameraAspectRatio.VERTICAL_2_3
+                  ? 900
+                  : 1000;
 
         this.rawRenderer.setSize(width, height);
 

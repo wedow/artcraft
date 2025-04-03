@@ -13,21 +13,50 @@ import {
   faDownload,
   faSpinnerThird,
 } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faRectangleWide,
+  faRectangleVertical,
+  faSquare,
+  faRectangle,
+} from "@fortawesome/pro-regular-svg-icons";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem, PopoverMenu } from "~/components/reusable/Popover";
 import { Button } from "~/components";
+import { CameraAspectRatio } from "~/pages/PageEnigma/enums";
+import { cameraAspectRatio } from "~/pages/PageEnigma/signals";
+import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
+import Queue from "~/pages/PageEnigma/Queue/Queue";
+import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
 import { EngineApi } from "~/Classes/ApiManager/EngineApi";
 import { scene } from "~/signals/scene";
+
 export const PromptBox = () => {
   useSignals();
   const editorEngine = useContext(EngineContext);
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
-    { label: "16:9", selected: true },
-    { label: "3:2", selected: false },
-    { label: "2:3", selected: false },
-    { label: "1:1", selected: false },
+    {
+      label: "3:2",
+      selected: true,
+      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
+    },
+    {
+      label: "2:3",
+      selected: false,
+      icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
+    },
+    {
+      label: "1:1",
+      selected: false,
+      icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
+    },
+    {
+      label: "16:9",
+      selected: false,
+      icon: <FontAwesomeIcon icon={faRectangleWide} className="h-4 w-4" />,
+    },
   ]);
   const [cameraList, setCameraList] = useState<PopoverItem[]>([
     {
@@ -50,6 +79,25 @@ export const PromptBox = () => {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [prompt]);
+
+  // Update aspect ratio list based on the current cameraAspectRatio signal
+  useEffect(() => {
+    setAspectRatioList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected:
+          (item.label === "16:9" &&
+            cameraAspectRatio.value === CameraAspectRatio.HORIZONTAL_16_9) ||
+          (item.label === "3:2" &&
+            cameraAspectRatio.value === CameraAspectRatio.HORIZONTAL_3_2) ||
+          (item.label === "2:3" &&
+            cameraAspectRatio.value === CameraAspectRatio.VERTICAL_2_3) ||
+          (item.label === "1:1" &&
+            cameraAspectRatio.value === CameraAspectRatio.SQUARE_1_1),
+      })),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraAspectRatio.value]);
 
   const handleCameraSelect = (selectedItem: PopoverItem) => {
     setCameraList((prev) =>
@@ -79,6 +127,32 @@ export const PromptBox = () => {
         selected: item.label === selectedItem.label,
       })),
     );
+
+    // Map the selected label to the corresponding CameraAspectRatio enum value
+    let newRatio: CameraAspectRatio;
+    switch (selectedItem.label) {
+      case "16:9":
+        newRatio = CameraAspectRatio.HORIZONTAL_16_9;
+        break;
+      case "3:2":
+        newRatio = CameraAspectRatio.HORIZONTAL_3_2;
+        break;
+      case "2:3":
+        newRatio = CameraAspectRatio.VERTICAL_2_3;
+        break;
+      case "1:1":
+        newRatio = CameraAspectRatio.SQUARE_1_1;
+        break;
+      default:
+        newRatio = CameraAspectRatio.HORIZONTAL_16_9;
+    }
+
+    // Publish the change to the engine
+    Queue.publish({
+      queueName: QueueNames.TO_ENGINE,
+      action: toEngineActions.CHANGE_CAMERA_ASPECT_RATIO,
+      data: newRatio,
+    });
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +222,24 @@ export const PromptBox = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleEnqueue();
+    }
+  };
+  
+// Get the current aspect ratio icon based on the cameraAspectRatio signal
+const getCurrentAspectRatioIcon = () => {
+  switch (cameraAspectRatio.value) {
+    case CameraAspectRatio.HORIZONTAL_16_9:
+      return faRectangleWide;
+    case CameraAspectRatio.HORIZONTAL_3_2:
+      return faRectangle;
+    case CameraAspectRatio.VERTICAL_2_3:
+      return faRectangleVertical;
+    case CameraAspectRatio.VERTICAL_9_16:
+      return faRectangleVertical;
+    case CameraAspectRatio.SQUARE_1_1:
+      return faSquare;
+    default:
+      return faRectangleWide;
     }
   };
 
@@ -220,6 +312,13 @@ export const PromptBox = () => {
             onSelect={handleAspectRatioSelect}
             mode="toggle"
             panelTitle="Aspect Ratio"
+            showIconsInList
+            triggerIcon={
+              <FontAwesomeIcon
+                icon={getCurrentAspectRatioIcon()}
+                className="h-4 w-4"
+              />
+            }
           />
           <PopoverMenu
             items={cameraList}
