@@ -66,7 +66,7 @@ class Editor {
   camera: THREE.PerspectiveCamera | null = null;
   render_camera: THREE.PerspectiveCamera | null = null;
   render_camera_aspect_ratio: CameraAspectRatio =
-    CameraAspectRatio.HORIZONTAL_16_9;
+    CameraAspectRatio.HORIZONTAL_3_2;
   renderer: THREE.WebGLRenderer | undefined;
   rawRenderer: THREE.WebGLRenderer | undefined;
   clock: THREE.Clock | undefined;
