@@ -1,10 +1,17 @@
 import { ReactNode } from "react";
 import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
-import { faBrush, faCatSpace } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faAlienMonster,
+  faCatSpace,
+  faCloud,
+  faCube,
+} from "@fortawesome/pro-solid-svg-icons";
 
 import { TabTitles } from "~/enums";
-import { StylizeTab } from "~/pages/PageEnigma/comps/SidePanelTabs/tabComps/StylizeTab/StylizeTab";
 import { CartoonsTab } from "../SidePanelTabs/tabComps/CharactersComboTabs";
+import { ObjectsTab } from "../SidePanelTabs/tabComps/ObjectsTab";
+import { SkyboxesTab } from "../SidePanelTabs/tabComps/SkyboxesTab";
+import { CreaturesTab } from "../SidePanelTabs/tabComps/CreaturesTab";
 
 export interface TabItem {
   icon: FontAwesomeIconProps["icon"];
@@ -19,9 +26,21 @@ export const tabList: TabItem[] = [
     component: <CartoonsTab />,
   },
 
-  // {
-  //   icon: faBrush,
-  //   title: TabTitles.STYLIZE,
-  //   component: <StylizeTab />,
-  // }
+  {
+    icon: faCube,
+    title: TabTitles.OBJECTS,
+    component: <ObjectsTab />,
+  },
+
+  {
+    icon: faCloud,
+    title: TabTitles.SKYBOXES,
+    component: <SkyboxesTab />,
+  },
+
+  {
+    icon: faAlienMonster,
+    title: TabTitles.OBJECTS_CREATURES,
+    component: <CreaturesTab />,
+  },
 ];

@@ -8,6 +8,7 @@ export interface PopoverItem {
   selected: boolean;
   icon?: ReactNode;
   action?: string;
+  disabled?: boolean;
 }
 
 interface PopoverMenuProps {
@@ -97,9 +98,21 @@ export const PopoverMenu = ({
                       {items.map((item, index) => (
                         <Button
                           key={index}
-                          className={`flex items-center justify-between border-transparent bg-transparent px-1.5 hover:bg-[#63636B]/60 ${mode === "toggle" && item.selected ? "hover:bg-[#63636B]" : "bg-transparent"}`}
-                          onClick={() => handleItemClick(item, close)}
+                          className={twMerge(
+                            "flex items-center justify-between border-transparent bg-transparent px-1.5",
+                            "hover:bg-[#63636B]/60",
+                            mode === "toggle" && item.selected
+                              ? "hover:bg-[#63636B]"
+                              : "bg-transparent",
+                            item.disabled
+                              ? "!cursor-not-allowed opacity-50"
+                              : "",
+                          )}
+                          onClick={() =>
+                            !item.disabled && handleItemClick(item, close)
+                          }
                           variant="secondary"
+                          disabled={item.disabled}
                         >
                           <div className="flex items-center gap-2">
                             {showIconsInList && item.icon}
