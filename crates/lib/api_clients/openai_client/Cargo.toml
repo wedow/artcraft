@@ -31,3 +31,6 @@ serde_json = { workspace = true }
 
 [dev-dependencies]
 tokio = { version = "1.38.0", features = ["macros"] }
+testing = { path = "../../testing" }
+filesys = { path = "../../files/filesys" }
+

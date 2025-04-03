@@ -7994,6 +7994,7 @@ dependencies = [
  "anyhow",
  "crockford",
  "errors",
+ "filesys",
  "log",
  "my-workspace-hack",
  "reqwest 0.12.15",
@@ -8001,6 +8002,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "subprocess_common",
+ "testing",
  "tokio",
 ]
 

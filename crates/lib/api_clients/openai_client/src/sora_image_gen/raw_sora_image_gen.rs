@@ -1,7 +1,9 @@
 use serde_derive::{Deserialize, Serialize};
 use errors::AnyhowResult;
+use crate::credentials::SoraCredentials;
 
 const URL : &str = "https://sora.com/backend/video_gen";
+
 
 // https://sora.com/backend/notif?limit=100&before=task_01jqpg8qghenet0rw2a79p0vbn
 
@@ -92,14 +94,16 @@ pub (crate) struct RawSoraErrorResponse {
   code: Option<String>,
 }
 
-pub (crate) async fn call_sora_image_gen(request: RawSoraImageGenRequest, session_bearer_token: &str) -> AnyhowResult<RawSoraResponse> {
+
+pub (crate) async fn call_sora_image_gen(request: RawSoraImageGenRequest, credentials: &SoraCredentials) -> AnyhowResult<RawSoraResponse> {
   let client = reqwest::Client::new();
 
-  let request = serde_json::to_string(&request)?;
+  let request_payload = serde_json::to_string(&request)?;
 
-  let response = client.post(URL)
-      .header("Authorization", "Bearer ".to_owned() + &session_bearer_token)
-      .json(&request)
+  let request= client.post(URL);
+  let request = credentials.add_credential_headers_to_request(request);
+
+  let response = request.json(&request_payload)
       .send()
       .await?;
       //.error_for_status()?;

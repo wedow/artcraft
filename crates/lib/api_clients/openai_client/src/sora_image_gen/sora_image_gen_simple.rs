@@ -1,18 +1,17 @@
 use errors::AnyhowResult;
+use crate::credentials::SoraCredentials;
 use crate::sora_image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::sora_image_gen::raw_sora_image_gen::{call_sora_image_gen, OperationType, RawSoraImageGenRequest, VideoGenType};
 
-pub struct SoraImageGenSimpleRequest {
+pub struct SoraImageGenSimpleRequest<'a> {
   pub prompt: String,
   pub num_images: NumImages,
   pub image_size: ImageSize,
-  pub session_bearer_token: String,
+  pub credentials: &'a SoraCredentials,
 }
 
-pub async fn sora_image_gen_simple(request: SoraImageGenSimpleRequest) -> AnyhowResult<SoraImageGenResponse> {
-  let session_bearer_token = request.session_bearer_token;
-
-  let request = RawSoraImageGenRequest {
+pub async fn sora_image_gen_simple(request: SoraImageGenSimpleRequest<'_>) -> AnyhowResult<SoraImageGenResponse> {
+  let args = RawSoraImageGenRequest {
     r#type: VideoGenType::ImageGen,
     operation: OperationType::SimpleCompose,
     prompt: request.prompt,
@@ -24,7 +23,7 @@ pub async fn sora_image_gen_simple(request: SoraImageGenSimpleRequest) -> Anyhow
   };
 
   // TODO: Error handling.
-  let result = call_sora_image_gen(request, &session_bearer_token).await?;
+  let result = call_sora_image_gen(args, request.credentials).await?;
 
   Ok(SoraImageGenResponse {
     task_id: result.id,
@@ -33,19 +32,35 @@ pub async fn sora_image_gen_simple(request: SoraImageGenSimpleRequest) -> Anyhow
 
 #[cfg(test)]
 mod tests {
+  use std::fs::read_to_string;
   use errors::AnyhowResult;
+  use testing::test_file_path::test_file_path;
+  use crate::credentials::SoraCredentials;
   use crate::sora_image_gen::common::{ImageSize, NumImages};
   use crate::sora_image_gen::sora_image_gen_simple::{sora_image_gen_simple, SoraImageGenSimpleRequest};
 
   #[ignore]
   #[tokio::test]
   pub async fn test() -> AnyhowResult<()> {
-    let token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5MzQ0ZTY1LWJiYzktNDRkMS1hOWQwLWY5NTdiMDc5YmQwZSIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSJdLCJjbGllbnRfaWQiOiJhcHBfTTFuUTN0UjV2VzdYOWpMMnBFNmdIOGRLNCIsImV4cCI6MTc0Mzk1MzE0MSwiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS9hdXRoIjp7InVzZXJfaWQiOiJ1c2VyLTl3ZjZKRmRnUlNKTGp2U0o1M0xOQWJWOCJ9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJlY2hlbG9uQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwiaWF0IjoxNzQzMDg5MTQxLCJpc3MiOiJodHRwczovL2F1dGgub3BlbmFpLmNvbSIsImp0aSI6ImY1YTI2ZjA3LWIxOGQtNDNlOS1iYWEwLWE0ZGY1YzZjY2NlNyIsIm5iZiI6MTc0MzA4OTE0MSwicHdkX2F1dGhfdGltZSI6MTc0MzA4OTE0MDM5OSwic2NwIjpbIm9wZW5pZCIsImVtYWlsIiwicHJvZmlsZSIsIm9mZmxpbmVfYWNjZXNzIl0sInNlc3Npb25faWQiOiJhdXRoc2Vzc19adTMxZnRXTnY0NUwyY3lsMlpha2xuQ1AiLCJzdWIiOiJnb29nbGUtb2F1dGgyfDExNjAxMTIwNzQ5MjM5NTIwMDM5NiJ9.4YjMmpz803PbjlNj3ilR-n_fp0cZFPTRG3drCgLZ1pwrn0inPO6KpZTyGBG6alrVsnhiQfjDE8Bnt5mw1ybDS5V93NHTaBO3vd5SO2kTAHPmp1AmevyA2R8sO0z2NElul5DRZ8kueqrqMX3495aOWZ1khyG2GmOkdA8MOj09nXbUn6y1Y7tn7lfJre8_YUpplXIUEv8dLUap_hVRDGixqYvhuTC3an8fRFDQELnEXOdLv8eDECXgVn_acukSvzOIIc55mAl_jfbf-XVR5_WI1Uwn1RK6JQt5m5KhyMRpndhmCGNSAb8YFShbV1LzUaRapqAQ1AaRcpuzHBQANJ_GgZL89qTUe3Fuj7u8r3WrHnZlnXewAm7LzBUKfKHBWZoSYTyhR5iw5OQhHEvQFQhOtkVmx7HSrQDz7sZCMEbQqLz8HdsJk9PV4eKZeMz-9m1ySl8kF7Pu8hJXLzJ64zX5LlJGXHCnS3DXJ4DQjw7knxnbB-iUFMXNCtOMjbeYrnTzm43A94l_xNkeaBQZLu608kI4FzUl7QFfXdYhfjAN4Czj_sH1N85M2s1db5FEU48r3BV0RSrfVgxi-tEPw-cfE-eV-GoTKp5uQyN7Tx_5gxQJNxMnn9ixYg6neYLEcvVlvCNkOfhVBqxRzTQGjqvCnrhmESMtD3esP96nwVWXuoQ";
+    let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
+    let cookie = read_to_string(test_file_path("test_data/temp/cookie.txt")?)?;
+    let sentinel = read_to_string(test_file_path("test_data/temp/sentinel.txt")?)?;
+
+    let bearer = bearer.trim().to_string();
+    let cookie = cookie.trim().to_string();
+    let sentinel = sentinel.trim().to_string();
+
+    let creds = SoraCredentials {
+      bearer_token: bearer,
+      cookie,
+      sentinel,
+    };
+
     let response = sora_image_gen_simple(SoraImageGenSimpleRequest {
-      prompt: "A cat and a dog play chess".to_string(),
+      prompt: "A toy F-22 fighter jet attacks a toy giant monster".to_string(),
       num_images: NumImages::One,
       image_size: ImageSize::Square,
-      session_bearer_token: token.to_string(),
+      credentials: &creds,
     }).await?;
 
     println!("task_id: {}", response.task_id);

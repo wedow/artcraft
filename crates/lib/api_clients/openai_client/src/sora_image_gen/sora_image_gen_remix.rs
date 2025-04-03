@@ -1,19 +1,18 @@
 use errors::AnyhowResult;
+use crate::credentials::SoraCredentials;
 use crate::sora_image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::sora_image_gen::raw_sora_image_gen::{call_sora_image_gen, InpaintItem, InpaintItemType, OperationType, RawSoraImageGenRequest, VideoGenType};
 
-pub struct SoraImageGenRemixRequest {
+pub struct SoraImageGenRemixRequest<'a> {
   pub prompt: String,
   pub num_images: NumImages,
   pub image_size: ImageSize,
   pub sora_media_tokens: Vec<String>,
-  pub session_bearer_token: String,
+  pub credentials: &'a SoraCredentials,
 }
 
-pub async fn sora_image_gen_remix(request: SoraImageGenRemixRequest) -> AnyhowResult<SoraImageGenResponse> {
-  let session_bearer_token = request.session_bearer_token;
-
-  let request = RawSoraImageGenRequest {
+pub async fn sora_image_gen_remix(request: SoraImageGenRemixRequest<'_>) -> AnyhowResult<SoraImageGenResponse> {
+  let args = RawSoraImageGenRequest {
     r#type: VideoGenType::ImageGen,
     operation: OperationType::Remix,
     prompt: request.prompt,
@@ -36,7 +35,7 @@ pub async fn sora_image_gen_remix(request: SoraImageGenRemixRequest) -> AnyhowRe
   };
 
   // TODO: Error handling.
-  let result = call_sora_image_gen(request, &session_bearer_token).await?;
+  let result = call_sora_image_gen(args, &request.credentials).await?;
 
   Ok(SoraImageGenResponse {
     task_id: result.id,
