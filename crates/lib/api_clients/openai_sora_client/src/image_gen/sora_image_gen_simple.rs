@@ -39,9 +39,9 @@ mod tests {
   use crate::image_gen::common::{ImageSize, NumImages};
   use crate::image_gen::sora_image_gen_simple::{sora_image_gen_simple, SoraImageGenSimpleRequest};
 
-  #[ignore]
+  #[ignore] // You can manually run "ignore" tests in the IDE, but they won't run in CI.
   #[tokio::test]
-  pub async fn test() -> AnyhowResult<()> {
+  pub async fn manual_test() -> AnyhowResult<()> {
     let sentinel = read_to_string(test_file_path("test_data/temp/sentinel.txt")?)?;
     let sentinel = sentinel.trim().to_string();
 
