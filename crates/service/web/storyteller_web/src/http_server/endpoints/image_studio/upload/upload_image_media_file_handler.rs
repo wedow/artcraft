@@ -49,7 +49,7 @@ pub struct UploadImageMediaFileForm {
   /// The uploaded screenshot
   #[multipart(limit = "512 MiB")]
   #[schema(value_type = Vec<u8>, format = Binary)]
-  screenshot: TempFile,
+  snapshot: TempFile,
 
   /// Optional: Title (name) of the scene
   #[multipart(limit = "2 KiB")]
@@ -64,7 +64,7 @@ pub struct UploadImageMediaFileForm {
   /// Optional: If an engine scene was used to create this snapshot, provide it here to create a link
   #[multipart(limit = "2 KiB")]
   #[schema(value_type = Option<MediaFileToken>, format = Binary)]
-  maybe_scene_source_media_file_token: Option<Text<MediaFileToken>>,
+  maybe_scene_source_media_token: Option<Text<MediaFileToken>>,
 }
 
 // Unlike the "upload" endpoints, which are pure inserts, these endpoints are *upserts*.
@@ -190,7 +190,7 @@ pub async fn upload_studio_scene_snapshot_handler(
   // ==================== FILE VALIDATION ==================== //
 
   let mut file_bytes = Vec::new();
-  form.screenshot.file.read_to_end(&mut file_bytes)
+  form.snapshot.file.read_to_end(&mut file_bytes)
       .map_err(|e| {
         error!("Problem reading file: {:?}", e);
         MediaFileUploadError::ServerError
@@ -215,7 +215,7 @@ pub async fn upload_studio_scene_snapshot_handler(
 
   // ==================== OTHER FILE METADATA ==================== //
 
-  let maybe_filename = form.screenshot.file_name.as_deref()
+  let maybe_filename = form.snapshot.file_name.as_deref()
       .as_deref()
       .map(|filename| PathBuf::from(filename));
 
