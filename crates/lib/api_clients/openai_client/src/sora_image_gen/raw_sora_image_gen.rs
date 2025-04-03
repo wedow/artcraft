@@ -95,22 +95,34 @@ pub (crate) struct RawSoraErrorResponse {
 }
 
 
+const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
+
 pub (crate) async fn call_sora_image_gen(request: RawSoraImageGenRequest, credentials: &SoraCredentials) -> AnyhowResult<RawSoraResponse> {
   let client = reqwest::Client::new();
 
   let request_payload = serde_json::to_string(&request)?;
 
-  let request= client.post(URL);
-  let request = credentials.add_credential_headers_to_request(request);
+  println!("\n\n >>> request_payload = {:?}", request_payload);
+
+  //let request = credentials.add_credential_headers_to_request(request);
+
+  let request= client.post(URL)
+      .header("OpenAI-Sentinel-Token", &credentials.sentinel)
+      .header("User-Agent", USER_AGENT)
+      .header("Cookie", &credentials.cookie)
+      .header("Authorization", &credentials.bearer_token)
+      .header("Content-Type", "application/json");
 
   let response = request.json(&request_payload)
       .send()
       .await?;
       //.error_for_status()?;
 
+  println!("\n\n >>> status = {:?}", response.status());
+
   let json_response = &response.text().await?;
 
-  println!("status: {:?}", json_response);
+  println!(" >>> response = {:?}", json_response);
 
   let response = serde_json::from_str(json_response)?;
 

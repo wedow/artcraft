@@ -11,22 +11,32 @@ pub struct SoraCredentials {
 }
 
 impl SoraCredentials {
-  pub fn add_credential_headers_to_request(&self, request: RequestBuilder) -> RequestBuilder {
-    let bearer_header = match self.bearer_token.get(0..6) {
+  pub fn authorization_header_value(&self) -> String {
+    match self.bearer_token.get(0..6) {
       Some("bearer") | Some("Bearer") => self.bearer_token.clone(),
       _ => "Bearer ".to_owned() + &self.bearer_token,
-    };
+    }
+  }
+
+  pub fn add_credential_headers_to_request(&self, request: RequestBuilder) -> RequestBuilder {
+    let bearer_header = self.authorization_header_value();
 
     println!(">>> BEARER HEADER = {}", bearer_header);
-    println!(">>> COOKIE HEADER = {}", self.cookie);
+    //println!(">>> COOKIE HEADER = {}", self.cookie);
     println!(">>> SENTINEL HEADER = {}", self.sentinel);
 
     let request = request
-        .header("Authorization", bearer_header)
-        .header("Cookie", &self.cookie)
         .header("OpenAI-Sentinel-Token", &self.sentinel)
-        .header("User-Agent", USER_AGENT);
+        .header("User-Agent", USER_AGENT)
+        .header("Cookie", &self.cookie)
+        .header("Authorization", bearer_header);
 
+    /*
+    Without sentinel token:
+      status: "{\n  \"error\": {\n    \"message\": \"Hmmm something didn't look right with your request. Please try again later or visit https://help.openai.com if this issue persists.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": null,\n    \"code\": \"sentinel_block\"\n  }\n}"
+      Error: missing field `id` at line 8 column 1
+
+     */
     request
   }
 }

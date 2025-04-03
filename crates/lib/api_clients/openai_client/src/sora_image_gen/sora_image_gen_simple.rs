@@ -42,13 +42,14 @@ mod tests {
   #[ignore]
   #[tokio::test]
   pub async fn test() -> AnyhowResult<()> {
-    let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
-    let cookie = read_to_string(test_file_path("test_data/temp/cookie.txt")?)?;
     let sentinel = read_to_string(test_file_path("test_data/temp/sentinel.txt")?)?;
-
-    let bearer = bearer.trim().to_string();
-    let cookie = cookie.trim().to_string();
     let sentinel = sentinel.trim().to_string();
+
+    let cookie = read_to_string(test_file_path("test_data/temp/cookie.txt")?)?;
+    let cookie = cookie.trim().to_string();
+
+    let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
+    let bearer = bearer.trim().to_string();
 
     let creds = SoraCredentials {
       bearer_token: bearer,

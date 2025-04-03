@@ -32,8 +32,8 @@ impl ImageSize {
   pub fn as_dimensions(&self) -> (u16, u16) {
     match self {
       ImageSize::Square => (480, 480),
-      ImageSize::Wide => (480, 270),
-      ImageSize::Tall => (270, 480),
+      ImageSize::Wide => (854, 480),
+      ImageSize::Tall => (480, 854),
     }
   }
 
