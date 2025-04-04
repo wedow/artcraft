@@ -436,7 +436,7 @@ export const PromptBox = () => {
                 disabled: true,
               },
             ]}
-            onAction={handleAction}
+            onPanelAction={handleAction}
             showIconsInList
             buttonClassName="backdrop-blur-none bg-transparent hover:bg-transparent py-1.5 px-0 pr-1 m-0 hover:opacity-50 transition-opacity duration-100 ring-0 border-none focus:ring-0 outline-none"
             triggerIcon={<FontAwesomeIcon icon={faPlus} className="text-xl" />}
