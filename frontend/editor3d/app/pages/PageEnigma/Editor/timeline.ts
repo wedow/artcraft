@@ -287,10 +287,6 @@ export class TimeLine {
         // testDeformBody(lastRig);
       }
 
-      // Add a skeleton helper to the character
-      const skeletonHelper = new THREE.SkeletonHelper(obj);
-      this.scene.scene.add(skeletonHelper);
-
       const object_uuid = obj.uuid;
 
       this.characters[object_uuid] = ClipGroup.CHARACTER; // TODO: Create a class to make the idea of a character.

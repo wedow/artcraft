@@ -14,6 +14,13 @@ import { TransformControls } from "./TransformControls";
 import { SceneManager, SceneObject } from "./scene_manager_api";
 import { FreeCam } from "./free_cam";
 import Stats from "three/examples/jsm/libs/stats.module.js";
+import { FKHelper } from "./KinHelpers/FKHelper";
+
+export enum KinMode {
+  FK,
+  IK,
+  NONE,
+}
 
 export class MouseControls {
   camera: THREE.PerspectiveCamera | null;
@@ -47,8 +54,11 @@ export class MouseControls {
   private isMovable: Function;
   enable_stats: Function;
 
+  private kinMode: KinMode = KinMode.NONE;
+  private fkHelper: FKHelper;
+
   constructor(
-    camera: THREE.PerspectiveCamera | null,
+    camera: THREE.PerspectiveCamera,
     camera_person_mode: boolean,
     cameraViewControls: FreeCam,
     lockControls: PointerLockControls | undefined,
@@ -62,7 +72,7 @@ export class MouseControls {
     mouse: THREE.Vector2 | undefined,
     timeline_mouse: THREE.Vector2 | undefined,
     raycaster: THREE.Raycaster | undefined,
-    control: TransformControls | undefined,
+    control: TransformControls,
     outlinePass: OutlinePass | undefined,
     scene: THREE.Scene,
     publishSelect: Function,
@@ -101,6 +111,11 @@ export class MouseControls {
     this.sceneManager = undefined;
     this.isMovable = isMovable;
     this.enable_stats = enable_stats;
+    this.fkHelper = new FKHelper({
+      camera: this.camera,
+      domElement: this.control.domElement,
+      scene: this.scene,
+    });
   }
 
   focus() {
@@ -198,13 +213,31 @@ export class MouseControls {
       // transform
       this.control?.setMode("translate");
       return;
-    } else if (event.key === "r") {
+    } else if (event.key === "r" && !event.ctrlKey) {
       // rotate
       this.control?.setMode("rotate");
       return;
     } else if (event.key === "g") {
       // scale
       this.control?.setMode("scale");
+      return;
+    } else if (event.key === "k") {
+      if (this.kinMode == KinMode.FK) {
+        this.fkHelper.clear();
+        this.kinMode = KinMode.NONE;
+        console.log("FK mode off");
+        return;
+      }
+
+      if (!(this.selected && this.selected.length > 0)) {
+        return;
+      }
+
+      // FK test
+
+      this.kinMode = KinMode.FK;
+      this.fkHelper.setTarget(this.selected[0]);
+      console.log("FK mode on");
       return;
     }
 
@@ -297,6 +330,11 @@ export class MouseControls {
       return;
     }
     this.camera_last_pos.copy(camera_pos);
+
+    if (this.kinMode == KinMode.FK) {
+      this.fkHelper.onMouseClick(this.mouse);
+      return;
+    }
 
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const interactable: any[] = [];
