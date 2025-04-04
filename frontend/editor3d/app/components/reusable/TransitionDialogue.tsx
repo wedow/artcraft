@@ -79,7 +79,7 @@ export const TransitionDialogue = ({
               <Dialog.Panel
                 className={twMerge(
                   "w-full max-w-lg transform rounded-xl",
-                  "border border-ui-panel-border bg-ui-panel",
+                  "border border-ui-panel-border bg-[#2C2C2C]",
                   "text-left align-middle shadow-xl transition-all",
                   className,
                 )}
@@ -130,7 +130,9 @@ export const TransitionDialogue = ({
                     )}
                   </Dialog.Title>
                 )}
-                <div className={`${childPadding ? "p-5 pt-0" : ""}`.trim()}>
+                <div
+                  className={`h-full ${childPadding ? "p-5 pt-0" : ""}`.trim()}
+                >
                   {children}
                 </div>
               </Dialog.Panel>

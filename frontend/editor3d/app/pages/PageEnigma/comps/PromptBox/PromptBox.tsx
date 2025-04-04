@@ -48,6 +48,12 @@ interface ReferenceImage {
 import { EngineApi } from "~/Classes/ApiManager/EngineApi";
 import { scene } from "~/signals/scene";
 import { UploaderStates } from "~/enums/UploaderStates";
+import { CameraSettingsModal } from "./CameraSettingsModal";
+
+interface ExtendedPopoverItem extends PopoverItem {
+  id: string;
+  focalLength: number;
+}
 
 export const PromptBox = () => {
   useSignals();
@@ -78,20 +84,26 @@ export const PromptBox = () => {
       icon: <FontAwesomeIcon icon={faRectangleWide} className="h-4 w-4" />,
     },
   ]);
-  const [cameraList, setCameraList] = useState<PopoverItem[]>([
+  const [cameraList, setCameraList] = useState<ExtendedPopoverItem[]>([
     {
+      id: "main",
       label: "Main View",
       selected: true,
       icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
+      focalLength: 35,
     },
     {
+      id: "cam2",
       label: "Camera 2",
       selected: false,
       icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
+      focalLength: 35,
     },
   ]);
+  const [selectedCameraId, setSelectedCameraId] = useState("main");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isCameraSettingsOpen, setIsCameraSettingsOpen] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -126,18 +138,39 @@ export const PromptBox = () => {
         selected: item.label === selectedItem.label,
       })),
     );
+    const selectedCamera = cameraList.find(
+      (cam) => cam.label === selectedItem.label,
+    );
+    if (selectedCamera) {
+      setSelectedCameraId(selectedCamera.id);
+    }
   };
 
   const handleAddCamera = () => {
     const newIndex = cameraList.length + 1;
+    const newId = `cam${newIndex}`;
     setCameraList((prev) => [
       ...prev,
       {
+        id: newId,
         label: `Camera ${newIndex}`,
         selected: false,
         icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
+        focalLength: 35,
       },
     ]);
+  };
+
+  const handleCameraNameChange = (id: string, newName: string) => {
+    setCameraList((prev) =>
+      prev.map((cam) => (cam.id === id ? { ...cam, label: newName } : cam)),
+    );
+  };
+
+  const handleCameraFocalLengthChange = (id: string, value: number) => {
+    setCameraList((prev) =>
+      prev.map((cam) => (cam.id === id ? { ...cam, focalLength: value } : cam)),
+    );
   };
 
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
@@ -326,6 +359,31 @@ export const PromptBox = () => {
     }
   };
 
+  const handleDeleteCamera = (id: string) => {
+    // Don't allow deleting the main camera or if it's the last camera
+    if (id === "main" || cameraList.length <= 1) return;
+
+    // Update camera list
+    setCameraList((prev) => prev.filter((cam) => cam.id !== id));
+
+    // If we're deleting the selected camera, select the first remaining camera
+    if (id === selectedCameraId) {
+      const remainingCameras = cameraList.filter((cam) => cam.id !== id);
+      if (remainingCameras.length > 0) {
+        setSelectedCameraId(remainingCameras[0].id);
+        // Update selection state
+        setCameraList((prev) =>
+          prev
+            .filter((cam) => cam.id !== id)
+            .map((cam, idx) => ({
+              ...cam,
+              selected: idx === 0,
+            })),
+        );
+      }
+    }
+  };
+
   return (
     <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col gap-3">
       {referenceImages.length > 0 && (
@@ -429,6 +487,8 @@ export const PromptBox = () => {
               showIconsInList
               mode="toggle"
               panelTitle="Camera"
+              panelActionLabel="Settings"
+              onPanelAction={() => setIsCameraSettingsOpen(true)}
             />
             <Tooltip
               content={
@@ -489,6 +549,17 @@ export const PromptBox = () => {
           </div>
         </div>
       </div>
+      <CameraSettingsModal
+        isOpen={isCameraSettingsOpen}
+        onClose={() => setIsCameraSettingsOpen(false)}
+        cameras={cameraList}
+        onCameraNameChange={handleCameraNameChange}
+        onCameraFocalLengthChange={handleCameraFocalLengthChange}
+        onAddCamera={handleAddCamera}
+        selectedCameraId={selectedCameraId}
+        onSelectCamera={setSelectedCameraId}
+        onDeleteCamera={handleDeleteCamera}
+      />
     </div>
   );
 };

@@ -23,10 +23,11 @@ interface PopoverMenuProps {
   children?: ReactNode;
   buttonClassName?: string;
   panelClassName?: string;
-  onAction?: (action: string) => void;
+  onPanelAction?: (action: string) => void;
   panelTitle?: string;
   position?: "top" | "bottom";
   align?: "start" | "center" | "end";
+  panelActionLabel?: string;
 }
 
 export const PopoverMenu = ({
@@ -41,16 +42,17 @@ export const PopoverMenu = ({
   children,
   buttonClassName,
   panelClassName,
-  onAction,
+  onPanelAction,
   panelTitle,
   position = "top",
   align = "start",
+  panelActionLabel,
 }: PopoverMenuProps) => {
   const selectedItem = items.find((item) => item.selected);
 
   const handleItemClick = (item: PopoverItem, close: () => void) => {
-    if (mode === "button" && item.action && onAction) {
-      onAction(item.action);
+    if (mode === "button" && item.action && onPanelAction) {
+      onPanelAction(item.action);
       close();
     } else {
       onSelect?.(item);
@@ -124,8 +126,19 @@ export const PopoverMenu = ({
                   )}
                 >
                   {panelTitle && (
-                    <div className="mb-2 mt-0.5 px-1.5 text-sm font-normal text-white opacity-70">
+                    <div className="mb-2 mt-0.5 flex justify-between px-1.5 text-sm font-normal text-white opacity-70">
                       {panelTitle}
+                      {panelActionLabel && (
+                        <button
+                          onClick={() => {
+                            onPanelAction?.(panelActionLabel);
+                            close();
+                          }}
+                          className="text-end text-sm text-white/85 hover:underline"
+                        >
+                          {panelActionLabel}
+                        </button>
+                      )}
                     </div>
                   )}
                   {mode === "default" && children ? (
