@@ -2,7 +2,8 @@ import { TransitionDialogue } from "~/components/reusable/TransitionDialogue";
 import { faPlus, faTrashAlt, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
-import { Input, Label, Tooltip } from "~/components";
+import { Button, Input, Label, Tooltip } from "~/components";
+import { SliderV2 } from "~/components/reusable/SliderV2/SliderV2";
 
 interface ExtendedPopoverItem extends PopoverItem {
   id: string;
@@ -73,77 +74,83 @@ export const CameraSettingsModal = ({
           </div>
         </div>
         <div className="col-span-8 p-3 ps-0 pt-2">
-          <div className="flex items-center justify-between gap-2.5 py-0.5 opacity-100">
-            <h2 className="text-[18px] font-semibold">
-              {selectedCamera?.label || "Camera"}
-            </h2>
-            <Tooltip
-              content={
-                selectedCamera?.id === "main"
-                  ? "Cannot delete the main camera"
-                  : "Delete camera"
-              }
-              position="top"
-              delay={200}
-            >
-              <button
-                className={`h-6 w-6 rounded-lg transition-colors ${
-                  selectedCamera?.id === "main"
-                    ? "cursor-not-allowed text-white/30"
-                    : "text-white/60 hover:text-white/100"
-                }`}
-                onClick={() =>
-                  selectedCamera &&
-                  selectedCamera.id !== "main" &&
-                  onDeleteCamera(selectedCamera.id)
-                }
-                disabled={selectedCamera?.id === "main"}
-              >
-                <FontAwesomeIcon icon={faTrashAlt} className="text-lg" />
-              </button>
-            </Tooltip>
-          </div>
-          <hr className="my-2 w-full border-white/10" />
-          <div className="space-y-6">
-            <div className="space-y-1.5">
-              <Label htmlFor="camera-name" className="opacity-70">
-                Name
-              </Label>
-              <Input
-                id="camera-name"
-                type="text"
-                value={selectedCamera?.label || ""}
-                onChange={(e) =>
-                  selectedCamera &&
-                  onCameraNameChange(selectedCamera.id, e.target.value)
-                }
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="focal-length" className="opacity-70">
-                Focal Length
-              </Label>
-              <div className="mt-1 flex items-center gap-4">
-                <input
-                  id="focal-length"
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={selectedCamera?.focalLength || 35}
-                  onChange={(e) =>
-                    selectedCamera &&
-                    onCameraFocalLengthChange(
-                      selectedCamera.id,
-                      Number(e.target.value),
-                    )
+          <div className="flex h-full flex-col">
+            <div>
+              <div className="flex items-center justify-between gap-2.5 py-0.5 opacity-100">
+                <h2 className="text-[18px] font-semibold">
+                  {selectedCamera?.label || "Camera"}
+                </h2>
+                <Tooltip
+                  content={
+                    selectedCamera?.id === "main"
+                      ? "Cannot delete the main camera"
+                      : "Delete camera"
                   }
-                  className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-white/20"
-                />
-                <span className="min-w-[60px] text-sm">
-                  {selectedCamera?.focalLength || 35}mm
-                </span>
+                  position="top"
+                  delay={200}
+                >
+                  <button
+                    className={`h-6 w-6 rounded-lg transition-colors ${
+                      selectedCamera?.id === "main"
+                        ? "cursor-not-allowed text-white/30"
+                        : "text-white/60 hover:text-white/100"
+                    }`}
+                    onClick={() =>
+                      selectedCamera &&
+                      selectedCamera.id !== "main" &&
+                      onDeleteCamera(selectedCamera.id)
+                    }
+                    disabled={selectedCamera?.id === "main"}
+                  >
+                    <FontAwesomeIcon icon={faTrashAlt} className="text-lg" />
+                  </button>
+                </Tooltip>
               </div>
+              <hr className="my-2 w-full border-white/10" />
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="camera-name" className="text-sm opacity-70">
+                    Name
+                  </Label>
+                  <Input
+                    id="camera-name"
+                    type="text"
+                    value={selectedCamera?.label || ""}
+                    onChange={(e) =>
+                      selectedCamera &&
+                      onCameraNameChange(selectedCamera.id, e.target.value)
+                    }
+                    className="text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="focal-length" className="text-sm opacity-70">
+                    Focal Length
+                  </Label>
+                  <div className="mt-1 flex items-center gap-4">
+                    <SliderV2
+                      min={10}
+                      max={200}
+                      value={selectedCamera?.focalLength || 35}
+                      onChange={(value) =>
+                        selectedCamera &&
+                        onCameraFocalLengthChange(selectedCamera.id, value)
+                      }
+                      step={1}
+                      suffix="mm"
+                      showDecrement={true}
+                      showIncrement={true}
+                      className="w-full"
+                    />
+                    <span className="min-w-[60px] text-sm">
+                      {selectedCamera?.focalLength || 35}mm
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-auto flex justify-end pt-4">
+              <Button onClick={onClose}>Done</Button>
             </div>
           </div>
         </div>
