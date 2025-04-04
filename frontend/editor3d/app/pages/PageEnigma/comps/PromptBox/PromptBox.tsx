@@ -22,7 +22,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem, PopoverMenu } from "~/components/reusable/Popover";
 import { Button } from "~/components";
 import { CameraAspectRatio } from "~/pages/PageEnigma/enums";
-import { cameraAspectRatio } from "~/pages/PageEnigma/signals";
+import { cameraAspectRatio, disableHotkeyInput, DomLevels, enableHotkeyInput } from "~/pages/PageEnigma/signals";
 import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
@@ -325,6 +325,14 @@ export const PromptBox = () => {
             onChange={handleChange}
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
+            onFocus={() => {
+              console.log("disabling hotkeys")
+              disableHotkeyInput(DomLevels.INPUT);
+            }}
+            onBlur={() => {
+              console.log("enabling hotkeys")
+              enableHotkeyInput(DomLevels.INPUT);
+            }}
           />
         </div>
         <div className="mt-2 flex items-center justify-between gap-2">
