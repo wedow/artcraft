@@ -24,11 +24,13 @@ export class FKHelper {
   constructor({
     camera,
     domElement,
-    scene
+    scene,
+    onDragChange
   }: {
     camera: THREE.Camera;
     domElement: HTMLElement;
     scene: THREE.Scene;
+    onDragChange: (dragging: boolean) => void;
   }) {
     this.raycaster = new THREE.Raycaster();
     this.scene = scene;
@@ -38,13 +40,14 @@ export class FKHelper {
     this.transformControls.setSpace("local");
     this.transformControls.setMode("rotate");
     this.transformControls.setSize(0.5);
+    this.transformControls.addEventListener("dragging-changed", (event: any) => {
+      onDragChange(event.value);
+    });
   }
 
   // Set FK target
   setTarget(target: THREE.Object3D) {
     // TODO: Highlight all the necessary bones
-    // TODO: Set the transform controls to the target
-    // TODO: Listen to click events for raycaster to select bones
     this.targetBoneSpheres = [];
     target.traverse((child) => {
       if (child.type !== "Bone") {

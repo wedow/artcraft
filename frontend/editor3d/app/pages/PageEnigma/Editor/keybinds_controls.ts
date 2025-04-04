@@ -56,6 +56,7 @@ export class MouseControls {
 
   private kinMode: KinMode = KinMode.NONE;
   private fkHelper: FKHelper;
+  private isBoneDragged: boolean = false;
 
   constructor(
     camera: THREE.PerspectiveCamera,
@@ -115,7 +116,12 @@ export class MouseControls {
       camera: this.camera,
       domElement: this.control.domElement,
       scene: this.scene,
+      onDragChange: this.onFKControlsDragging.bind(this),
     });
+  }
+
+  onFKControlsDragging(dragging: boolean) {
+    this.isBoneDragged = dragging;
   }
 
   focus() {
@@ -166,7 +172,7 @@ export class MouseControls {
   }
 
   onMouseDown(event: any) {
-    if ((event.button === 0 || event.button === 1) && this.isMovable()) {
+    if ((event.button === 0 || event.button === 1) && this.isMovable() && !this.isBoneDragged) {
       this.isMouseClicked = true;
     }
   }
@@ -229,12 +235,18 @@ export class MouseControls {
         return;
       }
 
+      // Make sure we have an intersection
       if (!(this.selected && this.selected.length > 0)) {
         return;
       }
 
-      // FK test
+      // Make sure FK is supported only on character type objects
+      const firstSelection = this.selected[0];
+      if (!firstSelection.userData.isCharacter) {
+        return;
+      }
 
+      // FK test
       this.kinMode = KinMode.FK;
       this.fkHelper.setTarget(this.selected[0]);
       console.log("FK mode on");
