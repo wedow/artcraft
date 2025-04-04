@@ -13,4 +13,5 @@ export enum JobType {
   TextToSpeech = "text_to_speech",
   VoiceConversion = "voice_conversion",
   VideoStyleTransfer = "workflow",
+  ImageGeneration = "image_generation",
 }

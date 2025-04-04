@@ -30,7 +30,7 @@ export const SidePanelMenu = ({
   return (
     <div
       className={twMerge(
-        "fixed z-30 bg-assets-background",
+        "fixed bg-assets-background",
         "right-0 top-[64px] w-[84px] overflow-auto border-l px-2 py-2",
         sidePanelVisible.value ? "border-transparent" : "border-[#363636]",
       )}
@@ -49,9 +49,9 @@ export const SidePanelMenu = ({
                   ? "border-[#363636] bg-brand-secondary-900/60 opacity-100 hover:bg-brand-secondary-900/60"
                   : "opacity-60",
                 tab.title === TabTitles.STYLIZE &&
-                "bg-brand-primary font-medium opacity-90 hover:border-white/25 hover:bg-brand-primary hover:opacity-100",
+                  "bg-brand-primary font-medium opacity-90 hover:border-white/25 hover:bg-brand-primary hover:opacity-100",
                 tab.title === selectedTab.title &&
-                  tab.title === TabTitles.STYLIZE
+                tab.title === TabTitles.STYLIZE
                   ? "border-white/50 opacity-100 hover:border-white/50"
                   : "",
               ])}

@@ -33,6 +33,15 @@ export const activeWorkflowJobs = computed(() => {
   });
 });
 
+export const activeImageGenerationJobs = computed(() => {
+  if (!activeJobs.value) {
+    return undefined;
+  }
+  return activeJobs.value.filter((job) => {
+    return job.request.inference_category === JobType.ImageGeneration;
+  });
+});
+
 export const activeAudioJobs = computed(() => {
   if (!activeJobs.value) {
     return undefined;

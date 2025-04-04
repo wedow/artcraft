@@ -19,7 +19,7 @@ export function getStyleName(typeInput: string) {
 
 interface Props {
   movie: MediaInfo;
-  setMovieId: (id: string) => void;
+  setMovieId?: (id: string) => void;
 }
 
 export function CompletedCard({ movie, setMovieId }: Props) {
@@ -37,20 +37,23 @@ export function CompletedCard({ movie, setMovieId }: Props) {
   );
   const styleName =
     movie.maybe_style_name && getStyleName(movie.maybe_style_name);
+
+  const handleClick = () => {
+    setMovieId?.(movie.token);
+  };
+
   return (
     <div
-      className="flex w-full items-center justify-between px-5 py-3 text-start transition-all duration-150 hover:cursor-pointer hover:bg-brand-secondary/40"
-      onClick={() => {
-        setMovieId(movie.token);
-      }}
+      className="flex w-full items-center justify-between rounded-lg p-2 text-start transition-all duration-150 hover:cursor-pointer hover:bg-white/10"
+      onClick={handleClick}
     >
       <div className="flex gap-4">
-        <div className="flex h-32 w-32 justify-center overflow-hidden rounded-lg bg-black/60">
+        <div className="flex aspect-square h-14 w-14 justify-center overflow-hidden rounded-lg border border-[#A9A9A9]/50 bg-black/60">
           <img
             src={
               loadError ? "/resources/images/movie-placeholder.png" : imageUrl
             }
-            className="h-full object-contain"
+            className="h-full w-full object-cover"
             alt={movie.maybe_title ?? "unknown"}
             crossOrigin="anonymous"
             onError={() => setLoadError(true)}
@@ -60,16 +63,16 @@ export function CompletedCard({ movie, setMovieId }: Props) {
         <div className="flex flex-col justify-center gap-1">
           <div className="font-medium">{movie.maybe_title || "Untitled"}</div>
           <div>
-            {styleName && (
+            {/* {styleName && (
               <div className="text-sm text-white/60">{styleName}</div>
-            )}
+            )} */}
             <div className="text-sm text-white/60">
               {dayjs(movie.updated_at).format("MMM D, YYYY HH:mm:ss")}
             </div>
           </div>
         </div>
       </div>
-      <div className="pr-5">
+      {/* <div className="pr-5">
         <button
           onClick={(event) => {
             event.preventDefault();
@@ -83,7 +86,7 @@ export function CompletedCard({ movie, setMovieId }: Props) {
           <FontAwesomeIcon icon={faArrowDownToLine} className="mr-2" />
           Download
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

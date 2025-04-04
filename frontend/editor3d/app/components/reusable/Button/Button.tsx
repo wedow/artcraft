@@ -28,7 +28,7 @@ export const Button = ({
   function getVariantClassNames(variant: string) {
     switch (variant) {
       case "secondary": {
-        return "bg-brand-secondary hover:bg-brand-secondary-900 text-white focus-visible:outline-brand-secondary";
+        return "bg-brand-secondary hover:bg-brand-secondary-700 text-white focus-visible:outline-brand-secondary";
       }
       case "action": {
         return "bg-action hover:bg-action-900 text-white focus-visible:outline-action";

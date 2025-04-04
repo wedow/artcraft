@@ -25,6 +25,8 @@ interface PopoverMenuProps {
   panelClassName?: string;
   onAction?: (action: string) => void;
   panelTitle?: string;
+  position?: "top" | "bottom";
+  align?: "start" | "center" | "end";
 }
 
 export const PopoverMenu = ({
@@ -38,8 +40,11 @@ export const PopoverMenu = ({
   triggerLabel,
   children,
   buttonClassName,
+  panelClassName,
   onAction,
   panelTitle,
+  position = "top",
+  align = "start",
 }: PopoverMenuProps) => {
   const selectedItem = items.find((item) => item.selected);
 
@@ -61,6 +66,17 @@ export const PopoverMenu = ({
     buttonClassName,
   );
 
+  const positionClasses = {
+    top: "bottom-full",
+    bottom: "top-full",
+  };
+
+  const alignClasses = {
+    start: "left-0",
+    center: "left-1/2 -translate-x-1/2",
+    end: "right-0",
+  };
+
   return (
     <Popover className="relative">
       {({ close }) => (
@@ -71,19 +87,40 @@ export const PopoverMenu = ({
             {mode === "default" && triggerLabel ? triggerLabel : null}
           </Popover.Button>
 
-          <div className="absolute bottom-full left-0 transform-gpu">
+          <div
+            className={twMerge(
+              "absolute transform-gpu",
+              positionClasses[position],
+              alignClasses[align],
+            )}
+          >
             <Transition
               enter="transition duration-100 ease-out"
-              enterFrom="translate-y-2 opacity-0"
+              enterFrom={
+                position === "bottom"
+                  ? "translate-y-2 opacity-0"
+                  : "-translate-y-2 opacity-0"
+              }
               enterTo="translate-y-0 opacity-100"
               leave="transition duration-100 ease-in"
               leaveFrom="translate-y-0 opacity-100"
-              leaveTo="translate-y-2 opacity-0"
+              leaveTo={
+                position === "bottom"
+                  ? "translate-y-2 opacity-0"
+                  : "-translate-y-2 opacity-0"
+              }
             >
-              <Popover.Panel className="origin-bottom">
+              <Popover.Panel
+                className={twMerge(
+                  position === "bottom" ? "origin-top" : "origin-bottom",
+                )}
+              >
                 <div
                   className={twMerge(
-                    "z-10 mb-2 min-w-48 rounded-lg bg-[#46464B] p-1.5 shadow-lg",
+                    "z-10 min-w-48 rounded-lg bg-[#46464B] p-1.5 shadow-lg",
+                    position === "top" && "mb-2",
+                    position === "bottom" && "mt-2",
+                    panelClassName,
                   )}
                 >
                   {panelTitle && (

@@ -58,19 +58,19 @@ export function InProgressCard({ movie }: Props) {
   }, []);
 
   return (
-    <div className="flex w-full items-center justify-between px-5 py-3 text-start transition-all duration-150">
+    <div className="flex w-full items-center justify-between rounded-lg p-2 text-start transition-all duration-150 hover:bg-white/10">
       <div className="flex gap-4">
-        <div className="flex h-32 w-32 items-center justify-center rounded-lg bg-white/10">
+        <div className="flex aspect-square h-14 w-14 items-center justify-center overflow-hidden rounded-lg border border-[#A9A9A9]/50 bg-black/60">
           {(movie.status.status === JobState.STARTED ||
             movie.status.status === JobState.PENDING) && (
-            <FontAwesomeIcon icon={faSpinnerThird} spin size={"2x"} />
+            <FontAwesomeIcon icon={faSpinnerThird} spin size={"lg"} />
           )}
           {(movie.status.status === JobState.COMPLETE_FAILURE ||
             movie.status.status === JobState.ATTEMPT_FAILED) && (
-            <FontAwesomeIcon icon={faCircleExclamation} size={"2x"} />
+            <FontAwesomeIcon icon={faCircleExclamation} size={"lg"} />
           )}
         </div>
-        <div className="flex flex-col justify-center gap-2">
+        <div className="flex flex-col justify-center gap-1">
           <div className="font-medium">
             {movie.request.maybe_model_title || "Untitled"}
           </div>
@@ -94,7 +94,7 @@ export function InProgressCard({ movie }: Props) {
           <Tooltip content="Cancel" position="top">
             <button
               onClick={() => deleteJob(movie)}
-              className="text-xl text-white/50 transition-all duration-150 hover:text-white/90"
+              className="text-[15px] font-medium text-white/50 transition-all duration-150 hover:text-white/100"
             >
               <FontAwesomeIcon icon={faClose} />
             </button>

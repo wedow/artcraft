@@ -1,10 +1,10 @@
 import { useLocation, useParams } from "@remix-run/react";
-import { faChevronLeft } from "@fortawesome/pro-solid-svg-icons";
-import { ButtonLink } from "~/components";
+import { faChevronLeft, faImages } from "@fortawesome/pro-solid-svg-icons";
+import { Button, ButtonLink } from "~/components";
 import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
-import { MyMoviesButton } from "./MyMoviesButton";
 import { getCurrentLocationWithoutParams } from "~/utilities";
+import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;
@@ -47,8 +47,13 @@ export const TopBar = ({ pageName }: Props) => {
           <SceneTitleInput pageName={pageName} />
         </div>
 
-        <div className="flex justify-end gap-2.5">
-          <MyMoviesButton />
+        <div className="flex justify-end gap-5">
+          <div className="flex gap-2">
+            <Button variant="secondary" icon={faImages} disabled>
+              My Library
+            </Button>
+            <Activity />
+          </div>
           <div className="flex justify-end gap-2">
             <AuthButtons />
           </div>
