@@ -1149,6 +1149,8 @@ class Editor {
       this.cam_obj = this.activeScene.get_object_by_name(this.camera_name);
 
       if (this.outliner_feature_flag) {
+        // FIXME: The signal should NOT be updated every single frame.
+        // Move it to a manual event-based system instead.
         const result = this.sceneManager?.render_outliner(
           this.timeline.characters,
         );
