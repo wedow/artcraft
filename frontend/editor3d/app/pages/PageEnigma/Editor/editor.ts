@@ -960,6 +960,8 @@ class Editor {
   }
 
   deleteObject(uuid: string) {
+    this.mouse_controls?.clearFKVisuals();
+    this.mouse_controls?.removeTransformControls(true);
     this.utils.deleteObject(uuid);
     if (this.outliner_feature_flag) {
       const result = this.sceneManager?.render_outliner(
@@ -991,26 +993,26 @@ class Editor {
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 1024
             : this.render_camera_aspect_ratio ===
-                CameraAspectRatio.VERTICAL_9_16
+              meraAspectRatio.VERTICAL_9_16
               ? 576
               : this.render_camera_aspect_ratio ===
-                  CameraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 900
                 : this.render_camera_aspect_ratio ===
-                    CameraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 600
                   : 1000;
         const height =
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 576
             : this.render_camera_aspect_ratio ===
-                CameraAspectRatio.VERTICAL_9_16
+              meraAspectRatio.VERTICAL_9_16
               ? 1024
               : this.render_camera_aspect_ratio ===
-                  CameraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 600
                 : this.render_camera_aspect_ratio ===
-                    CameraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 900
                   : 1000;
 
