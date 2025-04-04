@@ -48,7 +48,7 @@ export class FKHelper {
   // Set FK target
   setTarget(target: THREE.Object3D) {
     // TODO: Highlight all the necessary bones
-    this.targetBoneSpheres = [];
+    this.clear();
     target.traverse((child) => {
       if (child.type !== "Bone") {
         return;
@@ -59,7 +59,7 @@ export class FKHelper {
       const material = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, transparent: true });
       const sphere = new THREE.Mesh(geometry, material);
       sphere.name = FKHelperSphereName;
-      const uniformScale = 2;
+      const uniformScale = 1.5;
       sphere.scale.set(uniformScale, uniformScale, uniformScale);
       child.add(sphere);
       this.targetBoneSpheres.push(sphere);
@@ -98,14 +98,13 @@ export class FKHelper {
 
     this.scene.add(this.transformControls);
     this.isControlInScene = true;
-    // this.transformControls.addEventListener("dragging-changed", (event: any) => {
-    //   // Disable the object transforms for bone transforms
-    //   event.target.setPointer(event.value);
-    // });
   }
 
   private highlightSphere(sphere: THREE.Object3D) {
-    this.resetHighlight();
+    this.targetBoneSpheres.forEach((s) => {
+      // @ts-expect-error Material on object3d, but it's fine since this is a mesh
+      s.material.opacity = 0.2
+    });
     // @ts-expect-error Material on object3d, but it's fine since this is a mesh
     sphere.material.opacity = 1;
   }
@@ -128,13 +127,15 @@ export class FKHelper {
 
   private removeSpheres() {
     this.targetBoneSpheres.forEach((sphere) => {
+      this.scene.remove(sphere);
       sphere.parent?.remove(sphere);
+      // @ts-expect-error Geometry on object3d, but it's fine since this is a mesh
+      sphere.geometry.dispose();
     });
     this.targetBoneSpheres = [];
   }
 
   clear() {
-    this.targetBoneSpheres = [];
     this.removeControls();
     this.removeSpheres();
 

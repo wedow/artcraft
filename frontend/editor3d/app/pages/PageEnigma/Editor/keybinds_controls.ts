@@ -124,6 +124,10 @@ export class MouseControls {
     this.isBoneDragged = dragging;
   }
 
+  clearFKVisuals() {
+    this.fkHelper.clear();
+  }
+
   focus() {
     if (this.lockControls && this.selected) {
       this.lockControls.camera.lookAt(this.selected[0].position);
@@ -146,9 +150,26 @@ export class MouseControls {
       this.selected = [];
       this.publishSelect();
     }
+    this.hideTransformControls();
+    if (remove_outline) this.outlinePass.selectedObjects = [];
+  }
+
+  hideTransformControls() {
+    if (this.control == undefined) {
+      return;
+    }
+
     this.control.detach();
     this.scene.remove(this.control);
-    if (remove_outline) this.outlinePass.selectedObjects = [];
+  }
+
+  reattachTransformControls() {
+    if (this.control == undefined || this.selected == undefined) {
+      return;
+    }
+
+    this.control.attach(this.selected[0]);
+    this.scene.add(this.control);
   }
 
   selectObject(currentObject: THREE.Object3D) {
@@ -197,6 +218,35 @@ export class MouseControls {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  toggleFKMode() {
+    if (this.kinMode == KinMode.FK) {
+      this.fkHelper.clear();
+      this.kinMode = KinMode.NONE;
+      this.reattachTransformControls();
+      console.log("FK mode off");
+      return;
+    }
+
+    // Make sure we have an intersection
+    if (!(this.selected && this.selected.length > 0)) {
+      return;
+    }
+
+    // Make sure FK is supported only on character type objects
+    const firstSelection = this.selected[0];
+    if (!firstSelection.userData.isCharacter) {
+      return;
+    }
+
+    // FK is good to go
+    // Disable main transform controls
+    this.hideTransformControls();
+    this.kinMode = KinMode.FK;
+    this.fkHelper.setTarget(this.selected[0]);
+    console.log("FK mode on");
+    return;
+  }
+
   async onkeydown(event: KeyboardEvent) {
     if (hotkeysStatus.value.disabled) {
       return;
@@ -228,29 +278,7 @@ export class MouseControls {
       this.control?.setMode("scale");
       return;
     } else if (event.key === "k") {
-      if (this.kinMode == KinMode.FK) {
-        this.fkHelper.clear();
-        this.kinMode = KinMode.NONE;
-        console.log("FK mode off");
-        return;
-      }
-
-      // Make sure we have an intersection
-      if (!(this.selected && this.selected.length > 0)) {
-        return;
-      }
-
-      // Make sure FK is supported only on character type objects
-      const firstSelection = this.selected[0];
-      if (!firstSelection.userData.isCharacter) {
-        return;
-      }
-
-      // FK test
-      this.kinMode = KinMode.FK;
-      this.fkHelper.setTarget(this.selected[0]);
-      console.log("FK mode on");
-      return;
+      this.toggleFKMode();
     }
 
     if ((event.ctrlKey || event.metaKey) && !this.isProcessing) {
