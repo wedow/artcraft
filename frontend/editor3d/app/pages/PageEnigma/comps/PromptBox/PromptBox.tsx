@@ -13,6 +13,10 @@ import {
   faDownload,
   faSpinnerThird,
   faTimes,
+  faCheck,
+  faSpellCheck,
+  faMessageCheck,
+  faMessageXmark,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faRectangleWide,
@@ -23,9 +27,14 @@ import {
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem, PopoverMenu } from "~/components/reusable/Popover";
-import { Button } from "~/components";
+import { Button, ToggleButton, Tooltip } from "~/components";
 import { CameraAspectRatio } from "~/pages/PageEnigma/enums";
-import { cameraAspectRatio, disableHotkeyInput, DomLevels, enableHotkeyInput } from "~/pages/PageEnigma/signals";
+import {
+  cameraAspectRatio,
+  disableHotkeyInput,
+  DomLevels,
+  enableHotkeyInput,
+} from "~/pages/PageEnigma/signals";
 import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
@@ -45,6 +54,7 @@ export const PromptBox = () => {
   const editorEngine = useContext(EngineContext);
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
+  const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
@@ -384,11 +394,11 @@ export const PromptBox = () => {
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              console.log("disabling hotkeys")
+              console.log("disabling hotkeys");
               disableHotkeyInput(DomLevels.INPUT);
             }}
             onBlur={() => {
-              console.log("enabling hotkeys")
+              console.log("enabling hotkeys");
               enableHotkeyInput(DomLevels.INPUT);
             }}
           />
@@ -420,16 +430,39 @@ export const PromptBox = () => {
               mode="toggle"
               panelTitle="Camera"
             />
+            <Tooltip
+              content={
+                useSystemPrompt
+                  ? "Use system prompt: ON"
+                  : "Use system prompt: OFF"
+              }
+              position="top"
+              className="z-50"
+              delay={100}
+            >
+              <ToggleButton
+                isActive={useSystemPrompt}
+                icon={faMessageXmark}
+                activeIcon={faMessageCheck}
+                onClick={() => setUseSystemPrompt(!useSystemPrompt)}
+              />
+            </Tooltip>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
-              variant="secondary"
-              icon={faDownload}
-              onClick={handleDownloadFrame}
+            <Tooltip
+              content="Download frame"
+              position="top"
+              className="z-50"
+              delay={100}
             >
-              Download frame
-            </Button>
+              <Button
+                className="flex h-9 items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
+                variant="secondary"
+                icon={faDownload}
+                onClick={handleDownloadFrame}
+              />
+            </Tooltip>
+
             <Button
               className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
               variant="secondary"

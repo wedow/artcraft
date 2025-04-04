@@ -7,6 +7,7 @@ interface TooltipProps {
   content: React.ReactNode;
   position: "top" | "bottom" | "left" | "right";
   className?: string;
+  delay?: number;
 }
 
 export const Tooltip = ({
@@ -14,6 +15,7 @@ export const Tooltip = ({
   content,
   position,
   className,
+  delay = 300,
 }: TooltipProps) => {
   const [isShowing, setIsShowing] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,7 @@ export const Tooltip = ({
       {children}
       <Transition
         show={isShowing}
-        enter="transition ease-out duration-200 delay-300"
+        enter={`transition ease-out duration-200 delay-${delay}`}
         enterFrom="opacity-0"
         enterTo="opacity-100"
         leave="transition ease-in duration-150"
@@ -74,7 +76,7 @@ export const Tooltip = ({
           ref={tooltipRef}
           style={getStyleForPosition()}
           className={twMerge(
-            "pointer-events-none absolute z-10 w-max rounded-lg bg-ui-controls px-2.5 py-1.5 text-sm font-medium text-white shadow-xl",
+            "pointer-events-none absolute z-10 w-max rounded-lg bg-[#5F5F68] px-2.5 py-1.5 text-sm font-medium text-white shadow-xl",
             className ? className : "",
           )}
         >

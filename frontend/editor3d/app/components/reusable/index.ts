@@ -24,6 +24,7 @@ export * from "./Select";
 export * from "./Slider";
 export * from "./Tabs";
 export * from "./Textarea";
+export * from "./ToggleButton";
 export * from "./Tooltip";
 export * from "./TransitionDialogue";
 export * from "./Typography";
