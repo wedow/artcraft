@@ -1,0 +1,13 @@
+import { Canvas, Meta } from '@storybook/blocks';
+
+import * as TextareaStories from './Textarea.stories';
+
+<Meta of={TextareaStories} />
+
+# Textarea control
+
+Here is the Textarea with placeholder
+<Canvas of={TextareaStories.Default} />
+
+Here is the Textarea with label
+<Canvas of={TextareaStories.WithLabel} />

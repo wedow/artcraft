@@ -1,0 +1,20 @@
+import { Canvas, Meta } from '@storybook/blocks';
+
+import * as ButtonStories from './Button.stories';
+
+<Meta of={ButtonStories} />
+
+# Button
+
+A button denotes a possible action to be taken on behalf of the user.
+
+There are three types of Button: primary, secondary, action.
+
+<Canvas of={ButtonStories.Primary} />
+<Canvas of={ButtonStories.Secondary} />
+<Canvas of={ButtonStories.Action} />
+
+It can be shown with an optional icon. If "iconFlip" is true, the icon shows after the "children", if false it shows before.
+
+<Canvas of={ButtonStories.WithIconFlip} />
+<Canvas of={ButtonStories.WithIconNoFlip} />

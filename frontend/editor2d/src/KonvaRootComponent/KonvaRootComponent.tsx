@@ -9,7 +9,7 @@ import { SignaledCanvasDragDropFiles } from "./SignaledCanvasDragDropFiles";
 import { SignaledDialogs } from "./SignaledDialogs";
 import { SignaledToolbarMain } from "./SignaledToolbarMain";
 import { SignaledToolbarVideoExtraction } from "./SignaledToolbarVideoExtraction";
-
+import { PromptBox } from "~/components/PromptBox";
 // The KonvaApp is the root of the Konva stage
 // and only entry point for anything in Konva JS
 import { EngineType } from "~/KonvaApp";
@@ -56,14 +56,14 @@ export const KonvaRootComponent = ({
       <KonvaCanvasContainer
         ref={konvaContainerCallbackRef}
         className={className}
-      // retreive the classNames from the parent for sizing/styling
+        // retreive the classNames from the parent for sizing/styling
       />
       {/* <SignaledMagicBox /> */}
       <SignaledCanvasDragDropFiles
         openAddImage={appUiContext.openAddImage}
         openAddVideo={appUiContext.openAddVideo}
       />
-      <SignaledPromptText />
+      <PromptBox />
       <SignaledToolbarMain
         layoutSignal={layoutContext.signal}
         appUiContext={appUiContext}
