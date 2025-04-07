@@ -1,0 +1,172 @@
+{
+  "task_responses": [
+      {
+          "id": "task_01jr7xwwjyem5t268ym01wn9qs",
+          "user": "user-eOFctNDVUgUV6aaW513mcCFq",
+          "created_at": "2025-04-07T10:49:18.686690Z",
+          "status": "succeeded",
+          "progress_pct": 0.6789999999999999,
+          "progress_pos_in_queue": null,
+          "estimated_queue_wait_time": null,
+          "queue_status_message": null,
+          "priority": 1,
+          "type": "image_gen",
+          "prompt": "Can we make an alien planet skyscape where the clouds were giant whales. Maybe the planet is a gas giant",
+          "n_variants": 2,
+          "n_frames": 1,
+          "height": 480,
+          "width": 854,
+          "model": null,
+          "operation": "simple_compose",
+          "inpaint_items": [],
+          "preset_id": null,
+          "caption": null,
+          "actions": null,
+          "interpolation": null,
+          "sdedit": null,
+          "remix_config": null,
+          "quality": "standard",
+          "generations": [
+              {
+                  "id": "gen_01jr7xycyxfptaqtcq65bz8f46",
+                  "task_id": "task_01jr7xwwjyem5t268ym01wn9qs",
+                  "created_at": "2025-04-07T10:50:08.231958Z",
+                  "deleted_at": null,
+                  "url": "https://videos.openai.com/vg-assets/assets%2Ftask_01jr7xwwjyem5t268ym01wn9qs%2Fsrc_1.png?st=2025-04-07T09%3A33%3A44Z&se=2025-04-13T10%3A33%3A44Z&sks=b&skt=2025-04-07T09%3A33%3A44Z&ske=2025-04-13T10%3A33%3A44Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=iulvTinTA8YVVFDIEjoPKqZT%2BL%2BZvs5aT0mhjQg6YKw%3D&az=oaivgprodscus",
+                  "seed": 12345,
+                  "can_download": true,
+                  "download_status": "ready",
+                  "is_favorite": false,
+                  "is_liked": false,
+                  "is_public": true,
+                  "is_archived": false,
+                  "is_featured": false,
+                  "has_feedback": false,
+                  "like_count": 0,
+                  "cloudflare_metadata": null,
+                  "cf_thumbnail_url": null,
+                  "encodings": {
+                      "source": {
+                          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01jr7xwwjyem5t268ym01wn9qs%2Fimg_1.webp?st=2025-04-07T09%3A33%3A44Z&se=2025-04-13T10%3A33%3A44Z&sks=b&skt=2025-04-07T09%3A33%3A44Z&ske=2025-04-13T10%3A33%3A44Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=NU1Nx7GtchzkYdeb6z5TEbm9Y31jIUcTwPdqBl65T7s%3D&az=oaivgprodscus",
+                          "size": null,
+                          "width": null,
+                          "height": null,
+                          "duration_secs": null,
+                          "ssim": null
+                      },
+                      "md": null,
+                      "ld": null,
+                      "thumbnail": {
+                          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01jr7xwwjyem5t268ym01wn9qs%2Fimg_1_thumb.webp?st=2025-04-07T09%3A33%3A44Z&se=2025-04-13T10%3A33%3A44Z&sks=b&skt=2025-04-07T09%3A33%3A44Z&ske=2025-04-13T10%3A33%3A44Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=AQzzZYs0tYGBWwnFM5I03Wg6K8VZiNjLDMalRjxokeY%3D&az=oaivgprodscus",
+                          "size": null
+                      },
+                      "spritesheet": null
+                  },
+                  "width": 1536,
+                  "height": 1024,
+                  "n_frames": 1,
+                  "prompt": "Can we make an alien planet skyscape where the clouds were giant whales. Maybe the planet is a gas giant",
+                  "title": "Whale Cloud Skyscape",
+                  "actions": null,
+                  "inpaint_items": null,
+                  "interpolation": null,
+                  "sdedit": null,
+                  "operation": "simple_compose",
+                  "model": null,
+                  "preset_id": null,
+                  "user": {
+                      "id": "user-eOFctNDVUgUV6aaW513mcCFq",
+                      "username": "kasisnu"
+                  },
+                  "moderation_result": {
+                      "type": "passed",
+                      "results_by_frame_index": {},
+                      "code": null,
+                      "is_output_rejection": false,
+                      "task_id": "task_01jr7xwwjyem5t268ym01wn9qs"
+                  },
+                  "paragen_status": null,
+                  "task_type": "image_gen",
+                  "remix_config": null,
+                  "quality": "standard"
+              },
+              {
+                  "id": "gen_01jr7xycz4fbzrf6kjj70hpfb7",
+                  "task_id": "task_01jr7xwwjyem5t268ym01wn9qs",
+                  "created_at": "2025-04-07T10:50:08.233213Z",
+                  "deleted_at": null,
+                  "url": "https://videos.openai.com/vg-assets/assets%2Ftask_01jr7xwwjyem5t268ym01wn9qs%2Fsrc_0.png?st=2025-04-07T09%3A33%3A44Z&se=2025-04-13T10%3A33%3A44Z&sks=b&skt=2025-04-07T09%3A33%3A44Z&ske=2025-04-13T10%3A33%3A44Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=b%2Frn10WEfVBLqLao9k1UgFrS6QqJis8Co81tSx8oI7M%3D&az=oaivgprodscus",
+                  "seed": 12345,
+                  "can_download": true,
+                  "download_status": "ready",
+                  "is_favorite": false,
+                  "is_liked": false,
+                  "is_public": true,
+                  "is_archived": false,
+                  "is_featured": false,
+                  "has_feedback": false,
+                  "like_count": 0,
+                  "cloudflare_metadata": null,
+                  "cf_thumbnail_url": null,
+                  "encodings": {
+                      "source": {
+                          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01jr7xwwjyem5t268ym01wn9qs%2Fimg_0.webp?st=2025-04-07T09%3A33%3A44Z&se=2025-04-13T10%3A33%3A44Z&sks=b&skt=2025-04-07T09%3A33%3A44Z&ske=2025-04-13T10%3A33%3A44Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=o1Fdh1mh1O0P6jmnkcJlf4F7FWb3h%2BKSVRtVIXqjEJE%3D&az=oaivgprodscus",
+                          "size": null,
+                          "width": null,
+                          "height": null,
+                          "duration_secs": null,
+                          "ssim": null
+                      },
+                      "md": null,
+                      "ld": null,
+                      "thumbnail": {
+                          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01jr7xwwjyem5t268ym01wn9qs%2Fimg_0_thumb.webp?st=2025-04-07T09%3A33%3A44Z&se=2025-04-13T10%3A33%3A44Z&sks=b&skt=2025-04-07T09%3A33%3A44Z&ske=2025-04-13T10%3A33%3A44Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=2l%2BemWaC8q5o%2BIhxI5t%2BexjGe3F8ipPnPym0IIygvrA%3D&az=oaivgprodscus",
+                          "size": null
+                      },
+                      "spritesheet": null
+                  },
+                  "width": 1536,
+                  "height": 1024,
+                  "n_frames": 1,
+                  "prompt": "Can we make an alien planet skyscape where the clouds were giant whales. Maybe the planet is a gas giant",
+                  "title": "Whale Cloud Skyscape",
+                  "actions": null,
+                  "inpaint_items": null,
+                  "interpolation": null,
+                  "sdedit": null,
+                  "operation": "simple_compose",
+                  "model": null,
+                  "preset_id": null,
+                  "user": {
+                      "id": "user-eOFctNDVUgUV6aaW513mcCFq",
+                      "username": "kasisnu"
+                  },
+                  "moderation_result": {
+                      "type": "passed",
+                      "results_by_frame_index": {},
+                      "code": null,
+                      "is_output_rejection": false,
+                      "task_id": "task_01jr7xwwjyem5t268ym01wn9qs"
+                  },
+                  "paragen_status": null,
+                  "task_type": "image_gen",
+                  "remix_config": null,
+                  "quality": "standard"
+              }
+          ],
+          "num_unsafe_generations": 0,
+          "title": "Whale Cloud Skyscape",
+          "moderation_result": {
+              "type": "passed",
+              "results_by_frame_index": {},
+              "code": null,
+              "is_output_rejection": false,
+              "task_id": "task_01jr7xwwjyem5t268ym01wn9qs"
+          },
+          "failure_reason": null,
+          "needs_user_review": false
+      }
+  ],
+  "last_id": "task_01jr7xwwjyem5t268ym01wn9qs",
+  "has_more": false
+}
