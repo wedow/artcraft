@@ -1,12 +1,15 @@
-import {twMerge} from "tailwind-merge";
+import { twMerge } from "tailwind-merge";
 
-import {faPalette,} from "@fortawesome/pro-solid-svg-icons";
-import {ToolbarButton, ToolbarButtonProps,} from "~/components/features/ToolbarButton";
-import {paperWrapperStyles} from "~/components/styles";
-import {ToolbarNodeButtonNames} from "./enums";
-import {ToolbarNodeButtonData} from "./data";
-import {ColorPicker} from "~/components/ui/TextEditor/ColorPicker";
-import {DEFAULT_PAINT_COLOR} from "~/signals/uiEvents/toolbarMain/paintMode";
+import { faPalette } from "@fortawesome/pro-solid-svg-icons";
+import {
+  ToolbarButton,
+  ToolbarButtonProps,
+} from "~/components/features/ToolbarButton";
+import { paperWrapperStyles } from "~/components/styles";
+import { ToolbarNodeButtonNames } from "./enums";
+import { ToolbarNodeButtonData } from "./data";
+import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
+import { DEFAULT_PAINT_COLOR } from "~/signals/uiEvents/toolbarMain/paintMode";
 
 export interface ToolbarNodeProps {
   disabled?: boolean;
@@ -29,7 +32,7 @@ export const ToolbarNode = ({
   onLockClicked,
   buttonsProps,
   color = DEFAULT_PAINT_COLOR,
-  onColorChange = () => { },
+  onColorChange = () => {},
 }: ToolbarNodeProps) => {
   return (
     <div
@@ -41,7 +44,7 @@ export const ToolbarNode = ({
     >
       {ToolbarNodeButtonData.map((buttonDatum, idx) => {
         const buttonProps = buttonsProps?.[buttonDatum.name];
-
+        console.log(buttonDatum, idx);
         if (!buttonProps || buttonProps.hidden) {
           return;
         }
@@ -55,14 +58,20 @@ export const ToolbarNode = ({
             >
               <span className="text-[16px]">{buttonDatum.tooltip}</span>
             </ToolbarButton>
-
           );
         } else {
           return (
-            <ColorPicker color={color} onChange={onColorChange} faIcon={faPalette} borderStyle="w-full justify-start h-auto gap-2.5 text-white/80" showBar={false} key={idx}>
+            <ColorPicker
+              color={color}
+              onChange={onColorChange}
+              faIcon={faPalette}
+              borderStyle="w-full justify-start h-auto gap-2.5 text-white/80"
+              showBar={false}
+              key={idx}
+            >
               <span className="text-[16px]">{buttonDatum.tooltip}</span>
             </ColorPicker>
-          )
+          );
         }
       })}
     </div>

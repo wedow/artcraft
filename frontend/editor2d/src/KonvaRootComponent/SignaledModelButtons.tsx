@@ -25,13 +25,13 @@ export const SignaledModelButtons = () => {
 
   return (
     <div className={twMerge("z-20 flex h-fit w-fit items-center gap-2")}>
-      <ModelButton
+      {/* <ModelButton
         iconSrc={modelIconSrc}
         iconAlt={selectedModelData?.name || "Model"}
         label={selectedModelData?.name || "Realistic"}
         subtitle="Model"
         type="model"
-      />
+      /> */}
 
       {/* <ModelButton
         iconSrc={loraIconSrc}

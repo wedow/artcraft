@@ -13,7 +13,6 @@ import { MediaNode } from "../types";
 import { RenderTask } from "./RenderTask";
 import { OffScreenSceneCanvas } from "./OffScreenSceneCanvas";
 
-
 import { PaintNode } from "../Nodes/PaintNode";
 
 import { WebSocketClient } from "../../PyServer/DrawServer";
@@ -27,7 +26,7 @@ import {
 } from "~/signals/uiEvents/loadingIndicator";
 import { ensureBase64Prefix } from "../EngineUtitlities/Base64Helpers";
 import { DecodeBase64ToImage } from "~/utilities/DecodeBase64ToImage.ts";
-import {EncodeImageBitmapToBase64} from "~/utilities/EncodeImageBitmapToBase64.ts";
+import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64.ts";
 
 interface ServerSettings {
   model_path: string;
@@ -50,7 +49,6 @@ export class RealTimeDrawEngine {
   private outputBitmap: ImageBitmap | undefined;
 
   // private frames: ImageBitmap[];
-
   // capturing composite within window
 
   private mediaLayerRef: Konva.Layer;
@@ -66,8 +64,6 @@ export class RealTimeDrawEngine {
   private port: MessagePort | undefined;
   public captureCanvas: Konva.Rect;
   public backgroundRasterRect: Konva.Image;
-
-  public previewCanvas: Konva.Image;
 
   public videoLoadingCanvas: VideoNode | undefined;
 
@@ -100,9 +96,7 @@ export class RealTimeDrawEngine {
   private client: WebSocketClient | null = null;
   private isConnected: boolean = false;
 
-
-
-  public backgroundColor: string = "#d2d2d2";
+  public backgroundColor: string = "#d2d2d2"; // off white
   constructor({
     width,
     height,
@@ -131,17 +125,15 @@ export class RealTimeDrawEngine {
     this.imageNodes = [];
     this.onDrawCallback = onDraw;
     this.onPreviewCopyCallback = onPreviewCopy; // Assign Callback
-
     // TODO: Make this dynamic and update this on change of canvas.
+    this.width = width * 1.5;
+    this.height = height * 1;
 
-    this.width = width;
-    this.height = height;
+    this.positionX = window.innerWidth - this.width;
+    this.positionY = window.innerHeight - this.height;
 
-    this.positionX = window.innerWidth / 2 - this.width / 2 - this.width;
-    this.positionY = window.innerHeight / 2 - this.height / 2;
-
-    this.positionPreviewX = window.innerWidth / 2 - this.width / 2 + this.width;
-    this.positionPreviewY = window.innerHeight / 2 - this.height / 2;
+    // this.positionPreviewX = window.innerWidth / 2 - this.width / 2 + this.width;
+    // this.positionPreviewY = window.innerHeight / 2 - this.height / 2;
 
     this.offScreenCanvas = offScreenCanvas;
     this.offScreenCanvas.width = this.width;
@@ -165,6 +157,7 @@ export class RealTimeDrawEngine {
 
     this.currentPrompt = "";
     this.currentStrength = 1;
+
     // This is captures a subset of the medialayer ref
     this.captureCanvas = new Konva.Rect({
       name: "CaptureCanvas",
@@ -172,49 +165,36 @@ export class RealTimeDrawEngine {
       y: this.positionY,
       width: this.width,
       height: this.height,
-      fill: this.backgroundColor,
-      stroke: "black",
+      stroke: "blue",
       strokeWidth: 1,
+      cornerRadius: 10,
       draggable: false,
-    });
-
-    this.previewCanvas = new Konva.Image({
-      name: "PreviewCanvas",
-      x: this.positionX,
-      y: this.positionY,
-      width: this.width,
-      height: this.height,
-      image: undefined,
-      stroke: "black",
-      strokeWidth: 1,
-      draggable: false,
-      fill: "white",
     });
 
     this.offscreenRenderDiv = document.createElement("div");
 
-    this.backgroundRasterRect = new Konva.Image({
-      name: "backgroundRasterRect",
-      x: this.positionX,
-      y: this.positionY,
-      width: this.width,
-      height: this.height,
-      fill: this.backgroundColor,
-      image: undefined,
-      stroke: "black",
-      strokeWidth: 1,
-      draggable: false,
-    });
+    // this.backgroundRasterRect = new Konva.Image({
+    //   name: "backgroundRasterRect",
+    //   x: this.positionX,
+    //   y: this.positionY,
+    //   width: this.width,
+    //   height: this.height,
+    //   fill: "red",
+    //   image: undefined,
+    //   stroke: "black",
+    //   strokeWidth: 1,
+    //   draggable: false,
+    // });
 
     this.mediaLayerRef.add(this.captureCanvas);
-    this.mediaLayerRef.add(this.backgroundRasterRect);
-    this.mediaLayerRef.add(this.previewCanvas);
+    //this.mediaLayerRef.add(this.backgroundRasterRect);
+    //this.mediaLayerRef.add(this.previewCanvas);
     // send back
     this.captureCanvas.setZIndex(0);
-    this.backgroundRasterRect.setZIndex(0);
-    this.previewCanvas.setZIndex(1);
+    //this.backgroundRasterRect.setZIndex(0);
+    //this.previewCanvas.setZIndex(1);
     // Add mouse events for preview canvas copying
-    this.previewCopyListener();
+    //this.previewCopyListener();
 
     this.listenToServerEvents();
   }
@@ -280,20 +260,6 @@ export class RealTimeDrawEngine {
         );
         if (progress.error) {
           console.error("Error:", progress.error);
-        }
-      });
-
-      this.client.onResult(async (response) => {
-        try {
-          // Convert the base64 image to ImageBitmap and update the preview
-          const bitmap = await DecodeBase64ToImage(response.image);
-          this.outputBitmap = bitmap;
-          this.previewCanvas.image(bitmap);
-          this.mediaLayerRef.batchDraw();
-        } catch (error) {
-          console.error("Error processing result image:", error);
-        } finally {
-          this.isProcessing = false;
         }
       });
 
@@ -535,86 +501,6 @@ export class RealTimeDrawEngine {
     }
   }
 
-  public previewCopyListener() {
-    // Start of Selection
-    this.previewCanvas.on("mousedown touchstart", () => {
-      if (!this.outputBitmap) {
-        console.log("No preview image to copy");
-        return;
-      }
-
-      // Create draggable preview copy
-      const previewCopy = new Konva.Image({
-        x: this.previewCanvas.x(),
-        y: this.previewCanvas.y(),
-        width: this.width,
-        height: this.height,
-        image: this.outputBitmap,
-        draggable: true,
-        listening: true,
-      });
-
-      if (this.onPreviewCopyCallback) {
-        this.onPreviewCopyCallback(previewCopy);
-      }
-      previewCopy.startDrag();
-      previewCopy.moveToTop();
-      previewCopy.on("dragend", (e: Konva.KonvaEventObject<DragEvent>) => {
-        const previewBox = previewCopy.getClientRect();
-        const captureBox = this.captureCanvas.getClientRect();
-
-        if (Konva.Util.haveIntersection(previewBox, captureBox)) {
-          // Snap to capture canvas position
-          previewCopy.position({
-            x: this.captureCanvas.x(),
-            y: this.captureCanvas.y(),
-          });
-
-          e.target.off("dragend");
-        } else {
-          // Start Generation Here
-          previewCopy.destroy();
-          this.mediaLayerRef.batchDraw();
-        }
-      });
-
-      // Start Generation Here
-      const stage = this.mediaLayerRef.getStage();
-      const layer = this.mediaLayerRef; // Use the existing media layer
-
-      // Create centered text
-      // Start of Selection
-      const centeredText = new Konva.Text({
-        text: "Hold and Drag Over, To Copy",
-        fontSize: 24,
-        fontFamily: "Arial",
-        fill: "black",
-        x: this.captureCanvas.x() + this.captureCanvas.width() / 2,
-        y: this.captureCanvas.y() + this.captureCanvas.height() / 2,
-        id: "copyText",
-        listening: false,
-      });
-      // Calculate and set offsets based on text size to center it
-      centeredText.offsetX(centeredText.width() / 2);
-      centeredText.offsetY(centeredText.height() / 2);
-
-      layer.add(centeredText);
-      centeredText.moveToTop();
-      layer.batchDraw();
-
-      // Remove text on mouseup/touchend
-      const removeText = () => {
-        const text = layer.findOne("#copyText");
-        if (text) {
-          text.destroy();
-          layer.batchDraw();
-        }
-        stage.off("mouseup touchend", removeText);
-      };
-      stage.on("mouseup touchend", removeText);
-    });
-  }
-
   public findImageNodeById(
     id: string,
   ): ImageNode | TextNode | ShapeNode | PaintNode | undefined {
@@ -629,7 +515,7 @@ export class RealTimeDrawEngine {
     width: number | undefined,
     height: number | undefined,
   ) {
-    if (!this.captureCanvas || !this.previewCanvas) {
+    if (!this.captureCanvas) {
       return;
     }
     if (width) {
@@ -648,32 +534,12 @@ export class RealTimeDrawEngine {
     const oldPositionY = this.positionY;
 
     // recompute the position
-    const padBetweenCaptureAndPreview = 2;
-    this.positionX =
-      window.innerWidth / 2 -
-      this.width / 2 -
-      this.width / 2 -
-      padBetweenCaptureAndPreview;
-    this.positionY = window.innerHeight / 2 - this.height / 2;
-
-    this.positionPreviewX =
-      window.innerWidth / 2 -
-      this.width / 2 +
-      this.width / 2 +
-      padBetweenCaptureAndPreview;
-    this.positionPreviewY = window.innerHeight / 2 - this.height / 2;
 
     this.captureCanvas.setPosition({
-      x: this.positionX,
-      y: this.positionY,
+      x: this.positionX / 2,
+      y: this.positionY / 2,
     });
     this.captureCanvas.size({ width: this.width, height: this.height });
-
-    this.previewCanvas.setPosition({
-      x: this.positionPreviewX,
-      y: this.positionPreviewY,
-    });
-    this.previewCanvas.size({ width: this.width, height: this.height });
 
     // this is the change in positions
     const deltaX = this.positionX - oldPositionX;
@@ -684,7 +550,7 @@ export class RealTimeDrawEngine {
       let node = children[i];
 
       // skip the capture canvas and preview canvas update.
-      if (node.name() === "CaptureCanvas" || node.name() === "PreviewCanvas") {
+      if (node.name() === "CaptureCanvas") {
         continue;
       }
       const pos = node.getPosition();
@@ -781,8 +647,7 @@ export class RealTimeDrawEngine {
     if (this.isEnabled) {
       this.disableDragging();
     }
-    // ensure this goes to the top.
-    this.previewCanvas.moveToTop();
+
     await this.render();
   }
 
@@ -808,7 +673,10 @@ export class RealTimeDrawEngine {
     }
   }
 
-  private cloneStageForRender(stage: Konva.Stage, layerOfInterest: Konva.Layer): Konva.Stage {
+  private cloneStageForRender(
+    stage: Konva.Stage,
+    layerOfInterest: Konva.Layer,
+  ): Konva.Stage {
     const stageClone = new Konva.Stage({
       width: stage.width(),
       height: stage.height(),
@@ -852,14 +720,17 @@ export class RealTimeDrawEngine {
       // Clone the required layer from the stage
       // Set the right details (like removing highlight stroke)
       // Then render the cloned stage to a bitmap
-      const stageClone = this.cloneStageForRender(stage, config.layerOfInterest);
-      const stageBlob = await stageClone.toBlob({
+      const stageClone = this.cloneStageForRender(
+        stage,
+        config.layerOfInterest,
+      );
+      const stageBlob = (await stageClone.toBlob({
         x: x,
         y: y,
         width: config.width || Math.ceil(box.width),
         height: config.height || Math.ceil(box.height),
         pixelRatio: pixelRatio,
-      }) as Blob;
+      })) as Blob;
 
       // if config.test is true, the result is downloaded to the local files
       // config.test = true;
@@ -914,15 +785,10 @@ export class RealTimeDrawEngine {
       console.error("No rendered bitmap available to generate from");
       return;
     }
-      
-    const base64Bitmap = await this.imageBitmapToBase64(this.lastRenderedBitmap);
 
-    //const base64Bitmap = await EncodeImageBitmapToBase64(this.outputBitmap);
-
-    const generateResponse = await invoke("image_generation_command", {
-      image: base64Bitmap,
-      prompt: this.currentPrompt,
-    });
+    const base64Bitmap = await this.imageBitmapToBase64(
+      this.lastRenderedBitmap,
+    );
   }
 
   public async render() {
@@ -958,17 +824,14 @@ export class RealTimeDrawEngine {
 
     try {
       //const base64Bitmap = await this.imageBitmapToBase64(bitmap);
-
       //const base64BitmapResponse = await invoke("image_generation_command", {
       //  image: base64Bitmap,
       //  prompt: this.currentPrompt,
       //});
-
       ////console.log(base64BitmapResponse);
       //const decoded = await DecodeBase64ToImage(
       //  base64BitmapResponse as string,
       //);
-
       //this.outputBitmap = decoded;
       //this.previewCanvas.image(decoded);
     } catch (error) {
@@ -1014,12 +877,10 @@ export class RealTimeDrawEngine {
 
     imageSource.onload = () => {
       this.backgroundRasterRect.fill(color);
-      this.backgroundRasterRect.image(imageSource)
+      this.backgroundRasterRect.image(imageSource);
 
       this.mediaLayerRef.batchDraw();
       this.render();
     };
-
-
   }
 }

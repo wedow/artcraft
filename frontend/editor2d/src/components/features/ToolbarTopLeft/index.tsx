@@ -18,14 +18,16 @@ export const ToolbarTopLeft = () => {
 
   const tabs: TabItem[] = [
     { id: "realtime", label: "Sketch" },
-    //{ id: "edit", label: "Edit" },
+    { id: "gallery", label: "Gallery" },
     //{ id: "generate", label: "Generate" },
     // { id: "video", label: "Video" },
   ];
 
   const handleTabChange = (tabId: string) => {
     // Update the global signal
-    dispatchUiEvents.changeAppMode(tabId as "realtime" | "edit" | "generate");
+    dispatchUiEvents.changeAppMode(
+      tabId as "realtime" | "edit" | "generate" | "gallery",
+    );
   };
 
   const generationState = generationSignal.value;

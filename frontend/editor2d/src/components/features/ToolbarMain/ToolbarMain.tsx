@@ -63,11 +63,11 @@ export const ToolbarMain = ({
             buttonProps={buttonProps.SELECT}
             tooltip="Select"
           />
-          <ToolbarButton
+          {/* <ToolbarButton
             icon={faText}
             buttonProps={buttonProps.ADD_TEXT}
             tooltip="Add Text"
-          />
+          /> */}
 
           <Popover className="relative">
             {({ close }) => (
@@ -239,7 +239,7 @@ export const ToolbarMain = ({
 
         <div className="flex flex-col items-center gap-2">
           <div className="relative">
-            <Tooltip tip="Background Color" position="right">
+            {/* <Tooltip tip="Background Color" position="right">
               <div>
                 <BackgroundMenu
                   color={bgColor.value}
@@ -259,7 +259,7 @@ export const ToolbarMain = ({
                   style={{ backgroundColor: bgColor.value }}
                 />
               </div>
-            </Tooltip>
+            </Tooltip> */}
           </div>
         </div>
       </div>

@@ -67,14 +67,14 @@ export class EditEngine {
       width: window.innerWidth,
       height: window.innerHeight,
     });
-    this.bgLayer = new Konva.Layer();
+    //this.bgLayer = new Konva.Layer();
 
     this.mediaLayer = new Konva.Layer();
 
     this.nodeIsolationLayer = new Konva.Layer();
     this.uiLayer = new Konva.Layer();
 
-    this.stage.add(this.bgLayer);
+    //this.stage.add(this.bgLayer);
     this.stage.add(this.mediaLayer);
     this.stage.add(this.nodeIsolationLayer);
     this.stage.add(this.uiLayer);

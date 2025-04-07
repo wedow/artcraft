@@ -101,6 +101,7 @@ export class RenderEngine {
     this.port = undefined;
 
     this.fps = 24;
+
     this.captureCanvas = new Konva.Rect({
       name: "CaptureCanvas",
       x: this.positionX,

@@ -1,11 +1,11 @@
 import Konva from "konva";
 
-import {uiAccess, uiEvents} from "~/signals";
-import {ImageNode, ShapeNode, ShapeType, TextNode, VideoNode} from "./Nodes";
-import {PaintNode} from "./Nodes/PaintNode";
-import {PreviewCopyNode} from "./Nodes/PreviewCopy";
-import {UndoStackManager} from "./UndoRedo";
-import {CommandManager, MatteBox, SceneManager} from "./EngineUtitlities";
+import { uiAccess, uiEvents } from "~/signals";
+import { ImageNode, ShapeNode, ShapeType, TextNode, VideoNode } from "./Nodes";
+import { PaintNode } from "./Nodes/PaintNode";
+import { PreviewCopyNode } from "./Nodes/PreviewCopy";
+import { UndoStackManager } from "./UndoRedo";
+import { CommandManager, MatteBox, SceneManager } from "./EngineUtitlities";
 import {
   NodeIsolator,
   NodesManager,
@@ -16,22 +16,21 @@ import {
   SelectionManagerEvents,
   SelectorSquare,
 } from "./NodesManagers";
-import {EngineOptions, TextNodeData, VideoNodeData} from "./types";
+import { EngineOptions, TextNodeData, VideoNodeData } from "./types";
 
-import {AppModes, VideoResolutions} from "./constants";
-import {ToolbarMainButtonNames} from "~/components/features/ToolbarMain/enum";
+import { AppModes, VideoResolutions } from "./constants";
+import { ToolbarMainButtonNames } from "~/components/features/ToolbarMain/enum";
 
-import {ToolbarNodeButtonNames} from "~/components/features/ToolbarNode/enums";
-import {NavigateFunction} from "react-router-dom";
-import {LoadingVideosProvider} from "./EngineUtitlities/LoadingVideosProvider";
+import { ToolbarNodeButtonNames } from "~/components/features/ToolbarNode/enums";
+import { NavigateFunction } from "react-router-dom";
+import { LoadingVideosProvider } from "./EngineUtitlities/LoadingVideosProvider";
 
-import {VideoExtractionHandler} from "./EngineUtitlities/VideoExtractionHandler/VideoExtractionHandler";
-import {RealTimeDrawEngine} from "./RenderingPrimitives/RealTimeDrawEngine";
-import {NodeColor} from "~/signals/uiEvents/toolbarNode";
-import {invoke} from "@tauri-apps/api/core";
-import {DecodeBase64ToImage} from "~/utilities/DecodeBase64ToImage.ts";
-import {EncodeImageBitmapToBase64} from "~/utilities/EncodeImageBitmapToBase64.ts";
-
+import { VideoExtractionHandler } from "./EngineUtitlities/VideoExtractionHandler/VideoExtractionHandler";
+import { RealTimeDrawEngine } from "./RenderingPrimitives/RealTimeDrawEngine";
+import { NodeColor } from "~/signals/uiEvents/toolbarNode";
+import { invoke } from "@tauri-apps/api/core";
+import { DecodeBase64ToImage } from "~/utilities/DecodeBase64ToImage.ts";
+import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64.ts";
 
 export interface RenderingOptions {
   artstyle: string;
@@ -315,7 +314,7 @@ export class Engine {
         });
       }
     });
-   
+
     uiEvents.toolbarNode.DELETE.onClick(() =>
       this.commandManager.deleteNodes(),
     );
@@ -346,7 +345,7 @@ export class Engine {
     });
 
     uiEvents.toolbarMain.GENERATE.onClick(async (/*event*/) => {
-      console.log('generate clicked');
+      console.log("generate clicked");
       await this.realTimeDrawEngine.generateImage();
     });
 
@@ -396,7 +395,6 @@ export class Engine {
       this.addText(textdata);
     });
 
-   
     let renderTimeout: NodeJS.Timeout;
 
     uiEvents.promptEvents.onPromptStrengthChanged(async (strength) => {
@@ -429,8 +427,7 @@ export class Engine {
       }
     });
 
-
-    uiEvents.toolbarMain.onBgColorChanged((data)=>{
+    uiEvents.toolbarMain.onBgColorChanged((data) => {
       this.realTimeDrawEngine.updateBackground(data);
     });
 
@@ -462,29 +459,38 @@ export class Engine {
       return; // Can only remove background from a single image at a time.
     }
 
-    const [ selectedNode ] = selectedNodeSet;
+    const [selectedNode] = selectedNodeSet;
 
-    const removeBgInvocation
-        = async (selectedNode: ImageNode, callback: (existingImageNode: ImageNode, createdImage: ImageBitmap) => void) => {
-
-      const image : HTMLImageElement = selectedNode.kNode.image();
+    const removeBgInvocation = async (
+      selectedNode: ImageNode,
+      callback: (
+        existingImageNode: ImageNode,
+        createdImage: ImageBitmap,
+      ) => void,
+    ) => {
+      const image: HTMLImageElement = selectedNode.kNode.image();
       const base64Bitmap = await EncodeImageBitmapToBase64(image);
       const base64BitmapResponse = await invoke("remove_background", {
         image: base64Bitmap,
       });
 
-      const createdImage = await DecodeBase64ToImage(base64BitmapResponse as string);
+      const createdImage = await DecodeBase64ToImage(
+        base64BitmapResponse as string,
+      );
 
       callback(selectedNode, createdImage);
     };
 
-    const _promise = removeBgInvocation(selectedNode, (selectedNode: ImageNode, createdImage: ImageBitmap) => {
-      if (!this.nodesManager.hasNode(selectedNode)) {
-        return;
-      }
-      this.commandManager.deleteSpecificNodes([selectedNode]);
-      this.addImageFromImageBitmap(createdImage);
-    })
+    const _promise = removeBgInvocation(
+      selectedNode,
+      (selectedNode: ImageNode, createdImage: ImageBitmap) => {
+        if (!this.nodesManager.hasNode(selectedNode)) {
+          return;
+        }
+        this.commandManager.deleteSpecificNodes([selectedNode]);
+        this.addImageFromImageBitmap(createdImage);
+      },
+    );
   }
 
   disableAllButtons() {
@@ -618,7 +624,6 @@ export class Engine {
   }
 
   public addShape(type: ShapeType, size: number, color?: string) {
-
     const shapeNode = new ShapeNode({
       canvasPosition: this.realTimeDrawEngine.captureCanvas.position(),
       canvasSize: this.realTimeDrawEngine.captureCanvas.size(),
