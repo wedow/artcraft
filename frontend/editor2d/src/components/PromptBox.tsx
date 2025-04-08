@@ -32,7 +32,7 @@ import { getCanvasRenderBitmap } from "~/signal/canvasRenderBitmap";
 import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
-
+import { Api, ApiManager } from "~/KonvaApp/Api";
 interface ReferenceImage {
   id: string;
   url: string;
@@ -42,8 +42,10 @@ interface ReferenceImage {
 
 export const PromptBox = () => {
   useSignals();
-  //const { lastRenderedBitmap } = useCanvasSignal();
+  const isDesktopApp = window.navigator.userAgent.includes("Tauri");
+  console.log("Is this a desktop app?", isDesktopApp);
 
+  //const { lastRenderedBitmap } = useCanvasSignal();
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
@@ -188,20 +190,65 @@ export const PromptBox = () => {
         referenceImages,
       );
 
-      let image = getCanvasRenderBitmap();
-
-      if (image === undefined) {
-        return;
+      if (isDesktopApp) {
+        let image = getCanvasRenderBitmap();
+        if (image === undefined) {
+          return;
+        }
+        const base64Bitmap = await EncodeImageBitmapToBase64(image);
+        const generateResponse = await invoke("image_generation_command", {
+          image: base64Bitmap,
+          prompt: prompt,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
-      const base64Bitmap = await EncodeImageBitmapToBase64(image);
+      if (!isDesktopApp) {
+        const api = new Api();
+        let image = getCanvasRenderBitmap();
+        if (image === undefined) {
+          console.error(
+            "Error: Unable to generate image. Please check the input and try again.",
+          );
+          return;
+        }
+        const base64Bitmap = await EncodeImageBitmapToBase64(image);
+        const byteString = atob(base64Bitmap);
+        const mimeString = "image/png";
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const uuid = crypto.randomUUID(); // Generate a new UUID
+        const file = new File([ab], `${uuid}.png`, { type: mimeString });
 
-      const generateResponse = await invoke("image_generation_command", {
-        image: base64Bitmap,
-        prompt: prompt,
-      });
+        const snapshotMediaToken = await api.uploadSceneSnapshot({
+          screenshot: file,
+        });
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (snapshotMediaToken.data === undefined) {
+          console.error("Error: Unable to upload scene snapshot.");
+          return;
+        }
+
+        console.log("Snapshot media token:", snapshotMediaToken.data);
+
+        const response = await api.enqueueImageGeneration({
+          prompt: prompt,
+          snapshotMediaToken: snapshotMediaToken.data,
+          additionalImages: referenceImages.map((image) => image.mediaToken),
+        });
+
+        console.log("Response:", response);
+
+        if (response.success === true) {
+          console.error("Successfully enqueued image generation.");
+          return;
+        } else {
+          console.log("Image generation Not Successfull.");
+        }
+      }
     } finally {
       setisEnqueueing(false);
     }
@@ -213,10 +260,6 @@ export const PromptBox = () => {
     const iconElement = selected.icon as React.ReactElement;
     return iconElement.props.icon;
   };
-
-  // const handleSaveFrame = async () => {};
-
-  // const handleDownloadFrame = () => {};
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -360,29 +403,6 @@ export const PromptBox = () => {
             </Tooltip>
           </div>
           <div className="flex items-center gap-2">
-            {/* <Tooltip
-              content="Download frame"
-              position="top"
-              className="z-50"
-              closeOnClick={true}
-              delay={200}
-            >
-              <Button
-                className="flex h-9 items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
-                variant="secondary"
-                icon={faDownload}
-                onClick={handleDownloadFrame}
-              />
-            </Tooltip> */}
-
-            {/* <Button
-              className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
-              variant="secondary"
-              icon={faSave}
-              onClick={handleSaveFrame}
-            >
-              Save frame
-            </Button> */}
             <Button
               className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
               icon={!isEnqueueing ? faSparkles : undefined}
