@@ -27,7 +27,7 @@ import {
 import { ensureBase64Prefix } from "../EngineUtitlities/Base64Helpers";
 import { DecodeBase64ToImage } from "~/utilities/DecodeBase64ToImage.ts";
 import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64.ts";
-// import { setCanvasRenderBitmap } from "~/signal/canvasRenderBitmap";
+import { setCanvasRenderBitmap } from "~/signal/canvasRenderBitmap";
 
 interface ServerSettings {
   model_path: string;
@@ -828,7 +828,7 @@ export class RealTimeDrawEngine {
 
     this.lastRenderedBitmap = bitmap;
 
-    // setCanvasRenderBitmap(bitmap);
+    setCanvasRenderBitmap(bitmap);
 
     try {
     } catch (error) {

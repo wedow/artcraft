@@ -28,7 +28,8 @@ import {
   faSquare,
   faRectangle,
 } from "@fortawesome/pro-regular-svg-icons";
-
+import { getCanvasRenderBitmap } from "~/signal/canvasRenderBitmap";
+import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
 
@@ -41,6 +42,7 @@ interface ReferenceImage {
 
 export const PromptBox = () => {
   useSignals();
+  //const { lastRenderedBitmap } = useCanvasSignal();
 
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
@@ -186,7 +188,16 @@ export const PromptBox = () => {
         referenceImages,
       );
 
+      let image = getCanvasRenderBitmap();
+
+      if (image === undefined) {
+        return;
+      }
+
+      const base64Bitmap = await EncodeImageBitmapToBase64(image);
+
       const generateResponse = await invoke("image_generation_command", {
+        image: base64Bitmap,
         prompt: prompt,
       });
 
