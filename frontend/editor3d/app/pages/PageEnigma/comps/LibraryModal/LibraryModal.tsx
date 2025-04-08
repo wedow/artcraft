@@ -170,11 +170,12 @@ export const LibraryModal = ({
                 />
               </div>
               <div className="flex justify-end">
-                {mode === "select" && (
-                  <span className="text-sm text-white/60">
-                    Select up to {maxSelections} images
-                  </span>
-                )}
+                <button
+                  onClick={onClose}
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 transition-all hover:bg-black/70 hover:text-white"
+                >
+                  <FontAwesomeIcon icon={faXmark} className="text-lg" />
+                </button>
               </div>
             </div>
           </div>
@@ -254,7 +255,7 @@ export const LibraryModal = ({
           </div>
 
           {mode === "select" && (
-            <div className="flex items-center justify-between border-t border-white/10 p-4">
+            <div className="flex items-center justify-between border-t border-white/10 bg-black/25 p-4">
               <div className="flex items-center gap-3">
                 <div className="text-sm font-semibold text-white/80">
                   {selectedItemIds.length}/{maxSelections} selected
@@ -265,10 +266,7 @@ export const LibraryModal = ({
                 {selectedItemIds.length > 0 && (
                   <button
                     onClick={() => {
-                      const selectedItems = Object.values(groupedItems)
-                        .flat()
-                        .filter((item) => selectedItemIds.includes(item.id));
-                      onUseSelected?.(selectedItems);
+                      selectedItemIds.forEach((id) => onSelectItem?.(id));
                     }}
                     className="text-sm text-white/60 hover:text-white"
                   >
@@ -325,33 +323,38 @@ export const LibraryModal = ({
                   leaveTo="opacity-0 scale-95"
                 >
                   <div
-                    className="relative h-[90vh] w-[90vw] rounded-xl bg-[#2C2C2C]"
+                    className="relative h-[90vh] w-[80vw] rounded-xl bg-[#2C2C2C]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       onClick={handleCloseLightbox}
-                      className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white/80 hover:bg-black/70 hover:text-white"
+                      className="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 transition-all hover:bg-black/70 hover:text-white"
                     >
-                      <FontAwesomeIcon icon={faXmark} className="text-xl" />
+                      <FontAwesomeIcon icon={faXmark} className="text-lg" />
                     </button>
-                    {!lightboxImage.fullImage ? (
-                      <div className="flex h-full w-full items-center justify-center bg-gray-800">
-                        <span className="text-white/60">
-                          Image not available
-                        </span>
+                    <div className="grid h-full grid-cols-3 gap-6">
+                      <div className="col-span-2 flex h-full items-center justify-center overflow-hidden bg-black/40">
+                        {!lightboxImage.fullImage ? (
+                          <div className="flex h-full w-full items-center justify-center bg-gray-800">
+                            <span className="text-white/60">
+                              Image not available
+                            </span>
+                          </div>
+                        ) : (
+                          <img
+                            src={lightboxImage.fullImage}
+                            alt={lightboxImage.label}
+                            className="h-full w-full object-contain"
+                            onError={() =>
+                              handleImageError(lightboxImage.fullImage!)
+                            }
+                            crossOrigin="anonymous"
+                            referrerPolicy="no-referrer"
+                          />
+                        )}
                       </div>
-                    ) : (
-                      <img
-                        src={lightboxImage.fullImage}
-                        alt={lightboxImage.label}
-                        className="h-full w-full object-contain"
-                        onError={() =>
-                          handleImageError(lightboxImage.fullImage!)
-                        }
-                        crossOrigin="anonymous"
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
+                      <div className="py-5">Prompt</div>
+                    </div>
                   </div>
                 </Transition.Child>
               </div>
