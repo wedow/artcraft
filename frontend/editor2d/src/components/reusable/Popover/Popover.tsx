@@ -1,5 +1,10 @@
 import { ReactNode } from "react";
-import { Popover, Transition } from "@headlessui/react";
+import {
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  Transition,
+} from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../Button";
 
@@ -83,11 +88,11 @@ export const PopoverMenu = ({
     <Popover className="relative">
       {({ close }) => (
         <>
-          <Popover.Button className={className}>
+          <PopoverButton className={className}>
             {triggerIcon}
             {mode === "toggle" && selectedItem ? selectedItem.label : null}
             {mode === "default" && triggerLabel ? triggerLabel : null}
-          </Popover.Button>
+          </PopoverButton>
 
           <div
             className={twMerge(
@@ -112,7 +117,7 @@ export const PopoverMenu = ({
                   : "-translate-y-2 opacity-0"
               }
             >
-              <Popover.Panel
+              <PopoverPanel
                 className={twMerge(
                   position === "bottom" ? "origin-top" : "origin-bottom",
                 )}
@@ -189,7 +194,7 @@ export const PopoverMenu = ({
                     </div>
                   )}
                 </div>
-              </Popover.Panel>
+              </PopoverPanel>
             </Transition>
           </div>
         </>

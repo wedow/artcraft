@@ -22,7 +22,7 @@ export const ToggleButton = ({
       className={twMerge(
         "flex h-9 w-9 items-center border-2 border-transparent text-sm text-white backdrop-blur-lg transition-all",
         isActive
-          ? "bg-brand-primary/40 hover:bg-brand-primary/40 border-white/20 hover:border-white/30"
+          ? "border-white/20 bg-primary/40 hover:border-white/30 hover:bg-primary/40"
           : "bg-[#5F5F68]/60 hover:bg-[#5F5F68]/90",
         className,
       )}

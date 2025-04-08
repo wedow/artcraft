@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useSignals } from "@preact/signals-react/runtime";
 import {
   UploaderStates,
-  UploaderState,
+  // UploaderState,
   uploadImage,
 } from "~/components/UploadImage";
 
@@ -13,11 +13,8 @@ import { Button } from "~/components/reusable/Button";
 import { ToggleButton } from "~/components/reusable/ToggleButton";
 
 import {
-  faCamera,
   faMessageXmark,
   faMessageCheck,
-  faDownload,
-  faSave,
   faSparkles,
   faSpinnerThird,
   faTimes,
@@ -34,8 +31,6 @@ import {
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
-import { getCanvasRenderBitmap } from "~/signal/canvasRenderBitmap";
-import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64";
 
 interface ReferenceImage {
   id: string;
@@ -44,14 +39,8 @@ interface ReferenceImage {
   mediaToken: string;
 }
 
-interface ExtendedPopoverItem extends PopoverItem {
-  id: string;
-  focalLength: number;
-}
-
 export const PromptBox = () => {
   useSignals();
-  //const { lastRenderedBitmap } = useCanvasSignal();
 
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
@@ -60,7 +49,6 @@ export const PromptBox = () => {
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
-  const [isCameraSettingsOpen, setIsCameraSettingsOpen] = useState(false);
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
       label: "3:2",
@@ -83,22 +71,6 @@ export const PromptBox = () => {
       icon: <FontAwesomeIcon icon={faRectangleWide} className="h-4 w-4" />,
     },
   ]);
-  const [cameraList, setCameraList] = useState<ExtendedPopoverItem[]>([
-    {
-      id: "main",
-      label: "Main View",
-      selected: true,
-      icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
-      focalLength: 35,
-    },
-    {
-      id: "cam2",
-      label: "Camera 2",
-      selected: false,
-      icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
-      focalLength: 35,
-    },
-  ]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -110,41 +82,6 @@ export const PromptBox = () => {
     }
   }, [prompt]);
 
-  // Update aspect ratio list based on the current cameraAspectRatio signal
-  useEffect(() => {
-    setAspectRatioList((prev) => prev);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleCameraSelect = (selectedItem: PopoverItem) => {};
-
-  const handleAddCamera = () => {
-    const newIndex = cameraList.length + 1;
-    const newId = `cam${newIndex}`;
-    setCameraList((prev) => [
-      ...prev,
-      {
-        id: newId,
-        label: `Camera ${newIndex}`,
-        selected: false,
-        icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
-        focalLength: 35,
-      },
-    ]);
-  };
-
-  const handleCameraNameChange = (id: string, newName: string) => {
-    setCameraList((prev) =>
-      prev.map((cam) => (cam.id === id ? { ...cam, label: newName } : cam)),
-    );
-  };
-
-  const handleCameraFocalLengthChange = (id: string, value: number) => {
-    setCameraList((prev) =>
-      prev.map((cam) => (cam.id === id ? { ...cam, focalLength: value } : cam)),
-    );
-  };
-
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
     setAspectRatioList((prev) =>
       prev.map((item) => ({
@@ -152,15 +89,6 @@ export const PromptBox = () => {
         selected: item.label === selectedItem.label,
       })),
     );
-
-    // Map the selected label to the corresponding CameraAspectRatio enum value
-
-    // Publish the change to the engine
-    // Queue.publish({
-    //   queueName: QueueNames.TO_ENGINE,
-    //   action: toEngineActions.CHANGE_CAMERA_ASPECT_RATIO,
-    //   data: newRatio,
-    // });
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,7 +179,6 @@ export const PromptBox = () => {
     setisEnqueueing(true);
 
     try {
-      // Here we would pass both the prompt and reference images to the generation
       console.log(
         "Enqueuing with prompt:",
         prompt,
@@ -259,16 +186,7 @@ export const PromptBox = () => {
         referenceImages,
       );
 
-      let image = getCanvasRenderBitmap();
-
-      if (image === undefined) {
-        return;
-      }
-
-      const base64Bitmap = await EncodeImageBitmapToBase64(image);
-
       const generateResponse = await invoke("image_generation_command", {
-        image: base64Bitmap,
         prompt: prompt,
       });
 
@@ -278,12 +196,16 @@ export const PromptBox = () => {
     }
   };
 
-  // Get the current aspect ratio icon based on the cameraAspectRatio signal
-  const getCurrentAspectRatioIcon = () => {};
+  const getCurrentAspectRatioIcon = () => {
+    const selected = aspectRatioList.find((item) => item.selected);
+    if (!selected || !selected.icon) return faRectangle;
+    const iconElement = selected.icon as React.ReactElement;
+    return iconElement.props.icon;
+  };
 
-  const handleSaveFrame = async () => {};
+  // const handleSaveFrame = async () => {};
 
-  const handleDownloadFrame = () => {};
+  // const handleDownloadFrame = () => {};
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -409,13 +331,6 @@ export const PromptBox = () => {
               />
             </Tooltip>
             <Tooltip
-              content="Camera"
-              position="top"
-              className="z-50"
-              delay={300}
-              closeOnClick={true}
-            ></Tooltip>
-            <Tooltip
               content={
                 useSystemPrompt
                   ? "Use system prompt: ON"
@@ -434,7 +349,7 @@ export const PromptBox = () => {
             </Tooltip>
           </div>
           <div className="flex items-center gap-2">
-            <Tooltip
+            {/* <Tooltip
               content="Download frame"
               position="top"
               className="z-50"
@@ -447,18 +362,18 @@ export const PromptBox = () => {
                 icon={faDownload}
                 onClick={handleDownloadFrame}
               />
-            </Tooltip>
+            </Tooltip> */}
 
-            <Button
+            {/* <Button
               className="flex items-center border-none bg-[#5F5F68]/60 px-3 text-sm text-white backdrop-blur-lg hover:bg-[#5F5F68]/90"
               variant="secondary"
               icon={faSave}
               onClick={handleSaveFrame}
             >
               Save frame
-            </Button>
+            </Button> */}
             <Button
-              className="bg-brand-primary flex items-center border-none px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
               icon={!isEnqueueing ? faSparkles : undefined}
               onClick={handleEnqueue}
               disabled={isEnqueueing || !prompt.trim()}
