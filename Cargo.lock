@@ -5793,6 +5793,7 @@ dependencies = [
  "my-workspace-hack",
  "mysql_queries",
  "once_cell",
+ "openai_sora_client",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",

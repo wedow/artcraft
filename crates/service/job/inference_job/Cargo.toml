@@ -40,6 +40,7 @@ memory_caching = { path = "../../../lib/caching/memory_caching" }
 migration = { path = "../../../lib/migration" }
 mimetypes = { path = "../../../lib/files/mimetypes" }
 mysql_queries = { path = "../../../lib/mysql_queries" }
+openai_sora_client = { path = "../../../lib/api_clients/openai_sora_client" }
 primitives = { path = "../../../lib/data/primitives" }
 redis_common = { path = "../../../lib/redis_common" }
 redis_schema = { path = "../../../lib/redis_schema" }
