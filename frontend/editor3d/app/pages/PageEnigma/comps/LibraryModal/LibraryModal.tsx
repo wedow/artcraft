@@ -3,11 +3,13 @@ import { faCheck, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, LoadingSpinner } from "~/components";
 import { TabSelector } from "~/components/reusable/TabSelector";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { LibraryModalApi } from "./LibraryModalApi";
 import { FilterMediaClasses } from "../../../../enums";
 import { BucketConfig } from "../../../../api/BucketConfig";
 import { twMerge } from "tailwind-merge";
+import { createPortal } from "react-dom";
+import { Transition } from "@headlessui/react";
 
 export interface LibraryItem {
   id: string;
@@ -51,6 +53,7 @@ export const LibraryModal = ({
   const [groupedItems, setGroupedItems] = useState<GroupedItems>({});
   const [loading, setLoading] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<LibraryItem | null>(null);
+  const [isLightboxVisible, setIsLightboxVisible] = useState(false);
   const [failedImageUrls] = useState<Set<string>>(new Set());
   const bucketConfig = new BucketConfig();
   const api = new LibraryModalApi();
@@ -131,7 +134,14 @@ export const LibraryModal = ({
       onSelectItem(item.id);
     } else {
       setLightboxImage(item);
+      setIsLightboxVisible(true);
     }
+  };
+
+  const handleCloseLightbox = () => {
+    setIsLightboxVisible(false);
+    // Wait for animation to complete before removing the image
+    setTimeout(() => setLightboxImage(null), 300);
   };
 
   return (
@@ -141,7 +151,7 @@ export const LibraryModal = ({
         onClose={onClose}
         className={twMerge(
           "h-[620px] max-w-4xl",
-          mode === "view" && "h-[700px] max-w-5xl",
+          mode === "view" && "h-[80vh] max-h-[870px] max-w-7xl",
         )}
         childPadding={false}
       >
@@ -186,7 +196,7 @@ export const LibraryModal = ({
                     <div
                       className={twMerge(
                         "grid grid-cols-5 gap-1",
-                        mode === "view" && "grid-cols-4",
+                        mode === "view" && "grid-cols-5",
                       )}
                     >
                       {dateItems.map((item) => (
@@ -283,37 +293,72 @@ export const LibraryModal = ({
       </TransitionDialogue>
 
       {/* Lightbox Modal */}
-      <TransitionDialogue
-        isOpen={!!lightboxImage}
-        onClose={() => setLightboxImage(null)}
-        className="max-h-[90vh] max-w-[90vw]"
-        childPadding={false}
-      >
-        {lightboxImage && (
-          <div className="relative">
-            <button
-              onClick={() => setLightboxImage(null)}
-              className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white/80 hover:bg-black/70 hover:text-white"
-            >
-              <FontAwesomeIcon icon={faXmark} className="text-xl" />
-            </button>
-            {!lightboxImage.fullImage ? (
-              <div className="flex h-full w-full items-center justify-center bg-gray-800">
-                <span className="text-white/60">Image not available</span>
+      {lightboxImage &&
+        createPortal(
+          <Transition appear show={isLightboxVisible} as={Fragment}>
+            <div className="fixed inset-0 z-[100]">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div
+                  className="fixed inset-0 cursor-pointer bg-black/60"
+                  onClick={handleCloseLightbox}
+                />
+              </Transition.Child>
+              <div
+                className="fixed inset-0 flex items-center justify-center p-4"
+                onClick={handleCloseLightbox}
+              >
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 scale-95"
+                  enterTo="opacity-100 scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 scale-100"
+                  leaveTo="opacity-0 scale-95"
+                >
+                  <div
+                    className="relative h-[90vh] w-[90vw] rounded-xl bg-[#2C2C2C]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={handleCloseLightbox}
+                      className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white/80 hover:bg-black/70 hover:text-white"
+                    >
+                      <FontAwesomeIcon icon={faXmark} className="text-xl" />
+                    </button>
+                    {!lightboxImage.fullImage ? (
+                      <div className="flex h-full w-full items-center justify-center bg-gray-800">
+                        <span className="text-white/60">
+                          Image not available
+                        </span>
+                      </div>
+                    ) : (
+                      <img
+                        src={lightboxImage.fullImage}
+                        alt={lightboxImage.label}
+                        className="h-full w-full object-contain"
+                        onError={() =>
+                          handleImageError(lightboxImage.fullImage!)
+                        }
+                        crossOrigin="anonymous"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
+                  </div>
+                </Transition.Child>
               </div>
-            ) : (
-              <img
-                src={lightboxImage.fullImage}
-                alt={lightboxImage.label}
-                className="h-full w-full object-contain"
-                onError={() => handleImageError(lightboxImage.fullImage!)}
-                crossOrigin="anonymous"
-                referrerPolicy="no-referrer"
-              />
-            )}
-          </div>
+            </div>
+          </Transition>,
+          document.body,
         )}
-      </TransitionDialogue>
     </>
   );
 };
