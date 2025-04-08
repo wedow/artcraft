@@ -20,4 +20,8 @@ pub struct SoraImageGenArgs {
   #[serde(rename = "su")]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub maybe_sora_media_upload_tokens: Option<Vec<String>>,
+
+  #[serde(rename = "st")]
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub maybe_sora_task_id: Option<String>,
 }
