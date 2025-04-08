@@ -22,7 +22,7 @@ class BucketConfig {
     //const media_api_base_url = environmentVariables.values.GOOGLE_API;
     //return `${media_api_base_url}/${bucket}${path}`;
     const media_api_base_url = GetCdnOrigin();
-    return `${media_api_base_url}/${path}`;
+    return `${media_api_base_url}${path}`;
   }
 
   //private getBucket(): string {
