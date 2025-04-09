@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverMenu } from "~/components/reusable/Popover";
 import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
-
+import { useJobContext } from "~/components/JobContext";
 // Dummy data types
 interface CompletedItem {
   token: string;
@@ -64,6 +64,7 @@ const dummyJobs: ActiveJob[] = [
 ];
 
 export function Activity() {
+  const { jobToken, setJobToken } = useJobContext();
   const [completedItems, setCompletedItems] = useState<CompletedItem[]>([]);
   const [jobs, setJobs] = useState<ActiveJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +73,11 @@ export function Activity() {
   useEffect(() => {
     const pollData = () => {
       // Simulate API calls
+      if (jobToken) {
+        console.log("Current Job Token:", jobToken);
+      } else {
+        console.log("No Job Token available.");
+      }
       setCompletedItems(dummyCompletedItems);
       setJobs(dummyJobs);
       setLoading(false);

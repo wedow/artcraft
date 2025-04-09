@@ -6,7 +6,7 @@ import { router } from "./router";
 import { posthog } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { Toaster } from "~/components/ui/Toast";
-
+import { JobProvider } from "~/components/JobContext";
 import "./global.css";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
 
@@ -30,17 +30,21 @@ const App = () => {
   if (useStrictMode) {
     return (
       <StrictMode>
-        <PostHogProvider client={posthog}>
-          <RouterProvider router={router} />
-          <Toaster />
-        </PostHogProvider>
+        <JobProvider>
+          <PostHogProvider client={posthog}>
+            <RouterProvider router={router} />
+            <Toaster />
+          </PostHogProvider>
+        </JobProvider>
       </StrictMode>
     );
   }
   return (
     <>
-      <RouterProvider router={router} />
-      <Toaster />
+      <JobProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </JobProvider>
     </>
   );
 };

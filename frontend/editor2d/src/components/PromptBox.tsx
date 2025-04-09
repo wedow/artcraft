@@ -33,6 +33,7 @@ import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
 import { Api, ApiManager } from "~/KonvaApp/Api";
+import { useJobContext } from "~/components/JobContext";
 interface ReferenceImage {
   id: string;
   url: string;
@@ -44,6 +45,8 @@ export const PromptBox = () => {
   useSignals();
   const isDesktopApp = window.navigator.userAgent.includes("Tauri");
   console.log("Is this a desktop app?", isDesktopApp);
+
+  const { jobToken, setJobToken } = useJobContext();
 
   //const { lastRenderedBitmap } = useCanvasSignal();
   const [prompt, setPrompt] = useState("");
@@ -217,9 +220,11 @@ export const PromptBox = () => {
         const mimeString = "image/png";
         const ab = new ArrayBuffer(byteString.length);
         const ia = new Uint8Array(ab);
+
         for (let i = 0; i < byteString.length; i++) {
           ia[i] = byteString.charCodeAt(i);
         }
+
         const uuid = crypto.randomUUID(); // Generate a new UUID
         const file = new File([ab], `${uuid}.png`, { type: mimeString });
 
@@ -244,9 +249,14 @@ export const PromptBox = () => {
 
         if (response.success === true) {
           console.error("Successfully enqueued image generation.");
+
+          if (response.data) {
+            setJobToken(response.data);
+          }
+
           return;
         } else {
-          console.log("Image generation Not Successfull.");
+          console.log("Image generation Not Successful.");
         }
       }
     } finally {
