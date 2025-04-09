@@ -4,14 +4,16 @@ import { dndSidePanelWidth, sidePanelWidth } from "~/pages/PageEnigma/signals";
 import { H4, P, LoadingDots } from "~/components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEmptySet } from "@fortawesome/pro-solid-svg-icons";
+import { AutoSizer, Grid } from "react-virtualized";
+import "react-virtualized/styles.css";
 
 interface Props {
   busy?: boolean;
   className?: string;
   debug?: string;
-  currentPage?: number;
-  pageSize?: number;
   items: MediaItem[];
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
 export const ItemElements = ({
@@ -19,40 +21,87 @@ export const ItemElements = ({
   className,
   debug,
   items,
-  currentPage,
-  pageSize = 20,
+  onLoadMore,
+  hasMore,
 }: Props) => {
   const displayWidth =
     dndSidePanelWidth.value > -1
       ? dndSidePanelWidth.value
       : sidePanelWidth.value;
 
-  const displayItems =
-    currentPage !== undefined
-      ? items.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-      : items;
+  const GRID_GAP = 8;
+  const ASPECT_RATIO = 4.5 / 5;
+  const TEXT_HEIGHT = 24;
 
-  function getGridColumnsClass(displayWidth: number): string {
+  const columnCount = getGridColumns(displayWidth);
+  const rowCount = Math.ceil(items.length / columnCount);
+
+  function getGridColumns(displayWidth: number): number {
     if (displayWidth <= 280) {
-      return "grid-cols-2";
+      return 2;
     } else if (displayWidth <= 360) {
-      return "grid-cols-3";
+      return 3;
     } else if (displayWidth <= 440) {
-      return "grid-cols-4";
+      return 4;
     } else {
-      return "grid-cols-4";
+      return 4;
     }
   }
 
-  const gridColumnsClass = getGridColumnsClass(displayWidth);
+  const cellRenderer = ({
+    columnIndex,
+    rowIndex,
+    key,
+    style,
+  }: {
+    columnIndex: number;
+    rowIndex: number;
+    key: string;
+    style: React.CSSProperties;
+  }) => {
+    const index = rowIndex * columnCount + columnIndex;
+    if (index >= items.length) return null;
 
-  if (busy) {
+    const adjustedStyle = {
+      ...style,
+      padding: GRID_GAP / 2,
+      height: style.height as number,
+      boxSizing: "border-box" as const,
+    };
+
+    return (
+      <div key={key} style={adjustedStyle}>
+        <ItemElement debug={debug} item={items[index]} />
+      </div>
+    );
+  };
+
+  const handleScroll = ({
+    clientHeight,
+    scrollHeight,
+    scrollTop,
+  }: {
+    clientHeight: number;
+    scrollHeight: number;
+    scrollTop: number;
+  }) => {
+    if (!onLoadMore || !hasMore || busy) return;
+
+    const threshold = 100; // pixels from bottom
+    const bottom = scrollHeight - clientHeight - scrollTop;
+    if (bottom < threshold) {
+      onLoadMore();
+    }
+  };
+
+  if (busy && items.length === 0) {
     return (
       <div className="flex h-full w-full">
         <LoadingDots className="bg-transparent" />
       </div>
     );
   }
+
   if (items.length === 0 && !busy) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center text-center">
@@ -65,13 +114,39 @@ export const ItemElements = ({
       </div>
     );
   }
+
   return (
-    <div
-      className={`grid ${gridColumnsClass} gap-2.5 ${className ? " " + className : ""}`}
-    >
-      {displayItems.map((item, index) => (
-        <ItemElement debug={debug} key={index} item={item} />
-      ))}
+    <div className={`h-full w-full ${className || ""}`}>
+      <AutoSizer className="w-full">
+        {({ height, width }) => {
+          const availableWidth = width - GRID_GAP * (columnCount - 1);
+          const cellWidth = Math.floor(availableWidth / columnCount);
+          const imageHeight = Math.floor(cellWidth / ASPECT_RATIO);
+          const cellHeight = imageHeight + TEXT_HEIGHT;
+
+          return (
+            <Grid
+              cellRenderer={cellRenderer}
+              columnCount={columnCount}
+              columnWidth={cellWidth}
+              height={height}
+              rowCount={rowCount}
+              rowHeight={cellHeight}
+              width={width}
+              style={{ outline: "none" }}
+              columnGap={GRID_GAP}
+              rowGap={GRID_GAP}
+              overscanRowCount={2}
+              onScroll={handleScroll}
+            />
+          );
+        }}
+      </AutoSizer>
+      {busy && hasMore && (
+        <div className="flex w-full justify-center py-4">
+          <LoadingDots className="bg-transparent" />
+        </div>
+      )}
     </div>
   );
 };

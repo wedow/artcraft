@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { faCirclePlus } from "@fortawesome/pro-solid-svg-icons";
 
 import { usePosthogFeatureFlag } from "~/hooks/usePosthogFeatureFlag";
@@ -14,7 +14,6 @@ import {
 import {
   Button,
   FilterButtons,
-  Pagination,
   SearchFilter,
   UploadModal3D,
 } from "~/components";
@@ -33,6 +32,7 @@ import {
 } from "../hooks";
 
 const filterEngineCategories = [FilterEngineCategories.LOCATION];
+const PAGE_SIZE = 42; // Load 2 pages worth of items at a time
 
 export const SetsTab = () => {
   const showSearchObjectComponent = usePosthogFeatureFlag(
@@ -40,6 +40,7 @@ export const SetsTab = () => {
   );
 
   const [openUploadModal, setOpenUploadModal] = useState(false);
+  const [loadedItemCount, setLoadedItemCount] = useState(PAGE_SIZE);
 
   const { userObjects, userFetchStatus, fetchUserObjects } = useUserObjects({
     filterEngineCategories: filterEngineCategories,
@@ -78,15 +79,11 @@ export const SetsTab = () => {
   const displayedItems =
     selectedFilter === AssetFilterOption.FEATURED
       ? searchTermForFeaturedObjects
-        ? featuredObjectsSearchResults ?? []
-        : featuredObjects ?? []
+        ? (featuredObjectsSearchResults ?? [])
+        : (featuredObjects ?? [])
       : searchTermForUserObjects
-        ? userObjectsSearchResults ?? []
-        : userObjects ?? [];
-
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const pageSize = 21;
-  const totalPages = Math.ceil(displayedItems.length / pageSize);
+        ? (userObjectsSearchResults ?? [])
+        : (userObjects ?? []);
 
   const isFetching = isAnyStatusFetching([
     userFetchStatus,
@@ -95,17 +92,17 @@ export const SetsTab = () => {
     userObjectsSearchFetchStatus,
   ]);
 
-  useEffect(() => {
-    if (searchTermForUserObjects.length > 0) {
-      setCurrentPage(0);
+  const handleLoadMore = useCallback(() => {
+    if (!isFetching && loadedItemCount < displayedItems.length) {
+      setLoadedItemCount((prev) =>
+        Math.min(prev + PAGE_SIZE, displayedItems.length),
+      );
     }
-  }, [searchTermForUserObjects]);
+  }, [isFetching, loadedItemCount, displayedItems.length]);
 
   useEffect(() => {
-    if (searchTermForFeaturedObjects.length > 0) {
-      setCurrentPage(0);
-    }
-  }, [searchTermForFeaturedObjects]);
+    setLoadedItemCount(PAGE_SIZE);
+  }, [searchTermForUserObjects, searchTermForFeaturedObjects, selectedFilter]);
 
   return (
     <>
@@ -152,21 +149,11 @@ export const SetsTab = () => {
         <ItemElements
           busy={isFetching}
           debug="sets tab"
-          currentPage={currentPage}
-          pageSize={pageSize}
-          items={displayedItems}
+          items={displayedItems.slice(0, loadedItemCount)}
+          onLoadMore={handleLoadMore}
+          hasMore={loadedItemCount < displayedItems.length}
         />
       </div>
-      {totalPages > 1 && (
-        <Pagination
-          className="-mt-4 px-4"
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(newPage: number) => {
-            setCurrentPage(newPage);
-          }}
-        />
-      )}
       <UploadModal3D
         onClose={() => setOpenUploadModal(false)}
         onSuccess={fetchUserObjects}
