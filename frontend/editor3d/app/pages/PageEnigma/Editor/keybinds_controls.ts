@@ -57,6 +57,7 @@ export class MouseControls {
   private kinMode: KinMode = KinMode.NONE;
   private fkHelper: FKHelper;
   private isBoneDragged: boolean = false;
+  private ignoreNextClick: boolean = false;
 
   constructor(
     camera: THREE.PerspectiveCamera,
@@ -122,6 +123,10 @@ export class MouseControls {
 
   onFKControlsDragging(dragging: boolean) {
     this.isBoneDragged = dragging;
+
+    // FIX: Window dispatches a click event after FK dragging is complete
+    // This flag can be used to ignore that when FK is adjusted
+    this.ignoreNextClick = true;
   }
 
   clearFKVisuals() {
@@ -350,6 +355,13 @@ export class MouseControls {
     if (this.camera == undefined) {
       return;
     }
+
+    // Ignore window clicks if FK is active and bone is being transformed
+    if (this.ignoreNextClick) {
+      this.ignoreNextClick = false;
+      return;
+    }
+
     const camera_pos = new THREE.Vector3(
       parseFloat(this.camera.position.x.toFixed(2)),
       parseFloat(this.camera.position.y.toFixed(2)),
