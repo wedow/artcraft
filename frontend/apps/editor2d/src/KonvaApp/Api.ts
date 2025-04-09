@@ -148,7 +148,6 @@ export class ApiManager {
       formData.append("file", blob);
     }
 
-    // console.log(`HELLO${formData}`);
     return this.fetchMultipartFormData<T>(endpoint, {
       method: "POST",
       headers: {
@@ -327,7 +326,10 @@ export class Api extends ApiManager {
     return result;
   }
 
-  public async pollJobSession(jobToken: string): Promise<
+  public async pollJobSession(
+    jobToken: string,
+    thumbnailWidth: number = 256,
+  ): Promise<
     ApiResponse<{
       job_token: string;
       request: {
@@ -338,6 +340,9 @@ export class Api extends ApiManager {
         progress_percentage: number;
       };
       result: {
+        image_url: string;
+        thumbnail_url: string;
+        public_bucket_path: string;
         generated_images?: string[];
         error?: string;
       };
@@ -345,41 +350,53 @@ export class Api extends ApiManager {
   > {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/job/${jobToken}`;
 
-    const response = await this.get<{
-      success?: boolean;
-      status?: string;
-      result?: {
-        generated_images?: string[];
-        error?: string;
-      };
-      BadInput?: string;
-    }>({
+    const response = await this.get<any>({
       endpoint,
     });
+    console.log("Job Polling Response:");
+    console.log(response);
+
+    let image_url = response.state.maybe_result?.media_links?.cdn_url;
+    let public_bucket_path =
+      response.state.maybe_result?.maybe_public_bucket_media_path;
+
+    let thumbnail_url =
+      response.state.maybe_result?.media_links?.maybe_thumbnail_template?.replace(
+        "{WIDTH}",
+        thumbnailWidth.toString(),
+      );
+
+    let progress_percentage = response.state.status.progress_percentage;
+    let status_string = response.state.status.status;
+
+    console.log("Image URL:", image_url);
+    console.log("Thumbnail URL:", thumbnail_url);
+    console.log("Progress Percentage:", progress_percentage);
+    console.log("Status", status_string);
 
     console.log("response FROM JOBS");
     console.log(response);
 
     const success = response.success ?? false;
     const status = response.status ?? "";
-    const result = response.result ?? {
-      generated_images: [],
-      error: undefined,
-    };
-
     const errorMessage = response.BadInput;
 
     return {
       success,
       data: {
-        result,
+        result: {
+          image_url: image_url || "",
+          thumbnail_url: thumbnail_url || "",
+          public_bucket_path: public_bucket_path || "",
+          error: undefined,
+        },
         job_token: jobToken,
         request: {
           maybe_model_title: "Image Generation",
         },
         status: {
-          status: status.toLowerCase(),
-          progress_percentage: 0,
+          status: status_string.toLowerCase(),
+          progress_percentage: progress_percentage,
         },
       },
       errorMessage,

@@ -63,12 +63,11 @@ export const ToolbarMain = ({
             buttonProps={buttonProps.SELECT}
             tooltip="Select"
           />
-          {/* <ToolbarButton
+          <ToolbarButton
             icon={faText}
             buttonProps={buttonProps.ADD_TEXT}
             tooltip="Add Text"
-          /> */}
-
+          />
           <Popover className="relative">
             {({ close }) => (
               <>

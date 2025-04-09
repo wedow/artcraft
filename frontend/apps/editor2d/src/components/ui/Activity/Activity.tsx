@@ -6,6 +6,8 @@ import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
 import { useJobContext } from "~/components/JobContext";
 import { Api } from "~/KonvaApp/Api";
+import { toast } from "sonner";
+
 // Dummy data types
 interface CompletedItem {
   token: string;
@@ -65,90 +67,72 @@ const dummyCompletedItems: CompletedItem[] = [
 // ];
 
 export function Activity() {
-  const { jobToken, setJobToken } = useJobContext();
+  const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
+    useJobContext();
   const [completedItems, setCompletedItems] = useState<CompletedItem[]>([]);
   const [jobs, setJobs] = useState<ActiveJob[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Dummy polling function
   useEffect(() => {
     const pollData = async () => {
-      if (jobToken) {
-        console.log("Current Job Token:", jobToken);
+      if (jobTokens.length > 0) {
+        console.log("Current Job Tokens:", jobTokens);
         const api = new Api();
-        const job = await api.pollJobSession(jobToken);
-        console.log("Job response:", job);
 
-        if (job.success && job.data) {
-          const { status, progress_percentage } = job.data.status;
-          const { job_token } = job.data;
+        // Create a map to store the latest job data
+        const updatedJobs = new Map<string, ActiveJob>();
 
-          console.log("Job status:", status);
-          console.log("Progress percentage:", progress_percentage);
-          console.log("Job token:", job_token);
+        for (const jobToken of jobTokens) {
+          const job = await api.pollJobSession(jobToken);
 
-          // Update jobs with real job data
-          if (
-            status.toLowerCase() === "completed" ||
-            status.toLowerCase() === "failed"
-          ) {
-            // If job is completed or failed, remove it from active jobs
-            setJobs((prevJobs) =>
-              prevJobs.filter((j) => j.job_token !== job_token),
-            );
+          if (job.success && job.data) {
+            const { status, progress_percentage } = job.data.status;
+            const { job_token } = job.data;
 
-            // Add to completed items if it was successful
             if (
-              status.toLowerCase() === "completed" &&
-              job.data.result.generated_images
+              status.toLowerCase() === "complete_success" ||
+              status.toLowerCase() === "failed"
             ) {
-              const newCompletedItem: CompletedItem = {
-                id: job_token,
-                title: job.data.request.maybe_model_title || "Image Generation",
-                timestamp: new Date().toISOString(),
-                type: "image",
-                imageUrl: job.data.result.generated_images[0] || "",
-              };
+              // If job is complete_success or failed, we'll remove it later
+              removeJobToken(job_token);
 
-              setCompletedItems((prev) => [newCompletedItem, ...prev]);
+              // Add to complete_success items if it was successful
+              if (status.toLowerCase() === "complete_success") {
+                const newCompletedItem: CompletedItem = {
+                  token: job_token,
+                  maybe_title:
+                    job.data.request.maybe_model_title || "Image Generation",
+                  public_bucket_path: job.data.result.image_url || "",
+                  updated_at: new Date().toISOString(),
+                };
+                setCompletedItems((prev) => [newCompletedItem, ...prev]);
+                toast.success("Done Processing Image");
+              }
+            } else {
+              // Store the job in our map
+              const updatedJob: ActiveJob = {
+                job_token,
+                request: {
+                  maybe_model_title:
+                    job.data.request.maybe_model_title || "Image Generation",
+                },
+                status: {
+                  status: status.toUpperCase(),
+                  progress_percentage: progress_percentage || 0,
+                },
+              };
+              updatedJobs.set(job_token, updatedJob);
             }
           } else {
-            // Update or add the job to the active jobs list
-            const updatedJob: ActiveJob = {
-              job_token,
-              request: {
-                maybe_model_title:
-                  job.data.request.maybe_model_title || "Image Generation",
-              },
-              status: {
-                status: status.toUpperCase(),
-                progress_percentage: progress_percentage || 0,
-              },
-            };
-
-            setJobs((prevJobs) => {
-              const existingJobIndex = prevJobs.findIndex(
-                (j) => j.job_token === job_token,
-              );
-              if (existingJobIndex >= 0) {
-                // Update existing job
-                const newJobs = [...prevJobs];
-                newJobs[existingJobIndex] = updatedJob;
-                return newJobs;
-              } else {
-                // Add new job
-                return [updatedJob, ...prevJobs];
-              }
-            });
+            console.error("Failed to fetch job status:", job.errorMessage);
           }
-        } else {
-          console.error("Failed to fetch job status:", job.errorMessage);
         }
-      } else {
-        console.log("No Job Token available.");
-      }
 
-      if (jobs.length === 0) {
+        // Update jobs state with the deduplicated jobs
+        setJobs(Array.from(updatedJobs.values()));
+      }
+      if (jobTokens.length === 0) {
+        setJobs([]);
         setLoading(false);
       }
     };
@@ -163,7 +147,7 @@ export function Activity() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [jobToken]);
+  }, [jobTokens, removeJobToken]);
 
   return (
     <PopoverMenu

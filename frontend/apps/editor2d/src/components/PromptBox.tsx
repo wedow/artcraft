@@ -47,7 +47,8 @@ export const PromptBox = () => {
   const isDesktopApp = window.navigator.userAgent.includes("Tauri");
   console.log("Is this a desktop app?", isDesktopApp);
 
-  const { jobToken, setJobToken } = useJobContext();
+  const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
+    useJobContext();
 
   //const { lastRenderedBitmap } = useCanvasSignal();
   const [prompt, setPrompt] = useState("");
@@ -119,7 +120,7 @@ export const PromptBox = () => {
                 setUploadingImages((prev) =>
                   prev.filter((img) => img.id !== uploadId),
                 );
-                console.log("Reference image added:", referenceImage);
+                toast.success("Reference image added.");
               } else if (
                 newState.status === UploaderStates.assetError ||
                 newState.status === UploaderStates.imageCreateError
@@ -127,7 +128,8 @@ export const PromptBox = () => {
                 setUploadingImages((prev) =>
                   prev.filter((img) => img.id !== uploadId),
                 );
-                console.error("Upload failed");
+
+                toast.error("Upload failed. Please try again.");
               }
             },
           });
@@ -206,7 +208,7 @@ export const PromptBox = () => {
         const api = new Api();
         let image = getCanvasRenderBitmap();
         if (image === undefined) {
-          console.error(
+          toast.error(
             "Error: Unable to generate image. Please check the input and try again.",
           );
           return;
@@ -229,7 +231,9 @@ export const PromptBox = () => {
         });
 
         if (snapshotMediaToken.data === undefined) {
-          console.error("Error: Unable to upload scene snapshot.");
+          toast.error(
+            "Error: Unable to upload scene snapshot Please try again.",
+          );
           return;
         }
 
@@ -242,17 +246,13 @@ export const PromptBox = () => {
         });
 
         if (response.success === true) {
-          console.error("Successfully enqueued image generation.");
-
+          toast.success("Please wait while we process your image.");
           if (response.data) {
-            console.log("Response:", response.data);
-            setJobToken(response.data);
+            addJobToken(response.data);
           }
-
           return;
         } else {
-          console.log("Image generation Not Successful.");
-          toast.error("Failed to generate image. Please try again.");
+          toast.error("Failed to enqueue image generation. Please try again.");
         }
       }
     } catch (error) {

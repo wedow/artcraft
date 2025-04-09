@@ -17,8 +17,10 @@ interface Props {
 export function CompletedCard({ job }: Props) {
   const [loadError, setLoadError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const imageUrl = job.public_bucket_path + "-thumb.gif";
+  const imageUrl = job.public_bucket_path;
   const fullImageUrl = job.public_bucket_path;
+  console.log("I am hjere");
+  console.log(job);
 
   return (
     <>
