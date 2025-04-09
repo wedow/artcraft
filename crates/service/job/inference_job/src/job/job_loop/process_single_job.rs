@@ -1,3 +1,4 @@
+use crate::job::job_types::image_generation::v2::process_single_sora_job::process_single_sora_job;
 use std::time::Instant;
 
 use anyhow::anyhow;
@@ -20,6 +21,7 @@ use crate::job::job_types::f5_tts::process_single_f5_tts_job::process_single_f5_
 use crate::job::job_types::format_conversion::process_single_format_conversion_job::process_single_format_conversion_job;
 use crate::job::job_types::gpt_sovits::process_single_gpt_sovits_job::process_single_gpt_sovits_job;
 use crate::job::job_types::image_generation::process_single_ig_job::process_single_ig_job;
+use crate::job::job_types::image_generation::v2::process_single_sora_job;
 use crate::job::job_types::lipsync::process_single_lipsync_job::process_single_lipsync_job;
 use crate::job::job_types::mocap::process_single_mc_job::process_single_mc_job;
 use crate::job::job_types::render_engine_scene::process_render_engine_scene::process_single_render_engine_scene_job;
@@ -265,6 +267,7 @@ fn can_use_new_dispatch(job: &AvailableInferenceJob) -> bool {
     InferenceJobType::RvcV2 => true,
     InferenceJobType::SeedVc => true,
     InferenceJobType::VideoRender => true,
+    InferenceJobType::ImageGenApi => true,
     _ => false,
   }
 }
@@ -297,6 +300,10 @@ async fn new_dispatch(
     InferenceJobType::RvcV2 => {
       dispatch_rvc_v2_job(job_dependencies, job).await?
     },
+    InferenceJobType::ImageGenApi => {
+      process_single_ig_job(job_dependencies, job).await?
+    }
+
     // NB: Make sure to add the job to `can_use_new_dispatch`.
     _ => {
       return Err(ProcessSingleJobError::InvalidJob(

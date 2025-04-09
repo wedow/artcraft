@@ -57,6 +57,9 @@ pub enum MediaFileOriginModelType {
   #[serde(rename = "studio")]
   StorytellerStudio,
 
+  #[serde(rename = "studio_ig")]
+  StorytellerStudioImageGen,
+
   #[serde(rename = "vst")]
   VideoStyleTransfer,
 
@@ -93,6 +96,7 @@ impl MediaFileOriginModelType {
       Self::MocapNet => "mocap_net",
       Self::StyleTTS2 => "styletts2",
       Self::StableDiffusion15 => "stable_diffusion_1_5",
+      Self::StorytellerStudioImageGen => "studio_ig",
       Self::GptSovits => "gpt_sovits",
       Self::StorytellerStudio => "studio",
       Self::VideoStyleTransfer => "vst",
@@ -115,6 +119,7 @@ impl MediaFileOriginModelType {
       "mocap_net" => Ok(Self::MocapNet),
       "styletts2" => Ok(Self::StyleTTS2),
       "stable_diffusion_1_5" => Ok(Self::StableDiffusion15),
+      "studio_ig" => Ok(Self::StorytellerStudioImageGen),
       "gpt_sovits" => Ok(Self::GptSovits),
       "studio" => Ok(Self::StorytellerStudio),
       "vst" => Ok(Self::VideoStyleTransfer),
@@ -142,6 +147,7 @@ impl MediaFileOriginModelType {
       Self::StableDiffusion15,
       Self::GptSovits,
       Self::StorytellerStudio,
+      Self::StorytellerStudioImageGen,
       Self::VideoStyleTransfer,
       Self::ComfyUi,
       Self::VallEX,

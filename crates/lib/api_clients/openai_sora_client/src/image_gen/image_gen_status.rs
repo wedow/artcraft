@@ -1,9 +1,9 @@
 use std::{fs::File, io::Write, path::Path};
 
+use crate::credentials::SoraCredentials;
+use errors::AnyhowResult;
 use reqwest::Url;
 use serde_derive::Deserialize;
-use errors::{AnyhowError, AnyhowResult};
-use crate::credentials::SoraCredentials;
 
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
 
@@ -39,7 +39,7 @@ pub struct VideoGenStatusResponse {
   pub has_more: bool,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct TaskResponse {
   pub id: String,
@@ -75,7 +75,7 @@ pub struct TaskResponse {
   pub needs_user_review: bool,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Generation {
   pub id: String,
@@ -116,7 +116,7 @@ pub struct Generation {
   pub quality: Option<String>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Encodings {
   pub source: Source,
@@ -126,7 +126,7 @@ pub struct Encodings {
   pub spritesheet: Option<serde_json::Value>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Source {
   pub path: String,
@@ -137,21 +137,21 @@ pub struct Source {
   pub ssim: Option<f64>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Thumbnail {
   pub path: String,
   pub size: Option<i32>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct User {
   pub id: String,
   pub username: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct InpaintItem {
   pub crop_bounds: Option<String>,
@@ -163,7 +163,7 @@ pub struct InpaintItem {
   pub source_start_frame: i32,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct ModerationResult {
   pub r#type: String,
@@ -220,7 +220,7 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
   Ok(response)
 }
 
-pub async fn wait_for_image_gen_status(task_id: String, credentials: &SoraCredentials, retry_limit: Option<u32>) -> AnyhowResult<TaskResponse> {
+pub async fn wait_for_image_gen_status(task_id: &String, credentials: &SoraCredentials, retry_limit: Option<u32>) -> AnyhowResult<TaskResponse> {
   let status_request = StatusRequest {
     limit: None,
     before: None,
@@ -229,7 +229,7 @@ pub async fn wait_for_image_gen_status(task_id: String, credentials: &SoraCreden
   let retry_limit = retry_limit.unwrap_or(10);
 
   for _ in 0..retry_limit {
-    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
     let status_response = get_image_gen_status(&status_request, credentials).await?;
     match find_task_response_by_id(&status_response, task_id.clone()) {
       Some(task_response) => match TaskStatus::from_str(&task_response.status) {
@@ -294,11 +294,11 @@ fn find_task_response_by_id(status_response: &VideoGenStatusResponse, task_id: S
 
 #[cfg(test)]
 mod tests {
-  use std::fs::read_to_string;
-  use errors::AnyhowResult;
-  use testing::test_file_path::test_file_path;
   use crate::credentials::SoraCredentials;
-  use crate::image_gen::image_gen_status::{get_image_gen_status, StatusRequest, wait_for_image_gen_status, VideoGenStatusResponse, save_generations_to_dir};
+  use crate::image_gen::image_gen_status::{get_image_gen_status, save_generations_to_dir, wait_for_image_gen_status, StatusRequest, VideoGenStatusResponse};
+  use errors::AnyhowResult;
+  use std::fs::read_to_string;
+  use testing::test_file_path::test_file_path;
 
   #[ignore]
   #[tokio::test]
@@ -327,7 +327,12 @@ mod tests {
     let response = get_image_gen_status(&StatusRequest::new(Some(50), None), &creds).await?;
     println!("task_id: {}", response.task_responses[0].id);
 
-    let task_response = wait_for_image_gen_status("task_01jr9yvpfyetx9r7qvvx38scna".to_string(), &creds, Some(10)).await?;
+    let task_id = response.task_responses[0].id.clone();
+    let task_response = wait_for_image_gen_status(
+      &task_id,
+      &creds,
+      Some(10)
+    ).await?;
 
     assert!(task_response.status == "succeeded");
     Ok(())
