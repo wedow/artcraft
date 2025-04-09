@@ -100,6 +100,10 @@ const aggregateGalleryData = ({
   }
 
   data.results.forEach((result) => {
+    if (result.media_type !== "image") {
+      return;
+    }
+
     const dateString = result.updated_at as string;
     const dateObj = new Date(dateString);
 
