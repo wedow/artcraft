@@ -1,9 +1,9 @@
 import { MediaItem } from "~/pages/PageEnigma/models";
 import { useSignals } from "@preact/signals-react/runtime";
 import DndAsset from "~/pages/PageEnigma/DragAndDrop/DndAsset";
-import { SyntheticEvent } from "react";
 import { Badge } from "~/components";
 import { AssetType } from "~/enums";
+import { useState } from "react";
 
 interface Props {
   debug?: string;
@@ -35,8 +35,7 @@ const patchExpressionObjectType = (mediaType: string) => {
 
 export const ItemElement = ({ item }: Props) => {
   useSignals();
-  const defaultThumb = `/resources/images/default-covers/${(item.imageIndex || 0) % 24}.webp`;
-  const thumbnail = item.thumbnail ? item.thumbnail : defaultThumb;
+  const [imageError, setImageError] = useState(false);
 
   return (
     <div
@@ -56,15 +55,17 @@ export const ItemElement = ({ item }: Props) => {
         />
       )}
 
-      <img
-        crossOrigin="anonymous"
-        src={thumbnail}
-        onError={(e: SyntheticEvent<HTMLImageElement>) => {
-          e.currentTarget.src = defaultThumb;
-        }}
-        alt={item.name}
-        className="pointer-events-none aspect-[4.5/5] w-full select-none bg-gradient-to-b from-[#CCCCCC] to-[#A0A0A0] object-cover object-center"
-      />
+      <div className="pointer-events-none aspect-[4.5/5] w-full select-none bg-brand-secondary-500 object-cover object-center">
+        {item.thumbnail && !imageError && (
+          <img
+            crossOrigin="anonymous"
+            src={item.thumbnail}
+            alt={item.name}
+            className="h-full w-full object-cover object-center"
+            onError={() => setImageError(true)}
+          />
+        )}
+      </div>
       <div className="pointer-events-none w-full select-none truncate bg-brand-secondary-950 px-2 py-1 text-center text-[12px] transition-all duration-200 group-hover:bg-brand-secondary-800">
         {item.name || item.media_id}
       </div>
