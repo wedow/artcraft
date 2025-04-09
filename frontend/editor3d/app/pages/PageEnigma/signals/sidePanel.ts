@@ -3,7 +3,7 @@ import { Tab } from "~/pages/PageEnigma/models";
 import { pageHeight } from "~/signals";
 import { AssetFilterOption } from "~/enums";
 
-export const sidePanelVisible = signal(true);
+export const sidePanelVisible = signal(false);
 
 export const dndSidePanelWidth = signal(-1);
 

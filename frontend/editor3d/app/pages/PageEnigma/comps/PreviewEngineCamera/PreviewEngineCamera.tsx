@@ -71,7 +71,7 @@ export const PreviewEngineCamera = () => {
     <div
       id="preview-engine-camera"
       className={twMerge(
-        "origin-bottom-left shadow-lg",
+        "hidden origin-bottom-left shadow-lg", //hidden right now with css
         editorState.value === EditorStates.PREVIEW
           ? "invisible h-0 w-0"
           : "visible",

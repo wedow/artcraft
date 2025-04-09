@@ -132,7 +132,7 @@ export const PageEditor = () => {
                 style={{ transform: `scale(${getScale()})` }}
               >
                 <Outliner />
-                {/* <PreviewEngineCamera /> */}
+                <PreviewEngineCamera />
               </div>
               <PromptBox />
               <ControlPanelSceneObject />

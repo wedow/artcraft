@@ -40,7 +40,7 @@ export const outlinerState = {
 //   locked: false,
 // },
 
-export const outlinerIsShowing = signal(true);
+export const outlinerIsShowing = signal(false);
 
 export const selectItem = (
   id: string,
