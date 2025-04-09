@@ -39,7 +39,7 @@ export const ItemElement = ({ item }: Props) => {
 
   return (
     <div
-      className="group relative w-full cursor-pointer select-none overflow-hidden rounded-lg transition-all duration-200 hover:brightness-110"
+      className="group relative w-full cursor-pointer select-none overflow-hidden transition-all duration-200"
       onPointerDown={(event) => DndAsset.onPointerDown(event, item)}
     >
       {item.media_type && (
@@ -55,7 +55,7 @@ export const ItemElement = ({ item }: Props) => {
         />
       )}
 
-      <div className="pointer-events-none aspect-[4.5/5] w-full select-none bg-brand-secondary-500 object-cover object-center">
+      <div className="pointer-events-none aspect-[16/12] w-full select-none overflow-hidden rounded-lg border-2 border-white/10 bg-brand-secondary-500 object-cover object-center transition-all group-hover:border-brand-primary">
         {item.thumbnail && !imageError && (
           <img
             crossOrigin="anonymous"
@@ -66,7 +66,7 @@ export const ItemElement = ({ item }: Props) => {
           />
         )}
       </div>
-      <div className="pointer-events-none w-full select-none truncate bg-brand-secondary-950 px-2 py-1 text-center text-[12px] transition-all duration-200 group-hover:bg-brand-secondary-800">
+      <div className="pointer-events-none w-full select-none truncate py-1.5 text-start text-[13px] transition-all duration-200 ">
         {item.name || item.media_id}
       </div>
     </div>

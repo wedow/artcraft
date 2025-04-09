@@ -1,6 +1,5 @@
 import { ItemElement } from "./ItemElement";
 import { MediaItem } from "~/pages/PageEnigma/models";
-import { dndSidePanelWidth, sidePanelWidth } from "~/pages/PageEnigma/signals";
 import { H4, P, LoadingDots } from "~/components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEmptySet } from "@fortawesome/pro-solid-svg-icons";
@@ -24,29 +23,12 @@ export const ItemElements = ({
   onLoadMore,
   hasMore,
 }: Props) => {
-  const displayWidth =
-    dndSidePanelWidth.value > -1
-      ? dndSidePanelWidth.value
-      : sidePanelWidth.value;
+  const GRID_GAP = 12;
+  const ASPECT_RATIO = 16 / 12;
+  const TEXT_HEIGHT = 32;
+  const COLUMN_COUNT = 4;
 
-  const GRID_GAP = 8;
-  const ASPECT_RATIO = 4.5 / 5;
-  const TEXT_HEIGHT = 24;
-
-  const columnCount = getGridColumns(displayWidth);
-  const rowCount = Math.ceil(items.length / columnCount);
-
-  function getGridColumns(displayWidth: number): number {
-    if (displayWidth <= 280) {
-      return 2;
-    } else if (displayWidth <= 360) {
-      return 3;
-    } else if (displayWidth <= 440) {
-      return 4;
-    } else {
-      return 4;
-    }
-  }
+  const rowCount = Math.ceil(items.length / COLUMN_COUNT);
 
   const cellRenderer = ({
     columnIndex,
@@ -59,14 +41,20 @@ export const ItemElements = ({
     key: string;
     style: React.CSSProperties;
   }) => {
-    const index = rowIndex * columnCount + columnIndex;
+    const index = rowIndex * COLUMN_COUNT + columnIndex;
     if (index >= items.length) return null;
+
+    // Calculate dimensions for the container
+    const containerWidth = (style.width as number) - GRID_GAP;
+    const containerHeight = (style.height as number) - GRID_GAP;
 
     const adjustedStyle = {
       ...style,
-      padding: GRID_GAP / 2,
-      height: style.height as number,
-      boxSizing: "border-box" as const,
+      left: `${(style.left as number) + GRID_GAP / 2}px`,
+      top: `${(style.top as number) + GRID_GAP / 2}px`,
+      width: `${containerWidth}px`,
+      height: `${containerHeight}px`,
+      padding: 0,
     };
 
     return (
@@ -119,23 +107,23 @@ export const ItemElements = ({
     <div className={`h-full w-full ${className || ""}`}>
       <AutoSizer className="w-full">
         {({ height, width }) => {
-          const availableWidth = width - GRID_GAP * (columnCount - 1);
-          const cellWidth = Math.floor(availableWidth / columnCount);
+          // Calculate cell width accounting for gaps
+          const cellWidth = Math.floor(
+            (width - GRID_GAP * (COLUMN_COUNT + 1)) / COLUMN_COUNT,
+          );
           const imageHeight = Math.floor(cellWidth / ASPECT_RATIO);
-          const cellHeight = imageHeight + TEXT_HEIGHT;
+          const cellHeight = imageHeight + TEXT_HEIGHT + GRID_GAP;
 
           return (
             <Grid
               cellRenderer={cellRenderer}
-              columnCount={columnCount}
-              columnWidth={cellWidth}
-              height={height}
+              columnCount={COLUMN_COUNT}
+              columnWidth={cellWidth + GRID_GAP}
+              height={height - GRID_GAP}
               rowCount={rowCount}
               rowHeight={cellHeight}
               width={width}
               style={{ outline: "none" }}
-              columnGap={GRID_GAP}
-              rowGap={GRID_GAP}
               overscanRowCount={2}
               onScroll={handleScroll}
             />
