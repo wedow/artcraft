@@ -55,12 +55,20 @@ export class FKHelper {
       }
 
       // For each target bone, display a sphere to show the FK target and raycast intersect
-      const geometry = new THREE.SphereGeometry(1, 16, 16);
+      const geometry = new THREE.SphereGeometry(0.015, 16, 16);
       const material = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, transparent: true });
       const sphere = new THREE.Mesh(geometry, material);
+
+      // FIX: Set the sphere scale to counter parent's world scale to remain constant in size
+      // TODO: Make a scale clamp
+      const parentScale = new THREE.Vector3();
+      child.getWorldScale(parentScale);
+
+      const sphereScale = new THREE.Vector3(1, 1, 1);
+      sphereScale.divide(parentScale);
+      sphere.scale.copy(sphereScale);
+
       sphere.name = FKHelperSphereName;
-      const uniformScale = 1.5;
-      sphere.scale.set(uniformScale, uniformScale, uniformScale);
       child.add(sphere);
       this.targetBoneSpheres.push(sphere);
     });
