@@ -60,7 +60,7 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
       )}
     >
       <Tab.Group selectedIndex={selectedIndex} onChange={handleTabChange}>
-        <Tab.List className="glass relative inline-flex min-w-fit overflow-x-auto rounded-lg p-0.5 py-1">
+        <Tab.List className="glass relative inline-flex min-w-fit overflow-x-auto rounded-lg p-0.5 py-1 !shadow-none">
           {/* Animated indicator */}
           <div
             className="absolute top-1 z-10 h-[calc(100%-8px)] rounded-md bg-brand-primary/30 transition-all duration-200 ease-in-out"

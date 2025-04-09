@@ -9,7 +9,6 @@ import { ControlsVideo } from "./comps/ControlsVideo";
 import { ControlPanelSceneObject } from "./comps/ControlPanelSceneObject";
 import { PreviewEngineCamera } from "./comps/PreviewEngineCamera";
 import { PreviewFrameImage } from "./comps/PreviewFrameImage";
-
 import { pageHeight, pageWidth } from "~/signals";
 
 import {
@@ -28,6 +27,7 @@ import { AspectRatioMenu } from "./comps/AspectRatioMenu";
 import { Outliner } from "./comps/Outliner";
 import { CameraAspectRatio } from "./enums";
 import { PromptBox } from "./comps/PromptBox";
+import { AssetMenu } from "./comps/AssetMenu";
 
 export const PageEditor = () => {
   useSignals();
@@ -116,6 +116,8 @@ export const PageEditor = () => {
               </div>
             </div>
 
+            <AssetMenu />
+
             {/* Bottom controls */}
             <div
               className="absolute bottom-0 left-0"
@@ -146,6 +148,7 @@ export const PageEditor = () => {
             />
           </div>
         </div>
+
         {/* Side panel */}
         <div onClick={handleOverlayClick}>
           <SidePanel />

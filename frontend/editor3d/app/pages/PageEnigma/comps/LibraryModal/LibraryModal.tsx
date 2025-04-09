@@ -1,7 +1,7 @@
 import { TransitionDialogue } from "~/components/reusable/TransitionDialogue";
 import { faCheck, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, LoadingSpinner } from "~/components";
+import { Button, LoadingSpinner, CloseButton } from "~/components";
 import { TabSelector } from "~/components/reusable/TabSelector";
 import { useState, useEffect, Fragment } from "react";
 import { LibraryModalApi } from "./LibraryModalApi";
@@ -156,7 +156,7 @@ export const LibraryModal = ({
         childPadding={false}
       >
         <div className="flex h-full flex-col">
-          <div className="border-b border-white/10 p-4">
+          <div className="border-b border-white/10 p-4 py-3">
             <div className="grid grid-cols-3 items-center">
               <h2 className="text-xl font-semibold">
                 {mode === "select" ? "Select Images" : "My Library"}
@@ -170,12 +170,7 @@ export const LibraryModal = ({
                 />
               </div>
               <div className="flex justify-end">
-                <button
-                  onClick={onClose}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 transition-all hover:bg-black/70 hover:text-white"
-                >
-                  <FontAwesomeIcon icon={faXmark} className="text-lg" />
-                </button>
+                <CloseButton onClick={onClose} />
               </div>
             </div>
           </div>
@@ -326,12 +321,10 @@ export const LibraryModal = ({
                     className="relative h-[90vh] w-[80vw] rounded-xl bg-[#2C2C2C]"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button
+                    <CloseButton
                       onClick={handleCloseLightbox}
-                      className="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 transition-all hover:bg-black/70 hover:text-white"
-                    >
-                      <FontAwesomeIcon icon={faXmark} className="text-lg" />
-                    </button>
+                      className="absolute right-4 top-4 z-10"
+                    />
                     <div className="grid h-full grid-cols-3 gap-6">
                       <div className="col-span-2 flex h-full items-center justify-center overflow-hidden bg-black/40">
                         {!lightboxImage.fullImage ? (

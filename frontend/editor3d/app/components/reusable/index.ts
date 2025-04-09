@@ -5,6 +5,7 @@ export * from "./ButtonDropdown";
 export * from "./ButtonIcon";
 export * from "./ButtonIconSelect";
 export * from "./ButtonLink";
+export * from "./CloseButton";
 export * from "./ConfirmationModal";
 export * from "./FileUploader";
 export * from "./FilterButtons";
