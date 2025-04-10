@@ -38,7 +38,7 @@ export function ButtonIconSelect({
             `flex h-8 items-center justify-center rounded-lg border text-sm transition-all duration-150`,
             text ? "h-auto w-auto gap-2 px-2.5 py-1" : "w-8",
             selectedOption === value
-              ? "border-brand-primary bg-ui-panel/[0.3]"
+              ? "border-brand-primary bg-brand-primary/20"
               : "border-transparent hover:bg-ui-panel/[0.4]",
           )}
           onClick={() => handleOptionChange(value)}

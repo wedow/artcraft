@@ -59,7 +59,7 @@ export const TopBar = ({ pageName }: Props) => {
                 icon={faImages}
                 onClick={() => setIsLibraryModalOpen(true)}
               >
-                My Library
+                My Gallery
               </Button>
               <Activity />
             </div>

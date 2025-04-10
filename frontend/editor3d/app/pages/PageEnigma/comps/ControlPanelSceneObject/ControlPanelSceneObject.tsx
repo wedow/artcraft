@@ -15,11 +15,6 @@ import {
 } from "../../signals";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 import { Button, H5, InputVector } from "~/components";
-
-import { QueueNames } from "../../Queue/QueueNames";
-import Queue from "~/pages/PageEnigma/Queue/Queue";
-import { toTimelineActions } from "../../Queue/toTimelineActions";
-import { QueueKeyframe } from "~/pages/PageEnigma/models";
 import { editorState } from "~/pages/PageEnigma/signals/engine";
 import { twMerge } from "tailwind-merge";
 import { EditorStates } from "~/pages/PageEnigma/enums";
@@ -71,9 +66,6 @@ export const ControlPanelSceneObject = () => {
   };
 
   const currentSceneObject = currentObject.value;
-  const position = currentSceneObject?.objectVectors?.position;
-  const rotation = currentSceneObject?.objectVectors?.rotation;
-  const scale = currentSceneObject?.objectVectors?.scale;
 
   function localToEngine(xyz: Record<string, string>) {
     return {
@@ -167,42 +159,6 @@ export const ControlPanelSceneObject = () => {
     setLocalScale(xyz);
   };
 
-  const handleOnAddKeyFrame = () => {
-    if (currentSceneObject) {
-      if (
-        position == null ||
-        rotation == null ||
-        scale == null ||
-        currentSceneObject == null
-      ) {
-        return;
-      }
-
-      for (const key in editorEngine?.timeline.characters) {
-        const element = editorEngine?.timeline.characters[key];
-        if (key == currentSceneObject.object_uuid) {
-          currentSceneObject.group = element;
-          break;
-        }
-      }
-
-      Queue.publish({
-        queueName: QueueNames.TO_TIMELINE,
-        action: toTimelineActions.ADD_KEYFRAME,
-        data: {
-          group: currentSceneObject.group,
-          object_uuid: currentSceneObject.object_uuid,
-          object_name: currentSceneObject.object_name,
-          version: 1,
-
-          position: currentSceneObject.objectVectors.position,
-          rotation: currentSceneObject.objectVectors.rotation,
-          scale: currentSceneObject.objectVectors.scale,
-        } as QueueKeyframe,
-      });
-    }
-  };
-
   const handleDeleteObject = () => {
     editorEngine?.deleteObject(currentSceneObject.object_uuid);
   };
@@ -216,7 +172,7 @@ export const ControlPanelSceneObject = () => {
     <Transition
       show={isShowing.value}
       className={twMerge(
-        "absolute bottom-0 right-0 mb-2 mr-2 flex h-fit w-56 origin-bottom-right flex-col gap-2 rounded-lg border border-ui-panel-border bg-ui-panel/95 p-3.5 text-white shadow-lg",
+        "glass absolute bottom-0 right-0 mb-2 mr-2 flex h-fit w-56 origin-bottom-right flex-col gap-2 rounded-lg border border-ui-panel-border p-3.5 text-white shadow-lg",
       )}
       enter="transition-opacity duration-150"
       enterFrom="opacity-0"
@@ -311,14 +267,17 @@ export const ControlPanelSceneObject = () => {
       </Transition>
 
       <div className="mt-0.5 flex gap-1.5">
-        <Button variant="action" className="grow" onClick={handleOnAddKeyFrame}>
+        {/* <Button variant="action" className="grow" onClick={handleOnAddKeyFrame}>
           Add Keyframe (K)
-        </Button>
+        </Button> */}
         <Button
           variant="secondary"
           icon={faTrash}
           onClick={handleDeleteObject}
-        />
+          className="w-full"
+        >
+          Delete
+        </Button>
       </div>
     </Transition>
   );

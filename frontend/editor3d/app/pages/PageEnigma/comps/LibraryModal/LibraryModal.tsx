@@ -159,7 +159,7 @@ export const LibraryModal = ({
           <div className="border-b border-white/10 p-4 py-3">
             <div className="grid grid-cols-3 items-center">
               <h2 className="text-xl font-semibold">
-                {mode === "select" ? "Select Images" : "My Library"}
+                {mode === "select" ? "Select Images" : "My Gallery"}
               </h2>
               <div className="flex items-center justify-center">
                 <TabSelector

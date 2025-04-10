@@ -120,10 +120,7 @@ export const PageEditor = () => {
             <div
               className="absolute bottom-0 left-0"
               style={{
-                width:
-                  pageWidth.value -
-                  (sidePanelVisible.value ? sidePanelWidth.value : 0) -
-                  84,
+                width: pageWidth.value,
               }}
               onClick={handleOverlayClick}
             >
