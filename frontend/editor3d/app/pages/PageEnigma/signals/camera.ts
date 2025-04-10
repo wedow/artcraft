@@ -47,3 +47,13 @@ export const deleteCamera = (id: string) => {
     selectedCameraId.value = "main";
   }
 };
+
+export interface FocalLengthDragging {
+  isDragging: boolean;
+  focalLength: number;
+}
+
+export const focalLengthDragging = signal<FocalLengthDragging>({
+  isDragging: false,
+  focalLength: 35,
+});

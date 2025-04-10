@@ -4,7 +4,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
 import { Button, Input, Label, Tooltip } from "~/components";
 import { SliderV2 } from "~/components/reusable/SliderV2/SliderV2";
-import { updateCamera } from "~/pages/PageEnigma/signals/camera";
+import {
+  updateCamera,
+  focalLengthDragging,
+} from "~/pages/PageEnigma/signals/camera";
 import { useState, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -40,10 +43,29 @@ export const CameraSettingsModal = ({
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    const handlePointerUp = () => setIsDragging(false);
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      focalLengthDragging.value = {
+        isDragging: false,
+        focalLength: selectedCamera?.focalLength || 35,
+      };
+    };
     document.addEventListener("pointerup", handlePointerUp);
     return () => document.removeEventListener("pointerup", handlePointerUp);
-  }, []);
+  }, [selectedCamera?.focalLength]);
+
+  const handlePointerDown = () => {
+    setIsDragging(true);
+    focalLengthDragging.value = {
+      isDragging: true,
+      focalLength: selectedCamera?.focalLength || 35,
+    };
+  };
+
+  const handleFocalLengthChange = (id: string, value: number) => {
+    focalLengthDragging.value = { isDragging: true, focalLength: value };
+    onCameraFocalLengthChange(id, value);
+  };
 
   return (
     <TransitionDialogue
@@ -146,7 +168,7 @@ export const CameraSettingsModal = ({
                   </Label>
                   <div
                     className="mt-1 flex items-center gap-4"
-                    onPointerDown={() => setIsDragging(true)}
+                    onPointerDown={handlePointerDown}
                   >
                     <SliderV2
                       min={10}
@@ -154,7 +176,7 @@ export const CameraSettingsModal = ({
                       value={selectedCamera?.focalLength || 35}
                       onChange={(value) =>
                         selectedCamera &&
-                        onCameraFocalLengthChange(selectedCamera.id, value)
+                        handleFocalLengthChange(selectedCamera.id, value)
                       }
                       step={1}
                       suffix="mm"
