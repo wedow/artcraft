@@ -922,12 +922,12 @@ class Editor {
       this.camera,
     );
 
-    this.outlinePass.edgeStrength = 6.0;
-    this.outlinePass.edgeGlow = 0.2;
-    this.outlinePass.edgeThickness = 1.0;
+    this.outlinePass.edgeStrength = 5.0;
+    this.outlinePass.edgeGlow = 0.1;
+    this.outlinePass.edgeThickness = 1.2;
     this.outlinePass.pulsePeriod = 3;
     this.outlinePass.usePatternTexture = false;
-    this.outlinePass.visibleEdgeColor.set(0xe66462);
+    this.outlinePass.visibleEdgeColor.set(0x4b9fff);
 
     this.composer.addPass(this.outlinePass);
 
@@ -992,27 +992,25 @@ class Editor {
         const width =
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 1024
-            : this.render_camera_aspect_ratio ===
-              meraAspectRatio.VERTICAL_9_16
+            : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 576
               : this.render_camera_aspect_ratio ===
-                meraAspectRatio.HORIZONTAL_3_2
+                  meraAspectRatio.HORIZONTAL_3_2
                 ? 900
                 : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.VERTICAL_2_3
+                    meraAspectRatio.VERTICAL_2_3
                   ? 600
                   : 1000;
         const height =
           this.render_camera_aspect_ratio === CameraAspectRatio.HORIZONTAL_16_9
             ? 576
-            : this.render_camera_aspect_ratio ===
-              meraAspectRatio.VERTICAL_9_16
+            : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 1024
               : this.render_camera_aspect_ratio ===
-                meraAspectRatio.HORIZONTAL_3_2
+                  meraAspectRatio.HORIZONTAL_3_2
                 ? 600
                 : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.VERTICAL_2_3
+                    meraAspectRatio.VERTICAL_2_3
                   ? 900
                   : 1000;
 

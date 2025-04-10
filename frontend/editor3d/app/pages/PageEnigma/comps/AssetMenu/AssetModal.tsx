@@ -2,13 +2,13 @@ import { TransitionDialogue } from "~/components/reusable/TransitionDialogue";
 import {
   faPlus,
   faSearch,
-  faChevronRight,
   faChevronLeft,
   faLayerGroup,
   faUser,
   faSun,
   faTree,
   faCube,
+  faChevronRight,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, CloseButton, Input, Tooltip } from "~/components";
@@ -31,7 +31,6 @@ import { useSignals } from "@preact/signals-react/runtime";
 interface AssetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddAsset: () => void;
 }
 
 type AssetTab = {
@@ -52,11 +51,11 @@ const AllTabSection = ({
   onViewAll: () => void;
 }) => (
   <div className="mb-0">
-    <div className="mb-3 flex items-center justify-between">
-      <h3 className="text-md font-semibold opacity-90">{label}</h3>
+    <div className="mb-2 flex items-center justify-between">
+      <h3 className="text-md ml-2 font-semibold opacity-90">{label}</h3>
       <Button
         variant="secondary"
-        className="flex items-center gap-1 px-2 py-1 text-sm"
+        className="mr-3 flex items-center gap-1 px-2 py-1 text-xs"
         onClick={onViewAll}
       >
         View all
@@ -73,11 +72,7 @@ const AllTabSection = ({
   </div>
 );
 
-export const AssetModal = ({
-  isOpen,
-  onClose,
-  onAddAsset,
-}: AssetModalProps) => {
+export const AssetModal = ({ isOpen, onClose }: AssetModalProps) => {
   useSignals();
   const [activeLibraryTab, setActiveLibraryTab] = useState("library");
   const [activeAssetTab, setActiveAssetTab] = useState("all");
@@ -150,6 +145,16 @@ export const AssetModal = ({
           : (userCharacters ?? []),
     },
     {
+      id: "objects",
+      label: "Objects",
+      icon: faCube,
+      engineCategory: FilterEngineCategories.OBJECT,
+      items:
+        activeLibraryTab === "library"
+          ? [...demoShapeItems.value, ...(featuredObjects ?? [])]
+          : (userObjects ?? []),
+    },
+    {
       id: "skybox",
       label: "Skybox",
       icon: faSun,
@@ -164,16 +169,6 @@ export const AssetModal = ({
         activeLibraryTab === "library"
           ? (featuredNature ?? [])
           : (userNature ?? []),
-    },
-    {
-      id: "objects",
-      label: "Objects",
-      icon: faCube,
-      engineCategory: FilterEngineCategories.OBJECT,
-      items:
-        activeLibraryTab === "library"
-          ? [...demoShapeItems.value, ...(featuredObjects ?? [])]
-          : (userObjects ?? []),
     },
   ];
 
@@ -212,6 +207,11 @@ export const AssetModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
+  // Clear search term when tab changes
+  useEffect(() => {
+    setSearchTerm("");
+  }, [activeAssetTab]);
+
   const renderContent = () => {
     if (activeAssetTab === "all" && !searchTerm) {
       return (
@@ -238,7 +238,6 @@ export const AssetModal = ({
   };
 
   const handleAddAsset = () => {
-    onAddAsset();
     if (reopenAfterAdd) {
       // Small delay to allow the modal to close and reopen
       setTimeout(() => {
@@ -248,6 +247,8 @@ export const AssetModal = ({
       onClose();
     }
   };
+
+  const clearSearch = () => setSearchTerm("");
 
   return (
     <TransitionDialogue
@@ -310,19 +311,34 @@ export const AssetModal = ({
                   onTabChange={setActiveLibraryTab}
                   className="w-auto"
                 />
-                <Input
-                  ref={searchInputRef}
-                  placeholder="Search"
-                  className="grow"
-                  icon={faSearch}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <div className="relative grow">
+                  <Input
+                    ref={searchInputRef}
+                    placeholder="Search"
+                    className="grow"
+                    inputClassName="pr-2.5"
+                    icon={faSearch}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    iconClassName="text-white/60"
+                  />
+                  {searchTerm && (
+                    <CloseButton
+                      onClick={clearSearch}
+                      className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 bg-white/10 text-[10px] hover:bg-white/20"
+                    />
+                  )}
+                </div>
                 <CloseButton onClick={onClose} />
               </div>
-              <div className="mt-4 h-[574px] overflow-hidden">
+              <div
+                className={twMerge(
+                  "overflow-auto-y mt-4 h-[574px]",
+                  activeAssetTab !== "all" && "h-[552px]",
+                )}
+              >
                 {activeAssetTab !== "all" && !searchTerm && (
-                  <div className="mb-3 flex items-center font-semibold">
+                  <div className="mb-2 flex items-center font-semibold">
                     <Button
                       variant="secondary"
                       className="flex items-center gap-2 border-none bg-transparent px-3 py-1.5 text-sm text-white/70 hover:bg-transparent hover:text-white/100"

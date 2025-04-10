@@ -4,6 +4,12 @@ import DndAsset from "~/pages/PageEnigma/DragAndDrop/DndAsset";
 import { Badge } from "~/components";
 import { AssetType } from "~/enums";
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHandPointer } from "@fortawesome/pro-regular-svg-icons";
+import {
+  faArrowPointer,
+  faUpDownLeftRight,
+} from "@fortawesome/pro-solid-svg-icons";
 
 interface Props {
   debug?: string;
@@ -55,7 +61,7 @@ export const ItemElement = ({ item }: Props) => {
         />
       )}
 
-      <div className="pointer-events-none aspect-[16/12] w-full select-none overflow-hidden rounded-xl border-[3px] border-white/5 bg-brand-secondary-600 object-cover object-center transition-all group-hover:border-brand-primary">
+      <div className="pointer-events-none relative aspect-[16/12] w-full select-none overflow-hidden rounded-xl border-[3px] border-white/5 bg-brand-secondary-600 object-cover object-center transition-all group-hover:border-brand-primary">
         {item.thumbnail && !imageError && (
           <img
             crossOrigin="anonymous"
@@ -65,6 +71,11 @@ export const ItemElement = ({ item }: Props) => {
             onError={() => setImageError(true)}
           />
         )}
+
+        <div className="text-shadow-md absolute inset-0 flex items-center justify-center bg-brand-primary-950/50 text-[13px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          <FontAwesomeIcon icon={faUpDownLeftRight} className="mr-1.5" />
+          Drag to Scene
+        </div>
       </div>
       <div className="pointer-events-none w-full select-none truncate py-1.5 text-start text-[13px] text-white/80 transition-all duration-200">
         {item.name || item.media_id}

@@ -1,5 +1,6 @@
 import { faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { twMerge } from "tailwind-merge";
 
 interface CloseButtonProps {
   onClick: () => void;
@@ -21,7 +22,11 @@ export const CloseButton = ({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center rounded-full bg-black/40 text-white/60 transition-all hover:bg-black/70 hover:text-white ${sizeClasses[size]} ${className}`}
+      className={twMerge(
+        "flex items-center justify-center rounded-full bg-black/40 text-white/60 transition-all hover:bg-black/70 hover:text-white",
+        sizeClasses[size],
+        className,
+      )}
     >
       <FontAwesomeIcon icon={faXmark} />
     </button>

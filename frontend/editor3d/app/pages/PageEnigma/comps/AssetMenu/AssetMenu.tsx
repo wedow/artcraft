@@ -7,11 +7,6 @@ import { assetModalVisibleDuringDrag } from "../../signals";
 export const AssetMenu = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddAsset = () => {
-    // TODO: Implement asset addition logic
-    console.log("Adding asset...");
-  };
-
   const handleOpenModal = () => {
     assetModalVisibleDuringDrag.value = true;
     setIsModalOpen(true);
@@ -42,11 +37,7 @@ export const AssetMenu = () => {
         </Tooltip>
       </div>
 
-      <AssetModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddAsset={handleAddAsset}
-      />
+      <AssetModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   );
 };
