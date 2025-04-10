@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
-import { useContext } from "react";
 import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";
 import {
   faPlus,
@@ -13,8 +12,6 @@ import {
   faDownload,
   faSpinnerThird,
   faTimes,
-  faCheck,
-  faSpellCheck,
   faMessageCheck,
   faMessageXmark,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -39,7 +36,6 @@ import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
 import { LibraryModal } from "../LibraryModal/LibraryModal";
-import { BucketConfig } from "../../../../api/BucketConfig";
 import type { LibraryItem } from "../LibraryModal/LibraryModal";
 
 interface ReferenceImage {
@@ -51,7 +47,7 @@ interface ReferenceImage {
 import { EngineApi } from "~/Classes/ApiManager/EngineApi";
 import { scene } from "~/signals/scene";
 import { UploaderStates } from "~/enums/UploaderStates";
-import { CameraSettingsModal } from "./CameraSettingsModal";
+import { CameraSettingsModal } from "../CameraSettingsModal";
 
 interface ExtendedPopoverItem extends PopoverItem {
   id: string;

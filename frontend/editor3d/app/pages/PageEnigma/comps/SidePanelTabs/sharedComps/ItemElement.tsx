@@ -65,6 +65,7 @@ export const ItemElement = ({ item }: Props) => {
         {item.thumbnail && !imageError && (
           <img
             crossOrigin="anonymous"
+            referrerPolicy="no-referrer"
             src={item.thumbnail}
             alt={item.name}
             className="h-full w-full object-cover object-center"
