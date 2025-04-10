@@ -40,6 +40,13 @@ import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
 import { LibraryModal } from "../LibraryModal/LibraryModal";
 import type { LibraryItem } from "../LibraryModal/LibraryModal";
+import {
+  cameras,
+  selectedCameraId,
+  addCamera,
+  deleteCamera,
+  updateCamera,
+} from "~/pages/PageEnigma/signals/camera";
 
 interface ReferenceImage {
   id: string;
@@ -51,14 +58,11 @@ import { EngineApi } from "~/Classes/ApiManager/EngineApi";
 import { UploaderStates } from "~/enums/UploaderStates";
 import { CameraSettingsModal } from "../CameraSettingsModal";
 
-interface ExtendedPopoverItem extends PopoverItem {
-  id: string;
-  focalLength: number;
-}
-
 export const PromptBox = () => {
   useSignals();
   const editorEngine = useContext(EngineContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
@@ -83,25 +87,6 @@ export const PromptBox = () => {
       icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
     },
   ]);
-  const [cameraList, setCameraList] = useState<ExtendedPopoverItem[]>([
-    {
-      id: "main",
-      label: "Main View",
-      selected: true,
-      icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
-      focalLength: 35,
-    },
-    {
-      id: "cam2",
-      label: "Camera 2",
-      selected: false,
-      icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
-      focalLength: 35,
-    },
-  ]);
-  const [selectedCameraId, setSelectedCameraId] = useState("main");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isCameraSettingsOpen, setIsCameraSettingsOpen] = useState(false);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [selectedLibraryImages, setSelectedLibraryImages] = useState<string[]>(
@@ -141,45 +126,42 @@ export const PromptBox = () => {
   }, [isGridVisible]);
 
   const handleCameraSelect = (selectedItem: PopoverItem) => {
-    setCameraList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === selectedItem.label,
-      })),
-    );
-    const selectedCamera = cameraList.find(
+    const selectedCamera = cameras.value.find(
       (cam) => cam.label === selectedItem.label,
     );
     if (selectedCamera) {
-      setSelectedCameraId(selectedCamera.id);
+      selectedCameraId.value = selectedCamera.id;
+      // Force update camera properties
+      updateCamera(selectedCamera.id, {
+        focalLength: selectedCamera.focalLength,
+        position: selectedCamera.position,
+        rotation: selectedCamera.rotation,
+      });
     }
   };
 
   const handleAddCamera = () => {
-    const newIndex = cameraList.length + 1;
+    const newIndex = cameras.value.length + 1;
     const newId = `cam${newIndex}`;
-    setCameraList((prev) => [
-      ...prev,
-      {
-        id: newId,
-        label: `Camera ${newIndex}`,
-        selected: false,
-        icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
-        focalLength: 35,
-      },
-    ]);
+    addCamera({
+      id: newId,
+      label: `Camera ${newIndex}`,
+      focalLength: 35,
+      fov: 70,
+      position: { x: 0, y: 2.5, z: -5 },
+      rotation: { x: 0, y: 0, z: 0 },
+    });
   };
 
   const handleCameraNameChange = (id: string, newName: string) => {
-    setCameraList((prev) =>
-      prev.map((cam) => (cam.id === id ? { ...cam, label: newName } : cam)),
-    );
+    updateCamera(id, { label: newName });
   };
 
   const handleCameraFocalLengthChange = (id: string, value: number) => {
-    setCameraList((prev) =>
-      prev.map((cam) => (cam.id === id ? { ...cam, focalLength: value } : cam)),
-    );
+    const camera = cameras.value.find((cam) => cam.id === id);
+    if (camera) {
+      updateCamera(id, { focalLength: value });
+    }
   };
 
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
@@ -412,31 +394,6 @@ export const PromptBox = () => {
     }
   };
 
-  const handleDeleteCamera = (id: string) => {
-    // Don't allow deleting the main camera or if it's the last camera
-    if (id === "main" || cameraList.length <= 1) return;
-
-    // Update camera list
-    setCameraList((prev) => prev.filter((cam) => cam.id !== id));
-
-    // If we're deleting the selected camera, select the first remaining camera
-    if (id === selectedCameraId) {
-      const remainingCameras = cameraList.filter((cam) => cam.id !== id);
-      if (remainingCameras.length > 0) {
-        setSelectedCameraId(remainingCameras[0].id);
-        // Update selection state
-        setCameraList((prev) =>
-          prev
-            .filter((cam) => cam.id !== id)
-            .map((cam, idx) => ({
-              ...cam,
-              selected: idx === 0,
-            })),
-        );
-      }
-    }
-  };
-
   return (
     <>
       <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col gap-3">
@@ -569,7 +526,15 @@ export const PromptBox = () => {
                 closeOnClick={true}
               >
                 <PopoverMenu
-                  items={cameraList}
+                  items={cameras.value.map((cam) => ({
+                    id: cam.id,
+                    label: cam.label,
+                    selected: cam.id === selectedCameraId.value,
+                    icon: (
+                      <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />
+                    ),
+                    focalLength: cam.focalLength,
+                  }))}
                   onSelect={handleCameraSelect}
                   onAdd={handleAddCamera}
                   triggerIcon={
@@ -659,13 +624,19 @@ export const PromptBox = () => {
         <CameraSettingsModal
           isOpen={isCameraSettingsOpen}
           onClose={() => setIsCameraSettingsOpen(false)}
-          cameras={cameraList}
+          cameras={cameras.value.map((cam) => ({
+            id: cam.id,
+            label: cam.label,
+            selected: cam.id === selectedCameraId.value,
+            icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
+            focalLength: cam.focalLength,
+          }))}
           onCameraNameChange={handleCameraNameChange}
           onCameraFocalLengthChange={handleCameraFocalLengthChange}
           onAddCamera={handleAddCamera}
-          selectedCameraId={selectedCameraId}
-          onSelectCamera={setSelectedCameraId}
-          onDeleteCamera={handleDeleteCamera}
+          selectedCameraId={selectedCameraId.value}
+          onSelectCamera={(id: string) => (selectedCameraId.value = id)}
+          onDeleteCamera={deleteCamera}
         />
       </div>
       <LibraryModal

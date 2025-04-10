@@ -52,6 +52,7 @@ import { BufferType, EngineFrameBuffers } from "./VideoProcessor/engine_buffer";
 
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { CharacterAnimationEngine } from "./Engines/CharacterAnimationEngine";
+import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
 
 export type EditorInitializeConfig = {
   sceneToken: string;
@@ -192,6 +193,8 @@ class Editor {
   processingHasFailed: boolean;
   stats: Stats;
 
+  cameras: Map<string, THREE.PerspectiveCamera> = new Map();
+
   constructor() {
     this.processingHasFailed = false;
     console.log(
@@ -323,8 +326,134 @@ class Editor {
       this.engineFrameBuffers.frameWorkerManager.type = imageFormat;
     }
 
-    // New Rendering Pipeline Engine Work
+    // Initialize cameras from signals
+    cameras.value.forEach((camData) => {
+      const camera = new THREE.PerspectiveCamera(
+        camData.fov,
+        this.getRenderDimensions().aspectRatio,
+        0.01,
+        200,
+      );
+      camera.position.set(
+        camData.position.x,
+        camData.position.y,
+        camData.position.z,
+      );
+      camera.rotation.set(
+        camData.rotation.x,
+        camData.rotation.y,
+        camData.rotation.z,
+      );
+      this.cameras.set(camData.id, camera);
+    });
+
+    // Set initial camera
+    this.camera = this.cameras.get("main") || null;
+    this.render_camera = this.camera;
+
+    // Subscribe to camera changes
+    this.setupCameraSignalHandlers();
   }
+
+  // Add helper method to convert focal length to FOV
+  focalLengthToFov(focalLength: number, sensorHeight: number = 24): number {
+    // Using the formula: FOV = 2 * arctan(sensorHeight / (2 * focalLength))
+    return 2 * Math.atan(sensorHeight / (2 * focalLength)) * (180 / Math.PI);
+  }
+
+  setupCameraSignalHandlers() {
+    // Handle camera selection changes
+    selectedCameraId.subscribe((id) => {
+      const newCamera = this.cameras.get(id);
+      if (newCamera) {
+        this.camera = newCamera;
+        this.render_camera = newCamera;
+
+        // Update camera properties in signals
+        const camData = cameras.value.find((c) => c.id === id);
+        if (camData) {
+          // Convert focal length to FOV
+          const fov = this.focalLengthToFov(camData.focalLength);
+          newCamera.fov = fov;
+          newCamera.updateProjectionMatrix();
+          this.renderScene(); // Force a render update
+        }
+      }
+    });
+
+    // Handle camera updates
+    cameras.subscribe((newCameras) => {
+      newCameras.forEach((camData) => {
+        let camera = this.cameras.get(camData.id);
+
+        // Create new camera if it doesn't exist
+        if (!camera) {
+          const fov = this.focalLengthToFov(camData.focalLength);
+          camera = new THREE.PerspectiveCamera(
+            fov,
+            this.getRenderDimensions().aspectRatio,
+            0.01,
+            200,
+          );
+          this.cameras.set(camData.id, camera);
+        }
+
+        // Update camera properties
+        camera.position.set(
+          camData.position.x,
+          camData.position.y,
+          camData.position.z,
+        );
+        camera.rotation.set(
+          camData.rotation.x,
+          camData.rotation.y,
+          camData.rotation.z,
+        );
+
+        // Update FOV based on focal length
+        const fov = this.focalLengthToFov(camData.focalLength);
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+
+        // Force a render update if this is the active camera
+        if (camData.id === selectedCameraId.value) {
+          this.renderScene();
+        }
+      });
+
+      // Clean up deleted cameras
+      const currentIds = new Set(newCameras.map((c) => c.id));
+      for (const [id] of this.cameras.entries()) {
+        if (!currentIds.has(id) && id !== "main") {
+          this.cameras.delete(id);
+        }
+      }
+    });
+  }
+
+  // Update camera position in signals when it changes
+  updateCameraPosition() {
+    if (this.camera && selectedCameraId.value) {
+      const pos = this.camera.position;
+      const rot = this.camera.rotation;
+
+      const camData = cameras.value.find(
+        (c) => c.id === selectedCameraId.value,
+      );
+      if (camData) {
+        cameras.value = cameras.value.map((c) =>
+          c.id === selectedCameraId.value
+            ? {
+                ...c,
+                position: { x: pos.x, y: pos.y, z: pos.z },
+                rotation: { x: rot.x, y: rot.y, z: rot.z },
+              }
+            : c,
+        );
+      }
+    }
+  }
+
   getRenderDimensions() {
     switch (this.render_camera_aspect_ratio) {
       case CameraAspectRatio.HORIZONTAL_16_9: {
@@ -1159,6 +1288,21 @@ class Editor {
     }
 
     const delta_time = this.clock.getDelta();
+
+    // Update camera properties from signals before FreeCam update
+    if (selectedCameraId.value && this.camera) {
+      const camData = cameras.value.find(
+        (c) => c.id === selectedCameraId.value,
+      );
+      if (camData) {
+        const fov = this.focalLengthToFov(camData.focalLength);
+        if (this.camera.fov !== fov) {
+          this.camera.fov = fov;
+          this.camera.updateProjectionMatrix();
+        }
+      }
+    }
+
     this.cameraViewControls?.update(5 * delta_time);
     this.activeScene.shader_objects.forEach((shader) => {
       shader.material.uniforms["time"].value += 0.5 * delta_time;

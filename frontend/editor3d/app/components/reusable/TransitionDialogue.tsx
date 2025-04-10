@@ -13,7 +13,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { Tooltip } from "~/components";
 
-const DialogBackdrop = () => {
+const DialogBackdrop = ({ className }: { className?: string }) => {
   useEffect(() => {
     disableHotkeyInput(DomLevels.DIALOGUE);
     return () => {
@@ -31,7 +31,7 @@ const DialogBackdrop = () => {
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <div className="fixed inset-0 bg-black/60" />
+      <div className={twMerge("fixed inset-0 bg-black/60", className)} />
     </Transition.Child>
   );
 };
@@ -43,6 +43,7 @@ export const TransitionDialogue = ({
   onTitleIconClick,
   onClose,
   className,
+  backdropClassName,
   width,
   children,
   childPadding = true,
@@ -56,6 +57,7 @@ export const TransitionDialogue = ({
   titleIconClassName?: string;
   onClose: () => void;
   className?: string;
+  backdropClassName?: string;
   width?: number;
   children: ReactNode;
   childPadding?: boolean;
@@ -64,7 +66,7 @@ export const TransitionDialogue = ({
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-[70]" onClose={onClose}>
-        <DialogBackdrop />
+        <DialogBackdrop className={backdropClassName} />
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child

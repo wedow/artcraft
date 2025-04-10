@@ -1,5 +1,6 @@
 import { EventDispatcher, Quaternion, Vector3, Vector2 } from "three";
 import * as THREE from "three";
+import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
 
 class FreeCam extends EventDispatcher {
   object: THREE.PerspectiveCamera;
@@ -228,6 +229,22 @@ class FreeCam extends EventDispatcher {
     this.object.translateX(this.moveVector.x * moveMulti);
     this.object.translateY(this.moveVector.y * moveMulti);
     this.object.translateZ(this.moveVector.z * moveMulti);
+
+    // Update camera position in signals
+    if (selectedCameraId.value) {
+      const pos = this.object.position;
+      const rot = this.object.rotation;
+
+      cameras.value = cameras.value.map((cam) =>
+        cam.id === selectedCameraId.value
+          ? {
+              ...cam,
+              position: { x: pos.x, y: pos.y, z: pos.z },
+              rotation: { x: rot.x, y: rot.y, z: rot.z },
+            }
+          : cam,
+      );
+    }
   }
 
   updateMovementVector() {
