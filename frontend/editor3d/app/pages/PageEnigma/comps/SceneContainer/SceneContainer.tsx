@@ -1,12 +1,7 @@
 import { useCallback, useContext } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { pageHeight, pageWidth } from "~/signals";
-import {
-  editorLetterBox,
-  timelineHeight,
-  sidePanelWidth,
-  sidePanelVisible,
-} from "~/pages/PageEnigma/signals";
+import { editorLetterBox, timelineHeight } from "~/pages/PageEnigma/signals";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 import { Letterbox } from "./Letterbox";
 
@@ -14,8 +9,7 @@ export const SceneContainer = ({ children }: { children: React.ReactNode }) => {
   useSignals();
   const editorEngine = useContext(EngineContext);
 
-  const containerWidth =
-    pageWidth.value - (sidePanelVisible.value ? sidePanelWidth.value : 0) - 84;
+  const containerWidth = pageWidth.value;
 
   const containerHeight = pageHeight.value - timelineHeight.value - 64;
 

@@ -18,3 +18,4 @@ export * from "./stylizeTab";
 export * from "./timing";
 export * from "./timeline";
 export * from "./error";
+export * from "./assetModal";

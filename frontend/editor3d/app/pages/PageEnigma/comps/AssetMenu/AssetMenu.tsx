@@ -2,6 +2,7 @@ import { faCube, faMagicWandSparkles } from "@fortawesome/pro-solid-svg-icons";
 import { Button, Tooltip } from "~/components";
 import { useState } from "react";
 import { AssetModal } from "./AssetModal";
+import { assetModalVisibleDuringDrag } from "../../signals";
 
 export const AssetMenu = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -11,6 +12,11 @@ export const AssetMenu = () => {
     console.log("Adding asset...");
   };
 
+  const handleOpenModal = () => {
+    assetModalVisibleDuringDrag.value = true;
+    setIsModalOpen(true);
+  };
+
   return (
     <>
       <div className="glass absolute left-2 top-1/2 flex -translate-y-1/2 flex-col gap-1 rounded-lg p-1">
@@ -18,7 +24,7 @@ export const AssetMenu = () => {
           <Button
             icon={faCube}
             className="h-12 w-12 text-lg"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenModal}
           />
         </Tooltip>
         <Tooltip
@@ -31,7 +37,7 @@ export const AssetMenu = () => {
             className="h-12 w-12 text-lg"
             variant="secondary"
             disabled={true}
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenModal}
           />
         </Tooltip>
       </div>

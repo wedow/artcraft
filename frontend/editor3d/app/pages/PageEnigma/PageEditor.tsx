@@ -23,7 +23,6 @@ import {
 } from "~/pages/PageEnigma/signals";
 import { EditorCanvas } from "./comps/EngineCanvases";
 import { SceneContainer } from "./comps/SceneContainer";
-import { AspectRatioMenu } from "./comps/AspectRatioMenu";
 import { Outliner } from "./comps/Outliner";
 import { CameraAspectRatio } from "./enums";
 import { PromptBox } from "./comps/PromptBox";
@@ -95,7 +94,6 @@ export const PageEditor = () => {
           className="flex"
           style={{
             height,
-            width,
           }}
         >
           <div className="relative w-full overflow-hidden bg-transparent">
@@ -136,9 +134,11 @@ export const PageEditor = () => {
                 <Outliner />
                 <PreviewEngineCamera />
               </div>
-              <PromptBox />
+
               <ControlPanelSceneObject />
             </div>
+
+            <PromptBox />
 
             <LoadingDots
               className="absolute left-0 top-0"
@@ -150,9 +150,9 @@ export const PageEditor = () => {
         </div>
 
         {/* Side panel */}
-        <div onClick={handleOverlayClick}>
+        {/* <div onClick={handleOverlayClick}>
           <SidePanel />
-        </div>
+        </div> */}
       </div>
 
       {/* Timeline */}

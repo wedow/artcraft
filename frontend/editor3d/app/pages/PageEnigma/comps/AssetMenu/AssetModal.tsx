@@ -3,16 +3,30 @@ import {
   faPlus,
   faSearch,
   faChevronRight,
+  faChevronLeft,
+  faLayerGroup,
+  faUser,
+  faSun,
+  faTree,
+  faCube,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, CloseButton, Input, Tooltip } from "~/components";
 import { TabSelector } from "~/components/reusable/TabSelector";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { ItemElements } from "../SidePanelTabs/sharedComps/ItemElements";
-import { demoSkyboxItems, demoShapeItems } from "../../signals";
+import {
+  demoSkyboxItems,
+  demoShapeItems,
+  demoCharacterItems,
+  assetModalVisibleDuringDrag,
+  reopenAfterDragSignal,
+} from "../../signals";
 import { MediaItem } from "../../models";
 import { useUserObjects, useFeaturedObjects } from "../SidePanelTabs/hooks";
 import { FilterEngineCategories } from "~/enums";
+import { twMerge } from "tailwind-merge";
+import { useSignals } from "@preact/signals-react/runtime";
 
 interface AssetModalProps {
   isOpen: boolean;
@@ -23,6 +37,7 @@ interface AssetModalProps {
 type AssetTab = {
   id: string;
   label: string;
+  icon: typeof faLayerGroup;
   engineCategory?: FilterEngineCategories;
   items: MediaItem[];
 };
@@ -36,9 +51,9 @@ const AllTabSection = ({
   items: MediaItem[];
   onViewAll: () => void;
 }) => (
-  <div className="mb-8">
+  <div className="mb-0">
     <div className="mb-3 flex items-center justify-between">
-      <h3 className="text-lg font-medium opacity-90">{label}</h3>
+      <h3 className="text-md font-semibold opacity-90">{label}</h3>
       <Button
         variant="secondary"
         className="flex items-center gap-1 px-2 py-1 text-sm"
@@ -48,7 +63,7 @@ const AllTabSection = ({
         <FontAwesomeIcon icon={faChevronRight} className="text-xs opacity-70" />
       </Button>
     </div>
-    <div className="h-[200px]">
+    <div className="h-[170px]">
       <ItemElements
         items={items.slice(0, 4)}
         busy={false}
@@ -63,9 +78,27 @@ export const AssetModal = ({
   onClose,
   onAddAsset,
 }: AssetModalProps) => {
+  useSignals();
   const [activeLibraryTab, setActiveLibraryTab] = useState("library");
   const [activeAssetTab, setActiveAssetTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [reopenAfterAdd, setReopenAfterAdd] = useState(true);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Update the signal when the preference changes
+  useEffect(() => {
+    reopenAfterDragSignal.value = reopenAfterAdd;
+  }, [reopenAfterAdd]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to ensure the modal is fully mounted
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   // Fetch objects for different categories
   const { userObjects: userCharacters } = useUserObjects({
@@ -103,25 +136,29 @@ export const AssetModal = ({
     { id: "mine", label: "Mine" },
   ];
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const assetTabs: AssetTab[] = [
-    { id: "all", label: "All", items: [] },
+    { id: "all", label: "All", icon: faLayerGroup, items: [] },
     {
       id: "character",
       label: "Character",
+      icon: faUser,
       engineCategory: FilterEngineCategories.CHARACTER,
       items:
         activeLibraryTab === "library"
-          ? (featuredCharacters ?? [])
+          ? [...demoCharacterItems.value, ...(featuredCharacters ?? [])]
           : (userCharacters ?? []),
     },
     {
       id: "skybox",
       label: "Skybox",
+      icon: faSun,
       items: demoSkyboxItems.value,
     },
     {
       id: "nature",
       label: "Nature",
+      icon: faTree,
       engineCategory: FilterEngineCategories.SET_DRESSING,
       items:
         activeLibraryTab === "library"
@@ -131,6 +168,7 @@ export const AssetModal = ({
     {
       id: "objects",
       label: "Objects",
+      icon: faCube,
       engineCategory: FilterEngineCategories.OBJECT,
       items:
         activeLibraryTab === "library"
@@ -171,12 +209,13 @@ export const AssetModal = ({
     if (searchTerm && activeAssetTab !== "all") {
       setActiveAssetTab("all");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   const renderContent = () => {
     if (activeAssetTab === "all" && !searchTerm) {
       return (
-        <div className="space-y-2">
+        <div className="h-full space-y-2 overflow-y-auto">
           {assetTabs.slice(1).map((tab) => (
             <AllTabSection
               key={tab.id}
@@ -198,43 +237,72 @@ export const AssetModal = ({
     );
   };
 
+  const handleAddAsset = () => {
+    onAddAsset();
+    if (reopenAfterAdd) {
+      // Small delay to allow the modal to close and reopen
+      setTimeout(() => {
+        onClose();
+      }, 100);
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <TransitionDialogue
-      isOpen={isOpen}
+      isOpen={isOpen && assetModalVisibleDuringDrag.value}
       onClose={onClose}
-      className="h-[640px] max-w-5xl"
+      className="h-[640px] max-w-4xl"
       childPadding={false}
     >
       <div className="grid h-full grid-cols-12 gap-3">
-        <div className="relative col-span-3 p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-gray-200 after:dark:bg-white/10">
+        <div className="relative col-span-3 flex h-full flex-col p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-gray-200 after:dark:bg-white/10">
           <div className="flex items-center justify-between gap-2.5 py-0.5">
             <h2 className="text-[18px] font-semibold opacity-80">3D Assets</h2>
             <Tooltip content="Upload model" position="top" delay={200}>
               <Button
                 className="h-6 w-6 rounded-full border-none bg-transparent text-white/70 transition-colors hover:bg-transparent hover:text-white/100"
-                onClick={onAddAsset}
+                onClick={handleAddAsset}
               >
                 <FontAwesomeIcon icon={faPlus} className="text-xl" />
               </Button>
             </Tooltip>
           </div>
           <hr className="my-2 w-full border-white/10" />
-          <div className="space-y-1">
+          <div className="space-y-2">
             {assetTabs.map((tab) => (
               <Button
                 key={tab.id}
                 variant={activeAssetTab === tab.id ? "primary" : "secondary"}
-                className="w-full justify-start text-left"
+                className={twMerge(
+                  "w-full justify-start rounded-xl border border-white/[2%] bg-white/[4%] px-3.5 py-2.5 text-left hover:bg-white/15",
+                  activeAssetTab === tab.id &&
+                    "border-brand-primary bg-brand-primary/10 hover:bg-brand-primary/10",
+                )}
                 onClick={() => setActiveAssetTab(tab.id)}
               >
+                <FontAwesomeIcon icon={tab.icon} className="mr-2 opacity-70" />
                 {tab.label}
               </Button>
             ))}
           </div>
+          <div className="mt-auto flex items-center gap-2 pt-3">
+            <input
+              type="checkbox"
+              id="reopen-after-add"
+              checked={reopenAfterAdd}
+              onChange={(e) => setReopenAfterAdd(e.target.checked)}
+              className="h-4 w-4 rounded-lg border-gray-300 bg-gray-700 text-brand-primary focus:ring-brand-primary"
+            />
+            <label htmlFor="reopen-after-add" className="text-sm text-white/70">
+              Reopen after adding
+            </label>
+          </div>
         </div>
-        <div className="col-span-9 p-3 ps-0 pt-2">
+        <div className="col-span-9 p-3 pb-0 ps-0 pt-2">
           <div className="flex h-full flex-col">
-            <div>
+            <div className="h-full">
               <div className="flex items-center gap-4">
                 <TabSelector
                   tabs={libraryTabs}
@@ -243,6 +311,7 @@ export const AssetModal = ({
                   className="w-auto"
                 />
                 <Input
+                  ref={searchInputRef}
                   placeholder="Search"
                   className="grow"
                   icon={faSearch}
@@ -251,12 +320,24 @@ export const AssetModal = ({
                 />
                 <CloseButton onClick={onClose} />
               </div>
-              <div className="mt-4 h-[480px] overflow-y-auto">
+              <div className="mt-4 h-[574px] overflow-hidden">
+                {activeAssetTab !== "all" && !searchTerm && (
+                  <div className="mb-3 flex items-center font-semibold">
+                    <Button
+                      variant="secondary"
+                      className="flex items-center gap-2 border-none bg-transparent px-3 py-1.5 text-sm text-white/70 hover:bg-transparent hover:text-white/100"
+                      onClick={() => setActiveAssetTab("all")}
+                    >
+                      <FontAwesomeIcon
+                        icon={faChevronLeft}
+                        className="text-sm font-semibold opacity-70"
+                      />
+                    </Button>
+                    {currentTab.label}
+                  </div>
+                )}
                 {renderContent()}
               </div>
-            </div>
-            <div className="mt-auto flex justify-end pt-4">
-              <Button onClick={onClose}>Done</Button>
             </div>
           </div>
         </div>

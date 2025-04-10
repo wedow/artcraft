@@ -66,7 +66,7 @@ export const ItemElement = ({ item }: Props) => {
           />
         )}
       </div>
-      <div className="pointer-events-none w-full select-none truncate py-1.5 text-start text-[13px] transition-all duration-200 ">
+      <div className="pointer-events-none w-full select-none truncate py-1.5 text-start text-[13px] text-white/80 transition-all duration-200">
         {item.name || item.media_id}
       </div>
     </div>

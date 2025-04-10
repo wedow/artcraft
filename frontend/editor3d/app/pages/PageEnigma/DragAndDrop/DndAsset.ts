@@ -13,6 +13,8 @@ import {
   overTimeline,
   sidePanelWidth,
   timelineHeight,
+  assetModalVisibleDuringDrag,
+  reopenAfterDragSignal,
 } from "~/pages/PageEnigma/signals";
 import { pageHeight, pageWidth } from "~/signals";
 import { addShape } from "~/pages/PageEnigma/signals/shape";
@@ -42,6 +44,7 @@ class DndAsset {
       this.initY = event.pageY;
       canDrop.value = false;
       this.notDropText = "";
+      assetModalVisibleDuringDrag.value = false;
       window.addEventListener("pointerup", this.onPointerUp);
       window.addEventListener("pointermove", this.onPointerMove);
     }
@@ -54,6 +57,14 @@ class DndAsset {
       this.overElement = null;
       overTimeline.value = false;
       this.notDropText = "";
+      if (reopenAfterDragSignal.value) {
+        assetModalVisibleDuringDrag.value = true;
+      } else {
+        assetModalVisibleDuringDrag.value = true;
+        setTimeout(() => {
+          assetModalVisibleDuringDrag.value = false;
+        }, 0);
+      }
     }
   }
 
