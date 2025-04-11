@@ -33,6 +33,8 @@ export enum toEngineActions {
   CHANGE_CAMERA_ASPECT_RATIO = "change_camera_aspect_ratio",
   // data=CamperaAspectRatio
 
+  CAMERA_CHANGED = "camera_changed",
+
   UNMUTE = "unmute",
   // data={version, type, group, object_uuid} if lipsync
   // data={version, type, group} if global_audio

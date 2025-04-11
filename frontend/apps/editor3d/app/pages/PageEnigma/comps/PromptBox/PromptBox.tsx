@@ -162,11 +162,11 @@ export const PromptBox = () => {
         editorEngine.renderScene();
 
         // Queue an update to ensure the engine processes the camera change
-        Queue.publish({
-          queueName: QueueNames.TO_ENGINE,
-          action: toEngineActions.CAMERA_CHANGED,
-          data: selectedCamera,
-        });
+        // Queue.publish({
+        //   queueName: QueueNames.TO_ENGINE,
+        //   action: toEngineActions.CAMERA_CHANGED,
+        //   data: selectedCamera,
+        // });
       }
 
       // Force update camera properties in the state
@@ -180,16 +180,70 @@ export const PromptBox = () => {
   };
 
   const handleAddCamera = () => {
+    // Check if we've reached the maximum number of cameras
+    if (cameras.value.length >= 6) {
+      console.warn("Maximum number of cameras (6) reached");
+      return;
+    }
+
     const newIndex = cameras.value.length + 1;
     const newId = `cam${newIndex}`;
+
+    // This is for generating random orbital position for the new camera using spherical coordinates
+    const radius = Math.random() * 5 + 7; // Distance from center: 7 to 12 units
+    const theta = Math.random() * Math.PI * 2; // Azimuthal angle: 0 to 2π
+    const phi = Math.PI / 3 + (Math.random() * Math.PI) / 6; // Polar angle: π/3 to π/2 (60° to 90° from horizontal)
+
+    // Convert spherical coordinates to Cartesian coordinates
+    const randomX = radius * Math.sin(phi) * Math.cos(theta);
+    const randomY = Math.abs(radius * Math.cos(phi)) + 2; // Ensure Y is positive and at least 2 units up
+    const randomZ = radius * Math.sin(phi) * Math.sin(theta);
+
     addCamera({
       id: newId,
       label: `Camera ${newIndex}`,
-      focalLength: 35,
-      fov: 70,
-      position: { x: 0, y: 2.5, z: -5 },
+      focalLength: 24,
+      position: {
+        x: randomX,
+        y: randomY,
+        z: randomZ,
+      },
       rotation: { x: 0, y: 0, z: 0 },
+      lookAt: { x: 0, y: 0, z: 0 },
     });
+
+    // Switch to the newly created camera
+    selectedCameraId.value = newId;
+
+    // Update the engine camera to match the new camera's properties
+    if (editorEngine && editorEngine.camera) {
+      editorEngine.camera.position.set(randomX, randomY, randomZ);
+      editorEngine.camera.lookAt(0, 0, 0);
+      editorEngine.camera.fov = editorEngine.focalLengthToFov(24);
+      editorEngine.camera.updateProjectionMatrix();
+
+      // Reset and update camera controls
+      if (editorEngine.cameraViewControls) {
+        editorEngine.cameraViewControls.reset();
+        editorEngine.cameraViewControls.update(0);
+      }
+
+      // Force a render to update the view
+      editorEngine.renderScene();
+
+      // Queue.publish({
+      //   queueName: QueueNames.TO_ENGINE,
+      //   action: toEngineActions.CAMERA_CHANGED,
+      //   data: {
+      //     id: newId,
+      //     label: `Camera ${newIndex}`,
+      //     focalLength: 24,
+      //     position: { x: randomX, y: randomY, z: randomZ },
+      //     rotation: { x: 0, y: 0, z: 0 },
+      //     lookAt: { x: 0, y: 0, z: 0 },
+      //   },
+      // });
+    }
   };
 
   const handleCameraNameChange = (id: string, newName: string) => {
