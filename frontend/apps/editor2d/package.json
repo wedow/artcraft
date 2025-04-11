@@ -1,8 +1,8 @@
 {
-  "name": "@frontend/editor3d",
+  "name": "@frontend/editor2d",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "editor3d"
+    "name": "editor2d"
   }
 }

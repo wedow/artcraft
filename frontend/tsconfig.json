@@ -4,7 +4,7 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/editor3d"
+      "path": "./apps/editor2d"
     }
   ]
 }
