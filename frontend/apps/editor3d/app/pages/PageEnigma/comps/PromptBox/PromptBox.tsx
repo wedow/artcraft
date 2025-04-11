@@ -129,13 +129,52 @@ export const PromptBox = () => {
     const selectedCamera = cameras.value.find(
       (cam) => cam.label === selectedItem.label,
     );
-    if (selectedCamera) {
+    if (selectedCamera && editorEngine) {
       selectedCameraId.value = selectedCamera.id;
-      // Force update camera properties
+
+      // Update the main camera to match the selected camera's properties
+      if (editorEngine.camera) {
+        // First update position and lookAt
+        editorEngine.camera.position.set(
+          selectedCamera.position.x,
+          selectedCamera.position.y,
+          selectedCamera.position.z,
+        );
+        editorEngine.camera.lookAt(
+          selectedCamera.lookAt.x,
+          selectedCamera.lookAt.y,
+          selectedCamera.lookAt.z,
+        );
+
+        // Update FOV
+        editorEngine.camera.fov = editorEngine.focalLengthToFov(
+          selectedCamera.focalLength,
+        );
+        editorEngine.camera.updateProjectionMatrix();
+
+        // Reset and update camera controls
+        if (editorEngine.cameraViewControls) {
+          editorEngine.cameraViewControls.reset();
+          editorEngine.cameraViewControls.update(0);
+        }
+
+        // Force a render to update the view
+        editorEngine.renderScene();
+
+        // Queue an update to ensure the engine processes the camera change
+        Queue.publish({
+          queueName: QueueNames.TO_ENGINE,
+          action: toEngineActions.CAMERA_CHANGED,
+          data: selectedCamera,
+        });
+      }
+
+      // Force update camera properties in the state
       updateCamera(selectedCamera.id, {
         focalLength: selectedCamera.focalLength,
         position: selectedCamera.position,
         rotation: selectedCamera.rotation,
+        lookAt: selectedCamera.lookAt,
       });
     }
   };

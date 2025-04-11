@@ -4,7 +4,6 @@ export interface Camera {
   id: string;
   label: string;
   focalLength: number;
-  fov: number;
   position: { x: number; y: number; z: number };
   rotation: { x: number; y: number; z: number };
   lookAt: { x: number; y: number; z: number };
@@ -15,7 +14,6 @@ export const cameras = signal<Camera[]>([
     id: "main",
     label: "Main View",
     focalLength: 17,
-    fov: 70,
     position: { x: -2.5, y: 2.5, z: 2.5 },
     rotation: { x: 0, y: 0, z: 0 },
     lookAt: { x: 0, y: 0, z: 0 },
@@ -23,9 +21,8 @@ export const cameras = signal<Camera[]>([
   {
     id: "cam2",
     label: "Camera 2",
-    focalLength: 35,
-    fov: 70,
-    position: { x: -2.5, y: 2.5, z: 2.5 },
+    focalLength: 10,
+    position: { x: 0, y: 0.6, z: 1.5 },
     rotation: { x: 0, y: 0, z: 0 },
     lookAt: { x: 0, y: 0, z: 0 },
   },

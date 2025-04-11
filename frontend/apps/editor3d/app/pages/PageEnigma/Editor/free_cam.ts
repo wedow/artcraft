@@ -235,12 +235,18 @@ class FreeCam extends EventDispatcher {
       const pos = this.object.position;
       const rot = this.object.rotation;
 
+      // Calculate lookAt point based on camera's forward direction
+      const lookAtPoint = new Vector3(0, 0, -1);
+      lookAtPoint.applyQuaternion(this.object.quaternion);
+      lookAtPoint.add(pos);
+
       cameras.value = cameras.value.map((cam) =>
         cam.id === selectedCameraId.value
           ? {
               ...cam,
               position: { x: pos.x, y: pos.y, z: pos.z },
               rotation: { x: rot.x, y: rot.y, z: rot.z },
+              lookAt: { x: lookAtPoint.x, y: lookAtPoint.y, z: lookAtPoint.z },
             }
           : cam,
       );

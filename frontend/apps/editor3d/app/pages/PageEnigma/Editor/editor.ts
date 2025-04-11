@@ -467,24 +467,52 @@ class Editor {
     const width = this.container.offsetWidth;
     const height = this.container.offsetHeight;
 
-    // Sets up camera and base position.
-    this.camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 200);
-    this.camera.position.z = 2.5;
-    this.camera.position.y = 2.5;
-    this.camera.position.x = -2.5;
-    this.camera.lookAt(0, 0, 0);
+    // Sets up camera and base position using camera configurations from camera.ts
+    const mainCameraConfig = cameras.value.find((cam) => cam.id === "main");
+    if (mainCameraConfig) {
+      this.camera = new THREE.PerspectiveCamera(
+        this.focalLengthToFov(mainCameraConfig.focalLength),
+        width / height,
+        0.01,
+        200,
+      );
+      this.camera.position.set(
+        mainCameraConfig.position.x,
+        mainCameraConfig.position.y,
+        mainCameraConfig.position.z,
+      );
+      this.camera.lookAt(
+        mainCameraConfig.lookAt.x,
+        mainCameraConfig.lookAt.y,
+        mainCameraConfig.lookAt.z,
+      );
+    }
 
     this.camera.layers.enable(0);
-    this.camera.layers.enable(1); // This camera does not see this layer
+    this.camera.layers.enable(1);
 
     this.timeline.camera = this.camera;
 
-    this.render_camera = new THREE.PerspectiveCamera(
-      70,
-      width / height,
-      0.01,
-      200,
-    );
+    const otherCameras = cameras.value.filter((cam) => cam.id !== "main");
+    if (otherCameras.length > 0) {
+      const renderCameraConfig = otherCameras[0];
+      this.render_camera = new THREE.PerspectiveCamera(
+        this.focalLengthToFov(renderCameraConfig.focalLength),
+        width / height,
+        0.01,
+        200,
+      );
+      this.render_camera.position.set(
+        renderCameraConfig.position.x,
+        renderCameraConfig.position.y,
+        renderCameraConfig.position.z,
+      );
+      this.render_camera.lookAt(
+        renderCameraConfig.lookAt.x,
+        renderCameraConfig.lookAt.y,
+        renderCameraConfig.lookAt.z,
+      );
+    }
 
     this.render_camera.layers.disable(1); // This camera does not see this layer      );
 

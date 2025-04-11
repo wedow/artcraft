@@ -17,6 +17,7 @@ import { GetCdnOrigin } from "~/api/GetCdnOrigin";
 import { GetFrontendEnvironment } from "~/Classes/GetFrontendEnvironment";
 import { gridVisibility } from "../signals/engine";
 import { InfiniteGridHelper } from "./InfiniteGridHelper";
+import { cameras, selectedCameraId } from "../signals/camera";
 
 class Scene {
   name: string;
@@ -86,7 +87,7 @@ class Scene {
     this._createGrid();
     this._create_base_lighting();
     this._create_skybox();
-    this._create_camera_obj();
+    // this._create_camera_obj();
 
     this.helper = new MMDAnimationHelper({ afterglow: 0.0 });
     this.scene.userData["helper"] = this.helper;
@@ -110,7 +111,7 @@ class Scene {
     this._createGrid();
     this._create_base_lighting();
     this._create_skybox();
-    this._create_camera_obj();
+    // this._create_camera_obj();
   }
 
   async instantiate(
@@ -370,31 +371,45 @@ class Scene {
   }
 
   async _create_camera_obj() {
-    const camera_position = new THREE.Vector3(0, 0.6, 1.5);
+    cameras.value.forEach((cameraConfig) => {
+      const camera_position = new THREE.Vector3(
+        cameraConfig.position.x,
+        cameraConfig.position.y,
+        cameraConfig.position.z,
+      );
 
-    // TODO(bt,2025-02-10): Make the local dev assets more configurable or seedable.
-    const camera_id = GetFrontendEnvironment().getIsLocalDev()
-      ? "m_cxh4asqhapdz10j880755dg4yevshb" // Local development
-      : "m_cxh4asqhapdz10j880755dg4yevshb"; // Production
+      // TODO(bt,2025-02-10): Make the local dev assets more configurable or seedable.
+      const camera_id = GetFrontendEnvironment().getIsLocalDev()
+        ? "m_cxh4asqhapdz10j880755dg4yevshb" // Local development
+        : "m_cxh4asqhapdz10j880755dg4yevshb"; // Production
 
-    const camera_obj = await this.loadGlbWithPlaceholder(
-      camera_id,
-      "Camera",
-      false,
-      camera_position,
-    );
-    camera_obj.userData["name"] = this.camera_name;
-    camera_obj.name = this.camera_name;
-    camera_obj.position.set(
-      camera_position.x,
-      camera_position.y,
-      camera_position.z,
-    );
-    camera_obj.layers.set(1);
-    camera_obj.children.forEach((child) => {
-      child.layers.set(1);
+      this.loadGlbWithPlaceholder(
+        camera_id,
+        "Camera",
+        false,
+        camera_position,
+      ).then((camera_obj) => {
+        camera_obj.userData["name"] = cameraConfig.label;
+        camera_obj.name = cameraConfig.label;
+        camera_obj.position.set(
+          camera_position.x,
+          camera_position.y,
+          camera_position.z,
+        );
+        camera_obj.layers.set(1);
+        camera_obj.children.forEach((child) => {
+          child.layers.set(1);
+        });
+        this.scene.add(camera_obj);
+
+        if (cameraConfig.id === selectedCameraId.value) {
+          camera_obj.visible = false;
+          camera_obj.layers.disableAll(); // Make the active camera not touchable
+        } else {
+          camera_obj.visible = true;
+        }
+      });
     });
-    this.scene.add(camera_obj);
   }
 
   renderMode(enabled: boolean = true) {
