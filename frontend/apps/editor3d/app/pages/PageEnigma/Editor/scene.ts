@@ -374,7 +374,7 @@ class Scene {
 
     // TODO(bt,2025-02-10): Make the local dev assets more configurable or seedable.
     const camera_id = GetFrontendEnvironment().getIsLocalDev()
-      ? "m_4djqzq89mbn6sdbbqm25ks6drhr55k" // Local development
+      ? "m_cxh4asqhapdz10j880755dg4yevshb" // Local development
       : "m_cxh4asqhapdz10j880755dg4yevshb"; // Production
 
     const camera_obj = await this.loadGlbWithPlaceholder(
