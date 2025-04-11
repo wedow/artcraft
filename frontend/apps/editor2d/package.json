@@ -1,11 +1,15 @@
 {
-  "name": "storyteller-board",
+  "name": "editor2d",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "nx": {
+    "name": "editor2d"
+  },
   "scripts": {
     "dev": "echo 'editor2d' && vite",
-    "build": "tsc -b && vite build",
+    "build_old": "tsc -b && vite build",
+    "build": "vite build",
     "build2": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
