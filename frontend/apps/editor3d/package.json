@@ -1,8 +1,11 @@
 {
-  "name": "gottagofast_v0.0.0",
+  "name": "editor3d",
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "nx": {
+    "name": "editor3d"
+  },
   "scripts": {
     "build": "remix vite:build",
     "dev": "echo 'editor3d' && remix vite:dev",

@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./apps/editor2d"
+    },
+    {
+      "path": "./apps/editor3d"
     }
   ]
 }

@@ -13,8 +13,6 @@ import { get_media_url } from "~/Classes/ApiHelpers";
 import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "~/components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { CharacterPoseHelper } from "../../Editor/Engines/Helpers/CharacterPoseHelper";
-import { testGlobalExperiment } from "../../Editor/debug";
 
 // TODO(bt,2025-01-28): This is just a temporary flag
 const TODO_REMOVE_RUN_POSE_CALCULATION = false;
@@ -64,17 +62,6 @@ export default function CharacterFrameButton(
     setIsUploadModalOpen(false);
   }, [setIsUploadModalOpen]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const applyPoseFromUrl = (url = "https://cdn-2.fakeyou.com/media/1/g/b/n/a/1gbnawabpjak164p6t7r6jskqrh1exkh/image_1gbnawabpjak164p6t7r6jskqrh1exkh.png") => {
-    const poseHelper = new CharacterPoseHelper(editorEngine!);
-    const character = editorEngine!.timeline.scene.get_object_by_uuid(characterId)!;
-    const currentTime = editorEngine!.timeline.current_time;
-    const maxTime = editorEngine!.timeline.timeline_limit;
-    editorEngine?.animation_engine.createStartFrameAnimation(
-      character, poseHelper, url, currentTime, maxTime
-    );
-  };
-
   const handleFrameSet = useCallback((token?: string) => {
     if (!token) {
       console.error("No image media file token to set as first frame");
@@ -94,7 +81,6 @@ export default function CharacterFrameButton(
       .then(async (url) => {
         console.debug("Frame url: ", url)
 
-        applyPoseFromUrl(url);
         setMediaFile(url);
 
         // TODO(brandon,2024-01-27): Please forgive me for this ugly hack. It's just 
@@ -114,7 +100,7 @@ export default function CharacterFrameButton(
         unlockButton();
       })
 
-  }, [applyPoseFromUrl, unlockButton]);
+  }, [unlockButton]);
 
   const handleDeleteFrame = useCallback(() => {
     const character = editorEngine!.timeline.scene.get_object_by_uuid(characterId)!;

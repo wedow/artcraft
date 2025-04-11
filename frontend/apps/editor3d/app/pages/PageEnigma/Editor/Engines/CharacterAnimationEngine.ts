@@ -6,7 +6,6 @@ import { get_media_url } from "~/Classes/ApiHelpers";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader.js";
 import { ClipUI } from "../../clips/clip_ui";
 import Ijson from "~/interfaces/Ijson";
-import { CharacterPoseHelper } from "./Helpers/CharacterPoseHelper";
 
 export const START_FRAME_LABEL = "CharacterStartFrameLabel";
 
@@ -289,21 +288,21 @@ export class CharacterAnimationEngine implements Ijson {
   }
 
   /** resetTime: The time to reset the character to. This should ideally be the current timeline time. */
-  async createStartFrameAnimation(character: THREE.Object3D, poseHelper: CharacterPoseHelper, url: string, resetTime: number = 0, maxTime: number = 1) {
-    // Clear any existing start frame
-    // This will also reset the animation to default pose
-    this.clearStartFrame(character);
+  async createStartFrameAnimation(character: THREE.Object3D, poseHelper: any, url: string, resetTime: number = 0, maxTime: number = 1) {
+    //// Clear any existing start frame
+    //// This will also reset the animation to default pose
+    //this.clearStartFrame(character);
 
-    // We must create the track data now after resetting to default
-    const poseData = await poseHelper.extractPoseData(url);
-    const tracks = poseHelper.inflatePoseDataToTracks(character, poseData);
+    //// We must create the track data now after resetting to default
+    //const poseData = await poseHelper.extractPoseData(url);
+    //const tracks = poseHelper.inflatePoseDataToTracks(character, poseData);
 
-    // Create the animation track from the rotation values and hip position
-    // then add it to the character
-    const startFrameClip = new THREE.AnimationClip(START_FRAME_LABEL, 0, tracks);
-    character.animations.push(startFrameClip);
+    //// Create the animation track from the rotation values and hip position
+    //// then add it to the character
+    //const startFrameClip = new THREE.AnimationClip(START_FRAME_LABEL, 0, tracks);
+    //character.animations.push(startFrameClip);
 
-    // Reset the character evaluation to what was passed in
-    this.evaluateCharacter(character, resetTime, maxTime);
+    //// Reset the character evaluation to what was passed in
+    //this.evaluateCharacter(character, resetTime, maxTime);
   }
 }
