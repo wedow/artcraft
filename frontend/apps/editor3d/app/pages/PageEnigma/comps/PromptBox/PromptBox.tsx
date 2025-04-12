@@ -93,7 +93,6 @@ export const PromptBox = () => {
     [],
   );
   const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
-  const [isGridVisible, setIsGridVisible] = useState(true);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -120,10 +119,6 @@ export const PromptBox = () => {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraAspectRatio.value]);
-
-  useEffect(() => {
-    setGridVisibility(isGridVisible);
-  }, [isGridVisible]);
 
   const handleCameraSelect = (selectedItem: PopoverItem) => {
     const selectedCamera = cameras.value.find(
