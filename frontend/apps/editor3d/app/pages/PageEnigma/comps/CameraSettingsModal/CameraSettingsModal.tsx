@@ -41,6 +41,15 @@ export const CameraSettingsModal = ({
 }: CameraSettingsModalProps) => {
   const selectedCamera = cameras.find((cam) => cam.id === selectedCameraId);
   const [isDragging, setIsDragging] = useState(false);
+  const [tempCameraName, setTempCameraName] = useState<string>("");
+  const [editingCameraId, setEditingCameraId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedCamera) {
+      setTempCameraName(selectedCamera.label);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCamera?.id]);
 
   useEffect(() => {
     const handlePointerUp = () => {
@@ -67,16 +76,29 @@ export const CameraSettingsModal = ({
     onCameraFocalLengthChange(id, value);
   };
 
+  const handleNameBlur = () => {
+    if (selectedCamera && tempCameraName.trim() !== "") {
+      onCameraNameChange(selectedCamera.id, tempCameraName);
+    } else if (selectedCamera) {
+      setTempCameraName(selectedCamera.label);
+    }
+    setEditingCameraId(null);
+  };
+
+  const handleNameFocus = (id: string) => {
+    setEditingCameraId(id);
+  };
+
   return (
     <TransitionDialogue
       isOpen={isOpen}
       onClose={onClose}
       className={twMerge(
-        "h-[500px] max-w-3xl transition-opacity duration-200",
-        isDragging ? "opacity-30 hover:opacity-20" : "opacity-100",
+        "h-[500px] max-w-3xl duration-200",
+        isDragging ? "opacity-10" : "opacity-100",
       )}
       backdropClassName={twMerge(
-        "transition-opacity duration-200",
+        "duration-200",
         isDragging ? "opacity-0" : "opacity-100",
       )}
       childPadding={false}
@@ -99,14 +121,16 @@ export const CameraSettingsModal = ({
             {cameras.map((camera) => (
               <button
                 key={camera.id}
-                className={`w-full rounded-lg p-2 text-left transition-colors duration-100 hover:bg-[#63636B]/40 ${
+                className={`h-9 w-full rounded-lg p-2 text-left transition-colors duration-100 hover:bg-[#63636B]/40 ${
                   camera.id === selectedCameraId ? "bg-[#63636B]/40" : ""
                 }`}
                 onClick={() => handleCameraSelect(camera)}
               >
                 <div className="flex items-center gap-2.5 text-sm">
                   {camera.icon}
-                  {camera.label}
+                  {editingCameraId === camera.id
+                    ? tempCameraName
+                    : camera.label}
                 </div>
               </button>
             ))}
@@ -154,10 +178,11 @@ export const CameraSettingsModal = ({
                   <Input
                     id="camera-name"
                     type="text"
-                    value={selectedCamera?.label || ""}
-                    onChange={(e) =>
-                      selectedCamera &&
-                      onCameraNameChange(selectedCamera.id, e.target.value)
+                    value={tempCameraName}
+                    onChange={(e) => setTempCameraName(e.target.value)}
+                    onBlur={handleNameBlur}
+                    onFocus={() =>
+                      selectedCamera && handleNameFocus(selectedCamera.id)
                     }
                     className="text-sm"
                   />

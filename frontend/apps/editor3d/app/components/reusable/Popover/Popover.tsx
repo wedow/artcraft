@@ -86,9 +86,15 @@ export const PopoverMenu = ({
       {({ close }) => (
         <>
           <Popover.Button className={className}>
-            {triggerIcon}
-            {mode === "toggle" && selectedItem ? selectedItem.label : null}
-            {mode === "default" && triggerLabel ? triggerLabel : null}
+            <>
+              {triggerIcon}
+              {mode === "toggle" && selectedItem ? (
+                <span className="truncate">{selectedItem.label}</span>
+              ) : null}
+              {mode === "default" && triggerLabel ? (
+                <span className="truncate">{triggerLabel}</span>
+              ) : null}
+            </>
           </Popover.Button>
 
           <div
@@ -166,9 +172,9 @@ export const PopoverMenu = ({
                           variant="secondary"
                           disabled={item.disabled}
                         >
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 truncate">
                             {showIconsInList && item.icon}
-                            {item.label}
+                            <span className="truncate">{item.label}</span>
                           </div>
                           {mode === "toggle" && (
                             <input

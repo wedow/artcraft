@@ -652,6 +652,7 @@ export const PromptBox = () => {
                   panelTitle="Camera"
                   panelActionLabel="Settings"
                   onPanelAction={() => setIsCameraSettingsOpen(true)}
+                  buttonClassName="max-w-[130px] h-9"
                 />
               </Tooltip>
               <Tooltip
