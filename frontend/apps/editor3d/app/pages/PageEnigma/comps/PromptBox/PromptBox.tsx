@@ -46,8 +46,8 @@ import {
   addCamera,
   deleteCamera,
   updateCamera,
+  focalLengthDragging,
 } from "~/pages/PageEnigma/signals/camera";
-import { focalLengthDragging } from "~/pages/PageEnigma/signals/camera";
 
 interface ReferenceImage {
   id: string;
