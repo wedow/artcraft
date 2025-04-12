@@ -646,6 +646,7 @@ export const PromptBox = () => {
                     <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />
                   }
                   showAddButton
+                  disableAddButton={cameras.value.length >= 6}
                   showIconsInList
                   mode="toggle"
                   panelTitle="Camera"
