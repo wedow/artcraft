@@ -11,6 +11,8 @@ import {
 } from "../signals";
 import Editor from "./editor";
 import { getArtStyle } from "~/enums";
+import { cameras, selectedCameraId, Camera } from "../signals/camera";
+
 export type EditorInitializeConfig = {
   sceneToken: string;
 };
@@ -98,6 +100,16 @@ export class SaveManager {
     );
     const timeline_json = await proxyTimeline.saveToJson();
 
+    // Save all cameras data
+    const camerasData = cameras.value.map((cam: Camera) => ({
+      id: cam.id,
+      label: cam.label,
+      focalLength: cam.focalLength,
+      position: cam.position,
+      rotation: cam.rotation,
+      lookAt: cam.lookAt,
+    }));
+
     const save_data = {
       version: this.editor.version,
       scene: scene_json,
@@ -108,6 +120,9 @@ export class SaveManager {
         position: this.editor.camera?.position,
         rotation: this.editor.camera?.rotation,
       },
+      // Add cameras array and selected camera
+      cameras: camerasData,
+      selectedCameraId: selectedCameraId.value,
     };
     // take json scene and figure out checksum
     const jsonString = JSON.stringify(save_data);
@@ -146,6 +161,16 @@ export class SaveManager {
     );
     const timeline_json = await proxyTimeline.saveToJson();
 
+    // Save all cameras data
+    const camerasData = cameras.value.map((cam: Camera) => ({
+      id: cam.id,
+      label: cam.label,
+      focalLength: cam.focalLength,
+      position: cam.position,
+      rotation: cam.rotation,
+      lookAt: cam.lookAt,
+    }));
+
     const save_data = {
       version: this.editor.version,
       scene: scene_json,
@@ -156,6 +181,9 @@ export class SaveManager {
         position: this.editor.camera?.position,
         rotation: this.editor.camera?.rotation,
       },
+      // Add cameras array and selected camera
+      cameras: camerasData,
+      selectedCameraId: selectedCameraId.value,
     };
 
     // TODO turn scene information into and object ...
@@ -216,6 +244,23 @@ export class SaveManager {
 
       this.editor.camera.position.copy(camera_position);
       this.editor.camera.rotation.copy(camera_rotation);
+    }
+
+    // Restore cameras data
+    if (scene_json.cameras) {
+      cameras.value = scene_json.cameras.map((cam: Camera) => ({
+        id: cam.id,
+        label: cam.label,
+        focalLength: cam.focalLength,
+        position: cam.position,
+        rotation: cam.rotation,
+        lookAt: cam.lookAt,
+      }));
+    }
+
+    // Restore selected camera
+    if (scene_json.selectedCameraId) {
+      selectedCameraId.value = scene_json.selectedCameraId;
     }
 
     // For Remixing Scenes.
