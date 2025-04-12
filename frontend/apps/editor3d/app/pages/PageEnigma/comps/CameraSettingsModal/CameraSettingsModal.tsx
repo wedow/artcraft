@@ -4,16 +4,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
 import { Button, Input, Label, Tooltip } from "~/components";
 import { SliderV2 } from "~/components/reusable/SliderV2/SliderV2";
-import {
-  updateCamera,
-  focalLengthDragging,
-} from "~/pages/PageEnigma/signals/camera";
+import { focalLengthDragging } from "~/pages/PageEnigma/signals/camera";
 import { useState, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface ExtendedPopoverItem extends PopoverItem {
   id: string;
   focalLength: number;
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+  lookAt: { x: number; y: number; z: number };
 }
 
 interface CameraSettingsModalProps {
@@ -24,7 +24,7 @@ interface CameraSettingsModalProps {
   onCameraFocalLengthChange: (id: string, value: number) => void;
   onAddCamera: () => void;
   selectedCameraId: string;
-  onSelectCamera: (id: string) => void;
+  handleCameraSelect: (selectedItem: PopoverItem) => void;
   onDeleteCamera: (id: string) => void;
 }
 
@@ -36,7 +36,7 @@ export const CameraSettingsModal = ({
   onCameraFocalLengthChange,
   onAddCamera,
   selectedCameraId,
-  onSelectCamera,
+  handleCameraSelect,
   onDeleteCamera,
 }: CameraSettingsModalProps) => {
   const selectedCamera = cameras.find((cam) => cam.id === selectedCameraId);
@@ -102,7 +102,7 @@ export const CameraSettingsModal = ({
                 className={`w-full rounded-lg p-2 text-left transition-colors duration-100 hover:bg-[#63636B]/40 ${
                   camera.id === selectedCameraId ? "bg-[#63636B]/40" : ""
                 }`}
-                onClick={() => onSelectCamera(camera.id)}
+                onClick={() => handleCameraSelect(camera)}
               >
                 <div className="flex items-center gap-2.5 text-sm">
                   {camera.icon}

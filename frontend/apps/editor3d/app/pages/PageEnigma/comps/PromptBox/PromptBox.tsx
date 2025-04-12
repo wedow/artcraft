@@ -723,7 +723,7 @@ export const PromptBox = () => {
           onCameraFocalLengthChange={handleCameraFocalLengthChange}
           onAddCamera={handleAddCamera}
           selectedCameraId={selectedCameraId.value}
-          onSelectCamera={(id: string) => (selectedCameraId.value = id)}
+          handleCameraSelect={handleCameraSelect}
           onDeleteCamera={deleteCamera}
         />
       </div>
