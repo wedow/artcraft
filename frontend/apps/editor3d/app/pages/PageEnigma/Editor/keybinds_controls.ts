@@ -335,7 +335,7 @@ export class MouseControls {
     if (event.shiftKey) {
       this.cameraViewControls.movementSpeed = 4;
     } else if (event.altKey) {
-      this.cameraViewControls.movementSpeed = 0.5;
+      this.cameraViewControls.movementSpeed = 0.2;
     } else {
       this.cameraViewControls.movementSpeed = 1.15;
     }
