@@ -47,6 +47,7 @@ import {
   deleteCamera,
   updateCamera,
 } from "~/pages/PageEnigma/signals/camera";
+import { focalLengthDragging } from "~/pages/PageEnigma/signals/camera";
 
 interface ReferenceImage {
   id: string;
@@ -126,6 +127,19 @@ export const PromptBox = () => {
     );
     if (selectedCamera && editorEngine) {
       selectedCameraId.value = selectedCamera.id;
+
+      // Show focal length display temporarily
+      // TODO: Rename dragging to visible - BFlat
+      focalLengthDragging.value = {
+        isDragging: true,
+        focalLength: selectedCamera.focalLength,
+      };
+      setTimeout(() => {
+        focalLengthDragging.value = {
+          isDragging: false,
+          focalLength: selectedCamera.focalLength,
+        };
+      }, 1500);
 
       // Update the main camera to match the selected camera's properties
       if (editorEngine.camera) {
@@ -622,6 +636,9 @@ export const PromptBox = () => {
                       <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />
                     ),
                     focalLength: cam.focalLength,
+                    position: cam.position,
+                    rotation: cam.rotation,
+                    lookAt: cam.lookAt,
                   }))}
                   onSelect={handleCameraSelect}
                   onAdd={handleAddCamera}
@@ -718,6 +735,9 @@ export const PromptBox = () => {
             selected: cam.id === selectedCameraId.value,
             icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
             focalLength: cam.focalLength,
+            position: cam.position,
+            rotation: cam.rotation,
+            lookAt: cam.lookAt,
           }))}
           onCameraNameChange={handleCameraNameChange}
           onCameraFocalLengthChange={handleCameraFocalLengthChange}

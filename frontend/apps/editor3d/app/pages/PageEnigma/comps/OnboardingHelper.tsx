@@ -38,7 +38,7 @@ export const OnboardingHelper = () => {
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <div className="glass pointer-events-none absolute left-1/2 top-52 z-10 flex -translate-x-1/2  transform items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary !bg-brand-primary/10 px-5 py-4">
+      <div className="glass pointer-events-none absolute left-1/2 top-48 z-10 flex -translate-x-1/2  transform items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary !bg-brand-primary/10 px-5 py-4">
         <div className="flex items-center">
           <p className="pr-3 text-lg font-semibold">Hold</p>
           <Mouse button="left" />

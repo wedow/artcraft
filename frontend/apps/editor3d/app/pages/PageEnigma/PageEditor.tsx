@@ -25,6 +25,7 @@ import { CameraAspectRatio } from "./enums";
 import { PromptBox } from "./comps/PromptBox";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { focalLengthDragging } from "./signals/camera";
+import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 
 export const PageEditor = () => {
   useSignals();
@@ -103,13 +104,7 @@ export const PageEditor = () => {
             </SceneContainer>
 
             {/* Focal Length Display */}
-            {focalLengthDragging.value.isDragging && (
-              <div className="absolute left-1/2 top-16 -translate-x-1/2 transform">
-                <div className="glass rounded-xl px-6 py-3 text-center text-3xl font-bold text-white">
-                  {focalLengthDragging.value.focalLength}mm
-                </div>
-              </div>
-            )}
+            <FocalLengthDisplay />
 
             {/* Top controls */}
             <div
