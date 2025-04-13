@@ -41,6 +41,11 @@ pwd
 ls -lA .
 
 printf "==================================="
+echo "List directory files (2)"
+find / | grep build/server
+
+
+printf "==================================="
 echo "Find build manifest"
 find . | grep manifest.json
 
@@ -53,7 +58,7 @@ echo "Current dir (2)"
 pwd
 
 printf "==================================="
-echo "List directory files (2)"
+echo "List directory files (3)"
 pwd
 ls -lA .
 
