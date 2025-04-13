@@ -26,6 +26,9 @@ set -euxo pipefail
 echo "Run build script (TODO: Make strict)"
 nx build editor3d
 
+echo "Find build manifest"
+find . | grep manifest.json
+
 echo "Change to project dir"
 pushd apps/editor3d/
 
