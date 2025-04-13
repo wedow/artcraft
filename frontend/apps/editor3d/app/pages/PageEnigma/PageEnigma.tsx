@@ -16,6 +16,8 @@ import * as gpu from "detect-gpu";
 import { UsersApi } from "~/Classes/ApiManager";
 import { PageEnigmaComponent } from "~/pages/PageEnigma/PageEnigmaComponent";
 import { TurnOnGpu } from "~/pages/PageEnigma/TurnOnGpu";
+import { PrecisionSelector } from "./comps/PrecisionSelector/PrecisionSelector";
+import { precisionSelectedValue, precisionSelectorMenuCoords, precisionSelectorValues, showPrecisionSelector } from "./signals/precisionSelectorMenu";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -71,7 +73,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
         case "apple gpu (Apple GPU)":
           // TODO(bt,2025-04-08): We may want to disable this heuristic.
           // We're getting lack of hardware acceleration using Tauri on Mac and Linux.
-          isValid = true; 
+          isValid = true;
           break;
         default:
           break;
@@ -93,6 +95,12 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
       <EngineProvider sceneToken={sceneToken}>
         <PageEnigmaComponent />
         <DragComponent />
+        <PrecisionSelector
+          showSignal={showPrecisionSelector}
+          coordSignal={precisionSelectorMenuCoords}
+          valuesSignal={precisionSelectorValues}
+          selectedValueSignal={precisionSelectedValue}
+        />
         <GenerateModals />
         <ErrorDialog />
         <Wizard />

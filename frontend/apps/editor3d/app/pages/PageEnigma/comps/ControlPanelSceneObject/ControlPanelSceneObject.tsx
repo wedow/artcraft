@@ -22,6 +22,7 @@ import { sanitize } from "./utils/sanitize";
 import { objectMismatch } from "~/pages/PageEnigma/comps/ControlPanelSceneObject/utils/objectMismatch";
 import { XYZ } from "~/pages/PageEnigma/datastructures/common";
 import { pageHeight } from "~/signals";
+import { DraggablePrecisionMutator } from "./DraggablePrecisionMutator";
 
 // TODO this will be useful later to fix the bug on leading zeros
 // const formatNumber = (input: string): number => {
@@ -147,6 +148,15 @@ export const ControlPanelSceneObject = () => {
     setLocalRotation(xyz);
   };
 
+  const handleUniformScaleChange = (scale: number) => {
+    const updatedScaleValues: Record<string, string> = {};
+    updatedScaleValues.x = (parseFloat(localScale.x) + scale).toString();
+    updatedScaleValues.y = (parseFloat(localScale.y) + scale).toString();
+    updatedScaleValues.z = (parseFloat(localScale.z) + scale).toString();
+
+    handleScaleChange(updatedScaleValues);
+  }
+
   const handleScaleChange = (xyz: Record<string, string>) => {
     if (isInvalid(xyz)) {
       setLocalScale(xyz);
@@ -255,7 +265,9 @@ export const ControlPanelSceneObject = () => {
         </div>
 
         <div className="mb-1 flex flex-col gap-1">
-          <H5>Scale</H5>
+          <DraggablePrecisionMutator onChange={handleUniformScaleChange}>
+            <h5>Scale</h5>
+          </DraggablePrecisionMutator>
           <InputVector
             x={localScale.x.toString()}
             y={localScale.y.toString()}
