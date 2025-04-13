@@ -25,6 +25,7 @@ set -euxo pipefail
 
 printf "\n\n===================================\n"
 echo "List Env"
+env
 
 printf "\n\n===================================\n"
 echo "Run build script (TODO: Make strict)"
