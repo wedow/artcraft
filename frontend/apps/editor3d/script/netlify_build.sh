@@ -23,29 +23,40 @@ set -euxo pipefail
 #   # echo "List files after build"
 #   # find dist/
 
+printf "\n\n===================================\n"
+echo "List Env"
+
+printf "\n\n===================================\n"
 echo "Run build script (TODO: Make strict)"
 nx build editor3d
 
+printf "\n\n===================================\n"
 echo "Current dir (1)"
 pwd
 
+printf "\n\n===================================\n"
 echo "List directory files (1)"
 pwd
 ls -lA .
 
+printf "\n\n===================================\n"
 echo "Find build manifest"
 find . | grep manifest.json
 
+printf "\n\n===================================\n"
 echo "Change to project dir"
 pushd apps/editor3d/
 
+printf "\n\n===================================\n"
 echo "Current dir (2)"
 pwd
 
+printf "\n\n===================================\n"
 echo "List directory files (2)"
 pwd
 ls -lA .
 
+printf "\n\n===================================\n"
 echo "List build directory files"
 ls -lA build/
 
@@ -56,6 +67,7 @@ ls -lA build/
 #echo "Copy netlify 404.html page into dist"
 #cp "404.html" dist/
 
+printf "\n\n===================================\n"
 echo "List files after build"
 find dist/
 
