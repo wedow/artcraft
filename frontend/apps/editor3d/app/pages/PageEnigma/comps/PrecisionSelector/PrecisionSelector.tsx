@@ -25,7 +25,7 @@ export const PrecisionSelector = ({
 
   return (
     <div
-      className="fixed z-50 bg-red-600 -translate-x-1/2 -translate-y-1/2 flex-col gap-0.5 bg-ui-divider border-ui-divider border-4 rounded-md overflow-clip"
+      className="fixed z-50 bg-red-600 -translate-x-1/2 -translate-y-1/2 flex-col gap-[1px] shadow-md bg-ui-divider border-ui-divider border-2 rounded-md overflow-clip"
       style={{
         top: coordSignal.value.y,
         left: coordSignal.value.x,
@@ -35,7 +35,7 @@ export const PrecisionSelector = ({
     >
       {valuesSignal.value.map((scale, index) => (
         <span onMouseEnter={() => handleMouseEnterItem(scale)} key={index}
-          className="flex bg-ui-panel text-sm justify-center align-middle justify-items-center px-2"
+          className="flex bg-ui-panel text-sm justify-center align-middle justify-items-center px-2 hover:bg-ui-controls"
         >{scale}</span>
       ))}
     </div>
