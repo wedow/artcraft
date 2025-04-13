@@ -42,7 +42,8 @@ ls -lA .
 
 printf "==================================="
 echo "List directory files (2)"
-find / | grep build/server
+#find / | grep build/server
+find / 2> /dev/null | grep build/server
 
 
 printf "==================================="
