@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euxo pipefail 
+#set -euxo pipefail 
 
 #   echo "Run build script"
 #   npm install
