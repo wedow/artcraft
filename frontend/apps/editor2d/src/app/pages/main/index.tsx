@@ -17,6 +17,7 @@ import { EditModeRootComponent } from "~/EditModeRootComponent/EditModeRootCompo
 import { useRef } from "react";
 import { EngineType } from "~/KonvaApp";
 import { GenerationEngine } from "~/KonvaApp/GenerationEngine";
+import { GalleryRootComponent } from "~/GalleryRootComponent";
 
 export const Main = withProtectionRoute(() => {
   // This is a hook that will log the number of times the component has rerendered
@@ -59,8 +60,10 @@ export const Main = withProtectionRoute(() => {
   }
 
   return (
-    <div className="fixed grid h-full w-full grid-cols-12 grid-rows-12">
-      {childView}
+    <div className="fixed h-full w-full">
+      <div className="fixed grid h-full w-full grid-cols-12 grid-rows-12">
+        {childView}
+      </div>
       <div className="absolute top-0 w-full p-3.5">
         <div className="relative flex w-full">
           <div className="absolute left-0">
@@ -74,6 +77,8 @@ export const Main = withProtectionRoute(() => {
           </div>
         </div>
       </div>
+      {appModeValue === "gallery" &&
+      (<GalleryRootComponent className="fixed h-full w-full z-1 bg-black" />)}
     </div>
   );
 });
