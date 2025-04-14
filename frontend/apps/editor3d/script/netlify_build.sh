@@ -67,6 +67,12 @@ printf "==================================="
 echo "List build directory files"
 ls -lA build/
 
+mkdir dist/
+
+printf "==================================="
+echo "Copy files"
+cp -r build/server/* dist/
+
 #echo "Copy netlify configs into dist"
 #cp _headers dist/
 #cp _redirects dist/
@@ -74,7 +80,9 @@ ls -lA build/
 #echo "Copy netlify 404.html page into dist"
 #cp "404.html" dist/
 
+
 printf "==================================="
 echo "List files after build"
 find dist/
+
 
