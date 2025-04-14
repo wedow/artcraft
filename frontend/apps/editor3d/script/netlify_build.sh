@@ -79,6 +79,7 @@ mkdir dist/
 printf "==================================="
 echo "Copy files"
 cp -r build/server/* dist/
+cp -r build/client/* dist/
 
 #echo "Copy netlify configs into dist"
 cp _headers dist/
