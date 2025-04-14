@@ -1,14 +1,14 @@
 import { useCallback, useRef } from "react";
-
+import { UndoRedo } from "~/components/reusable/UndoRedoController/UndoRedo";
 // Components
 import { KonvaCanvasContainer } from "./KonvaCanvasContainer";
-import { ContextualButtonRetry } from "./ContextualButtonRetry";
+
 import { ContextualToolbarNode } from "./ContextualToolbarNode";
-import { ContextualLoadingBar } from "./ContextualLoadingBar";
+
 import { SignaledCanvasDragDropFiles } from "./SignaledCanvasDragDropFiles";
 import { SignaledDialogs } from "./SignaledDialogs";
 import { SignaledToolbarMain } from "./SignaledToolbarMain";
-import { SignaledToolbarVideoExtraction } from "./SignaledToolbarVideoExtraction";
+
 import { PromptBox } from "~/components/PromptBox";
 // The KonvaApp is the root of the Konva stage
 // and only entry point for anything in Konva JS
@@ -22,9 +22,6 @@ import { useLayoutContext } from "./contextSignals/layout";
 // common hooks
 import { useRenderCounter } from "~/hooks/useRenderCounter";
 import { useNavigate } from "react-router-dom";
-import { SignaledMagicBox } from "./SignaledMagicBox";
-import { SignaledPromptSlider } from "./SignaledPromptSlider";
-import { SignaledPromptText } from "./SignaledPromptText";
 
 export const KonvaRootComponent = ({
   className,
@@ -53,11 +50,13 @@ export const KonvaRootComponent = ({
 
   return (
     <>
+    <UndoRedo>
       <KonvaCanvasContainer
         ref={konvaContainerCallbackRef}
         className={className}
         // retreive the classNames from the parent for sizing/styling
       />
+      
       {/* <SignaledMagicBox /> */}
       <SignaledCanvasDragDropFiles
         openAddImage={appUiContext.openAddImage}
@@ -77,6 +76,7 @@ export const KonvaRootComponent = ({
       {/* <ContextualLoadingBar /> */}
       <ContextualToolbarNode />
       {/* <ContextualButtonRetry /> */}
+      </UndoRedo>
     </>
   );
 };

@@ -1,0 +1,120 @@
+{
+    "success": true,
+    "jobs": [
+        {
+            "created_at": "2024-03-20T10:15:30Z",
+            "job_token": "job_123456789",
+            "maybe_result": {
+                "entity_token": "entity_987654321",
+                "entity_type": "image",
+                "maybe_public_bucket_media_path": "https://storage.example.com/media/image123.jpg",
+                "maybe_successfully_completed_at": "2024-03-20T10:20:45Z",
+                "media_links": {
+                    "cdn_url": "https://cdn.example.com/media/image123.jpg",
+                    "maybe_thumbnail_template": "https://cdn.example.com/media/image123_{WIDTH}.jpg",
+                    "maybe_video_previews": null
+                }
+            },
+            "request": {
+                "inference_category": "image_generation",
+                "maybe_model_title": "Stable Diffusion v2.1",
+                "maybe_model_token": "model_abc123",
+                "maybe_model_type": "diffusion",
+                "maybe_raw_inference_text": null,
+                "maybe_style_name": "anime"
+            },
+            "status": {
+                "attempt_count": 1,
+                "maybe_assigned_cluster": "cluster-1",
+                "maybe_assigned_worker": "worker-xyz",
+                "maybe_current_execution_duration_seconds": 315,
+                "maybe_extra_status_description": "Processing at 85%",
+                "maybe_failure_category": null,
+                "maybe_first_started_at": "2024-03-20T10:15:35Z",
+                "progress_percentage": 85,
+                "requires_keepalive": false,
+                "status": "running"
+            },
+            "updated_at": "2024-03-20T10:20:45Z"
+        },
+        {
+            "created_at": "2024-03-20T09:30:15Z",
+            "job_token": "job_987654321",
+            "maybe_result": {
+                "entity_token": "entity_123456789",
+                "entity_type": "video",
+                "maybe_public_bucket_media_path": "https://storage.example.com/media/video456.mp4",
+                "maybe_successfully_completed_at": "2024-03-20T09:45:30Z",
+                "media_links": {
+                    "cdn_url": "https://cdn.example.com/media/video456.mp4",
+                    "maybe_thumbnail_template": null,
+                    "maybe_video_previews": {
+                        "animated": {
+                            "url": "https://cdn.example.com/previews/video456_animated.mp4"
+                        },
+                        "animated_thumbnail_template": [
+                            "https://cdn.example.com/previews/video456_animated_{WIDTH}.jpg"
+                        ],
+                        "still": {
+                            "url": "https://cdn.example.com/previews/video456_still.jpg"
+                        },
+                        "still_thumbnail_template": [
+                            "https://cdn.example.com/previews/video456_still_{WIDTH}.jpg"
+                        ]
+                    }
+                }
+            },
+            "request": {
+                "inference_category": "video_generation",
+                "maybe_lipsync_details": {
+                    "face_driver_media_file_token": "media_face123",
+                    "source_media_file_token": "media_source456"
+                },
+                "maybe_model_title": "Video Diffusion Model",
+                "maybe_model_token": "model_def456",
+                "maybe_model_type": "video_diffusion",
+                "maybe_raw_inference_text": null,
+                "maybe_style_name": "realistic"
+            },
+            "status": {
+                "attempt_count": 1,
+                "maybe_assigned_cluster": "cluster-2",
+                "maybe_assigned_worker": "worker-abc",
+                "maybe_current_execution_duration_seconds": null,
+                "maybe_extra_status_description": null,
+                "maybe_failure_category": null,
+                "maybe_first_started_at": "2024-03-20T09:30:20Z",
+                "progress_percentage": 100,
+                "requires_keepalive": false,
+                "status": "completed"
+            },
+            "updated_at": "2024-03-20T09:45:30Z"
+        },
+        {
+            "created_at": "2024-03-20T11:00:00Z",
+            "job_token": "job_456789123",
+            "maybe_result": null,
+            "request": {
+                "inference_category": "text_to_speech",
+                "maybe_model_title": "TTS Model v3",
+                "maybe_model_token": "model_ghi789",
+                "maybe_model_type": "tts",
+                "maybe_raw_inference_text": "Hello, this is a sample text for TTS conversion.",
+                "maybe_style_name": null
+            },
+            "status": {
+                "attempt_count": 2,
+                "maybe_assigned_cluster": "cluster-3",
+                "maybe_assigned_worker": null,
+                "maybe_current_execution_duration_seconds": null,
+                "maybe_extra_status_description": "Failed to process audio",
+                "maybe_failure_category": "processing_error",
+                "maybe_first_started_at": "2024-03-20T11:00:05Z",
+                "progress_percentage": 0,
+                "requires_keepalive": true,
+                "status": "failed"
+            },
+            "updated_at": "2024-03-20T11:15:00Z"
+        }
+    ]
+}

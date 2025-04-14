@@ -30,7 +30,6 @@ export const Main = withProtectionRoute(() => {
 
   useSignals();
 
-  const realtimeEngineRef = useRef<EngineType | null>(null);
   const generationEngineRef = useRef<GenerationEngine | null>(null);
 
   const appModeValue = appMode.value;

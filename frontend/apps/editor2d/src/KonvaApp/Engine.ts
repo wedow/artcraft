@@ -55,7 +55,7 @@ export class Engine {
   private uiLayer: Konva.Layer;
   private previewLayer: Konva.Layer;
   private offScreenCanvas: OffscreenCanvas;
-  private realTimeDrawEngine: RealTimeDrawEngine;
+  public realTimeDrawEngine: RealTimeDrawEngine;
   private nodesManager: NodesManager;
   private nodeIsolator: NodeIsolator;
   private nodeTransformer: NodeTransformer;
@@ -66,8 +66,8 @@ export class Engine {
   private backgroundNode: ShapeNode | null = null;
 
   private sceneManager: SceneManager;
-  private undoStackManager: UndoStackManager;
-  private commandManager: CommandManager;
+  public undoStackManager: UndoStackManager;
+  public commandManager: CommandManager;
   private videoExtractionHandler: VideoExtractionHandler;
 
   public segmentationButtonCanBePressed: boolean = true;
