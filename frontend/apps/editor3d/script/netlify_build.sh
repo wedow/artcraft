@@ -23,9 +23,9 @@
 #   # echo "List files after build"
 #   # find dist/
 
-printf "==================================="
-echo "List Env"
-env
+#printf "==================================="
+#echo "List Env"
+#env
 
 printf "==================================="
 echo "Run build script (TODO: Make strict)"
@@ -47,6 +47,13 @@ find / 2> /dev/null | grep build/server
 
 
 printf "==================================="
+echo "LIST DIRECTORY FILES (3)"
+#find / | grep build/server
+find / 2> /dev/null | grep EnvironmentVar
+find / 2> /dev/null | grep PageEnigma
+
+
+printf "==================================="
 echo "Find build manifest"
 find . | grep manifest.json
 
@@ -59,7 +66,7 @@ echo "Current dir (2)"
 pwd
 
 printf "==================================="
-echo "List directory files (3)"
+echo "List directory files (4)"
 pwd
 ls -lA .
 
