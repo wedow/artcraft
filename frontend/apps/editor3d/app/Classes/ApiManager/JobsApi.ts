@@ -40,7 +40,7 @@ export class JobsApi extends ApiManager {
 
   public ListRecentJobs(): Promise<ApiResponse<Job[]>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/session`;
-
+    
     return this.get<{
       success: boolean;
       jobs: Job[];

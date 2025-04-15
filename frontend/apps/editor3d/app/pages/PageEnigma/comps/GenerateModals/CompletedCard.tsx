@@ -6,7 +6,7 @@ import { BucketConfig } from "~/api/BucketConfig";
 import dayjs from "dayjs";
 import environmentVariables from "~/Classes/EnvironmentVariables";
 import { useSignals } from "@preact/signals-react/runtime";
-import { downloadFile } from "~/pages/PageEnigma/comps/GenerateModals/utils/downloadFile";
+import { downloadFileImage } from "~/pages/PageEnigma/comps/GenerateModals/utils/downloadFile";
 import { styleList } from "~/pages/PageEnigma/styleList";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
 
@@ -27,13 +27,20 @@ export function CompletedCard({ movie, setMovieId }: Props) {
   const bucketConfig = useRef<BucketConfig>(new BucketConfig());
   const [loadError, setLoadError] = useState(false);
   const cdnOrigin = GetCdnOrigin();
-  const downloadLink = `https://${cdnOrigin}${movie.public_bucket_path}`;
 
-  const imageUrl = bucketConfig.current.getCdnUrl(
-    movie.public_bucket_path + "-thumb.gif",
-    360,
-    20,
-  );
+
+  const downloadLink = `${cdnOrigin}${movie.public_bucket_path}`;
+  
+  // console.log(downloadLink);
+  // console.log("This is the completed item", movie);
+  // console.log("item completed card", movie);
+
+  // to do use the thumbnail image
+  const imageUrl = downloadLink; // bucketConfig.current.getCdnUrl(
+  //   movie.public_bucket_path + "-thumb.gif",
+  //   360,
+  //   20,
+  // );
   const styleName =
     movie.maybe_style_name && getStyleName(movie.maybe_style_name);
 
@@ -71,21 +78,21 @@ export function CompletedCard({ movie, setMovieId }: Props) {
           </div>
         </div>
       </div>
-      {/* <div className="pr-5">
+      <div className="pr-5">
         <button
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
             const title =
               movie.maybe_title !== null ? movie.maybe_title : "Untitled";
-            downloadFile({ url: downloadLink, title });
+            downloadFileImage({ url: downloadLink, title });
           }}
           className="text-[15px] font-medium text-white/50 transition-all duration-150 hover:text-white/100"
         >
           <FontAwesomeIcon icon={faArrowDownToLine} className="mr-2" />
           Download
         </button>
-      </div> */}
+      </div>
     </div>
   );
 }

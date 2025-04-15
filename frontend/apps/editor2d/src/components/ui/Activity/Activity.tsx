@@ -105,8 +105,8 @@ export function Activity() {
                   public_bucket_path: job.data.result.image_url || "",
                   updated_at: new Date().toISOString(),
                 };
-                setCompletedItems((prev) => [newCompletedItem, ...prev]);
                 toast.success("Done Processing Image");
+                setCompletedItems((prev) => [newCompletedItem, ...prev]);
               }
             } else {
               // Store the job in our map
