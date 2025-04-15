@@ -15,6 +15,9 @@ pub enum SoraError {
   #[error("Sora sentinel block: {0}")]
   SentinelBlock(String),
 
+  #[error("Sora too many concurrent tasks: {0}")]
+  TooManyConcurrentTasks(String),
+
   #[error("Sora API error: {0}")]
   GenericError(String),
 
@@ -115,10 +118,10 @@ pub enum RawSoraError {
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
-pub  enum SoraErrorCode {
+pub enum SoraErrorCode {
   SentinelBlock,
   TokenExpired,
-
+  TooManyConcurrentTasks,
   Unknown(String),
 }
 
@@ -178,6 +181,9 @@ pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest
         }
         SoraErrorCode::SentinelBlock => {
           return Err(SoraError::SentinelBlock(error_response.error.message));
+        }
+        SoraErrorCode::TooManyConcurrentTasks => {
+          return Err(SoraError::TooManyConcurrentTasks(error_response.error.message));
         }
         SoraErrorCode::Unknown(_) => {
           return Err(SoraError::GenericError(error_response.error.message));
