@@ -301,8 +301,6 @@ export class Api extends ApiManager {
       additional_images: additionalImages,
     };
 
-    console.log("body", body);
-
     const postResponse = await this.post<
       {
         uuid_idempotency_token: string;
