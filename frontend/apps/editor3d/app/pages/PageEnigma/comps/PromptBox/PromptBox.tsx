@@ -430,8 +430,10 @@ export const PromptBox = () => {
           screenshot: snapshot.file,
           sceneMediaToken: "",
         });
-
+        
+        console.log("useSystemPrompt", useSystemPrompt);
         await engineApi.enqueueImageGeneration({
+          disableSystemPrompt: !useSystemPrompt,
           prompt: prompt,
           snapshotMediaToken: snapshotResult.data || "",
           additionalImages: referenceImages.map((image) => image.mediaToken),

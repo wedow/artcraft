@@ -236,10 +236,10 @@ export const PromptBox = () => {
           );
           return;
         }
-
+        console.log("useSystemPrompt", useSystemPrompt);
         console.log("Snapshot media token:", snapshotMediaToken.data);
-
         const response = await api.enqueueImageGeneration({
+          disableSystemPrompt: !useSystemPrompt,
           prompt: prompt,
           snapshotMediaToken: snapshotMediaToken.data,
           additionalImages: referenceImages.map((image) => image.mediaToken),
