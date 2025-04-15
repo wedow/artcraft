@@ -100,7 +100,6 @@
     "eslint-plugin-storybook": "^0.8.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
-    "node-sass": "^9.0.0",
     "postcss": "^8.4.37",
     "postcss-import": "^16.0.1",
     "postcss-nesting": "^12.1.0",
