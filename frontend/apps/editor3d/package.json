@@ -7,7 +7,7 @@
     "name": "editor3d"
   },
   "scripts": {
-    "build": "remix vite:build",
+    "build": "remix vite:build --verbose",
     "dev": "echo 'editor3d' && remix vite:dev",
     "staging-build": "remix vite:build",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint playground/* .",
