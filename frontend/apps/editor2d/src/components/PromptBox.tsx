@@ -35,6 +35,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
 import { Api, ApiManager } from "~/KonvaApp/Api";
 import { useJobContext } from "~/components/JobContext";
+import { Login } from "@storyteller/login";
 interface ReferenceImage {
   id: string;
   url: string;
@@ -281,6 +282,7 @@ export const PromptBox = () => {
 
   return (
     <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col gap-3">
+      <Login />
       {(referenceImages.length > 0 || uploadingImages.length > 0) && (
         <div className="flex w-full gap-2">
           {referenceImages.map((image) => (
