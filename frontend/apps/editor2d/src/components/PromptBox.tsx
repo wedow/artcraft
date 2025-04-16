@@ -36,6 +36,7 @@ import { PopoverItem } from "~/components/reusable/Popover";
 import { Api, ApiManager } from "~/KonvaApp/Api";
 import { useJobContext } from "~/components/JobContext";
 import { Login } from "@storyteller/login";
+//import { ApiFoo } from "@storyteller/api";
 interface ReferenceImage {
   id: string;
   url: string;
@@ -47,6 +48,11 @@ export const PromptBox = () => {
   useSignals();
   const isDesktopApp = window.navigator.userAgent.includes("Tauri");
   console.log("Is this a desktop app?", isDesktopApp);
+
+
+  //const apiFoo = new ApiFoo();
+  //const result = apiFoo.add(1, 2);
+  //console.log("Result of apiFoo.add(1, 2):", result);
 
   const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
     useJobContext();
