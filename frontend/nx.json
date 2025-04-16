@@ -100,5 +100,9 @@
         "^build"
       ]
     }
+  },
+  "workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "libs"
   }
 }
