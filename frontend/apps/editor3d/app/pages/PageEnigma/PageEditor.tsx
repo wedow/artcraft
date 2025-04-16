@@ -27,6 +27,8 @@ import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { focalLengthDragging } from "./signals/camera";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 
+import { Login } from "@frontend/login";
+
 export const PageEditor = () => {
   useSignals();
 
@@ -83,6 +85,7 @@ export const PageEditor = () => {
   return (
     <div className="w-screen">
       <TopBar pageName="Edit Scene" />
+      <Login />
       <OnboardingHelper />
       <div
         className="relative flex w-screen"

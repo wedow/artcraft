@@ -4,12 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/editor2d"
-    },
-    {
-      "path": "./apps/editor3d"
-    },
-    {
       "path": "./libs/api"
     },
     {

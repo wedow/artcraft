@@ -14,6 +14,15 @@ export default defineConfig({
   //    'kalidokit': `${path.resolve(__dirname, 'src')}/`,
   //  },
   //},
+  resolve: {
+    alias: [
+      {
+        find: /@frontend\/login/,
+        //replacement: path.resolve(__dirname, 'node_modules', '@frontend', 'login'),
+        replacement: path.resolve(__dirname, '../', '../', 'libs', 'login'),
+      },
+    ],
+  },
   //rollupOptions: {
   //  // make sure to externalize deps that shouldn't be bundled
   //  // into your library
