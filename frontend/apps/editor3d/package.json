@@ -4,7 +4,14 @@
   "sideEffects": false,
   "type": "module",
   "nx": {
-    "name": "editor3d"
+    "name": "editor3d",
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
   },
   "scripts": {
     "build": "remix vite:build",
