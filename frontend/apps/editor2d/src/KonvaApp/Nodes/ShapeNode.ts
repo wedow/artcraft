@@ -56,11 +56,8 @@ export class ShapeNode extends NetworkedNode {
     switch (shapeType) {
       case ShapeType.CIRCLE:
         shape = new Konva.Ellipse({
-          x: size.width,
-          y: size.height,
-          radiusX: size.width,
-          radiusY: size.height,
-          ...transform,
+          radiusX: size.width / 2,
+          radiusY: size.height / 2,
           fill: color,
           strokeScaleEnabled: false,
           draggable: true,
@@ -80,8 +77,6 @@ export class ShapeNode extends NetworkedNode {
 
       case ShapeType.TRIANGLE:
         shape = new Konva.Shape({
-          x: 0,
-          y: 0,
           width: size.width,
           height: size.height,
           ...transform,
@@ -113,12 +108,20 @@ export class ShapeNode extends NetworkedNode {
     this.size = size;
     this.color = color;
 
-    // Add shape to group
+    // Center the shape
     const centerPosition = NodeUtilities.positionNodeOnCanvasCenter({
       canvasOffset: canvasPosition,
-      componentSize: canvasSize,
+      componentSize: this.size,
       maxSize: canvasSize,
     });
+
+    // If the shape is an ellipse, the center is the origin so we need to offset it
+    if (shapeType === ShapeType.CIRCLE) {
+      centerPosition.x += size.width / 2;
+      centerPosition.y += size.height / 2;
+    }
+
+    // Add shape to group
     // bring to the front
     this.kNode.moveToTop();
     this.kNode.setPosition(centerPosition);
