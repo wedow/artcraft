@@ -3,19 +3,12 @@ import { faCheck } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, LoadingSpinner, CloseButton } from "~/components";
 import { TabSelector } from "~/components/reusable/TabSelector";
-import React, {
-  useState,
-  useEffect,
-  Fragment,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { LibraryModalApi } from "./LibraryModalApi";
 import { FilterMediaClasses } from "../../../../enums";
-import { BucketConfig } from "../../../../api/BucketConfig";
 import { twMerge } from "tailwind-merge";
-import { createPortal } from "react-dom";
-import { Transition } from "@headlessui/react";
+import { LightboxModal } from "~/components/reusable/LightboxModal";
+import { GetCdnOrigin } from "~/api/GetCdnOrigin";
 
 export interface LibraryItem {
   id: string;
@@ -64,7 +57,8 @@ export const LibraryModal = React.memo(
     );
     const [isLightboxVisible, setIsLightboxVisible] = useState(false);
     const [failedImageUrls] = useState<Set<string>>(new Set());
-    const bucketConfig = useMemo(() => new BucketConfig(), []);
+    const cdnOrigin = GetCdnOrigin();
+    const imageUrl = lightboxImage?.fullImage || "";
     const api = useMemo(() => new LibraryModalApi(), []);
 
     const formatDate = useCallback((date: string) => {
@@ -109,10 +103,11 @@ export const LibraryModal = React.memo(
     const getImageUrl = useCallback(
       (path: string | undefined | null) => {
         if (!path) return null;
-        const url = bucketConfig.getGcsUrl(path);
+        const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+        const url = `${cdnOrigin}${normalizedPath}`;
         return failedImageUrls.has(url) ? null : url;
       },
-      [bucketConfig, failedImageUrls],
+      [cdnOrigin, failedImageUrls],
     );
 
     useEffect(() => {
@@ -125,11 +120,8 @@ export const LibraryModal = React.memo(
           if (response.success && response.data) {
             const newItems = response.data.map((item) => ({
               id: item.token,
-              label: item.maybe_title || "Untitled",
-              thumbnail: getImageUrl(
-                item.cover_image.maybe_cover_image_public_bucket_path ||
-                  item.public_bucket_path,
-              ),
+              label: item.maybe_title || "Image Generation",
+              thumbnail: getImageUrl(item.public_bucket_path),
               fullImage: getImageUrl(item.public_bucket_path),
               createdAt: item.created_at,
             }));
@@ -318,74 +310,16 @@ export const LibraryModal = React.memo(
           </div>
         </TransitionDialogue>
 
-        {/* Lightbox Modal */}
-        {lightboxImage &&
-          createPortal(
-            <Transition appear show={isLightboxVisible} as={Fragment}>
-              <div className="fixed inset-0 z-[100]">
-                <Transition.Child
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div
-                    className="fixed inset-0 cursor-pointer bg-black/60"
-                    onClick={handleCloseLightbox}
-                  />
-                </Transition.Child>
-                <div
-                  className="fixed inset-0 flex items-center justify-center p-4"
-                  onClick={handleCloseLightbox}
-                >
-                  <Transition.Child
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0 scale-95"
-                    enterTo="opacity-100 scale-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100 scale-100"
-                    leaveTo="opacity-0 scale-95"
-                  >
-                    <div
-                      className="relative h-[90vh] w-[80vw] rounded-xl bg-[#2C2C2C]"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <CloseButton
-                        onClick={handleCloseLightbox}
-                        className="absolute right-4 top-4 z-10"
-                      />
-                      <div className="grid h-full grid-cols-3 gap-6">
-                        <div className="col-span-2 flex h-full items-center justify-center overflow-hidden bg-black/40">
-                          {!lightboxImage.fullImage ? (
-                            <div className="flex h-full w-full items-center justify-center bg-gray-800">
-                              <span className="text-white/60">
-                                Image not available
-                              </span>
-                            </div>
-                          ) : (
-                            <img
-                              src={lightboxImage.fullImage}
-                              alt={lightboxImage.label}
-                              className="h-full w-full object-contain"
-                              onError={() =>
-                                handleImageError(lightboxImage.fullImage!)
-                              }
-                              crossOrigin="anonymous"
-                              referrerPolicy="no-referrer"
-                            />
-                          )}
-                        </div>
-                        <div className="py-5">Prompt</div>
-                      </div>
-                    </div>
-                  </Transition.Child>
-                </div>
-              </div>
-            </Transition>,
-            document.body,
-          )}
+        <LightboxModal
+          isOpen={isLightboxVisible}
+          onClose={handleCloseLightbox}
+          imageUrl={imageUrl}
+          imageAlt={lightboxImage?.label || ""}
+          onImageError={() => imageUrl && handleImageError(imageUrl)}
+          title={lightboxImage?.label}
+          createdAt={lightboxImage?.createdAt}
+          downloadUrl={imageUrl}
+        />
       </>
     );
   },

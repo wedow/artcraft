@@ -9,24 +9,13 @@ import { activeImageGenerationJobs, toasts, userMovies } from "~/signals";
 import { useEffect, useState } from "react";
 import { JobsApi } from "~/Classes/ApiManager/JobsApi";
 import { toast } from "sonner";
-
+import { ActiveJob } from "~/pages/PageEnigma/models";
 // TODO ensure we de-dupe all this extra code.
 interface CompletedItem {
   token: string;
   maybe_title: string;
   public_bucket_path: string;
   updated_at: string;
-}
-
-interface ActiveJob {
-  job_token: string;
-  request: {
-    maybe_model_title: string;
-  };
-  status: {
-    status: string;
-    progress_percentage: number;
-  };
 }
 
 // {
@@ -80,65 +69,78 @@ export function Activity() {
         try {
           const jobsApi = new JobsApi();
           const jobsResponse = await jobsApi.ListRecentJobs();
-          
+
           if (jobsResponse.success && jobsResponse.data) {
             // Process active jobs
             const activeJobs = jobsResponse.data
-              .filter(job => {
+              .filter((job) => {
                 const status = job.status?.status?.toLowerCase();
-                return status && status !== "complete_success" && status !== "failed";
+                return (
+                  status && status !== "complete_success" && status !== "failed"
+                );
               })
-              .map(job => ({
+              .map((job) => ({
                 job_token: job.job_token,
                 request: {
-                  maybe_model_title: job.request?.maybe_model_title || "Image Generation"
+                  maybe_model_title:
+                    job.request?.maybe_model_title || "Image Generation",
                 },
                 status: {
                   status: job.status?.status?.toUpperCase() || "",
-                  progress_percentage: job.status?.progress_percentage || 0
-                }
+                  progress_percentage: job.status?.progress_percentage || 0,
+                },
               }));
-            
+
             // Process completed items
             // Get completed items and filter out any that are already in our list
-            const successfulJobs = jobsResponse.data
-              .filter(job => job.status?.status?.toLowerCase() === "complete_success");
-            
+            const successfulJobs = jobsResponse.data.filter(
+              (job) => job.status?.status?.toLowerCase() === "complete_success",
+            );
+
             // Create a set of existing tokens for faster lookup
-            const existingTokens = new Set(completedItems.map(item => item.token));
-            
+            const existingTokens = new Set(
+              completedItems.map((item) => item.token),
+            );
+
             // Filter out jobs we already have in our list
             const newCompletedItems = successfulJobs
-              .filter(job => !existingTokens.has(job.job_token))
-              .map(job => ({
+              .filter((job) => !existingTokens.has(job.job_token))
+              .map((job) => ({
                 token: job.job_token,
-                maybe_title: job.request?.maybe_model_title || "Image Generation",
-                public_bucket_path: job.maybe_result?.maybe_public_bucket_media_path || "",
-                updated_at: job.updated_at || new Date().toISOString()
+                maybe_title:
+                  job.request?.maybe_model_title || "Image Generation",
+                public_bucket_path:
+                  job.maybe_result?.maybe_public_bucket_media_path || "",
+                updated_at: job.updated_at || new Date().toISOString(),
               }));
-              
+
             // Show toast notification for newly completed items
             if (newCompletedItems.length > 0) {
               const count = newCompletedItems.length;
-              const message = count === 1 
-                ? `${newCompletedItems[0].maybe_title} completed successfully`
-                : `${count} images completed successfully`;
+              const message =
+                count === 1
+                  ? `${newCompletedItems[0].maybe_title} completed successfully`
+                  : `${count} images completed successfully`;
               toast.success(message);
             }
 
             // Update completed items with a maximum limit of 50 items
-            setCompletedItems(prev => {
+            setCompletedItems((prev) => {
               const combined = [...newCompletedItems, ...prev];
               // Remove duplicates based on token
               const uniqueItems = Array.from(
-                new Map(combined.map(item => [item.token, item])).values()
+                new Map(combined.map((item) => [item.token, item])).values(),
               );
               // Sort by updated_at in descending order and limit to 50 items
               return uniqueItems
-                .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+                .sort(
+                  (a, b) =>
+                    new Date(b.updated_at).getTime() -
+                    new Date(a.updated_at).getTime(),
+                )
                 .slice(0, 50);
             });
-            setJobs(activeJobs);
+            setJobs(activeJobs as ActiveJob[]);
             setLoading(false);
           }
         } catch (error) {
@@ -158,6 +160,7 @@ export function Activity() {
     }, 5000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -170,23 +173,26 @@ export function Activity() {
         align="end"
         triggerIcon={
           <div>
-            <FontAwesomeIcon icon={faBell} />
-            {activeImageGenerationJobs.value &&
-              activeImageGenerationJobs.value.length > 0 && (
-                <div className="bg-blue-500 absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full" />
-              )}
+            {jobs && jobs.length > 0 ? (
+              <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+            ) : (
+              <FontAwesomeIcon icon={faBell} />
+            )}
+            {jobs && jobs.length > 0 && (
+              <div className="bg-blue-500 absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full" />
+            )}
           </div>
         }
       >
         <div className="max-h-[480px] overflow-y-auto">
           {/* In progress */}
           {jobs && jobs.length > 0 && (
-              <div>
-                {jobs.map((job) => (
-                  <InProgressCard key={job.job_token} movie={job} />
-                ))}
-              </div>
-            )}
+            <div>
+              {jobs.map((job) => (
+                <InProgressCard key={job.job_token} job={job} />
+              ))}
+            </div>
+          )}
 
           {!userMovies.value && !activeImageGenerationJobs.value ? (
             <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
@@ -212,16 +218,10 @@ export function Activity() {
               {/* Completed */}
               <div className="flex flex-col">
                 {completedItems.map((item) => (
-                  <CompletedCard 
-                    key={item.token} 
-                    movie={item} 
-                    setMovieId={(item_id) => {
-                      console.log("item_id", item_id);
-                    }}
-                  />
+                  <CompletedCard key={item.token} job={item} />
                 ))}
               </div>
-              </div>
+            </div>
           )}
         </div>
       </PopoverMenu>

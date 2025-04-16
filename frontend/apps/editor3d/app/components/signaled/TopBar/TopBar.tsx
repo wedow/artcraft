@@ -27,16 +27,16 @@ export const TopBar = ({ pageName }: Props) => {
 
   return (
     <>
-      <header className="fixed left-0 top-0 z-30 w-full border-b border-white/5 bg-ui-background">
+      <header className="fixed left-0 top-0 z-[60] w-full border-b border-white/5 bg-ui-background">
         <nav
           className="mx-auto grid h-[56px] w-screen grid-cols-3 items-center justify-between px-3"
           aria-label="Global"
         >
           <div className="flex gap-4">
-            <a href="/" className="">
+            <a href="/">
               <span className="sr-only">ArtCraft</span>
               <img
-                className="h-[30px] w-auto"
+                className="h-[28px] w-auto"
                 src="/resources/images/artcraft-logo-3.png"
                 alt="Logo ArtCraft"
               />

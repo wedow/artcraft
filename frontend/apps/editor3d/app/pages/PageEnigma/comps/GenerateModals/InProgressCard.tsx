@@ -1,22 +1,15 @@
 import { useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faClose,
-  faCircleExclamation,
-  faSpinnerThird,
-} from "@fortawesome/pro-solid-svg-icons";
-
+import { faClose, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { ToastTypes } from "~/enums";
 import { addToast } from "~/signals";
-
 import { JobState } from "~/pages/PageEnigma/enums";
 import { ActiveJob } from "~/pages/PageEnigma/models";
-
 import { Tooltip } from "~/components";
 import { JobsApi } from "~/Classes/ApiManager";
 import { PollRecentJobs } from "~/hooks/useActiveJobs/utilities";
 interface Props {
-  movie: ActiveJob;
+  job: ActiveJob;
 }
 
 function getPercent(status: JobState, percentage: number) {
@@ -33,16 +26,16 @@ function getPercent(status: JobState, percentage: number) {
   }
 }
 
-export function InProgressCard({ movie }: Props) {
+export function InProgressCard({ job }: Props) {
   const completePercent = getPercent(
-    movie.status.status as JobState,
-    movie.status.progress_percentage,
+    job.status.status as JobState,
+    job.status.progress_percentage,
   );
 
-  const deleteJob = useCallback(async (movieJob: ActiveJob) => {
+  const deleteJob = useCallback(async (job: ActiveJob) => {
     const jobsApi = new JobsApi();
 
-    const response = await jobsApi.DeleteJobByToken(movieJob.job_token);
+    const response = await jobsApi.DeleteJobByToken(job.job_token);
     if (response.success) {
       PollRecentJobs();
       addToast(ToastTypes.SUCCESS, "File successfully deleted.");
@@ -58,32 +51,33 @@ export function InProgressCard({ movie }: Props) {
   return (
     <div className="flex w-full items-center justify-between rounded-lg p-2 text-start transition-all duration-150 hover:bg-white/10">
       <div className="flex gap-4">
-        <div className="flex aspect-square h-14 w-14 items-center justify-center overflow-hidden rounded-lg border border-[#A9A9A9]/50 bg-black/60">
-          {(movie.status.status === JobState.STARTED ||
-            movie.status.status === JobState.PENDING) && (
-            <FontAwesomeIcon icon={faSpinnerThird} spin size={"lg"} />
+        <div className="flex aspect-square h-14 w-14 items-center justify-center rounded-lg border border-[#A9A9A9]/50 bg-black/60 text-white">
+          <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+          {/* {(job.status.status === JobState.STARTED ||
+            job.status.status === JobState.PENDING) && (
+            <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
           )}
-          {(movie.status.status === JobState.COMPLETE_FAILURE ||
-            movie.status.status === JobState.ATTEMPT_FAILED) && (
+          {(job.status.status === JobState.COMPLETE_FAILURE ||
+            job.status.status === JobState.ATTEMPT_FAILED) && (
             <FontAwesomeIcon icon={faCircleExclamation} size={"lg"} />
-          )}
+          )} */}
         </div>
         <div className="flex flex-col justify-center gap-1">
           <div className="font-medium">
-            {movie.request.maybe_model_title || "Untitled"}
+            {job.request.maybe_model_title || "Image Generation"}
           </div>
 
           <div className="text-sm capitalize text-white/60">
-            {movie.status.status.replaceAll("_", " ")}... {completePercent}%
+            {job.status.status.replaceAll("_", " ")}... {completePercent}%
           </div>
         </div>
       </div>
 
-      {movie.status.status !== JobState.STARTED && (
+      {job.status.status !== JobState.STARTED && (
         <div className="pr-5">
           <Tooltip content="Cancel" position="left">
             <button
-              onClick={() => deleteJob(movie)}
+              onClick={() => deleteJob(job)}
               className="text-[15px] font-medium text-white/50 transition-all duration-150 hover:text-white/100"
             >
               <FontAwesomeIcon icon={faClose} />
