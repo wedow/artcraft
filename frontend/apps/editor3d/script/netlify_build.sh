@@ -2,6 +2,9 @@
 
 set -euxo pipefail 
 
+echo "Install packages"
+npm install
+
 echo "Build Editor 3D"
 nx build editor3d --verbose
 
