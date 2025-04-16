@@ -27,7 +27,7 @@ import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { focalLengthDragging } from "./signals/camera";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 
-import { Login } from "@frontend/login";
+import { Login } from "@storyteller/login";
 
 export const PageEditor = () => {
   useSignals();

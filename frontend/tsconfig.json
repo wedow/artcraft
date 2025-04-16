@@ -4,10 +4,10 @@
   "files": [],
   "references": [
     {
-      "path": "./libs/api"
+      "path": "./libs/utils/api"
     },
     {
-      "path": "./libs/login"
+      "path": "./libs/components/login"
     }
   ]
 }
