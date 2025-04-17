@@ -5,7 +5,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
 import { posthog } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
-import { Toaster } from "~/components/ui/Toast";
+import { Toaster } from "@storyteller/shared/components";
 import { JobProvider } from "~/components/JobContext";
 import "./global.css";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
@@ -33,7 +33,7 @@ const App = () => {
         <JobProvider>
           <PostHogProvider client={posthog}>
             <RouterProvider router={router} />
-            <Toaster />
+            <Toaster topOffset={70} rightOffset={12} />
           </PostHogProvider>
         </JobProvider>
       </StrictMode>
@@ -43,7 +43,7 @@ const App = () => {
     <>
       <JobProvider>
         <RouterProvider router={router} />
-        <Toaster />
+        <Toaster topOffset={70} rightOffset={12} />
       </JobProvider>
     </>
   );

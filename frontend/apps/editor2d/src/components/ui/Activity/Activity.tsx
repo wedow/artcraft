@@ -6,7 +6,7 @@ import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
 import { useJobContext } from "~/components/JobContext";
 import { Api } from "~/KonvaApp/Api";
-import { toast } from "sonner";
+import { toast } from "@storyteller/shared/components";
 
 // Dummy data types
 interface CompletedItem {
@@ -199,7 +199,7 @@ export function Activity() {
           </div>
         ) : completedItems.length === 0 && jobs.length === 0 ? (
           <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
-            <h3 className="text-gray-300">No activities yet</h3>
+            <h3 className="text-lg text-gray-300">No activities yet</h3>
           </div>
         ) : (
           <div>

@@ -21,7 +21,8 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "~/*": ["./src/*"],
-      "@ApiManager/*": ["./src/Classes/ApiManager/*"]
+      "@ApiManager/*": ["./src/Classes/ApiManager/*"],
+      "@storyteller/shared/*": ["../../shared/*"]
     }
   },
   "include": ["src"]
