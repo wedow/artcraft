@@ -137,7 +137,7 @@ export const Tooltip = ({
             transitionTimingFunction: "ease-out",
           }}
           className={twMerge(
-            "pointer-events-none absolute z-10 w-max rounded-lg bg-[#5F5F68] px-2.5 py-1.5 text-sm font-medium text-white shadow-xl",
+            "pointer-events-none absolute z-10 w-max rounded-lg bg-[#5F5F68] px-2.5 py-1.5 text-[13px] font-medium text-white shadow-xl",
             className ? className : "",
           )}
         >

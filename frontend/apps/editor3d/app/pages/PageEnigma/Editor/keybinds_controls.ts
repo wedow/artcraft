@@ -17,7 +17,11 @@ import { SceneManager, SceneObject } from "./scene_manager_api";
 import { FreeCam } from "./free_cam";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { FKHelper } from "./KinHelpers/FKHelper";
-import { selectedMode } from "../signals/selectedMode";
+import {
+  selectedMode,
+  poseMode,
+  showPoseControls,
+} from "../signals/selectedMode";
 
 export enum KinMode {
   FK,
@@ -122,6 +126,10 @@ export class MouseControls {
       scene: this.scene,
       onDragChange: this.onFKControlsDragging.bind(this),
     });
+
+    // Expose handlePoseModeChange to window
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__mouseControls = this;
   }
 
   onFKControlsDragging(dragging: boolean) {
@@ -185,7 +193,11 @@ export class MouseControls {
     this.setSelected(this.selected);
     this.publishSelect();
 
-    // this.editor.update_properties()
+    if (currentObject.userData.isCharacter) {
+      showPoseControls.value = true;
+    }
+
+    // Normal selection behavior
     if (currentObject.userData["locked"] !== true && this.control) {
       this.scene.add(this.control);
       this.control.attach(currentObject);
@@ -235,6 +247,9 @@ export class MouseControls {
       this.fkHelper.clear();
       this.kinMode = KinMode.NONE;
       this.reattachTransformControls();
+      if (poseMode.value === "pose") {
+        poseMode.value = "select";
+      }
       console.log("FK mode off");
       return;
     }
@@ -255,6 +270,9 @@ export class MouseControls {
     this.hideTransformControls();
     this.kinMode = KinMode.FK;
     this.fkHelper.setTarget(this.selected[0]);
+    if (poseMode.value === "select") {
+      poseMode.value = "pose";
+    }
     console.log("FK mode on");
     return;
   }
@@ -305,30 +323,20 @@ export class MouseControls {
 
     if ((event.ctrlKey || event.metaKey) && !this.isProcessing) {
       if (event.key === "Z" || event.key === "z") {
-        if (event.shiftKey) {
-          // redo
-          this.isProcessing = true;
-          await this.sceneManager?.redo();
-          this.isProcessing = false;
-        } else {
-          // undo
-          this.isProcessing = true;
-          await this.sceneManager?.undo();
-          this.isProcessing = false;
-        }
-        return;
+        // redo
+        this.isProcessing = true;
+        await this.sceneManager?.redo();
+        this.isProcessing = false;
       } else if (event.key === "c") {
         // redo
         this.isProcessing = true;
         await this.sceneManager?.copy();
         this.isProcessing = false;
-        return;
       } else if (event.key === "v") {
         // redo
         this.isProcessing = true;
         await this.sceneManager?.paste();
         this.isProcessing = false;
-        return;
       } else if (event.key === "0") {
         // Stats Menu
         this.enable_stats();
@@ -454,7 +462,8 @@ export class MouseControls {
       this.selected = [];
       this.setSelected(this.selected);
       this.removeTransformControls();
-      //hideObjectPanel();
+      hideObjectPanel();
+      showPoseControls.value = false;
     }
 
     if (this.sceneManager) {

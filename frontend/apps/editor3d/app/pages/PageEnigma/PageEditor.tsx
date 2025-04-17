@@ -7,6 +7,7 @@ import { ControlPanelSceneObject } from "./comps/ControlPanelSceneObject";
 import { PreviewEngineCamera } from "./comps/PreviewEngineCamera";
 import { PreviewFrameImage } from "./comps/PreviewFrameImage";
 import { pageHeight, pageWidth } from "~/signals";
+import { PoseModeSelector } from "./comps/PoseModeSelector";
 
 import {
   timelineHeight,
@@ -24,7 +25,6 @@ import { Outliner } from "./comps/Outliner";
 import { CameraAspectRatio } from "./enums";
 import { PromptBox } from "./comps/PromptBox";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
-import { focalLengthDragging } from "./signals/camera";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 
 export const PageEditor = () => {
@@ -105,6 +105,9 @@ export const PageEditor = () => {
 
             {/* Focal Length Display */}
             <FocalLengthDisplay />
+
+            {/* Pose Mode Selector */}
+            <PoseModeSelector />
 
             {/* Top controls */}
             <div

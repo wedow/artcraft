@@ -45,7 +45,7 @@ export const Button = ({
   );
 
   const className = twMerge(
-    "text-sm font-medium rounded-lg px-3 py-2 border border-[#363636] shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all duration-150 flex gap-2 items-center justify-center",
+    "text-sm font-medium rounded-lg px-3 py-2 border border-transparent shadow-sm focus-visible:outline focus-visible:outline-0 focus-visible:outline-offset-0 transition-all duration-150 flex gap-2 items-center justify-center",
     getVariantClassNames(propsVariant),
     propsClassName,
     disabledClass,
