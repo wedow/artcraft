@@ -4,7 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "nx": {
-    "name": "editor2d"
+    "name": "editor2d",
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
   },
   "scripts": {
     "dev": "echo 'editor2d' && vite",

@@ -1,42 +1,23 @@
 {
-  "include": [
-    "env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "netlify-edge-plugin.ts"
-  ],
+  "extends": "../../tsconfig.base.json",
+  "include": ["env.d.ts", "**/*.ts", "**/*.tsx", "netlify-edge-plugin.ts"],
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "target": "ESNext",
     "strict": true,
     "allowJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
     "paths": {
-      "~/*": [
-        "./app/*"
-      ]
+      "~/*": ["apps/editor3d/app/*"]
     },
     // Vite takes care of building everything, not tsc.
     "noEmit": true
-  },
-  "references": [
-    {
-      "path": "../../libs/api"
-    },
-    {
-      "path": "../../libs/login"
-    }
-  ]
+  }
 }
