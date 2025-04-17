@@ -27,11 +27,13 @@ import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { focalLengthDragging } from "./signals/camera";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 
-import { Login } from "@frontend/login"
+import { Login } from "@frontend/login";
+import { api } from "@storyteller/api";
+
 
 export const PageEditor = () => {
   useSignals();
-
+  //console.log(api());
   //To prevent the click event from propagating to the canvas: TODO: HANDLE THIS BETTER?
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
