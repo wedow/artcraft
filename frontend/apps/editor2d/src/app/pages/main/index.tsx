@@ -77,9 +77,8 @@ export const Main = withProtectionRoute(() => {
           </div>
         </div>
       </div>
-      {appModeValue === "gallery" && (
-        <GalleryRootComponent className="z-1 fixed h-full w-full bg-black" />
-      )}
+      {appModeValue === "gallery" &&
+      (<GalleryRootComponent className="fixed h-full w-full z-1 bg-black" />)}
     </div>
   );
 });

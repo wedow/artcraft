@@ -58,7 +58,6 @@ interface ReferenceImage {
 import { EngineApi } from "~/Classes/ApiManager/EngineApi";
 import { UploaderStates } from "~/enums/UploaderStates";
 import { CameraSettingsModal } from "../CameraSettingsModal";
-import { toast } from "@storyteller/shared/components";
 
 export const PromptBox = () => {
   useSignals();
@@ -431,7 +430,7 @@ export const PromptBox = () => {
           screenshot: snapshot.file,
           sceneMediaToken: "",
         });
-
+        
         console.log("useSystemPrompt", useSystemPrompt);
         await engineApi.enqueueImageGeneration({
           disableSystemPrompt: !useSystemPrompt,
@@ -452,7 +451,6 @@ export const PromptBox = () => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       } finally {
         setisEnqueueing(false);
-        toast.success("Image generation enqueued");
       }
     }
     setisEnqueueing(false);

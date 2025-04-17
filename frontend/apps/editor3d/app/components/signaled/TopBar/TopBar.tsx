@@ -52,7 +52,7 @@ export const TopBar = ({ pageName }: Props) => {
             <SceneTitleInput pageName={pageName} />
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-5">
             <div className="flex gap-2">
               <Button
                 variant="secondary"
