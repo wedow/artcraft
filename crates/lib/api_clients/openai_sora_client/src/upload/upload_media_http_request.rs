@@ -3,6 +3,7 @@ use errors::AnyhowResult;
 use reqwest::multipart::{Form, Part};
 use reqwest::Client;
 use serde::Deserialize;
+use crate::sora_error::SoraError;
 
 const SORA_UPLOAD_MEDIA_URL: &str = "https://sora.com/backend/uploads";
 
@@ -25,6 +26,17 @@ Response:
   "size_bytes": 118501,
   "thumbnail_url": "https://videos.openai.com/vg-assets/assets%2Fclient_upload%2Fmedia%2Fuser-9wf6JFdgRSJLjvSJ53LNAbV8%2Fmedia_01jqt9vt20erx9zvryf3v1pecx.jpg?st=2025-04-02T02%3A39%3A01Z&se=2025-04-08T03%3A39%3A01Z&sks=b&skt=2025-04-02T02%3A39%3A01Z&ske=2025-04-08T03%3A39%3A01Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=9aU9xKI0BkhRtrTb0RD05%2BT6prBnmXk1I7nV2nTsFbY%3D&az=oaivgprodscus"
 }
+
+Error response:
+
+Failed to upload scene media to Sora: Upload failed with status 401 Unauthorized: {
+      "error": {
+        "message": "Your authentication token has expired. Please try signing in again.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "token_expired"
+      }
+    }
 */
 
 #[derive(Debug, Deserialize)]
@@ -50,7 +62,13 @@ pub (crate) struct SoraMediaUploadRequest<'a> {
   pub credentials: &'a SoraCredentials,
 }
 
-pub (crate) async fn upload_media_http_request(file_bytes: Vec<u8>, filename: String, mime_type: &str, credentials: &SoraCredentials) -> AnyhowResult<SoraMediaUploadResponse> {
+pub (crate) async fn upload_media_http_request(
+  file_bytes: Vec<u8>,
+  filename: String,
+  mime_type: &str,
+  credentials: &SoraCredentials,
+) -> Result<SoraMediaUploadResponse, SoraError> {
+
   // Create multipart form
   let part = Part::bytes(file_bytes) // NB: Reqwest needs to own the bytes.
     .file_name(filename) // NB: Reqwest needs to own the bytes
@@ -70,12 +88,29 @@ pub (crate) async fn upload_media_http_request(file_bytes: Vec<u8>, filename: St
 
   // Check response status
   if !response.status().is_success() {
-    let status = response.status();
-    let text = response.text().await?;
-    return Err(anyhow::anyhow!("Upload failed with status {}: {}", status, text));
+    let error = classify_error(response).await;
+    return Err(error);
   }
 
   // Parse response
   let upload_response = response.json::<SoraMediaUploadResponse>().await?;
   Ok(upload_response)
+}
+
+async fn classify_error(response: reqwest::Response) -> SoraError {
+  let status = response.status();
+  let message = match response.text().await {
+    Ok(text) => text,
+    Err(err) => return SoraError::ReqwestError(err),
+  };
+
+  let cookie_expired =
+      message.contains("Your authentication token has expired. Please try signing in again.")
+      || message.contains("token_expired");
+
+  if cookie_expired {
+    SoraError::UnauthorizedCookieOrBearerExpired
+  } else {
+    SoraError::OtherBadStatus(anyhow::anyhow!("Upload failed with status {}: {}", status, message))
+  }
 }

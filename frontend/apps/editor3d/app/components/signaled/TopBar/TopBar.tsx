@@ -30,7 +30,7 @@ export const TopBar = ({ pageName }: Props) => {
       <header className="fixed left-0 top-0 z-[60] w-full border-b border-white/5 bg-ui-background">
         <nav
           className="mx-auto grid h-[56px] w-screen grid-cols-3 items-center justify-between px-3"
-          aria-label="Global"
+          aria-label="navigation"
         >
           <div className="flex gap-4">
             <a href="/">
@@ -52,7 +52,7 @@ export const TopBar = ({ pageName }: Props) => {
             <SceneTitleInput pageName={pageName} />
           </div>
 
-          <div className="flex justify-end gap-5">
+          <div className="flex justify-end gap-3.5">
             <div className="flex gap-2">
               <Button
                 variant="secondary"

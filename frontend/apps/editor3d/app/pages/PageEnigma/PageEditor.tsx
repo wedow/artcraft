@@ -88,7 +88,7 @@ export const PageEditor = () => {
   return (
     <div className="w-screen">
       <TopBar pageName="Edit Scene" />
-      <Login />
+      {/* <Login /> */}
       <OnboardingHelper />
       <div
         className="relative flex w-screen"

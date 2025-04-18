@@ -4,8 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverMenu } from "~/components/reusable/Popover/Popover";
 import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
-import { H3, P, Tooltip } from "~/components";
-import { activeImageGenerationJobs, toasts, userMovies } from "~/signals";
+import { Tooltip } from "~/components";
 import { useEffect, useState } from "react";
 import { JobsApi } from "~/Classes/ApiManager/JobsApi";
 import { toast } from "sonner";
@@ -146,6 +145,7 @@ export function Activity() {
         } catch (error) {
           toast.error("Error Fetching Recent Jobs");
           console.error("Failed to fetch recent jobs:", error);
+          setLoading(false);
         }
       };
       await fetchJobs();
@@ -173,13 +173,13 @@ export function Activity() {
         align="end"
         triggerIcon={
           <div>
-            {jobs && jobs.length > 0 ? (
+            {jobs.length > 0 ? (
               <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
             ) : (
               <FontAwesomeIcon icon={faBell} />
             )}
-            {jobs && jobs.length > 0 && (
-              <div className="bg-blue-500 absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full" />
+            {jobs.length > 0 && (
+              <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-brand-primary-400" />
             )}
           </div>
         }
@@ -194,24 +194,19 @@ export function Activity() {
             </div>
           )}
 
-          {!userMovies.value && !activeImageGenerationJobs.value ? (
-            <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
-              <FontAwesomeIcon
-                icon={faSpinnerThird}
-                spin
-                size="2x"
-                className="text-gray-400"
-              />
-              <H3 className="text-gray-300">Retrieving Activities</H3>
+          {loading ? (
+            <div className="flex h-48 w-full items-center justify-center gap-3 p-4 text-center align-middle">
+              <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+              <h3 className="text-lg font-medium text-gray-300">
+                Loading activities...
+              </h3>
             </div>
-          ) : userMovies.value &&
-            userMovies.value.length === 0 &&
-            !activeImageGenerationJobs.value ? (
-            <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
-              <H3 className="text-gray-300">No activities yet</H3>
-              <P className="text-gray-400">
-                Try generating something new from the featured scenes
-              </P>
+          ) : jobs.length === 0 && completedItems.length === 0 ? (
+            <div className="flex h-48 w-full items-center justify-center gap-3 p-4 text-center align-middle">
+              <FontAwesomeIcon icon={faBell} />
+              <h3 className="text-lg font-medium text-gray-300">
+                No activities yet
+              </h3>
             </div>
           ) : (
             <div>
