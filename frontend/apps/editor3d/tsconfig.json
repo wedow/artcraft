@@ -22,10 +22,10 @@
   },
   "references": [
     {
-      "path": "../../libs/login"
+      "path": "../../libs/api"
     },
     {
-      "path": "../../libs/components/toaster"
+      "path": "../../libs/login"
     }
   ]
 }

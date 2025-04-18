@@ -48,7 +48,6 @@ import {
   updateCamera,
   focalLengthDragging,
 } from "~/pages/PageEnigma/signals/camera";
-import { toast } from "@storyteller/ui-toaster";
 
 interface ReferenceImage {
   id: string;
@@ -431,7 +430,7 @@ export const PromptBox = () => {
           screenshot: snapshot.file,
           sceneMediaToken: "",
         });
-
+        
         console.log("useSystemPrompt", useSystemPrompt);
         await engineApi.enqueueImageGeneration({
           disableSystemPrompt: !useSystemPrompt,
@@ -452,7 +451,6 @@ export const PromptBox = () => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       } finally {
         setisEnqueueing(false);
-        toast.success("Image added to queue");
       }
     }
     setisEnqueueing(false);

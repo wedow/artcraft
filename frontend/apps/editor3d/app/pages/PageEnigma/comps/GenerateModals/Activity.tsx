@@ -4,10 +4,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverMenu } from "~/components/reusable/Popover/Popover";
 import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
-import { H3, Tooltip } from "~/components";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { Tooltip } from "~/components";
+import { useEffect, useState } from "react";
 import { JobsApi } from "~/Classes/ApiManager/JobsApi";
-import { toast } from "@storyteller/ui-toaster";
+import { toast } from "sonner";
 import { ActiveJob } from "~/pages/PageEnigma/models";
 // TODO ensure we de-dupe all this extra code.
 interface CompletedItem {
@@ -59,49 +59,26 @@ interface CompletedItem {
 export function Activity() {
   useSignals();
   const [completedItems, setCompletedItems] = useState<CompletedItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState<ActiveJob[]>([]);
-  const processedJobs = useRef(new Set<string>());
-  const isFirstLoad = useRef(true);
-  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Debounced toast function
-  const showToast = useCallback((items: CompletedItem[]) => {
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-    }
-
-    toastTimeoutRef.current = setTimeout(() => {
-      const count = items.length;
-      toast.success(
-        count === 1
-          ? `${items[0].maybe_title} completed successfully`
-          : `${count} images completed successfully`,
-      );
-      toastTimeoutRef.current = null;
-    }, 100); // Small delay to catch potential double calls
-  }, []);
 
   useEffect(() => {
-    let mounted = true;
+    const pollData = async () => {
+      const fetchJobs = async () => {
+        try {
+          const jobsApi = new JobsApi();
+          const jobsResponse = await jobsApi.ListRecentJobs();
 
-    async function fetchJobs() {
-      try {
-        const jobsApi = new JobsApi();
-        const response = await jobsApi.ListRecentJobs();
-
-        if (!mounted || !response.success || !response.data) return;
-
-        // Handle active jobs
-        const activeJobs = response.data
-          .filter((job) => {
-            const status = job.status?.status?.toLowerCase();
-            return (
-              status && status !== "complete_success" && status !== "failed"
-            );
-          })
-          .map(
-            (job) =>
-              ({
+          if (jobsResponse.success && jobsResponse.data) {
+            // Process active jobs
+            const activeJobs = jobsResponse.data
+              .filter((job) => {
+                const status = job.status?.status?.toLowerCase();
+                return (
+                  status && status !== "complete_success" && status !== "failed"
+                );
+              })
+              .map((job) => ({
                 job_token: job.job_token,
                 request: {
                   maybe_model_title:
@@ -111,78 +88,80 @@ export function Activity() {
                   status: job.status?.status?.toUpperCase() || "",
                   progress_percentage: job.status?.progress_percentage || 0,
                 },
-                created_at: job.created_at || new Date().toISOString(),
+              }));
+
+            // Process completed items
+            // Get completed items and filter out any that are already in our list
+            const successfulJobs = jobsResponse.data.filter(
+              (job) => job.status?.status?.toLowerCase() === "complete_success",
+            );
+
+            // Create a set of existing tokens for faster lookup
+            const existingTokens = new Set(
+              completedItems.map((item) => item.token),
+            );
+
+            // Filter out jobs we already have in our list
+            const newCompletedItems = successfulJobs
+              .filter((job) => !existingTokens.has(job.job_token))
+              .map((job) => ({
+                token: job.job_token,
+                maybe_title:
+                  job.request?.maybe_model_title || "Image Generation",
+                public_bucket_path:
+                  job.maybe_result?.maybe_public_bucket_media_path || "",
                 updated_at: job.updated_at || new Date().toISOString(),
-                maybe_result: job.maybe_result || null,
-              }) as ActiveJob,
-          );
+              }));
 
-        // Handle completed jobs
-        const newlyCompleted = response.data.filter(
-          (job) =>
-            job.status?.status?.toLowerCase() === "complete_success" &&
-            !processedJobs.current.has(job.job_token),
-        );
+            // Show toast notification for newly completed items
+            if (newCompletedItems.length > 0) {
+              const count = newCompletedItems.length;
+              const message =
+                count === 1
+                  ? `${newCompletedItems[0].maybe_title} completed successfully`
+                  : `${count} images completed successfully`;
+              toast.success(message);
+            }
 
-        if (newlyCompleted.length > 0) {
-          // Add to processed set
-          newlyCompleted.forEach((job) =>
-            processedJobs.current.add(job.job_token),
-          );
-
-          // Create completed items
-          const newItems = newlyCompleted.map((job) => ({
-            token: job.job_token,
-            maybe_title: job.request?.maybe_model_title || "Image Generation",
-            public_bucket_path:
-              job.maybe_result?.maybe_public_bucket_media_path || "",
-            updated_at: job.updated_at || new Date().toISOString(),
-          }));
-
-          // Show toast only if not first load
-          if (!isFirstLoad.current) {
-            showToast(newItems);
+            // Update completed items with a maximum limit of 50 items
+            setCompletedItems((prev) => {
+              const combined = [...newCompletedItems, ...prev];
+              // Remove duplicates based on token
+              const uniqueItems = Array.from(
+                new Map(combined.map((item) => [item.token, item])).values(),
+              );
+              // Sort by updated_at in descending order and limit to 50 items
+              return uniqueItems
+                .sort(
+                  (a, b) =>
+                    new Date(b.updated_at).getTime() -
+                    new Date(a.updated_at).getTime(),
+                )
+                .slice(0, 50);
+            });
+            setJobs(activeJobs as ActiveJob[]);
+            setLoading(false);
           }
-
-          // Update state
-          setCompletedItems((prev) => {
-            const combined = [...newItems, ...prev];
-            return combined
-              .filter(
-                (item, index, self) =>
-                  index === self.findIndex((t) => t.token === item.token),
-              )
-              .sort(
-                (a, b) =>
-                  new Date(b.updated_at).getTime() -
-                  new Date(a.updated_at).getTime(),
-              )
-              .slice(0, 50);
-          });
+        } catch (error) {
+          toast.error("Error Fetching Recent Jobs");
+          console.error("Failed to fetch recent jobs:", error);
+          setLoading(false);
         }
-
-        setJobs(activeJobs);
-        isFirstLoad.current = false;
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-      }
-    }
-
-    // Initial fetch
-    fetchJobs();
-
-    // Set up polling
-    const interval = setInterval(fetchJobs, 5000);
-
-    // Cleanup
-    return () => {
-      mounted = false;
-      clearInterval(interval);
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-      }
+      };
+      await fetchJobs();
     };
-  }, [showToast]);
+
+    // Initial load
+    // Initial call to pollData
+    pollData();
+    // Set up polling interval (every 5 seconds)
+    const interval = setInterval(async () => {
+      await pollData();
+    }, 5000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Tooltip content="Activity" position="bottom" closeOnClick={true}>
@@ -206,7 +185,8 @@ export function Activity() {
         }
       >
         <div className="max-h-[480px] overflow-y-auto">
-          {jobs.length > 0 && (
+          {/* In progress */}
+          {jobs && jobs.length > 0 && (
             <div>
               {jobs.map((job) => (
                 <InProgressCard key={job.job_token} job={job} />
@@ -214,22 +194,23 @@ export function Activity() {
             </div>
           )}
 
-          {isFirstLoad.current ? (
-            <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
-              <FontAwesomeIcon
-                icon={faSpinnerThird}
-                spin
-                size="2x"
-                className="text-gray-400"
-              />
-              <H3 className="text-gray-300">Retrieving Activities</H3>
+          {loading ? (
+            <div className="flex h-48 w-full items-center justify-center gap-3 p-4 text-center align-middle">
+              <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+              <h3 className="text-lg font-medium text-gray-300">
+                Loading activities...
+              </h3>
             </div>
           ) : jobs.length === 0 && completedItems.length === 0 ? (
-            <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
-              <h3 className="text-lg text-gray-300">No activities yet</h3>
+            <div className="flex h-48 w-full items-center justify-center gap-3 p-4 text-center align-middle">
+              <FontAwesomeIcon icon={faBell} />
+              <h3 className="text-lg font-medium text-gray-300">
+                No activities yet
+              </h3>
             </div>
           ) : (
             <div>
+              {/* Completed */}
               <div className="flex flex-col">
                 {completedItems.map((item) => (
                   <CompletedCard key={item.token} job={item} />

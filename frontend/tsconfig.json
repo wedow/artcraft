@@ -11,9 +11,6 @@
     },
     {
       "path": "./apps/editor3d"
-    },
-    {
-      "path": "./libs/components/toaster"
     }
   ]
 }
