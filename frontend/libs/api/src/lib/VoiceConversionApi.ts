@@ -1,4 +1,4 @@
-import { ApiManager, ApiResponse } from "./ApiManager";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
 
 interface VoiceConversionParams {
   autoPredictF0?: boolean;

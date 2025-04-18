@@ -1,6 +1,6 @@
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
-import { GenerateTtsAudioErrorType } from "../enums/Tts";
-import { Visibility } from "../enums/Visibility";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
+import { GenerateTtsAudioErrorType } from "./enums/Tts.js";
+import { Visibility } from "./enums/Visibility.js";
 
 export interface GenerateTtsAudioRequest {
   creator_set_visibility?: Visibility;

@@ -1,4 +1,4 @@
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
 
 export interface UserRating {
   entity_token: string;

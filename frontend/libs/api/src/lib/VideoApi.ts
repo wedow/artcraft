@@ -1,5 +1,5 @@
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
-import { Visibility } from "../enums/Visibility";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
+import { Visibility } from "./enums/Visibility.js";
 
 interface GenerateVideoStyleTransferRequest {
   creator_set_visibility: string;

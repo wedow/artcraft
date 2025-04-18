@@ -1,6 +1,6 @@
-import { ApiManager, ApiResponse } from "./ApiManager";
-import { Pagination } from "../models/Pagination";
-import { ZsDataset } from "../models/Dataset";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
+import { Pagination } from "./models/Pagination.js";
+import { ZsDataset } from "./models/Dataset.js";
 
 interface VoiceDesignerParams {
   text: string;

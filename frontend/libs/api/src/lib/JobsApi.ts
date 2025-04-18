@@ -1,7 +1,7 @@
 // libs/api-client/src/JobsApi.ts
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
-import { Job, JobPreview } from "../models/Job";
-import { JobState } from "../models/JobState";
+import { ApiManager, ApiResponse } from "../../../api/src/lib/ApiManager.js";
+import { Job, JobPreview } from "./models/Job.js";
+import { JobState } from "./models/JobState.js";
 
 export class JobsApi extends ApiManager {
   public GetPreviewStatusByJobToken({

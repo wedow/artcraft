@@ -1,9 +1,9 @@
-
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
-import { FilterEngineCategories } from "../enums/QueryFilters";
-import { Visibility } from "../enums/Visibility";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
+import { FilterEngineCategories } from "./enums/QueryFilters.js";
+import { Visibility } from "./enums/Visibility.js";
+import { EIntermediateFile } from "./enums/EIntermediateFile.js";
 export class MediaUploadApi extends ApiManager {
-  private sessionToken: string = "";
+  private sessionToken = "";
 
   private async getSessionTokenForUploadStudioShot() {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/session_token`;
@@ -336,11 +336,6 @@ export class MediaUploadApi extends ApiManager {
     const fileName = `${maybe_title}-${uuid}`;
     return this.Upload({ endpoint, blob, fileName, uuid, options }); // token comes back and send it VST
   }
-
-
-
-
-
 }
 
 

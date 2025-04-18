@@ -1,4 +1,4 @@
-import { ApiManager, ApiResponse } from "./ApiManager";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
 
 export class AnalyticsApi extends ApiManager {
   public PostAnalytics({

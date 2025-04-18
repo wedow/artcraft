@@ -1,10 +1,10 @@
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
 import {
   UserBookmarkBatch,
   UserBookmarkByEntity,
   UserBookmarkByUser,
-} from "../models/UserBookmark";
-import { Pagination } from "../models/Pagination";
+} from "./models/UserBookmark.js";
+import { Pagination } from "./models/Pagination.js";
 
 export enum ScopedEntityTypes {
   USER = "user",

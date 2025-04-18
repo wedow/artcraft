@@ -1,6 +1,6 @@
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
-import { Subscription } from "../models/Billing";
-import { LoyaltyProgram } from "../enums/Billing";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
+import { Subscription } from "./models/Billing.js";
+import { LoyaltyProgram } from "./enums/Billing.js";
 
 export class BillingApi extends ApiManager {
   public async ListActiveSubscriptions(): Promise<

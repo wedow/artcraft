@@ -1,5 +1,5 @@
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
-import { Prompts } from "../models/Prompts";
+import { ApiManager, ApiResponse } from  "./ApiManager.js";
+import { Prompts } from "./models/Prompts.js";
 
 export class PromptsApi extends ApiManager {
   public GetPromptsByToken({

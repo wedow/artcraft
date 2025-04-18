@@ -1,12 +1,12 @@
-import { ApiManager, ApiResponse } from "./ApiManager";
-import { Weight } from "../models/Weight";
-import { Pagination, PaginationInfinite } from "../models/Pagination";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
+import { Weight } from "./models/Weight.js";
+import { Pagination, PaginationInfinite } from "./models/Pagination.js";
 import {
   FilterEngineCategories,
   FilterMediaClasses,
   FilterMediaType,
-} from "../enums/QueryFilters";
-import { Visibility } from "../enums/Visibility";
+} from "./enums/QueryFilters.js";
+import { Visibility } from "./enums/Visibility.js";
 
 export enum ScopedWeightType {
   HIFIGAN_TT2 = "hifigan_tt2",
