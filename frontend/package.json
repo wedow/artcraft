@@ -59,7 +59,7 @@
     "vitest": "^3.0.0"
   },
   "workspaces": [
-    "apps/*",
-    "libs/*"
+    "apps/**/*",
+    "libs/**/*"
   ]
 }
