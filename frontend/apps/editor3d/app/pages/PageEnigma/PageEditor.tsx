@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { LoadingDots, Toaster, TopBar } from "~/components";
+import { LoadingDots, TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
 import { ControlsTopButtons } from "./comps/ControlsTopButtons";
 import { ControlPanelSceneObject } from "./comps/ControlPanelSceneObject";
@@ -8,12 +8,9 @@ import { PreviewEngineCamera } from "./comps/PreviewEngineCamera";
 import { PreviewFrameImage } from "./comps/PreviewFrameImage";
 import { pageHeight, pageWidth } from "~/signals";
 import { PoseModeSelector } from "./comps/PoseModeSelector";
-
 import {
   timelineHeight,
   sidePanelWidth,
-  sidePanelVisible,
-  dndSidePanelWidth,
   dndTimelineHeight,
   editorLoader,
   cameraAspectRatio,
@@ -26,11 +23,8 @@ import { CameraAspectRatio } from "./enums";
 import { PromptBox } from "./comps/PromptBox";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-
-import { Login } from "@frontend/login";
 // import { api } from "@storyteller/api";
 // import { AnalyticsApi } from "@storyteller/api";
-
 
 export const PageEditor = () => {
   useSignals();
@@ -48,13 +42,6 @@ export const PageEditor = () => {
     };
   }, []);
 
-  const dndWidth =
-    dndSidePanelWidth.value > -1
-      ? dndSidePanelWidth.value
-      : sidePanelWidth.value;
-  const width = sidePanelVisible.value
-    ? pageWidth.value - dndWidth - 84
-    : pageWidth.value - 84;
   const height =
     dndTimelineHeight.value > -1
       ? pageHeight.value - dndTimelineHeight.value - 56
@@ -88,7 +75,6 @@ export const PageEditor = () => {
   return (
     <div className="w-screen">
       <TopBar pageName="Edit Scene" />
-      {/* <Login /> */}
       <OnboardingHelper />
       <div
         className="relative flex w-screen"
@@ -104,7 +90,6 @@ export const PageEditor = () => {
         >
           <div className="relative w-full overflow-hidden bg-transparent">
             <SceneContainer>
-              <Toaster />
               <EditorCanvas />
               <PreviewFrameImage />
             </SceneContainer>

@@ -23,6 +23,9 @@
   "references": [
     {
       "path": "../../libs/login"
+    },
+    {
+      "path": "../../libs/components/toaster"
     }
   ]
 }
