@@ -1,6 +1,6 @@
 import { faChevronLeft } from "@fortawesome/pro-solid-svg-icons";
 import { P, H1, ButtonLink } from "~/components";
-import { json } from "@remix-run/router";
+import { json } from "react-router-dom";
 
 export const loader = () => {
   return json(null, { status: 404 });

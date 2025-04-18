@@ -1,5 +1,5 @@
 import { ComponentType, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "@remix-run/react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSignals, useSignalEffect } from "@preact/signals-react/runtime";
 import { LoadingDots } from "~/components";
 import { authentication, persistLogin } from "~/signals";

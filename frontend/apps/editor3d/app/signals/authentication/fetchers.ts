@@ -46,6 +46,8 @@ export const login = async ({
   // in storyteller studio, only having a sesison is not enough,
   // we need session info and active subscription info as well
   getUserInfoAndSubcriptions();
+
+  window.location.href = "/"; // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
 };
 
 export const signUp = async ({

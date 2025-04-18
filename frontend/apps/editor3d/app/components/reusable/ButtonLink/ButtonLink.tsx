@@ -1,4 +1,4 @@
-import { Link, LinkProps } from "@remix-run/react";
+import { Link, LinkProps } from "react-router-dom";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { twMerge } from "tailwind-merge";

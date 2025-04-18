@@ -1,9 +1,9 @@
-import { vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { netlifyPlugin } from "@netlify/remix-edge-adapter/plugin";
 import { viteCommonjs, esbuildCommonjs } from '@originjs/vite-plugin-commonjs'
 import path from 'path'
+import { dirname, resolve } from 'node:path'
 
 export default defineConfig({
   root: __dirname,
@@ -34,8 +34,17 @@ export default defineConfig({
   //      globals: {},
   //  },
   //},
+  build: {
+    rollupOptions: {
+      input: {
+        index: resolve(__dirname, 'index.html'),
+        login: resolve(__dirname, 'login.html'),
+        signup: resolve(__dirname, 'signup.html'),
+        //nested: resolve(__dirname, 'nested/index.html'),
+      },
+    },
+  },
   plugins: [
-    remix(),
     netlifyPlugin(),
     tsconfigPaths(),
     //viteCommonjs({

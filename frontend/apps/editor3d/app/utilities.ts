@@ -1,4 +1,4 @@
-import { Params } from "@remix-run/react";
+import { Params } from "react-router-dom";
 import { JobStatus } from "./enums";
 import deepEqual from "deep-equal";
 

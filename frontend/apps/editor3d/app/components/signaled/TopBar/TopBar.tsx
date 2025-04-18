@@ -1,9 +1,9 @@
-import { useLocation, useParams } from "@remix-run/react";
 import {
   faChevronLeft,
   faChevronRight,
   faImages,
 } from "@fortawesome/pro-solid-svg-icons";
+import { useLocation, useParams } from "react-router-dom";
 import { Button, ButtonLink } from "~/components";
 import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";

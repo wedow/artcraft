@@ -1,13 +1,36 @@
 import { faEnvelope, faKey, faUser } from "@fortawesome/pro-solid-svg-icons";
+import { GlobalSettingsManager } from "./pages/PageEnigma/GlobalSettingsManager";
+import { StrictMode } from 'react';
 import { Button, H1, Input, Link, P } from "~/components";
 import { addToast, authentication, signUp } from "~/signals";
 import { FormEvent, useRef, useState } from "react";
 import { AUTH_STATUS, ToastTypes } from "~/enums";
 import { useSignalEffect, useSignals } from "@preact/signals-react/runtime";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from 'react-router-dom';
+
+import "./styles/normalize.css";
+import "./styles/tailwind.css";
+import "./styles/base.css";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+
+import { config } from "@fortawesome/fontawesome-svg-core";
+
+config.autoAddCss = false; /* eslint-disable import/first */
 
 const regEx =
   /^(([^<>()[\].,;:\s@"]+(.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i;
+
+// TODO(bt,2025-04-19): Make these configurable
+const ENV = {
+  BASE_API: "https://api.storyteller.ai",
+  GOOGLE_API: "https://studio.storyteller.ai",
+  FUNNEL_API: "https://studio.storyteller.ai",
+  CDN_API: "https://cdn-2.fakeyou.com",
+  GRAVATAR_API: "https://studio.storyteller.ai",
+  DEPLOY_PRIME_URL: "https://studio.storyteller.ai",
+};
 
 export default function SignUpScreen() {
   useSignals();
@@ -137,10 +160,26 @@ export default function SignUpScreen() {
           <br />
           <div className="flex gap-2">
             <P>Already have an account?</P>
-            <Link to="/login">Log in instead</Link>
+            <Link 
+              to="/login"
+              reloadDocument={true} // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
+              >Log in instead</Link>
           </div>
         </form>
       </div>
     </div>
   );
 }
+
+
+// TODO: Replace environment variables from `root.tsx`
+createRoot(document.getElementById("root")!).render(
+  <>
+    <StrictMode>
+      <BrowserRouter>
+        <GlobalSettingsManager env={ENV} />
+        <SignUpScreen />
+      </BrowserRouter>
+    </StrictMode>
+  </>
+);

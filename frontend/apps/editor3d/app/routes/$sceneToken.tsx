@@ -1,5 +1,5 @@
 import type { HeadersFunction } from "@remix-run/deno";
-import { useParams } from "@remix-run/react";
+import { useParams } from "react-router-dom";
 
 import { withProtectionRoute } from "~/hoc/withProtectedRoute";
 import { PageEnigma } from "~/pages/PageEnigma";

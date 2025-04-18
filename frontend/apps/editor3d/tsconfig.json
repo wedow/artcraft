@@ -22,9 +22,6 @@
   },
   "references": [
     {
-      "path": "../../libs/api"
-    },
-    {
       "path": "../../libs/login"
     }
   ]

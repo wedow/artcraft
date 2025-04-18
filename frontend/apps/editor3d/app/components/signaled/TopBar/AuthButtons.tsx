@@ -16,10 +16,17 @@ export const AuthButtons = () => {
   } else {
     return (
       <>
-        <ButtonLink variant="secondary" to="/login">
+        <ButtonLink 
+          to="/login"
+          variant="secondary" 
+          reloadDocument={true} // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
+        >
           Login
         </ButtonLink>
-        <ButtonLink to="/signup">Sign Up</ButtonLink>
+        <ButtonLink 
+          to="/signup"
+          reloadDocument={true} // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
+          >Sign Up</ButtonLink>
       </>
     );
   }

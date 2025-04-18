@@ -1,4 +1,6 @@
 import { useRef } from "react";
+import { BrowserRouter } from 'react-router-dom';
+import { StrictMode } from 'react';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSignalEffect, useSignals } from "@preact/signals-react/runtime";
 
@@ -6,6 +8,7 @@ import { faKey, faUser } from "@fortawesome/pro-solid-svg-icons";
 
 import { AUTH_STATUS } from "~/enums";
 import { authentication, login, logout } from "~/signals";
+import { createRoot } from "react-dom/client";
 
 import {
   Button,
@@ -16,6 +19,26 @@ import {
   LoadingDots,
   ConfirmationModal,
 } from "~/components";
+
+import "./styles/normalize.css";
+import "./styles/tailwind.css";
+import "./styles/base.css";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+
+import { config } from "@fortawesome/fontawesome-svg-core";
+import { GlobalSettingsManager } from "./pages/PageEnigma/GlobalSettingsManager";
+
+config.autoAddCss = false; /* eslint-disable import/first */
+
+// TODO(bt,2025-04-19): Make these configurable
+const ENV = {
+  BASE_API: "https://api.storyteller.ai",
+  GOOGLE_API: "https://studio.storyteller.ai",
+  FUNNEL_API: "https://studio.storyteller.ai",
+  CDN_API: "https://cdn-2.fakeyou.com",
+  GRAVATAR_API: "https://studio.storyteller.ai",
+  DEPLOY_PRIME_URL: "https://studio.storyteller.ai",
+};
 
 export default function LoginScreen() {
   useSignals();
@@ -137,6 +160,7 @@ const checkShouldShowLoader = () => {
     authentication.status.value === AUTH_STATUS.LOGGED_IN
   );
 };
+
 const getAuthLoaderMessage = () => {
   if (authentication.status.value === AUTH_STATUS.LOGGED_IN) {
     return "Authenticated, Redirecting...";
@@ -146,3 +170,16 @@ const getAuthLoaderMessage = () => {
   }
   return "Getting Session...";
 };
+
+
+// TODO: Replace environment variables from `root.tsx`
+createRoot(document.getElementById("root")!).render(
+  <>
+    <StrictMode>
+      <BrowserRouter>
+        <GlobalSettingsManager env={ENV} />
+        <LoginScreen/>
+      </BrowserRouter>
+    </StrictMode>
+  </>
+);

@@ -1,4 +1,4 @@
-import { NavLink, NavLinkProps } from "@remix-run/react";
+import { NavLink, NavLinkProps } from "react-router-dom";
 import { LabelHTMLAttributes, ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 

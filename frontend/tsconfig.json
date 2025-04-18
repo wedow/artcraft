@@ -11,6 +11,9 @@
     },
     {
       "path": "./apps/editor3d"
+    },
+    {
+      "path": "./apps/my-app"
     }
   ]
 }
