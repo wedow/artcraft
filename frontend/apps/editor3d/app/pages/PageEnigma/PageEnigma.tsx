@@ -6,9 +6,8 @@ import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
 import { useQueueHandler } from "./hooks/useQueueHandler";
 import { ErrorDialog, LoadingDots } from "~/components";
 import { GenerateModals } from "~/pages/PageEnigma/comps/GenerateModals/GenerateModals";
-
+import { Toaster } from "@storyteller/ui-toaster";
 import { EditorLoadingBar } from "./comps/EditorLoadingBar";
-
 import { Wizard } from "~/pages/PageEnigma/Wizard/Wizard";
 import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect, useState } from "react";
@@ -17,7 +16,12 @@ import { UsersApi } from "~/Classes/ApiManager";
 import { PageEnigmaComponent } from "~/pages/PageEnigma/PageEnigmaComponent";
 import { TurnOnGpu } from "~/pages/PageEnigma/TurnOnGpu";
 import { PrecisionSelector } from "./comps/PrecisionSelector/PrecisionSelector";
-import { precisionSelectedValue, precisionSelectorMenuCoords, precisionSelectorValues, showPrecisionSelector } from "./signals/precisionSelectorMenu";
+import {
+  precisionSelectedValue,
+  precisionSelectorMenuCoords,
+  precisionSelectorValues,
+  showPrecisionSelector,
+} from "./signals/precisionSelectorMenu";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -106,6 +110,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
         <Wizard />
       </EngineProvider>
       <EditorLoadingBar />
+      <Toaster offsetTop={70} offsetRight={12} />
     </TrackProvider>
   );
 };
