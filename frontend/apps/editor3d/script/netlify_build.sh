@@ -17,6 +17,10 @@ pushd apps/editor3d/
 #echo "Make output directory"
 #mkdir dist/
 
+echo "DEBUGGING CURRENT STATE"
+pwd
+ls -lA
+
 echo "Copy files to putput directory"
 #cp -r build/server/* dist/
 #cp -r build/client/* dist/
