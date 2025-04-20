@@ -7,8 +7,6 @@ import { dirname, resolve } from 'node:path'
 
 export default defineConfig({
   root: path.resolve(__dirname, 'src'),
-  //build: {
-  //},
   //resolve: {
   //  alias: {
   //    'kalidokit': `${path.resolve(__dirname, 'src')}/`,
@@ -35,6 +33,7 @@ export default defineConfig({
   //  },
   //},
   build: {
+    outDir: path.resolve(__dirname, 'dist'),
     rollupOptions: {
       input: {
         index: resolve(__dirname, 'src/index.html'),
