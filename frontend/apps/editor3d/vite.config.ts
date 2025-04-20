@@ -6,7 +6,7 @@ import path from 'path'
 import { dirname, resolve } from 'node:path'
 
 export default defineConfig({
-  root: __dirname,
+  root: path.resolve(__dirname, 'src'),
   //build: {
   //},
   //resolve: {
@@ -37,10 +37,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        index: resolve(__dirname, 'index.html'),
-        login: resolve(__dirname, 'login.html'),
-        signup: resolve(__dirname, 'signup.html'),
-        //nested: resolve(__dirname, 'nested/index.html'),
+        index: resolve(__dirname, 'src/index.html'),
+        login: resolve(__dirname, 'src/login.html'),
+        signup: resolve(__dirname, 'src/signup.html'),
       },
     },
   },

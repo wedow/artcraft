@@ -3,9 +3,9 @@ import colors from "tailwindcss/colors";
 
 export default {
   content: [
-    "./index.html",
-    "./app/**/*.{js,jsx,ts,tsx}",
-    "./app/*.{js,jsx,ts,tsx}",
+    "./src/index.html",
+    "./src/app/**/*.{js,jsx,ts,tsx}",
+    "./src/app/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {

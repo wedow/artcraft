@@ -15,15 +15,12 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "~/*": ["apps/editor3d/app/*"]
+      "~/*": ["apps/editor3d/src/app/*"]
     },
     // Vite takes care of building everything, not tsc.
     "noEmit": true
   },
   "references": [
-    {
-      "path": "../../libs/login"
-    },
     {
       "path": "../../libs/components/toaster"
     }

@@ -3,7 +3,7 @@ export default {
   preset: "ts-jest",
   testEnvironment: "node",
   moduleNameMapper: {
-    "^~(.*)$": "<rootDir>/app/$1",
+    "^~(.*)$": "<rootDir>/src/app/$1",
   },
   automock: false,
 };
