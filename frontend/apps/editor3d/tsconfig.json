@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "~/*": ["apps/editor3d/src/app/*"]
+      "~/*": ["apps/editor3d/app/src/*"]
     },
     // Vite takes care of building everything, not tsc.
     "noEmit": true
