@@ -177,6 +177,7 @@ export const PromptBox = () => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(e.target.value);
   };
+
   const handleTauriEnqueue = async () => {
     const api = new Api();
     let image = getCanvasRenderBitmap();
@@ -209,12 +210,16 @@ export const PromptBox = () => {
     console.log("useSystemPrompt", useSystemPrompt);
     console.log("Snapshot media token:", snapshotMediaToken.data);
 
-    const generateResponse = await invoke("sora_image_generation_command", {
-      snapshot_media_token: snapshotMediaToken.data,
-      disable_system_prompt: !useSystemPrompt,
-      prompt: prompt,
-      maybe_additional_images: referenceImages.map((image) => image.mediaToken),
-      maybe_number_of_samples: 1,
+    const generateResponse = await invoke("sora_image_remix_command", {
+      request: {
+        snapshot_media_token: snapshotMediaToken.data,
+        disable_system_prompt: !useSystemPrompt,
+        prompt: prompt,
+        maybe_additional_images: referenceImages.map(
+          (image) => image.mediaToken,
+        ),
+        maybe_number_of_samples: 1,
+      },
     });
     toast.success("Please wait while we process your image.");
   };
