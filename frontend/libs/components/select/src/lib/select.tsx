@@ -37,7 +37,7 @@ export const Select = ({
           <>
             <ListboxButton
               id={id}
-              className="relative h-10 w-full cursor-pointer rounded-md bg-secondary py-2 pl-3 pr-10 text-left outline-none outline-offset-0 transition-all duration-150 ease-in-out sm:text-sm focus:!outline-none"
+              className="relative h-10 w-full cursor-pointer rounded-md bg-secondary py-2 pl-3 pr-10 text-left outline-none outline-offset-0 transition-all duration-150 ease-in-out sm:text-sm focus:!outline-none hover:bg-secondary hover:[filter:brightness(1.2)]"
             >
               <span
                 className={twMerge("block truncate", !value && "opacity-50")}
@@ -63,7 +63,7 @@ export const Select = ({
                     className={({ focus, selected }) =>
                       twMerge(
                         "relative cursor-pointer select-none py-2 pl-7 pr-2 text-white transition-all duration-150 ease-in-out",
-                        focus && "bg-white/5 text-white",
+                        focus && "bg-white/[8%] text-white",
                         selected && "bg-primary/40",
                         !selected && "text-white/90"
                       )
