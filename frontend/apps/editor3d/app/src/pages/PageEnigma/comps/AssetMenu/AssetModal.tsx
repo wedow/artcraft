@@ -92,14 +92,24 @@ export const AssetModal = () => {
 
   useEffect(() => {
     if (assetModalVisible.value) {
+      // Check for stored category and tab from upload
+      const lastUploadedTab = sessionStorage.getItem("lastUploadedTab");
+      if (lastUploadedTab) {
+        setActiveLibraryTab("mine");
+        setActiveAssetTab(lastUploadedTab);
+        // Clear the stored values
+        sessionStorage.removeItem("lastUploadedTab");
+        sessionStorage.removeItem("lastUploadedCategory");
+      }
       // Small delay to ensure the modal is fully mounted
       const timer = setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
       return () => clearTimeout(timer);
     }
-    return undefined; // Return for the false case
-  }, []);
+    return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assetModalVisible.value]);
 
   // Fetch objects for different categories
   const {

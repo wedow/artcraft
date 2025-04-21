@@ -19,6 +19,7 @@ import {
   CHARACTER_MIXAMO_FILE_TYPE,
   IMAGEPLANE_FILE_TYPE,
 } from "~/enums";
+import { assetModalVisible } from "~/pages/PageEnigma/signals";
 
 interface Props {
   onClose: () => void;
@@ -41,6 +42,15 @@ const categoryFileTypes: Partial<Record<FilterEngineCategories, string[]>> = {
   [FilterEngineCategories.IMAGE_PLANE]: Object.values(IMAGEPLANE_FILE_TYPE),
   [FilterEngineCategories.LOCATION]: Object.values(OBJECT_FILE_TYPE),
   [FilterEngineCategories.CREATURE]: Object.values(OBJECT_FILE_TYPE),
+};
+
+// Map engine categories to asset modal tabs
+const categoryToAssetTab: Partial<Record<FilterEngineCategories, string>> = {
+  [FilterEngineCategories.OBJECT]: "objects",
+  [FilterEngineCategories.CHARACTER]: "character",
+  [FilterEngineCategories.IMAGE_PLANE]: "image-planes",
+  [FilterEngineCategories.LOCATION]: "sets",
+  [FilterEngineCategories.CREATURE]: "creatures",
 };
 
 // Excluded category options for the upload modal
@@ -139,10 +149,25 @@ export function UploadModal3D({
       case UploaderStates.success:
         return (
           <UploadSuccess
-            title={title}
+            title="3D model"
             onOk={() => {
               onSuccess();
               onClose();
+              // Store the selected category and tab in sessionStorage
+              const assetTab = categoryToAssetTab[selectedCategory];
+              if (assetTab) {
+                sessionStorage.setItem(
+                  "lastUploadedCategory",
+                  selectedCategory,
+                );
+                sessionStorage.setItem("lastUploadedTab", assetTab);
+                // Reopen the asset modal
+                assetModalVisible.value = true;
+              } else {
+                // Clear any existing stored values if we don't have a valid tab
+                sessionStorage.removeItem("lastUploadedCategory");
+                sessionStorage.removeItem("lastUploadedTab");
+              }
             }}
           />
         );
