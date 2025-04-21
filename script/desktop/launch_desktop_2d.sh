@@ -5,12 +5,20 @@ set -euxo pipefail
 # Tauri doesn't let you configure the frontend project directory statically, though they do provide an
 # environment variable to pass it to the CLI. Without doing this, the tauri cli randomly walks the
 # filesystem and finds the wrong frontend code.
-
+# Kill any process running on port 5741
+if lsof -i tcp:5741 &>/dev/null; then
+  lsof -i tcp:5741 -t | xargs kill -9
+  echo "Killed process running on port 5741"
+else
+  echo "No process running on port 5741"
+fi
 # TODO(bt,2025-02-13): This is not the correct way to get the root dir
+brew install pkg-config pixman cairo pango libpng jpeg giflib librsvg
 root_dir=$(pwd)
 frontend_path="${root_dir}/frontend"
 
 pushd "${frontend_path}"
+
 #nvm use stable
 npm install
 popd

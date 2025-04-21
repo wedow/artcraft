@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { withProtectionRoute } from "~/components/hoc";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
+import { Resource, invoke } from '@tauri-apps/api/core';
 
 // Components of the page
 import { ToolbarUserProfile } from "~/components/features";
@@ -26,6 +27,11 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+export const isTauri = (): boolean => {
+  console.log(window.__TAURI_INTERNALS__);
+  return window.__TAURI_INTERNALS__;
+};
+
 export const Main = withProtectionRoute(() => {
   // This is a hook that will log the number of times the component has rerendered
   // Let's make sure we only log once
@@ -40,7 +46,7 @@ export const Main = withProtectionRoute(() => {
   const realtimeEngineRef = useRef<EngineType | null>(null);
   const generationEngineRef = useRef<GenerationEngine | null>(null);
   const [firstTimeDialogOpen, setFirstTimeDialogOpen] = useState(true);
-
+  const [signinDialogOpen, setSigninDialogOpen] = useState(false);
   const appModeValue = appMode.value;
   let childView;
 
@@ -97,7 +103,7 @@ export const Main = withProtectionRoute(() => {
         }}
         className="max-w-5xl"
       >
-        <div className="flex flex-col items-center justify-center gap-6">
+        <div className="flex flex-col items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <h1 className="text-3xl font-bold">
               <FontAwesomeIcon
@@ -123,7 +129,22 @@ export const Main = withProtectionRoute(() => {
             </video>
           </div>
           <Button
-            className="px-4 py-3 font-semibold"
+            className="font-semibold"
+            icon={faArrowRight}
+            iconFlip={true}
+            onClick={async () => {
+              if (isTauri()) {
+                await invoke('open_login_command');
+                setFirstTimeDialogOpen(false);
+              } else {
+                console.error('Tauri is not available in this environment');
+              }
+            }}
+          >
+            Signin to OpenAI to get Started
+          </Button>
+          {/* <Button
+            className="font-semibold"
             icon={faArrowRight}
             iconFlip={true}
             onClick={() => {
@@ -131,7 +152,7 @@ export const Main = withProtectionRoute(() => {
             }}
           >
             Start creating now
-          </Button>
+          </Button> */}
         </div>
       </BaseDialog>
     </>
