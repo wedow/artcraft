@@ -7,7 +7,7 @@ export const FKBoneBlacklistStrings = [
   "handring",
   "pinky",
   "headtop",
-  "ear",
+  "-ear",
   "teeth",
   "eye",
   "lid",
