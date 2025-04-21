@@ -42,10 +42,13 @@ interface ReferenceImage {
   mediaToken: string;
 }
 
+export const isTauri = (): boolean => {
+  console.log(window.__TAURI_INTERNALS__);
+  return window.__TAURI_INTERNALS__;
+};
+
 export const PromptBox = () => {
   useSignals();
-  const isDesktopApp = window.navigator.userAgent.includes("Tauri");
-  console.log("Is this a desktop app?", isDesktopApp);
 
   const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
     useJobContext();
@@ -181,6 +184,8 @@ export const PromptBox = () => {
   const handleTauriEnqueue = async () => {
     const api = new Api();
     let image = getCanvasRenderBitmap();
+
+    console.log("image", image);
     if (image === undefined) {
       return;
     }
@@ -203,24 +208,35 @@ export const PromptBox = () => {
       screenshot: file,
     });
 
+    console.log("didn't make it here");
+
+    console.log("snapshotMediaToken", snapshotMediaToken);
+
     if (snapshotMediaToken.data === undefined) {
       toast.error("Error: Unable to upload scene snapshot Please try again.");
       return;
     }
     console.log("useSystemPrompt", useSystemPrompt);
     console.log("Snapshot media token:", snapshotMediaToken.data);
+    try {
+      const generateResponse = await invoke("sora_image_remix_command", {
+        request: {
+          snapshot_media_token: snapshotMediaToken.data,
+          disable_system_prompt: !useSystemPrompt,
+          prompt: prompt,
+          maybe_additional_images: referenceImages.map(
+            (image) => image.mediaToken,
+          ),
+          maybe_number_of_samples: 1,
+        },
+      });
+    } catch (error) {
+      console.error("Error during image TAURI EDITION generation:", error);
+      toast.error(
+        "An error occurred while generating the image. Please try again.",
+      );
+    }
 
-    const generateResponse = await invoke("sora_image_remix_command", {
-      request: {
-        snapshot_media_token: snapshotMediaToken.data,
-        disable_system_prompt: !useSystemPrompt,
-        prompt: prompt,
-        maybe_additional_images: referenceImages.map(
-          (image) => image.mediaToken,
-        ),
-        maybe_number_of_samples: 1,
-      },
-    });
     toast.success("Please wait while we process your image.");
   };
 
@@ -289,9 +305,11 @@ export const PromptBox = () => {
         referenceImages,
       );
 
-      if (isDesktopApp == true) {
+      if (isTauri()) {
+        console.log("Calling Tauri Enqueue");
         handleTauriEnqueue();
       } else {
+        console.log("Calling Web Enqueue");
         handleWebEnqueue();
       }
     } catch (error) {
