@@ -44,7 +44,10 @@
   ],
   "references": [
     {
-      "path": "../close-button/tsconfig.lib.json"
+      "path": "../button/tsconfig.lib.json"
+    },
+    {
+      "path": "../modal/tsconfig.lib.json"
     }
   ]
 }

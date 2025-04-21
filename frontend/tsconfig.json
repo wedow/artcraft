@@ -23,6 +23,18 @@
     },
     {
       "path": "./libs/components/modal"
+    },
+    {
+      "path": "./libs/components/settings-modal"
+    },
+    {
+      "path": "./libs/components/button"
+    },
+    {
+      "path": "./libs/components/input"
+    },
+    {
+      "path": "./libs/components/label"
     }
   ]
 }

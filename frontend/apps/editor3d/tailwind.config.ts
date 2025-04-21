@@ -6,6 +6,7 @@ export default {
     "./app/index.html",
     "./app/src/**/*.{js,jsx,ts,tsx}",
     "./app/src/*.{js,jsx,ts,tsx}",
+    "../../libs/components/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
@@ -25,7 +26,37 @@ export default {
     colors: {
       transparent: "transparent",
       current: "currentColor",
-
+      white: colors.white,
+      gray: colors.gray,
+      black: colors.black,
+      primary: {
+        DEFAULT: "#2d81ff",
+        "50": "#eef6ff",
+        "100": "#d9ebff",
+        "200": "#bcdcff",
+        "300": "#8ec7ff",
+        "400": "#59a7ff",
+        "500": "#2d81ff",
+        "600": "#1b63f5",
+        "700": "#144ee1",
+        "800": "#173fb6",
+        "900": "#19398f",
+        "950": "#142457",
+      },
+      secondary: {
+        DEFAULT: "#3E3E41",
+        "50": "#f6f6f6",
+        "100": "#e7e7e7",
+        "200": "#d1d1d1",
+        "300": "#b0b0b0",
+        "400": "#888888",
+        "500": "#6d6d6d",
+        "600": "#5d5d5d",
+        "700": "#4f4f4f",
+        "800": "#454545",
+        "900": "#3d3d3d",
+        "950": "#3E3E41",
+      },
       "brand-primary": {
         //sunglo
         DEFAULT: "#2d81ff", //=500
@@ -85,7 +116,6 @@ export default {
         "900": "#64373f",
         "950": "#361b1e",
       },
-
       success: {
         //apple
         DEFAULT: "#40ad48", //=500
@@ -101,7 +131,6 @@ export default {
         "900": "#1f4823",
         "950": "#0c270f",
       },
-
       action: {
         DEFAULT: "#3E3E41",
         "50": "#f6f6f6",
@@ -116,7 +145,6 @@ export default {
         "900": "#3d3d3d",
         "950": "#3E3E41",
       },
-
       character: {
         unselected: "#46527C",
         selected: "#6384F4",
@@ -169,7 +197,6 @@ export default {
         cannotDrop: "#904948",
         wrapper: "#39394d",
       },
-
       ui: {
         background: "#242424",
         panel: "#1F1F1F",
@@ -178,7 +205,6 @@ export default {
         "controls-button": "#3E3E41",
         divider: "#515168",
       },
-
       media: {
         "audio-tts": "#6AAA88",
         "audio-v2v": "#6691B9",
@@ -186,29 +212,22 @@ export default {
         "audio-demo": "#B96675",
         "is-new": "#FFDC26",
       },
-
       inference: {
         pending: "#6b728b",
         generating: "#46527C",
         error: "#924C4B",
       },
-
       "axis-x": "#D33242",
       "axis-y": "#308752",
       "axis-z": "#2E70FF",
       red: "#D33242",
       green: "#308752",
       blue: "#2E70FF",
-
       facebook: "#4267b2",
       reddit: "#ff5700",
       whatsapp: "#25d366",
       x: "#000000",
       email: "#858585",
-
-      white: colors.white,
-      gray: colors.gray,
-      black: colors.black,
     },
   },
   plugins: [],

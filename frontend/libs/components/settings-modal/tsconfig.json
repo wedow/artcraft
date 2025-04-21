@@ -3,7 +3,10 @@
   "include": [],
   "references": [
     {
-      "path": "../close-button"
+      "path": "../button"
+    },
+    {
+      "path": "../modal"
     },
     {
       "path": "./tsconfig.lib.json"

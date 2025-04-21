@@ -12,7 +12,7 @@ import { SceneTitleInput } from "./SceneTitleInput";
 import { getCurrentLocationWithoutParams } from "~/utilities";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
 import { LibraryModal } from "~/pages/PageEnigma/comps/LibraryModal/LibraryModal";
-import { SettingsModal } from "~/pages/PageEnigma/comps/SettingsModal";
+import { SettingsModal } from "@storyteller/ui-settings-modal";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;

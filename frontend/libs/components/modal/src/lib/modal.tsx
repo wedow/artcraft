@@ -123,13 +123,12 @@ export const Modal = ({
                   </DialogTitle>
                 )}
                 <div className={`h-full`.trim()}>{children}</div>
-                {showClose && (
-                  <CloseButton
-                    className="absolute top-0 right-0"
-                    onClick={onClose}
-                  />
-                )}
               </DialogPanel>
+              {showClose && (
+                <div className="absolute top-0 right-0 p-2.5">
+                  <CloseButton onClick={onClose} />
+                </div>
+              )}
             </TransitionChild>
           </div>
         </div>
