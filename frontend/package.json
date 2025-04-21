@@ -5,6 +5,7 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@headlessui/react": "^2.2.2",
     "@preact/signals-react": "^3.0.1",
     "@remix-run/serve": "^2.15.0",
     "pnpm": "^10.8.1",

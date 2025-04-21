@@ -60,6 +60,7 @@ export const LoadingBar = ({
 
   return (
     <Transition
+      as="div"
       className={wrapperClassName}
       show={show}
       enter="transition-opacity duration-150"
