@@ -35,6 +35,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
 import { Api, ApiManager } from "~/KonvaApp/Api";
 import { useJobContext } from "~/components/JobContext";
+import { IsDesktopApp } from "@storyteller/tauri-utils";
+
 interface ReferenceImage {
   id: string;
   url: string;
@@ -289,7 +291,10 @@ export const PromptBox = () => {
         referenceImages,
       );
 
-      if (isDesktopApp == true) {
+      const isDesktop = IsDesktopApp();
+      console.log('Is this a desktop app?', isDesktop);
+
+      if (isDesktop) {
         handleTauriEnqueue();
       } else {
         handleWebEnqueue();

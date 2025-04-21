@@ -1,5 +1,5 @@
 {
-  "name": "@frontend/tauri-utils",
+  "name": "@storyteller/tauri-utils",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",

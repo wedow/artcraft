@@ -8,6 +8,9 @@
       "path": "../../libs/components/button"
     },
     {
+      "path": "../../libs/tauri-utils"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {
