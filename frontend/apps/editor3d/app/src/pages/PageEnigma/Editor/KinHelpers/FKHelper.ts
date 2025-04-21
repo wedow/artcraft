@@ -1,5 +1,6 @@
 import { TransformControls } from "three/examples/jsm/Addons";
 import * as THREE from "three";
+import { FKBoneBlacklistSet, FKBoneBlacklistStrings } from "./FKBoneFilter";
 
 export const FKHelperSphereName = "__FKHelperSphere__";
 
@@ -50,9 +51,20 @@ export class FKHelper {
     // TODO: Highlight all the necessary bones
     this.clear();
     target.traverse((child) => {
+      // Skip if not bone
       if (child.type !== "Bone") {
         return;
       }
+
+      // Skip if bones is one of the blacklisted ones
+      // This step could probably be optimized better
+      for (const blacklistedBone of FKBoneBlacklistStrings) {
+        if (child.name.toLowerCase().includes(blacklistedBone)) {
+          return;
+        }
+      }
+
+      console.log(child.name);
 
       // For each target bone, display a sphere to show the FK target and raycast intersect
       const geometry = new THREE.SphereGeometry(0.015, 16, 16);
@@ -75,6 +87,7 @@ export class FKHelper {
 
     this.skeletonHelper = new THREE.SkeletonHelper(target);
     this.scene.add(this.skeletonHelper);
+    console.log("All bones:", this.skeletonHelper.bones.map((b) => b.name));
   }
 
   onMouseClick(mouse: THREE.Vector2) {
