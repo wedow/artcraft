@@ -41,6 +41,9 @@
     },
     {
       "path": "./libs/components/tooltip"
+    },
+    {
+      "path": "./libs/tauri-utils"
     }
   ]
 }
