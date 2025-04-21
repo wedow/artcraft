@@ -22,7 +22,14 @@ export const loadPreviewOnCanvas = ({
 }) => {
   // Setup of scene, camera, and renderer in the canvas
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+  // Calculate proper aspect ratio from canvas dimensions
+  const width = canvas.getBoundingClientRect().width || 0;
+  const height = canvas.getBoundingClientRect().height || 0;
+  const aspectRatio = width / height;
+
+  // Reduce FOV to make objects appear larger
+  const camera = new THREE.PerspectiveCamera(35, aspectRatio, 0.1, 1000);
   camera.position.z = 2;
 
   const renderer = new THREE.WebGLRenderer({
@@ -32,13 +39,15 @@ export const loadPreviewOnCanvas = ({
     preserveDrawingBuffer: true,
   });
 
-  renderer.setSize(
-    canvas.getBoundingClientRect().width || 0,
-    canvas.getBoundingClientRect().height || 0,
-  );
+  renderer.setSize(width, height);
 
   const color = 0xfcece7;
   const light = new THREE.HemisphereLight(color, 0x8d8d8d, 3.0);
+
+  // Add some additional lighting to better show the model
+  const frontLight = new THREE.DirectionalLight(0xffffff, 2);
+  frontLight.position.set(0, 0, 10);
+  scene.add(frontLight);
 
   scene.add(light);
 
@@ -88,33 +97,41 @@ const glbLoader = ({
         child.userData["color"] = "#FFFFFF";
         scene.add(child);
 
-        let maxSize = 2;
-        if (scene.children.length > 0) {
-          scene.children.forEach((child) => {
-            child.traverse((object: THREE.Object3D | THREE.Mesh) => {
-              // Assuming `object` is your Three.js object and you know it's a Mesh
-              if (object instanceof THREE.Mesh) {
-                object.geometry.computeBoundingBox();
-                const boundingBox = object.geometry.boundingBox;
-                const center = new THREE.Vector3();
-                boundingBox.getCenter(center);
-                const dimensions = new THREE.Vector3();
-                boundingBox.getSize(dimensions);
-                const maxDim = Math.max(
-                  dimensions.x,
-                  dimensions.y,
-                  dimensions.z,
-                );
-                if (maxSize < maxDim) {
-                  maxSize = maxDim;
-                  camera.position.set(-maxDim, maxDim, maxDim);
-                  camera.lookAt(center);
-                  camera.updateProjectionMatrix();
-                }
-              }
-            });
-          });
-        }
+        // Calculate bounding box for all objects in the scene
+        const box = new THREE.Box3();
+        scene.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.geometry.computeBoundingBox();
+            box.expandByObject(object);
+          }
+        });
+
+        // Get the center and size of the bounding box
+        const center = new THREE.Vector3();
+        const size = new THREE.Vector3();
+        box.getCenter(center);
+        box.getSize(size);
+
+        // Calculate the radius of the bounding sphere
+        const radius = Math.max(size.x, size.y, size.z) * 0.5;
+
+        // Position camera to fit the object in view with minimal padding
+        const fov = camera.fov * (Math.PI / 180);
+        const distance = (radius * 1.2) / Math.tan(fov * 0.5);
+
+        // Position camera at a better angle for preview
+        camera.position.set(
+          center.x + distance * 0.6,
+          center.y + distance * 0.4,
+          center.z + distance * 0.6,
+        );
+        camera.lookAt(center);
+
+        // Adjust the camera's near and far planes to ensure the model is visible
+        camera.near = distance * 0.01;
+        camera.far = distance * 100;
+        camera.updateProjectionMatrix();
+
         renderer.render(scene, camera);
         statusCallback({
           type: "OK",

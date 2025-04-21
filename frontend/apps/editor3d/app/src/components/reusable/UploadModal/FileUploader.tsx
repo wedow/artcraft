@@ -1,5 +1,6 @@
 import { FileUploader as DragDropFilesUploader } from "react-drag-drop-files";
 import { DragAndDropZone } from "./DragAndDropZone";
+import { Label } from "../Typography";
 
 interface Props {
   title: string;
@@ -10,8 +11,8 @@ interface Props {
 
 export const FileUploader = ({ fileTypes, title, file, setFile }: Props) => {
   return (
-    <div className="flex w-full flex-col gap-3">
-      {title}
+    <div className="flex w-full flex-col">
+      <Label required>{title}</Label>
       <DragDropFilesUploader
         handleChange={(file: File | null) => {
           setFile(file);

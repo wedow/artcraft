@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-
-import { Button, H6, Input, ListDropdown } from "~/components";
+import { Button, H6, Input, Label, ListDropdown } from "~/components";
 import { FileUploader } from "../UploadModal/FileUploader";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "./utilities";
 import { upload3DObjects } from "./utilities/upload3DObjects";
 import { UploaderState } from "~/models";
 import { FilterEngineCategories, MediaFileAnimationType } from "~/enums";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCube } from "@fortawesome/pro-solid-svg-icons";
 
 interface Props {
   title: string;
@@ -21,7 +22,6 @@ interface Props {
 }
 
 export const UploadFiles3D = ({
-  title,
   fileTypes,
   engineCategory,
   options,
@@ -121,16 +121,19 @@ export const UploadFiles3D = ({
   return (
     <>
       <div className="mb-4 flex flex-col gap-4">
-        <Input
-          placeholder="Enter the title here"
-          errorMessage={uploadTitle.error}
-          value={uploadTitle.value}
-          onChange={(event) => setUploadTitle({ value: event.target.value })}
-          className={uploadTitle.error ? "mb-3" : ""}
-        />
+        <div className="flex flex-col">
+          <Label required>Asset Name</Label>
+          <Input
+            placeholder="Enter the asset name here"
+            errorMessage={uploadTitle.error}
+            value={uploadTitle.value}
+            onChange={(event) => setUploadTitle({ value: event.target.value })}
+            className={uploadTitle.error ? "mb-3" : ""}
+          />
+        </div>
 
         <FileUploader
-          title={title}
+          title="Upload 3D Model"
           fileTypes={fileTypes}
           file={assetFile.value}
           setFile={(file: File | null) => {
@@ -149,16 +152,20 @@ export const UploadFiles3D = ({
           <H6 className="z-10 text-red">{assetFile.error}</H6>
         )}
 
-        <div className="relative m-auto aspect-square w-full overflow-hidden rounded-lg bg-brand-secondary">
-          <canvas className="h-full w-full" ref={canvasCallbackRef} />
+        <div className="relative m-auto w-full overflow-hidden rounded-lg bg-brand-secondary">
+          <canvas
+            className="pointer-events-none h-full w-full"
+            ref={canvasCallbackRef}
+          />
           {!assetFile.value && (
-            <H6 className="absolute left-0 top-1/2 -mt-5 w-full text-center">
-              File Preview
+            <H6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 flex w-full items-center justify-center gap-2.5 text-center opacity-50">
+              <FontAwesomeIcon icon={faCube} />
+              Your model preview will appear here
             </H6>
           )}
           {previewStatus.type.includes("Error") && (
             <>
-              <H6 className="absolute left-0 top-1/2 -mt-5 w-full text-center">
+              <H6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 w-full text-center">
                 {previewStatus.type}
                 {previewStatus.message && <br />}
                 {previewStatus.message}
@@ -167,12 +174,16 @@ export const UploadFiles3D = ({
           )}
         </div>
 
-        <div className="flex justify-end gap-4">
-          <Button variant="primary" onClick={handleSubmit}>
-            Upload
-          </Button>
+        <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={!uploadTitle.value || !assetFile.value}
+          >
+            Upload
           </Button>
         </div>
       </div>

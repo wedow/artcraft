@@ -1,20 +1,30 @@
 import { useEffect, useState } from "react";
 
-import { TransitionDialogue, LoadingDots } from "~/components";
+import {
+  TransitionDialogue,
+  LoadingDots,
+  Label,
+  CloseButton,
+} from "~/components";
 
 import { UploadAssetError } from "../UploadModal/UploadAssetError";
 import { UploadSuccess } from "../UploadModal/UploadSuccess";
 import { UploadFiles3D } from "./UploadFiles3D";
-import { FilterEngineCategories, UploaderStates } from "~/enums";
 import { initialUploaderState, UploaderState } from "~/models";
+import { Select } from "../Select";
+import {
+  FilterEngineCategories,
+  UploaderStates,
+  OBJECT_FILE_TYPE,
+  CHARACTER_MIXAMO_FILE_TYPE,
+  IMAGEPLANE_FILE_TYPE,
+} from "~/enums";
 
 interface Props {
   onClose: () => void;
   onSuccess: () => void;
   isOpen: boolean;
   title: string;
-  fileTypes: string[];
-  engineCategory: FilterEngineCategories;
   options?: {
     fileSubtypes?: { [key: string]: string }[];
     hasLength?: boolean;
@@ -22,17 +32,52 @@ interface Props {
   };
 }
 
+// Map categories to their allowed file types
+const categoryFileTypes: Partial<Record<FilterEngineCategories, string[]>> = {
+  [FilterEngineCategories.OBJECT]: Object.values(OBJECT_FILE_TYPE),
+  [FilterEngineCategories.CHARACTER]: [
+    ...Object.values(CHARACTER_MIXAMO_FILE_TYPE),
+  ],
+  [FilterEngineCategories.IMAGE_PLANE]: Object.values(IMAGEPLANE_FILE_TYPE),
+  [FilterEngineCategories.LOCATION]: Object.values(OBJECT_FILE_TYPE),
+  [FilterEngineCategories.CREATURE]: Object.values(OBJECT_FILE_TYPE),
+};
+
+// Excluded category options for the upload modal
+const categoryOptions = Object.entries(FilterEngineCategories)
+  .filter(
+    ([, value]) =>
+      ![
+        "audio",
+        "video_plane",
+        "skybox",
+        "set_dressing",
+        "expression",
+        "animation",
+        "scene",
+      ].includes(value),
+  )
+  .sort(([, a], [, b]) => (a === "object" ? -1 : b === "object" ? 1 : 0))
+  .map(([key, value]) => ({
+    // This is because sets is location i guess - BFlat
+    label:
+      key === "LOCATION"
+        ? "Set"
+        : key.charAt(0) + key.slice(1).toLowerCase().replace(/_/g, " "),
+    value: value,
+  }));
+
 export function UploadModal3D({
   isOpen,
   onClose,
   onSuccess,
   title,
-  fileTypes,
-  engineCategory,
   options,
 }: Props) {
   const [uploaderState, setUploaderState] =
     useState<UploaderState>(initialUploaderState);
+  const [selectedCategory, setSelectedCategory] =
+    useState<FilterEngineCategories>(FilterEngineCategories.OBJECT);
 
   const updateUploaderState = (newState: UploaderState) => {
     setUploaderState(newState);
@@ -52,14 +97,35 @@ export function UploadModal3D({
     switch (uploaderState.status) {
       case UploaderStates.ready:
         return (
-          <UploadFiles3D
-            title={title}
-            engineCategory={engineCategory}
-            fileTypes={fileTypes}
-            options={options}
-            onClose={onClose}
-            onUploadProgress={updateUploaderState}
-          />
+          <div className="space-y-4">
+            <div className="flex w-full flex-col">
+              <Label>Category</Label>
+              <Select
+                id="category-select"
+                options={categoryOptions}
+                value={selectedCategory}
+                onChange={(value) => {
+                  if (
+                    typeof value === "string" &&
+                    Object.values(FilterEngineCategories).includes(
+                      value as FilterEngineCategories,
+                    )
+                  ) {
+                    setSelectedCategory(value as FilterEngineCategories);
+                  }
+                }}
+                placeholder="Select a category"
+              />
+            </div>
+            <UploadFiles3D
+              title={title}
+              engineCategory={selectedCategory}
+              fileTypes={categoryFileTypes[selectedCategory] || []}
+              options={options}
+              onClose={onClose}
+              onUploadProgress={updateUploaderState}
+            />
+          </div>
         );
       case UploaderStates.uploadingAsset:
       case UploaderStates.uploadingCover:
@@ -87,7 +153,7 @@ export function UploadModal3D({
             onRetry={() => {
               resetModalState();
             }}
-            type={FilterEngineCategories.OBJECT}
+            type={selectedCategory}
             errorMessage={uploaderState.errorMessage}
           />
         );
@@ -104,10 +170,18 @@ export function UploadModal3D({
           />
         );
     }
+    return undefined;
   };
 
   return (
-    <TransitionDialogue isOpen={isOpen} onClose={onClose} title={title}>
+    <TransitionDialogue
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      className="max-w-xl"
+      showClose={false}
+    >
+      <CloseButton className="absolute right-4 top-4" onClick={onClose} />
       <UploaderModalContent />
     </TransitionDialogue>
   );

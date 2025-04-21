@@ -27,11 +27,17 @@ const DialogBackdrop = ({ className }: { className?: string }) => {
       enter="ease-out duration-300"
       enterFrom="opacity-0"
       enterTo="opacity-100"
-      leave="ease-in duration-200"
+      leave="ease-in duration-100"
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <div className={twMerge("fixed inset-0 bg-black/60", className)} />
+      <div
+        className={twMerge("fixed inset-0 bg-black/60", className)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      />
     </Transition.Child>
   );
 };
@@ -71,7 +77,7 @@ export const TransitionDialogue = ({
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
+              enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
@@ -86,6 +92,10 @@ export const TransitionDialogue = ({
                   className,
                 )}
                 style={{ minWidth: width }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
               >
                 {title && (
                   <Dialog.Title

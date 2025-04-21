@@ -35,13 +35,15 @@ export const H4 = ({ className, children }: TypoProps) => (
 export const Label = ({
   className,
   children,
+  required,
   ...rest
-}: LabelHTMLAttributes<HTMLLabelElement>) => (
+}: LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }) => (
   <label
     className={twMerge(baseTypo, "mb-2 text-[15px] font-medium", className)}
     {...rest}
   >
     {children}
+    {required && <span className="ml-0.5 text-[#ff6467]">*</span>}
   </label>
 );
 

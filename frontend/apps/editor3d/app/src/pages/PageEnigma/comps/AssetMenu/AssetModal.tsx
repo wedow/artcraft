@@ -1,4 +1,5 @@
 import { TransitionDialogue } from "~/components/reusable/TransitionDialogue";
+import { UploadModal3D } from "~/components/reusable/UploadModal3D";
 import {
   faPlus,
   faSearch,
@@ -10,6 +11,7 @@ import {
   faChevronRight,
   faMountainCity,
   faDog,
+  faImage,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, CloseButton, Input, Tooltip } from "~/components";
@@ -26,14 +28,10 @@ import {
 } from "../../signals";
 import { MediaItem } from "../../models";
 import { useUserObjects, useFeaturedObjects } from "../SidePanelTabs/hooks";
-import { FilterEngineCategories } from "~/enums";
+import { FilterEngineCategories, FilterMediaType } from "~/enums";
 import { twMerge } from "tailwind-merge";
 import { useSignals } from "@preact/signals-react/runtime";
-
-interface AssetModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+import { isAnyStatusFetching } from "../SidePanelTabs/utilities";
 
 type AssetTab = {
   id: string;
@@ -80,6 +78,7 @@ export const AssetModal = () => {
   const [activeAssetTab, setActiveAssetTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [reopenAfterAdd, setReopenAfterAdd] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = () => {
@@ -99,110 +98,203 @@ export const AssetModal = () => {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [assetModalVisible.value]);
+    return undefined; // Return for the false case
+  }, []);
 
   // Fetch objects for different categories
-  const { userObjects: userCharacters } = useUserObjects({
+  const {
+    userObjects: userCharacters,
+    userFetchStatus: userCharactersFetchStatus,
+    fetchUserObjects: fetchUserCharacters,
+  } = useUserObjects({
     filterEngineCategories: [FilterEngineCategories.CHARACTER],
     defaultErrorMessage: "Error fetching user characters",
   });
 
-  const { userObjects: userObjects } = useUserObjects({
+  const {
+    userObjects: userObjects,
+    userFetchStatus: userObjectsFetchStatus,
+    fetchUserObjects: fetchUserObjects,
+  } = useUserObjects({
     filterEngineCategories: [FilterEngineCategories.OBJECT],
     defaultErrorMessage: "Error fetching user objects",
   });
 
-  const { featuredObjects: featuredCharacters } = useFeaturedObjects({
-    filterEngineCategories: [FilterEngineCategories.CHARACTER],
-    defaultErrorMessage: "Error fetching featured characters",
-  });
-
-  const { featuredObjects: featuredObjects } = useFeaturedObjects({
-    filterEngineCategories: [FilterEngineCategories.OBJECT],
-    defaultErrorMessage: "Error fetching featured objects",
-  });
-
-  const { userObjects: userSets } = useUserObjects({
+  const {
+    userObjects: userSets,
+    userFetchStatus: userSetsFetchStatus,
+    fetchUserObjects: fetchUserSets,
+  } = useUserObjects({
     filterEngineCategories: [FilterEngineCategories.LOCATION],
     defaultErrorMessage: "Error fetching user sets",
   });
 
-  const { featuredObjects: featuredSets } = useFeaturedObjects({
-    filterEngineCategories: [FilterEngineCategories.LOCATION],
-    defaultErrorMessage: "Error fetching featured sets",
-  });
-
-  const { userObjects: userCreatures } = useUserObjects({
+  const {
+    userObjects: userCreatures,
+    userFetchStatus: userCreaturesFetchStatus,
+    fetchUserObjects: fetchUserCreatures,
+  } = useUserObjects({
     filterEngineCategories: [FilterEngineCategories.CREATURE],
     defaultErrorMessage: "Error fetching user creatures",
   });
 
-  const { featuredObjects: featuredCreatures } = useFeaturedObjects({
+  const {
+    userObjects: userImagePlanes,
+    userFetchStatus: userImagePlanesFetchStatus,
+    fetchUserObjects: fetchUserImagePlanes,
+  } = useUserObjects({
+    filterEngineCategories: [FilterEngineCategories.IMAGE_PLANE],
+    defaultErrorMessage: "Error fetching user image planes",
+  });
+
+  const {
+    featuredObjects: featuredCharacters,
+    featuredFetchStatus: featuredCharactersFetchStatus,
+  } = useFeaturedObjects({
+    filterEngineCategories: [FilterEngineCategories.CHARACTER],
+    filterMediaTypes: [FilterMediaType.GLB],
+    defaultErrorMessage: "Error fetching featured characters",
+  });
+
+  const {
+    featuredObjects: featuredObjects,
+    featuredFetchStatus: featuredObjectsFetchStatus,
+  } = useFeaturedObjects({
+    filterEngineCategories: [FilterEngineCategories.OBJECT],
+    defaultErrorMessage: "Error fetching featured objects",
+  });
+
+  const {
+    featuredObjects: featuredSets,
+    featuredFetchStatus: featuredSetsFetchStatus,
+  } = useFeaturedObjects({
+    filterEngineCategories: [FilterEngineCategories.LOCATION],
+    defaultErrorMessage: "Error fetching featured sets",
+  });
+
+  const {
+    featuredObjects: featuredCreatures,
+    featuredFetchStatus: featuredCreaturesFetchStatus,
+  } = useFeaturedObjects({
     filterEngineCategories: [FilterEngineCategories.CREATURE],
     defaultErrorMessage: "Error fetching featured creatures",
   });
+
+  const {
+    featuredObjects: featuredImagePlanes,
+    featuredFetchStatus: featuredImagePlanesFetchStatus,
+  } = useFeaturedObjects({
+    filterEngineCategories: [FilterEngineCategories.IMAGE_PLANE],
+    defaultErrorMessage: "Error fetching featured image planes",
+  });
+
+  const isFetching = isAnyStatusFetching([
+    userCharactersFetchStatus,
+    userObjectsFetchStatus,
+    userSetsFetchStatus,
+    userCreaturesFetchStatus,
+    userImagePlanesFetchStatus,
+    featuredCharactersFetchStatus,
+    featuredObjectsFetchStatus,
+    featuredSetsFetchStatus,
+    featuredCreaturesFetchStatus,
+    featuredImagePlanesFetchStatus,
+  ]);
 
   const libraryTabs = [
     { id: "library", label: "Library" },
     { id: "mine", label: "Mine" },
   ];
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const assetTabs: AssetTab[] = [
-    { id: "all", label: "All", icon: faLayerGroup, items: [] },
-    {
-      id: "character",
-      label: "Character",
-      icon: faUser,
-      engineCategory: FilterEngineCategories.CHARACTER,
-      items:
-        activeLibraryTab === "library"
-          ? [...demoCharacterItems.value, ...(featuredCharacters ?? [])]
-          : (userCharacters ?? []),
-    },
-    {
-      id: "objects",
-      label: "Objects",
-      icon: faCube,
-      engineCategory: FilterEngineCategories.OBJECT,
-      items:
-        activeLibraryTab === "library"
-          ? [...demoShapeItems.value, ...(featuredObjects ?? [])]
-          : (userObjects ?? []),
-    },
-    {
-      id: "sets",
-      label: "Sets",
-      icon: faMountainCity,
-      engineCategory: FilterEngineCategories.LOCATION,
-      items:
-        activeLibraryTab === "library"
-          ? (featuredSets ?? [])
-          : (userSets ?? []),
-    },
-    {
-      id: "creatures",
-      label: "Creatures",
-      icon: faDog,
-      engineCategory: FilterEngineCategories.CREATURE,
-      items:
-        activeLibraryTab === "library"
-          ? (featuredCreatures ?? [])
-          : (userCreatures ?? []),
-    },
-    {
-      id: "skybox",
-      label: "Skybox",
-      icon: faSun,
-      items: demoSkyboxItems.value,
-    },
-  ];
+  const assetTabs = useMemo<AssetTab[]>(
+    () => [
+      { id: "all", label: "All", icon: faLayerGroup, items: [] },
+      {
+        id: "character",
+        label: "Character",
+        icon: faUser,
+        engineCategory: FilterEngineCategories.CHARACTER,
+        items:
+          activeLibraryTab === "library"
+            ? [...demoCharacterItems.value, ...(featuredCharacters ?? [])]
+            : (userCharacters ?? []),
+      },
+      {
+        id: "objects",
+        label: "Objects",
+        icon: faCube,
+        engineCategory: FilterEngineCategories.OBJECT,
+        items:
+          activeLibraryTab === "library"
+            ? [...demoShapeItems.value, ...(featuredObjects ?? [])]
+            : (userObjects ?? []),
+      },
+      {
+        id: "sets",
+        label: "Sets",
+        icon: faMountainCity,
+        engineCategory: FilterEngineCategories.LOCATION,
+        items:
+          activeLibraryTab === "library"
+            ? (featuredSets ?? [])
+            : (userSets ?? []),
+      },
+      {
+        id: "creatures",
+        label: "Creatures",
+        icon: faDog,
+        engineCategory: FilterEngineCategories.CREATURE,
+        items:
+          activeLibraryTab === "library"
+            ? (featuredCreatures ?? [])
+            : (userCreatures ?? []),
+      },
+      {
+        id: "skybox",
+        label: "Skybox",
+        icon: faSun,
+        items: activeLibraryTab === "library" ? demoSkyboxItems.value : [],
+      },
+      {
+        id: "image-planes",
+        label: "Image Planes",
+        icon: faImage,
+        engineCategory: FilterEngineCategories.IMAGE_PLANE,
+        items:
+          activeLibraryTab === "library"
+            ? (featuredImagePlanes ?? [])
+            : (userImagePlanes ?? []),
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      activeLibraryTab,
+      demoCharacterItems.value,
+      demoShapeItems.value,
+      demoSkyboxItems.value,
+      featuredCharacters,
+      featuredCreatures,
+      featuredObjects,
+      featuredSets,
+      featuredImagePlanes,
+      userCharacters,
+      userCreatures,
+      userObjects,
+      userSets,
+      userImagePlanes,
+    ],
+  );
 
   // Combine all items for the "All" tab
   const allItems = useMemo(() => {
-    return assetTabs
+    const items = assetTabs
       .filter((tab) => tab.id !== "all")
       .flatMap((tab) => tab.items);
+    // console.log("All items:", items);
+    // console.log("Active library tab:", activeLibraryTab);
+    // console.log("User creatures:", userCreatures);
+    // console.log("User objects:", userObjects);
+    return items;
   }, [assetTabs]);
 
   // Update the items array for the "All" tab
@@ -238,11 +330,31 @@ export const AssetModal = () => {
     setSearchTerm("");
   }, [activeAssetTab]);
 
+  // Refresh user content when switching to mine tab
+  useEffect(() => {
+    if (activeLibraryTab === "mine") {
+      // Trigger a refetch of user content
+      fetchUserCharacters();
+      fetchUserObjects();
+      fetchUserSets();
+      fetchUserCreatures();
+      fetchUserImagePlanes();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLibraryTab]);
+
   const renderContent = () => {
     if (activeAssetTab === "all" && !searchTerm) {
+      // Filter out empty categories when in "mine" tab
+      const tabsToShow = assetTabs
+        .slice(1)
+        .filter(
+          (tab) => activeLibraryTab === "library" || tab.items.length > 0,
+        );
+
       return (
         <div className="h-full space-y-2 overflow-y-auto">
-          {assetTabs.slice(1).map((tab) => (
+          {tabsToShow.map((tab) => (
             <AllTabSection
               key={tab.id}
               label={tab.label}
@@ -257,13 +369,18 @@ export const AssetModal = () => {
     return (
       <ItemElements
         items={displayedItems}
-        busy={false}
+        busy={isFetching}
         debug={`asset-modal-${currentTab.id}`}
       />
     );
   };
 
   const handleAddAsset = () => {
+    assetModalVisible.value = false;
+    setIsUploadModalOpen(true);
+  };
+
+  const handleUploadSuccess = () => {
     if (reopenAfterAdd) {
       // Small delay to allow the modal to close and reopen
       setTimeout(() => {
@@ -277,113 +394,129 @@ export const AssetModal = () => {
   const clearSearch = () => setSearchTerm("");
 
   return (
-    <TransitionDialogue
-      isOpen={assetModalVisible.value && assetModalVisibleDuringDrag.value}
-      onClose={handleClose}
-      className="h-[640px] max-w-4xl"
-      childPadding={false}
-    >
-      <div className="grid h-full grid-cols-12 gap-3">
-        <div className="relative col-span-3 flex h-full flex-col p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-gray-200 after:dark:bg-white/10">
-          <div className="flex items-center justify-between gap-2.5 py-0.5">
-            <h2 className="text-[18px] font-semibold opacity-80">3D Assets</h2>
-            <Tooltip content="Upload model" position="top" delay={200}>
-              <Button
-                className="h-6 w-6 rounded-full border-none bg-transparent text-white/70 transition-colors hover:bg-transparent hover:text-white/100"
-                onClick={handleAddAsset}
-              >
-                <FontAwesomeIcon icon={faPlus} className="text-xl" />
-              </Button>
-            </Tooltip>
-          </div>
-          <hr className="my-2 w-full border-white/10" />
-          <div className="space-y-2">
-            {assetTabs.map((tab) => (
-              <Button
-                key={tab.id}
-                variant={activeAssetTab === tab.id ? "primary" : "secondary"}
-                className={twMerge(
-                  "w-full justify-start rounded-xl border border-white/[2%] bg-white/[4%] px-3.5 py-2.5 text-left hover:bg-white/15",
-                  activeAssetTab === tab.id &&
-                    "border-brand-primary bg-brand-primary/10 hover:bg-brand-primary/10",
-                )}
-                onClick={() => setActiveAssetTab(tab.id)}
-              >
-                <FontAwesomeIcon icon={tab.icon} className="mr-2 opacity-70" />
-                {tab.label}
-              </Button>
-            ))}
-          </div>
-          <div className="mt-auto flex items-center gap-2 pt-3">
-            <input
-              type="checkbox"
-              id="reopen-after-add"
-              checked={reopenAfterAdd}
-              onChange={(e) => setReopenAfterAdd(e.target.checked)}
-              className="h-4 w-4 rounded-lg border-gray-300 bg-gray-700 text-brand-primary focus:ring-brand-primary"
-            />
-            <label htmlFor="reopen-after-add" className="text-sm text-white/70">
-              Reopen after adding
-            </label>
-          </div>
-        </div>
-        <div className="col-span-9 p-3 pb-0 ps-0 pt-2">
-          <div className="flex h-full flex-col">
-            <div className="h-full">
-              <div className="flex items-center gap-4">
-                <TabSelector
-                  tabs={libraryTabs}
-                  activeTab={activeLibraryTab}
-                  onTabChange={setActiveLibraryTab}
-                  className="w-auto"
-                />
-                <div className="relative grow">
-                  <Input
-                    ref={searchInputRef}
-                    placeholder="Search"
-                    className="grow"
-                    inputClassName="pr-2.5"
-                    icon={faSearch}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    iconClassName="text-white/60"
-                  />
-                  {searchTerm && (
-                    <CloseButton
-                      onClick={clearSearch}
-                      className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 bg-white/10 text-[10px] hover:bg-white/20"
-                    />
+    <>
+      <TransitionDialogue
+        isOpen={assetModalVisible.value && assetModalVisibleDuringDrag.value}
+        onClose={handleClose}
+        className="h-[640px] max-w-4xl"
+        childPadding={false}
+      >
+        <div className="grid h-full grid-cols-12 gap-3">
+          <div className="relative col-span-3 flex h-full flex-col p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-gray-200 after:dark:bg-white/10">
+            <div className="flex items-center justify-between gap-2.5 py-0.5">
+              <h2 className="text-[18px] font-semibold opacity-80">
+                3D Assets
+              </h2>
+              <Tooltip content="Upload model" position="top" delay={200}>
+                <Button
+                  className="h-6 w-6 rounded-full border-none bg-transparent text-white/70 transition-colors hover:bg-transparent hover:text-white/100"
+                  onClick={handleAddAsset}
+                >
+                  <FontAwesomeIcon icon={faPlus} className="text-xl" />
+                </Button>
+              </Tooltip>
+            </div>
+            <hr className="my-2 w-full border-white/10" />
+            <div className="space-y-2">
+              {assetTabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeAssetTab === tab.id ? "primary" : "secondary"}
+                  className={twMerge(
+                    "w-full justify-start rounded-xl border border-white/[2%] bg-white/[4%] px-3.5 py-2.5 text-left hover:bg-white/15",
+                    activeAssetTab === tab.id &&
+                      "border-brand-primary bg-brand-primary/10 hover:bg-brand-primary/10",
                   )}
-                </div>
-                <CloseButton onClick={handleClose} />
-              </div>
-              <div
-                className={twMerge(
-                  "overflow-auto-y mt-4 h-[574px]",
-                  activeAssetTab !== "all" && "h-[552px]",
-                )}
+                  onClick={() => setActiveAssetTab(tab.id)}
+                >
+                  <FontAwesomeIcon
+                    icon={tab.icon}
+                    className="mr-2 opacity-70"
+                  />
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
+            <div className="mt-auto flex items-center gap-2 pt-3">
+              <input
+                type="checkbox"
+                id="reopen-after-add"
+                checked={reopenAfterAdd}
+                onChange={(e) => setReopenAfterAdd(e.target.checked)}
+                className="h-4 w-4 rounded-lg border-gray-300 bg-gray-700 text-brand-primary focus:ring-brand-primary"
+              />
+              <label
+                htmlFor="reopen-after-add"
+                className="text-sm text-white/70"
               >
-                {activeAssetTab !== "all" && !searchTerm && (
-                  <div className="mb-2 flex items-center font-semibold">
-                    <Button
-                      variant="secondary"
-                      className="flex items-center gap-2 border-none bg-transparent px-3 py-1.5 text-sm text-white/70 hover:bg-transparent hover:text-white/100"
-                      onClick={() => setActiveAssetTab("all")}
-                    >
-                      <FontAwesomeIcon
-                        icon={faChevronLeft}
-                        className="text-sm font-semibold opacity-70"
+                Reopen after adding
+              </label>
+            </div>
+          </div>
+          <div className="col-span-9 p-3 pb-0 ps-0 pt-2">
+            <div className="flex h-full flex-col">
+              <div className="h-full">
+                <div className="flex items-center gap-4">
+                  <TabSelector
+                    tabs={libraryTabs}
+                    activeTab={activeLibraryTab}
+                    onTabChange={setActiveLibraryTab}
+                    className="w-auto"
+                  />
+                  <div className="relative grow">
+                    <Input
+                      ref={searchInputRef}
+                      placeholder="Search"
+                      className="grow"
+                      inputClassName="pr-2.5"
+                      icon={faSearch}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      iconClassName="text-white/60"
+                    />
+                    {searchTerm && (
+                      <CloseButton
+                        onClick={clearSearch}
+                        className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 bg-white/10 text-[10px] hover:bg-white/20"
                       />
-                    </Button>
-                    {currentTab.label}
+                    )}
                   </div>
-                )}
-                {renderContent()}
+                  <CloseButton onClick={handleClose} />
+                </div>
+                <div
+                  className={twMerge(
+                    "overflow-auto-y mt-4 h-[574px]",
+                    activeAssetTab !== "all" && "h-[552px]",
+                  )}
+                >
+                  {activeAssetTab !== "all" && !searchTerm && (
+                    <div className="mb-2 flex items-center font-semibold">
+                      <Button
+                        variant="secondary"
+                        className="flex items-center gap-2 border-none bg-transparent px-3 py-1.5 text-sm text-white/70 hover:bg-transparent hover:text-white/100"
+                        onClick={() => setActiveAssetTab("all")}
+                      >
+                        <FontAwesomeIcon
+                          icon={faChevronLeft}
+                          className="text-sm font-semibold opacity-70"
+                        />
+                      </Button>
+                      {currentTab.label}
+                    </div>
+                  )}
+                  {renderContent()}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </TransitionDialogue>
+      </TransitionDialogue>
+      <UploadModal3D
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={handleUploadSuccess}
+        isOpen={isUploadModalOpen}
+        title="Upload 3D Asset"
+      />
+    </>
   );
 };
