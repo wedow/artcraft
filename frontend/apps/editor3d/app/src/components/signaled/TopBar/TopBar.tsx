@@ -1,6 +1,8 @@
+import { useState } from "react";
 import {
   faChevronLeft,
   faChevronRight,
+  faGear,
   faImages,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useLocation, useParams } from "react-router-dom";
@@ -10,7 +12,7 @@ import { SceneTitleInput } from "./SceneTitleInput";
 import { getCurrentLocationWithoutParams } from "~/utilities";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
 import { LibraryModal } from "~/pages/PageEnigma/comps/LibraryModal/LibraryModal";
-import { useState } from "react";
+import { SettingsModal } from "~/pages/PageEnigma/comps/SettingsModal";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;
@@ -28,6 +30,7 @@ export const TopBar = ({ pageName }: Props) => {
   );
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const handleClick = () => {
     window.location.href = "https://storyteller-2d.netlify.app/";
@@ -74,11 +77,18 @@ export const TopBar = ({ pageName }: Props) => {
             <div className="flex gap-2">
               <Button
                 variant="secondary"
+                icon={faGear}
+                className="h-[38px] w-[38px]"
+                onClick={() => setIsSettingsModalOpen(true)}
+              />
+              <Button
+                variant="secondary"
                 icon={faImages}
                 onClick={() => setIsLibraryModalOpen(true)}
               >
                 My Gallery
               </Button>
+
               <Activity />
             </div>
             <div className="flex justify-end gap-2">
@@ -87,6 +97,11 @@ export const TopBar = ({ pageName }: Props) => {
           </div>
         </nav>
       </header>
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
 
       <LibraryModal
         isOpen={isLibraryModalOpen}
