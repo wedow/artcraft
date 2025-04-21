@@ -520,23 +520,46 @@ export class RealTimeDrawEngine {
     if (!this.captureCanvas) {
       return;
     }
-    const scaleFactor = 1;
+    const scaleFactor = 0.9;
     // Store old values for calculating delta
     const oldPositionX = this.positionX;
     const oldPositionY = this.positionY;
 
-    // If width/height aren't provided, use window dimensions
+    const oldWidth = this.width;
+    const oldHeight = this.height;
+
+    // Original aspect ratio
+    const originalAspectRatio = oldWidth / oldHeight;
+
+    // Calculate new dimensions based on window size
+    let newWidth: number;
+    let newHeight: number;
+
     if (width === undefined) {
-      this.width = window.innerWidth * scaleFactor; // Using 80% of window width
+      newWidth = window.innerWidth * scaleFactor;
     } else {
-      this.width = width * scaleFactor;
+      newWidth = width * scaleFactor;
     }
 
     if (height === undefined) {
-      this.height = window.innerHeight * scaleFactor; // Using 80% of window height
+      newHeight = window.innerHeight * scaleFactor;
     } else {
-      this.height = height * scaleFactor;
+      newHeight = height * scaleFactor;
     }
+
+    // Preserve aspect ratio
+    const newAspectRatio = newWidth / newHeight;
+
+    if (newAspectRatio > originalAspectRatio) {
+      // Width is constraining factor
+      newWidth = newHeight * originalAspectRatio;
+    } else {
+      // Height is constraining factor
+      newHeight = newWidth / originalAspectRatio;
+    }
+
+    this.width = newWidth;
+    this.height = newHeight;
 
     console.log("New dimensions:", this.width, this.height);
 
@@ -553,9 +576,12 @@ export class RealTimeDrawEngine {
     });
     this.captureCanvas.size({ width: this.width, height: this.height });
 
-    // Calculate the change in position
-    const deltaX = this.positionX - oldPositionX;
-    const deltaY = this.positionY - oldPositionY;
+    // Calculate scale factors to maintain proportions
+    const scaleX = this.width / oldWidth;
+    const scaleY = this.height / oldHeight;
+
+    // Use a uniform scale factor to preserve aspect ratio
+    const uniformScale = Math.min(scaleX, scaleY);
 
     // Update all children except the capture canvas
     var children = this.mediaLayerRef.getChildren();
@@ -566,11 +592,27 @@ export class RealTimeDrawEngine {
       if (node.name() === "CaptureCanvas") {
         continue;
       }
+
       const pos = node.getPosition();
+      const oldScale = node.scale();
+
+      // Apply both position shift and scaling to maintain relative positioning
       node.setPosition({
-        x: pos.x + deltaX,
-        y: pos.y + deltaY,
+        x: (pos.x - oldPositionX) * uniformScale + this.positionX,
+        y: (pos.y - oldPositionY) * uniformScale + this.positionY,
       });
+
+      // Update scale proportionally if the node has a scale property
+      if (
+        oldScale &&
+        typeof oldScale.x === "number" &&
+        typeof oldScale.y === "number"
+      ) {
+        node.scale({
+          x: oldScale.x * uniformScale,
+          y: oldScale.y * uniformScale,
+        });
+      }
     }
 
     this.mediaLayerRef.batchDraw();

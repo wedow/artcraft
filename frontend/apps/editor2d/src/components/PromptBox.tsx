@@ -177,7 +177,100 @@ export const PromptBox = () => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(e.target.value);
   };
+  const handleTauriEnqueue = async () => {
+    const api = new Api();
+    let image = getCanvasRenderBitmap();
+    if (image === undefined) {
+      return;
+    }
+    const base64Bitmap = await EncodeImageBitmapToBase64(image);
 
+    const byteString = atob(base64Bitmap);
+    const mimeString = "image/png";
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    const uuid = crypto.randomUUID(); // Generate a new UUID
+    const file = new File([ab], `${uuid}.png`, { type: mimeString });
+
+    const snapshotMediaToken = await api.uploadSceneSnapshot({
+      screenshot: file,
+    });
+
+    if (snapshotMediaToken.data === undefined) {
+      toast.error("Error: Unable to upload scene snapshot Please try again.");
+      return;
+    }
+    console.log("useSystemPrompt", useSystemPrompt);
+    console.log("Snapshot media token:", snapshotMediaToken.data);
+
+    const generateResponse = await invoke("sora_image_generation_command", {
+      snapshot_media_token: snapshotMediaToken.data,
+      disable_system_prompt: !useSystemPrompt,
+      prompt: prompt,
+      maybe_additional_images: referenceImages.map((image) => image.mediaToken),
+      maybe_number_of_samples: 1,
+    });
+    toast.success("Please wait while we process your image.");
+  };
+
+  const handleWebEnqueue = async () => {
+    const api = new Api();
+    let image = getCanvasRenderBitmap();
+    if (image === undefined) {
+      toast.error(
+        "Error: Unable to generate image. Please check the input and try again.",
+      );
+      return;
+    }
+    const base64Bitmap = await EncodeImageBitmapToBase64(image);
+
+    const byteString = atob(base64Bitmap);
+    const mimeString = "image/png";
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    const uuid = crypto.randomUUID(); // Generate a new UUID
+    const file = new File([ab], `${uuid}.png`, { type: mimeString });
+
+    const snapshotMediaToken = await api.uploadSceneSnapshot({
+      screenshot: file,
+    });
+
+    if (snapshotMediaToken.data === undefined) {
+      toast.error("Error: Unable to upload scene snapshot Please try again.");
+      return;
+    }
+    console.log("useSystemPrompt", useSystemPrompt);
+    console.log("Snapshot media token:", snapshotMediaToken.data);
+
+    const response = await api.enqueueImageGeneration({
+      disableSystemPrompt: !useSystemPrompt,
+      prompt: prompt,
+      snapshotMediaToken: snapshotMediaToken.data,
+      additionalImages: referenceImages.map((image) => image.mediaToken),
+    });
+
+    if (response.success === true) {
+      toast.success("Please wait while we process your image.");
+      if (response.data) {
+        addJobToken(response.data);
+      }
+      return;
+    } else {
+      toast.error("Failed to enqueue image generation. Please try again.");
+    }
+  };
   const handleEnqueue = async () => {
     if (!prompt.trim()) return;
 
@@ -191,69 +284,10 @@ export const PromptBox = () => {
         referenceImages,
       );
 
-      if (isDesktopApp) {
-        let image = getCanvasRenderBitmap();
-        if (image === undefined) {
-          return;
-        }
-        const base64Bitmap = await EncodeImageBitmapToBase64(image);
-        const generateResponse = await invoke("image_generation_command", {
-          image: base64Bitmap,
-          prompt: prompt,
-        });
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
-
-      if (!isDesktopApp) {
-        const api = new Api();
-        let image = getCanvasRenderBitmap();
-        if (image === undefined) {
-          toast.error(
-            "Error: Unable to generate image. Please check the input and try again.",
-          );
-          return;
-        }
-        const base64Bitmap = await EncodeImageBitmapToBase64(image);
-        const byteString = atob(base64Bitmap);
-        const mimeString = "image/png";
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-
-        for (let i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-
-        const uuid = crypto.randomUUID(); // Generate a new UUID
-        const file = new File([ab], `${uuid}.png`, { type: mimeString });
-
-        const snapshotMediaToken = await api.uploadSceneSnapshot({
-          screenshot: file,
-        });
-
-        if (snapshotMediaToken.data === undefined) {
-          toast.error(
-            "Error: Unable to upload scene snapshot Please try again.",
-          );
-          return;
-        }
-        console.log("useSystemPrompt", useSystemPrompt);
-        console.log("Snapshot media token:", snapshotMediaToken.data);
-        const response = await api.enqueueImageGeneration({
-          disableSystemPrompt: !useSystemPrompt,
-          prompt: prompt,
-          snapshotMediaToken: snapshotMediaToken.data,
-          additionalImages: referenceImages.map((image) => image.mediaToken),
-        });
-
-        if (response.success === true) {
-          toast.success("Please wait while we process your image.");
-          if (response.data) {
-            addJobToken(response.data);
-          }
-          return;
-        } else {
-          toast.error("Failed to enqueue image generation. Please try again.");
-        }
+      if (isDesktopApp == true) {
+        handleTauriEnqueue();
+      } else {
+        handleWebEnqueue();
       }
     } catch (error) {
       console.error("Error during image generation:", error);
