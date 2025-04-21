@@ -24,5 +24,15 @@
       "@ApiManager/*": ["./src/Classes/ApiManager/*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../libs/components/settings-modal/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/components/button/tsconfig.lib.json"
+    }
+  ]
 }

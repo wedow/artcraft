@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #363636 #171717;
+}
+
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #171717;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #363636;
+  border-radius: 4px;
+  border: 2px solid #171717;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 @layer base {
   :root {
     @apply select-none bg-ui-background font-sans text-white;
@@ -27,28 +59,7 @@
     background-size: 36px 36px;
     @apply bg-center;
   }
-  h1 {
-    @apply text-3xl font-medium md:text-5xl;
-  }
-  h2 {
-    @apply text-2xl font-medium md:text-4xl;
-  }
-  h3 {
-    @apply text-xl font-medium md:text-3xl;
-  }
-  h4 {
-    @apply text-lg font-medium;
-  }
-  h5,
-  label {
-    @apply text-base;
-  }
-  h6 {
-    @apply text-sm;
-  }
-  p {
-    @apply text-sm font-normal;
-  }
+
   a {
     @apply font-medium text-primary-400 hover:text-primary-300;
   }

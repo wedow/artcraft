@@ -4,7 +4,11 @@ import defaultTheme from "tailwindcss/defaultTheme";
 import { storytellerColors } from "./tailwind.stcolors";
 
 export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "../../libs/components/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -44,14 +48,42 @@ export default {
       info: colors.sky[500],
 
       // brand colors
-      primary: storytellerColors.azureRadiance,
-      secondary: storytellerColors.gunpowder,
+      primary: {
+        DEFAULT: "#2d81ff",
+        50: "#eef6ff",
+        100: "#d9ebff",
+        200: "#bcdcff",
+        300: "#8ec7ff",
+        400: "#59a7ff",
+        500: "#2d81ff",
+        600: "#1b63f5",
+        700: "#144ee1",
+        800: "#173fb6",
+        900: "#19398f",
+        950: "#142457",
+      },
+      secondary: {
+        DEFAULT: "#3E3E41",
+        50: "#f6f6f6",
+        100: "#e7e7e7",
+        200: "#d1d1d1",
+        300: "#b0b0b0",
+        400: "#888888",
+        500: "#6d6d6d",
+        600: "#5d5d5d",
+        700: "#4f4f4f",
+        800: "#454545",
+        900: "#3d3d3d",
+        950: "#3E3E41",
+      },
+
       tertiary: storytellerColors.aquamarineBlue,
 
       ui: {
         background: "#101014",
         panel: "#3E3E41",
         border: "#FFFFFF0D",
+        "panel-border": "#3F3F3F",
         controls: "#3E3E41",
       },
     },
