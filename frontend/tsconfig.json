@@ -35,6 +35,9 @@
     },
     {
       "path": "./libs/components/label"
+    },
+    {
+      "path": "./libs/components/select"
     }
   ]
 }

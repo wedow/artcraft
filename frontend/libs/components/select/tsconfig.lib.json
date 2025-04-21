@@ -41,10 +41,5 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx"
-  ],
-  "references": [
-    {
-      "path": "../label/tsconfig.lib.json"
-    }
   ]
 }

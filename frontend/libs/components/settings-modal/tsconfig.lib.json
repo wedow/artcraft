@@ -44,6 +44,9 @@
   ],
   "references": [
     {
+      "path": "../input/tsconfig.lib.json"
+    },
+    {
       "path": "../button/tsconfig.lib.json"
     },
     {

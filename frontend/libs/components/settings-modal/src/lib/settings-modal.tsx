@@ -9,6 +9,8 @@ import {
   faCog,
 } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
+import { Input } from "@storyteller/ui-input";
+import { Select, SelectValue } from "@storyteller/ui-select";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -90,10 +92,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 <label htmlFor="pal-api-key" className="mb-2 block">
                   Pal API Key (optional)
                 </label>
-                <input
+                <Input
                   id="pal-api-key"
                   type="password"
-                  className="w-full rounded border p-2"
                   value={palApiKey}
                   onChange={(e) => setPalApiKey((e.target as any).value)}
                   placeholder="Enter API Key"
@@ -103,10 +104,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 <label htmlFor="kling-api-key" className="mb-2 block">
                   Kling API Key (optional)
                 </label>
-                <input
+                <Input
                   id="kling-api-key"
                   type="password"
-                  className="w-full rounded border p-2"
                   value={klingApiKey}
                   onChange={(e) => setKlingApiKey((e.target as any).value)}
                   placeholder="Enter API Key"
@@ -123,29 +123,33 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <label htmlFor="default-video-model" className="mb-2 block">
                 Default Video Model
               </label>
-              <select
+              <Select
                 id="default-video-model"
-                className="w-full rounded border p-2"
                 value={defaultVideoModel}
-                onChange={(e) => setDefaultVideoModel((e.target as any).value)}
-              >
-                <option value="veo">Veo</option>
-                <option value="kling">Kling</option>
-              </select>
+                onChange={(val: SelectValue) =>
+                  setDefaultVideoModel(val as string)
+                }
+                options={[
+                  { value: "veo", label: "Veo" },
+                  { value: "kling", label: "Kling" },
+                ]}
+              />
             </div>
             <div>
               <label htmlFor="human-video-provider" className="mb-2 block">
                 Human Video Provider
               </label>
-              <select
+              <Select
                 id="human-video-provider"
-                className="w-full rounded border p-2"
                 value={humanVideoProvider}
-                onChange={(e) => setHumanVideoProvider((e.target as any).value)}
-              >
-                <option value="artcraft">ArtCraft</option>
-                <option value="pal">Pal</option>
-              </select>
+                onChange={(val: SelectValue) =>
+                  setHumanVideoProvider(val as string)
+                }
+                options={[
+                  { value: "artcraft", label: "ArtCraft" },
+                  { value: "pal", label: "Pal" },
+                ]}
+              />
             </div>
           </div>
         );
@@ -204,9 +208,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 {sections.find((s) => s.id === selectedSection)?.label}
               </h2>
             </div>
-            <div className="overflow-y-auto p-3 ps-0 text-sm">
-              {renderContent()}
-            </div>
+            <div className="p-3 ps-0 text-sm h-full">{renderContent()}</div>
           </div>
         </div>
       </div>
