@@ -220,8 +220,12 @@ class FreeCam extends EventDispatcher {
     this.updateMovementVector();
   }
 
+  isStationary() {
+    return this.moveVector.distanceTo(new Vector3(0, 0, 0)) === 0;
+  }
+
   update(delta: number) {
-    if (!this.enabled) {
+    if (!this.enabled || this.isStationary()) {
       return;
     }
 
