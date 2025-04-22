@@ -47,6 +47,9 @@
     },
     {
       "path": "./libs/components/demo-modal"
+    },
+    {
+      "path": "./apps/artcraft-website"
     }
   ]
 }
