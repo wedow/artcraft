@@ -36,6 +36,9 @@
     },
     {
       "path": "../../libs/tauri-utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/components/demo-modal/tsconfig.lib.json"
     }
   ]
 }

@@ -37,6 +37,9 @@
       "path": "../../libs/components/toaster"
     },
     {
+      "path": "../../libs/components/demo-modal"
+    },
+    {
       "path": "../../libs/components/tooltip"
     },
     {

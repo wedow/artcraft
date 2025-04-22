@@ -44,6 +44,9 @@
     },
     {
       "path": "./libs/tauri-utils"
+    },
+    {
+      "path": "./libs/components/demo-modal"
     }
   ]
 }

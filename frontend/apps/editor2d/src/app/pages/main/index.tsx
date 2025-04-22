@@ -2,10 +2,6 @@ import { useParams } from "react-router-dom";
 import { withProtectionRoute } from "~/components/hoc";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
 import { Resource, invoke } from "@tauri-apps/api/core";
-
-// Components of the page
-import { ToolbarUserProfile } from "~/components/features";
-
 //Components of the Konva App are all in the KonvaComponent
 import { KonvaRootComponent } from "~/KonvaRootComponent";
 import { ToolbarTopLeft } from "~/components/features/ToolbarTopLeft";
@@ -15,17 +11,10 @@ import { appMode } from "~/signals";
 import { useSignals } from "@preact/signals-react/runtime";
 import { GenerationRootComponent } from "~/GenerationRootComponent/GenerationRootComponent";
 import { EditModeRootComponent } from "~/EditModeRootComponent/EditModeRootComponent";
-import { useRef, useState } from "react";
-import { EngineType } from "~/KonvaApp";
+import { useRef } from "react";
 import { GenerationEngine } from "~/KonvaApp/GenerationEngine";
 import { GalleryRootComponent } from "~/GalleryRootComponent";
-import { BaseDialog } from "~/components/ui/BaseDialog";
-import { Button } from "~/components/ui/Button";
-import {
-  faArrowRight,
-  faMagicWandSparkles,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { DemoModal } from "@storyteller/ui-demo-modal";
 
 export const isTauri = (): boolean => {
   console.log(window.__TAURI_INTERNALS__);
@@ -43,10 +32,7 @@ export const Main = withProtectionRoute(() => {
 
   useSignals();
 
-  const realtimeEngineRef = useRef<EngineType | null>(null);
   const generationEngineRef = useRef<GenerationEngine | null>(null);
-  const [firstTimeDialogOpen, setFirstTimeDialogOpen] = useState(true);
-  const [signinDialogOpen, setSigninDialogOpen] = useState(false);
   const appModeValue = appMode.value;
   let childView;
 
@@ -96,65 +82,21 @@ export const Main = withProtectionRoute(() => {
           <GalleryRootComponent className="z-1 fixed h-full w-full bg-black" />
         )}
       </div>
-      <BaseDialog
-        isOpen={firstTimeDialogOpen}
-        onClose={() => {
-          setFirstTimeDialogOpen(false);
-        }}
-        className="max-w-5xl"
-      >
-        <div className="flex flex-col items-center justify-center gap-5">
-          <div className="flex flex-col items-center gap-3">
-            <h1 className="text-3xl font-bold">
-              <FontAwesomeIcon
-                icon={faMagicWandSparkles}
-                className="mr-3 text-[24px]"
-              />
-              Welcome to ArtCraft
-            </h1>
-            <div className="text-center">
-              <p className="text-lg font-medium text-white/80">
-                Your creative canvas for digital art and design
-              </p>
-              <p className="text-white/60">
-                Draw freely, create collages, and design with our intuitive
-                tool. Bring your ideas to life in seconds!
-              </p>
-            </div>
-          </div>
 
-          <div className="aspect-video w-full overflow-hidden rounded-md">
-            <video autoPlay muted loop controls={false}>
-              <source src="/videos/artcraft-canvas-demo.mp4" type="video/mp4" />
-            </video>
-          </div>
-          <Button
-            className="font-semibold"
-            icon={faArrowRight}
-            iconFlip={true}
-            onClick={async () => {
-              if (isTauri()) {
-                await invoke("open_sora_login_command");
-                setFirstTimeDialogOpen(false);
-              } else {
-                console.error("Tauri is not available in this environment");
-              }
-            }}
-          >
-            Sign in to OpenAI to get Started
-          </Button>
-          {/* <Button
-            className="font-semibold"
-            icon={faArrowRight}
-            iconFlip={true}
-            onClick={() => {
-              setFirstTimeDialogOpen(false);
-            }}
-          >
-            Start creating now
-          </Button> */}
-        </div>
-      </BaseDialog>
+      <DemoModal
+        title="Welcome to ArtCraft Canvas"
+        subTitle="Your creative canvas for digital art and design"
+        description="Draw freely, create collages, and design with our intuitive tool."
+        videoSrc="/videos/artcraft-canvas-demo.mp4"
+        buttonText="Sign in to OpenAI to get started"
+        buttonOnClick={async () => {
+          if (isTauri()) {
+            await invoke("open_sora_login_command");
+          } else {
+            console.error("Tauri is not available in this environment");
+          }
+        }}
+      />
     </>
   );
 });

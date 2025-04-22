@@ -23,8 +23,7 @@ import { CameraAspectRatio } from "./enums";
 import { PromptBox } from "./comps/PromptBox";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-// import { api } from "@storyteller/api";
-// import { AnalyticsApi } from "@storyteller/api";
+import { DemoModal } from "@storyteller/ui-demo-modal";
 
 export const PageEditor = () => {
   useSignals();
@@ -151,6 +150,15 @@ export const PageEditor = () => {
       {/* <div onClick={handleOverlayClick}>
         <Timeline />
       </div> */}
+
+      <DemoModal
+        title="Welcome to ArtCraft 3D"
+        subTitle="Your 3D editor for digital art and design"
+        description="Set up your scene by adding objects and start bringing your ideas to life!"
+        videoSrc="/resources/videos/artcraft-3d-demo.mp4"
+        buttonText="Sign in to OpenAI to get started"
+        buttonOnClick={() => {}}
+      />
     </div>
   );
 };
