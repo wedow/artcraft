@@ -17,7 +17,7 @@ export default function Navbar() {
   return (
     <Disclosure
       as="nav"
-      className="z-20 sticky top-0 left-0 w-full bg-[#101014]/70 backdrop-blur-lg"
+      className="z-20 sticky top-0 left-0 w-full bg-[#1b1b1f]/70 backdrop-blur-lg"
     >
       <div className="mx-auto max-w-[1920px] sm:px-6 lg:px-8 px-6 md:px-16 xl:px-32">
         <div className="flex h-16 justify-between">

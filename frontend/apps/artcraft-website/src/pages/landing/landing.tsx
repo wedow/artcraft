@@ -2,27 +2,9 @@ import { Button } from "@storyteller/ui-button";
 import { faApple, faWindows } from "@fortawesome/free-brands-svg-icons";
 import { faDesktop } from "@fortawesome/pro-solid-svg-icons";
 import { isMobile, isWindows, isMacOs } from "react-device-detect";
-import { useRef, useState } from "react";
 import { DOWNLOAD_LINKS } from "../../config/downloads";
 
 const Landing = () => {
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const videos = [
-    "/videos/artcraft-canvas-demo.mp4",
-    "/videos/artcraft-3d-demo.mp4",
-  ];
-
-  const handleVideoEnd = () => {
-    if (videoRef.current) {
-      const nextIndex = (currentVideoIndex + 1) % videos.length;
-      setCurrentVideoIndex(nextIndex);
-      videoRef.current.src = videos[nextIndex];
-      videoRef.current.play();
-    }
-  };
-
   const handleDownload = () => {
     const downloadLink = isWindows
       ? DOWNLOAD_LINKS.WINDOWS
@@ -59,59 +41,103 @@ const Landing = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#101014] text-white">
+    <div className="relative min-h-screen bg-[#101014] text-white bg-dots">
       <div className="dotted-pattern absolute inset-0 z-[0] opacity-50" />
       {/* Hero Section */}
-      <div className="relative flex overflow-hidden pt-24 xl:min-h-[1000px] xl:items-center xl:pt-0">
-        {/* Content Container */}
-        <div className="relative z-10 mx-auto grid h-full w-full max-w-[1920px] grid-cols-12 items-center px-6 md:px-16 xl:px-32">
-          <div className="z-10 col-span-12 w-full xl:absolute xl:left-0 xl:top-1/2 xl:max-w-4xl xl:-translate-y-1/2 xl:pl-32 before:xl:absolute before:xl:-inset-0 before:xl:-z-10 before:xl:mr-40 before:xl:rounded-full before:xl:bg-black/90 before:xl:to-transparent before:xl:blur-[180px]">
-            <div className="max-w-2xl">
-              <div className="mb-6">
-                <span className="text-lg font-semibold uppercase tracking-widest text-gray-400">
-                  ArtCraft
-                </span>
-              </div>
-
-              <h1 className="mb-6 font-bold leading-tight lg:text-6xl">
-                AI editor.
-                <br />
+      <div className="relative flex overflow-hidden xl:items-center xl:pt-0">
+        <div className="w-full flex flex-col items-center justify-center text-center pt-28 pb-20 px-5">
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg blur-xl"></div>
+            <h1 className="relative mb-8 font-bold text-5xl lg:text-7xl bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+              AI editor.
+              <br />
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 On your local machine.
-              </h1>
-
-              <p className="mb-10 max-w-xl text-lg leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation.
-              </p>
-
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Button
-                  className="rounded-lg px-5 py-3.5 text-md"
-                  disabled={isMobile || (!isWindows && !isMacOs)}
-                  icon={isMobile ? faDesktop : isWindows ? faWindows : faApple}
-                  onClick={handleDownload}
-                >
-                  {isMobile
-                    ? "Download on desktop"
-                    : isWindows
-                    ? "Download for Windows"
-                    : isMacOs
-                    ? "Download for MacOS"
-                    : "Not available on your device"}
-                </Button>
-              </div>
-            </div>
+              </span>
+            </h1>
           </div>
-          <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl border border-white/[16%] bg-transparent md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
+
+          <p className="mb-12 max-w-2xl text-lg lg:text-xl leading-relaxed text-gray-300">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </p>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+            <Button
+              className="rounded-xl px-8 py-4 text-md bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
+              disabled={isMobile || (!isWindows && !isMacOs)}
+              icon={isMobile ? faDesktop : isWindows ? faWindows : faApple}
+              onClick={handleDownload}
+            >
+              {isMobile
+                ? "Download on desktop"
+                : isWindows
+                ? "Download for Windows"
+                : isMacOs
+                ? "Download for MacOS"
+                : "Not available on your device"}
+            </Button>
+            <Button
+              className="rounded-xl px-8 py-4 text-md border-2 border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 transition-all duration-300"
+              onClick={() => window.open("#learn-more", "_self")}
+            >
+              Learn more
+            </Button>
+          </div>
+
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl -z-10 animate-pulse-slow" />
+        </div>
+      </div>
+
+      {/* Video Sections */}
+      <div className="relative z-10 mx-auto max-w-[1920px] px-4 py-20 sm:px-24 lg:px-32">
+        {/* First Video Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 items-center gap-16 mb-32 p-5 pr-16 bg-white/10 backdrop-blur-md rounded-[80px]">
+          <div className="lg:col-span-3 rounded-[60px] overflow-hidden bg-[#1C1C20]">
             <video
-              ref={videoRef}
               muted
               autoPlay
-              className="h-full w-full object-cover object-top opacity-90"
-              onEnded={handleVideoEnd}
-              src={videos[currentVideoIndex]}
-            />
+              loop
+              className="w-full aspect-[4/3] object-cover"
+            >
+              <source src="/videos/artcraft-canvas-demo.mp4" type="video/mp4" />
+            </video>
+          </div>
+          <div className="lg:col-span-2 space-y-6">
+            <h2 className="text-5xl font-bold">MAKE YOUR CREATIONS MORE FUN</h2>
+            <p className="text-lg text-gray-400 leading-relaxed">
+              Use custom effects, AI-powered tools, and creative features to add
+              your personality to your artwork. Set your style and create your
+              own unique pieces that stand out.
+            </p>
+            <Button className="rounded-lg px-5 py-3.5 text-md bg-[#2D81FF] hover:bg-[#438AF6]">
+              Start Creating
+            </Button>
+          </div>
+        </div>
+
+        {/* Second Video Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 items-center gap-16 mb-32 p-5 pl-16 bg-white/10 backdrop-blur-md rounded-[80px]">
+          <div className="lg:col-span-2 order-2 lg:order-1 space-y-6">
+            <h2 className="text-5xl font-bold">UNLEASH YOUR CREATIVITY</h2>
+            <p className="text-lg text-gray-400 leading-relaxed">
+              Transform your ideas into reality with our powerful AI tools and
+              creative features. Perfect for both beginners and professional
+              artists.
+            </p>
+            <Button className="rounded-lg px-5 py-3.5 text-md bg-[#2D81FF] hover:bg-[#438AF6]">
+              Learn More
+            </Button>
+          </div>
+          <div className="lg:col-span-3 order-1 lg:order-2 rounded-[60px] overflow-hidden bg-[#1C1C20]">
+            <video
+              muted
+              autoPlay
+              loop
+              className="w-full aspect-[4/3] object-cover"
+            >
+              <source src="/videos/artcraft-3d-demo.mp4" type="video/mp4" />
+            </video>
           </div>
         </div>
       </div>
@@ -196,5 +222,40 @@ const Landing = () => {
     </div>
   );
 };
+
+const styles = `
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  
+  @keyframes pulse-slow {
+    0% { opacity: 0.4; }
+    50% { opacity: 0.6; }
+    100% { opacity: 0.4; }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+const styleSheet = document.createElement("style");
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
 
 export default Landing;

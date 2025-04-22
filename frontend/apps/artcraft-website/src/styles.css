@@ -6,6 +6,13 @@
   body {
     font-family: "Source Sans 3", sans-serif;
     color: #ffffff;
-    background-color: #101014;
+    background-color: #1b1b1f;
   }
+}
+
+.bg-dots {
+  background-image: radial-gradient(#ffffff25 1px, transparent 0);
+  background-color: #1b1b1f;
+  background-size: 36px 36px;
+  @apply bg-center;
 }
