@@ -23,6 +23,8 @@ module.exports = {
       white: colors.white,
       gray: colors.gray,
       black: colors.black,
+      blue: colors.blue,
+      purple: colors.purple,
       primary: {
         DEFAULT: "#2d81ff",
         50: "#eef6ff",

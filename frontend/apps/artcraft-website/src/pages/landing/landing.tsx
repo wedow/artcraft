@@ -45,21 +45,24 @@ const Landing = () => {
       <div className="dotted-pattern absolute inset-0 z-[0] opacity-50" />
       {/* Hero Section */}
       <div className="relative flex overflow-hidden xl:items-center xl:pt-0">
-        <div className="w-full flex flex-col items-center justify-center text-center pt-28 pb-20 px-5">
+        <div className="w-full flex flex-col items-center justify-center text-center pt-28 pb-20 px-10">
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg blur-xl"></div>
-            <h1 className="relative mb-8 font-bold text-5xl lg:text-7xl bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-              AI editor.
+            <div className="absolute -inset-1 rounded-lg blur-xl"></div>
+            <h1 className="relative mb-10 font-bold text-5xl lg:text-7xl">
+              AI Canvas & Scene Editor
               <br />
-              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                On your local machine.
+              <span>On your </span>
+              <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-[9px] after:bg-primary/60 after:mb-1.5">
+                local machine
               </span>
+              <span>.</span>
             </h1>
           </div>
 
           <p className="mb-12 max-w-2xl text-lg lg:text-xl leading-relaxed text-gray-300">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Create stunning artwork with the power of AI. Perfect for artists,
+            designers, and creators who want to push the boundaries of their
+            creativity.
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
