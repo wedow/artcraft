@@ -1300,17 +1300,6 @@ class Editor {
       }
     }
 
-    if (this.cam_obj == undefined) {
-      this.cam_obj = this.activeScene.get_object_by_name(this.camera_name);
-
-      if (this.outliner_feature_flag) {
-        const result = this.sceneManager?.render_outliner(
-          this.timeline.characters,
-        );
-        if (result) outlinerState.items.value = result.items;
-      }
-    }
-
     if (this.clock == undefined || this.renderer == undefined) {
       return;
     }
