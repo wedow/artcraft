@@ -1,9 +1,39 @@
 import { Button } from "@storyteller/ui-button";
-import { faApple } from "@fortawesome/free-brands-svg-icons";
+import { faApple, faWindows } from "@fortawesome/free-brands-svg-icons";
 import { faDesktop } from "@fortawesome/pro-solid-svg-icons";
-import { isMobile } from "react-device-detect";
+import { isMobile, isWindows, isMacOs } from "react-device-detect";
+import { useRef, useState } from "react";
+import { DOWNLOAD_LINKS } from "../../config/downloads";
 
 const Landing = () => {
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const videos = [
+    "/videos/artcraft-canvas-demo.mp4",
+    "/videos/artcraft-3d-demo.mp4",
+  ];
+
+  const handleVideoEnd = () => {
+    if (videoRef.current) {
+      const nextIndex = (currentVideoIndex + 1) % videos.length;
+      setCurrentVideoIndex(nextIndex);
+      videoRef.current.src = videos[nextIndex];
+      videoRef.current.play();
+    }
+  };
+
+  const handleDownload = () => {
+    const downloadLink = isWindows
+      ? DOWNLOAD_LINKS.WINDOWS
+      : isMacOs
+      ? DOWNLOAD_LINKS.MACOS
+      : null;
+    if (downloadLink) {
+      window.open(downloadLink, "_blank");
+    }
+  };
+
   const features = [
     {
       title: "Lorem ipsum dolor sit",
@@ -39,12 +69,12 @@ const Landing = () => {
             <div className="max-w-2xl">
               <div className="mb-6">
                 <span className="text-lg font-semibold uppercase tracking-widest text-gray-400">
-                  MIRA
+                  ArtCraft
                 </span>
               </div>
 
               <h1 className="mb-6 font-bold leading-tight lg:text-6xl">
-                Realtime AI editor.
+                AI editor.
                 <br />
                 On your local machine.
               </h1>
@@ -57,22 +87,30 @@ const Landing = () => {
 
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button
-                  disabled={isMobile}
-                  icon={isMobile ? faDesktop : faApple}
+                  className="rounded-lg px-5 py-3.5 text-md"
+                  disabled={isMobile || (!isWindows && !isMacOs)}
+                  icon={isMobile ? faDesktop : isWindows ? faWindows : faApple}
+                  onClick={handleDownload}
                 >
-                  {isMobile ? "Download on desktop" : "Download for MacOS"}
+                  {isMobile
+                    ? "Download on desktop"
+                    : isWindows
+                    ? "Download for Windows"
+                    : isMacOs
+                    ? "Download for MacOS"
+                    : "Not available on your device"}
                 </Button>
-                <button className="w-full transform rounded-lg border border-white/30 px-8 py-4 font-semibold transition hover:scale-105 hover:bg-white/10 sm:w-auto">
-                  Learn more
-                </button>
               </div>
             </div>
           </div>
           <div className="col-span-12 mt-12 aspect-video w-full transform overflow-hidden rounded-xl border border-white/[16%] bg-transparent md:mt-16 xl:col-span-9 xl:col-start-4 xl:mt-0">
-            <img
-              src="/images/landing_hero.png"
-              alt="AI Video Creation"
+            <video
+              ref={videoRef}
+              muted
+              autoPlay
               className="h-full w-full object-cover object-top opacity-90"
+              onEnded={handleVideoEnd}
+              src={videos[currentVideoIndex]}
             />
           </div>
         </div>

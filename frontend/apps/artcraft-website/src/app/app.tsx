@@ -1,9 +1,10 @@
 import { Route, Routes } from "react-router-dom";
 import Landing from "../pages/landing/landing";
-
+import Navbar from "../components/navbar/navbar";
 export function App() {
   return (
-    <div>
+    <div className="relative">
+      <Navbar />
       {/* <div role="navigation">
         <ul>
           <li>
