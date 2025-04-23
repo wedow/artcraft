@@ -48,7 +48,10 @@ jobs:
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
       - name: install frontend dependencies
-        run: cd ./crates/desktop/tauri-artcraft && yarn install # change this to npm, pnpm or bun depending on which one you use.
+        run: |
+          cd ./crates/desktop/tauri-artcraft
+          yarn install # change this to npm, pnpm or bun depending on which one you use.
+          npm add --global nx@latest
 
       - uses: tauri-apps/tauri-action@v0
         env:
