@@ -1,23 +1,20 @@
 import { Route, Routes } from "react-router-dom";
-import Landing from "../pages/landing/landing";
-import Navbar from "../components/navbar/navbar";
+import Landing from "../pages/landing";
+import Download from "../pages/download";
+import Navbar from "../components/navbar";
+import Footer from "../components/footer";
+
 export function App() {
   return (
     <div className="relative">
       <Navbar />
-      {/* <div role="navigation">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/page-2">Page 2</Link>
-          </li>
-        </ul>
-      </div> */}
+
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/download" element={<Download />} />
       </Routes>
+
+      <Footer />
     </div>
   );
 }

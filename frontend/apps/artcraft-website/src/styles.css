@@ -13,6 +13,6 @@
 .bg-dots {
   background-image: radial-gradient(#ffffff25 1px, transparent 0);
   background-color: #1b1b1f;
-  background-size: 36px 36px;
+  background-size: 33px 33px;
   @apply bg-center;
 }
