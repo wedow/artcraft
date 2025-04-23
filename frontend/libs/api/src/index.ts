@@ -1,3 +1,4 @@
+export * from "./lib/enums/index.js";
 export * from "./lib/AnalyticsApi.js";
 export * from "./lib/BillingApi.js";
 export * from "./lib/CommentsApi.js";
@@ -14,3 +15,5 @@ export * from "./lib/UserBookmarksApi.js";
 export * from "./lib/UsersApi.js";
 export * from "./lib/VideoApi.js";
 export * from "./lib/WeightsApi.js";
+export * from "./lib/GetCdnOrigin.js";
+export * from "./lib/LibraryModalApi.js";

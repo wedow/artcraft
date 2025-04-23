@@ -7,9 +7,11 @@ import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { LibraryModalApi } from "./LibraryModalApi";
-import { FilterMediaClasses } from "../../../../enums";
-import { GetCdnOrigin } from "~/api/GetCdnOrigin";
+import {
+  GetCdnOrigin,
+  FilterMediaClasses,
+  LibraryModalApi,
+} from "@storyteller/api";
 import { twMerge } from "tailwind-merge";
 
 export interface LibraryItem {
