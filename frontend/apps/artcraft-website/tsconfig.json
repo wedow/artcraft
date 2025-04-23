@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/components/button"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {
