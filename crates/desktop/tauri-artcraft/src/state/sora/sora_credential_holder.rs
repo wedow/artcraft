@@ -3,17 +3,27 @@ use std::sync::{Arc, RwLock};
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use openai_sora_client::credentials::SoraCredentials;
+use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
+
+// TODO: This is just so we can phase in the new credentials
+pub struct Inner {
+  credentials: Option<SoraCredentials>,
+  credential_set: Option<SoraCredentialSet>,
+}
 
 /// Hold credentials for the application.
 #[derive(Clone)]
 pub struct SoraCredentialHolder {
-  credentials: Arc<RwLock<Option<SoraCredentials>>>
+  credentials: Arc<RwLock<Inner>>,
 }
 
 impl SoraCredentialHolder {
   pub fn new() -> Self {
     Self {
-      credentials: Arc::new(RwLock::new(None))
+      credentials: Arc::new(RwLock::new(Inner {
+        credentials: None,
+        credential_set: None,
+      })),
     }
   }
 
@@ -21,7 +31,7 @@ impl SoraCredentialHolder {
     match self.credentials.write() {
       Err(err) => Err(anyhow!("Failed to acquire write lock: {:?}", err)),
       Ok(mut creds) => {
-        *creds = Some(credentials.clone());
+        creds.credentials = Some(credentials.clone());
         Ok(())
       }
     }
@@ -31,7 +41,7 @@ impl SoraCredentialHolder {
     match self.credentials.write() {
       Err(err) => Err(anyhow!("Failed to acquire write lock: {:?}", err)),
       Ok(mut creds) => {
-        *creds = None;
+        creds.credentials = None;
         Ok(())
       }
     }
@@ -41,7 +51,7 @@ impl SoraCredentialHolder {
     match self.credentials.read() {
       Err(err) => Err(anyhow!("Failed to acquire read lock: {:?}", err)),
       Ok(creds) => {
-        Ok(creds.clone())
+        Ok(creds.credentials.clone())
       }
     }
   }
@@ -49,7 +59,7 @@ impl SoraCredentialHolder {
   pub fn get_credentials_required(&self) -> AnyhowResult<SoraCredentials> {
     match self.credentials.read() {
       Err(err) => Err(anyhow!("Failed to acquire read lock: {:?}", err)),
-      Ok(creds) => match creds.deref() {
+      Ok(creds) => match &creds.credentials {
         None => Err(anyhow!("Credentials not set")),
         Some(creds) => Ok(creds.clone()),
       }
