@@ -50,6 +50,18 @@
     },
     {
       "path": "./apps/artcraft-website"
+    },
+    {
+      "path": "./libs/components/gallery-modal"
+    },
+    {
+      "path": "./libs/components/lightbox-modal"
+    },
+    {
+      "path": "./libs/components/tab-selector"
+    },
+    {
+      "path": "./libs/components/loading-spinner"
     }
   ]
 }

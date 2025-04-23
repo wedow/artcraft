@@ -1,0 +1,125 @@
+import { CloseButton } from "@storyteller/ui-close-button";
+import { Button } from "@storyteller/ui-button";
+import { Transition, TransitionChild } from "@headlessui/react";
+import { createPortal } from "react-dom";
+import dayjs from "dayjs";
+import { faDownToLine } from "@fortawesome/pro-solid-svg-icons";
+
+interface LightboxModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  imageUrl?: string | null;
+  imageAlt?: string;
+  onImageError?: () => void;
+  title?: string;
+  createdAt?: string;
+  additionalInfo?: React.ReactNode;
+  downloadUrl?: string;
+}
+
+export function LightboxModal({
+  isOpen,
+  onClose,
+  imageUrl,
+  imageAlt = "",
+  onImageError,
+  title,
+  createdAt,
+  additionalInfo,
+  downloadUrl,
+}: LightboxModalProps) {
+  return createPortal(
+    <Transition appear show={isOpen}>
+      <div className="fixed inset-0 z-[100]">
+        <TransitionChild
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div
+            className="fixed inset-0 cursor-pointer bg-black/60"
+            onClick={onClose}
+          />
+        </TransitionChild>
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          onClick={onClose}
+        >
+          <TransitionChild
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <div
+              className="relative h-[90vh] w-[80vw] rounded-xl bg-[#2C2C2C]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CloseButton
+                onClick={onClose}
+                className="absolute right-4 top-4 z-10"
+              />
+              <div className="grid h-full grid-cols-3 gap-6">
+                <div className="col-span-2 flex h-full items-center justify-center overflow-hidden rounded-l-xl bg-black/40">
+                  {!imageUrl ? (
+                    <div className="flex h-full w-full items-center justify-center bg-gray-800">
+                      <span className="text-white/60">Image not available</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={imageUrl}
+                      alt={imageAlt}
+                      className="h-full w-full object-contain"
+                      onError={onImageError}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                </div>
+                <div className="flex h-full flex-col py-5 pe-5">
+                  <div className="flex-1 space-y-4">
+                    <div className="text-xl font-medium">
+                      {title || "Image Generation"}
+                    </div>
+                    {createdAt && (
+                      <div className="text-sm text-white/60">
+                        Created:{" "}
+                        {dayjs(createdAt).format("MMM D, YYYY HH:mm:ss")}
+                      </div>
+                    )}
+                    {additionalInfo}
+                  </div>
+                  {downloadUrl && (
+                    <div className="flex justify-end">
+                      <a
+                        href={downloadUrl}
+                        download
+                        onClick={(e) => e.stopPropagation()}
+                        className="no-underline"
+                      >
+                        <Button
+                          icon={faDownToLine}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Download
+                        </Button>
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </TransitionChild>
+        </div>
+      </div>
+    </Transition>,
+    document.body
+  );
+}
+
+export default LightboxModal;
