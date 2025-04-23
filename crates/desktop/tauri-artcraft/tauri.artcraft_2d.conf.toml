@@ -3,3 +3,5 @@
 frontendDist = "../../../frontend/apps/editor2d/dist"
 beforeDevCommand = "nx run editor2d:dev"
 devUrl = "http://localhost:5741"
+[bundle]
+targets = "dmg"

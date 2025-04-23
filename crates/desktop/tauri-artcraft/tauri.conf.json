@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../../../frontend/apps/editor2d/dist",
     "devUrl": "http://localhost:5741",
-    "beforeDevCommand": "nx run editor2d:dev",
-    "beforeBuildCommand": "nx run editor2d:build"
+    "beforeDevCommand": "pwd && cd ./../../frontend && nx run editor2d:dev",
+    "beforeBuildCommand": "pwd && cd ./../../frontend && nx run editor2d:build"
   },
   "app": {
     "windows": [
