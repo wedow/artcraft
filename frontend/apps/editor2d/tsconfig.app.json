@@ -29,6 +29,12 @@
   ],
   "references": [
     {
+      "path": "../../libs/components/toaster/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/components/input/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/components/settings-modal/tsconfig.lib.json"
     },
     {

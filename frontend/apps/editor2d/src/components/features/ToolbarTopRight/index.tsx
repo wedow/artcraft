@@ -4,9 +4,11 @@ import { Activity } from "~/components/ui/Activity/Activity";
 // import { paperWrapperStyles } from "~/components/styles";
 // import { faPlus, faQuestion } from "@fortawesome/pro-solid-svg-icons";
 // import { ToolbarButton } from "~/components/features/ToolbarButton";
+
 import { Button } from "@storyteller/ui-button";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { useState } from "react";
+import { AuthButtons } from "~/components/shared_authentication/AuthButtons";
 
 export const ToolbarTopRight = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -21,8 +23,8 @@ export const ToolbarTopRight = () => {
           onClick={() => setIsSettingsModalOpen(true)}
         />
         <Activity />
+        <AuthButtons/>
       </div>
-
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}

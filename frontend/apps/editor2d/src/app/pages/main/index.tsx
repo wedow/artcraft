@@ -14,6 +14,7 @@ import { EditModeRootComponent } from "~/EditModeRootComponent/EditModeRootCompo
 import { useRef } from "react";
 import { GenerationEngine } from "~/KonvaApp/GenerationEngine";
 import { GalleryRootComponent } from "~/GalleryRootComponent";
+
 import { DemoModal } from "@storyteller/ui-demo-modal";
 
 export const isTauri = (): boolean => {
