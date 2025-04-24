@@ -30,7 +30,7 @@ pub async fn upgrade_or_renew_session(sora_credentials: &mut SoraCredentialSet) 
   }
 
   if refresh_jwt {
-    let cookies = sora_credentials.cookies.get_cookies();
+    let cookies = sora_credentials.cookies.as_str();
 
     info!("Generating new JWT bearer token...");
     let token = generate_bearer_with_cookie(cookies).await?;

@@ -1,5 +1,5 @@
+use crate::creds::credential_migration::CredentialMigrationRef;
 use serde_derive::{Deserialize, Serialize};
-use crate::credentials::SoraCredentials;
 use thiserror::Error;
 
 const SORA_IMAGE_GEN_URL: &str = "https://sora.com/backend/video_gen";
@@ -146,20 +146,41 @@ impl std::fmt::Display for RawSoraErrorInner {
 }
 
 /// Don't expose the internal request implementation as there are only a few "correct" ways to call the API.
-pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest, credentials: &SoraCredentials) -> Result<RawSoraResponse, SoraError> {
+pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest, credentials: CredentialMigrationRef<'_>) -> Result<RawSoraResponse, SoraError> {
   let client = reqwest::Client::new();
 
-  let sentinel = match credentials.sentinel.as_deref() {
-    None => return Err(SoraError::GenericError("Calls to image gen require a sentinel in the credentials payload.".to_string())),
-    Some(sentinel) => sentinel,
-  };
+  let mut cookie;
+  let mut authorization_header;
+  let mut sentinel;
+
+  match credentials {
+    CredentialMigrationRef::Legacy(creds) => {
+      cookie = creds.cookie.clone();
+      authorization_header = creds.authorization_header_value();
+      // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
+      sentinel = creds.sentinel.as_ref()
+          .map(|sentinel| sentinel.to_string())
+          .ok_or(SoraError::SentinelBlock("Sentinel is required for image generation.".to_string()))?;
+    }
+    CredentialMigrationRef::New(creds) => {
+      cookie = creds.cookies.to_string();
+      // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
+      authorization_header = creds.jwt_bearer_token.as_ref()
+          .ok_or(SoraError::InvalidJwt("JWT bearer is required for image generation".to_string()))?
+          .to_authorization_header_value();
+      // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
+      sentinel = creds.sora_sentinel.as_ref()
+          .map(|sentinel| sentinel.get_sentinel().to_string())
+          .ok_or(SoraError::SentinelBlock("Sentinel is required for image generation.".to_string()))?;
+    }
+  }
 
   let http_request = client.post(SORA_IMAGE_GEN_URL)
       .header("User-Agent", USER_AGENT)
-      .header("Cookie", &credentials.cookie)
-      .header("Authorization", credentials.authorization_header_value())
+      .header("Cookie", &cookie)
+      .header("Authorization", &authorization_header)
       .header("Content-Type", "application/json")
-      .header("OpenAI-Sentinel-Token", sentinel);
+      .header("OpenAI-Sentinel-Token", &sentinel);
 
   let http_request = http_request.json(&sora_request).build()
       .map_err(|e| SoraError::NetworkError(e.to_string()))?;

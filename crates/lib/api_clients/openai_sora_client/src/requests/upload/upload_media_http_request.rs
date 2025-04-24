@@ -1,4 +1,5 @@
 use crate::credentials::{SoraCredentials, USER_AGENT};
+use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::sora_error::SoraError;
 use reqwest::multipart::{Form, Part};
 use reqwest::Client;
@@ -65,7 +66,7 @@ pub (crate) async fn upload_media_http_request(
   file_bytes: Vec<u8>,
   filename: String,
   mime_type: &str,
-  credentials: &SoraCredentials,
+  credentials: CredentialMigrationRef<'_>,
 ) -> Result<SoraMediaUploadResponse, SoraError> {
 
   // Create multipart form
@@ -75,13 +76,30 @@ pub (crate) async fn upload_media_http_request(
 
   let form = Form::new().part("file", part);
 
+  let cookie;
+  let auth_header;
+
+  match credentials {
+    CredentialMigrationRef::Legacy(creds) => {
+      cookie = creds.cookie.clone();
+      auth_header = creds.authorization_header_value();
+    }
+    CredentialMigrationRef::New(creds) => {
+      cookie = creds.cookies.to_string();
+      auth_header = creds.jwt_bearer_token
+          .as_ref()
+          .ok_or(SoraError::NoBearerTokenAvailable)?
+          .to_authorization_header_value();
+    }
+  }
+
   // Make API request
   let client = Client::new();
   let request_builder = client.post(SORA_UPLOAD_MEDIA_URL)
       .multipart(form)
       .header("User-Agent", USER_AGENT)
-      .header("Cookie", &credentials.cookie)
-      .header("Authorization", credentials.authorization_header_value());
+      .header("Cookie", &cookie)
+      .header("Authorization", &auth_header);
 
   let response = request_builder.send().await?;
 

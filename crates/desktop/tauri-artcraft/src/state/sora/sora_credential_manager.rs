@@ -9,6 +9,8 @@ use openai_sora_client::requests::sentinel_refresh::generate::token::generate_to
 use openai_sora_client::requests::sentinel_refresh::refresh_sentinel;
 use std::fs::OpenOptions;
 use std::io::Write;
+use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
+use openai_sora_client::creds::sora_sentinel::SoraSentinel;
 
 #[derive(Clone)]
 pub struct SoraCredentialManager {
@@ -24,7 +26,8 @@ impl SoraCredentialManager {
     match read_sora_credentials_from_disk(app_data_root) {
       Err(err) => warn!("Failed to read credentials from disk: {:?}", err),
       Ok(creds) => {
-        holder.set_credentials(&creds).expect("Failed to set credentials");
+        holder.set_legacy_credentials(&creds.credentials).expect("Failed to set credentials");
+        holder.set_credentials(&creds.credentials_set).expect("Failed to set credentials");
       }
     }
 
@@ -34,30 +37,44 @@ impl SoraCredentialManager {
     }
   }
 
-  pub fn set_credentials(&self, creds: &SoraCredentials) -> AnyhowResult<()> {
+  pub fn set_legacy_credentials(&self, creds: &SoraCredentials) -> AnyhowResult<()> {
+    self.holder.set_legacy_credentials(creds)
+  }
+
+  pub fn set_credentials(&self, creds: &SoraCredentialSet) -> AnyhowResult<()> {
     self.holder.set_credentials(creds)
   }
 
   pub fn clear_credentials(&self) -> AnyhowResult<()> {
-    self.holder.clear_credentials()
+    self.holder.clear_credentials()?;
+    Ok(())
   }
 
-  pub fn get_credentials(&self) -> AnyhowResult<Option<SoraCredentials>> {
+  pub fn get_legacy_credentials(&self) -> AnyhowResult<Option<SoraCredentials>> {
+    self.holder.get_legacy_credentials()
+  }
+
+  pub fn get_legacy_credentials_required(&self) -> AnyhowResult<SoraCredentials> {
+    self.holder.get_legacy_credentials_required()
+  }
+
+  pub fn get_credentials(&self) -> AnyhowResult<Option<SoraCredentialSet>> {
     self.holder.get_credentials()
   }
 
-  pub fn get_credentials_required(&self) -> AnyhowResult<SoraCredentials> {
+  pub fn get_credentials_required(&self) -> AnyhowResult<SoraCredentialSet> {
     self.holder.get_credentials_required()
   }
 
   pub fn reset_from_disk(&self) -> AnyhowResult<SoraCredentials> {
     let creds = read_sora_credentials_from_disk(&self.app_data_root)?;
-    self.holder.set_credentials(&creds)?;
-    Ok(creds)
+    self.holder.set_credentials(&creds.credentials_set)?;
+    self.holder.set_legacy_credentials(&creds.credentials)?;
+    Ok(creds.credentials)
   }
 
   /// Refresh the sentinel token from Sora's API
-  pub async fn call_sentinel_refresh(&self) -> AnyhowResult<SoraCredentials> {
+  pub async fn call_sentinel_refresh(&self) -> AnyhowResult<SoraCredentialSet> {
     // NB(bt,2025-04-21): Technically we don't need credentials to get a sentinel.
     let mut creds = self.holder.get_credentials_required()?;
 
@@ -72,7 +89,7 @@ impl SoraCredentialManager {
 
     info!("Token obtained.");
 
-    creds.sentinel = Some(sentinel.clone());
+    creds.sora_sentinel = Some(SoraSentinel::new(sentinel.clone()));
 
     self.holder.set_credentials(&creds)?;
 

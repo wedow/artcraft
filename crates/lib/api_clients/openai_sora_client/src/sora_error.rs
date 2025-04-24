@@ -3,6 +3,9 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum SoraError {
+  /// We haven't received a bearer token yet.
+  NoBearerTokenAvailable,
+
   /// Unauthorized, cookie and/or bearer token expired. We'll need to ask for a refreshed login.
   ///
   /// Example message, e.g. from the upload endpoint:
@@ -28,13 +31,16 @@ impl Error for SoraError {}
 impl Display for SoraError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      SoraError::UnauthorizedCookieOrBearerExpired => {
+      Self::NoBearerTokenAvailable => {
+        write!(f, "Unauthorized: no bearer token set")
+      }
+      Self::UnauthorizedCookieOrBearerExpired => {
         write!(f, "Unauthorized: cookie and/or bearer token expired")
       }
-      SoraError::OtherBadStatus(err) => {
+      Self::OtherBadStatus(err) => {
         write!(f, "Other error: {}", err)
       }
-      SoraError::ReqwestError(err) => {
+      Self::ReqwestError(err) => {
         write!(f, "Reqwest error: {}", err)
       }
     }

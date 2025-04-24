@@ -15,6 +15,7 @@ use openai_sora_client::requests::upload::upload_media_from_file::SoraMediaUploa
 use std::fs::read_to_string;
 use std::io::Cursor;
 use tauri::{AppHandle, Manager, State};
+use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 
 #[tauri::command]
 pub async fn sora_image_generation_command(
@@ -43,7 +44,7 @@ pub async fn generate_image(
   sora_creds_holder: &SoraCredentialHolder,
 ) -> AnyhowResult<()> {
 
-  let sora_credentials = read_sora_credentials_from_disk(app_data_root)
+  let sora_credentials_payload = read_sora_credentials_from_disk(app_data_root)
       .map_err(|err| {
         error!("Failed to read Sora credentials from disk: {:?}", err);
         err
@@ -58,7 +59,7 @@ pub async fn generate_image(
 
     let filename = "image.png".to_string();
 
-    let response = sora_media_upload_from_bytes(image_bytes, filename, &sora_credentials)
+    let response = sora_media_upload_from_bytes(image_bytes, filename, CredentialMigrationRef::New(&sora_credentials_payload.credentials_set))
         .await
         .map_err(|err| {
           error!("Failed to upload image to Sora: {:?}", err);
@@ -73,7 +74,7 @@ pub async fn generate_image(
     num_images: NumImages::One,
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
-    credentials: &sora_credentials,
+    credentials: CredentialMigrationRef::New(&sora_credentials_payload.credentials_set),
   }).await
       .map_err(|err| {
         error!("Failed to call Sora image generation: {:?}", err);

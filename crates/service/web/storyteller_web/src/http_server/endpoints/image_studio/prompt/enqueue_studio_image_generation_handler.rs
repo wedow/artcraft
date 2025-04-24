@@ -37,6 +37,7 @@ use mysql_queries::payloads::generic_inference_args::generic_inference_args::{Ge
 use mysql_queries::payloads::generic_inference_args::inner_payloads::sora_image_gen_args::SoraImageGenArgs;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
+use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_file::{sora_media_upload_from_file, SoraMediaUploadRequest};
@@ -268,7 +269,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
   let mut sora_media_tokens = Vec::with_capacity(files_to_upload.len());
 
   for file_path in files_to_upload {
-    let sora_upload_response = sora_media_upload_from_file(file_path, &sora_credentials).await.map_err(|err| {
+    let sora_upload_response = sora_media_upload_from_file(file_path, CredentialMigrationRef::Legacy(&sora_credentials)).await.map_err(|err| {
       error!("Failed to upload scene media to Sora: {:?}", err);
       EnqueueImageGenRequestError::ServerError
     })?;
@@ -299,7 +300,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
     num_images: NumImages::One,
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
-    credentials: &sora_credentials
+    credentials: CredentialMigrationRef::Legacy(&sora_credentials),
   }).await;
 
   debug!("Sora image gen response: {:?}", response);
@@ -328,7 +329,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
           num_images: NumImages::One,
           image_size: ImageSize::Square,
           sora_media_tokens: sora_media_tokens.clone(),
-          credentials: &updated_sora_credentials
+          credentials: CredentialMigrationRef::Legacy(&updated_sora_credentials)
         }).await;
       },
       Err(e) => {
@@ -347,7 +348,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
               num_images: NumImages::One,
               image_size: ImageSize::Square,
               sora_media_tokens: sora_media_tokens.clone(),
-              credentials: &updated_sora_credentials
+              credentials: CredentialMigrationRef::Legacy(&updated_sora_credentials)
             }).await;
           },
           Err(e) => {

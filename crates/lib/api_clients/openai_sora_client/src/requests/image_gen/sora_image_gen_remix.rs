@@ -1,4 +1,4 @@
-use crate::credentials::SoraCredentials;
+use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::image_gen_http_request::{image_gen_http_request, InpaintItem, InpaintItemType, OperationType, RawSoraImageGenRequest, SoraError, VideoGenType};
 
@@ -7,7 +7,7 @@ pub struct SoraImageGenRemixRequest<'a> {
   pub num_images: NumImages,
   pub image_size: ImageSize,
   pub sora_media_tokens: Vec<String>,
-  pub credentials: &'a SoraCredentials,
+  pub credentials: CredentialMigrationRef<'a>,
 }
 
 /// The "remix" commands let you supply additional images as context.
@@ -35,7 +35,7 @@ pub async fn sora_image_gen_remix(request: SoraImageGenRemixRequest<'_>) -> Resu
     }).collect(),
   };
 
-  let result = image_gen_http_request(args, &request.credentials).await?;
+  let result = image_gen_http_request(args, request.credentials).await?;
 
   Ok(SoraImageGenResponse {
     task_id: result.id,
@@ -45,6 +45,7 @@ pub async fn sora_image_gen_remix(request: SoraImageGenRemixRequest<'_>) -> Resu
 #[cfg(test)]
 mod tests {
   use crate::credentials::SoraCredentials;
+  use crate::creds::credential_migration::CredentialMigrationRef;
   use crate::requests::image_gen::common::{ImageSize, NumImages};
   use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
   use errors::AnyhowResult;
@@ -74,7 +75,7 @@ mod tests {
       num_images: NumImages::One,
       image_size: ImageSize::Square,
       sora_media_tokens: vec!["media_01jqyhrz4detyvtzwp2p4j63ad".to_string()],
-      credentials: &creds,
+      credentials: CredentialMigrationRef::Legacy(&creds),
     }).await?;
 
     println!("task_id: {}", response.task_id);
