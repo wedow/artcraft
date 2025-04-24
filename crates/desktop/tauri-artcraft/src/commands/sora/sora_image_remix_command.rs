@@ -50,6 +50,8 @@ pub async fn sora_image_remix_command(
 ) -> Result<String, String> {
   info!("image_generation_command called; processing image...");
 
+  // TODO(bt,2025-04-24): Better error messages to caller
+
   generate_image(request, &app_data_root, &sora_creds_manager)
     .await
     .map_err(|err| {
@@ -82,7 +84,6 @@ pub async fn generate_image(
 
   // TODO(bt,2025-04-21): Read from in-memory cache instead, but allow for desktop replacement.
   let mut creds = read_sora_credentials_from_disk(app_data_root)
-    .await
     .map_err(|err| {
       error!("Failed to read Sora credentials from disk: {:?}", err);
       err

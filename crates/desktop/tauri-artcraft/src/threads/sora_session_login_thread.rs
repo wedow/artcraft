@@ -1,3 +1,4 @@
+use std::fs;
 use crate::state::app_dir::AppDataRoot;
 use crate::state::sora::sora_credential_holder::SoraCredentialHolder;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -10,7 +11,8 @@ use once_cell::sync::Lazy;
 use reqwest::Url;
 use std::fs::{read_to_string, OpenOptions};
 use std::io::Write;
-use chrono::{DateTime, NaiveDateTime};
+use std::ops::Sub;
+use chrono::{DateTime, NaiveDateTime, TimeDelta};
 use tauri::{AppHandle, Manager, Webview};
 
 pub const LOGIN_WINDOW_NAME: &str = "login_window";
@@ -35,7 +37,11 @@ pub async fn sora_session_login_thread(
   loop {
     for (window_name, webview) in app.webviews() {
       if window_name == LOGIN_WINDOW_NAME {
-        let result = check_login_window(&webview, &app_data_root).await;
+        let result = check_login_window(
+          &webview,
+          &app_data_root,
+          &sora_creds_manager,
+        ).await;
         if let Err(err) = result {
           error!("Error checking login window: {:?}", err);
         }
@@ -46,10 +52,14 @@ pub async fn sora_session_login_thread(
   }
 }
 
-async fn check_login_window(webview: &Webview, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
+async fn check_login_window(
+  webview: &Webview,
+  app_data_root: &AppDataRoot,
+  sora_credential_manager: &SoraCredentialManager,
+) -> AnyhowResult<()> {
   clear_browsing_data_on_test_domain(webview)?;
   //keep_on_task(webview)?;
-  extract_cookies_to_file(webview, app_data_root)?;
+  extract_cookies_to_file(webview, app_data_root, sora_credential_manager)?;
   //initialize_sora_jwt_bearer_token(app_data_root).await?; // TODO: This only runs once. We need better management.
   Ok(())
 }
@@ -93,7 +103,11 @@ fn clear_browsing_data_on_test_domain(webview: &Webview) -> AnyhowResult<()> {
 }
 
 // TODO(bt,2025-04-07): Heuristic to detect when logged in. Only write when logged in.
-fn extract_cookies_to_file(webview: &Webview, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
+fn extract_cookies_to_file(
+  webview: &Webview,
+  app_data_root: &AppDataRoot,
+  sora_credential_manager: &SoraCredentialManager,
+) -> AnyhowResult<()> {
   let new_cookies = get_all_sora_cookies_as_string(webview)?.trim().to_string();
   let maybe_old_cookies = read_sora_cookies_from_disk(app_data_root);
 
@@ -102,6 +116,18 @@ fn extract_cookies_to_file(webview: &Webview, app_data_root: &AppDataRoot) -> An
   if let Some(old_cookies) = maybe_old_cookies {
     should_write_cookies = old_cookies != new_cookies;
   }
+
+  if !should_write_cookies {
+    return Ok(());
+  }
+
+  // TODO(bt): Race conditions ahead.
+
+  sora_credential_manager.clear_credentials()?;
+
+  fs::remove_file(app_data_root.get_sora_cookie_file_path())?;
+  fs::remove_file(app_data_root.get_sora_bearer_token_file_path())?;
+  fs::remove_file(app_data_root.get_sora_sentinel_file_path())?;
 
   let cookie_file = app_data_root.get_sora_cookie_file_path();
 
@@ -113,6 +139,8 @@ fn extract_cookies_to_file(webview: &Webview, app_data_root: &AppDataRoot) -> An
 
   file.write_all(new_cookies.as_bytes())?;
   file.flush()?;
+
+  sora_credential_manager.reset_from_disk()?;
 
   Ok(())
 }

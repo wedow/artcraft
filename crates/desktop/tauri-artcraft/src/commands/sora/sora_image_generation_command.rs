@@ -45,7 +45,6 @@ pub async fn generate_image(
 ) -> AnyhowResult<()> {
 
   let creds = read_sora_credentials_from_disk(app_data_root)
-      .await
       .map_err(|err| {
         error!("Failed to read Sora credentials from disk: {:?}", err);
         err

@@ -28,7 +28,7 @@ pub async fn run() {
   let app_data_root2 = config.app_data_root.clone();
 
   println!("Attempting to read existing credentials...");
-  let sora_creds_manager = SoraCredentialManager::initialize_from_disk_infallible(&app_data_root).await;
+  let sora_creds_manager = SoraCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let sora_creds_manager2 = sora_creds_manager.clone();
 
   println!("Initializing backend runtime...");
