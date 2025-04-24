@@ -4,7 +4,7 @@ import { Button, LoadingSpinner } from "~/components/ui";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
 import { GenerationLoadingState, generationSignal } from "~/signals";
 import { useRef, useState } from "react";
-import BackgroundGallery from "./BackgroundGallery";
+// import BackgroundGallery from "./BackgroundGallery";
 import { twMerge } from "tailwind-merge";
 import { Transition } from "@headlessui/react";
 import { GenerationEngine } from "~/KonvaApp/GenerationEngine";
@@ -138,7 +138,7 @@ export const GenerationRootComponent = ({
         </div>
       </div>
 
-      <Transition
+      {/* <Transition
         show={generationState.loadingState === GenerationLoadingState.INIT}
         enter="transition-opacity duration-700"
         enterFrom="opacity-0"
@@ -149,7 +149,7 @@ export const GenerationRootComponent = ({
         as="div"
       >
         <BackgroundGallery />
-      </Transition>
+      </Transition> */}
     </>
   );
 };
