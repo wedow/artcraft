@@ -99,13 +99,17 @@ pub async fn generate_image(
 
   let mut sora_media_tokens = Vec::with_capacity(files_to_upload.len());
 
-  for file_path in files_to_upload {
+  for (i, file_path) in files_to_upload.iter().enumerate() {
+    info!("Uploading image {} of {}...", (i+1), files_to_upload.len());
+
     // TODO(bt,2025-04-24): Handle JWT reset error.
     let sora_upload_response = sora_media_upload_from_file(file_path, CredentialMigrationRef::New(&creds))
         .await?;
 
     sora_media_tokens.push(sora_upload_response.id);
   }
+
+  info!("Calling image generation...");
 
   // TODO(bt,2025-04-21): Download media tokens.
   //  Note: This is incredibly inefficient. We should keep a local cache.

@@ -1,3 +1,4 @@
+use log::info;
 use crate::credentials::{SoraCredentials, USER_AGENT};
 use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::sora_error::SoraError;
@@ -105,6 +106,7 @@ pub (crate) async fn upload_media_http_request(
 
   // Check response status
   if !response.status().is_success() {
+    info!("Error uploading image: {:?}", response.status());
     let error = classify_error(response).await;
     return Err(error);
   }

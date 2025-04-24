@@ -16,7 +16,7 @@ use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub async fn run() {
+pub fn run() {
   // NB: Tauri wants to install the logger itself, so we can't rely on the logger crate 
   // until the tauri runtime begins.
   println!("Loading model config...");

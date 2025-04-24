@@ -113,8 +113,10 @@ fn extract_cookies_to_file(
 
   let mut should_write_cookies = maybe_old_cookies.is_none();
 
-  if let Some(old_cookies) = maybe_old_cookies {
-    should_write_cookies = old_cookies != new_cookies;
+  if new_cookies.len() > 50 {
+    if let Some(old_cookies) = maybe_old_cookies {
+      should_write_cookies = old_cookies != new_cookies;
+    }
   }
 
   if !should_write_cookies {
@@ -125,9 +127,9 @@ fn extract_cookies_to_file(
 
   sora_credential_manager.clear_credentials()?;
 
-  fs::remove_file(app_data_root.get_sora_cookie_file_path())?;
-  fs::remove_file(app_data_root.get_sora_bearer_token_file_path())?;
-  fs::remove_file(app_data_root.get_sora_sentinel_file_path())?;
+  let _r = fs::remove_file(app_data_root.get_sora_cookie_file_path());
+  let _r = fs::remove_file(app_data_root.get_sora_bearer_token_file_path());
+  let _r = fs::remove_file(app_data_root.get_sora_sentinel_file_path());
 
   let cookie_file = app_data_root.get_sora_cookie_file_path();
 

@@ -4,7 +4,6 @@ use crate::state::sora::sora_credential_holder::SoraCredentialHolder;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
-use openai_sora_client::credentials::SoraCredentials;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::creds::sora_sentinel::SoraSentinel;
 use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
@@ -35,10 +34,6 @@ impl SoraCredentialManager {
     }
   }
 
-  pub fn set_legacy_credentials(&self, creds: &SoraCredentials) -> AnyhowResult<()> {
-    self.holder.set_legacy_credentials(creds)
-  }
-
   pub fn set_credentials(&self, creds: &SoraCredentialSet) -> AnyhowResult<()> {
     self.holder.set_credentials(creds)
   }
@@ -46,14 +41,6 @@ impl SoraCredentialManager {
   pub fn clear_credentials(&self) -> AnyhowResult<()> {
     self.holder.clear_credentials()?;
     Ok(())
-  }
-
-  pub fn get_legacy_credentials(&self) -> AnyhowResult<Option<SoraCredentials>> {
-    self.holder.get_legacy_credentials()
-  }
-
-  pub fn get_legacy_credentials_required(&self) -> AnyhowResult<SoraCredentials> {
-    self.holder.get_legacy_credentials_required()
   }
 
   pub fn get_credentials(&self) -> AnyhowResult<Option<SoraCredentialSet>> {
