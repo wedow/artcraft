@@ -1,2 +1,2 @@
-pub mod upgrade_or_renew_session;
+pub mod maybe_upgrade_or_renew_session;
 pub mod wait_for_image_gen_status;

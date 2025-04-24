@@ -6,7 +6,7 @@ use openai_sora_client::creds::sora_cookies::SoraCookies;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use openai_sora_client::creds::sora_sentinel::SoraSentinel;
-use openai_sora_client::recipes::upgrade_or_renew_session::upgrade_or_renew_session;
+use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use std::fs::{read_to_string, OpenOptions};
 use std::io::Write;
 
@@ -49,7 +49,7 @@ pub async fn read_sora_credentials_from_disk_with_upgrade(app_data_root: &AppDat
     sentinel,
   );
 
-  let response = upgrade_or_renew_session(&mut credentials).await;
+  let response = maybe_upgrade_or_renew_session(&mut credentials).await;
 
   if let Err(err) = response {
     // NB: Make this portion infallible. Don't die on setup. We can recover downstream.
