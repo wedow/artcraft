@@ -1,4 +1,4 @@
-import { ApiManager, ApiResponse } from "../apis/ApiManager";
+import { ApiManager, ApiResponse } from "./ApiManager";
 
 export class CommentsApi extends ApiManager {
   public CreateComment({

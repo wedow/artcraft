@@ -1,5 +1,5 @@
 // libs/api-client/src/JobsApi.ts
-import { ApiManager, ApiResponse } from "../../../api/src/lib/ApiManager.js";
+import { ApiManager, ApiResponse } from "./ApiManager.js";
 import { Job, JobPreview } from "./models/Job.js";
 import { JobState } from "./models/JobState.js";
 
@@ -59,7 +59,7 @@ export class JobsApi extends ApiManager {
 
   public ListRecentJobs(): Promise<ApiResponse<Job[]>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/session`;
-    
+
     return this.get<{
       success: boolean;
       jobs: Job[];
