@@ -8,6 +8,7 @@ use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, ImageReader};
 use log::{error, info};
 use openai_sora_client::credentials::SoraCredentials;
+use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
@@ -15,7 +16,6 @@ use openai_sora_client::requests::upload::upload_media_from_file::SoraMediaUploa
 use std::fs::read_to_string;
 use std::io::Cursor;
 use tauri::{AppHandle, Manager, State};
-use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 
 #[tauri::command]
 pub async fn sora_image_generation_command(
@@ -44,13 +44,12 @@ pub async fn generate_image(
   sora_creds_holder: &SoraCredentialHolder,
 ) -> AnyhowResult<()> {
 
-  let sora_credentials_payload = read_sora_credentials_from_disk(app_data_root)
+  let creds = read_sora_credentials_from_disk(app_data_root)
+      .await
       .map_err(|err| {
         error!("Failed to read Sora credentials from disk: {:?}", err);
         err
       })?;
-
-  //let sora_credentials = sora_creds_holder.get_credentials()?;
 
   let mut sora_media_tokens = vec![];
 
@@ -59,7 +58,7 @@ pub async fn generate_image(
 
     let filename = "image.png".to_string();
 
-    let response = sora_media_upload_from_bytes(image_bytes, filename, CredentialMigrationRef::New(&sora_credentials_payload.credentials_set))
+    let response = sora_media_upload_from_bytes(image_bytes, filename, CredentialMigrationRef::New(&creds))
         .await
         .map_err(|err| {
           error!("Failed to upload image to Sora: {:?}", err);
@@ -74,7 +73,7 @@ pub async fn generate_image(
     num_images: NumImages::One,
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
-    credentials: CredentialMigrationRef::New(&sora_credentials_payload.credentials_set),
+    credentials: CredentialMigrationRef::New(&creds),
   }).await
       .map_err(|err| {
         error!("Failed to call Sora image generation: {:?}", err);

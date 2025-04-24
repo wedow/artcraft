@@ -81,21 +81,20 @@ pub async fn generate_image(
   let files_to_upload = vec![filename];
 
   // TODO(bt,2025-04-21): Read from in-memory cache instead, but allow for desktop replacement.
-  let sora_creds_payload= read_sora_credentials_from_disk(app_data_root)
+  let mut creds = read_sora_credentials_from_disk(app_data_root)
+    .await
     .map_err(|err| {
       error!("Failed to read Sora credentials from disk: {:?}", err);
       err
     })?;
 
-  let mut sora_creds = sora_creds_payload.credentials_set;
-
   let no_sentinel = !app_data_root.get_sora_sentinel_file_path().is_file()
-      || sora_creds.sora_sentinel.is_none();
+      || creds.sora_sentinel.is_none();
 
   if no_sentinel {
     info!("Refreshing credentials...");
 
-    sora_creds = sora_creds_manager.call_sentinel_refresh()
+    creds = sora_creds_manager.call_sentinel_refresh()
         .await
         .map_err(|err| {
           error!("Failed to refresh: {:?}", err);
@@ -108,7 +107,7 @@ pub async fn generate_image(
   let mut sora_media_tokens = Vec::with_capacity(files_to_upload.len());
 
   for file_path in files_to_upload {
-    let sora_upload_response = sora_media_upload_from_file(file_path, CredentialMigrationRef::New(&sora_creds))
+    let sora_upload_response = sora_media_upload_from_file(file_path, CredentialMigrationRef::New(&creds))
         .await?;
 
     sora_media_tokens.push(sora_upload_response.id);
@@ -123,13 +122,13 @@ pub async fn generate_image(
     num_images: NumImages::One,
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
-    credentials: CredentialMigrationRef::New(&sora_creds),
+    credentials: CredentialMigrationRef::New(&creds),
   }).await;
 
   if let Err(err) = &response {
     error!("Error in generating image: {:?}", err);
 
-    sora_creds = sora_creds_manager.call_sentinel_refresh()
+    creds = sora_creds_manager.call_sentinel_refresh()
         .await
         .map_err(|err| {
           error!("Failed to refresh: {:?}", err);
@@ -143,7 +142,7 @@ pub async fn generate_image(
       num_images: NumImages::One,
       image_size: ImageSize::Square,
       sora_media_tokens: sora_media_tokens.clone(),
-      credentials: CredentialMigrationRef::New(&sora_creds),
+      credentials: CredentialMigrationRef::New(&creds),
     }).await;
   }
 

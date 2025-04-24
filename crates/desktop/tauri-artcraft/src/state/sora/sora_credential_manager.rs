@@ -19,14 +19,13 @@ pub struct SoraCredentialManager {
 
 impl SoraCredentialManager {
 
-  pub fn initialize_from_disk_infallible(app_data_root: &AppDataRoot) -> Self {
+  pub async fn initialize_from_disk_infallible(app_data_root: &AppDataRoot) -> Self {
     let holder = SoraCredentialHolder::new();
 
-    match read_sora_credentials_from_disk(app_data_root) {
+    match read_sora_credentials_from_disk(app_data_root).await {
       Err(err) => warn!("Failed to read credentials from disk: {:?}", err),
       Ok(creds) => {
-        holder.set_legacy_credentials(&creds.credentials).expect("Failed to set credentials");
-        holder.set_credentials(&creds.credentials_set).expect("Failed to set credentials");
+        holder.set_credentials(&creds).expect("Failed to set credentials");
       }
     }
 
@@ -65,11 +64,10 @@ impl SoraCredentialManager {
     self.holder.get_credentials_required()
   }
 
-  pub fn reset_from_disk(&self) -> AnyhowResult<SoraCredentials> {
-    let creds = read_sora_credentials_from_disk(&self.app_data_root)?;
-    self.holder.set_credentials(&creds.credentials_set)?;
-    self.holder.set_legacy_credentials(&creds.credentials)?;
-    Ok(creds.credentials)
+  pub async fn reset_from_disk(&self) -> AnyhowResult<SoraCredentialSet> {
+    let creds = read_sora_credentials_from_disk(&self.app_data_root).await?;
+    self.holder.set_credentials(&creds)?;
+    Ok(creds)
   }
 
   /// Refresh the sentinel token from Sora's API

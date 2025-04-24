@@ -13,6 +13,18 @@ pub struct SoraCredentialSet {
 }
 
 impl SoraCredentialSet {
+  pub fn initialize(
+    cookies: SoraCookies,
+    bearer: Option<SoraJwtBearerToken>,
+    sentinel: Option<SoraSentinel>
+  ) -> Self {
+    Self {
+      cookies,
+      jwt_bearer_token: bearer,
+      sora_sentinel: sentinel,
+    }
+  }
+
   pub fn initialize_with_just_cookies(cookies: SoraCookies) -> Self {
     SoraCredentialSet {
       cookies,
