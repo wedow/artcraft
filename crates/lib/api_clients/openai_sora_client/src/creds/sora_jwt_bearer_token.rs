@@ -21,6 +21,10 @@ impl SoraJwtBearerToken {
     &self.token
   }
 
+  pub fn as_bytes(&self) -> &[u8] {
+    self.token.as_bytes()
+  }
+
   pub fn jwt_claims(&self) -> &SoraJwtClaims {
     &self.jwt_claims
   }

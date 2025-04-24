@@ -14,6 +14,9 @@ use std::io::Write;
 use std::ops::Sub;
 use chrono::{DateTime, NaiveDateTime, TimeDelta};
 use tauri::{AppHandle, Manager, Webview};
+use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
+use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
+use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 
 pub const LOGIN_WINDOW_NAME: &str = "login_window";
 
@@ -59,7 +62,7 @@ async fn check_login_window(
 ) -> AnyhowResult<()> {
   clear_browsing_data_on_test_domain(webview)?;
   //keep_on_task(webview)?;
-  extract_cookies_to_file(webview, app_data_root, sora_credential_manager)?;
+  extract_cookies_to_file(webview, app_data_root, sora_credential_manager).await?;
   //initialize_sora_jwt_bearer_token(app_data_root).await?; // TODO: This only runs once. We need better management.
   Ok(())
 }
@@ -103,7 +106,7 @@ fn clear_browsing_data_on_test_domain(webview: &Webview) -> AnyhowResult<()> {
 }
 
 // TODO(bt,2025-04-07): Heuristic to detect when logged in. Only write when logged in.
-fn extract_cookies_to_file(
+async fn extract_cookies_to_file(
   webview: &Webview,
   app_data_root: &AppDataRoot,
   sora_credential_manager: &SoraCredentialManager,
@@ -114,15 +117,19 @@ fn extract_cookies_to_file(
     return Ok(());
   }
 
-  let maybe_old_cookies = read_sora_cookies_from_disk(app_data_root);
+  let session_cookie_presence = has_session_cookie(&new_cookies)
+      .unwrap_or_else(|err| {
+        error!("Failed to check for session cookie: {:?}", err);
+        SessionCookiePresence::MaybePresent
+      });
 
-  let mut should_write_cookies = maybe_old_cookies.is_none();
+  info!("Session cookies are: {:?}", session_cookie_presence);
 
-  if new_cookies.len() > 50 {
-    if let Some(old_cookies) = maybe_old_cookies {
-      should_write_cookies = old_cookies != new_cookies;
-    }
-  }
+  let (should_write_cookies, should_upgrade_session) = match session_cookie_presence {
+    SessionCookiePresence::Present => (true, true),
+    SessionCookiePresence::MaybePresent => (true, false),
+    SessionCookiePresence::Absent => (false, false),
+  };
 
   if !should_write_cookies {
     return Ok(());
@@ -136,18 +143,15 @@ fn extract_cookies_to_file(
   let _r = fs::remove_file(app_data_root.get_sora_bearer_token_file_path());
   let _r = fs::remove_file(app_data_root.get_sora_sentinel_file_path());
 
-  let cookie_file = app_data_root.get_sora_cookie_file_path();
+  let mut new_credentials =
+      SoraCredentialSet::initialize_with_just_cookies_str(&new_cookies);
 
-  let mut file = OpenOptions::new()
-      .create(true)
-      .write(true)
-      .truncate(true)
-      .open(cookie_file)?;
+  if should_upgrade_session {
+    let _upgraded = maybe_upgrade_or_renew_session(&mut new_credentials).await?;
+  }
 
-  file.write_all(new_cookies.as_bytes())?;
-  file.flush()?;
-
-  sora_credential_manager.reset_from_disk()?;
+  sora_credential_manager.set_credentials(&new_credentials)?;
+  sora_credential_manager.persist_all_to_disk()?;
 
   Ok(())
 }
