@@ -11,9 +11,9 @@ use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, ImageReader};
 use log::{debug, error, info};
 use openai_sora_client::credentials::SoraCredentials;
+use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
-use openai_sora_client::requests::sentinel_refresh::refresh_sentinel;
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
 use openai_sora_client::requests::upload::upload_media_from_file::{sora_media_upload_from_file, SoraMediaUploadRequest};
 use serde_derive::Deserialize;
@@ -22,7 +22,6 @@ use std::io::Cursor;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
-use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize)]

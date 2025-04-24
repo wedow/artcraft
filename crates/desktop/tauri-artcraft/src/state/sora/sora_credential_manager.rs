@@ -5,12 +5,11 @@ use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
 use openai_sora_client::credentials::SoraCredentials;
-use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
-use openai_sora_client::requests::sentinel_refresh::refresh_sentinel;
-use std::fs::OpenOptions;
-use std::io::Write;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::creds::sora_sentinel::SoraSentinel;
+use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
+use std::fs::OpenOptions;
+use std::io::Write;
 
 #[derive(Clone)]
 pub struct SoraCredentialManager {

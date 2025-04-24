@@ -1,10 +1,10 @@
 use crate::credentials::SoraCredentials;
+use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::requests::upload::upload_media_http_request::{upload_media_http_request, SoraMediaUploadResponse};
 use errors::AnyhowResult;
 use std::path::Path;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
-use crate::creds::credential_migration::CredentialMigrationRef;
 
 /// Try to prevent buffer reallocations.
 /// There's a better way to implement this.
@@ -43,11 +43,11 @@ pub async fn sora_media_upload_from_file<P: AsRef<Path>>(file_path: P, creds: Cr
 #[cfg(test)]
 mod tests {
   use crate::credentials::SoraCredentials;
+  use crate::creds::credential_migration::CredentialMigrationRef;
   use crate::requests::upload::upload_media_from_file::sora_media_upload_from_file;
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
-  use crate::creds::credential_migration::CredentialMigrationRef;
 
   #[ignore] // You can manually run "ignore" tests in the IDE, but they won't run in CI.
   #[tokio::test]

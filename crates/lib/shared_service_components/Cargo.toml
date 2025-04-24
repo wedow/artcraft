@@ -27,6 +27,7 @@ errors = { workspace = true }
 anyhow = { workspace = true }
 log = { workspace = true }
 r2d2_redis = "0.14.0"
+reqwest = { workspace = true, features = ["multipart", "gzip"] }
 
 [dev-dependencies]
 # None yet

@@ -17,7 +17,7 @@ use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use openai_sora_client::credentials::SoraCredentials;
 use openai_sora_client::requests::image_gen::SoraError;
 use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
-use openai_sora_client::requests::sentinel_refresh::refresh_sentinel;
+use shared_service_components::sora_redis_sentinel_refresh::refresh::refresh_sentinel;
 use serde::Deserialize;
 use serde::Serialize;
 use shared_service_components::sora_redis_credentials::keys::RedisSoraCredentialSubkey;
