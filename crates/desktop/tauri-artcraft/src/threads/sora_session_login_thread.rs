@@ -5,11 +5,12 @@ use crate::utils::sora::initialize_sora_jwt_bearer_token::initialize_sora_jwt_be
 use crate::utils::sora_webview_cookies::get_all_sora_cookies_as_string;
 use anyhow::anyhow;
 use errors::AnyhowResult;
-use log::{error, info};
+use log::{error, info, warn};
 use once_cell::sync::Lazy;
 use reqwest::Url;
-use std::fs::OpenOptions;
+use std::fs::{read_to_string, OpenOptions};
 use std::io::Write;
+use chrono::{DateTime, NaiveDateTime};
 use tauri::{AppHandle, Manager, Webview};
 
 pub const LOGIN_WINDOW_NAME: &str = "login_window";
@@ -93,7 +94,14 @@ fn clear_browsing_data_on_test_domain(webview: &Webview) -> AnyhowResult<()> {
 
 // TODO(bt,2025-04-07): Heuristic to detect when logged in. Only write when logged in.
 fn extract_cookies_to_file(webview: &Webview, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
-  let cookies = get_all_sora_cookies_as_string(webview)?;
+  let new_cookies = get_all_sora_cookies_as_string(webview)?.trim().to_string();
+  let maybe_old_cookies = read_sora_cookies_from_disk(app_data_root);
+
+  let mut should_write_cookies = maybe_old_cookies.is_none();
+
+  if let Some(old_cookies) = maybe_old_cookies {
+    should_write_cookies = old_cookies != new_cookies;
+  }
 
   let cookie_file = app_data_root.get_sora_cookie_file_path();
 
@@ -103,8 +111,23 @@ fn extract_cookies_to_file(webview: &Webview, app_data_root: &AppDataRoot) -> An
       .truncate(true)
       .open(cookie_file)?;
 
-  file.write_all(cookies.as_bytes())?;
+  file.write_all(new_cookies.as_bytes())?;
   file.flush()?;
 
   Ok(())
+}
+
+pub fn read_sora_cookies_from_disk(app_data_root: &AppDataRoot) -> Option<String> {
+  let cookie_file = app_data_root.get_sora_cookie_file_path();
+  if !cookie_file.exists() {
+    return None;
+  }
+
+  match read_to_string(cookie_file) {
+    Ok(contents) => Some(contents.trim().to_string()),
+    Err(err) => {
+      warn!("Failed to read cookie file: {:?}", err);
+      None
+    }
+  }
 }
