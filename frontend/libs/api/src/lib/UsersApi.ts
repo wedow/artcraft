@@ -62,6 +62,7 @@ export class UsersApi extends ApiManager {
     usernameOrEmail: string;
     password: string;
   }): Promise<ApiResponse<{ signedSession?: string }>> {
+    console.log("Logging in with usernameOrEmail:", usernameOrEmail);
     const endpoint = `${this.ApiTargets.BaseApi}/v1/login`;
     const body = {
       username_or_email: usernameOrEmail,

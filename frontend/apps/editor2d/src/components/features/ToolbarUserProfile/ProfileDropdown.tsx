@@ -21,21 +21,8 @@ export function ProfileDropdown() {
     signals: { userInfo },
     fetchers: { logout },
   } = authentication;
-
+  
   if (!userInfo.value) return null;
-
-  // Extract user info for better readability
-  const {
-    core_info: {
-      username,
-      gravatar_hash: emailHash,
-      display_name,
-      default_avatar: {
-        image_index: avatarIndex,
-        color_index: backgroundColorIndex,
-      },
-    },
-  } = userInfo.value;
 
   const profileUrl = `https://storyteller.ai/profile/${display_name}`;
 

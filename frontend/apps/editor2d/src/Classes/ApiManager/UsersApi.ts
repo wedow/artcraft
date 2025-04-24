@@ -63,6 +63,7 @@ export class UsersApi extends ApiManager {
     password: string;
   }): Promise<ApiResponse<{ signedSession?: string }>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/login`;
+  
     const body = {
       username_or_email: usernameOrEmail,
       password: password,

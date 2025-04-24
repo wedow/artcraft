@@ -2,14 +2,16 @@ import { useSignals } from "@preact/signals-react/runtime";
 // import { AUTH_STATUS } from "~/signals/authentication/enums";
 // import { authentication } from "~/signals";
 import { ButtonLink } from "~/components/reusable/ButtonLink/ButtonLink";
+import { ProfileDropdown } from "../features/ToolbarUserProfile/ProfileDropdown";
 // import ProfileDropdown from "./ProfileDropdown";
 
 // TODO MAKE THIS A SHARED COMPONENT ART CRAFT
 export const AuthButtons = () => {
   useSignals();
-  //const { status } = authentication;
+  // const { status } = authentication;
+  // status.value === AUTH_STATUS.LOGGED_IN
+
   if (false) {
-    // status.value === AUTH_STATUS.LOGGED_IN
     return <ProfileDropdown />;
   } else {
     return (

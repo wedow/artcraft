@@ -2,12 +2,6 @@
   "files": [],
   "references": [
     {
-      "path": "../../libs/components/toaster"
-    },
-    {
-      "path": "../../libs/components/input"
-    },
-    {
       "path": "../../libs/components/settings-modal"
     },
     {
@@ -18,6 +12,9 @@
     },
     {
       "path": "../../libs/components/demo-modal"
+    },
+    {
+      "path": "../../libs/api"
     },
     {
       "path": "./tsconfig.app.json"

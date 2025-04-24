@@ -5,7 +5,7 @@ import { faKey, faUser } from "@fortawesome/pro-solid-svg-icons";
 import { Button, Input, LoadingSpinner } from "~/components/ui";
 import { authentication } from "~/signals";
 import { twMerge } from "tailwind-merge";
-
+import { UsersApi } from "@storyteller/api";
 export const Login = () => {
   const {
     signals: { status: authStatus },
@@ -36,17 +36,21 @@ export const Login = () => {
     return "Getting Session...";
   }
 
-  const handleOnSumbit = (ev: React.FormEvent<HTMLFormElement>) => {
+  const handleOnSumbit = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     if (formRef.current) {
       const form = new FormData(formRef.current);
       const usernameOrEmail = form.get("usernameOrEmail")?.toString();
       const password = form.get("password")?.toString();
-      if (usernameOrEmail && password && login) {
-        login({
+   
+      if (usernameOrEmail && password) {
+        let api = new UsersApi();
+        
+        let response = await api.Login({
           usernameOrEmail,
           password,
         });
+        console.log("response", response);
       }
     }
   }; // end handleOnSubmit
