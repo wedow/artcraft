@@ -10,7 +10,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   GetCdnOrigin,
   FilterMediaClasses,
-  LibraryModalApi,
+  GalleryModalApi,
   UsersApi,
 } from "@storyteller/api";
 import { twMerge } from "tailwind-merge";
@@ -29,7 +29,7 @@ interface GroupedItems {
 
 type ModalMode = "select" | "view";
 
-interface LibraryModalProps {
+interface GalleryModalProps {
   isOpen: boolean;
   onClose: () => void;
   mode: ModalMode;
@@ -54,7 +54,7 @@ export const GalleryModal = React.memo(
     tabs,
     activeTab,
     onTabChange,
-  }: LibraryModalProps) => {
+  }: GalleryModalProps) => {
     const [groupedItems, setGroupedItems] = useState<GroupedItems>({});
     const [loading, setLoading] = useState(false);
     const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(
@@ -65,7 +65,7 @@ export const GalleryModal = React.memo(
     const [username, setUsername] = useState<string>("");
     const cdnOrigin = GetCdnOrigin();
     const imageUrl = lightboxImage?.fullImage || "";
-    const api = useMemo(() => new LibraryModalApi(), []);
+    const api = useMemo(() => new GalleryModalApi(), []);
     const usersApi = useMemo(() => new UsersApi(), []);
 
     const formatDate = useCallback((date: string) => {
@@ -187,7 +187,7 @@ export const GalleryModal = React.memo(
     }, []);
 
     const handleDeselectAll = useCallback(() => {
-      selectedItemIds.forEach((id) => onSelectItem?.(id));
+      selectedItemIds.forEach((id: any) => onSelectItem?.(id));
     }, [selectedItemIds, onSelectItem]);
 
     const handleUseSelected = useCallback(() => {

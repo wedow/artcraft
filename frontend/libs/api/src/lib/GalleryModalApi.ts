@@ -1,9 +1,9 @@
-import { MediaFilesApi } from "lib/MediaFilesApi.js";
+import { MediaFilesApi } from "./MediaFilesApi.js";
 import {
   FilterMediaClasses,
   FilterMediaType,
   FilterEngineCategories,
-} from "lib/enums/QueryFilters.js";
+} from "./enums/QueryFilters.js";
 
 interface ListUserMediaQuery {
   username: string;
@@ -14,7 +14,7 @@ interface ListUserMediaQuery {
   include_user_uploads?: boolean;
 }
 
-export class LibraryModalApi extends MediaFilesApi {
+export class GalleryModalApi extends MediaFilesApi {
   constructor() {
     super();
   }

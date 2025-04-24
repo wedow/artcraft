@@ -16,4 +16,4 @@ export * from "./lib/UsersApi.js";
 export * from "./lib/VideoApi.js";
 export * from "./lib/WeightsApi.js";
 export * from "./lib/GetCdnOrigin.js";
-export * from "./lib/LibraryModalApi.js";
+export * from "./lib/GalleryModalApi.js";
