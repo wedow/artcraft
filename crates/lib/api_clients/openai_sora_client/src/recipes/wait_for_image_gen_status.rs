@@ -1,6 +1,6 @@
 use crate::credentials::SoraCredentials;
 use crate::requests::image_gen::image_gen_status::TaskStatus;
-use crate::requests::image_gen::{get_image_gen_status, StatusRequest, TaskResponse, VideoGenStatusResponse};
+use crate::requests::image_gen::image_gen_status::{get_image_gen_status, StatusRequest, TaskResponse, VideoGenStatusResponse};
 use errors::AnyhowResult;
 
 pub async fn wait_for_image_gen_status(task_id: &String, credentials: &SoraCredentials, retry_limit: Option<u32>) -> AnyhowResult<TaskResponse> {
