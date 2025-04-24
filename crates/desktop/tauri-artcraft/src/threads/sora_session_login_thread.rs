@@ -109,6 +109,11 @@ fn extract_cookies_to_file(
   sora_credential_manager: &SoraCredentialManager,
 ) -> AnyhowResult<()> {
   let new_cookies = get_all_sora_cookies_as_string(webview)?.trim().to_string();
+
+  if new_cookies.is_empty() {
+    return Ok(());
+  }
+
   let maybe_old_cookies = read_sora_cookies_from_disk(app_data_root);
 
   let mut should_write_cookies = maybe_old_cookies.is_none();
