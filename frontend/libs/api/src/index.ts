@@ -1,4 +1,3 @@
-export * from './lib/api.js';
 export * from "./lib/AnalyticsApi.js";
 export * from "./lib/BillingApi.js";
 export * from "./lib/CommentsApi.js";
