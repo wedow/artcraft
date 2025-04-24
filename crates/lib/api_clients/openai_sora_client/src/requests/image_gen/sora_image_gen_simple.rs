@@ -39,6 +39,7 @@ mod tests {
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
+  use crate::creds::credential_migration::CredentialMigrationRef;
 
   #[ignore] // You can manually run "ignore" tests in the IDE, but they won't run in CI.
   #[tokio::test]
@@ -62,7 +63,7 @@ mod tests {
       prompt: "A pirate and a ninja fight in a battle inside a UFO. Fully photo realistic, lifelike, lens flare".to_string(),
       num_images: NumImages::One,
       image_size: ImageSize::Square,
-      credentials: creds,
+      credentials: CredentialMigrationRef::Legacy(&creds),
     }).await?;
 
     println!("task_id: {}", response.task_id);
