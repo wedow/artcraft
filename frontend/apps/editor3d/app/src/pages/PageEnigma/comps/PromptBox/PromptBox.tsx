@@ -38,8 +38,6 @@ import {
 import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
-import { LibraryModal } from "../LibraryModal/LibraryModal";
-import type { LibraryItem } from "../LibraryModal/LibraryModal";
 import {
   cameras,
   selectedCameraId,
@@ -61,6 +59,7 @@ import { EngineApi } from "~/Classes/ApiManager/EngineApi";
 import { UploaderStates } from "~/enums/UploaderStates";
 import { CameraSettingsModal } from "../CameraSettingsModal";
 import { twMerge } from "tailwind-merge";
+import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
 
 export const PromptBox = () => {
   useSignals();
@@ -92,11 +91,11 @@ export const PromptBox = () => {
     },
   ]);
   const [isCameraSettingsOpen, setIsCameraSettingsOpen] = useState(false);
-  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
-  const [selectedLibraryImages, setSelectedLibraryImages] = useState<string[]>(
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     [],
   );
-  const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
+  const [activeGalleryTab, setActiveGalleryTab] = useState("my-media");
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -359,17 +358,17 @@ export const PromptBox = () => {
     fileInputRef.current?.click();
   };
 
-  const handleLibrarySelect = () => {
-    setIsLibraryModalOpen(true);
+  const handleGallerySelect = () => {
+    setIsGalleryModalOpen(true);
   };
 
-  const handleLibraryClose = () => {
-    setIsLibraryModalOpen(false);
-    setSelectedLibraryImages([]);
+  const handleGalleryClose = () => {
+    setIsGalleryModalOpen(false);
+    setSelectedGalleryImages([]);
   };
 
   const handleImageSelect = (id: string) => {
-    setSelectedLibraryImages((prev) => {
+    setSelectedGalleryImages((prev) => {
       if (prev.includes(id)) {
         return prev.filter((imageId) => imageId !== id);
       }
@@ -380,19 +379,19 @@ export const PromptBox = () => {
     });
   };
 
-  const handleLibraryImages = (selectedItems: LibraryItem[]) => {
+  const handleGalleryImages = (selectedItems: GalleryItem[]) => {
     selectedItems.forEach((item) => {
       if (!item.fullImage) return;
       const referenceImage: ReferenceImage = {
         id: Math.random().toString(36).substring(7),
         url: item.fullImage,
-        file: new File([], "library-image"),
+        file: new File([], "gallery-image"),
         mediaToken: item.id,
       };
       setReferenceImages((prev) => [...prev, referenceImage]);
     });
-    setIsLibraryModalOpen(false);
-    setSelectedLibraryImages([]);
+    setIsGalleryModalOpen(false);
+    setSelectedGalleryImages([]);
   };
 
   const handleAction = (action: string) => {
@@ -400,8 +399,8 @@ export const PromptBox = () => {
       case "upload":
         handleUploadClick();
         break;
-      case "library":
-        handleLibrarySelect();
+      case "gallery":
+        handleGallerySelect();
         break;
       default:
         console.log("Unknown action:", action);
@@ -581,7 +580,7 @@ export const PromptBox = () => {
                   label: "Choose from library",
                   selected: false,
                   icon: <FontAwesomeIcon icon={faImages} className="h-4 w-4" />,
-                  action: "library",
+                  action: "gallery",
                 },
               ]}
               onPanelAction={handleAction}
@@ -762,20 +761,20 @@ export const PromptBox = () => {
           onDeleteCamera={deleteCamera}
         />
       </div>
-      <LibraryModal
-        isOpen={isLibraryModalOpen}
-        onClose={handleLibraryClose}
+      <GalleryModal
+        isOpen={isGalleryModalOpen}
+        onClose={handleGalleryClose}
         mode="select"
-        selectedItemIds={selectedLibraryImages}
+        selectedItemIds={selectedGalleryImages}
         onSelectItem={handleImageSelect}
         maxSelections={4}
-        onUseSelected={handleLibraryImages}
+        onUseSelected={handleGalleryImages}
         tabs={[
-          { id: "my-media", label: "My media" },
-          { id: "uploads", label: "Uploads" },
+          { id: "my-media", label: "My generations" },
+          { id: "uploads", label: "My uploads" },
         ]}
-        activeTab={activeLibraryTab}
-        onTabChange={setActiveLibraryTab}
+        activeTab={activeGalleryTab}
+        onTabChange={setActiveGalleryTab}
       />
     </>
   );

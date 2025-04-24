@@ -3,6 +3,12 @@
   "include": [],
   "references": [
     {
+      "path": "../../api"
+    },
+    {
+      "path": "../loading-spinner"
+    },
+    {
       "path": "../close-button"
     },
     {

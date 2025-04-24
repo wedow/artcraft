@@ -8,6 +8,9 @@
       "path": "../../libs/components/button"
     },
     {
+      "path": "../../libs/components/gallery-modal"
+    },
+    {
       "path": "../../libs/tauri-utils"
     },
     {

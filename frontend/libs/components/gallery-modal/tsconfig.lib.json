@@ -44,6 +44,12 @@
   ],
   "references": [
     {
+      "path": "../../api/tsconfig.lib.json"
+    },
+    {
+      "path": "../loading-spinner/tsconfig.lib.json"
+    },
+    {
       "path": "../close-button/tsconfig.lib.json"
     },
     {

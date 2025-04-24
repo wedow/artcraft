@@ -22,7 +22,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@devnomic/marquee": "^1.0.3",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/pro-regular-svg-icons": "^6.7.2",
@@ -52,8 +51,8 @@
     "@preact/signals-react-transform": "^0.4.0",
     "@tauri-apps/cli": "^2.4.0",
     "@types/deep-equal": "^1.0.4",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",

@@ -11,10 +11,11 @@ import {
   GetCdnOrigin,
   FilterMediaClasses,
   LibraryModalApi,
+  UsersApi,
 } from "@storyteller/api";
 import { twMerge } from "tailwind-merge";
 
-export interface LibraryItem {
+export interface GalleryItem {
   id: string;
   label: string;
   thumbnail: string | null;
@@ -23,7 +24,7 @@ export interface LibraryItem {
 }
 
 interface GroupedItems {
-  [date: string]: LibraryItem[];
+  [date: string]: GalleryItem[];
 }
 
 type ModalMode = "select" | "view";
@@ -35,7 +36,7 @@ interface LibraryModalProps {
   selectedItemIds?: string[];
   onSelectItem?: (id: string) => void;
   maxSelections?: number;
-  onUseSelected?: (selectedItems: LibraryItem[]) => void;
+  onUseSelected?: (selectedItems: GalleryItem[]) => void;
   tabs: { id: string; label: string }[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
@@ -56,14 +57,16 @@ export const GalleryModal = React.memo(
   }: LibraryModalProps) => {
     const [groupedItems, setGroupedItems] = useState<GroupedItems>({});
     const [loading, setLoading] = useState(false);
-    const [lightboxImage, setLightboxImage] = useState<LibraryItem | null>(
+    const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(
       null
     );
     const [isLightboxVisible, setIsLightboxVisible] = useState(false);
     const [failedImageUrls] = useState<Set<string>>(new Set());
+    const [username, setUsername] = useState<string>("");
     const cdnOrigin = GetCdnOrigin();
     const imageUrl = lightboxImage?.fullImage || "";
     const api = useMemo(() => new LibraryModalApi(), []);
+    const usersApi = useMemo(() => new UsersApi(), []);
 
     const formatDate = useCallback((date: string) => {
       const d = new Date(date);
@@ -75,7 +78,7 @@ export const GalleryModal = React.memo(
     }, []);
 
     const groupItemsByDate = useCallback(
-      (items: LibraryItem[]) => {
+      (items: GalleryItem[]) => {
         const grouped = items.reduce((acc: GroupedItems, item) => {
           const dateKey = formatDate(item.createdAt);
           if (!acc[dateKey]) {
@@ -115,14 +118,28 @@ export const GalleryModal = React.memo(
     );
 
     useEffect(() => {
+      const getUsername = async () => {
+        const session = await usersApi.GetSession();
+        if (session.success && session.data?.user) {
+          setUsername(session.data.user.username);
+        }
+      };
+      getUsername();
+    }, [usersApi]);
+
+    useEffect(() => {
       const loadItems = async () => {
+        if (!username) return;
         setLoading(true);
         try {
           const response = await api.listUserMediaFiles({
             filter_media_classes: [FilterMediaClasses.IMAGE],
+            username: username,
+            include_user_uploads: activeTab === "uploads",
+            user_uploads_only: activeTab === "uploads",
           });
           if (response.success && response.data) {
-            const newItems = response.data.map((item) => ({
+            const newItems = response.data.map((item: any) => ({
               id: item.token,
               label: item.maybe_title || "Image Generation",
               thumbnail: getImageUrl(item.public_bucket_path),
@@ -141,7 +158,7 @@ export const GalleryModal = React.memo(
         loadItems();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab, isOpen]);
+    }, [activeTab, isOpen, username]);
 
     // useEffect(() => {
     //   console.log("LibraryModal render caused by:", {
@@ -152,7 +169,7 @@ export const GalleryModal = React.memo(
     // }, [isOpen, activeTab, selectedItemIds]);
 
     const handleItemClick = useCallback(
-      (item: LibraryItem) => {
+      (item: GalleryItem) => {
         if (mode === "select" && onSelectItem) {
           onSelectItem(item.id);
         } else {
@@ -190,12 +207,13 @@ export const GalleryModal = React.memo(
             mode === "view" && "h-[80vh] max-h-[870px] max-w-7xl"
           )}
           childPadding={false}
+          showClose={false}
         >
           <div className="flex h-full flex-col">
             <div className="border-b border-white/10 p-4 py-3">
               <div className="grid grid-cols-3 items-center">
                 <h2 className="text-xl font-semibold">
-                  {mode === "select" ? "Select Images" : "My Gallery"}
+                  {mode === "select" ? "Select Images" : "Gallery"}
                 </h2>
                 <div className="flex items-center justify-center">
                   <TabSelector
@@ -211,7 +229,7 @@ export const GalleryModal = React.memo(
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto">
               {loading ? (
                 <div className="flex h-full items-center justify-center">
                   <div className="text-white/60">
@@ -219,7 +237,7 @@ export const GalleryModal = React.memo(
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-6 p-4">
                   {Object.entries(groupedItems).map(([date, dateItems]) => (
                     <div key={date}>
                       <h3 className="text-md mb-2 font-medium text-white/60">
@@ -238,7 +256,7 @@ export const GalleryModal = React.memo(
                               "group relative aspect-square overflow-hidden rounded-md border-[3px] transition-all",
                               mode === "select" &&
                                 selectedItemIds.includes(item.id)
-                                ? "border-brand-primary"
+                                ? "border-primary"
                                 : "border-transparent hover:border-white"
                             )}
                             onClick={() => handleItemClick(item)}
@@ -269,7 +287,7 @@ export const GalleryModal = React.memo(
                             </div>
                             {mode === "select" &&
                               selectedItemIds.includes(item.id) && (
-                                <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-brand-primary">
+                                <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
                                   <FontAwesomeIcon
                                     icon={faCheck}
                                     className="text-sm"

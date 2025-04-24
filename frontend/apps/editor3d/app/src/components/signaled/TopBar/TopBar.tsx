@@ -11,7 +11,7 @@ import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
 import { getCurrentLocationWithoutParams } from "~/utilities";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
-import { LibraryModal } from "~/pages/PageEnigma/comps/LibraryModal/LibraryModal";
+import { GalleryModal } from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
 
@@ -106,13 +106,13 @@ export const TopBar = ({ pageName }: Props) => {
         onClose={() => setIsSettingsModalOpen(false)}
       />
 
-      <LibraryModal
+      <GalleryModal
         isOpen={isLibraryModalOpen}
         onClose={() => setIsLibraryModalOpen(false)}
         mode="view"
         tabs={[
-          { id: "my-media", label: "My media" },
-          { id: "uploads", label: "Uploads" },
+          { id: "my-media", label: "My generations" },
+          { id: "uploads", label: "My uploads" },
         ]}
         activeTab={activeLibraryTab}
         onTabChange={setActiveLibraryTab}

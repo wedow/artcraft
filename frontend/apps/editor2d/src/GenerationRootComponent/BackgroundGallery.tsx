@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Marquee } from "@devnomic/marquee";
+// import { Marquee } from "@devnomic/marquee";
 import "@devnomic/marquee/dist/index.css";
 
 function getRandomImages(count: number) {
@@ -21,16 +21,18 @@ interface ImageColumnProps {
   duration?: number;
 }
 
-function ImageColumn({
-  images,
-  delay,
-  reverse = false,
-  duration = 100,
-  isLoaded,
-}: ImageColumnProps) {
+function ImageColumn(
+  {
+    // images,
+    // delay,
+    // reverse = false,
+    // duration = 100,
+    // isLoaded,
+  }: ImageColumnProps,
+) {
   return (
     <div className="flex h-screen flex-col gap-6">
-      <Marquee
+      {/* <Marquee
         fade={false}
         direction="up"
         reverse={reverse}
@@ -59,7 +61,7 @@ function ImageColumn({
             />
           </div>
         ))}
-      </Marquee>
+      </Marquee> */}
     </div>
   );
 }
