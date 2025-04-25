@@ -2,7 +2,7 @@ import { AUTH_STATUS } from "./enums";
 import { UserInfo } from "~/Classes/ApiManager/models/Users";
 import { ActiveSubscriptions } from "@ApiManager/models/Billing";
 
-import { signals } from "./signals";
+import { signals } from "./auth_signals";
 
 export const updateAuthStatus = (newStatus: AUTH_STATUS) => {
   signals.status.value = newStatus;

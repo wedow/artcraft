@@ -1,4 +1,4 @@
-import { signals } from "./signals";
+import { signals } from "./auth_signals";
 import * as fetchers from "./fetchers";
 import * as enums from "./enums";
 

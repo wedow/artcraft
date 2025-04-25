@@ -1,5 +1,4 @@
 import { computed, signal } from "@preact/signals-react";
-
 import { UserInfo } from "@ApiManager/models/Users";
 import { ActiveSubscriptions } from "@ApiManager/models/Billing";
 import { LoyaltyProgram } from "@ApiManager/enums/Billing";

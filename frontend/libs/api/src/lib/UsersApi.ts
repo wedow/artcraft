@@ -36,6 +36,7 @@ export class UsersApi extends ApiManager {
     }>
   > {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/user/${username}/profile`;
+    console.log("endpoint", endpoint);
     return this.get<{
       success: boolean;
       user?: UserInfo;

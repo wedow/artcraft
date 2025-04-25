@@ -6,9 +6,10 @@ import { Button, Input, LoadingSpinner } from "~/components/ui";
 import { authentication } from "~/signals";
 import { twMerge } from "tailwind-merge";
 import { UsersApi } from "@storyteller/api";
+
 export const Login = () => {
   const {
-    signals: { status: authStatus },
+    signals: { status: authStatus, userInfo },
     fetchers: { login },
     enums: { AUTH_STATUS },
   } = authentication;
@@ -40,6 +41,7 @@ export const Login = () => {
     ev.preventDefault();
     if (formRef.current) {
       const form = new FormData(formRef.current);
+
       const usernameOrEmail = form.get("usernameOrEmail")?.toString();
       const password = form.get("password")?.toString();
    
@@ -50,7 +52,18 @@ export const Login = () => {
           usernameOrEmail,
           password,
         });
-        console.log("response", response);
+
+        if (response.success) {
+          let session = response.data?.signedSession;
+          if (session) {
+            localStorage.setItem("session", session);
+            authStatus.value = AUTH_STATUS.LOGGED_IN;
+            let response = await api.GetUserProfile(usernameOrEmail);
+            if (response.success) {
+              userInfo.value = response.data?.user;
+            }
+          }
+        }
       }
     }
   }; // end handleOnSubmit
@@ -86,6 +99,7 @@ export const Login = () => {
               shouldShowLoader && "opacity-0",
             )}
           >
+            
             <Input
               label="Username or Email"
               icon={faUser}
