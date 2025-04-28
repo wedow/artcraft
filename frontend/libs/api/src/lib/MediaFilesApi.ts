@@ -27,6 +27,8 @@ interface ListUserMediaQuery {
   filter_media_classes?: FilterMediaClasses[];
   filter_media_type?: FilterMediaType[];
   filter_engine_categories?: FilterEngineCategories[];
+  user_uploads_only?: boolean;
+  include_user_uploads?: boolean;
 }
 
 interface SearchFeaturedMediaQuery {
@@ -115,7 +117,7 @@ export class MediaFilesApi extends ApiManager {
   }
 
   public async ListMediaFiles(
-    query: ListMediaQuery,
+    query: ListMediaQuery
   ): Promise<ApiResponse<MediaFile[], PaginationInfinite>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/list`;
     const queryWithStrings = {
@@ -149,7 +151,7 @@ export class MediaFilesApi extends ApiManager {
   }
 
   public async ListFeaturedMediaFiles(
-    query: ListMediaQuery,
+    query: ListMediaQuery
   ): Promise<ApiResponse<MediaFile[], PaginationInfinite>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/list_featured`;
     const queryWithStrings = {
@@ -183,13 +185,13 @@ export class MediaFilesApi extends ApiManager {
   }
 
   public async ListUserMediaFiles(
-    query: ListUserMediaQuery,
+    query: ListUserMediaQuery
   ): Promise<ApiResponse<MediaFile[], Pagination>> {
     const userName = query.username;
     const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/list/user/${userName}`;
     const queryWithStrings = {
       ...query,
-      include_user_uploads: true,
+      include_user_uploads: query.include_user_uploads,
       filter_media_classes: query.filter_media_classes
         ? query.filter_media_classes.join(",")
         : undefined,
@@ -205,11 +207,17 @@ export class MediaFilesApi extends ApiManager {
       results: MediaFile[];
       pagination?: Pagination;
     }>({ endpoint, query: queryWithStrings })
-      .then((response) => ({
-        success: response.success,
-        data: response.results ?? [],
-        pagination: response.pagination,
-      }))
+      .then((response) => {
+        let results = response.results ?? [];
+        if (query.user_uploads_only) {
+          results = results.filter((file) => file.origin_category === "upload");
+        }
+        return {
+          success: response.success,
+          data: results,
+          pagination: response.pagination,
+        };
+      })
       .catch((err) => {
         return {
           success: false,
@@ -219,7 +227,7 @@ export class MediaFilesApi extends ApiManager {
   }
 
   public async SearchFeaturedMediaFiles(
-    query: SearchFeaturedMediaQuery,
+    query: SearchFeaturedMediaQuery
   ): Promise<ApiResponse<MediaFile[], Pagination>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/search_featured`;
     const queryWithStrings = {
@@ -251,7 +259,7 @@ export class MediaFilesApi extends ApiManager {
   }
 
   public async SearchUserMediaFiles(
-    query: SearchFeaturedMediaQuery,
+    query: SearchFeaturedMediaQuery
   ): Promise<ApiResponse<MediaFile[], Pagination>> {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/search_session`;
     const queryWithStrings = {

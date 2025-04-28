@@ -16,15 +16,14 @@ path = "src/lib.rs"
 normal = ["workspace-build-acceleration"]
 
 [dependencies]
+# Workspace hack (faster compile times)
+workspace-build-acceleration = { workspace =  true }
 
 # Internal
-errors = { path = "../../errors" }
-
-# Workspace hack (faster compile times)
-workspace-build-acceleration = { version = "0.1", path = "../../../workspace-build-acceleration" }
+errors = { workspace = true }
 
 # External
-log = "0.4.14"
+log = { workspace = true }
 
 # Powerful audio decoder and demuxer
 #symphonia = { version = "0.5.2", features = ["aac", "alac", "flac", "isomp4", "mkv", "mp3", "ogg", "vorbis", "wav"] }

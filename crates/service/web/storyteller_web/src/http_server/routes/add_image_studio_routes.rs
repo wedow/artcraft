@@ -1,4 +1,5 @@
 use crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::enqueue_studio_image_generation_handler;
+use crate::http_server::endpoints::image_studio::update_gpt_image_job_status_handler::update_gpt_image_job_status_handler;
 use crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::upload_snapshot_media_file_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
@@ -23,6 +24,10 @@ where
     )
     .service(web::resource("/prompt")
       .route(web::post().to(enqueue_studio_image_generation_handler))
+      .route(web::head().to(|| HttpResponse::Ok()))
+    )
+    .service(web::resource("/update_job_status")
+      .route(web::post().to(update_gpt_image_job_status_handler))
       .route(web::head().to(|| HttpResponse::Ok()))
     )
   )

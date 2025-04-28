@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use elasticsearch::{Elasticsearch, SearchParts};
+use log::debug;
 use once_cell::sync::Lazy;
 use serde_json::{json, Number, Value};
 
@@ -75,7 +76,7 @@ pub async fn search_model_weights(args: SearchArgs<'_>) -> AnyhowResult<Vec<Mode
 
   let json_query = serde_json::to_string(&query)?;
 
-  println!("Query: {:#?}", json_query);
+  debug!("ElasticSearch Query: {:#?}", json_query);
 
   let search_response = args.client
       .search(SearchParts::Index(&[MODEL_WEIGHT_INDEX]))

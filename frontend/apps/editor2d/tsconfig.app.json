@@ -35,6 +35,9 @@
       "path": "../../libs/components/button/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/components/gallery-modal/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/tauri-utils/tsconfig.lib.json"
     },
     {

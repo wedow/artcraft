@@ -18,14 +18,14 @@ normal = ["workspace-build-acceleration"]
 
 [dependencies]
 # Workspace hack (faster compile times)
-workspace-build-acceleration = { version = "0.1", path = "../../../workspace-build-acceleration" }
+workspace-build-acceleration = { workspace =  true }
 
 # Internal
-errors = { path = "../../errors" }
+errors = { workspace = true }
 
 # External
 ffprobe = "0.4.0"
-log = "0.4.20"
+log = { workspace = true }
 # TODO(bt,2024-08-08): We might drop `mp4` crate because it crashes on reading
 #  some videos with the message "avcc not found"
 mp4 = "0.14.0"

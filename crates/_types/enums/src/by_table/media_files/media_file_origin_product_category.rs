@@ -39,6 +39,10 @@ pub enum MediaFileOriginProductCategory {
   #[serde(rename = "vst")]
   VideoStyleTransfer,
 
+  /// Image Studio
+  #[serde(rename = "image_studio")]
+  ImageStudio,
+
   /// Storyteller Studio
   #[serde(rename = "studio")]
   StorytellerStudio,
@@ -87,6 +91,7 @@ impl MediaFileOriginProductCategory {
       Self::FaceFusion => "face_fusion",
       Self::FaceMirror => "face_mirror",
       Self::VideoStyleTransfer => "vst",
+      Self::ImageStudio => "image_studio",
       Self::StorytellerStudio => "studio",
       Self::TextToSpeech => "tts",
       Self::VoiceConversion => "voice_conversion",
@@ -105,6 +110,7 @@ impl MediaFileOriginProductCategory {
       "face_fusion" => Ok(Self::FaceFusion),
       "face_mirror" => Ok(Self::FaceMirror),
       "vst" => Ok(Self::VideoStyleTransfer),
+      "image_studio" => Ok(Self::ImageStudio),
       "studio" => Ok(Self::StorytellerStudio),
       "tts" => Ok(Self::TextToSpeech),
       "voice_conversion" => Ok(Self::VoiceConversion),
@@ -126,6 +132,7 @@ impl MediaFileOriginProductCategory {
       Self::FaceFusion,
       Self::FaceMirror,
       Self::VideoStyleTransfer,
+      Self::ImageStudio,
       Self::StorytellerStudio,
       Self::TextToSpeech,
       Self::VoiceConversion,
@@ -153,6 +160,7 @@ mod tests {
       assert_serialization(MediaFileOriginProductCategory::FaceFusion, "face_fusion");
       assert_serialization(MediaFileOriginProductCategory::FaceMirror, "face_mirror");
       assert_serialization(MediaFileOriginProductCategory::VideoStyleTransfer, "vst");
+      assert_serialization(MediaFileOriginProductCategory::ImageStudio, "image_studio");
       assert_serialization(MediaFileOriginProductCategory::StorytellerStudio, "studio");
       assert_serialization(MediaFileOriginProductCategory::TextToSpeech, "tts");
       assert_serialization(MediaFileOriginProductCategory::VoiceConversion, "voice_conversion");
@@ -170,6 +178,7 @@ mod tests {
       assert_eq!(MediaFileOriginProductCategory::FaceFusion.to_str(), "face_fusion");
       assert_eq!(MediaFileOriginProductCategory::FaceMirror.to_str(), "face_mirror");
       assert_eq!(MediaFileOriginProductCategory::VideoStyleTransfer.to_str(), "vst");
+      assert_eq!(MediaFileOriginProductCategory::ImageStudio.to_str(), "image_studio");
       assert_eq!(MediaFileOriginProductCategory::StorytellerStudio.to_str(), "studio");
       assert_eq!(MediaFileOriginProductCategory::TextToSpeech.to_str(), "tts");
       assert_eq!(MediaFileOriginProductCategory::VoiceConversion.to_str(), "voice_conversion");
@@ -187,6 +196,7 @@ mod tests {
       assert_eq!(MediaFileOriginProductCategory::from_str("face_fusion").unwrap(), MediaFileOriginProductCategory::FaceFusion);
       assert_eq!(MediaFileOriginProductCategory::from_str("face_mirror").unwrap(), MediaFileOriginProductCategory::FaceMirror);
       assert_eq!(MediaFileOriginProductCategory::from_str("vst").unwrap(), MediaFileOriginProductCategory::VideoStyleTransfer);
+      assert_eq!(MediaFileOriginProductCategory::from_str("image_studio").unwrap(), MediaFileOriginProductCategory::ImageStudio);
       assert_eq!(MediaFileOriginProductCategory::from_str("studio").unwrap(), MediaFileOriginProductCategory::StorytellerStudio);
       assert_eq!(MediaFileOriginProductCategory::from_str("tts").unwrap(), MediaFileOriginProductCategory::TextToSpeech);
       assert_eq!(MediaFileOriginProductCategory::from_str("voice_conversion").unwrap(), MediaFileOriginProductCategory::VoiceConversion);
@@ -200,12 +210,13 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = MediaFileOriginProductCategory::all_variants();
-      assert_eq!(variants.len(), 13);
+      assert_eq!(variants.len(), 14);
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::Unknown));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::FaceAnimator));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::FaceFusion));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::FaceMirror));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::VideoStyleTransfer));
+      assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::ImageStudio));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::StorytellerStudio));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::TextToSpeech));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::VoiceConversion));

@@ -11,17 +11,17 @@ use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::bucket_client::BucketClient;
-use log::{debug, error, info};
 use log::warn;
+use log::{debug, error};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use openai_sora_client::credentials::SoraCredentials;
-use openai_sora_client::image_gen::SoraError;
-use openai_sora_client::sentinel_refresh::generate::token::generate_token;
-use openai_sora_client::sentinel_refresh::refresh_sentinel;
+use openai_sora_client::requests::image_gen::SoraError;
+use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
 use serde::Deserialize;
 use serde::Serialize;
-use shared_service_components::sora_redis_credentials::set_sora_credential_field_in_redis::set_sora_credential_field_in_redis;
 use shared_service_components::sora_redis_credentials::keys::RedisSoraCredentialSubkey;
+use shared_service_components::sora_redis_credentials::set_sora_credential_field_in_redis::set_sora_credential_field_in_redis;
+use shared_service_components::sora_redis_sentinel_refresh::refresh::refresh_sentinel;
 use sqlx::MySqlPool;
 use tempdir::TempDir;
 use utoipa::ToSchema;
@@ -37,9 +37,10 @@ use mysql_queries::payloads::generic_inference_args::generic_inference_args::{Ge
 use mysql_queries::payloads::generic_inference_args::inner_payloads::sora_image_gen_args::SoraImageGenArgs;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use openai_sora_client::image_gen::common::{ImageSize, NumImages};
-use openai_sora_client::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
-use openai_sora_client::upload::upload_media_from_file::{sora_media_upload_from_file, SoraMediaUploadRequest};
+use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
+use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
+use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
+use openai_sora_client::requests::upload::upload_media_from_file::sora_media_upload_from_file;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
@@ -83,6 +84,9 @@ pub struct EnqueueStudioImageGenRequest {
   pub disable_system_prompt: Option<bool>,
 
   /// Additional images to include (optional). Up to nine images.
+  pub additional_images: Option<Vec<MediaFileToken>>,
+
+  #[deprecated(note="use `additional_images` instead. if both are present, `additional_images` will be used.")]
   pub maybe_additional_images: Option<Vec<MediaFileToken>>,
 
   pub maybe_number_of_samples: Option<u32>,
@@ -236,13 +240,26 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
     EnqueueImageGenRequestError::ServerError
   })?;
 
-  let mut files_to_upload = Vec::with_capacity(1 + request.maybe_additional_images.as_ref().map(|v| v.len()).unwrap_or(0));
+  let additional_images;
+
+  // NB: Frontend is calling us with the wrong field name. Let's just accept both.
+  if let Some(images) = &request.additional_images {
+    additional_images = images.clone();
+  } else if let Some(images) = &request.maybe_additional_images {
+    additional_images = images.clone();
+  } else {
+    additional_images = vec![];
+  }
+
+  let mut files_to_upload = Vec::with_capacity(1 + additional_images.len());
 
   files_to_upload.push(scene_media_path.clone());
 
-  let additional_images = request.maybe_additional_images.clone().unwrap_or_else(|| vec![]);
+  debug!("Additional images to download: {}", additional_images.len());
 
-  for media_file_token in &additional_images {
+  for (i, media_file_token ) in additional_images.iter().enumerate() {
+    debug!("Downloading additional image {} of {} ...", (i+1), additional_images.len());
+
     let media_file_path = query_and_download_media_file(&media_file_token, &work_temp_dir, &public_bucket_client, &server_state.mysql_pool).await.map_err(|err| {
       error!("Failed to download additional media file: {:?}", err);
       EnqueueImageGenRequestError::ServerError
@@ -267,11 +284,16 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
 
   let mut sora_media_tokens = Vec::with_capacity(files_to_upload.len());
 
-  for file_path in files_to_upload {
-    let sora_upload_response = sora_media_upload_from_file(file_path, &sora_credentials).await.map_err(|err| {
-      error!("Failed to upload scene media to Sora: {:?}", err);
-      EnqueueImageGenRequestError::ServerError
-    })?;
+  for (i, file_path) in files_to_upload.iter().enumerate() {
+    debug!("Uploading file {} of {} to Sora...", (i+1), files_to_upload.len());
+
+    let sora_upload_response =
+        sora_media_upload_from_file(file_path, CredentialMigrationRef::Legacy(&sora_credentials))
+            .await
+            .map_err(|err| {
+              error!("Failed to upload scene media to Sora: {:?}", err);
+              EnqueueImageGenRequestError::ServerError
+            })?;
 
     debug!("Uploaded media to Sora : {:?}", sora_upload_response);
     sora_media_tokens.push(sora_upload_response.id);
@@ -294,12 +316,14 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
 
   let prompt = create_prompt(&request);
 
+  debug!("Sending Sora remix request with {} media tokens...", sora_media_tokens.len());
+
   let mut response = sora_image_gen_remix(SoraImageGenRemixRequest {
     prompt: prompt.clone(),
     num_images: NumImages::One,
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
-    credentials: &sora_credentials
+    credentials: CredentialMigrationRef::Legacy(&sora_credentials),
   }).await;
 
   debug!("Sora image gen response: {:?}", response);
@@ -328,7 +352,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
           num_images: NumImages::One,
           image_size: ImageSize::Square,
           sora_media_tokens: sora_media_tokens.clone(),
-          credentials: &updated_sora_credentials
+          credentials: CredentialMigrationRef::Legacy(&updated_sora_credentials)
         }).await;
       },
       Err(e) => {
@@ -347,7 +371,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
               num_images: NumImages::One,
               image_size: ImageSize::Square,
               sora_media_tokens: sora_media_tokens.clone(),
-              credentials: &updated_sora_credentials
+              credentials: CredentialMigrationRef::Legacy(&updated_sora_credentials)
             }).await;
           },
           Err(e) => {
@@ -485,7 +509,7 @@ async fn query_and_download_media_file(media_file_token: &MediaFileToken, downlo
   let download_filename = format!("download_file_{}.{}", media_file.token.as_str(), extension);
   let download_file_path = download_dir.path().join(download_filename);
 
-  info!("Downloading from bucket...");
+  debug!("Downloading from bucket...");
 
   bucket_client.download_file_to_disk(&media_file_bucket_path.to_full_object_pathbuf(), &download_file_path).await?;
 

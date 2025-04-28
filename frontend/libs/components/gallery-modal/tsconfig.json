@@ -1,0 +1,34 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../../api"
+    },
+    {
+      "path": "../loading-spinner"
+    },
+    {
+      "path": "../close-button"
+    },
+    {
+      "path": "../button"
+    },
+    {
+      "path": "../tab-selector"
+    },
+    {
+      "path": "../lightbox-modal"
+    },
+    {
+      "path": "../modal"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
+  "extends": "../../../tsconfig.base.json"
+}

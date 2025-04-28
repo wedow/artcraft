@@ -1,6 +1,6 @@
 [package]
 name = "images"
-edition = "2018"
+edition = "2024"
 version = "0.0.1"
 authors = [
     "Brandon Thomas <bt@brand.io>",
@@ -18,15 +18,16 @@ path = "src/lib.rs"
 normal = ["workspace-build-acceleration"]
 
 [dependencies]
+# Workspace hack (faster compile times)
+workspace-build-acceleration = { workspace =  true }
 
 # Internal
-errors = { path = "../../errors" }
-
-# Workspace hack (faster compile times)
-workspace-build-acceleration = { version = "0.1", path = "../../../workspace-build-acceleration" }
+errors = { workspace = true}
+mimetypes = { workspace = true }
 
 # External
-image = "0.25.1"
+image = "0.25.6"
 
 [dev-dependencies]
+anyhow = { workspace = true }
 testing = { path = "../../testing" }

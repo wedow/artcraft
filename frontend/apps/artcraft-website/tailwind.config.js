@@ -1,0 +1,67 @@
+const { createGlobPatternsForDependencies } = require("@nx/react/tailwind");
+const { join } = require("path");
+import colors from "tailwindcss/colors";
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    join(
+      __dirname,
+      "{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}"
+    ),
+    ...createGlobPatternsForDependencies(__dirname),
+    "./app/index.html",
+    "./app/src/**/*.{js,jsx,ts,tsx}",
+    "./app/src/*.{js,jsx,ts,tsx}",
+    "../../libs/components/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {},
+    colors: {
+      transparent: "transparent",
+      current: "currentColor",
+      white: colors.white,
+      gray: colors.gray,
+      black: colors.black,
+      blue: colors.blue,
+      purple: colors.purple,
+      primary: {
+        DEFAULT: "#2d81ff",
+        50: "#eef6ff",
+        100: "#d9ebff",
+        200: "#bcdcff",
+        300: "#8ec7ff",
+        400: "#59a7ff",
+        500: "#2d81ff",
+        600: "#1b63f5",
+        700: "#144ee1",
+        800: "#173fb6",
+        900: "#19398f",
+        950: "#142457",
+      },
+      secondary: {
+        DEFAULT: "#3E3E41",
+        50: "#f6f6f6",
+        100: "#e7e7e7",
+        200: "#d1d1d1",
+        300: "#b0b0b0",
+        400: "#888888",
+        500: "#6d6d6d",
+        600: "#5d5d5d",
+        700: "#4f4f4f",
+        800: "#454545",
+        900: "#3d3d3d",
+        950: "#3E3E41",
+      },
+      ui: {
+        background: "#242424",
+        panel: "#1F1F1F",
+        "panel-border": "#3F3F3F",
+        controls: "#3E3E41",
+        "controls-button": "#3E3E41",
+        divider: "#515168",
+      },
+    },
+  },
+  plugins: [],
+};

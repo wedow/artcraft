@@ -1,8 +1,13 @@
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { twMerge } from "tailwind-merge";
-import { ButtonHTMLAttributes } from "react";
+import { ButtonHTMLAttributes, AnchorHTMLAttributes } from "react";
 import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+
+type AnchorProps = Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  keyof ButtonHTMLAttributes<HTMLButtonElement>
+>;
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: IconDefinition;
@@ -11,6 +16,9 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   htmlFor?: string;
   variant?: "primary" | "secondary" | "action";
   loading?: boolean;
+  as?: "button" | "link";
+  href?: string;
+  target?: string;
 }
 
 export const Button = ({
@@ -23,6 +31,9 @@ export const Button = ({
   disabled,
   iconFlip = false,
   loading,
+  as = "button",
+  href,
+  target,
   ...rest
 }: ButtonProps) => {
   function getVariantClassNames(variant: string) {
@@ -45,7 +56,7 @@ export const Button = ({
   );
 
   const className = twMerge(
-    "text-sm font-medium rounded-lg px-3 py-2 border border-transparent shadow-sm focus-visible:outline focus-visible:outline-0 focus-visible:outline-offset-0 transition-all duration-150 flex gap-2 items-center justify-center",
+    "w-fit text-sm font-medium rounded-lg px-3 py-2 border border-transparent shadow-sm focus-visible:outline focus-visible:outline-0 focus-visible:outline-offset-0 transition-all duration-150 flex gap-2 items-center justify-center",
     getVariantClassNames(propsVariant),
     propsClassName,
     disabledClass
@@ -76,6 +87,39 @@ export const Button = ({
       </label>
     );
   }
+
+  if (as === "link" && href) {
+    return (
+      <a
+        href={href}
+        className={className}
+        style={rest.style}
+        {...(rest as unknown as AnchorProps)}
+        target={target}
+      >
+        {loading && !iconFlip ? (
+          <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+        ) : (
+          <>
+            {icon && !iconFlip ? (
+              <FontAwesomeIcon icon={icon} className={iconClassName} />
+            ) : null}
+          </>
+        )}
+        {children}
+        {loading && iconFlip ? (
+          <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+        ) : (
+          <>
+            {icon && iconFlip ? (
+              <FontAwesomeIcon icon={icon} className={iconClassName} />
+            ) : null}
+          </>
+        )}
+      </a>
+    );
+  }
+
   return (
     <button
       className={className}

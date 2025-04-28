@@ -51,11 +51,12 @@ google_sign_in = { path = "../../../lib/api_clients/google_sign_in" }
 hashing = { path = "../../../lib/files/hashing" }
 http_server_common = { path = "../../../lib/deprecated/http_server_common" }
 idempotency = { path = "../../../lib/idempotency" }
+images = { workspace = true }
 markdown = { path = "../../../lib/markdown" }
 media = { path = "../../../lib/files/media" }
 memory_caching = { path = "../../../lib/caching/memory_caching" }
 migration = { path = "../../../lib/migration" }
-mimetypes = { path = "../../../lib/files/mimetypes" }
+mimetypes = { workspace = true }
 mysql_queries = { path = "../../../lib/mysql_queries" }
 openai_sora_client = { path = "../../../lib/api_clients/openai_sora_client" }
 password = { path = "../../../lib/password" }

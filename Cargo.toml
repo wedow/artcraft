@@ -155,6 +155,7 @@ workspace-build-acceleration = { path = "crates/workspace-build-acceleration" }
 anyhow = "1.0.97"
 base64 = "0.22.1"
 chrono = { version = "0.4.40", features = ["serde"] }
+cookie = "0.18.1"
 hex-literal = "1.0.0"
 log = "0.4.27"
 once_cell = "1.21.3"
@@ -176,7 +177,9 @@ enums = { path = "crates/_types/enums" }
 enums_public = { path = "crates/_types/enums_public" }
 errors = { path = "crates/lib/errors" }
 filesys = { path = "crates/lib/files/filesys" }
+images = { path = "crates/lib/files/images" }
 memory_caching = { path = "crates/lib/caching/memory_caching" }
+mimetypes = { path = "crates/lib/files/mimetypes" }
 openai_sora_client = { path = "crates/lib/api_clients/openai_sora_client" }
 primitives = { path = "crates/lib/data/primitives" }
 shared_service_components = { path = "crates/lib/shared_service_components" }

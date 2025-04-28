@@ -11,11 +11,14 @@ use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, ImageReader};
 use log::{debug, error, info};
 use openai_sora_client::credentials::SoraCredentials;
-use openai_sora_client::image_gen::common::{ImageSize, NumImages};
-use openai_sora_client::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
-use openai_sora_client::sentinel_refresh::refresh_sentinel;
-use openai_sora_client::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
-use openai_sora_client::upload::upload_media_from_file::{sora_media_upload_from_file, SoraMediaUploadRequest};
+use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
+use openai_sora_client::recipes::image_remix_with_session_auto_renew::{image_remix_with_session_auto_renew, ImageRemixAutoRenewRequest};
+use openai_sora_client::recipes::image_upload_from_file_with_session_auto_renew::{image_upload_from_file_with_session_auto_renew, ImageUploadFromFileAutoRenewRequest};
+use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
+use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
+use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
+use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
+use openai_sora_client::requests::upload::upload_media_from_file::sora_media_upload_from_file;
 use serde_derive::Deserialize;
 use std::fs::read_to_string;
 use std::io::Cursor;
@@ -50,6 +53,8 @@ pub async fn sora_image_remix_command(
 ) -> Result<String, String> {
   info!("image_generation_command called; processing image...");
 
+  // TODO(bt,2025-04-24): Better error messages to caller
+
   generate_image(request, &app_data_root, &sora_creds_manager)
     .await
     .map_err(|err| {
@@ -80,76 +85,61 @@ pub async fn generate_image(
 
   let files_to_upload = vec![filename];
 
-  // TODO(bt,2025-04-21): Read from in-memory cache instead, but allow for desktop replacement.
-  let mut sora_creds = read_sora_credentials_from_disk(app_data_root)
-    .map_err(|err| {
-      error!("Failed to read Sora credentials from disk: {:?}", err);
-      err
-    })?;
 
-  let no_sentinel = !app_data_root.get_sora_sentinel_file_path().is_file()
-      || sora_creds.sentinel.is_none();
 
-  if no_sentinel {
-    info!("Refreshing credentials...");
+  let mut creds = sora_creds_manager.get_credentials_required()?;
 
-    sora_creds = sora_creds_manager.call_sentinel_refresh()
-        .await
-        .map_err(|err| {
-          error!("Failed to refresh: {:?}", err);
-          err
-        })?;
+  let credential_updated = maybe_upgrade_or_renew_session(&mut creds)
+      .await
+      .map_err(|err| {
+        error!("Failed to upgrade or renew session: {:?}", err);
+        err
+      })?;
 
-    // TODO: Write to disk.
+  if credential_updated {
+    info!("Storing updated credentials");
+    sora_creds_manager.set_credentials(&creds)?;
   }
 
   let mut sora_media_tokens = Vec::with_capacity(files_to_upload.len());
 
-  for file_path in files_to_upload {
-    let sora_upload_response = sora_media_upload_from_file(file_path, &sora_creds)
-        .await?;
+  for (i, file_path) in files_to_upload.iter().enumerate() {
+    info!("Uploading image {} of {}...", (i+1), files_to_upload.len());
 
-    sora_media_tokens.push(sora_upload_response.id);
+    let (response, maybe_new_credentials) =
+        image_upload_from_file_with_session_auto_renew(ImageUploadFromFileAutoRenewRequest {
+          file_path,
+          credentials: &creds,
+        }).await?;
+
+    if let Some(new_creds) = maybe_new_credentials {
+      info!("Storing updated credentials.");
+      sora_creds_manager.set_credentials(&new_creds)?;
+      creds = new_creds;
+    }
+
+    sora_media_tokens.push(response.id);
   }
+
+  info!("Calling image generation...");
 
   // TODO(bt,2025-04-21): Download media tokens.
   //  Note: This is incredibly inefficient. We should keep a local cache.
   //  Also, if they've already been uploaded to OpenAI, we shouldn't continue to re-upload.
 
-  let mut response = sora_image_gen_remix(SoraImageGenRemixRequest {
-    prompt: request.prompt.to_string(),
-    num_images: NumImages::One,
-    image_size: ImageSize::Square,
-    sora_media_tokens: sora_media_tokens.clone(),
-    credentials: &sora_creds,
-  }).await;
+  let (response, maybe_new_creds) =
+      image_remix_with_session_auto_renew(ImageRemixAutoRenewRequest {
+        prompt: request.prompt.to_string(),
+        num_images: NumImages::One,
+        image_size: ImageSize::Square,
+        sora_media_tokens: sora_media_tokens.clone(),
+        credentials: &creds,
+      }).await?;
 
-  if let Err(err) = &response {
-    error!("Error in generating image: {:?}", err);
-
-    sora_creds = sora_creds_manager.call_sentinel_refresh()
-        .await
-        .map_err(|err| {
-          error!("Failed to refresh: {:?}", err);
-          err
-        })?;
-
-    info!("Retrying request...");
-
-    response = sora_image_gen_remix(SoraImageGenRemixRequest {
-      prompt: request.prompt.to_string(),
-      num_images: NumImages::One,
-      image_size: ImageSize::Square,
-      sora_media_tokens: sora_media_tokens.clone(),
-      credentials: &sora_creds,
-    }).await;
+  if let Some(new_creds) = maybe_new_creds {
+    info!("Storing updated credentials.");
+    sora_creds_manager.set_credentials(&new_creds)?;
   }
-
-  let response = response
-      .map_err(|err| {
-        error!("Failed to call Sora image generation: {:?}", err);
-        err
-      })?;
 
   println!(">> TASK ID: {:?} ", response.task_id);
 

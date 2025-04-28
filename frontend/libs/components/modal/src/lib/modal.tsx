@@ -64,7 +64,7 @@ export const Modal = ({
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-[70]" onClose={onClose}>
         <DialogBackdrop className={backdropClassName} />
-        <div className="fixed inset-0 overflow-y-auto">
+        <div className="fixed inset-0">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <TransitionChild
               as="div"
@@ -83,7 +83,7 @@ export const Modal = ({
               )}
             >
               <DialogPanel
-                className="w-full relative"
+                className="w-full h-full"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

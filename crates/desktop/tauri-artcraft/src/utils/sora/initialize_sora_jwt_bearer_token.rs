@@ -2,7 +2,7 @@ use crate::state::app_dir::AppDataRoot;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::info;
-use openai_sora_client::bearer::generate::generate_bearer_with_cookie;
+use openai_sora_client::requests::bearer::generate::generate_bearer_with_cookie;
 
 /// Loading the JWT bearer token for the first time.
 pub async fn initialize_sora_jwt_bearer_token(app_data_root: &AppDataRoot) -> AnyhowResult<()> {

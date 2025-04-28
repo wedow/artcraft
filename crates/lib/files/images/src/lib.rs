@@ -23,6 +23,7 @@
 // Re-export image to everyone importing this library
 pub use image;
 
+pub mod image_info;
 pub mod resize_image_file_preserving_aspect;
 pub mod resize_preserving_aspect;
 

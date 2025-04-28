@@ -28,11 +28,12 @@ pub enum MediaFileOriginCategory {
   DeviceApi,
 
   /// From Storyteller Studio Engine
+  #[deprecated(note="This db field should only denote file provenance, not the product.")]
   #[serde(rename = "studio")]
   StorytellerStudio,
 
   /// From Storyteller Studio Engine
-  #[deprecated(note = "Use StorytellerStudio instead")]
+  #[deprecated(note = "DO NOT USE. Originally deprecated in favor of `StorytellerStudio`.")]
   StoryEngine,
 }
 
