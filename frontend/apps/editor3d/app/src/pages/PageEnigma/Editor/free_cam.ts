@@ -1,4 +1,10 @@
-import { EventDispatcher, Quaternion, Vector3, Vector2 } from "three";
+import {
+  EventDispatcher,
+  Quaternion,
+  Vector3,
+  Vector2,
+  MathUtils,
+} from "three";
 import * as THREE from "three";
 import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
 import { isPromptBoxFocused } from "~/pages/PageEnigma/signals/promptBox";
@@ -14,6 +20,11 @@ class FreeCam extends EventDispatcher {
   dragging = false;
   xOffset = 0;
   yOffset = 0;
+
+  // Smoothing properties
+  smoothingFactor = 0.2;
+  currentVelocity = new Vector3();
+  lastPosition = new Vector3();
 
   lastMousePosition = new Vector2();
   mouseVelocity = new Vector2();
@@ -46,6 +57,7 @@ class FreeCam extends EventDispatcher {
 
     this.object = object;
     this.domElement = domElement;
+    this.lastPosition.copy(object.position);
 
     this.keydown = this.keydown.bind(this);
     this.keyup = this.keyup.bind(this);
@@ -168,6 +180,7 @@ class FreeCam extends EventDispatcher {
       this.dragging = true;
       this.xOffset = event.clientX;
       this.yOffset = event.clientY;
+      this.resetVelocity();
     }
   }
 
@@ -178,6 +191,7 @@ class FreeCam extends EventDispatcher {
     if (event.button === 2) {
       this.xOffset = event.clientX;
       this.yOffset = event.clientY;
+      this.resetVelocity();
     }
     this.dragging = false;
   }
@@ -191,9 +205,28 @@ class FreeCam extends EventDispatcher {
       const mouseY = event.clientY - this.yOffset;
       this.xOffset = event.clientX;
       this.yOffset = event.clientY;
+
       if (Math.abs(mouseX + mouseY) > 0) {
-        this.object.translateX(-mouseX * (this.movementSpeed * 0.01));
-        this.object.translateY(mouseY * (this.movementSpeed * 0.01));
+        // Store last position before movement
+        this.lastPosition.copy(this.object.position);
+
+        // Apply movement with smoothing
+        const translationX = -mouseX * (this.movementSpeed * 0.01);
+        const translationY = mouseY * (this.movementSpeed * 0.01);
+
+        this.currentVelocity.x = MathUtils.lerp(
+          this.currentVelocity.x,
+          translationX,
+          this.smoothingFactor,
+        );
+        this.currentVelocity.y = MathUtils.lerp(
+          this.currentVelocity.y,
+          translationY,
+          this.smoothingFactor,
+        );
+
+        this.object.translateX(this.currentVelocity.x);
+        this.object.translateY(this.currentVelocity.y);
       }
     }
   }
@@ -203,7 +236,21 @@ class FreeCam extends EventDispatcher {
       return;
     }
 
-    this.object.translateZ(event.deltaY / 120); // 120 is the lowest mouse wheel rot.
+    // Store last position before zoom
+    this.lastPosition.copy(this.object.position);
+
+    const zoomDelta = event.deltaY / 120;
+    this.currentVelocity.z = MathUtils.lerp(
+      this.currentVelocity.z,
+      zoomDelta,
+      this.smoothingFactor,
+    );
+    this.object.translateZ(this.currentVelocity.z);
+  }
+
+  resetVelocity() {
+    this.currentVelocity.set(0, 0, 0);
+    this.lastPosition.copy(this.object.position);
   }
 
   reset() {
@@ -217,6 +264,9 @@ class FreeCam extends EventDispatcher {
     this.moveState.yawRight = 0;
     this.moveState.down = 0;
     this.moveState.up = 0;
+
+    this.resetVelocity();
+
     this.updateMovementVector();
   }
 
@@ -225,17 +275,31 @@ class FreeCam extends EventDispatcher {
   }
 
   update(delta: number) {
-    if (!this.enabled || this.isStationary()) {
+    if (!this.enabled) {
       return;
     }
 
     const moveMulti = delta * this.movementSpeed;
 
-    this.object.translateX(this.moveVector.x * moveMulti);
-    this.object.translateY(this.moveVector.y * moveMulti);
-    this.object.translateZ(this.moveVector.z * moveMulti);
+    // Apply WASD movement with smoothing
+    const targetMovement = new Vector3(
+      this.moveVector.x * moveMulti,
+      this.moveVector.y * moveMulti,
+      this.moveVector.z * moveMulti,
+    );
 
-    // Update camera position in signals
+    // Smooth out the movement
+    this.currentVelocity.lerp(targetMovement, this.smoothingFactor);
+
+    // Apply the smoothed movement
+    this.object.translateX(this.currentVelocity.x);
+    this.object.translateY(this.currentVelocity.y);
+    this.object.translateZ(this.currentVelocity.z);
+
+    // Store last position
+    this.lastPosition.copy(this.object.position);
+
+    // Update camera signals
     if (selectedCameraId.value) {
       const pos = this.object.position;
       const rot = this.object.rotation;
