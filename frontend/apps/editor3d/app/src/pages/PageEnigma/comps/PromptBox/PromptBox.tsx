@@ -24,9 +24,11 @@ import {
 } from "@fortawesome/pro-regular-svg-icons";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { PopoverItem, PopoverMenu } from "~/components/reusable/Popover";
 import { Button, ToggleButton, Tooltip } from "~/components";
 import { CameraAspectRatio } from "~/pages/PageEnigma/enums";
+
 import {
   cameraAspectRatio,
   disableHotkeyInput,
@@ -35,9 +37,11 @@ import {
   gridVisibility,
   setGridVisibility,
 } from "~/pages/PageEnigma/signals";
+
 import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
+
 import {
   cameras,
   selectedCameraId,
@@ -55,17 +59,22 @@ interface ReferenceImage {
   file: File;
   mediaToken: string;
 }
+
 import { EngineApi } from "~/Classes/ApiManager/EngineApi";
 import { UploaderStates } from "~/enums/UploaderStates";
 import { CameraSettingsModal } from "../CameraSettingsModal";
 import { twMerge } from "tailwind-merge";
 import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
+import { Modal } from "@storyteller/ui-modal";
 
 export const PromptBox = () => {
   useSignals();
   const editorEngine = useContext(EngineContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [content, setContent] = useState<React.ReactNode>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setisEnqueueing] = useState(false);
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
@@ -417,6 +426,11 @@ export const PromptBox = () => {
     setPrompt(e.target.value);
   };
 
+  const handleError = (errorMessage: string) => {
+    setContent(errorMessage);
+    setIsModalOpen(true);
+  }
+
   const handleEnqueue = async () => {
     if (!prompt.trim()) return;
 
@@ -427,21 +441,29 @@ export const PromptBox = () => {
 
       const engineApi = new EngineApi();
       const snapshot = editorEngine.snapShotOfCurrentFrame(false);
+
       if (snapshot) {
         const snapshotResult = await engineApi.uploadSceneSnapshot({
           screenshot: snapshot.file,
           sceneMediaToken: "",
         });
 
-        console.log("useSystemPrompt", useSystemPrompt);
-        await engineApi.enqueueImageGeneration({
+      console.log("useSystemPrompt", useSystemPrompt);
+      
+      const response = await engineApi.enqueueImageGeneration({
           disableSystemPrompt: !useSystemPrompt,
           prompt: prompt,
-          snapshotMediaToken: snapshotResult.data || "",
+          snapshotMediaToken: "",
           additionalImages: referenceImages.map((image) => image.mediaToken),
         });
+        console.log("response", response);
+        if (response.errorMessage) {
+          handleError(response.errorMessage);
+          setisEnqueueing(false);
+          return;
+        }
       }
-
+    
       try {
         // Here we would pass both the prompt and reference images to the generation
         console.log(
@@ -503,6 +525,12 @@ export const PromptBox = () => {
 
   return (
     <>
+      <Modal isOpen={isModalOpen} onClose={() => {
+        setIsModalOpen(false);
+        setContent("");
+      }}>
+        {content}
+      </Modal>
       <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col gap-3">
         {(referenceImages.length > 0 || uploadingImages.length > 0) && (
           <div className="flex w-full gap-2">

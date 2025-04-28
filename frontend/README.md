@@ -55,4 +55,13 @@ npm install
 2.import it first in code
 3.nx sync
 4.nx build
+
+or
+
+# frontend build
+in frontend folder
+
+% nx build -project type
+% nx build editor3d
+% nx dev editor3d
 ```

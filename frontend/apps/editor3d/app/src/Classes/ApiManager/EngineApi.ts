@@ -116,12 +116,12 @@ export class EngineApi extends ApiManager {
         snapshot_media_token: string;
         additional_images?: string[];
       },
-      { success?: boolean; job_token?: string; BadInput?: string }
+      { success?: boolean; job_token?: string; error_reason?: string, failure_reason?: string}
     >({
       endpoint,
       body,
     });
-
+    console.log("postResponse", postResponse);
     // Check if the response is successful
     const isSuccess = postResponse.success ?? false;
 
@@ -129,7 +129,7 @@ export class EngineApi extends ApiManager {
     const result = {
       success: isSuccess,
       data: isSuccess ? postResponse.job_token : undefined,
-      errorMessage: isSuccess ? undefined : postResponse.BadInput,
+      errorMessage: isSuccess ? undefined : (postResponse.error_reason || postResponse.failure_reason),
     };
 
     return result;
