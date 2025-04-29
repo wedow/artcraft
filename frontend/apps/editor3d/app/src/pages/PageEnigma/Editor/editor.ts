@@ -753,8 +753,11 @@ class Editor {
     }
 
     // Store original renderer and camera state
-    const originalWidth = this.renderer.domElement.width;
-    const originalHeight = this.renderer.domElement.height;
+    const sizeVector = new THREE.Vector2();
+    this.renderer.getSize(sizeVector);
+
+    const originalWidth = sizeVector.x;
+    const originalHeight = sizeVector.y;
     const originalPixelRatio = this.renderer.getPixelRatio();
     const originalCameraAspect = this.camera.aspect;
     const originalRenderCameraAspect =
