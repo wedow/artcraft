@@ -1,5 +1,5 @@
 # For some reason, we can't pass json files to the tauri dev command
 [build]
 frontendDist = "../../../frontend/apps/editor2d/dist"
-beforeDevCommand = "nx run editor2d:dev"
+beforeDevCommand = "npx nx run editor2d:dev"
 devUrl = "http://localhost:5741"
