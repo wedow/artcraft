@@ -64,6 +64,7 @@ class FreeCam extends EventDispatcher {
     this.reset = this.reset.bind(this);
     this.update = this.update.bind(this);
     this.updateMovementVector = this.updateMovementVector.bind(this);
+    this.updateRotationVector = this.updateRotationVector.bind(this);
     this.getContainerDimensions = this.getContainerDimensions.bind(this);
     this.dispose = this.dispose.bind(this);
 
@@ -80,6 +81,7 @@ class FreeCam extends EventDispatcher {
     window.addEventListener("wheel", this.mousewheel.bind(this));
 
     this.updateMovementVector();
+    this.updateRotationVector();
   }
 
   keydown(event: KeyboardEvent) {
@@ -125,6 +127,7 @@ class FreeCam extends EventDispatcher {
     }
 
     this.updateMovementVector();
+    this.updateRotationVector();
   }
 
   keyup(event: KeyboardEvent) {
@@ -170,6 +173,7 @@ class FreeCam extends EventDispatcher {
     }
 
     this.updateMovementVector();
+    this.updateRotationVector();
   }
 
   mousedown(event: MouseEvent) {
@@ -268,6 +272,7 @@ class FreeCam extends EventDispatcher {
     this.resetVelocity();
 
     this.updateMovementVector();
+    this.updateRotationVector();
   }
 
   isStationary() {
@@ -277,13 +282,22 @@ class FreeCam extends EventDispatcher {
     );
   }
 
+  isRotating() {
+    return (
+      this.moveState.pitchUp ||
+      this.moveState.pitchDown ||
+      this.moveState.yawLeft ||
+      this.moveState.yawRight
+    );
+  }
+
   update(delta: number) {
     if (!this.enabled) {
       return;
     }
 
-    // Skip update if there's no movement and velocity
-    if (this.isStationary()) {
+    // Skip update if there's no movement, velocity, or rotation
+    if (this.isStationary() && !this.isRotating()) {
       return;
     }
 
@@ -307,6 +321,13 @@ class FreeCam extends EventDispatcher {
     // Store last position
     this.lastPosition.copy(this.object.position);
 
+
+    // Done with positions
+    // Now handle rotations
+    this.object.rotateX(this.rotationVector.x);
+    this.object.rotateY(this.rotationVector.y);
+    this.object.rotateZ(this.rotationVector.z);
+
     // Update camera signals
     if (selectedCameraId.value) {
       const pos = this.object.position;
@@ -320,11 +341,11 @@ class FreeCam extends EventDispatcher {
       cameras.value = cameras.value.map((cam) =>
         cam.id === selectedCameraId.value
           ? {
-              ...cam,
-              position: { x: pos.x, y: pos.y, z: pos.z },
-              rotation: { x: rot.x, y: rot.y, z: rot.z },
-              lookAt: { x: lookAtPoint.x, y: lookAtPoint.y, z: lookAtPoint.z },
-            }
+            ...cam,
+            position: { x: pos.x, y: pos.y, z: pos.z },
+            rotation: { x: rot.x, y: rot.y, z: rot.z },
+            lookAt: { x: lookAtPoint.x, y: lookAtPoint.y, z: lookAtPoint.z },
+          }
           : cam,
       );
     }
@@ -339,6 +360,13 @@ class FreeCam extends EventDispatcher {
     this.moveVector.x = -this.moveState.left + this.moveState.right;
     this.moveVector.y = -this.moveState.down + this.moveState.up;
     this.moveVector.z = -forward + this.moveState.back;
+  }
+
+  updateRotationVector() {
+    this.rotationVector.x = -this.moveState.pitchDown + this.moveState.pitchUp;
+    this.rotationVector.y = -this.moveState.yawRight + this.moveState.yawLeft;
+    this.rotationVector.z = -this.moveState.rollRight + this.moveState.rollLeft;
+    this.rotationVector.multiplyScalar(this.rollSpeed);
   }
 
   getContainerDimensions() {

@@ -549,7 +549,7 @@ class Editor {
     );
     this.cameraViewControls.movementSpeed = 1.15;
     this.cameraViewControls.domElement = this.renderer.domElement;
-    this.cameraViewControls.rollSpeed = Math.PI / 24;
+    this.cameraViewControls.rollSpeed = Math.PI / 180;
     this.cameraViewControls.autoForward = false;
     this.cameraViewControls.dragToLook = true;
     this.cameraViewControls.enabled = true;
