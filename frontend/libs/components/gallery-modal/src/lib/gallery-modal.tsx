@@ -128,13 +128,17 @@ export const GalleryModal = React.memo(
             user_uploads_only: activeTab === "uploads",
           });
           if (response.success && response.data) {
+            // Print the JSON response for debugging
+            console.log("Media files response:", response.data);
+
             const newItems = response.data.map((item: any) => ({
               id: item.token,
               label: item.maybe_title || "Image Generation",
-              thumbnail: item.thumbnail,
-              fullImage: item.fullImage,
+              thumbnail: item.media_links.maybe_thumbnail_template,
+              fullImage: item.media_links.cdn_url,
               createdAt: item.created_at,
             }));
+            console.log("Media files response:", newItems);
             setGroupedItems(groupItemsByDate(newItems));
           }
         } catch (error) {
