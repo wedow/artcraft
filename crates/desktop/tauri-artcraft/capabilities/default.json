@@ -7,6 +7,14 @@
   ],
   "permissions": [
     "core:default",
-    "log:default"
+    "log:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://*.storyteller.ai" },
+        { "url": "https://*.fakeyou.com" }
+      ],
+      "deny": [{ "url": "https://private.tauri.app" }]
+    }
   ]
 }

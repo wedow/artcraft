@@ -89,14 +89,18 @@ async fn persist_webview_cookies(
 pub async fn get_storyteller_cookies(webview: &Webview) -> AnyhowResult<StorytellerCredentialSet> {
   debug!("Getting storyteller cookies...");
 
-  // FIXME: THIS IS A TOTAL HACK. / DO NOT REMOVE.
-  // NB: If we don't call a method on the webview, the very next call to get cookies will deadlock.
-  if let Ok(url) = webview.url() {
-    debug!("For url: {:?}", url);
-  }
+  //// FIXME: THIS IS A TOTAL HACK. / DO NOT REMOVE.
+  //// NB: If we don't call a method on the webview, the very next call to get cookies will deadlock.
+  //if let Ok(url) = webview.url() {
+  //  debug!("For url: {:?}", url);
+  //}
 
   let cookies = webview.cookies_for_url(STORYTELLER_ROOT_COOKIE_URL.clone())?;
 
+  info!("Got storyteller cookies: {:?}", cookies);
+  info!("Got storyteller cookies: {:?}", cookies.len());
+  info!("Got storyteller location: {:?}", webview.url());
+  
   let mut avt_cookie = None;
   let mut session_cookie = None;
 

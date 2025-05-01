@@ -21,6 +21,7 @@ use crate::threads::main_window_thread::main_window_thread::main_window_thread;
 use crate::threads::sora_session_login_thread::sora_session_login_thread;
 use crate::threads::sora_task_polling_thread::sora_task_polling_thread;
 
+use tauri_plugin_http;
 use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
 
@@ -51,6 +52,7 @@ pub fn run() {
   println!("Initializing backend runtime...");
 
   tauri::Builder::default()
+    .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_log::Builder::new()
       .level(log::LevelFilter::Info)
       .targets(vec![

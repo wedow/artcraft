@@ -1,6 +1,8 @@
 import { GetBuildEnvironment } from "~/BuildEnvironment";
 import environmentVariables from "../EnvironmentVariables";
 import { Configs } from "~/configs";
+//import { fetch } from '@tauri-apps/plugin-http'
+import { FetchProxy as fetch } from "@storyteller/tauri-utils";
 
 type NonNullableObject<T extends object> = NonNullable<T>;
 

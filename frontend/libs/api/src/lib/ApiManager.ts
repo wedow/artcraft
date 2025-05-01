@@ -1,5 +1,7 @@
 // import { bool } from "@techstark/opencv-js";
 import { API_TARGETS } from "./enums/Api.js";
+//import { fetch } from '@tauri-apps/plugin-http'
+import { FetchProxy as fetch } from "@storyteller/tauri-utils";
 
 type NonNullableObject<T extends object> = NonNullable<T>;
 
