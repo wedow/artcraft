@@ -8,7 +8,6 @@ import { CloseButton } from "@storyteller/ui-close-button";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  GetCdnOrigin,
   FilterMediaClasses,
   GalleryModalApi,
   UsersApi,
@@ -63,7 +62,7 @@ export const GalleryModal = React.memo(
     const [isLightboxVisible, setIsLightboxVisible] = useState(false);
     const [failedImageUrls] = useState<Set<string>>(new Set());
     const [username, setUsername] = useState<string>("");
-    const cdnOrigin = GetCdnOrigin();
+
     const imageUrl = lightboxImage?.fullImage || "";
     const api = useMemo(() => new GalleryModalApi(), []);
     const usersApi = useMemo(() => new UsersApi(), []);
@@ -107,16 +106,6 @@ export const GalleryModal = React.memo(
       [failedImageUrls]
     );
 
-    const getImageUrl = useCallback(
-      (path: string | undefined | null) => {
-        if (!path) return null;
-        const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-        const url = `${cdnOrigin}${normalizedPath}`;
-        return failedImageUrls.has(url) ? null : url;
-      },
-      [cdnOrigin, failedImageUrls]
-    );
-
     useEffect(() => {
       const getUsername = async () => {
         const session = await usersApi.GetSession();
@@ -142,8 +131,8 @@ export const GalleryModal = React.memo(
             const newItems = response.data.map((item: any) => ({
               id: item.token,
               label: item.maybe_title || "Image Generation",
-              thumbnail: getImageUrl(item.public_bucket_path),
-              fullImage: getImageUrl(item.public_bucket_path),
+              thumbnail: item.thumbnail,
+              fullImage: item.fullImage,
               createdAt: item.created_at,
             }));
             setGroupedItems(groupItemsByDate(newItems));
