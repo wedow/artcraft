@@ -33,8 +33,7 @@ const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
 
   /// Initizations that depends on ENV vars ///
   function PostHogInit() {
-    const data = EnvironmentVariables.values;
-    const apiKey = data.REACT_APP_PUBLIC_POSTHOG_KEY as string;
+    const apiKey = import.meta.env.VITE_POSTHOG_API_KEY;
     posthog.init(apiKey, {
       api_host: "https://us.i.posthog.com/",
       ui_host: "https://us.i.posthog.com/",
@@ -43,6 +42,9 @@ const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
 
   useEffect(() => {
     EnvironmentVariables.initialize(env);
+    if (import.meta.env.DEV) {
+      return;
+    }
     PostHogInit();
   }, [env]);
 
