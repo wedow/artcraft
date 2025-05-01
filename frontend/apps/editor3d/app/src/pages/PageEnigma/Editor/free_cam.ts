@@ -9,6 +9,28 @@ import * as THREE from "three";
 import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
 import { isPromptBoxFocused } from "~/pages/PageEnigma/signals/promptBox";
 
+
+export const isSafariUserAgent = () => {
+  const ua = navigator.userAgent;
+
+  const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
+
+  return isSafari;
+}
+
+export const hasApplePay = () => {
+  // @ts-expect-error Apple Pay is not defined in TypeScript
+  return !!window.ApplePaySession;
+}
+
+export const isSafari = () => {
+  return isSafariUserAgent() || hasApplePay();
+}
+
+export const isPointerLockSupported = () => {
+  return !isSafari();
+}
+
 class FreeCam extends EventDispatcher {
   object: THREE.PerspectiveCamera;
   domElement: HTMLElement | Document;

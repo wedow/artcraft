@@ -14,7 +14,7 @@ import {
 } from "three/examples/jsm/Addons.js";
 import { TransformControls } from "./TransformControls";
 import { SceneManager, SceneObject } from "./scene_manager_api";
-import { FreeCam } from "./free_cam";
+import { FreeCam, isPointerLockSupported } from "./free_cam";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { FKHelper } from "./KinHelpers/FKHelper";
 import {
@@ -391,6 +391,10 @@ export class MouseControls {
     this.timeline_mouse = this.mouse;
 
     // this causes an issue  https://discourse.threejs.org/t/unable-to-use-pointer-lock-api/11092
+    if (!isPointerLockSupported()) {
+      return;
+    }
+
     if (this.isMouseClicked && this.lockControls) {
       if (this.lockControls.isLocked == false) {
         this.lockControls.lock();
