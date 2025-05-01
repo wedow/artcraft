@@ -623,8 +623,8 @@ export const PromptBox = () => {
                   src={image.url}
                   alt="Reference"
                   className="h-full w-full rounded-lg object-cover"
-                  crossOrigin="anonymous"
-                  referrerPolicy="no-referrer"
+                  // crossOrigin="anonymous"
+                  // referrerPolicy="no-referrer"
                 />
                 <button
                   onClick={() => handleRemoveReference(image.id)}

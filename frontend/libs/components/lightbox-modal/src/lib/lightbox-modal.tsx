@@ -76,8 +76,8 @@ export function LightboxModal({
                       alt={imageAlt}
                       className="h-full w-full object-contain"
                       onError={onImageError}
-                      crossOrigin="anonymous"
-                      referrerPolicy="no-referrer"
+                      // crossOrigin="anonymous"
+                      // referrerPolicy="no-referrer"
                     />
                   )}
                 </div>

@@ -23,6 +23,8 @@ config_path="${rust_crate_path}/tauri.artcraft_3d.no_dev.conf.toml"
 export TAURI_FRONTEND_PATH="${frontend_path}"
 export TAURI_APP_PATH="${rust_crate_path}"
 
+# Launch nx dev editor3d in the background
+(cd "$frontend_path" && npx nx dev editor3d &)
 
 RUSTFLAGS="-Awarnings" cargo tauri dev --no-dev-server \
   --no-dev-server-wait \

@@ -64,6 +64,7 @@ export const GalleryModal = React.memo(
     const [username, setUsername] = useState<string>("");
 
     const imageUrl = lightboxImage?.fullImage || "";
+
     const api = useMemo(() => new GalleryModalApi(), []);
     const usersApi = useMemo(() => new UsersApi(), []);
 
@@ -130,7 +131,7 @@ export const GalleryModal = React.memo(
           if (response.success && response.data) {
             // Print the JSON response for debugging
             console.log("Media files response:", response.data);
-            const thumbnail_size = 100;
+            const thumbnail_size = 250;
             const newItems = response.data.map((item: any) => ({
               id: item.token,
               label: item.maybe_title || "Image Generation",

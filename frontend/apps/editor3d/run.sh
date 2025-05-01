@@ -9,6 +9,5 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 cd "${REPO_ROOT}"
 echo "${REPO_ROOT}"
 
-
 # Run the launch script
 ./script/desktop/run_desktop_3d.sh
