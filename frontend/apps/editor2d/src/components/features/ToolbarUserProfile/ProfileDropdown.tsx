@@ -44,8 +44,12 @@ export function ProfileDropdown() {
           size={34}
           username={userInfo.value.display_name}
           email_hash={userInfo.value.email_gravatar_hash}
-          avatarIndex={Number(userInfo.value.core_info.default_avatar.image_index) || 0}
-          backgroundIndex={Number(userInfo.value.core_info.default_avatar.color_index) || 0}
+          avatarIndex={
+            Number(userInfo.value.core_info.default_avatar.image_index) || 0
+          }
+          backgroundIndex={
+            Number(userInfo.value.core_info.default_avatar.color_index) || 0
+          }
         />
         <FontAwesomeIcon icon={faChevronDown} />
       </MenuButton>

@@ -1,6 +1,6 @@
 import { signals } from "./auth_signals";
 import { UsersApi } from "@storyteller/api";
-import { BillingApi } from "@ApiManager/BillingApi";
+import { BillingApi } from "@storyteller/api";
 
 import {
   updateActiveSubscriptions,

@@ -44,10 +44,10 @@ export const Login = () => {
 
       const usernameOrEmail = form.get("usernameOrEmail")?.toString();
       const password = form.get("password")?.toString();
-   
+
       if (usernameOrEmail && password) {
         let api = new UsersApi();
-        
+
         let response = await api.Login({
           usernameOrEmail,
           password,
@@ -99,7 +99,6 @@ export const Login = () => {
               shouldShowLoader && "opacity-0",
             )}
           >
-            
             <Input
               label="Username or Email"
               icon={faUser}
