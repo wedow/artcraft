@@ -9,7 +9,7 @@ import { Toaster } from "~/components/ui/Toast";
 import { JobProvider } from "~/components/JobContext";
 import "./global.css";
 import { useRenderCounter } from "~/hooks/useRenderCounter";
-
+import { FetchProxy as fetch } from "@storyteller/tauri-utils";
 function PostHogInit() {
   const apiKey = import.meta.env.VITE_POSTHOG_API_KEY;
   posthog.init(apiKey, {
