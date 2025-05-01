@@ -1,51 +1,19 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from "react";
 import { useSignals, useSignalEffect } from "@preact/signals-react/runtime";
-import { useEffect } from "react";
-import { BrowserRouter } from 'react-router-dom';
-import * as ReactDOM from 'react-dom/client';
-import { authentication, persistLogin } from "~/signals";
-import { PageEnigma } from './pages/PageEnigma/PageEnigma';
+import { BrowserRouter } from "react-router-dom";
+import { PageEnigma } from "./pages/PageEnigma/PageEnigma";
 import { createRoot } from "react-dom/client";
-//import App from './app/app';
-//import { App } from './root';
-
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useLoaderData,
-} from "@remix-run/react";
-
 import "./styles/normalize.css";
 import "./styles/tailwind.css";
 import "./styles/base.css";
 import "@fortawesome/fontawesome-svg-core/styles.css";
-
 import { config } from "@fortawesome/fontawesome-svg-core";
-
 import EnvironmentVariables from "~/Classes/EnvironmentVariables";
-import { pageHeight, pageWidth } from "~/signals";
-
+import { pageHeight, pageWidth, persistLogin } from "~/signals";
 import { showWizard } from "~/pages/PageEnigma/Wizard/signals/wizard";
-import { BuildEnvironmentType, GetBuildEnvironment } from "./BuildEnvironment";
+import { posthog } from "posthog-js";
 
 config.autoAddCss = false; /* eslint-disable import/first */
-
-//const root = ReactDOM.createRoot(
-//  document.getElementById('root') as HTMLElement
-//);
-//
-//root.render(
-//  <StrictMode>
-//    <BrowserRouter>
-//      <App/>
-//    </BrowserRouter>
-//  </StrictMode>
-//);
-
-//createRoot(document.getElementById("root")!).render(<PageEnigma/>);
 
 // TODO(bt,2025-04-19): Make these configurable
 const ENV = {
@@ -67,13 +35,12 @@ const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
   function PostHogInit() {
     const data = EnvironmentVariables.values;
     const apiKey = data.REACT_APP_PUBLIC_POSTHOG_KEY as string;
-    //posthog.init(apiKey, {
-    //  //HACK: This is the default host from Netlify, but need to figure out why it isn't working on prod.
-    //  // api_host: data.DEPLOY_PRIME_URL + "/ingest" as string,
-    //  api_host: "https://studio.storyteller.ai/ingest" as string,
-    //  ui_host: data.REACT_APP_PUBLIC_POSTHOG_UI as string,
-    //});
+    posthog.init(apiKey, {
+      api_host: "https://us.i.posthog.com/",
+      ui_host: "https://us.i.posthog.com/",
+    });
   }
+
   useEffect(() => {
     EnvironmentVariables.initialize(env);
     PostHogInit();
@@ -114,8 +81,8 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <GlobalSettingsManager env={ENV} />
         <div className="topbar-spacer" />
-        <PageEnigma/>
+        <PageEnigma />
       </BrowserRouter>
     </StrictMode>
-  </>
+  </>,
 );
