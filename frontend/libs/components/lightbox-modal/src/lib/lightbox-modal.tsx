@@ -15,6 +15,7 @@ interface LightboxModalProps {
   createdAt?: string;
   additionalInfo?: React.ReactNode;
   downloadUrl?: string;
+  onDownloadClicked?: () => void;
 }
 
 export function LightboxModal({
@@ -27,6 +28,7 @@ export function LightboxModal({
   createdAt,
   additionalInfo,
   downloadUrl,
+  onDownloadClicked,
 }: LightboxModalProps) {
   return createPortal(
     <Transition appear show={isOpen}>
@@ -104,7 +106,10 @@ export function LightboxModal({
                       >
                         <Button
                           icon={faDownToLine}
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDownloadClicked?.();
+                          }}
                         >
                           Download
                         </Button>

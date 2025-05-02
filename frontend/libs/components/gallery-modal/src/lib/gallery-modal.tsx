@@ -39,6 +39,7 @@ interface GalleryModalProps {
   tabs: { id: string; label: string }[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
+  onDownloadClicked?: () => void;
 }
 
 export const GalleryModal = React.memo(
@@ -53,6 +54,7 @@ export const GalleryModal = React.memo(
     tabs,
     activeTab,
     onTabChange,
+    onDownloadClicked,
   }: GalleryModalProps) => {
     const [groupedItems, setGroupedItems] = useState<GroupedItems>({});
     const [loading, setLoading] = useState(false);
