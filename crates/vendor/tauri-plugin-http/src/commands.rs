@@ -316,7 +316,9 @@ pub async fn fetch<R: Runtime>(
                 let mut maybe_origin_header = headers.get(header::ORIGIN);
 
                 let replace_origin_header = maybe_origin_header.is_none()
-                    || maybe_origin_header == Some(&HeaderValue::from_static("null"));
+                    || maybe_origin_header == Some(&HeaderValue::from_static("null")) // Above error (Mac)
+                    || maybe_origin_header == Some(&HeaderValue::from_static("http://tauri.localhost")) // Windows
+                    || maybe_origin_header == Some(&HeaderValue::from_static("tauri://localhost")); // Mac plausibly causes this
 
                 if replace_origin_header {
                     // TODO(bt): Make this a sentinel origin, eg. sentinel.storyteller.ai.

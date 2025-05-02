@@ -5,33 +5,10 @@ import { viteCommonjs, esbuildCommonjs } from '@originjs/vite-plugin-commonjs'
 import path from 'path'
 import { dirname, resolve } from 'node:path'
 
+// NB(bt): This configuration file can specify bundler rollup options, compiler plugins,
+// dev server HTTP headers, CORS options, path rewriting, etc. Read the vite docs for more.
 export default defineConfig({
   root: path.resolve(__dirname, 'app'),
-  //resolve: {
-  //  alias: {
-  //    'kalidokit': `${path.resolve(__dirname, 'src')}/`,
-  //  },
-  //},
-  //resolve: {
-  //  alias: [
-  //    {
-  //      find: /@frontend\/login/,
-  //      //replacement: path.resolve(__dirname, 'node_modules', '@frontend', 'login'),
-  //      replacement: path.resolve(__dirname, '../', '../', 'libs', 'login'),
-  //    },
-  //  ],
-  //},
-  //rollupOptions: {
-  //  // make sure to externalize deps that shouldn't be bundled
-  //  // into your library
-  //  exports: "named",
-  //  external: [],
-  //  output: {
-  //      // Provide global variables to use in the UMD build
-  //      // for externalized deps
-  //      globals: {},
-  //  },
-  //},
   build: {
     outDir: path.resolve(__dirname, 'dist'),
     rollupOptions: {
@@ -45,51 +22,7 @@ export default defineConfig({
   plugins: [
     netlifyPlugin(),
     tsconfigPaths(),
-    //viteCommonjs({
-    //  include: ["kalidokit"],
-    //}),
-    {
-      name: "configure-response-headers",
-      configureServer: (server) => {
-        server.middlewares.use((_req, res, next) => {
-          res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-          res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-          next();
-        });
-      },
-    },
   ],
   server: {
-    // Local development CORS for images
-    headers: {
-      "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp"
-    },
-    proxy: {
-      "/v1": "https://api.storyteller.ai",
-      "/avatar": "https://www.gravatar.com",
-      "/preview": "https://style.storyteller.ai",
-      "/google": {
-        target: "https://storage.googleapis.com",
-        rewrite: (path) => path.replace(/^\/google/, ""),
-      },
-    },
-  },
-  //optimizeDeps: {
-  //  esbuildOptions: {
-  //    plugins: [
-  //      esbuildCommonjs(['kalidokit'])
-  //    ]
-  //  }
-  //}
-  optimizeDeps: {
-    include: [
-      //'vue',
-      //'vue-router',
-      //'@vueuse/core',
-      //'@vueuse/head',
-      //'consola',
-      //'kalidokit',
-    ],
   }
 });

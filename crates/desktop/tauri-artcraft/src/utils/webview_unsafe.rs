@@ -1,5 +1,5 @@
-use tauri::{AppHandle, Manager, Webview};
 use errors::AnyhowResult;
+use tauri::{AppHandle, Manager};
 
 const MAIN_WINDOW_NAME: &str = "main";
 
@@ -7,19 +7,19 @@ pub fn webview_unsafe_for_app(app: &AppHandle) -> AnyhowResult<()> {
   let windows = app.windows();
   let maybe_window = windows.get(MAIN_WINDOW_NAME);
   
-  if let Some(window) = maybe_window {
+  /*if let Some(window) = maybe_window {
     let webview = window.get_webview(MAIN_WINDOW_NAME);
     if let Some(webview) = webview {
       webview_unsafe(&webview);
-      
     }
   } else {
     return Err(anyhow::anyhow!("Main window not found"));
-  }
+  }*/
+
   Ok(())
 }
 
-pub fn webview_unsafe(webview: &Webview) {
+/*pub fn webview_unsafe(webview: &Webview) {
   let r = webview.with_webview(|webview| {
     webview.controller();
     #[cfg(target_os = "macos")]
@@ -35,4 +35,4 @@ pub fn webview_unsafe(webview: &Webview) {
     }
 
   });
-}
+}*/
