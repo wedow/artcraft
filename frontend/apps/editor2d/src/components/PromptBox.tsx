@@ -28,11 +28,11 @@ import { getCanvasRenderBitmap } from "~/signal/canvasRenderBitmap";
 import { EncodeImageBitmapToBase64 } from "~/utilities/EncodeImageBitmapToBase64";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
-import { Api } from "~/KonvaApp/Api";
+
 import { useJobContext } from "~/components/JobContext";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
-
+import { PromptsApi } from "@storyteller/api";
 interface ReferenceImage {
   id: string;
   url: string;
@@ -215,7 +215,7 @@ export const PromptBox = () => {
   };
 
   const handleTauriEnqueue = async () => {
-    const api = new Api();
+    const api = new PromptsApi();
     let image = getCanvasRenderBitmap();
     if (image === undefined) {
       return;
@@ -261,7 +261,7 @@ export const PromptBox = () => {
   };
 
   const handleWebEnqueue = async () => {
-    const api = new Api();
+    const api = new PromptsApi();
     let image = getCanvasRenderBitmap();
     if (image === undefined) {
       toast.error(

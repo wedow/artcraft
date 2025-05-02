@@ -1,4 +1,5 @@
 import { twMerge } from "tailwind-merge";
+import { Fragment } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronDown,
@@ -65,18 +66,18 @@ export function ProfileDropdown() {
         )}
       >
         <MenuItem
-          as="a"
+          as="button"
           href={profileUrl}
           target="_blank"
           rel="noreferrer"
           className={twMerge(
             "flex w-full items-center gap-3 rounded-lg px-3 py-2",
-            "text-md font-medium text-gray-700 hover:bg-gray-100",
+            "text-md font-medium text-white hover:bg-gray-100 hover:text-gray-700",
             "transition-colors duration-150",
           )}
         >
-          <FontAwesomeIcon icon={faUser} className="w-4 text-gray-700" />
-          <span className="text-gray-700">My Profile</span>
+          <FontAwesomeIcon icon={faUser} className="w-4" />
+          My Profile
         </MenuItem>
 
         {menuOptions.map((option, index) => (
@@ -85,7 +86,7 @@ export function ProfileDropdown() {
             as="button"
             className={twMerge(
               "flex w-full items-center gap-3 rounded-lg px-3 py-2",
-              "text-md font-medium text-gray-700 hover:bg-gray-100",
+              "text-md font-medium text-white hover:bg-gray-100 hover:text-gray-700",
               "transition-colors duration-150",
             )}
             onClick={(e) => {
@@ -94,7 +95,7 @@ export function ProfileDropdown() {
               option.onClick();
             }}
           >
-            <FontAwesomeIcon icon={option.icon} className="w-4 text-gray-700" />
+            <FontAwesomeIcon icon={option.icon} className="w-4" />
             <span>{option.label}</span>
           </MenuItem>
         ))}
