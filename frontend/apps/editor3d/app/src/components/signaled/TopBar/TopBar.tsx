@@ -58,7 +58,7 @@ export const TopBar = ({ pageName }: Props) => {
                 Back to Editor
               </ButtonLink>
             )}
-            <Button
+            {/* <Button
               variant="secondary"
               icon={faChevronRight}
               iconClassName="text-xs"
@@ -67,7 +67,7 @@ export const TopBar = ({ pageName }: Props) => {
               className="bg-transparent p-0 text-sm text-white/80 hover:bg-transparent hover:text-white hover:underline hover:underline-offset-2"
             >
               Go to 2D Canvas
-            </Button>
+            </Button> */}
           </div>
 
           <div className="flex items-center justify-center gap-2 font-medium">

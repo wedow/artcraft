@@ -52,7 +52,7 @@ export const ToolbarTopLeft = () => {
         className="h-[28px] select-none"
       />
 
-      <Button
+      {/* <Button
         variant="secondary"
         icon={faChevronRight}
         iconClassName="text-xs"
@@ -61,7 +61,7 @@ export const ToolbarTopLeft = () => {
         className="bg-transparent p-0 text-sm text-white/80 hover:bg-transparent hover:text-white hover:underline hover:underline-offset-2"
       >
         Go to 3D Stage Editor
-      </Button>
+      </Button> */}
 
       {/* <TabSelector
         tabs={tabs}
