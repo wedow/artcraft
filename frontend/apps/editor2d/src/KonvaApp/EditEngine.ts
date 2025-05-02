@@ -279,26 +279,26 @@ export class EditEngine {
 
   public async setupStage() {
     // Frame rate inicator
-    const textNode = new Konva.Text({
-      x: 10,
-      y: 80,
-      text: "",
-      fontSize: 18,
-      fontFamily: "Source Sans 3",
-      fill: "white",
-    });
-    const anim = new Konva.Animation((frame) => {
-      if (frame && import.meta.env.DEV) {
-        const timeDiff = frame.timeDiff;
-        const frameRate = frame.frameRate;
-        textNode.setText(
-          `FrameTime: ${timeDiff.toFixed(0)} ms\nFrameRate: ${frameRate.toFixed(0)} fps`,
-        );
-      }
-    }, this.mediaLayer);
+    // const textNode = new Konva.Text({
+    //   x: 10,
+    //   y: 80,
+    //   text: "",
+    //   fontSize: 18,
+    //   fontFamily: "Source Sans 3",
+    //   fill: "white",
+    // });
+    // const anim = new Konva.Animation((frame) => {
+    //   if (frame && import.meta.env.DEV) {
+    //     const timeDiff = frame.timeDiff;
+    //     const frameRate = frame.frameRate;
+    //     textNode.setText(
+    //       `FrameTime: ${timeDiff.toFixed(0)} ms\nFrameRate: ${frameRate.toFixed(0)} fps`,
+    //     );
+    //   }
+    // }, this.mediaLayer);
 
-    anim.start();
-    this.uiLayer.add(textNode);
+    // anim.start();
+    // this.uiLayer.add(textNode);
     this.addKeyboardShortcuts();
   }
 
