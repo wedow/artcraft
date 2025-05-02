@@ -75,6 +75,12 @@ export const Signup = () => {
 
   return (
     <div className="pegboard fixed flex h-full w-full flex-col items-center justify-center bg-center bg-repeat">
+      <Button
+        className="absolute left-4 top-4 px-3 py-2 text-sm"
+        onClick={() => navigate("/")}
+      >
+        Back to Home
+      </Button>
       <div className="mb-7 flex w-10/12 max-w-2xl items-center justify-center gap-4">
         <img
           src="/brand/artcraft-logo.png"

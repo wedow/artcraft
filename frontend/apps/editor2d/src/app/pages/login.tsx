@@ -77,6 +77,12 @@ export const Login = () => {
 
   return (
     <div className="pegboard fixed flex h-full w-full flex-col items-center justify-center bg-center bg-repeat">
+      <Button
+        className="absolute left-4 top-4 px-3 py-2 text-sm"
+        onClick={() => navigate("/")}
+      >
+        Back to Home
+      </Button>
       <div className="mb-7 flex w-10/12 max-w-2xl items-center justify-center gap-4">
         <img
           src="/brand/artcraft-logo.png"
@@ -126,12 +132,12 @@ export const Login = () => {
           )}
         </div>
         <div className="align-items flex w-full max-w-xl rounded-b-xl bg-ui-controls px-6 py-4">
-          <a
+          {/* <a
             href="https://storyteller.ai/password-reset"
             className="grow text-sm !text-primary-400 transition-all duration-150 hover:!text-primary-300"
           >
             Forgot your password?
-          </a>
+          </a> */}
           <div className="flex justify-end gap-1 text-sm">
             <p className="opacity-75">Don&apos;t have an account?</p>
             <Link to="/signup">Sign Up</Link>
