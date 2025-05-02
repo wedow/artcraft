@@ -15,5 +15,7 @@
       "default": "./dist/index.js"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tauri-apps/plugin-upload": "2.2.1"
+  }
 }

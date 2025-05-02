@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";
+import { downloadFileFromUrl } from "@storyteller/api";
 import {
   faPlus,
   faCamera,
@@ -880,6 +881,7 @@ export const PromptBox = () => {
         ]}
         activeTab={activeGalleryTab}
         onTabChange={setActiveGalleryTab}
+        onDownloadClicked={downloadFileFromUrl}
       />
     </>
   );

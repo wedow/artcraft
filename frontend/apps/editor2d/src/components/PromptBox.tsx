@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useSignals } from "@preact/signals-react/runtime";
 import { toast } from "sonner";
 import { UploaderStates, uploadImage } from "~/components/UploadImage";
-
+import { downloadFileFromUrl } from "@storyteller/api";
 import { PopoverMenu } from "~/components/reusable/Popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button } from "@storyteller/ui-button";
@@ -33,6 +33,7 @@ import { useJobContext } from "~/components/JobContext";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { PromptsApi } from "@storyteller/api";
+
 interface ReferenceImage {
   id: string;
   url: string;
@@ -357,6 +358,7 @@ export const PromptBox = () => {
     }
   };
 
+ 
   return (
     <>
       <Modal
@@ -536,6 +538,7 @@ export const PromptBox = () => {
         ]}
         activeTab={activeGalleryTab}
         onTabChange={setActiveGalleryTab}
+        onDownloadClicked={downloadFileFromUrl}
       />
     </>
   );

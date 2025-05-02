@@ -39,7 +39,7 @@ interface GalleryModalProps {
   tabs: { id: string; label: string }[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
-  onDownloadClicked?: () => void;
+  onDownloadClicked?: (url: string) => Promise<void>;
 }
 
 export const GalleryModal = React.memo(
@@ -341,6 +341,7 @@ export const GalleryModal = React.memo(
           title={lightboxImage?.label}
           createdAt={lightboxImage?.createdAt}
           downloadUrl={imageUrl}
+          onDownloadClicked={onDownloadClicked}
         />
       </>
     );

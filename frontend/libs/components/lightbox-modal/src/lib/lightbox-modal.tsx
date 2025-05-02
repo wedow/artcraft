@@ -15,7 +15,7 @@ interface LightboxModalProps {
   createdAt?: string;
   additionalInfo?: React.ReactNode;
   downloadUrl?: string;
-  onDownloadClicked?: () => void;
+  onDownloadClicked?: (url: string) => Promise<void>;
 }
 
 export function LightboxModal({
@@ -98,22 +98,26 @@ export function LightboxModal({
                   </div>
                   {downloadUrl && (
                     <div className="flex justify-end">
-                      <a
-                        href={downloadUrl}
-                        download
-                        onClick={(e) => e.stopPropagation()}
-                        className="no-underline"
-                      >
+                      {onDownloadClicked ? (
                         <Button
                           icon={faDownToLine}
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            onDownloadClicked?.();
+                            await onDownloadClicked(downloadUrl);
                           }}
                         >
                           Download
                         </Button>
-                      </a>
+                      ) : (
+                        <a
+                          href={downloadUrl}
+                          download
+                          onClick={(e) => e.stopPropagation()}
+                          className="no-underline"
+                        >
+                          <Button icon={faDownToLine}>Download</Button>
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>

@@ -14,7 +14,7 @@ import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
 import { GalleryModal } from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
-
+import { downloadFileFromUrl } from "@storyteller/api";
 function isEditorPath(path: string) {
   if (path === "/") return true;
   if (path === "/idealenigma/") return true;
@@ -116,6 +116,7 @@ export const TopBar = ({ pageName }: Props) => {
         ]}
         activeTab={activeLibraryTab}
         onTabChange={setActiveLibraryTab}
+        onDownloadClicked={downloadFileFromUrl}
       />
     </>
   );

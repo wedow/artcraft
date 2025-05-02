@@ -8,10 +8,13 @@ import { useState } from "react";
 import { AuthButtons } from "~/components/shared_authentication/AuthButtons";
 import { Tooltip } from "@storyteller/ui-tooltip";
 
+import { downloadFileFromUrl } from "@storyteller/api";
+
 export const ToolbarTopRight = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [activeGalleryTab, setActiveGalleryTab] = useState("my-media");
+ 
 
   return (
     <>
@@ -50,6 +53,7 @@ export const ToolbarTopRight = () => {
         ]}
         activeTab={activeGalleryTab}
         onTabChange={setActiveGalleryTab}
+        onDownloadClicked={downloadFileFromUrl}
       />
     </>
   );
