@@ -1,6 +1,7 @@
 use crate::state::data_dir::app_assets_dir::AppAssetsDir;
 use crate::state::data_dir::app_credentials_dir::AppCredentialsDir;
 use crate::state::data_dir::app_downloads_dir::AppDownloadsDir;
+use crate::state::data_dir::app_settings_dir::AppSettingsDir;
 use crate::state::data_dir::app_weights_dir::AppWeightsDir;
 use crate::state::data_dir::temporary_dir::TemporaryDir;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
@@ -12,7 +13,6 @@ use std::path::{Path, PathBuf};
 
 const DEFAULT_DATA_DIR : &str = "Artcraft";
 
-
 /// Note: Tauri appends ".log" to the end of the filename.
 const LOG_FILE_NAME : &str = "application_debug";
 
@@ -23,6 +23,7 @@ pub struct AppDataRoot {
   assets_dir: AppAssetsDir,
   credentials_dir: AppCredentialsDir,
   downloads_dir: AppDownloadsDir,
+  settings_dir: AppSettingsDir,
   weights_dir: AppWeightsDir,
   temp_dir: TemporaryDir,
   log_file_name: PathBuf,
@@ -60,10 +61,11 @@ impl AppDataRoot {
     }
     
     let assets_dir = AppAssetsDir::get_or_create_in_root_dir(&dir)?;
-    let downloads_dir = AppDownloadsDir::get_or_create_in_root_dir(&dir)?;
     let credentials_dir = AppCredentialsDir::get_or_create_in_root_dir(&dir)?;
-    let weights_dir = AppWeightsDir::get_or_create_in_root_dir(&dir)?;
+    let downloads_dir = AppDownloadsDir::get_or_create_in_root_dir(&dir)?;
+    let settings_dir = AppSettingsDir::get_or_create_in_root_dir(&dir)?;
     let temp_dir = TemporaryDir::get_or_create_in_root_dir(&dir)?;
+    let weights_dir = AppWeightsDir::get_or_create_in_root_dir(&dir)?;
     let log_file_name = dir.join(LOG_FILE_NAME);
     let log_file_name_string = log_file_name
         .to_str()
@@ -75,6 +77,7 @@ impl AppDataRoot {
       assets_dir,
       credentials_dir,
       downloads_dir,
+      settings_dir,
       weights_dir,
       temp_dir,
       log_file_name,
@@ -94,6 +97,10 @@ impl AppDataRoot {
     &self.downloads_dir
   }
 
+  pub fn settings_dir(&self) -> &AppSettingsDir {
+    &self.settings_dir
+  }
+  
   pub fn weights_dir(&self) -> &AppWeightsDir {
     &self.weights_dir
   }
