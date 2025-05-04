@@ -1,4 +1,8 @@
+use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use errors::AnyhowResult;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 /// For now, let's just keep a collection of loose json files in a settings dir.
@@ -23,11 +27,25 @@ impl DataSubdir for AppSettingsDir {
 }
 
 impl AppSettingsDir {
-  pub fn get_download_preferences_file_path(&self) -> PathBuf {
-    self.path.join("download_settings.json")
-  }
-
   pub fn get_app_preferences_path(&self) -> PathBuf {
     self.path.join("app_preferences.json")
+  }
+  
+  pub fn write_app_preferences(&self, prefs: &AppPreferences) -> AnyhowResult<()> {
+    let serializable = prefs.to_serializable();
+    let serializable = serde_json::to_string(&serializable)?;
+    
+    let filename = self.get_app_preferences_path();
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(filename)?;
+
+    file.write_all(serializable.as_bytes())?;
+    file.flush()?;
+    
+    Ok(())
   }
 }
