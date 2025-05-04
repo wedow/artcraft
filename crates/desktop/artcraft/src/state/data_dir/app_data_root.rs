@@ -100,7 +100,7 @@ impl AppDataRoot {
   pub fn settings_dir(&self) -> &AppSettingsDir {
     &self.settings_dir
   }
-  
+
   pub fn weights_dir(&self) -> &AppWeightsDir {
     &self.weights_dir
   }
