@@ -1,3 +1,4 @@
+pub mod app_preferences;
 pub mod app_startup_time;
 pub mod data_dir;
 pub mod expanduser;

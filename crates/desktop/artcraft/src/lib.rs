@@ -11,6 +11,7 @@ use crate::commands::platform_info_command::platform_info_command;
 use crate::commands::sora::open_sora_login_command::open_sora_login_command;
 use crate::commands::sora::sora_image_generation_command::sora_image_generation_command;
 use crate::commands::sora::sora_image_remix_command::sora_image_remix_command;
+use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::main_window_size::MainWindowSize;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -34,6 +35,9 @@ pub fn run() {
   let app_data_root = AppDataRoot::create_default().expect("data directory should be created");
   let app_data_root_2 = app_data_root.clone();
 
+  println!("Loading app preferences...");
+  let app_preferences = AppPreferences::load_from_file_or_default(&app_data_root);
+  
   println!("Attempting to read existing artcraft credentials...");
   let storyteller_creds_manager = StorytellerCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let storyteller_creds_manager_2 = storyteller_creds_manager.clone();

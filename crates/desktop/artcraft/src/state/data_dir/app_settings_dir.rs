@@ -27,7 +27,7 @@ impl AppSettingsDir {
     self.path.join("download_settings.json")
   }
 
-  pub fn get_behavior_preferences_path(&self) -> PathBuf {
+  pub fn get_app_preferences_path(&self) -> PathBuf {
     self.path.join("app_preferences.json")
   }
 }
