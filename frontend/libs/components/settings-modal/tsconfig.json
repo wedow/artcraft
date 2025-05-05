@@ -15,10 +15,13 @@
       "path": "../modal"
     },
     {
-      "path": "../../tauri-utils"
+      "path": "../../api"
     },
     {
-      "path": "../../api"
+      "path": "../../tauri-api"
+    },
+    {
+      "path": "../../tauri-utils"
     },
     {
       "path": "./tsconfig.lib.json"
