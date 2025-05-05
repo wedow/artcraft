@@ -11,6 +11,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { Input } from "@storyteller/ui-input";
 import { Select, SelectValue } from "@storyteller/ui-select";
+import { MiscSettingsPane } from "./MiscSettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -38,6 +39,8 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [klingApiKey, setKlingApiKey] = useState("");
   const [defaultVideoModel, setDefaultVideoModel] = useState("veo");
   const [humanVideoProvider, setHumanVideoProvider] = useState("artcraft");
+
+
 
   const sections = [
     { id: "accounts" as const, label: "Accounts", icon: faUser },
@@ -157,15 +160,13 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       case "image":
         return (
           <div>
-            <button className="text-blue-600">Various Image Settings...</button>
+            <button className="text-blue-600">Various Image Settings (TODO)...</button>
           </div>
         );
 
       case "misc":
         return (
-          <div>
-            <button className="text-blue-600">Other Settings...</button>
-          </div>
+          <MiscSettingsPane />
         );
     }
   };

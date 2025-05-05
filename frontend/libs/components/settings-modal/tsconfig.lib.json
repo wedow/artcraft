@@ -54,6 +54,12 @@
     },
     {
       "path": "../modal/tsconfig.lib.json"
-    }
+    },
+    {
+      "path": "../../api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../tauri-utils/tsconfig.lib.json"
+    },
   ]
 }

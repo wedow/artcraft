@@ -62,6 +62,9 @@
     },
     {
       "path": "./libs/soundboard"
+    },
+    {
+      "path": "./libs/tauri-api"
     }
   ]
 }
