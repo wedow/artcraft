@@ -534,7 +534,7 @@ export const PromptBox = () => {
           },
         });
 
-        //console.log("response", generateResponse);
+        console.log("response", generateResponse);
 
         //if (generateResponse.errorMessage) {
         //  handleError(response.errorMessage);
@@ -625,8 +625,6 @@ export const PromptBox = () => {
                   src={image.url}
                   alt="Reference"
                   className="h-full w-full rounded-lg object-cover"
-                  // crossOrigin="anonymous"
-                  // referrerPolicy="no-referrer"
                 />
                 <button
                   onClick={() => handleRemoveReference(image.id)}

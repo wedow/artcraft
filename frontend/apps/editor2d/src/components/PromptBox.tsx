@@ -258,6 +258,7 @@ export const PromptBox = () => {
         maybe_number_of_samples: 1,
       },
     });
+    console.log("Generate response:", generateResponse);
     toast.success("Please wait while we process your image.");
   };
 
@@ -358,7 +359,6 @@ export const PromptBox = () => {
     }
   };
 
- 
   return (
     <>
       <Modal
