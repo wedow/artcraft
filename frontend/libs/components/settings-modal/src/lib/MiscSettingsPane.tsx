@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Input } from "@storyteller/ui-input";
 import { AppPreferencesPayload, GetAppPreferences } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "libs/tauri-api/src/lib/settings/UpdateAppPreference";
+import { open } from '@tauri-apps/plugin-dialog';
 
 interface MiscSettingsPaneProps {
 }
@@ -45,12 +46,21 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
     await reloadPreferences();
   }
 
+  const openPicker = async () => {
+    const file = await open({
+      multiple: false,
+      directory: false,
+    });
+    console.log(file);
+  }
+
   return (<>
     <div className="space-y-4">
       <div>
         <label htmlFor="pal-api-key" className="mb-2 block">
           Default Download Directory
         </label>
+        <button onClick={openPicker}>button</button>
         <Input
             id="pal-api-key"
             type="input"
