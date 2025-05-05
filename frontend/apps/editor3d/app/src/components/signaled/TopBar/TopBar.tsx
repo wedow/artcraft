@@ -16,6 +16,8 @@ import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { downloadFileFromUrl } from "@storyteller/api";
 import { TabSelector, TabItem } from "@storyteller/ui-tab-selector";
+import { Signal } from "@preact/signals-react";
+import { useSignals } from "@preact/signals-react/runtime";
 function isEditorPath(path: string) {
   if (path === "/") return true;
   if (path === "/idealenigma/") return true;
@@ -23,6 +25,8 @@ function isEditorPath(path: string) {
 }
 interface Props {
   pageName: string;
+  appTabIdSignal: Signal<string>;
+  setAppTabId: (id: string) => void;
 }
 
 const appTabs: TabItem[] = [
@@ -30,7 +34,9 @@ const appTabs: TabItem[] = [
   { id: "3D", label: "3D" },
 ];
 
-export const TopBar = ({ pageName }: Props) => {
+export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
+  useSignals();
+
   const currentLocation = getCurrentLocationWithoutParams(
     useLocation().pathname,
     useParams(),
@@ -38,7 +44,6 @@ export const TopBar = ({ pageName }: Props) => {
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("3D");
 
   const handleClick = () => {
     window.location.href = "https://storyteller-2d.netlify.app/";
@@ -67,9 +72,9 @@ export const TopBar = ({ pageName }: Props) => {
             )}
             <TabSelector
               tabs={appTabs}
-              activeTab={activeTab}
+              activeTab={appTabIdSignal.value}
               disabled={false}
-              onTabChange={(tabId) => setActiveTab(tabId)}
+              onTabChange={(tabId) => setAppTabId(tabId)}
             />
             {/* <Button
               variant="secondary"

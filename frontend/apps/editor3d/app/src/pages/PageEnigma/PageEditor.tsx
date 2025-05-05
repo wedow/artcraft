@@ -26,6 +26,7 @@ import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 import { DemoModal } from "@storyteller/ui-demo-modal";
+import { appTabId, setAppTabId } from "~/signals/appTab";
 
 export const PageEditor = () => {
   useSignals();
@@ -75,7 +76,11 @@ export const PageEditor = () => {
 
   return (
     <div className="w-screen">
-      <TopBar pageName="Edit Scene" />
+      <TopBar
+        pageName="Edit Scene"
+        appTabIdSignal={appTabId}
+        setAppTabId={setAppTabId}
+      />
       <OnboardingHelper />
       <div
         className="relative flex w-screen"
