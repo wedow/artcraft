@@ -12,7 +12,6 @@ use crate::commands::sora::open_sora_login_command::open_sora_login_command;
 use crate::commands::sora::sora_image_generation_command::sora_image_generation_command;
 use crate::commands::sora::sora_image_remix_command::sora_image_remix_command;
 use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
-use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::main_window_size::MainWindowSize;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -26,6 +25,7 @@ use crate::utils::webview_unsafe::webview_unsafe_for_app;
 
 use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use tauri_plugin_http;
+use tauri_plugin_dialog;
 use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
 
@@ -55,6 +55,7 @@ pub fn run() {
   println!("Initializing backend runtime...");
 
   tauri::Builder::default()
+    .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_upload::init())
     .plugin(tauri_plugin_log::Builder::new()
@@ -124,7 +125,6 @@ pub fn run() {
       platform_info_command,
       sora_image_generation_command,
       sora_image_remix_command,
-      update_app_preferences_command,
     ])
     .run(tauri::generate_context!("tauri.conf.json"))
     .expect("error while running tauri application");

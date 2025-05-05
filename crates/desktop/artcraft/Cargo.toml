@@ -67,6 +67,7 @@ tauri-plugin-http = { path = "../../vendor/tauri-plugin-http" }
 # NB: The version of the `discord-rich-presence` crate (0.2.5) last published has non-Send/Sync error
 # types and can't do threading. We need to wait for a new version to unpin from Git.
 discord-rich-presence = { git = "https://github.com/vionya/discord-rich-presence" }
+tauri-plugin-dialog = "2"
 
 [dev-dependencies]
 libloading = "0.8.6"
