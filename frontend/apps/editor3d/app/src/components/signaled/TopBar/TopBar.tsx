@@ -15,6 +15,7 @@ import { GalleryModal } from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { downloadFileFromUrl } from "@storyteller/api";
+import { TabSelector, TabItem } from "@storyteller/ui-tab-selector";
 function isEditorPath(path: string) {
   if (path === "/") return true;
   if (path === "/idealenigma/") return true;
@@ -24,6 +25,11 @@ interface Props {
   pageName: string;
 }
 
+const appTabs: TabItem[] = [
+  { id: "2D", label: "2D" },
+  { id: "3D", label: "3D" },
+];
+
 export const TopBar = ({ pageName }: Props) => {
   const currentLocation = getCurrentLocationWithoutParams(
     useLocation().pathname,
@@ -32,6 +38,7 @@ export const TopBar = ({ pageName }: Props) => {
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("3D");
 
   const handleClick = () => {
     window.location.href = "https://storyteller-2d.netlify.app/";
@@ -58,6 +65,12 @@ export const TopBar = ({ pageName }: Props) => {
                 Back to Editor
               </ButtonLink>
             )}
+            <TabSelector
+              tabs={appTabs}
+              activeTab={activeTab}
+              disabled={false}
+              onTabChange={(tabId) => setActiveTab(tabId)}
+            />
             {/* <Button
               variant="secondary"
               icon={faChevronRight}
