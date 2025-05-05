@@ -12,6 +12,7 @@ use crate::commands::sora::open_sora_login_command::open_sora_login_command;
 use crate::commands::sora::sora_image_generation_command::sora_image_generation_command;
 use crate::commands::sora::sora_image_remix_command::sora_image_remix_command;
 use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
+use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::main_window_size::MainWindowSize;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -123,6 +124,7 @@ pub fn run() {
       platform_info_command,
       sora_image_generation_command,
       sora_image_remix_command,
+      update_app_preferences_command,
     ])
     .run(tauri::generate_context!("tauri.conf.json"))
     .expect("error while running tauri application");

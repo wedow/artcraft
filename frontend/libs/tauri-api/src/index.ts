@@ -1,2 +1,2 @@
 
-export * from './lib/tauri-api';
+export * from './lib/settings/GetAppPreferences.js';
