@@ -1,5 +1,5 @@
 import { authentication } from "./authentication";
-import { UsersApi } from "~/Classes/ApiManager/UsersApi";
+import { UsersApi } from "@storyteller/api";
 import { BillingApi } from "~/Classes/ApiManager/BillingApi";
 
 import {
@@ -33,11 +33,16 @@ export const login = async ({
   password: string;
   failureCallback?: () => void;
 }) => {
+  console.log('>>> login...');
   updateAuthStatus(AUTH_STATUS.LOGGING);
 
+  console.log('>>> login - usersapi...');
   const usersApi = new UsersApi();
+  console.log('>>> login - usersapi login...');
   const loginResponse = await usersApi.Login({ usernameOrEmail, password });
+  console.log('>>> login - usersapi login respose...');
   if (!loginResponse.success || !loginResponse.data) {
+    console.log('>>> set logout state...');
     setLogoutStates();
     return;
   }
@@ -45,7 +50,9 @@ export const login = async ({
   // technically user is login with the system now, HOWEVER,
   // in storyteller studio, only having a sesison is not enough,
   // we need session info and active subscription info as well
+  console.log('>>> update subs...');
   getUserInfoAndSubcriptions();
+  console.log('>>> redirect /...');
 
   window.location.href = "/"; // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
 };
@@ -92,6 +99,7 @@ export const persistLogin = async () => {
 };
 
 async function getUserInfoAndSubcriptions() {
+  console.log('>>> updateAuthStatus...')
   updateAuthStatus(AUTH_STATUS.GET_USER_INFO);
   const usersApi = new UsersApi();
   const sessionResponse = await usersApi.GetSession();
@@ -100,11 +108,13 @@ async function getUserInfoAndSubcriptions() {
     !sessionResponse.data ||
     !sessionResponse.data.user
   ) {
+    console.log('>>> setLogout...')
     setLogoutStates();
     return;
   }
 
   if (sessionResponse.data && !sessionResponse.data.user.can_access_studio) {
+    console.log('>>> no access...')
     updateAuthStatus(AUTH_STATUS.NO_ACCESS);
     return;
   }
@@ -116,6 +126,7 @@ async function getUserInfoAndSubcriptions() {
     !subscriptionsResponse.data ||
     !subscriptionsResponse.data.active_subscriptions
   ) {
+    console.log('>>> set LOGOUT...')
     setLogoutStates();
     return;
   }

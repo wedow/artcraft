@@ -9,6 +9,7 @@ export class UsersApi extends ApiManager {
     }>
   > {
     const endpoint = `${this.ApiTargets.BaseApi}/v1/session`;
+    console.log('endpoint', endpoint);
     return this.get<{
       success: boolean;
       logged_in: boolean;
@@ -65,6 +66,7 @@ export class UsersApi extends ApiManager {
   }): Promise<ApiResponse<{ signedSession?: string }>> {
     console.log("Logging in with usernameOrEmail:", usernameOrEmail);
     const endpoint = `${this.ApiTargets.BaseApi}/v1/login`;
+    console.log('endpoint', endpoint);
     const body = {
       username_or_email: usernameOrEmail,
       password: password,

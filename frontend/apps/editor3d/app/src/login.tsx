@@ -13,7 +13,7 @@ import { AUTH_STATUS } from "~/enums";
 import { authentication, login, logout } from "~/signals";
 import { createRoot } from "react-dom/client";
 
-import { Button, Input, ConfirmationModal } from "~/components";
+import { Button, Input } from "~/components";
 
 import "./styles/normalize.css";
 import "./styles/tailwind.css";
@@ -46,8 +46,6 @@ export default function LoginScreen() {
   const authLoaderMessage = getAuthLoaderMessage();
   const shouldShowLoader = checkShouldShowLoader();
 
-  const showNoAccessModal = authStatus.value === AUTH_STATUS.NO_ACCESS;
-
   const handleOnSumbit = (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     if (formRef.current) {
@@ -55,6 +53,7 @@ export default function LoginScreen() {
       const usernameOrEmail = form.get("usernameOrEmail")?.toString();
       const password = form.get("password")?.toString();
       if (usernameOrEmail && password && login) {
+        console.log('login...')
         login({
           usernameOrEmail,
           password,
@@ -147,30 +146,9 @@ export default function LoginScreen() {
           </div>
         </div>
       </div>
-      <ConfirmationModal
-        text="We're in a closed beta and you'll need a beta key to use this app."
-        title="Unauthorized"
-        open={showNoAccessModal}
-        onClose={handleClose}
-        cancelText="Close"
-        onCancel={handleClose}
-        okText="Get Beta Key"
-        onOk={() => {
-          handleClose();
-          if (window) {
-            window.open("https://storyteller.ai/beta-key/redeem", "_blank");
-          }
-        }}
-      />
     </div>
   );
 }
-
-const handleClose = () => {
-  if (authentication.status.value !== AUTH_STATUS.LOGGED_OUT) {
-    logout();
-  }
-};
 
 const checkShouldShowLoader = () => {
   return (
