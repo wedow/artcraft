@@ -15,18 +15,6 @@
       "path": "../modal"
     },
     {
-      "path": "../../api"
-    },
-    {
-      "path": "../../tauri-api"
-    },
-    {
-      "path": "../../tauri-utils"
-    },
-    {
-      "path": "../../soundboard"
-    },
-    {
       "path": "./tsconfig.lib.json"
     },
     {

@@ -1,3 +1,2 @@
-export * from './api';
-export { FetchProxy } from './FetchProxy';
 export { IsDesktopApp } from './IsDesktopApp';
+export { FetchProxy } from './FetchProxy';
