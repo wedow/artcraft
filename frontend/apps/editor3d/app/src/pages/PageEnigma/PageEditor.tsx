@@ -27,11 +27,12 @@ import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 import { DemoModal } from "@storyteller/ui-demo-modal";
 import { appTabId, setAppTabId } from "~/signals/appTab";
+import { KonvaCanvasContainer } from "../Page2d/KonvaCanvasContainer";
+import { KonvaRootComponent } from "../Page2d/KonvaRootComponent";
 
 export const PageEditor = () => {
   useSignals();
-  //console.log(api());
-  //To prevent the click event from propagating to the canvas: TODO: HANDLE THIS BETTER?
+ 
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
@@ -159,7 +160,9 @@ export const PageEditor = () => {
   }
 
   const ContentFor2D = () => {
-    return <div>hello world</div>;
+    return <KonvaCanvasContainer>
+      <KonvaRootComponent className="w-full h-full"/>
+    </KonvaCanvasContainer>;
   };
 
   return (

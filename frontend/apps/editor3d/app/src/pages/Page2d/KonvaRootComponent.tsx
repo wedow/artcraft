@@ -3,25 +3,26 @@ import { useCallback, useRef, useState } from "react";
 // Components
 import { KonvaCanvasContainer } from "./KonvaCanvasContainer";
 import { ContextualToolbarNode } from "./ContextualToolbarNode";
-import { SignaledCanvasDragDropFiles } from "./SignaledCanvasDragDropFiles";
+// import { SignaledCanvasDragDropFiles } from "./SignaledCanvasDragDropFiles";
 import { SignaledDialogs } from "./SignaledDialogs";
 import { SignaledToolbarMain } from "./SignaledToolbarMain";
 
-import { PromptBox } from "~/components/PromptBox";
+// import { PromptBox } from "~/components/PromptBox";
 // The KonvaApp is the root of the Konva stage
 // and only entry point for anything in Konva JS
 import { EngineType } from "~/KonvaApp";
 import { KonvaApp } from "~/KonvaApp";
 
 // all the signal-contexts are wrapped in hooks
-import { useAppUiContext } from "./contextSignals/appUi";
+import { useAppUiContext } from "./contextSignals/appUi"; not needed for 2d.
 import { useLayoutContext } from "./contextSignals/layout";
 
 // common hooks
 import { useRenderCounter } from "~/hooks/useRenderCounter";
 import { useNavigate } from "react-router-dom";
 
-import { UndoRedo } from "~/components/reusable/UndoRedo/UndoRedo";
+// TODO REFACTOR THIS INTO THE COMPONENT LIBRARY its used in 3d and 2d
+import { UndoRedo } from "./components/reusable/UndoRedo/UndoRedo";
 
 export const KonvaRootComponent = ({
   className,
@@ -34,7 +35,7 @@ export const KonvaRootComponent = ({
   // Let's make sure we only log once
   useRenderCounter("KonvaRootComponent");
   const navigate = useNavigate();
-  const appUiContext = useAppUiContext();
+  // const appUiContext = useAppUiContext();
   const layoutContext = useLayoutContext();
   
   // Add state to track engine initialization
@@ -80,11 +81,12 @@ export const KonvaRootComponent = ({
       {/* Conditionally render the UI components that need the engine */}
       {isEngineReady && engineRef.current && (
         <UndoRedo engine={engineRef.current}>
-          <SignaledCanvasDragDropFiles
+          
+          {/* <SignaledCanvasDragDropFiles
             openAddImage={appUiContext.openAddImage}
             openAddVideo={appUiContext.openAddVideo}
-          />
-          <PromptBox />
+          /> */}
+          {/* /<PromptBox /> */}
           <SignaledToolbarMain
             layoutSignal={layoutContext.signal}
             appUiContext={appUiContext}
