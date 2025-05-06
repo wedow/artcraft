@@ -250,9 +250,10 @@ export function Activity() {
 }
 
 const jobPollingDisabled = () => {
-  if ((window as any)._JOB_POLLING_DISABLED) {
-    return true;
-  }
-
-  return false;
+  // Set 'window._JOB_POLLING_DISABLED = true' in the console.
+  return (
+    typeof window !== 'undefined' && 
+    '_JOB_POLLING_DISABLED' in window &&
+    !!(window as any)._JOB_POLLING_DISABLED
+  );
 }
