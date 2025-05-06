@@ -65,6 +65,9 @@
     },
     {
       "path": "./libs/tauri-api"
+    },
+    {
+      "path": "./libs/components/login-modal"
     }
   ]
 }
