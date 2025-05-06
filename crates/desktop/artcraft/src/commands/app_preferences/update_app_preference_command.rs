@@ -55,16 +55,7 @@ async fn update_prefs(
   
   match request.preference {
     PreferenceName::PreferredDownloadDirectory => {
-      let mut directory = request.value.parse::<PreferredDownloadDirectory>()?;
-      // TODO(bt): Replace this hack with a better model.
-      match prefs.preferred_download_directory {
-        PreferredDownloadDirectory::SystemDefault => {}
-        PreferredDownloadDirectory::Custom(custom) => {
-          if custom.to_string_lossy() == "$default" {
-            directory = PreferredDownloadDirectory::SystemDefault;
-          }
-        }
-      }
+      let directory = serde_json::from_str(&request.value)?;
       prefs.preferred_download_directory = directory;
     }
     PreferenceName::PlaySounds => {

@@ -1,5 +1,5 @@
 use crate::state::app_preferences::app_preferences_serializable::AppPreferencesSerializable;
-use crate::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
+use crate::state::app_preferences::preferred_download_directory::{PreferredDownloadDirectory, SystemDownloadDirectory};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 #[derive(Clone)]
@@ -14,7 +14,7 @@ pub struct AppPreferences {
 impl Default for AppPreferences {
   fn default() -> Self {
     Self {
-      preferred_download_directory: PreferredDownloadDirectory::SystemDefault,
+      preferred_download_directory: PreferredDownloadDirectory::System(SystemDownloadDirectory::Downloads),
       play_sounds: true,
     }
   }
