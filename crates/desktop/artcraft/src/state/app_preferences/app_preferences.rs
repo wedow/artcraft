@@ -42,9 +42,6 @@ impl AppPreferences {
   }
   
   pub fn to_serializable(&self) -> AppPreferencesSerializable {
-    AppPreferencesSerializable {
-      preferred_download_directory: Some(self.preferred_download_directory.clone()),
-      play_sounds: Some(self.play_sounds),
-    }
+    AppPreferencesSerializable::from_preferences(self)
   }
 }

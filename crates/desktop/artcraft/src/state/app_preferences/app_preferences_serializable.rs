@@ -1,11 +1,18 @@
+use serde::Serialize;
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::{Deserialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Vector clock versioning string rather than semver.
+const CURRENT_VERSION: &str = "1";
+
+#[derive(Debug, Clone, serde_derive::Serialize, Deserialize)]
 pub struct AppPreferencesSerializable {
+  /// Versioning string.
+  pub version: String,
+  
   /// The downloads directory to use when a user downloads a file.
   pub preferred_download_directory: Option<PreferredDownloadDirectory>,
 
@@ -25,11 +32,12 @@ impl AppPreferencesSerializable {
     Ok(Some(data))
   }
 
-  pub fn save_to_file(&self, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
-    let filename = app_data_root.settings_dir().get_app_preferences_path();
-    let json = serde_json::to_string(self)?;
-    std::fs::write(filename, json)?;
-    Ok(())
+  pub fn from_preferences(preferences: &AppPreferences) -> Self {
+    Self {
+      version: CURRENT_VERSION.to_string(),
+      preferred_download_directory: Some(preferences.preferred_download_directory.clone()),
+      play_sounds: Some(preferences.play_sounds),
+    }
   }
 
   pub fn to_preferences(&self) -> AppPreferences {

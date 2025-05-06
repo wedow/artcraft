@@ -4,6 +4,7 @@ use errors::AnyhowResult;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use serde::Serialize;
 
 /// For now, let's just keep a collection of loose json files in a settings dir.
 /// Once we know the structure and schema, we can standardize on a single json file.
@@ -33,8 +34,12 @@ impl AppSettingsDir {
   
   pub fn write_app_preferences(&self, prefs: &AppPreferences) -> AnyhowResult<()> {
     let serializable = prefs.to_serializable();
-    let serializable = serde_json::to_string(&serializable)?;
-    
+
+    let formatter = serde_json::ser::PrettyFormatter::with_indent(b"  ");
+    let mut buf = Vec::new();
+    let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
+    serializable.serialize(&mut ser)?;
+
     let filename = self.get_app_preferences_path();
 
     let mut file = OpenOptions::new()
@@ -43,7 +48,7 @@ impl AppSettingsDir {
         .truncate(true)
         .open(filename)?;
 
-    file.write_all(serializable.as_bytes())?;
+    file.write_all(&buf)?;
     file.flush()?;
     
     Ok(())
