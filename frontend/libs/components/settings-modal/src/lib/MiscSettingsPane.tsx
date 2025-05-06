@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
+import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { AppPreferencesPayload, GetAppPreferences } from "@storyteller/tauri-api";
+import { AppPreferencesPayload, GetAppPreferences, CustomDirectory } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "libs/tauri-api/src/lib/settings/UpdateAppPreference";
 import { open } from '@tauri-apps/plugin-dialog';
+
+// NB: On the backend, we expand "$default" to mean the default system download dir.
+const DEFAULT_SYSTEM_DOWNLOAD_DIRECTORY_SIGIL = "$default";
 
 interface MiscSettingsPaneProps {
 }
@@ -20,21 +24,18 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
     fetchData();
   }, []);
 
-  const downloadDirectory = preferences?.preferred_download_directory || "(default)";
+
+
+  // NB: This might be a complex type.
+  const downloadDirectorySpec = preferences?.preferred_download_directory || DEFAULT_SYSTEM_DOWNLOAD_DIRECTORY_SIGIL;
+  const downloadDirectory = (typeof downloadDirectorySpec === "string")? downloadDirectorySpec : downloadDirectorySpec.custom;
+
   const playSounds = preferences?.play_sounds || false;
 
   const reloadPreferences = async () => {
     const prefs = await GetAppPreferences();
     console.log("prefs", prefs)
     setPreferences(prefs.preferences);
-  }
-
-  const setDownloadDirectory = async (value: string) => {
-    await UpdateAppPreferences({
-      preference: PreferenceName.PreferredDownloadDirectory, 
-      value: value,
-    });
-    await reloadPreferences();
   }
 
   const setPlaySounds = async (checked: boolean) => {
@@ -46,12 +47,25 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
     await reloadPreferences();
   }
 
-  const openPicker = async () => {
-    const file = await open({
+  const openDirectoryPicker = async () => {
+    let defaultPath = downloadDirectory || undefined;
+
+    let directory = await open({
       multiple: false,
-      directory: false,
+      directory: true,
+      defaultPath: defaultPath,
     });
-    console.log(file);
+
+    console.log("selected directory", directory);
+
+    directory = directory === null ? DEFAULT_SYSTEM_DOWNLOAD_DIRECTORY_SIGIL : directory;
+
+    await UpdateAppPreferences({
+      preference: PreferenceName.PreferredDownloadDirectory, 
+      value: directory,
+    });
+
+    await reloadPreferences();
   }
 
   return (<>
@@ -60,18 +74,19 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
         <label htmlFor="pal-api-key" className="mb-2 block">
           Default Download Directory
         </label>
-        <button onClick={openPicker}>button</button>
-        <Input
-            id="pal-api-key"
-            type="input"
-            value={downloadDirectory}
-            onChange={(e) => setDownloadDirectory((e.target as any).value)}
-            placeholder="Enter API Key"
-        />
+
+
+        <Button 
+          variant="primary" 
+          className="py-1"
+          onClick={openDirectoryPicker}
+        >
+            Choose Directory
+        </Button>
       </div>
       <div>
         <label htmlFor="play-sounds" className="mb-2 block">
-          Play Sounds for Events?
+          Play Notification Sounds for Events?
         </label>
         <Input
             id="play-sounds"

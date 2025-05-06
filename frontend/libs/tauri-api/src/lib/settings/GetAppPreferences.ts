@@ -6,10 +6,15 @@ export interface GetAppPreferencesResult {
 
 export interface AppPreferencesPayload {
   // Preferred download directory
-  preferred_download_directory: string,
+  preferred_download_directory: string | CustomDirectory,
 
   // Play sounds on events.
   play_sounds: boolean,
+}
+
+export interface CustomDirectory {
+  // If the directory is custom.
+  custom: string,
 }
 
 export const GetAppPreferences = async () : Promise<GetAppPreferencesResult> => {
