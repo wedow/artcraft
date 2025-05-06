@@ -117,7 +117,7 @@ members = [
   "crates/vendor/candle/candle-transformers",
   "crates/vendor/candle/tensor-tools",
   "crates/vendor/limitation",
-  "crates/vendor/tauri-plugin-http",
+  #"crates/vendor/tauri-plugin-http",
   # NB(bt,2023-12-12): Newrelic keeps breaking with upgrades. Kill for now.
   #"crates/vendor/newrelic-telemetry-sdk-rust",
 

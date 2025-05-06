@@ -10,19 +10,38 @@
     "log:default",
     "upload:allow-download",
     "upload:default",
+    "http:allow-fetch",
+    "http:allow-fetch-cancel",
+    "http:allow-fetch-read-body",
+    "http:allow-fetch-send",
     {
       "identifier": "http:default",
       "allow": [
+        {
+          "url": "http://localhost:12345"
+        },
         {
           "url": "https://*.storyteller.ai"
         },
         {
           "url": "https://*.fakeyou.com"
+        },
+        {
+          "url": "http://**"
+        },
+        {
+          "url": "https://**"
+        },
+        {
+          "url": "http://*:*"
+        },
+        {
+          "url": "https://*:*"
         }
       ],
       "deny": [
         {
-          "url": "https://private.tauri.app"
+          "url": "https://private.example.app"
         }
       ]
     },

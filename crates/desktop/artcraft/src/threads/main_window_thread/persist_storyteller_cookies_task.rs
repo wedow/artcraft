@@ -14,8 +14,8 @@ use storyteller_client::credentials::storyteller_avt_cookie::StorytellerAvtCooki
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::credentials::storyteller_session_cookie::StorytellerSessionCookie;
 use tauri::{AppHandle, Manager, Webview, Window};
-use tauri_plugin_http::reqwest_cookie_store::CookieStore;
-use tauri_plugin_http::Http;
+//use tauri_plugin_http::reqwest_cookie_store::CookieStore;
+//use tauri_plugin_http::Http;
 
 const MAIN_WEBVIEW_NAME: &str = "main";
 
@@ -46,69 +46,69 @@ pub async fn persist_storyteller_cookies_task(
   //  return Ok(())
   //}
 
-  let maybe_http = app.try_state::<Http>();
-  
-  let http = match maybe_http {
-    None => {
-      error!("No HTTP plugin found");
-      return Err(anyhow!("No HTTP plugin found"));
-    }
-    Some(http) => http,
-  };
-  
-  match http.cookies_jar.store.lock() {
-    Err(err) => {
-      error!("Failed to lock cookie jar: {:?}", err);
-      return Err(anyhow!("Failed to lock cookie jar"));
-    }
-    Ok(cookie_jar) => {
-      sync_tauri_credentials(&cookie_jar, storyteller_credential_manager)?;
-    }
-  }
-  
-  Ok(())
-}
-
-fn sync_tauri_credentials(
-  cookie_store: &CookieStore,
-  storyteller_credential_manager: &StorytellerCredentialManager,
-) -> AnyhowResult<()> {
-  let current_http_plugin_credentials = get_credentials_from_cookie_store(cookie_store)?;
-
-  let mut replace_credentials = true;
-
-  let maybe_old_credentials = storyteller_credential_manager.get_credentials()?;
-
-  if let Some(old_credentials) = maybe_old_credentials {
-    if old_credentials.equals(&current_http_plugin_credentials) {
-      replace_credentials = false;
-    }
-  }
-  
-  if replace_credentials {
-    info!("Syncing ArtCraft credentials ...");
-    storyteller_credential_manager.set_credentials(&current_http_plugin_credentials)?;
-    // NB: tauri-plugin-http stores the credentials on disk, so we can defer to that for now.
-    //storyteller_credential_manager.persist_all_to_disk()?;
-  }
+//  let maybe_http = app.try_state::<Http>();
+//  
+//  let http = match maybe_http {
+//    None => {
+//      error!("No HTTP plugin found");
+//      return Err(anyhow!("No HTTP plugin found"));
+//    }
+//    Some(http) => http,
+//  };
+//  
+//  let credentials = match http.cookies_jar.store.lock() {
+//    Err(err) => {
+//      error!("Failed to lock cookie jar: {:?}", err);
+//      return Err(anyhow!("Failed to lock cookie jar"));
+//    }
+//    Ok(cookie_jar) => {
+//      get_credentials_from_cookie_store(&cookie_jar)?
+//    }
+//  };
+//
+//  sync_tauri_credentials(credentials, storyteller_credential_manager)?;
   
   Ok(())
 }
 
-pub fn get_credentials_from_cookie_store(cookie_jar: &CookieStore) -> AnyhowResult<StorytellerCredentialSet> {
-  let mut avt_cookie = None;
-  let mut session_cookie = None;
-
-  for cookie in cookie_jar.iter_unexpired() {
-    if let Some(avt) = StorytellerAvtCookie::maybe_from_cookie(&cookie) {
-      avt_cookie = Some(avt);
-    } else if let Some(session) = StorytellerSessionCookie::maybe_from_cookie(&cookie) {
-      session_cookie = Some(session);
-    }
-  }
-
-  Ok(StorytellerCredentialSet::initialize(
-    avt_cookie,
-    session_cookie,
-  ))
-}
+// fn sync_tauri_credentials(
+//   current_http_plugin_credentials: StorytellerCredentialSet,
+//   storyteller_credential_manager: &StorytellerCredentialManager,
+// ) -> AnyhowResult<()> {
+//   let mut replace_credentials = true;
+// 
+//   let maybe_old_credentials = storyteller_credential_manager.get_credentials()?;
+// 
+//   if let Some(old_credentials) = maybe_old_credentials {
+//     if old_credentials.equals(&current_http_plugin_credentials) {
+//       replace_credentials = false;
+//     }
+//   }
+//   
+//   if replace_credentials {
+//     info!("Syncing ArtCraft credentials ...");
+//     storyteller_credential_manager.set_credentials(&current_http_plugin_credentials)?;
+//     // NB: tauri-plugin-http stores the credentials on disk, so we can defer to that for now.
+//     //storyteller_credential_manager.persist_all_to_disk()?;
+//   }
+//   
+//   Ok(())
+// }
+// 
+// pub fn get_credentials_from_cookie_store(cookie_jar: &CookieStore) -> AnyhowResult<StorytellerCredentialSet> {
+//   let mut avt_cookie = None;
+//   let mut session_cookie = None;
+// 
+//   for cookie in cookie_jar.iter_unexpired() {
+//     if let Some(avt) = StorytellerAvtCookie::maybe_from_cookie(&cookie) {
+//       avt_cookie = Some(avt);
+//     } else if let Some(session) = StorytellerSessionCookie::maybe_from_cookie(&cookie) {
+//       session_cookie = Some(session);
+//     }
+//   }
+// 
+//   Ok(StorytellerCredentialSet::initialize(
+//     avt_cookie,
+//     session_cookie,
+//   ))
+// }

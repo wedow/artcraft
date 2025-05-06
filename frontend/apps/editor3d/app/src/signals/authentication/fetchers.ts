@@ -38,9 +38,13 @@ export const login = async ({
 
   console.log('>>> login - usersapi...');
   const usersApi = new UsersApi();
-  console.log('>>> login - usersapi login...');
+
+  console.log('>>> login - usersapi login... TODO ...');
+
   const loginResponse = await usersApi.Login({ usernameOrEmail, password });
-  console.log('>>> login - usersapi login respose...');
+
+  console.log('>>>> THE API CALL RETURNS!?!?!?');
+
   if (!loginResponse.success || !loginResponse.data) {
     console.log('>>> set logout state...');
     setLogoutStates();

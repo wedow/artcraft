@@ -65,8 +65,10 @@ export class UsersApi extends ApiManager {
     password: string;
   }): Promise<ApiResponse<{ signedSession?: string }>> {
     console.log("Logging in with usernameOrEmail:", usernameOrEmail);
+
     const endpoint = `${this.ApiTargets.BaseApi}/v1/login`;
     console.log('endpoint', endpoint);
+
     const body = {
       username_or_email: usernameOrEmail,
       password: password,
@@ -83,11 +85,14 @@ export class UsersApi extends ApiManager {
       endpoint: endpoint,
       body: body,
     })
-      .then((response) => ({
-        success: response.success,
-        data: { signedSession: response.signed_session },
-        errorMessage: response.error_message,
-      }))
+      .then((response) => {
+        console.log('response gotten');
+        return {
+          success: response.success,
+          data: { signedSession: response.signed_session },
+          errorMessage: response.error_message,
+        };
+      })
       .catch((err) => {
         return {
           success: false,

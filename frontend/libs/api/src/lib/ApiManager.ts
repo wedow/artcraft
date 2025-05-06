@@ -37,6 +37,8 @@ export class ApiManager {
       body?: B;
     },
   ): Promise<T> {
+    console.log('ApiManager.fetch(), method = ', method)
+
     const queryInString =
       query &&
       Object.entries(query).reduce(
@@ -56,6 +58,8 @@ export class ApiManager {
 
     const bodyInString = JSON.stringify(body);
 
+    console.log('>>> Sending fetch via fetch() top level function...')
+
     const response = await fetch(endpointWithQueries, {
       method,
       headers: {
@@ -66,10 +70,22 @@ export class ApiManager {
       body: bodyInString,
     });
 
+    console.log('>>> RESPONSE DONE ...', response);
+
     if (!response.ok) {
+      console.log('THROWING AN ERROR');
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
+    //console.log('GETTING TEXT...');
+
+    //const responseJson = await response.json();
+
+    //console.log('>>> RESPONSE JSON ...', responseJson);
+
+    //return responseJson;
+    
+    console.log('returning...');
     return response.json();
   }
 
@@ -113,6 +129,7 @@ export class ApiManager {
     query?: Record<string, string | boolean | number | undefined>;
     body?: B;
   }): Promise<T> {
+    console.log('ApiManager.post()')
     return this.fetch<B, T>(endpoint, {
       method: "POST",
       query,

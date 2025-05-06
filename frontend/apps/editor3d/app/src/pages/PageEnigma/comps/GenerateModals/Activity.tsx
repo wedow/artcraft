@@ -249,6 +249,8 @@ export function Activity() {
   );
 }
 
+(window as any)._JOB_POLLING_DISABLED = false;
+
 const jobPollingDisabled = () => {
   // Set 'window._JOB_POLLING_DISABLED = true' in the console.
   return (
