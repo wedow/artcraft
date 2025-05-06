@@ -7,6 +7,7 @@ import { InProgressCard } from "./InProgressCard";
 import { H3, Tooltip } from "~/components";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { JobsApi } from "~/Classes/ApiManager/JobsApi";
+//import { JobsApi } from "@storyteller/api";
 import { toast } from "@storyteller/ui-toaster";
 import { ActiveJob } from "~/pages/PageEnigma/models";
 // TODO ensure we de-dupe all this extra code.
@@ -86,7 +87,12 @@ export function Activity() {
 
     async function fetchJobs() {
       try {
+        if (jobPollingDisabled()) {
+          return;
+        }
+
         const jobsApi = new JobsApi();
+        console.log('>>> ACTIVITY JOBS')
         const response = await jobsApi.ListRecentJobs();
 
         if (!mounted || !response.success || !response.data) return;
@@ -241,4 +247,12 @@ export function Activity() {
       </PopoverMenu>
     </Tooltip>
   );
+}
+
+const jobPollingDisabled = () => {
+  if ((window as any)._JOB_POLLING_DISABLED) {
+    return true;
+  }
+
+  return false;
 }
