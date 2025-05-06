@@ -23,7 +23,7 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
 
   // NB: This might be a complex type.
   const outerDownloadObject = preferences?.preferred_download_directory || {};
-  const downloadDirectory = ("custom" in outerDownloadObject) ? outerDownloadObject.custom : "";
+  const downloadDirectory = ("custom" in outerDownloadObject) ? outerDownloadObject.custom as string : "";
   const currentDownloadLabel = ("system" in outerDownloadObject) ? "System Download Directory" : downloadDirectory;
 
   const playSounds = preferences?.play_sounds || false;
@@ -92,7 +92,7 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
             Choose Directory
         </Button>
         <Button 
-          variant="danger" 
+          variant="secondary" 
           className="py-1"
           onClick={clearDirectory}
         >
