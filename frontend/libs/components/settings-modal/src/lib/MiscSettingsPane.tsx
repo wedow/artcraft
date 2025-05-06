@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { AppPreferencesPayload, GetAppPreferences, CustomDirectory } from "@storyteller/tauri-api";
+import { AppPreferencesPayload, CustomDirectory, GetAppPreferences } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "libs/tauri-api/src/lib/settings/UpdateAppPreference";
 import { open } from '@tauri-apps/plugin-dialog';
 
@@ -57,8 +57,13 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
     });
 
     if (directory === null) {
-      return;
+      return; // User dismissed the dialog choice
     }
+
+    // Serialize for backend
+    directory = JSON.stringify({
+      custom: directory,
+    } as CustomDirectory);
 
     await UpdateAppPreferences({
       preference: PreferenceName.PreferredDownloadDirectory, 
