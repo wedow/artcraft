@@ -64,5 +64,8 @@
     {
       "path": "../../tauri-utils/tsconfig.lib.json"
     },
+    {
+      "path": "../../soundboard/tsconfig.lib.json"
+    },
   ]
 }

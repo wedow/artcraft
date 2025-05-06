@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SoundRegistry, SoundEffect } from "@storyteller/soundboard";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
 import { AppPreferencesPayload, CustomDirectory, GetAppPreferences, SystemDirectory } from "@storyteller/tauri-api";
@@ -41,8 +42,6 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   const successSound = preferences?.generation_success_sound;
   const failureSound = preferences?.generation_failure_sound;
   const enqueueSound = preferences?.generation_enqueue_sound;
-
-  console.log("VALUES", successSound, failureSound, enqueueSound);
 
   const reloadPreferences = async () => {
     const prefs = await GetAppPreferences();
@@ -88,11 +87,11 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   }
 
   const setSuccessSound = async (val: string) => {
-    console.log("setting success", val)
     await UpdateAppPreferences({
       preference: PreferenceName.GenerationSuccessSound, 
       value: val,
     });
+    SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
   }
 
@@ -101,6 +100,7 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
       preference: PreferenceName.GenerationFailureSound, 
       value: val,
     });
+    SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
   }
 
@@ -109,6 +109,7 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
       preference: PreferenceName.GenerationEnqueueSound, 
       value: val,
     });
+    SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
   }
 
