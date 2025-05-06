@@ -3,25 +3,19 @@
   "include": [],
   "references": [
     {
+      "path": "../modal"
+    },
+    {
       "path": "../select"
+    },
+    {
+      "path": "../../tauri-api"
     },
     {
       "path": "../input"
     },
     {
       "path": "../button"
-    },
-    {
-      "path": "../modal"
-    },
-    {
-      "path": "../../api"
-    },
-    {
-      "path": "../../tauri-api"
-    },
-    {
-      "path": "../../tauri-utils"
     },
     {
       "path": "../../soundboard"

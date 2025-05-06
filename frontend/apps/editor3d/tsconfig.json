@@ -55,6 +55,15 @@
       "path": "../../libs/components/demo-modal"
     },
     {
+      "path": "../../libs/soundboard"
+    },
+    {
+      "path": "../../libs/components/tab-selector"
+    },
+    {
+      "path": "../../libs/api"
+    },
+    {
       "path": "../../libs/components/tooltip"
     },
     {
@@ -65,12 +74,6 @@
     },
     {
       "path": "../../libs/tauri-utils"
-    },
-    {
-      "path": "../../libs/api"
-    },
-    {
-      "path": "../../libs/soundboard"
     }
   ]
 }

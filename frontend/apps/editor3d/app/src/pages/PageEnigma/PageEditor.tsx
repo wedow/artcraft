@@ -1,5 +1,4 @@
-import React, { useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import React, { useEffect, useState } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { LoadingDots, TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
@@ -23,13 +22,13 @@ import { Outliner } from "./comps/Outliner";
 import { CameraAspectRatio } from "./enums";
 import { PromptBox } from "./comps/PromptBox";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
-import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-import { DemoModal } from "@storyteller/ui-demo-modal";
 import { appTabId, setAppTabId } from "~/signals/appTab";
+import { LoginModal } from "@storyteller/ui-login-modal";
 
 export const PageEditor = () => {
   useSignals();
+  const [showLoginModal, setShowLoginModal] = useState(true);
   //console.log(api());
   //To prevent the click event from propagating to the canvas: TODO: HANDLE THIS BETTER?
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -158,7 +157,7 @@ export const PageEditor = () => {
         <Timeline />
       </div> */}
 
-      <DemoModal
+      {/* <DemoModal
         title="Welcome to ArtCraft 3D"
         subTitle="Your 3D editor for digital art and design"
         description="Set up your scene by adding objects and start bringing your ideas to life!"
@@ -171,6 +170,13 @@ export const PageEditor = () => {
             console.error("This is not the Desktop app.");
           }
         }}
+      /> */}
+
+      <LoginModal
+        onClose={() => {}}
+        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
+        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
+        openAiLogo="/resources/images/openai-logo.png"
       />
     </div>
   );
