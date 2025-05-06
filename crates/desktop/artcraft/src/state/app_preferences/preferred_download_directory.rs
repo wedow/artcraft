@@ -26,20 +26,6 @@ pub enum SystemDownloadDirectory {
   Documents,
 }
 
-//impl FromStr for PreferredDownloadDirectory {
-//  type Err = AnyhowError;
-//
-//  fn from_str(s: &str) -> Result<Self, Self::Err> {
-//    if s == SYSTEM_DEFAULT_SENTINEL_VALUE || s == "\"system_default\"" {
-//      Ok(PreferredDownloadDirectory::SystemDefault)
-//    } else {
-//      // TODO: If it gets serialized as JSON, we may need to remove the `{"custom": ...` wrapping layer.
-//      let path = PathBuf::from(s);
-//      Ok(PreferredDownloadDirectory::Custom(path))
-//    }
-//  }
-//}
-
 impl FromStr for SystemDownloadDirectory {
   type Err = AnyhowError;
 
@@ -93,36 +79,4 @@ mod tests {
       assert_eq!(&val, "{\"custom\":\"/tmp\"}");
     }
   }
-
-  // mod string {
-  //   use super::*;
-
-  //   #[test]
-  //   fn to_string_system_default() {
-  //     let val = PreferredDownloadDirectory::SystemDefault;
-  //     let val = val.to_string();
-  //     assert_eq!(&val, "system_default");
-  //   }
-
-  //   #[test]
-  //   fn to_string_custom() {
-  //     let val = PreferredDownloadDirectory::Custom("/tmp/foo".into());
-  //     let val = val.to_string();
-  //     assert_eq!(&val, "/tmp/foo");
-  //   }
-  // }
-
-  // #[test]
-  // fn from_string_system_default() {
-  //   let val = "system_default";
-  //   let val = PreferredDownloadDirectory::from_str(val).unwrap();
-  //   assert_eq!(val, PreferredDownloadDirectory::SystemDefault);
-  // }
-
-  // #[test]
-  // fn from_string_custom() {
-  //   let val = "/tmp/foo";
-  //   let val = PreferredDownloadDirectory::from_str(val).unwrap();
-  //   assert_eq!(val, PreferredDownloadDirectory::Custom(PathBuf::from("/tmp/foo")));
-  // }
 }

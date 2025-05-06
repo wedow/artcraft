@@ -39,10 +39,10 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   }
 
   const setPlaySounds = async (checked: boolean) => {
-    const value = checked ? "true" : "false";
+    //const value = checked ? "true" : "false";
     await UpdateAppPreferences({
       preference: PreferenceName.PlaySounds, 
-      value: value,
+      value: checked,
     });
     await reloadPreferences();
   }
@@ -60,14 +60,11 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
       return; // User dismissed the dialog choice
     }
 
-    // Serialize for backend
-    directory = JSON.stringify({
-      custom: directory,
-    } as CustomDirectory);
-
     await UpdateAppPreferences({
       preference: PreferenceName.PreferredDownloadDirectory, 
-      value: directory,
+      value: {
+        custom: directory
+      } as CustomDirectory,
     });
 
     await reloadPreferences();

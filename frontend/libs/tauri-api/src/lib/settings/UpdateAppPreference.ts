@@ -1,9 +1,10 @@
 
 import { invoke } from "@tauri-apps/api/core";
+import { PreferredDownloadDirectory } from "./GetAppPreferences";
 
 export interface UpdateAppPreferencesRequest {
   preference: PreferenceName,
-  value: string,
+  value: string | boolean | PreferredDownloadDirectory,
 }
 
 export enum PreferenceName {

@@ -6,11 +6,13 @@ export interface GetAppPreferencesResult {
 
 export interface AppPreferencesPayload {
   // Preferred download directory
-  preferred_download_directory: SystemDirectory | CustomDirectory,
+  preferred_download_directory: PreferredDownloadDirectory,
 
   // Play sounds on events.
   play_sounds: boolean,
 }
+
+export type PreferredDownloadDirectory = SystemDirectory | CustomDirectory;
 
 export interface SystemDirectory {
   // If the directory is a system directory.
