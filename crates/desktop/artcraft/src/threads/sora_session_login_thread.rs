@@ -20,7 +20,8 @@ use tauri::{AppHandle, Manager, Webview};
 
 pub const LOGIN_WINDOW_NAME: &str = "login_window";
 
-pub const SORA_LOGIN_URL_STR: &str = "https://sora.com/auth/login?callback_path=/";
+//pub const SORA_LOGIN_URL_STR: &str = "https://sora.com/auth/login?callback_path=/";
+pub const SORA_LOGIN_URL_STR: &str = "https://chatgpt.com/auth/login?next=%2Fsora%2F";
 
 pub static SORA_LOGIN_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse(SORA_LOGIN_URL_STR).expect("URL should parse")
@@ -60,12 +61,6 @@ async fn check_login_window(
   app_data_root: &AppDataRoot,
   sora_credential_manager: &SoraCredentialManager,
 ) -> AnyhowResult<()> {
-
-
-  
-  
-  
-  
   clear_browsing_data_on_test_domain(webview)?;
   //keep_on_task(webview)?;
   extract_cookies_to_file(webview, app_data_root, sora_credential_manager).await?;

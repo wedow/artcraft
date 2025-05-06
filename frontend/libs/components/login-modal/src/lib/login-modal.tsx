@@ -57,6 +57,7 @@ export function LoginModal({
       try {
         if (IsDesktopApp()) {
           await invoke("open_sora_login_command");
+          
           // Add 3 second delay before setting session to true
           await new Promise((resolve) => setTimeout(resolve, 3000));
           setHasSession(true);
@@ -168,6 +169,9 @@ export function LoginModal({
               alt="OpenAI Logo"
               className="w-72 h-72 mx-auto grow"
             />
+            <div>
+              <Button onClick={() => handleClose()}>Cancel (temporary)</Button>
+            </div>
           </div>
         );
       case 3:

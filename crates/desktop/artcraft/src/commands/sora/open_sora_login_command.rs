@@ -4,10 +4,11 @@ use errors::AnyhowResult;
 use log::{error, info};
 use once_cell::sync::Lazy;
 use std::time::Duration;
+use anyhow::anyhow;
 use tauri::{AppHandle, Manager, Url, WebviewUrl, WebviewWindowBuilder, WindowBuilder};
 use tokio::time::sleep_until;
 
-pub const START_URL_STR: &str = "https://storyteller.ai/";
+pub const START_URL_STR: &str = "https://google.com";
 
 pub static START_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse(START_URL_STR).expect("URL should parse")
@@ -48,24 +49,22 @@ async fn do_open_login(app: &AppHandle) -> AnyhowResult<()> {
       .resizable(true)
       .visible(true)
       .closable(true)
+      .min_inner_size(200.0, 500.0)
       .focused(true)
       .devtools(true)
       .build()?;
+  
+  let webview = window.get_webview(LOGIN_WINDOW_NAME)
+      .ok_or_else(|| anyhow!("no webview found"))?;
 
-  for (name, webview) in window.webviews() {
-    if name != LOGIN_WINDOW_NAME {
-      continue;
-    }
+  clear_all_webview_cookies(&webview)?;
 
-    clear_all_webview_cookies(&webview)?;
+  webview.navigate(SORA_HOMEPAGE_URL.clone())?;
 
-    // NB: We're starting to get Cloudflare protection screens. Let's try to avoid.
-    webview.navigate(SORA_HOMEPAGE_URL.clone())?;
-    tokio::time::sleep(Duration::from_millis(100)).await;
+  // NB: We're starting to get Cloudflare protection screens. Let's try to avoid.
+  tokio::time::sleep(Duration::from_millis(100)).await;
 
-    webview.navigate(SORA_LOGIN_URL.clone())?;
-    break;
-  }
+  webview.navigate(SORA_LOGIN_URL.clone())?;
 
   info!("Done.");
   Ok(())
