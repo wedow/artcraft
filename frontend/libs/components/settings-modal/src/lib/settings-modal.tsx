@@ -11,6 +11,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { Input } from "@storyteller/ui-input";
 import { Select, SelectValue } from "@storyteller/ui-select";
+import { MiscSettingsPane } from "./MiscSettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ interface AccountInfo {
   credits: number;
 }
 
-type SettingsSection = "accounts" | "video" | "image" | "misc";
+type SettingsSection = "misc" | "accounts" | "video" | "image";
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [accountInfo] = useState<AccountInfo>({
@@ -33,17 +34,18 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   });
 
   const [selectedSection, setSelectedSection] =
-    useState<SettingsSection>("accounts");
+    useState<SettingsSection>("misc");
+
   const [palApiKey, setPalApiKey] = useState("");
   const [klingApiKey, setKlingApiKey] = useState("");
   const [defaultVideoModel, setDefaultVideoModel] = useState("veo");
   const [humanVideoProvider, setHumanVideoProvider] = useState("artcraft");
 
   const sections = [
+    { id: "misc" as const, label: "Misc", icon: faCog },
     { id: "accounts" as const, label: "Accounts", icon: faUser },
     { id: "video" as const, label: "Video", icon: faVideo },
     { id: "image" as const, label: "Image", icon: faImage },
-    { id: "misc" as const, label: "Misc", icon: faCog },
   ];
 
   const renderContent = () => {
@@ -157,15 +159,13 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       case "image":
         return (
           <div>
-            <button className="text-blue-600">Various Image Settings...</button>
+            <button className="text-blue-600">Various Image Settings (TODO)...</button>
           </div>
         );
 
       case "misc":
         return (
-          <div>
-            <button className="text-blue-600">Other Settings...</button>
-          </div>
+          <MiscSettingsPane />
         );
     }
   };
