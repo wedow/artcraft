@@ -10,6 +10,9 @@ export interface UpdateAppPreferencesRequest {
 export enum PreferenceName {
   PreferredDownloadDirectory = "preferred_download_directory",
   PlaySounds = "play_sounds", 
+  GenerationSuccessSound = "generation_success_sound",
+  GenerationFailureSound = "generation_failure_sound",
+  GenerationEnqueueSound = "generation_enqueue_sound",
 }
 
 export interface UpdateAppPreferencesResult {

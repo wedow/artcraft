@@ -10,6 +10,12 @@ export interface AppPreferencesPayload {
 
   // Play sounds on events.
   play_sounds: boolean,
+
+  // Sound names to play. 
+  // These are keys, not filenames, and are defined by the frontend.
+  generation_success_sound?: string,
+  generation_failure_sound?: string,
+  generation_enqueue_sound?: string,
 }
 
 export type PreferredDownloadDirectory = SystemDirectory | CustomDirectory;

@@ -1,14 +1,13 @@
-use serde::Serialize;
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
-use serde_derive::{Deserialize};
+use serde_derive::{Deserialize, Serialize};
 
 /// Vector clock versioning string rather than semver.
 const CURRENT_VERSION: &str = "1";
 
-#[derive(Debug, Clone, serde_derive::Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPreferencesSerializable {
   /// Versioning string.
   pub version: String,
@@ -18,6 +17,15 @@ pub struct AppPreferencesSerializable {
 
   /// Play sounds on events.
   pub play_sounds: Option<bool>,
+  
+  /// Key pointing to file; defined in the frontend code.
+  pub generation_success_sound: Option<String>,
+  
+  /// Key pointing to file; defined in the frontend code.
+  pub generation_failure_sound: Option<String>,
+  
+  /// Key pointing to file; defined in the frontend code.
+  pub generation_enqueue_sound: Option<String>,
 }
 
 impl AppPreferencesSerializable {
@@ -37,6 +45,9 @@ impl AppPreferencesSerializable {
       version: CURRENT_VERSION.to_string(),
       preferred_download_directory: Some(preferences.preferred_download_directory.clone()),
       play_sounds: Some(preferences.play_sounds),
+      generation_success_sound: preferences.generation_success_sound.clone(),
+      generation_failure_sound: preferences.generation_failure_sound.clone(),
+      generation_enqueue_sound: preferences.generation_enqueue_sound.clone(),
     }
   }
 
@@ -50,6 +61,10 @@ impl AppPreferencesSerializable {
     if let Some(play_sounds) = self.play_sounds {
       preferences.play_sounds = play_sounds;
     }
+    
+    preferences.generation_success_sound = self.generation_success_sound.clone();
+    preferences.generation_failure_sound = self.generation_failure_sound.clone();
+    preferences.generation_enqueue_sound = self.generation_enqueue_sound.clone();
     
     preferences
   }

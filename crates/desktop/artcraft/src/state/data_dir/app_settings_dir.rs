@@ -1,10 +1,10 @@
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
 use errors::AnyhowResult;
+use serde::Serialize;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use serde::Serialize;
 
 /// For now, let's just keep a collection of loose json files in a settings dir.
 /// Once we know the structure and schema, we can standardize on a single json file.
