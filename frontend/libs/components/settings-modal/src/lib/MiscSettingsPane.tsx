@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { AppPreferencesPayload, CustomDirectory, GetAppPreferences } from "@storyteller/tauri-api";
+import { AppPreferencesPayload, CustomDirectory, GetAppPreferences, SystemDirectory } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "libs/tauri-api/src/lib/settings/UpdateAppPreference";
 import { open } from '@tauri-apps/plugin-dialog';
 
@@ -64,6 +64,17 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
     await reloadPreferences();
   }
 
+  const clearDirectory = async () => {
+    await UpdateAppPreferences({
+      preference: PreferenceName.PreferredDownloadDirectory, 
+      value: {
+        system: "downloads" 
+      } as SystemDirectory,
+    });
+
+    await reloadPreferences();
+  }
+
   return (<>
     <div className="space-y-4">
       <div>
@@ -79,6 +90,13 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
           onClick={openDirectoryPicker}
         >
             Choose Directory
+        </Button>
+        <Button 
+          variant="danger" 
+          className="py-1"
+          onClick={clearDirectory}
+        >
+            Use Default
         </Button>
       </div>
       <div>
