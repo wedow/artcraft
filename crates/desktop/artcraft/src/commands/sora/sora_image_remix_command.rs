@@ -21,13 +21,23 @@ use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
 use openai_sora_client::requests::upload::upload_media_from_file::sora_media_upload_from_file;
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 use std::fs::read_to_string;
 use std::io::Cursor;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::threads::sora_task_polling_thread::SoraImageGenerationComplete;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SoraImageEnqueueFailure {
+  // TODO: Reason.
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SoraImageEnqueueSuccess {
+}
 
 #[derive(Deserialize)]
 pub struct SoraImageRemixCommand {
@@ -48,7 +58,7 @@ pub struct SoraImageRemixCommand {
 
 #[tauri::command]
 pub async fn sora_image_remix_command(
-  _app: AppHandle,
+  app: AppHandle,
   request: SoraImageRemixCommand,
   app_data_root: State<'_, AppDataRoot>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
@@ -60,12 +70,23 @@ pub async fn sora_image_remix_command(
 
   // TODO(bt,2025-04-24): Better error messages to caller
 
-  generate_image(request, &app_data_root, &sora_creds_manager, &sora_task_queue)
-    .await
-    .map_err(|err| {
-      error!("error: {:?}", err);
-      "there was an error".to_string()
-    })?;
+  let result = generate_image(request, &app_data_root, &sora_creds_manager, &sora_task_queue).await;
+  
+  if let Err(err) = result {
+    error!("error: {:?}", err);
+
+    let result = app.emit("sora-image-enqueue-failure", SoraImageEnqueueFailure{});
+    if let Err(err) = result {
+      error!("Failed to emit event: {:?}", err);
+    }
+    
+    return Err("there was an error".to_string());
+  }
+
+  let result = app.emit("sora-image-enqueue-success", SoraImageEnqueueSuccess{});
+  if let Err(err) = result {
+    error!("Failed to emit event: {:?}", err);
+  }
 
   Ok("success".to_string())
 }
