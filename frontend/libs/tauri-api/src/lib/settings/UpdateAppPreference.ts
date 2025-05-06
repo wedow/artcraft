@@ -4,7 +4,7 @@ import { PreferredDownloadDirectory } from "./GetAppPreferences";
 
 export interface UpdateAppPreferencesRequest {
   preference: PreferenceName,
-  value: string | boolean | PreferredDownloadDirectory,
+  value: undefined | string | boolean | PreferredDownloadDirectory,
 }
 
 export enum PreferenceName {

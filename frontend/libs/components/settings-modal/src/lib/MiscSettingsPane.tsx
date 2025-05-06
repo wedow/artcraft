@@ -9,6 +9,7 @@ import { Select, SelectValue } from "libs/components/select/src/lib/select";
 
 // TODO: This is maintained in two places. Here and InstallSounds.
 const SOUND_OPTIONS = [
+  { value: "none", label: "None (Silent)" },
   { value: "flower", label: "Flower" },
   { value: "correct", label: "Correct" },
   { value: "next", label: "Next" },
@@ -39,9 +40,9 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
 
   const playSounds = preferences?.play_sounds || false;
 
-  const successSound = preferences?.generation_success_sound;
-  const failureSound = preferences?.generation_failure_sound;
-  const enqueueSound = preferences?.generation_enqueue_sound;
+  const successSound = orNone(preferences?.generation_success_sound); // ? preferences?.generation_success_sound : "none";
+  const failureSound = orNone(preferences?.generation_failure_sound); // ? preferences?.generation_failure_sound : "none";
+  const enqueueSound = orNone(preferences?.generation_enqueue_sound); // ? preferences?.generation_enqueue_sound : "none";
 
   const reloadPreferences = async () => {
     const prefs = await GetAppPreferences();
@@ -87,30 +88,39 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   }
 
   const setSuccessSound = async (val: string) => {
+    let sendVal = val === "none" ? undefined : val;
     await UpdateAppPreferences({
       preference: PreferenceName.GenerationSuccessSound, 
-      value: val,
+      value: sendVal,
     });
     SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
   }
 
   const setFailureSound = async (val: string) => {
+    let sendVal = val === "none" ? undefined : val;
     await UpdateAppPreferences({
       preference: PreferenceName.GenerationFailureSound, 
-      value: val,
+      value: sendVal,
     });
     SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
   }
 
   const setEnqueueSound = async (val: string) => {
+    let sendVal = val === "none" ? undefined : val;
     await UpdateAppPreferences({
       preference: PreferenceName.GenerationEnqueueSound, 
-      value: val,
+      value: sendVal,
     });
     SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
+  }
+
+  const playSound = (val?: string) => {
+    if (val !== undefined && val !== "none") {
+      SoundRegistry.getInstance().playSound(val);
+    }
   }
 
   return (<>
@@ -162,6 +172,13 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
             }
             options={SOUND_OPTIONS}
         />
+        <Button 
+          variant="secondary" 
+          className="py-1"
+          onClick={() => playSound(successSound)}
+        >
+            Play
+        </Button>
       </div>
 
       <div>
@@ -176,6 +193,13 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
             }
             options={SOUND_OPTIONS}
         />
+        <Button 
+          variant="secondary" 
+          className="py-1"
+          onClick={() => playSound(failureSound)}
+        >
+            Play
+        </Button>
       </div>
 
       <div>
@@ -190,7 +214,21 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
             }
             options={SOUND_OPTIONS}
         />
+        <Button 
+          variant="secondary" 
+          className="py-1"
+          onClick={() => playSound(enqueueSound)}
+        >
+            Play
+        </Button>
       </div>
     </div>
   </>)
+}
+
+const orNone = (val: string | undefined | null) : string => {
+  if (!!!val) {
+    return "none";
+  }
+  return val;
 }

@@ -66,6 +66,8 @@ async fn update_prefs(
 ) -> AnyhowResult<()> {
   let mut prefs = app_prefs.get_clone()?;
   
+  info!("Value is: {:?}", request.value);
+  
   match request.preference {
     PreferenceName::PreferredDownloadDirectory => {
       match request.value {
@@ -84,19 +86,19 @@ async fn update_prefs(
       }
     }
     PreferenceName::GenerationSuccessSound => {
-      if let Some(value) = request.value {
-        prefs.generation_success_sound = Some(string_value(&value)?);
-      }
+      prefs.generation_success_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
     }
     PreferenceName::GenerationFailureSound => {
-      if let Some(value) = request.value {
-        prefs.generation_failure_sound = Some(string_value(&value)?);
-      }
+      prefs.generation_failure_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
     }
     PreferenceName::GenerationEnqueueSound => {
-      if let Some(value) = request.value {
-        prefs.generation_enqueue_sound = Some(string_value(&value)?);
-      }
+      prefs.generation_enqueue_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
     }
   }
   
