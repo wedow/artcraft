@@ -56,9 +56,9 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
       defaultPath: defaultPath,
     });
 
-    console.log("selected directory", directory);
-
-    directory = directory === null ? DEFAULT_SYSTEM_DOWNLOAD_DIRECTORY_SIGIL : directory;
+    if (directory === null) {
+      return;
+    }
 
     await UpdateAppPreferences({
       preference: PreferenceName.PreferredDownloadDirectory, 

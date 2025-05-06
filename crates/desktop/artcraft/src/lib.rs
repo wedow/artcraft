@@ -7,11 +7,12 @@ pub mod utils;
 use tauri::Manager;
 
 use crate::commands::flip_image::flip_image;
+use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
+use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::platform_info_command::platform_info_command;
 use crate::commands::sora::open_sora_login_command::open_sora_login_command;
 use crate::commands::sora::sora_image_generation_command::sora_image_generation_command;
 use crate::commands::sora::sora_image_remix_command::sora_image_remix_command;
-use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::main_window_size::MainWindowSize;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -121,6 +122,7 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
       flip_image,
       get_app_preferences_command,
+      update_app_preferences_command,
       open_sora_login_command,
       platform_info_command,
       sora_image_generation_command,

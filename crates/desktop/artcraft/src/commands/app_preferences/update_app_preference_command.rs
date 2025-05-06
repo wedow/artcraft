@@ -26,7 +26,6 @@ pub struct UpdateAppPreferencesResponse {
   pub success: bool,
 }
 
-
 #[tauri::command]
 pub async fn update_app_preferences_command(
   request: UpdateAppPreferencesRequest,
@@ -56,7 +55,17 @@ async fn update_prefs(
   
   match request.preference {
     PreferenceName::PreferredDownloadDirectory => {
-      prefs.preferred_download_directory = request.value.parse::<PreferredDownloadDirectory>()?;
+      let mut directory = request.value.parse::<PreferredDownloadDirectory>()?;
+      // TODO(bt): Replace this hack with a better model.
+      match prefs.preferred_download_directory {
+        PreferredDownloadDirectory::SystemDefault => {}
+        PreferredDownloadDirectory::Custom(custom) => {
+          if custom.to_string_lossy() == "$default" {
+            directory = PreferredDownloadDirectory::SystemDefault;
+          }
+        }
+      }
+      prefs.preferred_download_directory = directory;
     }
     PreferenceName::PlaySounds => {
       prefs.play_sounds = request.value.parse::<bool>()?;
