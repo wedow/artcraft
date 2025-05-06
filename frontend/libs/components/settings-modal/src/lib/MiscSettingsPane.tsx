@@ -5,15 +5,11 @@ import { AppPreferencesPayload, CustomDirectory, GetAppPreferences } from "@stor
 import { PreferenceName, UpdateAppPreferences } from "libs/tauri-api/src/lib/settings/UpdateAppPreference";
 import { open } from '@tauri-apps/plugin-dialog';
 
-// NB: On the backend, we expand "$default" to mean the default system download dir.
-const DEFAULT_SYSTEM_DOWNLOAD_DIRECTORY_SIGIL = "$default";
-
 interface MiscSettingsPaneProps {
 }
 
 export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   const [preferences, setPreferences] = useState<AppPreferencesPayload|undefined>(undefined);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,10 +21,10 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   }, []);
 
 
-
   // NB: This might be a complex type.
-  const downloadDirectorySpec = preferences?.preferred_download_directory || DEFAULT_SYSTEM_DOWNLOAD_DIRECTORY_SIGIL;
-  const downloadDirectory = (typeof downloadDirectorySpec === "string")? downloadDirectorySpec : downloadDirectorySpec.custom;
+  const outerDownloadObject = preferences?.preferred_download_directory || {};
+  const downloadDirectory = ("custom" in outerDownloadObject) ? outerDownloadObject.custom : "";
+  const currentDownloadLabel = ("system" in outerDownloadObject) ? "System Download Directory" : downloadDirectory;
 
   const playSounds = preferences?.play_sounds || false;
 
@@ -48,12 +44,10 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   }
 
   const openDirectoryPicker = async () => {
-    let defaultPath = downloadDirectory || undefined;
-
     let directory = await open({
       multiple: false,
       directory: true,
-      defaultPath: defaultPath,
+      defaultPath: downloadDirectory || undefined,
     });
 
     if (directory === null) {
@@ -73,10 +67,11 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   return (<>
     <div className="space-y-4">
       <div>
-        <label htmlFor="pal-api-key" className="mb-2 block">
+        <label htmlFor="download-path" className="mb-2 block">
           Default Download Directory
         </label>
-
+        This is where downloads are placed after downloading.
+        The current path is <pre>{currentDownloadLabel}</pre>
 
         <Button 
           variant="primary" 
