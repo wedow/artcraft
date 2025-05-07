@@ -171,12 +171,12 @@ export const PageEditor = () => {
         }}
       /> */}
 
-      <LoginModal
+      {/* <LoginModal
         onClose={() => {}}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
         openAiLogo="/resources/images/openai-logo.png"
-      />
+      /> */}
     </div>
   );
 };

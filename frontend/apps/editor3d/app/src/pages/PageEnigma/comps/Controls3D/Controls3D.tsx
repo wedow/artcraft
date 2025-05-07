@@ -121,7 +121,7 @@ export const Controls3D = () => {
                 <Tooltip
                   content="Add 3D asset to scene (B)"
                   position="bottom"
-                  delay={100}
+                  delay={300}
                   closeOnClick
                   className={twMerge(
                     showEmptySceneTooltip ? "hidden" : "block",

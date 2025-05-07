@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
-
-import {
-  TransitionDialogue,
-  LoadingDots,
-  Label,
-  CloseButton,
-} from "~/components";
-
+import { LoadingDots } from "~/components";
+import { Modal } from "@storyteller/ui-modal";
+import { Label } from "@storyteller/ui-label";
 import { UploadAssetError } from "../UploadModal/UploadAssetError";
 import { UploadSuccess } from "../UploadModal/UploadSuccess";
 import { UploadFiles3D } from "./UploadFiles3D";
@@ -20,17 +15,21 @@ import {
   IMAGEPLANE_FILE_TYPE,
 } from "~/enums";
 import { assetModalVisible } from "~/pages/PageEnigma/signals";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 interface Props {
   onClose: () => void;
   onSuccess: () => void;
   isOpen: boolean;
   title: string;
+  titleIcon: IconDefinition;
   options?: {
     fileSubtypes?: { [key: string]: string }[];
     hasLength?: boolean;
     hasThumbnailUpload?: boolean;
   };
+  preselectedCategory?: FilterEngineCategories;
+  isSelectVisible: boolean;
 }
 
 // Map categories to their allowed file types
@@ -82,12 +81,19 @@ export function UploadModal3D({
   onClose,
   onSuccess,
   title,
+  titleIcon,
   options,
-}: Props) {
+  preselectedCategory,
+  isSelectVisible,
+}: Props & { preselectedCategory?: FilterEngineCategories }) {
   const [uploaderState, setUploaderState] =
     useState<UploaderState>(initialUploaderState);
   const [selectedCategory, setSelectedCategory] =
-    useState<FilterEngineCategories>(FilterEngineCategories.OBJECT);
+    useState<FilterEngineCategories>(
+      preselectedCategory !== undefined
+        ? preselectedCategory
+        : FilterEngineCategories.OBJECT,
+    );
 
   const updateUploaderState = (newState: UploaderState) => {
     setUploaderState(newState);
@@ -103,30 +109,43 @@ export function UploadModal3D({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (preselectedCategory !== undefined) {
+      setSelectedCategory(preselectedCategory);
+    }
+  }, [preselectedCategory]);
+
+  useEffect(() => {
+    console.log("Preselected category:", preselectedCategory);
+    console.log("Initial selected category:", selectedCategory);
+  }, [preselectedCategory, selectedCategory]);
+
   const UploaderModalContent = () => {
     switch (uploaderState.status) {
       case UploaderStates.ready:
         return (
           <div className="space-y-4">
-            <div className="flex w-full flex-col">
-              <Label>Category</Label>
-              <Select
-                id="category-select"
-                options={categoryOptions}
-                value={selectedCategory}
-                onChange={(value) => {
-                  if (
-                    typeof value === "string" &&
-                    Object.values(FilterEngineCategories).includes(
-                      value as FilterEngineCategories,
-                    )
-                  ) {
-                    setSelectedCategory(value as FilterEngineCategories);
-                  }
-                }}
-                placeholder="Select a category"
-              />
-            </div>
+            {isSelectVisible && (
+              <div className="flex w-full flex-col">
+                <Label className="mb-1">Category</Label>
+                <Select
+                  id="category-select"
+                  options={categoryOptions}
+                  value={selectedCategory}
+                  onChange={(value) => {
+                    if (
+                      typeof value === "string" &&
+                      Object.values(FilterEngineCategories).includes(
+                        value as FilterEngineCategories,
+                      )
+                    ) {
+                      setSelectedCategory(value as FilterEngineCategories);
+                    }
+                  }}
+                  placeholder="Select a category"
+                />
+              </div>
+            )}
             <UploadFiles3D
               title={title}
               engineCategory={selectedCategory}
@@ -146,31 +165,30 @@ export function UploadModal3D({
             <div className="w-100 text-center opacity-50">Uploading...</div>
           </>
         );
-      case UploaderStates.success:
+      case UploaderStates.success: {
+        // Store the selected category and tab in sessionStorage
+        const assetTab = categoryToAssetTab[selectedCategory];
+        if (assetTab) {
+          sessionStorage.setItem("lastUploadedCategory", selectedCategory);
+          sessionStorage.setItem("lastUploadedTab", assetTab);
+          // Reopen the asset modal
+          assetModalVisible.value = true;
+        } else {
+          // Clear any existing stored values if we don't have a valid tab
+          sessionStorage.removeItem("lastUploadedCategory");
+          sessionStorage.removeItem("lastUploadedTab");
+        }
+        onSuccess();
+        onClose();
         return (
           <UploadSuccess
             title="3D model"
             onOk={() => {
-              onSuccess();
               onClose();
-              // Store the selected category and tab in sessionStorage
-              const assetTab = categoryToAssetTab[selectedCategory];
-              if (assetTab) {
-                sessionStorage.setItem(
-                  "lastUploadedCategory",
-                  selectedCategory,
-                );
-                sessionStorage.setItem("lastUploadedTab", assetTab);
-                // Reopen the asset modal
-                assetModalVisible.value = true;
-              } else {
-                // Clear any existing stored values if we don't have a valid tab
-                sessionStorage.removeItem("lastUploadedCategory");
-                sessionStorage.removeItem("lastUploadedTab");
-              }
             }}
           />
         );
+      }
       case UploaderStates.assetError:
         return (
           <UploadAssetError
@@ -199,15 +217,15 @@ export function UploadModal3D({
   };
 
   return (
-    <TransitionDialogue
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
+      titleIcon={titleIcon}
       title={title}
       className="max-w-xl"
-      showClose={false}
+      showClose={true}
     >
-      <CloseButton className="absolute right-4 top-4" onClick={onClose} />
       <UploaderModalContent />
-    </TransitionDialogue>
+    </Modal>
   );
 }

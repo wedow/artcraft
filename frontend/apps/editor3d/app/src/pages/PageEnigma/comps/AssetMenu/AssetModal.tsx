@@ -1,7 +1,6 @@
 import { Modal } from "@storyteller/ui-modal";
 import { UploadModal3D } from "~/components/reusable/UploadModal3D";
 import {
-  faPlus,
   faSearch,
   faChevronLeft,
   faLayerGroup,
@@ -12,9 +11,9 @@ import {
   faMountainCity,
   faDog,
   faImage,
+  faUpFromLine,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { Input } from "@storyteller/ui-input";
@@ -45,6 +44,7 @@ import { isAnyStatusFetching } from "../SidePanelTabs/utilities";
 type AssetTab = {
   id: string;
   label: string;
+  labelSingle?: string;
   icon: typeof faLayerGroup;
   engineCategory?: FilterEngineCategories;
   items: MediaItem[];
@@ -88,6 +88,9 @@ export const AssetModal = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<FilterEngineCategories | null>(null);
+  const [isSelectVisible, setIsSelectVisible] = useState(true);
 
   const handleReopenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.checked;
@@ -232,7 +235,8 @@ export const AssetModal = () => {
       { id: "all", label: "All", icon: faLayerGroup, items: [] },
       {
         id: "character",
-        label: "Character",
+        label: "Characters",
+        labelSingle: "Character",
         icon: faUser,
         engineCategory: FilterEngineCategories.CHARACTER,
         items:
@@ -243,6 +247,7 @@ export const AssetModal = () => {
       {
         id: "objects",
         label: "Objects",
+        labelSingle: "Object",
         icon: faCube,
         engineCategory: FilterEngineCategories.OBJECT,
         items:
@@ -253,6 +258,7 @@ export const AssetModal = () => {
       {
         id: "sets",
         label: "Sets",
+        labelSingle: "Set",
         icon: faMountainCity,
         engineCategory: FilterEngineCategories.LOCATION,
         items:
@@ -263,6 +269,7 @@ export const AssetModal = () => {
       {
         id: "creatures",
         label: "Creatures",
+        labelSingle: "Creature",
         icon: faDog,
         engineCategory: FilterEngineCategories.CREATURE,
         items:
@@ -273,12 +280,14 @@ export const AssetModal = () => {
       {
         id: "skybox",
         label: "Skybox",
+        labelSingle: "Skybox",
         icon: faSun,
         items: activeLibraryTab === "library" ? demoSkyboxItems.value : [],
       },
       {
         id: "image-planes",
         label: "Image Planes",
+        labelSingle: "Image Plane",
         icon: faImage,
         engineCategory: FilterEngineCategories.IMAGE_PLANE,
         items:
@@ -399,6 +408,16 @@ export const AssetModal = () => {
   const handleAddAsset = () => {
     assetModalVisible.value = false;
     setIsUploadModalOpen(true);
+    setSelectedCategory(null);
+    setIsSelectVisible(true);
+  };
+
+  const handleAddSpecificAsset = (category: FilterEngineCategories) => {
+    console.log("Selected category:", category);
+    assetModalVisible.value = false;
+    setIsUploadModalOpen(true);
+    setSelectedCategory(category);
+    setIsSelectVisible(false);
   };
 
   const handleUploadSuccess = () => {
@@ -413,6 +432,11 @@ export const AssetModal = () => {
   };
 
   const clearSearch = () => setSearchTerm("");
+
+  const getArticle = (word: string | undefined) => {
+    if (!word) return "a";
+    return /^[aeiou]/i.test(word) ? "an" : "a";
+  };
 
   return (
     <>
@@ -429,17 +453,31 @@ export const AssetModal = () => {
               <h2 className="text-[18px] font-semibold opacity-80">
                 3D Assets
               </h2>
-              <Tooltip content="Upload model" position="top" delay={200}>
+              {/* <Tooltip content="Upload model" position="top" delay={200}>
                 <Button
-                  className="h-6 w-6 rounded-full border-none bg-transparent text-white/70 transition-colors hover:bg-transparent hover:text-white/100"
+                  className="flex h-7 w-7 items-center justify-center rounded-md border-none bg-primary/50 text-white/70 transition-colors hover:bg-primary/70 hover:text-white/100"
                   onClick={handleAddAsset}
                 >
-                  <FontAwesomeIcon icon={faPlus} className="text-xl" />
+                  <FontAwesomeIcon icon={faPlus} className="text-lg" />
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
             </div>
             <hr className="my-2 w-full border-white/10" />
-            <div className="space-y-2">
+            <div className="flex h-full flex-col space-y-2">
+              <Button
+                variant="primary"
+                className={twMerge(
+                  "w-full justify-start rounded-xl border border-white/[2%] bg-white/[4%] px-3.5 py-2.5 text-left hover:bg-white/15",
+                  "border-primary bg-primary/70 hover:bg-primary",
+                )}
+                onClick={handleAddAsset}
+              >
+                <FontAwesomeIcon
+                  icon={faUpFromLine}
+                  className="mr-2 text-lg opacity-70"
+                />
+                Upload an asset
+              </Button>
               {assetTabs.map((tab) => (
                 <Button
                   key={tab.id}
@@ -447,7 +485,7 @@ export const AssetModal = () => {
                   className={twMerge(
                     "w-full justify-start rounded-xl border border-white/[2%] bg-white/[4%] px-3.5 py-2.5 text-left hover:bg-white/15",
                     activeAssetTab === tab.id &&
-                      "border-brand-primary bg-brand-primary/10 hover:bg-brand-primary/10",
+                      "border-primary bg-primary/10 hover:bg-primary/10",
                   )}
                   onClick={() => setActiveAssetTab(tab.id)}
                 >
@@ -479,7 +517,7 @@ export const AssetModal = () => {
                   id="reopen-after-add"
                   checked={reopenAfterDragSignal.value}
                   onChange={handleReopenChange}
-                  className="h-4 w-4 cursor-pointer rounded-lg border-gray-300 bg-gray-700 text-brand-primary focus:ring-brand-primary"
+                  className="h-4 w-4 cursor-pointer rounded-lg border-gray-300 bg-gray-700 text-primary focus:ring-primary"
                 />
                 <label
                   htmlFor="reopen-after-add"
@@ -529,18 +567,35 @@ export const AssetModal = () => {
                   )}
                 >
                   {activeAssetTab !== "all" && !searchTerm && (
-                    <div className="mb-2 flex items-center font-semibold">
-                      <Button
-                        variant="secondary"
-                        className="flex items-center gap-2 border-none bg-transparent px-3 py-1.5 text-sm text-white/70 hover:bg-transparent hover:text-white/100"
-                        onClick={() => setActiveAssetTab("all")}
-                      >
-                        <FontAwesomeIcon
-                          icon={faChevronLeft}
-                          className="text-sm font-semibold opacity-70"
-                        />
-                      </Button>
-                      {currentTab.label}
+                    <div className="mb-2 flex items-center justify-between font-semibold">
+                      <div className="flex items-center">
+                        <Button
+                          variant="secondary"
+                          className="flex items-center gap-2 border-none bg-transparent px-3 py-1.5 text-sm text-white/70 hover:bg-transparent hover:text-white/100"
+                          onClick={() => setActiveAssetTab("all")}
+                        >
+                          <FontAwesomeIcon
+                            icon={faChevronLeft}
+                            className="text-sm font-semibold opacity-70"
+                          />
+                        </Button>
+                        {currentTab.label}
+                      </div>
+                      {activeAssetTab !== "skybox" && (
+                        <Button
+                          icon={faUpFromLine}
+                          onClick={() =>
+                            handleAddSpecificAsset(
+                              currentTab.engineCategory ||
+                                FilterEngineCategories.OBJECT,
+                            )
+                          }
+                          className="border-primary bg-primary/70 px-2 py-1 text-xs transition-colors hover:bg-primary"
+                        >
+                          Upload {getArticle(currentTab.labelSingle)}{" "}
+                          {currentTab.labelSingle}
+                        </Button>
+                      )}
                     </div>
                   )}
                   {renderContent()}
@@ -551,10 +606,15 @@ export const AssetModal = () => {
         </div>
       </Modal>
       <UploadModal3D
-        onClose={() => setIsUploadModalOpen(false)}
+        onClose={() => {
+          setIsUploadModalOpen(false);
+        }}
         onSuccess={handleUploadSuccess}
         isOpen={isUploadModalOpen}
-        title="Upload 3D Asset"
+        title={`Upload ${selectedCategory ? (selectedCategory.toLowerCase().replace(/_/g, " ") === "location" ? "sets" : selectedCategory.toLowerCase().replace(/_/g, " ")) : "3D Asset"}`}
+        titleIcon={!isSelectVisible ? currentTab.icon : faUpFromLine}
+        preselectedCategory={selectedCategory || FilterEngineCategories.OBJECT}
+        isSelectVisible={isSelectVisible}
       />
     </>
   );
