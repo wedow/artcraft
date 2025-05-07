@@ -14,12 +14,11 @@ import {
   CHARACTER_MIXAMO_FILE_TYPE,
   IMAGEPLANE_FILE_TYPE,
 } from "~/enums";
-import { assetModalVisible } from "~/pages/PageEnigma/signals";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 interface Props {
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (category: FilterEngineCategories) => void;
   isOpen: boolean;
   title: string;
   titleIcon: IconDefinition;
@@ -42,16 +41,6 @@ const categoryFileTypes: Partial<Record<FilterEngineCategories, string[]>> = {
   [FilterEngineCategories.LOCATION]: Object.values(OBJECT_FILE_TYPE),
   [FilterEngineCategories.CREATURE]: Object.values(OBJECT_FILE_TYPE),
 };
-
-// Map engine categories to asset modal tabs
-const categoryToAssetTab: Partial<Record<FilterEngineCategories, string>> = {
-  [FilterEngineCategories.OBJECT]: "objects",
-  [FilterEngineCategories.CHARACTER]: "character",
-  [FilterEngineCategories.IMAGE_PLANE]: "image-planes",
-  [FilterEngineCategories.LOCATION]: "sets",
-  [FilterEngineCategories.CREATURE]: "creatures",
-};
-
 // Excluded category options for the upload modal
 const categoryOptions = Object.entries(FilterEngineCategories)
   .filter(
@@ -120,6 +109,14 @@ export function UploadModal3D({
     console.log("Initial selected category:", selectedCategory);
   }, [preselectedCategory, selectedCategory]);
 
+  useEffect(() => {
+    if (uploaderState.status === UploaderStates.success) {
+      onSuccess(selectedCategory);
+      onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploaderState.status]);
+
   const UploaderModalContent = () => {
     switch (uploaderState.status) {
       case UploaderStates.ready:
@@ -166,25 +163,12 @@ export function UploadModal3D({
           </>
         );
       case UploaderStates.success: {
-        // Store the selected category and tab in sessionStorage
-        const assetTab = categoryToAssetTab[selectedCategory];
-        if (assetTab) {
-          sessionStorage.setItem("lastUploadedCategory", selectedCategory);
-          sessionStorage.setItem("lastUploadedTab", assetTab);
-          // Reopen the asset modal
-          assetModalVisible.value = true;
-        } else {
-          // Clear any existing stored values if we don't have a valid tab
-          sessionStorage.removeItem("lastUploadedCategory");
-          sessionStorage.removeItem("lastUploadedTab");
-        }
-        onSuccess();
-        onClose();
         return (
           <UploadSuccess
             title="3D model"
             onOk={() => {
               onClose();
+              onSuccess(selectedCategory);
             }}
           />
         );

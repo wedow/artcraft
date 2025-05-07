@@ -81,6 +81,21 @@ const AllTabSection = ({
   </div>
 );
 
+const categoryToTabIdMap: Record<FilterEngineCategories, string> = {
+  [FilterEngineCategories.CHARACTER]: "characters",
+  [FilterEngineCategories.CREATURE]: "creatures",
+  [FilterEngineCategories.IMAGE_PLANE]: "image-planes",
+  [FilterEngineCategories.LOCATION]: "sets",
+  [FilterEngineCategories.OBJECT]: "objects",
+  [FilterEngineCategories.SKYBOX]: "skybox",
+  [FilterEngineCategories.ANIMATION]: "all",
+  [FilterEngineCategories.AUDIO]: "all",
+  [FilterEngineCategories.EXPRESSION]: "all",
+  [FilterEngineCategories.SCENE]: "all",
+  [FilterEngineCategories.SET_DRESSING]: "all",
+  [FilterEngineCategories.VIDEO_PLANE]: "all",
+};
+
 export const AssetModal = () => {
   useSignals();
   const [activeLibraryTab, setActiveLibraryTab] = useState("library");
@@ -104,6 +119,10 @@ export const AssetModal = () => {
     assetModalVisible.value = false;
   };
 
+  const handleOpen = () => {
+    assetModalVisible.value = true;
+  };
+
   useEffect(() => {
     if (assetModalVisible.value) {
       // Check for stored category and tab from upload
@@ -119,7 +138,10 @@ export const AssetModal = () => {
       const timer = setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        // Ensure no side effects remain
+      };
     }
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -406,21 +428,20 @@ export const AssetModal = () => {
   };
 
   const handleAddAsset = () => {
-    assetModalVisible.value = false;
+    handleClose();
     setIsUploadModalOpen(true);
     setSelectedCategory(null);
     setIsSelectVisible(true);
   };
 
   const handleAddSpecificAsset = (category: FilterEngineCategories) => {
-    console.log("Selected category:", category);
-    assetModalVisible.value = false;
+    handleClose();
     setIsUploadModalOpen(true);
     setSelectedCategory(category);
     setIsSelectVisible(false);
   };
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (category: FilterEngineCategories) => {
     if (reopenAfterDragSignal.value) {
       // Small delay to allow the modal to close and reopen
       setTimeout(() => {
@@ -429,6 +450,23 @@ export const AssetModal = () => {
     } else {
       handleClose();
     }
+
+    // Use the provided category to find the AssetTab ID
+    const lastUploadedTabId = categoryToTabIdMap[category] || "all";
+
+    // Close the upload modal
+    setTimeout(() => {
+      sessionStorage.setItem("lastUploadedTab", lastUploadedTabId);
+      console.log("AssetModal: lastUploadedTabId set to:", lastUploadedTabId);
+      setIsUploadModalOpen(false);
+      handleOpen();
+    }, 300);
+
+    fetchUserCharacters();
+    fetchUserObjects();
+    fetchUserSets();
+    fetchUserCreatures();
+    fetchUserImagePlanes();
   };
 
   const clearSearch = () => setSearchTerm("");
@@ -581,21 +619,22 @@ export const AssetModal = () => {
                         </Button>
                         {currentTab.label}
                       </div>
-                      {activeAssetTab !== "skybox" && (
-                        <Button
-                          icon={faUpFromLine}
-                          onClick={() =>
-                            handleAddSpecificAsset(
-                              currentTab.engineCategory ||
-                                FilterEngineCategories.OBJECT,
-                            )
-                          }
-                          className="border-primary bg-primary/70 px-2 py-1 text-xs transition-colors hover:bg-primary"
-                        >
-                          Upload {getArticle(currentTab.labelSingle)}{" "}
-                          {currentTab.labelSingle}
-                        </Button>
-                      )}
+                      {activeAssetTab !== "skybox" &&
+                        activeAssetTab !== "all" && (
+                          <Button
+                            icon={faUpFromLine}
+                            onClick={() =>
+                              handleAddSpecificAsset(
+                                currentTab.engineCategory ||
+                                  FilterEngineCategories.OBJECT,
+                              )
+                            }
+                            className="border-primary bg-primary/70 px-2 py-1 text-xs transition-colors hover:bg-primary"
+                          >
+                            Upload {getArticle(currentTab.labelSingle)}{" "}
+                            {currentTab.labelSingle}
+                          </Button>
+                        )}
                     </div>
                   )}
                   {renderContent()}
@@ -609,7 +648,7 @@ export const AssetModal = () => {
         onClose={() => {
           setIsUploadModalOpen(false);
         }}
-        onSuccess={handleUploadSuccess}
+        onSuccess={(category) => handleUploadSuccess(category)}
         isOpen={isUploadModalOpen}
         title={`Upload ${selectedCategory ? (selectedCategory.toLowerCase().replace(/_/g, " ") === "location" ? "sets" : selectedCategory.toLowerCase().replace(/_/g, " ")) : "3D Asset"}`}
         titleIcon={!isSelectVisible ? currentTab.icon : faUpFromLine}
