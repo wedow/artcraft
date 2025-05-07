@@ -37,15 +37,15 @@ pub async fn sora_login_thread(
   app: AppHandle,
   app_data_root: AppDataRoot,
   sora_creds_manager: SoraCredentialManager
-) -> ! {
+) {
   loop {
     info!(">>> SORA LOGIN THREAD <<<");
     
     let login_webview = match app.get_webview(LOGIN_WINDOW_NAME) {
       Some(webview) => webview,
       None => {
-        tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
-        continue;
+        info!("Exit sora login thread.");
+        return; // NB: Only exit if we don't have the webview.
       }
     };
 
