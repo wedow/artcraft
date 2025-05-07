@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"enables the default permissions","local":true,"windows":["main"],"permissions":["core:default","log:default","upload:allow-download","upload:default",{"identifier":"http:default","allow":[{"url":"https://*.storyteller.ai"},{"url":"https://*.fakeyou.com"}],"deny":[{"url":"https://private.tauri.app"}]}]}}

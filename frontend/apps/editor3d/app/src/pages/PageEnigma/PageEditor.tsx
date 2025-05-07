@@ -27,11 +27,12 @@ import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 import { DemoModal } from "@storyteller/ui-demo-modal";
 import { appTabId, setAppTabId } from "~/signals/appTab";
+import { KonvaCanvasContainer } from "../Page2d/KonvaCanvasContainer";
+import { KonvaRootComponent } from "../Page2d/KonvaRootComponent";
 
 export const PageEditor = () => {
   useSignals();
-  //console.log(api());
-  //To prevent the click event from propagating to the canvas: TODO: HANDLE THIS BETTER?
+ 
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
@@ -74,6 +75,96 @@ export const PageEditor = () => {
     return scaleHeight;
   };
 
+  const ContentFor3D = () => {
+    return <> <OnboardingHelper />
+    <div
+      className="relative flex w-screen"
+      style={{ height: "calc(100vh - 68px)" }}
+    >
+      {/* Engine section/side panel */}
+      <div
+        id="engine-n-panels-wrapper"
+        className="flex"
+        style={{
+          height,
+        }}
+      >
+        <div className="relative w-full overflow-hidden bg-transparent">
+          <SceneContainer>
+            <EditorCanvas />
+            <PreviewFrameImage />
+          </SceneContainer>
+
+          {/* Focal Length Display */}
+          <FocalLengthDisplay />
+
+          {/* Pose Mode Selector */}
+          <PoseModeSelector />
+
+          {/* Top controls */}
+          <div
+            className="absolute left-0 top-0 w-full"
+            onClick={handleOverlayClick}
+          >
+            <div className="grid grid-cols-3 gap-4">
+              <ControlsTopButtons />
+              <Controls3D />
+            </div>
+          </div>
+
+          {/* Bottom controls */}
+          <div
+            className="absolute bottom-0 left-0"
+            style={{
+              width: pageWidth.value,
+            }}
+            onClick={handleOverlayClick}
+          >
+            <div
+              className="absolute bottom-0 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
+              style={{ transform: `scale(${getScale()})` }}
+            >
+              <Outliner />
+              <PreviewEngineCamera />
+            </div>
+
+            <ControlPanelSceneObject />
+          </div>
+
+          <PromptBox />
+
+          <LoadingDots
+            className="absolute left-0 top-0 z-50"
+            isShowing={editorLoader.value.isShowing}
+            type="bricks"
+            message={editorLoader.value.message}
+          />
+        </div>
+      </div>
+    </div>
+    <DemoModal
+      title="Welcome to ArtCraft 3D"
+      subTitle="Your 3D editor for digital art and design"
+      description="Set up your scene by adding objects and start bringing your ideas to life!"
+      videoSrc="/resources/videos/artcraft-3d-demo.mp4"
+      buttonText="Sign in to OpenAI to get started"
+      buttonOnClick={async () => {
+        if (IsDesktopApp()) {
+          await invoke("open_sora_login_command");
+        } else {
+          console.error("This is not the Desktop app.");
+        }
+      }}
+    />
+    </>
+  }
+
+  const ContentFor2D = () => {
+    return <KonvaCanvasContainer>
+      <KonvaRootComponent className="w-full h-full"/>
+    </KonvaCanvasContainer>;
+  };
+
   return (
     <div className="w-screen">
       <TopBar
@@ -81,97 +172,7 @@ export const PageEditor = () => {
         appTabIdSignal={appTabId}
         setAppTabId={setAppTabId}
       />
-      <OnboardingHelper />
-      <div
-        className="relative flex w-screen"
-        style={{ height: "calc(100vh - 68px)" }}
-      >
-        {/* Engine section/side panel */}
-        <div
-          id="engine-n-panels-wrapper"
-          className="flex"
-          style={{
-            height,
-          }}
-        >
-          <div className="relative w-full overflow-hidden bg-transparent">
-            <SceneContainer>
-              <EditorCanvas />
-              <PreviewFrameImage />
-            </SceneContainer>
-
-            {/* Focal Length Display */}
-            <FocalLengthDisplay />
-
-            {/* Pose Mode Selector */}
-            <PoseModeSelector />
-
-            {/* Top controls */}
-            <div
-              className="absolute left-0 top-0 w-full"
-              onClick={handleOverlayClick}
-            >
-              <div className="grid grid-cols-3 gap-4">
-                <ControlsTopButtons />
-                <Controls3D />
-              </div>
-            </div>
-
-            {/* Bottom controls */}
-            <div
-              className="absolute bottom-0 left-0"
-              style={{
-                width: pageWidth.value,
-              }}
-              onClick={handleOverlayClick}
-            >
-              <div
-                className="absolute bottom-0 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
-                style={{ transform: `scale(${getScale()})` }}
-              >
-                <Outliner />
-                <PreviewEngineCamera />
-              </div>
-
-              <ControlPanelSceneObject />
-            </div>
-
-            <PromptBox />
-
-            <LoadingDots
-              className="absolute left-0 top-0 z-50"
-              isShowing={editorLoader.value.isShowing}
-              type="bricks"
-              message={editorLoader.value.message}
-            />
-          </div>
-        </div>
-
-        {/* Side panel */}
-        {/* <div onClick={handleOverlayClick}>
-          <SidePanel />
-        </div> */}
-      </div>
-
-      {/* Timeline */}
-      {/* <div onClick={handleOverlayClick}>
-        <Timeline />
-      </div> */}
-
-      <DemoModal
-        title="Welcome to ArtCraft 3D"
-        subTitle="Your 3D editor for digital art and design"
-        description="Set up your scene by adding objects and start bringing your ideas to life!"
-        videoSrc="/resources/videos/artcraft-3d-demo.mp4"
-        buttonText="Sign in to OpenAI to get started"
-        buttonOnClick={async () => {
-          if (IsDesktopApp()) {
-            await invoke("open_sora_login_command");
-          } else {
-            console.error("This is not the Desktop app.");
-          }
-        }}
-      />
+      {appTabId.value === "3D" ? <ContentFor3D /> : <ContentFor2D />}
     </div>
   );
 };
