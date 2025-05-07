@@ -62,6 +62,18 @@
     },
     {
       "path": "./libs/soundboard"
+    },
+    {
+      "path": "./libs/components/promptbox"
+    },
+    {
+      "path": "./libs/components/popover"
+    },
+    {
+      "path": "./libs/common/enums"
+    },
+    {
+      "path": "./libs/common/interfaces"
     }
   ]
 }
