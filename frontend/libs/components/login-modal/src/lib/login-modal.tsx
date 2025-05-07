@@ -209,7 +209,7 @@ export function LoginModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 cursor-pointer bg-black/60" />
+          <div className="fixed inset-0 cursor-pointer bg-black/80" />
         </TransitionChild>
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <TransitionChild

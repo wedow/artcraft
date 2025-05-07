@@ -18,7 +18,7 @@ import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { Input } from "@storyteller/ui-input";
-import { TabSelector } from "~/components/reusable/TabSelector";
+import { TabSelector } from "@storyteller/ui-tab-selector";
 import React, {
   useState,
   useEffect,
