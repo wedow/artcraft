@@ -1,13 +1,13 @@
 //! Adapted from 'jwt' crate
 
+use crate::sora_error::SoraError;
 use anyhow::anyhow;
-use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use base64::Engine;
 use chrono::{DateTime, Utc};
+use errors::AnyhowResult;
 use log::warn;
 use serde_json::Value;
-use errors::AnyhowResult;
-use crate::sora_error::SoraError;
 
 const SEPARATOR: &str = ".";
 

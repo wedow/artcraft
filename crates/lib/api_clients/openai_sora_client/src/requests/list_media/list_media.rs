@@ -30,6 +30,8 @@ pub struct TaskResponse {
   pub height: u32,
   pub width: u32,
   pub operation: String,
+  
+  // There are many more fields [...]
 }
 
 /// Note: this request only requires a valid bearer token, and it doesn't require a cookie payload at all!
@@ -71,10 +73,9 @@ pub async fn list_media(credentials: &SoraCredentialSet) -> Result<ListMediaResp
 
 #[cfg(test)]
 mod tests {
-  use errors::AnyhowResult;
-  use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
-  use crate::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
   use super::*;
+  use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
+  use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore] // Don't run in CI. Requires valid cookie

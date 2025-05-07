@@ -33,25 +33,32 @@ pub static SORA_ROOT_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse(SORA_ROOT_URL_STR).expect("URL should parse")
 });
 
-pub async fn sora_session_login_thread(
+pub async fn sora_login_thread(
   app: AppHandle,
   app_data_root: AppDataRoot,
   sora_creds_manager: SoraCredentialManager
 ) -> ! {
   loop {
-    for (window_name, webview) in app.webviews() {
-      if window_name == LOGIN_WINDOW_NAME {
-        let result = check_login_window(
-          &webview,
-          &app_data_root,
-          &sora_creds_manager,
-        ).await;
-        if let Err(err) = result {
-          error!("Error checking login window: {:?}", err);
-        }
-        break;
+    info!(">>> SORA LOGIN THREAD <<<");
+    
+    let login_webview = match app.get_webview(LOGIN_WINDOW_NAME) {
+      Some(webview) => webview,
+      None => {
+        tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
+        continue;
       }
+    };
+
+    let result = check_login_window(
+      &login_webview,
+      &app_data_root,
+      &sora_creds_manager,
+    ).await;
+ 
+    if let Err(err) = result {
+      error!("Error checking login window: {:?}", err);
     }
+
     tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
   }
 }

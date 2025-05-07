@@ -9,8 +9,6 @@ pub async fn classify_general_http_error(response: reqwest::Response) -> SoraErr
     Err(err) => return SoraError::ReqwestError(err),
   };
   
-  println!("Failed to fetch media list: {}", status);
-  println!("Message: {}", message);
   /*
   
 Old cookie - 
@@ -36,6 +34,7 @@ Message: {
 }
    */
 
+  // TODO: I *think* this is just the bearer token, not the cookie.
   let cookie_expired =
       message.contains("Your authentication token has expired. Please try signing in again.")
           || message.contains("token_expired");
