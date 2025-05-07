@@ -8,6 +8,33 @@ pub async fn classify_general_http_error(response: reqwest::Response) -> SoraErr
     Ok(text) => text,
     Err(err) => return SoraError::ReqwestError(err),
   };
+  
+  println!("Failed to fetch media list: {}", status);
+  println!("Message: {}", message);
+  /*
+  
+Old cookie - 
+
+Message: {
+  "error": {
+    "message": "Your authentication token has expired. Please try signing in again.",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "token_expired"
+  }
+}
+
+No cookie - 
+
+Message: {
+  "error": {
+    "message": "Your authentication token has expired. Please try signing in again.",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "token_expired"
+  }
+}
+   */
 
   let cookie_expired =
       message.contains("Your authentication token has expired. Please try signing in again.")

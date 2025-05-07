@@ -71,6 +71,7 @@ pub async fn list_media(credentials: &SoraCredentialSet) -> Result<ListMediaResp
 #[cfg(test)]
 mod tests {
   use errors::AnyhowResult;
+  use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
   use crate::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
   use super::*;
 
@@ -81,7 +82,11 @@ mod tests {
     
     let mut creds = SoraCredentialSet::initialize_with_just_cookies_str(cookie);
     
-    let _updated = maybe_upgrade_or_renew_session(&mut creds).await?;
+    let bearer = "";
+    
+    creds.jwt_bearer_token = Some(SoraJwtBearerToken::new(bearer.to_string())?);
+    
+    //let _updated = maybe_upgrade_or_renew_session(&mut creds).await?;
     
     let results = list_media(&creds).await.expect("should work");
     

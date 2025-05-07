@@ -25,6 +25,10 @@ pub enum SoraError {
   ///     }
   ///   }
   UnauthorizedCookieOrBearerExpired,
+
+  /// Something is wrong with the JWT bearer token.
+  /// This error originates on our end as we try to parse the JWT.
+  LocalJwtClaimsParseError(String),
   
   /// Sora is having issues.
   /// Typically served from Cloudflare
@@ -54,6 +58,9 @@ impl Display for SoraError {
     match self {
       Self::NoBearerTokenAvailable => {
         write!(f, "Unauthorized: no bearer token set")
+      }
+      Self::LocalJwtClaimsParseError(message) => {
+        write!(f, "Local JWT claims parse error: {}", message)
       }
       Self::TooManyConcurrentTasks => {
         write!(f, "Too many concurrent tasks. Please wait.")
