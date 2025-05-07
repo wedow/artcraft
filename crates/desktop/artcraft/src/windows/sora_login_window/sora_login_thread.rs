@@ -17,7 +17,7 @@ use std::fs;
 use std::fs::{read_to_string, OpenOptions};
 use std::io::Write;
 use std::ops::Sub;
-use tauri::{AppHandle, Manager, Webview};
+use tauri::{AppHandle, Manager, Webview, WebviewWindow};
 
 pub async fn sora_login_thread(
   app: AppHandle,
@@ -25,9 +25,7 @@ pub async fn sora_login_thread(
   sora_creds_manager: SoraCredentialManager
 ) {
   loop {
-    info!(">>> SORA LOGIN THREAD <<<");
-    
-    let login_webview = match app.get_webview(LOGIN_WINDOW_NAME) {
+    let login_webview_window = match app.get_webview_window(LOGIN_WINDOW_NAME) {
       Some(webview) => webview,
       None => {
         info!("Exit sora login thread.");
@@ -36,7 +34,7 @@ pub async fn sora_login_thread(
     };
 
     let result = check_login_window(
-      &login_webview,
+      &login_webview_window,
       &app_data_root,
       &sora_creds_manager,
     ).await;
@@ -48,7 +46,7 @@ pub async fn sora_login_thread(
       Ok(false) => {} // Continue iteration and try again...
       Ok(true) => {
         info!("Successfully saved cookies from login window. Closing.");
-        if let Err(err) = login_webview.close() {
+        if let Err(err) = login_webview_window.close() {
           error!("Error closing login window: {:?}", err);
         }
         return;
@@ -61,7 +59,7 @@ pub async fn sora_login_thread(
 
 /// Returns true if we can exit.
 async fn check_login_window(
-  webview: &Webview,
+  webview_window: &WebviewWindow,
   app_data_root: &AppDataRoot,
   sora_credential_manager: &SoraCredentialManager,
 ) -> AnyhowResult<bool> {
@@ -80,9 +78,7 @@ async fn check_login_window(
   - Check if we're on the correct domain, if not exit? (or inverse, that we're not in login flow)
    */
 
-  let hostname = get_hostname(webview)?;
-
-  info!("Sora login webview is at hostname `{}`.", hostname);
+  let hostname = get_hostname(webview_window)?;
 
   let mut maybe_at_destination = false;
 
@@ -100,19 +96,22 @@ async fn check_login_window(
     "appleid.apple.com"
     => {
       // NB: We're in auth flow.
+      info!("Sora login webview is in auth flow; hostname `{}`.", hostname);
       return Ok(false)
     }
     _ => {}, // We just don't know...
   }
 
-  let webview_cookies = extract_sora_webview_cookies(webview)?.trim().to_string();
+  let webview_cookies = extract_sora_webview_cookies(webview_window)?.trim().to_string();
 
   let session_cookie_presence = has_session_cookie(&webview_cookies)
       .unwrap_or_else(|err| {
         error!("Failed to check for session cookie: {:?}", err);
         SessionCookiePresence::MaybePresent
       });
-  
+
+  info!("Sora login webview is at hostname `{}`; cookie status: {:?}.", hostname, session_cookie_presence);
+
   match session_cookie_presence {
     SessionCookiePresence::Absent => {
       info!("Session cookies are absent.");
@@ -142,7 +141,7 @@ async fn check_login_window(
   Ok(true)
 }
 
-fn get_hostname(webview: &Webview) -> AnyhowResult<String> {
+fn get_hostname(webview: &WebviewWindow) -> AnyhowResult<String> {
   let url = webview.url()?;
   let url_hostname= url.host()
       .ok_or(anyhow!("no host in url"))?
