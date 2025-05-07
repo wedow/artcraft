@@ -1,8 +1,8 @@
+use errors::AnyhowResult;
 use once_cell::sync::Lazy;
 use reqwest::Url;
-use tauri::Webview;
 use tauri::webview::Cookie;
-use errors::AnyhowResult;
+use tauri::Webview;
 
 const CHAT_GPT_ROOT_COOKIE_URL_STR: &str = "https://chatgpt.com";
 
@@ -10,12 +10,7 @@ static CHAT_GPT_ROOT_COOKIE_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse(CHAT_GPT_ROOT_COOKIE_URL_STR).expect("URL should parse")
 });
 
-pub fn get_all_chatgpt_cookies(webview: &Webview) -> AnyhowResult<Vec<Cookie>> {
-  let cookies = webview.cookies_for_url(CHAT_GPT_ROOT_COOKIE_URL.clone())?;
-  Ok(cookies)
-}
-
-pub fn get_all_sora_cookies_as_string(webview: &Webview) -> AnyhowResult<String> {
+pub fn extract_sora_webview_cookies(webview: &Webview) -> AnyhowResult<String> {
   // NB(bt): Cookies were originally on sora.com, but now they're located on 
   // the sora.chatgpt.com / *.chatgpt.com domains.
   let cookies = get_all_chatgpt_cookies(webview)?;
@@ -25,4 +20,9 @@ pub fn get_all_sora_cookies_as_string(webview: &Webview) -> AnyhowResult<String>
     .collect::<Vec<String>>()
     .join("; ");
   Ok(cookie_string)
+}
+
+fn get_all_chatgpt_cookies(webview: &Webview) -> AnyhowResult<Vec<Cookie>> {
+  let cookies = webview.cookies_for_url(CHAT_GPT_ROOT_COOKIE_URL.clone())?;
+  Ok(cookies)
 }

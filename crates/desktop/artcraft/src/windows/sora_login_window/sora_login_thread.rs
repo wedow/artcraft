@@ -1,8 +1,8 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::sora::sora_credential_holder::SoraCredentialHolder;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
-use crate::utils::cookies::sora_webview_cookies::get_all_sora_cookies_as_string;
 use crate::utils::sora::initialize_sora_jwt_bearer_token::initialize_sora_jwt_bearer_token;
+use crate::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
 use crate::windows::sora_login_window::open_sora_login_window::LOGIN_WINDOW_NAME;
 use anyhow::anyhow;
 use chrono::{DateTime, NaiveDateTime, TimeDelta};
@@ -41,87 +41,111 @@ pub async fn sora_login_thread(
       &sora_creds_manager,
     ).await;
  
-    if let Err(err) = result {
-      error!("Error checking login window: {:?}", err);
+    match result {
+      Err(err) => {
+        error!("Error checking login window: {:?}", err);
+      }
+      Ok(false) => {} // Continue iteration and try again...
+      Ok(true) => {
+        info!("Successfully saved cookies from login window. Closing.");
+        if let Err(err) = login_webview.close() {
+          error!("Error closing login window: {:?}", err);
+        }
+        return;
+      }
     }
 
     tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
   }
 }
 
+/// Returns true if we can exit.
 async fn check_login_window(
   webview: &Webview,
   app_data_root: &AppDataRoot,
   sora_credential_manager: &SoraCredentialManager,
-) -> AnyhowResult<()> {
-  //clear_browsing_data_on_test_domain(webview)?;
-  //keep_on_task(webview)?;
-  extract_cookies_to_file(webview, app_data_root, sora_credential_manager).await?;
-  Ok(())
-}
+) -> AnyhowResult<bool> {
+  
+  /* Login flow looks like this:
+  
+  1. Start: https://sora.chatgpt.com/
+  2. Login Start: https://chatgpt.com/auth/login?next=%2Fsora%2F [this is where we start]
+  3. Login Continue: https://auth.openai.com/log-in
+  4. SSO / Google Login (etc): https://accounts.google.com/v3/signin/challenge/pwd?[query]
+  5. Done / Landing: https://sora.chatgpt.com/explore
+   */
+  
+  /*
+  - Do not use credential manager until the end (we don't load old cookies!)
+  - Check if we're on the correct domain, if not exit? (or inverse, that we're not in login flow)
+   */
 
-// TODO(bt,2025-04-07): Heuristic to detect when logged in. Only write when logged in.
-async fn extract_cookies_to_file(
-  webview: &Webview,
-  app_data_root: &AppDataRoot,
-  sora_credential_manager: &SoraCredentialManager,
-) -> AnyhowResult<()> {
-  let new_cookies = get_all_sora_cookies_as_string(webview)?.trim().to_string();
+  let hostname = get_hostname(webview)?;
 
-  if new_cookies.is_empty() {
-    return Ok(());
+  info!("Sora login webview is at hostname `{}`.", hostname);
+
+  let mut maybe_at_destination = false;
+
+  match hostname.as_str() {
+    "sora.com" | // Old destination
+    "sora.chatgpt.com" // New destination
+    => {
+      maybe_at_destination = true;
+    }
+    // chatgpt.com/auth is also an auth domain
+    "auth.openai.com" |
+    "accounts.google.com" |
+    "accounts.youtube.com" |
+    "login.live.com" |
+    "appleid.apple.com"
+    => {
+      // NB: We're in auth flow.
+      return Ok(false)
+    }
+    _ => {}, // We just don't know...
   }
 
-  let session_cookie_presence = has_session_cookie(&new_cookies)
+  let webview_cookies = extract_sora_webview_cookies(webview)?.trim().to_string();
+
+  let session_cookie_presence = has_session_cookie(&webview_cookies)
       .unwrap_or_else(|err| {
         error!("Failed to check for session cookie: {:?}", err);
         SessionCookiePresence::MaybePresent
       });
-
-  info!("Session cookies are: {:?}", session_cookie_presence);
-
-  let (should_write_cookies, should_upgrade_session) = match session_cookie_presence {
-    SessionCookiePresence::Present => (true, true),
-    SessionCookiePresence::MaybePresent => (true, false),
-    SessionCookiePresence::Absent => (false, false),
-  };
-
-  if !should_write_cookies {
-    return Ok(());
+  
+  match session_cookie_presence {
+    SessionCookiePresence::Absent => {
+      info!("Session cookies are absent.");
+      return Ok(false);
+    }
+    _ => {},
   }
+
+  let mut new_credentials =
+      SoraCredentialSet::initialize_with_just_cookies_str(&webview_cookies);
+  
+  let _upgraded = maybe_upgrade_or_renew_session(&mut new_credentials).await?;
 
   // TODO(bt): Race conditions ahead.
 
   sora_credential_manager.clear_credentials()?;
 
-  let _r = fs::remove_file(app_data_root.get_sora_cookie_file_path());
-  let _r = fs::remove_file(app_data_root.get_sora_bearer_token_file_path());
-  let _r = fs::remove_file(app_data_root.get_sora_sentinel_file_path());
-
-  let mut new_credentials =
-      SoraCredentialSet::initialize_with_just_cookies_str(&new_cookies);
-
-  if should_upgrade_session {
-    let _upgraded = maybe_upgrade_or_renew_session(&mut new_credentials).await?;
-  }
+  let creds_dir = app_data_root.credentials_dir();
+  
+  let _r = fs::remove_file(creds_dir.get_sora_cookie_file_path());
+  let _r = fs::remove_file(creds_dir.get_sora_bearer_token_file_path());
+  let _r = fs::remove_file(creds_dir.get_sora_sentinel_file_path());
 
   sora_credential_manager.set_credentials(&new_credentials)?;
   sora_credential_manager.persist_all_to_disk()?;
-
-  Ok(())
+  
+  Ok(true)
 }
 
-pub fn read_sora_cookies_from_disk(app_data_root: &AppDataRoot) -> Option<String> {
-  let cookie_file = app_data_root.get_sora_cookie_file_path();
-  if !cookie_file.exists() {
-    return None;
-  }
-
-  match read_to_string(cookie_file) {
-    Ok(contents) => Some(contents.trim().to_string()),
-    Err(err) => {
-      warn!("Failed to read cookie file: {:?}", err);
-      None
-    }
-  }
+fn get_hostname(webview: &Webview) -> AnyhowResult<String> {
+  let url = webview.url()?;
+  let url_hostname= url.host()
+      .ok_or(anyhow!("no host in url"))?
+      .to_string();
+  Ok(url_hostname)
 }
