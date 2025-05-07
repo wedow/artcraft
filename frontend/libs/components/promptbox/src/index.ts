@@ -1,1 +1,1 @@
-export * from "./lib/PromptBox";
+export * from "./lib/PromptBox3D";

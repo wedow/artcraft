@@ -52,7 +52,7 @@ import {
   UploadImageArgs,
 } from "@storyteller/interfaces";
 import { EngineApi } from "@storyteller/api";
-import { CameraSettingsModal } from "../CameraSettingsModal";
+import { CameraSettingsModal } from "@storyteller/ui-camera-settings-modal";
 import { twMerge } from "tailwind-merge";
 import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
 import { Modal } from "@storyteller/ui-modal";
@@ -66,22 +66,20 @@ interface PromptBox3DProps {
   gridVisibility: Signal<boolean>;
   setGridVisibility: (isVisible: boolean) => void;
   selectedCameraId: Signal<string>;
-  addCamera: (cam: Camera) => void;
-  updateCamera: (id: string, updates: Partial<Camera>) => void;
   deleteCamera: (id: string) => void;
   focalLengthDragging: Signal<FocalLengthDragging>;
   isPromptBoxFocused: Signal<boolean>;
   uploadImage: (arg: UploadImageArgs) => Promise<void>;
   handleCameraSelect: (item: PopoverItem) => void;
   handleAddCamera: () => void;
-  handleCameraNameChange: (name: string) => void;
+  handleCameraNameChange: (id: string, newName: string) => void;
   handleCameraFocalLengthChange: (id: string, value: number) => void;
-  handleAspectRatioSelect: (selectedItem: PopoverItem) => void;
+  onAspectRatioSelect: (newRatio: CameraAspectRatio) => void;
   setEnginePrompt: (prompt: string) => void;
-  snapshotCurrentFrame: (shouldDownload?: boolean) => {
+  snapshotCurrentFrame: ((shouldDownload?: boolean) => {
     base64Snapshot: string;
     file: File;
-  } | null;
+  } | null) | undefined;
 }
 
 export const PromptBox3D = ({
@@ -92,8 +90,6 @@ export const PromptBox3D = ({
   gridVisibility,
   setGridVisibility,
   selectedCameraId,
-  addCamera,
-  updateCamera,
   deleteCamera,
   focalLengthDragging,
   isPromptBoxFocused,
@@ -102,7 +98,7 @@ export const PromptBox3D = ({
   handleAddCamera,
   handleCameraNameChange,
   handleCameraFocalLengthChange,
-  handleAspectRatioSelect,
+  onAspectRatioSelect,
   setEnginePrompt,
   snapshotCurrentFrame,
 }: PromptBox3DProps) => {
@@ -168,6 +164,37 @@ export const PromptBox3D = ({
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraAspectRatio.value]);
+
+  const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
+    setAspectRatioList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === selectedItem.label,
+      })),
+    );
+
+    // Map the selected label to the corresponding CameraAspectRatio enum value
+    let newRatio: CameraAspectRatio;
+    switch (selectedItem.label) {
+      case "16:9":
+        newRatio = CameraAspectRatio.HORIZONTAL_16_9;
+        break;
+      case "3:2":
+        newRatio = CameraAspectRatio.HORIZONTAL_3_2;
+        break;
+      case "2:3":
+        newRatio = CameraAspectRatio.VERTICAL_2_3;
+        break;
+      case "1:1":
+        newRatio = CameraAspectRatio.SQUARE_1_1;
+        break;
+      default:
+        newRatio = CameraAspectRatio.HORIZONTAL_16_9;
+    }
+
+    onAspectRatioSelect(newRatio);
+  };
+
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -314,44 +341,46 @@ export const PromptBox3D = ({
     //const engineApi = new EngineApi();
     const promptsApi = new PromptsApi();
 
-    const snapshot = snapshotCurrentFrame(false);
+    if (snapshotCurrentFrame) {
+      const snapshot = snapshotCurrentFrame(false);
 
-    if (snapshot) {
-      const snapshotResult = await promptsApi.uploadSceneSnapshot({
-        screenshot: snapshot.file,
-        sceneMediaToken: "",
-      });
+      if (snapshot) {
+        const snapshotResult = await promptsApi.uploadSceneSnapshot({
+          screenshot: snapshot.file,
+          sceneMediaToken: "",
+        });
 
-      console.log("useSystemPrompt", useSystemPrompt);
+        console.log("useSystemPrompt", useSystemPrompt);
 
-      const response = await promptsApi.enqueueImageGeneration({
-        disableSystemPrompt: !useSystemPrompt,
-        prompt: prompt,
-        snapshotMediaToken: snapshotResult.data || "",
-        additionalImages: referenceImages.map((image) => image.mediaToken),
-      });
+        const response = await promptsApi.enqueueImageGeneration({
+          disableSystemPrompt: !useSystemPrompt,
+          prompt: prompt,
+          snapshotMediaToken: snapshotResult.data || "",
+          additionalImages: referenceImages.map((image) => image.mediaToken),
+        });
 
-      console.log("response", response);
+        console.log("response", response);
 
-      if (response.errorMessage) {
-        handleError(response.errorMessage);
-        setisEnqueueing(false);
-        return;
+        if (response.errorMessage) {
+          handleError(response.errorMessage);
+          setisEnqueueing(false);
+          return;
+        }
       }
-    }
 
-    try {
-      // Here we would pass both the prompt and reference images to the generation
-      console.log(
-        "Enqueuing with prompt:",
-        prompt,
-        "and reference images:",
-        referenceImages
-      );
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    } finally {
-      setisEnqueueing(false);
-      toast.success("Image added to queue");
+      try {
+        // Here we would pass both the prompt and reference images to the generation
+        console.log(
+          "Enqueuing with prompt:",
+          prompt,
+          "and reference images:",
+          referenceImages
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } finally {
+        setisEnqueueing(false);
+        toast.success("Image added to queue");
+      }
     }
     setisEnqueueing(false);
   };
@@ -365,47 +394,49 @@ export const PromptBox3D = ({
 
     const promptsApi = new PromptsApi();
 
-    const snapshot = snapshotCurrentFrame(false);
+    if (snapshotCurrentFrame) {
+      const snapshot = snapshotCurrentFrame(false);
 
-    if (snapshot) {
-      const snapshotResult = await promptsApi.uploadSceneSnapshot({
-        screenshot: snapshot.file,
-        //sceneMediaToken: "",
-      });
+      if (snapshot) {
+        const snapshotResult = await promptsApi.uploadSceneSnapshot({
+          screenshot: snapshot.file,
+          //sceneMediaToken: "",
+        });
 
-      const generateResponse = await invoke("sora_image_remix_command", {
-        request: {
-          snapshot_media_token: snapshotResult.data!,
-          disable_system_prompt: !useSystemPrompt,
-          prompt: prompt,
-          maybe_additional_images: referenceImages.map(
-            (image) => image.mediaToken
-          ),
-          maybe_number_of_samples: 1,
-        },
-      });
+        const generateResponse = await invoke("sora_image_remix_command", {
+          request: {
+            snapshot_media_token: snapshotResult.data!,
+            disable_system_prompt: !useSystemPrompt,
+            prompt: prompt,
+            maybe_additional_images: referenceImages.map(
+              (image) => image.mediaToken
+            ),
+            maybe_number_of_samples: 1,
+          },
+        });
 
-      console.log("response", generateResponse);
+        console.log("response", generateResponse);
 
-      //if (generateResponse.errorMessage) {
-      //  handleError(response.errorMessage);
-      //  setisEnqueueing(false);
-      //  return;
-      //}
-    }
+        //if (generateResponse.errorMessage) {
+        //  handleError(response.errorMessage);
+        //  setisEnqueueing(false);
+        //  return;
+        //}
+      }
 
-    try {
-      // Here we would pass both the prompt and reference images to the generation
-      console.log(
-        "Enqueuing with prompt:",
-        prompt,
-        "and reference images:",
-        referenceImages
-      );
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    } finally {
-      setisEnqueueing(false);
-      toast.success("Image added to queue");
+      try {
+        // Here we would pass both the prompt and reference images to the generation
+        console.log(
+          "Enqueuing with prompt:",
+          prompt,
+          "and reference images:",
+          referenceImages
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } finally {
+        setisEnqueueing(false);
+        toast.success("Image added to queue");
+      }
     }
 
     setisEnqueueing(false);
@@ -435,6 +466,10 @@ export const PromptBox3D = ({
   };
 
   const handleSaveFrame = async () => {
+    if (!snapshotCurrentFrame) {
+      return;
+    }
+
     const snapshot = snapshotCurrentFrame(false);
     if (snapshot) {
       const engineApi = new EngineApi();
@@ -446,6 +481,9 @@ export const PromptBox3D = ({
   };
 
   const handleDownloadFrame = () => {
+    if (!snapshotCurrentFrame) {
+      return;
+    }
     snapshotCurrentFrame(true);
   };
 
@@ -704,6 +742,7 @@ export const PromptBox3D = ({
             selected: cam.id === selectedCameraId.value,
             icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
             focalLength: cam.focalLength,
+            focalLengthDragging: focalLengthDragging,
             position: cam.position,
             rotation: cam.rotation,
             lookAt: cam.lookAt,
@@ -714,6 +753,9 @@ export const PromptBox3D = ({
           selectedCameraId={selectedCameraId.value}
           handleCameraSelect={handleCameraSelect}
           onDeleteCamera={deleteCamera}
+          disableHotkeyInput={disableHotkeyInput}
+          enableHotkeyInput={enableHotkeyInput}
+          focalLengthDragging={focalLengthDragging}
         />
       </div>
       <GalleryModal
