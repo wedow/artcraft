@@ -49,7 +49,7 @@ async fn do_open_login(app: &AppHandle) -> AnyhowResult<()> {
       .resizable(true)
       .visible(true)
       .closable(true)
-      .min_inner_size(200.0, 500.0)
+      .min_inner_size(200.0, 800.0)
       .focused(true)
       .devtools(true)
       .build()?;

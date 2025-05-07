@@ -4,7 +4,8 @@ use cookie::Cookie;
 use once_cell::sync::Lazy;
 use errors::AnyhowResult;
 
-pub const SESSION_COOKIE_NAME : &str = "__Secure-authjs.session-token";
+pub const SESSION_COOKIE_NAME_OLD : &str = "__Secure-authjs.session-token";
+pub const SESSION_COOKIE_NAME_NEW : &str = "__Secure-next-auth.session-token";
 
 /// Cookies Sora.com mints that are not the session cookie. We can ignore these.
 /// This list is very likely to change over time.
@@ -51,7 +52,9 @@ pub fn has_session_cookie(cookies_header: &str) -> AnyhowResult<SessionCookiePre
   for cookie in cookies {
     let cookie= cookie?;
     let cookie_name = cookie.name();
-    if cookie_name == SESSION_COOKIE_NAME {
+    if cookie_name == SESSION_COOKIE_NAME_NEW {
+      return Ok(SessionCookiePresence::Present);
+    } else if cookie_name == SESSION_COOKIE_NAME_NEW {
       return Ok(SessionCookiePresence::Present);
     } else if !IRRELEVANT_COOKIE_NAMES.contains(cookie_name) {
       unknown_cookie_count += 1;

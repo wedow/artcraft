@@ -5,7 +5,6 @@ use log::{debug, error, info};
 use reqwest::Client;
 use serde_derive::Deserialize;
 
-//const SORA_BEARER_GENERATE_URL: &str = "https://sora.com/api/auth/session";
 const SORA_BEARER_GENERATE_URL: &str = "https://sora.chatgpt.com/api/auth/session";
 
 #[derive(Debug, Deserialize)]
