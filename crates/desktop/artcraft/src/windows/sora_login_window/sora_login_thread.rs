@@ -3,6 +3,7 @@ use crate::state::sora::sora_credential_holder::SoraCredentialHolder;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
 use crate::utils::cookies::sora_webview_cookies::get_all_sora_cookies_as_string;
 use crate::utils::sora::initialize_sora_jwt_bearer_token::initialize_sora_jwt_bearer_token;
+use crate::windows::sora_login_window::open_sora_login_window::LOGIN_WINDOW_NAME;
 use anyhow::anyhow;
 use chrono::{DateTime, NaiveDateTime, TimeDelta};
 use errors::AnyhowResult;
@@ -17,21 +18,6 @@ use std::fs::{read_to_string, OpenOptions};
 use std::io::Write;
 use std::ops::Sub;
 use tauri::{AppHandle, Manager, Webview};
-
-pub const LOGIN_WINDOW_NAME: &str = "login_window";
-
-//pub const SORA_LOGIN_URL_STR: &str = "https://sora.com/auth/login?callback_path=/";
-pub const SORA_LOGIN_URL_STR: &str = "https://chatgpt.com/auth/login?next=%2Fsora%2F";
-
-pub static SORA_LOGIN_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse(SORA_LOGIN_URL_STR).expect("URL should parse")
-});
-
-pub const SORA_ROOT_URL_STR: &str = "https://sora.com/";
-
-pub static SORA_ROOT_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse(SORA_ROOT_URL_STR).expect("URL should parse")
-});
 
 pub async fn sora_login_thread(
   app: AppHandle,
@@ -68,48 +54,9 @@ async fn check_login_window(
   app_data_root: &AppDataRoot,
   sora_credential_manager: &SoraCredentialManager,
 ) -> AnyhowResult<()> {
-  clear_browsing_data_on_test_domain(webview)?;
+  //clear_browsing_data_on_test_domain(webview)?;
   //keep_on_task(webview)?;
   extract_cookies_to_file(webview, app_data_root, sora_credential_manager).await?;
-  //initialize_sora_jwt_bearer_token(app_data_root).await?; // TODO: This only runs once. We need better management.
-  Ok(())
-}
-
-fn keep_on_task(webview: &Webview) -> AnyhowResult<()> {
-  let url = webview.url()?;
-  let hostname= url.host()
-      .ok_or(anyhow!("no host in url"))?
-      .to_string();
-  match hostname.as_str() {
-    "auth.openai.com" => {},
-    "openai.com" => {},
-    "sora.com" => {},
-    // Third party SSO
-    "accounts.google.com" => {},
-    "accounts.youtube.com" => {},
-    "login.live.com" => {},
-    "appleid.apple.com" => {},
-    _ => {
-      info!("Non login hostname: {}", hostname);
-      webview.navigate(SORA_LOGIN_URL.clone())?;
-    }
-  }
-  Ok(())
-}
-
-/// This is just so we have a way to clear browsing data.
-fn clear_browsing_data_on_test_domain(webview: &Webview) -> AnyhowResult<()> {
-  let url = webview.url()?;
-  let hostname= url.host()
-      .ok_or(anyhow!("no host in url"))?
-      .to_string();
-  match hostname.as_str() {
-    "storyteller.ai" => {
-      info!("Clearing all browsing data...");
-      webview.clear_all_browsing_data()?;
-    }
-    _ => {}
-  }
   Ok(())
 }
 

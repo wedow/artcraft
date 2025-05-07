@@ -1,13 +1,16 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
-use crate::threads::sora_login_thread::sora_login_thread::{sora_login_thread, LOGIN_WINDOW_NAME, SORA_LOGIN_URL};
 use crate::utils::clear_all_webview_cookies::clear_all_webview_cookies;
+use crate::windows::sora_login_window::sora_login_thread::sora_login_thread;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 use std::time::Duration;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+
+/// Name of the window
+pub const LOGIN_WINDOW_NAME: &str = "login_window";
 
 pub const START_URL_STR: &str = "https://google.com";
 
@@ -20,6 +23,18 @@ pub const SORA_HOMEPAGE_URL_STR: &str = "https://sora.com/";
 pub static SORA_HOMEPAGE_URL : Lazy<Url> = Lazy::new(|| {
   Url::parse(SORA_HOMEPAGE_URL_STR).expect("URL should parse")
 });
+
+pub const SORA_LOGIN_URL_STR: &str = "https://chatgpt.com/auth/login?next=%2Fsora%2F";
+
+pub static SORA_LOGIN_URL: Lazy<Url> = Lazy::new(|| {
+  Url::parse(SORA_LOGIN_URL_STR).expect("URL should parse")
+});
+
+//pub const SORA_ROOT_URL_STR: &str = "https://sora.com/";
+//
+//pub static SORA_ROOT_URL: Lazy<Url> = Lazy::new(|| {
+//  Url::parse(SORA_ROOT_URL_STR).expect("URL should parse")
+//});
 
 pub async fn open_sora_login_window(
   app: &AppHandle,
