@@ -1,1 +1,1 @@
-mod list_media;
+pub mod list_media;

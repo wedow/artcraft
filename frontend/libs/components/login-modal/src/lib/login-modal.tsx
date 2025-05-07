@@ -57,7 +57,7 @@ export function LoginModal({
       try {
         if (IsDesktopApp()) {
           await invoke("open_sora_login_command");
-          
+
           // Add 3 second delay before setting session to true
           await new Promise((resolve) => setTimeout(resolve, 3000));
           setHasSession(true);

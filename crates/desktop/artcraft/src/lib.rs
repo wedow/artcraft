@@ -11,6 +11,7 @@ use crate::commands::app_preferences::get_app_preferences_command::get_app_prefe
 use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::flip_image::flip_image;
 use crate::commands::platform_info_command::platform_info_command;
+use crate::commands::sora::check_sora_session_command::check_sora_session_command;
 use crate::commands::sora::open_sora_login_command::open_sora_login_command;
 use crate::commands::sora::sora_image_generation_command::sora_image_generation_command;
 use crate::commands::sora::sora_image_remix_command::sora_image_remix_command;
@@ -108,7 +109,6 @@ pub fn run() {
         }
       }
 
-      //tauri::async_runtime::spawn(sora_session_login_thread(app_2, app_data_root_2, sora_creds_manager_2));
       tauri::async_runtime::spawn(main_window_thread(app_3, app_data_root_3, storyteller_creds_manager_2));
       tauri::async_runtime::spawn(sora_task_polling_thread(app_4, app_data_root_4, sora_creds_manager_3, storyteller_creds_manager_3, sora_task_queue_2));
       tauri::async_runtime::spawn(discord_presence_thread());
@@ -120,13 +120,14 @@ pub fn run() {
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .invoke_handler(tauri::generate_handler![
+      check_sora_session_command,
       flip_image,
       get_app_preferences_command,
-      update_app_preferences_command,
       open_sora_login_command,
       platform_info_command,
       sora_image_generation_command,
       sora_image_remix_command,
+      update_app_preferences_command,
     ])
     .run(tauri::generate_context!("tauri.conf.json"))
     .expect("error while running tauri application");
