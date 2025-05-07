@@ -8,6 +8,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
+import { CheckSoraSession, SoraSessionState } from "@storyteller/tauri-api";
 import { invoke } from "@tauri-apps/api/core";
 
 interface LoginModalProps {
@@ -29,15 +30,11 @@ export function LoginModal({
   const [isOpen, setIsOpen] = useState(false);
   const totalSteps = 3;
 
-  const checkSession = async () => {
-    // Return the current session state
-    return hasSession;
-  };
-
   // Check session on component mount
   useEffect(() => {
     const initSession = async () => {
-      const sessionExists = await checkSession();
+      const result = await CheckSoraSession();
+      const sessionExists = result.state === SoraSessionState.Valid;
       if (!sessionExists) {
         setIsOpen(true);
         setStep(1);
@@ -61,7 +58,8 @@ export function LoginModal({
           // Add 3 second delay before setting session to true
           await new Promise((resolve) => setTimeout(resolve, 3000));
           setHasSession(true);
-          const sessionExists = await checkSession();
+          const result = await CheckSoraSession();
+          const sessionExists = result.state === SoraSessionState.Valid;
           if (sessionExists) {
             setStep(step + 1);
           }
@@ -169,9 +167,9 @@ export function LoginModal({
               alt="OpenAI Logo"
               className="w-72 h-72 mx-auto grow"
             />
-            <div>
+            {/*<div>
               <Button onClick={() => handleClose()}>Cancel (temporary)</Button>
-            </div>
+            </div>*/}
           </div>
         );
       case 3:
