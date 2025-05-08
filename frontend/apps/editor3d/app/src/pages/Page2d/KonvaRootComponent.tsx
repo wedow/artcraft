@@ -19,13 +19,13 @@ import { useLayoutContext } from "./contextSignals/layout";
 // common hooks
 import { useRenderCounter } from "./useRenderCounter";
 import { useNavigate } from "react-router-dom";
-
+import "./global.css";
 // TODO REFACTOR THIS INTO THE COMPONENT LIBRARY its used in 3d and 2d
 
 // These imports are required for the 2D prompt box component
 // Job context is currently missing
 // import { PromptBox2D } from "@storyteller/ui-promptbox";
-// import { UndoRedo } from "./components/reusable/UndoRedo/UndoRedo";
+import { UndoRedo } from "./components/reusable/UndoRedo/UndoRedo";
 // import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";
 // import { getCanvasRenderBitmap } from "./signals/canvasRenderBitmap";
 // import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
