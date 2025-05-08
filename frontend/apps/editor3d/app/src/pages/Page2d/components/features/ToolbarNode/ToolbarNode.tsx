@@ -4,12 +4,12 @@ import { faPalette } from "@fortawesome/pro-solid-svg-icons";
 import {
   ToolbarButton,
   ToolbarButtonProps,
-} from "~/components/features/ToolbarButton";
-import { paperWrapperStyles } from "~/components/styles";
+} from "../../../components/features/ToolbarButton";
+import { paperWrapperStyles } from "../../../components/styles";
 import { ToolbarNodeButtonNames } from "./enums";
 import { ToolbarNodeButtonData } from "./data";
-import { ColorPicker } from "~/components/ui/TextEditor/ColorPicker";
-import { DEFAULT_PAINT_COLOR } from "~/signals/uiEvents/toolbarMain/paintMode";
+import { ColorPicker } from "../../../components/ui/TextEditor/ColorPicker";
+import { DEFAULT_PAINT_COLOR } from "../../../signals/uiEvents/toolbarMain/paintMode";
 
 export interface ToolbarNodeProps {
   disabled?: boolean;

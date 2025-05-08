@@ -5,10 +5,10 @@ import {
   DialogAddImage,
   DialogEditText,
   DialogError,
-} from "~/components/features";
+} from "./components/features";
 
 import { AppUiSignalType } from "./contextSignals/appUi";
-import { dialogError } from "~/signals/uiAccess/dialogError";
+import { dialogError } from "./signals/uiAccess/dialogError";
 
 
 export const SignaledDialogs = ({

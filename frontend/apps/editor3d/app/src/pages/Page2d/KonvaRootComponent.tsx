@@ -10,15 +10,15 @@ import { SignaledToolbarMain } from "./SignaledToolbarMain";
 // import { PromptBox } from "~/components/PromptBox";
 // The KonvaApp is the root of the Konva stage
 // and only entry point for anything in Konva JS
-import { EngineType } from "~/KonvaApp";
-import { KonvaApp } from "~/KonvaApp";
+import { EngineType } from "./KonvaApp";
+import { KonvaApp } from "./KonvaApp";
 
 // all the signal-contexts are wrapped in hooks
-import { useAppUiContext } from "./contextSignals/appUi"; not needed for 2d.
+import { useAppUiContext } from "./contextSignals/appUi"; 
 import { useLayoutContext } from "./contextSignals/layout";
 
 // common hooks
-import { useRenderCounter } from "~/hooks/useRenderCounter";
+import { useRenderCounter } from "./useRenderCounter";
 import { useNavigate } from "react-router-dom";
 
 // TODO REFACTOR THIS INTO THE COMPONENT LIBRARY its used in 3d and 2d
@@ -35,7 +35,7 @@ export const KonvaRootComponent = ({
   // Let's make sure we only log once
   useRenderCounter("KonvaRootComponent");
   const navigate = useNavigate();
-  // const appUiContext = useAppUiContext();
+  const appUiContext = useAppUiContext();
   const layoutContext = useLayoutContext();
   
   // Add state to track engine initialization

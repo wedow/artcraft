@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals-react";
 import { ContextualLoadingBarProps } from "./type";
-import { LoadingBarStatus } from "~/components/ui/LoadingBar";
+import { LoadingBarStatus } from "../../components/ui/LoadingBar";
 
 const loadingBarSignal = signal<ContextualLoadingBarProps>({
   position: {

@@ -1,5 +1,5 @@
 import { signal } from "@preact/signals-react";
-import { LoadingBarStatus } from "~/components/ui";
+import { LoadingBarStatus } from "../../../components/ui/LoadingBar";
 import { LoadingBarInterface } from "../type";
 
 const loadingBarSignal = signal<LoadingBarInterface>({

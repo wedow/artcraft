@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals-react";
-import { ToolbarMainButtonNames } from "~/components/features/ToolbarMain/enum";
-import { isToolbarMode } from "~/signals/uiEvents/toolbarMain/toolbarMain";
+import { ToolbarMainButtonNames } from "../../../components/features/ToolbarMain/enum";
+import { isToolbarMode } from "../../../signals/uiEvents/toolbarMain/toolbarMain";
 
 interface ToolbarMainSignalInterface {
   disabled: boolean;

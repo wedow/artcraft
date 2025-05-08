@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals-react";
 import { ContextualUi } from "./type";
-import { ToolbarNodeButtonNames as ButtonNames } from "~/components/features/ToolbarNode/enums";
+import { ToolbarNodeButtonNames as ButtonNames } from "../../components/features/ToolbarNode/enums";
 import { DEFAULT_PAINT_COLOR } from "../uiEvents/toolbarMain/paintMode";
 
 type ButtonStates = {

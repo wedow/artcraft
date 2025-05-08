@@ -1,11 +1,11 @@
 import { effect, signal } from "@preact/signals-react";
-import { models } from "~/data/models";
+// import { models } from "~/data/models";
 
-// Define the signals for selected models and download states
-export const selectedModel = signal<string | null>(
-  models.length > 0 ? models[0].id : null,
-);
-export const selectedLora = signal<string | null>(null);
+// // Define the signals for selected models and download states
+// export const selectedModel = signal<string | null>(
+//   models.length > 0 ? models[0].id : null,
+// );
+// export const selectedLora = signal<string | null>(null);
 
 // Replace single download tracking with a map to track multiple downloads
 export interface DownloadInfo {
@@ -17,13 +17,13 @@ export interface DownloadInfo {
 export const downloadingItems = signal<Record<string, DownloadInfo>>({});
 
 // Dispatchers
-const setSelectedModel = (modelId: string | null) => {
-  selectedModel.value = modelId;
-};
+// const setSelectedModel = (modelId: string | null) => {
+//   selectedModel.value = modelId;
+// };
 
-const setSelectedLora = (loraId: string | null) => {
-  selectedLora.value = loraId;
-};
+// const setSelectedLora = (loraId: string | null) => {
+//   selectedLora.value = loraId;
+// };
 
 // Start downloading a model or lora
 const startDownload = (id: string, type: "model" | "lora") => {
@@ -62,17 +62,17 @@ const getDownloadProgress = (id: string): number => {
 };
 
 // Event listeners
-const onSelectedModelChanged = (callback: (modelId: string | null) => void) => {
-  effect(() => {
-    callback(selectedModel.value);
-  });
-};
+// const onSelectedModelChanged = (callback: (modelId: string | null) => void) => {
+//   effect(() => {
+//     callback(selectedModel.value);
+//   });
+// };
 
-const onSelectedLoraChanged = (callback: (loraId: string | null) => void) => {
-  effect(() => {
-    callback(selectedLora.value);
-  });
-};
+// const onSelectedLoraChanged = (callback: (loraId: string | null) => void) => {
+//   effect(() => {
+//     callback(selectedLora.value);
+//   });
+// };
 
 const onDownloadsChanged = (
   callback: (downloads: Record<string, DownloadInfo>) => void,
@@ -84,8 +84,8 @@ const onDownloadsChanged = (
 
 // EXPORTS
 export const dispatchers = {
-  setSelectedModel,
-  setSelectedLora,
+  // setSelectedModel,
+  // setSelectedLora,
   startDownload,
   updateDownloadProgress,
   finishDownload,
@@ -94,7 +94,7 @@ export const dispatchers = {
 };
 
 export const events = {
-  onSelectedModelChanged,
-  onSelectedLoraChanged,
+  // onSelectedModelChanged,
+  // onSelectedLoraChanged,
   onDownloadsChanged,
 };

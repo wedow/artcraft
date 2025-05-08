@@ -1,7 +1,7 @@
 import { MouseEventHandler } from "react";
 import { signal, effect, Signal } from "@preact/signals-react";
 
-import { ToolbarNodeButtonNames as ButtonNames } from "./components/features/ToolbarNode/enums";
+import { ToolbarNodeButtonNames as ButtonNames } from "../../components/features/ToolbarNode/enums";
 const lockEvent = signal<React.MouseEvent<HTMLButtonElement> | undefined>();
 let lockEffectCleanup: (() => void) | undefined;
 const lockEventHandler = (callback: MouseEventHandler<HTMLButtonElement>) => {

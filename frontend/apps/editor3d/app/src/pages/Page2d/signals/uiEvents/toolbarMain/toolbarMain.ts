@@ -1,8 +1,8 @@
 import { MouseEventHandler } from "react";
 import { signal, effect, Signal } from "@preact/signals-react";
 
-import { ToolbarMainButtonNames } from "~/components/features/ToolbarMain/enum";
-import { AppModes } from "~/KonvaApp/constants";
+import { ToolbarMainButtonNames } from "../../../components/features/ToolbarMain/enum";
+import { AppModes } from "../../../KonvaApp/constants";
 
 const events = Object.values(ToolbarMainButtonNames).reduce(
   (acc, buttonName) => {

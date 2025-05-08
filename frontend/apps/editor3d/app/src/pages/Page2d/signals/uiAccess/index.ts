@@ -14,7 +14,7 @@ import { loadingBar } from "./loadingBar";
 import { magicBox } from "./magicBox";
 import { toolbarMain } from "./toolbarMain";
 import { toolbarNode } from "./toolbarNode";
-import { toolbarVideoExtraction } from "./toolbarVideoExtraction";
+
 
 export const uiAccess = {
   buttonRetry,
@@ -25,5 +25,4 @@ export const uiAccess = {
   magicBox,
   toolbarMain,
   toolbarNode,
-  toolbarVideoExtraction,
 };

@@ -1,0 +1,18 @@
+   const dataURL = this.videoLayer.toDataURL({
+          x: this.captureCanvas.x(),
+          y: this.captureCanvas.y(),
+          width: this.captureCanvas.width(),
+          height: this.captureCanvas.height(),
+        });
+        
+
+        // Create an image element to display the captured area
+        const img = new Image();
+        img.src = dataURL;
+        document.body.appendChild(img); // Append the image to the body or any other container
+
+        // Optionally, you can download the captured image
+        const link = document.createElement("a");
+        link.href = dataURL;
+        link.download = "snapshot.png";
+        link.click();
