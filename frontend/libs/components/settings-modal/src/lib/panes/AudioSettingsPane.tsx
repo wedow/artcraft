@@ -31,7 +31,6 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
   useEffect(() => {
     const fetchData = async () => {
       const prefs = await GetAppPreferences();
-      console.log("prefs", prefs);
       setPreferences(prefs.preferences);
     };
     fetchData();
@@ -45,7 +44,6 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
 
   const reloadPreferences = async () => {
     const prefs = await GetAppPreferences();
-    console.log("prefs", prefs);
     setPreferences(prefs.preferences);
   };
 
