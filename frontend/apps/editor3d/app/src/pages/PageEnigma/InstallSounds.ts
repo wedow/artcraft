@@ -12,7 +12,7 @@ export const InstallSounds = () => {
 
   // Good for simple immediate failure
   r.setSoundOnce("error_chirp", new SoundEffect("resources/sound/goldensun_135.wav", { defaultVolume: 0.2 }));
-  r.setSoundOnce("spikethrow", new SoundEffect("resources/sound/smrpg_enemy_spikethrow.wav", { defaultVolume: 0.1 })); // DEFAULT
+  r.setSoundOnce("spike_throw", new SoundEffect("resources/sound/smrpg_enemy_spikethrow.wav", { defaultVolume: 0.1 })); // DEFAULT
 
   // Good for simple async success
   r.setSoundOnce("special_flower", new SoundEffect("resources/sound/smrpg_specialflower.wav", { defaultVolume: 0.2 })); // DEFAULT

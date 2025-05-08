@@ -9,6 +9,14 @@ pub struct AppPreferences {
 
   /// Play sounds on events.
   pub play_sounds: bool,
+
+  /// Key pointing to file; defined in the frontend code.
+  /// Defined for enqueue since image enqueue can be async
+  pub enqueue_success_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
+  /// Defined for enqueue since image enqueue can be async
+  pub enqueue_failure_sound: Option<String>,
   
   /// Key pointing to file; defined in the frontend code.
   pub generation_success_sound: Option<String>,
@@ -19,14 +27,6 @@ pub struct AppPreferences {
   /// Key pointing to file; defined in the frontend code.
   #[deprecated]
   pub generation_enqueue_sound: Option<String>,
-  
-  /// Key pointing to file; defined in the frontend code.
-  /// Defined for enqueue since image enqueue can be async
-  pub enqueue_success_sound: Option<String>,
-
-  /// Key pointing to file; defined in the frontend code.
-  /// Defined for enqueue since image enqueue can be async
-  pub enqueue_failure_sound: Option<String>,
 }
 
 impl Default for AppPreferences {
@@ -35,11 +35,11 @@ impl Default for AppPreferences {
       preferred_download_directory: PreferredDownloadDirectory::System(SystemDownloadDirectory::Downloads),
       play_sounds: true,
       // NB: These are defined in the frontend.
-      generation_success_sound: Some("flower".to_string()),
+      enqueue_success_sound: Some("done".to_string()),
+      enqueue_failure_sound: Some("spike_throw".to_string()),
+      generation_success_sound: Some("special_flower".to_string()),
       generation_failure_sound: Some("crumble".to_string()),
       generation_enqueue_sound: Some("done".to_string()),
-      enqueue_success_sound: Some("next".to_string()),
-      enqueue_failure_sound: Some("crumble".to_string()),
     }
   }
 }
