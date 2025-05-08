@@ -17,7 +17,16 @@ pub struct AppPreferences {
   pub generation_failure_sound: Option<String>,
   
   /// Key pointing to file; defined in the frontend code.
+  #[deprecated]
   pub generation_enqueue_sound: Option<String>,
+  
+  /// Key pointing to file; defined in the frontend code.
+  /// Defined for enqueue since image enqueue can be async
+  pub enqueue_success_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
+  /// Defined for enqueue since image enqueue can be async
+  pub enqueue_failure_sound: Option<String>,
 }
 
 impl Default for AppPreferences {
@@ -29,6 +38,8 @@ impl Default for AppPreferences {
       generation_success_sound: Some("flower".to_string()),
       generation_failure_sound: Some("crumble".to_string()),
       generation_enqueue_sound: Some("done".to_string()),
+      enqueue_success_sound: Some("next".to_string()),
+      enqueue_failure_sound: Some("crumble".to_string()),
     }
   }
 }
