@@ -46,6 +46,8 @@ import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
 import { PromptsApi } from "@storyteller/api";
 import { SoundRegistry } from "@storyteller/soundboard";
+import { GetAppPreferences, SoraImageRemix } from "@storyteller/tauri-api";
+import { CommandSuccessStatus } from "@storyteller/tauri-api";
 
 import {
   cameras,
@@ -522,19 +524,54 @@ export const PromptBox = () => {
           //sceneMediaToken: "",
         });
 
-        const generateResponse = await invoke("sora_image_remix_command", {
-          request: {
-            snapshot_media_token: snapshotResult.data!,
-            disable_system_prompt: !useSystemPrompt,
-            prompt: prompt,
-            maybe_additional_images: referenceImages.map(
-              (image) => image.mediaToken,
-            ),
-            maybe_number_of_samples: 1,
-          },
+        console.log("snapshotResult", snapshotResult)
+
+        const generateResponse = await SoraImageRemix({
+          snapshot_media_token: snapshotResult.data!,
+          disable_system_prompt: !useSystemPrompt,
+          prompt: prompt,
+          maybe_additional_images: referenceImages.map(
+            (image) => image.mediaToken,
+          ),
+          maybe_number_of_samples: 1,
         });
 
-        console.log("response", generateResponse);
+        console.log("generateResponse", generateResponse)
+
+        if (generateResponse.status === CommandSuccessStatus.Success) {
+          const prefs = await GetAppPreferences();
+          const soundName = prefs.preferences?.enqueue_success_sound;
+          if (soundName !== undefined) {
+            const registry = SoundRegistry.getInstance();
+            registry.playSound(soundName);
+          }
+          toast.success("Image added to queue");
+          setisEnqueueing(false);
+          return;
+
+        } else {
+          const prefs = await GetAppPreferences();
+          const soundName = prefs.preferences?.enqueue_failure_sound;
+          if (soundName !== undefined) {
+            const registry = SoundRegistry.getInstance();
+            registry.playSound(soundName);
+          }
+          toast.error("Failed to enqueue image");
+          setisEnqueueing(false);
+          return;
+        }
+
+        // const generateResponse = await invoke("sora_image_remix_command", {
+        //   request: {
+        //     snapshot_media_token: snapshotResult.data!,
+        //     disable_system_prompt: !useSystemPrompt,
+        //     prompt: prompt,
+        //     maybe_additional_images: referenceImages.map(
+        //       (image) => image.mediaToken,
+        //     ),
+        //     maybe_number_of_samples: 1,
+        //   },
+        // });
 
         //if (generateResponse.errorMessage) {
         //  handleError(response.errorMessage);

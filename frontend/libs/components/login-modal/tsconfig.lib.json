@@ -44,6 +44,9 @@
   ],
   "references": [
     {
+      "path": "../../api/tsconfig.lib.json"
+    },
+    {
       "path": "../../tauri-api/tsconfig.lib.json"
     },
     {
@@ -51,6 +54,9 @@
     },
     {
       "path": "../button/tsconfig.lib.json"
+    },
+    {
+      "path": "../input/tsconfig.lib.json"
     }
   ]
 }

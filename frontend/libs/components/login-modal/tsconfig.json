@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../api"
+    },
+    {
       "path": "../../tauri-api"
     },
     {
@@ -10,6 +13,9 @@
     },
     {
       "path": "../button"
+    },
+    {
+      "path": "../input"
     },
     {
       "path": "./tsconfig.lib.json"

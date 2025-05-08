@@ -23,16 +23,26 @@ export interface SoraImageRemixResult extends CommandResult {
   // TODO: Status fields (they're not on the backend yet)
 }
 
+// Returns the Success and Error variants directly.
+// Throws on Network/Tauri errors.
 export const SoraImageRemix = async (request: SoraImageRemixRequest) : Promise<SoraImageRemixResult> => {
-  const result = await invoke("sora_image_remix_command", {
-    request: {
-      snapshot_media_token: request.snapshot_media_token,
-      disable_system_prompt: request.disable_system_prompt,
-      prompt: request.prompt,
-      maybe_additional_images: request.maybe_additional_images,
-      maybe_number_of_samples: request.maybe_number_of_samples,
-    },
-  });
-
-  return (result as SoraImageRemixResult);
+  try {
+    return await invoke("sora_image_remix_command", {
+        request: {
+        snapshot_media_token: request.snapshot_media_token,
+        disable_system_prompt: request.disable_system_prompt,
+        prompt: request.prompt,
+        maybe_additional_images: request.maybe_additional_images,
+        maybe_number_of_samples: request.maybe_number_of_samples,
+        },
+    }) as SoraImageRemixResult;
+  } catch (error) {
+    let maybeTypedError = error as CommandResult;
+    if ("status" in maybeTypedError) {
+      return maybeTypedError
+    } else {
+      // Something else with Tauri, network, etc.
+      throw error;
+    }
+  }
 }
