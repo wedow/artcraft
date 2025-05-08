@@ -54,13 +54,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const renderContent = () => {
     switch (selectedSection) {
       case "audio":
-        return (
-          <AudioSettingsPane />
-        );
+        return <AudioSettingsPane />;
       case "misc":
-        return (
-          <MiscSettingsPane />
-        );
+        return <MiscSettingsPane />;
       case "accounts":
         return (
           <div className="space-y-4">
@@ -170,7 +166,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       case "image":
         return (
           <div>
-            <button className="text-blue-600">Various Image Settings (TODO)...</button>
+            <button className="text-blue-600">
+              Various Image Settings (TODO)...
+            </button>
           </div>
         );
     }
@@ -208,7 +206,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               ))}
             </div>
           </div>
-          <div className="col-span-8 flex h-full flex-col overflow-auto">
+          <div className="col-span-8 flex h-full flex-col">
             <div className="w-full border-b border-white/10 py-2.5 ps-0">
               <h2 className="text-[18px] font-semibold">
                 {sections.find((s) => s.id === selectedSection)?.label}

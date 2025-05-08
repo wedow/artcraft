@@ -68,6 +68,9 @@
     },
     {
       "path": "./libs/components/login-modal"
+    },
+    {
+      "path": "./libs/components/switch"
     }
   ]
 }
