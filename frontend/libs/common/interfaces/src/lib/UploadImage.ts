@@ -1,4 +1,4 @@
-import { UploaderState } from "./UploadedState";
+import { UploaderState } from "./UploaderState";
 
 export interface UploadImageArgs {
   title: string;
