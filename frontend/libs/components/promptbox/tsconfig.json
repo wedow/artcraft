@@ -33,13 +33,7 @@
       "path": "../../api"
     },
     {
-      "path": "../../common/types"
-    },
-    {
-      "path": "../../common/interfaces"
-    },
-    {
-      "path": "../../common/enums"
+      "path": "../../common"
     },
     {
       "path": "./tsconfig.lib.json"

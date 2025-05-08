@@ -70,12 +70,6 @@
       "path": "./libs/components/popover"
     },
     {
-      "path": "./libs/common/enums"
-    },
-    {
-      "path": "./libs/common/interfaces"
-    },
-    {
       "path": "./libs/components/camera-settings-modal"
     },
     {
@@ -85,7 +79,7 @@
       "path": "./libs/components/slider-v2"
     },
     {
-      "path": "./libs/common/types"
+      "path": "./libs/common"
     }
   ]
 }

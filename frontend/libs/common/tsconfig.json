@@ -3,17 +3,11 @@
   "include": [],
   "references": [
     {
-      "path": "../types"
-    },
-    {
-      "path": "../enums"
-    },
-    {
       "path": "./tsconfig.lib.json"
     },
     {
       "path": "./tsconfig.spec.json"
     }
   ],
-  "extends": "../../../tsconfig.base.json"
+  "extends": "../../tsconfig.base.json"
 }

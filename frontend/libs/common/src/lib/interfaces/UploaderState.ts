@@ -1,4 +1,4 @@
-import { UploaderStates } from "@storyteller/enums";
+import { UploaderStates } from "../enums";
 
 export interface UploaderState {
   status: UploaderStates;

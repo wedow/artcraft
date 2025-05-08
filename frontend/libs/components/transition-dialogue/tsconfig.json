@@ -3,7 +3,7 @@
   "include": [],
   "references": [
     {
-      "path": "../../common/enums"
+      "path": "../../common"
     },
     {
       "path": "../tooltip"

@@ -7,7 +7,7 @@ import {
   faDownLeftAndUpRightToCenter,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Tooltip } from "@storyteller/ui-tooltip";
-import { DomLevels } from "@storyteller/enums";
+import { DomLevels } from "@storyteller/common";
 
 const DialogBackdrop = ({
   className,

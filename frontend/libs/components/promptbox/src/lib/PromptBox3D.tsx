@@ -33,7 +33,10 @@ import {
   CameraAspectRatio,
   UploaderStates,
   DomLevels,
-} from "@storyteller/enums";
+  Camera,
+  FocalLengthDragging,
+  UploadImageArgs,
+} from "@storyteller/common";
 
 import { PromptsApi } from "@storyteller/api";
 import { SoundRegistry } from "@storyteller/soundboard";
@@ -46,11 +49,6 @@ interface ReferenceImage {
   mediaToken: string;
 }
 
-import {
-  Camera,
-  FocalLengthDragging,
-  UploadImageArgs,
-} from "@storyteller/interfaces";
 import { EngineApi } from "@storyteller/api";
 import { CameraSettingsModal } from "@storyteller/ui-camera-settings-modal";
 import { twMerge } from "tailwind-merge";

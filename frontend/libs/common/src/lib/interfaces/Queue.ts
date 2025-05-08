@@ -1,5 +1,5 @@
-import { ClipGroup, ClipType } from "@storyteller/enums";
-import { XYZ } from "@storyteller/types";
+import { ClipGroup, ClipType } from "../enums";
+import { XYZ } from "../types";
 
 export interface QueueClip {
   version: number;

@@ -1,4 +1,4 @@
-import { AssetType } from "@storyteller/enums";
+import { AssetType } from "../enums";
 
 export interface MediaItem {
   version: number;

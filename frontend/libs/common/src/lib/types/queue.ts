@@ -1,7 +1,6 @@
-import { QueueNames, toTimelineActions, CameraAspectRatio, fromEngineActions, toEngineActions } from "@storyteller/enums";
-
-import { IGenerationOptions, UpdateTime, QueueClip, QueueKeyframe, MediaItem } from "@storyteller/interfaces";
-import { ToastDataType } from "@storyteller/types";
+import { CameraAspectRatio, fromEngineActions, QueueNames, toEngineActions, toTimelineActions } from "../enums";
+import { IGenerationOptions, MediaItem, QueueClip, QueueKeyframe, UpdateTime } from "../interfaces";
+import { ToastDataType } from "./toast";
 
 export type UnionedActionTypes =
   | fromEngineActions

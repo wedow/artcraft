@@ -74,13 +74,7 @@
       "path": "../../api/tsconfig.lib.json"
     },
     {
-      "path": "../../common/types/tsconfig.lib.json"
-    },
-    {
-      "path": "../../common/interfaces/tsconfig.lib.json"
-    },
-    {
-      "path": "../../common/enums/tsconfig.lib.json"
+      "path": "../../common/tsconfig.lib.json"
     }
   ]
 }
