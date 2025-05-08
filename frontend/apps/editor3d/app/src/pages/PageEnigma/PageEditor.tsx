@@ -25,6 +25,13 @@ import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 import { appTabId, setAppTabId } from "~/signals/appTab";
 import { LoginModal } from "@storyteller/ui-login-modal";
+import {
+  disableHotkeyInput,
+  enableHotkeyInput,
+  DomLevels,
+} from "./signals/hotkeys";
+import { AUTH_STATUS } from "../../enums/authentication";
+import { authentication } from "../../signals/authentication/authentication";
 
 export const PageEditor = () => {
   useSignals();
@@ -156,26 +163,22 @@ export const PageEditor = () => {
         <Timeline />
       </div> */}
 
-      {/* <DemoModal
-        title="Welcome to ArtCraft 3D"
-        subTitle="Your 3D editor for digital art and design"
-        description="Set up your scene by adding objects and start bringing your ideas to life!"
-        videoSrc="/resources/videos/artcraft-3d-demo.mp4"
-        buttonText="Sign in to OpenAI to get started"
-        buttonOnClick={async () => {
-          if (IsDesktopApp()) {
-            await invoke("open_sora_login_command");
-          } else {
-            console.error("This is not the Desktop app.");
-          }
-        }}
-      /> */}
-
       <LoginModal
         onClose={() => {}}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
         openAiLogo="/resources/images/openai-logo.png"
+        onOpenChange={(isOpen: boolean) => {
+          if (isOpen) {
+            disableHotkeyInput(DomLevels.DIALOGUE);
+          } else {
+            enableHotkeyInput(DomLevels.DIALOGUE);
+          }
+        }}
+        onArtCraftAuthSuccess={(userInfo: any) => {
+          authentication.status.value = AUTH_STATUS.LOGGED_IN;
+          authentication.userInfo.value = userInfo;
+        }}
       />
     </div>
   );

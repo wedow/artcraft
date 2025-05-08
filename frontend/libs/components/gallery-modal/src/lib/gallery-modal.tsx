@@ -116,8 +116,10 @@ export const GalleryModal = React.memo(
           setUsername(session.data.user.username);
         }
       };
-      getUsername();
-    }, [usersApi]);
+      if (isOpen) {
+        getUsername();
+      }
+    }, [usersApi, isOpen]);
 
     useEffect(() => {
       const loadItems = async () => {

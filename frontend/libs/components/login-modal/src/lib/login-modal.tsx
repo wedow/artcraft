@@ -1,7 +1,7 @@
 import { Button } from "@storyteller/ui-button";
 import { Transition, TransitionChild } from "@headlessui/react";
 import { createPortal } from "react-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   faArrowRight,
   faRightToBracket,
@@ -14,12 +14,15 @@ import {
   useSoraLoginListener,
 } from "@storyteller/tauri-api";
 import { invoke } from "@tauri-apps/api/core";
-
+import { ArtCraftSignUp } from "./ArtCraftSignUp";
+import { UsersApi } from "@storyteller/api";
 interface LoginModalProps {
   onClose: () => void;
   videoSrc2D?: string;
   videoSrc3D?: string;
   openAiLogo?: string;
+  onOpenChange?: (isOpen: boolean) => void;
+  onArtCraftAuthSuccess?: (userInfo: any) => void;
 }
 
 export function LoginModal({
@@ -27,30 +30,139 @@ export function LoginModal({
   videoSrc2D,
   videoSrc3D,
   openAiLogo,
+  onOpenChange,
+  onArtCraftAuthSuccess,
 }: LoginModalProps) {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedInArtCraft, setIsLoggedInArtCraft] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const totalSteps = isLoggedInArtCraft ? 3 : 4;
+  const artCraftFormRef = useRef<HTMLFormElement>(null);
 
-  const totalSteps = 3;
+  const initSession = async () => {
+    const result = await CheckSoraSession();
+    const sessionExists = result.state === SoraSessionState.Valid;
+    return sessionExists;
+  };
+
+  const checkArtCraftLogin = async () => {
+    const usersApi = new UsersApi();
+    const session = await usersApi.GetSession();
+    const loggedIn = session.data?.loggedIn;
+    return loggedIn;
+  };
 
   useSoraLoginListener((payload) => {
     console.log("Login success!", payload);
-    setStep(3);
+    if (isLoggedInArtCraft) {
+      setStep(4);
+    } else {
+      setStep(3);
+    }
   });
 
   // Check session on component mount
   useEffect(() => {
-    const initSession = async () => {
-      const result = await CheckSoraSession();
-      const sessionExists = result.state === SoraSessionState.Valid;
-      if (!sessionExists) {
-        setIsOpen(true);
-        setStep(1);
+    // Run both checks in parallel
+    Promise.all([initSession(), checkArtCraftLogin()]).then(
+      ([soraSessionExists, loggedIn]) => {
+        if (soraSessionExists && !loggedIn) {
+          // Sora session exists, but not logged in to ArtCraft
+          setIsOpen(true);
+          setStep(3);
+        } else if (!soraSessionExists) {
+          // No Sora session, start at step 1
+          setIsOpen(true);
+          setStep(1);
+        } else if (loggedIn) {
+          // Already logged in, no need to show modal
+          setIsLoggedInArtCraft(true);
+          // setIsOpen(false);
+        }
       }
-    };
-    initSession();
+    );
   }, []);
+
+  useEffect(() => {
+    if (onOpenChange) onOpenChange(isOpen);
+  }, [isOpen, onOpenChange]);
+
+  const handleArtCraftAuth = async (
+    username: string,
+    email: string,
+    password: string,
+    passwordConfirmation: string
+  ) => {
+    setIsLoading(true);
+    const usersApi = new UsersApi();
+    try {
+      let signupResponse, loginResponse;
+      if (isSignUp) {
+        // Sign up
+        signupResponse = await usersApi.Signup({
+          username,
+          email,
+          password,
+          passwordConfirmation,
+        });
+        if (!signupResponse.success) {
+          // TODO: Add error handling UI
+          console.error(signupResponse.errorMessage || "Signup failed");
+          setErrorMessage(
+            signupResponse.errorMessage || "Signup failed, please try again."
+          );
+          return;
+        }
+        // Automatically login after successful signup
+        loginResponse = await usersApi.Login({
+          usernameOrEmail: username || email,
+          password,
+        });
+        if (!loginResponse.success) {
+          // TODO: Add error handling UI
+          console.error(
+            loginResponse.errorMessage || "Login after signup failed"
+          );
+          setErrorMessage(
+            loginResponse.errorMessage ||
+              "Login after signup failed, please try again. "
+          );
+          return;
+        }
+      } else {
+        // Login
+        loginResponse = await usersApi.Login({
+          usernameOrEmail: username || email,
+          password,
+        });
+        if (!loginResponse.success) {
+          // TODO: Add error handling UI
+          console.error(loginResponse.errorMessage || "Login failed");
+          setErrorMessage(
+            loginResponse.errorMessage || "Login failed, please try again."
+          );
+          return;
+        }
+      }
+
+      setStep(4);
+
+      const session = await usersApi.GetSession();
+      const userInfo = session.data?.user;
+      if (onArtCraftAuthSuccess && userInfo) {
+        onArtCraftAuthSuccess(userInfo);
+      }
+    } catch (e) {
+      // handle error (show error message, etc.)
+      // TODO: Add error handling UI
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleClose = () => {
     setIsOpen(false);
@@ -63,8 +175,6 @@ export function LoginModal({
       try {
         if (IsDesktopApp()) {
           await invoke("open_sora_login_command");
-
-          // Add 3 second delay before setting session to true
           await new Promise((resolve) => setTimeout(resolve, 3000));
           const result = await CheckSoraSession();
           const sessionExists = result.state === SoraSessionState.Valid;
@@ -73,10 +183,8 @@ export function LoginModal({
           }
         } else {
           alert("Please open the desktop app to login");
-          // Add 3 second delay before setting session to true
           await new Promise((resolve) => setTimeout(resolve, 3000));
           const sessionExists = true;
-
           if (sessionExists) {
             setStep(step + 1);
           }
@@ -86,7 +194,12 @@ export function LoginModal({
       } finally {
         setIsLoading(false);
       }
-    } else if (step < totalSteps) {
+    } else if (step === 3) {
+      // Trigger the form submit in ArtCraftSignUp
+      if (artCraftFormRef.current) {
+        artCraftFormRef.current.requestSubmit();
+      }
+    } else {
       setStep(step + 1);
     }
   };
@@ -111,6 +224,10 @@ export function LoginModal({
 
   // Step content rendering
   const renderStepContent = () => {
+    if (step === 3 && isLoggedInArtCraft) {
+      setStep(4);
+      return null;
+    }
     switch (step) {
       case 1:
         return (
@@ -178,6 +295,16 @@ export function LoginModal({
         );
       case 3:
         return (
+          <ArtCraftSignUp
+            onSubmit={handleArtCraftAuth}
+            isSignUp={isSignUp}
+            onToggleMode={() => setIsSignUp((prev) => !prev)}
+            formRef={artCraftFormRef}
+            errorMessage={errorMessage}
+          />
+        );
+      case 4:
+        return (
           <div className="flex flex-col items-center justify-center h-full">
             <h2 className="text-3xl font-bold mb-2 text-center">
               Thank you for signing in!
@@ -237,7 +364,7 @@ export function LoginModal({
                 {renderProgress()}
                 {renderStepContent()}
                 <div className="flex items-end justify-center gap-2.5 mt-10 grow">
-                  {step > 1 && step !== 3 ? (
+                  {step === 2 ? (
                     <Button
                       variant="secondary"
                       onClick={handleBack}
@@ -255,7 +382,13 @@ export function LoginModal({
                         loading={isLoading}
                         disabled={isLoading}
                       >
-                        {step === 2 ? "Login with OpenAI" : "Continue"}
+                        {step === 2
+                          ? "Login with OpenAI"
+                          : step === 3
+                          ? isSignUp
+                            ? "Sign up"
+                            : "Login"
+                          : "Continue"}
                       </Button>
                     </>
                   ) : (

@@ -1,8 +1,6 @@
 import { useSignals } from "@preact/signals-react/runtime";
-
 import { AUTH_STATUS } from "~/enums";
 import { authentication } from "~/signals";
-
 import { ButtonLink } from "~/components";
 import ProfileDropdown from "./ProfileDropdown";
 
