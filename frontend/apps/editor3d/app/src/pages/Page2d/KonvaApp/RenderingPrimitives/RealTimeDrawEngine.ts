@@ -662,13 +662,7 @@ export class RealTimeDrawEngine {
   }
 
   public removeNodes(node: MediaNode) {
-    if (node instanceof VideoNode) {
-      const index = this.videoNodes.indexOf(node);
-      if (index > -1) {
-        node.kNode.off("dragend", this.handleNodeDragEnd);
-        this.videoNodes.splice(index, 1);
-      }
-    } else if (
+   if (
       node instanceof ImageNode ||
       node instanceof TextNode ||
       node instanceof ShapeNode ||

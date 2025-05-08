@@ -37,13 +37,10 @@ import { appMode, changeAppMode, appModeEvents } from "./appMode";
 
 export const uiEvents = {
   ...addMediaEvents,
-  onChromakeyRequest,
-  aiStylize: aiStylizeEvents,
   buttonRetry: buttonRetryEvent,
   buttonTest: buttonTestEvent,
   toolbarMain: toolbarMainEvents,
   toolbarNode: toolbarNodeEvents,
-  toolbarVideoExtraction: toolbarVideoExtractionEvents,
   promptEvents: promptEvents,
   loadingIndicator: loadingIndicatorEvents,
   modelSelection: modelSelectionEvents,
@@ -51,13 +48,10 @@ export const uiEvents = {
 };
 export const dispatchUiEvents = {
   ...addMediaDispatchers,
-  dispatchChromakeyRequest,
-
   buttonRetry: buttonRetryDispatcher,
   buttonTest: buttonTestDispatcher,
   toolbarMain: toolbarMainDispatchers,
   toolbarNode: toolbarNodeDispatchers,
-  toolbarVideoExtraction: toolbarVideoExtractionDispatchers,
   promptSettings: promptDispatchers,
   loadingIndicator: loadingIndicatorDispatchers,
   modelSelection: modelSelectionDispatchers,

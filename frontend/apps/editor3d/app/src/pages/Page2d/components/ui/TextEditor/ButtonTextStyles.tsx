@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { buttonGroupButton, buttonGroupGrouper } from "./styles";
-import { FontStyle, FontWeight, TextDecoration } from "./types";
+import { FontStyle, FontWeight, TextDecoration } from "../../../TextTypes";
 export const ButtonsTextStyles = ({
   fontStyle: currStyle,
   fontWeight: currWeight,

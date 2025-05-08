@@ -1,15 +1,4 @@
 #!/usr/bin/env bash
-
-set -euxo pipefail
-
-# Kill any process running on port 5741, which will block startup
-if lsof -i tcp:5173 &>/dev/null; then
-  lsof -i tcp:5173 -t | xargs kill -9
-  echo "Killed process running on port 5173"
-else
-  echo "No process running on port 5173"
-fi
-
 root_dir=$(pwd)
 frontend_path="${root_dir}/frontend"
 rust_crate_path="${root_dir}/crates/desktop/artcraft"

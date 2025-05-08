@@ -1,6 +1,6 @@
 import Konva from "konva";
-import { ToolbarNodeButtonNames } from "~/components/features/ToolbarNode";
-import { ContextualToolbarProps } from "~/signals/uiAccess/toolbarNode";
+import { ToolbarNodeButtonNames } from "../../components/features/ToolbarNode";
+import { ContextualToolbarProps } from "../../signals/uiAccess/toolbarNode";
 export function calculateContextualsPosition(kNode: Konva.Transformer) {
   const w = kNode.getSize().width * kNode.scaleX();
   const h = kNode.getSize().height * kNode.scaleY();

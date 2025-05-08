@@ -1,5 +1,6 @@
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
+// TODO: USE API STORTELLE
 import { MediaFilesApi, MediaUploadApi } from "~/Classes/ApiManager";
 import { NodesManager, SelectionManager } from "../NodesManagers";
 import {
@@ -9,17 +10,17 @@ import {
   TransformationData,
   VideoNodeData,
 } from "../types";
-import { uiAccess } from "~/signals";
+import { uiAccess } from "../../signals/uiAccess";
 import { NavigateFunction } from "react-router-dom";
 import { NodeType } from "../Nodes/constants";
-import { ImageNode, VideoNode, TextNode } from "../Nodes";
-import { RenderEngine } from "../RenderingPrimitives/RenderEngine";
-import { LoadingVideosProvider } from "./LoadingVideosProvider";
+import { ImageNode, TextNode } from "../Nodes";
+import { RealTimeDrawEngine as RenderEngine } from "../RenderingPrimitives/RealTimeDrawEngine";
+
 
 export class SceneManager {
   private navigateRef: NavigateFunction;
 
-  private loadingVideosProviderRef: LoadingVideosProvider;
+
   private mediaLayerRef: Konva.Layer;
   private nodesManagerRef: NodesManager;
   private selectionManagerRef: SelectionManager;
@@ -28,21 +29,21 @@ export class SceneManager {
 
   constructor({
     navigateRef,
-    loadingVideosProviderRef,
+  
     mediaLayerRef,
     nodesManagerRef,
     selectionManagerRef,
     renderEngineRef,
   }: {
     navigateRef: NavigateFunction;
-    loadingVideosProviderRef: LoadingVideosProvider;
+
     mediaLayerRef: Konva.Layer;
     nodesManagerRef: NodesManager;
     selectionManagerRef: SelectionManager;
     renderEngineRef: RenderEngine;
   }) {
     this.navigateRef = navigateRef;
-    this.loadingVideosProviderRef = loadingVideosProviderRef;
+
     this.mediaLayerRef = mediaLayerRef;
     this.nodesManagerRef = nodesManagerRef;
     this.selectionManagerRef = selectionManagerRef;

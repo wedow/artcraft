@@ -1,5 +1,5 @@
 import { effect, signal } from "@preact/signals-react";
-import { clamp, normalize } from "~/utilities";
+import { clamp, normalize } from "../../../utilities";
 
 export const DEFAULT_PAINT_COLOR: string = "#ff0000";
 export const paintColor = signal<string>(DEFAULT_PAINT_COLOR);

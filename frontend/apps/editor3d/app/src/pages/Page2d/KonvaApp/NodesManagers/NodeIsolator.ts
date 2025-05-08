@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { MediaNode, TransformationData } from "../types";
-import { uiAccess } from "~/signals";
+import { uiAccess } from "../../signals/uiAccess";
 
 export class NodeIsolator {
   private mediaLayerRef: Konva.Layer;

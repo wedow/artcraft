@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { Size } from "../types";
 import { Colors } from "../constants";
-import { uiAccess } from "~/signals";
+import { uiAccess } from "../../signals/uiAccess";
 
 export class MatteBox {
   private matteBoxPoly: Konva.Line;

@@ -318,13 +318,7 @@ export class SelectionManager {
           position: position
         });
       }
-      else if (node instanceof VideoNode) {
-        showOrUpdate({
-          locked: node.isLocked(),
-          buttonStates: getVideoNodeButtonStates({ locked: node.isLocked() }),
-          position: position
-        });
-      }
+     
 
       // show loading bar is the node is noding
       if (node instanceof NetworkedNode) {
@@ -357,13 +351,6 @@ export class SelectionManager {
       this.nodeTransformerRef.getKonvaNode(),
     );
 
-    if (node instanceof VideoNode) {
-      if (node.isSegmentationMode && !uiAccess.toolbarNode.isLockDisabled()) {
-        uiAccess.toolbarNode.disableLock();
-      } else {
-        uiAccess.toolbarNode.enableLock();
-      }
-    }
     if (node.isLocked() !== uiAccess.toolbarNode.isLocked()) {
       // console.log("setting lock");
       uiAccess.toolbarNode.setLocked(node.isLocked());

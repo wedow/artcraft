@@ -5,7 +5,7 @@ import {
   faAlignRight,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TextAlign } from "./types";
+import { TextAlign } from "../../../TextTypes";
 import { buttonGroupButton, buttonGroupGrouper } from "./styles";
 export const ButtonsAlignments = ({
   value,
