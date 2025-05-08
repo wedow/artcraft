@@ -41,5 +41,13 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../interfaces/tsconfig.lib.json"
+    },
+    {
+      "path": "../enums/tsconfig.lib.json"
+    }
   ]
 }

@@ -3,6 +3,12 @@
   "include": [],
   "references": [
     {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../enums"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

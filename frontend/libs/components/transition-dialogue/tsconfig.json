@@ -3,6 +3,12 @@
   "include": [],
   "references": [
     {
+      "path": "../../common/enums"
+    },
+    {
+      "path": "../tooltip"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

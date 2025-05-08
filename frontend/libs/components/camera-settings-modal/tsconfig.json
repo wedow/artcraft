@@ -3,6 +3,27 @@
   "include": [],
   "references": [
     {
+      "path": "../slider-v2"
+    },
+    {
+      "path": "../tooltip"
+    },
+    {
+      "path": "../label"
+    },
+    {
+      "path": "../input"
+    },
+    {
+      "path": "../button"
+    },
+    {
+      "path": "../popover"
+    },
+    {
+      "path": "../transition-dialogue"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

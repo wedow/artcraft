@@ -3,6 +3,12 @@
   "include": [],
   "references": [
     {
+      "path": "../types"
+    },
+    {
+      "path": "../enums"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {
