@@ -50,19 +50,22 @@
       "path": "../label/tsconfig.lib.json"
     },
     {
+      "path": "../switch/tsconfig.lib.json"
+    },
+    {
       "path": "../select/tsconfig.lib.json"
     },
     {
       "path": "../../tauri-api/tsconfig.lib.json"
     },
     {
+      "path": "../../soundboard/tsconfig.lib.json"
+    },
+    {
       "path": "../input/tsconfig.lib.json"
     },
     {
       "path": "../button/tsconfig.lib.json"
-    },
-    {
-      "path": "../../soundboard/tsconfig.lib.json"
     }
   ]
 }

@@ -8,14 +8,18 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
-import { CheckSoraSession, SoraSessionState } from "@storyteller/tauri-api";
+import {
+  CheckSoraSession,
+  SoraSessionState,
+  useSoraLoginListener,
+} from "@storyteller/tauri-api";
 import { invoke } from "@tauri-apps/api/core";
 
 interface LoginModalProps {
   onClose: () => void;
-  videoSrc2D: string;
-  videoSrc3D: string;
-  openAiLogo: string;
+  videoSrc2D?: string;
+  videoSrc3D?: string;
+  openAiLogo?: string;
 }
 
 export function LoginModal({
@@ -26,10 +30,14 @@ export function LoginModal({
 }: LoginModalProps) {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasSession, setHasSession] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoginClicked, setIsLoginClicked] = useState(false);
+
   const totalSteps = 3;
+
+  useSoraLoginListener((payload) => {
+    console.log("Login success!", payload);
+    setStep(3);
+  });
 
   // Check session on component mount
   useEffect(() => {
@@ -52,14 +60,12 @@ export function LoginModal({
   const handleNext = async () => {
     if (step === 2) {
       setIsLoading(true);
-      setIsLoginClicked(true);
       try {
         if (IsDesktopApp()) {
           await invoke("open_sora_login_command");
 
           // Add 3 second delay before setting session to true
           await new Promise((resolve) => setTimeout(resolve, 3000));
-          setHasSession(true);
           const result = await CheckSoraSession();
           const sessionExists = result.state === SoraSessionState.Valid;
           if (sessionExists) {
@@ -69,7 +75,6 @@ export function LoginModal({
           alert("Please open the desktop app to login");
           // Add 3 second delay before setting session to true
           await new Promise((resolve) => setTimeout(resolve, 3000));
-          setHasSession(true);
           const sessionExists = true;
 
           if (sessionExists) {
@@ -169,9 +174,6 @@ export function LoginModal({
               alt="OpenAI Logo"
               className="w-72 h-72 mx-auto grow"
             />
-            {/*<div>
-              <Button onClick={() => handleClose()}>Cancel (temporary)</Button>
-            </div>*/}
           </div>
         );
       case 3:
@@ -255,17 +257,6 @@ export function LoginModal({
                       >
                         {step === 2 ? "Login with OpenAI" : "Continue"}
                       </Button>
-                      {step > 1 && step !== 3 ? (
-                        <Button
-                          variant="secondary"
-                          onClick={() => {
-                            setStep(step + 1);
-                          }}
-                          disabled={!isLoginClicked}
-                        >
-                          Next
-                        </Button>
-                      ) : null}
                     </>
                   ) : (
                     <Button

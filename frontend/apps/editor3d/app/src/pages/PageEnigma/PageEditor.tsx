@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { LoadingDots, TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";

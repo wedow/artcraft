@@ -46,7 +46,8 @@ export const Input = React.forwardRef(
             id={id ? id : label ? label : undefined}
             className={twMerge(
               "h-10 w-full rounded-lg bg-[#242424] px-3 py-2.5 text-white placeholder-white/50 outline-none",
-              "border border-[#363636] transition-all duration-150 ease-in-out hover:border-brand-primary/60 focus:border-brand-primary focus:!outline-none",
+              "border border-[#363636] transition-all duration-150 ease-in-out hover:border-primary/60 focus:border-primary focus:!outline-none",
+              "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-[#363636]",
               icon && "pl-10",
               isError && "outline-red focus:outline-red",
               inputClassName

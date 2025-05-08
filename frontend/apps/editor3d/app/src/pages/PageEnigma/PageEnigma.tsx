@@ -8,7 +8,7 @@ import { ErrorDialog, LoadingDots } from "~/components";
 import { GenerateModals } from "~/pages/PageEnigma/comps/GenerateModals/GenerateModals";
 import { Toaster } from "@storyteller/ui-toaster";
 import { EditorLoadingBar } from "./comps/EditorLoadingBar";
-import { Wizard } from "~/pages/PageEnigma/Wizard/Wizard";
+// import { Wizard } from "~/pages/PageEnigma/Wizard/Wizard";
 import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect, useState } from "react";
 import * as gpu from "detect-gpu";
@@ -91,7 +91,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   });
 
   useEffect(() => {
-    console.log('installing event listeners')
+    console.log("installing event listeners");
     InstallSounds();
     InstallImageGenerationSuccess();
     InstallImageGenerationFailure();
@@ -117,7 +117,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
         />
         <GenerateModals />
         <ErrorDialog />
-        <Wizard />
+        {/* <Wizard /> */}
       </EngineProvider>
       <EditorLoadingBar />
       <Toaster offsetTop={70} offsetRight={12} />
