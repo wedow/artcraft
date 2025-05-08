@@ -1,0 +1,46 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../camera-settings-modal"
+    },
+    {
+      "path": "../toaster"
+    },
+    {
+      "path": "../../soundboard"
+    },
+    {
+      "path": "../gallery-modal"
+    },
+    {
+      "path": "../../tauri-utils"
+    },
+    {
+      "path": "../modal"
+    },
+    {
+      "path": "../button"
+    },
+    {
+      "path": "../tooltip"
+    },
+    {
+      "path": "../popover"
+    },
+    {
+      "path": "../../api"
+    },
+    {
+      "path": "../../common"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
+  "extends": "../../../tsconfig.base.json"
+}

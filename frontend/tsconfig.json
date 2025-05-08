@@ -62,6 +62,24 @@
     },
     {
       "path": "./libs/soundboard"
+    },
+    {
+      "path": "./libs/components/promptbox"
+    },
+    {
+      "path": "./libs/components/popover"
+    },
+    {
+      "path": "./libs/components/camera-settings-modal"
+    },
+    {
+      "path": "./libs/components/transition-dialogue"
+    },
+    {
+      "path": "./libs/components/slider-v2"
+    },
+    {
+      "path": "./libs/common"
     }
   ]
 }
