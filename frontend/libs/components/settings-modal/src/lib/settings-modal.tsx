@@ -1,5 +1,4 @@
 import { Modal } from "@storyteller/ui-modal";
-import { Button } from "@storyteller/ui-button";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,38 +9,21 @@ import {
   faVolumeHigh,
 } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
-import { Input } from "@storyteller/ui-input";
-import { Select, SelectValue } from "@storyteller/ui-select";
 import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
+import { AccountSettingsPane } from "./panes/AccountSettingsPane";
+import { VideoSettingsPane } from "./panes/VideoSettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface AccountInfo {
-  username: string;
-  subscription: string;
-  credits: number;
-}
-
 type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
-  const [accountInfo] = useState<AccountInfo>({
-    username: "Username [logout]",
-    subscription: "Pro-tier [change/upgrade]",
-    credits: 10233,
-  });
-
   const [selectedSection, setSelectedSection] =
     useState<SettingsSection>("misc");
-
-  const [palApiKey, setPalApiKey] = useState("");
-  const [klingApiKey, setKlingApiKey] = useState("");
-  const [defaultVideoModel, setDefaultVideoModel] = useState("veo");
-  const [humanVideoProvider, setHumanVideoProvider] = useState("artcraft");
 
   const sections = [
     { id: "audio" as const, label: "Audio", icon: faVolumeHigh },
@@ -58,117 +40,13 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       case "misc":
         return <MiscSettingsPane />;
       case "accounts":
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span>ArtCraft Account:</span>
-              <span className="text-white/80">{accountInfo.username}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>ArtCraft Subscription:</span>
-              <span className="text-white/80">{accountInfo.subscription}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Credits Remaining:</span>
-              <span className="text-white/80">{accountInfo.credits}</span>
-            </div>
-
-            <div className="rounded-md p-4 text-sm dark:bg-white/5">
-              <p className="text-white/60">
-                Note: You can optionally log into other accounts and use your
-                credits at those providers. Some features are only available via
-                3rd party accounts, such as OpenAI / Sora GPT 4.0 Images. For
-                other features, ArtCraft credits are consumed unless you log
-                into your third party account.
-              </p>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span>OpenAI / Sora Account:</span>
-              <Button variant="secondary" className="py-1">
-                Connect
-              </Button>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Google / Veo Account:</span>
-              <Button variant="secondary" className="py-1">
-                Connect
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="pal-api-key" className="mb-2 block">
-                  Pal API Key (optional)
-                </label>
-                <Input
-                  id="pal-api-key"
-                  type="password"
-                  value={palApiKey}
-                  onChange={(e) => setPalApiKey((e.target as any).value)}
-                  placeholder="Enter API Key"
-                />
-              </div>
-              <div>
-                <label htmlFor="kling-api-key" className="mb-2 block">
-                  Kling API Key (optional)
-                </label>
-                <Input
-                  id="kling-api-key"
-                  type="password"
-                  value={klingApiKey}
-                  onChange={(e) => setKlingApiKey((e.target as any).value)}
-                  placeholder="Enter API Key"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
+        return <AccountSettingsPane />;
       case "video":
-        return (
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="default-video-model" className="mb-2 block">
-                Default Video Model
-              </label>
-              <Select
-                id="default-video-model"
-                value={defaultVideoModel}
-                onChange={(val: SelectValue) =>
-                  setDefaultVideoModel(val as string)
-                }
-                options={[
-                  { value: "veo", label: "Veo" },
-                  { value: "kling", label: "Kling" },
-                ]}
-              />
-            </div>
-            <div>
-              <label htmlFor="human-video-provider" className="mb-2 block">
-                Human Video Provider
-              </label>
-              <Select
-                id="human-video-provider"
-                value={humanVideoProvider}
-                onChange={(val: SelectValue) =>
-                  setHumanVideoProvider(val as string)
-                }
-                options={[
-                  { value: "artcraft", label: "ArtCraft" },
-                  { value: "pal", label: "Pal" },
-                ]}
-              />
-            </div>
-          </div>
-        );
-
+        return <VideoSettingsPane />;
       case "image":
         return (
           <div>
-            <button className="text-blue-600">
-              Various Image Settings (TODO)...
-            </button>
+            <button className="text-blue-600">Various Image Settings...</button>
           </div>
         );
     }
