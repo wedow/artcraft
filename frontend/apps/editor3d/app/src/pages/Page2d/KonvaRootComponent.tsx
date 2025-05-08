@@ -7,14 +7,13 @@ import { ContextualToolbarNode } from "./ContextualToolbarNode";
 import { SignaledDialogs } from "./SignaledDialogs";
 import { SignaledToolbarMain } from "./SignaledToolbarMain";
 
-// import { PromptBox } from "~/components/PromptBox";
 // The KonvaApp is the root of the Konva stage
 // and only entry point for anything in Konva JS
 import { EngineType } from "./KonvaApp";
 import { KonvaApp } from "./KonvaApp";
 
 // all the signal-contexts are wrapped in hooks
-import { useAppUiContext } from "./contextSignals/appUi"; 
+import { useAppUiContext } from "./contextSignals/appUi";
 import { useLayoutContext } from "./contextSignals/layout";
 
 // common hooks
@@ -22,7 +21,15 @@ import { useRenderCounter } from "./useRenderCounter";
 import { useNavigate } from "react-router-dom";
 
 // TODO REFACTOR THIS INTO THE COMPONENT LIBRARY its used in 3d and 2d
-import { UndoRedo } from "./components/reusable/UndoRedo/UndoRedo";
+
+// These imports are required for the 2D prompt box component
+// Job context is currently missing
+// import { PromptBox2D } from "@storyteller/ui-promptbox";
+// import { UndoRedo } from "./components/reusable/UndoRedo/UndoRedo";
+// import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";
+// import { getCanvasRenderBitmap } from "./signals/canvasRenderBitmap";
+// import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
+// import { useJobContext } from "~/components/JobContext";
 
 export const KonvaRootComponent = ({
   className,
@@ -37,11 +44,11 @@ export const KonvaRootComponent = ({
   const navigate = useNavigate();
   const appUiContext = useAppUiContext();
   const layoutContext = useLayoutContext();
-  
+
   // Add state to track engine initialization
   const [isEngineReady, setIsEngineReady] = useState(false);
   const engineRef = useRef<EngineType | null>(null);
-  
+
   const konvaContainerCallbackRef = useCallback((node: HTMLDivElement) => {
     // Only initialize if we have a node and haven't initialized yet
     if (node !== null && !isEngineReady && engineRef.current === null) {
@@ -70,7 +77,7 @@ export const KonvaRootComponent = ({
         ref={konvaContainerCallbackRef}
         className={className}
       />
-      
+
       {/* Conditionally render the loading overlay */}
       {!isEngineReady && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -81,12 +88,17 @@ export const KonvaRootComponent = ({
       {/* Conditionally render the UI components that need the engine */}
       {isEngineReady && engineRef.current && (
         <UndoRedo engine={engineRef.current}>
-          
+
           {/* <SignaledCanvasDragDropFiles
             openAddImage={appUiContext.openAddImage}
             openAddVideo={appUiContext.openAddVideo}
           /> */}
-          {/* /<PromptBox /> */}
+          {/* <PromptBox2D
+            uploadImage={uploadImage}
+            getCanvasRenderBitmap={getCanvasRenderBitmap}
+            EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
+            useJobContext={useJobContext}
+          /> */}
           <SignaledToolbarMain
             layoutSignal={layoutContext.signal}
             appUiContext={appUiContext}
