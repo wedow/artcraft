@@ -27,6 +27,9 @@ pub struct CommandSuccessResponseWrapper<T: Serialize> {
   pub status: CommandSuccessStatus,
 
   #[serde(skip_serializing_if = "Option::is_none")]
+  pub success_message: Option<String>,
+  
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub payload: Option<T>,
 }
 
@@ -36,7 +39,10 @@ pub struct CommandErrorResponseWrapper<T: Serialize> {
   pub status: CommandErrorStatus,
 
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub error: Option<T>,
+  pub error_message: Option<String>,
+  
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub error_details: Option<T>,
 }
 
 
@@ -44,6 +50,7 @@ impl CommandSuccessResponseWrapper<()> {
   pub fn empty() -> Self {
     CommandSuccessResponseWrapper {
       status: CommandSuccessStatus::Success,
+      success_message: None,
       payload: None,
     }
   }
@@ -61,6 +68,7 @@ impl From<()> for CommandSuccessResponseWrapper<()> {
   fn from(_: ()) -> Self {
     CommandSuccessResponseWrapper {
       status: CommandSuccessStatus::Success,
+      success_message: None,
       payload: None,
     }
   }
@@ -72,7 +80,18 @@ impl <T> From<T> for CommandSuccessResponseWrapper<T> where T: Serialize + Seria
   fn from(val: T) -> Self {
     CommandSuccessResponseWrapper {
       status: CommandSuccessStatus::Success,
+      success_message: None,
       payload: Some(val),
+    }
+  }
+}
+
+impl From<&str> for CommandSuccessResponseWrapper<String> {
+  fn from(msg: &str) -> Self {
+    CommandSuccessResponseWrapper {
+      status: CommandSuccessStatus::Success,
+      success_message: Some(msg.to_string()),
+      payload: None,
     }
   }
 }
@@ -81,7 +100,8 @@ impl From<&str> for CommandErrorResponseWrapper<String> {
   fn from(value: &str) -> Self {
     CommandErrorResponseWrapper {
       status: CommandErrorStatus::BadRequest, // NB: Default to 500 error.
-      error: Some(value.to_string()),
+      error_message: Some(value.to_string()),
+      error_details: None,
     }
   }
 }

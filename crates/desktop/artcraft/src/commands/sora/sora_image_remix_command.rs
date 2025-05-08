@@ -1,3 +1,4 @@
+use crate::commands::command_response_wrapper::CommandResult;
 use crate::events::sendable_event_trait::SendableEvent;
 use crate::events::sora::sora_image_enqueue_failure_event::SoraImageEnqueueFailureEvent;
 use crate::events::sora::sora_image_enqueue_success_event::SoraImageEnqueueSuccessEvent;
@@ -56,7 +57,7 @@ pub async fn sora_image_remix_command(
   app_data_root: State<'_, AppDataRoot>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
-) -> Result<String, String> {
+) -> CommandResult<(), String> {
   
   info!("image_generation_command called; scene media token: {:?}, additional images: {:?}", 
     request.snapshot_media_token, request.maybe_additional_images);
@@ -75,7 +76,7 @@ pub async fn sora_image_remix_command(
       error!("Failed to emit event: {:?}", err);
     }
     
-    return Err("there was an error".to_string());
+    return Err("there was an error".into());
   }
 
   let event = SoraImageEnqueueSuccessEvent {};
@@ -85,7 +86,7 @@ pub async fn sora_image_remix_command(
     error!("Failed to emit event: {:?}", err);
   }
 
-  Ok("success".to_string())
+  Ok(().into())
 }
 
 pub async fn generate_image(
