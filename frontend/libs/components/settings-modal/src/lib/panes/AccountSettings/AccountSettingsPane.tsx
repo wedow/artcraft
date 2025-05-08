@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { SoraAccountButton } from "../components/SoraAccountButton";
+import { SoraAccountButton } from "./SoraAccountButton";
+import { SoraAccountBlock } from "./SoraAccountBlock";
 
 interface AccountInfo {
   username: string;
@@ -22,6 +23,7 @@ export const AccountSettingsPane = () => {
   return (
     <>
       <div className="space-y-4">
+        {/*
         <div className="flex justify-between">
           <span>ArtCraft Account:</span>
           <span className="text-white/80">{accountInfo.username}</span>
@@ -44,11 +46,14 @@ export const AccountSettingsPane = () => {
             third party account.
           </p>
         </div>
+        */}
 
-        <div className="flex justify-between items-center">
-          <span>OpenAI / Sora Account:</span>
-          <SoraAccountButton />
-        </div>
+        <SoraAccountBlock />
+
+        {/*
+        <hr />
+
+        <h2>Coming Soon...</h2>
 
         <div className="flex justify-between items-center">
           <span>Google / Veo Account:</span>
@@ -57,20 +62,14 @@ export const AccountSettingsPane = () => {
           </Button>
         </div>
 
+        <div className="flex justify-between items-center">
+          <span>Midjourney Account:</span>
+          <Button variant="secondary" disabled className="h-[30px]">
+            Connect
+          </Button>
+        </div>
+
         <div className="space-y-4">
-          <div>
-            <label htmlFor="pal-api-key" className="mb-2 block">
-              Pal API Key (optional)
-            </label>
-            <Input
-              id="pal-api-key"
-              type="password"
-              value={palApiKey}
-              onChange={(e) => setPalApiKey((e.target as any).value)}
-              placeholder="Enter API Key"
-              disabled
-            />
-          </div>
           <div>
             <label htmlFor="kling-api-key" className="mb-2 block">
               Kling API Key (optional)
@@ -84,7 +83,34 @@ export const AccountSettingsPane = () => {
               disabled
             />
           </div>
+          <div>
+            <label htmlFor="pal-api-key" className="mb-2 block">
+              Fal API Key (optional)
+            </label>
+            <Input
+              id="pal-api-key"
+              type="password"
+              value={palApiKey}
+              onChange={(e) => setPalApiKey((e.target as any).value)}
+              placeholder="Enter API Key"
+              disabled
+            />
+          </div>
+          <div>
+            <label htmlFor="pal-api-key" className="mb-2 block">
+              Replicate API Key (optional)
+            </label>
+            <Input
+              id="pal-api-key"
+              type="password"
+              value={palApiKey}
+              onChange={(e) => setPalApiKey((e.target as any).value)}
+              placeholder="Enter API Key"
+              disabled
+            />
+          </div>
         </div>
+        */}
       </div>
     </>
   );

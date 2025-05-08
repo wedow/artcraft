@@ -11,7 +11,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
-import { AccountSettingsPane } from "./panes/AccountSettingsPane";
+import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 import { VideoSettingsPane } from "./panes/VideoSettingsPane";
 
 interface SettingsModalProps {
