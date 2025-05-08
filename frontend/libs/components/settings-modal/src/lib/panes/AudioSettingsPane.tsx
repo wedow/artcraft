@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { SoundRegistry, SoundEffect } from "@storyteller/soundboard";
+import { SoundRegistry } from "@storyteller/soundboard";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { AppPreferencesPayload, CustomDirectory, GetAppPreferences, SystemDirectory } from "@storyteller/tauri-api";
+import { AppPreferencesPayload, GetAppPreferences } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "@storyteller/tauri-api";
-import { open } from '@tauri-apps/plugin-dialog';
 import { Select, SelectValue } from "@storyteller/ui-select";
 
 // TODO: This is maintained in two places. Here and InstallSounds.
@@ -17,10 +16,10 @@ const SOUND_OPTIONS = [
   { value: "crumble", label: "Crumble" },
 ];
 
-interface MiscSettingsPaneProps {
+interface AudioSettingsPaneProps {
 }
 
-export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
+export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
   const [preferences, setPreferences] = useState<AppPreferencesPayload|undefined>(undefined);
 
   useEffect(() => {
@@ -33,16 +32,11 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   }, []);
 
 
-  // NB: This might be a complex type.
-  const outerDownloadObject = preferences?.preferred_download_directory || {};
-  const downloadDirectory = ("custom" in outerDownloadObject) ? outerDownloadObject.custom as string : "";
-  const currentDownloadLabel = ("system" in outerDownloadObject) ? "System Download Directory" : downloadDirectory;
-
   const playSounds = preferences?.play_sounds || false;
 
-  const successSound = orNone(preferences?.generation_success_sound); // ? preferences?.generation_success_sound : "none";
-  const failureSound = orNone(preferences?.generation_failure_sound); // ? preferences?.generation_failure_sound : "none";
-  const enqueueSound = orNone(preferences?.generation_enqueue_sound); // ? preferences?.generation_enqueue_sound : "none";
+  const successSound = orNone(preferences?.generation_success_sound);
+  const failureSound = orNone(preferences?.generation_failure_sound);
+  const enqueueSound = orNone(preferences?.generation_enqueue_sound);
 
   const reloadPreferences = async () => {
     const prefs = await GetAppPreferences();
@@ -55,34 +49,6 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
     await UpdateAppPreferences({
       preference: PreferenceName.PlaySounds, 
       value: checked,
-    });
-    await reloadPreferences();
-  }
-
-  const openDirectoryPicker = async () => {
-    let directory = await open({
-      multiple: false,
-      directory: true,
-      defaultPath: downloadDirectory || undefined,
-    });
-    if (directory === null) {
-      return; // User dismissed the dialog choice
-    }
-    await UpdateAppPreferences({
-      preference: PreferenceName.PreferredDownloadDirectory, 
-      value: {
-        custom: directory
-      } as CustomDirectory,
-    });
-    await reloadPreferences();
-  }
-
-  const clearDirectory = async () => {
-    await UpdateAppPreferences({
-      preference: PreferenceName.PreferredDownloadDirectory, 
-      value: {
-        system: "downloads" 
-      } as SystemDirectory,
     });
     await reloadPreferences();
   }
@@ -125,29 +91,6 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
 
   return (<>
     <div className="space-y-4">
-      <div>
-        <label htmlFor="download-path" className="mb-2 block">
-          Default Download Directory
-        </label>
-        This is where downloads are placed after downloading.
-        The current path is <pre>{currentDownloadLabel}</pre>
-
-        <Button 
-          variant="primary" 
-          className="py-1"
-          onClick={openDirectoryPicker}
-        >
-            Choose Directory
-        </Button>
-        <Button 
-          variant="secondary" 
-          className="py-1"
-          onClick={clearDirectory}
-        >
-            Use Default
-        </Button>
-      </div>
-
       <div>
         <label htmlFor="play-sounds" className="mb-2 block">
           Play Notification Sounds for Events?

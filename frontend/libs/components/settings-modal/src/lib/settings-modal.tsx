@@ -7,11 +7,13 @@ import {
   faVideo,
   faImage,
   faCog,
+  faVolumeHigh,
 } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { Input } from "@storyteller/ui-input";
 import { Select, SelectValue } from "@storyteller/ui-select";
-import { MiscSettingsPane } from "./MiscSettingsPane";
+import { MiscSettingsPane } from "./panes/MiscSettingsPane";
+import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -24,7 +26,7 @@ interface AccountInfo {
   credits: number;
 }
 
-type SettingsSection = "misc" | "accounts" | "video" | "image";
+type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [accountInfo] = useState<AccountInfo>({
@@ -42,6 +44,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [humanVideoProvider, setHumanVideoProvider] = useState("artcraft");
 
   const sections = [
+    { id: "audio" as const, label: "Audio", icon: faVolumeHigh },
     { id: "misc" as const, label: "Misc", icon: faCog },
     { id: "accounts" as const, label: "Accounts", icon: faUser },
     { id: "video" as const, label: "Video", icon: faVideo },
@@ -50,6 +53,14 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
   const renderContent = () => {
     switch (selectedSection) {
+      case "audio":
+        return (
+          <AudioSettingsPane />
+        );
+      case "misc":
+        return (
+          <MiscSettingsPane />
+        );
       case "accounts":
         return (
           <div className="space-y-4">
@@ -161,11 +172,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <div>
             <button className="text-blue-600">Various Image Settings (TODO)...</button>
           </div>
-        );
-
-      case "misc":
-        return (
-          <MiscSettingsPane />
         );
     }
   };
