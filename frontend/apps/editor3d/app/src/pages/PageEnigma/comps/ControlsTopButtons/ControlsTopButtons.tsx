@@ -187,7 +187,7 @@ export const ControlsTopButtons = () => {
   return (
     <div className="flex flex-col gap-2 pl-2 pt-2">
       <div className="flex gap-1.5">
-        <ButtonDropdown
+        {/* <ButtonDropdown
           label="File"
           icon={faFile}
           className="shadow-xl"
@@ -285,7 +285,7 @@ export const ControlsTopButtons = () => {
               },
             },
           ]}
-        />
+        /> */}
 
         <Button
           icon={outlinerIsShowing.value ? faCheckSquare : faSquare}
