@@ -8,19 +8,20 @@ export const InstallSounds = () => {
   }
 
   // Good for simple immediate enqueue
+  r.setSoundOnce("done", new SoundEffect("resources/sound/oot_dialogue_done.wav", { defaultVolume: 0.2 })); // DEFAULT
 
   // Good for simple immediate failure
   r.setSoundOnce("error_chirp", new SoundEffect("resources/sound/goldensun_135.wav", { defaultVolume: 0.2 }));
+  r.setSoundOnce("spikethrow", new SoundEffect("resources/sound/smrpg_enemy_spikethrow.wav", { defaultVolume: 0.1 })); // DEFAULT
 
   // Good for simple async success
-  r.setSoundOnce("special_flower", new SoundEffect("resources/sound/smrpg_specialflower.wav", { defaultVolume: 0.2 }));
+  r.setSoundOnce("special_flower", new SoundEffect("resources/sound/smrpg_specialflower.wav", { defaultVolume: 0.2 })); // DEFAULT
 
   // Good for async errors
-  r.setSoundOnce("crumble", new SoundEffect("resources/sound/smrpg_drybones_crumble.wav", { defaultVolume: 0.1 }));
+  r.setSoundOnce("crumble", new SoundEffect("resources/sound/smrpg_drybones_crumble.wav", { defaultVolume: 0.1 })); // DEFAULT
   r.setSoundOnce("special_alert", new SoundEffect("resources/sound/goldensun_214.wav", { defaultVolume: 0.2 }));
 
   // Good for menus
-  r.setSoundOnce("done", new SoundEffect("resources/sound/oot_dialogue_done.wav", { defaultVolume: 0.2 }));
   r.setSoundOnce("next", new SoundEffect("resources/sound/oot_dialogue_next.wav", { defaultVolume: 0.2 }));
   r.setSoundOnce("select", new SoundEffect("resources/sound/goldensun_111.wav", { defaultVolume: 0.4 }));
 
