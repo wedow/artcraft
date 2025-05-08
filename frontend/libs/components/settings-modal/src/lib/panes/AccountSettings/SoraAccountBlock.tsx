@@ -12,6 +12,8 @@ import {
 } from "@storyteller/tauri-api";
 import { invoke } from "@tauri-apps/api/core";
 
+const DEFAULT_CACHE_TTL_MS = 1 * 60 * 1000; // 1 minute
+
 interface SoraAccountBlockProps {
   cacheKey?: string;
   cacheTtlMs?: number;
@@ -19,7 +21,7 @@ interface SoraAccountBlockProps {
 
 export const SoraAccountBlock = ({
   cacheKey = "soraSettingsSessionCache",
-  cacheTtlMs = 5 * 60 * 1000,
+  cacheTtlMs = DEFAULT_CACHE_TTL_MS,
 }: SoraAccountBlockProps) => {
   const [soraSession, setSoraSession] = useState<CheckSoraSessionResult| undefined>(undefined);
   const [isCheckingSoraSession, setIsCheckingSoraSession] = useState(false);
@@ -67,17 +69,52 @@ export const SoraAccountBlock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey, cacheTtlMs]);
 
-  console.log(">>> soraSession", soraSession);
-
-  const soraEmail = soraSession?.state === SoraSessionState.Valid ? 
-    soraSession.maybe_account_email : 
-    "";
+  const handleSoraButton = async () => {
+    if (isCheckingSoraSession) return;
+    if (soraSession?.state === SoraSessionState.Valid) {
+      setIsCheckingSoraSession(true);
+      await LogoutSoraSession();
+      setSoraSession({state: SoraSessionState.NotSetUp});
+      localStorage.removeItem(cacheKey);
+      setIsCheckingSoraSession(false);
+    } else {
+      setIsCheckingSoraSession(true);
+      try {
+        await invoke("open_sora_login_command");
+      } catch (e) {
+      } finally {
+        setIsCheckingSoraSession(false);
+      }
+    }
+  };
 
   return(
     <div className="flex justify-between items-center">
       <span>OpenAI / Sora Account:</span>
-      {soraEmail}
-      <SoraAccountButton />
+      <pre>{soraSession?.maybe_account_email || ""}</pre>
+      <Button
+        variant={
+          soraSession?.state === SoraSessionState.Valid && !isCheckingSoraSession
+            ? "destructive"
+            : soraSession?.state === SoraSessionState.NotSetUp
+            ? "primary"
+            : "secondary"
+        }
+        className="h-[30px]"
+        onClick={handleSoraButton}
+        disabled={isCheckingSoraSession}
+      >
+        {isCheckingSoraSession ? (
+          <FontAwesomeIcon
+            icon={faSpinnerThird}
+            className="animate-spin text-sm"
+          />
+        ) : soraSession?.state === SoraSessionState.Valid ? (
+          "Disconnect"
+        ) : (
+          "Connect"
+        )}
+      </Button>
     </div>
   )
 }
