@@ -9,13 +9,9 @@ type ImageGenerationSuccess = {
 
 export const InstallImageGenerationSuccess = () => {
   listen<ImageGenerationSuccess>('sora-image-generation-complete', async (event) => {
-    console.log("sora-image-generation-complete event", event);
     const prefs = await GetAppPreferences();
-    console.log("prefs", prefs);
     const soundName = prefs.preferences?.generation_success_sound;
-    console.log("soundName", soundName);
     if (soundName !== undefined) {
-      console.log("playing sound", soundName);
       const registry = SoundRegistry.getInstance();
       registry.playSound(soundName);
     }

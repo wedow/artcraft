@@ -13,12 +13,19 @@ import { Label } from "@storyteller/ui-label";
 
 // TODO: This is maintained in two places. Here and InstallSounds.
 const SOUND_OPTIONS = [
-  { value: "none", label: "None (Silent)" },
-  { value: "flower", label: "Flower" },
+  { value: "none", label: "None (Silent)" }, // NB: MUST BE FIRST
+
+  // Other options
   { value: "correct", label: "Correct" },
-  { value: "next", label: "Next" },
-  { value: "done", label: "Done" },
   { value: "crumble", label: "Crumble" },
+  { value: "done", label: "Done" },
+  { value: "error_chirp", label: "Error Chirp" },
+  { value: "flower", label: "Flower" },
+  { value: "next", label: "Next" },
+  { value: "select", label: "Select" },
+  { value: "special_alert", label: "Special Alert" },
+  { value: "special_flower", label: "Special Flower" },
+  { value: "spike_throw", label: "Spike Throw" },
 ];
 
 interface AudioSettingsPaneProps {}
@@ -38,9 +45,10 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
 
   const playSounds = preferences?.play_sounds || false;
 
-  const successSound = orNone(preferences?.generation_success_sound);
-  const failureSound = orNone(preferences?.generation_failure_sound);
-  const enqueueSound = orNone(preferences?.generation_enqueue_sound);
+  const enqueueSuccessSound = orNone(preferences?.enqueue_success_sound);
+  const enqueueFailureSound = orNone(preferences?.enqueue_failure_sound);
+  const generationSuccessSound = orNone(preferences?.generation_success_sound);
+  const generationFailureSound = orNone(preferences?.generation_failure_sound);
 
   const reloadPreferences = async () => {
     const prefs = await GetAppPreferences();
@@ -53,6 +61,26 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
       preference: PreferenceName.PlaySounds,
       value: checked,
     });
+    await reloadPreferences();
+  };
+
+  const setEnqueueSuccessSound = async (val: string) => {
+    let sendVal = val === "none" ? undefined : val;
+    await UpdateAppPreferences({
+      preference: PreferenceName.EnqueueSuccessSound,
+      value: sendVal,
+    });
+    SoundRegistry.getInstance().playSound(val);
+    await reloadPreferences();
+  };
+
+  const setEnqueueFailureSound = async (val: string) => {
+    let sendVal = val === "none" ? undefined : val;
+    await UpdateAppPreferences({
+      preference: PreferenceName.EnqueueFailureSound,
+      value: sendVal,
+    });
+    SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
   };
 
@@ -76,16 +104,6 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
     await reloadPreferences();
   };
 
-  const setEnqueueSound = async (val: string) => {
-    let sendVal = val === "none" ? undefined : val;
-    await UpdateAppPreferences({
-      preference: PreferenceName.GenerationEnqueueSound,
-      value: sendVal,
-    });
-    SoundRegistry.getInstance().playSound(val);
-    await reloadPreferences();
-  };
-
   const playSound = (val?: string) => {
     if (val !== undefined && val !== "none") {
       SoundRegistry.getInstance().playSound(val);
@@ -103,11 +121,49 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="success-sound">Success Sound</Label>
+          <Label htmlFor="success-sound">Enqueue Success Sound</Label>
           <div className="flex items-center gap-2">
             <Select
               id="success-sound"
-              value={successSound}
+              value={enqueueSuccessSound}
+              onChange={(val: SelectValue) => setEnqueueSuccessSound(val as string)}
+              options={SOUND_OPTIONS}
+              className="grow"
+            />
+            <Button
+              variant="primary"
+              className="w-[40px] h-[40px]"
+              icon={faPlay}
+              onClick={() => playSound(enqueueSuccessSound)}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="success-sound">Enqueue Failure Sound</Label>
+          <div className="flex items-center gap-2">
+            <Select
+              id="success-sound"
+              value={enqueueFailureSound}
+              onChange={(val: SelectValue) => setEnqueueFailureSound(val as string)}
+              options={SOUND_OPTIONS}
+              className="grow"
+            />
+            <Button
+              variant="primary"
+              className="w-[40px] h-[40px]"
+              icon={faPlay}
+              onClick={() => playSound(enqueueFailureSound)}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="success-sound">Generation Success Sound</Label>
+          <div className="flex items-center gap-2">
+            <Select
+              id="success-sound"
+              value={generationSuccessSound}
               onChange={(val: SelectValue) => setSuccessSound(val as string)}
               options={SOUND_OPTIONS}
               className="grow"
@@ -116,17 +172,17 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
               variant="primary"
               className="w-[40px] h-[40px]"
               icon={faPlay}
-              onClick={() => playSound(successSound)}
+              onClick={() => playSound(generationSuccessSound)}
             />
           </div>
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="failure-sound">Failure Sound</Label>
+          <Label htmlFor="failure-sound">Generation Failure Sound</Label>
           <div className="flex items-center gap-2">
             <Select
               id="failure-sound"
-              value={failureSound}
+              value={generationFailureSound}
               onChange={(val: SelectValue) => setFailureSound(val as string)}
               options={SOUND_OPTIONS}
               className="grow"
@@ -135,29 +191,11 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
               variant="primary"
               className="w-[40px] h-[40px]"
               icon={faPlay}
-              onClick={() => playSound(failureSound)}
+              onClick={() => playSound(generationFailureSound)}
             />
           </div>
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="enqueue-sound">Enqueue Sound</Label>
-          <div className="flex items-center gap-2">
-            <Select
-              id="enqueue-sound"
-              value={enqueueSound}
-              onChange={(val: SelectValue) => setEnqueueSound(val as string)}
-              options={SOUND_OPTIONS}
-              className="grow"
-            />
-            <Button
-              variant="primary"
-              className="w-[40px] h-[40px]"
-              icon={faPlay}
-              onClick={() => playSound(enqueueSound)}
-            />
-          </div>
-        </div>
       </div>
     </>
   );
