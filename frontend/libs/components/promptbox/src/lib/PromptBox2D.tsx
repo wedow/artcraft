@@ -2,7 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useSignals } from "@preact/signals-react/runtime";
 import { toast } from "sonner";
-import { JobContextType, MaybeCanvasRenderBitmapType, UploaderState, UploaderStates } from "@storyteller/common";
+import {
+  JobContextType,
+  MaybeCanvasRenderBitmapType,
+  UploaderState,
+  UploaderStates,
+} from "@storyteller/common";
 import { downloadFileFromUrl } from "@storyteller/api";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -36,14 +41,18 @@ interface ReferenceImage {
 }
 
 interface PromptBox2DProps {
-  uploadImage: ({ title, assetFile, progressCallback, }: {
+  uploadImage: ({
+    title,
+    assetFile,
+    progressCallback,
+  }: {
     title: string;
     assetFile: File;
     progressCallback: (newState: UploaderState) => void;
   }) => Promise<void>;
-  getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType
-  EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>
-  useJobContext: () => JobContextType
+  getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
+  EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
+  useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
 }
 
@@ -55,7 +64,7 @@ export const PromptBox2D = ({
   onEnqueuePressed,
 }: PromptBox2DProps) => {
   useSignals();
-  
+
   console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
@@ -68,7 +77,7 @@ export const PromptBox2D = ({
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
-    [],
+    []
   );
   const [activeGalleryTab, setActiveGalleryTab] = useState("my-media");
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
@@ -108,7 +117,7 @@ export const PromptBox2D = ({
       prev.map((item) => ({
         ...item,
         selected: item.label === selectedItem.label,
-      })),
+      }))
     );
   };
 
@@ -122,7 +131,9 @@ export const PromptBox2D = ({
         const reader = new FileReader();
         reader.onloadend = () => {
           uploadImage({
-            title: `reference-image-${Math.random().toString(36).substring(2, 15)}`,
+            title: `reference-image-${Math.random()
+              .toString(36)
+              .substring(2, 15)}`,
             assetFile: file,
             progressCallback: (newState) => {
               console.debug("Upload progress:", newState.data);
@@ -135,7 +146,7 @@ export const PromptBox2D = ({
                 };
                 setReferenceImages((prev) => [...prev, referenceImage]);
                 setUploadingImages((prev) =>
-                  prev.filter((img) => img.id !== uploadId),
+                  prev.filter((img) => img.id !== uploadId)
                 );
                 toast.success("Reference image added.");
               } else if (
@@ -143,7 +154,7 @@ export const PromptBox2D = ({
                 newState.status === UploaderStates.imageCreateError
               ) {
                 setUploadingImages((prev) =>
-                  prev.filter((img) => img.id !== uploadId),
+                  prev.filter((img) => img.id !== uploadId)
                 );
 
                 toast.error("Upload failed. Please try again.");
@@ -266,7 +277,7 @@ export const PromptBox2D = ({
         disable_system_prompt: !useSystemPrompt,
         prompt: prompt,
         maybe_additional_images: referenceImages.map(
-          (image) => image.mediaToken,
+          (image) => image.mediaToken
         ),
         maybe_number_of_samples: 1,
       },
@@ -279,12 +290,11 @@ export const PromptBox2D = ({
     const api = new PromptsApi();
     // to take the snapshot of the canvas
     // Call onEnqueuePressed if it exists
-  
-   
+
     let image = getCanvasRenderBitmap();
     if (image === undefined) {
       toast.error(
-        "Error: Unable to generate image. Please check the input and try again.",
+        "Error: Unable to generate image. Please check the input and try again."
       );
       return;
     }
@@ -350,7 +360,7 @@ export const PromptBox2D = ({
         "Enqueuing with prompt:",
         prompt,
         "and reference images:",
-        referenceImages,
+        referenceImages
       );
 
       const isDesktop = IsDesktopApp();
@@ -364,7 +374,7 @@ export const PromptBox2D = ({
     } catch (error) {
       console.error("Error during image generation:", error);
       toast.error(
-        "An error occurred while generating the image. Please try again.",
+        "An error occurred while generating the image. Please try again."
       );
     } finally {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -382,7 +392,7 @@ export const PromptBox2D = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      
+
       handleEnqueue();
     }
   };
@@ -473,7 +483,7 @@ export const PromptBox2D = ({
               ]}
               onPanelAction={handleAction}
               showIconsInList
-              buttonClassName="backdrop-blur-none bg-transparent hover:bg-transparent py-1.5 px-0 pr-1 m-0 hover:opacity-50 transition-opacity duration-100 ring-0 border-none focus:ring-0 outline-none"
+              buttonClassName="bg-transparent hover:bg-transparent py-1.5 px-0 pr-1 m-0 hover:opacity-50 transition-opacity duration-100 ring-0 border-none focus:ring-0 outline-none"
               triggerIcon={
                 <FontAwesomeIcon icon={faPlus} className="text-xl" />
               }
@@ -488,8 +498,8 @@ export const PromptBox2D = ({
               onChange={handleChange}
               onPaste={handlePaste}
               onKeyDown={handleKeyDown}
-              onFocus={() => { }}
-              onBlur={() => { }}
+              onFocus={() => {}}
+              onBlur={() => {}}
             />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">

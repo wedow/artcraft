@@ -40,8 +40,8 @@ export const DialogAddImage = ({
   return (
     <Modal isOpen={isOpen} onClose={closeCallback}>
       <div className="flex flex-col gap-3">
-        <DialogTitle className="text-3xl font-bold">Upload Image</DialogTitle>
-        <div className="border-ui-border flex flex-col rounded-lg border-2 border-dashed">
+        <DialogTitle className="text-2xl font-bold">Upload Image</DialogTitle>
+        <div className="flex flex-col rounded-lg border-2 border-dashed border-white/20">
           <FileUploader
             fileTypes={Object.values(IMAGE_FILE_TYPE)}
             file={currFile}

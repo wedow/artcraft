@@ -3,10 +3,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 import { FileUtilities } from "../../utilities/FileUtilities";
-import { ImageNode,  TextNode, ShapeNode, PreviewCopyNode, PaintNode } from "../Nodes";
+import {
+  ImageNode,
+  TextNode,
+  ShapeNode,
+  PreviewCopyNode,
+  PaintNode,
+} from "../Nodes";
 import { MediaNode } from "../types";
 import { RenderTask } from "./RenderTask";
-
 
 import {
   isLoadingVisible,
@@ -22,7 +27,6 @@ interface ServerSettings {
 }
 
 export class RealTimeDrawEngine {
-  
   private imageNodes: (ImageNode | TextNode | ShapeNode | PaintNode)[];
 
   public offScreenCanvas: OffscreenCanvas;
@@ -44,7 +48,6 @@ export class RealTimeDrawEngine {
   private port: MessagePort | undefined;
   public captureCanvas: Konva.Rect;
   public backgroundRasterRect: Konva.Image;
-
 
   public fps: number = 24;
 
@@ -97,17 +100,15 @@ export class RealTimeDrawEngine {
     ) => void;
     onPreviewCopyCallback?: (previewCopy: Konva.Image) => void; // New Parameter
   }) {
-    
     this.imageNodes = [];
     this.onDrawCallback = onDraw;
-  
+
     // TODO: Make this dynamic and update this on change of canvas.
     this.width = width * 1.5;
     this.height = height * 1;
 
     this.positionX = window.innerWidth - this.width;
     this.positionY = window.innerHeight - this.height;
-
 
     this.offScreenCanvas = offScreenCanvas;
     this.offScreenCanvas.width = this.width;
@@ -150,7 +151,6 @@ export class RealTimeDrawEngine {
     this.mediaLayerRef.add(this.captureCanvas);
 
     this.captureCanvas.setZIndex(0);
-    
 
     this.listenToServerEvents();
   }
@@ -520,7 +520,8 @@ export class RealTimeDrawEngine {
 
     // Calculate new position to center the canvas in the window
     this.positionX = (window.innerWidth - this.width) / 2;
-    this.positionY = (window.innerHeight - this.height) / 2;
+    const headerPadding = 56;
+    this.positionY = (window.innerHeight - headerPadding - this.height) / 2;
 
     console.log("New centered position:", this.positionX, this.positionY);
 
@@ -636,7 +637,6 @@ export class RealTimeDrawEngine {
   public isProcessing = false;
   private handleNodeDragEnd = async () => {
     // Clean up any existing state
-
     //await this.render();
   };
 
@@ -662,7 +662,7 @@ export class RealTimeDrawEngine {
   }
 
   public removeNodes(node: MediaNode) {
-   if (
+    if (
       node instanceof ImageNode ||
       node instanceof TextNode ||
       node instanceof ShapeNode ||
@@ -819,7 +819,6 @@ export class RealTimeDrawEngine {
     await this.startServer();
   }
 
-
   private async renderFrame(config: {
     layerOfInterest: Konva.Layer; // layer where the element that you want to clip lives.
     // XY and height of a captureCanvas ( region of interest )
@@ -832,38 +831,33 @@ export class RealTimeDrawEngine {
     quality?: number; // 1.0 is the best.
     test: boolean; // true == blob else Image Bitmap
   }): Promise<ImageBitmap | Blob> {
-   
-      const box = config.layerOfInterest.getClientRect();
-      const stage = config.layerOfInterest.getStage();
+    const box = config.layerOfInterest.getClientRect();
+    const stage = config.layerOfInterest.getStage();
 
-      const x = config.x !== undefined ? config.x : Math.floor(box.x);
-      const y = config.y !== undefined ? config.y : Math.floor(box.y);
-      const pixelRatio = config.pixelRatio || 1;
+    const x = config.x !== undefined ? config.x : Math.floor(box.x);
+    const y = config.y !== undefined ? config.y : Math.floor(box.y);
+    const pixelRatio = config.pixelRatio || 1;
 
-      // Clone the required layer from the stage
-      // Set the right details (like removing highlight stroke)
-      // Then render the cloned stage to a bitmap
-      const stageClone = this.cloneStageForRender(
-        stage,
-        config.layerOfInterest,
-      );
-      const stageBlob = (await stageClone.toBlob({
-        x: x,
-        y: y,
-        width: config.width || Math.ceil(box.width),
-        height: config.height || Math.ceil(box.height),
-        pixelRatio: pixelRatio,
-      })) as Blob;
+    // Clone the required layer from the stage
+    // Set the right details (like removing highlight stroke)
+    // Then render the cloned stage to a bitmap
+    const stageClone = this.cloneStageForRender(stage, config.layerOfInterest);
+    const stageBlob = (await stageClone.toBlob({
+      x: x,
+      y: y,
+      width: config.width || Math.ceil(box.width),
+      height: config.height || Math.ceil(box.height),
+      pixelRatio: pixelRatio,
+    })) as Blob;
 
-      // if config.test is true, the result is downloaded to the local files
-      // config.test = true;
-      if (config.test) {
-        await FileUtilities.blobToFileJpeg(stageBlob, "1");
-      }
+    // if config.test is true, the result is downloaded to the local files
+    // config.test = true;
+    if (config.test) {
+      await FileUtilities.blobToFileJpeg(stageBlob, "1");
+    }
 
-      const result = await createImageBitmap(stageBlob);
-      return result;
-
+    const result = await createImageBitmap(stageBlob);
+    return result;
   }
 
   // Add method to create or update background
