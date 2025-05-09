@@ -44,6 +44,7 @@ interface PromptBox2DProps {
   getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>
   useJobContext: () => JobContextType
+  onEnqueuePressed?: () => void | Promise<void>;
 }
 
 export const PromptBox2D = ({
@@ -51,10 +52,11 @@ export const PromptBox2D = ({
   getCanvasRenderBitmap,
   EncodeImageBitmapToBase64,
   useJobContext,
+  onEnqueuePressed,
 }: PromptBox2DProps) => {
   useSignals();
-  const isDesktopApp = window.navigator.userAgent.includes("Tauri");
-  console.log("Is this a desktop app?", isDesktopApp);
+  
+  console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
   const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
@@ -229,6 +231,7 @@ export const PromptBox2D = ({
     const api = new PromptsApi();
     let image = getCanvasRenderBitmap();
     if (image === undefined) {
+      console.log("image is undefined");
       return;
     }
     const base64Bitmap = await EncodeImageBitmapToBase64(image);
@@ -274,6 +277,10 @@ export const PromptBox2D = ({
 
   const handleWebEnqueue = async () => {
     const api = new PromptsApi();
+    // to take the snapshot of the canvas
+    // Call onEnqueuePressed if it exists
+  
+   
     let image = getCanvasRenderBitmap();
     if (image === undefined) {
       toast.error(
@@ -325,6 +332,16 @@ export const PromptBox2D = ({
     }
   };
   const handleEnqueue = async () => {
+    console.log("Pressing Enqueue");
+    if (onEnqueuePressed) {
+      try {
+        await onEnqueuePressed();
+      } catch (error) {
+        console.error("Error in onEnqueuePressed callback:", error);
+        return;
+      }
+    }
+
     if (isEnqueueing) return;
     setIsEnqueueing(true);
     if (!prompt.trim()) return;
@@ -365,6 +382,7 @@ export const PromptBox2D = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      
       handleEnqueue();
     }
   };

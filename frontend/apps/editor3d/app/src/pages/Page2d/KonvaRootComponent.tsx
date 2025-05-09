@@ -24,13 +24,16 @@ import "./global.css";
 
 // These imports are required for the 2D prompt box component
 // Job context is currently missing
-// import { PromptBox2D } from "@storyteller/ui-promptbox";
+import { PromptBox2D } from "@storyteller/ui-promptbox";
 import { UndoRedo } from "./components/reusable/UndoRedo/UndoRedo";
-// import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";
+import { getCanvasRenderBitmap } from "./signals/canvasRenderBitmap";
+import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
+import { uploadImage } from "../../components/reusable/UploadModalMedia/uploadImage";
 // import { getCanvasRenderBitmap } from "./signals/canvasRenderBitmap";
 // import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
-// import { useJobContext } from "~/components/JobContext";
-
+import { JobProvider, useJobContext } from "./JobContext";
+import { RealTimeDrawEngine } from "./KonvaApp/RenderingPrimitives/RealTimeDrawEngine";
+import { VideoResolutions } from "./KonvaApp/constants";
 export const KonvaRootComponent = ({
   className,
   sceneToken,
@@ -48,6 +51,7 @@ export const KonvaRootComponent = ({
   // Add state to track engine initialization
   const [isEngineReady, setIsEngineReady] = useState(false);
   const engineRef = useRef<EngineType | null>(null);
+  const renderEngineRef = useRef<RealTimeDrawEngine | null>(null);
 
   const konvaContainerCallbackRef = useCallback((node: HTMLDivElement) => {
     // Only initialize if we have a node and haven't initialized yet
@@ -57,7 +61,10 @@ export const KonvaRootComponent = ({
           navigate: navigate,
           sceneToken: sceneToken,
         };
+       
+
         engineRef.current = KonvaApp(node, options);
+        renderEngineRef.current = engineRef.current.realTimeDrawEngine;
         // Only set ready if initialization succeeded
         if (engineRef.current) {
           setIsEngineReady(true);
@@ -93,12 +100,18 @@ export const KonvaRootComponent = ({
             openAddImage={appUiContext.openAddImage}
             openAddVideo={appUiContext.openAddVideo}
           /> */}
-          {/* <PromptBox2D
-            uploadImage={uploadImage}
-            getCanvasRenderBitmap={getCanvasRenderBitmap}
+          <JobProvider>
+            <PromptBox2D
+              uploadImage={uploadImage}
+              getCanvasRenderBitmap={getCanvasRenderBitmap}
             EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
             useJobContext={useJobContext}
-          /> */}
+            onEnqueuePressed={async ()=> {
+              // will set the snapshot of the canvas internally. 
+              await renderEngineRef.current?.render();
+            }}
+          /> </JobProvider>
+        
           <SignaledToolbarMain
             layoutSignal={layoutContext.signal}
             appUiContext={appUiContext}

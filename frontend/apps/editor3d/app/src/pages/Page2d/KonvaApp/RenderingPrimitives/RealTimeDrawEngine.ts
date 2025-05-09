@@ -25,13 +25,13 @@ export class RealTimeDrawEngine {
   
   private imageNodes: (ImageNode | TextNode | ShapeNode | PaintNode)[];
 
-  private offScreenCanvas: OffscreenCanvas;
+  public offScreenCanvas: OffscreenCanvas;
   private outputBitmap: ImageBitmap | undefined;
 
   // private frames: ImageBitmap[];
   // capturing composite within window
 
-  private mediaLayerRef: Konva.Layer;
+  public mediaLayerRef: Konva.Layer;
   private drawingsLayer: Konva.Layer; // New Layer for Drawings
 
   private height: number;
@@ -59,7 +59,7 @@ export class RealTimeDrawEngine {
   public paintColor: string = "#000000";
   private brushSize: number = 5; // Default brush size
 
-  private onDrawCallback?: (
+  public onDrawCallback?: (
     canvas: HTMLCanvasElement,
     lineBounds: {
       width: number;
@@ -95,7 +95,7 @@ export class RealTimeDrawEngine {
         y: number;
       },
     ) => void;
-    onPreviewCopy?: (previewCopy: Konva.Image) => void; // New Parameter
+    onPreviewCopyCallback?: (previewCopy: Konva.Image) => void; // New Parameter
   }) {
     
     this.imageNodes = [];
@@ -701,54 +701,6 @@ export class RealTimeDrawEngine {
     return stageClone;
   }
 
-  // private async renderFrame(config: {
-  //   layerOfInterest: Konva.Layer; // layer where the element that you want to clip lives.
-  //   // XY and height of a captureCanvas ( region of interest )
-  //   x?: number; // x position of the region of interest
-  //   y?: number; // y position of the region of interest
-  //   width?: number; // size of the region of interest
-  //   height?: number; // size of the region of interest
-  //   pixelRatio?: number; // higher means higher quality
-  //   mimeType?: string; // image/jpeg or image/png
-  //   quality?: number; // 1.0 is the best.
-  //   test: boolean; // true == blob else Image Bitmap
-  // }): Promise<ImageBitmap | Blob> {
-  //   try {
-  //     const box = config.layerOfInterest.getClientRect();
-  //     const stage = config.layerOfInterest.getStage();
-
-  //     const x = config.x !== undefined ? config.x : Math.floor(box.x);
-  //     const y = config.y !== undefined ? config.y : Math.floor(box.y);
-  //     const pixelRatio = config.pixelRatio || 1;
-
-  //     // Clone the required layer from the stage
-  //     // Set the right details (like removing highlight stroke)
-  //     // Then render the cloned stage to a bitmap
-  //     const stageClone = this.cloneStageForRender(
-  //       stage,
-  //       config.layerOfInterest,
-  //     );
-  //     const stageBlob = (await stageClone.toBlob({
-  //       x: x,
-  //       y: y,
-  //       width: config.width || Math.ceil(box.width),
-  //       height: config.height || Math.ceil(box.height),
-  //       pixelRatio: pixelRatio,
-  //     })) as Blob;
-
-  //     // if config.test is true, the result is downloaded to the local files
-  //     // config.test = true;
-  //     if (config.test) {
-  //       await FileUtilities.blobToFileJpeg(stageBlob, "1");
-  //     }
-
-  //     const result = await createImageBitmap(stageBlob);
-  //     return result;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
   private async imageBitmapToBase64(imageBitmap: ImageBitmap): Promise<string> {
     // Create a temporary canvas
     const canvas = document.createElement("canvas");
@@ -800,46 +752,46 @@ export class RealTimeDrawEngine {
     });
   }
 
-  // public async render() {
-  //   // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
-  //   if (this.isProcessing) {
-  //     console.log("isProcessing Returning");
-  //     return;
-  //   }
-  //   console.log("Calling Render");
-  //   this.isProcessing = true;
+  public async render() {
+    // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
+    if (this.isProcessing) {
+      console.log("isProcessing Returning");
+      return;
+    }
+    console.log("Calling Render");
+    this.isProcessing = true;
 
-  //   this.mediaLayerRef.draw();
-  //   // Output all nodes in mediaLayerRef
-  //   const nodes = this.mediaLayerRef.getChildren();
-  //   console.log("All nodes in mediaLayer:", nodes);
-  //   console.log(
-  //     `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
-  //   );
+    this.mediaLayerRef.draw();
+    // Output all nodes in mediaLayerRef
+    const nodes = this.mediaLayerRef.getChildren();
+    console.log("All nodes in mediaLayer:", nodes);
+    console.log(
+      `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
+    );
 
-  //   const bitmap = (await this.renderFrame({
-  //     layerOfInterest: this.mediaLayerRef,
-  //     x: this.captureCanvas.x(),
-  //     y: this.captureCanvas.y(),
-  //     width: this.width,
-  //     height: this.height,
-  //     mimeType: "image/jpeg",
-  //     pixelRatio: 1,
-  //     quality: 1.0,
-  //     test: false,
-  //   })) as ImageBitmap;
+    const bitmap = (await this.renderFrame({
+      layerOfInterest: this.mediaLayerRef,
+      x: this.captureCanvas.x(),
+      y: this.captureCanvas.y(),
+      width: this.width,
+      height: this.height,
+      mimeType: "image/jpeg",
+      pixelRatio: 1,
+      quality: 1.0,
+      test: false,
+    })) as ImageBitmap;
 
-  //   this.lastRenderedBitmap = bitmap;
+    this.lastRenderedBitmap = bitmap;
 
-  //   setCanvasRenderBitmap(bitmap);
+    setCanvasRenderBitmap(bitmap);
 
-  //   try {
-  //   } catch (error) {
-  //     console.error("Error during image processing:", error);
-  //   } finally {
-  //     this.isProcessing = false;
-  //   }
-  // }
+    try {
+    } catch (error) {
+      console.error("Error during image processing:", error);
+    } finally {
+      this.isProcessing = false;
+    }
+  }
 
   // Add getter/setter for brush size
   public set paintBrushSize(size: number) {
@@ -865,6 +817,53 @@ export class RealTimeDrawEngine {
       this.client.ws.close();
     }
     await this.startServer();
+  }
+
+
+  private async renderFrame(config: {
+    layerOfInterest: Konva.Layer; // layer where the element that you want to clip lives.
+    // XY and height of a captureCanvas ( region of interest )
+    x?: number; // x position of the region of interest
+    y?: number; // y position of the region of interest
+    width?: number; // size of the region of interest
+    height?: number; // size of the region of interest
+    pixelRatio?: number; // higher means higher quality
+    mimeType?: string; // image/jpeg or image/png
+    quality?: number; // 1.0 is the best.
+    test: boolean; // true == blob else Image Bitmap
+  }): Promise<ImageBitmap | Blob> {
+   
+      const box = config.layerOfInterest.getClientRect();
+      const stage = config.layerOfInterest.getStage();
+
+      const x = config.x !== undefined ? config.x : Math.floor(box.x);
+      const y = config.y !== undefined ? config.y : Math.floor(box.y);
+      const pixelRatio = config.pixelRatio || 1;
+
+      // Clone the required layer from the stage
+      // Set the right details (like removing highlight stroke)
+      // Then render the cloned stage to a bitmap
+      const stageClone = this.cloneStageForRender(
+        stage,
+        config.layerOfInterest,
+      );
+      const stageBlob = (await stageClone.toBlob({
+        x: x,
+        y: y,
+        width: config.width || Math.ceil(box.width),
+        height: config.height || Math.ceil(box.height),
+        pixelRatio: pixelRatio,
+      })) as Blob;
+
+      // if config.test is true, the result is downloaded to the local files
+      // config.test = true;
+      if (config.test) {
+        await FileUtilities.blobToFileJpeg(stageBlob, "1");
+      }
+
+      const result = await createImageBitmap(stageBlob);
+      return result;
+
   }
 
   // Add method to create or update background
