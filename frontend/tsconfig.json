@@ -80,6 +80,15 @@
     },
     {
       "path": "./libs/common"
+    },
+    {
+      "path": "./libs/tauri-api"
+    },
+    {
+      "path": "./libs/components/login-modal"
+    },
+    {
+      "path": "./libs/components/switch"
     }
   ]
 }

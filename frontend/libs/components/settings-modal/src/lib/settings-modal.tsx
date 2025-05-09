@@ -1,172 +1,53 @@
 import { Modal } from "@storyteller/ui-modal";
-import { Button } from "@storyteller/ui-button";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
-  faVideo,
-  faImage,
   faCog,
+  faVolumeHigh,
 } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
-import { Input } from "@storyteller/ui-input";
-import { Select, SelectValue } from "@storyteller/ui-select";
+import { MiscSettingsPane } from "./panes/MiscSettingsPane";
+import { AudioSettingsPane } from "./panes/AudioSettingsPane";
+import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  globalAccountLogoutCallback: () => void;
 }
 
-interface AccountInfo {
-  username: string;
-  subscription: string;
-  credits: number;
-}
+//type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
+type SettingsSection = "general" | "accounts" | "alerts";
 
-type SettingsSection = "accounts" | "video" | "image" | "misc";
-
-export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
-  const [accountInfo] = useState<AccountInfo>({
-    username: "Username [logout]",
-    subscription: "Pro-tier [change/upgrade]",
-    credits: 10233,
-  });
-
+export const SettingsModal = ({ isOpen, onClose, globalAccountLogoutCallback }: SettingsModalProps) => {
   const [selectedSection, setSelectedSection] =
-    useState<SettingsSection>("accounts");
-  const [palApiKey, setPalApiKey] = useState("");
-  const [klingApiKey, setKlingApiKey] = useState("");
-  const [defaultVideoModel, setDefaultVideoModel] = useState("veo");
-  const [humanVideoProvider, setHumanVideoProvider] = useState("artcraft");
+    useState<SettingsSection>("general");
 
   const sections = [
+    { id: "general" as const, label: "General", icon: faCog },
     { id: "accounts" as const, label: "Accounts", icon: faUser },
-    { id: "video" as const, label: "Video", icon: faVideo },
-    { id: "image" as const, label: "Image", icon: faImage },
-    { id: "misc" as const, label: "Misc", icon: faCog },
+    { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
+    //{ id: "video" as const, label: "Video", icon: faVideo },
+    //{ id: "image" as const, label: "Image", icon: faImage },
   ];
 
   const renderContent = () => {
     switch (selectedSection) {
+      case "alerts":
+        return <AudioSettingsPane />;
+      case "general":
+        return <MiscSettingsPane />;
       case "accounts":
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span>ArtCraft Account:</span>
-              <span className="text-white/80">{accountInfo.username}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>ArtCraft Subscription:</span>
-              <span className="text-white/80">{accountInfo.subscription}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Credits Remaining:</span>
-              <span className="text-white/80">{accountInfo.credits}</span>
-            </div>
-
-            <div className="rounded-md p-4 text-sm dark:bg-white/5">
-              <p className="text-white/60">
-                Note: You can optionally log into other accounts and use your
-                credits at those providers. Some features are only available via
-                3rd party accounts, such as OpenAI / Sora GPT 4.0 Images. For
-                other features, ArtCraft credits are consumed unless you log
-                into your third party account.
-              </p>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span>OpenAI / Sora Account:</span>
-              <Button variant="secondary" className="py-1">
-                Connect
-              </Button>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Google / Veo Account:</span>
-              <Button variant="secondary" className="py-1">
-                Connect
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="pal-api-key" className="mb-2 block">
-                  Pal API Key (optional)
-                </label>
-                <Input
-                  id="pal-api-key"
-                  type="password"
-                  value={palApiKey}
-                  onChange={(e) => setPalApiKey((e.target as any).value)}
-                  placeholder="Enter API Key"
-                />
-              </div>
-              <div>
-                <label htmlFor="kling-api-key" className="mb-2 block">
-                  Kling API Key (optional)
-                </label>
-                <Input
-                  id="kling-api-key"
-                  type="password"
-                  value={klingApiKey}
-                  onChange={(e) => setKlingApiKey((e.target as any).value)}
-                  placeholder="Enter API Key"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case "video":
-        return (
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="default-video-model" className="mb-2 block">
-                Default Video Model
-              </label>
-              <Select
-                id="default-video-model"
-                value={defaultVideoModel}
-                onChange={(val: SelectValue) =>
-                  setDefaultVideoModel(val as string)
-                }
-                options={[
-                  { value: "veo", label: "Veo" },
-                  { value: "kling", label: "Kling" },
-                ]}
-              />
-            </div>
-            <div>
-              <label htmlFor="human-video-provider" className="mb-2 block">
-                Human Video Provider
-              </label>
-              <Select
-                id="human-video-provider"
-                value={humanVideoProvider}
-                onChange={(val: SelectValue) =>
-                  setHumanVideoProvider(val as string)
-                }
-                options={[
-                  { value: "artcraft", label: "ArtCraft" },
-                  { value: "pal", label: "Pal" },
-                ]}
-              />
-            </div>
-          </div>
-        );
-
-      case "image":
-        return (
-          <div>
-            <button className="text-blue-600">Various Image Settings...</button>
-          </div>
-        );
-
-      case "misc":
-        return (
-          <div>
-            <button className="text-blue-600">Other Settings...</button>
-          </div>
-        );
+        return <AccountSettingsPane globalAccountLogoutCallback={globalAccountLogoutCallback} />;
+      //case "video":
+      //  return <VideoSettingsPane />;
+      //case "image":
+      //  return (
+      //    <div>
+      //      <button className="text-blue-600">Various Image Settings...</button>
+      //    </div>
+      //  );
     }
   };
 
@@ -202,7 +83,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               ))}
             </div>
           </div>
-          <div className="col-span-8 flex h-full flex-col overflow-auto">
+          <div className="col-span-8 flex h-full flex-col">
             <div className="w-full border-b border-white/10 py-2.5 ps-0">
               <h2 className="text-[18px] font-semibold">
                 {sections.find((s) => s.id === selectedSection)?.label}

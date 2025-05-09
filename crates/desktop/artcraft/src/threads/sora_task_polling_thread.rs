@@ -1,3 +1,6 @@
+use crate::events::sendable_event_trait::SendableEvent;
+use crate::events::sora::sora_image_generation_complete_event::SoraImageGenerationCompleteEvent;
+use crate::events::sora::sora_image_generation_failed_event::SoraImageGenerationFailedEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -17,16 +20,6 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter};
 use tempdir::TempDir;
 use tokens::tokens::media_files::MediaFileToken;
-
-#[derive(Debug, Clone, Serialize)]
-pub struct SoraImageGenerationComplete {
-  pub media_file_token: MediaFileToken,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct SoraImageGenerationFailed {
-  pub prompt: String,
-}
 
 pub async fn sora_task_polling_thread(
   app_handle: AppHandle,
@@ -102,9 +95,10 @@ async fn polling_loop(
     
     for task in failed_tasks.iter() {
       if sora_task_queue.contains_key(&task.id)? {
-        app_handle.emit("sora-image-generation-failed", SoraImageGenerationFailed {
+        let event = SoraImageGenerationFailedEvent { 
           prompt: task.prompt.clone(),
-        })?;
+        };
+        event.send(&app_handle)?;
       }
     }
 
@@ -133,9 +127,11 @@ async fn polling_loop(
         
         info!("Uploaded to API backend: {:?}", result.media_file_token);
         
-        app_handle.emit("sora-image-generation-complete", SoraImageGenerationComplete { 
-          media_file_token: result.media_file_token 
-        })?;
+        let event = SoraImageGenerationCompleteEvent {
+          media_file_token: result.media_file_token,
+        };
+        
+        event.send(&app_handle)?;
       }
     }
 
@@ -146,7 +142,7 @@ async fn polling_loop(
 
     sora_task_queue.remove_list(&succeeded_task_ids)?;
 
-    tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
+    tokio::time::sleep(std::time::Duration::from_millis(6_000)).await;
   }
 }
 

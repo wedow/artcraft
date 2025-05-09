@@ -3,16 +3,31 @@
   "include": [],
   "references": [
     {
+      "path": "../modal"
+    },
+    {
+      "path": "../label"
+    },
+    {
+      "path": "../switch"
+    },
+    {
       "path": "../select"
+    },
+    {
+      "path": "../../soundboard"
+    },
+    {
+      "path": "../../tauri-api"
+    },
+    {
+      "path": "../../api"
     },
     {
       "path": "../input"
     },
     {
       "path": "../button"
-    },
-    {
-      "path": "../modal"
     },
     {
       "path": "./tsconfig.lib.json"

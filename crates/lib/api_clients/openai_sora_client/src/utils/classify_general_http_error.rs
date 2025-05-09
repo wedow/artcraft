@@ -8,7 +8,33 @@ pub async fn classify_general_http_error(response: reqwest::Response) -> SoraErr
     Ok(text) => text,
     Err(err) => return SoraError::ReqwestError(err),
   };
+  
+  /*
+  
+Old cookie - 
 
+Message: {
+  "error": {
+    "message": "Your authentication token has expired. Please try signing in again.",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "token_expired"
+  }
+}
+
+No cookie - 
+
+Message: {
+  "error": {
+    "message": "Your authentication token has expired. Please try signing in again.",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "token_expired"
+  }
+}
+   */
+
+  // TODO: I *think* this is just the bearer token, not the cookie.
   let cookie_expired =
       message.contains("Your authentication token has expired. Please try signing in again.")
           || message.contains("token_expired");
@@ -17,8 +43,18 @@ pub async fn classify_general_http_error(response: reqwest::Response) -> SoraErr
     return SoraError::UnauthorizedCookieOrBearerExpired
   }
 
-  if status.as_u16() == 502 {
-    return SoraError::BadGateway(message);
+  let status_code = status.as_u16();
+  
+  match status_code {
+    502 => {
+      return SoraError::BadGateway(message);
+    }
+    524 => {
+      if message.contains("cloudflare") || message.contains("Cloudflare") {
+        return SoraError::CloudFlareTimeout(message);
+      }
+    }
+    _ => {}, // Fall-through
   }
 
   SoraError::OtherBadStatus(anyhow::anyhow!("Upload failed with status {}: {}", status, message))

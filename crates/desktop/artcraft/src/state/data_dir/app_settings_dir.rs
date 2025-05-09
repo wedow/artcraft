@@ -1,6 +1,7 @@
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
 use errors::AnyhowResult;
+use serde::Serialize;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -33,8 +34,12 @@ impl AppSettingsDir {
   
   pub fn write_app_preferences(&self, prefs: &AppPreferences) -> AnyhowResult<()> {
     let serializable = prefs.to_serializable();
-    let serializable = serde_json::to_string(&serializable)?;
-    
+
+    let formatter = serde_json::ser::PrettyFormatter::with_indent(b"  ");
+    let mut buf = Vec::new();
+    let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
+    serializable.serialize(&mut ser)?;
+
     let filename = self.get_app_preferences_path();
 
     let mut file = OpenOptions::new()
@@ -43,7 +48,7 @@ impl AppSettingsDir {
         .truncate(true)
         .open(filename)?;
 
-    file.write_all(serializable.as_bytes())?;
+    file.write_all(&buf)?;
     file.flush()?;
     
     Ok(())

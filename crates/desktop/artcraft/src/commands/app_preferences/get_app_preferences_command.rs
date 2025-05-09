@@ -14,8 +14,27 @@ pub struct GetAppPreferencesResponse {
 pub struct AppPreferencesPayload {
   /// The downloads directory to use when a user downloads a file.
   pub preferred_download_directory: PreferredDownloadDirectory,
+  
   /// Play sounds on events.
   pub play_sounds: bool,
+
+  /// Key pointing to file; defined in the frontend code.
+  /// Defined for enqueue since image enqueue can be async
+  pub enqueue_success_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
+  /// Defined for enqueue since image enqueue can be async
+  pub enqueue_failure_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
+  pub generation_success_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
+  pub generation_failure_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
+  #[deprecated]
+  pub generation_enqueue_sound: Option<String>,
 }
 
 
@@ -42,5 +61,10 @@ async fn get_prefs(app_prefs: &AppPreferencesManager) -> AnyhowResult<AppPrefere
   Ok(AppPreferencesPayload {
     preferred_download_directory: prefs.preferred_download_directory,
     play_sounds: prefs.play_sounds,
+    enqueue_success_sound: prefs.enqueue_success_sound,
+    enqueue_failure_sound: prefs.enqueue_failure_sound,
+    generation_success_sound: prefs.generation_success_sound,
+    generation_failure_sound: prefs.generation_failure_sound,
+    generation_enqueue_sound: prefs.generation_enqueue_sound,
   })
 }

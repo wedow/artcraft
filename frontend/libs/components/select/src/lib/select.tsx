@@ -17,6 +17,7 @@ interface ListDropdownProps {
   placeholder?: string;
   value?: SelectValue;
   id?: string;
+  className?: string;
 }
 
 export const Select = ({
@@ -25,13 +26,14 @@ export const Select = ({
   placeholder,
   value,
   id,
+  className,
 }: ListDropdownProps) => {
   const selectedOption = options.find(
     (option: SelectOption) => option.value === value
   ) || { label: placeholder || "", value: "" };
 
   return (
-    <div className="relative mt-1">
+    <div className={twMerge("relative", className)}>
       <Listbox value={value || ""} onChange={onChange}>
         {({ open }) => (
           <>

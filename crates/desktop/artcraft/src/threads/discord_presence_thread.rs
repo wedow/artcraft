@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use discord_rich_presence::{DiscordIpc, DiscordIpcClient};
 use errors::AnyhowResult;
-use log::info;
+use log::{debug, info};
 
 /// Our Discord App ID. Not sure if this is a secret.
 const DISCORD_APP_ID : &str = "1366596912593113138";
@@ -15,13 +15,13 @@ pub async fn discord_presence_thread() -> ! {
 }
 
 async fn discord_main_loop(mut client: DiscordIpcClient) -> AnyhowResult<()> {
-  info!("Connecting Discord IPC client");
+  info!("(Re)-connecting Discord IPC client...");
 
   client.connect()
       .map_err(|err| anyhow!("Error connecting to Discord IPC: {:?}", err))?;
 
   loop {
-    info!("Notifying discord...");
+    debug!("Notifying discord presence API...");
 
     let assets = discord_rich_presence::activity::Assets::new()
         .large_image("https://storyteller.ai/android-chrome-512x512.png")
@@ -37,6 +37,6 @@ async fn discord_main_loop(mut client: DiscordIpcClient) -> AnyhowResult<()> {
         .assets(assets))
         .map_err(|err| anyhow!("Error setting Discord activity: {:?}", err))?;
 
-    tokio::time::sleep(std::time::Duration::from_millis(30_000)).await;
+    tokio::time::sleep(std::time::Duration::from_millis(60_000)).await;
   }
 }

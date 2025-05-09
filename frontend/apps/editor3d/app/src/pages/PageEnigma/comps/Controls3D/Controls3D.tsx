@@ -23,7 +23,8 @@ export const Controls3D = () => {
   useEffect(() => {
     // Check if scene is empty and onboarding helper is not visible
     const checkSceneEmpty = () => {
-      const isSceneEmpty = outlinerState.items.value.length === 0;
+      const isSceneEmpty =
+        outlinerState.items.value.length === 0 && !assetModalVisible.value;
 
       setShowEmptySceneTooltip(isSceneEmpty);
     };
@@ -37,7 +38,8 @@ export const Controls3D = () => {
     return () => {
       unsubscribe();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assetModalVisible.value]);
 
   const handleModeChange = (value: string) => {
     selectedMode.value = value;
@@ -119,7 +121,7 @@ export const Controls3D = () => {
                 <Tooltip
                   content="Add 3D asset to scene (B)"
                   position="bottom"
-                  delay={100}
+                  delay={300}
                   closeOnClick
                   className={twMerge(
                     showEmptySceneTooltip ? "hidden" : "block",

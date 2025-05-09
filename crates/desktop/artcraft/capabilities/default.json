@@ -25,6 +25,7 @@
           "url": "https://private.tauri.app"
         }
       ]
-    }
+    },
+    "dialog:default"
   ]
 }

@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
-
-import {
-  TransitionDialogue,
-  LoadingDots,
-  Label,
-  CloseButton,
-} from "~/components";
-
+import { LoadingDots } from "~/components";
+import { Modal } from "@storyteller/ui-modal";
+import { Label } from "@storyteller/ui-label";
 import { UploadAssetError } from "../UploadModal/UploadAssetError";
 import { UploadSuccess } from "../UploadModal/UploadSuccess";
 import { UploadFiles3D } from "./UploadFiles3D";
@@ -19,18 +14,21 @@ import {
   CHARACTER_MIXAMO_FILE_TYPE,
   IMAGEPLANE_FILE_TYPE,
 } from "~/enums";
-import { assetModalVisible } from "~/pages/PageEnigma/signals";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 interface Props {
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (category: FilterEngineCategories) => void;
   isOpen: boolean;
   title: string;
+  titleIcon: IconDefinition;
   options?: {
     fileSubtypes?: { [key: string]: string }[];
     hasLength?: boolean;
     hasThumbnailUpload?: boolean;
   };
+  preselectedCategory?: FilterEngineCategories;
+  isSelectVisible: boolean;
 }
 
 // Map categories to their allowed file types
@@ -43,16 +41,6 @@ const categoryFileTypes: Partial<Record<FilterEngineCategories, string[]>> = {
   [FilterEngineCategories.LOCATION]: Object.values(OBJECT_FILE_TYPE),
   [FilterEngineCategories.CREATURE]: Object.values(OBJECT_FILE_TYPE),
 };
-
-// Map engine categories to asset modal tabs
-const categoryToAssetTab: Partial<Record<FilterEngineCategories, string>> = {
-  [FilterEngineCategories.OBJECT]: "objects",
-  [FilterEngineCategories.CHARACTER]: "character",
-  [FilterEngineCategories.IMAGE_PLANE]: "image-planes",
-  [FilterEngineCategories.LOCATION]: "sets",
-  [FilterEngineCategories.CREATURE]: "creatures",
-};
-
 // Excluded category options for the upload modal
 const categoryOptions = Object.entries(FilterEngineCategories)
   .filter(
@@ -82,12 +70,19 @@ export function UploadModal3D({
   onClose,
   onSuccess,
   title,
+  titleIcon,
   options,
-}: Props) {
+  preselectedCategory,
+  isSelectVisible,
+}: Props & { preselectedCategory?: FilterEngineCategories }) {
   const [uploaderState, setUploaderState] =
     useState<UploaderState>(initialUploaderState);
   const [selectedCategory, setSelectedCategory] =
-    useState<FilterEngineCategories>(FilterEngineCategories.OBJECT);
+    useState<FilterEngineCategories>(
+      preselectedCategory !== undefined
+        ? preselectedCategory
+        : FilterEngineCategories.OBJECT,
+    );
 
   const updateUploaderState = (newState: UploaderState) => {
     setUploaderState(newState);
@@ -103,30 +98,51 @@ export function UploadModal3D({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (preselectedCategory !== undefined) {
+      setSelectedCategory(preselectedCategory);
+    }
+  }, [preselectedCategory]);
+
+  useEffect(() => {
+    console.log("Preselected category:", preselectedCategory);
+    console.log("Initial selected category:", selectedCategory);
+  }, [preselectedCategory, selectedCategory]);
+
+  useEffect(() => {
+    if (uploaderState.status === UploaderStates.success) {
+      onSuccess(selectedCategory);
+      onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploaderState.status]);
+
   const UploaderModalContent = () => {
     switch (uploaderState.status) {
       case UploaderStates.ready:
         return (
           <div className="space-y-4">
-            <div className="flex w-full flex-col">
-              <Label>Category</Label>
-              <Select
-                id="category-select"
-                options={categoryOptions}
-                value={selectedCategory}
-                onChange={(value) => {
-                  if (
-                    typeof value === "string" &&
-                    Object.values(FilterEngineCategories).includes(
-                      value as FilterEngineCategories,
-                    )
-                  ) {
-                    setSelectedCategory(value as FilterEngineCategories);
-                  }
-                }}
-                placeholder="Select a category"
-              />
-            </div>
+            {isSelectVisible && (
+              <div className="flex w-full flex-col">
+                <Label className="mb-1">Category</Label>
+                <Select
+                  id="category-select"
+                  options={categoryOptions}
+                  value={selectedCategory}
+                  onChange={(value) => {
+                    if (
+                      typeof value === "string" &&
+                      Object.values(FilterEngineCategories).includes(
+                        value as FilterEngineCategories,
+                      )
+                    ) {
+                      setSelectedCategory(value as FilterEngineCategories);
+                    }
+                  }}
+                  placeholder="Select a category"
+                />
+              </div>
+            )}
             <UploadFiles3D
               title={title}
               engineCategory={selectedCategory}
@@ -146,31 +162,17 @@ export function UploadModal3D({
             <div className="w-100 text-center opacity-50">Uploading...</div>
           </>
         );
-      case UploaderStates.success:
+      case UploaderStates.success: {
         return (
           <UploadSuccess
             title="3D model"
             onOk={() => {
-              onSuccess();
               onClose();
-              // Store the selected category and tab in sessionStorage
-              const assetTab = categoryToAssetTab[selectedCategory];
-              if (assetTab) {
-                sessionStorage.setItem(
-                  "lastUploadedCategory",
-                  selectedCategory,
-                );
-                sessionStorage.setItem("lastUploadedTab", assetTab);
-                // Reopen the asset modal
-                assetModalVisible.value = true;
-              } else {
-                // Clear any existing stored values if we don't have a valid tab
-                sessionStorage.removeItem("lastUploadedCategory");
-                sessionStorage.removeItem("lastUploadedTab");
-              }
+              onSuccess(selectedCategory);
             }}
           />
         );
+      }
       case UploaderStates.assetError:
         return (
           <UploadAssetError
@@ -199,15 +201,15 @@ export function UploadModal3D({
   };
 
   return (
-    <TransitionDialogue
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
+      titleIcon={titleIcon}
       title={title}
       className="max-w-xl"
-      showClose={false}
+      showClose={true}
     >
-      <CloseButton className="absolute right-4 top-4" onClick={onClose} />
       <UploaderModalContent />
-    </TransitionDialogue>
+    </Modal>
   );
 }

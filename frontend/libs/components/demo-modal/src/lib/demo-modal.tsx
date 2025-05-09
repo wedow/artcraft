@@ -54,7 +54,6 @@ export function DemoModal({
           <video autoPlay muted loop controls={false}>
             <source src={videoSrc} type="video/mp4" />
           </video>
-          W
         </div>
         <Button
           className="font-semibold"

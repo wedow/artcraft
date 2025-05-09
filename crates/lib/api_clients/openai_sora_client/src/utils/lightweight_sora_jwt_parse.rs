@@ -1,12 +1,13 @@
 //! Adapted from 'jwt' crate
 
+use crate::sora_error::SoraError;
 use anyhow::anyhow;
-use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use base64::Engine;
 use chrono::{DateTime, Utc};
+use errors::AnyhowResult;
 use log::warn;
 use serde_json::Value;
-use errors::AnyhowResult;
 
 const SEPARATOR: &str = ".";
 
@@ -19,48 +20,53 @@ pub struct SoraJwtClaims {
   pub email_verified: bool,
 }
 
-pub fn lightweight_sora_jwt_parse(token: &str) -> AnyhowResult<SoraJwtClaims> {
+pub fn lightweight_sora_jwt_parse(token: &str) -> Result<SoraJwtClaims, SoraError> {
   let [_header_str, claims_str, _signature_str] = split_components(token)?;
 
-  let claims = decode_base64(claims_str)?;
-  let claims : serde_json::Map<String, Value> = serde_json::from_str(&claims)?;
+  let claims = decode_base64(claims_str)
+      .map_err(|err| SoraError::LocalJwtClaimsParseError(
+        format!("failure to parse claims base64: {:?}", err)))?;
+  
+  let claims : serde_json::Map<String, Value> = serde_json::from_str(&claims)
+      .map_err(|err| SoraError::LocalJwtClaimsParseError(
+        format!("failure to parse claims json: {:?}", err)))?;
 
   let iat = claims.get("iat")
       .map(|val| val.as_number())
       .flatten()
-      .ok_or(anyhow!("no iat claim"))?;
+      .ok_or_else(|| jwt_error("no iat claim"))?;
 
   let iat = iat.as_i64()
-      .ok_or(anyhow!("iat is not a number"))?;
+      .ok_or_else(|| jwt_error("iat is not a number"))?;
 
   let iat = DateTime::from_timestamp(iat, 0)
-      .ok_or(anyhow!("iat is not a valid timestamp"))?;
+      .ok_or_else(|| jwt_error("iat is not a valid timestamp"))?;
 
   let exp = claims.get("exp")
       .map(|val| val.as_number())
       .flatten()
-      .ok_or(anyhow!("no exp claim"))?;
+      .ok_or_else(|| jwt_error("no exp claim"))?;
 
   let exp = exp.as_i64()
-      .ok_or(anyhow!("exp is not a number"))?;
+      .ok_or_else(|| jwt_error("exp is not a number"))?;
 
   let exp = DateTime::from_timestamp(exp, 0)
-      .ok_or(anyhow!("iat is not a valid timestamp"))?;
+      .ok_or_else(|| jwt_error("iat is not a valid timestamp"))?;
 
   let user_id = claims.get("https://api.openai.com/auth")
       .map(|val| val.get("user_id"))
       .flatten()
       .map(|val| val.as_str())
       .flatten()
-      .ok_or(anyhow!("no user_id claim"))?;
+      .ok_or_else(|| jwt_error("no user_id claim"))?;
 
   let profile = claims.get("https://api.openai.com/profile")
-      .ok_or(anyhow!("no user_id claim"))?;
+      .ok_or_else(|| jwt_error("no user_id claim"))?;
 
   let email = profile.get("email")
       .map(|val| val.as_str())
       .flatten()
-      .ok_or(anyhow!("no email claim"))?;
+      .ok_or_else(|| jwt_error("no email claim"))?;
 
   let email_verified = profile.get("email_verified")
       .map(|val| val.as_bool())
@@ -79,14 +85,19 @@ pub fn lightweight_sora_jwt_parse(token: &str) -> AnyhowResult<SoraJwtClaims> {
   })
 }
 
-fn split_components(token: &str) -> AnyhowResult<[&str; 3]> {
+fn split_components(token: &str) -> Result<[&str; 3], SoraError> {
   let mut components = token.split(SEPARATOR);
-  let header = components.next().ok_or(anyhow!("no header component"))?;
-  let claims = components.next().ok_or(anyhow!("no claims component"))?;
-  let signature = components.next().ok_or(anyhow!("no signature component"))?;
+  let header = components.next()
+      .ok_or_else(|| jwt_error("no header component"))?;
+  
+  let claims = components.next()
+      .ok_or_else(|| jwt_error("no claims component"))?;
+  
+  let signature = components.next()
+      .ok_or_else(|| jwt_error("no signature component"))?;
 
   if components.next().is_some() {
-    return Err(anyhow!("too many components"));
+    return Err(jwt_error("too many components"));
   }
 
   Ok([header, claims, signature])
@@ -96,6 +107,10 @@ fn decode_base64(raw: &str) -> AnyhowResult<String> {
   let json_bytes = BASE64_URL_SAFE_NO_PAD.decode(raw)?;
   let json_str = String::from_utf8(json_bytes.clone())?;
   Ok(json_str)
+}
+
+fn jwt_error(reason: &str) -> SoraError {
+  SoraError::LocalJwtClaimsParseError(reason.to_string())
 }
 
 #[cfg(test)]

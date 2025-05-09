@@ -43,13 +43,16 @@
       "path": "../../libs/components/close-button"
     },
     {
-      "path": "../../libs/components/modal"
+      "path": "../../libs/tauri-api"
     },
     {
       "path": "../../libs/components/toaster"
     },
     {
       "path": "../../libs/components/demo-modal"
+    },
+    {
+      "path": "../../libs/components/login-modal"
     },
     {
       "path": "../../libs/components/popover"
@@ -62,6 +65,9 @@
     },
     {
       "path": "../../libs/components/promptbox"
+    },
+    {
+      "path": "../../libs/common"
     },
     {
       "path": "../../libs/components/tab-selector"
@@ -77,6 +83,12 @@
     },
     {
       "path": "../../libs/components/gallery-modal"
+    },
+    {
+      "path": "../../libs/components/label"
+    },
+    {
+      "path": "../../libs/components/modal"
     },
     {
       "path": "../../libs/tauri-utils"

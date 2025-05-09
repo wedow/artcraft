@@ -28,9 +28,7 @@ import { CameraAspectRatio } from "./enums";
 import { PromptBox3D } from "@storyteller/ui-promptbox";
 import { PopoverItem } from "@storyteller/ui-popover";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
-import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-import { DemoModal } from "@storyteller/ui-demo-modal";
 import { appTabId, setAppTabId } from "~/signals/appTab";
 import { KonvaCanvasContainer } from "../Page2d/KonvaCanvasContainer";
 import { KonvaRootComponent } from "../Page2d/KonvaRootComponent";
@@ -41,6 +39,14 @@ import { EngineContext } from "./contexts/EngineContext";
 import Queue, { QueueNames } from "./Queue";
 import { toEngineActions } from "./Queue/toEngineActions";
 import { UnionedDataTypes } from "./Queue/Queue";
+import { LoginModal } from "@storyteller/ui-login-modal";
+import { DemoModal } from "@storyteller/ui-demo-modal";
+import { IsDesktopApp } from "@storyteller/tauri-utils";
+import {
+  DomLevels,
+} from "./signals/hotkeys";
+import { AUTH_STATUS } from "../../enums/authentication";
+import { authentication } from "../../signals/authentication/authentication";
 
 export const PageEditor = () => {
   useSignals();
@@ -244,7 +250,8 @@ export const PageEditor = () => {
   }
 
   const ContentFor3D = () => {
-    return <> <OnboardingHelper />
+    return (<>
+    <OnboardingHelper />
       <div
         className="relative flex w-screen"
         style={{ height: "calc(100vh - 68px)" }}
@@ -346,12 +353,27 @@ export const PageEditor = () => {
         buttonOnClick={async () => {
           if (IsDesktopApp()) {
             await invoke("open_sora_login_command");
-          } else {
-            console.error("This is not the Desktop app.");
           }
         }}
       />
-    </>
+      <LoginModal
+        onClose={() => {}}
+        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
+        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
+        openAiLogo="/resources/images/openai-logo.png"
+        onOpenChange={(isOpen: boolean) => {
+          if (isOpen) {
+            disableHotkeyInput(DomLevels.DIALOGUE);
+          } else {
+            enableHotkeyInput(DomLevels.DIALOGUE);
+          }
+        }}
+        onArtCraftAuthSuccess={(userInfo: any) => {
+          authentication.status.value = AUTH_STATUS.LOGGED_IN;
+          authentication.userInfo.value = userInfo;
+        }}
+      />
+      </>);
   }
 
   const ContentFor2D = () => {

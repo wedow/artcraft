@@ -1,3 +1,4 @@
+use std::{fs, io};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::sora::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
 use crate::state::sora::sora_credential_holder::SoraCredentialHolder;
@@ -9,6 +10,7 @@ use openai_sora_client::creds::sora_sentinel::SoraSentinel;
 use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::path::Path;
 use openai_sora_client::creds::sora_cookies::SoraCookies;
 use openai_sora_client::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 
@@ -43,6 +45,31 @@ impl SoraCredentialManager {
   pub fn clear_credentials(&self) -> AnyhowResult<()> {
     self.holder.clear_credentials()?;
     Ok(())
+  }
+
+  /// This is meant to be infallible.
+  pub fn purge_credentials_from_disk(&self) -> Result<(), io::Error> {
+    let creds_dir = self.app_data_root.credentials_dir();
+
+    remove_file_if_exists(creds_dir.get_sora_cookie_file_path())?;
+    remove_file_if_exists(creds_dir.get_sora_bearer_token_file_path())?;
+    remove_file_if_exists(creds_dir.get_sora_sentinel_file_path())?;
+    
+    Ok(())
+  }
+  
+  /// This is meant to be infallible.
+  pub fn try_purge_credentials_from_disk(&self) {
+    let creds_dir = self.app_data_root.credentials_dir();
+    if let Err(err) = fs::remove_file(creds_dir.get_sora_cookie_file_path()) {
+      error!("Failed to remove cookie file: {:?}", err);
+    }
+    if let Err(err) = fs::remove_file(creds_dir.get_sora_bearer_token_file_path()) {
+      error!("Failed to remove bearer token file: {:?}", err);
+    }
+    if let Err(err) = fs::remove_file(creds_dir.get_sora_sentinel_file_path()) {
+      error!("Failed to remove sentinel file: {:?}", err);
+    }
   }
 
   pub fn get_credentials(&self) -> AnyhowResult<Option<SoraCredentialSet>> {
@@ -153,5 +180,13 @@ fn persist_sentinel_to_disk(sentinel: &SoraSentinel, app_data_root: &AppDataRoot
   file.write_all(sentinel.as_bytes())?;
   file.flush()?;
 
+  Ok(())
+}
+
+fn remove_file_if_exists<P: AsRef<Path>>(path: P) -> Result<(), io::Error> {
+  let p = path.as_ref();
+  if p.exists() && p.is_file() {
+    fs::remove_file(p)?;
+  }
   Ok(())
 }

@@ -3,7 +3,7 @@ import { useSignals } from "@preact/signals-react/runtime";
 import DndAsset from "~/pages/PageEnigma/DragAndDrop/DndAsset";
 import { Badge } from "~/components";
 import { AssetType } from "~/enums";
-import { useState } from "react";
+// import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpDownLeftRight } from "@fortawesome/pro-solid-svg-icons";
 
@@ -37,7 +37,7 @@ const patchExpressionObjectType = (mediaType: string) => {
 
 export const ItemElement = ({ item }: Props) => {
   useSignals();
-  const [imageError, setImageError] = useState(false);
+  // const [imageError, setImageError] = useState(false);
 
   return (
     <div className="group relative w-full select-none overflow-hidden transition-all duration-200">
@@ -59,16 +59,13 @@ export const ItemElement = ({ item }: Props) => {
         onPointerDown={(event) => DndAsset.onPointerDown(event, item)}
         style={{ cursor: "grab", pointerEvents: "auto" }}
       >
-        {item.thumbnail && !imageError && (
-          <img
-            crossOrigin="anonymous"
-            referrerPolicy="no-referrer"
-            src={item.thumbnail}
-            alt={item.name}
-            className="h-full w-full object-cover object-center"
-            onError={() => setImageError(true)}
-          />
-        )}
+        <img
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+          src={item.thumbnail}
+          alt={item.name}
+          className="h-full w-full object-cover object-center"
+        />
 
         <div className="text-shadow-md absolute inset-0 flex items-center justify-center bg-brand-primary-950/50 text-[13px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           <FontAwesomeIcon icon={faUpDownLeftRight} className="mr-1.5" />

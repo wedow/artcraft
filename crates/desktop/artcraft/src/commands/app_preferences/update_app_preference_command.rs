@@ -1,8 +1,10 @@
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info};
+use openai_sora_client::sora_error::SoraError::AnyhowError;
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 
@@ -11,7 +13,15 @@ use tauri::{AppHandle, State};
 pub struct UpdateAppPreferencesRequest {
   pub preference: PreferenceName,
   /// We'll decode this with respect to the preference value.
-  pub value: String,
+  pub value: Option<ValueType>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(untagged)]
+pub enum ValueType {
+  Bool(bool),
+  String(String),
+  DownloadDirectory(PreferredDownloadDirectory),
 }
 
 #[derive(Deserialize)]
@@ -19,13 +29,15 @@ pub struct UpdateAppPreferencesRequest {
 pub enum PreferenceName {
   PreferredDownloadDirectory,
   PlaySounds,
+  GenerationSuccessSound,
+  GenerationFailureSound,
+  GenerationEnqueueSound,
 }
 
 #[derive(Serialize)]
 pub struct UpdateAppPreferencesResponse {
   pub success: bool,
 }
-
 
 #[tauri::command]
 pub async fn update_app_preferences_command(
@@ -54,12 +66,39 @@ async fn update_prefs(
 ) -> AnyhowResult<()> {
   let mut prefs = app_prefs.get_clone()?;
   
+  info!("Value is: {:?}", request.value);
+  
   match request.preference {
     PreferenceName::PreferredDownloadDirectory => {
-      prefs.preferred_download_directory = request.value.parse::<PreferredDownloadDirectory>()?;
+      match request.value {
+        Some(ValueType::DownloadDirectory(dir)) => 
+          prefs.preferred_download_directory = dir,
+        _ =>
+          return Err(anyhow!("Invalid value: {:?}", request.value)),
+      }
     }
     PreferenceName::PlaySounds => {
-      prefs.play_sounds = request.value.parse::<bool>()?;
+      match request.value {
+        Some(ValueType::Bool(val)) => 
+          prefs.play_sounds = val,
+        _ => 
+          return Err(anyhow!("Invalid value: {:?}", request.value)),
+      }
+    }
+    PreferenceName::GenerationSuccessSound => {
+      prefs.generation_success_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
+    }
+    PreferenceName::GenerationFailureSound => {
+      prefs.generation_failure_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
+    }
+    PreferenceName::GenerationEnqueueSound => {
+      prefs.generation_enqueue_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
     }
   }
   
@@ -67,4 +106,11 @@ async fn update_prefs(
   app_data_root.settings_dir().write_app_preferences(&prefs)?;
   
   Ok(())
+}
+
+fn string_value(value: &ValueType) -> AnyhowResult<String> {
+  match value {
+    ValueType::String(val) => Ok(val.to_string()),
+    _ => Err(anyhow!("Invalid value type: {:?}", value)),
+  }
 }

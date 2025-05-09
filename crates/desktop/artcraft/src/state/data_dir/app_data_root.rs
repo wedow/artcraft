@@ -136,6 +136,10 @@ impl AppDataRoot {
   pub fn get_window_size_config_file(&self) -> PathBuf {
     self.path.join("window_size.json")
   }
+  
+  pub fn get_window_position_config_file(&self) -> PathBuf {
+    self.path.join("window_position.json")
+  }
 }
 
 // eg. /home/bob/artcraft, /Users/bob/artcraft, or C:\Users\Alice\artcraft

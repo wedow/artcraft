@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   faChevronLeft,
-  faChevronRight,
   faGear,
   faImages,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -18,11 +17,14 @@ import { downloadFileFromUrl } from "@storyteller/api";
 import { TabSelector, TabItem } from "@storyteller/ui-tab-selector";
 import { Signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
+import { setLogoutStates } from "~/signals/authentication/utilities";
+
 function isEditorPath(path: string) {
   if (path === "/") return true;
   if (path === "/idealenigma/") return true;
   return false;
 }
+
 interface Props {
   pageName: string;
   appTabIdSignal: Signal<string>;
@@ -30,8 +32,8 @@ interface Props {
 }
 
 const appTabs: TabItem[] = [
-  { id: "2D", label: "2D" },
   { id: "3D", label: "3D" },
+  { id: "2D", label: "2D" },
 ];
 
 export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
@@ -70,7 +72,8 @@ export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
               tabs={appTabs}
               activeTab={appTabIdSignal.value}
               disabled={false}
-              onTabChange={(tabId) => setAppTabId(tabId)}
+              onTabChange={(tabId: string) => setAppTabId(tabId)}
+              className="w-fit"
             />
           </div>
 
@@ -108,6 +111,7 @@ export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
+        globalAccountLogoutCallback={() => setLogoutStates()}
       />
 
       <GalleryModal

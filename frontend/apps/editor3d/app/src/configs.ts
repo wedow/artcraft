@@ -66,8 +66,8 @@ export class Configs {
                 break;
         }
 
-        console.debug(`Build environment type: ${environment}`);
-        console.debug(`Deploy context: ${this.deployContext}`);
-        console.debug(`Upload API: ${this.uploadApiVideo}`);
+        //console.debug(`Build environment type: ${environment}`);
+        //console.debug(`Deploy context: ${this.deployContext}`);
+        //console.debug(`Upload API: ${this.uploadApiVideo}`);
     }
 }

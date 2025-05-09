@@ -1,11 +1,11 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::utils::best_window_size_heuristic::best_window_size_heuristic;
+use crate::windows::main_window::constants::MAIN_WINDOW_NAME;
 use errors::AnyhowResult;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::Write;
 use tauri::{AppHandle, Manager, PhysicalSize, Window};
-
-const MAIN_WINDOW_NAME: &str = "main";
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct MainWindowSize {
@@ -26,7 +26,7 @@ impl MainWindowSize {
   }
 
   pub fn from_window(window: &Window) -> AnyhowResult<Self> {
-    let size = window.inner_size()?;
+    let size = best_window_size_heuristic(window)?;
     Ok(Self {
       width: size.width,
       height: size.height,
