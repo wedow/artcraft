@@ -19,36 +19,37 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
+//type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
+type SettingsSection = "general" | "accounts" | "alerts";
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [selectedSection, setSelectedSection] =
-    useState<SettingsSection>("misc");
+    useState<SettingsSection>("general");
 
   const sections = [
-    { id: "audio" as const, label: "Audio", icon: faVolumeHigh },
-    { id: "misc" as const, label: "Misc", icon: faCog },
+    { id: "general" as const, label: "General", icon: faCog },
     { id: "accounts" as const, label: "Accounts", icon: faUser },
-    { id: "video" as const, label: "Video", icon: faVideo },
-    { id: "image" as const, label: "Image", icon: faImage },
+    { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
+    //{ id: "video" as const, label: "Video", icon: faVideo },
+    //{ id: "image" as const, label: "Image", icon: faImage },
   ];
 
   const renderContent = () => {
     switch (selectedSection) {
-      case "audio":
+      case "alerts":
         return <AudioSettingsPane />;
-      case "misc":
+      case "general":
         return <MiscSettingsPane />;
       case "accounts":
         return <AccountSettingsPane />;
-      case "video":
-        return <VideoSettingsPane />;
-      case "image":
-        return (
-          <div>
-            <button className="text-blue-600">Various Image Settings...</button>
-          </div>
-        );
+      //case "video":
+      //  return <VideoSettingsPane />;
+      //case "image":
+      //  return (
+      //    <div>
+      //      <button className="text-blue-600">Various Image Settings...</button>
+      //    </div>
+      //  );
     }
   };
 
