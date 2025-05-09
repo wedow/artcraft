@@ -197,6 +197,10 @@ class Editor {
   processingHasFailed: boolean;
   stats: Stats;
 
+  // Allows us to cancel the queued render
+  private renderEventToken: number;
+  private shouldRender: boolean;
+
   constructor() {
     this.processingHasFailed = false;
     console.log(
@@ -256,6 +260,8 @@ class Editor {
     this.lastFrameTime = 0;
     this.last_selected_sum = 0;
     this.selectedCanvas = false;
+    this.renderEventToken = -1;
+    this.shouldRender = true;
     // Audio Engine Test.
 
     this.render_camera_aspect_ratio = CameraAspectRatio.HORIZONTAL_3_2;
@@ -645,7 +651,7 @@ class Editor {
     // Creates the main update loop.
     //this.renderer.setAnimationLoop(this.updateLoop.bind(this));
 
-    this.updateLoop();
+    this.startRenderLoop();
 
     if (!this.utils.isEmpty(sceneToken)) {
       this.loadScene(sceneToken);
@@ -1155,10 +1161,10 @@ class Editor {
             : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 576
               : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 900
                 : this.render_camera_aspect_ratio ===
-                    meraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 600
                   : 1000;
         const height =
@@ -1167,10 +1173,10 @@ class Editor {
             : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 1024
               : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 600
                 : this.render_camera_aspect_ratio ===
-                    meraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 900
                   : 1000;
 
@@ -1377,10 +1383,15 @@ class Editor {
   }
 
   // Basicly Unity 3D's update loop.
-  async updateLoop() {
+  updateLoop() {
+    if (!this.shouldRender) {
+      console.debug("Stopping 3D render loop");
+      return;
+    }
+
     // Performance improvement: Handle frame cap
     // Request the next render already - this is necessary so the loop doesn't stop if the fps cap is hit
-    requestAnimationFrame(this.updateLoop.bind(this));
+    this.renderEventToken = requestAnimationFrame(this.updateLoop.bind(this));
     const frameTime = performance.now();
     if (frameTime - this.lastFrameTime < 1000 / this.cap_fps) {
       return;
@@ -1388,6 +1399,23 @@ class Editor {
 
     this.lastFrameTime = frameTime;
     this.renderSingleFrame();
+  }
+
+  startRenderLoop() {
+    if (this.shouldRender) {
+      console.warn("Render flag is already true");
+    }
+    this.shouldRender = true;
+    this.updateLoop();
+  }
+
+  stopRenderLoop() {
+    this.shouldRender = false;
+
+    if (this.renderEventToken) {
+      cancelAnimationFrame(this.renderEventToken);
+      this.renderEventToken = -1;
+    }
   }
 
   change_mode(type: "translate" | "rotate" | "scale") {
