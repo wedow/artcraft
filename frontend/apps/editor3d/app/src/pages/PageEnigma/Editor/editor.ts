@@ -840,7 +840,7 @@ class Editor {
     }
     const uuid = crypto.randomUUID();
     const file = new File([ab], `${uuid}.png`, { type: mimeString });
-
+    console.log("snapShotOfCurrentFrame Function Called 2");
     return { base64Snapshot, file };
   }
 

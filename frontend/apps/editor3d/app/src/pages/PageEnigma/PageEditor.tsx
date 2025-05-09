@@ -342,13 +342,14 @@ export const PageEditor = () => {
                   handleCameraFocalLengthChange={handleCameraFocalLengthChange}
                   onAspectRatioSelect={onAspectRatioSelect}
                   setEnginePrompt={(prompt) => {
+                    console.log("setEnginePrompt", prompt);
                     if (!editorEngine) {
+                      console.log("editorEngine is not available");
                       return;
                     }
-
                     editorEngine!.positive_prompt = prompt;
                   }}
-                  snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame}
+                  snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame.bind(editorEngine)}
                 />
 
                 <LoadingDots
