@@ -144,7 +144,7 @@ export class Engine {
 
     //Collection of commands for undo-redo
     this.undoStackManager = new UndoStackManager(() => {
-      this.realTimeDrawEngine.render();
+      //this.realTimeDrawEngine.render();
     });
     this.commandManager = new CommandManager({
       mediaLayerRef: this.mediaLayer,
@@ -326,7 +326,7 @@ export class Engine {
     });
     uiEvents.toolbarMain.REDO.onClick(() => {
       this.undoStackManager.redo();
-      this.realTimeDrawEngine.render();
+      //this.realTimeDrawEngine.render();
     });
 
     uiEvents.toolbarMain.SAVE.onClick(async (/*event*/) => {
@@ -391,7 +391,7 @@ export class Engine {
       this.realTimeDrawEngine.currentStrength = strength / 100.0;
       clearTimeout(renderTimeout);
       renderTimeout = setTimeout(async () => {
-        await this.realTimeDrawEngine.render();
+        //await this.realTimeDrawEngine.render();
       }, 1000);
     });
 
@@ -399,7 +399,7 @@ export class Engine {
       this.realTimeDrawEngine.currentPrompt = prompt;
       clearTimeout(renderTimeout);
       renderTimeout = setTimeout(async () => {
-        await this.realTimeDrawEngine.render();
+        //await this.realTimeDrawEngine.render();
       }, 1000);
     });
 
@@ -602,7 +602,7 @@ export class Engine {
           mediaLayerRef: this.mediaLayer,
           selectionManagerRef: this.selectionManager,
           loaded: async () => {
-            this.realTimeDrawEngine.render();
+            //this.realTimeDrawEngine.render();
           },
         });
         newShapeNode.kNode.position(shapeNode.kNode.position());
@@ -636,7 +636,7 @@ export class Engine {
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        await this.realTimeDrawEngine.render();
+        //await this.realTimeDrawEngine.render();
         this.setAppMode(AppModes.SELECT);
       },
     });
@@ -650,7 +650,7 @@ export class Engine {
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        this.realTimeDrawEngine.render();
+        //this.realTimeDrawEngine.render();
         this.setAppMode(AppModes.SELECT);
       },
     });
@@ -664,7 +664,7 @@ export class Engine {
       imageFile: imageFile,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        await this.realTimeDrawEngine.render();
+        //await this.realTimeDrawEngine.render();
         this.setAppMode(AppModes.SELECT);
       },
     });
@@ -680,7 +680,7 @@ export class Engine {
       imageBitmap: imageBitmap,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        await this.realTimeDrawEngine.render();
+        //await this.realTimeDrawEngine.render();
         this.setAppMode(AppModes.SELECT);
       },
     });
@@ -703,7 +703,7 @@ export class Engine {
       mediaLayerRef: this.mediaLayer,
       selectionManagerRef: this.selectionManager,
       loaded: async () => {
-        await this.realTimeDrawEngine.render();
+        //await this.realTimeDrawEngine.render();
       },
     });
     this.commandManager.createNode(node);

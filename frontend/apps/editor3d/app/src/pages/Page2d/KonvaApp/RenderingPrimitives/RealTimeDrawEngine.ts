@@ -398,7 +398,7 @@ export class RealTimeDrawEngine {
 
     stage.on("mouseup touchend", async () => {
       stopDrawing();
-      await this.render();
+      //await this.render();
     });
 
     // Store cleanup function
@@ -637,7 +637,7 @@ export class RealTimeDrawEngine {
   private handleNodeDragEnd = async () => {
     // Clean up any existing state
 
-    await this.render();
+    //await this.render();
   };
 
   public async addNodes(node: MediaNode) {
@@ -658,7 +658,7 @@ export class RealTimeDrawEngine {
       this.disableDragging();
     }
 
-    await this.render();
+    //await this.render();
   }
 
   public removeNodes(node: MediaNode) {
@@ -800,46 +800,46 @@ export class RealTimeDrawEngine {
     });
   }
 
-  public async render() {
-    // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
-    if (this.isProcessing) {
-      console.log("isProcessing Returning");
-      return;
-    }
-    console.log("Calling Render");
-    this.isProcessing = true;
+  // public async render() {
+  //   // only pick nodes that intersect wi th the canvas on screen bounds to freeze.
+  //   if (this.isProcessing) {
+  //     console.log("isProcessing Returning");
+  //     return;
+  //   }
+  //   console.log("Calling Render");
+  //   this.isProcessing = true;
 
-    this.mediaLayerRef.draw();
-    // Output all nodes in mediaLayerRef
-    const nodes = this.mediaLayerRef.getChildren();
-    console.log("All nodes in mediaLayer:", nodes);
-    console.log(
-      `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
-    );
+  //   this.mediaLayerRef.draw();
+  //   // Output all nodes in mediaLayerRef
+  //   const nodes = this.mediaLayerRef.getChildren();
+  //   console.log("All nodes in mediaLayer:", nodes);
+  //   console.log(
+  //     `context: x:${this.positionX} y:${this.positionY} ${this.width} x ${this.height}`,
+  //   );
 
-    const bitmap = (await this.renderFrame({
-      layerOfInterest: this.mediaLayerRef,
-      x: this.captureCanvas.x(),
-      y: this.captureCanvas.y(),
-      width: this.width,
-      height: this.height,
-      mimeType: "image/jpeg",
-      pixelRatio: 1,
-      quality: 1.0,
-      test: false,
-    })) as ImageBitmap;
+  //   const bitmap = (await this.renderFrame({
+  //     layerOfInterest: this.mediaLayerRef,
+  //     x: this.captureCanvas.x(),
+  //     y: this.captureCanvas.y(),
+  //     width: this.width,
+  //     height: this.height,
+  //     mimeType: "image/jpeg",
+  //     pixelRatio: 1,
+  //     quality: 1.0,
+  //     test: false,
+  //   })) as ImageBitmap;
 
-    this.lastRenderedBitmap = bitmap;
+  //   this.lastRenderedBitmap = bitmap;
 
-    setCanvasRenderBitmap(bitmap);
+  //   setCanvasRenderBitmap(bitmap);
 
-    try {
-    } catch (error) {
-      console.error("Error during image processing:", error);
-    } finally {
-      this.isProcessing = false;
-    }
-  }
+  //   try {
+  //   } catch (error) {
+  //     console.error("Error during image processing:", error);
+  //   } finally {
+  //     this.isProcessing = false;
+  //   }
+  // }
 
   // Add getter/setter for brush size
   public set paintBrushSize(size: number) {
@@ -880,7 +880,7 @@ export class RealTimeDrawEngine {
       this.backgroundRasterRect.image(imageSource);
 
       this.mediaLayerRef.batchDraw();
-      this.render();
+      //this.render();
     };
   }
 }
