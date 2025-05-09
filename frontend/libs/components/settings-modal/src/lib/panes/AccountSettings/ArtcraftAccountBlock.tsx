@@ -48,7 +48,7 @@ export const ArtcraftAccountBlock = ({
       setIsCheckingArtcraftSession(false);
       globalAccountLogoutCallback(); // TODO: This resets the old global application state
     } else {
-      console.log("TODO");
+      window.location.href = "/login"; // TODO(bt,2025-05-08): Once we have in-page routing, get rid of this.
     }
   };
 
