@@ -251,104 +251,6 @@ export const PageEditor = () => {
     });
   };
 
-  const ContentFor3D = () => {
-    return (
-      <>
-        <OnboardingHelper />
-        <div
-          className="relative flex w-screen"
-          style={{ height: "calc(100vh - 68px)" }}
-        >
-          {/* Engine section/side panel */}
-          <div
-            id="engine-n-panels-wrapper"
-            className="flex"
-            style={{
-              height,
-            }}
-          >
-            <div className="relative w-full overflow-hidden bg-transparent">
-              <SceneContainer>
-                <EditorCanvas />
-                <PreviewFrameImage />
-              </SceneContainer>
-
-              {/* Focal Length Display */}
-              <FocalLengthDisplay />
-
-              {/* Pose Mode Selector */}
-              <PoseModeSelector />
-
-              {/* Top controls */}
-              <div
-                className="absolute left-0 top-0 w-full"
-                onClick={handleOverlayClick}
-              >
-                <div className="grid grid-cols-3 gap-4">
-                  <ControlsTopButtons />
-                  <Controls3D />
-                </div>
-              </div>
-
-              {/* Bottom controls */}
-              <div
-                className="absolute bottom-0 left-0"
-                style={{
-                  width: pageWidth.value,
-                }}
-                onClick={handleOverlayClick}
-              >
-                <div
-                  className="absolute bottom-0 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
-                  style={{ transform: `scale(${getScale()})` }}
-                >
-                  <Outliner />
-                  <PreviewEngineCamera />
-                </div>
-
-                <ControlPanelSceneObject />
-              </div>
-
-              <PromptBox3D
-                cameras={cameras}
-                cameraAspectRatio={cameraAspectRatio}
-                disableHotkeyInput={disableHotkeyInput}
-                enableHotkeyInput={enableHotkeyInput}
-                gridVisibility={gridVisibility}
-                setGridVisibility={setGridVisibility}
-                selectedCameraId={selectedCameraId}
-                deleteCamera={deleteCamera}
-                focalLengthDragging={focalLengthDragging}
-                isPromptBoxFocused={isPromptBoxFocused}
-                uploadImage={uploadImage}
-                handleCameraSelect={handleCameraSelect}
-                handleAddCamera={handleAddCamera}
-                handleCameraNameChange={handleCameraNameChange}
-                handleCameraFocalLengthChange={handleCameraFocalLengthChange}
-                onAspectRatioSelect={onAspectRatioSelect}
-                setEnginePrompt={(prompt) => {
-                  if (!editorEngine) {
-                    return;
-                  }
-
-                  editorEngine!.positive_prompt = prompt;
-                }}
-                snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame}
-              />
-
-              <LoadingDots
-                className="absolute left-0 top-0 z-50"
-                isShowing={editorLoader.value.isShowing}
-                type="bricks"
-                message={editorLoader.value.message}
-              />
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  };
-
   const ContentFor2D = () => {
     return (
       <KonvaCanvasContainer>
@@ -365,7 +267,103 @@ export const PageEditor = () => {
         setAppTabId={setAppTabId}
       />
 
-      {appTabId.value === "3D" ? <ContentFor3D /> : <ContentFor2D />}
+      {appTabId.value === "3D" ? (
+        <>
+          <OnboardingHelper />
+          <div
+            className="relative flex w-screen"
+            style={{ height: "calc(100vh - 68px)" }}
+          >
+            {/* Engine section/side panel */}
+            <div
+              id="engine-n-panels-wrapper"
+              className="flex"
+              style={{
+                height,
+              }}
+            >
+              <div className="relative w-full overflow-hidden bg-transparent">
+                <SceneContainer>
+                  <EditorCanvas />
+                  <PreviewFrameImage />
+                </SceneContainer>
+
+                {/* Focal Length Display */}
+                <FocalLengthDisplay />
+
+                {/* Pose Mode Selector */}
+                <PoseModeSelector />
+
+                {/* Top controls */}
+                <div
+                  className="absolute left-0 top-0 w-full"
+                  onClick={handleOverlayClick}
+                >
+                  <div className="grid grid-cols-3 gap-4">
+                    <ControlsTopButtons />
+                    <Controls3D />
+                  </div>
+                </div>
+
+                {/* Bottom controls */}
+                <div
+                  className="absolute bottom-0 left-0"
+                  style={{
+                    width: pageWidth.value,
+                  }}
+                  onClick={handleOverlayClick}
+                >
+                  <div
+                    className="absolute bottom-0 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
+                    style={{ transform: `scale(${getScale()})` }}
+                  >
+                    <Outliner />
+                    <PreviewEngineCamera />
+                  </div>
+
+                  <ControlPanelSceneObject />
+                </div>
+
+                <PromptBox3D
+                  cameras={cameras}
+                  cameraAspectRatio={cameraAspectRatio}
+                  disableHotkeyInput={disableHotkeyInput}
+                  enableHotkeyInput={enableHotkeyInput}
+                  gridVisibility={gridVisibility}
+                  setGridVisibility={setGridVisibility}
+                  selectedCameraId={selectedCameraId}
+                  deleteCamera={deleteCamera}
+                  focalLengthDragging={focalLengthDragging}
+                  isPromptBoxFocused={isPromptBoxFocused}
+                  uploadImage={uploadImage}
+                  handleCameraSelect={handleCameraSelect}
+                  handleAddCamera={handleAddCamera}
+                  handleCameraNameChange={handleCameraNameChange}
+                  handleCameraFocalLengthChange={handleCameraFocalLengthChange}
+                  onAspectRatioSelect={onAspectRatioSelect}
+                  setEnginePrompt={(prompt) => {
+                    if (!editorEngine) {
+                      return;
+                    }
+
+                    editorEngine!.positive_prompt = prompt;
+                  }}
+                  snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame}
+                />
+
+                <LoadingDots
+                  className="absolute left-0 top-0 z-50"
+                  isShowing={editorLoader.value.isShowing}
+                  type="bricks"
+                  message={editorLoader.value.message}
+                />
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <ContentFor2D />
+      )}
 
       <LoginModal
         onClose={() => {}}
