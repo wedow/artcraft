@@ -8,7 +8,13 @@ import { UserInfo } from "@storyteller/api";
 
 const usersApi = new UsersApi();
 
-export const ArtcraftAccountBlock = () => {
+export interface ArtcraftAccountBlockProps {
+  globalAccountLogoutCallback: () => void,
+}
+
+export const ArtcraftAccountBlock = ({
+  globalAccountLogoutCallback,
+}: ArtcraftAccountBlockProps) => {
   const [artcraftSession, setArtcraftSession] = useState<UserInfo| undefined>(undefined);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isCheckingArtcraftSession, setIsCheckingArtcraftSession] = useState(false);
@@ -40,6 +46,7 @@ export const ArtcraftAccountBlock = () => {
       setArtcraftSession(undefined);
       setIsLoggedIn(false);
       setIsCheckingArtcraftSession(false);
+      globalAccountLogoutCallback(); // TODO: This resets the old global application state
     } else {
       console.log("TODO");
     }

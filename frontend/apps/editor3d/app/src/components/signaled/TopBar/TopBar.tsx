@@ -17,11 +17,14 @@ import { downloadFileFromUrl } from "@storyteller/api";
 import { TabSelector, TabItem } from "@storyteller/ui-tab-selector";
 import { Signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
+import { setLogoutStates } from "~/signals/authentication/utilities";
+
 function isEditorPath(path: string) {
   if (path === "/") return true;
   if (path === "/idealenigma/") return true;
   return false;
 }
+
 interface Props {
   pageName: string;
   appTabIdSignal: Signal<string>;
@@ -118,6 +121,7 @@ export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
+        globalAccountLogoutCallback={() => setLogoutStates()}
       />
 
       <GalleryModal

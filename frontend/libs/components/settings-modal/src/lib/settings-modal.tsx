@@ -14,12 +14,13 @@ import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  globalAccountLogoutCallback: () => void;
 }
 
 //type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
 type SettingsSection = "general" | "accounts" | "alerts";
 
-export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
+export const SettingsModal = ({ isOpen, onClose, globalAccountLogoutCallback }: SettingsModalProps) => {
   const [selectedSection, setSelectedSection] =
     useState<SettingsSection>("general");
 
@@ -38,7 +39,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       case "general":
         return <MiscSettingsPane />;
       case "accounts":
-        return <AccountSettingsPane />;
+        return <AccountSettingsPane globalAccountLogoutCallback={globalAccountLogoutCallback} />;
       //case "video":
       //  return <VideoSettingsPane />;
       //case "image":

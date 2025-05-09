@@ -11,7 +11,13 @@ interface AccountInfo {
   credits: number;
 }
 
-export const AccountSettingsPane = () => {
+interface AccountSettingsPaneProps {
+  globalAccountLogoutCallback: () => void;
+}
+
+export const AccountSettingsPane = ({
+  globalAccountLogoutCallback,
+}: AccountSettingsPaneProps) => {
   const [accountInfo] = useState<AccountInfo>({
     username: "-",
     subscription: "-",
@@ -49,7 +55,7 @@ export const AccountSettingsPane = () => {
         </div>
         */}
 
-        <ArtcraftAccountBlock />
+        <ArtcraftAccountBlock globalAccountLogoutCallback={globalAccountLogoutCallback}/>
         
         <SoraAccountBlock />
 
