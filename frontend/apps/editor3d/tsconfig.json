@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "include": [
     "env.d.ts",
-    "**/*.js",
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.js",
+    "app/**/*.ts",
+    "app/**/*.tsx",
     "netlify-edge-plugin.ts"
   ],
   "compilerOptions": {
