@@ -345,24 +345,6 @@ export const PageEditor = () => {
             </div>
           </div>
         </div>
-
-        <LoginModal
-          onClose={() => {}}
-          videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
-          videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
-          openAiLogo="/resources/images/openai-logo.png"
-          onOpenChange={(isOpen: boolean) => {
-            if (isOpen) {
-              disableHotkeyInput(DomLevels.DIALOGUE);
-            } else {
-              enableHotkeyInput(DomLevels.DIALOGUE);
-            }
-          }}
-          onArtCraftAuthSuccess={(userInfo: any) => {
-            authentication.status.value = AUTH_STATUS.LOGGED_IN;
-            authentication.userInfo.value = userInfo;
-          }}
-        />
       </>
     );
   };
@@ -382,7 +364,26 @@ export const PageEditor = () => {
         appTabIdSignal={appTabId}
         setAppTabId={setAppTabId}
       />
+
       {appTabId.value === "3D" ? <ContentFor3D /> : <ContentFor2D />}
+
+      <LoginModal
+        onClose={() => {}}
+        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
+        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
+        openAiLogo="/resources/images/openai-logo.png"
+        onOpenChange={(isOpen: boolean) => {
+          if (isOpen) {
+            disableHotkeyInput(DomLevels.DIALOGUE);
+          } else {
+            enableHotkeyInput(DomLevels.DIALOGUE);
+          }
+        }}
+        onArtCraftAuthSuccess={(userInfo: any) => {
+          authentication.status.value = AUTH_STATUS.LOGGED_IN;
+          authentication.userInfo.value = userInfo;
+        }}
+      />
     </div>
   );
 };

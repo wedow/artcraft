@@ -1,7 +1,7 @@
 import { twMerge } from "tailwind-merge";
 
 export const paperWrapperStyles =
-  "rounded-xl border border-ui-border p-1.5 shadow-lg bg-ui-panel";
+  "rounded-xl border border-ui-panel-border p-1.5 shadow-lg bg-ui-background";
 
 export const transitionTimingStyles = "transition duration-150 ease-in-out";
 

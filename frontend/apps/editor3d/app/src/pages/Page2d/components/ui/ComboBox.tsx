@@ -29,7 +29,7 @@ export const Combobox = ({ options, value, onChange }: ComboBoxInterface) => {
       onChange={onChange}
       onClose={() => setQuery("")}
     >
-      <div className="relative flex h-10 rounded-md border border-ui-border">
+      <div className="relative flex h-10 rounded-lg border border-ui-panel-border">
         <ComboboxInput
           className="rounded-lg px-3"
           displayValue={(font: string) => font}
@@ -41,7 +41,7 @@ export const Combobox = ({ options, value, onChange }: ComboBoxInterface) => {
       </div>
       <ComboboxOptions
         anchor="bottom"
-        className="mt-1 w-[var(--input-width)] rounded-lg border border-ui-border empty:invisible"
+        className="mt-1 w-[var(--input-width)] rounded-lg border border-ui-panel-border empty:invisible"
       >
         {filteredOptions.map((option, idx) => (
           <ComboboxOption

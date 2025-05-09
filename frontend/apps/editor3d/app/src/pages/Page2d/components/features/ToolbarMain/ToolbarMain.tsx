@@ -2,10 +2,8 @@ import {
   faArrowRotateLeft,
   faArrowRotateRight,
   faCircle,
-  faEraser,
   faFilePlus,
   faImage,
-  faImages,
   faLocationArrow,
   faPaintbrush,
   faShapes,
@@ -19,18 +17,18 @@ import { Fragment, MouseEventHandler } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { ToolbarButton } from "../../../components/features/ToolbarButton";
-import { Tooltip } from "~/components/ui/Tooltip";
+// import { Tooltip } from "~/components/ui/Tooltip";
 
 // style and constants
 import { paperWrapperStyles, toolTipStyles } from "../../../components/styles";
 import { ToolbarMainButtonNames } from "./enum";
-import { dispatchUiEvents, uiEvents } from "../../../signals/uiEvents";
+import { dispatchUiEvents } from "../../../signals/uiEvents";
 import { paintColor } from "../../../signals/uiEvents/toolbarMain/paintMode";
-import { ColorPicker } from "../../../components/ui/TextEditor/ColorPicker";
+// import { ColorPicker } from "../../../components/ui/TextEditor/ColorPicker";
 import { PaintModeMenu } from "../../../components/ui/ToolbarMain/PaintModeMenu";
-import { EraseModeMenu } from "../../../components/ui/ToolbarMain/EraseModeMenu";
-import { BackgroundMenu } from "../../../components/ui/ToolbarMain/BackgroundMenu";
-import { bgColor } from "../../../signals/uiEvents/toolbarMain/backgroundMenu";
+// import { EraseModeMenu } from "../../../components/ui/ToolbarMain/EraseModeMenu";
+// import { BackgroundMenu } from "../../../components/ui/ToolbarMain/BackgroundMenu";
+// import { bgColor } from "../../../signals/uiEvents/toolbarMain/backgroundMenu";
 
 export const ToolbarMain = ({
   disabled = false,
@@ -53,7 +51,7 @@ export const ToolbarMain = ({
           paperWrapperStyles,
           "glass",
           disabled &&
-            "pointer-events-none cursor-default bg-ui-border shadow-md",
+            "bg-ui-border pointer-events-none cursor-default shadow-md",
         )}
       >
         <div className="flex flex-col items-center gap-2">
@@ -234,11 +232,11 @@ export const ToolbarMain = ({
           /> */}
         </div>
 
-        <hr className="w-full border-t border-white/15" />
+        {/* <hr className="w-full border-t border-white/15" />
 
         <div className="flex flex-col items-center gap-2">
           <div className="relative">
-            {/* <Tooltip tip="Background Color" position="right">
+            <Tooltip tip="Background Color" position="right">
               <div>
                 <BackgroundMenu
                   color={bgColor.value}
@@ -258,9 +256,9 @@ export const ToolbarMain = ({
                   style={{ backgroundColor: bgColor.value }}
                 />
               </div>
-            </Tooltip> */}
+            </Tooltip>
           </div>
-        </div>
+        </div> */}
       </div>
     </>
   );

@@ -6,8 +6,7 @@ import { FileUploader } from "../../../components/reusable/FileUploader";
 import { Button } from "@storyteller/ui-button";
 
 import { IMAGE_FILE_TYPE } from "../../../constants/fileTypeEnums";
-
-import { BaseDialog } from "../../../components/ui/BaseDialog";
+import { Modal } from "@storyteller/ui-modal";
 
 export const DialogAddImage = ({
   stagedImage = null,
@@ -39,38 +38,40 @@ export const DialogAddImage = ({
   }
 
   return (
-    <BaseDialog isOpen={isOpen} onClose={closeCallback}>
-      <DialogTitle className="text-3xl font-bold">Upload Image</DialogTitle>
-      <div className="flex flex-col rounded-lg border-2 border-dashed border-ui-border">
-        <FileUploader
-          title=""
-          fileTypes={Object.values(IMAGE_FILE_TYPE)}
-          file={currFile}
-          setFile={(file: File | null) => {
-            setAssetFile(file);
-            if (file) {
-              onAddImage(file);
-              handleClose();
-            }
-          }}
-        />
-        {currFile && (
-          <div
-            className="relative flex items-center justify-center bg-ui-border"
-            style={{ height: "calc(100vh - 500px)" }}
-          >
-            <img
-              src={URL.createObjectURL(currFile)}
-              className="max-h-full object-contain"
-            />
-          </div>
-        )}
+    <Modal isOpen={isOpen} onClose={closeCallback}>
+      <div className="flex flex-col gap-3">
+        <DialogTitle className="text-3xl font-bold">Upload Image</DialogTitle>
+        <div className="border-ui-border flex flex-col rounded-lg border-2 border-dashed">
+          <FileUploader
+            fileTypes={Object.values(IMAGE_FILE_TYPE)}
+            file={currFile}
+            setFile={(file: File | null) => {
+              setAssetFile(file);
+              if (file) {
+                onAddImage(file);
+                handleClose();
+              }
+            }}
+          />
+          {currFile && (
+            <div
+              className="bg-ui-border relative flex items-center justify-center"
+              style={{ height: "calc(100vh - 500px)" }}
+            >
+              <img
+                src={URL.createObjectURL(currFile)}
+                className="max-h-full object-contain"
+                alt="upload img"
+              />
+            </div>
+          )}
+        </div>
+        <div className="flex w-full justify-end gap-2">
+          <Button onClick={handleClose} variant="secondary">
+            Cancel
+          </Button>
+        </div>
       </div>
-      <div className="flex w-full justify-end gap-2">
-        <Button onClick={handleClose} variant="secondary">
-          Cancel
-        </Button>
-      </div>
-    </BaseDialog>
+    </Modal>
   );
 };

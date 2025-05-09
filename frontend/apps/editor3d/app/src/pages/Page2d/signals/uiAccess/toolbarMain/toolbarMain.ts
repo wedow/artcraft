@@ -53,7 +53,9 @@ export const toolbarMain = {
     this.changeButtonState(ToolbarMainButtonNames.ERASER, { active: false });
     this.changeButtonState(ToolbarMainButtonNames.PAINT, { active: false });
     this.changeButtonState(mode, { active: true });
-  }
+
+    console.log("setMode", mode);
+  },
 };
 
 function initButtonStates() {

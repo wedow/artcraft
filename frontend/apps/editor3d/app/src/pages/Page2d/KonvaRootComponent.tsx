@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { KonvaCanvasContainer } from "./KonvaCanvasContainer";
 import { ContextualToolbarNode } from "./ContextualToolbarNode";
 // import { SignaledCanvasDragDropFiles } from "./SignaledCanvasDragDropFiles";
-import { SignaledDialogs } from "./SignaledDialogs";
+// import { SignaledDialogs } from "./SignaledDialogs";
 import { SignaledToolbarMain } from "./SignaledToolbarMain";
 
 // The KonvaApp is the root of the Konva stage
@@ -33,7 +33,17 @@ import { uploadImage } from "../../components/reusable/UploadModalMedia/uploadIm
 // import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
 import { JobProvider, useJobContext } from "./JobContext";
 import { RealTimeDrawEngine } from "./KonvaApp/RenderingPrimitives/RealTimeDrawEngine";
-import { VideoResolutions } from "./KonvaApp/constants";
+// import { VideoResolutions } from "./KonvaApp/constants";
+
+import {
+  DialogAddImage,
+  DialogEditText,
+  DialogError,
+} from "./components/features";
+import { dispatchUiEvents } from "./signals";
+import { useSignals } from "@preact/signals-react/runtime";
+import { dialogError } from "./signals/uiAccess/dialogError";
+
 export const KonvaRootComponent = ({
   className,
   sceneToken,
@@ -41,6 +51,7 @@ export const KonvaRootComponent = ({
   className: string;
   sceneToken?: string;
 }) => {
+  useSignals();
   // This is a hook that will log the number of times the component has rerendered
   // Let's make sure we only log once
   useRenderCounter("KonvaRootComponent");
@@ -53,29 +64,38 @@ export const KonvaRootComponent = ({
   const engineRef = useRef<EngineType | null>(null);
   const renderEngineRef = useRef<RealTimeDrawEngine | null>(null);
 
-  const konvaContainerCallbackRef = useCallback((node: HTMLDivElement) => {
-    // Only initialize if we have a node and haven't initialized yet
-    if (node !== null && !isEngineReady && engineRef.current === null) {
-      try {
-        const options = {
-          navigate: navigate,
-          sceneToken: sceneToken,
-        };
-       
+  const konvaContainerCallbackRef = useCallback(
+    (node: HTMLDivElement) => {
+      // Only initialize if we have a node and haven't initialized yet
+      if (node !== null && !isEngineReady && engineRef.current === null) {
+        try {
+          const options = {
+            navigate: navigate,
+            sceneToken: sceneToken,
+          };
 
-        engineRef.current = KonvaApp(node, options);
-        renderEngineRef.current = engineRef.current.realTimeDrawEngine;
-        // Only set ready if initialization succeeded
-        if (engineRef.current) {
-          setIsEngineReady(true);
+          engineRef.current = KonvaApp(node, options);
+          renderEngineRef.current = engineRef.current.realTimeDrawEngine;
+          // Only set ready if initialization succeeded
+          if (engineRef.current) {
+            setIsEngineReady(true);
+          }
+        } catch (error) {
+          console.error("Failed to initialize KonvaApp:", error);
+          engineRef.current = null;
+          setIsEngineReady(false);
         }
-      } catch (error) {
-        console.error("Failed to initialize KonvaApp:", error);
-        engineRef.current = null;
-        setIsEngineReady(false);
       }
-    }
-  }, [navigate, sceneToken, isEngineReady]);
+    },
+    [navigate, sceneToken, isEngineReady],
+  );
+
+  // Modal stuff
+  const props = dialogError.signal.value;
+  const { isShowing, title, message } = props;
+  const onClose = useCallback(() => {
+    dialogError.hide();
+  }, []);
 
   return (
     <>
@@ -95,7 +115,6 @@ export const KonvaRootComponent = ({
       {/* Conditionally render the UI components that need the engine */}
       {isEngineReady && engineRef.current && (
         <UndoRedo engine={engineRef.current}>
-
           {/* <SignaledCanvasDragDropFiles
             openAddImage={appUiContext.openAddImage}
             openAddVideo={appUiContext.openAddVideo}
@@ -104,25 +123,52 @@ export const KonvaRootComponent = ({
             <PromptBox2D
               uploadImage={uploadImage}
               getCanvasRenderBitmap={getCanvasRenderBitmap}
-            EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
-            useJobContext={useJobContext}
-            onEnqueuePressed={async ()=> {
-              // will set the snapshot of the canvas internally. 
-              await renderEngineRef.current?.render();
-            }}
-          /> </JobProvider>
-        
+              EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
+              useJobContext={useJobContext}
+              onEnqueuePressed={async () => {
+                // will set the snapshot of the canvas internally.
+                await renderEngineRef.current?.render();
+              }}
+            />{" "}
+          </JobProvider>
+
           <SignaledToolbarMain
             layoutSignal={layoutContext.signal}
             appUiContext={appUiContext}
           />
-          <SignaledDialogs
+          {/* <SignaledDialogs
             appUiSignal={appUiContext.signal}
             resetAll={appUiContext.resetAll}
-          />
+          /> */}
           <ContextualToolbarNode />
         </UndoRedo>
       )}
+
+      {/* Modals */}
+
+      <DialogEditText
+        isOpen={appUiContext.signal.value.isEditTextOpen}
+        onDoneEditText={(data) => {
+          dispatchUiEvents.addTextToEngine(data);
+        }}
+        closeCallback={appUiContext.resetAll}
+      />
+
+      <DialogAddImage
+        isOpen={appUiContext.signal.value.isAddImageOpen}
+        stagedImage={appUiContext.signal.value.stagedImage}
+        closeCallback={appUiContext.resetAll}
+        onAddImage={(file) => {
+          dispatchUiEvents.addImageToEngine(file);
+        }}
+      />
+
+      <DialogError
+        isShowing={isShowing}
+        title={title}
+        message={message}
+        onClose={onClose}
+      />
     </>
   );
 };

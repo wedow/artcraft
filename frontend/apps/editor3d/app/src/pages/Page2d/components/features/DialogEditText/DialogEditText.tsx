@@ -31,14 +31,12 @@ export type TextNodeData = {
   text: string;
 } & TextFormatData;
 
-
 import { useState } from "react";
 
 import { DialogTitle } from "@headlessui/react";
 import { Button, TextEditor } from "../../../components/ui";
 
-import { BaseDialog } from "../../../components/ui/BaseDialog";
-
+import { Modal } from "@storyteller/ui-modal";
 
 export const DialogEditText = ({
   isOpen,
@@ -92,26 +90,28 @@ export const DialogEditText = ({
     closeCallback();
   };
   return (
-    <BaseDialog isOpen={isOpen} onClose={closeCallback} className="w-fit">
-      <DialogTitle className="text-2xl font-bold">Edit Text</DialogTitle>
-      <TextEditor
-        text={text}
-        formatData={textFormatData}
-        onChangeText={handleOnChangeText}
-        onChangeFormatting={handleOnChangeFormatting}
-      />
-      <div className="flex w-full justify-end gap-2">
-        <Button onClick={closeCallback} variant="secondary">
-          Cancel
-        </Button>
-        <Button
-          className="hover:animate-pulse"
-          onClick={handleOnDoneEditText}
-          disabled={text === ""}
-        >
-          Enter
-        </Button>
+    <Modal isOpen={isOpen} onClose={closeCallback} className="w-fit max-w-2xl">
+      <div className="flex flex-col gap-3">
+        <DialogTitle className="text-2xl font-bold">Edit Text</DialogTitle>
+        <TextEditor
+          text={text}
+          formatData={textFormatData}
+          onChangeText={handleOnChangeText}
+          onChangeFormatting={handleOnChangeFormatting}
+        />
+        <div className="flex w-full justify-end gap-2">
+          <Button onClick={closeCallback} variant="secondary">
+            Cancel
+          </Button>
+          <Button
+            className="hover:animate-pulse"
+            onClick={handleOnDoneEditText}
+            disabled={text === ""}
+          >
+            Enter
+          </Button>
+        </div>
       </div>
-    </BaseDialog>
+    </Modal>
   );
 };

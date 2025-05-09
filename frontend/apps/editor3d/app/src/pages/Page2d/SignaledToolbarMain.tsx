@@ -13,6 +13,7 @@ import { AppUiContextInterface } from "./contextSignals/appUi";
 import { twMerge } from "tailwind-merge";
 import { paperWrapperStyles } from "./components/styles";
 import { dispatchUiEvents } from "./signals/uiEvents";
+import { useSignals } from "@preact/signals-react/runtime";
 
 export const SignaledToolbarMain = ({
   // layoutSignal,
@@ -21,7 +22,7 @@ export const SignaledToolbarMain = ({
   layoutSignal: LayoutSignalType;
   appUiContext: AppUiContextInterface;
 }) => {
-
+  useSignals();
   const loadingBar = toolbarMain.loadingBar.signal.value;
   const getButtonDispatcher = (buttonName: ToolbarMainButtonNames) => {
     switch (buttonName) {

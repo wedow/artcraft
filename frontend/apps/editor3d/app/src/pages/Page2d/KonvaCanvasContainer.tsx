@@ -9,6 +9,8 @@ export const KonvaCanvasContainer = forwardRef<
 >(({ className, ...props }, ref) => {
   // useRenderCounter("KonvaCanvasContainer");
 
-  const classes = twMerge("pegboard -z-10", className);
+  const classes = twMerge("pegboard -z-10", "h-[calc(100vh-56px)]", className);
   return <div ref={ref} className={classes} {...props} />;
 });
+
+KonvaCanvasContainer.displayName = "KonvaCanvasContainer";
