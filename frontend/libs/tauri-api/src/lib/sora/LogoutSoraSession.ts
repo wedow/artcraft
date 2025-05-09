@@ -1,4 +1,5 @@
+import { invoke } from "@tauri-apps/api/core";
+
 export const LogoutSoraSession = async (): Promise<void> => {
-  // Replace with real Tauri command to logout Sora session - BFlat
-  return new Promise((resolve) => setTimeout(resolve, 500));
+  return await invoke("sora_logout_command");
 };

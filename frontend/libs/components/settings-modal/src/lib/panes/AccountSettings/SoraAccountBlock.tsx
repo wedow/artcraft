@@ -1,4 +1,3 @@
-import { SoraAccountButton } from "./SoraAccountButton"
 import { useState, useEffect } from "react";
 import { Button } from "@storyteller/ui-button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
