@@ -62,6 +62,10 @@ pub enum SoraError {
 
   /// serde_json::Error, likely from JSON deserialization schema mismatch.
   JsonError(serde_json::Error),
+
+  /// serde_json::Error, likely from JSON deserialization schema mismatch.
+  /// Includes the original body.
+  JsonErrorWithBody(serde_json::Error, String),
 }
 
 impl Error for SoraError {}
@@ -107,6 +111,9 @@ impl Display for SoraError {
       }
       Self::JsonError(err) => {
         write!(f, "serde_json error: {}", err)
+      }
+      Self::JsonErrorWithBody(err, message) => {
+        write!(f, "serde_json error: {:?} body: {:?}", err, message)
       }
     }
   }
