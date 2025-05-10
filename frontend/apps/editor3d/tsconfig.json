@@ -24,9 +24,10 @@
     "allowJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
     "paths": {
       "~/*": [
-        "apps/editor3d/app/src/*"
+        "app/src/*"
       ]
     },
     // Vite takes care of building everything, not tsc.
