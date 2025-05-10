@@ -10,3 +10,8 @@ export const setAppTabId = (newId: string) => {
 
   appTabId.value = newId;
 };
+
+export const is3DEditorInitialized = signal(false);
+export const setIs3DEditorInitialized = (isInitialized: boolean) => {
+  is3DEditorInitialized.value = isInitialized;
+}

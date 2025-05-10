@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   faChevronLeft,
   faGear,
@@ -18,6 +18,7 @@ import { TabSelector, TabItem } from "@storyteller/ui-tab-selector";
 import { Signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
+import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;
@@ -29,6 +30,7 @@ interface Props {
   pageName: string;
   appTabIdSignal: Signal<string>;
   setAppTabId: (id: string) => void;
+  is3DInitSignal: Signal<boolean>;
 }
 
 const appTabs: TabItem[] = [
@@ -36,7 +38,7 @@ const appTabs: TabItem[] = [
   { id: "2D", label: "2D" },
 ];
 
-export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
+export const TopBar = ({ pageName, appTabIdSignal, setAppTabId, is3DInitSignal }: Props) => {
   useSignals();
 
   const currentLocation = getCurrentLocationWithoutParams(
@@ -46,6 +48,22 @@ export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  const engine3D = useContext(EngineContext);
+  const handleTabChange = (tabId: string) => {
+    if (appTabIdSignal.peek() == "3D") {
+      engine3D?.unmountEngine();
+    }
+    setAppTabId(tabId);
+  }
+
+  const currentAppTabId = appTabIdSignal.value;
+  const is3DInit = is3DInitSignal.value;
+  useEffect(() => {
+    if (currentAppTabId == "3D" && is3DInit) {
+      engine3D?.remountEngine();
+    }
+  }, [currentAppTabId, engine3D, is3DInit]);
 
   return (
     <>
@@ -68,13 +86,13 @@ export const TopBar = ({ pageName, appTabIdSignal, setAppTabId }: Props) => {
                 Back to Editor
               </ButtonLink>
             )}
-            {/* <TabSelector
+            <TabSelector
               tabs={appTabs}
               activeTab={appTabIdSignal.value}
               disabled={false}
-              onTabChange={(tabId: string) => setAppTabId(tabId)}
+              onTabChange={handleTabChange}
               className="w-fit"
-            /> */}
+            />
           </div>
 
           <div className="flex items-center justify-center gap-2 font-medium">

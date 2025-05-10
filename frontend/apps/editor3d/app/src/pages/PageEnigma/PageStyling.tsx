@@ -18,7 +18,7 @@ import { StyleSelection } from "~/pages/PageEnigma/comps/StyleSelection";
 import { StyleMoreOptions } from "~/pages/PageEnigma/comps/StyleMoreOptions/StyleMoreOptions";
 import Queue, { QueueNames } from "~/pages/PageEnigma/Queue";
 import { toTimelineActions } from "~/pages/PageEnigma/Queue/toTimelineActions";
-import { appTabId, setAppTabId } from "~/signals/appTab";
+import { appTabId, is3DEditorInitialized, setAppTabId } from "~/signals/appTab";
 
 export const PageStyling = () => {
   useSignals();
@@ -64,6 +64,7 @@ export const PageStyling = () => {
         pageName="Stylization"
         appTabIdSignal={appTabId}
         setAppTabId={setAppTabId}
+        is3DInitSignal={is3DEditorInitialized}
       />
       <div className="mt-4 flex flex-col items-center gap-6">
         <PreviewImages />

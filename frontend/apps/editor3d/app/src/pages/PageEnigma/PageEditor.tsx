@@ -28,7 +28,7 @@ import { PromptBox3D } from "@storyteller/ui-promptbox";
 import { PopoverItem } from "@storyteller/ui-popover";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-import { appTabId, setAppTabId } from "~/signals/appTab";
+import { appTabId, is3DEditorInitialized, setAppTabId } from "~/signals/appTab";
 import { KonvaCanvasContainer } from "../Page2d/KonvaCanvasContainer";
 import { KonvaRootComponent } from "../Page2d/KonvaRootComponent";
 import {
@@ -265,6 +265,7 @@ export const PageEditor = () => {
         pageName="Edit Scene"
         appTabIdSignal={appTabId}
         setAppTabId={setAppTabId}
+        is3DInitSignal={is3DEditorInitialized}
       />
 
       {appTabId.value === "3D" ? (
@@ -366,7 +367,7 @@ export const PageEditor = () => {
       )}
 
       <LoginModal
-        onClose={() => {}}
+        onClose={() => { }}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
         openAiLogo="/resources/images/openai-logo.png"

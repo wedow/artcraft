@@ -83,6 +83,10 @@ class FreeCam extends EventDispatcher {
 
     this.keydown = this.keydown.bind(this);
     this.keyup = this.keyup.bind(this);
+    this.mousedown = this.mousedown.bind(this);
+    this.mouseup = this.mouseup.bind(this);
+    this.mousemove = this.mousemove.bind(this);
+    this.mousewheel = this.mousewheel.bind(this);
     this.reset = this.reset.bind(this);
     this.update = this.update.bind(this);
     this.updateMovementVector = this.updateMovementVector.bind(this);
@@ -94,16 +98,26 @@ class FreeCam extends EventDispatcher {
       event.preventDefault();
     });
 
-    window.addEventListener("keydown", this.keydown.bind(this));
-    window.addEventListener("keyup", this.keyup.bind(this));
-
-    window.addEventListener("mousedown", this.mousedown.bind(this));
-    window.addEventListener("mouseup", this.mouseup.bind(this));
-    window.addEventListener("mousemove", this.mousemove.bind(this));
-    window.addEventListener("wheel", this.mousewheel.bind(this));
-
     this.updateMovementVector();
     this.updateRotationVector();
+  }
+
+  attachEventListeners() {
+    window.addEventListener("keydown", this.keydown);
+    window.addEventListener("keyup", this.keyup);
+    window.addEventListener("mousedown", this.mousedown);
+    window.addEventListener("mouseup", this.mouseup);
+    window.addEventListener("mousemove", this.mousemove);
+    window.addEventListener("wheel", this.mousewheel);
+  }
+
+  detachEventListeners() {
+    window.removeEventListener("keydown", this.keydown);
+    window.removeEventListener("keyup", this.keyup);
+    window.removeEventListener("mousedown", this.mousedown);
+    window.removeEventListener("mouseup", this.mouseup);
+    window.removeEventListener("mousemove", this.mousemove);
+    window.removeEventListener("wheel", this.mousewheel);
   }
 
   keydown(event: KeyboardEvent) {

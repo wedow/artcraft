@@ -65,6 +65,7 @@ export class SceneManager implements SceneManagerAPI {
   private lastSceneState: SceneState;
   private copiedObject: THREE.Object3D | undefined;
   private is_character: Function;
+  private devMode: boolean;
 
   constructor(
     version: number,
@@ -80,14 +81,35 @@ export class SceneManager implements SceneManagerAPI {
     this.lastSceneState = this.getSceneState();
     this.updateOutliner = updateOutliner;
     this.is_character = is_character;
+    this.devMode = devMode;
 
-    if (devMode) {
-      window.addEventListener("mousemove", this.onMouseMove.bind(this), false);
-      window.addEventListener("click", this.onMouseClick.bind(this), false);
-      window.addEventListener("keydown", this.onKeyDown.bind(this), false);
-      window.addEventListener("mousedown", this.onMouseDown.bind(this), false);
-      window.addEventListener("mouseup", this.onMouseUp.bind(this), false);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseClick = this.onMouseClick.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+  }
+
+  public attachEventListeners() {
+    if (!this.devMode) {
+      return;
     }
+    window.addEventListener("mousemove", this.onMouseMove, false);
+    window.addEventListener("click", this.onMouseClick, false);
+    window.addEventListener("keydown", this.onKeyDown, false);
+    window.addEventListener("mousedown", this.onMouseDown, false);
+    window.addEventListener("mouseup", this.onMouseUp, false);
+  }
+
+  public detachEventListeners() {
+    if (!this.devMode) {
+      return;
+    }
+    window.removeEventListener("mousemove", this.onMouseMove, false);
+    window.removeEventListener("click", this.onMouseClick, false);
+    window.removeEventListener("keydown", this.onKeyDown, false);
+    window.removeEventListener("mousedown", this.onMouseDown, false);
+    window.removeEventListener("mouseup", this.onMouseUp, false);
   }
 
   public async undo() {
@@ -121,7 +143,7 @@ export class SceneManager implements SceneManagerAPI {
     name: string,
     position: THREE.Vector3,
   ): Promise<THREE.Object3D<THREE.Object3DEventMap>> {
-    if (media_token.includes("SKY::")){
+    if (media_token.includes("SKY::")) {
       const token = media_token.replace("SKY::", "");
       this.scene.updateSkybox(token);
     }
@@ -243,16 +265,16 @@ export class SceneManager implements SceneManagerAPI {
   }
 
   public async copy() {
-    // TODO MAKE BETTER FIX: Temp disables copy and paste of characters. 
+    // TODO MAKE BETTER FIX: Temp disables copy and paste of characters.
     const object = this.mouse_controls.selected?.at(0)
-    if(object !== undefined ){
-      if(this.is_character(object.uuid) === false)
-      this.copiedObject = object;
+    if (object !== undefined) {
+      if (this.is_character(object.uuid) === false)
+        this.copiedObject = object;
     }
   }
 
   public async paste() {
-    if(this.copiedObject && this.copiedObject.name != "::CAM::") {
+    if (this.copiedObject && this.copiedObject.name != "::CAM::") {
       const userdata = this.copiedObject.userData;
       const position = this.copiedObject.position.clone();
       const rotation = this.copiedObject.rotation.clone();
@@ -264,7 +286,7 @@ export class SceneManager implements SceneManagerAPI {
 
       const obj = await this.create(media_id, name, position);
       this.scene.setColor(obj.uuid, color);
-      obj.position.copy(position.add(new THREE.Vector3(0.5,0.0,0.5)));
+      obj.position.copy(position.add(new THREE.Vector3(0.5, 0.0, 0.5)));
       obj.rotation.copy(rotation);
       obj.scale.copy(scale);
 
