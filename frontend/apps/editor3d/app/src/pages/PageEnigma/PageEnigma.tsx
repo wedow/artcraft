@@ -23,8 +23,8 @@ import {
   showPrecisionSelector,
 } from "./signals/precisionSelectorMenu";
 import { InstallSounds } from "~/pages/PageEnigma/InstallSounds";
-import { InstallImageGenerationFailure } from "~/pages/PageEnigma/TauriEvents/SoraImageGenerationFailure";
-import { InstallImageGenerationSuccess } from "~/pages/PageEnigma/TauriEvents/SoraImageGenerationSuccess";
+import { useImageGenerationFailureEvent } from "./TauriEvents/useImageGenerationFailureEvent";
+import { useImageGenerationSuccessEvent } from "./TauriEvents/useImageGenerationSuccessEvent";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -90,11 +90,12 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     });
   });
 
+  useImageGenerationSuccessEvent();
+  useImageGenerationFailureEvent();
+
   useEffect(() => {
     console.log("installing event listeners");
     InstallSounds();
-    InstallImageGenerationSuccess();
-    InstallImageGenerationFailure();
   });
 
   if (validGpu === "unknown") {

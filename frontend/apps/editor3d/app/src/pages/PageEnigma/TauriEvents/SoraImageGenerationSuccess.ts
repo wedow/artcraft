@@ -8,7 +8,10 @@ type ImageGenerationSuccess = {
 };
 
 export const InstallImageGenerationSuccess = () => {
+  console.log("Installing image generation success event listener...");
+
   listen<ImageGenerationSuccess>('sora-image-generation-complete', async (event) => {
+    console.log("Image generation success event received:", event);
     const prefs = await GetAppPreferences();
     const soundName = prefs.preferences?.generation_success_sound;
     if (soundName !== undefined) {

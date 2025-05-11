@@ -8,6 +8,8 @@ type SoraImageGenerationFailed = {
 };
 
 export const InstallImageGenerationFailure = () => {
+  console.log("Installing image generation failure event listener...");
+  
   listen<SoraImageGenerationFailed>('sora-image-generation-failed', async (event) => {
     const prefs = await GetAppPreferences();
     const soundName = prefs.preferences?.generation_failure_sound;
