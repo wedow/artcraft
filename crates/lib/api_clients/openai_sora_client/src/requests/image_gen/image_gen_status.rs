@@ -173,7 +173,7 @@ pub struct InpaintItem {
   pub r#type: String,
   pub preset_id: Option<String>,
   pub generation_id: Option<String>,
-  pub upload_media_id: String,
+  pub upload_media_id: Option<String>,
   pub frame_index: i32,
   pub source_start_frame: i32,
 }
@@ -202,7 +202,7 @@ impl StatusRequest {
 
 /// Gets the status of image generation tasks from Sora API
 pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &SoraCredentialSet) -> Result<VideoGenStatusResponse, SoraError> {
-  
+
   let bearer_header = match credentials.jwt_bearer_token.as_ref()  {
     Some(bearer) => bearer.to_authorization_header_value(),
     None => {
@@ -316,7 +316,7 @@ mod tests {
 
     let creds = SoraCredentials { bearer_token: bearer, cookie, sentinel: Some(sentinel) };
     let new_creds = SoraCredentialSet::from_legacy_credentials(&creds)?;
-    
+
     // Get the task status for a specific task
     // let response = get_image_gen_status(&StatusRequest::new(None, Some("task_01jr9yvpfyetx9r7qvvx38scna".to_string())), &creds).await?;
 
