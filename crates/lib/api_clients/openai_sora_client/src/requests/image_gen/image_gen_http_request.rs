@@ -1,3 +1,4 @@
+use log::warn;
 use crate::creds::credential_migration::CredentialMigrationRef;
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
@@ -200,6 +201,8 @@ pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest
       .map_err(|e| SoraImageGenError::NetworkError(e.to_string()))?;
 
   if status != reqwest::StatusCode::OK {
+    warn!("Sora image generation failure. Raw response: {:?}", response_body);
+    
     let error_response: RawSoraErrorResponse = serde_json::from_str(response_body)
         .map_err(|e| SoraImageGenError::GenericError(format!("Failed to parse error response: {}", e)))?;
 
