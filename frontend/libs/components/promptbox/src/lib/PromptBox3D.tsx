@@ -488,7 +488,7 @@ export const PromptBox3D = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleWebEnqueue();
+      handleEnqueue();
     }
   };
 
