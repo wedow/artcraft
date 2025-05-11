@@ -357,7 +357,7 @@ export const PromptBox2D = ({
     if (!prompt.trim()) return;
     try {
       console.log(
-        "Enqueuing with prompt:",
+        "(4) Enqueuing with prompt:",
         prompt,
         "and reference images:",
         referenceImages

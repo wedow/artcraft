@@ -446,8 +446,10 @@ export const PromptBox = () => {
     r.playSound("test");
 
     if (isDesktop) {
+      console.log("Desktop enqueueing...")
       await handleTauriEnqueue();
     } else {
+      console.log("Web enqueueing...")
       await handleWebEnqueue();
     }
   };
@@ -492,7 +494,7 @@ export const PromptBox = () => {
       try {
         // Here we would pass both the prompt and reference images to the generation
         console.log(
-          "Enqueuing with prompt:",
+          "(2) Enqueuing with prompt:",
           prompt,
           "and reference images:",
           referenceImages,
@@ -592,7 +594,7 @@ export const PromptBox = () => {
       try {
         // Here we would pass both the prompt and reference images to the generation
         console.log(
-          "Enqueuing with prompt:",
+          "(1) Enqueuing with prompt:",
           prompt,
           "and reference images:",
           referenceImages,
