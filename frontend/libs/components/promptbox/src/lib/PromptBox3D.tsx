@@ -48,7 +48,7 @@ import { twMerge } from "tailwind-merge";
 import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
 import { Modal } from "@storyteller/ui-modal";
 import { Signal } from "@preact/signals-react";
-import { CommandSuccessStatus, GetAppPreferences, SoraImageRemix } from "@storyteller/tauri-api";
+import { CommandSuccessStatus, GetAppPreferences, SoraImageRemix, SoraImageRemixErrorType } from "@storyteller/tauri-api";
 
 interface ReferenceImage {
   id: string;
@@ -318,6 +318,7 @@ export const PromptBox3D = ({
 
   const handleEnqueue = async () => {
     const isDesktop = IsDesktopApp();
+    console.log("Is Desktop?", isDesktop);
     if (isDesktop) {
       console.log("Desktop app - tauri enqueue");
       await handleTauriEnqueue();
@@ -346,7 +347,7 @@ export const PromptBox3D = ({
           sceneMediaToken: "",
         });
 
-        console.log("useSystemPrompt", useSystemPrompt);
+        console.log("(web 3d) useSystemPrompt", useSystemPrompt);
 
         const response = await promptsApi.enqueueImageGeneration({
           disableSystemPrompt: !useSystemPrompt,
@@ -410,18 +411,6 @@ export const PromptBox3D = ({
 
         console.log("snapshotResult", snapshotResult);
 
-        // const generateResponse = await invoke("sora_image_remix_command", {
-        //   request: {
-        //     snapshot_media_token: snapshotResult.data!,
-        //     disable_system_prompt: !useSystemPrompt,
-        //     prompt: prompt,
-        //     maybe_additional_images: referenceImages.map(
-        //       (image) => image.mediaToken
-        //     ),
-        //     maybe_number_of_samples: 1,
-        //   },
-        // });
-
         const generateResponse = await SoraImageRemix({
           snapshot_media_token: snapshotResult.data!,
           disable_system_prompt: !useSystemPrompt,
@@ -452,16 +441,30 @@ export const PromptBox3D = ({
             const registry = SoundRegistry.getInstance();
             registry.playSound(soundName);
           }
-          toast.error("Failed to enqueue image");
+
+          let errorMessage = "Failed to enqueue image";
+
+          if ("error_type" in generateResponse) {
+            switch (generateResponse.error_type) {
+              case SoraImageRemixErrorType.ServerError:
+                errorMessage = "Server error. Failed to enqueue image.";
+                break;
+              case SoraImageRemixErrorType.TooManyConcurrentTasks:
+                errorMessage = "You have too many Sora image generation tasks running. Please wait a moment.";
+                break;
+              case SoraImageRemixErrorType.SoraUsernameNotYetCreated:
+                errorMessage = "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
+                break;
+              case SoraImageRemixErrorType.SoraIsHavingProblems:
+                errorMessage = "Sora is having problems. Please try again later.";
+                break;
+            }
+          }
+          toast.error(errorMessage);
           setisEnqueueing(false);
           return;
         }
 
-        //if (generateResponse.errorMessage) {
-        //  handleError(response.errorMessage);
-        //  setisEnqueueing(false);
-        //  return;
-        //}
       }
 
       try {

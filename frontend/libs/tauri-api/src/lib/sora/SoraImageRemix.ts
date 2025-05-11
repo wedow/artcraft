@@ -19,9 +19,23 @@ export interface SoraImageRemixRequest {
   maybe_number_of_samples: number,
 }
 
-export interface SoraImageRemixResult extends CommandResult {
+export interface SoraImageRemixSuccess extends CommandResult {
   // TODO: Status fields (they're not on the backend yet)
 }
+
+export enum SoraImageRemixErrorType {
+  ServerError = "server_error",
+  TooManyConcurrentTasks = "too_many_concurrent_tasks",
+  SoraUsernameNotYetCreated = "sora_username_not_yet_created",
+  SoraIsHavingProblems = "sora_is_having_problems",
+}
+
+export interface SoraImageRemixError extends CommandResult {
+  error_type: SoraImageRemixErrorType;
+  error_message?: string;
+}
+
+export type SoraImageRemixResult = SoraImageRemixSuccess | SoraImageRemixError;
 
 // Returns the Success and Error variants directly.
 // Throws on Network/Tauri errors.
