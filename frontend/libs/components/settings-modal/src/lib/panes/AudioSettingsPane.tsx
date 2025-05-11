@@ -16,16 +16,20 @@ const SOUND_OPTIONS = [
   { value: "none", label: "None (Silent)" }, // NB: MUST BE FIRST
 
   // Other options
+  { value: "click", label: "Click" },
   { value: "correct", label: "Correct" },
   { value: "crumble", label: "Crumble" },
   { value: "done", label: "Done" },
   { value: "error_chirp", label: "Error Chirp" },
   { value: "flower", label: "Flower" },
+  { value: "ghost", label: "Ghost" },
+  { value: "giant_shell_kick", label: "Shell Kick" },
   { value: "next", label: "Next" },
   { value: "select", label: "Select" },
   { value: "special_alert", label: "Special Alert" },
   { value: "special_flower", label: "Special Flower" },
   { value: "spike_throw", label: "Spike Throw" },
+  { value: "wrong", label: "Wrong" },
 ];
 
 interface AudioSettingsPaneProps {}

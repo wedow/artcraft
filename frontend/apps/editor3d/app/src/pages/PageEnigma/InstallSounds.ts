@@ -7,23 +7,37 @@ export const InstallSounds = () => {
     return;
   }
 
-  // Good for simple immediate enqueue
+  // Good for simple menu choices
+  r.setSoundOnce("click", new SoundEffect("resources/sound/smrpg_click.wav", { defaultVolume: 0.2 }));
+  r.setSoundOnce("scifi_menu_beep_1", new SoundEffect("resources/sound/metroidprime_UI_15.wav", { defaultVolume: 0.4 }));
+  r.setSoundOnce("scifi_menu_beep_2", new SoundEffect("resources/sound/metroidprime_UI_14.wav", { defaultVolume: 0.4 }));
+  r.setSoundOnce("scifi_menu_select", new SoundEffect("resources/sound/metroidprime_UI_18.wav", { defaultVolume: 0.4 }));
+
+  // Good for simple immediate enqueue success
   r.setSoundOnce("done", new SoundEffect("resources/sound/oot_dialogue_done.wav", { defaultVolume: 0.2 })); // DEFAULT
 
   // Good for simple immediate failure
   r.setSoundOnce("error_chirp", new SoundEffect("resources/sound/goldensun_135.wav", { defaultVolume: 0.2 }));
   r.setSoundOnce("spike_throw", new SoundEffect("resources/sound/smrpg_enemy_spikethrow.wav", { defaultVolume: 0.1 })); // DEFAULT
+  r.setSoundOnce("giant_shell_kick", new SoundEffect("resources/sound/smrpg_mario_giantshellkick.wav", { defaultVolume: 0.2 }));
+  r.setSoundOnce("wrong", new SoundEffect("resources/sound/smrpg_wrong.wav", { defaultVolume: 0.2 }));
 
   // Good for simple async success
   r.setSoundOnce("special_flower", new SoundEffect("resources/sound/smrpg_specialflower.wav", { defaultVolume: 0.2 })); // DEFAULT
+  r.setSoundOnce("extra_power", new SoundEffect("resources/sound/smrpg_character_extrapower.wav", { defaultVolume: 0.2 })); // DEFAULT
 
   // Good for async errors
   r.setSoundOnce("crumble", new SoundEffect("resources/sound/smrpg_drybones_crumble.wav", { defaultVolume: 0.1 })); // DEFAULT
+  r.setSoundOnce("ghost", new SoundEffect("resources/sound/smrpg_ghost.wav", { defaultVolume: 0.2 }));
   r.setSoundOnce("special_alert", new SoundEffect("resources/sound/goldensun_214.wav", { defaultVolume: 0.2 }));
+  r.setSoundOnce("scifi_alert", new SoundEffect("resources/sound/metroidprime_UI_52.wav", { defaultVolume: 0.2 }));
+  r.setSoundOnce("scifi_shrill_alert", new SoundEffect("resources/sound/metroidprime_UI_51.wav", { defaultVolume: 0.2 }));
 
   // Good for menus
   r.setSoundOnce("next", new SoundEffect("resources/sound/oot_dialogue_next.wav", { defaultVolume: 0.2 }));
   r.setSoundOnce("select", new SoundEffect("resources/sound/goldensun_111.wav", { defaultVolume: 0.4 }));
+  r.setSoundOnce("scifi_menu_open", new SoundEffect("resources/sound/metroidprime_UI_12.wav", { defaultVolume: 0.4 }));
+  r.setSoundOnce("scifi_menu_close", new SoundEffect("resources/sound/metroidprime_UI_13.wav", { defaultVolume: 0.4 }));
 
   // Good for special reward / celebration
   r.setSoundOnce("correct", new SoundEffect("resources/sound/smrpg_correct.wav", { defaultVolume: 0.1 }));

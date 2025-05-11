@@ -8,7 +8,6 @@ import { ErrorDialog, LoadingDots } from "~/components";
 import { GenerateModals } from "~/pages/PageEnigma/comps/GenerateModals/GenerateModals";
 import { Toaster } from "@storyteller/ui-toaster";
 import { EditorLoadingBar } from "./comps/EditorLoadingBar";
-// import { Wizard } from "~/pages/PageEnigma/Wizard/Wizard";
 import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect, useState } from "react";
 import * as gpu from "detect-gpu";
