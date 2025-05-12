@@ -10,13 +10,14 @@ import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
 import { isPromptBoxFocused } from "~/pages/PageEnigma/signals/promptBox";
 
 
-export const isSafariUserAgent = () => {
+export const isSafariOrWebKit = () => {
   const ua = navigator.userAgent;
 
+  const isWebKit = /AppleWebKit/i.test(ua) && !/Chrome|Chromium|Edg|OPR|CriOS|FxiOS/i.test(ua);
   const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
 
-  return isSafari;
-}
+  return isSafari || isWebKit;
+};
 
 export const hasApplePay = () => {
   // @ts-expect-error Apple Pay is not defined in TypeScript
@@ -24,7 +25,7 @@ export const hasApplePay = () => {
 }
 
 export const isSafari = () => {
-  return isSafariUserAgent() || hasApplePay();
+  return isSafariOrWebKit() || hasApplePay();
 }
 
 export const isPointerLockSupported = () => {
