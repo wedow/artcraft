@@ -21,11 +21,43 @@
     ],
     "security": {
       "csp": {
-        "default-src": "*",
-        "connect-src": "*",
+        "default-src": [
+          "'self'",
+          "'unsafe-eval'",
+          "'unsafe-inline'",
+          "blob:",
+          "data:",
+          "https://*.fakeyou.com",
+          "https://*.storyteller.ai",
+          "ipc://localhost",
+          "tauri://localhost"
+        ], 
+        "connect-src": [
+          "'self'",
+          "'unsafe-eval'",
+          "'unsafe-inline'",
+          "blob:",
+          "data:",
+          "https://*.fakeyou.com",
+          "https://*.storyteller.ai",
+          "https://unpkg.com/detect-gpu@5.0.70/",
+          "ipc://localhost",
+          "tauri://localhost"
+        ],
         "font-src": "*",
         "img-src": "* data: blob: 'unsafe-inline'",
-        "style-src": "*"
+        "style-src": [
+          "'self'",
+          "'unsafe-eval'",
+          "'unsafe-inline'",
+          "blob:",
+          "data:",
+          "https://*.fakeyou.com",
+          "https://*.storyteller.ai",
+          "https://fonts.googleapis.com",
+          "ipc://localhost",
+          "tauri://localhost"
+        ]
       }
     }
   },

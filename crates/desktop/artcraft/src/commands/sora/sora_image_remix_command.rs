@@ -1,4 +1,4 @@
-use crate::commands::command_response_wrapper::CommandResult;
+use crate::commands::command_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus, CommandResult};
 use crate::events::sendable_event_trait::SendableEvent;
 use crate::events::sora::sora_image_enqueue_failure_event::SoraImageEnqueueFailureEvent;
 use crate::events::sora::sora_image_enqueue_success_event::SoraImageEnqueueSuccessEvent;
@@ -12,7 +12,7 @@ use crate::utils::get_url_file_extension::get_url_file_extension;
 use crate::utils::simple_http_download::simple_http_download;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use errors::AnyhowResult;
+use errors::{AnyhowError, AnyhowResult};
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, ImageReader};
 use log::{debug, error, info};
@@ -25,13 +25,21 @@ use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
 use openai_sora_client::requests::upload::upload_media_from_file::sora_media_upload_from_file;
+use openai_sora_client::sora_error::SoraError;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::read_to_string;
 use std::io::Cursor;
+use std::time::Duration;
+use storyteller_client::api_error::ApiError;
+use storyteller_client::api_error::ApiError::InternalServerError;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
+
+const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
+
+const SORA_IMAGE_REMIX_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
 #[derive(Deserialize)]
 pub struct SoraImageRemixCommand {
@@ -50,6 +58,20 @@ pub struct SoraImageRemixCommand {
   pub maybe_number_of_samples: Option<u32>,
 }
 
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum SoraImageRemixErrorType {
+  /// Generic server error
+  ServerError,
+  /// The user is sending too many requests
+  TooManyConcurrentTasks,
+  /// The user needs to create a Sora account
+  SoraUsernameNotYetCreated,
+  /// The Sora service is having problems. Try again soon.
+  SoraIsHavingProblems,
+}
+
+
 #[tauri::command]
 pub async fn sora_image_remix_command(
   app: AppHandle,
@@ -57,7 +79,7 @@ pub async fn sora_image_remix_command(
   app_data_root: State<'_, AppDataRoot>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
-) -> CommandResult<(), String> {
+) -> CommandResult<(), SoraImageRemixErrorType, ()> {
   
   info!("image_generation_command called; scene media token: {:?}, additional images: {:?}", 
     request.snapshot_media_token, request.maybe_additional_images);
@@ -66,27 +88,83 @@ pub async fn sora_image_remix_command(
 
   let result = generate_image(request, &app_data_root, &sora_creds_manager, &sora_task_queue).await;
   
-  if let Err(err) = result {
-    error!("error: {:?}", err);
+  match result {
+    Err(err) => {
+      error!("error: {:?}", err);
 
-    let event = SoraImageEnqueueFailureEvent {};
-    let result = event.send(&app);
+      let event = SoraImageEnqueueFailureEvent {};
+      let result = event.send(&app);
 
-    if let Err(err) = result {
-      error!("Failed to emit event: {:?}", err);
+      if let Err(err) = result {
+        error!("Failed to emit event: {:?}", err);
+      }
+      
+      let mut status = CommandErrorStatus::ServerError;
+      let mut error_type = SoraImageRemixErrorType::ServerError;
+      let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
+      
+      match (err) {
+        InnerError::SoraError(SoraError::TooManyConcurrentTasks) => {
+          error_type = SoraImageRemixErrorType::TooManyConcurrentTasks;
+          status = CommandErrorStatus::ServerError;
+          error_message = "You already have work in progress. Please wait for it to finish.";
+        },
+        InnerError::SoraError(SoraError::SoraUsernameNotYetCreated) => {
+          error_type = SoraImageRemixErrorType::SoraUsernameNotYetCreated;
+          status = CommandErrorStatus::BadRequest;
+          error_message = "You need to create a username on Sora.com to continue.";
+        },
+        InnerError::SoraError(SoraError::BadGateway(_) | SoraError::CloudFlareTimeout(_)) => {
+          error_type = SoraImageRemixErrorType::SoraIsHavingProblems;
+          status = CommandErrorStatus::ServerError;
+          error_message = "Sora is having problems. Please wait a moment and then retry.";
+        }
+        _ => {},
+      }
+
+      Err(CommandErrorResponseWrapper {
+        status,
+        error_message: Some(error_message.to_string()),
+        error_type: Some(error_type),
+        error_details: None,
+      })
     }
-    
-    return Err("there was an error".into());
+    Ok(_) => {
+      let event = SoraImageEnqueueSuccessEvent {};
+      let result = event.send(&app);
+
+      if let Err(err) = result {
+        error!("Failed to emit event: {:?}", err);
+      }
+
+      Ok(().into())
+    }
   }
+}
 
-  let event = SoraImageEnqueueSuccessEvent {};
-  let result = event.send(&app);
+#[derive(Debug)]
+enum InnerError {
+  SoraError(SoraError),
+  AnyhowError(AnyhowError),
+  StorytellerApiError(ApiError),
+}
 
-  if let Err(err) = result {
-    error!("Failed to emit event: {:?}", err);
+impl From<AnyhowError> for InnerError {
+  fn from(value: AnyhowError) -> Self {
+    Self::AnyhowError(value)
   }
+}
 
-  Ok(().into())
+impl From<SoraError> for InnerError {
+  fn from(value: SoraError) -> Self {
+    Self::SoraError(value)
+  }
+}
+
+impl From<ApiError> for InnerError {
+  fn from(value: ApiError) -> Self {
+    Self::StorytellerApiError(value)
+  }
 }
 
 pub async fn generate_image(
@@ -94,7 +172,7 @@ pub async fn generate_image(
   app_data_root: &AppDataRoot,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> AnyhowResult<()> {
+) -> Result<(), InnerError> {
 
   let response = get_media_file(&ApiHost::Storyteller, &request.snapshot_media_token).await?;
 
@@ -133,6 +211,7 @@ pub async fn generate_image(
         image_upload_from_file_with_session_auto_renew(ImageUploadFromFileAutoRenewRequest {
           file_path,
           credentials: &creds,
+          request_timeout: Some(SORA_IMAGE_UPLOAD_TIMEOUT),
         }).await?;
 
     if let Some(new_creds) = maybe_new_credentials {
@@ -157,6 +236,7 @@ pub async fn generate_image(
         image_size: ImageSize::Square,
         sora_media_tokens: sora_media_tokens.clone(),
         credentials: &creds,
+        request_timeout: Some(SORA_IMAGE_REMIX_TIMEOUT),
       }).await?;
 
   if let Some(new_creds) = maybe_new_creds {

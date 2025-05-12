@@ -29,9 +29,10 @@ pub enum ValueType {
 pub enum PreferenceName {
   PreferredDownloadDirectory,
   PlaySounds,
+  EnqueueSuccessSound,
+  EnqueueFailureSound,
   GenerationSuccessSound,
   GenerationFailureSound,
-  GenerationEnqueueSound,
 }
 
 #[derive(Serialize)]
@@ -85,6 +86,16 @@ async fn update_prefs(
           return Err(anyhow!("Invalid value: {:?}", request.value)),
       }
     }
+    PreferenceName::EnqueueSuccessSound => {
+      prefs.enqueue_success_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
+    }
+    PreferenceName::EnqueueFailureSound => {
+      prefs.enqueue_failure_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
+    }
     PreferenceName::GenerationSuccessSound => {
       prefs.generation_success_sound = request.value
           .map(|val| string_value(&val))
@@ -92,11 +103,6 @@ async fn update_prefs(
     }
     PreferenceName::GenerationFailureSound => {
       prefs.generation_failure_sound = request.value
-          .map(|val| string_value(&val))
-          .transpose()?;
-    }
-    PreferenceName::GenerationEnqueueSound => {
-      prefs.generation_enqueue_sound = request.value
           .map(|val| string_value(&val))
           .transpose()?;
     }

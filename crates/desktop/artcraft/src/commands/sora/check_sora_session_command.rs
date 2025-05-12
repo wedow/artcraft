@@ -1,3 +1,5 @@
+use std::ops::Add;
+use chrono::{DateTime, TimeDelta, Utc};
 use crate::commands::app_preferences::get_app_preferences_command::AppPreferencesPayload;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
@@ -11,6 +13,8 @@ use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_o
 use openai_sora_client::requests::list_media::list_media::list_media;
 use serde_derive::Serialize;
 use tauri::{AppHandle, State};
+
+const CACHE_PERIOD : TimeDelta = TimeDelta::milliseconds(1000 * 60 * 5); // 5 minutes
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -63,10 +67,35 @@ async fn do_check(
       });
     }
   };
+
+  let mut needs_upgrade_or_check = false;
   
-  let upgraded = maybe_upgrade_or_renew_session(&mut creds).await?;
+  let stats = sora_creds_manager.get_credential_stats()?;
+
+  match stats.last_consecutive_credential_success {
+    None => {
+      info!("Session never checked, needs upgrade or status checking.");
+      needs_upgrade_or_check= true;
+    }
+    Some(last_success) => {
+      let now = chrono::Utc::now();
+      let expires = last_success.add(CACHE_PERIOD);
+      if now.gt(&expires) {
+        info!("Session success expired, needs upgrade or status checking.");
+        needs_upgrade_or_check = true;
+      }
+    }
+  }
   
-  list_media(&creds).await?;
+  let mut upgraded = false;
+  
+  if needs_upgrade_or_check {
+    info!("Attempting to upgrade session...");
+    upgraded = maybe_upgrade_or_renew_session(&mut creds).await?;
+    info!("Attempting to check session...");
+    list_media(&creds).await?;
+    sora_creds_manager.record_credential_success()?;
+  }
 
   if upgraded {
     info!("Saving upgraded session to manager and disk...");

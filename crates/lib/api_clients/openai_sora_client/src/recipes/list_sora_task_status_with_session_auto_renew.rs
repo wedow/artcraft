@@ -39,11 +39,10 @@ pub async fn list_sora_task_status_with_session_auto_renew(
     new_creds = Some(updated_creds);
   }
 
-  let legacy_creds = new_creds.as_ref()
-      .unwrap_or_else(|| &args.credentials)
-      .to_legacy_credentials()?;
+  let upgraded_creds = new_creds.as_ref()
+      .unwrap_or_else(|| &args.credentials);
 
-  let result = get_image_gen_status(&request, &legacy_creds).await;
+  let result = get_image_gen_status(&request, &upgraded_creds).await;
 
   let err = match result {
     Ok(response) => return Ok((response, new_creds)),
@@ -56,7 +55,7 @@ pub async fn list_sora_task_status_with_session_auto_renew(
 
   info!("Retrying image upload with new credentials...");
 
-  let result = get_image_gen_status(&request, &legacy_creds).await?;
+  let result = get_image_gen_status(&request, &upgraded_creds).await?;
 
   Ok((result, Some(new_creds)))
 }

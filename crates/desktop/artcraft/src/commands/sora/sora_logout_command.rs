@@ -1,5 +1,5 @@
 use crate::commands::app_preferences::get_app_preferences_command::AppPreferencesPayload;
-use crate::commands::command_response_wrapper::{CommandResult, CommandSuccessResponseWrapper};
+use crate::commands::command_response_wrapper::{CommandResult, CommandSuccessResponseWrapper, SimpleCommandResult};
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -17,7 +17,7 @@ use tauri::{AppHandle, State};
 #[tauri::command]
 pub async fn sora_logout_command(
   sora_creds_manager: State<'_, SoraCredentialManager>,
-) -> CommandResult<(), String> {
+) -> SimpleCommandResult {
   info!("sora_logout_command called");
 
   if let Err(err) = sora_creds_manager.purge_credentials_from_disk() {
@@ -30,6 +30,10 @@ pub async fn sora_logout_command(
     return Err("error clearing credentials from memory".into());
   }
   
+  if let Err(err) = sora_creds_manager.reset_credential_stats() {
+    error!("Error resetting credential stats: {:?}", err);
+    return Err("error resetting credential stats".into());
+  }
+  
   Ok(().into())
 }
-

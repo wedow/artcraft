@@ -9,6 +9,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { JobsApi } from "~/Classes/ApiManager/JobsApi";
 import { toast } from "@storyteller/ui-toaster";
 import { ActiveJob } from "~/pages/PageEnigma/models";
+import { IsJobPollingDisabled } from "~/flags/DevConsoleFlags";
 // TODO ensure we de-dupe all this extra code.
 interface CompletedItem {
   token: string;
@@ -85,6 +86,9 @@ export function Activity() {
     let mounted = true;
 
     async function fetchJobs() {
+      if (IsJobPollingDisabled()) {
+        return;
+      }
       try {
         const jobsApi = new JobsApi();
         const response = await jobsApi.ListRecentJobs();

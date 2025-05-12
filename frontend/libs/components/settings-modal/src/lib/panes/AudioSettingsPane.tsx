@@ -16,16 +16,27 @@ const SOUND_OPTIONS = [
   { value: "none", label: "None (Silent)" }, // NB: MUST BE FIRST
 
   // Other options
-  { value: "correct", label: "Correct" },
-  { value: "crumble", label: "Crumble" },
-  { value: "done", label: "Done" },
-  { value: "error_chirp", label: "Error Chirp" },
-  { value: "flower", label: "Flower" },
-  { value: "next", label: "Next" },
-  { value: "select", label: "Select" },
-  { value: "special_alert", label: "Special Alert" },
-  { value: "special_flower", label: "Special Flower" },
-  { value: "spike_throw", label: "Spike Throw" },
+  { label: "Click", value: "click" },
+  { label: "Correct", value: "correct" },
+  { label: "Crumble", value: "crumble" },
+  { label: "Dialog Done", value: "done" },
+  { label: "Dialog Next", value: "next" },
+  { label: "Error Chirp", value: "error_chirp" },
+  { label: "Flower", value: "flower" },
+  { label: "Ghost", value: "ghost" },
+  { label: "Sci-Fi Alert", value: "scifi_alert" },
+  { label: "Sci-Fi Menu Beep 1", value: "scifi_menu_beep_1" },
+  { label: "Sci-Fi Menu Beep 2", value: "scifi_menu_beep_2" },
+  { label: "Sci-Fi Menu Close", value: "scifi_menu_close" },
+  { label: "Sci-Fi Menu Open", value: "scifi_menu_open" },
+  { label: "Sci-Fi Menu Select", value: "scifi_menu_select" },
+  { label: "Sci-Fi Shrill Alert", value: "scifi_shrill_alert" },
+  { label: "Select", value: "select" },
+  { label: "Shell Kick", value: "giant_shell_kick" },
+  { label: "Special Alert", value: "special_alert" },
+  { label: "Special Flower", value: "special_flower" },
+  { label: "Spike Throw", value: "spike_throw" },
+  { label: "Wrong", value: "wrong" },
 ];
 
 interface AudioSettingsPaneProps {}

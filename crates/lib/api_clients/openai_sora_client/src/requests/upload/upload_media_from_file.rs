@@ -2,6 +2,7 @@ use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::requests::upload::upload_media_http_request::{upload_media_http_request, SoraMediaUploadResponse};
 use crate::sora_error::SoraError;
 use std::path::Path;
+use std::time::Duration;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
@@ -9,7 +10,11 @@ use tokio::io::AsyncReadExt;
 /// There's a better way to implement this.
 const INITIAL_BUFFER_SIZE : usize = 1024*1024;
 
-pub async fn sora_media_upload_from_file<P: AsRef<Path>>(file_path: P, creds: CredentialMigrationRef<'_>) -> Result<SoraMediaUploadResponse, SoraError> {
+pub async fn sora_media_upload_from_file<P: AsRef<Path>>(
+  file_path: P, 
+  creds: CredentialMigrationRef<'_>,
+  maybe_timeout: Option<Duration>,
+) -> Result<SoraMediaUploadResponse, SoraError> {
   let mut file = File::open(&file_path).await?;
   let mut buffer = Vec::with_capacity(INITIAL_BUFFER_SIZE);
   file.read_to_end(&mut buffer).await?;
@@ -31,7 +36,7 @@ pub async fn sora_media_upload_from_file<P: AsRef<Path>>(file_path: P, creds: Cr
     _ => "application/octet-stream",
   };
 
-  Ok(upload_media_http_request(buffer, filename, mime_type, creds).await?)
+  Ok(upload_media_http_request(buffer, filename, mime_type, creds, maybe_timeout).await?)
 }
 
 #[cfg(test)]
@@ -63,6 +68,7 @@ mod tests {
     let response = sora_media_upload_from_file(
       image_path,
       CredentialMigrationRef::Legacy(&creds),
+      None,
     ).await?;
 
     println!("media: {:?}", response);

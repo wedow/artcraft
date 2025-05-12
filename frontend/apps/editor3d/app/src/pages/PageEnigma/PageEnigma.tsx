@@ -8,7 +8,6 @@ import { ErrorDialog, LoadingDots } from "~/components";
 import { GenerateModals } from "~/pages/PageEnigma/comps/GenerateModals/GenerateModals";
 import { Toaster } from "@storyteller/ui-toaster";
 import { EditorLoadingBar } from "./comps/EditorLoadingBar";
-// import { Wizard } from "~/pages/PageEnigma/Wizard/Wizard";
 import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect, useState } from "react";
 import * as gpu from "detect-gpu";
@@ -23,8 +22,8 @@ import {
   showPrecisionSelector,
 } from "./signals/precisionSelectorMenu";
 import { InstallSounds } from "~/pages/PageEnigma/InstallSounds";
-import { InstallImageGenerationFailure } from "~/pages/PageEnigma/TauriEvents/SoraImageGenerationFailure";
-import { InstallImageGenerationSuccess } from "~/pages/PageEnigma/TauriEvents/SoraImageGenerationSuccess";
+import { useImageGenerationFailureEvent } from "./TauriEvents/useImageGenerationFailureEvent";
+import { useImageGenerationSuccessEvent } from "./TauriEvents/useImageGenerationSuccessEvent";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -90,11 +89,12 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     });
   });
 
+  useImageGenerationSuccessEvent();
+  useImageGenerationFailureEvent();
+
   useEffect(() => {
     console.log("installing event listeners");
     InstallSounds();
-    InstallImageGenerationSuccess();
-    InstallImageGenerationFailure();
   });
 
   if (validGpu === "unknown") {

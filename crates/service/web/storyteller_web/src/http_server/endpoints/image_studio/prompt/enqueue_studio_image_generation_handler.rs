@@ -15,7 +15,7 @@ use log::warn;
 use log::{debug, error};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use openai_sora_client::credentials::SoraCredentials;
-use openai_sora_client::requests::image_gen::SoraError;
+use openai_sora_client::requests::image_gen::SoraImageGenError;
 use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
 use serde::Deserialize;
 use serde::Serialize;
@@ -326,7 +326,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
 
   debug!("Sora image gen response: {:?}", response);
 
-  if let Err(SoraError::SentinelBlock(msg)) = &response {
+  if let Err(SoraImageGenError::SentinelBlock(msg)) = &response {
     error!("Sora sentinel block, attempting refresh: {}", msg);
 
     match generate_token().await {
@@ -382,16 +382,16 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
 
   let response = response.map_err(|err| {
     match err {
-      SoraError::TokenExpired(msg) => {
+      SoraImageGenError::TokenExpired(msg) => {
         error!("Sora token expired, needs refresh: {}", msg);
         // TODO: Implement token refresh logic here
         EnqueueImageGenRequestError::ServerError
       },
-      SoraError::SentinelBlock(msg) => {
+      SoraImageGenError::SentinelBlock(msg) => {
         error!("Sora sentinel block still occurring after refresh: {}", msg);
         EnqueueImageGenRequestError::ServerError
       },
-      SoraError::TooManyConcurrentTasks(msg) => {
+      SoraImageGenError::TooManyConcurrentTasks(msg) => {
         error!("Sora too many concurrent tasks: {}", msg);
         EnqueueImageGenRequestError::TooManyConcurrentTasks
       },

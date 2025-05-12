@@ -14,12 +14,16 @@ use crate::sora_error::SoraError;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
+use std::time::Duration;
 
 pub struct ImageUploadFromBytesAutoRenewRequest<'a> {
   pub file_bytes: Vec<u8>,
   pub filename: String,
   pub mime_type: &'a str,
   pub credentials: &'a SoraCredentialSet,
+  
+  /// This function can try to upload several times. This is the timeout for *individual* requests.
+  pub request_timeout: Option<Duration>,
 }
 
 /// Image upload with retry and session auto-renewal.
@@ -32,6 +36,7 @@ pub async fn image_upload_from_bytes_with_session_auto_renew(
     request.file_bytes.clone(), // FIXME(bt): This is horrible, but the client needs to take ownership. :(
     request.filename.clone(), // FIXME: Same
     CredentialMigrationRef::New(request.credentials),
+    request.request_timeout,
   ).await;
 
   let err = match result {
@@ -51,6 +56,7 @@ pub async fn image_upload_from_bytes_with_session_auto_renew(
     request.file_bytes,
     request.filename,
     CredentialMigrationRef::New(&new_creds),
+    request.request_timeout,
   ).await?;
 
   Ok((result, Some(new_creds)))

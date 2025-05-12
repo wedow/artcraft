@@ -42,19 +42,20 @@ import { PromptsApi } from "@storyteller/api";
 import { SoundRegistry } from "@storyteller/soundboard";
 import { toast } from "@storyteller/ui-toaster";
 
-interface ReferenceImage {
-  id: string;
-  url: string;
-  file: File;
-  mediaToken: string;
-}
-
 import { EngineApi } from "@storyteller/api";
 import { CameraSettingsModal } from "@storyteller/ui-camera-settings-modal";
 import { twMerge } from "tailwind-merge";
 import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
 import { Modal } from "@storyteller/ui-modal";
 import { Signal } from "@preact/signals-react";
+import { CommandSuccessStatus, GetAppPreferences, SoraImageRemix, SoraImageRemixErrorType } from "@storyteller/tauri-api";
+
+interface ReferenceImage {
+  id: string;
+  url: string;
+  file: File;
+  mediaToken: string;
+}
 
 interface PromptBox3DProps {
   cameras: Signal<Camera[]>;
@@ -317,14 +318,12 @@ export const PromptBox3D = ({
 
   const handleEnqueue = async () => {
     const isDesktop = IsDesktopApp();
-    console.log("Is this a desktop app?", isDesktop);
-
-    const r = SoundRegistry.getInstance();
-    r.playSound("test");
-
+    console.log("Is Desktop?", isDesktop);
     if (isDesktop) {
+      console.log("Desktop app - tauri enqueue");
       await handleTauriEnqueue();
     } else {
+      console.log("Web app - web enqueue");
       await handleWebEnqueue();
     }
   };
@@ -348,7 +347,7 @@ export const PromptBox3D = ({
           sceneMediaToken: "",
         });
 
-        console.log("useSystemPrompt", useSystemPrompt);
+        console.log("(web 3d) useSystemPrompt", useSystemPrompt);
 
         const response = await promptsApi.enqueueImageGeneration({
           disableSystemPrompt: !useSystemPrompt,
@@ -369,7 +368,7 @@ export const PromptBox3D = ({
       try {
         // Here we would pass both the prompt and reference images to the generation
         console.log(
-          "Enqueuing with prompt:",
+          "(3D.2) Enqueuing with prompt:",
           prompt,
           "and reference images:",
           referenceImages
@@ -388,6 +387,15 @@ export const PromptBox3D = ({
 
     setisEnqueueing(true);
 
+    setTimeout(() => {
+      // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if 
+      // the backend hangs on a given request. (Sometimes Sora doesn't respond.) Ideally what we would do instead is only
+      // force the prompt box to be enabled again as long as another request isn't running, ie. if we just fired off two
+      // requests in succession, we wouldn't want to turn it off as the first one gets submitted.
+      console.debug('Turn off blocking of prompt box...');
+      setisEnqueueing(false);
+    }, 10000);
+
     setPrompt(prompt);
 
     const promptsApi = new PromptsApi();
@@ -401,31 +409,68 @@ export const PromptBox3D = ({
           //sceneMediaToken: "",
         });
 
-        const generateResponse = await invoke("sora_image_remix_command", {
-          request: {
-            snapshot_media_token: snapshotResult.data!,
-            disable_system_prompt: !useSystemPrompt,
-            prompt: prompt,
-            maybe_additional_images: referenceImages.map(
-              (image) => image.mediaToken
-            ),
-            maybe_number_of_samples: 1,
-          },
+        console.log("snapshotResult", snapshotResult);
+
+        const generateResponse = await SoraImageRemix({
+          snapshot_media_token: snapshotResult.data!,
+          disable_system_prompt: !useSystemPrompt,
+          prompt: prompt,
+          maybe_additional_images: referenceImages.map(
+            (image) => image.mediaToken,
+          ),
+          maybe_number_of_samples: 1,
         });
 
-        console.log("response", generateResponse);
+        console.log("generateResponse", generateResponse);
 
-        //if (generateResponse.errorMessage) {
-        //  handleError(response.errorMessage);
-        //  setisEnqueueing(false);
-        //  return;
-        //}
+        if (generateResponse.status === CommandSuccessStatus.Success) {
+          const prefs = await GetAppPreferences();
+          const soundName = prefs.preferences?.enqueue_success_sound;
+          if (soundName !== undefined) {
+            const registry = SoundRegistry.getInstance();
+            registry.playSound(soundName);
+          }
+          toast.success("Image added to queue");
+          setisEnqueueing(false);
+          return;
+
+        } else {
+          const prefs = await GetAppPreferences();
+          const soundName = prefs.preferences?.enqueue_failure_sound;
+          if (soundName !== undefined) {
+            const registry = SoundRegistry.getInstance();
+            registry.playSound(soundName);
+          }
+
+          let errorMessage = "Failed to enqueue image";
+
+          if ("error_type" in generateResponse) {
+            switch (generateResponse.error_type) {
+              case SoraImageRemixErrorType.ServerError:
+                errorMessage = "Server error. Failed to enqueue image.";
+                break;
+              case SoraImageRemixErrorType.TooManyConcurrentTasks:
+                errorMessage = "You have too many Sora image generation tasks running. Please wait a moment.";
+                break;
+              case SoraImageRemixErrorType.SoraUsernameNotYetCreated:
+                errorMessage = "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
+                break;
+              case SoraImageRemixErrorType.SoraIsHavingProblems:
+                errorMessage = "Sora is having problems. Please try again later.";
+                break;
+            }
+          }
+          toast.error(errorMessage);
+          setisEnqueueing(false);
+          return;
+        }
+
       }
 
       try {
         // Here we would pass both the prompt and reference images to the generation
         console.log(
-          "Enqueuing with prompt:",
+          "(3D.1) Enqueuing with prompt:",
           prompt,
           "and reference images:",
           referenceImages
@@ -443,7 +488,7 @@ export const PromptBox3D = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleWebEnqueue();
+      handleEnqueue();
     }
   };
 

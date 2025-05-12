@@ -860,7 +860,6 @@ class Editor {
     }
     const uuid = crypto.randomUUID();
     const file = new File([ab], `${uuid}.png`, { type: mimeString });
-
     return { base64Snapshot, file };
   }
 

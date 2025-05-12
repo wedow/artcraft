@@ -1,23 +1,29 @@
-use std::{fs, io};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::sora::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
 use crate::state::sora::sora_credential_holder::SoraCredentialHolder;
+use crate::state::sora::sora_credential_stats::SoraCredentialStats;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
+use memory_store::clone_cell::CloneCell;
+use openai_sora_client::creds::sora_cookies::SoraCookies;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
+use openai_sora_client::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use openai_sora_client::creds::sora_sentinel::SoraSentinel;
 use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
-use openai_sora_client::creds::sora_cookies::SoraCookies;
-use openai_sora_client::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
+use std::{fs, io};
 
 #[derive(Clone)]
 pub struct SoraCredentialManager {
   holder: SoraCredentialHolder,
   app_data_root: AppDataRoot,
+  
+  /// This is meant to help debug credential issues, keep credentials cached, fresh, etc.
+  // TODO: Put this into the same structure as the credentials and also persist to disk.
+  stats: CloneCell<SoraCredentialStats>,
 }
 
 impl SoraCredentialManager {
@@ -35,7 +41,34 @@ impl SoraCredentialManager {
     Self {
       holder,
       app_data_root: app_data_root.clone(),
+      stats: CloneCell::with_owned(SoraCredentialStats::new()),
     }
+  }
+
+  pub fn record_credential_success(&self) -> AnyhowResult<()> {
+    let mut stats = self.stats.get_clone()?;
+    stats.record_credential_success();
+    self.stats.set_owned(stats)?;
+    Ok(())
+  }
+
+  pub fn record_credential_failure(&self) -> AnyhowResult<()> {
+    let mut stats = self.stats.get_clone()?;
+    stats.record_credential_failure();
+    self.stats.set_owned(stats)?;
+    Ok(())
+  }
+  
+  pub fn reset_credential_stats(&self) -> AnyhowResult<()> {
+    self.stats.set_owned(SoraCredentialStats::new())
+  }
+  
+  pub fn get_credential_stats(&self) -> AnyhowResult<SoraCredentialStats> {
+    self.stats.get_clone()
+  }
+
+  pub fn set_credential_stats(&self, stats: SoraCredentialStats) -> AnyhowResult<()> {
+    self.stats.set_owned(stats)
   }
 
   pub fn set_credentials(&self, creds: &SoraCredentialSet) -> AnyhowResult<()> {

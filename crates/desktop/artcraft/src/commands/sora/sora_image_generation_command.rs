@@ -14,7 +14,12 @@ use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_g
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
 use std::fs::read_to_string;
 use std::io::Cursor;
+use std::time::Duration;
 use tauri::{AppHandle, Manager, State};
+
+const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
+
+const SORA_IMAGE_REMIX_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
 #[tauri::command]
 pub async fn sora_image_generation_command(
@@ -55,8 +60,13 @@ pub async fn generate_image(
     let image_bytes = BASE64_STANDARD.decode(image)?;
 
     let filename = "image.png".to_string();
+    
 
-    let response = sora_media_upload_from_bytes(image_bytes, filename, CredentialMigrationRef::New(&creds))
+    let response = sora_media_upload_from_bytes(
+      image_bytes, 
+      filename, 
+      CredentialMigrationRef::New(&creds), 
+      Some(SORA_IMAGE_UPLOAD_TIMEOUT))
         .await
         .map_err(|err| {
           error!("Failed to upload image to Sora: {:?}", err);
@@ -72,6 +82,7 @@ pub async fn generate_image(
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
     credentials: CredentialMigrationRef::New(&creds),
+    request_timeout: Some(SORA_IMAGE_REMIX_TIMEOUT),
   }).await
       .map_err(|err| {
         error!("Failed to call Sora image generation: {:?}", err);

@@ -320,7 +320,7 @@ export const PromptBox = () => {
     if (!prompt.trim()) return;
     try {
       console.log(
-        "Enqueuing with prompt:",
+        "(3) Enqueuing with prompt:",
         prompt,
         "and reference images:",
         referenceImages,

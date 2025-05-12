@@ -1,3 +1,4 @@
+use std::time::Duration;
 use crate::credentials::{SoraCredentials, USER_AGENT};
 use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::sora_error::SoraError;
@@ -69,6 +70,7 @@ pub (crate) async fn upload_media_http_request(
   filename: String,
   mime_type: &str,
   credentials: CredentialMigrationRef<'_>,
+  maybe_timeout: Option<Duration>,
 ) -> Result<SoraMediaUploadResponse, SoraError> {
 
   // Create multipart form
@@ -97,11 +99,15 @@ pub (crate) async fn upload_media_http_request(
 
   // Make API request
   let client = Client::new();
-  let request_builder = client.post(SORA_UPLOAD_MEDIA_URL)
+  let mut request_builder = client.post(SORA_UPLOAD_MEDIA_URL)
       .multipart(form)
       .header("User-Agent", USER_AGENT)
       .header("Cookie", &cookie)
       .header("Authorization", &auth_header);
+  
+  if let Some(timeout) = maybe_timeout {
+    request_builder = request_builder.timeout(timeout);
+  }
 
   let response = request_builder.send().await?;
 

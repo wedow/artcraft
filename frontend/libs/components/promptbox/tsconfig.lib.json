@@ -44,6 +44,9 @@
   ],
   "references": [
     {
+      "path": "../../tauri-api/tsconfig.lib.json"
+    },
+    {
       "path": "../camera-settings-modal/tsconfig.lib.json"
     },
     {

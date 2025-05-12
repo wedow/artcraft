@@ -1,14 +1,15 @@
-use crate::credentials::SoraCredentials;
+use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::image_gen_http_request::{image_gen_http_request, OperationType, RawSoraImageGenRequest, VideoGenType};
 use errors::AnyhowResult;
-use crate::creds::credential_migration::CredentialMigrationRef;
+use std::time::Duration;
 
 pub struct SoraImageGenSimpleRequest<'a> {
   pub prompt: String,
   pub num_images: NumImages,
   pub image_size: ImageSize,
   pub credentials: CredentialMigrationRef<'a>,
+  pub request_timeout: Option<Duration>,
 }
 
 pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> AnyhowResult<SoraImageGenResponse> {
@@ -24,7 +25,7 @@ pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> Anyho
   };
 
   // TODO: Error handling.
-  let result = image_gen_http_request(sora_request, args.credentials).await?;
+  let result = image_gen_http_request(sora_request, args.credentials, args.request_timeout).await?;
 
   Ok(SoraImageGenResponse {
     task_id: result.id,
@@ -34,12 +35,12 @@ pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> Anyho
 #[cfg(test)]
 mod tests {
   use crate::credentials::SoraCredentials;
+  use crate::creds::credential_migration::CredentialMigrationRef;
   use crate::requests::image_gen::common::{ImageSize, NumImages};
   use crate::requests::image_gen::sora_image_gen_simple::{sora_image_gen_simple, SoraImageGenSimpleRequest};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
-  use crate::creds::credential_migration::CredentialMigrationRef;
 
   #[ignore] // You can manually run "ignore" tests in the IDE, but they won't run in CI.
   #[tokio::test]
@@ -64,6 +65,7 @@ mod tests {
       num_images: NumImages::One,
       image_size: ImageSize::Square,
       credentials: CredentialMigrationRef::Legacy(&creds),
+      request_timeout: None,
     }).await?;
 
     println!("task_id: {}", response.task_id);

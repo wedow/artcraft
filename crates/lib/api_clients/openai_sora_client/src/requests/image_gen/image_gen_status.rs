@@ -6,7 +6,9 @@ use reqwest::Url;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Debug, Display};
 use std::{fs::File, io::Write, path::Path};
-use log::debug;
+use log::{debug, warn};
+use crate::creds::sora_credential_set::SoraCredentialSet;
+use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
 
@@ -171,7 +173,7 @@ pub struct InpaintItem {
   pub r#type: String,
   pub preset_id: Option<String>,
   pub generation_id: Option<String>,
-  pub upload_media_id: String,
+  pub upload_media_id: Option<String>,
   pub frame_index: i32,
   pub source_start_frame: i32,
 }
@@ -199,7 +201,16 @@ impl StatusRequest {
 }
 
 /// Gets the status of image generation tasks from Sora API
-pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &SoraCredentials) -> Result<VideoGenStatusResponse, SoraError> {
+pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &SoraCredentialSet) -> Result<VideoGenStatusResponse, SoraError> {
+
+  let bearer_header = match credentials.jwt_bearer_token.as_ref()  {
+    Some(bearer) => bearer.to_authorization_header_value(),
+    None => {
+      warn!("No JWT bearer for getting image gen status!");
+      return Err(SoraError::NoBearerTokenAvailable)
+    },
+  };
+
   let client = reqwest::Client::new();
 
   let mut url = reqwest::Url::parse(SORA_STATUS_URL)
@@ -216,8 +227,8 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
 
   let http_request = client.get(url)
       .header("User-Agent", USER_AGENT)
-      .header("Cookie", &credentials.cookie)
-      .header("Authorization", credentials.authorization_header_value())
+      .header("Cookie", credentials.cookies.as_str())
+      .header("Authorization", bearer_header)
       .header("Content-Type", "application/json");
 
   let http_request = http_request.build()?;
@@ -235,9 +246,15 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
     return Err(SoraError::AnyhowError(anyhow::anyhow!("The status request failed; status = {:?}, message = {:?}", status, response_body)));
   }
 
-  let response: VideoGenStatusResponse = serde_json::from_str(response_body)?;
+  let maybe_response = serde_json::from_str::<VideoGenStatusResponse>(response_body);
 
-  Ok(response)
+  match maybe_response {
+    Ok(response) => Ok(response),
+    Err(err) => {
+      warn!("Failed to parse status response: {:?}", err);
+      Err(SoraError::JsonErrorWithBody(err, response_body.to_string()))
+    }
+  }
 }
 
 pub async fn save_generations_to_dir(generations: &[Generation], dir: &str) -> AnyhowResult<()> {
@@ -275,6 +292,7 @@ mod tests {
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
+  use crate::creds::sora_credential_set::SoraCredentialSet;
 
   #[ignore]
   #[tokio::test]
@@ -297,10 +315,12 @@ mod tests {
     let bearer = bearer.trim().to_string();
 
     let creds = SoraCredentials { bearer_token: bearer, cookie, sentinel: Some(sentinel) };
+    let new_creds = SoraCredentialSet::from_legacy_credentials(&creds)?;
+
     // Get the task status for a specific task
     // let response = get_image_gen_status(&StatusRequest::new(None, Some("task_01jr9yvpfyetx9r7qvvx38scna".to_string())), &creds).await?;
 
-    let response = get_image_gen_status(&StatusRequest::new(Some(50), None), &creds).await?;
+    let response = get_image_gen_status(&StatusRequest::new(Some(50), None), &new_creds).await?;
     println!("task_id: {}", response.task_responses[0].id);
 
     let task_id = response.task_responses[0].id.clone();

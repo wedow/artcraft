@@ -1,5 +1,5 @@
 pub (crate) mod image_gen_http_request;
-pub use image_gen_http_request::SoraError;
+pub use image_gen_http_request::SoraImageGenError;
 pub mod common;
 pub mod sora_image_gen_remix;
 pub mod sora_image_gen_simple;
