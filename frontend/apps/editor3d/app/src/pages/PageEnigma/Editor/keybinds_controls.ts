@@ -22,6 +22,7 @@ import {
   poseMode,
   showPoseControls,
 } from "../signals/selectedMode";
+import { Euler } from "three";
 
 export enum KinMode {
   FK,
@@ -65,6 +66,7 @@ export class MouseControls {
   private fkHelper: FKHelper;
   private isBoneDragged: boolean = false;
   private ignoreNextClick: boolean = false;
+  private manualMouseLock = false;
 
   constructor(
     camera: THREE.PerspectiveCamera,
@@ -377,6 +379,60 @@ export class MouseControls {
     }
   }
 
+  handleMousePointerLock() {
+    if (this.isMouseClicked && this.lockControls) {
+      if (this.lockControls.isLocked == false) {
+        this.lockControls.lock();
+      }
+    } else if (this.lockControls) {
+      if (this.lockControls.isLocked == true) {
+        this.lockControls.unlock();
+      }
+    }
+  }
+
+  handleMouseManualLock(event: MouseEvent) {
+    if (this.isMouseClicked && this.lockControls) {
+      // If the mouse is clicked and the lockControls is not locked, lock it
+      if (this.lockControls.isLocked == false) {
+        // Lock the mouse flag
+        this.lockControls.isLocked = true;
+
+        // Change the cursor to a dragging cursor
+        this.lockControls.domElement.style.cursor = "move";
+        console.log("Mouse locked manually");
+        return;
+      }
+
+      // If the mouse is clicked but controls also locked, move the camera with the mouse
+      const camera = this.lockControls.getObject();
+      const _euler = new Euler(0, 0, 0, 'YXZ');
+      const _MOUSE_SENSITIVITY = 0.002;
+      const pointerSpeed = 1.0;
+      const _PI_2 = Math.PI / 2;
+      const minPolarAngle = 0;
+      const maxPolarAngle = Math.PI;
+
+      _euler.setFromQuaternion(camera.quaternion);
+
+      _euler.y -= event.movementX * _MOUSE_SENSITIVITY * pointerSpeed;
+      _euler.x -= event.movementY * _MOUSE_SENSITIVITY * pointerSpeed;
+
+      _euler.x = Math.max(_PI_2 - maxPolarAngle, Math.min(_PI_2 - minPolarAngle, _euler.x));
+
+      camera.quaternion.setFromEuler(_euler);
+    } else if (this.lockControls) {
+      if (this.lockControls.isLocked == true) {
+        // Unlock the mouse flag
+        this.lockControls.isLocked = false;
+
+        // Change the cursor back to default
+        this.lockControls.domElement.style.cursor = "default";
+        console.log("Mouse unlocked manually");
+      }
+    }
+  }
+
   // Sets new mouse location usually used in raycasts.
   onMouseMove(event: MouseEvent) {
     if (this.canvReference == undefined) {
@@ -392,18 +448,11 @@ export class MouseControls {
 
     // this causes an issue  https://discourse.threejs.org/t/unable-to-use-pointer-lock-api/11092
     if (!isPointerLockSupported()) {
-      return;
+      this.handleMouseManualLock(event);
+    } else {
+      this.handleMousePointerLock();
     }
 
-    if (this.isMouseClicked && this.lockControls) {
-      if (this.lockControls.isLocked == false) {
-        this.lockControls.lock();
-      }
-    } else if (this.lockControls) {
-      if (this.lockControls.isLocked == true) {
-        this.lockControls.unlock();
-      }
-    }
   }
 
   // When the mouse clicks the screen.
