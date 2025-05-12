@@ -254,14 +254,6 @@ export const PageEditor = () => {
   const display3d = appTabId.value === "3D" ? "block" : "none";
   const display2d = appTabId.value === "2D" ? "block" : "none";
 
-  const ContentFor2D = () => {
-    return (
-      <KonvaCanvasContainer style={{ display: display2d }}>
-        <KonvaRootComponent className="h-full w-full" />
-      </KonvaCanvasContainer>
-    );
-  };
-
   return (
     <div className="w-screen">
       <TopBar
@@ -364,7 +356,9 @@ export const PageEditor = () => {
           </div>
         </div>
       </>
-      <ContentFor2D />
+      <KonvaCanvasContainer style={{ display: display2d }}>
+        <KonvaRootComponent className="h-full w-full" />
+      </KonvaCanvasContainer>
 
 
       <LoginModal
