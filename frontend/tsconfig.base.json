@@ -24,11 +24,8 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@frontend/login": [
-        "libs/login/src/index.ts"
-      ],
-      "@frontend/soundboard": [
-        "libs/soundboard/src/index.ts"
+      "~/*": [
+        "apps/editor3d/app/src/*"
       ]
     }
   }
