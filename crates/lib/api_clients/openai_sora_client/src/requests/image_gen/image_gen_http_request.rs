@@ -1,8 +1,9 @@
-use log::warn;
 use crate::creds::credential_migration::CredentialMigrationRef;
-use serde_derive::{Deserialize, Serialize};
-use thiserror::Error;
 use crate::requests::image_gen::image_gen_status::TaskId;
+use log::warn;
+use serde_derive::{Deserialize, Serialize};
+use std::time::Duration;
+use thiserror::Error;
 
 const SORA_IMAGE_GEN_URL: &str = "https://sora.com/backend/video_gen";
 
@@ -152,7 +153,11 @@ impl std::fmt::Display for RawSoraErrorInner {
 }
 
 /// Don't expose the internal request implementation as there are only a few "correct" ways to call the API.
-pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest, credentials: CredentialMigrationRef<'_>) -> Result<RawSoraResponse, SoraImageGenError> {
+pub (crate) async fn image_gen_http_request(
+  sora_request: RawSoraImageGenRequest, 
+  credentials: CredentialMigrationRef<'_>, 
+  request_timeout: Option<Duration>,
+) -> Result<RawSoraResponse, SoraImageGenError> {
   let client = reqwest::Client::new();
 
   let mut cookie;
@@ -181,12 +186,17 @@ pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest
     }
   }
 
-  let http_request = client.post(SORA_IMAGE_GEN_URL)
+  let mut http_request = client.post(SORA_IMAGE_GEN_URL)
       .header("User-Agent", USER_AGENT)
       .header("Cookie", &cookie)
       .header("Authorization", &authorization_header)
       .header("Content-Type", "application/json")
       .header("OpenAI-Sentinel-Token", &sentinel);
+  
+  
+  if let Some(timeout) = request_timeout {
+    http_request = http_request.timeout(timeout);
+  }
 
   let http_request = http_request.json(&sora_request).build()
       .map_err(|e| SoraImageGenError::NetworkError(e.to_string()))?;
@@ -241,8 +251,8 @@ pub (crate) async fn image_gen_http_request(sora_request: RawSoraImageGenRequest
 
 #[cfg(test)]
 mod tests {
-  use errors::AnyhowResult;
   use crate::requests::image_gen::image_gen_http_request::RawSoraResponse;
+  use errors::AnyhowResult;
 
   #[test]
   fn deserialize_task_id() -> AnyhowResult<()> {

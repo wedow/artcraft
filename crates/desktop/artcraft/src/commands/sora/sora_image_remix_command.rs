@@ -39,6 +39,8 @@ use tokens::tokens::media_files::MediaFileToken;
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
+const SORA_IMAGE_REMIX_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
+
 #[derive(Deserialize)]
 pub struct SoraImageRemixCommand {
   /// Image media file; the engine or canvas snapshot (screenshot).
@@ -234,6 +236,7 @@ pub async fn generate_image(
         image_size: ImageSize::Square,
         sora_media_tokens: sora_media_tokens.clone(),
         credentials: &creds,
+        request_timeout: Some(SORA_IMAGE_REMIX_TIMEOUT),
       }).await?;
 
   if let Some(new_creds) = maybe_new_creds {

@@ -19,6 +19,8 @@ use tauri::{AppHandle, Manager, State};
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
+const SORA_IMAGE_REMIX_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
+
 #[tauri::command]
 pub async fn sora_image_generation_command(
   prompt: &str,
@@ -80,6 +82,7 @@ pub async fn generate_image(
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
     credentials: CredentialMigrationRef::New(&creds),
+    request_timeout: Some(SORA_IMAGE_REMIX_TIMEOUT),
   }).await
       .map_err(|err| {
         error!("Failed to call Sora image generation: {:?}", err);

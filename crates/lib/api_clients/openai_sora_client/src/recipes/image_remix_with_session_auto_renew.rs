@@ -1,3 +1,4 @@
+use std::time::Duration;
 use anyhow::anyhow;
 use log::{info, warn};
 use errors::AnyhowResult;
@@ -18,6 +19,8 @@ pub struct ImageRemixAutoRenewRequest<'a> {
   pub image_size: ImageSize,
   pub sora_media_tokens: Vec<String>,
   pub credentials: &'a SoraCredentialSet,
+  /// This function can try several different requests. This is the timeout for *individual* requests.
+  pub request_timeout: Option<Duration>,
 }
 
 /// Image request with retry and session auto-renewal.
@@ -29,6 +32,7 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
     image_size: request.image_size,
     sora_media_tokens: request.sora_media_tokens.clone(), // NB: Clone because used again
     credentials: CredentialMigrationRef::New(request.credentials),
+    request_timeout: request.request_timeout,
   }).await;
 
   let err = match result {
@@ -126,6 +130,7 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
     image_size: request.image_size,
     sora_media_tokens: request.sora_media_tokens,
     credentials: CredentialMigrationRef::New(&new_creds),
+    request_timeout: request.request_timeout,
   }).await;
 
   match result {

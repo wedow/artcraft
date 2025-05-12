@@ -1,7 +1,8 @@
-use log::info;
 use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::image_gen_http_request::{image_gen_http_request, InpaintItem, InpaintItemType, OperationType, RawSoraImageGenRequest, SoraImageGenError, VideoGenType};
+use log::info;
+use std::time::Duration;
 
 pub struct SoraImageGenRemixRequest<'a> {
   pub prompt: String,
@@ -9,6 +10,7 @@ pub struct SoraImageGenRemixRequest<'a> {
   pub image_size: ImageSize,
   pub sora_media_tokens: Vec<String>,
   pub credentials: CredentialMigrationRef<'a>,
+  pub request_timeout: Option<Duration>,
 }
 
 /// The "remix" commands let you supply additional images as context.
@@ -39,7 +41,7 @@ pub async fn sora_image_gen_remix(request: SoraImageGenRemixRequest<'_>) -> Resu
   // TODO: Replace this with debug level logging in the future.
   info!("Sending remix request: {:?}", args);
 
-  let result = image_gen_http_request(args, request.credentials).await?;
+  let result = image_gen_http_request(args, request.credentials, request.request_timeout).await?;
 
   Ok(SoraImageGenResponse {
     task_id: result.id,
@@ -80,6 +82,7 @@ mod tests {
       image_size: ImageSize::Square,
       sora_media_tokens: vec!["media_01jqyhrz4detyvtzwp2p4j63ad".to_string()],
       credentials: CredentialMigrationRef::Legacy(&creds),
+      request_timeout: None,
     }).await?;
 
     println!("task_id: {}", response.task_id);
