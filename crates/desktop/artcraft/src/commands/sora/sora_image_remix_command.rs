@@ -25,16 +25,19 @@ use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
 use openai_sora_client::requests::upload::upload_media_from_file::sora_media_upload_from_file;
+use openai_sora_client::sora_error::SoraError;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::read_to_string;
 use std::io::Cursor;
+use std::time::Duration;
+use storyteller_client::api_error::ApiError;
+use storyteller_client::api_error::ApiError::InternalServerError;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
-use openai_sora_client::sora_error::SoraError;
-use storyteller_client::api_error::ApiError;
-use storyteller_client::api_error::ApiError::InternalServerError;
 use tokens::tokens::media_files::MediaFileToken;
+
+const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
 #[derive(Deserialize)]
 pub struct SoraImageRemixCommand {
@@ -96,23 +99,23 @@ pub async fn sora_image_remix_command(
       
       let mut status = CommandErrorStatus::ServerError;
       let mut error_type = SoraImageRemixErrorType::ServerError;
-      let mut error_message = "A server error occurred.";
+      let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
       
       match (err) {
         InnerError::SoraError(SoraError::TooManyConcurrentTasks) => {
           error_type = SoraImageRemixErrorType::TooManyConcurrentTasks;
           status = CommandErrorStatus::ServerError;
-          error_message = "You already have work in progress. Please wait.";
+          error_message = "You already have work in progress. Please wait for it to finish.";
         },
         InnerError::SoraError(SoraError::SoraUsernameNotYetCreated) => {
           error_type = SoraImageRemixErrorType::SoraUsernameNotYetCreated;
           status = CommandErrorStatus::BadRequest;
-          error_message = "You need to create a username on Sora.com.";
+          error_message = "You need to create a username on Sora.com to continue.";
         },
         InnerError::SoraError(SoraError::BadGateway(_) | SoraError::CloudFlareTimeout(_)) => {
           error_type = SoraImageRemixErrorType::SoraIsHavingProblems;
           status = CommandErrorStatus::ServerError;
-          error_message = "Sora is having problems. Please wait a moment before retrying.";
+          error_message = "Sora is having problems. Please wait a moment and then retry.";
         }
         _ => {},
       }
@@ -206,6 +209,7 @@ pub async fn generate_image(
         image_upload_from_file_with_session_auto_renew(ImageUploadFromFileAutoRenewRequest {
           file_path,
           credentials: &creds,
+          request_timeout: Some(SORA_IMAGE_UPLOAD_TIMEOUT),
         }).await?;
 
     if let Some(new_creds) = maybe_new_credentials {

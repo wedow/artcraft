@@ -6,10 +6,14 @@ use crate::requests::upload::upload_media_http_request::{upload_media_http_reque
 use crate::sora_error::SoraError;
 use log::{info, warn};
 use std::path::Path;
+use std::time::Duration;
 
 pub struct ImageUploadFromFileAutoRenewRequest<'a, P: AsRef<Path>> {
   pub file_path: P,
   pub credentials: &'a SoraCredentialSet,
+  
+  /// This function can try to upload several times. This is the timeout for *individual* requests.
+  pub request_timeout: Option<Duration>,
 }
 
 /// Image upload with retry and session auto-renewal.
@@ -21,6 +25,8 @@ pub async fn image_upload_from_file_with_session_auto_renew<P: AsRef<Path>>(
   let result = sora_media_upload_from_file(
     request.file_path.as_ref().clone(), // FIXME(bt): This is horrible, but the client needs to take ownership. :(
     CredentialMigrationRef::New(request.credentials),
+    /// This function can try to upload several times. This is the timeout for *individual* requests.
+    request.request_timeout,
   ).await;
 
   let err = match result {
@@ -37,6 +43,7 @@ pub async fn image_upload_from_file_with_session_auto_renew<P: AsRef<Path>>(
   let result = sora_media_upload_from_file(
     request.file_path,
     CredentialMigrationRef::New(&new_creds),
+    request.request_timeout,
   ).await?;
 
   Ok((result, Some(new_creds)))
