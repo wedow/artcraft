@@ -27,28 +27,5 @@
       ]
     },
     "dialog:default"
-  ],
-  "app": {
-    "csp": {
-        "default-src": [
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            "https://*.storyteller.ai",
-            "https://*.fakeyou.com"
-        ],
-        "script-src": [
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            "https://*.storyteller.ai",
-            "https://*.fakeyou.com"
-        ],
-        "connect-src": [
-            "'self'",
-            "https://*.storyteller.ai",
-            "https://*.fakeyou.com"
-        ]
-    }
-  }
+  ]
 }
