@@ -210,7 +210,7 @@ const Landing = () => {
         </motion.div>
       </div>
 
-      <div className="relative z-10 max-w-[1920px] px-4 md:pt-32 md:pb-56 sm:px-24 lg:px-32">
+      <div className="relative z-10 mx-auto max-w-[1920px] px-4 md:pt-32 md:pb-56 sm:px-24 lg:px-32">
         {/* Discord CTA Section */}
         <motion.div
           className="flex flex-col items-center justify-center text-center p-12 py-20 rounded-[40px] bg-primary/30 backdrop-blur-md border-[6px] border-primary/60"
