@@ -1063,7 +1063,7 @@ dependencies = [
  "serde_path_to_error",
  "serde_qs 0.10.1",
  "sha2 0.10.8",
- "smart-default",
+ "smart-default 0.6.0",
  "smol_str",
  "thiserror 1.0.63",
  "tokio",
@@ -4181,6 +4181,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "eventsource-stream"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74fef4569247a5f429d9156b9d0a2599914385dd189c539334c625d8099d90ab"
+dependencies = [
+ "futures-core",
+ "nom",
+ "pin-project-lite",
+]
+
+[[package]]
 name = "exr"
 version = "1.73.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4200,6 +4211,67 @@ name = "extended"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af9673d8203fcb076b19dfd17e38b3d4ae9f44959416ea532ce72415a6020365"
+
+[[package]]
+name = "fal"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fd7dd8565317310f05569296166e2cbdd2bc870173b2b24b77ed681166268d0"
+dependencies = [
+ "base64 0.22.1",
+ "eventsource-stream",
+ "fal-derive",
+ "futures 0.3.29",
+ "image",
+ "reqwest 0.12.15",
+ "serde",
+ "serde_json",
+ "smart-default 0.7.1",
+ "thiserror 1.0.63",
+]
+
+[[package]]
+name = "fal-derive"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87f377f2f18a6bf107f907aa687df6bda2874bd38b25b1531f2a6fb38a9ca643"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.87",
+]
+
+[[package]]
+name = "fal_client"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "chrono",
+ "cookie 0.18.1",
+ "crockford",
+ "errors",
+ "fal",
+ "file_to_base64_url",
+ "filesys",
+ "futures 0.3.29",
+ "hex-literal",
+ "idempotency",
+ "log",
+ "once_cell",
+ "rand 0.9.0",
+ "reqwest 0.12.15",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha3",
+ "subprocess_common",
+ "testing",
+ "thiserror 2.0.12",
+ "tokio",
+ "toml 0.8.20",
+ "workspace-build-acceleration",
+]
 
 [[package]]
 name = "fancy-regex"
@@ -4279,6 +4351,37 @@ checksum = "38e2275cc4e4fc009b0669731a1e5ab7ebf11f469eaede2bab9309a5b4d6057f"
 dependencies = [
  "memoffset 0.9.0",
  "rustc_version 0.4.0",
+]
+
+[[package]]
+name = "file_to_base64_url"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "chrono",
+ "cookie 0.18.1",
+ "crockford",
+ "errors",
+ "fal",
+ "filesys",
+ "hex-literal",
+ "idempotency",
+ "log",
+ "mimetypes",
+ "once_cell",
+ "rand 0.9.0",
+ "reqwest 0.12.15",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha3",
+ "subprocess_common",
+ "testing",
+ "thiserror 2.0.12",
+ "tokio",
+ "toml 0.8.20",
+ "workspace-build-acceleration",
 ]
 
 [[package]]
@@ -11241,6 +11344,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "smart-default"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0eb01866308440fc64d6c44d9e86c5cc17adfe33c4d6eed55da9145044d0ffc1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.87",
 ]
 
 [[package]]
