@@ -21,6 +21,12 @@ pub struct RemBgResponse {
 pub async fn remove_background_rembg<P: AsRef<Path>>(image_path: P, api_key: &FalApiKey) -> Result<RemBgResponse, FalErrorPlus> {
   let image_url = file_to_base64_url(image_path)?;
   
+  /*
+  TODO: Handle error messages - 
+    FalError(FalError(Other("{\"detail\": \"Invalid Key Authorization header format. Expected '<key_id>:<key_secret>'.\"}")))
+    FalError(FalError(Other("{\"detail\": \"No user found for Key ID and Secret\"}"))) 
+  */
+  
   let request = RemoveBackgroundInput {
     image_url,
     crop_to_bbox: None,

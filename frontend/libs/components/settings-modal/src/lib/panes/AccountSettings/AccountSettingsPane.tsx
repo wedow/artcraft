@@ -4,6 +4,7 @@ import { Input } from "@storyteller/ui-input";
 import { SoraAccountButton } from "./SoraAccountButton";
 import { SoraAccountBlock } from "./SoraAccountBlock";
 import { ArtcraftAccountBlock } from "./ArtcraftAccountBlock";
+import { FalApiKeyBlock } from "./FalApiKeyBlock";
 
 interface AccountInfo {
   username: string;
@@ -59,6 +60,7 @@ export const AccountSettingsPane = ({
         
         <SoraAccountBlock />
 
+        <FalApiKeyBlock />
 
         {/*
         <hr />

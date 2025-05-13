@@ -10,6 +10,7 @@ use tauri::Manager;
 use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::fal::fal_background_removal_command::fal_background_removal_command;
+use crate::commands::fal::get_fal_api_key_command::get_fal_api_key_command;
 use crate::commands::fal::set_fal_api_key_command::set_fal_api_key_command;
 use crate::commands::flip_image::flip_image;
 use crate::commands::platform_info_command::platform_info_command;
@@ -149,6 +150,7 @@ pub fn run() {
       fal_background_removal_command,
       flip_image,
       get_app_preferences_command,
+      get_fal_api_key_command,
       open_sora_login_command,
       platform_info_command,
       set_fal_api_key_command,
