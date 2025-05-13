@@ -33,6 +33,7 @@ primitives = { workspace = true }
 storyteller_client = { workspace = true }
 subprocess_common = { workspace = true }
 tokens = { workspace = true }
+fal_client = { workspace = true }
 
 # External
 anyhow = { workspace = true }

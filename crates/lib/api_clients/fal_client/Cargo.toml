@@ -17,31 +17,14 @@ path = "src/lib.rs"
 workspace-build-acceleration = { workspace =  true }
 
 # Internal
-crockford = { path = "../../data/crockford" }
 file_to_base64_url = { path = "../../files/file_to_base64_url" }
-errors = { path = "../../errors" }
-idempotency = { path = "../../idempotency" }
-subprocess_common = { path = "../../subprocess_common" }
+errors = { workspace = true }
 
 # External
 anyhow = { workspace = true }
-base64 = { workspace = true }
-chrono = { workspace = true}
-cookie = { workspace = true }
 fal = { version = "0.3.6", features = ["endpoints"] }
-hex-literal = { workspace = true }
-log = { workspace = true }
-once_cell= { workspace = true }
-rand = { workspace = true }
-reqwest = { workspace = true, features = ["multipart", "gzip"] }
-serde = { workspace = true }
-serde_derive = { workspace = true }
-serde_json = { workspace = true }
-sha3 = { workspace = true }
-thiserror = { workspace = true }
-tokio = { version = "1.38.0", features = ["macros"] }
-toml = { workspace = true }
-futures = "0.3.29"
+futures = { workspace = true }
+tokio = { workspace = true }
 
 [dev-dependencies]
 testing = { path = "../../testing" }

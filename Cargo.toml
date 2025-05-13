@@ -159,15 +159,16 @@ workspace-build-acceleration = { path = "crates/workspace-build-acceleration" }
 # External libs
 # Centrally pinned versions so that we can uniformly upgrade/downgrade versions across the workspace
 # If a crate needs to use an older/newer version, the dependency should be managed in that crate's own Cargo.toml
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 base64 = "0.22.1"
-chrono = { version = "0.4.40", features = ["serde"] }
+chrono = { version = "0.4.41", features = ["serde"] }
 cookie = "0.18.1"
+futures = { version = "0.3.31" }
 hex-literal = "1.0.0"
 indexmap = "2.9.0"
 log = "0.4.27"
 once_cell = "1.21.3"
-rand = "0.9.0"
+rand = "0.9.1"
 regex = "1.11.1"
 reqwest = { version = "0.12.15", features = ["json", "cookies"] }
 serde = {  version = "1.0.219", features = ["derive"] }
@@ -177,7 +178,8 @@ serde_yaml = "0.9.1"
 sha3 = "0.10.8"
 tauri = { version = "2.4.1", features = ["unstable", "devtools"] } # NB: "devtools" prevents App Store distribution
 thiserror = "2.0.12"
-toml = "0.8.20"
+tokio = { version = "1.45.0", features = ["macros"] }
+toml = "0.8.22"
 url = { version = "2.5.4", features = ["serde"] }
 
 # Internal libs
@@ -185,6 +187,7 @@ crockford = { path = "crates/lib/data/crockford" }
 enums = { path = "crates/_types/enums" }
 enums_public = { path = "crates/_types/enums_public" }
 errors = { path = "crates/lib/errors" }
+fal_client = { path = "crates/lib/api_clients/fal_client" }
 filesys = { path = "crates/lib/files/filesys" }
 idempotency = { path = "crates/lib/idempotency" }
 images = { path = "crates/lib/files/images" }
