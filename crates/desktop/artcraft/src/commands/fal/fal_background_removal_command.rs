@@ -94,11 +94,6 @@ pub async fn fal_background_removal_command(
       .has_apparent_api_token()
       .unwrap_or(true); // NB: Failures would be lock issues
   
-  let maybe_key = fal_creds_manager.get_key().expect("wat")
-      .map(|key| key.0);
-  
-  println!(">>> fal_background_removal_command; has_creds: {} maybe_key: {:?}", has_credentials, maybe_key);
-  
   if !has_credentials {
     warn!("No API key found");
     return Err(CommandErrorResponseWrapper {
@@ -235,30 +230,33 @@ pub async fn remove_background(
       .unwrap_or_else(|| ".png".to_string());
 
   let mut result_file = app_data_root.temp_dir().new_named_temp_file_with_extension(&extension_with_dot)?;
-  //let result_filename = format!("{}_bg_removed{}", response.media_file.token.as_str(), extension_with_dot);
 
   info!("Downloading file result file...");
   
   simple_http_download_to_tempfile(&result.image_url, &mut result_file).await?;
 
-  info!("Uploading image file...");
+  let result_filename = result_file.path().to_path_buf();
 
-  let result_filename = temp_download.path().to_path_buf();
-  
+  let mut buffer = Vec::new();
+  result_file.read_to_end(&mut buffer)?;
+  let base64_bytes = BASE64_STANDARD.encode(buffer.as_bytes());
+
+  info!("Uploading image media file...");
+
   let upload_result = upload_image_media_file_from_file(
     &ApiHost::Storyteller, 
     Some(&creds), 
     result_filename
   ).await?;
 
-  let response = get_media_file(&ApiHost::Storyteller, &upload_result.media_file_token).await?;
-
-  let mut buffer = Vec::new();
-  temp_download.read_to_end(&mut buffer)?;
+  // TODO: Don't do this to get MediaLinks. Get those from the core API itself.
+  info!("Re-requesting media file...");
   
-  let bytes = BASE64_STANDARD.encode(buffer.as_bytes());
+  let response = get_media_file(&ApiHost::Storyteller, &upload_result.media_file_token).await?;
+  
+  info!("Uploaded media file: {:?}", response.media_file.token);
 
-  Ok((response, bytes))
+  Ok((response, base64_bytes))
 }
 
 async fn download_media_file(app_data_root: &AppDataRoot, token: &MediaFileToken) -> Result<NamedTempFile, InnerError> {
