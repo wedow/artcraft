@@ -47,6 +47,7 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
+use filesys::file_read_bytes::file_read_bytes;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize)]
@@ -237,9 +238,9 @@ pub async fn remove_background(
 
   let result_filename = result_file.path().to_path_buf();
 
-  let mut buffer = Vec::new();
-  result_file.read_to_end(&mut buffer)?;
-  let base64_bytes = BASE64_STANDARD.encode(buffer.as_bytes());
+  // NB: We couldn't pass the existing file handle as I think the file handle pointer is already at the EOF
+  let bytes = file_read_bytes(&result_filename)?;
+  let base64_bytes = BASE64_STANDARD.encode(bytes.as_bytes());
 
   info!("Uploading image media file...");
 
@@ -249,7 +250,7 @@ pub async fn remove_background(
     result_filename
   ).await?;
 
-  // TODO: Don't do this to get MediaLinks. Get those from the core API itself.
+  // TODO: Don't re-request to simply build MediaLinks (or CDN URL). Get those from the upload API in one turn.
   info!("Re-requesting media file...");
   
   let response = get_media_file(&ApiHost::Storyteller, &upload_result.media_file_token).await?;
