@@ -49,8 +49,17 @@ impl FalCredentialManager {
     self.key.get_clone()
   }
   
+  pub fn get_key_required(&self) -> AnyhowResult<FalApiKey> {
+    self.key.get_clone_required()
+  }
+  
   pub fn clear_key(&self) -> AnyhowResult<()> {
     self.key.clear()
+  }
+  
+  /// Does not check the token for validity
+  pub fn has_apparent_api_token(&self) -> AnyhowResult<bool> {
+    self.key.is_some()
   }
   
   pub fn purge_api_key_from_disk(&self) -> Result<(), io::Error> {

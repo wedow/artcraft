@@ -91,7 +91,7 @@ pub async fn sora_image_remix_command(
 
   let has_credentials = sora_creds_manager
       .has_apparently_complete_credentials()
-      .unwrap_or(true);
+      .unwrap_or(true); // NB: Failures would be lock issues
   
   if !has_credentials {
     warn!("No apparently completed credentials found");

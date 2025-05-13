@@ -6,6 +6,7 @@ use fal::prelude::*;
 use fal_client::file_to_base64_url::file_to_base64_url;
 use futures::StreamExt;
 use std::path::Path;
+use url::Url;
 
 pub struct RemBgArgs<'a, P: AsRef<Path>> {
   pub image_path: P,
@@ -13,12 +14,12 @@ pub struct RemBgArgs<'a, P: AsRef<Path>> {
 }
 
 pub struct RemBgResponse {
-  pub image_url: String,
+  pub image_url: Url,
 }
 
 /// remove background using `fal_ai/imageutils/rembg`
-pub async fn remove_background_rembg<P: AsRef<Path>>(args: RemBgArgs<'_, P>) -> Result<RemBgResponse, FalErrorPlus> {
-  let image_url = file_to_base64_url(&args.image_path)?;
+pub async fn remove_background_rembg<P: AsRef<Path>>(image_path: P, api_key: &FalApiKey) -> Result<RemBgResponse, FalErrorPlus> {
+  let image_url = file_to_base64_url(image_path)?;
   
   let request = RemoveBackgroundInput {
     image_url,
@@ -27,7 +28,7 @@ pub async fn remove_background_rembg<P: AsRef<Path>>(args: RemBgArgs<'_, P>) -> 
   };
   
   let result = rembg(request)
-      .with_api_key(&args.api_key.0)
+      .with_api_key(&api_key.0)
       .queue()
       .await?;
 
@@ -42,15 +43,17 @@ pub async fn remove_background_rembg<P: AsRef<Path>>(args: RemBgArgs<'_, P>) -> 
 
   let output = result.response().await?;
 
+  let url = Url::parse(&output.image.url)?;
+  
   Ok(RemBgResponse {
-    image_url: output.image.url,
+    image_url: url,
   })
 }
 
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::remove_background_rembg::{remove_background_rembg, RemBgArgs};
+  use crate::requests::remove_background_rembg::remove_background_rembg;
   use errors::AnyhowResult;
   use testing::test_file_path::test_file_path;
 
@@ -63,10 +66,7 @@ mod tests {
     const KEY : &str = "DO NOT COMMIT";
     let api_key = FalApiKey::from_str(KEY);
 
-    let result = remove_background_rembg(RemBgArgs {
-      image_path: image,
-      api_key: &api_key,
-    }).await?;
+    let result = remove_background_rembg(image, &api_key).await?;
 
     Ok(())
   }

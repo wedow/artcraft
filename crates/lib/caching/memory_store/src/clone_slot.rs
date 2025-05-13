@@ -31,7 +31,17 @@ impl <T: Clone> CloneSlot<T> {
       Ok(store) => Ok(store.clone()),
     }
   }
-  
+
+  pub fn get_clone_required(&self) -> AnyhowResult<T> {
+    match self.store.read() {
+      Err(err) => Err(anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(store) => match &*store {
+        None => Err(anyhow!("Required stored item is not set")),
+        Some(inner) => Ok(inner.clone()),
+      }
+    }
+  }
+
   pub fn set_clone(&self, value: &T) -> AnyhowResult<()> {
     match self.store.write() {
       Err(err) => Err(anyhow!("Failed to acquire write lock: {:?}", err)),

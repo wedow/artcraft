@@ -73,7 +73,7 @@ impl CommandSuccessResponseWrapper<()> {
 /// `Serialize`. Rust's `"specialization"`, which would let us account for this, is an unstable, nightly-only
 /// feature. So instead we manually mark all types other than `()` with `SerializeMarker` as a hack to 
 /// distinguish the two.
-trait SerializeMarker : Serialize {}
+pub trait SerializeMarker : Serialize {}
 
 // NB: () is Serialize! So we can't broadly implement just `T: Serialize`.
 impl From<()> for CommandSuccessResponseWrapper<()> {

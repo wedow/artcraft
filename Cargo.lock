@@ -4254,6 +4254,7 @@ dependencies = [
  "futures 0.3.31",
  "testing",
  "tokio",
+ "url",
  "workspace-build-acceleration",
 ]
 

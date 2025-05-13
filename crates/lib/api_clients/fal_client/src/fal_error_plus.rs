@@ -8,6 +8,8 @@ pub enum FalErrorPlus {
   FalError(fal::FalError),
   /// Another error we didn't handle.
   AnyhowError(anyhow::Error),
+  /// URL parse errors.
+  UrlParseError(url::ParseError),
 }
 
 impl Display for FalErrorPlus {
@@ -15,6 +17,7 @@ impl Display for FalErrorPlus {
     match self {
       Self::FalError(err) => write!(f, "FalErrorPlus::FalError: {:?}", err),
       Self::AnyhowError(err) => write!(f, "FalErrorPlus::AnyhowError: {:?}", err),
+      Self::UrlParseError(err) => write!(f, "FalErrorPlus::UrlParseError: {:?}", err),
     }
   }
 }
@@ -30,5 +33,11 @@ impl From<fal::FalError> for FalErrorPlus {
 impl From<anyhow::Error> for FalErrorPlus {
   fn from(err: anyhow::Error) -> Self {
     FalErrorPlus::AnyhowError(err)
+  }
+}
+
+impl From<url::ParseError> for FalErrorPlus {
+  fn from(err: url::ParseError) -> Self {
+    FalErrorPlus::UrlParseError(err)
   }
 }

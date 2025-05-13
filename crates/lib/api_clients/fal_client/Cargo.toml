@@ -25,6 +25,7 @@ anyhow = { workspace = true }
 fal = { version = "0.3.6", features = ["endpoints"] }
 futures = { workspace = true }
 tokio = { workspace = true }
+url = { workspace = true }
 
 [dev-dependencies]
 testing = { path = "../../testing" }
