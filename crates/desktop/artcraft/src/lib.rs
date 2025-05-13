@@ -9,6 +9,7 @@ use tauri::Manager;
 
 use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::commands::fal::set_fal_api_key_command::set_fal_api_key_command;
 use crate::commands::flip_image::flip_image;
 use crate::commands::platform_info_command::platform_info_command;
 use crate::commands::sora::check_sora_session_command::check_sora_session_command;
@@ -18,6 +19,7 @@ use crate::commands::sora::sora_image_remix_command::sora_image_remix_command;
 use crate::commands::sora::sora_logout_command::sora_logout_command;
 use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::fal::fal_credential_manager::FalCredentialManager;
 use crate::state::main_window_position::MainWindowPosition;
 use crate::state::main_window_size::MainWindowSize;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
@@ -48,9 +50,12 @@ pub fn run() {
   let storyteller_creds_manager = StorytellerCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let storyteller_creds_manager_2 = storyteller_creds_manager.clone();
   
-  println!("Attempting to read existing credentials...");
+  println!("Attempting to read existing sora credentials...");
   let sora_creds_manager = SoraCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let sora_creds_manager_2 = sora_creds_manager.clone();
+  
+  println!("Attempting to read existing fal credentials...");
+  let fal_creds_manager = FalCredentialManager::initialize_from_disk_infallible(&app_data_root);
 
   // Other state
   let sora_task_queue = SoraTaskQueue::new();
@@ -134,6 +139,7 @@ pub fn run() {
     .manage(app_data_root)
     .manage(app_preferences)
     .manage(sora_creds_manager)
+    .manage(fal_creds_manager)
     .manage(sora_task_queue)
     .invoke_handler(tauri::generate_handler![
       check_sora_session_command,
@@ -141,6 +147,7 @@ pub fn run() {
       get_app_preferences_command,
       open_sora_login_command,
       platform_info_command,
+      set_fal_api_key_command,
       sora_image_generation_command,
       sora_image_remix_command,
       sora_logout_command,

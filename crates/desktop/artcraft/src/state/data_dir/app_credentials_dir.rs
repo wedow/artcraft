@@ -40,4 +40,8 @@ impl AppCredentialsDir {
   pub fn get_storyteller_session_cookie_file_path(&self) -> PathBuf {
     self.path.join("artcraft_session.txt")
   }
+
+  pub fn get_fal_api_key_file_path(&self) -> PathBuf {
+    self.path.join("fal_api_key.txt")
+  }
 }
