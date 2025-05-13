@@ -26,6 +26,9 @@
       "path": "../../libs/tauri-utils"
     },
     {
+      "path": "../editor3d"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

@@ -1,8 +1,8 @@
 import { Route, Routes } from "react-router-dom";
-import Landing from "../pages/landing";
 import Download from "../pages/download";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import Landing2 from "../pages/landing2";
 
 export function App() {
   return (
@@ -10,7 +10,7 @@ export function App() {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Landing2 />} />
         <Route path="/download" element={<Download />} />
       </Routes>
 

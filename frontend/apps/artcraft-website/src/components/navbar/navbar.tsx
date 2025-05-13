@@ -1,18 +1,15 @@
-import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-} from "@headlessui/react";
+import { Disclosure, DisclosureButton } from "@headlessui/react";
 import { faBars } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button } from "@storyteller/ui-button";
+// import { Button } from "@storyteller/ui-button";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useState } from "react";
+import { DiscordButton } from "../discord-button";
 
-const navigation = [
-  { name: "Home", href: "/", current: true },
-  { name: "Download", href: "/download", current: false },
-];
+// const navigation = [
+//   { name: "Home", href: "/", current: true },
+//   { name: "Download", href: "/download", current: false },
+// ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -30,11 +27,13 @@ export default function Navbar() {
     <Disclosure
       as="nav"
       className={twMerge(
-        "z-20 fixed top-0 left-0 w-full transition-colors duration-200",
-        scrolled ? "bg-[#1b1b1f]/70 backdrop-blur-lg" : "bg-transparent"
+        "z-20 fixed top-0 left-0 w-full transition-colors duration-200 bg-transparent",
+        scrolled
+          ? "bg-[#1b1b1f]/70 backdrop-blur-lg lg:bg-transparent lg:backdrop-blur-none"
+          : "bg-transparent"
       )}
     >
-      <div className="mx-auto max-w-[1920px] sm:px-6 lg:px-8 px-6 md:px-16 xl:px-32">
+      <div className="mx-auto max-w-screen sm:px-6 lg:px-8 px-6 md:px-16 xl:px-4">
         <div className="flex h-16 justify-between">
           <div className="flex">
             <div className="flex shrink-0 items-center">
@@ -46,7 +45,7 @@ export default function Navbar() {
                 />
               </a>
             </div>
-            <div className="hidden md:ml-7 md:flex md:items-center md:space-x-3">
+            {/* <div className="hidden md:ml-7 md:flex md:items-center md:space-x-3">
               {navigation.map((item) => (
                 <a
                   key={item.name}
@@ -62,27 +61,24 @@ export default function Navbar() {
                   {item.name}
                 </a>
               ))}
-            </div>
+            </div> */}
           </div>
           <div className="flex items-center">
             <div className="hidden md:ml-4 md:flex md:shrink-0 md:items-center">
-              <Button as="link" href="/download">
+              {/* <Button as="link" href="/download">
                 Download
-              </Button>
+              </Button> */}
+              <DiscordButton small />
             </div>
-            <div className="mr-2 -ml-2 flex items-center md:hidden">
+            <div className="-ml-2 flex items-center md:hidden">
               {/* Mobile menu button */}
-              <DisclosureButton className="group relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset">
-                <span className="absolute -inset-0.5" />
-                <span className="sr-only">Open main menu</span>
-                <FontAwesomeIcon icon={faBars} />
-              </DisclosureButton>
+              <DiscordButton className="text-sm" small />
             </div>
           </div>
         </div>
       </div>
 
-      <DisclosurePanel className="md:hidden">
+      {/* <DisclosurePanel className="md:hidden">
         <div className="space-y-1 px-2 pt-2 pb-3 sm:px-3">
           {navigation.map((item) => (
             <DisclosureButton
@@ -101,7 +97,7 @@ export default function Navbar() {
             </DisclosureButton>
           ))}
         </div>
-      </DisclosurePanel>
+      </DisclosurePanel> */}
     </Disclosure>
   );
 }

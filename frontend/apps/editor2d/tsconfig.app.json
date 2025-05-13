@@ -51,6 +51,9 @@
     },
     {
       "path": "../../libs/tauri-utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../editor3d"
     }
   ]
 }
