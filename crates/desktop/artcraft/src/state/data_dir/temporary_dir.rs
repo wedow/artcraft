@@ -35,4 +35,17 @@ impl TemporaryDir {
         .tempfile_in(&self.path)?;
     Ok(tempfile)
   }
+
+  pub fn new_named_temp_file_with_extension(&self, extension: &str) -> anyhow::Result<NamedTempFile> {
+    let extension = if extension.starts_with(".") {
+      extension.to_string()
+    } else {
+      format!(".{}", extension)
+    };
+    let tempfile = Builder::new()
+        .prefix("temp_")
+        .suffix(&extension)
+        .tempfile_in(&self.path)?;
+    Ok(tempfile)
+  }
 }

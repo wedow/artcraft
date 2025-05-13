@@ -826,6 +826,7 @@ dependencies = [
  "log",
  "memory_caching",
  "memory_store",
+ "mimetypes",
  "once_cell",
  "openai_sora_client",
  "primitives",

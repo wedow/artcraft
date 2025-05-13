@@ -13,7 +13,7 @@ use crate::state::storyteller::storyteller_credential_manager::StorytellerCreden
 use crate::utils::get_url_file_extension::get_url_file_extension;
 use crate::utils::simple_http_download::simple_http_download;
 use base64::prelude::BASE64_STANDARD;
-use base64::Engine;
+use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
 use fal_client::fal_error_plus::FalErrorPlus;
 use fal_client::requests::remove_background_rembg::remove_background_rembg;
@@ -33,21 +33,29 @@ use openai_sora_client::sora_error::SoraError;
 use reqwest::Url;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::read_to_string;
-use std::io::Cursor;
+use std::io::{Cursor, Write};
 use std::ops::Add;
+use std::path::PathBuf;
 use std::time::Duration;
+use anyhow::anyhow;
 use storyteller_client::api_error::ApiError;
 use storyteller_client::api_error::ApiError::InternalServerError;
 use storyteller_client::media_files::get_media_file::{get_media_file, GetMediaFileSuccessResponse};
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
+use tempfile::NamedTempFile;
+use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
 
 #[derive(Deserialize)]
 pub struct FalBackgroundRemovalRequest {
   /// Image media file; the image to remove the background from.
-  pub image_media_token: MediaFileToken,
+  pub image_media_token: Option<MediaFileToken>,
+  
+  /// Base64-encoded image
+  pub base64_image: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -72,7 +80,6 @@ pub enum SoraImageRemixErrorType {
 
 #[tauri::command]
 pub async fn fal_background_removal_command(
-  app: AppHandle,
   request: FalBackgroundRemovalRequest,
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
@@ -147,6 +154,9 @@ enum InnerError {
   FalError(FalErrorPlus),
   AnyhowError(AnyhowError),
   StorytellerApiError(ApiError),
+  DecodeError(DecodeError),
+  //ImageError(image::ImageError),
+  IoError(std::io::Error),
 }
 
 impl From<AnyhowError> for InnerError {
@@ -167,6 +177,24 @@ impl From<ApiError> for InnerError {
   }
 }
 
+impl From<DecodeError> for InnerError {
+  fn from(value: DecodeError) -> Self {
+    Self::DecodeError(value)
+  }
+}
+
+//impl From<image::ImageError> for InnerError {
+//  fn from(value: image::ImageError) -> Self {
+//    Self::ImageError(value)
+//  }
+//}
+//
+impl From<std::io::Error> for InnerError {
+  fn from(value: std::io::Error) -> Self {
+    Self::IoError(value)
+  }
+}
+
 pub async fn remove_background(
   request: FalBackgroundRemovalRequest,
   app_data_root: &AppDataRoot,
@@ -176,20 +204,21 @@ pub async fn remove_background(
   
   let api_key = fal_creds_manager.get_key_required()?;
   let creds = storyteller_creds_manager.get_credentials_required()?;
-
-  let response = get_media_file(&ApiHost::Storyteller, &request.image_media_token).await?;
-
-  let media_file_url = &response.media_file.media_links.cdn_url;
-  let extension_with_dot = get_url_file_extension(media_file_url)
-      .map(|ext| format!(".{}", ext))
-      .unwrap_or_else(|| ".png".to_string());
-
-  let filename = format!("{}{}", response.media_file.token.as_str(), extension_with_dot);
-  let filename = app_data_root.downloads_dir().path().join(&filename);
-
-  simple_http_download(&media_file_url, &filename).await?;
+  
+  let mut temp_download;
+  
+  if let Some(media_token) = request.image_media_token {
+    temp_download = download_media_file(&app_data_root, &media_token).await?;
+    
+  } else if let Some(base64_bytes) = request.base64_image {
+    temp_download = persist_base64(&app_data_root, base64_bytes).await?;
+  } else {
+    return Err(InnerError::AnyhowError(anyhow!("No image media token or base64 image provided")));
+  }
 
   info!("Calling FAL image background removal...");
+
+  let filename = temp_download.path().to_path_buf();
   
   let result = remove_background_rembg(filename, &api_key).await?;
 
@@ -197,12 +226,17 @@ pub async fn remove_background(
       .map(|ext| format!(".{}", ext))
       .unwrap_or_else(|| ".png".to_string());
 
-  let result_filename = format!("{}_bg_removed{}", response.media_file.token.as_str(), extension_with_dot);
+  let mut result_file = app_data_root.temp_dir().new_named_temp_file_with_extension(&extension_with_dot)?;
+  //let result_filename = format!("{}_bg_removed{}", response.media_file.token.as_str(), extension_with_dot);
 
-  simple_http_download(&media_file_url, &result_filename).await?;
+  info!("Downloading file result file...");
+  
+  simple_http_download_to_tempfile(&result.image_url, &mut result_file).await?;
 
   info!("Uploading image file...");
 
+  let result_filename = temp_download.path().to_path_buf();
+  
   let upload_result = upload_image_media_file_from_file(
     &ApiHost::Storyteller, 
     Some(&creds), 
@@ -212,4 +246,39 @@ pub async fn remove_background(
   let response = get_media_file(&ApiHost::Storyteller, &upload_result.media_file_token).await?;
 
   Ok(response)
+}
+
+async fn download_media_file(app_data_root: &AppDataRoot, token: &MediaFileToken) -> Result<NamedTempFile, InnerError> {
+  let response = get_media_file(&ApiHost::Storyteller, token).await?;
+
+  let media_file_url = &response.media_file.media_links.cdn_url;
+  
+  let extension_with_dot = get_url_file_extension(media_file_url)
+      .map(|ext| format!(".{}", ext))
+      .unwrap_or_else(|| ".png".to_string());
+
+  //let filename = format!("{}{}", response.media_file.token.as_str(), extension_with_dot);
+  //let filename = app_data_root.downloads_dir().path().join(&filename);
+  
+  let mut file = app_data_root.temp_dir().new_named_temp_file_with_extension(&extension_with_dot)?;
+
+  simple_http_download_to_tempfile(&media_file_url, &mut file).await?;
+  
+  Ok(file) // NB: Must return TempFile to not drop / delete it
+}
+
+async fn persist_base64(app_data_root: &AppDataRoot, base64_image: String) -> Result<NamedTempFile, InnerError> {
+  let bytes = BASE64_STANDARD.decode(base64_image)?;
+
+  let extension = MimetypeInfo::get_for_bytes(&bytes)
+      .map(|info| info.file_extension())
+      .flatten()
+      .map(|ext| ext.extension_with_period().to_string())
+      .unwrap_or_else(|| ".png".to_string());
+  
+  let mut file = app_data_root.temp_dir().new_named_temp_file_with_extension(&extension)?;
+  
+  file.write_all(bytes.as_ref())?;
+
+  Ok(file) // NB: Must return TempFile to not drop / delete it
 }
