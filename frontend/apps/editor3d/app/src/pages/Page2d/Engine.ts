@@ -28,6 +28,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { DecodeBase64ToImage } from "./utilities/DecodeBase64ToImage";
 import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
+import { FalBackgroundRemoval, FalBackgroundRemovalRequest } from "@storyteller/tauri-api";
 
 
 
@@ -443,6 +444,8 @@ export class Engine {
   }
 
   removeBackground() {
+    console.log("Remove background");
+
     const selectedNodeSet = this.selectionManager.getSelectedNodes();
 
     if (selectedNodeSet.size !== 1) {
@@ -460,15 +463,30 @@ export class Engine {
     ) => {
       const image: HTMLImageElement = selectedNode.kNode.image();
       const base64Bitmap = await EncodeImageBitmapToBase64(image);
-      const base64BitmapResponse = await invoke("remove_background", {
-        image: base64Bitmap,
-      });
 
-      const createdImage = await DecodeBase64ToImage(
-        base64BitmapResponse as string,
-      );
+      const falRemoveBgRequest: FalBackgroundRemovalRequest = {
+        base64_image: base64Bitmap,
+      };
 
-      callback(selectedNode, createdImage);
+      const response = await FalBackgroundRemoval(falRemoveBgRequest);
+
+      if (response.status !== "success") {
+        console.error("Failed to remove background", response);
+        // TODO
+        return;
+      }
+
+      console.log("Remove background success", response)
+
+      if ("payload" in response) {
+        const base64BitmapResponse = response.payload?.base64_bytes;
+
+        const createdImage = await DecodeBase64ToImage(
+          base64BitmapResponse as string,
+        );
+
+        callback(selectedNode, createdImage);
+      }
     };
 
     const _promise = removeBgInvocation(

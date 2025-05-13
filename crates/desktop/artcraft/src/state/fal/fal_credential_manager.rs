@@ -36,7 +36,7 @@ impl FalCredentialManager {
     }
     
     Self {
-      key: CloneSlot::empty(),
+      key: holder,
       app_data_root: app_data_root.clone(),
     }
   }

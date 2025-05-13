@@ -12,14 +12,17 @@ use crate::state::sora::sora_task_queue::SoraTaskQueue;
 use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::utils::get_url_file_extension::get_url_file_extension;
 use crate::utils::simple_http_download::simple_http_download;
+use crate::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
+use anyhow::anyhow;
 use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
 use fal_client::fal_error_plus::FalErrorPlus;
 use fal_client::requests::remove_background_rembg::remove_background_rembg;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
-use image::{DynamicImage, ImageReader};
+use image::{DynamicImage, EncodableLayout, ImageReader};
 use log::{debug, error, info, warn};
+use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use openai_sora_client::credentials::SoraCredentials;
 use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 use openai_sora_client::recipes::image_remix_with_session_auto_renew::{image_remix_with_session_auto_renew, ImageRemixAutoRenewRequest};
@@ -33,11 +36,10 @@ use openai_sora_client::sora_error::SoraError;
 use reqwest::Url;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::read_to_string;
-use std::io::{Cursor, Write};
+use std::io::{Cursor, Read, Write};
 use std::ops::Add;
 use std::path::PathBuf;
 use std::time::Duration;
-use anyhow::anyhow;
 use storyteller_client::api_error::ApiError;
 use storyteller_client::api_error::ApiError::InternalServerError;
 use storyteller_client::media_files::get_media_file::{get_media_file, GetMediaFileSuccessResponse};
@@ -45,9 +47,7 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
-use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
 
 #[derive(Deserialize)]
 pub struct FalBackgroundRemovalRequest {
@@ -64,6 +64,8 @@ pub struct FalBackgroundRemovalSuccessResponse {
   pub media_token: MediaFileToken,
   /// Result URL
   pub cdn_url: Url,
+  /// Base64 bytes
+  pub base64_bytes: String,
 }
 
 impl SerializeMarker for FalBackgroundRemovalSuccessResponse {}
@@ -91,6 +93,11 @@ pub async fn fal_background_removal_command(
   let has_credentials = fal_creds_manager
       .has_apparent_api_token()
       .unwrap_or(true); // NB: Failures would be lock issues
+  
+  let maybe_key = fal_creds_manager.get_key().expect("wat")
+      .map(|key| key.0);
+  
+  println!(">>> fal_background_removal_command; has_creds: {} maybe_key: {:?}", has_credentials, maybe_key);
   
   if !has_credentials {
     warn!("No API key found");
@@ -142,8 +149,9 @@ pub async fn fal_background_removal_command(
       //}
       
       Ok(FalBackgroundRemovalSuccessResponse {
-        media_token: result.media_file.token,
-        cdn_url: result.media_file.media_links.cdn_url,
+        media_token: result.0.media_file.token,
+        cdn_url: result.0.media_file.media_links.cdn_url,
+        base64_bytes: result.1,
       }.into())
     }
   }
@@ -200,7 +208,7 @@ pub async fn remove_background(
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<GetMediaFileSuccessResponse, InnerError> {
+) -> Result<(GetMediaFileSuccessResponse, String), InnerError> {
   
   let api_key = fal_creds_manager.get_key_required()?;
   let creds = storyteller_creds_manager.get_credentials_required()?;
@@ -245,7 +253,12 @@ pub async fn remove_background(
 
   let response = get_media_file(&ApiHost::Storyteller, &upload_result.media_file_token).await?;
 
-  Ok(response)
+  let mut buffer = Vec::new();
+  temp_download.read_to_end(&mut buffer)?;
+  
+  let bytes = BASE64_STANDARD.encode(buffer.as_bytes());
+
+  Ok((response, bytes))
 }
 
 async fn download_media_file(app_data_root: &AppDataRoot, token: &MediaFileToken) -> Result<NamedTempFile, InnerError> {

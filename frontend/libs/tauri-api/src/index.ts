@@ -5,3 +5,4 @@ export * from "./lib/sora/CheckSoraSession.js";
 export * from "./lib/sora/LogoutSoraSession.js";
 export * from "./lib/sora/SoraImageRemix.js";
 export * from "./lib/sora/useSoraLoginListener.js";
+export * from "./lib/fal/FalBackgroundRemoval.js";

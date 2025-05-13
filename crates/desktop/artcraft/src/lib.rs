@@ -50,6 +50,7 @@ pub fn run() {
   println!("Attempting to read existing artcraft credentials...");
   let storyteller_creds_manager = StorytellerCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let storyteller_creds_manager_2 = storyteller_creds_manager.clone();
+  let storyteller_creds_manager_3 = storyteller_creds_manager.clone();
   
   println!("Attempting to read existing sora credentials...");
   let sora_creds_manager = SoraCredentialManager::initialize_from_disk_infallible(&app_data_root);
@@ -142,6 +143,7 @@ pub fn run() {
     .manage(sora_creds_manager)
     .manage(fal_creds_manager)
     .manage(sora_task_queue)
+    .manage(storyteller_creds_manager_3)
     .invoke_handler(tauri::generate_handler![
       check_sora_session_command,
       fal_background_removal_command,
