@@ -40,6 +40,7 @@ interface GalleryModalProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   onDownloadClicked?: (url: string) => Promise<void>;
+  onAddToSceneClicked?: (url: string) => Promise<void>;
 }
 
 export const GalleryModal = React.memo(
@@ -55,6 +56,7 @@ export const GalleryModal = React.memo(
     activeTab,
     onTabChange,
     onDownloadClicked,
+    onAddToSceneClicked,
   }: GalleryModalProps) => {
     const [groupedItems, setGroupedItems] = useState<GroupedItems>({});
     const [loading, setLoading] = useState(false);
@@ -342,6 +344,7 @@ export const GalleryModal = React.memo(
           createdAt={lightboxImage?.createdAt}
           downloadUrl={imageUrl}
           onDownloadClicked={onDownloadClicked}
+          onAddToSceneClicked={onAddToSceneClicked}
         />
       </>
     );

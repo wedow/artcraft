@@ -16,6 +16,7 @@ interface LightboxModalProps {
   additionalInfo?: React.ReactNode;
   downloadUrl?: string;
   onDownloadClicked?: (url: string) => Promise<void>;
+  onAddToSceneClicked?: (url: string) => Promise<void>;
 }
 
 export function LightboxModal({
@@ -29,10 +30,12 @@ export function LightboxModal({
   additionalInfo,
   downloadUrl,
   onDownloadClicked,
+  onAddToSceneClicked,
 }: LightboxModalProps) {
   return createPortal(
     <Transition appear show={isOpen}>
       <div className="fixed inset-0 z-[100]">
+        {/* backdrop */}
         <TransitionChild
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -46,6 +49,8 @@ export function LightboxModal({
             onClick={onClose}
           />
         </TransitionChild>
+
+        {/* dialog container */}
         <div
           className="fixed inset-0 flex items-center justify-center p-4"
           onClick={onClose}
@@ -62,11 +67,15 @@ export function LightboxModal({
               className="relative h-[90vh] w-[80vw] rounded-xl bg-[#2C2C2C]"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* close */}
               <CloseButton
                 onClick={onClose}
                 className="absolute right-4 top-4 z-10"
               />
+
+              {/* content grid */}
               <div className="grid h-full grid-cols-3 gap-6">
+                {/* image panel */}
                 <div className="col-span-2 flex h-full items-center justify-center overflow-hidden rounded-l-xl bg-black/40">
                   {!imageUrl ? (
                     <div className="flex h-full w-full items-center justify-center bg-gray-800">
@@ -81,6 +90,8 @@ export function LightboxModal({
                     />
                   )}
                 </div>
+
+                {/* info + actions */}
                 <div className="flex h-full flex-col py-5 pe-5">
                   <div className="flex-1 space-y-4">
                     <div className="text-xl font-medium">
@@ -94,30 +105,44 @@ export function LightboxModal({
                     )}
                     {additionalInfo}
                   </div>
-                  {downloadUrl && (
-                    <div className="flex justify-end">
-                      {onDownloadClicked ? (
+
+                  {/* buttons with spacing */}
+                  {(onAddToSceneClicked && downloadUrl) || downloadUrl ? (
+                    <div className="mt-15 mb-15 flex justify-end gap-2">
+                      {onAddToSceneClicked && downloadUrl && (
                         <Button
-                          icon={faDownToLine}
                           onClick={async (e) => {
                             e.stopPropagation();
-                            await onDownloadClicked(downloadUrl);
+                            await onAddToSceneClicked(downloadUrl);
                           }}
                         >
-                          Download
+                          Add to Current Scene
                         </Button>
-                      ) : (
-                        <a
-                          href={downloadUrl}
-                          download
-                          onClick={(e) => e.stopPropagation()}
-                          className="no-underline"
-                        >
-                          <Button icon={faDownToLine}>Download</Button>
-                        </a>
                       )}
+
+                      {downloadUrl &&
+                        (onDownloadClicked ? (
+                          <Button
+                            icon={faDownToLine}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await onDownloadClicked(downloadUrl);
+                            }}
+                          >
+                            Download
+                          </Button>
+                        ) : (
+                          <a
+                            href={downloadUrl}
+                            download
+                            onClick={(e) => e.stopPropagation()}
+                            className="no-underline"
+                          >
+                            <Button icon={faDownToLine}>Download</Button>
+                          </a>
+                        ))}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>

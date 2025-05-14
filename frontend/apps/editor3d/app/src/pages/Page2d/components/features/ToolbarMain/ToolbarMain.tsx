@@ -29,6 +29,7 @@ import { PaintModeMenu } from "../../../components/ui/ToolbarMain/PaintModeMenu"
 // import { EraseModeMenu } from "../../../components/ui/ToolbarMain/EraseModeMenu";
 // import { BackgroundMenu } from "../../../components/ui/ToolbarMain/BackgroundMenu";
 // import { bgColor } from "../../../signals/uiEvents/toolbarMain/backgroundMenu";
+import { useAppUiContext } from "~/pages/Page2d/contextSignals/appUi";
 
 export const ToolbarMain = ({
   disabled = false,
@@ -147,9 +148,6 @@ export const ToolbarMain = ({
               <ToolbarButton icon={faImage} buttonProps={buttonProps.ADD_IMAGE}>
                 <span className="text-[16px]">Add Image</span>
               </ToolbarButton>
-              {/* <ToolbarButton icon={faFilm} buttonProps={buttonProps.ADD_VIDEO}>
-                Add Video
-              </ToolbarButton> */}
             </PopoverPanel>
           </Popover>
         </div>
@@ -191,24 +189,6 @@ export const ToolbarMain = ({
                 tooltip="Paint Brush"
               />
             )}
-
-            {/* Conditionally show eraser menu on mode selection */}
-            {/* {buttonProps.ERASER.active ? (
-              <EraseModeMenu
-                faIcon={faEraser}
-                borderStyle="border-2  bg-primary/30 border-2 border-primary hover:bg-primary/30 text-white"
-                defaultOpen={true}
-                anchor="right"
-                anchorGap={12}
-                closeOnMouseLeave={true}
-              />
-            ) : (
-              <ToolbarButton
-                icon={faEraser}
-                buttonProps={buttonProps.ERASER}
-                tooltip="Eraser"
-              />
-            )} */}
           </div>
         </div>
 

@@ -19,6 +19,7 @@ import { Signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
+import { useAppUiContext } from "~/pages/Page2d/contextSignals/appUi";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;
@@ -38,7 +39,12 @@ const appTabs: TabItem[] = [
   { id: "3D", label: "3D" },
 ];
 
-export const TopBar = ({ pageName, appTabIdSignal, setAppTabId, is3DInitSignal }: Props) => {
+export const TopBar = ({
+  pageName,
+  appTabIdSignal,
+  setAppTabId,
+  is3DInitSignal,
+}: Props) => {
   useSignals();
 
   const currentLocation = getCurrentLocationWithoutParams(
@@ -55,7 +61,7 @@ export const TopBar = ({ pageName, appTabIdSignal, setAppTabId, is3DInitSignal }
       engine3D?.unmountEngine();
     }
     setAppTabId(tabId);
-  }
+  };
 
   const currentAppTabId = appTabIdSignal.value;
   const is3DInit = is3DInitSignal.value;
@@ -143,6 +149,39 @@ export const TopBar = ({ pageName, appTabIdSignal, setAppTabId, is3DInitSignal }
         activeTab={activeLibraryTab}
         onTabChange={setActiveLibraryTab}
         onDownloadClicked={downloadFileFromUrl}
+        onAddToSceneClicked={async (url) => {
+          console.log("add to scene", url);
+          // Download the image from the URL and convert to File
+          const downloadImage = async (url: string): Promise<File | null> => {
+            try {
+              // Fetch the image
+              const response = await fetch(url);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.status}`);
+              }
+
+              // Get the blob data
+              const blob = await response.blob();
+
+              // Extract filename from URL or use a default name
+              const filename = url.split("/").pop() || "image.png";
+
+              // Create a File object from the blob
+              const file = new File([blob], filename, { type: blob.type });
+
+              return file;
+            } catch (error) {
+              console.error("Error downloading image:", error);
+              return null;
+            }
+          };
+          const file = await downloadImage(url);
+          if (file) {
+            console.log("file", file);
+          } else {
+            console.error("Failed to download image");
+          }
+        }}
       />
     </>
   );
