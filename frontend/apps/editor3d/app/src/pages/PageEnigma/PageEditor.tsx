@@ -8,6 +8,7 @@ import { PreviewEngineCamera } from "./comps/PreviewEngineCamera";
 import { PreviewFrameImage } from "./comps/PreviewFrameImage";
 import { pageHeight, pageWidth } from "~/signals";
 import { PoseModeSelector } from "./comps/PoseModeSelector";
+import ImageToVideo from "../PageVideo/ImageToVideo";
 import {
   timelineHeight,
   sidePanelWidth,
@@ -145,13 +146,6 @@ export const PageEditor = () => {
 
         // Force a render to update the view
         editorEngine.renderScene();
-
-        // Queue an update to ensure the engine processes the camera change
-        // Queue.publish({
-        //   queueName: QueueNames.TO_ENGINE,
-        //   action: toEngineActions.CAMERA_CHANGED,
-        //   data: selectedCamera,
-        // });
       }
 
       // Force update camera properties in the state
@@ -215,19 +209,6 @@ export const PageEditor = () => {
 
       // Force a render to update the view
       editorEngine.renderScene();
-
-      // Queue.publish({
-      //   queueName: QueueNames.TO_ENGINE,
-      //   action: toEngineActions.CAMERA_CHANGED,
-      //   data: {
-      //     id: newId,
-      //     label: `Camera ${newIndex}`,
-      //     focalLength: 24,
-      //     position: { x: randomX, y: randomY, z: randomZ },
-      //     rotation: { x: 0, y: 0, z: 0 },
-      //     lookAt: { x: 0, y: 0, z: 0 },
-      //   },
-      // });
     }
   };
 
@@ -253,6 +234,7 @@ export const PageEditor = () => {
 
   const display3d = appTabId.value === "3D" ? "block" : "none";
   const display2d = appTabId.value === "2D" ? "block" : "none";
+  const displayVideo = appTabId.value === "VIDEO" ? "block" : "none";
 
   return (
     <div className="w-screen">
@@ -343,7 +325,9 @@ export const PageEditor = () => {
                   }
                   editorEngine!.positive_prompt = prompt;
                 }}
-                snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame.bind(editorEngine)}
+                snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame.bind(
+                  editorEngine,
+                )}
               />
 
               <LoadingDots
@@ -360,9 +344,12 @@ export const PageEditor = () => {
         <KonvaRootComponent className="h-full w-full" />
       </KonvaCanvasContainer>
 
+      <div style={{ display: displayVideo }}>
+        <ImageToVideo className="h-full w-full" />
+      </div>
 
       <LoginModal
-        onClose={() => { }}
+        onClose={() => {}}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
         openAiLogo="/resources/images/openai-logo.png"

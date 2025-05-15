@@ -12,7 +12,6 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect, useState } from "react";
 import * as gpu from "detect-gpu";
 import { UsersApi } from "~/Classes/ApiManager";
-import { PageEnigmaComponent } from "~/pages/PageEnigma/PageEnigmaComponent";
 import { TurnOnGpu } from "~/pages/PageEnigma/TurnOnGpu";
 import { PrecisionSelector } from "./comps/PrecisionSelector/PrecisionSelector";
 import {
@@ -24,7 +23,7 @@ import {
 import { InstallSounds } from "~/pages/PageEnigma/InstallSounds";
 import { useImageGenerationFailureEvent } from "./TauriEvents/useImageGenerationFailureEvent";
 import { useImageGenerationSuccessEvent } from "./TauriEvents/useImageGenerationSuccessEvent";
-
+import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
   useActiveJobs();
@@ -107,7 +106,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   return (
     <TrackProvider>
       <EngineProvider sceneToken={sceneToken}>
-        <PageEnigmaComponent />
+        <PageEditor />
         <DragComponent />
         <PrecisionSelector
           showSignal={showPrecisionSelector}
