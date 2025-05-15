@@ -89,6 +89,9 @@
     },
     {
       "path": "./libs/components/switch"
+    },
+    {
+      "path": "./libs/build-env"
     }
   ]
 }
