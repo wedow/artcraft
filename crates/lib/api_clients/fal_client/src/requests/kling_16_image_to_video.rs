@@ -7,6 +7,8 @@ use fal_client::file_to_base64_url::file_to_base64_url;
 use futures::StreamExt;
 use std::path::Path;
 use chrono::Utc;
+use fal::endpoints::fal_ai::kling_video::v1::pro::effects::I2VOutput;
+use fal::queue::Queue;
 use url::Url;
 
 pub struct Kling16Args<'a, P: AsRef<Path>> {
@@ -28,7 +30,7 @@ pub enum Kling16Duration {
 pub async fn kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'_, P>) -> Result<Kling16Response, FalErrorPlus> {
   println!("Image to base64... {:?}", Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string());
   std::io::stdout().flush().unwrap();
-  
+
   let image_url = file_to_base64_url(args.image_path)?;
 
   /*
@@ -36,7 +38,7 @@ pub async fn kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'_, P>) -
     FalError(FalError(Other("{\"detail\": \"Invalid Key Authorization header format. Expected '<key_id>:<key_secret>'.\"}")))
     FalError(FalError(Other("{\"detail\": \"No user found for Key ID and Secret\"}")))
   */
-  
+
   let duration = match args.duration{
     Kling16Duration::Default => None,
     Kling16Duration::FiveSeconds => Some("5".to_string()),
@@ -55,15 +57,24 @@ pub async fn kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'_, P>) -
 
   println!("Sending request... {:?}", Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string());
   std::io::stdout().flush().unwrap();
-  
+
   let result = image_to_video(request)
       .with_api_key(&args.api_key.0)
       .queue()
       .await?;
+  
+  let payload = result.payload;
+
+  let test  : Queue<I2VOutput> = Queue::new(;
+    result.client().clone(),
+    result.endpoint(),
+    args.api_key.0.clone(),
+    result.payload().clone(),
+  );
 
   println!("Result... {:?} - {:?}", result, Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string());
   std::io::stdout().flush().unwrap();
-  
+
   let mut stream = result.stream(true).await?;
 
   let mut i = 0;
@@ -74,13 +85,13 @@ pub async fn kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'_, P>) -
     if status.status == Status::Completed {
       break;
     }
-    
+
     if i > 5 {
       return Err(FalErrorPlus::FalError(
         fal::prelude::FalError::Other("Timed out waiting for video to be created".to_string()),
       ));
     }
-    
+
     i+= 1;
   }
 
@@ -112,7 +123,7 @@ mod tests {
     let secret = read_to_string("/Users/bt/Artcraft/credentials/fal_api_key.txt")?;
 
     let api_key = FalApiKey::from_str(&secret);
-    
+
     let args = Kling16Args {
       image_path: image,
       api_key: &api_key,

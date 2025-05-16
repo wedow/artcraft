@@ -25,6 +25,7 @@ anyhow = { workspace = true }
 chrono = { workspace = true }
 fal = { version = "0.3.6", features = ["endpoints"] }
 futures = { workspace = true }
+serde = { workspace = true }
 tokio = { workspace = true }
 url = { workspace = true }
 
