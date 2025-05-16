@@ -1,9 +1,20 @@
 import Konva from "konva";
 
 import { uiAccess, uiEvents } from "./signals";
-import { ImageNode, ShapeNode, ShapeType, TextNode, PaintNode, PreviewCopyNode } from "./KonvaApp/Nodes";
+import {
+  ImageNode,
+  ShapeNode,
+  ShapeType,
+  TextNode,
+  PaintNode,
+  PreviewCopyNode,
+} from "./KonvaApp/Nodes";
 import { UndoStackManager } from "./KonvaApp/UndoRedo";
-import { CommandManager, MatteBox, SceneManager } from "./KonvaApp/EngineUtitlities";
+import {
+  CommandManager,
+  MatteBox,
+  SceneManager,
+} from "./KonvaApp/EngineUtitlities";
 import {
   NodeIsolator,
   NodesManager,
@@ -28,9 +39,10 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { DecodeBase64ToImage } from "./utilities/DecodeBase64ToImage";
 import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
-import { FalBackgroundRemoval, FalBackgroundRemovalRequest } from "@storyteller/tauri-api";
-
-
+import {
+  FalBackgroundRemoval,
+  FalBackgroundRemovalRequest,
+} from "@storyteller/tauri-api";
 
 export interface RenderingOptions {
   artstyle: string;
@@ -102,7 +114,7 @@ export class Engine {
     this.nodeTransformer = new NodeTransformer();
     this.uiLayer.add(this.nodeTransformer.getKonvaNode());
     // Loading Placeholders
-   
+
     // Node Isolator
     this.nodeIsolator = new NodeIsolator({
       mediaLayerRef: this.mediaLayer,
@@ -165,7 +177,7 @@ export class Engine {
       selectionManagerRef: this.selectionManager,
       renderEngineRef: this.realTimeDrawEngine,
     });
-    
+
     this.matteBox = new MatteBox({
       boardCanvasSize: {
         width: this.boardCanvasRef.clientWidth,
@@ -375,7 +387,6 @@ export class Engine {
     });
     // Listen to other toolbars
     // VideoExtraction Toolbar
-  
 
     // Listen to other requests coming from the UI
     uiEvents.onGetStagedImage((image) => {
@@ -476,7 +487,7 @@ export class Engine {
         return;
       }
 
-      console.log("Remove background success", response)
+      console.log("Remove background success", response);
 
       if ("payload" in response) {
         const base64BitmapResponse = response.payload?.base64_bytes;
@@ -741,7 +752,7 @@ export class Engine {
         this.commandManager.deleteNodes();
       }
     });
-  }   
+  }
 }
 
 // TODO: Move to utilities?
