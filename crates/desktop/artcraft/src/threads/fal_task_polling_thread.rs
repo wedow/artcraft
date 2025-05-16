@@ -8,9 +8,11 @@ use crate::state::fal::fal_task_queue::FalTaskQueue;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
 use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
+use fal_client::export::queue::Status;
+use fal_client::fal_error_plus::FalErrorPlus;
+use fal_client::utils::queue_status_checker::QueueStatusChecker;
 use log::{error, info, warn};
 use openai_sora_client::requests::image_gen::image_gen_status::{Generation, TaskId, TaskStatus};
-use reqwest::Url;
 use serde_derive::Serialize;
 use std::fs::File;
 use std::io::Write;
@@ -19,9 +21,12 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter};
 use tempdir::TempDir;
-use fal_client::fal_error_plus::FalErrorPlus;
-use fal_client::utils::queue_status_checker::QueueStatusChecker;
+use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
+use url::Url;
+use fal_client::model::fal_request_id::FalRequestId;
+use storyteller_client::api_error::ApiError;
+use storyteller_client::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoMediaFileSuccessResponse};
 
 pub async fn fal_task_polling_thread(
   app_handle: AppHandle,
@@ -62,15 +67,15 @@ async fn polling_loop(
     info!("Task queue has {} pending tasks.", fal_task_queue.len()?);
 
     let key = fal_creds_manager.get_key_required()?;
-    
+    let storyteller_creds = storyteller_creds_manager.get_credentials_required()?;
+
     let queue_status_checker = QueueStatusChecker::new(key);
 
-    // TODO: Clear completed tasks.
-    // let mut succeeded_tasks = Vec::new();
-    // let mut failed_tasks = Vec::new();
-    
+    let mut succeeded_tasks = Vec::new();
+    //let mut failed_tasks = Vec::new(); // TODO
+
     let len = fal_task_queue.len()?;
-    
+
     for i in 0..len {
       let task = match fal_task_queue.get_index(i)? {
         Some(task) => task,
@@ -80,24 +85,76 @@ async fn polling_loop(
         }
       };
       
-      info!("Checking task status for task ID: {:?}", &task.enqueued_request.request_id);
-      
+      let task_id = task.enqueued_request.request_id.clone();
+
+      info!("Checking task status for task ID: {:?}", &task_id);
+
       let result = queue_status_checker.check_status(&task.enqueued_request).await;
-      
-      match result {
+
+      let url = match result {
         Err(err) => {
           warn!("Error checking job status: {:?}", err);
           tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
+          
+          // TODO: Some failures will be permanent job failures and the jobs will need to be removed.
+          
           continue;
         }
         Ok(status) => {
           info!("Status: {:?}", status);
+          match status.status {
+            Status::Completed => {
+              let result = queue_status_checker.get_download_url(&task.enqueued_request).await;
+              
+              let url = match result {
+                Ok(url) => url,
+                Err(err) => {
+                  warn!("Failed to get download url: {:?}", err);
+                  
+                  // TODO: Some failures will be permanent job failures.
+                  
+                  continue; 
+                }
+              };
+              
+              url
+            }
+            _ => {
+              continue;
+            },
+          }
+        }
+      };
+      
+      
+      let download_file = download_generation(&url, &app_data_root).await?;
+
+      let result = upload_video_media_file_from_file(
+        &ApiHost::Storyteller, 
+        Some(&storyteller_creds), 
+        download_file
+      ).await;
+      
+      match result {
+        Ok(success) => {
+          info!("Uploaded to API backend: {:?}", success.media_file_token);
+          
+          //let event = SoraImageGenerationCompleteEvent {
+          //  media_file_token: success.media_file_token,
+          //};
+          //event.send(&app_handle)?;
+
+          succeeded_tasks.push(task_id);
+        }
+        Err(err) => {
+          warn!("Failed to upload video media file: {:?}", err);
+          continue;
         }
       }
     }
 
 
-    
+
 //    // TODO: The cursoring logic likely needs to improve.
 //    for task in response.task_responses {
 //      let status = TaskStatus::from_str(&task.status);
@@ -157,31 +214,28 @@ async fn polling_loop(
 //      }
 //    }
 //
-//    let succeeded_task_ids : Vec<&TaskId> = succeeded_tasks
-//        .iter()
-//        .map(|task| &task.id)
-//        .collect();
-//
-//    fal_task_queue.remove_list(&succeeded_task_ids)?;
+    let succeeded_task_ids : Vec<&FalRequestId> = succeeded_tasks
+        .iter()
+        .map(|task| task)
+        .collect::<Vec<_>>();
+
+    fal_task_queue.remove_list(&succeeded_task_ids)?;
 
     tokio::time::sleep(std::time::Duration::from_millis(6_000)).await;
   }
 }
 
-async fn download_generation(generation: &Generation, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
-  let url = Url::parse(&generation.url)?;
+async fn download_generation(url: &str, app_data_root: &AppDataRoot) -> AnyhowResult<NamedTempFile> {
+  let url = Url::parse(&url)?;
 
-  let response = reqwest::get(&generation.url).await?;
-  let image_bytes = response.bytes().await?;
+  let response = reqwest::get(url.clone()).await?;
+  let response_bytes = response.bytes().await?;
 
   let ext = url.path().split(".").last().unwrap_or("png");
 
-  let tempdir = app_data_root.temp_dir().path();
-  let download_filename = format!("{}.{}", generation.id, ext);
-  let download_path = tempdir.join(download_filename);
+  let mut temp_file = app_data_root.temp_dir().new_named_temp_file_with_extension(ext)?;
+  
+  temp_file.write_all(&response_bytes)?;
 
-  let mut file = File::create(&download_path)?;
-  file.write_all(&image_bytes)?;
-
-  Ok(download_path)
+  Ok(temp_file)
 }

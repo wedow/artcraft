@@ -62,6 +62,7 @@ tempdir = "0.3.7"
 tempfile = "3.18.0"
 tokio = { version = "1.42", features = ["rt", "rt-multi-thread", "fs"] }
 tokio-util = { version = "0.7", features = ["codec"] }
+url = { workspace = true }
 
 # NB: We need to vendor this in so that we can access the cookies inside via the private API
 tauri-plugin-http = { path = "../../vendor/tauri-plugin-http" }

@@ -850,6 +850,7 @@ dependencies = [
  "tokens",
  "tokio",
  "tokio-util",
+ "url",
  "workspace-build-acceleration",
 ]
 
