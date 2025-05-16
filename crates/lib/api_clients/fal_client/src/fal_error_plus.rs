@@ -10,6 +10,8 @@ pub enum FalErrorPlus {
   AnyhowError(anyhow::Error),
   /// URL parse errors.
   UrlParseError(url::ParseError),
+  /// An endpoint we don't support yet.
+  UnhandledEndpoint(String),
 }
 
 impl Display for FalErrorPlus {
@@ -18,6 +20,7 @@ impl Display for FalErrorPlus {
       Self::FalError(err) => write!(f, "FalErrorPlus::FalError: {:?}", err),
       Self::AnyhowError(err) => write!(f, "FalErrorPlus::AnyhowError: {:?}", err),
       Self::UrlParseError(err) => write!(f, "FalErrorPlus::UrlParseError: {:?}", err),
+      Self::UnhandledEndpoint(endpoint) => write!(f, "FalErrorPlus::UnhandledEndpoint: {:?}", endpoint),
     }
   }
 }

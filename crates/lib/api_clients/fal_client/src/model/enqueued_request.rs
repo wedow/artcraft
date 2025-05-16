@@ -1,5 +1,6 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::model::fal_endpoint::FalEndpoint;
+use crate::model::fal_request_id::FalRequestId;
 use errors::AnyhowResult;
 use fal::queue::{Queue, QueueResponse};
 use reqwest::Client;
@@ -8,7 +9,7 @@ use serde::de::DeserializeOwned;
 #[derive(Clone, Debug)]
 pub struct EnqueuedRequest {
   pub fal_endpoint: FalEndpoint,
-  pub request_id: String,
+  pub request_id: FalRequestId,
   pub response_url: String,
   pub status_url: String,
   pub cancel_url: String,
@@ -19,7 +20,7 @@ impl EnqueuedRequest {
     let endpoint = FalEndpoint::from_queue_response(queue);
     Ok(Self {
       fal_endpoint: endpoint.clone(),
-      request_id: queue.payload.request_id.clone(),
+      request_id: FalRequestId(queue.payload.request_id.clone()),
       response_url: queue.payload.response_url.clone(),
       status_url: queue.payload.status_url.clone(),
       cancel_url: queue.payload.cancel_url.clone(),
@@ -30,7 +31,7 @@ impl EnqueuedRequest {
     let client = Client::new();
     let endpoint = self.fal_endpoint.url();
     let payload = QueueResponse {
-      request_id: self.request_id.clone(),
+      request_id: self.request_id.0.clone(),
       response_url: self.response_url.clone(),
       status_url: self.status_url.clone(),
       cancel_url: self.cancel_url.clone(),

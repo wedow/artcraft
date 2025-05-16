@@ -10,6 +10,7 @@ use tauri::Manager;
 use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::fal::fal_background_removal_command::fal_background_removal_command;
+use crate::commands::fal::fal_kling_image_to_video_command::fal_kling_image_to_video_command;
 use crate::commands::fal::get_fal_api_key_command::get_fal_api_key_command;
 use crate::commands::fal::set_fal_api_key_command::set_fal_api_key_command;
 use crate::commands::flip_image::flip_image;
@@ -22,12 +23,14 @@ use crate::commands::sora::sora_logout_command::sora_logout_command;
 use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::fal::fal_credential_manager::FalCredentialManager;
+use crate::state::fal::fal_task_queue::FalTaskQueue;
 use crate::state::main_window_position::MainWindowPosition;
 use crate::state::main_window_size::MainWindowSize;
 use crate::state::sora::sora_credential_manager::SoraCredentialManager;
 use crate::state::sora::sora_task_queue::SoraTaskQueue;
 use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::threads::discord_presence_thread::discord_presence_thread;
+use crate::threads::fal_task_polling_thread::fal_task_polling_thread;
 use crate::threads::main_window_thread::main_window_thread::main_window_thread;
 use crate::threads::sora_task_polling_thread::sora_task_polling_thread;
 use crate::utils::webview_unsafe::webview_unsafe_for_app;
@@ -59,10 +62,14 @@ pub fn run() {
   
   println!("Attempting to read existing fal credentials...");
   let fal_creds_manager = FalCredentialManager::initialize_from_disk_infallible(&app_data_root);
+  let fal_creds_manager_2 = fal_creds_manager.clone();
 
   // Other state
   let sora_task_queue = SoraTaskQueue::new();
   let sora_task_queue_2 = sora_task_queue.clone();
+
+  let fal_task_queue = FalTaskQueue::new();
+  let fal_task_queue_2 = fal_task_queue.clone();
 
   println!("Initializing backend runtime...");
 
@@ -97,13 +104,19 @@ pub fn run() {
         eprintln!("Error setting webview unsafe: {:?}", err);
       }
 
+      // TODO(bt): Clean this up. We can just clone at the callsite. Also clean initialization
       let app_2 = app.clone();
       let app_3 = app.clone();
       let app_4 = app.clone();
+      let app_5 = app.clone();
       let app_data_root_3 = app_data_root_2.clone();
       let app_data_root_4 = app_data_root_2.clone();
+      let app_data_root_5 = app_data_root_2.clone();
       let sora_creds_manager_3 = sora_creds_manager_2.clone();
       let storyteller_creds_manager_3 = storyteller_creds_manager.clone();
+      let storyteller_creds_manager_4 = storyteller_creds_manager.clone();
+      let fal_creds_manager_3 = fal_creds_manager_2.clone();
+      let fal_task_queue_3 = fal_task_queue_2.clone();
 
       match MainWindowSize::from_filesystem_configs(&app_data_root_3) {
         Ok(None) => {}
@@ -136,18 +149,21 @@ pub fn run() {
       tauri::async_runtime::spawn(main_window_thread(app_3, app_data_root_3, storyteller_creds_manager_2));
       tauri::async_runtime::spawn(sora_task_polling_thread(app_4, app_data_root_4, sora_creds_manager_3, storyteller_creds_manager_3, sora_task_queue_2));
       tauri::async_runtime::spawn(discord_presence_thread());
+      tauri::async_runtime::spawn(fal_task_polling_thread(app_5, app_data_root_5, fal_creds_manager_3, storyteller_creds_manager_4, fal_task_queue_3));
 
       Ok(())
     })
     .manage(app_data_root)
     .manage(app_preferences)
-    .manage(sora_creds_manager)
     .manage(fal_creds_manager)
+    .manage(fal_task_queue)
+    .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)
     .invoke_handler(tauri::generate_handler![
       check_sora_session_command,
       fal_background_removal_command,
+      fal_kling_image_to_video_command,
       flip_image,
       get_app_preferences_command,
       get_fal_api_key_command,
