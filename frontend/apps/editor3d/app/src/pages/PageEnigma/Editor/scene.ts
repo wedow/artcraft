@@ -428,9 +428,11 @@ class Scene {
 
   // TODO: REPLACE
   async getMediaURL(media_id: string) {
+    console.log("getMediaID!!!!!!!!!!!!!", media_id);
     const response = await this.mediaFilesApi.GetMediaFileByToken({
       mediaFileToken: media_id,
     });
+    console.log("response!!!!!!!!!!!!!!", response);
     return response.data!.media_links.cdn_url;
   }
 
@@ -559,6 +561,7 @@ class Scene {
     version: number = 1.0,
   ): Promise<THREE.Object3D> {
     const url = await this.getMediaURL(media_id);
+
     if (url.includes(".pmd") || url.includes(".pmx")) {
       return await this.loadMMDWithPlaceholder(
         media_id,

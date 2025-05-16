@@ -40,7 +40,10 @@ interface GalleryModalProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   onDownloadClicked?: (url: string) => Promise<void>;
-  onAddToSceneClicked?: (url: string) => Promise<void>;
+  onAddToSceneClicked?: (
+    url: string,
+    media_id: string | undefined
+  ) => Promise<void>;
 }
 
 export const GalleryModal = React.memo(
@@ -134,6 +137,7 @@ export const GalleryModal = React.memo(
             include_user_uploads: activeTab === "uploads",
             user_uploads_only: activeTab === "uploads",
           });
+
           if (response.success && response.data) {
             // Print the JSON response for debugging
             console.log("Media files response:", response.data);
@@ -344,6 +348,7 @@ export const GalleryModal = React.memo(
           title={lightboxImage?.label}
           createdAt={lightboxImage?.createdAt}
           downloadUrl={imageUrl}
+          mediaId={lightboxImage?.id}
           onDownloadClicked={onDownloadClicked}
           onAddToSceneClicked={onAddToSceneClicked}
         />

@@ -16,8 +16,12 @@ interface LightboxModalProps {
   createdAt?: string;
   additionalInfo?: React.ReactNode;
   downloadUrl?: string;
+  mediaId?: string;
   onDownloadClicked?: (url: string) => Promise<void>;
-  onAddToSceneClicked?: (url: string) => Promise<void>;
+  onAddToSceneClicked?: (
+    url: string,
+    media_id: string | undefined
+  ) => Promise<void>;
 }
 
 export function LightboxModal({
@@ -30,7 +34,8 @@ export function LightboxModal({
   title,
   createdAt,
   additionalInfo,
-  downloadUrl,
+  downloadUrl, // cdn url of the image
+  mediaId, // media id of the image
   onDownloadClicked,
   onAddToSceneClicked,
 }: LightboxModalProps) {
@@ -115,7 +120,7 @@ export function LightboxModal({
                         <Button
                           onClick={async (e) => {
                             e.stopPropagation();
-                            await onAddToSceneClicked(downloadUrl);
+                            await onAddToSceneClicked(downloadUrl, mediaId);
                             onClose(); // close the lightbox
                             onCloseGallery(); // close the gallery
                           }}
