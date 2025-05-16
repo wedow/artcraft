@@ -78,6 +78,8 @@ export const TopBar = ({
     console.log("add to scene", url);
     if (currentAppTabId === "2D") {
       console.log("Adding to 2D scene");
+
+      // from the uploaded image url.
     } else if (currentAppTabId === "3D") {
       console.log("Adding to 3D scene");
 
