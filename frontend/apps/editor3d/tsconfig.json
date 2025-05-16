@@ -84,6 +84,9 @@
     },
     {
       "path": "../../libs/tauri-utils"
+    },
+    {
+      "path": "../../libs/build-env"
     }
   ]
 }

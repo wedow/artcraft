@@ -4,10 +4,10 @@
   "version": "0.0.1",
   "identifier": "ai.artcraft.app",
   "build": {
-    "frontendDist": "../../../",
-    "devUrl": "http://localhost:5741",
-    "beforeDevCommand": "nx run editor2d:dev",
-    "beforeBuildCommand": "nx run editor2d:build"
+    "frontendDist": "../../../frontend/apps/editor3d/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "nx run editor3d:dev",
+    "beforeBuildCommand": "nx run editor3d:build"
   },
   "app": {
     "windows": [

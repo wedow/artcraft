@@ -1,5 +1,4 @@
 import { signal } from "@preact/signals-core";
-import { GetFrontendEnvironment } from "~/Classes/GetFrontendEnvironment";
 import { AssetType } from "~/enums";
 import { MediaItem } from "~/pages/PageEnigma/models";
 
@@ -26,9 +25,7 @@ export const demoAnimationItems = signal<MediaItem[]>([
   },
   {
     version: 1,
-    media_id: GetFrontendEnvironment().getIsLocalDev() ? 
-       "m_z0wj1rckcsea1sb0ht27m41g2w4zss" : // Local development
-       "m_s7d4ems68sb2vqj4pdje1rc15q3ycp", // Production
+    media_id: "m_s7d4ems68sb2vqj4pdje1rc15q3ycp",
     type: AssetType.ANIMATION,
     length: 100,
     name: "Walk",

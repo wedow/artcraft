@@ -19,6 +19,7 @@ import { Signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
+import { useAppUiContext } from "~/pages/Page2d/contextSignals/appUi";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;

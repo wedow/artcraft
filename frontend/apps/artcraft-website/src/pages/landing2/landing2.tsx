@@ -67,6 +67,7 @@ const Landing = () => {
               muted
               autoPlay
               loop
+              playsInline
               className="w-full aspect-[16/9] object-cover"
             >
               <source src="/videos/hero-video.mp4" type="video/mp4" />
@@ -113,6 +114,7 @@ const Landing = () => {
                     autoPlay
                     muted
                     loop
+                    playsInline
                     className="aspect-square w-full max-w-none rounded-tl-xl bg-gray-800 ring-1 ring-white/10 object-cover h-full rounded-lg overflow-hidden"
                   />
                 </div>
@@ -137,13 +139,13 @@ const Landing = () => {
                 variants={fadeUpVariants}
               >
                 <div className="mx-auto max-w-2xl sm:mx-0 sm:max-w-none border-[16px] border-white/10 rounded-3xl overflow-hidden">
-                  <motion.video
+                  <video
                     src="/videos/artcraft-canvas-demo.mp4"
                     autoPlay
                     muted
                     loop
+                    playsInline
                     className="aspect-square w-full max-w-none rounded-tl-xl bg-gray-800 ring-1 ring-white/10 object-cover h-full rounded-lg overflow-hidden"
-                    variants={fadeUpVariants}
                   />
                 </div>
               </motion.div>

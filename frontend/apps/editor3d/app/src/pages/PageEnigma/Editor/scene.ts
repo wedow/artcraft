@@ -11,7 +11,9 @@ import { ChromaKeyMaterial } from "./chromakey";
 import { TimeLine } from "./timeline";
 import { ClipGroup, ClipType } from "~/enums";
 import { ClipUI } from "../clips/clip_ui";
+
 import { GetFrontendEnvironment } from "~/Classes/GetFrontendEnvironment";
+
 import { gridVisibility } from "../signals/engine";
 import { InfiniteGridHelper } from "./InfiniteGridHelper";
 import { cameras, selectedCameraId } from "../signals/camera";
@@ -379,10 +381,7 @@ class Scene {
         cameraConfig.position.z,
       );
 
-      // TODO(bt,2025-02-10): Make the local dev assets more configurable or seedable.
-      const camera_id = GetFrontendEnvironment().getIsLocalDev()
-        ? "m_cxh4asqhapdz10j880755dg4yevshb" // Local development
-        : "m_cxh4asqhapdz10j880755dg4yevshb"; // Production
+      const camera_id = "m_cxh4asqhapdz10j880755dg4yevshb";
 
       this.loadGlbWithPlaceholder(
         camera_id,

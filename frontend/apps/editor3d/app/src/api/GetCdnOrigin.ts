@@ -1,4 +1,4 @@
-import { GetFrontendEnvironment } from "~/Classes/GetFrontendEnvironment";
+// TODO(bt,2025-05-15): Remove this code
 
 /**
  * Return the CDN origin (scheme + host + optional port, but no path)
@@ -15,16 +15,9 @@ class CdnHostHelper {
       return CdnHostHelper.instance;
     }
 
-    const isLocalDev = GetFrontendEnvironment().getIsLocalDev();
-
-    let origin;
-    if (isLocalDev) {
-      //origin = 'https://pub-c8a4a5bdbdb048f286b77bdf9f786ff2.r2.dev';
-      origin = 'https://cdn-2.fakeyou.com';
-    } else {
-      origin = 'https://cdn-2.fakeyou.com';
-    }
+    const origin = 'https://cdn-2.fakeyou.com';
     const instance = new CdnHostHelper(origin);
+
     CdnHostHelper.instance = instance;
     return instance;
   }
