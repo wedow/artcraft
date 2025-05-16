@@ -1,1 +1,2 @@
 pub mod remove_background_rembg;
+mod kling_16_image_to_video;

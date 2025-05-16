@@ -4248,6 +4248,7 @@ name = "fal_client"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "chrono",
  "errors",
  "fal",
  "file_to_base64_url",
