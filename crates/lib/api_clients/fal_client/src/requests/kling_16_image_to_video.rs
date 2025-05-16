@@ -65,12 +65,6 @@ pub async fn kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'_, P>) -
   
   let payload = result.payload;
 
-  let test  : Queue<I2VOutput> = Queue::new(;
-    result.client().clone(),
-    result.endpoint(),
-    args.api_key.0.clone(),
-    result.payload().clone(),
-  );
 
   println!("Result... {:?} - {:?}", result, Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string());
   std::io::stdout().flush().unwrap();
