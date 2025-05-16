@@ -337,6 +337,7 @@ export const GalleryModal = React.memo(
         <LightboxModal
           isOpen={isLightboxVisible}
           onClose={handleCloseLightbox}
+          onCloseGallery={onClose}
           imageUrl={imageUrl}
           imageAlt={lightboxImage?.label || ""}
           onImageError={() => imageUrl && handleImageError(imageUrl)}

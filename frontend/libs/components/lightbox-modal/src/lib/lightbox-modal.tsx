@@ -8,6 +8,7 @@ import { faDownToLine } from "@fortawesome/pro-solid-svg-icons";
 interface LightboxModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCloseGallery: () => void;
   imageUrl?: string | null;
   imageAlt?: string;
   onImageError?: () => void;
@@ -22,6 +23,7 @@ interface LightboxModalProps {
 export function LightboxModal({
   isOpen,
   onClose,
+  onCloseGallery,
   imageUrl,
   imageAlt = "",
   onImageError,
@@ -114,6 +116,8 @@ export function LightboxModal({
                           onClick={async (e) => {
                             e.stopPropagation();
                             await onAddToSceneClicked(downloadUrl);
+                            onClose(); // close the lightbox
+                            onCloseGallery(); // close the gallery
                           }}
                         >
                           Add to Current Scene

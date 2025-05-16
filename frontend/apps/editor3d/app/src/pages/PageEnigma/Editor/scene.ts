@@ -2,8 +2,6 @@ import * as THREE from "three";
 import { GLTFLoader, GLTF } from "three/addons/loaders/GLTFLoader.js";
 import { MMDLoader } from "three/addons/loaders/MMDLoader.js";
 
-import environmentVariables from "~/Classes/EnvironmentVariables";
-
 import { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import { generateUUID } from "three/src/math/MathUtils.js";
 import { LoadingPlaceHolderManager } from "./placeholder_manager";
@@ -13,7 +11,6 @@ import { ChromaKeyMaterial } from "./chromakey";
 import { TimeLine } from "./timeline";
 import { ClipGroup, ClipType } from "~/enums";
 import { ClipUI } from "../clips/clip_ui";
-import { GetCdnOrigin } from "~/api/GetCdnOrigin";
 import { GetFrontendEnvironment } from "~/Classes/GetFrontendEnvironment";
 import { gridVisibility } from "../signals/engine";
 import { InfiniteGridHelper } from "./InfiniteGridHelper";
@@ -432,7 +429,7 @@ class Scene {
   // TODO: REPLACE
   async getMediaURL(media_id: string) {
     const response = await this.mediaFilesApi.GetMediaFileByToken({
-      mediaFileToken: media_id
+      mediaFileToken: media_id,
     });
     return response.data!.media_links.cdn_url;
   }
@@ -537,6 +534,21 @@ class Scene {
     this.scene.add(mmd);
     this.updateSurfaceIdAttributeToMesh(this.scene);
     return mmd;
+  }
+
+  async loadObjectFromUrl(
+    url: string,
+    position: THREE.Vector3 = new THREE.Vector3(-0.5, 1.5, 0),
+  ): Promise<THREE.Object3D> {
+    console.log("loadObjectFromUrl!!!!!!!!", url);
+    if (
+      url.includes(".png") ||
+      url.includes(".jpg") ||
+      url.includes(".jpeg") ||
+      url.includes(".mp4")
+    ) {
+      return await this.instantiate("Image::" + url);
+    }
   }
 
   async loadObject(
