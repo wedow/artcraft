@@ -3,6 +3,7 @@ import {
   uploadNewScene as uploadNewSceneEndpoint,
   updateExistingScene as updateExistingSceneEndpoint,
 } from "~/api";
+import { FetchProxy as fetch } from "@storyteller/tauri-utils";
 
 export const uploadNewScene = async (file: File, sceneTitle: string) => {
   const endpoint = uploadNewSceneEndpoint;
