@@ -50,6 +50,7 @@ use tempfile::NamedTempFile;
 use fal_client::requests::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
 use filesys::file_read_bytes::file_read_bytes;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::state::fal::fal_task_queue::FalTaskQueue;
 
 #[derive(Deserialize)]
 pub struct FalKlingImageToVideoRequest {
@@ -76,6 +77,7 @@ pub async fn fal_kling_image_to_video_command(
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
+  fal_task_queue: State<'_, FalTaskQueue>,
 ) -> CommandResult<(), SoraImageRemixErrorType, ()> {
 
   info!("fal_kling_image_to_video_command called; image media token: {:?}", request.image_media_token);
@@ -98,7 +100,8 @@ pub async fn fal_kling_image_to_video_command(
     request,
     &app_data_root,
     &fal_creds_manager,
-    &storyteller_creds_manager
+    &storyteller_creds_manager,
+    &fal_task_queue,
   ).await;
   
   if let Err(err) = result {
@@ -179,6 +182,7 @@ pub async fn image_to_video(
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
+  fal_task_queue: &FalTaskQueue,
 ) -> Result<(), InnerError> {
 
   let api_key = fal_creds_manager.get_key_required()?;
@@ -204,8 +208,11 @@ pub async fn image_to_video(
     api_key: &api_key,
     duration: Kling16Duration::Default,
   }).await?;
-  
-  // TODO: Handle event polling
+
+  if let Err(err) = fal_task_queue.insert(&enqueued) {
+    error!("Failed to enqueue task: {:?}", err);
+    return Err(InnerError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
+  }
 
   Ok(())
 }
