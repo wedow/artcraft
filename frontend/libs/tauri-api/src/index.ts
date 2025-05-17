@@ -6,5 +6,6 @@ export * from "./lib/sora/LogoutSoraSession.js";
 export * from "./lib/sora/SoraImageRemix.js";
 export * from "./lib/sora/useSoraLoginListener.js";
 export * from "./lib/fal/FalBackgroundRemoval.js";
+export * from "./lib/fal/FalKlingImageToVideo.js";
 export * from "./lib/fal/GetFalApiKey.js";
 export * from "./lib/fal/SetFalApiKey.js";

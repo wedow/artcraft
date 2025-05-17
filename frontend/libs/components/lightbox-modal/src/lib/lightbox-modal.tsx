@@ -4,6 +4,7 @@ import { Transition, TransitionChild } from "@headlessui/react";
 import { createPortal } from "react-dom";
 import dayjs from "dayjs";
 import { faDownToLine } from "@fortawesome/pro-solid-svg-icons";
+import { FalKlingImageToVideo } from "@storyteller/tauri-api"
 
 interface LightboxModalProps {
   isOpen: boolean;
@@ -116,6 +117,22 @@ export function LightboxModal({
                   {/* buttons with spacing */}
                   {(onAddToSceneClicked && downloadUrl) || downloadUrl ? (
                     <div className="mt-15 mb-15 flex justify-end gap-2">
+
+                      <Button
+                        onClick={async (e) => {
+                          let _result = await FalKlingImageToVideo({
+                            image_media_token: mediaId,
+                            //base64_image: downloadUrl,
+                          });
+                          //e.stopPropagation();
+                          //await onAddToSceneClicked(downloadUrl, mediaId);
+                          //onClose(); // close the lightbox
+                          //onCloseGallery(); // close the gallery
+                        }}
+                      >
+                        Generate Video
+                      </Button>
+
                       {onAddToSceneClicked && downloadUrl && (
                         <Button
                           onClick={async (e) => {
