@@ -146,6 +146,8 @@ export class StoryTellerProxyScene {
                 new THREE.Vector3(-0.5, 1.5, 0),
                 version,
               );
+              // Add any missing userdata back to the object
+              obj.userData = json_object.user_data;
             } else if (token.includes("Point::")) {
               const keyframe_uuid = token.replace("Point::", "");
               obj = this.scene.createPoint(
