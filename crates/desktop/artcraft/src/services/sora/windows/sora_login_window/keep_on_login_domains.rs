@@ -1,4 +1,4 @@
-use crate::windows::sora_login_window::open_sora_login_window::SORA_LOGIN_URL;
+use crate::services::sora::windows::sora_login_window::open_sora_login_window::SORA_LOGIN_URL;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::info;

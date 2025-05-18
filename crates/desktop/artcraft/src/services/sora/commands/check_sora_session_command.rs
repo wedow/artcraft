@@ -2,7 +2,7 @@ use crate::commands::app_preferences::get_app_preferences_command::AppPreference
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
+use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use chrono::{DateTime, TimeDelta, Utc};
 use errors::AnyhowResult;
 use log::{error, info};

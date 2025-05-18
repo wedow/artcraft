@@ -3,7 +3,7 @@ use crate::commands::command_response_wrapper::{CommandResult, CommandSuccessRes
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
+use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use errors::{AnyhowError, AnyhowResult};
 use log::{error, info};
 use once_cell::sync::Lazy;
