@@ -1,11 +1,11 @@
-use crate::events::sendable_event_trait::SendableEvent;
+use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
 use crate::services::sora::state::initialize_sora_jwt_bearer_token::initialize_sora_jwt_bearer_token;
 use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::LOGIN_WINDOW_NAME;
-use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use anyhow::anyhow;
 use chrono::{DateTime, NaiveDateTime, TimeDelta};
 use errors::AnyhowResult;

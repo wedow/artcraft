@@ -1,6 +1,6 @@
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
-use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use errors::AnyhowResult;
 use log::{error, info};

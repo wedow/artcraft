@@ -1,7 +1,7 @@
-use crate::commands::app_preferences::get_app_preferences_command::AppPreferencesPayload;
+use crate::core::commands::app_preferences::get_app_preferences_command::AppPreferencesPayload;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
-use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use chrono::{DateTime, TimeDelta, Utc};
 use errors::AnyhowResult;

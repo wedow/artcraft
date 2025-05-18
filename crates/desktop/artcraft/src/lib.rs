@@ -1,17 +1,19 @@
-pub mod commands;
-pub mod events;
+pub mod core;
 pub mod services;
-pub mod state;
-pub mod threads;
-pub mod utils;
-pub mod windows;
 
 use tauri::Manager;
 
-use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
-use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
-use crate::commands::flip_image::flip_image;
-use crate::commands::platform_info_command::platform_info_command;
+use crate::core::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
+use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::core::commands::flip_image::flip_image;
+use crate::core::commands::platform_info_command::platform_info_command;
+use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::core::state::main_window_position::MainWindowPosition;
+use crate::core::state::main_window_size::MainWindowSize;
+use crate::core::threads::discord_presence_thread::discord_presence_thread;
+use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
+use crate::core::utils::webview_unsafe::webview_unsafe_for_app;
 use crate::services::fal::commands::fal_background_removal_command::fal_background_removal_command;
 use crate::services::fal::commands::fal_kling_image_to_video_command::fal_kling_image_to_video_command;
 use crate::services::fal::commands::get_fal_api_key_command::get_fal_api_key_command;
@@ -28,13 +30,6 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_thread;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
-use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::main_window_position::MainWindowPosition;
-use crate::state::main_window_size::MainWindowSize;
-use crate::threads::discord_presence_thread::discord_presence_thread;
-use crate::threads::main_window_thread::main_window_thread::main_window_thread;
-use crate::utils::webview_unsafe::webview_unsafe_for_app;
 
 use tauri_plugin_dialog;
 use tauri_plugin_http;

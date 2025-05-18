@@ -1,6 +1,6 @@
-use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::utils::clear_all_webview_cookies::clear_all_webview_cookies;
+use crate::core::utils::clear_all_webview_cookies::clear_all_webview_cookies;
 use crate::services::sora::windows::sora_login_window::sora_login_thread::sora_login_thread;
 use anyhow::anyhow;
 use errors::AnyhowResult;

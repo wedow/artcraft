@@ -1,5 +1,5 @@
 use serde_derive::Serialize;
-use crate::events::sendable_event_trait::SendableEvent;
+use crate::core::events::sendable_event_trait::SendableEvent;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SoraImageGenerationFailedEvent {
