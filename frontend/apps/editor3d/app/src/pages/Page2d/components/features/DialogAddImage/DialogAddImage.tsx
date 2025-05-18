@@ -13,11 +13,13 @@ export const DialogAddImage = ({
   isOpen,
   closeCallback,
   onAddImage,
+  isProcessing = false,
 }: {
   stagedImage?: File | null;
   isOpen: boolean;
   closeCallback: () => void;
   onAddImage: (file: File) => void;
+  isProcessing?: boolean;
 }) => {
   const [assetFile, setAssetFile] = useState<File | null>(null);
   const previouslyStagedImageRef = useRef<File | null>(null);
@@ -37,10 +39,13 @@ export const DialogAddImage = ({
     closeCallback();
   }
 
+  // Show dialog if no image is set (currFile is null) and not processing
+  const shouldShowDialog = isOpen && (!currFile || !isProcessing);
+
   return (
-    <Modal isOpen={isOpen} onClose={closeCallback}>
+    <Modal isOpen={shouldShowDialog} onClose={closeCallback}>
       <div className="flex flex-col gap-3">
-        <DialogTitle className="text-2xl font-bold">Upload Image</DialogTitle>
+        <h1 className="text-2xl font-bold">Upload Image</h1>
         <div className="flex flex-col rounded-lg border-2 border-dashed border-white/20">
           <FileUploader
             fileTypes={Object.values(IMAGE_FILE_TYPE)}

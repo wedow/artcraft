@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { useSignals } from "@preact/signals-react/runtime";
 import { toast } from "@storyteller/ui-toaster";
 import {
@@ -47,7 +46,7 @@ interface ReferenceImage {
   mediaToken: string;
 }
 
-interface PromptBox2DProps {
+interface PromptBoxVideoProps {
   uploadImage: ({
     title,
     assetFile,
@@ -63,13 +62,13 @@ interface PromptBox2DProps {
   onEnqueuePressed?: () => void | Promise<void>;
 }
 
-export const PromptBox2D = ({
+export const PromptBoxVideo = ({
   uploadImage,
   getCanvasRenderBitmap,
   EncodeImageBitmapToBase64,
   useJobContext,
   onEnqueuePressed,
-}: PromptBox2DProps) => {
+}: PromptBoxVideoProps) => {
   useSignals();
 
   console.log("Is this a desktop app?", IsDesktopApp());
@@ -278,19 +277,6 @@ export const PromptBox2D = ({
     console.log("useSystemPrompt", useSystemPrompt);
     console.log("Snapshot media token:", snapshotMediaToken.data);
 
-    //const generateResponse = await invoke("sora_image_remix_command", {
-    //  request: {
-    //    snapshot_media_token: snapshotMediaToken.data,
-    //    disable_system_prompt: !useSystemPrompt,
-    //    prompt: prompt,
-    //    maybe_additional_images: referenceImages.map(
-    //      (image) => image.mediaToken
-    //    ),
-    //    maybe_number_of_samples: 1,
-    //  },
-    //});
-    //console.log("Generate response:", generateResponse);
-    //toast.success("Please wait while we process your image.");
 
     const generateResponse = await SoraImageRemix({
       snapshot_media_token: snapshotMediaToken.data,

@@ -19,7 +19,6 @@ import { Signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
-import { useAppUiContext } from "~/pages/Page2d/contextSignals/appUi";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;
@@ -37,7 +36,7 @@ interface Props {
 const appTabs: TabItem[] = [
   { id: "2D", label: "2D" },
   { id: "3D", label: "3D" },
-  // { id: "VIDEO", label: "Video" },
+  { id: "VIDEO", label: "Video" },
 ];
 
 export const TopBar = ({

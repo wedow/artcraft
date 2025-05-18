@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals-react";
 
-export const appTabId = signal("3D");
+export const appTabId = signal("VIDEO");
 
 export const setAppTabId = (newId: string) => {
   if (newId != "2D" && newId != "3D" && newId != "VIDEO") {
