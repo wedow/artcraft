@@ -3,8 +3,8 @@ use crate::events::sora::sora_image_generation_complete_event::SoraImageGenerati
 use crate::events::sora::sora_image_generation_failed_event::SoraImageGenerationFailedEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
-use crate::state::sora::sora_credential_manager::SoraCredentialManager;
-use crate::state::sora::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
+use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
 use log::{error, info};

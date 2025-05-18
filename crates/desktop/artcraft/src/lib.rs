@@ -23,12 +23,12 @@ use crate::services::sora::commands::sora_image_remix_command::sora_image_remix_
 use crate::services::sora::commands::sora_logout_command::sora_logout_command;
 use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::fal::fal_credential_manager::FalCredentialManager;
-use crate::state::fal::fal_task_queue::FalTaskQueue;
+use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
+use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::state::main_window_position::MainWindowPosition;
 use crate::state::main_window_size::MainWindowSize;
-use crate::state::sora::sora_credential_manager::SoraCredentialManager;
-use crate::state::sora::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
+use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::threads::discord_presence_thread::discord_presence_thread;
 use crate::threads::fal_task_polling_thread::fal_task_polling_thread;
