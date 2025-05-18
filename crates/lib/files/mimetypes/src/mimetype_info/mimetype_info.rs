@@ -1,3 +1,4 @@
+use crate::custom::custom_infer::CUSTOM_INFER;
 use crate::mimetype_info::file_extension::FileExtension;
 use infer::Type;
 use std::io;
@@ -14,12 +15,12 @@ pub struct MimetypeInfo {
 
 impl MimetypeInfo {
   pub fn get_for_bytes(bytes: &[u8]) -> Option<Self> {
-    infer::get(bytes)
+    CUSTOM_INFER.get(bytes)
         .map(|t| Self::for_type(t))
   }
 
   pub fn get_for_path<P: AsRef<Path>>(path: P) -> io::Result<Option<Self>> {
-    infer::get_from_path(path)
+    CUSTOM_INFER.get_from_path(path)
         .map(|maybe_type| maybe_type.map(|t| Self::for_type(t)))
   }
 
@@ -62,8 +63,8 @@ mod tests {
   }
 
   mod for_files {
-    use testing::test_file_path::test_file_path;
     use super::*;
+    use testing::test_file_path::test_file_path;
 
     #[test]
     fn mp3() -> anyhow::Result<()> {
@@ -74,6 +75,18 @@ mod tests {
       assert_eq!(ext, FileExtension::Mp3);
       assert_eq!(ext.extension_with_period(), ".mp3");
       assert_eq!(ext.extension_without_period(), "mp3");
+      Ok(())
+    }
+
+    #[test]
+    fn glb() -> anyhow::Result<()> {
+      let path = test_file_path("test_data/3d/hanashi.glb")?;
+      let t = MimetypeInfo::get_for_path(path)?.expect("should detect type");
+      assert_eq!(t.mime_type(), "model/gltf-binary");
+      let ext = t.file_extension.expect("should have extension");
+      assert_eq!(ext, FileExtension::Glb);
+      assert_eq!(ext.extension_with_period(), ".glb");
+      assert_eq!(ext.extension_without_period(), "glb");
       Ok(())
     }
   }

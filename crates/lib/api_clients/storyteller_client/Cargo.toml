@@ -22,6 +22,7 @@ enums_public = { workspace = true }
 errors = { workspace = true }
 idempotency = { workspace = true }
 tokens = { workspace = true }
+mimetypes = { workspace = true }
 
 # External
 anyhow = { workspace = true }

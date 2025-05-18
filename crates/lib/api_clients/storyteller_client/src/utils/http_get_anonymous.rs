@@ -1,5 +1,5 @@
+use crate::error::api_error::ApiError;
 use reqwest::Client;
-use crate::api_error::ApiError;
 const USER_AGENT: &str = "storyteller-client/1.0";
 
 pub async fn http_get_anonymous(url: String) -> Result<reqwest::Response, ApiError> {

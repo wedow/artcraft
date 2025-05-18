@@ -14,21 +14,25 @@ use fal_client::fal_error_plus::FalErrorPlus;
 use fal_client::model::fal_request_id::FalRequestId;
 use fal_client::utils::queue_status_checker::QueueStatusChecker;
 use log::{error, info, warn};
+use mimetypes::mimetype_for_file::get_mimetype_for_file;
+use mimetypes::mimetype_info::file_extension::FileExtension;
+use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use openai_sora_client::requests::image_gen::image_gen_status::{Generation, TaskId, TaskStatus};
 use serde_derive::Serialize;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use storyteller_client::api_error::ApiError;
+use storyteller_client::error::api_error::ApiError;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use storyteller_client::media_files::upload_new_engine_asset_from_file::upload_new_engine_asset_from_file;
 use storyteller_client::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoMediaFileSuccessResponse};
+use storyteller_client::recipes::upload_media_file_from_file::upload_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter};
 use tempdir::TempDir;
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
 use url::Url;
-use storyteller_client::media_files::upload_new_engine_asset_from_file::upload_new_engine_asset_from_file;
 
 pub async fn fal_task_polling_thread(
   app_handle: AppHandle,
@@ -132,58 +136,30 @@ async fn polling_loop(
       
       let download_file = download_url_to_temp_dir(&url, &app_data_root).await?;
       
-      let download_path = download_file.path();
-      
-      if download_path.ends_with(".glb") {
-        let result = upload_new_engine_asset_from_file(
-          &ApiHost::Storyteller,
-          Some(&storyteller_creds),
-          download_file
-        ).await;
+      let result = upload_media_file_from_file(
+        &ApiHost::Storyteller,
+        Some(&storyteller_creds),
+        download_file
+      ).await;
 
-        match result {
-          Ok(success) => {
-            info!("Uploaded to API backend: {:?}", success.media_file_token);
+      match result {
+        Ok(success) => {
+          info!("Uploaded to API backend: {:?}", success.media_file_token);
 
-            //let event = SoraImageGenerationCompleteEvent {
-            //  media_file_token: success.media_file_token,
-            //};
-            //event.send(&app_handle)?;
+          //let event = SoraImageGenerationCompleteEvent {
+          //  media_file_token: success.media_file_token,
+          //};
+          //event.send(&app_handle)?;
 
-            succeeded_tasks.push(task_id);
-          }
-          Err(err) => {
-            warn!("Failed to upload video media file: {:?}", err);
-            continue;
-          }
+          succeeded_tasks.push(task_id);
         }
-        
-      } else {
-        let result = upload_video_media_file_from_file(
-          &ApiHost::Storyteller,
-          Some(&storyteller_creds),
-          download_file
-        ).await;
-
-        match result {
-          Ok(success) => {
-            info!("Uploaded to API backend: {:?}", success.media_file_token);
-
-            //let event = SoraImageGenerationCompleteEvent {
-            //  media_file_token: success.media_file_token,
-            //};
-            //event.send(&app_handle)?;
-
-            succeeded_tasks.push(task_id);
-          }
-          Err(err) => {
-            warn!("Failed to upload video media file: {:?}", err);
-            continue;
-          }
+        Err(err) => {
+          warn!("Failed to upload media file: {:?}", err);
+          continue;
         }
       }
-    }
 
+    }
 
 
 //    // TODO: The cursoring logic likely needs to improve.

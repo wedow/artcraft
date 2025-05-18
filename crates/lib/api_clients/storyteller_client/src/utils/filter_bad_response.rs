@@ -1,7 +1,6 @@
-use anyhow::anyhow;
-use crate::api_error::ApiError;
+use crate::error::api_error::ApiError;
 use crate::utils::status_codes::*;
-use reqwest::StatusCode;
+use anyhow::anyhow;
 
 /// Pass request errors to this method for standard error handling behavior.
 /// This function needs to take temporary ownership, but will return it to the caller.
