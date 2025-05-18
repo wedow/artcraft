@@ -1,5 +1,5 @@
 use crate::events::sendable_event_trait::SendableEvent;
-use crate::events::sora::sora_login_success_event::SoraLoginSuccessEvent;
+use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
 use crate::services::sora::state::initialize_sora_jwt_bearer_token::initialize_sora_jwt_bearer_token;
 use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;

@@ -1,7 +1,7 @@
 use crate::commands::command_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus, CommandResult, SerializeMarker};
 use crate::events::sendable_event_trait::SendableEvent;
-use crate::events::sora::sora_image_enqueue_failure_event::SoraImageEnqueueFailureEvent;
-use crate::events::sora::sora_image_enqueue_success_event::SoraImageEnqueueSuccessEvent;
+use crate::services::sora::events::sora_image_enqueue_failure_event::SoraImageEnqueueFailureEvent;
+use crate::services::sora::events::sora_image_enqueue_success_event::SoraImageEnqueueSuccessEvent;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
