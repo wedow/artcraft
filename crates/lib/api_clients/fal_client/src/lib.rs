@@ -2,6 +2,13 @@
 
 extern crate fal;
 
+// Re-export
+pub mod export {
+  pub use fal::*;
+}
+
 pub mod creds;
 pub mod fal_error_plus;
+pub mod model;
 pub mod requests;
+pub mod utils;

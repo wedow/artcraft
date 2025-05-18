@@ -1,36 +1,36 @@
-pub mod commands;
-pub mod events;
-pub mod state;
-pub mod threads;
-pub mod utils;
-pub mod windows;
+pub mod core;
+pub mod services;
 
 use tauri::Manager;
 
-use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
-use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
-use crate::commands::fal::fal_background_removal_command::fal_background_removal_command;
-use crate::commands::fal::get_fal_api_key_command::get_fal_api_key_command;
-use crate::commands::fal::set_fal_api_key_command::set_fal_api_key_command;
-use crate::commands::flip_image::flip_image;
-use crate::commands::platform_info_command::platform_info_command;
-use crate::commands::sora::check_sora_session_command::check_sora_session_command;
-use crate::commands::sora::open_sora_login_command::open_sora_login_command;
-use crate::commands::sora::sora_image_generation_command::sora_image_generation_command;
-use crate::commands::sora::sora_image_remix_command::sora_image_remix_command;
-use crate::commands::sora::sora_logout_command::sora_logout_command;
-use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
-use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::fal::fal_credential_manager::FalCredentialManager;
-use crate::state::main_window_position::MainWindowPosition;
-use crate::state::main_window_size::MainWindowSize;
-use crate::state::sora::sora_credential_manager::SoraCredentialManager;
-use crate::state::sora::sora_task_queue::SoraTaskQueue;
-use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::threads::discord_presence_thread::discord_presence_thread;
-use crate::threads::main_window_thread::main_window_thread::main_window_thread;
-use crate::threads::sora_task_polling_thread::sora_task_polling_thread;
-use crate::utils::webview_unsafe::webview_unsafe_for_app;
+use crate::core::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
+use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::core::commands::flip_image::flip_image;
+use crate::core::commands::platform_info_command::platform_info_command;
+use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::core::state::main_window_position::MainWindowPosition;
+use crate::core::state::main_window_size::MainWindowSize;
+use crate::core::threads::discord_presence_thread::discord_presence_thread;
+use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
+use crate::core::utils::webview_unsafe::webview_unsafe_for_app;
+use crate::services::fal::commands::fal_background_removal_command::fal_background_removal_command;
+use crate::services::fal::commands::fal_hunyuan_image_to_3d_command::fal_hunyuan_image_to_3d_command;
+use crate::services::fal::commands::fal_kling_image_to_video_command::fal_kling_image_to_video_command;
+use crate::services::fal::commands::get_fal_api_key_command::get_fal_api_key_command;
+use crate::services::fal::commands::set_fal_api_key_command::set_fal_api_key_command;
+use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
+use crate::services::fal::state::fal_task_queue::FalTaskQueue;
+use crate::services::fal::threads::fal_task_polling_thread::fal_task_polling_thread;
+use crate::services::sora::commands::check_sora_session_command::check_sora_session_command;
+use crate::services::sora::commands::open_sora_login_command::open_sora_login_command;
+use crate::services::sora::commands::sora_image_generation_command::sora_image_generation_command;
+use crate::services::sora::commands::sora_image_remix_command::sora_image_remix_command;
+use crate::services::sora::commands::sora_logout_command::sora_logout_command;
+use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
+use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_thread;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 
 use tauri_plugin_dialog;
 use tauri_plugin_http;
@@ -59,10 +59,14 @@ pub fn run() {
   
   println!("Attempting to read existing fal credentials...");
   let fal_creds_manager = FalCredentialManager::initialize_from_disk_infallible(&app_data_root);
+  let fal_creds_manager_2 = fal_creds_manager.clone();
 
   // Other state
   let sora_task_queue = SoraTaskQueue::new();
   let sora_task_queue_2 = sora_task_queue.clone();
+
+  let fal_task_queue = FalTaskQueue::new();
+  let fal_task_queue_2 = fal_task_queue.clone();
 
   println!("Initializing backend runtime...");
 
@@ -97,13 +101,19 @@ pub fn run() {
         eprintln!("Error setting webview unsafe: {:?}", err);
       }
 
+      // TODO(bt): Clean this up. We can just clone at the callsite. Also clean initialization
       let app_2 = app.clone();
       let app_3 = app.clone();
       let app_4 = app.clone();
+      let app_5 = app.clone();
       let app_data_root_3 = app_data_root_2.clone();
       let app_data_root_4 = app_data_root_2.clone();
+      let app_data_root_5 = app_data_root_2.clone();
       let sora_creds_manager_3 = sora_creds_manager_2.clone();
       let storyteller_creds_manager_3 = storyteller_creds_manager.clone();
+      let storyteller_creds_manager_4 = storyteller_creds_manager.clone();
+      let fal_creds_manager_3 = fal_creds_manager_2.clone();
+      let fal_task_queue_3 = fal_task_queue_2.clone();
 
       match MainWindowSize::from_filesystem_configs(&app_data_root_3) {
         Ok(None) => {}
@@ -136,18 +146,22 @@ pub fn run() {
       tauri::async_runtime::spawn(main_window_thread(app_3, app_data_root_3, storyteller_creds_manager_2));
       tauri::async_runtime::spawn(sora_task_polling_thread(app_4, app_data_root_4, sora_creds_manager_3, storyteller_creds_manager_3, sora_task_queue_2));
       tauri::async_runtime::spawn(discord_presence_thread());
+      tauri::async_runtime::spawn(fal_task_polling_thread(app_5, app_data_root_5, fal_creds_manager_3, storyteller_creds_manager_4, fal_task_queue_3));
 
       Ok(())
     })
     .manage(app_data_root)
     .manage(app_preferences)
-    .manage(sora_creds_manager)
     .manage(fal_creds_manager)
+    .manage(fal_task_queue)
+    .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)
     .invoke_handler(tauri::generate_handler![
       check_sora_session_command,
       fal_background_removal_command,
+      fal_hunyuan_image_to_3d_command,
+      fal_kling_image_to_video_command,
       flip_image,
       get_app_preferences_command,
       get_fal_api_key_command,

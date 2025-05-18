@@ -1,4 +1,4 @@
-use crate::api_error::ApiError;
+use crate::error::api_error::ApiError;
 use crate::shared_response_types::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::shared_response_types::media_links::MediaLinks;
 use crate::shared_response_types::simple_entity_stats::SimpleEntityStats;
