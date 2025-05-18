@@ -1,15 +1,17 @@
 use crate::core::events::sendable_event_trait::SendableEvent;
-use crate::services::sora::events::sora_image_generation_complete_event::SoraImageGenerationCompleteEvent;
-use crate::services::sora::events::sora_image_generation_failed_event::SoraImageGenerationFailedEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
+use crate::services::sora::events::sora_image_generation_complete_event::SoraImageGenerationCompleteEvent;
+use crate::services::sora::events::sora_image_generation_failed_event::SoraImageGenerationFailedEvent;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
 use fal_client::export::queue::Status;
 use fal_client::fal_error_plus::FalErrorPlus;
+use fal_client::model::fal_request_id::FalRequestId;
 use fal_client::utils::queue_status_checker::QueueStatusChecker;
 use log::{error, info, warn};
 use openai_sora_client::requests::image_gen::image_gen_status::{Generation, TaskId, TaskStatus};
@@ -17,16 +19,16 @@ use serde_derive::Serialize;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
+use storyteller_client::api_error::ApiError;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use storyteller_client::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoMediaFileSuccessResponse};
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter};
 use tempdir::TempDir;
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
 use url::Url;
-use fal_client::model::fal_request_id::FalRequestId;
-use storyteller_client::api_error::ApiError;
-use storyteller_client::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoMediaFileSuccessResponse};
+use storyteller_client::media_files::upload_new_engine_asset_from_file::upload_new_engine_asset_from_file;
 
 pub async fn fal_task_polling_thread(
   app_handle: AppHandle,
@@ -125,30 +127,59 @@ async fn polling_loop(
           }
         }
       };
-      
-      
-      let download_file = download_generation(&url, &app_data_root).await?;
 
-      let result = upload_video_media_file_from_file(
-        &ApiHost::Storyteller, 
-        Some(&storyteller_creds), 
-        download_file
-      ).await;
+      // TODO: Clean up
       
-      match result {
-        Ok(success) => {
-          info!("Uploaded to API backend: {:?}", success.media_file_token);
-          
-          //let event = SoraImageGenerationCompleteEvent {
-          //  media_file_token: success.media_file_token,
-          //};
-          //event.send(&app_handle)?;
+      let download_file = download_url_to_temp_dir(&url, &app_data_root).await?;
+      
+      let download_path = download_file.path();
+      
+      if download_path.ends_with(".glb") {
+        let result = upload_new_engine_asset_from_file(
+          &ApiHost::Storyteller,
+          Some(&storyteller_creds),
+          download_file
+        ).await;
 
-          succeeded_tasks.push(task_id);
+        match result {
+          Ok(success) => {
+            info!("Uploaded to API backend: {:?}", success.media_file_token);
+
+            //let event = SoraImageGenerationCompleteEvent {
+            //  media_file_token: success.media_file_token,
+            //};
+            //event.send(&app_handle)?;
+
+            succeeded_tasks.push(task_id);
+          }
+          Err(err) => {
+            warn!("Failed to upload video media file: {:?}", err);
+            continue;
+          }
         }
-        Err(err) => {
-          warn!("Failed to upload video media file: {:?}", err);
-          continue;
+        
+      } else {
+        let result = upload_video_media_file_from_file(
+          &ApiHost::Storyteller,
+          Some(&storyteller_creds),
+          download_file
+        ).await;
+
+        match result {
+          Ok(success) => {
+            info!("Uploaded to API backend: {:?}", success.media_file_token);
+
+            //let event = SoraImageGenerationCompleteEvent {
+            //  media_file_token: success.media_file_token,
+            //};
+            //event.send(&app_handle)?;
+
+            succeeded_tasks.push(task_id);
+          }
+          Err(err) => {
+            warn!("Failed to upload video media file: {:?}", err);
+            continue;
+          }
         }
       }
     }
@@ -225,17 +256,3 @@ async fn polling_loop(
   }
 }
 
-async fn download_generation(url: &str, app_data_root: &AppDataRoot) -> AnyhowResult<NamedTempFile> {
-  let url = Url::parse(&url)?;
-
-  let response = reqwest::get(url.clone()).await?;
-  let response_bytes = response.bytes().await?;
-
-  let ext = url.path().split(".").last().unwrap_or("png");
-
-  let mut temp_file = app_data_root.temp_dir().new_named_temp_file_with_extension(ext)?;
-  
-  temp_file.write_all(&response_bytes)?;
-
-  Ok(temp_file)
-}

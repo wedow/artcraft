@@ -1,15 +1,13 @@
-use fal::endpoints::fal_ai::kling_video::v1_6::pro::effects::I2VOutput;
-use fal::FalError;
-use fal::prelude::fal_ai::imageutils::sam::RemoveBackgroundOutput;
-use fal::prelude::QueueResponse;
-use fal::queue::{Queue, QueueStatus};
-use reqwest::Client;
-use serde::de::DeserializeOwned;
-use url::Url;
 use crate::creds::fal_api_key::FalApiKey;
 use crate::fal_error_plus::FalErrorPlus;
 use crate::model::enqueued_request::EnqueuedRequest;
 use crate::model::fal_endpoint::FalEndpoint;
+use fal::endpoints::fal_ai::hunyuan3d::v2::ObjectOutput;
+use fal::endpoints::fal_ai::kling_video::v1_6::pro::effects::I2VOutput;
+use fal::prelude::QueueResponse;
+use fal::queue::{Queue, QueueStatus};
+use reqwest::Client;
+use serde::de::DeserializeOwned;
 
 pub struct QueueStatusChecker {
   api_key: FalApiKey,
@@ -22,6 +20,11 @@ impl QueueStatusChecker {
 
   pub async fn check_status(&self, request: &EnqueuedRequest) -> Result<QueueStatus, FalErrorPlus> {
     match &request.fal_endpoint {
+      FalEndpoint::Hunyuan3d2Base => {
+        let queue = self.make_queue::<ObjectOutput>(&request);
+        let status = queue.status(false).await?;
+        Ok(status)
+      }
       FalEndpoint::Kling16ImageToVideo => {
         let queue = self.make_queue::<I2VOutput>(&request);
         let status = queue.status(false).await?;
@@ -35,6 +38,11 @@ impl QueueStatusChecker {
   
   pub async fn get_download_url(&self, request: &EnqueuedRequest) -> Result<String, FalErrorPlus> {
     match &request.fal_endpoint {
+      FalEndpoint::Hunyuan3d2Base => {
+        let queue = self.make_queue::<ObjectOutput>(&request);
+        let status = queue.response().await?;
+        Ok(status.model_mesh.url)
+      }
       FalEndpoint::Kling16ImageToVideo => {
         let queue = self.make_queue::<I2VOutput>(&request);
         let status = queue.response().await?;
