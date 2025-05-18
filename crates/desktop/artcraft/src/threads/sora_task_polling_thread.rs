@@ -5,7 +5,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
 use log::{error, info};
 use openai_sora_client::recipes::list_sora_task_status_with_session_auto_renew::{list_sora_task_status_with_session_auto_renew, StatusRequestArgs};

@@ -2,7 +2,7 @@ use crate::state::app_startup_time::AppStartupTime;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::main_window_position::MainWindowPosition;
 use crate::state::main_window_size::MainWindowSize;
-use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::threads::main_window_thread::persist_storyteller_cookies_task::persist_storyteller_cookies_task;
 use crate::threads::main_window_thread::persist_window_position_task::persist_window_position_task;
 use crate::threads::main_window_thread::persist_window_resize_task::persist_window_resize_task;

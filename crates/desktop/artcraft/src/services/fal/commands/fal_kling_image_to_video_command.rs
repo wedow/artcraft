@@ -10,7 +10,7 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::trait_data_subdir::DataSubdir;
-use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::utils::get_url_file_extension::get_url_file_extension;
 use crate::utils::simple_http_download::simple_http_download;
 use crate::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;

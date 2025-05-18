@@ -1,6 +1,6 @@
 use crate::state::app_startup_time::AppStartupTime;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
 use chrono::TimeDelta;
 use errors::AnyhowResult;

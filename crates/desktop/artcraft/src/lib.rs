@@ -29,7 +29,7 @@ use crate::state::app_preferences::app_preferences_manager::load_app_preferences
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::main_window_position::MainWindowPosition;
 use crate::state::main_window_size::MainWindowSize;
-use crate::state::storyteller::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::threads::discord_presence_thread::discord_presence_thread;
 use crate::threads::fal_task_polling_thread::fal_task_polling_thread;
 use crate::threads::main_window_thread::main_window_thread::main_window_thread;
