@@ -15,6 +15,7 @@ use crate::core::threads::discord_presence_thread::discord_presence_thread;
 use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
 use crate::core::utils::webview_unsafe::webview_unsafe_for_app;
 use crate::services::fal::commands::fal_background_removal_command::fal_background_removal_command;
+use crate::services::fal::commands::fal_hunyuan_image_to_3d_command::fal_hunyuan_image_to_3d_command;
 use crate::services::fal::commands::fal_kling_image_to_video_command::fal_kling_image_to_video_command;
 use crate::services::fal::commands::get_fal_api_key_command::get_fal_api_key_command;
 use crate::services::fal::commands::set_fal_api_key_command::set_fal_api_key_command;
@@ -159,6 +160,7 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
       check_sora_session_command,
       fal_background_removal_command,
+      fal_hunyuan_image_to_3d_command,
       fal_kling_image_to_video_command,
       flip_image,
       get_app_preferences_command,

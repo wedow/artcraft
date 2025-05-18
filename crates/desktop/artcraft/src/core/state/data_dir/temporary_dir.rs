@@ -36,7 +36,7 @@ impl TemporaryDir {
     Ok(tempfile)
   }
 
-  pub fn new_named_temp_file_with_extension(&self, extension: &str) -> anyhow::Result<NamedTempFile> {
+  pub fn new_named_temp_file_with_extension(&self, extension: &str) -> Result<NamedTempFile, std::io::Error> {
     let extension = if extension.starts_with(".") {
       extension.to_string()
     } else {
