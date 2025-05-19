@@ -317,7 +317,7 @@ export const PopoverMenu = ({
                             </div>
 
                             {item.selected && (
-                              <span className="text-primary text-xl font-bold bg-white rounded-full p-0 h-4 w-4 flex items-center justify-center">
+                              <span className="text-primary text-xl font-bold bg-white rounded-full p-0 h-4 w-4 flex items-center justify-center mr-1">
                                 <FontAwesomeIcon icon={faCircleCheck} />
                               </span>
                             )}
