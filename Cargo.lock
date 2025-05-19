@@ -6497,6 +6497,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "jwt_light"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "chrono",
+ "cookie 0.18.1",
+ "errors",
+ "hex-literal",
+ "log",
+ "once_cell",
+ "rand 0.9.1",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha3",
+ "testing",
+ "thiserror 2.0.12",
+ "toml 0.8.22",
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "k256"
 version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

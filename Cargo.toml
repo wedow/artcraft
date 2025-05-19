@@ -66,6 +66,7 @@ members = [
   "crates/lib/idempotency",
   "crates/lib/image_algorithms",
   "crates/lib/jobs_common",
+  "crates/lib/jwt_light",
   "crates/lib/logging",
   "crates/lib/machine_learning/ml_models",
   "crates/lib/machine_learning/ml_weights_registry",

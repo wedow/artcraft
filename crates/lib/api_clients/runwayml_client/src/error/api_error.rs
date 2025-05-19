@@ -3,6 +3,9 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum ApiError {
+  
+  /// Inability to parse local JWT claims
+  LocalJwtClaimsParseError(String),
 }
 
 impl Display for ApiError {
