@@ -1,5 +1,5 @@
 use crate::creds::jwt_claims::JwtClaims;
-use errors::AnyhowResult;
+use crate::error::api_error::ApiError;
 use jwt_light::parse_jwt_claims_trait::ParseJwtClaims;
 
 /// Sora bearer tokens are JWT tokens that can be minted with a valid cookie/session.
@@ -10,7 +10,7 @@ pub struct JwtBearerToken {
 }
 
 impl JwtBearerToken {
-  pub fn new(raw_jwt: String) -> AnyhowResult<Self> {
+  pub fn new(raw_jwt: String) -> Result<Self, ApiError> {
     let jwt_claims = JwtClaims::parse_claims(&raw_jwt)?;
     Ok(Self {
       raw_jwt,

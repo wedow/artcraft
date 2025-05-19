@@ -1,2 +1,3 @@
+pub mod credentials;
 pub mod jwt_bearer_token;
-mod jwt_claims;
+pub mod jwt_claims;
