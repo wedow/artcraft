@@ -1,17 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { toast } from "@storyteller/ui-toaster";
-import {
-  JobContextType,
-  MaybeCanvasRenderBitmapType,
-  UploaderState,
-  UploaderStates,
-} from "@storyteller/common";
+import { JobContextType } from "@storyteller/common";
 import { downloadFileFromUrl } from "@storyteller/api";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
+import { FalKlingImageToVideo } from "@storyteller/tauri-api";
 import {
   faMessageXmark,
   faMessageCheck,
@@ -30,12 +26,9 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
-import { PromptsApi } from "@storyteller/api";
 import {
   CommandSuccessStatus,
   GetAppPreferences,
-  SoraImageRemix,
-  SoraImageRemixErrorType,
 } from "@storyteller/tauri-api";
 import { SoundRegistry } from "@storyteller/soundboard";
 
@@ -47,29 +40,34 @@ interface ReferenceImage {
 }
 
 interface PromptBoxVideoProps {
-  uploadImage: ({
-    title,
-    assetFile,
-    progressCallback,
-  }: {
-    title: string;
-    assetFile: File;
-    progressCallback: (newState: UploaderState) => void;
-  }) => Promise<void>;
-  getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
-  EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
+  model: string;
+  imageMediaId?: string;
+  url?: string;
 }
 
 export const PromptBoxVideo = ({
-  uploadImage,
-  getCanvasRenderBitmap,
-  EncodeImageBitmapToBase64,
   useJobContext,
   onEnqueuePressed,
+  model,
+  imageMediaId,
+  url,
 }: PromptBoxVideoProps) => {
   useSignals();
+
+  // for the image media id and url, we need to set the reference image gallery panel.
+  useEffect(() => {
+    if (imageMediaId && url) {
+      const referenceImage: ReferenceImage = {
+        id: Math.random().toString(36).substring(7),
+        url: url,
+        file: new File([], "library-image"),
+        mediaToken: imageMediaId,
+      };
+      setReferenceImages([referenceImage]);
+    }
+  }, [imageMediaId, url]);
 
   console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,6 +110,18 @@ export const PromptBoxVideo = ({
     }
   });
 
+  useEffect(() => {
+    if (imageMediaId && url) {
+      const referenceImage: ReferenceImage = {
+        id: Math.random().toString(36).substring(7),
+        url: url,
+        file: new File([], "library-image"),
+        mediaToken: imageMediaId,
+      };
+      setReferenceImages([referenceImage]);
+    }
+  }, [imageMediaId, url]);
+
   const handleResolutionSelect = (selectedItem: PopoverItem) => {
     setResolutionList((prev) =>
       prev.map((item) => ({
@@ -121,62 +131,11 @@ export const PromptBoxVideo = ({
     );
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      Array.from(files).forEach((file) => {
-        const uploadId = Math.random().toString(36).substring(7);
-        setUploadingImages((prev) => [...prev, { id: uploadId, file }]);
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          uploadImage({
-            title: `reference-image-${Math.random()
-              .toString(36)
-              .substring(2, 15)}`,
-            assetFile: file,
-            progressCallback: (newState) => {
-              console.debug("Upload progress:", newState.data);
-              if (newState.status === UploaderStates.success && newState.data) {
-                const referenceImage: ReferenceImage = {
-                  id: Math.random().toString(36).substring(7),
-                  url: reader.result as string,
-                  file,
-                  mediaToken: newState.data || "",
-                };
-                setReferenceImages((prev) => [...prev, referenceImage]);
-                setUploadingImages((prev) =>
-                  prev.filter((img) => img.id !== uploadId)
-                );
-                toast.success("Reference image added.");
-              } else if (
-                newState.status === UploaderStates.assetError ||
-                newState.status === UploaderStates.imageCreateError
-              ) {
-                setUploadingImages((prev) =>
-                  prev.filter((img) => img.id !== uploadId)
-                );
-
-                toast.error("Upload failed. Please try again.");
-              }
-            },
-          });
-        };
-
-        reader.readAsDataURL(file);
-      });
-    }
-  };
-
   const handleRemoveReference = (id: string) => {
     setReferenceImages((prev) => prev.filter((img) => img.id !== id));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
   };
 
   const handleGallerySelect = () => {
@@ -236,49 +195,11 @@ export const PromptBoxVideo = ({
     setPrompt(e.target.value);
   };
 
-  const handleTauriEnqueue = async () => {
-    const api = new PromptsApi();
-    let image = getCanvasRenderBitmap();
-    if (image === undefined) {
-      console.log("image is undefined");
-      return;
-    }
-    const base64Bitmap = await EncodeImageBitmapToBase64(image);
-
-    const byteString = atob(base64Bitmap);
-    const mimeString = "image/png";
-
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-
-    const uuid = crypto.randomUUID(); // Generate a new UUID
-    const file = new File([ab], `${uuid}.png`, { type: mimeString });
-
-    const snapshotMediaToken = await api.uploadSceneSnapshot({
-      screenshot: file,
+  const handleEnqueue = async () => {
+    const generateResponse = await FalKlingImageToVideo({
+      image_media_token: referenceImages[0].mediaToken,
     });
-
-    if (snapshotMediaToken.data === undefined) {
-      toast.error("Error: Unable to upload scene snapshot Please try again.");
-      return;
-    }
-    console.log("useSystemPrompt", useSystemPrompt);
-    console.log("Snapshot media token:", snapshotMediaToken.data);
-
-    const generateResponse = await SoraImageRemix({
-      snapshot_media_token: snapshotMediaToken.data,
-      disable_system_prompt: !useSystemPrompt,
-      prompt: prompt,
-      maybe_additional_images: referenceImages.map((image) => image.mediaToken),
-      maybe_number_of_samples: 1,
-    });
-
-    console.log("generateResponse", generateResponse);
-
+    onEnqueuePressed?.();
     if (generateResponse.status === CommandSuccessStatus.Success) {
       const prefs = await GetAppPreferences();
       const soundName = prefs.preferences?.enqueue_success_sound;
@@ -294,129 +215,33 @@ export const PromptBoxVideo = ({
         const registry = SoundRegistry.getInstance();
         registry.playSound(soundName);
       }
-
-      let errorMessage = "Failed to enqueue image";
-
-      if ("error_type" in generateResponse) {
-        switch (generateResponse.error_type) {
-          case SoraImageRemixErrorType.SoraLoginRequired:
-            errorMessage =
-              "You need to log into Sora to continue. See the settings menu.";
-            break;
-          case SoraImageRemixErrorType.ServerError:
-            errorMessage = "Server error. Failed to enqueue image.";
-            break;
-          case SoraImageRemixErrorType.TooManyConcurrentTasks:
-            errorMessage =
-              "You have too many Sora image generation tasks running. Please wait a moment.";
-            break;
-          case SoraImageRemixErrorType.SoraUsernameNotYetCreated:
-            errorMessage =
-              "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
-            break;
-          case SoraImageRemixErrorType.SoraIsHavingProblems:
-            errorMessage = "Sora is having problems. Please try again later.";
-            break;
-        }
-      }
-      toast.error(errorMessage);
-    }
-  };
-
-  const handleWebEnqueue = async () => {
-    const api = new PromptsApi();
-    // to take the snapshot of the canvas
-    // Call onEnqueuePressed if it exists
-
-    let image = getCanvasRenderBitmap();
-    if (image === undefined) {
-      toast.error(
-        "Error: Unable to generate image. Please check the input and try again."
-      );
-      return;
-    }
-    const base64Bitmap = await EncodeImageBitmapToBase64(image);
-
-    const byteString = atob(base64Bitmap);
-    const mimeString = "image/png";
-
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
     }
 
-    const uuid = crypto.randomUUID(); // Generate a new UUID
-    const file = new File([ab], `${uuid}.png`, { type: mimeString });
-
-    const snapshotMediaToken = await api.uploadSceneSnapshot({
-      screenshot: file,
-    });
-
-    if (snapshotMediaToken.data === undefined) {
-      toast.error("Error: Unable to upload scene snapshot Please try again.");
-      return;
-    }
-    console.log("useSystemPrompt", useSystemPrompt);
-    console.log("Snapshot media token:", snapshotMediaToken.data);
-
-    const response = await api.enqueueImageGeneration({
-      disableSystemPrompt: !useSystemPrompt,
-      prompt: prompt,
-      snapshotMediaToken: snapshotMediaToken.data,
-      additionalImages: referenceImages.map((image) => image.mediaToken),
-    });
-
-    if (response.success === true) {
-      toast.success("Please wait while we process your image.");
-      if (response.data) {
-        addJobToken(response.data);
-      }
-      return;
-    } else {
-      toast.error("Failed to enqueue image generation. Please try again.");
-    }
-  };
-  const handleEnqueue = async () => {
-    console.log("Pressing Enqueue");
-    if (onEnqueuePressed) {
-      try {
-        await onEnqueuePressed();
-      } catch (error) {
-        console.error("Error in onEnqueuePressed callback:", error);
-        return;
-      }
-    }
-
-    if (isEnqueueing) return;
-    setIsEnqueueing(true);
-    if (!prompt.trim()) return;
-    try {
-      console.log(
-        "(4) Enqueuing with prompt:",
-        prompt,
-        "and reference images:",
-        referenceImages
-      );
-
-      const isDesktop = IsDesktopApp();
-      console.log("Is this a desktop app?", isDesktop);
-
-      if (isDesktop) {
-        await handleTauriEnqueue();
-      } else {
-        await handleWebEnqueue();
-      }
-    } catch (error) {
-      console.error("Error during image generation:", error);
-      toast.error(
-        "An error occurred while generating the image. Please try again."
-      );
-    } finally {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      setIsEnqueueing(false);
-    }
+    //   let errorMessage = "Failed to enqueue image";
+    //   if ("error_type" in generateResponse) {
+    //     switch (generateResponse.error_type) {
+    //       case SoraImageRemixErrorType.SoraLoginRequired:
+    //         errorMessage =
+    //           "You need to log into Sora to continue. See the settings menu.";
+    //         break;
+    //       case SoraImageRemixErrorType.ServerError:
+    //         errorMessage = "Server error. Failed to enqueue image.";
+    //         break;
+    //       case SoraImageRemixErrorType.TooManyConcurrentTasks:
+    //         errorMessage =
+    //           "You have too many Sora image generation tasks running. Please wait a moment.";
+    //         break;
+    //       case SoraImageRemixErrorType.SoraUsernameNotYetCreated:
+    //         errorMessage =
+    //           "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
+    //         break;
+    //       case SoraImageRemixErrorType.SoraIsHavingProblems:
+    //         errorMessage = "Sora is having problems. Please try again later.";
+    //         break;
+    //     }
+    //   }
+    //   toast.error(errorMessage);
+    // }
   };
 
   const getCurrentResolutionIcon = () => {
@@ -429,7 +254,6 @@ export const PromptBoxVideo = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-
       handleEnqueue();
     }
   };
@@ -492,14 +316,6 @@ export const PromptBoxVideo = ({
           </div>
         )}
         <div className="glass w-[730px] rounded-xl p-4">
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={handleFileUpload}
-            multiple
-          />
           <div className="flex justify-center gap-2">
             <PopoverMenu
               mode="button"

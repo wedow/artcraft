@@ -5,24 +5,23 @@ import BackgroundGallery from "./BackgroundGallery";
 import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
 import { faFilm, faClock } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FalKlingImageToVideo } from "@storyteller/tauri-api";
 
-const ImageToVideo = () => {
+interface ImageToVideoProps {
+  imageMediaId?: string;
+  imageUrl?: string;
+}
+
+const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedModel, setSelectedModel] = useState<string>("Kling 2.0");
-  const [useSystemPrompt, setUseSystemPrompt] = useState(false);
 
+  const [useSystemPrompt, setUseSystemPrompt] = useState(false);
   const [isImageBeingProcessed, setIsImageBeingProcessed] = useState(false);
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const handleClose = () => setIsDialogOpen(false);
-  const handleAddImage = (image: File) => {
-    setSelectedImage(image);
-    setIsImageBeingProcessed(true);
-    setImagePreviewUrl(URL.createObjectURL(image));
-    setTimeout(() => setIsImageBeingProcessed(false), 3000);
-  };
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -72,8 +71,10 @@ const ImageToVideo = () => {
               console.log("Using job context");
               return jobContext;
             }}
+            model={selectedModel}
+            imageMediaId={imageMediaId}
+            url={imageUrl ?? imagePreviewUrl ?? undefined}
             onEnqueuePressed={async () => {
-              // TODO: Implement enqueue logic
               console.log("Enqueue pressed");
             }}
           />

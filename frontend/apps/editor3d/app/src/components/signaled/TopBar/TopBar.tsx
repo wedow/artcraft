@@ -36,7 +36,7 @@ interface Props {
 const appTabs: TabItem[] = [
   { id: "2D", label: "2D" },
   { id: "3D", label: "3D" },
-  // { id: "VIDEO", label: "Video" },
+  { id: "VIDEO", label: "Video" },
 ];
 
 export const TopBar = ({
@@ -54,6 +54,9 @@ export const TopBar = ({
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  const [url, setUrl] = useState<string>("");
+  const [mediaId, setMediaId] = useState<string>("");
 
   const engine3D = useContext(EngineContext);
   const handleTabChange = (tabId: string) => {
@@ -75,35 +78,30 @@ export const TopBar = ({
     url: string,
     media_id: string | undefined,
   ) => {
-    console.log("add to scene", url);
+    console.log("Items to add to scene", currentAppTabId);
+    console.log("url", url);
+    console.log("media_id", media_id);
+
+    setUrl(url);
+    setMediaId(media_id ?? "");
+
     if (currentAppTabId === "2D") {
       console.log("Adding to 2D scene");
-
       // from the uploaded image url.
     } else if (currentAppTabId === "3D") {
       console.log("Adding to 3D scene");
-
-      // from the uploaded image url.
-      // engine3D?.activeScene.loadObjectFromUrl(
-      //   "https://cdn-2.fakeyou.com/media/r/h/0/5/3/rh053gbx8yvjwk1mdvag4gkr5c0h9wbh/image_rh053gbx8yvjwk1mdvag4gkr5c0h9wbh.png",
-      // );
-
-      // from the gallery modal.
-      // engine3D?.activeScene.loadObjectFromUrl(
-      //   "https://cdn-2.fakeyou.com/media/1/t/b/0/e/1tb0e53691mdgqmtd4fmzy58wp96vwxz/image_1tb0e53691mdgqmtd4fmzy58wp96vwxz.png",
-      // );
-
-      // // working media id m_ehq8051fx4hddhja54a7zmz897cgrk
-      // engine3D?.activeScene.loadObject(
-      //   "m_ehq8051fx4hddhja54a7zmz897cgrk",
-      //   "image",
-      //   true,
-      // );
-
       // media id from the image selected from gallery.
-      engine3D?.activeScene.loadObject(media_id, "image", true);
+      if (media_id) {
+        engine3D?.activeScene.loadObject(media_id, "image", true);
+      } else {
+        console.warn("No media id provided");
+      }
     } else if (currentAppTabId === "VIDEO") {
       console.log("Adding to Video scene");
+      if (media_id) {
+      } else {
+        console.warn("No media id provided");
+      }
     } else {
       console.warn(`Unknown tab type: ${currentAppTabId}`);
     }
