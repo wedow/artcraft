@@ -5,7 +5,7 @@ import BackgroundGallery from "./BackgroundGallery";
 import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
 import { faFilm, faClock } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FalKlingImageToVideo } from "@storyteller/tauri-api";
+import { useSignals } from "@preact/signals-react/runtime";
 
 interface ImageToVideoProps {
   imageMediaId?: string;

@@ -50,6 +50,8 @@ import { LoginModal } from "@storyteller/ui-login-modal";
 import { DomLevels } from "./signals/hotkeys";
 import { AUTH_STATUS } from "../../enums/authentication";
 import { authentication } from "../../signals/authentication/authentication";
+import { topNavMediaId } from "~/components/signaled/TopBar/TopBar";
+import { topNavMediaUrl } from "~/components/signaled/TopBar/TopBar";
 
 export const PageEditor = () => {
   useSignals();
@@ -345,7 +347,11 @@ export const PageEditor = () => {
       </KonvaCanvasContainer>
 
       <div style={{ display: displayVideo }}>
-        <ImageToVideo className="h-full w-full" />
+        <ImageToVideo
+          className="h-full w-full"
+          imageMediaId={topNavMediaId.value}
+          imageUrl={topNavMediaUrl.value}
+        />
       </div>
 
       <LoginModal

@@ -39,6 +39,11 @@ const appTabs: TabItem[] = [
   { id: "VIDEO", label: "Video" },
 ];
 
+import { signal } from "@preact/signals-react";
+
+export const topNavMediaId = signal<string>("");
+export const topNavMediaUrl = signal<string>("");
+
 export const TopBar = ({
   pageName,
   appTabIdSignal,
@@ -98,10 +103,8 @@ export const TopBar = ({
       }
     } else if (currentAppTabId === "VIDEO") {
       console.log("Adding to Video scene");
-      if (media_id) {
-      } else {
-        console.warn("No media id provided");
-      }
+      topNavMediaId.value = media_id ?? "";
+      topNavMediaUrl.value = url;
     } else {
       console.warn(`Unknown tab type: ${currentAppTabId}`);
     }
