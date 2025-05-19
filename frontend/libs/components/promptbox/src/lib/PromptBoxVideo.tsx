@@ -445,7 +445,7 @@ export const PromptBoxVideo = ({
       >
         {content}
       </Modal>
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col gap-3">
+      <div className="relative z-20 flex flex-col gap-3">
         {(referenceImages.length > 0 || uploadingImages.length > 0) && (
           <div className="flex w-full gap-2">
             {referenceImages.map((image) => (
@@ -523,7 +523,7 @@ export const PromptBoxVideo = ({
             <textarea
               ref={textareaRef}
               rows={1}
-              placeholder="Choose the image from assets (+) and describe your what you want to happen in the video..."
+              placeholder="Choose the image from assets (+) and describe what you want to happen in the video..."
               className="text-md mb-2 max-h-[5.5em] flex-1 resize-none overflow-y-auto rounded bg-transparent pb-2 pr-2 pt-1 text-white placeholder-white placeholder:text-white/60 focus:outline-none"
               value={prompt}
               onChange={handleChange}

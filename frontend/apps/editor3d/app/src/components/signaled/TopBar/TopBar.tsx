@@ -36,7 +36,7 @@ interface Props {
 const appTabs: TabItem[] = [
   { id: "2D", label: "2D" },
   { id: "3D", label: "3D" },
-  // { id: "VIDEO", label: "Video" },
+  { id: "VIDEO", label: "Video" },
 ];
 
 export const TopBar = ({
@@ -140,7 +140,11 @@ export const TopBar = ({
           </div>
 
           <div className="flex items-center justify-center gap-2 font-medium">
-            <SceneTitleInput pageName={pageName} />
+            {currentAppTabId === "3D" ? (
+              <SceneTitleInput pageName={pageName} />
+            ) : (
+              <h1>{currentAppTabId === "2D" ? "Canvas" : "Generate"}</h1>
+            )}
           </div>
 
           <div className="flex justify-end gap-3.5">
