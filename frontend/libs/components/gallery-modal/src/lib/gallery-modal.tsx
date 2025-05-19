@@ -132,7 +132,10 @@ export const GalleryModal = React.memo(
         setLoading(true);
         try {
           const response = await api.listUserMediaFiles({
-            filter_media_classes: [FilterMediaClasses.IMAGE],
+            filter_media_classes:
+              activeTab === "videos"
+                ? [FilterMediaClasses.VIDEO]
+                : [FilterMediaClasses.IMAGE],
             username: username,
             include_user_uploads: activeTab === "uploads",
             user_uploads_only: activeTab === "uploads",
@@ -145,10 +148,13 @@ export const GalleryModal = React.memo(
             const newItems = response.data.map((item: any) => ({
               id: item.token,
               label: item.maybe_title || "Image Generation",
-              thumbnail: item.media_links.maybe_thumbnail_template?.replace(
-                "{WIDTH}",
-                thumbnail_size.toString()
-              ),
+              thumbnail:
+                activeTab === "videos"
+                  ? item.media_links.maybe_video_previews.still
+                  : item.media_links.maybe_thumbnail_template?.replace(
+                      "{WIDTH}",
+                      thumbnail_size.toString()
+                    ),
               fullImage: item.media_links.cdn_url,
               createdAt: item.created_at,
             }));
@@ -277,8 +283,7 @@ export const GalleryModal = React.memo(
                                 </div>
                               ) : (
                                 <img
-                                  //src={item.thumbnail}
-                                  src={item.fullImage || item.thumbnail}
+                                  src={item.thumbnail || item.fullImage || ""}
                                   alt={item.label}
                                   className="h-full w-full object-cover"
                                   onError={() =>
@@ -351,6 +356,7 @@ export const GalleryModal = React.memo(
           mediaId={lightboxImage?.id}
           onDownloadClicked={onDownloadClicked}
           onAddToSceneClicked={onAddToSceneClicked}
+          activeTab={activeTab}
         />
       </>
     );

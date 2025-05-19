@@ -4,7 +4,10 @@ import { Transition, TransitionChild } from "@headlessui/react";
 import { createPortal } from "react-dom";
 import dayjs from "dayjs";
 import { faDownToLine } from "@fortawesome/pro-solid-svg-icons";
-import { FalKlingImageToVideo, FalHunyuanImageTo3d } from "@storyteller/tauri-api"
+import {
+  FalKlingImageToVideo,
+  FalHunyuanImageTo3d,
+} from "@storyteller/tauri-api";
 
 interface LightboxModalProps {
   isOpen: boolean;
@@ -23,6 +26,7 @@ interface LightboxModalProps {
     url: string,
     media_id: string | undefined
   ) => Promise<void>;
+  activeTab?: string;
 }
 
 export function LightboxModal({
@@ -39,6 +43,7 @@ export function LightboxModal({
   mediaId, // media id of the image
   onDownloadClicked,
   onAddToSceneClicked,
+  activeTab,
 }: LightboxModalProps) {
   return createPortal(
     <Transition appear show={isOpen}>
@@ -89,6 +94,11 @@ export function LightboxModal({
                     <div className="flex h-full w-full items-center justify-center bg-gray-800">
                       <span className="text-white/60">Image not available</span>
                     </div>
+                  ) : activeTab === "videos" ? (
+                    <video controls className="h-full w-full object-contain">
+                      <source src={imageUrl} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   ) : (
                     <img
                       src={imageUrl}
@@ -103,7 +113,7 @@ export function LightboxModal({
                 <div className="flex h-full flex-col py-5 pe-5">
                   <div className="flex-1 space-y-4">
                     <div className="text-xl font-medium">
-                      {title || "Image Generation"}
+                      {title || (activeTab === "videos" ? "Video" : "Image")}
                     </div>
                     {createdAt && (
                       <div className="text-sm text-white/60">
@@ -117,50 +127,52 @@ export function LightboxModal({
                   {/* buttons with spacing */}
                   {(onAddToSceneClicked && downloadUrl) || downloadUrl ? (
                     <div className="mt-15 mb-15 flex justify-end gap-2">
+                      {activeTab !== "videos" && (
+                        <>
+                          <Button
+                            onClick={async (e) => {
+                              let _result = await FalKlingImageToVideo({
+                                image_media_token: mediaId,
+                                //base64_image: downloadUrl,
+                              });
+                              //e.stopPropagation();
+                              //await onAddToSceneClicked(downloadUrl, mediaId);
+                              //onClose(); // close the lightbox
+                              //onCloseGallery(); // close the gallery
+                            }}
+                          >
+                            Video
+                          </Button>
 
-                      <Button
-                        onClick={async (e) => {
-                          let _result = await FalKlingImageToVideo({
-                            image_media_token: mediaId,
-                            //base64_image: downloadUrl,
-                          });
-                          //e.stopPropagation();
-                          //await onAddToSceneClicked(downloadUrl, mediaId);
-                          //onClose(); // close the lightbox
-                          //onCloseGallery(); // close the gallery
-                        }}
-                      >
-                        Video
-                      </Button>
+                          <Button
+                            onClick={async (e) => {
+                              let _result = await FalHunyuanImageTo3d({
+                                image_media_token: mediaId,
+                                //base64_image: downloadUrl,
+                              });
+                              //e.stopPropagation();
+                              //await onAddToSceneClicked(downloadUrl, mediaId);
+                              //onClose(); // close the lightbox
+                              //onCloseGallery(); // close the gallery
+                            }}
+                          >
+                            3D
+                          </Button>
 
-                      <Button
-                        onClick={async (e) => {
-                          let _result = await FalHunyuanImageTo3d({
-                            image_media_token: mediaId,
-                            //base64_image: downloadUrl,
-                          });
-                          //e.stopPropagation();
-                          //await onAddToSceneClicked(downloadUrl, mediaId);
-                          //onClose(); // close the lightbox
-                          //onCloseGallery(); // close the gallery
-                        }}
-                      >
-                        3D
-                      </Button>
-
-                      {onAddToSceneClicked && downloadUrl && (
-                        <Button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            await onAddToSceneClicked(downloadUrl, mediaId);
-                            onClose(); // close the lightbox
-                            onCloseGallery(); // close the gallery
-                          }}
-                        >
-                          Add to Current Scene
-                        </Button>
+                          {onAddToSceneClicked && downloadUrl && (
+                            <Button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await onAddToSceneClicked(downloadUrl, mediaId);
+                                onClose(); // close the lightbox
+                                onCloseGallery(); // close the gallery
+                              }}
+                            >
+                              Add to Current Scene
+                            </Button>
+                          )}
+                        </>
                       )}
-
                       {downloadUrl &&
                         (onDownloadClicked ? (
                           <Button

@@ -506,7 +506,7 @@ export const PromptBoxVideo = ({
               panelTitle="Add Image"
               items={[
                 {
-                  label: "Choose from Assets",
+                  label: "Choose from library",
                   selected: false,
                   icon: <FontAwesomeIcon icon={faImages} className="h-4 w-4" />,
                   action: "gallery",
@@ -523,7 +523,7 @@ export const PromptBoxVideo = ({
             <textarea
               ref={textareaRef}
               rows={1}
-              placeholder="Choose the image from assets (+) and describe what you want to happen in the video..."
+              placeholder="Choose the image from library (+) and describe what you want to happen in the video..."
               className="text-md mb-2 max-h-[5.5em] flex-1 resize-none overflow-y-auto rounded bg-transparent pb-2 pr-2 pt-1 text-white placeholder-white placeholder:text-white/60 focus:outline-none"
               value={prompt}
               onChange={handleChange}
@@ -602,8 +602,8 @@ export const PromptBoxVideo = ({
         maxSelections={4}
         onUseSelected={handleGalleryImages}
         tabs={[
-          { id: "my-media", label: "My generations" },
-          { id: "uploads", label: "My uploads" },
+          { id: "my-media", label: "Generations" },
+          { id: "uploads", label: "Uploads" },
         ]}
         activeTab={activeGalleryTab}
         onTabChange={setActiveGalleryTab}

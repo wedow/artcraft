@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { invoke } from "@tauri-apps/api/core";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { downloadFileFromUrl } from "@storyteller/api";
 import {
@@ -48,7 +47,12 @@ import { twMerge } from "tailwind-merge";
 import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
 import { Modal } from "@storyteller/ui-modal";
 import { Signal } from "@preact/signals-react";
-import { CommandSuccessStatus, GetAppPreferences, SoraImageRemix, SoraImageRemixErrorType } from "@storyteller/tauri-api";
+import {
+  CommandSuccessStatus,
+  GetAppPreferences,
+  SoraImageRemix,
+  SoraImageRemixErrorType,
+} from "@storyteller/tauri-api";
 
 interface ReferenceImage {
   id: string;
@@ -75,10 +79,12 @@ interface PromptBox3DProps {
   handleCameraFocalLengthChange: (id: string, value: number) => void;
   onAspectRatioSelect: (newRatio: CameraAspectRatio) => void;
   setEnginePrompt: (prompt: string) => void;
-  snapshotCurrentFrame: ((shouldDownload?: boolean) => {
-    base64Snapshot: string;
-    file: File;
-  } | null) | undefined;
+  snapshotCurrentFrame:
+    | ((shouldDownload?: boolean) => {
+        base64Snapshot: string;
+        file: File;
+      } | null)
+    | undefined;
 }
 
 export const PromptBox3D = ({
@@ -169,7 +175,7 @@ export const PromptBox3D = ({
       prev.map((item) => ({
         ...item,
         selected: item.label === selectedItem.label,
-      })),
+      }))
     );
 
     // Map the selected label to the corresponding CameraAspectRatio enum value
@@ -193,7 +199,6 @@ export const PromptBox3D = ({
 
     onAspectRatioSelect(newRatio);
   };
-
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -388,11 +393,11 @@ export const PromptBox3D = ({
     setisEnqueueing(true);
 
     setTimeout(() => {
-      // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if 
+      // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
       // the backend hangs on a given request. (Sometimes Sora doesn't respond.) Ideally what we would do instead is only
       // force the prompt box to be enabled again as long as another request isn't running, ie. if we just fired off two
       // requests in succession, we wouldn't want to turn it off as the first one gets submitted.
-      console.debug('Turn off blocking of prompt box...');
+      console.debug("Turn off blocking of prompt box...");
       setisEnqueueing(false);
     }, 10000);
 
@@ -416,7 +421,7 @@ export const PromptBox3D = ({
           disable_system_prompt: !useSystemPrompt,
           prompt: prompt,
           maybe_additional_images: referenceImages.map(
-            (image) => image.mediaToken,
+            (image) => image.mediaToken
           ),
           maybe_number_of_samples: 1,
         });
@@ -433,7 +438,6 @@ export const PromptBox3D = ({
           toast.success("Image added to queue");
           setisEnqueueing(false);
           return;
-
         } else {
           const prefs = await GetAppPreferences();
           const soundName = prefs.preferences?.enqueue_failure_sound;
@@ -447,19 +451,23 @@ export const PromptBox3D = ({
           if ("error_type" in generateResponse) {
             switch (generateResponse.error_type) {
               case SoraImageRemixErrorType.SoraLoginRequired:
-                errorMessage = "You need to log into Sora to continue. See the settings menu.";
+                errorMessage =
+                  "You need to log into Sora to continue. See the settings menu.";
                 break;
               case SoraImageRemixErrorType.ServerError:
                 errorMessage = "Server error. Failed to enqueue image.";
                 break;
               case SoraImageRemixErrorType.TooManyConcurrentTasks:
-                errorMessage = "You have too many Sora image generation tasks running. Please wait a moment.";
+                errorMessage =
+                  "You have too many Sora image generation tasks running. Please wait a moment.";
                 break;
               case SoraImageRemixErrorType.SoraUsernameNotYetCreated:
-                errorMessage = "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
+                errorMessage =
+                  "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
                 break;
               case SoraImageRemixErrorType.SoraIsHavingProblems:
-                errorMessage = "Sora is having problems. Please try again later.";
+                errorMessage =
+                  "Sora is having problems. Please try again later.";
                 break;
             }
           }
@@ -467,7 +475,6 @@ export const PromptBox3D = ({
           setisEnqueueing(false);
           return;
         }
-
       }
 
       try {
@@ -813,8 +820,8 @@ export const PromptBox3D = ({
         maxSelections={4}
         onUseSelected={handleGalleryImages}
         tabs={[
-          { id: "my-media", label: "My generations" },
-          { id: "uploads", label: "My uploads" },
+          { id: "my-media", label: "Generations" },
+          { id: "uploads", label: "Uploads" },
         ]}
         activeTab={activeGalleryTab}
         onTabChange={setActiveGalleryTab}
