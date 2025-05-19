@@ -1,10 +1,9 @@
-use chrono::{DateTime, Utc};
-use serde_derive::Deserialize;
-use serde_json::Value;
 use crate::error::JwtError;
 use crate::utils::json_number_to_datetime::json_number_to_datetime;
+use chrono::{DateTime, Utc};
+use serde_json::Value;
 
-pub (crate) struct CommonPayload {
+pub struct CommonClaims {
   /// From the "iat" field
   pub created: DateTime<Utc>,
 
@@ -12,28 +11,13 @@ pub (crate) struct CommonPayload {
   pub expiration: DateTime<Utc>,
 }
 
-
-/// Claims normally present in JWTs
-//#[derive(Deserialize)]
-//struct CommonPayloadRaw {
-//  iat: i64,
-//  exp: i64,
-//}
-
-impl CommonPayload {
-  pub fn parse(raw_json_claims: &str) -> Result<Self, JwtError> {
-    //let default_claims : CommonPayloadRaw = serde_json::from_str(&raw_json_claims)?;
-
-    //let iat = DateTime::from_timestamp(default_claims.iat, 0)
-    //    .ok_or_else(|| JwtError::CommonFieldError("iat is not a valid timestamp"))?;
-
-    //let exp = DateTime::from_timestamp(default_claims.exp, 0)
-    //    .ok_or_else(|| JwtError::CommonFieldError("iat is not a valid timestamp"))?;
-
+impl CommonClaims {
+  pub fn from_json(raw_json_claims: &str) -> Result<Self, JwtError> {
     let claims : serde_json::Map<String, Value> = serde_json::from_str(&raw_json_claims)
         .map_err(|err| JwtError::CommonFieldError(
           format!("failure to parse claims json: {:?}", err)))?;
 
+    // NB: Some JWTs have "iat" and "exp" as integer numbers, some have them as floats
     let iat = {
       let iat = claims.get("iat")
           .map(|val| val.as_number())
@@ -61,9 +45,9 @@ impl CommonPayload {
 
 #[cfg(test)]
 mod tests {
-  use chrono::DateTime;
-  use crate::utils::common_payload::CommonPayload;
+  use crate::common_claims::CommonClaims;
   use crate::utils::raw_jwt_to_raw_json::raw_jwt_to_raw_json;
+  use chrono::DateTime;
 
   #[test]
   fn test_runwayml() {
@@ -71,7 +55,7 @@ mod tests {
 
     let json = raw_jwt_to_raw_json(jwt).unwrap();
     
-    let claims = CommonPayload::parse(&json).unwrap();
+    let claims = CommonClaims::from_json(&json).unwrap();
     
     // jwt payload: 
     // {
@@ -117,7 +101,7 @@ mod tests {
     //  - "nbf": 1744936471, - not before, don't use before date
     //  - "exp": 1745800472, - in 5 days, expiry
 
-    let claims = CommonPayload::parse(&json).unwrap();
+    let claims = CommonClaims::from_json(&json).unwrap();
     
     assert_eq!(claims.created, DateTime::from_timestamp(1744936471, 0).unwrap());
     assert_eq!(claims.expiration, DateTime::from_timestamp(1745800472, 0).unwrap());

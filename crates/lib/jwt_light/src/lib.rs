@@ -7,6 +7,6 @@
 
 pub (crate) mod utils;
 
-pub mod basic_jwt_claims;
+pub mod common_claims;
 pub mod error;
-pub mod jwt_claims;
+pub mod parse_jwt_claims_trait;

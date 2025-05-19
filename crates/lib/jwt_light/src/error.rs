@@ -13,6 +13,8 @@ pub enum JwtError {
   Utf8Error(std::string::FromUtf8Error),
   /// Error parsing a common field (iat, exp, etc.)
   CommonFieldError(String),
+  /// Error parsing a custom claims field.
+  CustomClaimsFieldError(String),
 }
 
 impl Error for JwtError {}
@@ -25,6 +27,7 @@ impl Display for JwtError {
       Self::Base64DecodeError(err) => { write!(f, "JwtError::Base64DecodeError : {:?}", err) }
       Self::Utf8Error(err) => { write!(f, "JwtError::Utf8Error : {:?}", err) }
       Self::CommonFieldError(reason) => { write!(f, "JwtError::CommonFieldError : {}", reason) }
+      Self::CustomClaimsFieldError(reason) => { write!(f, "JwtError::CustomClaimsFieldError : {}", reason) }
     }
   }
 }
