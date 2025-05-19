@@ -631,8 +631,8 @@ export const PromptBox2D = ({
         maxSelections={4}
         onUseSelected={handleGalleryImages}
         tabs={[
-          { id: "my-media", label: "My generations" },
-          { id: "uploads", label: "My uploads" },
+          { id: "my-media", label: "Generations" },
+          { id: "uploads", label: "Uploads" },
         ]}
         activeTab={activeGalleryTab}
         onTabChange={setActiveGalleryTab}

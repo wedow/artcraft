@@ -144,7 +144,7 @@ export const TopBar = ({
             {currentAppTabId === "3D" ? (
               <SceneTitleInput pageName={pageName} />
             ) : (
-              <h1>{currentAppTabId === "2D" ? "Canvas" : "Generate"}</h1>
+              <h1>{currentAppTabId === "2D" ? "Canvas" : "Generate Video"}</h1>
             )}
           </div>
 
@@ -186,8 +186,9 @@ export const TopBar = ({
         onClose={() => setIsLibraryModalOpen(false)}
         mode="view"
         tabs={[
-          { id: "my-media", label: "My generations" },
-          { id: "uploads", label: "My uploads" },
+          { id: "my-media", label: "Generations" },
+          { id: "uploads", label: "Uploads" },
+          { id: "videos", label: "Videos" },
         ]}
         activeTab={activeLibraryTab}
         onTabChange={setActiveLibraryTab}

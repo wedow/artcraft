@@ -132,7 +132,10 @@ export const GalleryModal = React.memo(
         setLoading(true);
         try {
           const response = await api.listUserMediaFiles({
-            filter_media_classes: [FilterMediaClasses.IMAGE],
+            filter_media_classes:
+              activeTab === "videos"
+                ? [FilterMediaClasses.VIDEO]
+                : [FilterMediaClasses.IMAGE],
             username: username,
             include_user_uploads: activeTab === "uploads",
             user_uploads_only: activeTab === "uploads",
@@ -145,10 +148,13 @@ export const GalleryModal = React.memo(
             const newItems = response.data.map((item: any) => ({
               id: item.token,
               label: item.maybe_title || "Image Generation",
-              thumbnail: item.media_links.maybe_thumbnail_template?.replace(
-                "{WIDTH}",
-                thumbnail_size.toString()
-              ),
+              thumbnail:
+                activeTab === "videos"
+                  ? item.media_links.maybe_video_previews.still
+                  : item.media_links.maybe_thumbnail_template?.replace(
+                      "{WIDTH}",
+                      thumbnail_size.toString()
+                    ),
               fullImage: item.media_links.cdn_url,
               createdAt: item.created_at,
             }));
@@ -252,15 +258,23 @@ export const GalleryModal = React.memo(
                       </h3>
                       <div
                         className={twMerge(
-                          "grid grid-cols-5 gap-1",
-                          mode === "view" && "grid-cols-5"
+                          activeTab === "videos"
+                            ? "grid grid-cols-3 gap-2"
+                            : "grid grid-cols-5 gap-1",
+                          mode === "view" &&
+                            (activeTab === "videos"
+                              ? "grid-cols-3"
+                              : "grid-cols-5")
                         )}
                       >
                         {dateItems.map((item) => (
                           <button
                             key={item.id}
                             className={twMerge(
-                              "group relative aspect-square overflow-hidden rounded-md border-[3px] transition-all",
+                              "group relative overflow-hidden rounded-md border-[3px] transition-all",
+                              activeTab === "videos"
+                                ? "aspect-video"
+                                : "aspect-square",
                               mode === "select" &&
                                 selectedItemIds.includes(item.id)
                                 ? "border-primary"
@@ -277,10 +291,14 @@ export const GalleryModal = React.memo(
                                 </div>
                               ) : (
                                 <img
-                                  //src={item.thumbnail}
-                                  src={item.fullImage || item.thumbnail}
+                                  src={item.thumbnail || item.fullImage || ""}
                                   alt={item.label}
-                                  className="h-full w-full object-cover"
+                                  className={twMerge(
+                                    "h-full w-full bg-black/30",
+                                    activeTab === "videos"
+                                      ? "object-contain"
+                                      : "object-cover"
+                                  )}
                                   onError={() =>
                                     handleImageError(item.thumbnail!)
                                   }
@@ -351,6 +369,7 @@ export const GalleryModal = React.memo(
           mediaId={lightboxImage?.id}
           onDownloadClicked={onDownloadClicked}
           onAddToSceneClicked={onAddToSceneClicked}
+          activeTab={activeTab}
         />
       </>
     );

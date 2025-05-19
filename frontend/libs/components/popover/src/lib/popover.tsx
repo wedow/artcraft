@@ -230,7 +230,7 @@ export const PopoverMenu = ({
               >
                 <div
                   className={twMerge(
-                    "z-10 w-56 mt-2 rounded-lg bg-[#46464B] p-1.5 shadow-lg",
+                    "z-10 min-w-48 mt-2 rounded-lg bg-[#46464B] p-1.5 shadow-lg",
                     position === "top" ? "mb-2" : "mt-2",
                     panelClassName
                   )}
