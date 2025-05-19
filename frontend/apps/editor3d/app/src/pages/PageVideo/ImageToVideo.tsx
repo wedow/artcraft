@@ -40,17 +40,6 @@ const ImageToVideo = () => {
       <div className="h-full w-full p-4">
         <div className="flex h-full w-full flex-col items-center justify-center rounded-md bg-gray-800">
           <PromptBoxVideo
-            uploadImage={async (file: File) => {
-              // TODO: Implement file upload logic
-              console.log("Uploading file:", file);
-              return { url: "", mediaToken: "" };
-            }}
-            getCanvasRenderBitmap={() => {}}
-            EncodeImageBitmapToBase64={async (bitmap: ImageBitmap) => {
-              // TODO: Implement bitmap encoding
-              console.log("Encoding bitmap to base64");
-              return "";
-            }}
             useJobContext={() => {
               // TODO: Implement job context logic
               console.log("Using job context");
