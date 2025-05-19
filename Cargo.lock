@@ -10302,6 +10302,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "runwayml_client"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "chrono",
+ "cookie 0.18.1",
+ "crockford",
+ "errors",
+ "filesys",
+ "hex-literal",
+ "idempotency",
+ "log",
+ "once_cell",
+ "rand 0.9.1",
+ "reqwest 0.12.15",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha3",
+ "subprocess_common",
+ "testing",
+ "thiserror 2.0.12",
+ "tokio",
+ "toml 0.8.22",
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "rust-embed"
 version = "8.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
