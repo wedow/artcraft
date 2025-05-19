@@ -36,7 +36,7 @@ interface Props {
 const appTabs: TabItem[] = [
   { id: "2D", label: "2D" },
   { id: "3D", label: "3D" },
-  { id: "VIDEO", label: "Video" },
+  // { id: "VIDEO", label: "Video" },
 ];
 
 export const TopBar = ({
