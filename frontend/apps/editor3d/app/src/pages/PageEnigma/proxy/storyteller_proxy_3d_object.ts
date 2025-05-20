@@ -29,6 +29,8 @@ export interface ObjectJSON {
   locked: boolean;
   visible: boolean | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rigData: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user_data: Record<string, any>;
 }
 
@@ -49,6 +51,8 @@ export class StoryTellerProxy3DObject {
   specular: number;
   locked: boolean;
   visible: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rigData: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userData: Record<string, any>;
 
@@ -71,6 +75,7 @@ export class StoryTellerProxy3DObject {
     this.specular = 0.5;
     this.locked = false;
     this.visible = true;
+    this.rigData = undefined;
     this.userData = {};
     this.userData.media_file_type = MediaFileType.None;
   }
@@ -129,6 +134,7 @@ export class StoryTellerProxy3DObject {
       locked: this.locked,
       visible: this.visible,
       user_data: this.userData,
+      rigData: this.rigData,
     };
     return json;
   }
