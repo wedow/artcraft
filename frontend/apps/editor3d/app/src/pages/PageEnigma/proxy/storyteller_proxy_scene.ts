@@ -5,6 +5,7 @@ import {
   ObjectJSON,
 } from "./storyteller_proxy_3d_object";
 import Scene from "../Editor/scene";
+import { BoneJSONHelper } from "../Editor/KinHelpers/BoneJSONHelper";
 
 interface LookUpDictionary {
   [key: string]: StoryTellerProxy3DObject;
@@ -49,6 +50,10 @@ export class StoryTellerProxyScene {
     proxyObject3D.locked = child.userData["locked"];
     proxyObject3D.visible = child.visible;
     proxyObject3D.userData = child.userData;
+    // Add rig data if present
+    const boneHelper = new BoneJSONHelper(child);
+    proxyObject3D.rigData = boneHelper.toJSON();
+
     const json_data = await proxyObject3D.toJSON();
     return json_data;
   }
@@ -148,6 +153,14 @@ export class StoryTellerProxyScene {
               );
               // Add any missing userdata back to the object
               obj.userData = json_object.user_data;
+
+              // Add rig data if present
+              if (json_object.rigData) {
+                const boneHelper = new BoneJSONHelper(obj);
+                boneHelper.poseFromBoneJSON(json_object.rigData);
+              } else {
+                console.log("No rig data found");
+              }
             } else if (token.includes("Point::")) {
               const keyframe_uuid = token.replace("Point::", "");
               obj = this.scene.createPoint(
