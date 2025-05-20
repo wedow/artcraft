@@ -196,12 +196,15 @@ export const PromptBoxVideo = ({
   };
 
   const handleEnqueue = async () => {
+
     setIsEnqueueing(true);
+
+    console.log("generateResponse", generateResponse);
+
     const generateResponse = await FalKlingImageToVideo({
       image_media_token: referenceImages[0].mediaToken,
     });
 
-    console.log("generateResponse", generateResponse);
     onEnqueuePressed?.();
     if (generateResponse.status === CommandSuccessStatus.Success) {
       const prefs = await GetAppPreferences();
@@ -245,6 +248,7 @@ export const PromptBoxVideo = ({
     //   }
     //   toast.error(errorMessage);
     // }
+
     setIsEnqueueing(false);
   };
 
