@@ -187,7 +187,7 @@ export const ControlsTopButtons = () => {
   return (
     <div className="flex flex-col gap-2 pl-2 pt-2">
       <div className="flex gap-1.5">
-        {/* <ButtonDropdown
+        <ButtonDropdown
           label="File"
           icon={faFile}
           className="shadow-xl"
@@ -222,9 +222,9 @@ export const ControlsTopButtons = () => {
             },
             {
               disabled:
-                !scene.value.isModified ||
-                scene.value.ownerToken ===
-                  authentication.userInfo.value?.user_token,
+                !(scene.value.isModified &&
+                  (scene.value.ownerToken === undefined || scene.value.ownerToken ===
+                    authentication.userInfo.value?.user_token)),
               // save scene should be disabled if there are no changes
               label: "Save scene",
               description: "Ctrl+S",
@@ -285,7 +285,7 @@ export const ControlsTopButtons = () => {
               },
             },
           ]}
-        /> */}
+        />
 
         <Button
           icon={outlinerIsShowing.value ? faCheckSquare : faSquare}
