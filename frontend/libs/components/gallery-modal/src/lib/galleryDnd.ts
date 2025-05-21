@@ -24,6 +24,13 @@ const dragState: DragState = {
 
 const dragThreshold = 5;
 
+export let onImageDrop:
+  | ((item: GalleryItem, position: { x: number; y: number }) => void)
+  | null = null;
+export function setOnImageDrop(cb: typeof onImageDrop) {
+  onImageDrop = cb;
+}
+
 function onPointerDown(event: React.PointerEvent, item: GalleryItem) {
   if (event.button !== 0) return;
   dragState.item = item;
@@ -52,7 +59,16 @@ function onPointerMove(event: PointerEvent) {
   dragState.currY = event.pageY;
 }
 
-function onPointerUp() {
+function onPointerUp(event: PointerEvent) {
+  if (
+    dragState.item &&
+    dragState.isDragging &&
+    dragState.item.mediaClass === "image"
+  ) {
+    if (onImageDrop) {
+      onImageDrop(dragState.item, { x: event.pageX, y: event.pageY });
+    }
+  }
   dragState.item = null;
   dragState.isDragging = false;
   galleryModalVisibleDuringDrag.value = galleryReopenAfterDragSignal.value;
