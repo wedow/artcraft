@@ -86,7 +86,6 @@ export const PromptBox2D = ({
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [activeGalleryTab, setActiveGalleryTab] = useState("my-media");
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
@@ -630,12 +629,6 @@ export const PromptBox2D = ({
         onSelectItem={handleImageSelect}
         maxSelections={4}
         onUseSelected={handleGalleryImages}
-        tabs={[
-          { id: "my-media", label: "Generations" },
-          { id: "uploads", label: "Uploads" },
-        ]}
-        activeTab={activeGalleryTab}
-        onTabChange={setActiveGalleryTab}
         onDownloadClicked={downloadFileFromUrl}
       />
     </>

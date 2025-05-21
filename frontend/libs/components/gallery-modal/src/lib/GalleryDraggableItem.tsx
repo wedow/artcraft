@@ -11,7 +11,7 @@ type ModalMode = "select" | "view";
 interface GalleryDraggableItemProps {
   item: GalleryItem;
   mode: ModalMode;
-  activeTab: string;
+  activeFilter: string;
   selected: boolean;
   onClick: () => void;
   onImageError: () => void;
@@ -21,7 +21,7 @@ interface GalleryDraggableItemProps {
 export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
   item,
   mode,
-  activeTab,
+  activeFilter,
   selected,
   onClick,
   onImageError,
@@ -76,7 +76,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
     <div
       className={twMerge(
         "group relative w-full",
-        activeTab === "videos" ? "aspect-video" : "aspect-square"
+        activeFilter === "video" ? "aspect-video" : "aspect-square"
       )}
     >
       {/* Media class badge on hover */}
@@ -92,7 +92,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           tabIndex={0}
           className={twMerge(
             "w-full group relative overflow-visible rounded-md border-[3px] transition-all focus:outline-none focus:ring-2 focus:ring-primary",
-            activeTab === "videos" ? "aspect-video" : "aspect-square",
+            activeFilter === "video" ? "aspect-video" : "aspect-square",
             selected
               ? "border-primary"
               : "border-transparent hover:border-primary"
@@ -115,7 +115,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
                 alt={item.label}
                 className={twMerge(
                   "h-full w-full bg-black/30",
-                  activeTab === "videos" ? "object-contain" : "object-cover"
+                  activeFilter === "video" ? "object-contain" : "object-cover"
                 )}
                 draggable={false}
                 onError={onImageError}
@@ -135,7 +135,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           className="-mt-3 bg-black/90"
           content={
             <div className="flex flex-col items-center text-xs whitespace-nowrap">
-              {activeTab !== "videos" && (
+              {activeFilter !== "video" && (
                 <span>
                   <span className="font-bold">Drag</span>
                   <span className="opacity-50"> to add</span>
@@ -153,7 +153,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
             tabIndex={0}
             className={twMerge(
               "w-full group relative overflow-visible rounded-md border-[3px] transition-all focus:outline-none focus:ring-2 focus:ring-primary",
-              activeTab === "videos" ? "aspect-video" : "aspect-square",
+              activeFilter === "video" ? "aspect-video" : "aspect-square",
               selected
                 ? "border-primary"
                 : "border-transparent hover:border-primary"
@@ -176,7 +176,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
                   alt={item.label}
                   className={twMerge(
                     "h-full w-full bg-black/30",
-                    activeTab === "videos" ? "object-contain" : "object-cover"
+                    activeFilter === "video" ? "object-contain" : "object-cover"
                   )}
                   draggable={false}
                   onError={onImageError}

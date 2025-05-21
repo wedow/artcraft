@@ -24,6 +24,8 @@ import { InstallSounds } from "~/pages/PageEnigma/InstallSounds";
 import { useImageGenerationFailureEvent } from "./TauriEvents/useImageGenerationFailureEvent";
 import { useImageGenerationSuccessEvent } from "./TauriEvents/useImageGenerationSuccessEvent";
 import { PageEditor } from "~/pages/PageEnigma/PageEditor";
+import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
+
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
   useActiveJobs();
@@ -108,6 +110,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
       <EngineProvider sceneToken={sceneToken}>
         <PageEditor />
         <DragComponent />
+        <GalleryDragComponent />
         <PrecisionSelector
           showSignal={showPrecisionSelector}
           coordSignal={precisionSelectorMenuCoords}

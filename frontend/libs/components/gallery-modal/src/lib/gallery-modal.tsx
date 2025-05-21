@@ -1,6 +1,5 @@
 import { Modal } from "@storyteller/ui-modal";
 import { LightboxModal } from "@storyteller/ui-lightbox-modal";
-import { TabSelector } from "@storyteller/ui-tab-selector";
 import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
@@ -12,12 +11,21 @@ import {
 } from "@storyteller/api";
 import { twMerge } from "tailwind-merge";
 import { GalleryDraggableItem } from "./GalleryDraggableItem";
-import { GalleryDragComponent } from "./GalleryDragComponent";
 import { useSignals } from "@preact/signals-react/runtime";
 import {
   galleryModalVisibleDuringDrag,
   galleryReopenAfterDragSignal,
 } from "./galleryModalSignals";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFilter,
+  faBorderAll,
+  faImage,
+  faVideo,
+  faCube,
+  faUpload,
+} from "@fortawesome/pro-solid-svg-icons";
+import { PopoverMenu } from "@storyteller/ui-popover";
 
 export interface GalleryItem {
   id: string;
@@ -42,9 +50,6 @@ interface GalleryModalProps {
   onSelectItem?: (id: string) => void;
   maxSelections?: number;
   onUseSelected?: (selectedItems: GalleryItem[]) => void;
-  tabs: { id: string; label: string }[];
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
   onDownloadClicked?: (url: string) => Promise<void>;
   onAddToSceneClicked?: (
     url: string,
@@ -61,9 +66,6 @@ export const GalleryModal = React.memo(
     onSelectItem,
     maxSelections = 4,
     onUseSelected,
-    tabs,
-    activeTab,
-    onTabChange,
     onDownloadClicked,
     onAddToSceneClicked,
   }: GalleryModalProps) => {
@@ -132,37 +134,70 @@ export const GalleryModal = React.memo(
       }
     }, [usersApi, isOpen]);
 
+    // filter state
+    const FILTERS = [
+      { id: "all", label: "All", icon: <FontAwesomeIcon icon={faBorderAll} /> },
+      { id: "image", label: "Image", icon: <FontAwesomeIcon icon={faImage} /> },
+      { id: "video", label: "Video", icon: <FontAwesomeIcon icon={faVideo} /> },
+      { id: "3d", label: "3D Object", icon: <FontAwesomeIcon icon={faCube} /> },
+      {
+        id: "uploaded",
+        label: "Uploaded",
+        icon: <FontAwesomeIcon icon={faUpload} />,
+      },
+    ];
+    const [activeFilter, setActiveFilter] = useState("all");
+
+    // Map filter to API/media class
+    const getFilterMediaClass = (filter: string) => {
+      switch (filter) {
+        case "image":
+          return [FilterMediaClasses.IMAGE];
+        case "video":
+          return [FilterMediaClasses.VIDEO];
+        case "uploaded":
+          return [FilterMediaClasses.IMAGE, FilterMediaClasses.VIDEO];
+        default:
+          return undefined;
+      }
+    };
+
     useEffect(() => {
       const loadItems = async () => {
         if (!username) return;
         setLoading(true);
         try {
           let response = null;
-          if (activeTab === "videos") {
+          const filterMediaClasses = getFilterMediaClass(activeFilter);
+          if (activeFilter === "uploaded") {
             response = await api.listUserMediaFiles({
-              filter_media_classes: [FilterMediaClasses.VIDEO],
+              filter_media_classes: filterMediaClasses,
               username: username,
               include_user_uploads: true,
               user_uploads_only: true,
             });
+          } else if (filterMediaClasses) {
+            response = await api.listUserMediaFiles({
+              filter_media_classes: filterMediaClasses,
+              username: username,
+              include_user_uploads: false,
+              user_uploads_only: false,
+            });
           } else {
             response = await api.listUserMediaFiles({
-              filter_media_classes: [FilterMediaClasses.IMAGE],
               username: username,
-              include_user_uploads: activeTab === "uploads",
-              user_uploads_only: activeTab === "uploads",
+              include_user_uploads: false,
+              user_uploads_only: false,
             });
           }
 
           if (response.success && response.data) {
-            // Print the JSON response for debugging
-            console.log("Media files response:", response.data);
             const thumbnail_size = 250;
             const newItems = response.data.map((item: any) => ({
               id: item.token,
               label: item.maybe_title || "Image Generation",
               thumbnail:
-                activeTab === "videos"
+                item.media_class === "video"
                   ? item.media_links.maybe_video_previews.still
                   : item.media_links.maybe_thumbnail_template?.replace(
                       "{WIDTH}",
@@ -174,11 +209,8 @@ export const GalleryModal = React.memo(
                 item.media_class ||
                 (item.filter_media_classes
                   ? item.filter_media_classes[0]
-                  : activeTab === "videos"
-                  ? "video"
                   : "image"),
             }));
-            console.log("Media files response:", newItems);
             setGroupedItems(groupItemsByDate(newItems));
           }
         } catch (error) {
@@ -190,16 +222,7 @@ export const GalleryModal = React.memo(
       if (isOpen) {
         loadItems();
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab, isOpen, username]);
-
-    // useEffect(() => {
-    //   console.log("LibraryModal render caused by:", {
-    //     isOpen,
-    //     activeTab,
-    //     selectedItemIds,
-    //   });
-    // }, [isOpen, activeTab, selectedItemIds]);
+    }, [activeFilter, isOpen, username]);
 
     const handleItemClick = useCallback(
       (item: GalleryItem) => {
@@ -234,7 +257,6 @@ export const GalleryModal = React.memo(
 
     return (
       <>
-        <GalleryDragComponent />
         <Modal
           isOpen={
             mode === "view"
@@ -285,12 +307,35 @@ export const GalleryModal = React.memo(
                     </div>
                   )}
                 </div>
-                <div className="flex justify-end gap-1.5 items-center">
-                  <TabSelector
-                    tabs={tabs}
-                    activeTab={activeTab}
-                    onTabChange={onTabChange}
-                    className="w-auto relative z-[51] mr-3"
+                <div className="flex justify-end gap-2 items-center">
+                  {/* Slider */}
+                  <div className="w-32 mr-2 relative z-[51]">
+                    <input type="range" min={0} max={100} className="w-full" />
+                  </div>
+                  {/* Filter popover */}
+                  <PopoverMenu
+                    panelTitle="Filter"
+                    position="bottom"
+                    align="end"
+                    buttonClassName="relative z-[51] mr-3"
+                    panelClassName="min-w-36"
+                    items={FILTERS.map((f) => ({
+                      label: f.label,
+                      selected: activeFilter === f.id,
+                      icon: f.icon,
+                    }))}
+                    onSelect={(item) => {
+                      const filter = FILTERS.find(
+                        (f) => f.label === item.label
+                      );
+                      if (filter) setActiveFilter(filter.id);
+                    }}
+                    triggerIcon={<FontAwesomeIcon icon={faFilter} />}
+                    triggerLabel={
+                      FILTERS.find((f) => f.id === activeFilter)?.label
+                    }
+                    mode="toggle"
+                    showIconsInList={true}
                   />
                   {mode === "view" && <Modal.ExpandButton />}
                   <CloseButton onClick={onClose} className="relative z-[51]" />
@@ -314,29 +359,35 @@ export const GalleryModal = React.memo(
                       </h3>
                       <div
                         className={twMerge(
-                          activeTab === "videos"
+                          activeFilter === "video"
                             ? "grid grid-cols-3 gap-2"
                             : "grid grid-cols-5 gap-1",
                           mode === "view" &&
-                            (activeTab === "videos"
+                            (activeFilter === "video"
                               ? "grid-cols-3"
                               : "grid-cols-5")
                         )}
                       >
-                        {dateItems.map((item) => (
-                          <GalleryDraggableItem
-                            key={item.id}
-                            item={item}
-                            mode={mode}
-                            activeTab={activeTab}
-                            selected={selectedItemIds.includes(item.id)}
-                            onClick={() => handleItemClick(item)}
-                            onImageError={() =>
-                              handleImageError(item.thumbnail!)
-                            }
-                            disableTooltipAndBadge={mode === "select"}
-                          />
-                        ))}
+                        {dateItems
+                          .filter((item) => {
+                            if (activeFilter === "3d")
+                              return item.mediaClass === "3d";
+                            return true;
+                          })
+                          .map((item) => (
+                            <GalleryDraggableItem
+                              key={item.id}
+                              item={item}
+                              mode={mode}
+                              activeFilter={activeFilter}
+                              selected={selectedItemIds.includes(item.id)}
+                              onClick={() => handleItemClick(item)}
+                              onImageError={() =>
+                                handleImageError(item.thumbnail!)
+                              }
+                              disableTooltipAndBadge={mode === "select"}
+                            />
+                          ))}
                       </div>
                     </div>
                   ))}
@@ -386,7 +437,7 @@ export const GalleryModal = React.memo(
           mediaId={lightboxImage?.id}
           onDownloadClicked={onDownloadClicked}
           onAddToSceneClicked={onAddToSceneClicked}
-          activeTab={activeTab}
+          activeTab={activeFilter}
         />
       </>
     );

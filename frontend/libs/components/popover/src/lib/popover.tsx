@@ -8,7 +8,11 @@ import {
 import { twMerge } from "tailwind-merge";
 import { Button } from "@storyteller/ui-button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronUp, faCircleCheck } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faCheck,
+  faChevronUp,
+  faCircleCheck,
+} from "@fortawesome/pro-solid-svg-icons";
 
 export interface PopoverItem {
   label: string;
@@ -363,14 +367,35 @@ export const PopoverMenu = ({
                         >
                           <div className="flex items-center gap-2 truncate">
                             {showIconsInList && item.icon}
-                            <span className="truncate">{item.label}</span>
+                            {mode === "toggle" ? (
+                              <span
+                                className={twMerge(
+                                  "truncate",
+                                  item.selected ? "text-white" : "text-white/70"
+                                )}
+                              >
+                                {item.label}
+                              </span>
+                            ) : (
+                              <span className="truncate">{item.label}</span>
+                            )}
                           </div>
                           {mode === "toggle" && (
-                            <input
-                              type="radio"
-                              checked={item.selected}
-                              readOnly
-                            />
+                            <span
+                              className={twMerge(
+                                "ml-2 h-5 w-5 rounded-full border flex items-center justify-center transition-colors",
+                                item.selected
+                                  ? "border-primary bg-primary"
+                                  : "border-transparent bg-transparent"
+                              )}
+                            >
+                              {item.selected && (
+                                <FontAwesomeIcon
+                                  icon={faCheck}
+                                  className="text-white text-xs font-bold"
+                                />
+                              )}
+                            </span>
                           )}
                         </Button>
                       ))}

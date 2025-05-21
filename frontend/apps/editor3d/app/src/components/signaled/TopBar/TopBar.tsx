@@ -57,7 +57,6 @@ export const TopBar = ({
     useLocation().pathname,
     useParams(),
   );
-  const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const [url, setUrl] = useState<string>("");
@@ -189,13 +188,6 @@ export const TopBar = ({
         isOpen={galleryModalVisibleDuringDrag.value}
         onClose={() => (galleryModalVisibleDuringDrag.value = false)}
         mode="view"
-        tabs={[
-          { id: "my-media", label: "Generations" },
-          { id: "uploads", label: "Uploads" },
-          { id: "videos", label: "Videos" },
-        ]}
-        activeTab={activeLibraryTab}
-        onTabChange={setActiveLibraryTab}
         onDownloadClicked={downloadFileFromUrl}
         onAddToSceneClicked={handleAddToScene}
       />

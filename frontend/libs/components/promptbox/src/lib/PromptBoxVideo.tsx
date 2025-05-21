@@ -15,14 +15,9 @@ import {
   faSpinnerThird,
   faTimes,
   faPlus,
-  faUpload,
   faImages,
 } from "@fortawesome/pro-solid-svg-icons";
-import {
-  faRectangleVertical,
-  faSquare,
-  faRectangle,
-} from "@fortawesome/pro-regular-svg-icons";
+import { faRectangle } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
@@ -82,7 +77,6 @@ export const PromptBoxVideo = ({
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [activeGalleryTab, setActiveGalleryTab] = useState("my-media");
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
@@ -424,12 +418,6 @@ export const PromptBoxVideo = ({
         onSelectItem={handleImageSelect}
         maxSelections={4}
         onUseSelected={handleGalleryImages}
-        tabs={[
-          { id: "my-media", label: "Generations" },
-          { id: "uploads", label: "Uploads" },
-        ]}
-        activeTab={activeGalleryTab}
-        onTabChange={setActiveGalleryTab}
         onDownloadClicked={downloadFileFromUrl}
       />
     </>

@@ -142,7 +142,6 @@ export const PromptBox3D = ({
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [activeGalleryTab, setActiveGalleryTab] = useState("my-media");
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -819,12 +818,6 @@ export const PromptBox3D = ({
         onSelectItem={handleImageSelect}
         maxSelections={4}
         onUseSelected={handleGalleryImages}
-        tabs={[
-          { id: "my-media", label: "Generations" },
-          { id: "uploads", label: "Uploads" },
-        ]}
-        activeTab={activeGalleryTab}
-        onTabChange={setActiveGalleryTab}
         onDownloadClicked={downloadFileFromUrl}
       />
     </>
