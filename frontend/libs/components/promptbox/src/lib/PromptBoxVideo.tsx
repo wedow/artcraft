@@ -196,7 +196,6 @@ export const PromptBoxVideo = ({
   };
 
   const handleEnqueue = async () => {
-
     setIsEnqueueing(true);
 
     console.log("generateResponse", generateResponse);

@@ -236,7 +236,11 @@ export const GalleryModal = React.memo(
       <>
         <GalleryDragComponent />
         <Modal
-          isOpen={isOpen && galleryModalVisibleDuringDrag.value}
+          isOpen={
+            mode === "view"
+              ? isOpen && galleryModalVisibleDuringDrag.value
+              : isOpen
+          }
           onClose={onClose}
           className={twMerge(
             "h-[620px] max-w-4xl",
@@ -244,14 +248,15 @@ export const GalleryModal = React.memo(
           )}
           childPadding={false}
           showClose={false}
-          backdropClassName="bg-transparent"
-          draggable={true}
-          allowBackgroundInteraction={true}
+          draggable={mode === "view"}
+          allowBackgroundInteraction={mode === "view" ? true : false}
           closeOnOutsideClick={false}
         >
-          <Modal.DragHandle>
-            <div className="absolute left-0 top-0 z-[50] h-[60px] w-full cursor-move" />
-          </Modal.DragHandle>
+          {mode === "view" && (
+            <Modal.DragHandle>
+              <div className="absolute left-0 top-0 z-[50] h-[60px] w-full cursor-move" />
+            </Modal.DragHandle>
+          )}
           <div className="flex h-full flex-col">
             <div className="border-b border-white/10 p-4 py-3">
               <div className="grid grid-cols-2 items-center">
@@ -259,23 +264,26 @@ export const GalleryModal = React.memo(
                   <h2 className="text-xl font-semibold">
                     {mode === "select" ? "Select Images" : "Gallery"}
                   </h2>
-                  <div className="flex items-center relative z-[51]">
-                    <input
-                      type="checkbox"
-                      id="gallery-reopen-after-drag"
-                      checked={galleryReopenAfterDragSignal.value}
-                      onChange={(e) =>
-                        (galleryReopenAfterDragSignal.value = e.target.checked)
-                      }
-                      className="h-4 w-4 cursor-pointer rounded-lg border-gray-300 bg-gray-700 text-primary focus:ring-primary"
-                    />
-                    <label
-                      htmlFor="gallery-reopen-after-drag"
-                      className="ml-2 cursor-pointer select-none text-sm text-white/70"
-                    >
-                      Reopen after adding
-                    </label>
-                  </div>
+                  {mode === "view" && (
+                    <div className="flex items-center relative z-[51]">
+                      <input
+                        type="checkbox"
+                        id="gallery-reopen-after-drag"
+                        checked={galleryReopenAfterDragSignal.value}
+                        onChange={(e) =>
+                          (galleryReopenAfterDragSignal.value =
+                            e.target.checked)
+                        }
+                        className="h-4 w-4 cursor-pointer rounded-lg border-gray-300 bg-gray-700 text-primary focus:ring-primary"
+                      />
+                      <label
+                        htmlFor="gallery-reopen-after-drag"
+                        className="ml-2 cursor-pointer select-none text-sm text-white/70"
+                      >
+                        Reopen after adding
+                      </label>
+                    </div>
+                  )}
                 </div>
                 <div className="flex justify-end gap-1.5 items-center">
                   <TabSelector
@@ -284,7 +292,7 @@ export const GalleryModal = React.memo(
                     onTabChange={onTabChange}
                     className="w-auto relative z-[51] mr-3"
                   />
-                  <Modal.ExpandButton />
+                  {mode === "view" && <Modal.ExpandButton />}
                   <CloseButton onClick={onClose} className="relative z-[51]" />
                 </div>
               </div>
@@ -326,6 +334,7 @@ export const GalleryModal = React.memo(
                             onImageError={() =>
                               handleImageError(item.thumbnail!)
                             }
+                            disableTooltipAndBadge={mode === "select"}
                           />
                         ))}
                       </div>
