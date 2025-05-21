@@ -31,6 +31,8 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
   const dragStarted = useRef(false);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    // Disable dragging for video items
+    if (item.mediaClass === "video") return;
     dragStarted.current = false;
     const moveListener = (moveEvent: PointerEvent) => {
       const dx = moveEvent.pageX - event.pageX;
@@ -71,10 +73,15 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
   };
 
   return (
-    <div className="group relative aspect-square w-full">
+    <div
+      className={twMerge(
+        "group relative w-full",
+        activeTab === "videos" ? "aspect-video" : "aspect-square"
+      )}
+    >
       {/* Media class badge on hover */}
       {!disableTooltipAndBadge && item.mediaClass && (
-        <div className="pointer-events-none absolute right-1 top-1 z-20 rounded-full bg-black/50 backdrop-blur-lg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <div className="pointer-events-none absolute right-2 top-2 z-20 rounded-full bg-black/50 backdrop-blur-lg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           {item.mediaClass}
         </div>
       )}
