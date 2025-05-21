@@ -55,12 +55,13 @@ import {
   topNavMediaUrl,
 } from "~/components/signaled/TopBar/TopBar";
 import { setOnImageDrop } from "../../../../../../libs/components/gallery-modal/src/lib/galleryDnd";
-import { uploadPlane } from "~/components/reusable/UploadModalMedia/uploadPlane";
+import { uploadPlaneFromMediaToken } from "~/components/reusable/UploadModalMedia/uploadPlane";
 import { addObject } from "./signals/objectGroup/addObject";
 import { AssetType } from "~/enums";
 import { v4 as uuidv4 } from "uuid";
 import { MediaItem } from "~/pages/PageEnigma/models";
 import { GalleryItem } from "../../../../../../libs/components/gallery-modal/src/lib/gallery-modal";
+import { UploaderState } from "~/models";
 
 export const PageEditor = () => {
   useSignals();
@@ -82,24 +83,10 @@ export const PageEditor = () => {
       async (item: GalleryItem, _position: { x: number; y: number }) => {
         console.log("Gallery image dropped", item, _position);
         try {
-          // Fetch the image (prefer fullImage, fallback to thumbnail)
-          const url = item.fullImage || item.thumbnail;
-          if (!url) {
-            console.warn("No image URL found for dropped item", item);
-            return;
-          }
-          console.log("Fetching image from URL:", url);
-          const response = await fetch(url);
-          const blob = await response.blob();
-          const file = new File([blob], item.label || "image.png", {
-            type: blob.type,
-          });
-          console.log("Image file created:", file);
-          // Upload the image as a plane
-          await uploadPlane({
+          await uploadPlaneFromMediaToken({
             title: item.label || "Image Plane",
-            assetFile: file,
-            progressCallback: (state) => {
+            mediaToken: item.id,
+            progressCallback: (state: UploaderState) => {
               if (state.status) console.log("Upload status:", state.status);
             },
           });
