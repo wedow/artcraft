@@ -72,7 +72,6 @@ export const GalleryModal = React.memo(
     onDownloadClicked,
     onAddToSceneClicked,
   }: GalleryModalProps) => {
-    const [groupedItems, setGroupedItems] = useState<GroupedItems>({});
     const [loading, setLoading] = useState(false);
     const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(
       null
@@ -90,6 +89,10 @@ export const GalleryModal = React.memo(
     );
     const gridColumns = maxColumns - (sliderValue - minColumns);
     const [imageFit, setImageFit] = useState<"cover" | "contain">("contain");
+    const [allItems, setAllItems] = useState<GalleryItem[]>([]);
+    const [pageIndex, setPageIndex] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const pageSize = 25;
 
     const imageUrl = lightboxImage?.fullImage || "";
 
@@ -175,66 +178,63 @@ export const GalleryModal = React.memo(
     };
 
     useEffect(() => {
-      const loadItems = async () => {
-        if (!username) return;
-        setLoading(true);
-        try {
-          let response = null;
-          const filterMediaClasses = getFilterMediaClass(activeFilter);
-          if (activeFilter === "uploaded") {
-            response = await api.listUserMediaFiles({
-              filter_media_classes: filterMediaClasses,
-              username: username,
-              include_user_uploads: true,
-              user_uploads_only: true,
-            });
-          } else if (filterMediaClasses) {
-            response = await api.listUserMediaFiles({
-              filter_media_classes: filterMediaClasses,
-              username: username,
-              include_user_uploads: false,
-              user_uploads_only: false,
-            });
-          } else {
-            response = await api.listUserMediaFiles({
-              username: username,
-              include_user_uploads: false,
-              user_uploads_only: false,
-            });
-          }
-
-          if (response.success && response.data) {
-            const thumbnail_size = 250;
-            const newItems = response.data.map((item: any) => ({
-              id: item.token,
-              label: item.maybe_title || "Image Generation",
-              thumbnail:
-                item.media_class === "video"
-                  ? item.media_links.maybe_video_previews.still
-                  : item.media_links.maybe_thumbnail_template?.replace(
-                      "{WIDTH}",
-                      thumbnail_size.toString()
-                    ),
-              fullImage: item.media_links.cdn_url,
-              createdAt: item.created_at,
-              mediaClass:
-                item.media_class ||
-                (item.filter_media_classes
-                  ? item.filter_media_classes[0]
-                  : "image"),
-            }));
-            setGroupedItems(groupItemsByDate(newItems));
-          }
-        } catch (error) {
-          console.error("Failed to fetch library items:", error);
-        }
-        setLoading(false);
-      };
-
-      if (isOpen) {
-        loadItems();
+      setAllItems([]);
+      setPageIndex(0);
+      setHasMore(true);
+      if (username) {
+        loadItems(true);
       }
-    }, [activeFilter, isOpen, username]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeFilter, username]);
+
+    const loadItems = async (reset = false) => {
+      if (!username) return;
+      setLoading(true);
+      try {
+        let response = null;
+        const filterMediaClasses = getFilterMediaClass(activeFilter);
+        const query = {
+          filter_media_classes: filterMediaClasses,
+          username: username,
+          include_user_uploads: activeFilter === "uploaded",
+          user_uploads_only: activeFilter === "uploaded",
+          page_index: reset ? 0 : pageIndex,
+          page_size: pageSize,
+        };
+        response = await api.listUserMediaFiles(query);
+
+        if (response.success && response.data) {
+          const thumbnail_size = 250;
+          const newItems = response.data.map((item: any) => ({
+            id: item.token,
+            label: item.maybe_title || "Image Generation",
+            thumbnail:
+              item.media_class === "video"
+                ? item.media_links.maybe_video_previews.still
+                : item.media_links.maybe_thumbnail_template?.replace(
+                    "{WIDTH}",
+                    thumbnail_size.toString()
+                  ),
+            fullImage: item.media_links.cdn_url,
+            createdAt: item.created_at,
+            mediaClass:
+              item.media_class ||
+              (item.filter_media_classes
+                ? item.filter_media_classes[0]
+                : "image"),
+          }));
+          setAllItems((prev) => (reset ? newItems : [...prev, ...newItems]));
+          // Pagination logic
+          const current = response.pagination?.current ?? 0;
+          const total = response.pagination?.total_page_count ?? 1;
+          setPageIndex(current + 1);
+          setHasMore(current + 1 < total);
+        }
+      } catch (error) {
+        console.error("Failed to fetch library items:", error);
+      }
+      setLoading(false);
+    };
 
     const handleItemClick = useCallback(
       (item: GalleryItem) => {
@@ -259,11 +259,11 @@ export const GalleryModal = React.memo(
     }, [selectedItemIds, onSelectItem]);
 
     const handleUseSelected = useCallback(() => {
-      const selectedItems = Object.values(groupedItems)
+      const selectedItems = Object.values(groupItemsByDate(allItems))
         .flat()
         .filter((item) => selectedItemIds.includes(item.id));
       onUseSelected?.(selectedItems);
-    }, [groupedItems, selectedItemIds, onUseSelected]);
+    }, [groupItemsByDate, selectedItemIds, onUseSelected]);
 
     useSignals();
 
@@ -271,6 +271,62 @@ export const GalleryModal = React.memo(
     let gapClass = "gap-0.5";
     if (gridColumns <= 4) gapClass = "gap-1.5";
     else if (gridColumns <= 7) gapClass = "gap-1";
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+      if (
+        scrollHeight - scrollTop - clientHeight < 100 &&
+        hasMore &&
+        !loading
+      ) {
+        loadItems();
+      }
+    };
+
+    // Soft refresh on open: fetch first page and prepend new items
+    useEffect(() => {
+      if (isOpen && allItems.length > 0 && username) {
+        const fetchLatest = async () => {
+          const filterMediaClasses = getFilterMediaClass(activeFilter);
+          const response = await api.listUserMediaFiles({
+            filter_media_classes: filterMediaClasses,
+            username,
+            include_user_uploads: activeFilter === "uploaded",
+            user_uploads_only: activeFilter === "uploaded",
+            page_index: 0,
+            page_size: pageSize,
+          });
+          if (response.success && response.data) {
+            const thumbnail_size = 250;
+            const newItems = response.data.map((item: any) => ({
+              id: item.token,
+              label: item.maybe_title || "Image Generation",
+              thumbnail:
+                item.media_class === "video"
+                  ? item.media_links.maybe_video_previews.still
+                  : item.media_links.maybe_thumbnail_template?.replace(
+                      "{WIDTH}",
+                      thumbnail_size.toString()
+                    ),
+              fullImage: item.media_links.cdn_url,
+              createdAt: item.created_at,
+              mediaClass:
+                item.media_class ||
+                (item.filter_media_classes
+                  ? item.filter_media_classes[0]
+                  : "image"),
+            }));
+            setAllItems((prev) => {
+              const existingIds = new Set(prev.map((i) => i.id));
+              const trulyNew = newItems.filter((i) => !existingIds.has(i.id));
+              return [...trulyNew, ...prev];
+            });
+          }
+        };
+        fetchLatest();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     return (
       <>
@@ -388,8 +444,8 @@ export const GalleryModal = React.memo(
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
-              {loading ? (
+            <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
+              {loading && allItems.length === 0 ? (
                 <div className="flex h-full items-center justify-center">
                   <div className="text-white/60">
                     <LoadingSpinner className="h-12 w-12" />
@@ -397,41 +453,57 @@ export const GalleryModal = React.memo(
                 </div>
               ) : (
                 <div className="space-y-6 p-4">
-                  {Object.entries(groupedItems).map(([date, dateItems]) => (
-                    <div key={date}>
-                      <h3 className="text-md mb-2 font-medium text-white/60">
-                        {date}
-                      </h3>
-                      <div
-                        className={twMerge("grid", gapClass)}
-                        style={{
-                          gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
-                        }}
-                      >
-                        {dateItems
-                          .filter((item) => {
-                            if (activeFilter === "3d")
-                              return item.mediaClass === "3d";
-                            return true;
-                          })
-                          .map((item) => (
-                            <GalleryDraggableItem
-                              key={item.id}
-                              item={item}
-                              mode={mode}
-                              activeFilter={activeFilter}
-                              selected={selectedItemIds.includes(item.id)}
-                              onClick={() => handleItemClick(item)}
-                              onImageError={() =>
-                                handleImageError(item.thumbnail!)
-                              }
-                              disableTooltipAndBadge={mode === "select"}
-                              imageFit={imageFit}
-                            />
-                          ))}
-                      </div>
+                  {Object.entries(groupItemsByDate(allItems)).map(
+                    ([date, dateItems]) => {
+                      const filteredItems = dateItems.filter((item) => {
+                        if (activeFilter === "3d")
+                          return item.mediaClass === "3d";
+                        if (activeFilter === "all")
+                          return item.mediaClass !== "audio";
+                        return true;
+                      });
+                      if (filteredItems.length === 0) return null;
+                      return (
+                        <div key={date}>
+                          <h3 className="text-md mb-2 font-medium text-white/60">
+                            {date}
+                          </h3>
+                          <div
+                            className={twMerge("grid", gapClass)}
+                            style={{
+                              gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+                            }}
+                          >
+                            {filteredItems.map((item) => (
+                              <GalleryDraggableItem
+                                key={item.id}
+                                item={item}
+                                mode={mode}
+                                activeFilter={activeFilter}
+                                selected={selectedItemIds.includes(item.id)}
+                                onClick={() => handleItemClick(item)}
+                                onImageError={() =>
+                                  handleImageError(item.thumbnail!)
+                                }
+                                disableTooltipAndBadge={mode === "select"}
+                                imageFit={imageFit}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                  )}
+                  {loading && allItems.length > 0 && (
+                    <div className="flex justify-center py-4">
+                      <LoadingSpinner className="h-8 w-8" />
                     </div>
-                  ))}
+                  )}
+                  {!hasMore && allItems.length > 0 && (
+                    <div className="flex justify-center py-4 text-white/40 text-xs">
+                      No more items
+                    </div>
+                  )}
                 </div>
               )}
             </div>

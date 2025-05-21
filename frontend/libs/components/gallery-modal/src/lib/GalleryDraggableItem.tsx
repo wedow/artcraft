@@ -105,7 +105,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
         >
           <div className="relative h-full w-full">
             {!item.thumbnail ? (
-              <div className="flex h-full w-full items-center justify-center bg-gray-800">
+              <div className="flex h-full w-full items-center justify-center bg-black/30">
                 <span className="text-white/60">Image not available</span>
               </div>
             ) : (
@@ -135,7 +135,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           className="-mt-3 bg-black/90"
           content={
             <div className="flex flex-col items-center text-xs whitespace-nowrap">
-              {activeFilter !== "video" && (
+              {item.mediaClass !== "video" && (
                 <span>
                   <span className="font-bold">Drag</span>
                   <span className="opacity-50"> to add</span>
@@ -168,7 +168,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           >
             <div className="relative h-full w-full">
               {!item.thumbnail ? (
-                <div className="flex h-full w-full items-center justify-center bg-gray-800">
+                <div className="flex h-full w-full items-center justify-center bg-black/30">
                   <span className="text-white/60">Image not available</span>
                 </div>
               ) : (

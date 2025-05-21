@@ -12,6 +12,8 @@ interface ListUserMediaQuery {
   filter_engine_categories?: FilterEngineCategories[];
   user_uploads_only?: boolean;
   include_user_uploads?: boolean;
+  page_index?: number;
+  page_size?: number;
 }
 
 export class GalleryModalApi extends MediaFilesApi {
@@ -28,6 +30,8 @@ export class GalleryModalApi extends MediaFilesApi {
       username: query.username,
       user_uploads_only: query.user_uploads_only,
       include_user_uploads: query.include_user_uploads,
+      page_index: query.page_index,
+      page_size: query.page_size,
     });
   }
 }
