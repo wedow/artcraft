@@ -93,7 +93,10 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
             activeFilter === "video" ? "aspect-square" : "aspect-square",
             selected
               ? "border-primary"
-              : "border-transparent hover:border-primary"
+              : "border-transparent hover:border-primary",
+            item.mediaClass === "video"
+              ? "cursor-pointer"
+              : "cursor-grab hover:cursor-grab active:cursor-grabbing"
           )}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
@@ -153,7 +156,10 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
               activeFilter === "video" ? "aspect-square" : "aspect-square",
               selected
                 ? "border-primary"
-                : "border-transparent hover:border-primary"
+                : "border-transparent hover:border-primary",
+              item.mediaClass === "video"
+                ? "cursor-pointer"
+                : "cursor-grab hover:cursor-grab active:cursor-grabbing"
             )}
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}

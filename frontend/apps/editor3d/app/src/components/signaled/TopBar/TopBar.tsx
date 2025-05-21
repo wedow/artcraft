@@ -166,7 +166,7 @@ export const TopBar = ({
                 icon={faImages}
                 onClick={handleOpenGalleryModal}
               >
-                My Gallery
+                My Library
               </Button>
 
               <Activity />

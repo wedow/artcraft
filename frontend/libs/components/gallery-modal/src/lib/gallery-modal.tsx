@@ -301,7 +301,7 @@ export const GalleryModal = React.memo(
               <div className="grid grid-cols-2 items-center">
                 <div className="flex items-center gap-4">
                   <h2 className="text-xl font-semibold">
-                    {mode === "select" ? "Select Images" : "Gallery"}
+                    {mode === "select" ? "Select Images" : "My Library"}
                   </h2>
                   {mode === "view" && (
                     <div className="flex items-center relative z-[51]">

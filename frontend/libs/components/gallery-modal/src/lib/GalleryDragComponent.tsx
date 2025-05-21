@@ -27,7 +27,7 @@ export const GalleryDragComponent: React.FC = () => {
   return ReactDOM.createPortal(
     <div
       style={style}
-      className="fixed z-[1000] w-[120px] h-[120px] pointer-events-none aspect-square flex flex-col bg-black/70 rounded-xl overflow-hidden shadow-lg"
+      className="fixed z-[1000] w-[120px] h-[120px] pointer-events-none aspect-square flex flex-col bg-black/70 rounded-xl overflow-hidden shadow-lg cursor-grabbing"
     >
       <img
         src={item.thumbnail || item.fullImage || ""}

@@ -33,6 +33,7 @@ function onPointerDown(event: React.PointerEvent, item: GalleryItem) {
   dragState.currY = event.pageY;
   dragState.isDragging = false;
   galleryModalVisibleDuringDrag.value = false;
+  document.body.style.cursor = "grabbing";
   window.addEventListener("pointermove", onPointerMove);
   window.addEventListener("pointerup", onPointerUp);
 }
@@ -55,6 +56,7 @@ function onPointerUp() {
   dragState.item = null;
   dragState.isDragging = false;
   galleryModalVisibleDuringDrag.value = galleryReopenAfterDragSignal.value;
+  document.body.style.cursor = "";
   window.removeEventListener("pointermove", onPointerMove);
   window.removeEventListener("pointerup", onPointerUp);
 }
