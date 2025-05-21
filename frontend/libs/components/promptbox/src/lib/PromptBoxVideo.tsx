@@ -416,7 +416,7 @@ export const PromptBoxVideo = ({
         mode="select"
         selectedItemIds={selectedGalleryImages}
         onSelectItem={handleImageSelect}
-        maxSelections={4}
+        maxSelections={1}
         onUseSelected={handleGalleryImages}
         onDownloadClicked={downloadFileFromUrl}
       />
