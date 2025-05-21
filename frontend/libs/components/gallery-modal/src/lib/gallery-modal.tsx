@@ -1,8 +1,6 @@
 import { Modal } from "@storyteller/ui-modal";
 import { LightboxModal } from "@storyteller/ui-lightbox-modal";
 import { TabSelector } from "@storyteller/ui-tab-selector";
-import { faCheck } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
@@ -13,6 +11,13 @@ import {
   UsersApi,
 } from "@storyteller/api";
 import { twMerge } from "tailwind-merge";
+import { GalleryDraggableItem } from "./GalleryDraggableItem";
+import { GalleryDragComponent } from "./GalleryDragComponent";
+import { useSignals } from "@preact/signals-react/runtime";
+import {
+  galleryModalVisibleDuringDrag,
+  galleryReopenAfterDragSignal,
+} from "./galleryModalSignals";
 
 export interface GalleryItem {
   id: string;
@@ -217,10 +222,13 @@ export const GalleryModal = React.memo(
       onUseSelected?.(selectedItems);
     }, [groupedItems, selectedItemIds, onUseSelected]);
 
+    useSignals();
+
     return (
       <>
+        <GalleryDragComponent />
         <Modal
-          isOpen={isOpen}
+          isOpen={isOpen && galleryModalVisibleDuringDrag.value}
           onClose={onClose}
           className={twMerge(
             "h-[620px] max-w-4xl",
@@ -238,19 +246,36 @@ export const GalleryModal = React.memo(
           </Modal.DragHandle>
           <div className="flex h-full flex-col">
             <div className="border-b border-white/10 p-4 py-3">
-              <div className="grid grid-cols-3 items-center">
-                <h2 className="text-xl font-semibold">
-                  {mode === "select" ? "Select Images" : "Gallery"}
-                </h2>
-                <div className="flex items-center justify-center">
+              <div className="grid grid-cols-2 items-center">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-xl font-semibold">
+                    {mode === "select" ? "Select Images" : "Gallery"}
+                  </h2>
+                  <div className="flex items-center relative z-[51]">
+                    <input
+                      type="checkbox"
+                      id="gallery-reopen-after-drag"
+                      checked={galleryReopenAfterDragSignal.value}
+                      onChange={(e) =>
+                        (galleryReopenAfterDragSignal.value = e.target.checked)
+                      }
+                      className="h-4 w-4 cursor-pointer rounded-lg border-gray-300 bg-gray-700 text-primary focus:ring-primary"
+                    />
+                    <label
+                      htmlFor="gallery-reopen-after-drag"
+                      className="ml-2 cursor-pointer select-none text-sm text-white/70"
+                    >
+                      Reopen after adding
+                    </label>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-1.5 items-center">
                   <TabSelector
                     tabs={tabs}
                     activeTab={activeTab}
                     onTabChange={onTabChange}
-                    className="w-auto relative z-[51]"
+                    className="w-auto relative z-[51] mr-3"
                   />
-                </div>
-                <div className="flex justify-end gap-1.5">
                   <Modal.ExpandButton />
                   <CloseButton onClick={onClose} className="relative z-[51]" />
                 </div>
@@ -283,57 +308,17 @@ export const GalleryModal = React.memo(
                         )}
                       >
                         {dateItems.map((item) => (
-                          <button
+                          <GalleryDraggableItem
                             key={item.id}
-                            className={twMerge(
-                              "group relative overflow-hidden rounded-md border-[3px] transition-all",
-                              activeTab === "videos"
-                                ? "aspect-video"
-                                : "aspect-square",
-                              mode === "select" &&
-                                selectedItemIds.includes(item.id)
-                                ? "border-primary"
-                                : "border-transparent hover:border-white"
-                            )}
+                            item={item}
+                            mode={mode}
+                            activeTab={activeTab}
+                            selected={selectedItemIds.includes(item.id)}
                             onClick={() => handleItemClick(item)}
-                          >
-                            <div className="relative h-full w-full">
-                              {!item.thumbnail ? (
-                                <div className="flex h-full w-full items-center justify-center bg-gray-800">
-                                  <span className="text-white/60">
-                                    Image not available
-                                  </span>
-                                </div>
-                              ) : (
-                                <img
-                                  src={item.thumbnail || item.fullImage || ""}
-                                  alt={item.label}
-                                  className={twMerge(
-                                    "h-full w-full bg-black/30",
-                                    activeTab === "videos"
-                                      ? "object-contain"
-                                      : "object-cover"
-                                  )}
-                                  onError={() =>
-                                    handleImageError(item.thumbnail!)
-                                  }
-                                />
-                              )}
-                              {mode === "select" &&
-                                selectedItemIds.includes(item.id) && (
-                                  <div className="absolute inset-0 bg-white/30" />
-                                )}
-                            </div>
-                            {mode === "select" &&
-                              selectedItemIds.includes(item.id) && (
-                                <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
-                                  <FontAwesomeIcon
-                                    icon={faCheck}
-                                    className="text-sm"
-                                  />
-                                </div>
-                              )}
-                          </button>
+                            onImageError={() =>
+                              handleImageError(item.thumbnail!)
+                            }
+                          />
                         ))}
                       </div>
                     </div>

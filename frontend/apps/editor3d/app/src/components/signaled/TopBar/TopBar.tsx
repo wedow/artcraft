@@ -10,12 +10,15 @@ import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
 import { getCurrentLocationWithoutParams } from "~/utilities";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
-import { GalleryModal } from "@storyteller/ui-gallery-modal";
+import {
+  GalleryModal,
+  galleryModalVisibleDuringDrag,
+} from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { downloadFileFromUrl } from "@storyteller/api";
 import { TabSelector, TabItem } from "@storyteller/ui-tab-selector";
-import { Signal } from "@preact/signals-react";
+import { Signal, signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
@@ -39,8 +42,6 @@ const appTabs: TabItem[] = [
   { id: "VIDEO", label: "Video" },
 ];
 
-import { signal } from "@preact/signals-react";
-
 export const topNavMediaId = signal<string>("");
 export const topNavMediaUrl = signal<string>("");
 
@@ -56,7 +57,6 @@ export const TopBar = ({
     useLocation().pathname,
     useParams(),
   );
-  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [activeLibraryTab, setActiveLibraryTab] = useState("my-media");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
@@ -110,6 +110,10 @@ export const TopBar = ({
     }
   };
 
+  const handleOpenGalleryModal = () => {
+    galleryModalVisibleDuringDrag.value = true;
+  };
+
   return (
     <>
       <header className="fixed left-0 top-0 z-[60] w-full border-b border-white/5 bg-ui-background">
@@ -161,7 +165,7 @@ export const TopBar = ({
               <Button
                 variant="secondary"
                 icon={faImages}
-                onClick={() => setIsLibraryModalOpen(true)}
+                onClick={handleOpenGalleryModal}
               >
                 My Gallery
               </Button>
@@ -182,8 +186,8 @@ export const TopBar = ({
       />
 
       <GalleryModal
-        isOpen={isLibraryModalOpen}
-        onClose={() => setIsLibraryModalOpen(false)}
+        isOpen={galleryModalVisibleDuringDrag.value}
+        onClose={() => (galleryModalVisibleDuringDrag.value = false)}
         mode="view"
         tabs={[
           { id: "my-media", label: "Generations" },

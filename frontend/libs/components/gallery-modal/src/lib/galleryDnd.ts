@@ -1,0 +1,71 @@
+import { GalleryItem } from "./gallery-modal";
+import {
+  galleryModalVisibleDuringDrag,
+  galleryReopenAfterDragSignal,
+} from "./galleryModalSignals";
+
+interface DragState {
+  item: GalleryItem | null;
+  isDragging: boolean;
+  startX: number;
+  startY: number;
+  currX: number;
+  currY: number;
+}
+
+const dragState: DragState = {
+  item: null,
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  currX: 0,
+  currY: 0,
+};
+
+const dragThreshold = 5;
+
+function onPointerDown(event: React.PointerEvent, item: GalleryItem) {
+  if (event.button !== 0) return;
+  dragState.item = item;
+  dragState.startX = event.pageX;
+  dragState.startY = event.pageY;
+  dragState.currX = event.pageX;
+  dragState.currY = event.pageY;
+  dragState.isDragging = false;
+  galleryModalVisibleDuringDrag.value = false;
+  window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("pointerup", onPointerUp);
+}
+
+function onPointerMove(event: PointerEvent) {
+  if (!dragState.item) return;
+  const deltaX = event.pageX - dragState.startX;
+  const deltaY = event.pageY - dragState.startY;
+  if (
+    !dragState.isDragging &&
+    (Math.abs(deltaX) > dragThreshold || Math.abs(deltaY) > dragThreshold)
+  ) {
+    dragState.isDragging = true;
+  }
+  dragState.currX = event.pageX;
+  dragState.currY = event.pageY;
+}
+
+function onPointerUp() {
+  dragState.item = null;
+  dragState.isDragging = false;
+  galleryModalVisibleDuringDrag.value = galleryReopenAfterDragSignal.value;
+  window.removeEventListener("pointermove", onPointerMove);
+  window.removeEventListener("pointerup", onPointerUp);
+}
+
+function getDragState() {
+  return dragState;
+}
+
+const galleryDnd = {
+  onPointerDown,
+  getDragState,
+};
+
+export default galleryDnd;
