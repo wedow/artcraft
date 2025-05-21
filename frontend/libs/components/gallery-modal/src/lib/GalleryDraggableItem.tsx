@@ -2,9 +2,9 @@ import React, { useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
-import type { GalleryItem } from "./gallery-modal";
 import galleryDnd from "./galleryDnd";
 import { Tooltip } from "@storyteller/ui-tooltip";
+import { GalleryItem } from "./gallery-modal";
 
 type ModalMode = "select" | "view";
 
@@ -62,10 +62,6 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
     }
   };
 
-  const handlePointerLeave = (event: React.PointerEvent) => {
-    // ... pointer leave logic if needed ...
-  };
-
   const handleButtonClick = (event: React.MouseEvent) => {
     if (!disableTooltipAndBadge) {
       onClick();
@@ -99,7 +95,6 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           )}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerLeave}
           onClick={handleButtonClick}
           aria-label={item.label}
         >
@@ -160,7 +155,6 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
             )}
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerLeave}
             onClick={handleButtonClick}
             aria-label={item.label}
           >

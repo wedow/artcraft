@@ -26,6 +26,7 @@ import {
   faUpload,
 } from "@fortawesome/pro-solid-svg-icons";
 import { PopoverMenu } from "@storyteller/ui-popover";
+import { SliderV2 } from "@storyteller/ui-sliderv2";
 
 export interface GalleryItem {
   id: string;
@@ -77,6 +78,15 @@ export const GalleryModal = React.memo(
     const [isLightboxVisible, setIsLightboxVisible] = useState(false);
     const [failedImageUrls] = useState<Set<string>>(new Set());
     const [username, setUsername] = useState<string>("");
+    const [activeFilter, setActiveFilter] = useState("all");
+    const minColumns = 3;
+    const maxColumns = 12;
+    // Default gridColumns to 5
+    const defaultGridColumns = 5;
+    const [sliderValue, setSliderValue] = useState(
+      maxColumns - (defaultGridColumns - minColumns)
+    );
+    const gridColumns = maxColumns - (sliderValue - minColumns);
 
     const imageUrl = lightboxImage?.fullImage || "";
 
@@ -146,7 +156,6 @@ export const GalleryModal = React.memo(
         icon: <FontAwesomeIcon icon={faUpload} />,
       },
     ];
-    const [activeFilter, setActiveFilter] = useState("all");
 
     // Map filter to API/media class
     const getFilterMediaClass = (filter: string) => {
@@ -255,6 +264,11 @@ export const GalleryModal = React.memo(
 
     useSignals();
 
+    // Compute gap class based on gridColumns
+    let gapClass = "gap-0.5";
+    if (gridColumns <= 4) gapClass = "gap-1.5";
+    else if (gridColumns <= 7) gapClass = "gap-1";
+
     return (
       <>
         <Modal
@@ -309,8 +323,21 @@ export const GalleryModal = React.memo(
                 </div>
                 <div className="flex justify-end gap-2 items-center">
                   {/* Slider */}
-                  <div className="w-32 mr-2 relative z-[51]">
-                    <input type="range" min={0} max={100} className="w-full" />
+                  <div className="w-48 mr-4 relative z-[51] flex items-center gap-2">
+                    <SliderV2
+                      min={minColumns}
+                      max={maxColumns}
+                      value={sliderValue}
+                      onChange={setSliderValue}
+                      step={1}
+                      variant="classic"
+                      showTooltip={false}
+                      className="w-full"
+                      showProgressBar={false}
+                      tooltipContent={`${
+                        maxColumns - (sliderValue - minColumns)
+                      } columns`}
+                    />
                   </div>
                   {/* Filter popover */}
                   <PopoverMenu
@@ -358,15 +385,10 @@ export const GalleryModal = React.memo(
                         {date}
                       </h3>
                       <div
-                        className={twMerge(
-                          activeFilter === "video"
-                            ? "grid grid-cols-3 gap-2"
-                            : "grid grid-cols-5 gap-1",
-                          mode === "view" &&
-                            (activeFilter === "video"
-                              ? "grid-cols-3"
-                              : "grid-cols-5")
-                        )}
+                        className={twMerge("grid", gapClass)}
+                        style={{
+                          gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+                        }}
                       >
                         {dateItems
                           .filter((item) => {

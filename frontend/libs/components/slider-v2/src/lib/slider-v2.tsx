@@ -17,6 +17,8 @@ interface SliderProps {
   innerLabel?: string;
   showDecrement?: boolean;
   showIncrement?: boolean;
+  variant?: "filled" | "classic";
+  showProgressBar?: boolean;
 }
 
 export const SliderV2 = ({
@@ -32,6 +34,8 @@ export const SliderV2 = ({
   innerLabel,
   showDecrement,
   showIncrement,
+  variant = "filled",
+  showProgressBar = true,
 }: SliderProps) => {
   const [localValue, setLocalValue] = useState(value);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -114,43 +118,72 @@ export const SliderV2 = ({
         />
       )}
 
-      <div
-        ref={sliderRef}
-        className={twMerge(
-          "glass border-ui-border group relative h-7 w-full cursor-pointer overflow-hidden rounded-lg border",
-          isDragging && "!bg-ui-controls/90",
-          className,
-        )}
-        onMouseDown={handleMouseDown}
-      >
+      {variant === "filled" ? (
         <div
+          ref={sliderRef}
           className={twMerge(
-            "absolute h-full bg-brand-primary/30 transition-colors duration-300 group-hover:bg-brand-primary/50",
-            isDragging && "!bg-brand-primary/50",
+            "glass border-ui-border group relative h-7 w-full cursor-pointer overflow-hidden rounded-lg border",
+            isDragging && "!bg-ui-controls/90",
+            className
           )}
-          style={{ width: `${percentage}%` }}
+          onMouseDown={handleMouseDown}
         >
-          {innerLabel && (
-            <span
+          <div
+            className={twMerge(
+              "absolute h-full bg-brand-primary/30 transition-colors duration-300 group-hover:bg-brand-primary/50",
+              isDragging && "!bg-brand-primary/50"
+            )}
+            style={{ width: `${percentage}%` }}
+          >
+            {innerLabel && (
+              <span
+                className={twMerge(
+                  "absolute top-1/2 ml-2.5 -translate-y-1/2 text-nowrap text-sm font-medium text-white/60 transition-colors duration-300 group-hover:text-white",
+                  isDragging && "!text-white"
+                )}
+              >
+                {innerLabel}
+              </span>
+            )}
+            <div
               className={twMerge(
-                "absolute top-1/2 ml-2.5 -translate-y-1/2 text-nowrap text-sm font-medium text-white/60 transition-colors duration-300 group-hover:text-white",
-                isDragging && "!text-white",
+                "absolute right-0 top-1/2 mr-1 h-4 w-0.5 -translate-y-1/2 rounded-full",
+                isDragging ? "bg-white" : "bg-white/50"
               )}
-            >
-              {innerLabel}
-            </span>
+              onMouseDown={handleMouseDown}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            />
+          </div>
+        </div>
+      ) : (
+        <div
+          ref={sliderRef}
+          className={twMerge(
+            "relative h-4 w-full cursor-pointer flex items-center",
+            className
+          )}
+          onMouseDown={handleMouseDown}
+        >
+          <div className="absolute left-0 right-0 h-2 bg-ui-border rounded-full bg-white/15" />
+          {showProgressBar && (
+            <div
+              className="absolute left-0 h-2 bg-white rounded-full transition-all duration-200"
+              style={{ width: `${percentage}%` }}
+            />
           )}
           <div
             className={twMerge(
-              "absolute right-0 top-1/2 mr-1 h-4 w-0.5 -translate-y-1/2 rounded-full",
-              isDragging ? "bg-white" : "bg-white/50",
+              "absolute top-1/2 z-10 size-4 -translate-y-1/2 rounded-full border-2 border-white bg-white shadow transition-colors duration-200 hover:ring-[4px] hover:ring-white/20",
+              isDragging ? "ring-[4px] ring-white/20" : ""
             )}
+            style={{ left: `calc(${percentage}% - 10px)` }}
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           />
         </div>
-      </div>
+      )}
 
       {showIncrement && (
         <Button
