@@ -25,6 +25,7 @@ export interface GalleryItem {
   thumbnail: string | null;
   fullImage?: string | null;
   createdAt: string;
+  mediaClass?: string;
 }
 
 interface GroupedItems {
@@ -169,6 +170,13 @@ export const GalleryModal = React.memo(
                     ),
               fullImage: item.media_links.cdn_url,
               createdAt: item.created_at,
+              mediaClass:
+                item.media_class ||
+                (item.filter_media_classes
+                  ? item.filter_media_classes[0]
+                  : activeTab === "videos"
+                  ? "video"
+                  : "image"),
             }));
             console.log("Media files response:", newItems);
             setGroupedItems(groupItemsByDate(newItems));
