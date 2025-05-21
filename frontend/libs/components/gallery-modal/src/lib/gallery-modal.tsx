@@ -196,7 +196,8 @@ export const GalleryModal = React.memo(
         const query = {
           filter_media_classes: filterMediaClasses,
           username: username,
-          include_user_uploads: activeFilter === "uploaded",
+          include_user_uploads:
+            activeFilter === "uploaded" || activeFilter === "all",
           user_uploads_only: activeFilter === "uploaded",
           page_index: reset ? 0 : pageIndex,
           page_size: pageSize,
