@@ -24,6 +24,8 @@ import {
   faVideo,
   faCube,
   faUpload,
+  faExpand,
+  faCompress,
 } from "@fortawesome/pro-solid-svg-icons";
 import { PopoverMenu } from "@storyteller/ui-popover";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
@@ -87,6 +89,7 @@ export const GalleryModal = React.memo(
       maxColumns - (defaultGridColumns - minColumns)
     );
     const gridColumns = maxColumns - (sliderValue - minColumns);
+    const [imageFit, setImageFit] = useState<"cover" | "contain">("contain");
 
     const imageUrl = lightboxImage?.fullImage || "";
 
@@ -322,8 +325,23 @@ export const GalleryModal = React.memo(
                   )}
                 </div>
                 <div className="flex justify-end gap-2 items-center">
+                  {/* Image fit toggle button */}
+                  <Button
+                    variant="action"
+                    onClick={() =>
+                      setImageFit((fit) =>
+                        fit === "cover" ? "contain" : "cover"
+                      )
+                    }
+                    className="relative z-[51] h-9 w-9 mr-3 bg-[#5F5F68]/60 hover:bg-[#5F5F68]/90"
+                  >
+                    <FontAwesomeIcon
+                      icon={imageFit === "cover" ? faExpand : faCompress}
+                      className="text-lg text-white"
+                    />
+                  </Button>
                   {/* Slider */}
-                  <div className="w-48 mr-4 relative z-[51] flex items-center gap-2">
+                  <div className="w-48 mr-3 relative z-[51] flex items-center gap-2">
                     <SliderV2
                       min={minColumns}
                       max={maxColumns}
@@ -408,6 +426,7 @@ export const GalleryModal = React.memo(
                                 handleImageError(item.thumbnail!)
                               }
                               disableTooltipAndBadge={mode === "select"}
+                              imageFit={imageFit}
                             />
                           ))}
                       </div>
@@ -459,7 +478,7 @@ export const GalleryModal = React.memo(
           mediaId={lightboxImage?.id}
           onDownloadClicked={onDownloadClicked}
           onAddToSceneClicked={onAddToSceneClicked}
-          activeTab={activeFilter}
+          mediaClass={lightboxImage?.mediaClass}
         />
       </>
     );

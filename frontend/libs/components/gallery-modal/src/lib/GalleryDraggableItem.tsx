@@ -16,6 +16,7 @@ interface GalleryDraggableItemProps {
   onClick: () => void;
   onImageError: () => void;
   disableTooltipAndBadge?: boolean;
+  imageFit?: "cover" | "contain";
 }
 
 export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
@@ -26,6 +27,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
   onClick,
   onImageError,
   disableTooltipAndBadge = false,
+  imageFit = "cover",
 }) => {
   const imgRef = useRef<HTMLImageElement>(null);
   const dragStarted = useRef(false);
@@ -72,7 +74,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
     <div
       className={twMerge(
         "group relative w-full",
-        activeFilter === "video" ? "aspect-video" : "aspect-square"
+        activeFilter === "video" ? "aspect-square" : "aspect-square"
       )}
     >
       {/* Media class badge on hover */}
@@ -88,7 +90,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           tabIndex={0}
           className={twMerge(
             "w-full group relative overflow-visible rounded-md border-[3px] transition-all focus:outline-none focus:ring-2 focus:ring-primary",
-            activeFilter === "video" ? "aspect-video" : "aspect-square",
+            activeFilter === "video" ? "aspect-square" : "aspect-square",
             selected
               ? "border-primary"
               : "border-transparent hover:border-primary"
@@ -110,7 +112,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
                 alt={item.label}
                 className={twMerge(
                   "h-full w-full bg-black/30",
-                  activeFilter === "video" ? "object-contain" : "object-cover"
+                  imageFit === "contain" ? "object-contain" : "object-cover"
                 )}
                 draggable={false}
                 onError={onImageError}
@@ -148,7 +150,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
             tabIndex={0}
             className={twMerge(
               "w-full group relative overflow-visible rounded-md border-[3px] transition-all focus:outline-none focus:ring-2 focus:ring-primary",
-              activeFilter === "video" ? "aspect-video" : "aspect-square",
+              activeFilter === "video" ? "aspect-square" : "aspect-square",
               selected
                 ? "border-primary"
                 : "border-transparent hover:border-primary"
@@ -170,7 +172,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
                   alt={item.label}
                   className={twMerge(
                     "h-full w-full bg-black/30",
-                    activeFilter === "video" ? "object-contain" : "object-cover"
+                    imageFit === "contain" ? "object-contain" : "object-cover"
                   )}
                   draggable={false}
                   onError={onImageError}

@@ -26,7 +26,7 @@ interface LightboxModalProps {
     url: string,
     media_id: string | undefined
   ) => Promise<void>;
-  activeTab?: string;
+  mediaClass?: string;
 }
 
 export function LightboxModal({
@@ -43,7 +43,7 @@ export function LightboxModal({
   mediaId, // media id of the image
   onDownloadClicked,
   onAddToSceneClicked,
-  activeTab,
+  mediaClass,
 }: LightboxModalProps) {
   return createPortal(
     <Transition appear show={isOpen}>
@@ -94,7 +94,7 @@ export function LightboxModal({
                     <div className="flex h-full w-full items-center justify-center bg-gray-800">
                       <span className="text-white/60">Image not available</span>
                     </div>
-                  ) : activeTab === "videos" ? (
+                  ) : mediaClass === "video" ? (
                     <video controls className="h-full w-full object-contain">
                       <source src={imageUrl} type="video/mp4" />
                       Your browser does not support the video tag.
