@@ -9,6 +9,10 @@ use serde_derive::{Deserialize, Serialize};
 
 const GENERATE_URL: &str = "https://api.runwayml.com/v1/tasks";
 
+// TODO: This endpoint is not implemented yet.
+// TODO: This endpoint is not implemented yet.
+// TODO: This endpoint is not implemented yet.
+
 #[derive(Serialize)]
 struct TaskRequest {
   /// eg. "gen4"
@@ -56,7 +60,7 @@ struct TaskRequestOptions {
 
 pub async fn gen4_image_to_video(
   credentials: &Credentials,
-) -> Result<String, RunwayMlError> {
+) -> Result<(), RunwayMlError> {
   
   let jwt = match credentials.jwt_bearer_token.as_ref() {
     Some(token) => token,
@@ -133,9 +137,13 @@ pub async fn gen4_image_to_video(
   //  return Err(SoraError::FailedToGenerateBearer)
   //}
 
-  let auth_response: SoraAuthResponse = serde_json::from_str(&response_body)?;
+  //let auth_response: SoraAuthResponse = serde_json::from_str(&response_body)?;
 
-  Ok(auth_response.access_token)
+  // TODO: This endpoint is not implemented yet.
+  // TODO: This endpoint is not implemented yet.
+  // TODO: This endpoint is not implemented yet.
+
+  todo!("This is not yet implemented")
 }
  
 #[cfg(test)]
