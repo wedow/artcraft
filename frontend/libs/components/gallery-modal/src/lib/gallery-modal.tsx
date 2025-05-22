@@ -12,10 +12,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { GalleryDraggableItem } from "./GalleryDraggableItem";
 import { useSignals } from "@preact/signals-react/runtime";
-import {
-  galleryModalVisibleDuringDrag,
-  galleryReopenAfterDragSignal,
-} from "./galleryModalSignals";
+import { galleryReopenAfterDragSignal } from "./galleryModalSignals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilter,
@@ -332,11 +329,7 @@ export const GalleryModal = React.memo(
     return (
       <>
         <Modal
-          isOpen={
-            mode === "view"
-              ? isOpen && galleryModalVisibleDuringDrag.value
-              : isOpen
-          }
+          isOpen={isOpen}
           onClose={onClose}
           className={twMerge(
             "h-[620px] max-w-4xl",
