@@ -64,7 +64,7 @@ import { GalleryItem } from "../../../../../../libs/components/gallery-modal/src
 import { UploaderState } from "~/models";
 import * as THREE from "three";
 
-// Utility to convert screen (client) coordinates to world coordinates
+// Utility to convert screen (client) coordinates to world coordinates for the image drop
 function screenToWorld(
   x: number,
   y: number,
@@ -94,6 +94,7 @@ export const PageEditor = () => {
     };
   }, []);
 
+  // Image drop from gallery/library modal
   useEffect(() => {
     setOnImageDrop(
       async (item: GalleryItem, _position: { x: number; y: number }) => {
@@ -131,7 +132,6 @@ export const PageEditor = () => {
                 z: worldPosition.z,
               },
             }),
-            // Add other fields as needed
           };
           addObject(mediaItem);
           console.log("Object added to scene:", mediaItem);
