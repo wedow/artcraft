@@ -73,7 +73,6 @@ export const PromptBoxVideo = ({
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
-  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
@@ -132,10 +131,9 @@ export const PromptBoxVideo = ({
     }
   };
 
-  const handleGallerySelect = () => {
-    setIsGalleryModalOpen(true);
-  };
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
 
+  const handleGallerySelect = () => setIsGalleryModalOpen(true);
   const handleGalleryClose = () => {
     setIsGalleryModalOpen(false);
     setSelectedGalleryImages([]);
@@ -411,7 +409,7 @@ export const PromptBoxVideo = ({
         </div>
       </div>
       <GalleryModal
-        isOpen={isGalleryModalOpen}
+        isOpen={!!isGalleryModalOpen}
         onClose={handleGalleryClose}
         mode="select"
         selectedItemIds={selectedGalleryImages}

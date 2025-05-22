@@ -3,6 +3,12 @@
   "include": [],
   "references": [
     {
+      "path": "../slider-v2"
+    },
+    {
+      "path": "../popover"
+    },
+    {
       "path": "../../api"
     },
     {
@@ -15,13 +21,13 @@
       "path": "../button"
     },
     {
-      "path": "../tab-selector"
-    },
-    {
       "path": "../lightbox-modal"
     },
     {
       "path": "../modal"
+    },
+    {
+      "path": "../tooltip"
     },
     {
       "path": "./tsconfig.lib.json"

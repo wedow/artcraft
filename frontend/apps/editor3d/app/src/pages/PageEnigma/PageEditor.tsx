@@ -62,6 +62,22 @@ import { v4 as uuidv4 } from "uuid";
 import { MediaItem } from "~/pages/PageEnigma/models";
 import { GalleryItem } from "../../../../../../libs/components/gallery-modal/src/lib/gallery-modal";
 import { UploaderState } from "~/models";
+import * as THREE from "three";
+
+// Utility to convert screen (client) coordinates to world coordinates
+function screenToWorld(
+  x: number,
+  y: number,
+  camera: THREE.Camera,
+  renderer: THREE.WebGLRenderer,
+): THREE.Vector3 {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndcX = ((x - rect.left) / rect.width) * 2 - 1;
+  const ndcY = -((y - rect.top) / rect.height) * 2 + 1;
+  const vector = new THREE.Vector3(ndcX, ndcY, 0.5); // z=0.5 for middle of the frustum
+  vector.unproject(camera);
+  return vector;
+}
 
 export const PageEditor = () => {
   useSignals();
@@ -91,11 +107,30 @@ export const PageEditor = () => {
             },
           });
           console.log("Upload complete, adding object to scene");
+
+          // Calculate world position from cursor
+          let worldPosition = undefined;
+          if (editorEngine?.camera && editorEngine?.renderer && _position) {
+            worldPosition = screenToWorld(
+              _position.x,
+              _position.y,
+              editorEngine.camera,
+              editorEngine.renderer,
+            );
+          }
+
           const mediaItem: MediaItem = {
             version: 1,
             type: AssetType.OBJECT,
             media_id: item.id || uuidv4(),
             name: item.label || "Image Plane",
+            ...(worldPosition && {
+              position: {
+                x: worldPosition.x,
+                y: worldPosition.y,
+                z: worldPosition.z,
+              },
+            }),
             // Add other fields as needed
           };
           addObject(mediaItem);

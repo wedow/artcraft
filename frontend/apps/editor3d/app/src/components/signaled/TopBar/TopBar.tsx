@@ -12,6 +12,7 @@ import { getCurrentLocationWithoutParams } from "~/utilities";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
 import {
   GalleryModal,
+  galleryModalVisibleViewMode,
   galleryModalVisibleDuringDrag,
 } from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
@@ -110,6 +111,7 @@ export const TopBar = ({
   };
 
   const handleOpenGalleryModal = () => {
+    galleryModalVisibleViewMode.value = true;
     galleryModalVisibleDuringDrag.value = true;
   };
 
@@ -185,8 +187,6 @@ export const TopBar = ({
       />
 
       <GalleryModal
-        isOpen={galleryModalVisibleDuringDrag.value}
-        onClose={() => (galleryModalVisibleDuringDrag.value = false)}
         mode="view"
         onDownloadClicked={downloadFileFromUrl}
         onAddToSceneClicked={handleAddToScene}

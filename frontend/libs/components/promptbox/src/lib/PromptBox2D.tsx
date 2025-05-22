@@ -82,7 +82,6 @@ export const PromptBox2D = ({
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
-  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
@@ -110,6 +109,8 @@ export const PromptBox2D = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -185,9 +186,7 @@ export const PromptBox2D = ({
     fileInputRef.current?.click();
   };
 
-  const handleGallerySelect = () => {
-    setIsGalleryModalOpen(true);
-  };
+  const handleGallerySelect = () => setIsGalleryModalOpen(true);
 
   const handleGalleryClose = () => {
     setIsGalleryModalOpen(false);
@@ -638,7 +637,7 @@ export const PromptBox2D = ({
         </div>
       </div>
       <GalleryModal
-        isOpen={isGalleryModalOpen}
+        isOpen={!!isGalleryModalOpen}
         onClose={handleGalleryClose}
         mode="select"
         selectedItemIds={selectedGalleryImages}

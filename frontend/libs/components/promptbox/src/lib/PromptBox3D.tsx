@@ -139,10 +139,10 @@ export const PromptBox3D = ({
     },
   ]);
   const [isCameraSettingsOpen, setIsCameraSettingsOpen] = useState(false);
-  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -257,10 +257,7 @@ export const PromptBox3D = ({
     fileInputRef.current?.click();
   };
 
-  const handleGallerySelect = () => {
-    setIsGalleryModalOpen(true);
-  };
-
+  const handleGallerySelect = () => setIsGalleryModalOpen(true);
   const handleGalleryClose = () => {
     setIsGalleryModalOpen(false);
     setSelectedGalleryImages([]);
@@ -521,7 +518,7 @@ export const PromptBox3D = ({
     }
   };
 
-  const getCurrentSoraRemixAspectRatio = () : SoraImageRemixAspectRatio => {
+  const getCurrentSoraRemixAspectRatio = (): SoraImageRemixAspectRatio => {
     switch (cameraAspectRatio.value) {
       case CameraAspectRatio.HORIZONTAL_3_2:
         return SoraImageRemixAspectRatio.Wide;
@@ -532,7 +529,7 @@ export const PromptBox3D = ({
       default:
         return SoraImageRemixAspectRatio.Square;
     }
-  }
+  };
 
   const handleSaveFrame = async () => {
     if (!snapshotCurrentFrame) {
@@ -828,7 +825,7 @@ export const PromptBox3D = ({
         />
       </div>
       <GalleryModal
-        isOpen={isGalleryModalOpen}
+        isOpen={!!isGalleryModalOpen}
         onClose={handleGalleryClose}
         mode="select"
         selectedItemIds={selectedGalleryImages}

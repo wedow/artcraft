@@ -12,7 +12,11 @@ import {
 import { twMerge } from "tailwind-merge";
 import { GalleryDraggableItem } from "./GalleryDraggableItem";
 import { useSignals } from "@preact/signals-react/runtime";
-import { galleryReopenAfterDragSignal } from "./galleryModalSignals";
+import {
+  galleryModalVisibleDuringDrag,
+  galleryReopenAfterDragSignal,
+  galleryModalVisibleViewMode,
+} from "./galleryModalSignals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilter,
@@ -43,8 +47,7 @@ interface GroupedItems {
 type ModalMode = "select" | "view";
 
 interface GalleryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   mode: ModalMode;
   selectedItemIds?: string[];
   onSelectItem?: (id: string) => void;
@@ -55,11 +58,11 @@ interface GalleryModalProps {
     url: string,
     media_id: string | undefined
   ) => Promise<void>;
+  isOpen?: boolean;
 }
 
 export const GalleryModal = React.memo(
   ({
-    isOpen,
     onClose,
     mode = "view",
     selectedItemIds = [],
@@ -68,6 +71,7 @@ export const GalleryModal = React.memo(
     onUseSelected,
     onDownloadClicked,
     onAddToSceneClicked,
+    isOpen,
   }: GalleryModalProps) => {
     const [loading, setLoading] = useState(false);
     const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(
@@ -142,10 +146,10 @@ export const GalleryModal = React.memo(
           setUsername(session.data.user.username);
         }
       };
-      if (isOpen) {
+      if (isOpen || (mode === "view" && galleryModalVisibleViewMode.value)) {
         getUsername();
       }
-    }, [usersApi, isOpen]);
+    }, [usersApi, mode, galleryModalVisibleViewMode.value, isOpen]);
 
     // filter state
     const FILTERS = [
@@ -283,7 +287,12 @@ export const GalleryModal = React.memo(
 
     // Soft refresh on open: fetch first page and prepend new items
     useEffect(() => {
-      if (isOpen && allItems.length > 0 && username) {
+      if (
+        mode === "view" &&
+        galleryModalVisibleViewMode.value &&
+        allItems.length > 0 &&
+        username
+      ) {
         const fetchLatest = async () => {
           const filterMediaClasses = getFilterMediaClass(activeFilter);
           const response = await api.listUserMediaFiles({
@@ -324,13 +333,26 @@ export const GalleryModal = React.memo(
         fetchLatest();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen]);
+    }, [mode, galleryModalVisibleViewMode.value]);
 
     return (
       <>
         <Modal
-          isOpen={isOpen}
-          onClose={onClose}
+          isOpen={
+            mode === "view"
+              ? galleryModalVisibleViewMode.value &&
+                galleryModalVisibleDuringDrag.value
+              : typeof isOpen === "boolean"
+              ? isOpen
+              : true
+          }
+          onClose={() => {
+            if (mode === "view") {
+              onClose?.() || (galleryModalVisibleViewMode.value = false);
+            } else {
+              onClose?.();
+            }
+          }}
           className={twMerge(
             "h-[620px] max-w-4xl",
             mode === "view" && "h-[640px] max-w-4xl"
@@ -433,7 +455,10 @@ export const GalleryModal = React.memo(
                     showIconsInList={true}
                   />
                   {mode === "view" && <Modal.ExpandButton />}
-                  <CloseButton onClick={onClose} className="relative z-[51]" />
+                  <CloseButton
+                    onClick={() => (galleryModalVisibleViewMode.value = false)}
+                    className="relative z-[51]"
+                  />
                 </div>
               </div>
             </div>
@@ -534,7 +559,11 @@ export const GalleryModal = React.memo(
         <LightboxModal
           isOpen={isLightboxVisible}
           onClose={handleCloseLightbox}
-          onCloseGallery={onClose}
+          onCloseGallery={() =>
+            mode === "view"
+              ? (galleryModalVisibleViewMode.value = false)
+              : onClose?.()
+          }
           imageUrl={imageUrl}
           imageAlt={lightboxImage?.label || ""}
           onImageError={() => imageUrl && handleImageError(imageUrl)}

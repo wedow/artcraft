@@ -44,6 +44,12 @@
   ],
   "references": [
     {
+      "path": "../slider-v2/tsconfig.lib.json"
+    },
+    {
+      "path": "../popover/tsconfig.lib.json"
+    },
+    {
       "path": "../../api/tsconfig.lib.json"
     },
     {
@@ -56,13 +62,13 @@
       "path": "../button/tsconfig.lib.json"
     },
     {
-      "path": "../tab-selector/tsconfig.lib.json"
-    },
-    {
       "path": "../lightbox-modal/tsconfig.lib.json"
     },
     {
       "path": "../modal/tsconfig.lib.json"
+    },
+    {
+      "path": "../tooltip/tsconfig.lib.json"
     }
   ]
 }
