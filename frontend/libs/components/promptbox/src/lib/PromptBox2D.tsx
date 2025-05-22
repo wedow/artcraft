@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { useSignals } from "@preact/signals-react/runtime";
 import { toast } from "@storyteller/ui-toaster";
 import {
@@ -37,6 +36,7 @@ import {
   GetAppPreferences,
   SoraImageRemix,
   SoraImageRemixErrorType,
+  SoraImageRemixAspectRatio,
 } from "@storyteller/tauri-api";
 import { SoundRegistry } from "@storyteller/soundboard";
 
@@ -291,12 +291,15 @@ export const PromptBox2D = ({
     //console.log("Generate response:", generateResponse);
     //toast.success("Please wait while we process your image.");
 
+    const aspectRatio = getCurrentSoraRemixAspectRatio();
+
     const generateResponse = await SoraImageRemix({
       snapshot_media_token: snapshotMediaToken.data,
       disable_system_prompt: !useSystemPrompt,
       prompt: prompt,
       maybe_additional_images: referenceImages.map((image) => image.mediaToken),
       maybe_number_of_samples: 1,
+      aspect_ratio: aspectRatio,
     });
 
     console.log("generateResponse", generateResponse);
@@ -446,6 +449,19 @@ export const PromptBox2D = ({
     if (!selected || !selected.icon) return faRectangle;
     const iconElement = selected.icon as React.ReactElement;
     return iconElement.props.icon;
+  };
+
+  const getCurrentSoraRemixAspectRatio = (): SoraImageRemixAspectRatio => {
+    const selected = aspectRatioList.find((item) => item.selected);
+    switch (selected?.label) {
+      case "3:2":
+        return SoraImageRemixAspectRatio.Wide;
+      case "2:3":
+        return SoraImageRemixAspectRatio.Tall;
+      case "1:1":
+      default:
+        return SoraImageRemixAspectRatio.Square;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
