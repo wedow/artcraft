@@ -51,6 +51,7 @@ import {
   CommandSuccessStatus,
   GetAppPreferences,
   SoraImageRemix,
+  SoraImageRemixAspectRatio,
   SoraImageRemixErrorType,
 } from "@storyteller/tauri-api";
 
@@ -415,6 +416,8 @@ export const PromptBox3D = ({
 
         console.log("snapshotResult", snapshotResult);
 
+        const aspectRatio = getCurrentSoraRemixAspectRatio();
+
         const generateResponse = await SoraImageRemix({
           snapshot_media_token: snapshotResult.data!,
           disable_system_prompt: !useSystemPrompt,
@@ -423,6 +426,7 @@ export const PromptBox3D = ({
             (image) => image.mediaToken
           ),
           maybe_number_of_samples: 1,
+          aspect_ratio: aspectRatio,
         });
 
         console.log("generateResponse", generateResponse);
@@ -516,6 +520,19 @@ export const PromptBox3D = ({
         return faRectangleWide;
     }
   };
+
+  const getCurrentSoraRemixAspectRatio = () : SoraImageRemixAspectRatio => {
+    switch (cameraAspectRatio.value) {
+      case CameraAspectRatio.HORIZONTAL_3_2:
+        return SoraImageRemixAspectRatio.Wide;
+      case CameraAspectRatio.VERTICAL_2_3:
+      case CameraAspectRatio.VERTICAL_9_16:
+        return SoraImageRemixAspectRatio.Tall;
+      case CameraAspectRatio.SQUARE_1_1:
+      default:
+        return SoraImageRemixAspectRatio.Square;
+    }
+  }
 
   const handleSaveFrame = async () => {
     if (!snapshotCurrentFrame) {

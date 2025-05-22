@@ -42,7 +42,9 @@ const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); //
 
 const SORA_IMAGE_REMIX_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
-#[derive(Deserialize)]
+const DEFAULT_ASPECT_RATIO : SoraAspectRatio = SoraAspectRatio::Square;
+
+#[derive(Deserialize, Debug)]
 pub struct SoraImageRemixCommand {
   /// Image media file; the engine or canvas snapshot (screenshot).
   pub snapshot_media_token: MediaFileToken,
@@ -57,6 +59,17 @@ pub struct SoraImageRemixCommand {
   pub maybe_additional_images: Option<Vec<MediaFileToken>>,
 
   pub maybe_number_of_samples: Option<u32>,
+  
+  /// Aspect ratio.
+  pub aspect_ratio: Option<SoraAspectRatio>,
+}
+
+#[derive(Deserialize, Debug, Copy, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum SoraAspectRatio {
+  Square,
+  Wide,
+  Tall,
 }
 
 #[derive(Serialize, Debug)]
@@ -74,7 +87,6 @@ pub enum SoraImageRemixErrorType {
   SoraIsHavingProblems,
 }
 
-
 #[tauri::command]
 pub async fn sora_image_remix_command(
   app: AppHandle,
@@ -84,8 +96,8 @@ pub async fn sora_image_remix_command(
   sora_task_queue: State<'_, SoraTaskQueue>,
 ) -> CommandResult<(), SoraImageRemixErrorType, ()> {
   
-  info!("image_generation_command called; scene media token: {:?}, additional images: {:?}", 
-    request.snapshot_media_token, request.maybe_additional_images);
+  info!("image_generation_command called; scene media token: {:?}, additional images: {:?}, full request: {:?}", 
+    &request.snapshot_media_token, &request.maybe_additional_images, &request);
 
   // TODO(bt,2025-04-24): Better error messages to caller
 
@@ -240,6 +252,14 @@ pub async fn generate_image(
     sora_media_tokens.push(response.id);
   }
 
+  let aspect_ratio = request.aspect_ratio.unwrap_or(DEFAULT_ASPECT_RATIO);
+  
+  let aspect_ratio = match aspect_ratio {
+    SoraAspectRatio::Square => ImageSize::Square,
+    SoraAspectRatio::Wide => ImageSize::Wide,
+    SoraAspectRatio::Tall => ImageSize::Tall,
+  };
+
   info!("Calling image generation...");
 
   // TODO(bt,2025-04-21): Download media tokens.
@@ -250,7 +270,7 @@ pub async fn generate_image(
       image_remix_with_session_auto_renew(ImageRemixAutoRenewRequest {
         prompt: request.prompt.to_string(),
         num_images: NumImages::One,
-        image_size: ImageSize::Square,
+        image_size: aspect_ratio,
         sora_media_tokens: sora_media_tokens.clone(),
         credentials: &creds,
         request_timeout: Some(SORA_IMAGE_REMIX_TIMEOUT),

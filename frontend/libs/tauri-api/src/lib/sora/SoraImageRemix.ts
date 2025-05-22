@@ -17,6 +17,15 @@ export interface SoraImageRemixRequest {
 
   // Typically "1"
   maybe_number_of_samples: number,
+
+  // The aspect ratio of the output image
+  aspect_ratio?: SoraImageRemixAspectRatio,
+}
+
+export enum SoraImageRemixAspectRatio {
+  Square = "square",
+  Wide = "wide",
+  Tall = "tall",
 }
 
 export interface SoraImageRemixSuccess extends CommandResult {
@@ -43,13 +52,7 @@ export type SoraImageRemixResult = SoraImageRemixSuccess | SoraImageRemixError;
 export const SoraImageRemix = async (request: SoraImageRemixRequest) : Promise<SoraImageRemixResult> => {
   try {
     return await invoke("sora_image_remix_command", {
-        request: {
-        snapshot_media_token: request.snapshot_media_token,
-        disable_system_prompt: request.disable_system_prompt,
-        prompt: request.prompt,
-        maybe_additional_images: request.maybe_additional_images,
-        maybe_number_of_samples: request.maybe_number_of_samples,
-        },
+      request: request,
     }) as SoraImageRemixResult;
   } catch (error) {
     let maybeTypedError = error as CommandResult;
