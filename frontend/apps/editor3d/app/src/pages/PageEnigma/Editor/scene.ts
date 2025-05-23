@@ -206,6 +206,7 @@ class Scene {
           color: 0xffffff,
           map: texture,
           transparent: true,
+          side: THREE.DoubleSide,
         });
         obj = new THREE.Mesh(geometry, image_material);
         obj.userData["media_id"] = name;

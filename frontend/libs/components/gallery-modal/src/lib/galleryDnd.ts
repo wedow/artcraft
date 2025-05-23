@@ -3,7 +3,6 @@ import {
   galleryModalVisibleDuringDrag,
   galleryReopenAfterDragSignal,
 } from "./galleryModalSignals";
-import { signal } from "@preact/signals-react";
 
 interface DragState {
   item: GalleryItem | null;
@@ -24,14 +23,6 @@ const dragState: DragState = {
 };
 
 const dragThreshold = 5;
-
-export const onImageDropSignal = signal<
-  ((item: GalleryItem, position: { x: number; y: number }) => void) | null
->(null);
-
-export function setOnImageDrop(cb: typeof onImageDropSignal.value) {
-  onImageDropSignal.value = cb;
-}
 
 function onPointerDown(event: React.PointerEvent, item: GalleryItem) {
   if (event.button !== 0) return;
