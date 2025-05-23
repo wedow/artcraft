@@ -67,12 +67,14 @@ function onPointerUp(event: PointerEvent) {
     dragState.isDragging &&
     dragState.item.mediaClass === "image"
   ) {
-    if (onImageDropSignal.value) {
-      onImageDropSignal.value(dragState.item, {
-        x: event.pageX,
-        y: event.pageY,
-      });
-    }
+    window.dispatchEvent(
+      new CustomEvent("gallery-image-drop", {
+        detail: {
+          item: dragState.item,
+          position: { x: event.pageX, y: event.pageY },
+        },
+      })
+    );
   }
   dragState.item = null;
   dragState.isDragging = false;

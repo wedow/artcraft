@@ -54,13 +54,11 @@ import {
   topNavMediaId,
   topNavMediaUrl,
 } from "~/components/signaled/TopBar/TopBar";
-import { setOnImageDrop } from "../../../../../../libs/components/gallery-modal/src/lib/galleryDnd";
 import { uploadPlaneFromMediaToken } from "~/components/reusable/UploadModalMedia/uploadPlane";
 import { addObject } from "./signals/objectGroup/addObject";
 import { AssetType } from "~/enums";
 import { v4 as uuidv4 } from "uuid";
 import { MediaItem } from "~/pages/PageEnigma/models";
-import { GalleryItem } from "../../../../../../libs/components/gallery-modal/src/lib/gallery-modal";
 import { UploaderState } from "~/models";
 import * as THREE from "three";
 
@@ -247,29 +245,30 @@ export const PageEditor = () => {
 
   // Image drop from gallery/library modal
   useEffect(() => {
-    setOnImageDrop(
-      async (item: GalleryItem, _position: { x: number; y: number }) => {
-        console.log("Drop debug:", {
-          editorEngine,
-          camera: editorEngine?.camera,
-          renderer: editorEngine?.renderer,
-          _position,
-        });
+    function handleGalleryImageDrop(e: CustomEvent) {
+      const { item, position } = e.detail;
+      console.log("Drop debug (event):", {
+        editorEngine,
+        camera: editorEngine?.camera,
+        renderer: editorEngine?.renderer,
+        position,
+      });
 
-        // Calculate world position from cursor immediately on drop
-        let worldPosition = undefined;
-        if (editorEngine?.camera && editorEngine?.renderer && _position) {
-          const rect = editorEngine.renderer.domElement.getBoundingClientRect();
-          // Convert client coordinates to canvas coordinates
-          const canvasX = _position.x - rect.left;
-          const canvasY = _position.y - rect.top;
-          const ndcX = (canvasX / rect.width) * 2 - 1;
-          const ndcY = -(canvasY / rect.height) * 2 + 1;
-          const vector = new THREE.Vector3(ndcX, ndcY, 0.5);
-          vector.unproject(editorEngine.camera);
-          worldPosition = vector;
-        }
+      // Calculate world position from cursor immediately on drop
+      let worldPosition = undefined;
+      if (editorEngine?.camera && editorEngine?.renderer && position) {
+        const rect = editorEngine.renderer.domElement.getBoundingClientRect();
+        // Convert client coordinates to canvas coordinates
+        const canvasX = position.x - rect.left;
+        const canvasY = position.y - rect.top;
+        const ndcX = (canvasX / rect.width) * 2 - 1;
+        const ndcY = -(canvasY / rect.height) * 2 + 1;
+        const vector = new THREE.Vector3(ndcX, ndcY, 0.5);
+        vector.unproject(editorEngine.camera);
+        worldPosition = vector;
+      }
 
+      (async () => {
         try {
           // Place the object immediately to avoid upload delay affecting placement
           const mediaItem: MediaItem = {
@@ -297,8 +296,18 @@ export const PageEditor = () => {
         } catch (err) {
           console.error("Failed to add image plane:", err);
         }
-      },
+      })();
+    }
+    window.addEventListener(
+      "gallery-image-drop",
+      handleGalleryImageDrop as EventListener,
     );
+    return () => {
+      window.removeEventListener(
+        "gallery-image-drop",
+        handleGalleryImageDrop as EventListener,
+      );
+    };
   }, []);
 
   const display3d = appTabId.value === "3D" ? "block" : "none";
