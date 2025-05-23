@@ -1,9 +1,9 @@
+// TODO: Move into shared component.
 import { MediaItem } from "~/pages/PageEnigma/models";
 import { useSignals } from "@preact/signals-react/runtime";
 import DndAsset from "~/pages/PageEnigma/DragAndDrop/DndAsset";
 import { Badge } from "~/components";
 import { AssetType } from "~/enums";
-// import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpDownLeftRight } from "@fortawesome/pro-solid-svg-icons";
 
@@ -37,7 +37,6 @@ const patchExpressionObjectType = (mediaType: string) => {
 
 export const ItemElement = ({ item }: Props) => {
   useSignals();
-  // const [imageError, setImageError] = useState(false);
 
   return (
     <div className="group relative w-full select-none overflow-hidden transition-all duration-200">

@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-
+// TODO: Move to shared component
 interface BadgeProps {
   label: string;
   color?: string;

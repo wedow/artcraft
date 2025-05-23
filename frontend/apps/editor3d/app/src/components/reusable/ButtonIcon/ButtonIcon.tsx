@@ -1,3 +1,4 @@
+// TODO: create a shared component.
 import {
   FontAwesomeIcon,
   FontAwesomeIconProps,
