@@ -81,7 +81,10 @@ export default function SignUpScreen() {
           email: email!,
           password: password!,
           passwordConfirmation: passwordConfirmation!,
-        }).then((error) => {
+        }).then((response) => {
+          const redirectPath = searchParams.get("redirect");
+          navigate(redirectPath ? redirectPath : "/");
+        }).catch((error) => {
           console.log("Error occured", error);
           if (error) {
             addToast(ToastTypes.ERROR, error);
