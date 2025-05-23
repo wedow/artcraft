@@ -255,22 +255,7 @@ export const PageEditor = () => {
           renderer: editorEngine?.renderer,
           _position,
         });
-        // Diagnostic log for received drop position and canvas rect
-        if (editorEngine?.renderer) {
-          const rect = editorEngine.renderer.domElement.getBoundingClientRect();
-          const canvasX = _position.x - rect.left;
-          const canvasY = _position.y - rect.top;
-          console.log(
-            "[Drop Debug] Received:",
-            _position,
-            "Canvas rect:",
-            rect,
-            "canvasX:",
-            canvasX,
-            "canvasY:",
-            canvasY,
-          );
-        }
+
         // Calculate world position from cursor immediately on drop
         let worldPosition = undefined;
         if (editorEngine?.camera && editorEngine?.renderer && _position) {
@@ -283,21 +268,6 @@ export const PageEditor = () => {
           const vector = new THREE.Vector3(ndcX, ndcY, 0.5);
           vector.unproject(editorEngine.camera);
           worldPosition = vector;
-          // Diagnostic logging
-          console.log({
-            dropPosition: _position,
-            rect: {
-              left: rect.left,
-              top: rect.top,
-              width: rect.width,
-              height: rect.height,
-            },
-            canvasX,
-            canvasY,
-            ndcX,
-            ndcY,
-            worldPosition,
-          });
         }
 
         try {
@@ -324,9 +294,8 @@ export const PageEditor = () => {
               if (state.status) console.log("Upload status:", state.status);
             },
           });
-          console.log("Upload complete");
         } catch (err) {
-          console.error("Failed to upload and add image plane:", err);
+          console.error("Failed to add image plane:", err);
         }
       },
     );
