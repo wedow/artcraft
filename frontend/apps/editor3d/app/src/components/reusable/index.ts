@@ -1,5 +1,4 @@
 export * from "./Badge";
-export * from "./Button";
 export * from "./ButtonDialogue";
 export * from "./ButtonDropdown";
 export * from "./ButtonIcon";
