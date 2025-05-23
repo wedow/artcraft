@@ -32,6 +32,9 @@
       "path": "../../libs/components/lightbox-modal"
     },
     {
+      "path": "../../libs/components/tab-selector"
+    },
+    {
       "path": "../../libs/components/input"
     },
     {
@@ -62,7 +65,7 @@
       "path": "../../libs/tauri-api"
     },
     {
-      "path": "../../libs/components/tab-selector"
+      "path": "../../libs/components/menu-icon-selector"
     },
     {
       "path": "../../libs/api"

@@ -3,6 +3,9 @@ import {
   faChevronLeft,
   faGear,
   faImages,
+  faCube,
+  faFilm,
+  faPaintbrush,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useLocation, useParams } from "react-router-dom";
 import { Button, ButtonLink } from "~/components";
@@ -18,11 +21,15 @@ import {
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { downloadFileFromUrl } from "@storyteller/api";
-import { TabSelector, TabItem } from "@storyteller/ui-tab-selector";
+import {
+  MenuIconSelector,
+  MenuIconItem,
+} from "@storyteller/ui-menu-icon-selector";
 import { Signal, signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function isEditorPath(path: string) {
   if (path === "/") return true;
@@ -37,10 +44,14 @@ interface Props {
   is3DInitSignal: Signal<boolean>;
 }
 
-const appTabs: TabItem[] = [
-  { id: "2D", label: "2D" },
-  { id: "3D", label: "3D" },
-  { id: "VIDEO", label: "Video" },
+const appMenuTabs: MenuIconItem[] = [
+  {
+    id: "2D",
+    label: "2D Canvas",
+    icon: <FontAwesomeIcon icon={faPaintbrush} />,
+  },
+  { id: "3D", label: "3D Editor", icon: <FontAwesomeIcon icon={faCube} /> },
+  { id: "VIDEO", label: "Video", icon: <FontAwesomeIcon icon={faFilm} /> },
 ];
 
 export const topNavMediaId = signal<string>("");
@@ -126,7 +137,7 @@ export const TopBar = ({
             <a href="/">
               <span className="sr-only">ArtCraft</span>
               <img
-                className="h-[28px] w-auto"
+                className="h-[24px] w-auto"
                 src="/resources/images/artcraft-logo-3.png"
                 alt="Logo ArtCraft"
               />
@@ -136,11 +147,11 @@ export const TopBar = ({
                 Back to Editor
               </ButtonLink>
             )}
-            <TabSelector
-              tabs={appTabs}
-              activeTab={appTabIdSignal.value}
+            <MenuIconSelector
+              menuItems={appMenuTabs}
+              activeMenu={appTabIdSignal.value}
               disabled={false}
-              onTabChange={handleTabChange}
+              onMenuChange={handleTabChange}
               className="w-fit"
             />
           </div>
