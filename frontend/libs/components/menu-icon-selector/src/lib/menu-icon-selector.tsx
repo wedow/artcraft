@@ -81,13 +81,13 @@ export const MenuIconSelector: React.FC<MenuIconSelectorProps> = ({
     >
       <div
         ref={containerRef}
-        className="relative flex gap-1 bg-white/10 border-none rounded-xl px-1 py-1 min-w-max"
+        className="relative flex gap-1 bg-white/10 border-white/10 border rounded-xl px-1 py-1 min-w-max"
         style={{ minWidth: 0 }}
         onMouseLeave={() => setHoveredIndex(-1)}
       >
         {/* Active tab background */}
         <div
-          className="absolute z-10 rounded-lg bg-primary/80 shadow-md transition-all duration-150 ease-in-out"
+          className="absolute z-10 rounded-lg bg-primary/30 border-2 border-primary shadow-md transition-all duration-150 ease-in-out -ml-[1px]"
           style={{
             left: activeStyle.left,
             width: activeStyle.width,
@@ -98,7 +98,7 @@ export const MenuIconSelector: React.FC<MenuIconSelectorProps> = ({
         {/* Hover background (only if hovering a different tab) */}
         {hoveredIndex !== -1 && hoveredIndex !== selectedIndex && (
           <div
-            className="absolute z-20 rounded-lg bg-white/15 transition-all duration-150 ease-in-out pointer-events-none"
+            className="absolute z-20 rounded-lg bg-white/15 transition-all duration-150 ease-in-out pointer-events-none -ml-[1px]"
             style={{
               left: hoverStyle.left,
               width: hoverStyle.width,
@@ -114,6 +114,7 @@ export const MenuIconSelector: React.FC<MenuIconSelectorProps> = ({
             position="bottom"
             delay={100}
             closeOnClick={true}
+            className="font-medium"
           >
             <button
               ref={(el) => {
