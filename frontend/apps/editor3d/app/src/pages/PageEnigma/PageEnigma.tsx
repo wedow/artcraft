@@ -119,7 +119,6 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
         />
         <GenerateModals />
         <ErrorDialog />
-        {/* <Wizard /> */}
       </EngineProvider>
       <EditorLoadingBar />
       <Toaster offsetTop={70} offsetRight={12} />
