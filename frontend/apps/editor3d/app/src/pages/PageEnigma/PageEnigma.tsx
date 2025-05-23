@@ -106,7 +106,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   }
 
   return (
-    <TrackProvider>
+  
       <EngineProvider sceneToken={sceneToken}>
         <PageEditor />
         <DragComponent />
@@ -119,9 +119,10 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
         />
         <GenerateModals />
         <ErrorDialog />
-      </EngineProvider>
-      <EditorLoadingBar />
+     
+      <EditorLoadingBar/>
       <Toaster offsetTop={70} offsetRight={12} />
-    </TrackProvider>
+      </EngineProvider>
+ 
   );
 };

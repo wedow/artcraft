@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { SceneGenereationMetaData } from "../models/sceneGenerationMetadata";
 import { StoryTellerProxyScene } from "../proxy/storyteller_proxy_scene";
-import { StoryTellerProxyTimeline } from "../proxy/storyteller_proxy_timeline";
+
 import {
   setCameraAspectRatio,
   hideEditorLoader,
@@ -53,19 +53,11 @@ export class SaveManager {
     );
     const scene_json = await proxyScene.saveToScene(this.editor.version);
 
-    const proxyTimeline = new StoryTellerProxyTimeline(
-      this.editor.version,
-      this.editor.timeline,
-      this.editor.transform_engine,
-      this.editor.animation_engine,
-      this.editor.audio_engine,
-      this.editor.lipsync_engine,
-      this.editor.emotion_engine,
-    );
-    const timeline_json = await proxyTimeline.saveToJson();
+  
+  
     const check_sum_data = {
       scene: scene_json,
-      timeline: timeline_json,
+      timeline: "",
       camera_data: {
         position: this.editor.camera?.position,
         rotation: this.editor.camera?.rotation,
@@ -89,16 +81,7 @@ export class SaveManager {
     );
     const scene_json = await proxyScene.saveToScene(this.editor.version);
 
-    const proxyTimeline = new StoryTellerProxyTimeline(
-      this.editor.version,
-      this.editor.timeline,
-      this.editor.transform_engine,
-      this.editor.animation_engine,
-      this.editor.audio_engine,
-      this.editor.lipsync_engine,
-      this.editor.emotion_engine,
-    );
-    const timeline_json = await proxyTimeline.saveToJson();
+   
 
     // Save all cameras data
     const camerasData = cameras.value.map((cam: Camera) => ({
@@ -114,7 +97,7 @@ export class SaveManager {
       version: this.editor.version,
       scene: scene_json,
       ...sceneGenerationMetadata,
-      timeline: timeline_json,
+      timeline: "",
       skybox: this.editor.activeScene.skybox,
       camera_data: {
         position: this.editor.camera?.position,
@@ -150,17 +133,7 @@ export class SaveManager {
     );
     const scene_json = await proxyScene.saveToScene(this.editor.version);
     console.log(scene_json);
-    const proxyTimeline = new StoryTellerProxyTimeline(
-      this.editor.version,
-      this.editor.timeline,
-      this.editor.transform_engine,
-      this.editor.animation_engine,
-      this.editor.audio_engine,
-      this.editor.lipsync_engine,
-      this.editor.emotion_engine,
-    );
-    const timeline_json = await proxyTimeline.saveToJson();
-
+ 
     // Save all cameras data
     const camerasData = cameras.value.map((cam: Camera) => ({
       id: cam.id,
@@ -175,7 +148,7 @@ export class SaveManager {
       version: this.editor.version,
       scene: scene_json,
       ...sceneGenerationMetadata,
-      timeline: timeline_json,
+      timeline: "",
       skybox: this.editor.activeScene.skybox,
       camera_data: {
         position: this.editor.camera?.position,
@@ -297,17 +270,7 @@ export class SaveManager {
       child.layers.set(1);
     });
 
-    const proxyTimeline = new StoryTellerProxyTimeline(
-      this.editor.version,
-      this.editor.timeline,
-      this.editor.transform_engine,
-      this.editor.animation_engine,
-      this.editor.audio_engine,
-      this.editor.lipsync_engine,
-      this.editor.emotion_engine,
-    );
     console.debug("Loading Timeline", scene_json["timeline"]);
-    await proxyTimeline.loadFromJson(scene_json["timeline"]);
 
     this.editor.timeline.checkEditorCanPlay();
 
