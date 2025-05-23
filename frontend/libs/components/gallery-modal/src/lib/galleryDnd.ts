@@ -52,20 +52,38 @@ function onPointerMove(event: PointerEvent) {
   dragState.currY = event.pageY;
 }
 
+export const IMAGE_DROP_EVENT = "gallery-image-drop";
+
+export function emitImageDrop(
+  item: GalleryItem,
+  position: { x: number; y: number }
+) {
+  window.dispatchEvent(
+    new CustomEvent(IMAGE_DROP_EVENT, { detail: { item, position } })
+  );
+}
+
+export function onImageDrop(
+  callback: (item: GalleryItem, position: { x: number; y: number }) => void
+) {
+  const handler = (e: any) => {
+    callback(e.detail.item, e.detail.position);
+  };
+  window.addEventListener(IMAGE_DROP_EVENT, handler);
+  return handler;
+}
+
+export function removeImageDropListener(handler: (e: any) => void) {
+  window.removeEventListener(IMAGE_DROP_EVENT, handler);
+}
+
 function onPointerUp(event: PointerEvent) {
   if (
     dragState.item &&
     dragState.isDragging &&
     dragState.item.mediaClass === "image"
   ) {
-    window.dispatchEvent(
-      new CustomEvent("gallery-image-drop", {
-        detail: {
-          item: dragState.item,
-          position: { x: event.pageX, y: event.pageY },
-        },
-      })
-    );
+    emitImageDrop(dragState.item, { x: event.pageX, y: event.pageY });
   }
   dragState.item = null;
   dragState.isDragging = false;

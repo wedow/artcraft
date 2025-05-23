@@ -61,6 +61,11 @@ import { v4 as uuidv4 } from "uuid";
 import { MediaItem } from "~/pages/PageEnigma/models";
 import { UploaderState } from "~/models";
 import * as THREE from "three";
+import {
+  GalleryItem,
+  onImageDrop,
+  removeImageDropListener,
+} from "@storyteller/ui-gallery-modal";
 
 export const PageEditor = () => {
   useSignals();
@@ -245,68 +250,62 @@ export const PageEditor = () => {
 
   // Image drop from gallery/library modal
   useEffect(() => {
-    function handleGalleryImageDrop(e: CustomEvent) {
-      const { item, position } = e.detail;
-      console.log("Drop debug (event):", {
-        editorEngine,
-        camera: editorEngine?.camera,
-        renderer: editorEngine?.renderer,
-        position,
-      });
+    const handler = onImageDrop(
+      (item: GalleryItem, position: { x: number; y: number }) => {
+        console.log("Drop debug (event):", {
+          editorEngine,
+          camera: editorEngine?.camera,
+          renderer: editorEngine?.renderer,
+          position,
+        });
 
-      // Calculate world position from cursor immediately on drop
-      let worldPosition = undefined;
-      if (editorEngine?.camera && editorEngine?.renderer && position) {
-        const rect = editorEngine.renderer.domElement.getBoundingClientRect();
-        // Convert client coordinates to canvas coordinates
-        const canvasX = position.x - rect.left;
-        const canvasY = position.y - rect.top;
-        const ndcX = (canvasX / rect.width) * 2 - 1;
-        const ndcY = -(canvasY / rect.height) * 2 + 1;
-        const vector = new THREE.Vector3(ndcX, ndcY, 0.5);
-        vector.unproject(editorEngine.camera);
-        worldPosition = vector;
-      }
-
-      (async () => {
-        try {
-          // Place the object immediately to avoid upload delay affecting placement
-          const mediaItem: MediaItem = {
-            version: 1,
-            type: AssetType.OBJECT,
-            media_id: item.id || uuidv4(),
-            name: item.label || "Image Plane",
-            ...(worldPosition && {
-              position: {
-                x: worldPosition.x,
-                y: worldPosition.y,
-                z: worldPosition.z,
-              },
-            }),
-          };
-          addObject(mediaItem);
-
-          await uploadPlaneFromMediaToken({
-            title: item.label || "Image Plane",
-            mediaToken: item.id,
-            progressCallback: (state: UploaderState) => {
-              if (state.status) console.log("Upload status:", state.status);
-            },
-          });
-        } catch (err) {
-          console.error("Failed to add image plane:", err);
+        // Calculate world position from cursor immediately on drop
+        let worldPosition = undefined;
+        if (editorEngine?.camera && editorEngine?.renderer && position) {
+          const rect = editorEngine.renderer.domElement.getBoundingClientRect();
+          // Convert client coordinates to canvas coordinates
+          const canvasX = position.x - rect.left;
+          const canvasY = position.y - rect.top;
+          const ndcX = (canvasX / rect.width) * 2 - 1;
+          const ndcY = -(canvasY / rect.height) * 2 + 1;
+          const vector = new THREE.Vector3(ndcX, ndcY, 0.5);
+          vector.unproject(editorEngine.camera);
+          worldPosition = vector;
         }
-      })();
-    }
-    window.addEventListener(
-      "gallery-image-drop",
-      handleGalleryImageDrop as EventListener,
+
+        (async () => {
+          try {
+            // Place the object immediately to avoid upload delay affecting placement
+            const mediaItem: MediaItem = {
+              version: 1,
+              type: AssetType.OBJECT,
+              media_id: item.id || uuidv4(),
+              name: item.label || "Image Plane",
+              ...(worldPosition && {
+                position: {
+                  x: worldPosition.x,
+                  y: worldPosition.y,
+                  z: worldPosition.z,
+                },
+              }),
+            };
+            addObject(mediaItem);
+
+            await uploadPlaneFromMediaToken({
+              title: item.label || "Image Plane",
+              mediaToken: item.id,
+              progressCallback: (state: UploaderState) => {
+                if (state.status) console.log("Upload status:", state.status);
+              },
+            });
+          } catch (err) {
+            console.error("Failed to add image plane:", err);
+          }
+        })();
+      },
     );
     return () => {
-      window.removeEventListener(
-        "gallery-image-drop",
-        handleGalleryImageDrop as EventListener,
-      );
+      removeImageDropListener(handler);
     };
   }, []);
 
