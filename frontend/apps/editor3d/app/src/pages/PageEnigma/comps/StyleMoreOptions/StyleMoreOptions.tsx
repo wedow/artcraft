@@ -1,5 +1,6 @@
 import { useSignals } from "@preact/signals-react/runtime";
-import { Button, TransitionDialogue } from "~/components";
+import { TransitionDialogue } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { StyleOptions } from "~/pages/PageEnigma/comps/SidePanelTabs/tabComps/StylizeTab/StyleOptions";
 
 interface Props {

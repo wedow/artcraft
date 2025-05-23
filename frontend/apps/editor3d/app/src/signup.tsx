@@ -1,6 +1,7 @@
 import { faEnvelope, faKey, faUser } from "@fortawesome/pro-solid-svg-icons";
 import { GlobalSettingsManager } from "./pages/PageEnigma/GlobalSettingsManager";
-import { Button, Input } from "~/components";
+import { Input } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { addToast, authentication, signUp } from "~/signals";
 import { FormEvent, useRef, useState, StrictMode } from "react";
 import { AUTH_STATUS, ToastTypes } from "~/enums";

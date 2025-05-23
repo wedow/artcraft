@@ -1,4 +1,6 @@
-import { Button } from "~/components";
+import {
+  Button
+} from "@storyteller/ui-button"
 
 interface Props {
   title: string;

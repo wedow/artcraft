@@ -17,12 +17,13 @@ import { scene, signalScene, authentication, addToast } from "~/signals";
 import { outlinerIsShowing } from "~/pages/PageEnigma/signals/outliner/outliner";
 
 import {
-  ButtonDialogue,
+  // ButtonDialogue,
   ButtonDropdown,
   Input,
   H4,
-  Button,
 } from "~/components";
+
+import {Button} from "@storyteller/ui-button";
 
 import { TestFeaturesButtons } from "./TestFeaturesButtons";
 import { Help } from "./Help";
@@ -300,7 +301,7 @@ export const ControlsTopButtons = () => {
           Outliner
         </Button>
 
-        <ButtonDialogue
+        {/* <ButtonDialogue
           buttonProps={{
             variant: "secondary",
             label: "Help",
@@ -320,7 +321,7 @@ export const ControlsTopButtons = () => {
           }
         >
           <Help />
-        </ButtonDialogue>
+        </ButtonDialogue> */}
       </div>
       <TestFeaturesButtons debug={false} />
     </div>

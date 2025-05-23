@@ -5,7 +5,9 @@ import {
   faImages,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useLocation, useParams } from "react-router-dom";
-import { Button, ButtonLink } from "~/components";
+import { Button } from "@storyteller/ui-button"
+
+import { ButtonLink } from "~/components";
 import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
 import { getCurrentLocationWithoutParams } from "~/utilities";

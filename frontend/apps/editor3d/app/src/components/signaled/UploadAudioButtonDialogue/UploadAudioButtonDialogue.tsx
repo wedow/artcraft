@@ -4,12 +4,15 @@ import { faCirclePlus, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import {
-  Button,
+  
   FileUploader,
   H2,
   TransitionDialogue,
   WaveformPlayer,
 } from "~/components";
+
+import { Button } from "@storyteller/ui-button"
+
 
 import { MediaUploadApi } from "~/Classes/ApiManager/MediaUploadApi";
 import { AUDIO_FILE_TYPE, ToastTypes } from "~/enums";

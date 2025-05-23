@@ -1,5 +1,4 @@
 export * from "./Badge";
-export * from "./ButtonDialogue";
 export * from "./ButtonDropdown";
 export * from "./ButtonIcon";
 export * from "./ButtonIconSelect";
@@ -24,7 +23,6 @@ export * from "./Select";
 export * from "./Slider";
 export * from "./Tabs";
 export * from "./Textarea";
-export * from "./ToggleButton";
 export * from "./Tooltip";
 export * from "./TransitionDialogue";
 export * from "./Typography";

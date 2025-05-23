@@ -1,7 +1,7 @@
 import { Fragment, useCallback } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { DoNotShow } from "~/constants";
-import { Button } from "~/components";
+import { Button } from "@storyteller/ui-button"
 
 interface Props {
   text: string;

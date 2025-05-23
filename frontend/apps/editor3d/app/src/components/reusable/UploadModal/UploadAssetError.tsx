@@ -1,6 +1,8 @@
-import { Button, P, H3 } from "~/components";
+import { P, H3 } from "~/components";
 import { FilterEngineCategories } from "~/enums";
-
+import {
+  Button
+} from "@storyteller/ui-button"
 interface Props {
   onCancel: () => void;
   onRetry: () => void;

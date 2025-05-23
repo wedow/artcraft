@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { faVolumeHigh, faChevronRight } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { H4, H6, Button, Label, Textarea } from "~/components";
+import { H4, H6, Label, Textarea } from "~/components";
+import { Button } from "@storyteller/ui-button";
 
 import { TtsState } from "~/pages/PageEnigma/models/voice";
 import { AudioTabPages } from "~/pages/PageEnigma/enums";

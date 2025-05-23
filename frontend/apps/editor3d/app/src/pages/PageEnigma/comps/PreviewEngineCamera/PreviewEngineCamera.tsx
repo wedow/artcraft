@@ -23,7 +23,8 @@ import { pageWidth } from "~/signals";
 import { CameraAspectRatio, EditorStates } from "~/pages/PageEnigma/enums";
 import { CameraViewCanvas } from "~/pages/PageEnigma/comps/EngineCanvases";
 
-import { Button, ButtonIcon, Tooltip } from "~/components";
+import { ButtonIcon, Tooltip } from "~/components";
+import { Button } from "@storyteller/ui-button"
 import { useEffect } from "react";
 
 export const PreviewEngineCamera = () => {

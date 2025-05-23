@@ -1,6 +1,7 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { faAngleLeft, faFilm, faPlus } from "@fortawesome/pro-solid-svg-icons";
-import { Button, TopBar } from "~/components";
+import { TopBar } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { PreviewImages } from "~/pages/PageEnigma/comps/PreviewImages";
 import { useContext, useState } from "react";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";

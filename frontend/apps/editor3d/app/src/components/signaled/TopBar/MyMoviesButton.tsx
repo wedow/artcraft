@@ -2,7 +2,7 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { twMerge } from "tailwind-merge";
 import { faFilm } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { generateMovieId, viewMyMovies } from "~/pages/PageEnigma/signals";
 
 import { activeWorkflowJobs } from "~/signals";

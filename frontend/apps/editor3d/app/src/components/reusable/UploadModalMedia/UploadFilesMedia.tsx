@@ -1,6 +1,6 @@
 import { useState } from "react";
-
-import { Button, H6, Input } from "~/components";
+import {  H6, Input } from "~/components";
+import { Button } from "@storyteller/ui-button"
 import { FileUploader } from "../UploadModal/FileUploader";
 import { uploadPlane } from "./uploadPlane";
 import { UploaderState } from "~/models";

@@ -14,7 +14,9 @@ import {
   timelineHeight,
 } from "../../signals";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
-import { Button, H5, InputVector } from "~/components";
+import {  H5, InputVector } from "~/components";
+import { Button } from "@storyteller/ui-button"
+
 import { editorState } from "~/pages/PageEnigma/signals/engine";
 import { twMerge } from "tailwind-merge";
 import { EditorStates } from "~/pages/PageEnigma/enums";

@@ -1,5 +1,5 @@
 import { Background } from "./Background";
-import { Button } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { Objects } from "./Objects";
 import { Characters } from "./Characters";
 import {
