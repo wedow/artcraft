@@ -17,7 +17,11 @@ import {
   faPlus,
   faImages,
 } from "@fortawesome/pro-solid-svg-icons";
-import { faRectangle } from "@fortawesome/pro-regular-svg-icons";
+import {
+  faRectangle,
+  faSquare,
+  faRectangleVertical,
+} from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
@@ -34,7 +38,7 @@ interface ReferenceImage {
   mediaToken: string;
 }
 
-interface PromptBoxVideoProps {
+interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
   model: string;
@@ -42,13 +46,13 @@ interface PromptBoxVideoProps {
   url?: string;
 }
 
-export const PromptBoxVideo = ({
+export const PromptBoxImage = ({
   useJobContext,
   onEnqueuePressed,
   model,
   imageMediaId,
   url,
-}: PromptBoxVideoProps) => {
+}: PromptBoxImageProps) => {
   useSignals();
 
   // for the image media id and url, we need to set the reference image gallery panel.
@@ -69,6 +73,7 @@ export const PromptBoxVideo = ({
   const [content, setContent] = useState("");
   const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
     useJobContext();
+
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
@@ -79,16 +84,21 @@ export const PromptBoxVideo = ({
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
-  const [resolutionList, setResolutionList] = useState<PopoverItem[]>([
+  const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
-      label: "720p",
+      label: "3:2",
       selected: true,
       icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
     },
     {
-      label: "480p",
+      label: "2:3",
       selected: false,
-      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
+      icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
+    },
+    {
+      label: "1:1",
+      selected: false,
+      icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
     },
   ]);
 
@@ -114,8 +124,8 @@ export const PromptBoxVideo = ({
     }
   }, [imageMediaId, url]);
 
-  const handleResolutionSelect = (selectedItem: PopoverItem) => {
-    setResolutionList((prev) =>
+  const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
+    setAspectRatioList((prev) =>
       prev.map((item) => ({
         ...item,
         selected: item.label === selectedItem.label,
@@ -243,7 +253,7 @@ export const PromptBoxVideo = ({
   };
 
   const getCurrentResolutionIcon = () => {
-    const selected = resolutionList.find((item) => item.selected);
+    const selected = aspectRatioList.find((item) => item.selected);
     if (!selected || !selected.icon) return faRectangle;
     const iconElement = selected.icon as React.ReactElement;
     return iconElement.props.icon;
@@ -350,16 +360,16 @@ export const PromptBoxVideo = ({
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Tooltip
-                content="Resolution"
+                content="Aspect Ratio"
                 position="top"
                 className="z-50"
                 closeOnClick={true}
               >
                 <PopoverMenu
-                  items={resolutionList}
-                  onSelect={handleResolutionSelect}
+                  items={aspectRatioList}
+                  onSelect={handleAspectRatioSelect}
                   mode="toggle"
-                  panelTitle="Resolution"
+                  panelTitle="Aspect Ratio"
                   showIconsInList
                   triggerIcon={
                     <FontAwesomeIcon

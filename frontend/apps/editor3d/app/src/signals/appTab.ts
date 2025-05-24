@@ -4,7 +4,7 @@ import { signal } from "@preact/signals-react";
 export const appTabId = signal("VIDEO");
 
 export const setAppTabId = (newId: string) => {
-  if (newId != "2D" && newId != "3D" && newId != "VIDEO") {
+  if (newId != "2D" && newId != "3D" && newId != "VIDEO" && newId != "IMAGE") {
     console.error("Provided app ID is not valid");
     return;
   }

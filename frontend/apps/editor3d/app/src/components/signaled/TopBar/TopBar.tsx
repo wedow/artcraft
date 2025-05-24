@@ -6,6 +6,7 @@ import {
   faCube,
   faFilm,
   faPaintbrush,
+  faImage,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useLocation, useParams } from "react-router-dom";
 import { Button, ButtonLink } from "~/components";
@@ -51,7 +52,16 @@ const appMenuTabs: MenuIconItem[] = [
     icon: <FontAwesomeIcon icon={faPaintbrush} />,
   },
   { id: "3D", label: "3D Editor", icon: <FontAwesomeIcon icon={faCube} /> },
-  { id: "VIDEO", label: "Video", icon: <FontAwesomeIcon icon={faFilm} /> },
+  {
+    id: "VIDEO",
+    label: "Prompt to Video",
+    icon: <FontAwesomeIcon icon={faFilm} />,
+  },
+  // {
+  //   id: "IMAGE",
+  //   label: "Prompt to Image",
+  //   icon: <FontAwesomeIcon icon={faImage} />,
+  // },
 ];
 
 export const topNavMediaId = signal<string>("");
@@ -116,6 +126,10 @@ export const TopBar = ({
       console.log("Adding to Video scene");
       topNavMediaId.value = media_id ?? "";
       topNavMediaUrl.value = url;
+    } else if (currentAppTabId === "IMAGE") {
+      console.log("Adding to Image scene");
+      topNavMediaId.value = media_id ?? "";
+      topNavMediaUrl.value = url;
     } else {
       console.warn(`Unknown tab type: ${currentAppTabId}`);
     }
@@ -160,7 +174,13 @@ export const TopBar = ({
             {currentAppTabId === "3D" ? (
               <SceneTitleInput pageName={pageName} />
             ) : (
-              <h1>{currentAppTabId === "2D" ? "Canvas" : "Generate Video"}</h1>
+              <h1>
+                {currentAppTabId === "2D"
+                  ? "Canvas"
+                  : currentAppTabId === "VIDEO"
+                    ? "Generate Video"
+                    : "Generate Image"}
+              </h1>
             )}
           </div>
 

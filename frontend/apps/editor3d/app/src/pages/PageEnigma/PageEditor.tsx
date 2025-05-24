@@ -9,6 +9,7 @@ import { PreviewFrameImage } from "./comps/PreviewFrameImage";
 import { pageHeight, pageWidth } from "~/signals";
 import { PoseModeSelector } from "./comps/PoseModeSelector";
 import ImageToVideo from "../PageVideo/ImageToVideo";
+import TextToImage from "../PageImage/TextToImage";
 import {
   timelineHeight,
   sidePanelWidth,
@@ -312,6 +313,7 @@ export const PageEditor = () => {
   const display3d = appTabId.value === "3D" ? "block" : "none";
   const display2d = appTabId.value === "2D" ? "block" : "none";
   const displayVideo = appTabId.value === "VIDEO" ? "block" : "none";
+  const displayImage = appTabId.value === "IMAGE" ? "block" : "none";
 
   return (
     <div className="w-screen">
@@ -423,7 +425,13 @@ export const PageEditor = () => {
 
       <div style={{ display: displayVideo }}>
         <ImageToVideo
-          className="h-full w-full"
+          imageMediaId={topNavMediaId.value}
+          imageUrl={topNavMediaUrl.value}
+        />
+      </div>
+
+      <div style={{ display: displayImage }}>
+        <TextToImage
           imageMediaId={topNavMediaId.value}
           imageUrl={topNavMediaUrl.value}
         />
