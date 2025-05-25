@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import { SceneGenereationMetaData as SceneGenerationMetaData } from "~/pages/PageEnigma/models/sceneGenerationMetadata";
 import { MediaUploadApi, StudioGen2Api, VideoApi } from "~/Classes/ApiManager";
 import { globalIPAMediaToken } from "../signals";
-import { BufferType } from "./VideoProcessor/engine_buffer";
+
 
 // TODO THIS CLASS MAKES NO SENSE
 // Refactor so we generate all the frames first.
@@ -98,7 +98,7 @@ export class VideoGeneration {
       console.log(`Studio recording: https://storyteller.ai/media/${mediaTokens.color}`);
 
     } finally {
-      await this.editor.engineFrameBuffers.clearBuffer(BufferType.COLOR);
+      
     }
 
     return mediaTokens;

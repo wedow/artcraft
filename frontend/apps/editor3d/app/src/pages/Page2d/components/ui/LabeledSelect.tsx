@@ -1,5 +1,5 @@
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { Button } from "~/components/ui/Button";
+import { Button } from "@storyteller/ui-button";
 import { useState, useRef } from "react";
 
 export interface LabeledSelectProps {

@@ -10,7 +10,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import EnvironmentVariables from "~/Classes/EnvironmentVariables";
 import { pageHeight, pageWidth, persistLogin } from "~/signals";
-import { showWizard } from "~/pages/PageEnigma/Wizard/signals/wizard";
+
 import { posthog } from "posthog-js";
 
 config.autoAddCss = false; /* eslint-disable import/first */
@@ -55,17 +55,9 @@ const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
     pageWidth.value = window.innerWidth;
   }
 
-  function initWizard() {
-    if (showWizard.value) {
-      return;
-    }
-    const wizard = localStorage.getItem("storyteller-wizard");
-    showWizard.value = wizard ? "" : "initial";
-    localStorage.setItem("storyteller-wizard", "shown");
-  }
 
   useEffect(() => {
-    initWizard();
+
     setPage();
     window.addEventListener("resize", setPage);
     return () => {

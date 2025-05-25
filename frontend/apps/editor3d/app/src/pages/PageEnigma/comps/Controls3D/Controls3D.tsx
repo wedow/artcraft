@@ -5,7 +5,9 @@ import {
   faPlus,
   faUpRightAndDownLeftFromCenter,
 } from "@fortawesome/pro-solid-svg-icons";
-import { Button, ButtonIconSelect, Tooltip } from "~/components";
+import { ButtonIconSelect, Tooltip } from "~/components";
+import { Button } from "@storyteller/ui-button"
+
 import { EngineContext } from "../../contexts/EngineContext";
 import { useContext, useEffect, useState } from "react";
 import { assetModalVisibleDuringDrag, assetModalVisible } from "../../signals";

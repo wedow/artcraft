@@ -22,7 +22,8 @@ import {
   faImage,
   faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
-import { Button, Label, P, TransitionDialogue } from "~/components";
+import { Label, P, TransitionDialogue } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 import { MediaFilesApi } from "~/Classes/ApiManager/MediaFilesApi";
 import { BucketConfig } from "~/api/BucketConfig";

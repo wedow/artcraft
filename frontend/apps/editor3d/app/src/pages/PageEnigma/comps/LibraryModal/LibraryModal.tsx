@@ -1,7 +1,8 @@
 import { TransitionDialogue } from "~/components/reusable/TransitionDialogue";
 import { faCheck } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, LoadingSpinner, CloseButton } from "~/components";
+import { LoadingSpinner, CloseButton } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { TabSelector } from "~/components/reusable/TabSelector";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { LibraryModalApi } from "./LibraryModalApi";

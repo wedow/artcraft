@@ -1,7 +1,9 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { useState } from "react";
 import { MediaFile } from "~/pages/PageEnigma/models";
-import { Button, Input, Label, TransitionDialogue } from "~/components";
+import { Input, Label, TransitionDialogue } from "~/components";
+import { Button } from "@storyteller/ui-button"
+
 import {
   faArrowDownToLine,
   faArrowRight,
@@ -12,7 +14,7 @@ import {
 import SocialButton from "./SocialButton";
 import { generateMovieId, viewMyMovies } from "~/pages/PageEnigma/signals";
 import dayjs from "dayjs";
-import environmentVariables from "~/Classes/EnvironmentVariables";
+
 import { downloadFile } from "~/pages/PageEnigma/comps/GenerateModals/utils/downloadFile";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
 

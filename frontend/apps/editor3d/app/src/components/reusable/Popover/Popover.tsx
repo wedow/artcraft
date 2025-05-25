@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
-import { Button } from "../Button";
+import { Button } from "@storyteller/ui-button"
 
 export interface PopoverItem {
   label: string;

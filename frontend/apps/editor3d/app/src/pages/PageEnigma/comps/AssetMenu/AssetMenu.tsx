@@ -1,5 +1,6 @@
 import { faCube, faMagicWandSparkles } from "@fortawesome/pro-solid-svg-icons";
-import { Button, Tooltip } from "~/components";
+import { Tooltip } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { useState } from "react";
 import { AssetModal } from "./AssetModal";
 import { assetModalVisibleDuringDrag } from "../../signals";

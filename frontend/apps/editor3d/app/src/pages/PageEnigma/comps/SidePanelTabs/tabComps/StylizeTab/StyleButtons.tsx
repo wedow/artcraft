@@ -1,4 +1,5 @@
-import { Button, Label } from "~/components";
+import { Label } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import {
   faArrowsRotate,
   faChevronLeft,

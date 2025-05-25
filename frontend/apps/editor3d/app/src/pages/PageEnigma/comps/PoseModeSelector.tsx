@@ -1,7 +1,8 @@
 import React from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { poseMode, showPoseControls } from "../signals/selectedMode";
-import { Button, Tooltip } from "~/components";
+import { Tooltip } from "~/components";
+import { Button } from "@storyteller/ui-button"
 import { faCheck, faPersonRunning } from "@fortawesome/pro-solid-svg-icons";
 
 declare global {

@@ -1,3 +1,4 @@
+// TODO: Move to shared component.
 import { ButtonHTMLAttributes, Fragment, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import {
@@ -5,7 +6,8 @@ import {
   faChevronDown,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, ButtonProps, TransitionDialogue } from "~/components";
+import { TransitionDialogue } from "~/components";
+import { Button, ButtonProps } from "@storyteller/ui-button";
 import { twMerge } from "tailwind-merge";
 
 type UnionedButtonProps = { label?: string } & ButtonProps;

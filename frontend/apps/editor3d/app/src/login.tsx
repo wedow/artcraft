@@ -13,7 +13,8 @@ import { AUTH_STATUS } from "~/enums";
 import { authentication, login, logout } from "~/signals";
 import { createRoot } from "react-dom/client";
 
-import { Button, Input, ConfirmationModal } from "~/components";
+import { Input, ConfirmationModal } from "~/components";
+import { Button } from "@storyteller/ui-button";
 
 import "./styles/normalize.css";
 import "./styles/tailwind.css";

@@ -6,9 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ToastTypes } from "~/enums";
 import { AudioTabPages } from "~/pages/PageEnigma/enums";
 import { V2VState } from "~/pages/PageEnigma/models/voice";
-import { VoiceConversionApi } from "~/Classes/ApiManager/VoiceConversionApi";
-import { addToast, startPollingActiveJobs } from "~/signals";
-import { H4, H6, Button, Label, UploadAudioComponent } from "~/components";
+import { VoiceConversionApi } from "~/Classes/ApiManager/VoiceConversionApi\";
+import { addToast, startPollingActiveJobs } from "~/signals\";
+import { H4, H6, Label, UploadAudioComponent } from "~/components";
+import { Button } from "@storyteller/ui-button";
 
 export const PageVoicetoVoice = ({
   changePage,

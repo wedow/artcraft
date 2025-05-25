@@ -1,6 +1,7 @@
 import { faFilm } from "@fortawesome/pro-solid-svg-icons";
 import { useSignals } from "@preact/signals-react/runtime";
-import { Button, Label } from "~/components";
+import { Label } from "~/components";
+import { Button } from "@storyteller/ui-button";
 import { GenerationOptions } from "~/pages/PageEnigma/models/generationOptions";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";

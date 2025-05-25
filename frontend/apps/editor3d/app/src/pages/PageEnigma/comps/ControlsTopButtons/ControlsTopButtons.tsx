@@ -4,7 +4,6 @@ import { useSignals, useSignalEffect } from "@preact/signals-react/runtime";
 import {
   faCheckSquare,
   faFile,
-  faQuestion,
   faSquare,
 } from "@fortawesome/pro-solid-svg-icons";
 
@@ -17,15 +16,14 @@ import { scene, signalScene, authentication, addToast } from "~/signals";
 import { outlinerIsShowing } from "~/pages/PageEnigma/signals/outliner/outliner";
 
 import {
-  ButtonDialogue,
   ButtonDropdown,
   Input,
   H4,
-  Button,
 } from "~/components";
 
+import {Button} from "@storyteller/ui-button";
+
 import { TestFeaturesButtons } from "./TestFeaturesButtons";
-import { Help } from "./Help";
 import { LoadUserScenes } from "./LoadUserScenes";
 import { getCurrentLocationWithoutParams, isNumberString } from "~/utilities";
 import { SceneGenereationMetaData as SceneGenerationMetaData } from "~/pages/PageEnigma/models/sceneGenerationMetadata";
@@ -42,10 +40,7 @@ import {
 } from "~/pages/PageEnigma/signals";
 import { CameraAspectRatio } from "~/pages/PageEnigma/enums";
 import { twMerge } from "tailwind-merge";
-import {
-  showWizard,
-  textInput,
-} from "~/pages/PageEnigma/Wizard/signals/wizard";
+
 
 export const ControlsTopButtons = () => {
   useSignals();
@@ -300,7 +295,7 @@ export const ControlsTopButtons = () => {
           Outliner
         </Button>
 
-        <ButtonDialogue
+        {/* <ButtonDialogue
           buttonProps={{
             variant: "secondary",
             label: "Help",
@@ -320,7 +315,7 @@ export const ControlsTopButtons = () => {
           }
         >
           <Help />
-        </ButtonDialogue>
+        </ButtonDialogue> */}
       </div>
       <TestFeaturesButtons debug={false} />
     </div>

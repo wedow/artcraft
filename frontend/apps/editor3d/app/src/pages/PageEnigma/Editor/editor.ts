@@ -48,11 +48,7 @@ import { MediaUploadApi } from "~/Classes/ApiManager";
 import { SceneManager } from "./scene_manager_api";
 import { CustomOutlinePass } from "./CustomOutlinePass.js";
 import FindSurfaces from "./FindSurfaces.js";
-import {
-  ImageFormat,
-  //VideoAudioPreProcessor,
-} from "./VideoProcessor/video_audio_preprocessor";
-import { BufferType, EngineFrameBuffers } from "./VideoProcessor/engine_buffer";
+
 
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { CharacterAnimationEngine } from "./Engines/CharacterAnimationEngine";
@@ -325,16 +321,9 @@ class Editor {
 
     // set image type at this stage
 
-    const imageFormat = ImageFormat.JPEG;
 
     this.renderIndex = 0;
-    this.engineFrameBuffers = new EngineFrameBuffers(
-      this.getRenderDimensions().width,
-      this.getRenderDimensions().height,
-    );
-    if (this.engineFrameBuffers.frameWorkerManager) {
-      this.engineFrameBuffers.frameWorkerManager.type = imageFormat;
-    }
+  
   }
 
   // Add helper method to convert focal length to FOV
@@ -1252,7 +1241,7 @@ class Editor {
           console.log(`COLLECTING COLOR FRAMES COUNTED: ${this.renderIndex}`);
           await this.engineFrameBuffers.collectColorFrames(this.renderIndex);
 
-          await this.engineFrameBuffers.logBufferInfo(BufferType.COLOR);
+         
           this.renderIndex = 0;
           console.time("Stop Playback And Upload Video Time");
           await this.stopPlaybackAndUploadVideo();
@@ -1263,7 +1252,7 @@ class Editor {
         } catch (error) {
           // don't use cache in this case.
           this.processingHasFailed = true;
-          this.engineFrameBuffers.clearBuffer(BufferType.COLOR);
+        
           console.log(`Video Generation: ${error}`);
         }
       } // End Timeline Playing

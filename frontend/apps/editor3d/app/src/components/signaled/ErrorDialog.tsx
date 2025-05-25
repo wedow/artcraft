@@ -1,7 +1,8 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { faTriangleExclamation } from "@fortawesome/pro-solid-svg-icons";
 
-import { Button, TransitionDialogue } from "~/components";
+import { TransitionDialogue } from "~/components";
+import { Button } from "@storyteller/ui-button"
 import {
   showErrorDialog,
   errorDialogMessage,
