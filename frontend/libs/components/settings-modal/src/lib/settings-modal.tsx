@@ -5,11 +5,13 @@ import {
   faUser,
   faCog,
   faVolumeHigh,
+  faCircleInfo,
 } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
+import { AboutSettingsPane } from "./panes/AboutSettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -18,7 +20,7 @@ interface SettingsModalProps {
 }
 
 //type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
-type SettingsSection = "general" | "accounts" | "alerts";
+type SettingsSection = "general" | "accounts" | "alerts" | "about";
 
 export const SettingsModal = ({ isOpen, onClose, globalAccountLogoutCallback }: SettingsModalProps) => {
   const [selectedSection, setSelectedSection] =
@@ -28,6 +30,7 @@ export const SettingsModal = ({ isOpen, onClose, globalAccountLogoutCallback }: 
     { id: "general" as const, label: "General", icon: faCog },
     { id: "accounts" as const, label: "Accounts", icon: faUser },
     { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
+    { id: "about" as const, label: "About", icon: faCircleInfo},
     //{ id: "video" as const, label: "Video", icon: faVideo },
     //{ id: "image" as const, label: "Image", icon: faImage },
   ];
@@ -40,14 +43,8 @@ export const SettingsModal = ({ isOpen, onClose, globalAccountLogoutCallback }: 
         return <MiscSettingsPane />;
       case "accounts":
         return <AccountSettingsPane globalAccountLogoutCallback={globalAccountLogoutCallback} />;
-      //case "video":
-      //  return <VideoSettingsPane />;
-      //case "image":
-      //  return (
-      //    <div>
-      //      <button className="text-blue-600">Various Image Settings...</button>
-      //    </div>
-      //  );
+      case "about":
+        return <AboutSettingsPane />;
     }
   };
 

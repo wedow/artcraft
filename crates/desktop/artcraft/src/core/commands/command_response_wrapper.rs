@@ -6,6 +6,9 @@ use std::str::FromStr;
 pub type CommandResult<SuccessPayload, ErrType, ErrPayload> = 
   Result<CommandSuccessResponseWrapper<SuccessPayload>, CommandErrorResponseWrapper<ErrType, ErrPayload>>;
 
+/// Easy to use infallible response.
+pub type InfallibleResponse<SuccessPayload> = CommandSuccessResponseWrapper<SuccessPayload>;
+
 /// No inner payloads for this type. Just strings as messages.
 pub type SimpleCommandResult = CommandResult<(), (), ()>;
 
