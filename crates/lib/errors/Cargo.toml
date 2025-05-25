@@ -17,13 +17,13 @@ path = "src/lib.rs"
 normal = ["workspace-build-acceleration"]
 
 [dependencies]
+# cargo-hakari workspace hack (faster compile times)
+workspace-build-acceleration = { workspace = true }
+
 # NB: This is one of the most central crates in the monorepo and everything depends on it.
 # Consider the dependencies here wisely.
 # Ideally we have almost nothing as a dependency of this crate.
-anyhow = "1.0.86"
-
-# Workspace hack (faster compile times)
-workspace-build-acceleration = { version = "0.1", path = "../../workspace-build-acceleration" }
+anyhow = { workspace = true }
 
 [dev-dependencies]
 # None yet

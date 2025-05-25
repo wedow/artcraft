@@ -39,6 +39,7 @@ members = [
   "crates/lib/api_clients/thumbnail_generator",
   "crates/lib/bootstrap",
   "crates/lib/bucket_paths",
+  "crates/lib/build_metadata",
   "crates/lib/caching/memory_caching",
   "crates/lib/caching/memory_store",
   "crates/lib/caching/redis_caching",

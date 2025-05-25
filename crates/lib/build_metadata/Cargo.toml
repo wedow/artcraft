@@ -1,6 +1,7 @@
 [package]
-name = "storyteller_root"
-edition = "2018"
+name = "build_metadata"
+resolver = "2" # NB: Required by `build-info`
+edition = "2024"
 version = "0.0.1"
 authors = [
     "Brandon Thomas <bt@brand.io>",
@@ -9,21 +10,25 @@ authors = [
 publish = false
 
 [lib]
-name = "storyteller_root"
+name = "build_metadata"
 path = "src/lib.rs"
 
 [package.metadata.cargo-udeps.ignore]
 normal = ["workspace-build-acceleration"]
 
 [dependencies]
-# cargo-hakari workspace hack (faster compile times)
+# Workspace hack (faster compile times)
 workspace-build-acceleration = { workspace = true }
 
 # Internal
 # (None yet)
 
 # External
-# (None yet)
+build-info = "0.0.40"
 
 [dev-dependencies]
-serial_test = "3.0.0"
+# None yet
+
+[build-dependencies]
+build-info-build = "0.0.40"
+
