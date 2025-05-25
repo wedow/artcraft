@@ -6,6 +6,7 @@ use tauri::Manager;
 use crate::core::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::core::commands::flip_image::flip_image;
+use crate::core::commands::get_build_info_command::get_build_info_command;
 use crate::core::commands::platform_info_command::platform_info_command;
 use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -164,6 +165,7 @@ pub fn run() {
       fal_kling_image_to_video_command,
       flip_image,
       get_app_preferences_command,
+      get_build_info_command,
       get_fal_api_key_command,
       open_sora_login_command,
       platform_info_command,
