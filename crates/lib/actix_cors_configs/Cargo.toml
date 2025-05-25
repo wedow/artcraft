@@ -9,7 +9,6 @@ authors = [
 publish = false
 
 [lib]
-# NB: Public "errors" crate is name-squatted, so we're fine to use this internally.
 name = "actix_cors_configs"
 path = "src/lib.rs"
 
