@@ -186,6 +186,7 @@ toml = "0.8.22"
 url = { version = "2.5.4", features = ["serde"] }
 
 # Internal libs
+build_metadata = { path = "crates/lib/build_metadata" }
 crockford = { path = "crates/lib/data/crockford" }
 enums = { path = "crates/_types/enums" }
 enums_public = { path = "crates/_types/enums_public" }

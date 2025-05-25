@@ -3,7 +3,7 @@ use build_info::chrono::{DateTime, Utc};
 
 build_info::build_info!(fn version);
 
-pub fn build_timestamp() -> DateTime<Utc>{
+pub fn build_timestamp() -> DateTime<Utc> {
   version().timestamp
 }
 
