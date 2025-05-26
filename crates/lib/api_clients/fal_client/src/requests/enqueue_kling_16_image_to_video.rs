@@ -1,12 +1,12 @@
 use crate::creds::fal_api_key::FalApiKey;
-use crate::fal_error_plus::FalErrorPlus;
+use crate::error::classify_fal_error::classify_fal_error;
+use crate::error::fal_error_plus::FalErrorPlus;
 use crate::model::enqueued_request::EnqueuedRequest;
 use fal::endpoints::fal_ai::kling_video::v1_6::pro::image_to_video::{image_to_video, ProImageToVideoRequest};
 use fal_client::file_to_base64_url::file_to_base64_url;
 use futures::StreamExt;
 use std::io::Write;
 use std::path::Path;
-use url::Url;
 
 pub struct Kling16Args<'a, P: AsRef<Path>> {
   pub image_path: P,
@@ -23,12 +23,6 @@ pub enum Kling16Duration {
 
 pub async fn enqueue_kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'_, P>) -> Result<EnqueuedRequest, FalErrorPlus> {
   let image_url = file_to_base64_url(args.image_path)?;
-
-  /*
-  TODO: Handle error messages -
-    FalError(FalError(Other("{\"detail\": \"Invalid Key Authorization header format. Expected '<key_id>:<key_secret>'.\"}")))
-    FalError(FalError(Other("{\"detail\": \"No user found for Key ID and Secret\"}")))
-  */
 
   let duration = match args.duration{
     Kling16Duration::Default => None,
@@ -49,7 +43,12 @@ pub async fn enqueue_kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'
   let result = image_to_video(request)
       .with_api_key(&args.api_key.0)
       .queue()
-      .await?;
+      .await;
+
+  let result = match result {
+    Ok(result) => result,
+    Err(err) => return Err(classify_fal_error(err)),
+  };
   
   Ok(EnqueuedRequest::from_queue_response(&result)?)
 }

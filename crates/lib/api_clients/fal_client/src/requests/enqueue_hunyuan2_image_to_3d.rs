@@ -1,5 +1,6 @@
 use crate::creds::fal_api_key::FalApiKey;
-use crate::fal_error_plus::FalErrorPlus;
+use crate::error::classify_fal_error::classify_fal_error;
+use crate::error::fal_error_plus::FalErrorPlus;
 use crate::model::enqueued_request::EnqueuedRequest;
 use fal::endpoints::fal_ai::hunyuan3d::v2::v2;
 use fal::endpoints::fal_ai::hunyuan3d::v2::Hunyuan3DInput;
@@ -16,12 +17,6 @@ pub struct Hunyuan2Args<'a, P: AsRef<Path>> {
 pub async fn enqueue_hunyuan2_image_to_3d<P: AsRef<Path>>(args: Hunyuan2Args<'_, P>) -> Result<EnqueuedRequest, FalErrorPlus> {
   let image_url = file_to_base64_url(args.image_path)?;
 
-  /*
-  TODO: Handle error messages -
-    FalError(FalError(Other("{\"detail\": \"Invalid Key Authorization header format. Expected '<key_id>:<key_secret>'.\"}")))
-    FalError(FalError(Other("{\"detail\": \"No user found for Key ID and Secret\"}")))
-  */
-
   let request = Hunyuan3DInput {
     input_image_url: image_url,
     textured_mesh: Some(true),
@@ -34,7 +29,12 @@ pub async fn enqueue_hunyuan2_image_to_3d<P: AsRef<Path>>(args: Hunyuan2Args<'_,
   let result = v2(request)
       .with_api_key(&args.api_key.0)
       .queue()
-      .await?;
+      .await;
+  
+  let result = match result {
+    Ok(result) => result,
+    Err(err) => return Err(classify_fal_error(err)),
+  };
   
   Ok(EnqueuedRequest::from_queue_response(&result)?)
 }

@@ -1,5 +1,5 @@
 use crate::creds::fal_api_key::FalApiKey;
-use crate::fal_error_plus::FalErrorPlus;
+use crate::error::fal_error_plus::FalErrorPlus;
 use crate::model::enqueued_request::EnqueuedRequest;
 use crate::model::fal_endpoint::FalEndpoint;
 use fal::endpoints::fal_ai::hunyuan3d::v2::ObjectOutput;

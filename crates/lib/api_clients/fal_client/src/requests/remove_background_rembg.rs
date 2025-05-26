@@ -1,5 +1,6 @@
 use crate::creds::fal_api_key::FalApiKey;
-use crate::fal_error_plus::FalErrorPlus;
+use crate::error::classify_fal_error::classify_fal_error;
+use crate::error::fal_error_plus::FalErrorPlus;
 use fal::endpoints::fal_ai::imageutils::rembg::RemoveBackgroundInput;
 use fal::prelude::fal_ai::imageutils::rembg::rembg;
 use fal::prelude::*;
@@ -21,12 +22,6 @@ pub struct RemBgResponse {
 pub async fn remove_background_rembg<P: AsRef<Path>>(image_path: P, api_key: &FalApiKey) -> Result<RemBgResponse, FalErrorPlus> {
   let image_url = file_to_base64_url(image_path)?;
   
-  /*
-  TODO: Handle error messages - 
-    FalError(FalError(Other("{\"detail\": \"Invalid Key Authorization header format. Expected '<key_id>:<key_secret>'.\"}")))
-    FalError(FalError(Other("{\"detail\": \"No user found for Key ID and Secret\"}"))) 
-  */
-  
   let request = RemoveBackgroundInput {
     image_url,
     crop_to_bbox: None,
@@ -36,7 +31,12 @@ pub async fn remove_background_rembg<P: AsRef<Path>>(image_path: P, api_key: &Fa
   let result = rembg(request)
       .with_api_key(&api_key.0)
       .queue()
-      .await?;
+      .await;
+
+  let result = match result {
+    Ok(result) => result,
+    Err(err) => return Err(classify_fal_error(err)),
+  };
 
   let mut stream = result.stream(true).await?;
 

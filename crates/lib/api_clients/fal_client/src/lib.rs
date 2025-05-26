@@ -8,7 +8,7 @@ pub mod export {
 }
 
 pub mod creds;
-pub mod fal_error_plus;
+pub mod error;
 pub mod model;
 pub mod requests;
 pub mod utils;

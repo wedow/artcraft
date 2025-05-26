@@ -1,3 +1,4 @@
+use crate::error::classify_fal_error::classify_fal_error;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -6,6 +7,8 @@ use std::fmt::{Display, Formatter};
 pub enum FalErrorPlus {
   /// An error arising in the `fal` crate.
   FalError(fal::FalError),
+  /// The fal API key is invalid.
+  FalApiKeyError(String),
   /// Another error we didn't handle.
   AnyhowError(anyhow::Error),
   /// URL parse errors.
@@ -18,6 +21,7 @@ impl Display for FalErrorPlus {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::FalError(err) => write!(f, "FalErrorPlus::FalError: {:?}", err),
+      Self::FalApiKeyError(reason) => write!(f, "FalErrorPlus::FalApiKeyError: {}", reason),
       Self::AnyhowError(err) => write!(f, "FalErrorPlus::AnyhowError: {:?}", err),
       Self::UrlParseError(err) => write!(f, "FalErrorPlus::UrlParseError: {:?}", err),
       Self::UnhandledEndpoint(endpoint) => write!(f, "FalErrorPlus::UnhandledEndpoint: {:?}", endpoint),
@@ -29,7 +33,7 @@ impl Error for FalErrorPlus {}
 
 impl From<fal::FalError> for FalErrorPlus {
   fn from(err: fal::FalError) -> Self {
-    FalErrorPlus::FalError(err)
+    classify_fal_error(err)
   }
 }
 
