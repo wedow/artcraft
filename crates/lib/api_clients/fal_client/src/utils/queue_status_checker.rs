@@ -4,6 +4,7 @@ use crate::model::enqueued_request::EnqueuedRequest;
 use crate::model::fal_endpoint::FalEndpoint;
 use fal::endpoints::fal_ai::hunyuan3d::v2::ObjectOutput;
 use fal::endpoints::fal_ai::kling_video::v1_6::pro::effects::I2VOutput;
+use fal::endpoints::fal_ai::minimax::image_to_video::VideoOutput;
 use fal::prelude::QueueResponse;
 use fal::queue::{Queue, QueueStatus};
 use reqwest::Client;
@@ -30,6 +31,11 @@ impl QueueStatusChecker {
         let status = queue.status(false).await?;
         Ok(status)
       }
+      FalEndpoint::Minimax01ImageToVideo => {
+        let queue = self.make_queue::<VideoOutput>(&request); // Assuming Minimax uses the same output type
+        let status = queue.status(false).await?;
+        Ok(status)
+      }
       FalEndpoint::Other(endpoint) => {
         Err(FalErrorPlus::UnhandledEndpoint(format!("Unsupported endpoint: {}", endpoint)))
       }
@@ -40,13 +46,18 @@ impl QueueStatusChecker {
     match &request.fal_endpoint {
       FalEndpoint::Hunyuan3d2Base => {
         let queue = self.make_queue::<ObjectOutput>(&request);
-        let status = queue.response().await?;
-        Ok(status.model_mesh.url)
+        let response = queue.response().await?;
+        Ok(response.model_mesh.url)
       }
       FalEndpoint::Kling16ImageToVideo => {
         let queue = self.make_queue::<I2VOutput>(&request);
-        let status = queue.response().await?;
-        Ok(status.video.url)
+        let response = queue.response().await?;
+        Ok(response.video.url)
+      }
+      FalEndpoint::Minimax01ImageToVideo => {
+        let queue = self.make_queue::<VideoOutput>(&request); // Assuming Minimax uses the same output type
+        let response = queue.response().await?;
+        Ok(response.video.url)
       }
       FalEndpoint::Other(endpoint) => {
         Err(FalErrorPlus::UnhandledEndpoint(format!("Unsupported endpoint: {}", endpoint)))

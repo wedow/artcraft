@@ -10,6 +10,7 @@ use std::path::Path;
 
 pub struct Kling16Args<'a, P: AsRef<Path>> {
   pub image_path: P,
+  pub prompt: &'a str,
   pub api_key: &'a FalApiKey,
   pub duration: Kling16Duration,
 }
@@ -32,7 +33,7 @@ pub async fn enqueue_kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'
 
   let request = ProImageToVideoRequest {
     image_url,
-    prompt: "".to_string(),
+    prompt: args.prompt.to_string(),
     aspect_ratio: None,
     cfg_scale: None,
     duration,
@@ -56,7 +57,7 @@ pub async fn enqueue_kling_16_image_to_video<P: AsRef<Path>>(args: Kling16Args<'
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
+  use crate::requests::video_gen::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
@@ -73,6 +74,7 @@ mod tests {
 
     let args = Kling16Args {
       image_path: image,
+      prompt: "",
       api_key: &api_key,
       duration: Kling16Duration::Default,
     };
