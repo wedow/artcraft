@@ -20,6 +20,8 @@ use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
 use fal_client::error::fal_error_plus::FalErrorPlus;
+use fal_client::requests::image_gen::enqueue_flux_pro_ultra_text_to_image::{enqueue_flux_pro_ultra_text_to_image, FluxProUltraTextToImageArgs};
+use fal_client::requests::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use fal_client::requests::remove_background_rembg::remove_background_rembg;
 use filesys::file_read_bytes::file_read_bytes;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
@@ -201,7 +203,7 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<(GetMediaFileSuccessResponse, String), InnerError> {
+) -> Result<(), InnerError> {
 
   match request.model {
     None => {
@@ -209,7 +211,6 @@ pub async fn handle_request(
     }
     Some(_) => {}
   }
-  
   
   let has_credentials = fal_creds_manager
       .has_apparent_api_token()
@@ -223,54 +224,31 @@ pub async fn handle_request(
   let api_key = fal_creds_manager.get_key_required()?;
   let creds = storyteller_creds_manager.get_credentials_required()?;
 
-  let mut temp_download;
+  let prompt = request.prompt.as_deref().unwrap_or("");
 
-  if let Some(media_token) = request.image_media_token {
-    temp_download = download_media_file_to_temp_dir(&app_data_root, &media_token).await?;
-
-  } else if let Some(base64_bytes) = request.base64_image {
-    temp_download = save_base64_image_to_temp_dir(&app_data_root, base64_bytes).await?;
-  } else {
-    return Err(InnerError::AnyhowError(anyhow!("No image media token or base64 image provided")));
+  let result = match request.model {
+    None => {
+      return Err(InnerError::NoModelSpecified);
+    }
+    Some(EnqueueTextToImageModel::FluxProUltra) => {
+      enqueue_flux_pro_ultra_text_to_image(FluxProUltraTextToImageArgs {
+        prompt,
+        api_key: &api_key,
+      }).await
+    }
+    Some(EnqueueTextToImageModel::Recraft3) => {
+      enqueue_recraft3_text_to_image(Recraft3TextToImageArgs {
+        prompt,
+        api_key: &api_key,
+      }).await
+    }
+  };
+  
+  if let Err(err) = result {
+    error!("Error enqueuing text to image: {:?}", err);
+    return Err(InnerError::FalError(err));
   }
-
-  info!("Calling FAL image background removal...");
-
-  let filename = temp_download.path().to_path_buf();
-
-  let result = remove_background_rembg(filename, &api_key).await?;
-
-  let extension_with_dot = get_url_file_extension(&result.image_url)
-      .map(|ext| format!(".{}", ext))
-      .unwrap_or_else(|| ".png".to_string());
-
-  let mut result_file = app_data_root.temp_dir().new_named_temp_file_with_extension(&extension_with_dot)?;
-
-  info!("Downloading file result file...");
-
-  simple_http_download_to_tempfile(&result.image_url, &mut result_file).await?;
-
-  let result_filename = result_file.path().to_path_buf();
-
-  // NB: We couldn't pass the existing file handle as I think the file handle pointer is already at the EOF
-  let bytes = file_read_bytes(&result_filename)?;
-  let base64_bytes = BASE64_STANDARD.encode(bytes.as_bytes());
-
-  info!("Uploading image media file...");
-
-  let upload_result = upload_image_media_file_from_file(
-    &ApiHost::Storyteller,
-    Some(&creds),
-    result_filename
-  ).await?;
-
-  // TODO: Don't re-request to simply build MediaLinks (or CDN URL). Get those from the upload API in one turn.
-  info!("Re-requesting media file...");
-
-  let response = get_media_file(&ApiHost::Storyteller, &upload_result.media_file_token).await?;
-
-  info!("Uploaded media file: {:?}", response.media_file.token);
-
-  Ok((response, base64_bytes))
+  
+  Ok(())
 }
 
