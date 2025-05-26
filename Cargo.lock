@@ -648,13 +648,10 @@ name = "artcraft"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "assertor",
  "base64 0.22.1",
  "build_metadata",
  "bytes 1.10.0",
  "chrono",
- "const_format",
- "crockford",
  "directories",
  "dirs",
  "discord-rich-presence",
@@ -664,9 +661,7 @@ dependencies = [
  "futures 0.3.31",
  "image",
  "indexmap 2.9.0",
- "libloading 0.8.6",
  "log",
- "memory_caching",
  "memory_store",
  "mimetypes",
  "once_cell",
@@ -677,10 +672,8 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "serde_yaml",
  "serial_test",
  "storyteller_client",
- "subprocess_common",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -2570,8 +2563,6 @@ dependencies = [
  "easyenv",
  "errors",
  "log",
- "serde",
- "serde_derive",
  "workspace-build-acceleration",
 ]
 
@@ -2852,7 +2843,6 @@ dependencies = [
 name = "dimensions"
 version = "0.0.1"
 dependencies = [
- "errors",
  "workspace-build-acceleration",
 ]
 
@@ -3225,7 +3215,6 @@ dependencies = [
  "jsonpath_lib",
  "log",
  "once_cell",
- "regex",
  "serde",
  "serde_json",
  "tokens",
@@ -3579,11 +3568,9 @@ name = "fal_client"
 version = "0.0.1"
 dependencies = [
  "anyhow",
- "chrono",
  "errors",
  "fal",
  "file_to_base64_url",
- "filesys",
  "futures 0.3.31",
  "reqwest 0.12.15",
  "serde",
@@ -3663,7 +3650,6 @@ dependencies = [
  "anyhow",
  "base64 0.22.1",
  "errors",
- "filesys",
  "mimetypes",
  "testing",
  "workspace-build-acceleration",
@@ -6257,7 +6243,6 @@ dependencies = [
  "log",
  "num-traits",
  "once_cell",
- "primitives",
  "rand 0.9.1",
  "regex",
  "reusable_types",
@@ -6832,10 +6817,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "cookie 0.18.1",
- "crockford",
  "errors",
- "filesys",
- "hex-literal",
  "idempotency",
  "log",
  "once_cell",
@@ -6845,7 +6827,6 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha3",
- "subprocess_common",
  "testing",
  "thiserror 2.0.12",
  "tokio",
@@ -8152,7 +8133,6 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "time",
- "url",
  "workspace-build-acceleration",
 ]
 
@@ -9198,19 +9178,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.87",
-]
-
-[[package]]
-name = "serde_yaml"
-version = "0.9.34+deprecated"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
-dependencies = [
- "indexmap 2.9.0",
- "itoa 1.0.11",
- "ryu",
- "serde",
- "unsafe-libyaml",
 ]
 
 [[package]]
@@ -10948,7 +10915,6 @@ dependencies = [
  "sqlx-core",
  "sqlx-mysql",
  "strum",
- "toml 0.8.22",
  "utoipa",
  "workspace-build-acceleration",
 ]
@@ -11576,12 +11542,6 @@ checksum = "382810877fe448991dfc7f0dd6e3ae5d58088fd0ea5e35189655f84e6814fa56"
 dependencies = [
  "void",
 ]
-
-[[package]]
-name = "unsafe-libyaml"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
 
 [[package]]
 name = "untrusted"

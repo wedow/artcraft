@@ -24,17 +24,14 @@ workspace-build-acceleration = { workspace =  true }
 
 # Internal
 build_metadata = { workspace = true }
-crockford = { workspace = true }
 errors = { workspace = true }
 fal_client = { workspace = true }
 filesys = { workspace = true }
-memory_caching = { workspace = true }
 memory_store = { workspace = true }
 mimetypes = { workspace = true }
 openai_sora_client = { workspace = true }
 primitives = { workspace = true }
 storyteller_client = { workspace = true }
-subprocess_common = { workspace = true }
 tokens = { workspace = true }
 
 # External
@@ -42,7 +39,6 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bytes = "1.10"
 chrono = { workspace = true }
-const_format = "0.2.34"
 directories = "6.0.0"
 dirs = "6.0.0"
 futures = "0.3"
@@ -55,7 +51,6 @@ reqwest = { workspace = true, features = ["multipart", "stream"], default-featur
 serde = { workspace = true }
 serde_derive = { workspace = true }
 serde_json = { workspace = true }
-serde_yaml = { workspace = true }
 tauri = { workspace = true }
 tauri-plugin-log = "2.3.1"
 tauri-plugin-upload = "2.2.1"
@@ -74,9 +69,7 @@ discord-rich-presence = { git = "https://github.com/vionya/discord-rich-presence
 tauri-plugin-dialog = "2"
 
 [dev-dependencies]
-libloading = "0.8.6"
 serial_test = "3.2.0"
-assertor = "0.0.3"
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.

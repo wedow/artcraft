@@ -25,7 +25,6 @@ composite_identifiers = { path = "../../../schema/public/composite_identifiers" 
 enums = { workspace = true }
 errors = { workspace = true }
 idempotency = { workspace = true }
-primitives = { workspace = true }
 reusable_types = { path = "../../../schema/public/reusable_types" }
 tokens = { workspace = true }
 

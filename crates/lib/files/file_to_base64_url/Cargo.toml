@@ -26,4 +26,3 @@ mimetypes = { workspace = true }
 
 [dev-dependencies]
 testing = { path = "../../testing" }
-filesys = { path = "../../files/filesys" }

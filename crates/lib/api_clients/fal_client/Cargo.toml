@@ -22,7 +22,6 @@ errors = { workspace = true }
 
 # External
 anyhow = { workspace = true }
-chrono = { workspace = true }
 fal = { version = "0.3.6", features = ["endpoints"] }
 futures = { workspace = true }
 reqwest = { workspace = true }
@@ -32,4 +31,3 @@ url = { workspace = true }
 
 [dev-dependencies]
 testing = { path = "../../testing" }
-filesys = { path = "../../files/filesys" }

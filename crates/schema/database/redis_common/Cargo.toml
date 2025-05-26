@@ -33,4 +33,3 @@ serde_json = { workspace = true }
 
 # TODO: Get rid of in favor of std::time
 time = "0.3.30"
-url = { workspace = true }
