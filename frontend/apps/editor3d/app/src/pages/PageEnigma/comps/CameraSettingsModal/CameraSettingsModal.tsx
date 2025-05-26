@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem } from "~/components/reusable/Popover";
 import { Input, Label, Tooltip } from "~/components";
 import { Button } from "@storyteller/ui-button";
-import { SliderV2 } from "~/components/reusable/SliderV2/SliderV2";
+import { SliderV2 } from "@storyteller/ui-sliderv2";
 import { focalLengthDragging } from "~/pages/PageEnigma/signals/camera";
 import { useState, useEffect } from "react";
 import { twMerge } from "tailwind-merge";

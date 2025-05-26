@@ -19,7 +19,7 @@ import {
 } from "../../../signals/uiEvents/toolbarMain/paintMode";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import { Slider } from "../Slider";
+import { Slider } from "@storyteller/ui-slider";
 import { HexEyedropPicker } from "../HexEyedropPicker";
 
 export const PaintModeMenu = ({

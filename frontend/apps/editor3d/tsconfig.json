@@ -32,6 +32,9 @@
       "path": "../../libs/components/lightbox-modal"
     },
     {
+      "path": "../../libs/components/slider-v2"
+    },
+    {
       "path": "../../libs/components/tab-selector"
     },
     {
@@ -51,9 +54,6 @@
     },
     {
       "path": "../../libs/soundboard"
-    },
-    {
-      "path": "../../libs/components/button"
     },
     {
       "path": "../../libs/components/promptbox"
@@ -84,6 +84,9 @@
     },
     {
       "path": "../../libs/components/modal"
+    },
+    {
+      "path": "../../libs/components/button"
     },
     {
       "path": "../../libs/tauri-utils"

@@ -3,8 +3,7 @@ export * from "./ButtonDropdown";
 export * from "./ButtonIcon";
 export * from "./ButtonIconSelect";
 export * from "./ButtonLink";
-export * from "./CloseButton";
-export * from "./ConfirmationModal";
+
 export * from "./FileUploader";
 export * from "./FilterButtons";
 export * from "./Gravatar";
@@ -16,13 +15,12 @@ export * from "./LoadingDots";
 export * from "./LoadingSpinner";
 export * from "./NumberInput";
 export * from "./Pagination";
-export * from "./Pill";
+
 export * from "./Popover";
 export * from "./SearchFilter";
 export * from "./Select";
-export * from "./Slider";
+
 export * from "./Tabs";
-export * from "./Textarea";
 export * from "./Tooltip";
 export * from "./TransitionDialogue";
 export * from "./Typography";

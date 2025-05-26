@@ -11,11 +11,18 @@ import { twMerge } from "tailwind-merge";
 
 import { useSignals } from "@preact/signals-react/runtime";
 import { paperWrapperStyles } from "~/components/styles";
-import { BRUSH_MAX_SIZE, BRUSH_MIN_SIZE, paintBrushSize, setPaintBrushSize } from "~/signals/uiEvents/toolbarMain/paintMode";
-import { Button } from "../Button";
-import { Input } from "../Input";
-import { Slider } from "../Slider";
-import { eraseBrushSize, setEraseBrushSize } from "~/signals/uiEvents/toolbarMain/eraseMode";
+import {
+  BRUSH_MAX_SIZE,
+  BRUSH_MIN_SIZE,
+  paintBrushSize,
+  setPaintBrushSize,
+} from "~/signals/uiEvents/toolbarMain/paintMode";
+
+import { Slider } from "@storyteller/ui-slider";
+import {
+  eraseBrushSize,
+  setEraseBrushSize,
+} from "~/signals/uiEvents/toolbarMain/eraseMode";
 
 export const EraseModeMenu = ({
   faIcon = faFont,
@@ -60,9 +67,7 @@ export const EraseModeMenu = ({
             )}
             onMouseEnter={() => defaultOpen && setIsOpen(true)}
           >
-            <FontAwesomeIcon
-              icon={faIcon}
-            />
+            <FontAwesomeIcon icon={faIcon} />
           </PopoverButton>
           {(open || isOpen) && (
             <div onMouseLeave={() => handleMouseLeave(close)}>
@@ -70,7 +75,7 @@ export const EraseModeMenu = ({
                 anchor={anchor}
                 className={twMerge(
                   paperWrapperStyles,
-                  "flex flex-col items-center gap-2 overflow-hidden w-[198px]",
+                  "flex w-[198px] flex-col items-center gap-2 overflow-hidden",
                 )}
                 style={
                   {
@@ -79,8 +84,10 @@ export const EraseModeMenu = ({
                 }
                 static
               >
-                <div className="flex flex-col w-full gap-2">
-                  <p className="text-white font-medium text-sm w-full justify-start">Eraser Size:</p>
+                <div className="flex w-full flex-col gap-2">
+                  <p className="w-full justify-start text-sm font-medium text-white">
+                    Eraser Size:
+                  </p>
                   <Slider
                     min={BRUSH_MIN_SIZE}
                     max={BRUSH_MAX_SIZE}
