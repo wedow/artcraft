@@ -60,7 +60,7 @@ log = { version = "0.4.27", default-features = false, features = ["kv_unstable",
 md-5 = { version = "0.10.6" }
 memchr = { version = "2.7.4", features = ["use_std"] }
 mime_guess = { version = "2.0.4" }
-native-tls = { version = "0.2.14", default-features = false, features = ["vendored"] }
+native-tls = { version = "0.2.14", default-features = false, features = ["alpn", "vendored"] }
 num-bigint = { version = "0.4.6" }
 num-integer = { version = "0.1.46", features = ["i128"] }
 num-iter = { version = "0.1.45", default-features = false, features = ["i128", "std"] }
@@ -98,7 +98,7 @@ subtle = { version = "2.5.0", default-features = false, features = ["i128"] }
 syn-f595c2ba2a3f28df = { package = "syn", version = "2.0.87", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 tauri-utils = { version = "2.4.0", default-features = false, features = ["build", "compression", "resources"] }
 time = { version = "0.3.36", features = ["local-offset", "macros", "serde-well-known"] }
-tokio = { version = "1.45.0", features = ["full"] }
+tokio = { version = "1.45.1", features = ["full"] }
 tokio-stream = { version = "0.1.16", features = ["fs"] }
 tracing = { version = "0.1.40", features = ["log"] }
 unicode-bidi = { version = "0.3.15" }
@@ -145,7 +145,7 @@ libc = { version = "0.2.170", features = ["extra_traits"] }
 log = { version = "0.4.27", default-features = false, features = ["kv_unstable", "std"] }
 md-5 = { version = "0.10.6" }
 memchr = { version = "2.7.4", features = ["use_std"] }
-native-tls = { version = "0.2.14", default-features = false, features = ["vendored"] }
+native-tls = { version = "0.2.14", default-features = false, features = ["alpn", "vendored"] }
 num-bigint = { version = "0.4.6" }
 num-integer = { version = "0.1.46", features = ["i128"] }
 num-iter = { version = "0.1.45", default-features = false, features = ["i128", "std"] }
@@ -183,7 +183,7 @@ syn-f595c2ba2a3f28df = { package = "syn", version = "2.0.87", features = ["extra
 tauri-build = { version = "2.1.1" }
 tauri-utils = { version = "2.4.0", default-features = false, features = ["build", "compression", "resources"] }
 time-macros = { version = "0.2.18", default-features = false, features = ["formatting", "parsing", "serde"] }
-tokio = { version = "1.45.0", features = ["full"] }
+tokio = { version = "1.45.1", features = ["full"] }
 tokio-stream = { version = "0.1.16", features = ["fs"] }
 tracing = { version = "0.1.40", features = ["log"] }
 unicode-bidi = { version = "0.3.15" }
@@ -199,7 +199,6 @@ hyper-dff4ba8e3ae991db = { package = "hyper", version = "1.6.0", features = ["cl
 hyper-rustls = { version = "0.27.3", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12", "webpki-tokio"] }
 hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
 hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn"] }
 openssl = { version = "0.10.71", features = ["vendored"] }
 openssl-sys = { version = "0.9.106", default-features = false, features = ["vendored"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
@@ -213,7 +212,6 @@ zstd-sys = { version = "2.0.10", default-features = false, features = ["legacy",
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3.1", default-features = false, features = ["std"] }
 heck = { version = "0.4.1", features = ["unicode"] }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn"] }
 openssl = { version = "0.10.71", features = ["vendored"] }
 openssl-sys = { version = "0.9.106", default-features = false, features = ["vendored"] }
 socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
@@ -231,7 +229,6 @@ hyper-dff4ba8e3ae991db = { package = "hyper", version = "1.6.0", features = ["cl
 hyper-rustls = { version = "0.27.3", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12", "webpki-tokio"] }
 hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
 hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn"] }
 quick-xml = { version = "0.32.0", features = ["serialize"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
 security-framework = { version = "2.10.0", features = ["alpn"] }
@@ -245,7 +242,6 @@ zstd-sys = { version = "2.0.10", default-features = false, features = ["legacy",
 core-foundation-sys = { version = "0.8.7" }
 deranged = { version = "0.3.11", default-features = false, features = ["powerfmt", "serde", "std"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3.1", default-features = false, features = ["std"] }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn"] }
 quick-xml = { version = "0.32.0", features = ["serialize"] }
 security-framework = { version = "2.10.0", features = ["alpn"] }
 socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
@@ -262,7 +258,6 @@ hyper-dff4ba8e3ae991db = { package = "hyper", version = "1.6.0", features = ["cl
 hyper-rustls = { version = "0.27.3", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12", "webpki-tokio"] }
 hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
 hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
 spin = { version = "0.9.8" }
 tokio-util = { version = "0.7.12", features = ["codec", "io"] }
@@ -284,7 +279,6 @@ hyper-rustls = { version = "0.27.3", default-features = false, features = ["http
 hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
 hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
 mime_guess = { version = "2.0.4" }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn"] }
 reqwest = { version = "0.12.15", features = ["blocking", "brotli", "cookies", "deflate", "gzip", "json", "multipart", "native-tls-alpn", "native-tls-vendored", "rustls-tls", "rustls-tls-manual-roots", "rustls-tls-native-roots", "socks", "stream", "trust-dns", "zstd"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
 socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
