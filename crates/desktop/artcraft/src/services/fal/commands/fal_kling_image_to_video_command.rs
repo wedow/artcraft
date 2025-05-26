@@ -20,8 +20,8 @@ use anyhow::anyhow;
 use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
-use fal_client::fal_error_plus::FalErrorPlus;
-use fal_client::requests::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
+use fal_client::error::fal_error_plus::FalErrorPlus;
+use fal_client::requests::video_gen::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
 use fal_client::requests::remove_background_rembg::remove_background_rembg;
 use filesys::file_read_bytes::file_read_bytes;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
@@ -57,10 +57,15 @@ use tokens::tokens::media_files::MediaFileToken;
 #[derive(Deserialize)]
 pub struct FalKlingImageToVideoRequest {
   /// Image media file; the image to remove the background from.
+  /// This must be supplied **OR** the `base64_image`.
   pub image_media_token: Option<MediaFileToken>,
 
   /// Base64-encoded image
+  /// This must be supplied **OR** the `image_media_token`.
   pub base64_image: Option<String>,
+
+  /// Optional: Text prompt.
+  pub prompt: Option<String>,
 }
 
 #[derive(Serialize, Debug)]
@@ -209,6 +214,7 @@ pub async fn image_to_video(
     image_path: filename,
     api_key: &api_key,
     duration: Kling16Duration::Default,
+    prompt: request.prompt.as_deref().unwrap_or(""),
   }).await?;
 
   if let Err(err) = fal_task_queue.insert(&enqueued) {

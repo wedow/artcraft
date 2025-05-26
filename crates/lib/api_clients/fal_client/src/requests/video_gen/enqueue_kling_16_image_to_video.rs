@@ -74,7 +74,7 @@ mod tests {
 
     let args = Kling16Args {
       image_path: image,
-      prompt: "",
+      prompt: "a corgi looks out over the water",
       api_key: &api_key,
       duration: Kling16Duration::Default,
     };

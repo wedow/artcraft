@@ -9,8 +9,8 @@ use crate::services::sora::events::sora_image_generation_failed_event::SoraImage
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
+use fal_client::error::fal_error_plus::FalErrorPlus;
 use fal_client::export::queue::Status;
-use fal_client::fal_error_plus::FalErrorPlus;
 use fal_client::model::fal_request_id::FalRequestId;
 use fal_client::utils::queue_status_checker::QueueStatusChecker;
 use log::{error, info, warn};
