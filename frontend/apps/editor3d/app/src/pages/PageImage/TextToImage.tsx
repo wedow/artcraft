@@ -13,7 +13,7 @@ interface TextToImageProps {
 
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedModel, setSelectedModel] = useState<string>("Kling 2.0");
+  const [selectedModel, setSelectedModel] = useState<string>("Flux Pro Ultra");
   const [useSystemPrompt, setUseSystemPrompt] = useState(false);
   const [isImageBeingProcessed, setIsImageBeingProcessed] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -29,16 +29,16 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
 
   const modelList: PopoverItem[] = [
     {
-      label: "Kling 2.0",
+      label: "Flux Pro Ultra",
       icon: <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />,
-      selected: selectedModel === "Kling 2.0",
+      selected: selectedModel === "Flux Pro Ultra",
       description: "High quality model",
       badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
     },
     {
-      label: "Runway",
+      label: "Recraft 3",
       icon: <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />,
-      selected: selectedModel === "Runway",
+      selected: selectedModel === "Recraft 3",
       description: "Fast and high-quality model",
       badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
     },

@@ -53,6 +53,7 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
@@ -98,6 +99,7 @@ pub async fn enqueue_text_to_image_command(
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
+  fal_task_queue: State<'_, FalTaskQueue>,
 ) -> CommandResult<EnqueueTextToImageSuccessResponse, EnqueueTextToImageErrorType, ()> {
 
   info!("enqueue_text_to_image called");
@@ -106,7 +108,8 @@ pub async fn enqueue_text_to_image_command(
     request,
     &app_data_root,
     &fal_creds_manager,
-    &storyteller_creds_manager
+    &storyteller_creds_manager,
+    &fal_task_queue,
   ).await;
 
   match result {
@@ -203,6 +206,7 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
+  fal_task_queue: &FalTaskQueue,
 ) -> Result<(), InnerError> {
 
   match request.model {
@@ -222,8 +226,6 @@ pub async fn handle_request(
   }
 
   let api_key = fal_creds_manager.get_key_required()?;
-  let creds = storyteller_creds_manager.get_credentials_required()?;
-
   let prompt = request.prompt.as_deref().unwrap_or("");
 
   let result = match request.model {
@@ -231,24 +233,36 @@ pub async fn handle_request(
       return Err(InnerError::NoModelSpecified);
     }
     Some(EnqueueTextToImageModel::FluxProUltra) => {
+      info!("enqueue Flux Pro Ultra text-to-image with prompt: {}", prompt);
       enqueue_flux_pro_ultra_text_to_image(FluxProUltraTextToImageArgs {
         prompt,
         api_key: &api_key,
       }).await
     }
     Some(EnqueueTextToImageModel::Recraft3) => {
+      info!("enqueue Recraft v3 text-to-image with prompt: {}", prompt);
       enqueue_recraft3_text_to_image(Recraft3TextToImageArgs {
         prompt,
         api_key: &api_key,
       }).await
     }
   };
-  
-  if let Err(err) = result {
-    error!("Error enqueuing text to image: {:?}", err);
-    return Err(InnerError::FalError(err));
+
+  match result {
+    Ok(enqueued) => {
+      info!("Successfully enqueued text to image");
+
+      if let Err(err) = fal_task_queue.insert(&enqueued) {
+        error!("Failed to enqueue task: {:?}", err);
+        return Err(InnerError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
+      }
+    }
+    Err(err) => {
+      error!("Failed to enqueue text to image: {:?}", err);
+      return Err(InnerError::FalError(err));
+    }
   }
-  
+
   Ok(())
 }
 

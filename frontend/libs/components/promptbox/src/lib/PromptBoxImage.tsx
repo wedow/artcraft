@@ -7,7 +7,7 @@ import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
-import { FalKlingImageToVideo } from "@storyteller/tauri-api";
+import { EnqueueTextToImage, EnqueueTextToImageModel } from "@storyteller/tauri-api";
 import {
   faMessageXmark,
   faMessageCheck,
@@ -71,8 +71,8 @@ export const PromptBoxImage = ({
   console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
-  const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
-    useJobContext();
+  //const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
+  //  useJobContext();
 
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setIsEnqueueing] = useState(false);
@@ -199,11 +199,14 @@ export const PromptBoxImage = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
-    console.log("generateResponse", generateResponse);
+    const modelName = getModelByName(model);
 
-    const generateResponse = await FalKlingImageToVideo({
-      image_media_token: referenceImages[0].mediaToken,
+    const generateResponse = await EnqueueTextToImage({
+      prompt: prompt,
+      model: modelName,
     });
+
+    console.log("generateResponse", generateResponse);
 
     onEnqueuePressed?.();
     if (generateResponse.status === CommandSuccessStatus.Success) {
@@ -257,6 +260,17 @@ export const PromptBoxImage = ({
     if (!selected || !selected.icon) return faRectangle;
     const iconElement = selected.icon as React.ReactElement;
     return iconElement.props.icon;
+  };
+
+  const getModelByName = (name: string) : EnqueueTextToImageModel => {
+    switch (name) {
+      case "Flux Pro Ultra":
+        return EnqueueTextToImageModel.FluxProUltra;
+      case "Recraft 3":
+        return EnqueueTextToImageModel.Recraft3;
+      default:
+        return EnqueueTextToImageModel.FluxProUltra;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
