@@ -6,8 +6,7 @@ import {
   faCirclePause,
   faSpinnerThird,
 } from "@fortawesome/pro-solid-svg-icons";
-
-import { ButtonIcon } from "~/components";
+import { ButtonIcon } from "@storyteller/ui-button-icon";
 
 export const WaveformPlayer = ({
   audio,

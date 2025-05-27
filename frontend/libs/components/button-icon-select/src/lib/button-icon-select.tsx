@@ -23,7 +23,7 @@ export function ButtonIconSelect({
   selectedOption,
 }: ButtonIconSelectProps) {
   const [internalSelectedOption, setInternalSelectedOption] = useState<string>(
-    selectedOption || options[0].value,
+    selectedOption || options[0].value
   );
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function ButtonIconSelect({
                 text ? "h-auto w-auto gap-2 px-3 py-1.5" : "w-9",
                 internalSelectedOption === value
                   ? "border-brand-primary bg-brand-primary/20"
-                  : "border-transparent hover:bg-ui-panel/[0.4]",
+                  : "border-transparent hover:bg-ui-panel/[0.4]"
               )}
               onClick={() => handleOptionChange(value)}
             >
@@ -72,7 +72,7 @@ export function ButtonIconSelect({
               text ? "h-auto w-auto gap-2 px-3 py-1.5" : "w-9",
               internalSelectedOption === value
                 ? "border-brand-primary bg-brand-primary/20"
-                : "border-transparent hover:bg-ui-panel/[0.4]",
+                : "border-transparent hover:bg-ui-panel/[0.4]"
             )}
             onClick={() => handleOptionChange(value)}
           >
@@ -81,7 +81,7 @@ export function ButtonIconSelect({
               <span className="text-nowrap text-sm font-medium">{text}</span>
             )}
           </button>
-        ),
+        )
       )}
     </div>
   );

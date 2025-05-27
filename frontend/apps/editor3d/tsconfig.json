@@ -35,13 +35,16 @@
       "path": "../../libs/components/lightbox-modal"
     },
     {
-      "path": "../../libs/components/button-dropdown"
+      "path": "../../libs/components/button-icon-select"
     },
     {
       "path": "../../libs/components/tab-selector"
     },
     {
       "path": "../../libs/components/close-button"
+    },
+    {
+      "path": "../../libs/components/button-dropdown"
     },
     {
       "path": "../../libs/components/login-modal"
@@ -86,16 +89,19 @@
       "path": "../../libs/components/label"
     },
     {
-      "path": "../../libs/components/input"
+      "path": "../../libs/components/modal"
     },
     {
       "path": "../../libs/components/tooltip"
     },
     {
+      "path": "../../libs/components/input"
+    },
+    {
       "path": "../../libs/components/button"
     },
     {
-      "path": "../../libs/components/modal"
+      "path": "../../libs/components/button-icon"
     },
     {
       "path": "../../libs/tauri-utils"

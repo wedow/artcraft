@@ -5,7 +5,7 @@ import {
   faPlus,
   faUpRightAndDownLeftFromCenter,
 } from "@fortawesome/pro-solid-svg-icons";
-import { ButtonIconSelect } from "~/components";
+import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { Button } from "@storyteller/ui-button";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { EngineContext } from "../../contexts/EngineContext";

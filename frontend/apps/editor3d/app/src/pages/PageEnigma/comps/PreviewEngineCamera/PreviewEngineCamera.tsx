@@ -20,7 +20,7 @@ import {
 import { pageWidth } from "~/signals";
 import { CameraAspectRatio, EditorStates } from "~/pages/PageEnigma/enums";
 import { CameraViewCanvas } from "~/pages/PageEnigma/comps/EngineCanvases";
-import { ButtonIcon } from "~/components";
+import { ButtonIcon } from "@storyteller/ui-button-icon";
 import { Button } from "@storyteller/ui-button";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect } from "react";

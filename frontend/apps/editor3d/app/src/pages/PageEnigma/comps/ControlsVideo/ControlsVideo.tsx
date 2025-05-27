@@ -8,7 +8,8 @@ import {
   faPlay,
   faRepeat,
 } from "@fortawesome/pro-solid-svg-icons";
-import { ButtonIcon, Tooltip } from "~/components";
+import { ButtonIcon } from "@storyteller/ui-button-icon";
+import { Tooltip } from "@storyteller/ui-tooltip";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 import {
   currentTime,
@@ -80,7 +81,10 @@ export const ControlsVideo = () => {
     editorEngine?.togglePlayback();
   };
   const handleForwardStep = () => {
-    currentTime.value = Math.min(currentTime.value + 1, filmLength.value * 1000);
+    currentTime.value = Math.min(
+      currentTime.value + 1,
+      filmLength.value * 1000,
+    );
     Queue.publish({
       queueName: QueueNames.TO_ENGINE,
       action: toEngineActions.UPDATE_TIME,

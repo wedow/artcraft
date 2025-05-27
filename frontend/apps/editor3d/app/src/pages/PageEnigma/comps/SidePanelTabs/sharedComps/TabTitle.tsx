@@ -1,5 +1,5 @@
 import { faChevronLeft, faClose } from "@fortawesome/pro-solid-svg-icons";
-import { ButtonIcon } from "~/components";
+import { ButtonIcon } from "@storyteller/ui-button-icon";
 import { sidePanelVisible } from "~/pages/PageEnigma/signals";
 
 interface Props {

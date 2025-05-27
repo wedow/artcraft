@@ -101,6 +101,12 @@
     },
     {
       "path": "./libs/components/button-dropdown"
+    },
+    {
+      "path": "./libs/components/button-icon"
+    },
+    {
+      "path": "./libs/components/button-icon-select"
     }
   ]
 }

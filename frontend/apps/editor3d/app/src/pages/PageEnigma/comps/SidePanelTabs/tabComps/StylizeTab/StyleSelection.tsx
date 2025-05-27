@@ -1,7 +1,7 @@
 // OLD STYLE SELECTION, KEEP FOR BACKUP IN CASE WE WANT TO REVERT BACK TO ONE PAGE STYLIZE TAB
 
 import { useContext, useState } from "react";
-import { ButtonIcon } from "~/components";
+import { ButtonIcon } from "@storyteller/ui-button-icon";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 import { ArtStyle } from "~/pages/PageEnigma/Editor/api_manager";
 import { faAngleLeft, faAngleRight } from "@fortawesome/pro-solid-svg-icons";
