@@ -1,7 +1,7 @@
-import { H6, ListDropdown } from "~/components";
+import { ListDropdown } from "~/components";
 import { Input } from "@storyteller/ui-input";
 import { Button } from "@storyteller/ui-button";
-import { FileUploader } from "./FileUploader";
+import { FileUploader } from "@storyteller/ui-file-uploader";
 import { useState } from "react";
 import {
   THUMBNAILS_FILE_TYPE,
@@ -120,7 +120,7 @@ export const UploadFiles = ({
           }}
         />
         {assetFile.error && (
-          <H6 className="z-10 text-red">{assetFile.error}</H6>
+          <h6 className="z-10 text-red">{assetFile.error}</h6>
         )}
         {hasThumbnailUpload && (
           <FileUploader

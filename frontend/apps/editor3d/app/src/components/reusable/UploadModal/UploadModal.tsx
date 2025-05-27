@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-
 import { LoadingDots } from "~/components";
 import { Modal } from "@storyteller/ui-modal";
-
 import { UploadAssetError } from "./UploadAssetError";
 import { UploadSuccess } from "./UploadSuccess";
 import { UploadFiles } from "./UploadFiles";
-
 import { FilterEngineCategories, UploaderStates } from "~/enums";
 import { UploaderState, initialUploaderState } from "~/models";
 

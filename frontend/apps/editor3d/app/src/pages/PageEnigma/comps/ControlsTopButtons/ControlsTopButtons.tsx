@@ -14,7 +14,6 @@ import {
 import { ToastTypes, getArtStyle } from "~/enums";
 import { scene, signalScene, authentication, addToast } from "~/signals";
 import { outlinerIsShowing } from "~/pages/PageEnigma/signals/outliner/outliner";
-import { H4 } from "~/components";
 import { ButtonDropdown } from "@storyteller/ui-button-dropdown";
 import { Input } from "@storyteller/ui-input";
 import { Button } from "@storyteller/ui-button";
@@ -187,8 +186,7 @@ export const ControlsTopButtons = () => {
               label: "New scene",
               description: "Ctrl+N",
               onClick: () => {
-                textInput.value = "Untitled New Scene";
-                showWizard.value = "new_scene";
+                setSceneTitleInput("Untitled New Scene");
               },
             },
             {
@@ -224,9 +222,9 @@ export const ControlsTopButtons = () => {
               dialogProps: {
                 title: "Save Scene",
                 content: (
-                  <H4>
+                  <h4>
                     Save scene to <b>{scene.value.title}</b>?
-                  </H4>
+                  </h4>
                 ),
                 confirmButtonProps: {
                   label: "Save",

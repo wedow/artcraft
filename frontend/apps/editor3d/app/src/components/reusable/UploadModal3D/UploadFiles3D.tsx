@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-import { H6, ListDropdown } from "~/components";
+import { ListDropdown } from "~/components";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
 import { Label } from "@storyteller/ui-label";
-import { FileUploader } from "../UploadModal/FileUploader";
+import { FileUploader } from "@storyteller/ui-file-uploader";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "./utilities";
 import { upload3DObjects } from "./utilities/upload3DObjects";
 import { UploaderState } from "~/models";
@@ -152,7 +152,7 @@ export const UploadFiles3D = ({
           />
         )}
         {assetFile.error && (
-          <H6 className="z-10 text-red">{assetFile.error}</H6>
+          <h6 className="z-10 text-red">{assetFile.error}</h6>
         )}
 
         <div className="relative m-auto w-full overflow-hidden rounded-lg bg-brand-secondary">
@@ -161,18 +161,18 @@ export const UploadFiles3D = ({
             ref={canvasCallbackRef}
           />
           {!assetFile.value && (
-            <H6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 flex w-full items-center justify-center gap-2.5 text-center opacity-50">
+            <h6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 flex w-full items-center justify-center gap-2.5 text-center opacity-50">
               <FontAwesomeIcon icon={faCube} />
               Your model preview will appear here
-            </H6>
+            </h6>
           )}
           {previewStatus.type.includes("Error") && (
             <>
-              <H6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 w-full text-center">
+              <h6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 w-full text-center">
                 {previewStatus.type}
                 {previewStatus.message && <br />}
                 {previewStatus.message}
-              </H6>
+              </h6>
             </>
           )}
         </div>

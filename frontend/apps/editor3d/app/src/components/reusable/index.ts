@@ -8,7 +8,6 @@ export * from "./NumberInput";
 export * from "./Pagination";
 export * from "./Popover";
 export * from "./SearchFilter";
-export * from "./Typography";
 export * from "./UploadModal";
 export * from "./UploadModal3D";
 export * from "./UploadModalMedia";

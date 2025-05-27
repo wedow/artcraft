@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverMenu } from "~/components/reusable/Popover/Popover";
 import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
-import { H3 } from "~/components";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { JobsApi } from "~/Classes/ApiManager/JobsApi";
@@ -227,7 +226,7 @@ export function Activity() {
                 size="2x"
                 className="text-gray-400"
               />
-              <H3 className="text-gray-300">Retrieving Activities</H3>
+              <h3 className="text-gray-300">Retrieving Activities</h3>
             </div>
           ) : jobs.length === 0 && completedItems.length === 0 ? (
             <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">

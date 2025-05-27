@@ -1,4 +1,4 @@
-import { Label } from "~/components";
+import { Label } from "@storyteller/ui-label";
 
 export const ShortcutsGroup = (props: {
   label: string;

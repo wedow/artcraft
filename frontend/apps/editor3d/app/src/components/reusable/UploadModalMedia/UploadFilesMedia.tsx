@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { H6 } from "~/components";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { FileUploader } from "../UploadModal/FileUploader";
+import { FileUploader } from "@storyteller/ui-file-uploader";
 import { uploadPlane } from "./uploadPlane";
 import { UploaderState } from "~/models";
 
@@ -82,14 +81,14 @@ export const UploadFilesMedia = ({
           }}
         />
         {assetFile.error && (
-          <H6 className="z-10 text-red">{assetFile.error}</H6>
+          <h6 className="z-10 text-red">{assetFile.error}</h6>
         )}
 
         <div className="relative m-auto aspect-square w-full overflow-hidden rounded-lg bg-brand-secondary">
           {!assetFile.value && (
-            <H6 className="absolute left-0 top-1/2 -mt-5 w-full text-center">
+            <h6 className="absolute left-0 top-1/2 -mt-5 w-full text-center">
               File Preview
-            </H6>
+            </h6>
           )}
           {assetFile.value &&
             (assetFile.value.type === "video/mp4" ? (

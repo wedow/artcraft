@@ -3,7 +3,6 @@ import { faFilm, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CompletedCard } from "~/pages/PageEnigma/comps/GenerateModals/CompletedCard";
 import { InProgressCard } from "~/pages/PageEnigma/comps/GenerateModals/InProgressCard";
-import { H3, P } from "~/components";
 import { Modal } from "@storyteller/ui-modal";
 import { viewMyMovies } from "~/pages/PageEnigma/signals";
 import { activeWorkflowJobs, userMovies } from "~/signals";
@@ -48,7 +47,7 @@ const MovieList = ({ setMovieId }: Props) => {
     return (
       <div className="flex h-full w-full flex-col justify-center gap-6 text-center align-middle">
         <FontAwesomeIcon icon={faSpinnerThird} spin size={"3x"} />
-        <H3>Retrieving Completed Movies</H3>
+        <h3>Retrieving Completed Movies</h3>
       </div>
     );
   }
@@ -59,11 +58,11 @@ const MovieList = ({ setMovieId }: Props) => {
   ) {
     return (
       <div className="flex h-full w-full flex-col justify-center gap-6 text-center align-middle">
-        <H3>You have not created any movies yet!</H3>
-        <P>
+        <h3>You have not created any movies yet!</h3>
+        <p>
           Try start a new scene from our featured scenes, and generate a movie
           via the <b>AI Stylize</b> tab.
-        </P>
+        </p>
       </div>
     );
   }

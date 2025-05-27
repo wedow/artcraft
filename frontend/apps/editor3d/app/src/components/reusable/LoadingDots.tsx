@@ -1,8 +1,6 @@
 import { Transition } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
 
-import { H4 } from ".";
-
 interface LoadingDotsProps {
   className?: string;
   isShowing?: boolean;
@@ -47,7 +45,7 @@ export function LoadingDots({
     >
       {type === "typing" && <div className="dot-typing"></div>}
       {type === "bricks" && <div className="dot-bricks"></div>}
-      {message && <H4>{message}</H4>}
+      {message && <h4>{message}</h4>}
     </Transition>
   );
 }

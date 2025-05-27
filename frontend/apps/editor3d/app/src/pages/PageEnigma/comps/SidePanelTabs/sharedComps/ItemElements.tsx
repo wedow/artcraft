@@ -1,6 +1,6 @@
 import { ItemElement } from "./ItemElement";
 import { MediaItem } from "~/pages/PageEnigma/models";
-import { H4, P, LoadingDots } from "~/components";
+import { LoadingDots } from "~/components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEmptySet } from "@fortawesome/pro-solid-svg-icons";
 import { AutoSizer, Grid } from "react-virtualized";
@@ -97,8 +97,8 @@ export const ItemElements = ({
           icon={faEmptySet}
           className="mb-4 text-4xl opacity-30"
         />
-        <H4>You do not have anything here.</H4>
-        <P className="text-sm opacity-75">Please upload some assets.</P>
+        <h4>You do not have anything here.</h4>
+        <p className="text-sm opacity-75">Please upload some assets.</p>
       </div>
     );
   }
