@@ -1,4 +1,6 @@
-import { Label, NumberInput, Slider } from "~/components";
+import { Label } from "@storyteller/ui-label";
+import { SliderV2 as Slider } from "@storyteller/ui-sliderv2";
+import { NumberInput } from "@storyteller/ui-input";
 import { useSignals } from "@preact/signals-react/runtime";
 
 import { styleStrength } from "~/pages/PageEnigma/signals/stylizeTab";
