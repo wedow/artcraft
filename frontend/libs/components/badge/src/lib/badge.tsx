@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-// TODO: Move to shared component
+
 interface BadgeProps {
   label: string;
   color?: string;
@@ -11,7 +11,7 @@ export const Badge = ({ label, className }: BadgeProps) => {
     <div
       className={twMerge(
         "rounded-[6px] bg-ui-controls/45 px-[4px] py-[1px] text-[10px] shadow-sm",
-        className,
+        className
       )}
     >
       {label}

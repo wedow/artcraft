@@ -3,12 +3,6 @@
   "include": [],
   "references": [
     {
-      "path": "../../common"
-    },
-    {
-      "path": "../close-button"
-    },
-    {
       "path": "./tsconfig.lib.json"
     },
     {

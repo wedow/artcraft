@@ -2,7 +2,7 @@
 import { MediaItem } from "~/pages/PageEnigma/models";
 import { useSignals } from "@preact/signals-react/runtime";
 import DndAsset from "~/pages/PageEnigma/DragAndDrop/DndAsset";
-import { Badge } from "~/components";
+import { Badge } from "@storyteller/ui-badge";
 import { AssetType } from "~/enums";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpDownLeftRight } from "@fortawesome/pro-solid-svg-icons";

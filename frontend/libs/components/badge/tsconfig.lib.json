@@ -41,28 +41,5 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx"
-  ],
-  "references": [
-    {
-      "path": "../slider-v2/tsconfig.lib.json"
-    },
-    {
-      "path": "../tooltip/tsconfig.lib.json"
-    },
-    {
-      "path": "../label/tsconfig.lib.json"
-    },
-    {
-      "path": "../input/tsconfig.lib.json"
-    },
-    {
-      "path": "../button/tsconfig.lib.json"
-    },
-    {
-      "path": "../popover/tsconfig.lib.json"
-    },
-    {
-      "path": "../modal/tsconfig.lib.json"
-    }
   ]
 }

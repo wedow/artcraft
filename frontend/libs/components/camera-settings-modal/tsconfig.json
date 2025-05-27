@@ -21,7 +21,7 @@
       "path": "../popover"
     },
     {
-      "path": "../transition-dialogue"
+      "path": "../modal"
     },
     {
       "path": "./tsconfig.lib.json"
