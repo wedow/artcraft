@@ -15,9 +15,9 @@ import {
 } from "~/pages/PageEnigma/comps/SidePanelTabs/sharedComps";
 import {
   SearchFilter,
-  Pagination,
   UploadModal3D,
 } from "~/components";
+import { Pagination } from "@storyteller/ui-pagination";
 import { Button, FilterButtons } from "@storyteller/ui-button"
 import { isAnyStatusFetching } from "../utilities";
 import {

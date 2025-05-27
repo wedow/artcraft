@@ -119,6 +119,9 @@
     },
     {
       "path": "./libs/components/list-dropdown"
+    },
+    {
+      "path": "./libs/components/pagination"
     }
   ]
 }

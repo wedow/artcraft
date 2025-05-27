@@ -35,6 +35,9 @@
       "path": "../../libs/components/lightbox-modal"
     },
     {
+      "path": "../../libs/components/loading-spinner"
+    },
+    {
       "path": "../../libs/components/button-icon-select"
     },
     {
@@ -50,9 +53,6 @@
       "path": "../../libs/components/login-modal"
     },
     {
-      "path": "../../libs/components/popover"
-    },
-    {
       "path": "../../libs/soundboard"
     },
     {
@@ -60,6 +60,9 @@
     },
     {
       "path": "../../libs/components/toaster"
+    },
+    {
+      "path": "../../libs/components/popover"
     },
     {
       "path": "../../libs/components/promptbox"
@@ -104,16 +107,22 @@
       "path": "../../libs/components/file-uploader"
     },
     {
+      "path": "../../libs/components/list-dropdown"
+    },
+    {
       "path": "../../libs/components/tooltip"
     },
     {
       "path": "../../libs/components/button"
     },
     {
+      "path": "../../libs/components/input"
+    },
+    {
       "path": "../../libs/components/button-icon"
     },
     {
-      "path": "../../libs/components/input"
+      "path": "../../libs/components/pagination"
     },
     {
       "path": "../../libs/tauri-utils"

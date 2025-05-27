@@ -6,11 +6,11 @@ import {
   VIDEOPLANE_FILE_TYPE,
 } from "~/enums";
 import {
-  Button,
-  Pagination,
   SearchFilter,
   UploadModalMedia,
 } from "~/components";
+import { Button } from "@storyteller/ui-button";
+import { Pagination } from "@storyteller/ui-pagination";
 import { ItemElements } from "~/pages/PageEnigma/comps/SidePanelTabs/sharedComps";
 import { isAnyStatusFetching } from "../../utilities";
 import { useUserObjects, useSearchUserObjects } from "../../hooks";
