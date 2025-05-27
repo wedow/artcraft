@@ -17,9 +17,9 @@ import {
   paintBrushSize,
   setPaintBrushSize,
 } from "../../../signals/uiEvents/toolbarMain/paintMode";
-import { Button } from "../Button";
-import { Input } from "../Input";
-import { Slider } from "@storyteller/ui-slider";
+import { Button } from "@storyteller/ui-button";
+import { Input } from "@storyteller/ui-input";
+import { SliderV2 } from "@storyteller/ui-sliderv2";
 import { HexEyedropPicker } from "../HexEyedropPicker";
 
 export const PaintModeMenu = ({
@@ -206,7 +206,7 @@ export const PaintModeMenu = ({
                   <p className="w-full justify-start text-sm font-medium text-white">
                     Brush Size:
                   </p>
-                  <Slider
+                  <SliderV2
                     min={BRUSH_MIN_SIZE}
                     max={BRUSH_MAX_SIZE}
                     value={brushSize}

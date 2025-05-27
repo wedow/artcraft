@@ -1,11 +1,10 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { faFilm, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import { CompletedCard } from "~/pages/PageEnigma/comps/GenerateModals/CompletedCard";
 import { InProgressCard } from "~/pages/PageEnigma/comps/GenerateModals/InProgressCard";
-import { TransitionDialogue, H3, P } from "~/components";
-
+import { H3, P } from "~/components";
+import { Modal } from "@storyteller/ui-modal";
 import { viewMyMovies } from "~/pages/PageEnigma/signals";
 import { activeWorkflowJobs, userMovies } from "~/signals";
 
@@ -17,7 +16,7 @@ export function MyMovies({ setMovieId }: Props) {
   useSignals();
 
   return (
-    <TransitionDialogue
+    <Modal
       title="My Movies"
       titleIcon={faFilm}
       className="max-w-4xl"
@@ -39,7 +38,7 @@ export function MyMovies({ setMovieId }: Props) {
         )}
         <MovieList setMovieId={setMovieId} />
       </div>
-    </TransitionDialogue>
+    </Modal>
   );
 }
 

@@ -7,10 +7,8 @@ import {
   faCameraViewfinder,
   faSpinnerThird,
 } from "@fortawesome/pro-solid-svg-icons";
-
 import Queue, { QueueNames } from "~/pages/PageEnigma/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
-
 import {
   cameraAspectRatio,
   editorState,
@@ -22,9 +20,9 @@ import {
 import { pageWidth } from "~/signals";
 import { CameraAspectRatio, EditorStates } from "~/pages/PageEnigma/enums";
 import { CameraViewCanvas } from "~/pages/PageEnigma/comps/EngineCanvases";
-
-import { ButtonIcon, Tooltip } from "~/components";
-import { Button } from "@storyteller/ui-button"
+import { ButtonIcon } from "~/components";
+import { Button } from "@storyteller/ui-button";
+import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect } from "react";
 
 export const PreviewEngineCamera = () => {

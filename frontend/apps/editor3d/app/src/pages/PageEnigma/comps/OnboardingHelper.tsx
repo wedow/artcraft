@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import { Key, KeyGroup, Mouse, Plus } from "./ControlsTopButtons/Help/Help";
-import { CloseButton } from "~/components";
+import { CloseButton } from "@storyteller/ui-close-button";
 
 const STORAGE_KEY = "onboarding_helper_dismissed";
 const EXPIRATION_DAYS = 3;
@@ -33,7 +33,7 @@ export const OnboardingHelper = () => {
       STORAGE_KEY,
       JSON.stringify({
         timestamp: Date.now(),
-      })
+      }),
     );
   };
 

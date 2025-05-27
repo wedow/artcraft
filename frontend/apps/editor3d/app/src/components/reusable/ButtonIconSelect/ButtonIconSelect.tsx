@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { twMerge } from "tailwind-merge";
-import { Tooltip } from "../Tooltip"; // Adjust the path if necessary
+import { Tooltip } from "@storyteller/ui-tooltip";
 
 interface Option {
   value: string;

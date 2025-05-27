@@ -5,7 +5,7 @@ import { ToastTypes } from "~/enums";
 import { addToast } from "~/signals";
 import { JobState } from "~/pages/PageEnigma/enums";
 import { ActiveJob } from "~/pages/PageEnigma/models";
-import { Tooltip } from "~/components";
+import { Tooltip } from "@storyteller/ui-tooltip";
 import { JobsApi } from "~/Classes/ApiManager";
 import { PollRecentJobs } from "~/hooks/useActiveJobs/utilities";
 interface Props {

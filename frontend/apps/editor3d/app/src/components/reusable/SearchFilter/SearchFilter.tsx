@@ -4,8 +4,9 @@ import {
   faFilterList,
   faSearch,
 } from "@fortawesome/pro-solid-svg-icons";
-import { Input, Tooltip } from "~/components";
-import { Button } from "@storyteller/ui-button"
+import { Input } from "@storyteller/ui-input";
+import { Button } from "@storyteller/ui-button";
+import { Tooltip } from "@storyteller/ui-tooltip";
 import debounce from "lodash/debounce";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

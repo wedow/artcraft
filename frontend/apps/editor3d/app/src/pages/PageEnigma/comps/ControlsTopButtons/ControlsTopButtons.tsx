@@ -4,6 +4,7 @@ import { useSignals, useSignalEffect } from "@preact/signals-react/runtime";
 import {
   faCheckSquare,
   faFile,
+  faQuestion,
   faSquare,
 } from "@fortawesome/pro-solid-svg-icons";
 
@@ -15,13 +16,9 @@ import { ToastTypes, getArtStyle } from "~/enums";
 import { scene, signalScene, authentication, addToast } from "~/signals";
 import { outlinerIsShowing } from "~/pages/PageEnigma/signals/outliner/outliner";
 
-import {
-  ButtonDropdown,
-  Input,
-  H4,
-} from "~/components";
+import { ButtonDropdown, Input, H4 } from "~/components";
 
-import {Button} from "@storyteller/ui-button";
+import { Button } from "@storyteller/ui-button";
 
 import { TestFeaturesButtons } from "./TestFeaturesButtons";
 import { LoadUserScenes } from "./LoadUserScenes";
@@ -40,14 +37,15 @@ import {
 } from "~/pages/PageEnigma/signals";
 import { CameraAspectRatio } from "~/pages/PageEnigma/enums";
 import { twMerge } from "tailwind-merge";
-
+import { Help } from "./Help";
+import { Modal } from "@storyteller/ui-modal";
 
 export const ControlsTopButtons = () => {
   useSignals();
   const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
+  const [helpIsShowing, setHelpIsShowing] = useState(false);
   const editorEngine = useContext(EngineContext);
 
   const [sceneTitleInput, setSceneTitleInput] = useState<string>("");
@@ -216,10 +214,12 @@ export const ControlsTopButtons = () => {
               },
             },
             {
-              disabled:
-                !(scene.value.isModified &&
-                  (scene.value.ownerToken === undefined || scene.value.ownerToken ===
-                    authentication.userInfo.value?.user_token)),
+              disabled: !(
+                scene.value.isModified &&
+                (scene.value.ownerToken === undefined ||
+                  scene.value.ownerToken ===
+                    authentication.userInfo.value?.user_token)
+              ),
               // save scene should be disabled if there are no changes
               label: "Save scene",
               description: "Ctrl+S",
@@ -295,29 +295,25 @@ export const ControlsTopButtons = () => {
           Outliner
         </Button>
 
-        {/* <ButtonDialogue
-          buttonProps={{
-            variant: "secondary",
-            label: "Help",
-            className: "shadow-xl",
-            icon: faQuestion,
-          }}
-          dialogProps={{
-            className: "max-w-6xl w-auto",
-          }}
-          title={
-            <>
-              Help
-              <span className="text-sm font-medium opacity-60">
-                @%CURRENT_STORYTELLER_GIT_VERSION%
-              </span>
-            </>
-          }
+        <Button
+          icon={faQuestion}
+          variant="secondary"
+          className="shadow-xl"
+          onClick={() => setHelpIsShowing(true)}
         >
-          <Help />
-        </ButtonDialogue> */}
+          Help
+        </Button>
       </div>
       <TestFeaturesButtons debug={false} />
+
+      <Modal
+        isOpen={helpIsShowing}
+        onClose={() => setHelpIsShowing(false)}
+        title="Help"
+        className="h-[500px] max-w-4xl"
+      >
+        <Help />
+      </Modal>
     </div>
   );
 };

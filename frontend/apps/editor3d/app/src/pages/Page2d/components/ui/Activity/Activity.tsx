@@ -6,7 +6,7 @@ import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
 import { useJobContext } from "~/components/JobContext";
 import { Api } from "~/KonvaApp/Api";
-import { toast } from "sonner";
+import { toast } from "@storyteller/ui-toaster";
 import { Tooltip } from "@storyteller/ui-tooltip";
 
 // Dummy data types
@@ -133,7 +133,7 @@ export function Activity() {
               </>
             </span>
             {jobs.length > 0 && (
-              <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-blue-500" />
+              <div className="bg-blue-500 absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full" />
             )}
           </div>
         }

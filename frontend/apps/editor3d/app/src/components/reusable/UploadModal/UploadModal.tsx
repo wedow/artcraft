@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { TransitionDialogue, LoadingDots } from "~/components";
+import { LoadingDots } from "~/components";
+import { Modal } from "@storyteller/ui-modal";
 
 import { UploadAssetError } from "./UploadAssetError";
 import { UploadSuccess } from "./UploadSuccess";
@@ -108,8 +109,8 @@ export function UploadModal({
   };
 
   return (
-    <TransitionDialogue isOpen={isOpen} onClose={onClose} title={title}>
+    <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <UploaderModalContent />
-    </TransitionDialogue>
+    </Modal>
   );
 }

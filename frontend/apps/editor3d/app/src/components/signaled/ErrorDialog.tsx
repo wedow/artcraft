@@ -1,8 +1,8 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { faTriangleExclamation } from "@fortawesome/pro-solid-svg-icons";
 
-import { TransitionDialogue } from "~/components";
-import { Button } from "@storyteller/ui-button"
+import { Modal } from "@storyteller/ui-modal";
+import { Button } from "@storyteller/ui-button";
 import {
   showErrorDialog,
   errorDialogMessage,
@@ -13,7 +13,7 @@ export function ErrorDialog() {
   useSignals();
 
   return (
-    <TransitionDialogue
+    <Modal
       title={errorDialogTitle.value}
       titleIcon={faTriangleExclamation}
       titleIconClassName="text-brand-primary"
@@ -33,6 +33,6 @@ export function ErrorDialog() {
           </Button>
         </div>
       </div>
-    </TransitionDialogue>
+    </Modal>
   );
 }

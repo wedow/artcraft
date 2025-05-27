@@ -1,8 +1,10 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { useState } from "react";
 import { MediaFile } from "~/pages/PageEnigma/models";
-import { Input, Label, TransitionDialogue } from "~/components";
-import { Button } from "@storyteller/ui-button"
+import { Input } from "@storyteller/ui-input";
+import { Label } from "@storyteller/ui-label";
+import { Button } from "@storyteller/ui-button";
+import { Modal } from "@storyteller/ui-modal";
 
 import {
   faArrowDownToLine,
@@ -54,7 +56,7 @@ export function Sharing({ mediaFile, setMediaFile }: Props) {
   };
 
   return (
-    <TransitionDialogue
+    <Modal
       title={generateTitle()}
       titleIcon={generateMovieId.value ? faChevronLeft : faFilm}
       titleIconClassName="text-white/60 hover:text-white/80 transition-colors duration-150"
@@ -145,6 +147,6 @@ export function Sharing({ mediaFile, setMediaFile }: Props) {
           </div>
         </div>
       </div>
-    </TransitionDialogue>
+    </Modal>
   );
 }

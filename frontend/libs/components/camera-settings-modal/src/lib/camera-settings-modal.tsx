@@ -1,7 +1,7 @@
-import { TransitionDialogue } from "@storyteller/ui-transition-dialogue";
+import { Modal } from "@storyteller/ui-modal";
 import { faPlus, faTrashAlt } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PopoverItem } from "@storyteller/ui-popover"
+import { PopoverItem } from "@storyteller/ui-popover";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
 import { Label } from "@storyteller/ui-label";
@@ -99,20 +99,21 @@ export const CameraSettingsModal = ({
   };
 
   return (
-    <TransitionDialogue
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       className={twMerge(
         "h-[500px] max-w-3xl duration-200",
-        isDragging ? "opacity-10" : "opacity-100",
+        isDragging ? "opacity-10" : "opacity-100"
       )}
       backdropClassName={twMerge(
         "duration-200",
-        isDragging ? "opacity-0" : "opacity-100",
+        isDragging ? "opacity-0" : "opacity-100"
       )}
       childPadding={false}
       disableHotkeyInput={disableHotkeyInput}
       enableHotkeyInput={enableHotkeyInput}
+      showClose={false}
     >
       <div className="grid h-full grid-cols-12 gap-3">
         <div className="relative col-span-4 p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-gray-200 after:dark:bg-white/10">
@@ -132,8 +133,9 @@ export const CameraSettingsModal = ({
             {cameras.map((camera) => (
               <button
                 key={camera.id}
-                className={`h-9 w-full rounded-lg p-2 text-left transition-colors duration-100 hover:bg-[#63636B]/40 ${camera.id === selectedCameraId ? "bg-[#63636B]/40" : ""
-                  }`}
+                className={`h-9 w-full rounded-lg p-2 text-left transition-colors duration-100 hover:bg-[#63636B]/40 ${
+                  camera.id === selectedCameraId ? "bg-[#63636B]/40" : ""
+                }`}
                 onClick={() => handleCameraSelect(camera)}
               >
                 <div className="flex items-center gap-2.5 text-sm">
@@ -163,10 +165,11 @@ export const CameraSettingsModal = ({
                   delay={200}
                 >
                   <button
-                    className={`h-6 w-6 rounded-lg transition-colors ${selectedCamera?.id === "main"
-                      ? "cursor-not-allowed text-white/30"
-                      : "text-white/60 hover:text-white/100"
-                      }`}
+                    className={`h-6 w-6 rounded-lg transition-colors ${
+                      selectedCamera?.id === "main"
+                        ? "cursor-not-allowed text-white/30"
+                        : "text-white/60 hover:text-white/100"
+                    }`}
                     onClick={() =>
                       selectedCamera &&
                       selectedCamera.id !== "main" &&
@@ -231,6 +234,6 @@ export const CameraSettingsModal = ({
           </div>
         </div>
       </div>
-    </TransitionDialogue>
+    </Modal>
   );
 };

@@ -22,7 +22,8 @@ import {
   faImage,
   faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
-import { Label, P, TransitionDialogue } from "~/components";
+import { Label, P } from "~/components";
+import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 import { MediaFilesApi } from "~/Classes/ApiManager/MediaFilesApi";
@@ -260,7 +261,7 @@ export const IPAdapter: React.FC = () => {
         </div>
       )}
 
-      <TransitionDialogue
+      <Modal
         title="Crop Reference Image"
         titleIcon={faCrop}
         className="max-w-4xl"
@@ -307,9 +308,9 @@ export const IPAdapter: React.FC = () => {
             Confirm
           </Button>
         </div>
-      </TransitionDialogue>
+      </Modal>
 
-      <TransitionDialogue
+      <Modal
         title="Reference Image Preview"
         titleIcon={faImage}
         className="max-w-fit"
@@ -335,7 +336,7 @@ export const IPAdapter: React.FC = () => {
             Close
           </Button>
         </div>
-      </TransitionDialogue>
+      </Modal>
     </div>
   );
 };

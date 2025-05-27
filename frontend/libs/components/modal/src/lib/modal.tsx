@@ -16,16 +16,27 @@ import {
   faUpRightAndDownLeftFromCenter,
   faDownLeftAndUpRightToCenter,
 } from "@fortawesome/pro-solid-svg-icons";
+import { DomLevels } from "@storyteller/common";
 
 const DialogBackdrop = ({
   className,
   onClose,
   closeOnOutsideClick,
+  disableHotkeyInput,
+  enableHotkeyInput,
 }: {
   className?: string;
   onClose?: () => void;
   closeOnOutsideClick?: boolean;
+  disableHotkeyInput: (level: number) => void;
+  enableHotkeyInput: (level: number) => void;
 }) => {
+  useEffect(() => {
+    disableHotkeyInput(DomLevels.DIALOGUE);
+    return () => {
+      enableHotkeyInput(DomLevels.DIALOGUE);
+    };
+  }, []);
   return (
     <TransitionChild
       as="div"
@@ -109,6 +120,8 @@ export const Modal = ({
   titleIcon,
   onTitleIconClick,
   onClose,
+  disableHotkeyInput = () => {},
+  enableHotkeyInput = () => {},
   className,
   backdropClassName,
   width,
@@ -135,6 +148,8 @@ export const Modal = ({
   childPadding?: boolean;
   showClose?: boolean;
   draggable?: boolean;
+  disableHotkeyInput?: (level: number) => void;
+  enableHotkeyInput?: (level: number) => void;
   /**
    * Optional initial position for the modal (only used on first open, if no previous position is stored)
    */
@@ -412,6 +427,8 @@ export const Modal = ({
               className={backdropClassName}
               onClose={onClose}
               closeOnOutsideClick={closeOnOutsideClick}
+              disableHotkeyInput={disableHotkeyInput}
+              enableHotkeyInput={enableHotkeyInput}
             />
           )}
           {allowBackgroundInteraction && (

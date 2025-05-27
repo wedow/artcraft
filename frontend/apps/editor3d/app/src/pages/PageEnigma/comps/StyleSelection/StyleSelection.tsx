@@ -4,8 +4,8 @@ import { ArtStyle } from "~/pages/PageEnigma/Editor/api_manager";
 import { styleList } from "~/pages/PageEnigma/styleList";
 import { ItemPicker } from "./ItemPicker";
 import { useSignals } from "@preact/signals-react/runtime";
-import { TransitionDialogue } from "~/components";
 import { selectedArtStyle } from "~/pages/PageEnigma/signals";
+import { Modal } from "@storyteller/ui-modal";
 
 interface Props {
   onClose: () => void;
@@ -26,7 +26,7 @@ export const StyleSelection = ({ onClose }: Props) => {
   };
 
   return (
-    <TransitionDialogue
+    <Modal
       isOpen={true}
       onClose={onClose}
       title="Select a Style"
@@ -47,6 +47,6 @@ export const StyleSelection = ({ onClose }: Props) => {
           ))}
         </div>
       </div>
-    </TransitionDialogue>
+    </Modal>
   );
 };

@@ -1,13 +1,15 @@
-import { TransitionDialogue } from "~/components/reusable/TransitionDialogue";
+import { Modal } from "@storyteller/ui-modal";
 import { faPlus, faTrashAlt } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PopoverItem } from "~/components/reusable/Popover";
-import { Input, Label, Tooltip } from "~/components";
+import { PopoverItem } from "@storyteller/ui-popover";
+import { Input } from "@storyteller/ui-input";
+import { Label } from "@storyteller/ui-label";
 import { Button } from "@storyteller/ui-button";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
 import { focalLengthDragging } from "~/pages/PageEnigma/signals/camera";
 import { useState, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
+import { Tooltip } from "@storyteller/ui-tooltip";
 
 interface ExtendedPopoverItem extends PopoverItem {
   id: string;
@@ -91,7 +93,7 @@ export const CameraSettingsModal = ({
   };
 
   return (
-    <TransitionDialogue
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       className={twMerge(
@@ -223,6 +225,6 @@ export const CameraSettingsModal = ({
           </div>
         </div>
       </div>
-    </TransitionDialogue>
+    </Modal>
   );
 };

@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 
-import { TransitionDialogue, LoadingDots } from "~/components";
-
+import { LoadingDots } from "~/components";
+import { Modal } from "@storyteller/ui-modal";
 import { UploadAssetError } from "../UploadModal/UploadAssetError";
 import { UploadSuccess } from "../UploadModal/UploadSuccess";
-import { UploadFilesMedia } from "./UploadFilesMedia";
 import { FilterEngineCategories, UploaderStates } from "~/enums";
 import { initialUploaderState, UploaderState } from "~/models";
 import { UploadImageMedia } from "./UploadImageMedia";
@@ -113,8 +112,8 @@ export function UploadImageMediaModal({
   };
 
   return (
-    <TransitionDialogue isOpen={isOpen} onClose={onClose} title={title}>
+    <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <UploaderModalContent />
-    </TransitionDialogue>
+    </Modal>
   );
 }

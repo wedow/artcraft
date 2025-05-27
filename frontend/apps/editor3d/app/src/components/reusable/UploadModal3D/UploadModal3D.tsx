@@ -6,7 +6,7 @@ import { UploadAssetError } from "../UploadModal/UploadAssetError";
 import { UploadSuccess } from "../UploadModal/UploadSuccess";
 import { UploadFiles3D } from "./UploadFiles3D";
 import { initialUploaderState, UploaderState } from "~/models";
-import { Select } from "../Select";
+import { Select } from "@storyteller/ui-select";
 import {
   FilterEngineCategories,
   UploaderStates,

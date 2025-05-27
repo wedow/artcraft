@@ -6,7 +6,7 @@ import {
   faChevronDown,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TransitionDialogue } from "~/components";
+import { Modal } from "@storyteller/ui-modal";
 import { Button, ButtonProps } from "@storyteller/ui-button";
 import { twMerge } from "tailwind-merge";
 
@@ -173,7 +173,7 @@ export const ButtonDropdown = ({
       </Menu>
 
       {currentDialogProps && (
-        <TransitionDialogue
+        <Modal
           title={currentDialogProps.title}
           isOpen={isOpen}
           onClose={closeModal}
@@ -207,7 +207,7 @@ export const ButtonDropdown = ({
               </Button>
             )}
           </div>
-        </TransitionDialogue>
+        </Modal>
       )}
     </div>
   );
