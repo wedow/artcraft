@@ -3,7 +3,7 @@ import { JobContextType } from "libs/common/src/lib/types";
 import { PromptBoxImage } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
 import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
-import { faFilm, faClock } from "@fortawesome/pro-solid-svg-icons";
+import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface TextToImageProps {
@@ -13,7 +13,9 @@ interface TextToImageProps {
 
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedModel, setSelectedModel] = useState<string>("GPT Image 1 (GPT-4o)");
+  const [selectedModel, setSelectedModel] = useState<string>(
+    "GPT Image 1 (GPT-4o)",
+  );
   const [useSystemPrompt, setUseSystemPrompt] = useState(false);
   const [isImageBeingProcessed, setIsImageBeingProcessed] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -30,21 +32,21 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const modelList: PopoverItem[] = [
     {
       label: "GPT Image 1 (GPT-4o)",
-      icon: <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />,
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       selected: selectedModel === "GPT Image 1 (GPT-4o)",
       description: "Slow, ultra instructive model",
       badges: [{ label: "45 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
     },
     {
       label: "Flux Pro Ultra",
-      icon: <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />,
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       selected: selectedModel === "Flux Pro Ultra",
       description: "High quality model",
       badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
     },
     {
       label: "Recraft 3",
-      icon: <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />,
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       selected: selectedModel === "Recraft 3",
       description: "Fast and high-quality model",
       badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
