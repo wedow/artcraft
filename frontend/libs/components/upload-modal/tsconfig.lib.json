@@ -44,9 +44,6 @@
   ],
   "references": [
     {
-      "path": "../../../apps/editor3d"
-    },
-    {
       "path": "../modal/tsconfig.lib.json"
     },
     {
