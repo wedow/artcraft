@@ -10,12 +10,11 @@ import {
 } from "~/enums";
 import { MediaItem } from "~/pages/PageEnigma/models";
 import {
-  Button,
-  FilterButtons,
   Pagination,
   SearchFilter,
   UploadModal,
 } from "~/components";
+import { Button, FilterButtons } from "@storyteller/ui-button";
 import { ItemElements } from "~/pages/PageEnigma/comps/SidePanelTabs/sharedComps";
 import { isAnyStatusFetching } from "../../utilities";
 import {
@@ -109,7 +108,7 @@ export const CharactersTab = ({
         ? fetchFeaturedObjects
         : undefined
       : nextUserObjects &&
-          nextUserObjects.current !== nextUserObjects.total_page_count
+        nextUserObjects.current !== nextUserObjects.total_page_count
         ? () => fetchUserObjects(nextUserObjects.current)
         : undefined;
 

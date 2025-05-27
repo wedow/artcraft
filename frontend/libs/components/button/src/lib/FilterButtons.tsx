@@ -1,4 +1,4 @@
-import { AssetFilterOption } from "~/enums";
+import { AssetFilterOption } from "@storyteller/common";
 
 interface Props {
   onClick: (button: AssetFilterOption) => void;

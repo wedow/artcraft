@@ -12,11 +12,10 @@ import {
 } from "~/enums";
 
 import {
-  Button,
-  FilterButtons,
   SearchFilter,
   UploadModal3D,
 } from "~/components";
+import { Button, FilterButtons } from "@storyteller/ui-button"
 
 import {
   TabTitle,

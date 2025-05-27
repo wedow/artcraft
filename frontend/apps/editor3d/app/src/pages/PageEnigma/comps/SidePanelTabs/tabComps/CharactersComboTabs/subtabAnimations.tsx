@@ -8,12 +8,11 @@ import {
   MediaFileAnimationType,
 } from "~/enums";
 import {
-  Button,
-  FilterButtons,
   Pagination,
   SearchFilter,
   UploadModal,
 } from "~/components";
+import { Button, FilterButtons } from "@storyteller/ui-button";
 import { ItemElements } from "~/pages/PageEnigma/comps/SidePanelTabs/sharedComps";
 import { isAnyStatusFetching } from "../../utilities";
 import {

@@ -1,4 +1,3 @@
-export * from "./FilterButtons";
 export * from "./InputVector";
 export * from "./NumberInput";
 export * from "./Pagination";

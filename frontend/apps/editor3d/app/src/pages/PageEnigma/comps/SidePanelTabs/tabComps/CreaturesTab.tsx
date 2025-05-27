@@ -13,15 +13,12 @@ import {
   ItemElements,
 } from "~/pages/PageEnigma/comps/SidePanelTabs/sharedComps";
 import {
-  FilterButtons,
   SearchFilter,
   Pagination,
   UploadModal3D,
 } from "~/components";
 
-import {
-  Button
-} from "@storyteller/ui-button"
+import { Button, FilterButtons } from "@storyteller/ui-button"
 
 import { isAnyStatusFetching } from "../utilities";
 import {
