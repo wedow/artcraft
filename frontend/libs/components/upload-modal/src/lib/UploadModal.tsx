@@ -4,8 +4,12 @@ import { Modal } from "@storyteller/ui-modal";
 import { UploadAssetError } from "./UploadAssetError";
 import { UploadSuccess } from "./UploadSuccess";
 import { UploadFiles } from "./UploadFiles";
-import { FilterEngineCategories, UploaderStates } from "~/enums";
-import { UploaderState, initialUploaderState } from "~/models";
+import {
+  FilterEngineCategories,
+  UploaderStates,
+  UploaderState,
+  initialUploaderState
+} from "./Types";
 
 interface Props {
   onClose: () => void;
