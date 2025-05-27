@@ -1,4 +1,4 @@
-import { ToastTypes } from "@storyteller/enums";
+import { ToastTypes } from "../enums/Toaster/ToastTypes";
 
 export type ToastDataType = {
   type: ToastTypes;
