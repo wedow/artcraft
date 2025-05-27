@@ -4,12 +4,14 @@ import { Button } from "@storyteller/ui-button";
 import { FileUploader } from "@storyteller/ui-file-uploader";
 import { useState } from "react";
 import {
+  FilterEngineCategories,
+} from "@storyteller/api";
+import {
   THUMBNAILS_FILE_TYPE,
   MediaFileAnimationType,
-  FilterEngineCategories,
-} from "~/enums";
+  UploaderState
+} from "@storyteller/common";
 import { uploadAssets } from "./uploadAssets";
-import { UploaderState } from "~/models";
 
 interface Props {
   title: string;
@@ -22,6 +24,8 @@ interface Props {
     hasThumbnailUpload?: boolean;
   };
   onUploadProgress: (newState: UploaderState) => void;
+  getFileName: (file: File) => string;
+  getFileExtension: (file: File) => string;
 }
 
 export const UploadFiles = ({
@@ -31,6 +35,8 @@ export const UploadFiles = ({
   title,
   options,
   onUploadProgress,
+  getFileName,
+  getFileExtension,
 }: Props) => {
   const fileSubtypes = options?.fileSubtypes;
   const hasLength = options?.hasLength;
@@ -82,6 +88,8 @@ export const UploadFiles = ({
       thumbnailFile: thumbnailFile || undefined,
       length: uploadLength,
       progressCallback: onUploadProgress,
+      getFileName: getFileName,
+      getFileExtension: getFileExtension,
     });
   };
 

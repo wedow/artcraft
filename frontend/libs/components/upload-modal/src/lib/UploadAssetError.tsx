@@ -1,4 +1,4 @@
-import { FilterEngineCategories } from "~/enums";
+import { FilterEngineCategories } from "@storyteller/api";
 import { Button } from "@storyteller/ui-button";
 interface Props {
   onCancel: () => void;

@@ -2,14 +2,14 @@ import { v4 as uuidv4 } from "uuid";
 
 import {
   FilterEngineCategories,
-  MediaFileAnimationType,
+} from "@storyteller/api";
+import {
   UploaderStates,
-} from "~/enums";
+  MediaFileAnimationType,
+  UploaderState
+} from "@storyteller/common";
 
-import { getFileName, getFileExtension } from "~/utilities";
-
-import { MediaUploadApi, MediaFilesApi } from "~/Classes/ApiManager";
-import { UploaderState } from "~/models";
+import { MediaUploadApi, MediaFilesApi } from "@storyteller/api";
 
 export const uploadAssets = async ({
   title,
@@ -19,6 +19,8 @@ export const uploadAssets = async ({
   animationType,
   length,
   progressCallback,
+  getFileName,
+  getFileExtension,
 }: {
   title: string;
   assetFile: File;
@@ -27,6 +29,8 @@ export const uploadAssets = async ({
   animationType?: MediaFileAnimationType;
   length?: number;
   progressCallback: (newState: UploaderState) => void;
+  getFileName: (file: File) => string;
+  getFileExtension: (file: File) => string;
 }) => {
   progressCallback({ status: UploaderStates.uploadingAsset });
   const mediaUploadApi = new MediaUploadApi();

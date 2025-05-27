@@ -11,7 +11,7 @@ import {
 import { MediaItem } from "~/pages/PageEnigma/models";
 import {
   UploadModal,
-} from "~/components";
+} from "@storyteller/ui-upload-modal";
 import { SearchFilter } from "@storyteller/ui-search";
 import { Pagination } from "@storyteller/ui-pagination";
 import { Button, FilterButtons } from "@storyteller/ui-button";
@@ -24,6 +24,7 @@ import {
   useSearchUserObjects,
   useFeatureFlags,
 } from "../../hooks";
+import { getFileExtension, getFileName } from "~/utilities";
 
 const filterEngineCategories = [FilterEngineCategories.CHARACTER];
 
@@ -195,6 +196,8 @@ export const CharactersTab = ({
         />
       )}
       <UploadModal
+        getFileName={getFileName}
+        getFileExtension={getFileExtension}
         onClose={() => setOpenUploadModal(false)}
         onSuccess={fetchUserObjects}
         isOpen={openUploadModal}

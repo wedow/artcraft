@@ -7,7 +7,7 @@ import {
 } from "~/enums";
 import {
   UploadModal,
-} from "~/components";
+} from "@storyteller/ui-upload-modal";
 import { SearchFilter } from "@storyteller/ui-search";
 import { Pagination } from "@storyteller/ui-pagination";
 import { Button, FilterButtons } from "@storyteller/ui-button";
@@ -20,6 +20,7 @@ import {
   useSearchUserObjects,
   useFeatureFlags,
 } from "../../hooks";
+import { getFileExtension, getFileName } from "~/utilities";
 
 const filterEngineCategories = [FilterEngineCategories.EXPRESSION];
 
@@ -154,6 +155,8 @@ export const ExpressionTab = () => {
         />
       )}
       <UploadModal
+        getFileName={getFileName}
+        getFileExtension={getFileExtension}
         onClose={() => setOpenUploadModal(false)}
         onSuccess={fetchUserObjects}
         isOpen={openUploadModal}

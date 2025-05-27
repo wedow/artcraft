@@ -19,6 +19,8 @@ interface Props {
     hasLength?: boolean;
     hasThumbnailUpload?: boolean;
   };
+  getFileName: (file: File) => string;
+  getFileExtension: (file: File) => string;
 }
 
 export function UploadModal({
@@ -29,6 +31,8 @@ export function UploadModal({
   fileTypes,
   type,
   options,
+  getFileName,
+  getFileExtension,
 }: Props) {
   const [uploaderState, setUploaderState] =
     useState<UploaderState>(initialUploaderState);
@@ -58,6 +62,8 @@ export function UploadModal({
             options={options}
             onClose={onClose}
             onUploadProgress={updateUploaderState}
+            getFileName={getFileName}
+            getFileExtension={getFileExtension}
           />
         );
       case UploaderStates.uploadingAsset:
