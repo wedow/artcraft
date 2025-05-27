@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { Modal } from "@storyteller/ui-modal";
 
-import { UploadAssetError } from "../UploadModal/UploadAssetError";
-import { UploadSuccess } from "../UploadModal/UploadSuccess";
+import { UploadAssetError, UploadSuccess } from "@storyteller/ui-upload-modal";
 import { UploadFilesMedia } from "./UploadFilesMedia";
 import { FilterEngineCategories, UploaderStates } from "~/enums";
 import { initialUploaderState, UploaderState } from "~/models";
