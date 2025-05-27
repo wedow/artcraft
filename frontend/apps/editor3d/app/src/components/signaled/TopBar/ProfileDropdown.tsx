@@ -7,9 +7,8 @@ import {
   faUser,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Menu, Transition } from "@headlessui/react";
-import { Gravatar } from "~/components/reusable";
+import { Gravatar } from "@storyteller/ui-gravatar";
 import { twMerge } from "tailwind-merge";
-
 import { authentication, logout } from "~/signals";
 
 export default function ProfileDropdown() {

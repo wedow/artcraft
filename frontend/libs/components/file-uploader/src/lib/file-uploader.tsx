@@ -1,7 +1,7 @@
 import { FileUploader as DragDropFileUploader } from "react-drag-drop-files";
 // Usage refer to https://github.com/KarimMokhtar/react-drag-drop-files
 
-import { DragAndDropZone } from "./DragAndDropZone";
+import { DragAndDropZone } from "./drag-and-drop-zone";
 
 export const FileUploader = ({
   file,

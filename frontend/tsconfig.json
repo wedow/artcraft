@@ -107,6 +107,12 @@
     },
     {
       "path": "./libs/components/button-link"
+    },
+    {
+      "path": "./libs/components/file-uploader"
+    },
+    {
+      "path": "./libs/components/gravatar"
     }
   ]
 }

@@ -2,8 +2,7 @@ import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import EnvironmentVariables from "~/Classes/EnvironmentVariables";
-
+import EnvironmentVariables from "./environment-variables";
 interface Props {
   size: number;
   email_hash?: string;
@@ -71,7 +70,7 @@ function Gravatar(props: Props) {
     <div
       className={twMerge(
         "relative aspect-square overflow-hidden rounded-full border border-white",
-        props.className,
+        props.className
       )}
     >
       {showLoader && (

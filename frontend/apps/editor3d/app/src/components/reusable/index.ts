@@ -1,6 +1,4 @@
-export * from "./FileUploader";
 export * from "./FilterButtons";
-export * from "./Gravatar";
 export * from "./InputVector";
 export * from "./ListDropdown";
 export * from "./LoadingBar";
