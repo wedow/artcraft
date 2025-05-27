@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { LoadingDots, TopBar } from "~/components";
+import { TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
 import { ControlsTopButtons } from "./comps/ControlsTopButtons";
 import { ControlPanelSceneObject } from "./comps/ControlPanelSceneObject";
@@ -28,6 +28,7 @@ import { Outliner } from "./comps/Outliner";
 import { CameraAspectRatio } from "./enums";
 import { PromptBox3D } from "@storyteller/ui-promptbox";
 import { PopoverItem } from "@storyteller/ui-popover";
+import { LoadingDots } from "@storyteller/ui-loading";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 import { appTabId, is3DEditorInitialized, setAppTabId } from "~/signals/appTab";
@@ -456,7 +457,7 @@ export const PageEditor = () => {
       </div>
 
       <LoginModal
-        onClose={() => {}}
+        onClose={() => { }}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
         openAiLogo="/resources/images/openai-logo.png"

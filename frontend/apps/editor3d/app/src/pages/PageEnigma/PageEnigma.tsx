@@ -4,7 +4,7 @@ import { EngineProvider } from "./contexts/EngineContext";
 import { useActiveJobs } from "~/hooks/useActiveJobs";
 import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
 import { useQueueHandler } from "./hooks/useQueueHandler";
-import { ErrorDialog, LoadingDots } from "~/components";
+import { ErrorDialog } from "~/components";
 import { GenerateModals } from "~/pages/PageEnigma/comps/GenerateModals/GenerateModals";
 import { Toaster } from "@storyteller/ui-toaster";
 import { EditorLoadingBar } from "./comps/EditorLoadingBar";
@@ -25,6 +25,7 @@ import { useImageGenerationFailureEvent } from "./TauriEvents/useImageGeneration
 import { useImageGenerationSuccessEvent } from "./TauriEvents/useImageGenerationSuccessEvent";
 import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
+import { LoadingDots } from "@storyteller/ui-loading";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -106,23 +107,23 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   }
 
   return (
-  
-      <EngineProvider sceneToken={sceneToken}>
-        <PageEditor />
-        <DragComponent />
-        <GalleryDragComponent />
-        <PrecisionSelector
-          showSignal={showPrecisionSelector}
-          coordSignal={precisionSelectorMenuCoords}
-          valuesSignal={precisionSelectorValues}
-          selectedValueSignal={precisionSelectedValue}
-        />
-        <GenerateModals />
-        <ErrorDialog />
-     
-      <EditorLoadingBar/>
+
+    <EngineProvider sceneToken={sceneToken}>
+      <PageEditor />
+      <DragComponent />
+      <GalleryDragComponent />
+      <PrecisionSelector
+        showSignal={showPrecisionSelector}
+        coordSignal={precisionSelectorMenuCoords}
+        valuesSignal={precisionSelectorValues}
+        selectedValueSignal={precisionSelectedValue}
+      />
+      <GenerateModals />
+      <ErrorDialog />
+
+      <EditorLoadingBar />
       <Toaster offsetTop={70} offsetRight={12} />
-      </EngineProvider>
- 
+    </EngineProvider>
+
   );
 };

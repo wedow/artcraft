@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { LoadingDots } from "~/components";
+import { LoadingDots } from "@storyteller/ui-loading";
 import { Modal } from "@storyteller/ui-modal";
 import { UploadAssetError } from "../UploadModal/UploadAssetError";
 import { UploadSuccess } from "../UploadModal/UploadSuccess";

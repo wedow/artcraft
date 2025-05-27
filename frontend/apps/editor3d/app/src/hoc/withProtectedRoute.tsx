@@ -1,7 +1,7 @@
 import { ComponentType, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSignals, useSignalEffect } from "@preact/signals-react/runtime";
-import { LoadingDots } from "~/components";
+import { LoadingDots } from "@storyteller/ui-loading";
 import { authentication, persistLogin } from "~/signals";
 import { AUTH_STATUS } from "~/enums";
 import { TWO_SECONDS } from "~/constants";

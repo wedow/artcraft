@@ -113,6 +113,9 @@
     },
     {
       "path": "./libs/components/gravatar"
+    },
+    {
+      "path": "./libs/components/loading"
     }
   ]
 }

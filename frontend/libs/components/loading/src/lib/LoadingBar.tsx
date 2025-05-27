@@ -1,6 +1,6 @@
 import { Transition } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
-import { LoadingSpinner } from "~/components";
+import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 
 interface LoadingBarProps {
   id?: string;

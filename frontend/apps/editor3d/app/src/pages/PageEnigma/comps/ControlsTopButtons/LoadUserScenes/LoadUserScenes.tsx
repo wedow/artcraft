@@ -10,7 +10,7 @@ import { MediaInfo } from "~/pages/PageEnigma/models";
 import { FilterEngineCategories, ToastTypes } from "~/enums";
 import { addToast } from "~/signals";
 import { ScenePicker, SceneTypes } from "../ScenePicker";
-import { LoadingSpinner } from "~/components";
+import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import { Label } from "@storyteller/ui-label";
 import { MediaFilesApi } from "~/Classes/ApiManager/MediaFilesApi";
 

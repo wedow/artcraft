@@ -1,6 +1,6 @@
 import { ItemElement } from "./ItemElement";
 import { MediaItem } from "~/pages/PageEnigma/models";
-import { LoadingDots } from "~/components";
+import { LoadingDots } from "@storyteller/ui-loading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEmptySet } from "@fortawesome/pro-solid-svg-icons";
 import { AutoSizer, Grid } from "react-virtualized";

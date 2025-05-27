@@ -98,6 +98,9 @@
       "path": "../../libs/components/modal"
     },
     {
+      "path": "../../libs/components/loading"
+    },
+    {
       "path": "../../libs/components/file-uploader"
     },
     {

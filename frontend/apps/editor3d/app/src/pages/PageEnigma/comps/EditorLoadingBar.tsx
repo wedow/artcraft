@@ -1,7 +1,7 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { loadingBarData, loadingBarIsShowing } from "~/signals";
 
-import { LoadingBar } from "~/components";
+import { LoadingBar } from "@storyteller/ui-loading";
 export const EditorLoadingBar = () => {
   useSignals();
   return (
