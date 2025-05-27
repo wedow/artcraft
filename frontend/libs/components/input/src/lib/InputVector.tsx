@@ -78,7 +78,7 @@ export const InputVector = ({
   // For dragging the input value to increment/decrement
   const handleMouseDown = (
     e: React.MouseEvent,
-    ref: RefObject<HTMLInputElement>,
+    ref: RefObject<HTMLInputElement|null>,
   ) => {
     e.stopPropagation();
     blurAllInputs();
