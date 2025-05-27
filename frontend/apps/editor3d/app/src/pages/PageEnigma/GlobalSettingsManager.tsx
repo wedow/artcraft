@@ -12,20 +12,8 @@ export const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) 
     persistLogin();
   });
 
-  /// Initizations that depends on ENV vars ///
-  function PostHogInit() {
-    const data = EnvironmentVariables.values;
-    const apiKey = data.REACT_APP_PUBLIC_POSTHOG_KEY as string;
-    //posthog.init(apiKey, {
-    //  //HACK: This is the default host from Netlify, but need to figure out why it isn't working on prod.
-    //  // api_host: data.DEPLOY_PRIME_URL + "/ingest" as string,
-    //  api_host: "https://studio.storyteller.ai/ingest" as string,
-    //  ui_host: data.REACT_APP_PUBLIC_POSTHOG_UI as string,
-    //});
-  }
   useEffect(() => {
     EnvironmentVariables.initialize(env);
-    PostHogInit();
   }, [env]);
 
   /// Initizations that run only once on 1ST mount ///

@@ -19,6 +19,12 @@ export default defineConfig({
         signup: resolve(__dirname, 'app/signup.html'),
       },
     },
+    // NB(bt): Set minify to false for debugging purposes in production builds.
+    minify: false,
+    terserOptions: {
+      compress: false,
+      mangle: false,
+    },
   },
   plugins: [
     netlifyPlugin(),

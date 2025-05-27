@@ -1,6 +1,4 @@
 import { LinksFunction } from "@remix-run/deno";
-import { posthog } from "posthog-js";
-import { PostHogProvider } from "posthog-js/react";
 import {
   Links,
   Meta,
@@ -61,9 +59,7 @@ export default function App() {
       </head>
       <body className="overflow-hidden bg-ui-background">
         <div className="topbar-spacer" />
-        <PostHogProvider client={posthog}>
-          <Outlet />
-        </PostHogProvider>
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
       </body>

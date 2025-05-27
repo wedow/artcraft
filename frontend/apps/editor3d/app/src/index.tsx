@@ -11,8 +11,6 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import EnvironmentVariables from "~/Classes/EnvironmentVariables";
 import { pageHeight, pageWidth, persistLogin } from "~/signals";
 
-import { posthog } from "posthog-js";
-
 config.autoAddCss = false; /* eslint-disable import/first */
 
 // TODO(bt,2025-04-19): Make these configurable
@@ -31,21 +29,11 @@ const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
     persistLogin();
   });
 
-  /// Initizations that depends on ENV vars ///
-  function PostHogInit() {
-    const apiKey = import.meta.env.VITE_POSTHOG_API_KEY;
-    posthog.init(apiKey, {
-      api_host: "https://us.i.posthog.com/",
-      ui_host: "https://us.i.posthog.com/",
-    });
-  }
-
   useEffect(() => {
     EnvironmentVariables.initialize(env);
     if (import.meta.env.DEV) {
       return;
     }
-    PostHogInit();
   }, [env]);
 
   /// Initizations that run only once on 1ST mount ///
