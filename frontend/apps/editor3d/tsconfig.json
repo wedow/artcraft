@@ -101,9 +101,6 @@
       "path": "../../libs/components/gravatar"
     },
     {
-      "path": "../../libs/components/button-link"
-    },
-    {
       "path": "../../libs/components/select"
     },
     {
@@ -125,10 +122,10 @@
       "path": "../../libs/components/input"
     },
     {
-      "path": "../../libs/components/button"
+      "path": "../../libs/components/list-dropdown"
     },
     {
-      "path": "../../libs/components/list-dropdown"
+      "path": "../../libs/components/button"
     },
     {
       "path": "../../libs/tauri-utils"

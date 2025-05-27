@@ -10,7 +10,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useLocation, useParams } from "react-router-dom";
 import { Button } from "@storyteller/ui-button";
-import { ButtonLink } from "@storyteller/ui-button-link";
+// import { ButtonLink } from "@storyteller/ui-button-link";
 import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
 import { getCurrentLocationWithoutParams } from "~/utilities";
@@ -157,11 +157,11 @@ export const TopBar = ({
                 alt="Logo ArtCraft"
               />
             </a>
-            {!isEditorPath(currentLocation) && (
+            {/* {!isEditorPath(currentLocation) && (
               <ButtonLink to={"/"} variant="secondary" icon={faChevronLeft}>
                 Back to Editor
               </ButtonLink>
-            )}
+            )} */}
             <MenuIconSelector
               menuItems={appMenuTabs}
               activeMenu={appTabIdSignal.value}
