@@ -10,11 +10,13 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import {
+  disableHotkeyInput,
+  enableHotkeyInput,
   objectPanel as objectPanelSignals,
   timelineHeight,
 } from "../../signals";
 import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
-import { InputVector } from "~/components";
+import { InputVector } from "@storyteller/ui-input";
 import { Button } from "@storyteller/ui-button";
 import { editorState } from "~/pages/PageEnigma/signals/engine";
 import { twMerge } from "tailwind-merge";
@@ -252,6 +254,8 @@ export const ControlPanelSceneObject = () => {
             z={localPosition.z.toString()}
             onChange={handlePositionChange}
             disabled={locked}
+            enableHotkeyInput={enableHotkeyInput}
+            disableHotkeyInput={disableHotkeyInput}
           />
         </div>
 
@@ -264,6 +268,8 @@ export const ControlPanelSceneObject = () => {
             onChange={handleRotationChange}
             increment={1}
             disabled={locked}
+            enableHotkeyInput={enableHotkeyInput}
+            disableHotkeyInput={disableHotkeyInput}
           />
         </div>
 
@@ -277,6 +283,8 @@ export const ControlPanelSceneObject = () => {
             z={localScale.z.toString()}
             onChange={handleScaleChange}
             disabled={locked}
+            enableHotkeyInput={enableHotkeyInput}
+            disableHotkeyInput={disableHotkeyInput}
           />
         </div>
       </Transition>

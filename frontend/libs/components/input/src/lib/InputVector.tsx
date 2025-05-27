@@ -1,10 +1,6 @@
 import React, { ChangeEvent, RefObject, useRef } from "react";
 import { twMerge } from "tailwind-merge";
-import {
-  disableHotkeyInput,
-  DomLevels,
-  enableHotkeyInput,
-} from "~/pages/PageEnigma/signals";
+import { DomLevels } from "@storyteller/common";
 
 interface InputVectorProps {
   x: string;
@@ -13,6 +9,8 @@ interface InputVectorProps {
   onChange: (v: Record<string, string>) => void;
   increment?: number;
   disabled?: boolean;
+  disableHotkeyInput: (level: DomLevels) => void;
+  enableHotkeyInput: (level: DomLevels) => void;
 }
 
 export const InputVector = ({
@@ -22,6 +20,8 @@ export const InputVector = ({
   onChange,
   increment = 0.1,
   disabled,
+  disableHotkeyInput,
+  enableHotkeyInput,
 }: InputVectorProps) => {
   const xRef = useRef<HTMLInputElement>(null);
   const yRef = useRef<HTMLInputElement>(null);
