@@ -1,4 +1,3 @@
-// TODO: DELETE
 import {
   faCircleXmark,
   faFilterList,

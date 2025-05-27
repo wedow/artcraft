@@ -10,9 +10,9 @@ import {
 } from "~/enums";
 import { MediaItem } from "~/pages/PageEnigma/models";
 import {
-  SearchFilter,
   UploadModal,
 } from "~/components";
+import { SearchFilter } from "@storyteller/ui-search";
 import { Pagination } from "@storyteller/ui-pagination";
 import { Button, FilterButtons } from "@storyteller/ui-button";
 import { ItemElements } from "~/pages/PageEnigma/comps/SidePanelTabs/sharedComps";

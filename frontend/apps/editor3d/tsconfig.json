@@ -29,10 +29,19 @@
   },
   "references": [
     {
+      "path": "../../libs/components/pagination"
+    },
+    {
+      "path": "../../libs/components/search"
+    },
+    {
       "path": "../../libs/components/badge"
     },
     {
       "path": "../../libs/components/lightbox-modal"
+    },
+    {
+      "path": "../../libs/components/button-icon"
     },
     {
       "path": "../../libs/components/loading-spinner"
@@ -117,12 +126,6 @@
     },
     {
       "path": "../../libs/components/input"
-    },
-    {
-      "path": "../../libs/components/button-icon"
-    },
-    {
-      "path": "../../libs/components/pagination"
     },
     {
       "path": "../../libs/tauri-utils"

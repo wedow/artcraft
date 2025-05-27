@@ -6,9 +6,9 @@ import {
   VIDEOPLANE_FILE_TYPE,
 } from "~/enums";
 import {
-  SearchFilter,
   UploadModalMedia,
 } from "~/components";
+import { SearchFilter } from "@storyteller/ui-search";
 import { Button } from "@storyteller/ui-button";
 import { Pagination } from "@storyteller/ui-pagination";
 import { ItemElements } from "~/pages/PageEnigma/comps/SidePanelTabs/sharedComps";

@@ -122,6 +122,9 @@
     },
     {
       "path": "./libs/components/pagination"
+    },
+    {
+      "path": "./libs/components/search"
     }
   ]
 }

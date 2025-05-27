@@ -12,9 +12,9 @@ import {
 } from "~/enums";
 
 import {
-  SearchFilter,
   UploadModal3D,
 } from "~/components";
+import { SearchFilter } from "@storyteller/ui-search";
 import { Button, FilterButtons } from "@storyteller/ui-button"
 
 import {
