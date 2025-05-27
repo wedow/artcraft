@@ -3,7 +3,7 @@ import EnvironmentVariables from "~/Classes/EnvironmentVariables";
 import { persistLogin } from "~/signals";
 import { pageHeight, pageWidth } from "~/signals";
 import { useEffect } from "react";
-import { showWizard } from "~/pages/PageEnigma/Wizard/signals/wizard";
+
 
 
 export const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
@@ -35,17 +35,7 @@ export const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) 
     pageWidth.value = window.innerWidth;
   }
 
-  function initWizard() {
-    if (showWizard.value) {
-      return;
-    }
-    const wizard = localStorage.getItem("storyteller-wizard");
-    showWizard.value = wizard ? "" : "initial";
-    localStorage.setItem("storyteller-wizard", "shown");
-  }
-
   useEffect(() => {
-    initWizard();
     setPage();
     window.addEventListener("resize", setPage);
     return () => {
