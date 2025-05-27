@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Input } from "../Input";
+import { Input } from "@storyteller/ui-input";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";

@@ -1,7 +1,6 @@
-import { H6, Input, ListDropdown } from "~/components";
-import {
-  Button
-} from "@storyteller/ui-button"
+import { H6, ListDropdown } from "~/components";
+import { Input } from "@storyteller/ui-input";
+import { Button } from "@storyteller/ui-button";
 import { FileUploader } from "./FileUploader";
 import { useState } from "react";
 import {

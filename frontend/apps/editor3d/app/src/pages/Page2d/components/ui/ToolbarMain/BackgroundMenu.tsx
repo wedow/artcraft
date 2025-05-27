@@ -8,12 +8,11 @@ import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import { twMerge } from "tailwind-merge";
-
 import { useSignals } from "@preact/signals-react/runtime";
 import { paperWrapperStyles } from "~/components/styles";
-import { Button } from "../Button";
+import { Button } from "@storyteller/ui-button";
 import { HexEyedropPicker } from "../HexEyedropPicker";
-import { Input } from "../Input";
+import { Input } from "@storyteller/ui-input";
 
 export const BackgroundMenu = ({
   color: prevColor,
@@ -90,7 +89,7 @@ export const BackgroundMenu = ({
     if (streamChanges) {
       onChange(color);
     }
-  }
+  };
 
   // Rerender the component when these signals change:
   useSignals();

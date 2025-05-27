@@ -3,15 +3,14 @@ import { twMerge } from "tailwind-merge";
 import { useSignals } from "@preact/signals-react/runtime";
 import { faPencil, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { scene, signalScene, authentication, currentPage } from "~/signals";
+import { scene, signalScene, authentication } from "~/signals";
 import {
   showErrorDialog,
   errorDialogMessage,
   errorDialogTitle,
 } from "~/pages/PageEnigma/signals";
-import { Input } from "~/components";
+import { Input } from "@storyteller/ui-input";
 import { MediaFilesApi } from "~/Classes/ApiManager/MediaFilesApi";
-import { Pages } from "~/pages/PageEnigma/constants/page";
 
 interface Props {
   pageName: string;

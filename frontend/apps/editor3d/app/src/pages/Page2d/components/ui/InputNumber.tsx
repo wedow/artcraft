@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
-
-import { Input } from "./Input";
+import { Input } from "@storyteller/ui-input";
 
 interface NumberInputProps {
   value: number;

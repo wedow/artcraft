@@ -1,9 +1,8 @@
 import { useState } from "react";
-
-import { H6, Input } from "~/components";
-import { Button } from "@storyteller/ui-button"
+import { H6 } from "~/components";
+import { Button } from "@storyteller/ui-button";
+import { Input } from "@storyteller/ui-input";
 import { FileUploader } from "../UploadModal/FileUploader";
-
 import { UploaderState } from "~/models";
 import { uploadImage } from "./uploadImage";
 
@@ -59,7 +58,7 @@ export const UploadImageMedia = ({
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4" >
+      <div className="mb-4 flex flex-col gap-4">
         <Input
           placeholder="Enter the title here"
           errorMessage={uploadTitle.error}
@@ -82,34 +81,30 @@ export const UploadImageMedia = ({
             }
           }}
         />
-        {
-          assetFile.error && (
-            <H6 className="z-10 text-red" > {assetFile.error} </H6>
-          )
-        }
+        {assetFile.error && (
+          <H6 className="z-10 text-red"> {assetFile.error} </H6>
+        )}
 
-        <div className="relative m-auto aspect-square w-full overflow-hidden rounded-lg bg-brand-secondary" >
+        <div className="relative m-auto aspect-square w-full overflow-hidden rounded-lg bg-brand-secondary">
           {!assetFile.value && (
-            <H6 className="absolute left-0 top-1/2 -mt-5 w-full text-center" >
+            <H6 className="absolute left-0 top-1/2 -mt-5 w-full text-center">
               File Preview
             </H6>
           )}
-          {
-            assetFile.value &&
+          {assetFile.value && (
             <img
               alt="file upload preview"
               className="m-auto max-h-full max-w-full"
               src={assetFile.src}
             />
-
-          }
+          )}
         </div>
 
-        < div className="flex justify-end gap-4" >
-          <Button variant="primary" onClick={handleSubmit} >
+        <div className="flex justify-end gap-4">
+          <Button variant="primary" onClick={handleSubmit}>
             Upload
           </Button>
-          < Button variant="secondary" onClick={onClose} >
+          <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
         </div>

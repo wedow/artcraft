@@ -17,7 +17,7 @@ import {
   faLockOpen,
   faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
-import { Input } from "~/components";
+import { Input } from "@storyteller/ui-input";
 import { Button } from "@storyteller/ui-button";
 import { Transition } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";

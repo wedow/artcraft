@@ -1,5 +1,6 @@
 import { faCameraMovie, faPlayCircle } from "@fortawesome/pro-solid-svg-icons";
-import { Button, Tooltip } from "~/components/ui";
+import { Button } from "@storyteller/ui-button";
+import { Tooltip } from "@storyteller/ui-tooltip";
 import { ToolbarButtonProps } from "../ToolbarButton";
 
 export const ButtonPreviewAndRender = ({
@@ -9,10 +10,7 @@ export const ButtonPreviewAndRender = ({
   buttonPreviewProps: ToolbarButtonProps;
   buttonRenderProps: ToolbarButtonProps;
 }) => {
-  return (
-    <div className="flex">
-    </div>
-  );
+  return <div className="flex"></div>;
 };
 const ButtonPreview = (buttonProps: ToolbarButtonProps) => {
   const {

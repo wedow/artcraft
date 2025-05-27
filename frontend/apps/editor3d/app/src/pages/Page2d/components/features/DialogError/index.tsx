@@ -1,13 +1,16 @@
 import { twMerge } from "tailwind-merge";
 
-import { dialogPanelStyles, paperWrapperStyles } from "../../../components/styles";
+import {
+  dialogPanelStyles,
+  paperWrapperStyles,
+} from "../../../components/styles";
 import {
   Description,
   Dialog,
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import { Button } from "../../../components/ui";
+import { Button } from "@storyteller/ui-button";
 
 export const DialogError = ({
   isShowing,

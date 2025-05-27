@@ -11,7 +11,7 @@ import { twMerge } from "tailwind-merge";
 
 import { paperWrapperStyles } from "../../../components/styles";
 import { Button } from "../Button";
-import { Input } from "../Input";
+import { Input } from "@storyteller/ui-input";
 import { HexEyedropPicker } from "../HexEyedropPicker";
 
 export const ColorPicker = ({

@@ -8,7 +8,6 @@ import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { ChangeEvent, useEffect, useState, useRef } from "react";
 import { HexAlphaColorPicker } from "react-colorful";
 import { twMerge } from "tailwind-merge";
-
 import { useSignals } from "@preact/signals-react/runtime";
 import { paperWrapperStyles } from "../../../components/styles";
 import {

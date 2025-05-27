@@ -1,5 +1,3 @@
-export * from "./Button";
-export * from "./Input";
 export * from "./InputNumber";
 export * from "./LoadingBar";
 export * from "./LoadingSpinner";

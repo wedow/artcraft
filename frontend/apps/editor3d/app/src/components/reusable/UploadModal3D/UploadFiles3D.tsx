@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-import { H6, Input, Label, ListDropdown } from "~/components";
-import {
-  Button
-} from "@storyteller/ui-button"
+import { H6, ListDropdown } from "~/components";
+import { Button } from "@storyteller/ui-button";
+import { Input } from "@storyteller/ui-input";
+import { Label } from "@storyteller/ui-label";
 import { FileUploader } from "../UploadModal/FileUploader";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "./utilities";
 import { upload3DObjects } from "./utilities/upload3DObjects";

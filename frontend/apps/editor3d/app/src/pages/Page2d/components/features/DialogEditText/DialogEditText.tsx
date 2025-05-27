@@ -30,12 +30,9 @@ export type TextFormatData = {
 export type TextNodeData = {
   text: string;
 } & TextFormatData;
-
 import { useState } from "react";
-
-import { DialogTitle } from "@headlessui/react";
-import { Button, TextEditor } from "../../../components/ui";
-
+import { TextEditor } from "../../../components/ui";
+import { Button } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
 
 export const DialogEditText = ({

@@ -5,7 +5,6 @@ import { Input } from "@storyteller/ui-input";
 import { Label } from "@storyteller/ui-label";
 import { Button } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
-
 import {
   faArrowDownToLine,
   faArrowRight,
@@ -16,7 +15,6 @@ import {
 import SocialButton from "./SocialButton";
 import { generateMovieId, viewMyMovies } from "~/pages/PageEnigma/signals";
 import dayjs from "dayjs";
-
 import { downloadFile } from "~/pages/PageEnigma/comps/GenerateModals/utils/downloadFile";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
 
