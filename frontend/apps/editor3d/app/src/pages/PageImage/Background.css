@@ -1,18 +1,92 @@
-.tile-background-animation {
-  background-image: url("/resources/images/tilebg.png");
-  background-repeat: repeat;
-  background-size: 512px;
-  animation: background-animation-scrolling 60s linear infinite;
-  -webkit-animation: background-animation-scrolling 60s linear infinite;
-  filter: grayscale(100%);
-  -webkit-filter: grayscale(100%);
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-@keyframes background-animation-scrolling {
+.image-fade-in {
+  animation: fadeInScale 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+@keyframes floatY {
   0% {
-    background-position: 0 0;
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.03);
   }
   100% {
-    background-position: 512px 512px;
+    transform: translateY(0px) scale(1);
   }
+}
+
+.image-float {
+  animation: floatY 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Staggered delays for up to 10 images per column */
+.image-float:nth-child(1) {
+  animation-delay: 0s;
+}
+.image-float:nth-child(2) {
+  animation-delay: 0.5s;
+}
+.image-float:nth-child(3) {
+  animation-delay: 1s;
+}
+.image-float:nth-child(4) {
+  animation-delay: 1.5s;
+}
+.image-float:nth-child(5) {
+  animation-delay: 2s;
+}
+.image-float:nth-child(6) {
+  animation-delay: 2.5s;
+}
+.image-float:nth-child(7) {
+  animation-delay: 3s;
+}
+.image-float:nth-child(8) {
+  animation-delay: 3.5s;
+}
+.image-float:nth-child(9) {
+  animation-delay: 4s;
+}
+.image-float:nth-child(10) {
+  animation-delay: 4.5s;
+}
+
+@keyframes columnUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-40px);
+  }
+}
+
+@keyframes columnDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(40px);
+  }
+}
+
+.column-marquee-up {
+  animation: columnUp 8s linear infinite alternate;
+  will-change: transform;
+}
+
+.column-marquee-down {
+  animation: columnDown 8s linear infinite alternate;
+  will-change: transform;
 }
