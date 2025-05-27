@@ -73,9 +73,6 @@
       "path": "./libs/components/camera-settings-modal"
     },
     {
-      "path": "./libs/components/transition-dialogue"
-    },
-    {
       "path": "./libs/components/slider-v2"
     },
     {
@@ -107,6 +104,9 @@
     },
     {
       "path": "./libs/components/button-icon-select"
+    },
+    {
+      "path": "./libs/components/button-link"
     }
   ]
 }

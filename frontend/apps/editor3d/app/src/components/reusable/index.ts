@@ -1,4 +1,3 @@
-export * from "./ButtonLink";
 export * from "./FileUploader";
 export * from "./FilterButtons";
 export * from "./Gravatar";

@@ -83,6 +83,9 @@
       "path": "../../libs/components/gallery-modal"
     },
     {
+      "path": "../../libs/components/button-link"
+    },
+    {
       "path": "../../libs/components/select"
     },
     {

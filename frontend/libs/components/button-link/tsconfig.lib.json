@@ -41,13 +41,5 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx"
-  ],
-  "references": [
-    {
-      "path": "../../common/tsconfig.lib.json"
-    },
-    {
-      "path": "../tooltip/tsconfig.lib.json"
-    }
   ]
 }
