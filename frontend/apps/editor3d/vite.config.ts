@@ -11,6 +11,8 @@ import { resolve } from 'node:path'
 export default defineConfig({
   root: path.resolve(__dirname, 'app'),
   build: {
+    minify: false,
+    sourcemap: true,
     outDir: path.resolve(__dirname, 'dist'),
     rollupOptions: {
       input: {
