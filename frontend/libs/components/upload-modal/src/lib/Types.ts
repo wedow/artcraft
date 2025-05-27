@@ -32,12 +32,18 @@ export enum UploaderStates {
   imageCreateError,
 }
 
+// NB(bt,2025-05-27): This is also declared in "editor3d". 
+// I'm duplicating here to remove a circular dependency.
+// We should consolidate definitions eventually.
 export interface UploaderState {
   status: UploaderStates;
   errorMessage?: string;
   data?: string;
 }
 
+// NB(bt,2025-05-27): This is also declared in "editor3d". 
+// I'm duplicating here to remove a circular dependency.
+// We should consolidate definitions eventually.
 export const initialUploaderState = {
   status: UploaderStates.ready,
 };
