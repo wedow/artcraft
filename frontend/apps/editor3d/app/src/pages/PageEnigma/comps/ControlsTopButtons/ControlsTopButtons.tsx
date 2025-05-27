@@ -7,7 +7,6 @@ import {
   faQuestion,
   faSquare,
 } from "@fortawesome/pro-solid-svg-icons";
-
 import {
   EditorExpandedI,
   EngineContext,
@@ -15,11 +14,10 @@ import {
 import { ToastTypes, getArtStyle } from "~/enums";
 import { scene, signalScene, authentication, addToast } from "~/signals";
 import { outlinerIsShowing } from "~/pages/PageEnigma/signals/outliner/outliner";
-
-import { ButtonDropdown, Input, H4 } from "~/components";
-
+import { H4 } from "~/components";
+import { ButtonDropdown } from "@storyteller/ui-button-dropdown";
+import { Input } from "@storyteller/ui-input";
 import { Button } from "@storyteller/ui-button";
-
 import { TestFeaturesButtons } from "./TestFeaturesButtons";
 import { LoadUserScenes } from "./LoadUserScenes";
 import { getCurrentLocationWithoutParams, isNumberString } from "~/utilities";

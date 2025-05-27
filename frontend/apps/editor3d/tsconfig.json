@@ -35,6 +35,9 @@
       "path": "../../libs/components/lightbox-modal"
     },
     {
+      "path": "../../libs/components/button-dropdown"
+    },
+    {
       "path": "../../libs/components/tab-selector"
     },
     {

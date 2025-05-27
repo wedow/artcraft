@@ -98,6 +98,9 @@
     },
     {
       "path": "./libs/components/badge"
+    },
+    {
+      "path": "./libs/components/button-dropdown"
     }
   ]
 }

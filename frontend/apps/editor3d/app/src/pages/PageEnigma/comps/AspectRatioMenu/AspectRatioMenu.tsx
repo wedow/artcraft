@@ -9,7 +9,7 @@ import { cameraAspectRatio } from "~/pages/PageEnigma/signals";
 import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
 import Queue from "~/pages/PageEnigma/Queue/Queue";
 import { toEngineActions } from "~/pages/PageEnigma/Queue/toEngineActions";
-import { ButtonDropdown } from "~/components";
+import { ButtonDropdown } from "@storyteller/ui-button-dropdown";
 
 export const AspectRatioMenu = () => {
   useSignals();
