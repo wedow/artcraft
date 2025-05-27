@@ -83,6 +83,9 @@
       "path": "../../libs/components/gallery-modal"
     },
     {
+      "path": "../../libs/components/gravatar"
+    },
+    {
       "path": "../../libs/components/button-link"
     },
     {
@@ -98,13 +101,13 @@
       "path": "../../libs/components/tooltip"
     },
     {
-      "path": "../../libs/components/input"
-    },
-    {
       "path": "../../libs/components/button"
     },
     {
       "path": "../../libs/components/button-icon"
+    },
+    {
+      "path": "../../libs/components/input"
     },
     {
       "path": "../../libs/tauri-utils"
