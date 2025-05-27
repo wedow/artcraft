@@ -5,3 +5,7 @@ export interface UploaderState {
   errorMessage?: string;
   data?: string;
 }
+
+export const initialUploaderState = {
+  status: UploaderStates.ready,
+};
