@@ -34,8 +34,7 @@ export const ListDropdown = ({ list, onSelect }: ListDropdownProps) => {
               <Listbox.Option
                 key={itemIdx}
                 className={({ active }) =>
-                  `relative cursor-pointer select-none py-2 pl-10 pr-4 text-white ${
-                    active ? "text-white" : "text-gray-400"
+                  `relative cursor-pointer select-none py-2 pl-10 pr-4 text-white ${active ? "text-white" : "text-gray-400"
                   }`
                 }
                 value={item}
@@ -43,9 +42,8 @@ export const ListDropdown = ({ list, onSelect }: ListDropdownProps) => {
                 {({ selected }) => (
                   <>
                     <span
-                      className={`block truncate ${
-                        selected ? "font-medium" : "font-normal"
-                      }`}
+                      className={`block truncate ${selected ? "font-medium" : "font-normal"
+                        }`}
                     >
                       {Object.values(item)[0]}
                     </span>

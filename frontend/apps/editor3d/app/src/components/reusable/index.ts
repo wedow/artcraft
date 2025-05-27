@@ -1,6 +1,5 @@
 export * from "./FilterButtons";
 export * from "./InputVector";
-export * from "./ListDropdown";
 export * from "./NumberInput";
 export * from "./Pagination";
 export * from "./Popover";

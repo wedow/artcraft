@@ -1,4 +1,4 @@
-import { ListDropdown } from "~/components";
+import { ListDropdown } from "@storyteller/ui-list-dropdown";
 import { Input } from "@storyteller/ui-input";
 import { Button } from "@storyteller/ui-button";
 import { FileUploader } from "@storyteller/ui-file-uploader";

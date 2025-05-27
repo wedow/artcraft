@@ -116,6 +116,9 @@
     },
     {
       "path": "./libs/components/loading"
+    },
+    {
+      "path": "./libs/components/list-dropdown"
     }
   ]
 }
