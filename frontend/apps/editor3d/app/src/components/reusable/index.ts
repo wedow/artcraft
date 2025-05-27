@@ -2,7 +2,6 @@ export * from "./FilterButtons";
 export * from "./InputVector";
 export * from "./NumberInput";
 export * from "./Pagination";
-export * from "./Popover";
 export * from "./SearchFilter";
 export * from "./UploadModal";
 export * from "./UploadModal3D";

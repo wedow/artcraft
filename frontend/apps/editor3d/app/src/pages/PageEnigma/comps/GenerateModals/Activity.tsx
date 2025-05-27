@@ -1,7 +1,7 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { faBell, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PopoverMenu } from "~/components/reusable/Popover/Popover";
+import { PopoverMenu } from "@storyteller/ui-popover";
 import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
 import { Tooltip } from "@storyteller/ui-tooltip";

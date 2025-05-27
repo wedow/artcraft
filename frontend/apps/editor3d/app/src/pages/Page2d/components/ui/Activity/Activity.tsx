@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { faBell, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PopoverMenu } from "~/components/reusable/Popover";
+import { PopoverMenu } from "@storyteller/ui-popover";
 import { CompletedCard } from "./CompletedCard";
 import { InProgressCard } from "./InProgressCard";
 import { useJobContext } from "~/components/JobContext";
