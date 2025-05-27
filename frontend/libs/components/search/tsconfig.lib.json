@@ -48,9 +48,6 @@
     },
     {
       "path": "../button/tsconfig.lib.json"
-    },
-    {
-      "path": "../input/tsconfig.lib.json"
     }
   ]
 }

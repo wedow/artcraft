@@ -9,9 +9,6 @@
       "path": "../button"
     },
     {
-      "path": "../input"
-    },
-    {
       "path": "./tsconfig.lib.json"
     },
     {

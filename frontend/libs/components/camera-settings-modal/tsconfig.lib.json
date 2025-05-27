@@ -53,9 +53,6 @@
       "path": "../label/tsconfig.lib.json"
     },
     {
-      "path": "../input/tsconfig.lib.json"
-    },
-    {
       "path": "../button/tsconfig.lib.json"
     },
     {

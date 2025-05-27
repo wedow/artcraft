@@ -122,13 +122,10 @@
       "path": "../../libs/components/label"
     },
     {
-      "path": "../../libs/components/input"
+      "path": "../../libs/components/list-dropdown"
     },
     {
       "path": "../../libs/components/button"
-    },
-    {
-      "path": "../../libs/components/list-dropdown"
     },
     {
       "path": "../../libs/tauri-utils"
