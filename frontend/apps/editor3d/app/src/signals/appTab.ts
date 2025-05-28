@@ -1,18 +1,26 @@
 import { signal } from "@preact/signals-react";
+import { STARTING_APP_TAB_ID } from "~/components/signaled/TopBar/TopBar";
 
 // change starting tab
-export const appTabId = signal("VIDEO");
+export const appTabId = signal(STARTING_APP_TAB_ID);
 
 export const setAppTabId = (newId: string) => {
-  if (newId != "2D" && newId != "3D" && newId != "VIDEO" && newId != "IMAGE") {
-    console.error("Provided app ID is not valid");
-    return;
+  switch (newId) {
+    case "2D":
+    case "3D":
+    case "IMAGE":
+    case "VIDEO":
+      break;
+    default:
+      console.error("Provided app ID is not valid");
+      return;
   }
 
   appTabId.value = newId;
 };
 
 export const is3DEditorInitialized = signal(false);
+
 export const setIs3DEditorInitialized = (isInitialized: boolean) => {
   is3DEditorInitialized.value = isInitialized;
 };
