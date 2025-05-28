@@ -52,16 +52,20 @@ const appMenuTabs: MenuIconItem[] = [
     label: "2D Canvas",
     icon: <FontAwesomeIcon icon={faPaintbrush} />,
   },
-  { id: "3D", label: "3D Editor", icon: <FontAwesomeIcon icon={faCube} /> },
   {
-    id: "VIDEO",
-    label: "Prompt to Video",
-    icon: <FontAwesomeIcon icon={faFilm} />,
+    id: "3D",
+    label: "3D Editor",
+    icon: <FontAwesomeIcon icon={faCube} />
   },
   {
     id: "IMAGE",
     label: "Prompt to Image",
     icon: <FontAwesomeIcon icon={faImage} />,
+  },
+  {
+    id: "VIDEO",
+    label: "Prompt to Video",
+    icon: <FontAwesomeIcon icon={faFilm} />,
   },
 ];
 
