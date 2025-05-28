@@ -1,5 +1,12 @@
 import { DiscordButton } from "../../components/discord-button";
 import { motion } from "framer-motion";
+import { Button } from "@storyteller/ui-button";
+import { isMobile } from "react-device-detect";
+import { faWindows, faApple } from "@fortawesome/free-brands-svg-icons";
+import { faVolumeMute, faVolumeHigh } from "@fortawesome/pro-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Footer from "../../components/footer";
+import { useState, useRef, useEffect } from "react";
 
 const fadeUpVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -28,41 +35,190 @@ const Landing = () => {
     },
   ];
 
+  const [isMuted, setIsMuted] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+      videoRef.current.volume = 0.14;
+    }
+  }, [isMuted]);
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+
   return (
-    <div className="relative min-h-screen bg-[#101014] text-white bg-dots">
-      <div className="dotted-pattern absolute inset-0 z-[0] opacity-50" />
+    <div className="relative min-h-screen bg-[#101014] text-white overflow-hidden bg-dots">
       {/* Hero Section */}
-      <div className="relative flex overflow-hidden xl:items-center xl:pt-0 mb-0">
+      <main className="relative mb-8 md:mb-12 pt-24 sm:pt-24 min-h-[400px] sm:min-h-[600px] md:min-h-[700px] flex items-center justify-center px-2 sm:px-4 md:px-0">
+        {/* Glowing Gradient Orb Background */}
         <motion.div
-          className="w-full flex flex-col items-center justify-center text-center pt-36 px-10"
+          className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+          initial="hidden"
+          animate="visible"
+          variants={fadeUpVariants}
+        >
+          <div className="w-[900px] h-[900px] rounded-full bg-gradient-to-br from-blue-700 via-blue-500 to-[#00AABA] opacity-40 blur-[120px]"></div>
+        </motion.div>
+
+        <div className="relative z-10 px-2 sm:px-4 md:px-6 py-8 w-full flex flex-col items-center justify-center">
+          <div className="max-w-full md:max-w-[1200px] mx-auto text-center flex flex-col items-center">
+            {/* Main Heading */}
+            <motion.h1
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-4 sm:mb-6 drop-shadow-[0_4px_32px_rgba(80,80,255,0.25)]"
+              initial="hidden"
+              animate="visible"
+              variants={fadeUpVariants}
+            >
+              <span className="text-white">
+                Controllable AI
+                <br />
+                for Artists
+              </span>
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              className="text-base sm:text-xl md:text-2xl lg:text-2xl text-white/70 mb-8 sm:mb-12 max-w-2xl mx-auto font-medium drop-shadow-[0_2px_12px_rgba(80,80,255,0.10)]"
+              initial="hidden"
+              animate="visible"
+              variants={fadeUpVariants}
+            >
+              Your vision, amplified. Create stunning art with unparalleled AI
+              control and precision.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              className="flex flex-col sm:flex-row items-center justify-center gap-2.5 md:gap-4 mb-10 sm:mb-16 w-full max-w-xs sm:max-w-none mx-auto"
+              initial="hidden"
+              animate="visible"
+              variants={fadeUpVariants}
+            >
+              {isMobile ? (
+                <Button
+                  className="text-lg font-semibold rounded-xl shadow-lg"
+                  disabled
+                >
+                  Download on a desktop
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    className="text-md px-4 py-3 font-semibold rounded-xl shadow-lg gap-3"
+                    as="link"
+                    href="/"
+                  >
+                    <FontAwesomeIcon icon={faWindows} />
+                    Download Windows
+                  </Button>
+                  <Button
+                    className="text-md px-4 py-3 font-semibold rounded-xl shadow-lg gap-3"
+                    as="link"
+                    href="/"
+                  >
+                    <FontAwesomeIcon icon={faApple} />
+                    Download Mac
+                  </Button>
+                </>
+              )}
+            </motion.div>
+
+            {/* Glassy Video Mockup */}
+            <motion.div
+              className="relative mx-auto mt-4 w-full max-w-full"
+              initial="hidden"
+              animate="visible"
+              variants={fadeUpVariants}
+            >
+              <div
+                className="relative rounded-[20px] sm:rounded-[32px] overflow-hidden bg-white/10 backdrop-blur-xl shadow-2xl p-2 sm:p-4 aspect-[16/9] w-full max-w-full md:max-w-[1200px] mx-auto transition-transform duration-300"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+              >
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover rounded-2xl"
+                  src="https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/artcraft_commercial.mp4"
+                >
+                  <source
+                    src="https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/artcraft_commercial.mp4"
+                    type="video/mp4"
+                  />
+                  Your browser does not support the video tag.
+                </video>
+                <button
+                  onClick={toggleMute}
+                  className={`absolute top-4 right-4 sm:top-6 sm:right-6 z-20 p-2 bg-black bg-opacity-40 rounded-full w-10 h-10 md:w-12 md:h-12 text-white transition-opacity duration-200 hover:bg-opacity-80 text-md md:text-xl
+                              ${
+                                isMuted
+                                  ? "opacity-100"
+                                  : isHovering
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                  aria-label={isMuted ? "Unmute video" : "Mute video"}
+                >
+                  <FontAwesomeIcon
+                    icon={isMuted ? faVolumeMute : faVolumeHigh}
+                  />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </main>
+
+      <div className="relative flex overflow-visible xl:items-center xl:pt-0 mb-4 md:mb-12 px-2 sm:px-4 md:px-0">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-200px] top-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-15 blur-[120px] z-0 pointer-events-none" />
+        <motion.div
+          className="w-full flex flex-col items-center justify-center text-center pt-16 sm:pt-24 md:pt-32 px-2 sm:px-6 md:px-10"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeUpVariants}
         >
           <motion.div className="relative" variants={fadeUpVariants}>
-            <h1 className="relative mb-6 md:mb-10 font-extrabold text-4xl sm:text-[3rem] md:text-[4rem] lg:text-[6rem] !leading-none">
-              <span className="text-primary">“</span>
+            <h1 className="relative mb-4 sm:mb-6 md:mb-10 font-bold text-3xl sm:text-4xl md:text-[3rem] lg:text-[4rem] xl:text-[5rem] !leading-none text-shadow-lg">
+              <span
+                className="text-primary"
+                style={{ textShadow: "0 0 15px var(--color-primary)" }}
+              >
+                “
+              </span>
               Is this really AI?
-              <span className="text-primary">”</span>
+              <span
+                className="text-primary"
+                style={{ textShadow: "0 0 15px var(--color-primary)" }}
+              >
+                ”
+              </span>
             </h1>
-            <span className="absolute -right-5 bottom-1 md:-right-14 md:bottom-14 text-xl md:text-3xl font-bold opacity-40 italic">
+            <span className="absolute -right-6 sm:-right-5 -bottom-1 sm:bottom-4 md:-right-16 md:bottom-10 text-lg sm:text-xl md:text-3xl font-bold opacity-40 italic hover:opacity-80 transition-opacity duration-300">
               — You
             </span>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Hero Section */}
-      <div className="relative z-10 mx-auto max-w-[100rem] px-4 md:px-16 lg:px-12 xl:px-32 lg:mb-32">
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-2 sm:px-4 md:px-16 lg:px-12 xl:px-32 pb-8 sm:pb-16 md:pb-24 lg:pb-32 overflow-visible px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute right-[-250px] top-[-150px] w-[700px] h-[700px] rounded-full bg-gradient-to-br from-blue-700 via-[#00AABA] to-pink-500 opacity-[0.1] blur-[140px] z-0 pointer-events-none" />
         <motion.div
-          className="items-center gap-16 mb-12 p-4 bg-white/10 backdrop-blur-md rounded-[40px]"
+          className="items-center gap-8 sm:gap-12 md:gap-16 mb-8 sm:mb-12 p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-[24px] sm:rounded-[40px] shadow-xl"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeUpVariants}
         >
-          <div className="rounded-[24px] overflow-hidden bg-[#1C1C20]">
+          <div className="rounded-[16px] sm:rounded-[24px] overflow-hidden bg-[#1C1C20] shadow-inner">
             <video
               muted
               autoPlay
@@ -85,7 +241,9 @@ const Landing = () => {
         </motion.div>
       </div>
 
-      <div className="overflow-hidden py-24 sm:py-32">
+      <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-150px] bottom-[-100px] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-10 blur-[110px] z-0 pointer-events-none" />
         <motion.div
           className="mx-auto max-w-[88rem] md:px-6 lg:px-8"
           initial="hidden"
@@ -93,29 +251,29 @@ const Landing = () => {
           viewport={{ once: true }}
           variants={fadeUpVariants}
         >
-          <div className="grid grid-cols-1 gap-20 lg:grid-cols-2 lg:items-center">
+          <div className="grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-2 lg:items-center">
             <motion.div
-              className="px-6 lg:px-0 lg:pt-4 lg:pr-4"
+              className="px-2 sm:px-6 lg:px-0 lg:pt-4 lg:pr-4"
               variants={fadeUpVariants}
             >
               <div className="max-w-2xl lg:mx-0 mb-10 md:mb-16">
-                <h2 className="relative font-extrabold text-4xl md:text-5xl lg:text-6xl xl:text-[4.8rem] !leading-tight">
+                <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl !leading-tight">
                   Our tool lets you design, control, and achieve{" "}
                   <span className="text-primary">great consistency.</span>
                 </h2>
               </div>
               <DiscordButton />
             </motion.div>
-            <div className="sm:px-6 lg:px-0">
+            <div className="sm:px-2 sm:mx-auto lg:px-0">
               <div className="relative isolate overflow-hidden bg-indigo-500 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:pr-0 lg:mx-0 lg:max-w-none">
-                <div className="mx-auto max-w-2xl sm:mx-0 sm:max-w-none border-[16px] border-white/10 rounded-3xl overflow-hidden">
+                <div className="mx-auto max-w-full sm:max-w-2xl sm:mx-0 sm:max-w-none p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
                   <video
                     src="/videos/artcraft-3d-demo.mp4"
                     autoPlay
                     muted
                     loop
                     playsInline
-                    className="aspect-square w-full max-w-none rounded-tl-xl bg-gray-800 ring-1 ring-white/10 object-cover h-full rounded-lg overflow-hidden"
+                    className="aspect-square w-full max-w-none rounded-lg bg-gray-800 object-cover h-full overflow-hidden"
                   />
                 </div>
               </div>
@@ -124,7 +282,9 @@ const Landing = () => {
         </motion.div>
       </div>
 
-      <div className="overflow-hidden md:py-24 sm:py-32">
+      <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute right-[-200px] top-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-700 via-[#00AABA] to-pink-500 opacity-10 blur-[120px] z-0 pointer-events-none" />
         <motion.div
           className="mx-auto max-w-[88rem] md:px-6 lg:px-8"
           initial="hidden"
@@ -132,30 +292,30 @@ const Landing = () => {
           viewport={{ once: true }}
           variants={fadeUpVariants}
         >
-          <div className="grid grid-cols-1 gap-20 lg:grid-cols-2 lg:items-center">
-            <div className="sm:px-6 lg:px-0 order-2 lg:order-1">
+          <div className="grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-2 lg:items-center">
+            <div className="sm:px-2 sm:mx-auto lg:px-0 order-2 lg:order-1">
               <motion.div
                 className="relative isolate overflow-hidden bg-indigo-500 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:pr-0 lg:mx-0 lg:max-w-none"
                 variants={fadeUpVariants}
               >
-                <div className="mx-auto max-w-2xl sm:mx-0 sm:max-w-none border-[16px] border-white/10 rounded-3xl overflow-hidden">
+                <div className="mx-auto max-w-full sm:max-w-2xl sm:mx-0 sm:max-w-none p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
                   <video
                     src="/videos/artcraft-canvas-demo.mp4"
                     autoPlay
                     muted
                     loop
                     playsInline
-                    className="aspect-square w-full max-w-none rounded-tl-xl bg-gray-800 ring-1 ring-white/10 object-cover h-full rounded-lg overflow-hidden"
+                    className="aspect-square w-full max-w-none rounded-lg bg-gray-800 object-cover h-full overflow-hidden"
                   />
                 </div>
               </motion.div>
             </div>
             <motion.div
-              className="px-6 lg:px-0 lg:pt-4 lg:pr-4 order-1 lg:order-2"
+              className="px-2 sm:px-6 lg:px-0 lg:pt-4 lg:pr-4 order-1 lg:order-2"
               variants={fadeUpVariants}
             >
               <div className=" max-w-2xl lg:mx-0 mb-10 md:mb-16">
-                <h2 className="relative font-extrabold text-4xl md:text-5xl lg:text-6xl xl:text-[4.8rem] !leading-tight">
+                <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl xl:text-[3.8rem] !leading-tight">
                   <span className="text-primary">Patented</span> Brain to Art
                   Interface
                 </h2>
@@ -166,7 +326,9 @@ const Landing = () => {
         </motion.div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-screen px-4 py-32 sm:px-24 lg:px-32">
+      <div className="relative z-10 mx-auto w-full max-w-screen px-2 sm:px-4 py-10 sm:py-20 md:py-32 sm:px-8 lg:px-32 overflow-visible px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-250px] top-[-150px] w-[700px] h-[700px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-[0.07] blur-[150px] z-0 pointer-events-none" />
         {/* Videos Section */}
         <motion.div
           className="space-y-12"
@@ -176,24 +338,21 @@ const Landing = () => {
           variants={fadeUpVariants}
         >
           <div className="text-center">
-            <h1 className="md:mb-16 text-4xl md:text-7xl font-extrabold">
+            <h1 className="md:mb-8 text-2xl sm:text-4xl md:text-6xl font-bold">
               Made using{" "}
               <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-[5px] md:after:h-[12px] after:bg-primary/60 after:mb-1">
                 ArtCraft
               </span>
             </h1>
-            {/* <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              See examples of artwork created using ArtCraft.
-            </p> */}
           </div>
-          <div className="grid gap-8 xl:grid-cols-3">
+          <div className="grid gap-6 sm:gap-8 xl:grid-cols-3">
             {videos.map((video, index) => (
               <motion.div
                 key={index}
-                className="group relative rounded-2xl bg-white/10 backdrop-blur-md p-1.5 transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20"
+                className="group relative rounded-2xl bg-white/10 backdrop-blur-md p-2 sm:p-4 transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20"
                 variants={fadeUpVariants}
               >
-                <div className="aspect-video overflow-hidden rounded-xl">
+                <div className="aspect-video overflow-hidden rounded-xl shadow-lg w-full">
                   <iframe
                     width="100%"
                     height="100%"
@@ -202,37 +361,41 @@ const Landing = () => {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen
-                    className="rounded-xl transition-transform duration-300 group-hover:scale-[1.02]"
+                    className="rounded-xl transition-transform duration-300 group-hover:scale-[1.02] w-full h-full min-h-[180px]"
+                    style={{ minHeight: "180px" }}
                   />
                 </div>
-                <div className="absolute inset-0 rounded-2xl border border-white/10 group-hover:border-white/20 transition-colors duration-300 pointer-events-none" />
               </motion.div>
             ))}
           </div>
         </motion.div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-[1920px] px-4 md:pt-32 md:pb-56 sm:px-24 lg:px-32">
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-2 sm:px-4 pt-10 sm:pt-20 md:pt-32 pb-12 sm:pb-24 md:pb-40 lg:pb-56 sm:px-8 lg:px-32 overflow-visible px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute right-[-300px] bottom-[-100px] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-700 via-[#00AABA] to-pink-500 opacity-10 blur-[160px] z-0 pointer-events-none" />
         {/* Discord CTA Section */}
         <motion.div
-          className="flex flex-col items-center justify-center text-center p-12 py-20 rounded-[40px] bg-primary/30 backdrop-blur-md border-[6px] border-primary/60"
+          className="flex flex-col items-center justify-center text-center p-4 sm:p-8 md:p-24 py-10 sm:py-20 rounded-[24px] sm:rounded-[40px] bg-gradient-to-br from-primary/30 to-primary/50 backdrop-blur-lg border-[3px] sm:border-[6px] border-primary/70 shadow-2xl shadow-primary/30"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeUpVariants}
         >
-          <h2 className="relative mb-12 font-extrabold text-4xl lg:text-6xl max-w-3xl !leading-tight">
+          <h2 className="relative mb-4 sm:mb-8 font-bold text-2xl sm:text-4xl lg:text-5xl max-w-3xl !leading-tight">
             Why haven't you joined our Discord yet?
           </h2>
-          {/* <p className="text-lg text-gray-400 mb-8 max-w-2xl">
+          <p className="text-base sm:text-lg text-gray-200 mb-6 sm:mb-10 max-w-2xl leading-relaxed">
             Connect with other creators, share your work, get feedback, and stay
             updated with the latest features and updates.
-          </p> */}
+          </p>
           <DiscordButton />
         </motion.div>
       </div>
 
-      <div></div>
+      <div className="pb-8 sm:pb-12"></div>
+
+      <Footer />
     </div>
   );
 };

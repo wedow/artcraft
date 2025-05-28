@@ -1,15 +1,7 @@
-import { Disclosure, DisclosureButton } from "@headlessui/react";
-import { faBars } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { Button } from "@storyteller/ui-button";
+import { Disclosure } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useState } from "react";
 import { DiscordButton } from "../discord-button";
-
-// const navigation = [
-//   { name: "Home", href: "/", current: true },
-//   { name: "Download", href: "/download", current: false },
-// ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -68,11 +60,17 @@ export default function Navbar() {
               {/* <Button as="link" href="/download">
                 Download
               </Button> */}
-              <DiscordButton small />
+              <DiscordButton
+                small
+                className="bg-white text-black hover:bg-white/90"
+              />
             </div>
             <div className="-ml-2 flex items-center md:hidden">
               {/* Mobile menu button */}
-              <DiscordButton className="text-sm" small />
+              <DiscordButton
+                className="text-sm bg-white text-black hover:bg-white/90"
+                small
+              />
             </div>
           </div>
         </div>

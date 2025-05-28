@@ -32,7 +32,7 @@ const navigation = {
 
 export default function Example() {
   return (
-    <footer className="bg-[#1F1F23]">
+    <footer className="bg-transparent">
       <div className="mx-auto max-w-7xl overflow-hidden px-6 py-16 sm:py-16 lg:px-8 flex flex-col gap-12 items-center">
         {/* <Button
           icon={faArrowDownToLine}
@@ -65,7 +65,10 @@ export default function Example() {
                 className="text-gray-400 hover:text-gray-300 transition-all"
               >
                 <span className="sr-only">{item.name}</span>
-                <item.icon aria-hidden="true" className="size-6" />
+                <item.icon
+                  aria-hidden="true"
+                  className="size-6 text-white/70"
+                />
               </a>
             ))}
           </div>

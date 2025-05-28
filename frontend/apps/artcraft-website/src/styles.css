@@ -4,15 +4,15 @@
 
 @layer base {
   body {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Poppins", sans-serif;
     color: #ffffff;
     background-color: #1b1b1f;
   }
 }
 
 .bg-dots {
-  background-image: radial-gradient(#ffffff25 1px, transparent 0);
-  background-color: #1b1b1f;
+  background-image: radial-gradient(#ffffff20 1px, transparent 0);
+  background-color: #101014;
   background-size: 33px 33px;
   @apply bg-center;
 }
