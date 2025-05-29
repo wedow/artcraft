@@ -302,49 +302,6 @@ export const PromptBox2D = ({
     });
 
     console.log("generateResponse", generateResponse);
-
-    if (generateResponse.status === CommandSuccessStatus.Success) {
-      const prefs = await GetAppPreferences();
-      const soundName = prefs.preferences?.enqueue_success_sound;
-      if (soundName !== undefined) {
-        const registry = SoundRegistry.getInstance();
-        registry.playSound(soundName);
-      }
-      toast.success("Image added to queue");
-    } else {
-      const prefs = await GetAppPreferences();
-      const soundName = prefs.preferences?.enqueue_failure_sound;
-      if (soundName !== undefined) {
-        const registry = SoundRegistry.getInstance();
-        registry.playSound(soundName);
-      }
-
-      let errorMessage = "Failed to enqueue image";
-
-      if ("error_type" in generateResponse) {
-        switch (generateResponse.error_type) {
-          case SoraImageRemixErrorType.SoraLoginRequired:
-            errorMessage =
-              "You need to log into Sora to continue. See the settings menu.";
-            break;
-          case SoraImageRemixErrorType.ServerError:
-            errorMessage = "Server error. Failed to enqueue image.";
-            break;
-          case SoraImageRemixErrorType.TooManyConcurrentTasks:
-            errorMessage =
-              "You have too many Sora image generation tasks running. Please wait a moment.";
-            break;
-          case SoraImageRemixErrorType.SoraUsernameNotYetCreated:
-            errorMessage =
-              "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
-            break;
-          case SoraImageRemixErrorType.SoraIsHavingProblems:
-            errorMessage = "Sora is having problems. Please try again later.";
-            break;
-        }
-      }
-      toast.error(errorMessage);
-    }
   };
 
   const handleWebEnqueue = async () => {

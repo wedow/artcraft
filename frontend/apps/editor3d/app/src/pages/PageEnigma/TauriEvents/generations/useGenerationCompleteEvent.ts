@@ -7,7 +7,7 @@ import { GenerationAction, GenerationModel, GenerationServiceProvider } from "./
 import { BasicEventWrapper } from "../BasicEventWrapper";
 
 type GenerationCompleteEvent = {
-  action: GenerationAction,
+  action?: GenerationAction,
   service: GenerationServiceProvider,
   model?: GenerationModel,
 };
@@ -46,6 +46,9 @@ export const useGenerationCompleteEvent = () => {
 }
 
 const makeMessage = (event: GenerationCompleteEvent) => {
+  if (!event.action) {
+    return "Generation complete!";
+  }
   switch (event.action) {
     case GenerationAction.GenerateImage:
       return "Image generation complete!";
