@@ -112,9 +112,23 @@ pub async fn sora_image_remix_command(
   
   if !has_credentials {
     warn!("No apparently completed credentials found");
+
+    let error_message = "You need to log into Sora to continue. See the settings menu.";
+
+    let event = GenerationEnqueueFailureEvent {
+      action: GenerationAction::GenerateImage,
+      service: GenerationServiceProvider::Sora,
+      model: None,
+      reason: Some(error_message.to_string()),
+    };
+
+    if let Err(err) = event.send(&app) {
+      error!("Failed to emit event: {:?}", err); // Fail open.
+    }
+
     return Err(CommandErrorResponseWrapper {
       status: CommandErrorStatus::Unauthorized,
-      error_message: Some("You need to log into Sora to continue. See the settings menu.".to_string()),
+      error_message: Some(error_message.to_string()),
       error_type: Some(SoraImageRemixErrorType::SoraLoginRequired),
       error_details: None,
     });
@@ -134,38 +148,38 @@ pub async fn sora_image_remix_command(
         error!("Failed to emit event: {:?}", err);
       }
 
-      let event = GenerationEnqueueFailureEvent {
-        action: GenerationAction::GenerateImage,
-        service: GenerationServiceProvider::Sora,
-        model: None,
-        reason: None,
-      };
-
-      if let Err(err) = event.send(&app) {
-        error!("Failed to emit event: {:?}", err); // Fail open.
-      }
-
       let mut status = CommandErrorStatus::ServerError;
       let mut error_type = SoraImageRemixErrorType::ServerError;
-      let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
-      
+      let mut error_message = "An error occurred. Please try again. If it continues, please tell our staff about the problem.";
+
       match (err) {
         InnerError::SoraError(SoraError::TooManyConcurrentTasks) => {
           error_type = SoraImageRemixErrorType::TooManyConcurrentTasks;
           status = CommandErrorStatus::ServerError;
-          error_message = "You already have work in progress. Please wait for it to finish.";
+          error_message = "You have too many Sora image generation tasks running. Please wait a moment.";
         },
         InnerError::SoraError(SoraError::SoraUsernameNotYetCreated) => {
           error_type = SoraImageRemixErrorType::SoraUsernameNotYetCreated;
           status = CommandErrorStatus::BadRequest;
-          error_message = "You need to create a username on Sora.com to continue.";
+          error_message = "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
         },
         InnerError::SoraError(SoraError::BadGateway(_) | SoraError::CloudFlareTimeout(_)) => {
           error_type = SoraImageRemixErrorType::SoraIsHavingProblems;
           status = CommandErrorStatus::ServerError;
-          error_message = "Sora is having problems. Please wait a moment and then retry.";
+          error_message = "Sora is having problems. Please try again later.";
         }
         _ => {},
+      }
+
+      let event = GenerationEnqueueFailureEvent {
+        action: GenerationAction::GenerateImage,
+        service: GenerationServiceProvider::Sora,
+        model: None,
+        reason: Some(error_message.to_string()),
+      };
+
+      if let Err(err) = event.send(&app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
       Err(CommandErrorResponseWrapper {

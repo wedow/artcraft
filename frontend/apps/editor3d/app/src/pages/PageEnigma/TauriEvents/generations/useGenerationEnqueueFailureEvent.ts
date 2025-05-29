@@ -9,6 +9,7 @@ type GenerationEnqueueFailureEvent = {
   action: GenerationAction,
   service: GenerationServiceProvider,
   model?: GenerationModel,
+  reason?: string,
 }; 
 
 export const useGenerationEnqueueFailureEvent = () => {
@@ -45,6 +46,9 @@ export const useGenerationEnqueueFailureEvent = () => {
 }
 
 const makeMessage = (event: GenerationEnqueueFailureEvent) => {
+  if (event.reason !== undefined) {
+    return event.reason;
+  }
   switch (event.action) {
     case GenerationAction.GenerateImage:
       return "Couldn't enqueue image generation!";
