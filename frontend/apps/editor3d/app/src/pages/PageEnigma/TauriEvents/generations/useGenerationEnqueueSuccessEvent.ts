@@ -21,7 +21,7 @@ export const useGenerationEnqueueSuccessEvent = () => {
       unlisten = listen<BasicEventWrapper<GenerationEnqueueSuccessEvent>>('generation-enqueue-success-event', async (event) => {
         console.log("Generation enqueue success event received:", event);
         const prefs = await GetAppPreferences();
-        const soundName = prefs.preferences?.generation_success_sound;
+        const soundName = prefs.preferences?.enqueue_success_sound;
         if (soundName !== undefined) {
           const registry = SoundRegistry.getInstance();
           registry.playSound(soundName);
