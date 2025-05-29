@@ -104,6 +104,13 @@ pub async fn fal_background_removal_command(
   
   if !has_credentials {
     warn!("No API key found");
+    let event = 
+        GenerationEnqueueFailureEvent::no_fal_api_key(GenerationAction::RemoveBackground);
+
+    if let Err(err) = event.send(&app) {
+      error!("Failed to emit event: {:?}", err); // Fail open.
+    }
+    
     return Err(CommandErrorResponseWrapper {
       status: CommandErrorStatus::Unauthorized,
       error_message: Some("You need to set a FAL api key".to_string()),

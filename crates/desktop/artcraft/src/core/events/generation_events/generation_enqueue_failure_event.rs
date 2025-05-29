@@ -17,3 +17,14 @@ impl BasicSendableEvent for GenerationEnqueueFailureEvent {
   const FRONTEND_EVENT_NAME: &'static str = "generation-enqueue-failure-event";
   const EVENT_STATUS: BasicEventStatus = BasicEventStatus::Failure;
 }
+
+impl GenerationEnqueueFailureEvent {
+  pub fn no_fal_api_key(action: GenerationAction) -> Self {
+    Self {
+      action,
+      service: GenerationServiceProvider::Fal,
+      model: None,
+      reason: Some("No FAL API key is set. Configure this in your settings.".to_string()),
+    }
+  }
+}

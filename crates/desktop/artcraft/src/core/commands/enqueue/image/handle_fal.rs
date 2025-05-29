@@ -11,6 +11,7 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
+use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::requests::image_gen::enqueue_flux_pro_ultra_text_to_image::{enqueue_flux_pro_ultra_text_to_image, FluxProUltraTextToImageArgs};
 use fal_client::requests::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use log::{error, info, warn};
@@ -23,6 +24,21 @@ pub async fn handle_fal(
   fal_task_queue: &FalTaskQueue,
 ) -> Result<(), InternalImageError> {
 
+  let api_key = match fal_creds_manager.get_key()? {
+    Some(key) => key,
+    None => {
+      error!("No FAL API key is set. Can't perform action.");
+      let event =
+          GenerationEnqueueFailureEvent::no_fal_api_key(GenerationAction::GenerateImage);
+
+      if let Err(err) = event.send(&app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
+      }
+      
+      return Err(InternalImageError::NeedsFalApiKey);
+    },
+  };
+  
   let api_key = fal_creds_manager.get_key_required()
       .map_err(|err| {
         error!("EnqueueTextToImage FAL api key required: {:?}", err);
