@@ -4,6 +4,7 @@ import { SoundRegistry } from "@storyteller/soundboard";
 import { GetAppPreferences } from "@storyteller/tauri-api";
 import { toast } from "@storyteller/ui-toaster";
 import { GenerationAction, GenerationModel, GenerationServiceProvider } from "./common";
+import { BasicEventWrapper } from "../BasicEventWrapper";
 
 type GenerationEnqueueFailureEvent = {
   action: GenerationAction,
@@ -18,7 +19,7 @@ export const useGenerationEnqueueFailureEvent = () => {
     let unlisten: Promise<UnlistenFn>;
 
     const setup = async () => {
-      unlisten = listen<GenerationEnqueueFailureEvent>('generation-enqueue-failure-event', async (event) => {
+      unlisten = listen<BasicEventWrapper<GenerationEnqueueFailureEvent>>('generation-enqueue-failure-event', async (event) => {
         console.log("Generation enqueue failure event received:", event);
         const prefs = await GetAppPreferences();
         const soundName = prefs.preferences?.enqueue_failure_sound;
@@ -26,7 +27,7 @@ export const useGenerationEnqueueFailureEvent = () => {
           const registry = SoundRegistry.getInstance();
           registry.playSound(soundName);
         }
-        const message = makeMessage(event.payload);
+        const message = makeMessage(event.payload.data);
         toast.error(message);
       });
 
@@ -46,7 +47,7 @@ export const useGenerationEnqueueFailureEvent = () => {
 }
 
 const makeMessage = (event: GenerationEnqueueFailureEvent) => {
-  if (event.reason !== undefined) {
+  if (!!event.reason) {
     return event.reason;
   }
   switch (event.action) {
