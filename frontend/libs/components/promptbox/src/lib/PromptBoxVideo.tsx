@@ -183,6 +183,13 @@ export const PromptBoxVideo = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
+    setTimeout(() => {
+      // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
+      // the backend hangs on a given request.
+      console.debug("Turn off blocking of prompt box...");
+      setIsEnqueueing(false);
+    }, 10000);
+
     const generateResponse = await FalKlingImageToVideo({
       image_media_token: referenceImages[0].mediaToken,
     });
