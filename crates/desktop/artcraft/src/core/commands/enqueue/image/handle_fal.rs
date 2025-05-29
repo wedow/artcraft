@@ -1,5 +1,9 @@
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
@@ -10,8 +14,10 @@ use anyhow::anyhow;
 use fal_client::requests::image_gen::enqueue_flux_pro_ultra_text_to_image::{enqueue_flux_pro_ultra_text_to_image, FluxProUltraTextToImageArgs};
 use fal_client::requests::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use log::{error, info, warn};
+use tauri::AppHandle;
 
 pub async fn handle_fal(
+  app: &AppHandle,
   request: EnqueueTextToImageRequest,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
@@ -52,6 +58,15 @@ pub async fn handle_fal(
     Ok(enqueued) => {
       info!("Successfully enqueued text to image");
 
+      let event = GenerationEnqueueSuccessEvent {
+        service: GenerationServiceName::Fal,
+        action: GenerationAction::GenerateImage,
+      };
+
+      if let Err(err) = event.send(app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
+      }
+
       if let Err(err) = fal_task_queue.insert(&enqueued) {
         error!("Failed to enqueue task: {:?}", err);
         return Err(InternalImageError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
@@ -59,6 +74,17 @@ pub async fn handle_fal(
     }
     Err(err) => {
       error!("Failed to enqueue text to image: {:?}", err);
+
+      let event = GenerationEnqueueFailureEvent {
+        service: GenerationServiceName::Fal,
+        action: GenerationAction::GenerateImage,
+        reason: None,
+      };
+
+      if let Err(err) = event.send(app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
+      }
+
       return Err(InternalImageError::FalError(err));
     }
   }

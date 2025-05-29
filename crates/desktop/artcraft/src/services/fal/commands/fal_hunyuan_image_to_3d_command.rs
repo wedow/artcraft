@@ -1,3 +1,9 @@
+use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
+use crate::core::commands::response::shorthand::Response;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
@@ -52,8 +58,6 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::core::commands::response::shorthand::Response;
 
 #[derive(Deserialize)]
 pub struct FalHunyuanImageTo3dRequest {
@@ -76,6 +80,7 @@ pub enum HunyuanErrorType {
 
 #[tauri::command]
 pub async fn fal_hunyuan_image_to_3d_command(
+  app: AppHandle,
   request: FalHunyuanImageTo3dRequest,
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
@@ -110,19 +115,19 @@ pub async fn fal_hunyuan_image_to_3d_command(
   if let Err(err) = result {
     error!("error: {:?}", err);
 
-    //let event = SoraImageEnqueueFailureEvent {};
-    //let result = event.send(&app);
-    //if let Err(err) = result {
-    //  error!("Failed to emit event: {:?}", err);
-    //}
+    let event = GenerationEnqueueFailureEvent {
+      service: GenerationServiceName::Fal,
+      action: GenerationAction::ImageTo3d,
+      reason: None,
+    };
+
+    if let Err(err) = event.send(&app) {
+      error!("Failed to emit event: {:?}", err); // Fail open.
+    }
 
     let mut status = CommandErrorStatus::ServerError;
     let mut error_type = HunyuanErrorType::ServerError;
     let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
-
-    //match (err) {
-    //  _ => {},
-    //}
 
     return Err(CommandErrorResponseWrapper {
       status,
@@ -131,13 +136,16 @@ pub async fn fal_hunyuan_image_to_3d_command(
       error_details: None,
     })
   }
-  
-  //let event = SoraImageEnqueueSuccessEvent {};
-  //let result = event.send(&app);
-  //if let Err(err) = result {
-  //  error!("Failed to emit event: {:?}", err);
-  //}
-  
+
+  let event = GenerationEnqueueSuccessEvent {
+    service: GenerationServiceName::Fal,
+    action: GenerationAction::ImageTo3d,
+  };
+
+  if let Err(err) = event.send(&app) {
+    error!("Failed to emit event: {:?}", err); // Fail open.
+  }
+
   Ok(().into())
 }
 

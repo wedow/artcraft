@@ -1,5 +1,9 @@
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
@@ -17,10 +21,12 @@ use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simp
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use openai_sora_client::sora_error::SoraError;
 use std::time::Duration;
+use tauri::AppHandle;
 
 const SORA_SIMPLE_IMAGE_GEN_TIMEOUT : Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
 pub async fn handle_sora(
+  app: &AppHandle,
   request: EnqueueTextToImageRequest,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
@@ -60,6 +66,16 @@ pub async fn handle_sora(
       match result {
         Ok((response, maybe_new_creds)) => (response, maybe_new_creds),
         Err(err) => {
+          let event = GenerationEnqueueFailureEvent {
+            service: GenerationServiceName::Sora,
+            action: GenerationAction::GenerateImage,
+            reason: None,
+          };
+
+          if let Err(err) = event.send(app) {
+            error!("Failed to emit event: {:?}", err); // Fail open.
+          }
+
           return Err(InternalImageError::SoraError(err));
         }
       };
@@ -72,6 +88,15 @@ pub async fn handle_sora(
   info!("New Sora Task ID: {:?} ", response.task_id);
 
   sora_task_queue.insert(&response.task_id)?;
+
+  let event = GenerationEnqueueSuccessEvent {
+    service: GenerationServiceName::Sora,
+    action: GenerationAction::GenerateImage,
+  };
+
+  if let Err(err) = event.send(app) {
+    error!("Failed to emit event: {:?}", err); // Fail open.
+  }
 
   Ok(())
 }

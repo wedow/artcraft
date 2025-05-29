@@ -2,7 +2,7 @@ use crate::core::events::basic_sendable_event_trait::{BasicEventStatus, BasicSen
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
 use serde_derive::Serialize;
 
-#[derive(Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct GenerationEnqueueSuccessEvent {
   pub service: GenerationServiceName,

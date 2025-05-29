@@ -54,6 +54,10 @@ use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 
 #[derive(Deserialize)]
 pub struct FalKlingImageToVideoRequest {
@@ -81,6 +85,7 @@ pub enum KlingImageToVideoErrorType {
 
 #[tauri::command]
 pub async fn fal_kling_image_to_video_command(
+  app: AppHandle,
   request: FalKlingImageToVideoRequest,
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
@@ -115,19 +120,19 @@ pub async fn fal_kling_image_to_video_command(
   if let Err(err) = result {
     error!("error: {:?}", err);
 
-    //let event = SoraImageEnqueueFailureEvent {};
-    //let result = event.send(&app);
-    //if let Err(err) = result {
-    //  error!("Failed to emit event: {:?}", err);
-    //}
+    let event = GenerationEnqueueFailureEvent {
+      service: GenerationServiceName::Fal,
+      action: GenerationAction::GenerateVideo,
+      reason: None,
+    };
+
+    if let Err(err) = event.send(&app) {
+      error!("Failed to emit event: {:?}", err); // Fail open.
+    }
 
     let mut status = CommandErrorStatus::ServerError;
     let mut error_type = KlingImageToVideoErrorType::ServerError;
     let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
-
-    //match (err) {
-    //  _ => {},
-    //}
 
     return Err(CommandErrorResponseWrapper {
       status,
@@ -137,12 +142,15 @@ pub async fn fal_kling_image_to_video_command(
     })
   }
   
-  //let event = SoraImageEnqueueSuccessEvent {};
-  //let result = event.send(&app);
-  //if let Err(err) = result {
-  //  error!("Failed to emit event: {:?}", err);
-  //}
-  
+  let event = GenerationEnqueueSuccessEvent {
+    service: GenerationServiceName::Fal,
+    action: GenerationAction::GenerateVideo,
+  };
+
+  if let Err(err) = event.send(&app) {
+    error!("Failed to emit event: {:?}", err); // Fail open.
+  }
+
   Ok(().into())
 }
 

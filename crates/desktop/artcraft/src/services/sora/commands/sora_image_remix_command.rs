@@ -140,10 +140,8 @@ pub async fn sora_image_remix_command(
         reason: None,
       };
 
-      let result = event.send(&app);
-
-      if let Err(err) = result {
-        error!("Failed to emit event: {:?}", err);
+      if let Err(err) = event.send(&app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
       let mut status = CommandErrorStatus::ServerError;
@@ -190,10 +188,8 @@ pub async fn sora_image_remix_command(
         action: GenerationAction::GenerateImage,
       };
 
-      let result = event.send(&app);
-
-      if let Err(err) = result {
-        error!("Failed to emit event: {:?}", err);
+      if let Err(err) = event.send(&app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
       Ok(().into())
