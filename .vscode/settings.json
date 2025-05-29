@@ -1,6 +1,15 @@
 {
-    "files.exclude": {
-        "**/*~": true,
-        "frontend_old/**": true
-    }
+  "files.exclude": {
+    "**/*~": true,
+    ".sqlx/**": true,
+    "_elasticsearch/**": true,
+    "_sql/**": true,
+    "frontend_old/**": true,
+    "includes/**": true,
+    "target/**": true,
+    "test_data/**": true,
+    "tmp/**": true,
+    "virtualenv/**": true,
+    "windows_dlls/**": true,
+  }
 }

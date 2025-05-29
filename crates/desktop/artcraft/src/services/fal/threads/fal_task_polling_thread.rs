@@ -1,4 +1,3 @@
-use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;

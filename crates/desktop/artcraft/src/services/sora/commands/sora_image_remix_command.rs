@@ -1,5 +1,8 @@
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
@@ -38,6 +41,7 @@ use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
@@ -122,13 +126,26 @@ pub async fn sora_image_remix_command(
     Err(err) => {
       error!("error: {:?}", err);
 
+      // TODO(bt,2025-05-28): Remove old event types
       let event = SoraImageEnqueueFailureEvent {};
       let result = event.send(&app);
 
       if let Err(err) = result {
         error!("Failed to emit event: {:?}", err);
       }
-      
+
+      let event = GenerationEnqueueFailureEvent {
+        service: GenerationServiceName::Sora,
+        action: GenerationAction::GenerateImage,
+        reason: None,
+      };
+
+      let result = event.send(&app);
+
+      if let Err(err) = result {
+        error!("Failed to emit event: {:?}", err);
+      }
+
       let mut status = CommandErrorStatus::ServerError;
       let mut error_type = SoraImageRemixErrorType::ServerError;
       let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
@@ -160,7 +177,19 @@ pub async fn sora_image_remix_command(
       })
     }
     Ok(_) => {
+      // TODO(bt,2025-05-28): Remove old event types
       let event = SoraImageEnqueueSuccessEvent {};
+      let result = event.send(&app);
+
+      if let Err(err) = result {
+        error!("Failed to emit event: {:?}", err);
+      }
+
+      let event = GenerationEnqueueSuccessEvent {
+        service: GenerationServiceName::Sora,
+        action: GenerationAction::GenerateImage,
+      };
+
       let result = event.send(&app);
 
       if let Err(err) = result {
