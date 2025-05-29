@@ -1,3 +1,4 @@
+use crate::services::fal::state::fal_generation_type::FalGenerationType;
 use chrono::{DateTime, Utc};
 use errors::AnyhowResult;
 use fal_client::model::enqueued_request::EnqueuedRequest;
@@ -10,12 +11,14 @@ use std::sync::{Arc, RwLock};
 pub struct FalTaskDetails {
   pub enqueue_time: DateTime<Utc>,
   pub enqueued_request: EnqueuedRequest,
+  pub generation_type: Option<FalGenerationType>,
 }
 
 impl FalTaskDetails {
   pub fn for_request(request: EnqueuedRequest) -> Self {
     Self {
       enqueue_time: Utc::now(),
+      generation_type: FalGenerationType::from_fal_endpoint(&request.fal_endpoint),
       enqueued_request: request,
     }
   }

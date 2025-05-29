@@ -14,8 +14,6 @@ use crate::core::utils::simple_http_download::simple_http_download;
 use crate::core::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
-use crate::services::sora::events::sora_image_enqueue_failure_event::SoraImageEnqueueFailureEvent;
-use crate::services::sora::events::sora_image_enqueue_success_event::SoraImageEnqueueSuccessEvent;
 use crate::services::sora::state::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
 use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;

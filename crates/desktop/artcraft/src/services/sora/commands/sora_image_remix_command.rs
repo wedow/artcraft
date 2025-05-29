@@ -9,8 +9,6 @@ use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
 use crate::core::utils::simple_http_download::simple_http_download;
-use crate::services::sora::events::sora_image_enqueue_failure_event::SoraImageEnqueueFailureEvent;
-use crate::services::sora::events::sora_image_enqueue_success_event::SoraImageEnqueueSuccessEvent;
 use crate::services::sora::state::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
 use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -138,15 +136,7 @@ pub async fn sora_image_remix_command(
   
   match result {
     Err(err) => {
-      error!("error: {:?}", err);
-
-      // TODO(bt,2025-05-28): Remove old event types
-      let event = SoraImageEnqueueFailureEvent {};
-      let result = event.send(&app);
-
-      if let Err(err) = result {
-        error!("Failed to emit event: {:?}", err);
-      }
+      error!("Sora image remix error: {:?}", err);
 
       let mut status = CommandErrorStatus::ServerError;
       let mut error_type = SoraImageRemixErrorType::ServerError;
@@ -190,14 +180,6 @@ pub async fn sora_image_remix_command(
       })
     }
     Ok(_) => {
-      // TODO(bt,2025-05-28): Remove old event types
-      let event = SoraImageEnqueueSuccessEvent {};
-      let result = event.send(&app);
-
-      if let Err(err) = result {
-        error!("Failed to emit event: {:?}", err);
-      }
-
       let event = GenerationEnqueueSuccessEvent {
         action: GenerationAction::GenerateImage,
         service: GenerationServiceProvider::Sora,

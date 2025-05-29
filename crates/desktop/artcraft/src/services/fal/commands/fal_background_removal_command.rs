@@ -14,8 +14,6 @@ use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp
 use crate::core::utils::simple_http_download::simple_http_download;
 use crate::core::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::sora::events::sora_image_enqueue_failure_event::SoraImageEnqueueFailureEvent;
-use crate::services::sora::events::sora_image_enqueue_success_event::SoraImageEnqueueSuccessEvent;
 use crate::services::sora::state::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
 use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -114,6 +112,16 @@ pub async fn fal_background_removal_command(
     });
   }
 
+  let event = GenerationEnqueueSuccessEvent {
+    action: GenerationAction::RemoveBackground,
+    service: GenerationServiceProvider::Fal,
+    model: None,
+  };
+
+  if let Err(err) = event.send(&app) {
+    error!("Failed to emit event: {:?}", err); // Fail open.
+  }
+
   let result = remove_background(
     request, 
     &app_data_root, 
@@ -148,16 +156,6 @@ pub async fn fal_background_removal_command(
       })
     }
     Ok(result) => {
-      let event = GenerationEnqueueSuccessEvent {
-        action: GenerationAction::RemoveBackground,
-        service: GenerationServiceProvider::Fal,
-        model: None,
-      };
-
-      if let Err(err) = event.send(&app) {
-        error!("Failed to emit event: {:?}", err); // Fail open.
-      }
-
       Ok(FalBackgroundRemovalSuccessResponse {
         media_token: result.0.media_file.token,
         cdn_url: result.0.media_file.media_links.cdn_url,

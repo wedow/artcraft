@@ -5,7 +5,7 @@ use serde_derive::Serialize;
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct GenerationCompleteEvent {
-  pub action: GenerationAction,
+  pub action: Option<GenerationAction>,
   pub service: GenerationServiceProvider,
   pub model: Option<GenerationModel>,
 }

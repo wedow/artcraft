@@ -1,6 +1,8 @@
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
+use crate::core::events::generation_events::generation_failed_event::GenerationFailedEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
-use crate::services::sora::events::sora_image_generation_complete_event::SoraImageGenerationCompleteEvent;
-use crate::services::sora::events::sora_image_generation_failed_event::SoraImageGenerationFailedEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -95,13 +97,19 @@ async fn polling_loop(
     
     for task in failed_tasks.iter() {
       if sora_task_queue.contains_key(&task.id)? {
-        let event = SoraImageGenerationFailedEvent { 
-          prompt: task.prompt
-              .as_deref()
-              .map(|s| s.to_string())
-              .unwrap_or_else(||"".to_string()),
+        let event = GenerationFailedEvent {
+          action: GenerationAction::GenerateImage,
+          service: GenerationServiceProvider::Sora,
+          model: None,
+          reason: None,
+          //  prompt: task.prompt
+          //      .as_deref()
+          //      .map(|s| s.to_string())
+          //      .unwrap_or_else(||"".to_string()),
         };
-        event.send(&app_handle)?;
+        if let Err(err) = event.send(&app_handle) {
+          error!("Failed to send GenerationFailedEvent: {:?}", err); // Fail open
+        }
       }
     }
 
@@ -129,12 +137,17 @@ async fn polling_loop(
         let result = upload_image_media_file_from_file(&api_host, Some(&creds), download_path).await?;
         
         info!("Uploaded to API backend: {:?}", result.media_file_token);
-        
-        let event = SoraImageGenerationCompleteEvent {
-          media_file_token: result.media_file_token,
+
+        let event = GenerationCompleteEvent {
+          //media_file_token: result.media_file_token,
+          action: Some(GenerationAction::GenerateImage),
+          service: GenerationServiceProvider::Sora,
+          model: None,
         };
-        
-        event.send(&app_handle)?;
+
+        if let Err(err) = event.send(&app_handle) {
+          error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
+        }
       }
     }
 

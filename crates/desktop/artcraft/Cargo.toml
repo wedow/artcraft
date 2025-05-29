@@ -37,7 +37,7 @@ tokens = { workspace = true }
 # External
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bytes = "1.10"
+bytes = "1.10.1"
 chrono = { workspace = true }
 directories = "6.0.0"
 dirs = "6.0.0"

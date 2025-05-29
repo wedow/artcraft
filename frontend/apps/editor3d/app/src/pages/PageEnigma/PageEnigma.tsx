@@ -21,8 +21,6 @@ import {
   showPrecisionSelector,
 } from "./signals/precisionSelectorMenu";
 import { InstallSounds } from "~/pages/PageEnigma/InstallSounds";
-import { useImageGenerationFailureEvent } from "./TauriEvents/useImageGenerationFailureEvent";
-import { useImageGenerationSuccessEvent } from "./TauriEvents/useImageGenerationSuccessEvent";
 import { useGenerationEnqueueFailureEvent } from "./TauriEvents/generations/useGenerationEnqueueFailureEvent";
 import { useGenerationEnqueueSuccessEvent } from "./TauriEvents/generations/useGenerationEnqueueSuccessEvent";
 import { useGenerationFailedEvent } from "./TauriEvents/generations/useGenerationFailedEvent";
@@ -95,8 +93,6 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     });
   });
 
-  useImageGenerationSuccessEvent();
-  useImageGenerationFailureEvent();
   useGenerationEnqueueSuccessEvent();
   useGenerationEnqueueFailureEvent();
   useGenerationCompleteEvent();

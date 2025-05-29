@@ -1,10 +1,11 @@
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
-use crate::services::sora::events::sora_image_generation_complete_event::SoraImageGenerationCompleteEvent;
-use crate::services::sora::events::sora_image_generation_failed_event::SoraImageGenerationFailedEvent;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
@@ -145,10 +146,17 @@ async fn polling_loop(
         Ok(success) => {
           info!("Uploaded to API backend: {:?}", success.media_file_token);
 
-          //let event = SoraImageGenerationCompleteEvent {
-          //  media_file_token: success.media_file_token,
-          //};
-          //event.send(&app_handle)?;
+          let event = GenerationCompleteEvent {
+            //media_file_token: result.media_file_token,
+            action: task.generation_type
+                .map(|typ| typ.to_event_generation_action()),
+            service: GenerationServiceProvider::Fal,
+            model: None,
+          };
+
+          if let Err(err) = event.send(&app_handle) {
+            error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
+          }
 
           succeeded_tasks.push(task_id);
         }
@@ -157,7 +165,6 @@ async fn polling_loop(
           continue;
         }
       }
-
     }
 
 
@@ -227,7 +234,7 @@ async fn polling_loop(
 
     fal_task_queue.remove_list(&succeeded_task_ids)?;
 
-    tokio::time::sleep(std::time::Duration::from_millis(6_000)).await;
+    tokio::time::sleep(std::time::Duration::from_millis(1_000)).await;
   }
 }
 
