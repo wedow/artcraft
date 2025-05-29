@@ -1,6 +1,10 @@
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
@@ -53,10 +57,6 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
-use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
-use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 
 #[derive(Deserialize)]
 pub struct FalBackgroundRemovalRequest {
@@ -126,8 +126,9 @@ pub async fn fal_background_removal_command(
       error!("error: {:?}", err);
 
       let event = GenerationEnqueueFailureEvent {
-        service: GenerationServiceName::Fal,
         action: GenerationAction::RemoveBackground,
+        service: GenerationServiceProvider::Fal,
+        model: None,
         reason: None,
       };
 
@@ -148,8 +149,9 @@ pub async fn fal_background_removal_command(
     }
     Ok(result) => {
       let event = GenerationEnqueueSuccessEvent {
-        service: GenerationServiceName::Fal,
         action: GenerationAction::RemoveBackground,
+        service: GenerationServiceProvider::Fal,
+        model: None,
       };
 
       if let Err(err) = event.send(&app) {
@@ -264,4 +266,3 @@ pub async fn remove_background(
 
   Ok((response, base64_bytes))
 }
-

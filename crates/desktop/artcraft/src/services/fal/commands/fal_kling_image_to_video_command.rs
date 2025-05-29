@@ -55,7 +55,7 @@ use tokens::tokens::media_files::MediaFileToken;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 
@@ -121,8 +121,9 @@ pub async fn fal_kling_image_to_video_command(
     error!("error: {:?}", err);
 
     let event = GenerationEnqueueFailureEvent {
-      service: GenerationServiceName::Fal,
       action: GenerationAction::GenerateVideo,
+      service: GenerationServiceProvider::Fal,
+      model: None,
       reason: None,
     };
 
@@ -143,8 +144,9 @@ pub async fn fal_kling_image_to_video_command(
   }
   
   let event = GenerationEnqueueSuccessEvent {
-    service: GenerationServiceName::Fal,
     action: GenerationAction::GenerateVideo,
+    service: GenerationServiceProvider::Fal,
+    model: None,
   };
 
   if let Err(err) = event.send(&app) {

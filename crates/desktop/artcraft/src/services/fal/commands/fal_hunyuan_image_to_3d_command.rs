@@ -1,7 +1,7 @@
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
@@ -116,8 +116,9 @@ pub async fn fal_hunyuan_image_to_3d_command(
     error!("error: {:?}", err);
 
     let event = GenerationEnqueueFailureEvent {
-      service: GenerationServiceName::Fal,
       action: GenerationAction::ImageTo3d,
+      service: GenerationServiceProvider::Fal,
+      model: None,
       reason: None,
     };
 
@@ -138,8 +139,9 @@ pub async fn fal_hunyuan_image_to_3d_command(
   }
 
   let event = GenerationEnqueueSuccessEvent {
-    service: GenerationServiceName::Fal,
     action: GenerationAction::ImageTo3d,
+    service: GenerationServiceProvider::Fal,
+    model: None,
   };
 
   if let Err(err) = event.send(&app) {

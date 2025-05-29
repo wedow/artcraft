@@ -1,7 +1,8 @@
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceName};
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -41,7 +42,6 @@ use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
@@ -135,8 +135,9 @@ pub async fn sora_image_remix_command(
       }
 
       let event = GenerationEnqueueFailureEvent {
-        service: GenerationServiceName::Sora,
         action: GenerationAction::GenerateImage,
+        service: GenerationServiceProvider::Sora,
+        model: None,
         reason: None,
       };
 
@@ -184,8 +185,9 @@ pub async fn sora_image_remix_command(
       }
 
       let event = GenerationEnqueueSuccessEvent {
-        service: GenerationServiceName::Sora,
         action: GenerationAction::GenerateImage,
+        service: GenerationServiceProvider::Sora,
+        model: None,
       };
 
       if let Err(err) = event.send(&app) {
