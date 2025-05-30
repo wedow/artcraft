@@ -20,7 +20,6 @@ workspace-build-acceleration = { workspace =  true }
 crockford = { path = "../../data/crockford" }
 errors = { path = "../../errors" }
 idempotency = { path = "../../idempotency" }
-jwt_light = { workspace = true }
 subprocess_common = { path = "../../subprocess_common" }
 
 # External

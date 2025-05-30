@@ -1,6 +1,4 @@
-use crate::creds::jwt_bearer_token::JwtBearerToken;
 use crate::creds::openart_cookies::OpenArtCookies;
-use crate::error::api_error::ApiError;
 
 #[derive(Clone)]
 pub struct OpenArtCredentials {

@@ -16,16 +16,22 @@ curl 'https://openart.ai/api/auth/session' --compressed
  -H 'Cache-Control: no-cache'
  -H 'TE: trailers'
  */
-use log::{error, info};
 use crate::creds::openart_credentials::OpenArtCredentials;
-use crate::error::openart_error::OpenArtError;
-use reqwest::Client;
 use crate::error::api_error::ApiError;
+use crate::error::classify_http_error_status_code_and_body::classify_http_error_status_code_and_body;
 use crate::error::client_error::ClientError;
+use crate::error::openart_error::OpenArtError;
+use log::{debug, error, info};
+use reqwest::Client;
 
 const SESSION_URL : &str = "https://openart.ai/api/auth/session";
 
-pub async fn get_session_request(creds: &OpenArtCredentials) -> Result<String, OpenArtError> {
+#[derive(Debug, Clone)]
+pub struct SessionDetails {
+  pub session_id: String,
+}
+
+pub async fn get_session_request(creds: &OpenArtCredentials) -> Result<SessionDetails, OpenArtError> {
 
   let cookies = match creds.cookies.as_ref() {
     Some(cookies) => cookies,
@@ -34,7 +40,7 @@ pub async fn get_session_request(creds: &OpenArtCredentials) -> Result<String, O
       return Err(ClientError::NoCookiesInCredentials.into());
     }
   };
-  
+
   let client = Client::builder()
       .gzip(true)
       .build()
@@ -43,7 +49,7 @@ pub async fn get_session_request(creds: &OpenArtCredentials) -> Result<String, O
         OpenArtError::Client(ClientError::ReqwestError(err))
       })?;
 
-  info!("Getting session info from cookies... (cookie payload length: {})", cookies.as_str().len());
+  info!("Getting session details from cookies... (cookie payload length: {})", cookies.as_str().len());
 
   let mut http_request= client.get(SESSION_URL)
       .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0")
@@ -64,25 +70,45 @@ pub async fn get_session_request(creds: &OpenArtCredentials) -> Result<String, O
   let response_body = &response.text()
       .await
       .map_err(|err| {
-        error!("Error reading body while attempting to generate bearer token: {:?}", err);
+        error!("Error reading body while attempting to read session details: {:?}", err);
         ApiError::ReqwestError(err)
       })?;
-  
+
   if !status.is_success() {
-    error!("Failed to generate bearer token with session cookies: {} ; body = {}", status, response_body);
-    let error = classify_general_http_status_code_and_body(status, &response_body).await;
+    error!("Failed to get session details: {} ; body = {}", status, response_body);
+    let error = classify_http_error_status_code_and_body(status, &response_body).await;
     return Err(error);
   }
-  
-  debug!("Bearer token generation response was 200.");
-  debug!("Auth Response: {}", response_body);
-  
-  if response_body == "null" {
-    error!("Failed to generate bearer token. Response was the string `null`.");  
-    return Err(SoraError::FailedToGenerateBearer)  
-  }
-  
-  let auth_response: SoraAuthResponse = serde_json::from_str(&response_body)?;
 
-  Ok(auth_response.access_token)
+  debug!("Session info response was 200. Body: {}", response_body);
+  
+  if response_body.is_empty() || response_body == "{}" {
+    error!("Received empty response body when requesting session details.");
+    return Err(OpenArtError::Api(ApiError::InvalidSession));
+  }
+
+  Ok(SessionDetails {
+    session_id: response_body.to_string(),
+  })
+}
+
+#[cfg(test)]
+mod tests {
+  use crate::creds::openart_cookies::OpenArtCookies;
+  use super::*;
+  use crate::creds::openart_credentials::OpenArtCredentials;
+
+  #[tokio::test]
+  #[ignore] // Do not run in CI. Run manully to test session retrieval.
+  async fn invalid_session() {
+    let creds = OpenArtCredentials {
+      cookies: Some(OpenArtCookies::new("".to_string()))
+    };
+
+    let result = get_session_request(&creds).await;
+
+    println!("Result: {:?}", result);
+
+    assert!(result.is_err());
+  }
 }

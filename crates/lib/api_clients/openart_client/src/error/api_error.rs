@@ -1,10 +1,13 @@
-use jwt_light::error::JwtError;
 use reqwest::StatusCode;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum ApiError {
+  /// Session endpoint did not return a valid session id.
+  /// Specifically for calls to https://openart.ai/api/auth/session
+  InvalidSession,
+  
   /// An error that occurred as or after the request was sent.
   ReqwestError(reqwest::Error),
   
@@ -18,7 +21,7 @@ pub enum ApiError {
 impl Display for ApiError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      ApiError::JwtError(err) => write!(f, "JwtError: {}", err),
+      ApiError::InvalidSession => write!(f, "Invalid session: no session id returned from the server"),
       ApiError::ReqwestError(err) => write!(f, "ReqwestError: {}", err),
       ApiError::UncategorizedBadResponse { status_code, message } => {
         write!(f, "UncategorizedBadResponse: {:?} : {}", status_code, message)
@@ -28,9 +31,3 @@ impl Display for ApiError {
 }
 
 impl Error for ApiError {}
-
-impl From<JwtError> for ApiError {
-  fn from(err: JwtError) -> Self {
-    ApiError::JwtError(err)
-  }
-}

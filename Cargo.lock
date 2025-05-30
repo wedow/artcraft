@@ -6847,7 +6847,6 @@ dependencies = [
  "filesys",
  "hex-literal",
  "idempotency",
- "jwt_light",
  "log",
  "once_cell",
  "rand 0.9.1",
