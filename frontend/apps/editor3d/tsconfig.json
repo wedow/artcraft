@@ -59,6 +59,9 @@
       "path": "../../libs/components/button-dropdown"
     },
     {
+      "path": "../../libs/components/action-reminder-modal"
+    },
+    {
       "path": "../../libs/components/login-modal"
     },
     {

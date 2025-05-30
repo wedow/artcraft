@@ -14,7 +14,7 @@ import {
   useSoraLoginListener,
 } from "@storyteller/tauri-api";
 import { invoke } from "@tauri-apps/api/core";
-import { ArtCraftSignUp } from "./ArtCraftSignUp";
+import { ArtCraftSignUp } from "./artcraft-signup";
 import { UsersApi } from "@storyteller/api";
 interface LoginModalProps {
   onClose: () => void;
@@ -42,11 +42,21 @@ export function LoginModal({
   const artCraftFormRef = useRef<HTMLFormElement>(null);
   const [initialArtCraftLoginStatusForUI, setInitialArtCraftLoginStatusForUI] =
     useState<boolean | null>(null);
+  const [initialSoraSessionStatusForUI, setInitialSoraSessionStatusForUI] =
+    useState<boolean | null>(null);
 
-  const uiTotalSteps = initialArtCraftLoginStatusForUI ? 3 : 4;
+  // Determine total steps and current step for UI
+  let uiTotalSteps = 4;
   let uiCurrentStep = step;
-
-  if (initialArtCraftLoginStatusForUI) {
+  if (initialSoraSessionStatusForUI) {
+    // If Sora session exists, remove the Sora step (step 3)
+    uiTotalSteps = 3;
+    if (step === 1) uiCurrentStep = 1;
+    else if (step === 2) uiCurrentStep = 2;
+    else if (step === 4) uiCurrentStep = 3;
+  } else if (initialArtCraftLoginStatusForUI) {
+    // If ArtCraft is logged in but not Sora, keep 4 steps
+    uiTotalSteps = 4;
     if (step === 1) uiCurrentStep = 1;
     else if (step === 3) uiCurrentStep = 2;
     else if (step === 4) uiCurrentStep = 3;
@@ -67,11 +77,7 @@ export function LoginModal({
 
   useSoraLoginListener((payload: any) => {
     console.log("Login success!", payload);
-    if (isLoggedInArtCraft) {
-      setStep(4);
-    } else {
-      setStep(2);
-    }
+    setStep(4); // Always go to the final step after Sora login
   });
 
   // Check session on component mount
@@ -80,8 +86,13 @@ export function LoginModal({
     Promise.all([initSession(), checkArtCraftLogin()]).then(
       ([soraSessionExists, loggedIn]) => {
         setInitialArtCraftLoginStatusForUI(loggedIn || false); // Set initial status for UI step counting
+        setInitialSoraSessionStatusForUI(soraSessionExists || false); // Set initial Sora status for UI step counting
 
-        if (soraSessionExists && !loggedIn) {
+        if (soraSessionExists && loggedIn) {
+          setIsLoggedInArtCraft(true);
+          setIsOpen(false); // Close the modal if fully logged in
+          return;
+        } else if (soraSessionExists && !loggedIn) {
           // Sora session exists, but not logged in to ArtCraft
           setIsOpen(true);
           setStep(2);
@@ -96,14 +107,10 @@ export function LoginModal({
           setIsOpen(true);
           setStep(1);
           setIsLoggedInArtCraft(false); // Ensure this is also set
-        } else if (loggedIn) {
-          // Already logged in, no need to show modal
-          setIsLoggedInArtCraft(true);
-          // setIsOpen(false); // This would prevent modal from showing if fully logged in
         }
       }
     );
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, []);
 
   useEffect(() => {
     if (onOpenChange) onOpenChange(isOpen);
@@ -124,14 +131,14 @@ export function LoginModal({
           const result = await CheckSoraSession();
           const sessionExists = result.state === SoraSessionState.Valid;
           if (sessionExists) {
-            setStep(step + 1);
+            setStep(4); // Always go to the final step after Sora login
           }
         } else {
           alert("Please open the desktop app to login");
           await new Promise((resolve) => setTimeout(resolve, 3000));
           const sessionExists = true;
           if (sessionExists) {
-            setStep(step + 1);
+            setStep(4); // Always go to the final step after Sora login
           }
         }
       } catch (error) {
@@ -279,7 +286,13 @@ export function LoginModal({
                   const userInfo = session.data?.user;
                   if (userInfo) onArtCraftAuthSuccess(userInfo);
                 }
-                setStep(3);
+                // Check for Sora session and skip to step 4 if present
+                const soraSessionExists = await initSession();
+                if (soraSessionExists) {
+                  setStep(4);
+                } else {
+                  setStep(3);
+                }
               } catch (e) {
                 console.error(e);
                 setErrorMessage(

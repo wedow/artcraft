@@ -37,8 +37,13 @@ import {
   SoraImageRemix,
   SoraImageRemixErrorType,
   SoraImageRemixAspectRatio,
+  CheckSoraSession,
+  SoraSessionState,
+  waitForSoraLogin,
 } from "@storyteller/tauri-api";
 import { SoundRegistry } from "@storyteller/soundboard";
+import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
+import { invoke } from "@tauri-apps/api/core";
 
 interface ReferenceImage {
   id: string;
@@ -243,7 +248,30 @@ export const PromptBox2D = ({
     setPrompt(e.target.value);
   };
 
+  // Helper to show Sora login reminder and wait for login
+  const handleSoraLoginReminder = async () => {
+    return new Promise<void>((resolve) => {
+      showActionReminder({
+        reminderType: "soraLogin",
+        onPrimaryAction: async () => {
+          await invoke("open_sora_login_command");
+          await waitForSoraLogin();
+          toast.success("Logged in to Sora!");
+          resolve();
+        },
+      });
+    });
+  };
+
   const handleTauriEnqueue = async () => {
+    // Check if the Sora session is valid
+    const soraSession = await CheckSoraSession();
+    if (soraSession.state !== SoraSessionState.Valid) {
+      setIsEnqueueing(false);
+      await handleSoraLoginReminder();
+      return;
+    }
+
     const api = new PromptsApi();
     let image = getCanvasRenderBitmap();
     if (image === undefined) {
@@ -403,7 +431,7 @@ export const PromptBox2D = ({
   const getCurrentAspectRatioIcon = () => {
     const selected = aspectRatioList.find((item) => item.selected);
     if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement;
+    const iconElement = selected.icon as React.ReactElement<any, any>;
     return iconElement.props.icon;
   };
 
