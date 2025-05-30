@@ -6835,6 +6835,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "openart_client"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "chrono",
+ "cookie 0.18.1",
+ "crockford",
+ "errors",
+ "filesys",
+ "hex-literal",
+ "idempotency",
+ "jwt_light",
+ "log",
+ "once_cell",
+ "rand 0.9.1",
+ "reqwest 0.12.15",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha3",
+ "subprocess_common",
+ "testing",
+ "thiserror 2.0.12",
+ "tokio",
+ "toml 0.8.22",
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "openssl"
 version = "0.10.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"

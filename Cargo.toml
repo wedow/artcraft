@@ -27,6 +27,7 @@ members = [
   "crates/lib/api_clients/google_drive_common",
   "crates/lib/api_clients/google_sign_in",
   "crates/lib/api_clients/openai_sora_client",
+  "crates/lib/api_clients/openart_client",
   "crates/lib/api_clients/runwayml_client",
   "crates/lib/api_clients/storyteller_client",
   "crates/lib/api_clients/thumbnail_generator",
