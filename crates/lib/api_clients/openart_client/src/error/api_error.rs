@@ -8,10 +8,10 @@ pub enum ApiError {
   /// Specifically for calls to https://openart.ai/api/auth/session
   InvalidSession,
   CouldNotParseSession { error: serde_json::Error, body: String },
-  
+
   /// An error that occurred as or after the request was sent.
   ReqwestError(reqwest::Error),
-  
+
   /// Some other failure response.
   UncategorizedBadResponse{
     status_code: StatusCode,
