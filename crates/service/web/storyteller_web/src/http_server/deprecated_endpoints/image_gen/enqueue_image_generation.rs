@@ -37,7 +37,7 @@ use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::users::UserToken;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
-use crate::http_server::endpoints::image_gen::prompt_enrichment::enrich_prompt;
+use crate::http_server::deprecated_endpoints::image_gen::prompt_enrichment::enrich_prompt;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
 use crate::util::allowed_studio_access::allowed_studio_access;
@@ -526,7 +526,7 @@ fn inference_mode_from_url_path(url_path: &str) -> Option<TypeOfInference> {
 
 #[cfg(test)]
 mod tests {
-  use crate::http_server::endpoints::image_gen::enqueue_image_generation::{inference_mode_from_url_path, TypeOfInference};
+  use crate::http_server::deprecated_endpoints::image_gen::enqueue_image_generation::{inference_mode_from_url_path, TypeOfInference};
 
   #[test]
     fn test_url_paths() {

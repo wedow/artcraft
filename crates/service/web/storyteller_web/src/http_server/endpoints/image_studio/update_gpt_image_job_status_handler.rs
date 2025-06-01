@@ -1,7 +1,6 @@
 use std::fmt;
 use std::sync::Arc;
 
-use crate::http_server::endpoints::engine::create_scene_handler::CreateSceneError;
 use crate::http_server::endpoints::inference_job::get::get_inference_job_status_handler::GetInferenceJobStatusError;
 use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
@@ -32,6 +31,7 @@ use mysql_queries::queries::generic_inference::web::dismiss_finished_jobs_for_us
 use mysql_queries::queries::generic_inference::web::get_inference_job_status::{get_inference_job_status, get_inference_job_status_from_connection};
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_cancelled_by_user::mark_generic_inference_job_cancelled_by_user;
+use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_successfully_done_by_token::mark_generic_inference_job_successfully_done_by_token;
 use mysql_queries::queries::media_files::create::generic_insert::insert_media_file_generic::{insert_media_file_generic, InsertArgs};
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
@@ -40,7 +40,6 @@ use sqlx::{MySqlConnection, MySqlPool};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
-use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_successfully_done_by_token::mark_generic_inference_job_successfully_done_by_token;
 
 #[derive(Deserialize, ToSchema)]
 pub struct UpdateGptImageJobStatusRequest {

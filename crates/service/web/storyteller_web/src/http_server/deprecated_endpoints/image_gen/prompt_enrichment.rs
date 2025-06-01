@@ -1,7 +1,7 @@
 use prompt_engineering::classify_prompt::classify_prompt;
 
-use crate::http_server::endpoints::image_gen::enqueue_image_generation::EnqueueImageGenRequest;
-use crate::http_server::endpoints::image_gen::replacement_prompts::get_replacement_prompt;
+use crate::http_server::deprecated_endpoints::image_gen::enqueue_image_generation::EnqueueImageGenRequest;
+use crate::http_server::deprecated_endpoints::image_gen::replacement_prompts::get_replacement_prompt;
 
 pub struct EnrichedPrompts {
   pub positive_prompt: String,
@@ -72,8 +72,8 @@ pub fn enrich_prompt(request: &EnqueueImageGenRequest) -> Option<EnrichedPrompts
 
 #[cfg(test)]
 mod tests {
-  use crate::http_server::endpoints::image_gen::enqueue_image_generation::EnqueueImageGenRequest;
-  use crate::http_server::endpoints::image_gen::prompt_enrichment::enrich_prompt;
+  use crate::http_server::deprecated_endpoints::image_gen::enqueue_image_generation::EnqueueImageGenRequest;
+  use crate::http_server::deprecated_endpoints::image_gen::prompt_enrichment::enrich_prompt;
 
   struct Prompt {
     pub positive: &'static str,
