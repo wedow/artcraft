@@ -7,7 +7,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use tokens::tokens::model_categories::ModelCategoryToken;
 
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::query_and_construct_payload::{CategoryInfoLite, CategoryTokenToCategoryMap, CategoryTokenToModelTokensMap, ModelTokenToCategoryTokensMap};
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::query_and_construct_payload::{CategoryInfoLite, CategoryTokenToCategoryMap, CategoryTokenToModelTokensMap, ModelTokenToCategoryTokensMap};
 
 fn recursive_category_tokens(model_category_map: &ModelTokenToCategoryTokensMap, all_categories: &Vec<CategoryInfoLite>) -> BTreeSet<ModelCategoryToken> {
   let mut category_tokens = leaf_category_tokens(model_category_map);

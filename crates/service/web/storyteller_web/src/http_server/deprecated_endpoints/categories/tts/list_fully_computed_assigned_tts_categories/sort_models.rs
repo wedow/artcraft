@@ -5,7 +5,7 @@ use lexical_sort::natural_lexical_cmp;
 use tokens::tokens::model_categories::ModelCategoryToken;
 use tokens::tokens::tts_models::TtsModelToken;
 
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::query_and_construct_payload::{CategoryTokenToModelTokensMap, TtsModelInfoLite};
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::query_and_construct_payload::{CategoryTokenToModelTokensMap, TtsModelInfoLite};
 
 const UNNAMED_MODEL_SORT_VALUE : &str = "unnamed";
 

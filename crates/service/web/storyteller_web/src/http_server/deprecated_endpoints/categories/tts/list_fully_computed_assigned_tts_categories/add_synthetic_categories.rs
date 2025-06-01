@@ -10,8 +10,8 @@ use mysql_queries::queries::trending_model_analytics::list_trending_tts_models::
 use tokens::tokens::model_categories::ModelCategoryToken;
 use tokens::tokens::tts_models::TtsModelToken;
 
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::query_and_construct_payload::{CategoryTokenToModelTokensMap, TtsModelInfoLite};
 use crate::configs::static_model::categories::synthetic_category_list::{SYNTHETIC_CATEGORY_LATEST_TTS_MODELS, SYNTHETIC_CATEGORY_TRENDING_TTS_MODELS};
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::query_and_construct_payload::{CategoryTokenToModelTokensMap, TtsModelInfoLite};
 
 pub fn add_recent_models(recursive_category_to_model_map: &mut CategoryTokenToModelTokensMap, models: &Vec<TtsModelInfoLite>) {
   let mut model_refs : Vec<&TtsModelInfoLite> = models.iter()

@@ -8,8 +8,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use chrono::{DateTime, Utc};
 use lexical_sort::natural_lexical_cmp;
 use log::error;
-use sqlx::{MySql, MySqlPool};
 use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 
 use errors::AnyhowResult;
 use memory_caching::single_item_ttl_cache::SingleItemTtlCache;
@@ -20,11 +20,11 @@ use mysql_queries::queries::tts::tts_models::list_tts_models::list_tts_models_wi
 use tokens::tokens::model_categories::ModelCategoryToken;
 use tokens::tokens::tts_models::TtsModelToken;
 
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::add_synthetic_categories::{add_recent_models, add_trending_models};
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::error::ListFullyComputedAssignedTtsCategoriesError;
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::list_fully_computed_assigned_tts_categories::ModelTokensByCategoryToken;
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::recursively_build_category_map::recursive_category_to_model_map;
-use crate::http_server::endpoints::categories::tts::list_fully_computed_assigned_tts_categories::sort_models::sort_models;
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::add_synthetic_categories::{add_recent_models, add_trending_models};
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::error::ListFullyComputedAssignedTtsCategoriesError;
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::list_fully_computed_assigned_tts_categories::ModelTokensByCategoryToken;
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::recursively_build_category_map::recursive_category_to_model_map;
+use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::sort_models::sort_models;
 use crate::state::cached_queries::list_cached_tts_categories_for_public_dropdown::list_cached_tts_categories_for_public_dropdown;
 
 #[derive(Clone)]
