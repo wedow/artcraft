@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use actix_multipart::Multipart;
-use actix_web::{http::StatusCode, HttpRequest, HttpResponse, ResponseError, web};
+use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, ResponseError};
 use log::{error, info, warn};
 use once_cell::sync::Lazy;
 
@@ -24,10 +24,10 @@ use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::zs_voice_dataset_samples::ZsVoiceDatasetSampleToken;
 use tokens::tokens::zs_voice_datasets::ZsVoiceDatasetToken;
 
-use crate::http_server::endpoints::media_uploads::common::drain_multipart_request::{drain_multipart_request, MediaSource};
-use crate::http_server::endpoints::media_uploads::common::upload_error::UploadError;
-use crate::state::server_state::ServerState;
+use crate::http_server::deprecated_endpoints::media_uploads::common::drain_multipart_request::{drain_multipart_request, MediaSource};
+use crate::http_server::deprecated_endpoints::media_uploads::common::upload_error::UploadError;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
+use crate::state::server_state::ServerState;
 
 #[derive(Serialize)]
 pub struct UploadSampleResponse {

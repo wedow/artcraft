@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use actix_multipart::Multipart;
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{web, HttpRequest, HttpResponse};
 
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::http_server::endpoints::media_uploads::common::upload_error::UploadError;
+use crate::http_server::deprecated_endpoints::media_uploads::common::upload_error::UploadError;
 use crate::state::server_state::ServerState;
 
 #[derive(Serialize)]

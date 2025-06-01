@@ -4,6 +4,8 @@ use actix_web::dev::{ServiceFactory, ServiceRequest, ServiceResponse};
 use actix_web::error::Error;
 use actix_web::{web, App, HttpResponse};
 
+use crate::http_server::deprecated_endpoints::w2l::list_user_w2l_inference_results::list_user_w2l_inference_results_handler;
+use crate::http_server::deprecated_endpoints::w2l::list_user_w2l_templates::list_user_w2l_templates_handler;
 use crate::http_server::endpoints::tts::list_user_tts_inference_results::list_user_tts_inference_results_handler;
 use crate::http_server::endpoints::tts::list_user_tts_models::list_user_tts_models_handler;
 use crate::http_server::endpoints::users::create_account_handler::create_account_handler;
@@ -17,8 +19,6 @@ use crate::http_server::endpoints::users::password_reset_redeem_handler::passwor
 use crate::http_server::endpoints::users::password_reset_request_handler::password_reset_request_handler;
 use crate::http_server::endpoints::users::session_info_handler::session_info_handler;
 use crate::http_server::endpoints::users::session_token_info_handler::session_token_info_handler;
-use crate::http_server::endpoints::w2l::list_user_w2l_inference_results::list_user_w2l_inference_results_handler;
-use crate::http_server::endpoints::w2l::list_user_w2l_templates::list_user_w2l_templates_handler;
 
 pub fn add_user_routes<T, B> (app: App<T>) -> App<T>
   where

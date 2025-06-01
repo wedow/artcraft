@@ -1,5 +1,13 @@
 pub mod animation;
+pub mod api_tokens;
 pub mod categories;
+pub mod control_plane;
 pub mod conversion;
 pub mod flags;
+pub mod investor_demo;
+pub mod media_uploads;
 pub mod mocap;
+pub mod stubs;
+pub mod vocoders;
+pub mod w2l;
+pub mod workflows;
