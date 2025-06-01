@@ -1,16 +1,16 @@
 use std::sync::Arc;
 
 use actix_http::header;
-use actix_web::{HttpRequest, HttpResponse, Responder, web};
-use actix_web::cookie::Cookie;
 use actix_web::cookie::time::OffsetDateTime;
+use actix_web::cookie::Cookie;
 use actix_web::http::StatusCode;
 use actix_web::web::Query;
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 
 use actix_helpers::extractors::get_request_host::get_request_host;
 
-use crate::http_server::endpoints::investor_demo::default_redirect::{DEFAULT_INVESTOR_REDIRECT, redirect_is_allowed};
-use crate::http_server::endpoints::investor_demo::demo_cookie::STORYTELLER_DEMO_COOKIE_NAME;
+use crate::http_server::deprecated_endpoints::investor_demo::default_redirect::{redirect_is_allowed, DEFAULT_INVESTOR_REDIRECT};
+use crate::http_server::deprecated_endpoints::investor_demo::demo_cookie::STORYTELLER_DEMO_COOKIE_NAME;
 use crate::state::server_state::ServerState;
 
 #[derive(Deserialize)]

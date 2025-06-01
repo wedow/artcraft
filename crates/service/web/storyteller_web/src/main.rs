@@ -77,7 +77,6 @@ use crate::configs::app_startup::redis_rate_limiters::configure_redis_rate_limit
 use crate::configs::connect_to_database::connect_to_database;
 use crate::configs::static_api_tokens::StaticApiTokenSet;
 use crate::http_server::cookies::anonymous_visitor_tracking::avt_cookie_manager::AvtCookieManager;
-use crate::http_server::endpoints::workflows::enqueue::progress_tracker_server;
 use crate::http_server::middleware::pushback_filter_middleware::PushbackFilter;
 use crate::http_server::routes::add_routes::add_routes;
 use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;

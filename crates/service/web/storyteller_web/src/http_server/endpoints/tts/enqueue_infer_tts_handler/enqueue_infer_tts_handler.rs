@@ -6,14 +6,14 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{info, warn};
 use r2d2_redis::redis::Commands;
-use rand::Rng;
 use rand::seq::IndexedRandom;
+use rand::Rng;
 use utoipa::ToSchema;
 
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
@@ -36,7 +36,7 @@ use user_input_common::check_for_slurs::contains_slurs;
 use crate::configs::app_startup::username_set::UsernameSet;
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::configs::plans::plan::Plan;
-use crate::http_server::endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
+use crate::http_server::deprecated_endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
 use crate::http_server::endpoints::tts::enqueue_infer_tts_handler::get_tts_model_with_caching::get_tts_model_with_caching;
 use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;

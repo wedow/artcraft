@@ -3,8 +3,8 @@ use std::time::{Duration, Instant};
 use actix::prelude::*;
 use actix_web_actors::ws;
 
-use crate::http_server::endpoints::workflows::enqueue::progress_tracker_server;
-use crate::http_server::endpoints::workflows::enqueue::progress_tracker_server::ChatServer;
+use crate::http_server::deprecated_endpoints::workflows::enqueue::progress_tracker_server;
+use crate::http_server::deprecated_endpoints::workflows::enqueue::progress_tracker_server::ChatServer;
 
 /// How often heartbeat pings are sent
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);

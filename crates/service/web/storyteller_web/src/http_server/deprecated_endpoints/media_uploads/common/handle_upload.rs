@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use actix_multipart::Multipart;
-use actix_web::{HttpRequest, web};
+use actix_web::{web, HttpRequest};
 use log::{error, info, warn};
 
 use bucket_paths::legacy::typified_paths::public::media_uploads::bucket_file_path::MediaUploadOriginalFilePath;
@@ -14,13 +14,13 @@ use http_server_common::request::get_request_ip::get_request_ip;
 use media::decode_basic_audio_info::decode_basic_audio_bytes_info;
 use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
 use mysql_queries::queries::media_uploads::get_media_upload_by_uuid::get_media_upload_by_uuid_with_connection;
-use mysql_queries::queries::media_uploads::insert_media_upload::{Args, insert_media_upload};
+use mysql_queries::queries::media_uploads::insert_media_upload::{insert_media_upload, Args};
 use tokens::tokens::media_uploads::MediaUploadToken;
 
-use crate::http_server::endpoints::media_uploads::common::drain_multipart_request::{drain_multipart_request, MediaSource};
-use crate::http_server::endpoints::media_uploads::common::upload_error::UploadError;
-use crate::state::server_state::ServerState;
+use crate::http_server::deprecated_endpoints::media_uploads::common::drain_multipart_request::{drain_multipart_request, MediaSource};
+use crate::http_server::deprecated_endpoints::media_uploads::common::upload_error::UploadError;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
+use crate::state::server_state::ServerState;
 
 pub enum SuccessCase {
   MediaAlreadyUploaded {

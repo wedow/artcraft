@@ -3,12 +3,12 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use actix::*;
-use actix_web::{
-  App, Error, HttpRequest, HttpResponse, HttpServer, middleware::Logger, Responder, web,
-};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Json, Path};
+use actix_web::{
+  middleware::Logger, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder,
+};
 use actix_web_actors::ws;
 use chrono::{DateTime, Utc};
 use log::error;
@@ -30,9 +30,9 @@ use redis_schema::keys::inference_job::style_transfer_progress_key::StyleTransfe
 use redis_schema::payloads::inference_job::style_transfer_progress_state::{InferenceProgressDetailsResponse, InferenceStageDetails};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
+use crate::http_server::deprecated_endpoints::workflows::enqueue::{progress_tracker_server, progress_tracker_session};
 use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job_progress::estimate_job_progress;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_polymorphic_inference_args::extract_polymorphic_inference_args;
-use crate::http_server::endpoints::workflows::enqueue::{progress_tracker_server, progress_tracker_session};
 use crate::http_server::web_utils::filter_model_name::maybe_filter_model_name;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;

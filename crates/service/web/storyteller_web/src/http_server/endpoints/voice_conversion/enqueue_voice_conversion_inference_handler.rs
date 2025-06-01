@@ -6,14 +6,14 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, info, warn};
 use r2d2_redis::redis::Commands;
-use sqlx::MySql;
 use sqlx::pool::PoolConnection;
+use sqlx::MySql;
 use utoipa::ToSchema;
 
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
@@ -35,7 +35,7 @@ use tokens::tokens::users::UserToken;
 use tts_common::priority::FAKEYOU_INVESTOR_PRIORITY_LEVEL;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
-use crate::http_server::endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
+use crate::http_server::deprecated_endpoints::investor_demo::demo_cookie::request_has_demo_cookie;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::memory_cache::model_token_to_info_cache::{ModelInfoForInferenceJob, ModelTokenToInfoCache};
 use crate::state::server_state::ServerState;

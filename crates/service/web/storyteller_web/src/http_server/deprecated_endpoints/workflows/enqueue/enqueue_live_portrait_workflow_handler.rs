@@ -28,7 +28,7 @@ use tokens::tokens::media_files::MediaFileToken;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::configs::plans::plan_category::PlanCategory;
-use crate::http_server::endpoints::workflows::enqueue::vst_common::vst_error::VstError;
+use crate::http_server::deprecated_endpoints::workflows::enqueue::vst_common::vst_error::VstError;
 use crate::http_server::requests::get_request_domain_branding::{get_request_domain_branding, DomainBranding};
 use crate::http_server::requests::request_headers::get_routing_tag_header::get_routing_tag_header;
 use crate::http_server::requests::request_headers::has_debug_header::has_debug_header;
