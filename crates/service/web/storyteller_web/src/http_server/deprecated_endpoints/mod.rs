@@ -11,6 +11,7 @@ pub mod investor_demo;
 pub mod leaderboard;
 pub mod media_uploads;
 pub mod mocap;
+pub mod moderation;
 pub mod stubs;
 pub mod vocoders;
 pub mod w2l;

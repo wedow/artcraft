@@ -1,13 +1,19 @@
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
-use actix_web::{App, Error, HttpResponse, web};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
+use actix_web::{web, App, Error, HttpResponse};
 
+use crate::http_server::deprecated_endpoints::moderation::approval::pending_w2l_templates::get_pending_w2l_templates_handler;
+use crate::http_server::deprecated_endpoints::moderation::categories::delete_category::delete_category_handler;
+use crate::http_server::deprecated_endpoints::moderation::categories::edit_category::edit_category_handler;
+use crate::http_server::deprecated_endpoints::moderation::categories::list_tts_categories_for_moderation::list_tts_categories_for_moderation_handler;
+use crate::http_server::deprecated_endpoints::moderation::stats::get_on_prem_worker_stats::get_on_prem_worker_stats_handler;
+use crate::http_server::deprecated_endpoints::moderation::stats::get_voice_count_stats::get_voice_count_stats_handler;
+use crate::http_server::deprecated_endpoints::moderation::user_roles::list_roles::list_user_roles_handler;
+use crate::http_server::deprecated_endpoints::moderation::user_roles::list_staff::list_staff_handler;
+use crate::http_server::deprecated_endpoints::moderation::user_roles::set_user_role::set_user_role_handler;
+use crate::http_server::deprecated_endpoints::moderation::users::list_users::list_users_handler;
 use crate::http_server::endpoints::inference_job::admin::kill_inference_jobs_handler::kill_generic_inference_jobs_handler;
-use crate::http_server::endpoints::moderation::approval::pending_w2l_templates::get_pending_w2l_templates_handler;
-use crate::http_server::endpoints::moderation::categories::delete_category::delete_category_handler;
-use crate::http_server::endpoints::moderation::categories::edit_category::edit_category_handler;
-use crate::http_server::endpoints::moderation::categories::list_tts_categories_for_moderation::list_tts_categories_for_moderation_handler;
 use crate::http_server::endpoints::moderation::info::moderator_token_info_handler::moderator_get_token_info_handler;
 use crate::http_server::endpoints::moderation::ip_bans::add_ip_ban::add_ip_ban_handler;
 use crate::http_server::endpoints::moderation::ip_bans::delete_ip_ban::delete_ip_ban_handler;
@@ -16,15 +22,9 @@ use crate::http_server::endpoints::moderation::ip_bans::list_ip_bans::list_ip_ba
 use crate::http_server::endpoints::moderation::jobs::get_tts_inference_queue_count::get_tts_inference_queue_count_handler;
 use crate::http_server::endpoints::moderation::jobs::get_w2l_inference_queue_count::get_w2l_inference_queue_count_handler;
 use crate::http_server::endpoints::moderation::jobs::kill_tts_inference_jobs::kill_tts_inference_jobs_handler;
-use crate::http_server::endpoints::moderation::stats::get_on_prem_worker_stats::get_on_prem_worker_stats_handler;
-use crate::http_server::endpoints::moderation::stats::get_voice_count_stats::get_voice_count_stats_handler;
 use crate::http_server::endpoints::moderation::user_bans::ban_user::ban_user_handler;
 use crate::http_server::endpoints::moderation::user_bans::list_banned_users::list_banned_users_handler;
 use crate::http_server::endpoints::moderation::user_feature_flags::edit_user_feature_flags_handler::edit_user_feature_flags_handler;
-use crate::http_server::endpoints::moderation::user_roles::list_roles::list_user_roles_handler;
-use crate::http_server::endpoints::moderation::user_roles::list_staff::list_staff_handler;
-use crate::http_server::endpoints::moderation::user_roles::set_user_role::set_user_role_handler;
-use crate::http_server::endpoints::moderation::users::list_users::list_users_handler;
 
 pub fn add_moderator_routes<T, B> (app: App<T>) -> App<T>
   where

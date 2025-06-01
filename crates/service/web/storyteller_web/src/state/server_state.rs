@@ -24,7 +24,7 @@ use crate::configs::app_startup::username_set::UsernameSet;
 use crate::configs::static_api_tokens::StaticApiTokenSet;
 use crate::http_server::cookies::anonymous_visitor_tracking::avt_cookie_manager::AvtCookieManager;
 use crate::http_server::deprecated_endpoints::categories::tts::list_fully_computed_assigned_tts_categories::list_fully_computed_assigned_tts_categories::ModelTokensByCategoryToken;
-use crate::http_server::endpoints::leaderboard::get_leaderboard::LeaderboardInfo;
+use crate::http_server::deprecated_endpoints::leaderboard::get_leaderboard::LeaderboardInfo;
 use crate::http_server::endpoints::media_files::list::list_featured_media_files_handler::ListFeaturedMediaFilesQueryParams;
 use crate::http_server::endpoints::stats::result_transformer::CacheableQueueStats;
 use crate::http_server::endpoints::tts::list_tts_models::TtsModelRecordForResponse;
