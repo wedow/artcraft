@@ -24,7 +24,6 @@ use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
 use fal_client::error::fal_error_plus::FalErrorPlus;
-use fal_client::requests::remove_background_rembg_from_file::remove_background_rembg_from_file;
 use fal_client::requests::video_gen::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
 use filesys::file_read_bytes::file_read_bytes;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};

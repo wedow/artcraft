@@ -26,7 +26,6 @@ use errors::{AnyhowError, AnyhowResult};
 use fal_client::error::fal_error_plus::FalErrorPlus;
 use fal_client::requests::image_gen::enqueue_flux_pro_ultra_text_to_image::{enqueue_flux_pro_ultra_text_to_image, FluxProUltraTextToImageArgs};
 use fal_client::requests::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
-use fal_client::requests::remove_background_rembg_from_file::remove_background_rembg_from_file;
 use filesys::file_read_bytes::file_read_bytes;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, EncodableLayout, ImageReader};

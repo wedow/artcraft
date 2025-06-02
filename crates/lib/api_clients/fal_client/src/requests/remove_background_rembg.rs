@@ -1,8 +1,9 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
-use fal::endpoints::fal_ai::imageutils::rembg::{rembg, RemoveBackgroundInput};
-use fal::prelude::Status;
+use fal::endpoints::fal_ai::imageutils::rembg::RemoveBackgroundInput;
+use fal::prelude::fal_ai::imageutils::rembg::rembg;
+use fal::prelude::*;
 use fal_client::file_to_base64_url::file_to_base64_url;
 use futures::StreamExt;
 use std::path::Path;
@@ -13,20 +14,15 @@ pub struct RemBgResponse {
 }
 
 /// remove background using `fal_ai/imageutils/rembg`
-pub async fn async_blocking_remove_background_rembg_from_file<P: AsRef<Path>>(image_path: P, api_key: &FalApiKey) -> Result<RemBgResponse, FalErrorPlus> {
+pub async fn remove_background_rembg<P: AsRef<Path>>(image_path: P, api_key: &FalApiKey) -> Result<RemBgResponse, FalErrorPlus> {
   let image_url = file_to_base64_url(image_path)?;
-  async_blocking_remove_background_rembg(image_url, api_key).await
-}
-
-/// remove background using `fal_ai/imageutils/rembg`
-pub (super) async fn async_blocking_remove_background_rembg(image_url: String, api_key: &FalApiKey) -> Result<RemBgResponse, FalErrorPlus> {
-
+  
   let request = RemoveBackgroundInput {
     image_url,
     crop_to_bbox: None,
     sync_mode: None
   };
-
+  
   let result = rembg(request)
       .with_api_key(&api_key.0)
       .queue()
@@ -49,7 +45,7 @@ pub (super) async fn async_blocking_remove_background_rembg(image_url: String, a
   let output = result.response().await?;
 
   let url = Url::parse(&output.image.url)?;
-
+  
   Ok(RemBgResponse {
     image_url: url,
   })
@@ -58,7 +54,7 @@ pub (super) async fn async_blocking_remove_background_rembg(image_url: String, a
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::remove_background_rembg::async_blocking_remove_background_rembg_from_file::async_blocking_remove_background_rembg_from_file;
+  use crate::requests::remove_background_rembg::remove_background_rembg;
   use errors::AnyhowResult;
   use testing::test_file_path::test_file_path;
 
@@ -71,7 +67,7 @@ mod tests {
     const KEY : &str = "DO NOT COMMIT";
     let api_key = FalApiKey::from_str(KEY);
 
-    let result = async_blocking_remove_background_rembg_from_file(image, &api_key).await?;
+    let result = remove_background_rembg(image, &api_key).await?;
 
     Ok(())
   }
