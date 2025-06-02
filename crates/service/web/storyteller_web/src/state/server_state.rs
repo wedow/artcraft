@@ -86,7 +86,7 @@ pub struct ServerState {
   pub public_bucket_client: BucketClient,
   pub auto_gc_bucket_client: BucketClient,
 
-  pub fal_api_key: FalApiKey,
+  pub fal: FalData,
   
   /// Where to store audio uploads for w2l
   pub audio_uploads_bucket_root: String,
@@ -285,4 +285,11 @@ pub struct StaticFeatureFlags {
 pub struct TrollBans {
   pub user_tokens: TrollUserBanList,
   pub ip_addresses: IpBanList,
+}
+
+/// Fal integration
+#[derive(Clone)]
+pub struct FalData {
+  pub api_key: FalApiKey,
+  pub webhook_url: String,
 }

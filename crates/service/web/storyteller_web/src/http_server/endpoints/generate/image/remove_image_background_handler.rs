@@ -14,8 +14,8 @@ use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
-use fal_client::requests::remove_background_rembg::async_blocking_remove_background_rembg_from_url::async_blocking_remove_background_rembg_from_url;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use fal_client::requests::webhook::image::remove_background_rembg_webhook::{remove_background_rembg_webhook, RemoveBackgroundRembgWebhookArgs};
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::warn;
 use mysql_queries::queries::media_files::edit::rename_media_file::rename_media_file;
@@ -138,28 +138,33 @@ pub async fn remove_image_background_handler(
     server_state.server_environment, 
     &bucket_path);
   
+  let args = RemoveBackgroundRembgWebhookArgs {
+    image_url: media_links.cdn_url,
+    webhook_url: &server_state.fal.webhook_url,
+    api_key: &server_state.fal.api_key,
+  };
+
+  let fal_result = remove_background_rembg_webhook(args)
+      .await
+      .map_err(|err| {
+        warn!("Error calling remove_background_rembg_webhook: {:?}", err);
+        RemoveImageBackgroundError::ServerError
+      })?;
+ 
   
-  let fal_result = async_blocking_remove_background_rembg_from_url(
-    media_links.cdn_url.to_string(),
-    &server_state.fal_api_key
-  ).await.map_err(|err| {
-    warn!("Error removing background: {:?}", err);
-    RemoveImageBackgroundError::ServerError
-  });
-  
-  match fal_result {
-    Ok(response) => {
-      response
-    },
-    Err(err) => {
-      warn!("Error removing background: {:?}", err);
-      return Err(RemoveImageBackgroundError::ServerError)
-    }
-  }
+  //match fal_result {
+  //  Ok(response) => {
+  //    response
+  //  },
+  //  Err(err) => {
+  //    warn!("Error removing background: {:?}", err);
+  //    return Err(RemoveImageBackgroundError::ServerError)
+  //  }
+  //}
   
 
   Ok(Json(RemoveImageBackgroundResponse {
     success: true,
-    inference_job_token: (),
+    inference_job_token: "TODO".to_string(),
   }))
 }
