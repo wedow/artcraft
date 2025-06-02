@@ -1,0 +1,17 @@
+use serde::{Deserialize, Serialize};
+use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use tokens::tokens::media_files::MediaFileToken;
+use utoipa::ToSchema;
+
+#[derive(Serialize, Deserialize, ToSchema)]
+pub struct RemoveImageBackgroundRequest {
+  /// Source of the file to remove the background from.
+  /// It must be an image.
+  media_file_token: Option<MediaFileToken>,
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+pub struct RemoveImageBackgroundResponse {
+  pub success: bool,
+  pub inference_job_token: InferenceJobToken,
+}

@@ -690,6 +690,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "artcraft_api_defs"
+version = "0.0.1"
+dependencies = [
+ "enums",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tokens",
+ "utoipa",
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "ascii"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9876,6 +9889,7 @@ dependencies = [
  "actix_cors_configs",
  "actix_helpers",
  "anyhow",
+ "artcraft_api_defs",
  "async-stripe",
  "async-trait",
  "base64 0.22.1",
