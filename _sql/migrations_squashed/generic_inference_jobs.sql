@@ -41,6 +41,15 @@ CREATE TABLE generic_inference_jobs (
   --  * voice_conversion
   inference_category VARCHAR(32) NOT NULL,
 
+  -- If the job is externally enqueued, this is the third-party service
+  -- responsible for the job. Typically, we won't run an inference job for
+  -- jobs being run on a third party.
+  maybe_external_third_party VARCHAR(16) DEFAULT NULL,
+
+  -- If the job is externally enqueued, this is the ID the third-party
+  -- service uses.
+  maybe_external_third_party_id VARCHAR(64) DEFAULT NULL,
+
   -- There is an index on this column.
   -- NB: See notes on inference_category. This is becoming a problematic field. We're using
   -- this to load the container spin-up arguments and dependencies, but the former is being
@@ -287,11 +296,13 @@ CREATE TABLE generic_inference_jobs (
   PRIMARY KEY (id),
   UNIQUE KEY (token),
   UNIQUE KEY (uuid_idempotency_token),
+  UNIQUE KEY (maybe_external_third_party, maybe_external_third_party_id),
   KEY index_job_type (job_type),
   KEY index_product_category (product_category),
   KEY index_inference_category (inference_category),
   KEY index_maybe_model_type_and_maybe_model_token (maybe_model_type, maybe_model_token),
   KEY index_maybe_model_type (maybe_model_type),
+  KEY index_maybe_external_third_party_id (maybe_external_third_party_id),
   KEY fk_maybe_model_token (maybe_model_token),
   KEY fk_maybe_input_source_token (maybe_input_source_token),
   KEY fk_maybe_input_source_token_and_type (maybe_input_source_token, maybe_input_source_token_type),
