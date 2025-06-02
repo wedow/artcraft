@@ -22,6 +22,7 @@ import {
   faRectangle,
   faTableCellsLarge,
 } from "@fortawesome/pro-regular-svg-icons";
+import { invoke } from "@tauri-apps/api/core";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -48,12 +49,16 @@ import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
 import { Modal } from "@storyteller/ui-modal";
 import { Signal } from "@preact/signals-react";
 import {
+  CheckSoraSession,
   CommandSuccessStatus,
   GetAppPreferences,
   SoraImageRemix,
   SoraImageRemixAspectRatio,
   SoraImageRemixErrorType,
+  SoraSessionState,
+  waitForSoraLogin,
 } from "@storyteller/tauri-api";
+import { showActionReminder } from "libs/components/action-reminder-modal/src/lib/action-reminder-modal-signals";
 
 interface ReferenceImage {
   id: string;
@@ -115,7 +120,7 @@ export const PromptBox3D = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [prompt, setPrompt] = useState("");
-  const [isEnqueueing, setisEnqueueing] = useState(false);
+  const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [uploadingImages, setUploadingImages] = useState<
@@ -333,7 +338,7 @@ export const PromptBox3D = ({
   const handleWebEnqueue = async () => {
     if (!prompt.trim()) return;
 
-    setisEnqueueing(true);
+    setIsEnqueueing(true);
 
     setEnginePrompt(prompt);
 
@@ -362,7 +367,7 @@ export const PromptBox3D = ({
 
         if (response.errorMessage) {
           handleError(response.errorMessage);
-          setisEnqueueing(false);
+          setIsEnqueueing(false);
           return;
         }
       }
@@ -377,17 +382,40 @@ export const PromptBox3D = ({
         );
         await new Promise((resolve) => setTimeout(resolve, 2000));
       } finally {
-        setisEnqueueing(false);
+        setIsEnqueueing(false);
         toast.success("Image added to queue");
       }
     }
-    setisEnqueueing(false);
+    setIsEnqueueing(false);
+  };
+
+  // Helper to show Sora login reminder and wait for login
+  const handleSoraLoginReminder = async () => {
+    return new Promise<void>((resolve) => {
+      showActionReminder({
+        reminderType: "soraLogin",
+        onPrimaryAction: async () => {
+          await invoke("open_sora_login_command");
+          await waitForSoraLogin();
+          toast.success("Logged in to Sora!");
+          resolve();
+        },
+      });
+    });
   };
 
   const handleTauriEnqueue = async () => {
     if (!prompt.trim()) return;
 
-    setisEnqueueing(true);
+    // Check if the Sora session is valid
+    const soraSession = await CheckSoraSession();
+    if (soraSession.state !== SoraSessionState.Valid) {
+      setIsEnqueueing(false);
+      await handleSoraLoginReminder();
+      return;
+    }
+
+    setIsEnqueueing(true);
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
@@ -395,7 +423,7 @@ export const PromptBox3D = ({
       // force the prompt box to be enabled again as long as another request isn't running, ie. if we just fired off two
       // requests in succession, we wouldn't want to turn it off as the first one gets submitted.
       console.debug("Turn off blocking of prompt box...");
-      setisEnqueueing(false);
+      setIsEnqueueing(false);
     }, 10000);
 
     setPrompt(prompt);
@@ -429,10 +457,10 @@ export const PromptBox3D = ({
         console.log("generateResponse", generateResponse);
 
         if (generateResponse.status === CommandSuccessStatus.Success) {
-          setisEnqueueing(false);
+          setIsEnqueueing(false);
           return;
         } else {
-          setisEnqueueing(false);
+          setIsEnqueueing(false);
           return;
         }
       }
@@ -447,12 +475,12 @@ export const PromptBox3D = ({
         );
         await new Promise((resolve) => setTimeout(resolve, 2000));
       } finally {
-        setisEnqueueing(false);
+        setIsEnqueueing(false);
         toast.success("Image added to queue");
       }
     }
 
-    setisEnqueueing(false);
+    setIsEnqueueing(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
