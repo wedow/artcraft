@@ -9913,6 +9913,7 @@ dependencies = [
  "enums",
  "enums_public",
  "errors",
+ "fal_client",
  "filesys",
  "futures 0.1.31",
  "futures 0.3.31",

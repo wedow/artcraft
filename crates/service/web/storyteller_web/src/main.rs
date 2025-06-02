@@ -60,6 +60,7 @@ use config::shared_constants::DEFAULT_MYSQL_CONNECTION_STRING;
 use config::shared_constants::DEFAULT_RUST_LOG;
 use email_sender::smtp_email_sender::SmtpEmailSender;
 use errors::AnyhowResult;
+use fal_client::creds::fal_api_key::FalApiKey;
 use memory_caching::arc_ttl_sieve::ArcTtlSieve;
 use memory_caching::single_item_ttl_cache::SingleItemTtlCache;
 use mysql_queries::mediators::badge_granter::BadgeGranter;
@@ -391,6 +392,8 @@ async fn main() -> AnyhowResult<()> {
     ServerEnvironment::Production => server_environment::ServerEnvironment::Production,
     ServerEnvironment::Development => server_environment::ServerEnvironment::Development,
   };
+  
+  let fal_api_key = FalApiKey::new(easyenv::get_env_string_required("FAL_API_KEY")?);
 
   let server_state = ServerState {
     env_config: EnvConfig {
@@ -431,6 +434,7 @@ async fn main() -> AnyhowResult<()> {
     sort_key_crypto,
     static_api_token_set,
     email_sender,
+    fal_api_key, 
     caches: InMemoryCaches {
       durable: DurableInMemoryCaches {
         model_token_info: model_token_info_cache,

@@ -211,6 +211,7 @@ enums = { path = "crates/schema/public/enums" }
 enums_public = { path = "crates/schema/public/enums_public" }
 errors = { path = "crates/lib/errors" }
 fal_client = { path = "crates/lib/api_clients/fal_client" }
+file_to_base64_url = { path = "crates/lib/files/file_to_base64_url" }
 filesys = { path = "crates/lib/files/filesys" }
 idempotency = { path = "crates/lib/idempotency" }
 images = { path = "crates/lib/files/images" }

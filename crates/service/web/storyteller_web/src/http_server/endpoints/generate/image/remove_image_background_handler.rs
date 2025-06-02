@@ -1,6 +1,12 @@
 use std::fmt;
 use std::sync::Arc;
 
+use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
+use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
+use crate::http_server::web_utils::response_success_helpers::simple_json_success;
+use crate::state::server_state::ServerState;
+use crate::util::delete_role_disambiguation::{delete_role_disambiguation, DeleteRole};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
@@ -8,17 +14,14 @@ use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
-use log::warn;
-use utoipa::ToSchema;
-
-use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
-use crate::http_server::web_utils::response_success_helpers::simple_json_success;
-use crate::state::server_state::ServerState;
-use crate::util::delete_role_disambiguation::{delete_role_disambiguation, DeleteRole};
+use fal_client::requests::remove_background_rembg::remove_background_rembg_from_url::remove_background_rembg_from_url;
+use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
+use log::warn;
 use mysql_queries::queries::media_files::edit::rename_media_file::rename_media_file;
 use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
 use tokens::tokens::media_files::MediaFileToken;
+use utoipa::ToSchema;
 
 // =============== Error Response ===============
 
@@ -122,6 +125,38 @@ pub async fn remove_image_background_handler(
   if !media_file.media_type.is_jpg_or_png() {
     return Err(RemoveImageBackgroundError::BadInput("Media file must be a JPG or PNG image".to_string()));
   }
+  
+  let media_domain = get_media_domain(&http_request);
+  
+  let bucket_path = MediaFileBucketPath::from_object_hash(
+    &media_file.public_bucket_directory_hash,
+    media_file.maybe_public_bucket_prefix.as_deref(),
+    media_file.maybe_public_bucket_extension.as_deref());
+  
+  let media_links = MediaLinks::from_media_path_and_env(
+    media_domain, 
+    server_state.server_environment, 
+    &bucket_path);
+  
+  
+  let fal_result = remove_background_rembg_from_url(
+    media_links.cdn_url.to_string(),
+    &server_state.fal_api_key
+  ).await.map_err(|err| {
+    warn!("Error removing background: {:?}", err);
+    RemoveImageBackgroundError::ServerError
+  });
+  
+  match fal_result {
+    Ok(response) => {
+      response
+    },
+    Err(err) => {
+      warn!("Error removing background: {:?}", err);
+      return Err(RemoveImageBackgroundError::ServerError)
+    }
+  }
+  
 
   Ok(Json(RemoveImageBackgroundResponse {
     success: true,

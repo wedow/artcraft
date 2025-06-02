@@ -47,6 +47,7 @@ email_sender= { path = "../../../lib/email_sender" }
 enums = { workspace = true }
 enums_public = { workspace = true }
 errors = { workspace = true }
+fal_client = { workspace = true }
 filesys = { workspace = true }
 google_sign_in = { path = "../../../lib/api_clients/google_sign_in" }
 hashing = { path = "../../../lib/files/hashing" }
