@@ -91,6 +91,13 @@ impl_mysql_from_row!(MediaFileType);
 
 /// NB: Legacy API for older code.
 impl MediaFileType {
+  
+  /// Jpeg and Png are the most widely supported static image formats for AI inference.
+  /// Webp, Webm, and Gif aren't as widely supported, so we don't include them here.
+  pub fn is_jpg_or_png(&self) -> bool {
+    matches!(self, Self::Jpg | Self::Png)
+  }
+  
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::Audio => "audio",
@@ -171,6 +178,29 @@ impl MediaFileType {
 mod tests {
   use crate::by_table::media_files::media_file_type::MediaFileType;
   use crate::test_helpers::assert_serialization;
+  
+  mod utility {
+    use super::*;
+    
+    #[test]
+    fn test_jpg_or_png() {
+      // True
+      assert!(MediaFileType::Jpg.is_jpg_or_png());
+      assert!(MediaFileType::Png.is_jpg_or_png());
+      
+      // Assert these image types are false
+      assert!(!MediaFileType::Gif.is_jpg_or_png());
+      assert!(!MediaFileType::Image.is_jpg_or_png());
+      
+      // Everything else is false
+      for variant in MediaFileType::all_variants() {
+        if matches!(variant, MediaFileType::Jpg | MediaFileType::Png) {
+          continue;
+        }
+        assert!(!variant.is_jpg_or_png(), "Expected {:?} to not be jpg or png", variant);
+      }
+    }
+  }
 
   mod serde {
     use super::*;

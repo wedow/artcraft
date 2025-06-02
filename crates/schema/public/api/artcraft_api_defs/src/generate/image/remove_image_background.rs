@@ -7,7 +7,7 @@ use utoipa::ToSchema;
 pub struct RemoveImageBackgroundRequest {
   /// Source of the file to remove the background from.
   /// It must be an image.
-  media_file_token: Option<MediaFileToken>,
+  pub media_file_token: Option<MediaFileToken>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

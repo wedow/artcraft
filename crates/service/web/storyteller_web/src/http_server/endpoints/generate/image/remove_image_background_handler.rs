@@ -17,7 +17,7 @@ use crate::state::server_state::ServerState;
 use crate::util::delete_role_disambiguation::{delete_role_disambiguation, DeleteRole};
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::queries::media_files::edit::rename_media_file::rename_media_file;
-use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
+use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
 use tokens::tokens::media_files::MediaFileToken;
 
 // =============== Error Response ===============
@@ -71,10 +71,9 @@ impl fmt::Display for RemoveImageBackgroundError {
 )]
 pub async fn remove_image_background_handler(
   http_request: HttpRequest,
-  path: Path<MediaFileTokenPathInfo>,
   request: Json<RemoveImageBackgroundRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<RemoveImageBackgroundResponse>, RemoveImageBackgroundError>{
+) -> Result<Json<RemoveImageBackgroundResponse>, RemoveImageBackgroundError> {
   let maybe_user_session = server_state
       .session_checker
       .maybe_get_user_session(&http_request, &server_state.mysql_pool)
@@ -92,16 +91,26 @@ pub async fn remove_image_background_handler(
     }
   };
 
+  let media_file_token = match &request.media_file_token {
+    Some(token) => token,
+    None => {
+      warn!("No media file token provided");
+      return Err(RemoveImageBackgroundError::BadInput("No media file token provided".to_string()));
+    }
+  };
+  
+  const IS_MOD : bool = false;
+  
   let media_file_lookup_result = get_media_file(
-    &path.token,
-    is_mod,
+    media_file_token,
+    IS_MOD,
     &server_state.mysql_pool,
   ).await;
 
   let media_file = match media_file_lookup_result {
     Ok(Some(media_file)) => media_file,
     Ok(None) => {
-      warn!("MediaFile not found: {:?}", path.token);
+      warn!("MediaFile not found: {:?}", media_file_token);
       return Err(RemoveImageBackgroundError::NotFound);
     },
     Err(err) => {
@@ -109,9 +118,10 @@ pub async fn remove_image_background_handler(
       return Err(RemoveImageBackgroundError::ServerError);
     }
   };
-  
-  media_file.
 
+  if !media_file.media_type.is_jpg_or_png() {
+    return Err(RemoveImageBackgroundError::BadInput("Media file must be a JPG or PNG image".to_string()));
+  }
 
   Ok(Json(RemoveImageBackgroundResponse {
     success: true,
