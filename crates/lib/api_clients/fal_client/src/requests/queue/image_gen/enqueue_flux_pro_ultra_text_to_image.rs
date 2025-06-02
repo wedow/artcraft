@@ -42,7 +42,7 @@ pub async fn enqueue_flux_pro_ultra_text_to_image(args: FluxProUltraTextToImageA
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::image_gen::enqueue_flux_pro_ultra_text_to_image::{enqueue_flux_pro_ultra_text_to_image, FluxProUltraTextToImageArgs};
+  use crate::requests::queue::image_gen::enqueue_flux_pro_ultra_text_to_image::{enqueue_flux_pro_ultra_text_to_image, FluxProUltraTextToImageArgs};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
 

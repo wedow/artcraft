@@ -39,7 +39,7 @@ pub async fn enqueue_recraft3_text_to_image(args: Recraft3TextToImageArgs<'_>) -
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
+  use crate::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
 
