@@ -22,12 +22,16 @@ errors = { workspace = true }
 
 # External
 anyhow = { workspace = true }
-fal = { version = "0.3.6", features = ["endpoints"] }
 futures = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }
 url = { workspace = true }
+
+# For now, we'll vendor in fal.
+# We need to implement webhooks and the upstream doesn't support them yet.
+#fal = { version = "0.3.6", features = ["endpoints"] }
+fal = { path = "../../../vendor/fal-rs", features = ["endpoints"] }
 
 [dev-dependencies]
 testing = { path = "../../testing" }

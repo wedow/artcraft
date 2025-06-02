@@ -16,18 +16,18 @@ repository = "https://github.com/carlosdp/fal-rs"
 [package.metadata.docs.rs]
 all-features = true
 
-[workspace]
-members = [
-    "fal-derive",
-    "generate",
-]
-resolver = "2"
+#[workspace]
+#members = [
+#    "fal-derive",
+#    "generate",
+#]
+#resolver = "2"
 
-[workspace.dependencies]
-reqwest = "0.12"
-serde = "1"
-serde_json = "1"
-tokio = "1"
+#[workspace.dependencies]
+#reqwest = "0.12"
+#serde = "1"
+#serde_json = "1"
+#tokio = "1"
 
 [dependencies]
 eventsource-stream = "0.2"
