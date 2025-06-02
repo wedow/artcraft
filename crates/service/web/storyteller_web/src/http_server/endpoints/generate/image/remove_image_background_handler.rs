@@ -14,7 +14,7 @@ use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
-use fal_client::requests::remove_background_rembg::remove_background_rembg_from_url::remove_background_rembg_from_url;
+use fal_client::requests::remove_background_rembg::async_blocking_remove_background_rembg_from_url::async_blocking_remove_background_rembg_from_url;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::warn;
@@ -139,7 +139,7 @@ pub async fn remove_image_background_handler(
     &bucket_path);
   
   
-  let fal_result = remove_background_rembg_from_url(
+  let fal_result = async_blocking_remove_background_rembg_from_url(
     media_links.cdn_url.to_string(),
     &server_state.fal_api_key
   ).await.map_err(|err| {

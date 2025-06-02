@@ -24,7 +24,7 @@ use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
 use fal_client::error::fal_error_plus::FalErrorPlus;
-use fal_client::requests::remove_background_rembg::remove_background_rembg_from_file::remove_background_rembg_from_file;
+use fal_client::requests::remove_background_rembg::async_blocking_remove_background_rembg_from_file::async_blocking_remove_background_rembg_from_file;
 use filesys::file_read_bytes::file_read_bytes;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, EncodableLayout, ImageReader};
@@ -236,7 +236,7 @@ pub async fn remove_background(
 
   let filename = temp_download.path().to_path_buf();
   
-  let result = remove_background_rembg_from_file(filename, &api_key).await?;
+  let result = async_blocking_remove_background_rembg_from_file(filename, &api_key).await?;
 
   let extension_with_dot = get_url_file_extension(&result.image_url)
       .map(|ext| format!(".{}", ext))
