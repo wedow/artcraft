@@ -4,6 +4,7 @@ use crate::error::fal_error_plus::FalErrorPlus;
 use fal::endpoints::fal_ai::imageutils::rembg::{rembg, RemoveBackgroundInput};
 use fal::prelude::Status;
 use fal_client::file_to_base64_url::file_to_base64_url;
+use futures::StreamExt;
 use std::path::Path;
 use url::Url;
 
