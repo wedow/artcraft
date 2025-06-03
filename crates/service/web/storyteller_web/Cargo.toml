@@ -124,7 +124,9 @@ elasticsearch = "8.5.0-alpha.1"
 
 # Files
 infer = "0.16.0"
-tempdir = "0.3.7"
+bytes = { workspace = true }
+tempdir = { workspace = true }
+tempfile = { workspace = true }
 
 # The "never-encode-slash" feature seems to have been removed:
 # https://github.com/durch/rust-s3/pull/254

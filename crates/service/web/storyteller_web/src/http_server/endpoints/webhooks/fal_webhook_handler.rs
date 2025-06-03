@@ -11,10 +11,10 @@ use anyhow::Error;
 use errors::AnyhowResult;
 use http_server_common::response::response_success_helpers::SimpleGenericJsonSuccess;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
-use log::info;
+use log::{info, warn};
 use serde_json::Value;
 use utoipa::ToSchema;
-
+use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::get_inference_job_by_fal_id;
 // 1. tauri --> hit endpoint to enqueue
 //
 // 2. webhook 
@@ -111,10 +111,35 @@ pub async fn fal_webhook_handler(
 ) -> Result<Json<SimpleGenericJsonSuccess>, FalWebhookError> {
 
   info!("Received FAL webhook body: {:?}", request);
+  
+  let request_id = request.request_id
+      .as_deref()
+      .ok_or_else(|| FalWebhookError::BadInput("Missing request_id".to_string()))?;
+  
+  let payload = request.payload
+      .as_ref()
+      .ok_or_else(|| FalWebhookError::BadInput("Missing payload".to_string()))?;
+  
+  let db_result = get_inference_job_by_fal_id(
+    request_id,
+    &server_state.mysql_pool,
+  ).await;
+  
+  let job = match db_result {
+    Ok(Some(record)) => record,
+    Ok(None) => {
+      warn!("Could not find job record by fal request id: {:?} ; request payload = {:?}", request_id, request);
+      return Err(FalWebhookError::NotFound)
+    },
+    Err(err) => {
+      warn!("Error querying job record: {:?}", err);
+      return Err(FalWebhookError::ServerError);
+    }
+  };
 
-  if let Some(payload) = request.payload.as_ref() {
-    if let Some(payload_obj) = payload.as_object() {
-      handle_image_payload(payload_obj).await?;
+  if let Some(payload_obj) = payload.as_object() {
+    if payload_obj.contains_key("image") {
+      handle_image_payload(payload_obj, &job, &server_state).await?;
     }
   }
 

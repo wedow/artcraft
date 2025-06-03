@@ -103,6 +103,24 @@ impl MediaFileType {
     matches!(self, Self::Jpg | Self::Png | Self::Image)
   }
   
+  /// Returns the `MediaFileType` if the mime type matches one of the known types.
+  /// This is not exhaustive.
+  /// (NB: In general we shouldn't keep much application logic in the `enums` crate,
+  /// but this is a good case for it.)
+  pub fn try_from_mime_type(mime_type: &str) -> Option<Self> {
+    match mime_type {
+      "image/jpeg" => Some(Self::Jpg),
+      "image/png" => Some(Self::Png),
+      //"audio/wav" => Some(Self::Wav),
+      //"audio/mpeg" => Some(Self::Mp3),
+      //"image/gif" => Some(Self::Gif),
+      //"video/mp4" => Some(Self::Mp4),
+      //"model/gltf-binary" => Some(Self::Glb),
+      //"model/gltf+json" => Some(Self::Gltf),
+      _ => None,
+    }
+  }
+  
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::Audio => "audio",
