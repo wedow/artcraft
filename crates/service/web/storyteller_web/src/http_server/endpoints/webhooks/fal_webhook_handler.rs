@@ -1,17 +1,32 @@
 use std::fmt;
 use std::sync::Arc;
 
+use crate::http_server::endpoints::webhooks::handle_image_payload::handle_image_payload;
 use crate::state::server_state::ServerState;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
-use log::info;
+use anyhow::Error;
+use errors::AnyhowResult;
 use http_server_common::response::response_success_helpers::SimpleGenericJsonSuccess;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
+use log::info;
 use serde_json::Value;
 use utoipa::ToSchema;
 
+// 1. tauri --> hit endpoint to enqueue
+//
+// 2. webhook 
+//  - upload media file
+//  - update job record with media token + status
+//
+// 3. tauri --> storyteller jobs endpoint polls
+//  - alert frontend of completion
+//
+// 4. javascript polls tauri  (backend removal)
+
+// TODO(bt, 2025-06-03): Handle webhook crypto authentication
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct FalWebhookRequest {
   pub status: FalWebhookStatus,
@@ -65,6 +80,13 @@ impl fmt::Display for FalWebhookError {
   }
 }
 
+impl From<anyhow::Error> for FalWebhookError {
+  fn from(value: Error) -> Self {
+    info!("Converting anyhow::Error to FalWebhookError: {:?}", value);
+    FalWebhookError::ServerError
+  }
+}
+
 // =============== Handler ===============
 
 /// Fal webhook
@@ -85,13 +107,16 @@ impl fmt::Display for FalWebhookError {
 pub async fn fal_webhook_handler(
   http_request: HttpRequest,
   server_state: web::Data<Arc<ServerState>>,
-  //request_body: web::Bytes
   request: Json<FalWebhookRequest>,
 ) -> Result<Json<SimpleGenericJsonSuccess>, FalWebhookError> {
 
-
   info!("Received FAL webhook body: {:?}", request);
 
+  if let Some(payload) = request.payload.as_ref() {
+    if let Some(payload_obj) = payload.as_object() {
+      handle_image_payload(payload_obj).await?;
+    }
+  }
 
   Ok(SimpleGenericJsonSuccess::wrapped(true))
 }
