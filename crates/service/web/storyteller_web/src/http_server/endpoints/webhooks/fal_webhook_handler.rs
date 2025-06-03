@@ -2,6 +2,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::http_server::endpoints::webhooks::handle_image_payload::handle_image_payload;
+use crate::http_server::endpoints::webhooks::handle_video_payload::handle_video_payload;
 use crate::state::server_state::ServerState;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
@@ -12,9 +13,10 @@ use errors::AnyhowResult;
 use http_server_common::response::response_success_helpers::SimpleGenericJsonSuccess;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::{info, warn};
+use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::get_inference_job_by_fal_id;
 use serde_json::Value;
 use utoipa::ToSchema;
-use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::get_inference_job_by_fal_id;
+
 // 1. tauri --> hit endpoint to enqueue
 //
 // 2. webhook 
@@ -140,6 +142,9 @@ pub async fn fal_webhook_handler(
   if let Some(payload_obj) = payload.as_object() {
     if payload_obj.contains_key("image") {
       handle_image_payload(payload_obj, &job, &server_state).await?;
+    }
+    if payload_obj.contains_key("video") {
+      handle_video_payload(payload_obj, &job, &server_state).await?;
     }
   }
 

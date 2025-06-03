@@ -2,6 +2,7 @@ use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileU
 use crate::state::server_state::ServerState;
 use crate::util::http_download_url_to_bytes::http_download_url_to_bytes;
 use crate::util::http_download_url_to_tempfile::http_download_url_to_tempfile;
+use actix_multipart::form::tempfile::TempFile;
 use actix_web::web;
 use anyhow::anyhow;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
@@ -17,42 +18,47 @@ use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::FalJobDetails;
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use serde_json::{Map, Value};
+use std::io::Write;
 use std::sync::Arc;
+use tempfile::NamedTempFile;
+use videos::ffprobe_get_info::ffprobe_get_info;
 
 const PREFIX : Option<&str> = Some("artcraft_");
 
 #[derive(Deserialize, Debug)]
-pub struct FalWebhookImage {
+pub struct FalWebhookVideo {
   pub content_type: Option<String>,
   pub file_name: Option<String>,
   pub file_size: Option<usize>,
-  pub height: Option<usize>,
-  pub width: Option<usize>,
+  pub height: Option<usize>, // NB: Might not be on videos
+  pub width: Option<usize>, // NB: Might not be on videos
   pub url: Option<String>,
 }
 
-pub async fn handle_image_payload(
+pub async fn handle_video_payload(
   payload: &Map<String, Value>,
   job: &FalJobDetails,
   server_state: &ServerState,
 ) -> AnyhowResult<()> {
   
-  let image_value = payload.get("image")
+  let video_value = payload.get("video")
       .ok_or_else(|| anyhow!("no `image` key in payload"))?;
+
+  info!("Video: {:?}", video_value);
   
-  let image: FalWebhookImage = serde_json::from_value(image_value.clone())?;
+  let video: FalWebhookVideo = serde_json::from_value(video_value.clone())?;
   
-  info!("Image payload received: {:?}", image);
+  info!("Video payload received: {:?}", video);
   
-  let image_url = image.url
+  let video_url = video.url
       .as_deref()
-      .ok_or_else(|| anyhow!("no `url` in image payload"))?;
+      .ok_or_else(|| anyhow!("no `url` in video payload"))?;
   
   //let mime_type = image.content_type
   //    .as_deref()
   //    .ok_or_else(|| anyhow!("no `content_type` in image payload"))?;
 
-  let file_bytes = http_download_url_to_bytes(image_url)
+  let file_bytes = http_download_url_to_bytes(video_url)
       .await
       .map_err(|e| anyhow!("Failed to download image: {:?}", e))?;
   
@@ -70,7 +76,29 @@ pub async fn handle_image_payload(
 
   let file_size_bytes = file_bytes.len();
   let file_hash = sha256_hash_bytes(&file_bytes)?;
-  let image_info = ImageInfo::decode_image_from_bytes(&file_bytes)?;
+
+  let mut maybe_duration_millis = None;
+  let mut maybe_frame_width = None;
+  let mut maybe_frame_height = None;
+  
+  if let Ok(mut file) = NamedTempFile::new() {
+    // NB: Fallible 
+    let _r = file.write_all(&file_bytes);
+    
+    if let Ok(video_info) = ffprobe_get_info(&file.path()) {
+      maybe_duration_millis = video_info.duration
+          .as_ref()
+          .map(|duration| duration.millis as u64);
+      
+      maybe_frame_width = video_info.dimensions
+          .as_ref()
+          .map(|ref dims| dims.width as u32);
+
+      maybe_frame_height = video_info.dimensions
+          .as_ref()
+          .map(|dims| dims.height as u32);
+    }
+  }
 
   let public_upload_path = MediaFileBucketPath::generate_new(PREFIX, Some(&extension_with_period));
 
@@ -93,13 +121,14 @@ pub async fn handle_image_payload(
       //.media_file_origin_product_category(MediaFileOriginProductCategory::Unknown)
       .mime_type(mime_type)
       .file_size_bytes(file_size_bytes as u64)
-      .frame_width(image_info.width())
-      .frame_height(image_info.height())
+      .maybe_frame_width(maybe_frame_width)
+      .maybe_frame_height(maybe_frame_height)
+      .maybe_duration_millis(maybe_duration_millis)
       .checksum_sha2(&file_hash)
       .insert_pool(&server_state.mysql_pool)
       .await?;
   
-  info!("Image media file uploaded with token: {}", media_token);
+  info!("Video media file uploaded with token: {}", media_token);
 
   Ok(())
 }

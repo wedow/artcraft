@@ -1,0 +1,1 @@
+pub mod generate_kling_1_6_video_handler;

@@ -111,12 +111,12 @@ impl MediaFileType {
     match mime_type {
       "image/jpeg" => Some(Self::Jpg),
       "image/png" => Some(Self::Png),
-      //"audio/wav" => Some(Self::Wav),
-      //"audio/mpeg" => Some(Self::Mp3),
-      //"image/gif" => Some(Self::Gif),
-      //"video/mp4" => Some(Self::Mp4),
-      //"model/gltf-binary" => Some(Self::Glb),
-      //"model/gltf+json" => Some(Self::Gltf),
+      "video/mp4" => Some(Self::Mp4),
+      //"audio/wav" => Some(Self::Wav), // NB: Not sure if this is correct
+      //"audio/mpeg" => Some(Self::Mp3), // NB: Not sure if this is correct
+      //"image/gif" => Some(Self::Gif), // NB: Not sure if this is correct
+      //"model/gltf-binary" => Some(Self::Glb), // NB: Not sure if this is correct
+      //"model/gltf+json" => Some(Self::Gltf), // NB: Not sure if this is correct
       _ => None,
     }
   }
