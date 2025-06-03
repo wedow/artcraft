@@ -330,9 +330,9 @@ export const PageEditor = () => {
   }, [appTabId.value, editorEngine]);
 
   const display3d = appTabId.value === "3D" ? "block" : "none";
-  const display2d = appTabId.value === "2D" ? "block" : "none";
-  const displayVideo = appTabId.value === "VIDEO" ? "block" : "none";
-  const displayImage = appTabId.value === "IMAGE" ? "block" : "none";
+  const display2d = appTabId.value === "2D";
+  const displayVideo = appTabId.value === "VIDEO";
+  const displayImage = appTabId.value === "IMAGE";
 
   return (
     <div className="w-screen">
@@ -438,23 +438,30 @@ export const PageEditor = () => {
           </div>
         </div>
       </>
-      <KonvaCanvasContainer style={{ display: display2d }}>
-        <KonvaRootComponent className="h-full w-full" />
-      </KonvaCanvasContainer>
 
-      <div style={{ display: displayVideo }}>
-        <ImageToVideo
-          imageMediaId={topNavMediaId.value}
-          imageUrl={topNavMediaUrl.value}
-        />
-      </div>
+      {display2d && (
+        <KonvaCanvasContainer>
+          <KonvaRootComponent className="h-full w-full" />
+        </KonvaCanvasContainer>
+      )}
 
-      <div style={{ display: displayImage }}>
-        <TextToImage
-          imageMediaId={topNavMediaId.value}
-          imageUrl={topNavMediaUrl.value}
-        />
-      </div>
+      {displayVideo && (
+        <div>
+          <ImageToVideo
+            imageMediaId={topNavMediaId.value}
+            imageUrl={topNavMediaUrl.value}
+          />
+        </div>
+      )}
+
+      {displayImage && (
+        <div>
+          <TextToImage
+            imageMediaId={topNavMediaId.value}
+            imageUrl={topNavMediaUrl.value}
+          />
+        </div>
+      )}
 
       <LoginModal
         onClose={() => { }}
