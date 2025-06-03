@@ -4,6 +4,7 @@ use sqlx::MySqlPool;
 
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::by_table::generic_inference_jobs::inference_input_source_token_type::InferenceInputSourceTokenType;
+use enums::by_table::generic_inference_jobs::inference_job_external_third_party::InferenceJobExternalThirdParty;
 use enums::by_table::generic_inference_jobs::inference_job_product_category::InferenceJobProductCategory;
 use enums::by_table::generic_inference_jobs::inference_job_type::InferenceJobType;
 use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
@@ -28,6 +29,9 @@ pub enum FalCategory {
 pub struct InsertGenericInferenceForFalArgs<'a> {
   pub uuid_idempotency_token: &'a str,
 
+  /// The external primary key identifier for the job.
+  pub maybe_external_third_party_id: &'a str,
+  
   pub fal_category: FalCategory,
 
   pub maybe_inference_args: Option<GenericInferenceArgs>,
@@ -67,6 +71,10 @@ pub async fn insert_generic_inference_job_for_fal_queue(args: InsertGenericInfer
         ),
       };
 
+
+  let maybe_external_third_party = InferenceJobExternalThirdParty::Fal;
+  
+  let maybe_external_third_party_id = "";
   const STATUS : JobStatusPlus = JobStatusPlus::Pending;
 
   let query = sqlx::query!(
@@ -77,6 +85,9 @@ SET
   uuid_idempotency_token = ?,
 
   job_type = ?,
+
+  maybe_external_third_party = ?,
+  maybe_external_third_party_id = ?,
 
   product_category = ?,
   inference_category = ?,
@@ -112,6 +123,9 @@ SET
         args.uuid_idempotency_token,
 
         JOB_TYPE.to_str(),
+    
+        maybe_external_third_party.to_str(),
+        args.maybe_external_third_party_id,
 
         product_category.to_str(),
         inference_category.to_str(),

@@ -26,6 +26,7 @@ use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, M
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 use http_server_common::request::get_request_ip::get_request_ip;
+use idempotency::uuid::generate_random_uuid;
 // =============== Error Response ===============
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -160,19 +161,19 @@ pub async fn remove_image_background_handler(
         RemoveImageBackgroundError::ServerError
       })?;
 
+  let external_job_id = fal_result.request_id
+      .ok_or_else(|| {
+        warn!("Fal request_id is None");
+        RemoveImageBackgroundError::ServerError
+      })?;
+  
   let ip_address = get_request_ip(&http_request);
 
-  //match fal_result {
-  //  Ok(response) => {
-  //    response
-  //  },
-  //  Err(err) => {
-  //    warn!("Error removing background: {:?}", err);
-  //    return Err(RemoveImageBackgroundError::ServerError)
-  //  }
-  //}
+  let uuid_idempotency_token = generate_random_uuid();
+  
   let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
-    uuid_idempotency_token: "",
+    uuid_idempotency_token: &uuid_idempotency_token,
+    maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::BackgroundRemoval,
     maybe_inference_args: None,
     maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
