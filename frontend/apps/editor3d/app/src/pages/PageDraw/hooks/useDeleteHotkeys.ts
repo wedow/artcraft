@@ -1,0 +1,29 @@
+import { useEffect, useCallback } from 'react';
+
+interface DeleteHotkeysProps {
+  onDelete: () => void;
+  target?: Document | HTMLElement;
+}
+
+export const useDeleteHotkeys = ({ onDelete, target = document }: DeleteHotkeysProps): void => {
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const isDelete = event.key === 'Delete' || 
+                    event.key === 'Backspace' || 
+                    (isMac && event.metaKey && event.key === 'Backspace');
+
+    if (isDelete) {
+      event.preventDefault();
+      onDelete();
+    }
+  }, [onDelete]);
+
+  useEffect(() => {
+    const currentTarget = target || document;
+    currentTarget.addEventListener('keydown', handleKeyDown as EventListener);
+
+    return () => {
+      currentTarget.removeEventListener('keydown', handleKeyDown as EventListener);
+    };
+  }, [handleKeyDown, target]);
+};
