@@ -97,6 +97,11 @@ impl MediaFileType {
   pub fn is_jpg_or_png(&self) -> bool {
     matches!(self, Self::Jpg | Self::Png)
   }
+
+  /// A little bit less strict than `is_jpg_or_png`, this includes the legacy `Image` type.
+  pub fn is_jpg_or_png_or_legacy_image(&self) -> bool {
+    matches!(self, Self::Jpg | Self::Png | Self::Image)
+  }
   
   pub fn to_str(&self) -> &'static str {
     match self {

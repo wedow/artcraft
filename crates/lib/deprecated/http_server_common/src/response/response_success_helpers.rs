@@ -1,8 +1,15 @@
 use actix_web::HttpResponse;
+use actix_web::web::Json;
 
 #[derive(Serialize)]
 pub struct SimpleGenericJsonSuccess {
   pub success: bool,
+}
+
+impl SimpleGenericJsonSuccess {
+  pub fn wrapped(success: bool) -> Json<Self> {
+    Json(SimpleGenericJsonSuccess { success })
+  }
 }
 
 pub fn simple_json_success() -> HttpResponse {

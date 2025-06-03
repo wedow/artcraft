@@ -63,7 +63,7 @@ impl fmt::Display for RemoveImageBackgroundError {
 
 // =============== Handler ===============
 
-/// Change (or remove) the "title" of a media file.
+/// Background removal
 #[utoipa::path(
   post,
   tag = "Generate Images",
@@ -140,7 +140,7 @@ pub async fn remove_image_background_handler(
     }
   };
 
-  if !media_file.media_type.is_jpg_or_png() {
+  if !media_file.media_type.is_jpg_or_png_or_legacy_image() {
     return Err(RemoveImageBackgroundError::BadInput("Media file must be a JPG or PNG image".to_string()));
   }
   
