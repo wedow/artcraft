@@ -1,1 +1,1 @@
-mod remove_image_background_handler;
+pub mod remove_image_background_handler;
