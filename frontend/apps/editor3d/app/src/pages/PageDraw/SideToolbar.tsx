@@ -62,11 +62,11 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   onGenerateImage,
   onUploadImage,
   onDelete,
+  activeToolId,
   className = "",
 }) => {
   /* ------------------------------------------------ state ---------- */
   const [open, setOpen]       = useState<string | null>(null);
-  const [selected, setSel]    = useState<string>("select");
 
   const [brushSize, setBrushSize] = useState(16);
   const [brushHsva, setBrushHsva] = useState<HsvaColor>({ h:120,s:100,v:100,a:1 });
@@ -310,7 +310,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
           }
 
           const { id, icon, onClick, popout, label } = tool;
-          const active = id === selected;
+          const active = id === activeToolId;
           const btnStyle = active ? "bg-zinc-600 text-white" : "hover:bg-zinc-800 text-zinc-100";
 
           return (
@@ -321,7 +321,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
                     <button
                       onClick={() => {
                         onClick?.();
-                        setSel(id);
                         setOpen(open === id ? null : id);
                       }}
                       className={`${baseBtn} ${btnStyle}`}
@@ -332,7 +331,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
                     <button
                       onClick={() => {
                         onClick?.();
-                        setSel(id);
                       }}
                       className={`${baseBtn} ${btnStyle}`}
                     >

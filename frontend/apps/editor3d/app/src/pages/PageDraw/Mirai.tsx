@@ -158,7 +158,7 @@ export const Mirai = ({
           strokeWidth: brushSize / stage.scaleX(),
           draggable: true,
         };
-        
+        store.selectNode(null);
         store.addLineNode(newLineNode);
         setCurrentLineId(lineId);
         setIsDrawing(true);
@@ -386,13 +386,11 @@ export const Mirai = ({
     const handleNodeMouseLeave = (e: Konva.KonvaEventObject<MouseEvent>) => {
       const container = e.target.getStage()?.container();
       if (!container) return;
-      const defaultCursor = activeTool === 'draw' 
-        ? 'crosshair' 
-        : activeTool === 'eraser'
-          ? 'cell'
-          : activeTool === 'select'
-            ? 'grab'
-            : 'default';
+      const defaultCursor = activeTool === 'draw' || activeTool === 'eraser'
+        ? 'none'
+        : activeTool === 'select'
+          ? 'grab'
+          : 'default';
       container.style.cursor = defaultCursor;
     };
 
@@ -467,17 +465,21 @@ export const Mirai = ({
     const renderNode = (node: Node | LineNode) => {
         // Node Callbacks
         const handleNodeMouseDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>, nodeId: string) => {
+          // Don't select nodes when draw or erase tools are active
+          if (activeTool === 'draw' || activeTool === 'eraser') {
+            return;
+          }
+          
           // Check if Ctrl/Cmd key is pressed
           const isMultiSelect = e.evt.ctrlKey || e.evt.metaKey;
           
           // If clicking directly on the stage, clear selection
           if (e.target === e.target.getStage()) {
-
             store.selectNode(null);
             return;
           }
 
-          store.selectNode(nodeId,isMultiSelect);
+          store.selectNode(nodeId, isMultiSelect);
         };
 
         const handleNodeDragStart = (e: Konva.KonvaEventObject<DragEvent>, nodeId:string) => {

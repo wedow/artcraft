@@ -239,6 +239,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       draggable: true
     });
     get().addNode(node);
+    get().setActiveTool('select'); // Switch to select tool after creating
   },
   
   createCircle: (x: number, y: number, radius = 50, fill = '#f0f0f0') => {
@@ -255,6 +256,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       draggable: true
     });
     get().addNode(node);
+    get().setActiveTool('select'); // Switch to select tool after creating
   },
   
   createTriangle: (x: number, y: number, width = 100, height = 100, fill = '#d0d0d0') => {
@@ -271,6 +273,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       draggable: true
     });
     get().addNode(node);
+    get().setActiveTool('select'); // Switch to select tool after creating
   },
   
   // History management
