@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
 use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::deprecated_endpoints::engine::create_scene_handler::CreateSceneError;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::web_utils::response_success_helpers::simple_json_success;
 use crate::state::server_state::ServerState;
@@ -17,16 +18,17 @@ use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBack
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::image::remove_background_rembg_webhook::{remove_background_rembg_webhook, RemoveBackgroundRembgWebhookArgs};
+use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
-use log::warn;
+use idempotency::uuid::generate_random_uuid;
+use log::{error, warn};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
+use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
-use http_server_common::request::get_request_ip::get_request_ip;
-use idempotency::uuid::generate_random_uuid;
 // =============== Error Response ===============
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -111,7 +113,13 @@ pub async fn remove_image_background_handler(
       return Err(RemoveImageBackgroundError::BadInput("No media file token provided".to_string()));
     }
   };
-  
+
+  insert_idempotency_token(&request.uuid_idempotency_token, &server_state.mysql_pool)
+      .await
+      .map_err(|err| {
+        error!("Error inserting idempotency token: {:?}", err);
+        RemoveImageBackgroundError::BadInput("invalid idempotency token".to_string())
+      })?;
   const IS_MOD : bool = false;
   
   let media_file_lookup_result = get_media_file(
