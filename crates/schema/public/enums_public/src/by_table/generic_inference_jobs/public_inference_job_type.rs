@@ -32,8 +32,13 @@ pub enum PublicInferenceJobType {
 
   #[serde(rename = "f5_tts")]
   F5TTS,
+  
   // ======= Everything else is the same =======
 
+  /// No need to hide this.
+  #[serde(rename = "fal_queue")]
+  FalQueue,
+  
   /// Jobs that run ComfyUI workflows
   /// This is actually just for Video Style Transfer and Storyteller Studio.
   #[deprecated(note = "Use VideoRender instead.")]
@@ -106,6 +111,7 @@ impl PublicInferenceJobType {
       InferenceJobType::LivePortrait => Self::ActingFace,
       InferenceJobType::FaceFusion => Self::Lipsync,
       // Conserved variants
+      InferenceJobType::FalQueue => Self::FalQueue,
       InferenceJobType::VideoRender => Self::VideoRender,
       InferenceJobType::GptSovits => Self::GptSovits,
       InferenceJobType::F5TTS => Self::F5TTS,
@@ -133,6 +139,7 @@ impl PublicInferenceJobType {
       Self::ActingFace => InferenceJobType::LivePortrait,
       Self::Lipsync => InferenceJobType::FaceFusion,
       // Conserved variants
+      Self::FalQueue => InferenceJobType::FalQueue,
       Self::VideoRender => InferenceJobType::VideoRender,
       Self::GptSovits => InferenceJobType::GptSovits,
       Self::F5TTS => InferenceJobType::F5TTS,

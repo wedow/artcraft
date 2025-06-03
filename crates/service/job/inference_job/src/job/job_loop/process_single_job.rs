@@ -360,6 +360,11 @@ async fn old_dispatch(
       return Err(ProcessSingleJobError::InvalidJob(
         anyhow!("invalid job category for dispatch: {:?}", job.inference_category)))
     }
+    InferenceCategory::VideoGeneration | InferenceCategory::BackgroundRemoval => {
+      // These are handled by the new dispatch
+      return Err(ProcessSingleJobError::InvalidJob(
+        anyhow!("these job types do not support the old-style dispatch: {:?}", job.inference_category)))
+    }
   };
 
   Ok(job_success_result)

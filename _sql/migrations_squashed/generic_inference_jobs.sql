@@ -39,6 +39,9 @@ CREATE TABLE generic_inference_jobs (
   -- Examples (may not be up to date):
   --  * text_to_speech
   --  * voice_conversion
+  --  * image_generation
+  --  * video_generation  
+  --  * background_removal
   inference_category VARCHAR(32) NOT NULL,
 
   -- If the job is externally enqueued, this is the third-party service
