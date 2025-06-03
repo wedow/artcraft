@@ -21,7 +21,7 @@ use fal_client::requests::webhook::image::remove_background_rembg_webhook::{remo
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use idempotency::uuid::generate_random_uuid;
-use log::{error, warn};
+use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
@@ -155,6 +155,8 @@ pub async fn remove_image_background_handler(
     media_domain, 
     server_state.server_environment, 
     &bucket_path);
+  
+  info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
   let args = RemoveBackgroundRembgWebhookArgs {
     image_url: media_links.cdn_url,
