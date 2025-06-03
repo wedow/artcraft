@@ -3567,6 +3567,7 @@ dependencies = [
  "fal-derive",
  "futures 0.3.31",
  "image",
+ "log",
  "percent-encoding-rfc3986",
  "reqwest 0.12.15",
  "serde",

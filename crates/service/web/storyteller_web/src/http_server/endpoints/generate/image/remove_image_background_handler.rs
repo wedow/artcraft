@@ -29,7 +29,10 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
+
+
 // =============== Error Response ===============
+
 
 #[derive(Debug, Serialize, ToSchema)]
 pub enum RemoveImageBackgroundError {
@@ -176,6 +179,8 @@ pub async fn remove_image_background_handler(
         warn!("Fal request_id is None");
         RemoveImageBackgroundError::ServerError
       })?;
+  
+  info!("Fal request_id: {}", external_job_id);
   
   let ip_address = get_request_ip(&http_request);
 

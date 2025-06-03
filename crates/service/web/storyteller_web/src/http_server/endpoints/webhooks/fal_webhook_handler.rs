@@ -6,9 +6,32 @@ use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
+use log::info;
 use http_server_common::response::response_success_helpers::SimpleGenericJsonSuccess;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
+use serde_json::Value;
 use utoipa::ToSchema;
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct FalWebhookRequest {
+  pub status: FalWebhookStatus,
+  
+  pub request_id: Option<String>,
+  pub gateway_request_id: Option<String>,
+
+  pub error: Option<String>,
+  
+  /// Payload of the webhook, if any.
+  pub payload: Option<Value>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub enum FalWebhookStatus {
+  #[serde(alias = "OK")]
+  Ok,
+  #[serde(alias = "ERROR")]
+  Error
+}
 
 // =============== Error Response ===============
 
@@ -56,19 +79,19 @@ impl fmt::Display for FalWebhookError {
     (status = 500, description = "Server error", body = FalWebhookError),
   ),
   params(
-    ("request" = RemoveImageBackgroundRequest, description = "Payload for Request"),
+    ("request" = FalWebhookRequest, description = "Payload for Request"),
   )
 )]
 pub async fn fal_webhook_handler(
   http_request: HttpRequest,
   server_state: web::Data<Arc<ServerState>>,
-  request_body: web::Bytes
+  //request_body: web::Bytes
+  request: Json<FalWebhookRequest>,
 ) -> Result<Json<SimpleGenericJsonSuccess>, FalWebhookError> {
-  
-  let body = String::from_utf8(request_body.to_vec())
-    .map_err(|e| FalWebhookError::BadInput(format!("Invalid UTF-8 in request body: {}", e)))?;
-  
-  println!("Received Fal webhook with body: {}", body);
-  
+
+
+  info!("Received FAL webhook body: {:?}", request);
+
+
   Ok(SimpleGenericJsonSuccess::wrapped(true))
 }

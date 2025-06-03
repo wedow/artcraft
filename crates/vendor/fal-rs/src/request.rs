@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use percent_encoding_rfc3986::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::IntoUrl;
 use serde::{de::DeserializeOwned, Serialize};
-
+use log::info;
 use crate::{
     queue::{Queue, QueueResponse},
     FalError,
@@ -138,11 +138,15 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
             .expect("No fal API key provided, and FAL_API_KEY environment variable is not set");
 
         let url_encoded = url.into_url()?;
-        let url_encoded = utf8_percent_encode(url_encoded.as_str(), NON_ALPHANUMERIC).to_string();
+        //let url_encoded = utf8_percent_encode(url_encoded.as_str(), NON_ALPHANUMERIC).to_string();
+
+        let request_url = format!("https://queue.fal.run/{}?fal_webhook={}", self.endpoint, url_encoded);
+
+        info!("Sending request to FAL queue webhook: {}", request_url);
 
         let response = self
             .client
-            .post(format!("https://queue.fal.run/{}?fal_webhook={}", self.endpoint, url_encoded))
+            .post(request_url)
             .json(&self.params)
             .header("Authorization", format!("Key {}", &key))
             .header("Content-Type", "application/json")
