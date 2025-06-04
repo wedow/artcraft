@@ -69,10 +69,10 @@ export const TopBar = ({
   pageName,
   appTabIdSignal,
   setAppTabId,
-  is3DInitSignal,
 }: Props) => {
   useSignals();
 
+  const editorEngine = useContext(EngineContext);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const [url, setUrl] = useState<string>("");
@@ -80,19 +80,10 @@ export const TopBar = ({
 
   const engine3D = useContext(EngineContext);
   const handleTabChange = (tabId: string) => {
-    if (appTabIdSignal.peek() == "3D") {
-      engine3D?.unmountEngine();
-    }
     setAppTabId(tabId);
   };
 
   const currentAppTabId = appTabIdSignal.value;
-  const is3DInit = is3DInitSignal.value;
-  useEffect(() => {
-    if (currentAppTabId == "3D" && is3DInit) {
-      engine3D?.remountEngine();
-    }
-  }, [currentAppTabId, engine3D, is3DInit]);
 
   const handleAddToScene = async (
     url: string,

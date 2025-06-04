@@ -7,6 +7,7 @@ pub mod endpoints;
 pub mod image;
 pub mod queue;
 pub mod request;
+pub mod webhook;
 
 use eventsource_stream::EventStreamError;
 pub use fal_derive::endpoint;

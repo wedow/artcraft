@@ -31,6 +31,7 @@ workspace-build-acceleration = { workspace = true }
 # Internal
 actix_cors_configs = { path = "../../../lib/actix_cors_configs" }
 actix_helpers = { path = "../../../lib/actix_helpers" }
+artcraft_api_defs = { workspace = true }
 bootstrap = { path = "../../../lib/bootstrap" }
 bucket_paths = { path = "../../../lib/bucket_paths" }
 cloud_storage = { path = "../../../lib/api_clients/cloud_storage" }
@@ -46,6 +47,7 @@ email_sender= { path = "../../../lib/email_sender" }
 enums = { workspace = true }
 enums_public = { workspace = true }
 errors = { workspace = true }
+fal_client = { workspace = true }
 filesys = { workspace = true }
 google_sign_in = { path = "../../../lib/api_clients/google_sign_in" }
 hashing = { path = "../../../lib/files/hashing" }
@@ -122,7 +124,9 @@ elasticsearch = "8.5.0-alpha.1"
 
 # Files
 infer = "0.16.0"
-tempdir = "0.3.7"
+bytes = { workspace = true }
+tempdir = { workspace = true }
+tempfile = { workspace = true }
 
 # The "never-encode-slash" feature seems to have been removed:
 # https://github.com/durch/rust-s3/pull/254

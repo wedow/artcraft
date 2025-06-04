@@ -1,0 +1,1 @@
+pub mod generate_kling_1_6_image_to_video;

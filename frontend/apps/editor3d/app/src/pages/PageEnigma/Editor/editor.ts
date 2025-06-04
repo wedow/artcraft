@@ -53,7 +53,7 @@ import FindSurfaces from "./FindSurfaces.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { CharacterAnimationEngine } from "./Engines/CharacterAnimationEngine";
 import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
-import { is3DEditorInitialized, setIs3DEditorInitialized } from "~/signals/appTab";
+import { is3DEditorInitialized, is3DPageMounted, setIs3DEditorInitialized } from "~/signals/appTab";
 
 export type EditorInitializeConfig = {
   sceneToken: string;
@@ -131,6 +131,7 @@ class Editor {
   // getSceneSignals: () => SceneSignal;
   render_width: number;
   render_height: number;
+  containerResizeObserver: ResizeObserver | undefined;
 
   positive_prompt: string;
   negative_prompt: string;
@@ -323,7 +324,7 @@ class Editor {
 
 
     this.renderIndex = 0;
-  
+
   }
 
   // Add helper method to convert focal length to FOV
@@ -388,6 +389,8 @@ class Editor {
   }
   updateSceneContainer(newContainer: HTMLDivElement) {
     this.container = newContainer;
+    this.containerResizeObserver?.disconnect()
+    this.containerResizeObserver?.observe(this.container);
   }
   engineCanvasMayReset() {
     //TODO: we should not need this, if the this canvas is reset,
@@ -403,6 +406,9 @@ class Editor {
   }
   updateEngineCanvas(newCanvas: HTMLCanvasElement) {
     this.canvReference = newCanvas;
+    if (this.renderer) {
+      this.renderer.domElement = this.canvReference;
+    }
   }
   camViewCanvasMayReset() {
     //TODO: we should not need this, if the this canvas is reset,
@@ -418,6 +424,9 @@ class Editor {
   }
   updateCamViewCanvas(newCanvas: HTMLCanvasElement) {
     this.canvasRenderCamReference = newCanvas;
+    if (this.rawRenderer) {
+      this.rawRenderer.domElement = this.canvasRenderCamReference;
+    }
   }
 
   changeRenderCameraAspectRatio(newAspectRatio: CameraAspectRatio) {
@@ -444,8 +453,8 @@ class Editor {
     sceneContainerEl,
   }: EditorInitializeConfig) {
     if (!this.can_initialize) {
-      console.log("Editor Already Initialized");
-      return;
+      console.log("Reinitializing 3D editor");
+      // return;
     }
 
     this.can_initialize = false;
@@ -642,10 +651,6 @@ class Editor {
     // Attach freecam state controller
     this.mouseOverEventHandler = this.mouseOverEventHandler.bind(this);
 
-    // This will enable all event and render loops
-    // We'll disable it here so the UI events can control is manually
-    // this.remountEngine();
-
     if (!this.utils.isEmpty(sceneToken)) {
       this.loadScene(sceneToken);
     } else {
@@ -666,6 +671,10 @@ class Editor {
     loadingBarIsShowing.value = false;
 
     setIs3DEditorInitialized(true);
+
+    // This will enable all event and render loops
+    // We'll disable it here so the UI events can control is manually
+    this.remountEngine();
   }
 
   public isMovable(): boolean {
@@ -1241,7 +1250,7 @@ class Editor {
           console.log(`COLLECTING COLOR FRAMES COUNTED: ${this.renderIndex}`);
           await this.engineFrameBuffers.collectColorFrames(this.renderIndex);
 
-         
+
           this.renderIndex = 0;
           console.time("Stop Playback And Upload Video Time");
           await this.stopPlaybackAndUploadVideo();
@@ -1252,7 +1261,7 @@ class Editor {
         } catch (error) {
           // don't use cache in this case.
           this.processingHasFailed = true;
-        
+
           console.log(`Video Generation: ${error}`);
         }
       } // End Timeline Playing
@@ -1433,10 +1442,17 @@ class Editor {
       return;
     }
 
+    if (!is3DPageMounted.peek()) {
+      console.log("3D mount: Wait for DOM mount");
+      return;
+    }
+
+    this.isMounted = true;
     this.startRenderLoop();
     this.sceneManager?.attachEventListeners();
     this.enableFreeCamControls();
     this.cameraViewControls?.attachEventListeners();
+    console.log("3D Editor Engine remounted");
   }
 
   unmountEngine() {
@@ -1444,6 +1460,8 @@ class Editor {
     this.sceneManager?.detachEventListeners();
     this.disableFreeCamControls();
     this.cameraViewControls?.detachEventListeners();
+    this.isMounted = false;
+    console.log("3D Editor Engine unmounted");
   }
 
   change_mode(type: "translate" | "rotate" | "scale") {
@@ -1693,7 +1711,7 @@ class Editor {
       return;
     }
 
-    const resizeObserver = new ResizeObserver((entries) => {
+    this.containerResizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         if (this.camera) {
@@ -1705,7 +1723,7 @@ class Editor {
       }
     });
 
-    resizeObserver.observe(this.container);
+    this.containerResizeObserver.observe(this.container);
   }
 
   getAssetType(selected: THREE.Object3D<THREE.Object3DEventMap>): AssetType {

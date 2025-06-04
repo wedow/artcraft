@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals-core";
 
-export const loadingBarIsShowing = signal(true);
+export const loadingBarIsShowing = signal(false);
 export const loadingBarData = signal<{
   label: string;
   message: string;

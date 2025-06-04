@@ -1,11 +1,13 @@
 use std::marker::PhantomData;
-
+use percent_encoding_rfc3986::{utf8_percent_encode, NON_ALPHANUMERIC};
+use reqwest::IntoUrl;
 use serde::{de::DeserializeOwned, Serialize};
-
+use log::info;
 use crate::{
     queue::{Queue, QueueResponse},
     FalError,
 };
+use crate::webhook::WebhookResponse;
 
 /// A request to the FAL API
 ///
@@ -128,5 +130,36 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
         let payload: QueueResponse = response.error_for_status()?.json().await?;
 
         Ok(Queue::new(self.client, self.endpoint, key, payload))
+    }
+
+    pub async fn queue_webhook<U: IntoUrl>(self, url: U) -> Result<WebhookResponse, FalError> {
+        let key = self
+            .api_key
+            .expect("No fal API key provided, and FAL_API_KEY environment variable is not set");
+
+        let url_encoded = url.into_url()?;
+        //let url_encoded = utf8_percent_encode(url_encoded.as_str(), NON_ALPHANUMERIC).to_string();
+
+        let request_url = format!("https://queue.fal.run/{}?fal_webhook={}", self.endpoint, url_encoded);
+
+        info!("Sending request to FAL queue webhook: {}", request_url);
+
+        let response = self
+            .client
+            .post(request_url)
+            .json(&self.params)
+            .header("Authorization", format!("Key {}", &key))
+            .header("Content-Type", "application/json")
+            .send()
+            .await?;
+
+        if response.status() != 200 {
+            let error = response.text().await?;
+            return Err(error.into());
+        }
+
+        let payload: WebhookResponse = response.error_for_status()?.json().await?;
+
+        Ok(payload)
     }
 }

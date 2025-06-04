@@ -33,6 +33,8 @@ all-features = true
 eventsource-stream = "0.2"
 smart-default = "0.7"
 thiserror = "1"
+percent-encoding-rfc3986 = "0.1.3"
+log = "0.4.27"
 
 [dependencies.base64]
 version = "0.22"

@@ -1,0 +1,154 @@
+use std::fmt;
+use std::sync::Arc;
+
+use crate::http_server::endpoints::webhooks::handle_image_payload::handle_image_payload;
+use crate::http_server::endpoints::webhooks::handle_video_payload::handle_video_payload;
+use crate::state::server_state::ServerState;
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
+use anyhow::Error;
+use errors::AnyhowResult;
+use http_server_common::response::response_success_helpers::SimpleGenericJsonSuccess;
+use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
+use log::{info, warn};
+use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::get_inference_job_by_fal_id;
+use serde_json::Value;
+use utoipa::ToSchema;
+
+// 1. tauri --> hit endpoint to enqueue
+//
+// 2. webhook 
+//  - upload media file
+//  - update job record with media token + status
+//
+// 3. tauri --> storyteller jobs endpoint polls
+//  - alert frontend of completion
+//
+// 4. javascript polls tauri  (backend removal)
+
+// TODO(bt, 2025-06-03): Handle webhook crypto authentication
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct FalWebhookRequest {
+  pub status: FalWebhookStatus,
+  
+  pub request_id: Option<String>,
+  pub gateway_request_id: Option<String>,
+
+  pub error: Option<String>,
+  
+  /// Payload of the webhook, if any.
+  pub payload: Option<Value>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub enum FalWebhookStatus {
+  #[serde(alias = "OK")]
+  Ok,
+  #[serde(alias = "ERROR")]
+  Error
+}
+
+// =============== Error Response ===============
+
+#[derive(Debug, Serialize, ToSchema)]
+pub enum FalWebhookError {
+  BadInput(String),
+  NotFound,
+  NotAuthorized,
+  ServerError,
+}
+
+impl ResponseError for FalWebhookError {
+  fn status_code(&self) -> StatusCode {
+    match *self {
+      FalWebhookError::BadInput(_) => StatusCode::BAD_REQUEST,
+      FalWebhookError::NotFound => StatusCode::NOT_FOUND,
+      FalWebhookError::NotAuthorized => StatusCode::UNAUTHORIZED,
+      FalWebhookError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+  }
+
+  fn error_response(&self) -> HttpResponse {
+    serialize_as_json_error(self)
+  }
+}
+
+// NB: Not using derive_more::Display since Clion doesn't understand it.
+impl fmt::Display for FalWebhookError {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{:?}", self)
+  }
+}
+
+impl From<anyhow::Error> for FalWebhookError {
+  fn from(value: Error) -> Self {
+    info!("Converting anyhow::Error to FalWebhookError: {:?}", value);
+    FalWebhookError::ServerError
+  }
+}
+
+// =============== Handler ===============
+
+/// Fal webhook
+#[utoipa::path(
+  post,
+  tag = "Webooks",
+  path = "/v1/webhooks/fal",
+  responses(
+    (status = 200, description = "Success", body = SimpleGenericJsonSuccess),
+    (status = 400, description = "Bad input", body = FalWebhookError),
+    (status = 401, description = "Not authorized", body = FalWebhookError),
+    (status = 500, description = "Server error", body = FalWebhookError),
+  ),
+  params(
+    ("request" = FalWebhookRequest, description = "Payload for Request"),
+  )
+)]
+pub async fn fal_webhook_handler(
+  http_request: HttpRequest,
+  server_state: web::Data<Arc<ServerState>>,
+  request: Json<FalWebhookRequest>,
+) -> Result<Json<SimpleGenericJsonSuccess>, FalWebhookError> {
+
+  info!("Received FAL webhook body: {:?}", request);
+  
+  let request_id = request.request_id
+      .as_deref()
+      .ok_or_else(|| FalWebhookError::BadInput("Missing request_id".to_string()))?;
+  
+  let payload = request.payload
+      .as_ref()
+      .ok_or_else(|| FalWebhookError::BadInput("Missing payload".to_string()))?;
+  
+  let db_result = get_inference_job_by_fal_id(
+    request_id,
+    &server_state.mysql_pool,
+  ).await;
+  
+  let job = match db_result {
+    Ok(Some(record)) => record,
+    Ok(None) => {
+      warn!("Could not find job record by fal request id: {:?} ; request payload = {:?}", request_id, request);
+      return Err(FalWebhookError::NotFound)
+    },
+    Err(err) => {
+      warn!("Error querying job record: {:?}", err);
+      return Err(FalWebhookError::ServerError);
+    }
+  };
+
+  if let Some(payload_obj) = payload.as_object() {
+    if payload_obj.contains_key("image") {
+      handle_image_payload(payload_obj, &job, &server_state).await?;
+    } else if payload_obj.contains_key("video") {
+      handle_video_payload(payload_obj, &job, &server_state).await?;
+    }
+    if payload_obj.contains_key("video") {
+      handle_video_payload(payload_obj, &job, &server_state).await?;
+    }
+  }
+
+  Ok(SimpleGenericJsonSuccess::wrapped(true))
+}

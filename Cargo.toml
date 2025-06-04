@@ -88,6 +88,7 @@ members = [
   #"crates/schema/database/sqlite_queries",
 
   # Schema (public): common strongly-typed tokens, ids, payloads, etc.
+  "crates/schema/public/api/artcraft_api_defs",
   "crates/schema/public/composite_identifiers",
   "crates/schema/public/enums",
   "crates/schema/public/enums_public",
@@ -181,6 +182,7 @@ actix-web-actors = "4.3.1+deprecated"
 actix-web-lab = "0.20.2"
 anyhow = "1.0.98"
 base64 = "0.22.1"
+bytes = "1.10.1"
 chrono = { version = "0.4.41", features = ["serde"] }
 cookie = "0.18.1"
 futures = { version = "0.3.31" }
@@ -197,18 +199,22 @@ serde_json = "1.0.140"
 serde_yaml = "0.9.34+deprecated"
 sha3 = "0.10.8"
 tauri = { version = "2.4.1", features = ["unstable", "devtools"] } # NB: "devtools" prevents App Store distribution
+tempdir = "0.3.7"
+tempfile = "3.20.0"
 thiserror = "2.0.12"
 tokio = { version = "1.45.1", features = ["macros"] }
 toml = "0.8.22"
 url = { version = "2.5.4", features = ["serde"] }
 
 # Internal libs
+artcraft_api_defs = { path = "crates/schema/public/api/artcraft_api_defs" }
 build_metadata = { path = "crates/lib/build_metadata" }
 crockford = { path = "crates/lib/data/crockford" }
 enums = { path = "crates/schema/public/enums" }
 enums_public = { path = "crates/schema/public/enums_public" }
 errors = { path = "crates/lib/errors" }
 fal_client = { path = "crates/lib/api_clients/fal_client" }
+file_to_base64_url = { path = "crates/lib/files/file_to_base64_url" }
 filesys = { path = "crates/lib/files/filesys" }
 idempotency = { path = "crates/lib/idempotency" }
 images = { path = "crates/lib/files/images" }

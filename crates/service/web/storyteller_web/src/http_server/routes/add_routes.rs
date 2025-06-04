@@ -124,8 +124,10 @@ use crate::http_server::endpoints::voice_designer::voices::list_voices_by_user::
 use crate::http_server::endpoints::voice_designer::voices::search_voices::search_voices;
 use crate::http_server::endpoints::voice_designer::voices::update_voice::update_voice_handler;
 use crate::http_server::routes::add_control_plane_routes::add_control_plane_routes;
+use crate::http_server::routes::add_generate_routes::add_generate_routes;
 use crate::http_server::routes::add_image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::add_studio_gen2_routes::add_studio_gen2_routes;
+use crate::http_server::routes::add_webhook_routes::add_webhook_routes;
 use crate::http_server::routes::beta_key_routes::add_beta_key_routes;
 use crate::http_server::routes::job_routes::add_job_routes;
 use crate::http_server::routes::media_files_routes::add_media_file_routes;
@@ -177,6 +179,8 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
   app = add_job_routes(app);
   app = add_engine_routes(app); /* /v1/engine/... */
   app = add_control_plane_routes(app); /* /v1/control_plane/... */
+  app = add_generate_routes(app); /* /v1/generate/... */
+  app = add_webhook_routes(app); /* /v1/webhooks/... */
 
   // app = add_image_gen_routes(app);
 

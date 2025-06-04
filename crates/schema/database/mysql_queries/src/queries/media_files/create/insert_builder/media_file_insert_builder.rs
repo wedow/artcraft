@@ -44,7 +44,7 @@ pub struct MediaFileInsertBuilder {
   // Media info
   maybe_mime_type: Option<String>,
   file_size_bytes: u64, // NB: Non-nullable field
-  // maybe_duration_millis: Option<u64>,
+  maybe_duration_millis: Option<u64>,
   // maybe_audio_encoding: Option<&'a str>,
   // maybe_video_encoding: Option<&'a str>,
   maybe_frame_width: Option<u32>,
@@ -90,6 +90,7 @@ impl MediaFileInsertBuilder {
       origin_product_category: MediaFileOriginProductCategory::Unknown,
       maybe_mime_type: None,
       file_size_bytes: 0,
+      maybe_duration_millis: None,
       maybe_frame_width: None,
       maybe_frame_height: None,
       checksum_sha2: None,
@@ -173,17 +174,31 @@ impl MediaFileInsertBuilder {
     self
   }
 
-  // TODO: maybe_duration_millis
+  pub fn maybe_duration_millis(mut self, maybe_duration_millis: Option<u64>) -> Self {
+    self.maybe_duration_millis = maybe_duration_millis;
+    self
+  }
+
   // TODO: maybe_audio_encoding
   // TODO: maybe_video_encoding
-
+  
   pub fn frame_width(mut self, frame_width: u32) -> Self {
     self.maybe_frame_width = Some(frame_width);
     self
   }
 
+  pub fn maybe_frame_width(mut self, maybe_frame_width: Option<u32>) -> Self {
+    self.maybe_frame_width = maybe_frame_width;
+    self
+  }
+
   pub fn frame_height(mut self, frame_height: u32) -> Self {
     self.maybe_frame_height = Some(frame_height);
+    self
+  }
+  
+  pub fn maybe_frame_height(mut self, maybe_frame_height: Option<u32>) -> Self {
+    self.maybe_frame_height = maybe_frame_height;
     self
   }
 
@@ -238,7 +253,7 @@ impl MediaFileInsertBuilder {
       maybe_origin_filename: None, // TODO
       maybe_mime_type: self.maybe_mime_type.as_deref(),
       file_size_bytes: self.file_size_bytes,
-      maybe_duration_millis: None, // TODO
+      maybe_duration_millis: self.maybe_duration_millis,
       maybe_audio_encoding: None, // TODO
       maybe_video_encoding: None, // TODO
       maybe_frame_width: self.maybe_frame_width,

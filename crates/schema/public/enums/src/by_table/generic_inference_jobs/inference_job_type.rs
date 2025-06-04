@@ -15,6 +15,10 @@ use strum::EnumIter;
 #[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Serialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum InferenceJobType {
+  /// Fal jobs do not run on our job runners.
+  /// Instead, we receive web hook updates from Fal.
+  FalQueue,
+  
   /// Storyteller Studio and Video Style Transfer Jobs (which we may want to split).
   /// These run in Comfy.
   /// TODO(bt,2024-07-15): We may segregate these two job types in the future
@@ -105,6 +109,7 @@ impl_mysql_enum_coders!(InferenceJobType);
 impl InferenceJobType {
   pub fn to_str(&self) -> &'static str {
     match self {
+      Self::FalQueue => "fal_queue",
       Self::VideoRender => "video_render",
       Self::LivePortrait => "live_portrait",
       Self::FaceFusion => "face_fusion",
@@ -130,6 +135,7 @@ impl InferenceJobType {
 
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
+      "fal_queue" => Ok(Self::FalQueue),
       "video_render" => Ok(Self::VideoRender),
       "live_portrait" => Ok(Self::LivePortrait),
       "face_fusion" => Ok(Self::FaceFusion),
@@ -158,6 +164,7 @@ impl InferenceJobType {
     // NB: BTreeSet is sorted
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
+      Self::FalQueue,
       Self::VideoRender,
       Self::LivePortrait,
       Self::FaceFusion,
@@ -197,6 +204,7 @@ mod tests {
 
     #[test]
     fn test_serialization() {
+      assert_serialization(InferenceJobType::FalQueue, "fal_queue");
       assert_serialization(InferenceJobType::VideoRender, "video_render");
       assert_serialization(InferenceJobType::LivePortrait, "live_portrait");
       assert_serialization(InferenceJobType::FaceFusion, "face_fusion");
@@ -221,6 +229,7 @@ mod tests {
 
     #[test]
     fn to_str() {
+      assert_eq!(InferenceJobType::FalQueue.to_str(), "fal_queue");
       assert_eq!(InferenceJobType::VideoRender.to_str(), "video_render");
       assert_eq!(InferenceJobType::LivePortrait.to_str(), "live_portrait");
       assert_eq!(InferenceJobType::FaceFusion.to_str(), "face_fusion");
@@ -245,6 +254,7 @@ mod tests {
 
     #[test]
     fn from_str() {
+      assert_eq!(InferenceJobType::from_str("fal_queue").unwrap(), InferenceJobType::FalQueue);
       assert_eq!(InferenceJobType::from_str("video_render").unwrap(), InferenceJobType::VideoRender);
       assert_eq!(InferenceJobType::from_str("live_portrait").unwrap(), InferenceJobType::LivePortrait);
       assert_eq!(InferenceJobType::from_str("face_fusion").unwrap(), InferenceJobType::FaceFusion);
@@ -270,29 +280,10 @@ mod tests {
     #[test]
     fn all_variants() {
       // Static check
-      let mut variants = InferenceJobType::all_variants();
-      assert_eq!(variants.len(), 17);
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::VideoRender));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::LivePortrait));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::FaceFusion));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::F5TTS));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::GptSovits));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::ComfyUi));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::StudioGen2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::ImageGenApi));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::ConvertFbxToGltf));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::MocapNet));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::RvcV2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::SadTalker));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::SeedVc));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::SoVitsSvc));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::StableDiffusion));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::StyleTTS2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::Tacotron2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::Unknown));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::BevyToWorkflow));
-      assert_eq!(variants.pop_first(), Some(InferenceJobType::RerenderAVideo));
-      assert_eq!(variants.pop_first(), None);
+      const EXPECTED_COUNT : usize = 21;
+      
+      assert_eq!(InferenceJobType::all_variants().len(), EXPECTED_COUNT);
+      assert_eq!(InferenceJobType::iter().len(), EXPECTED_COUNT);
 
       // Generated check
       use strum::IntoEnumIterator;

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
@@ -31,7 +31,7 @@ import { PopoverItem } from "@storyteller/ui-popover";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-import { appTabId, is3DEditorInitialized, setAppTabId } from "~/signals/appTab";
+import { appTabId, is3DEditorInitialized, is3DPageMounted, set3DPageMounted, setAppTabId } from "~/signals/appTab";
 import { KonvaCanvasContainer } from "../Page2d/KonvaCanvasContainer";
 import { KonvaRootComponent } from "../Page2d/KonvaRootComponent";
 import {
@@ -328,10 +328,21 @@ export const PageEditor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appTabId.value, editorEngine]);
 
-  const display3d = appTabId.value === "3D" ? "block" : "none";
-  const display2d = appTabId.value === "2D" ? "block" : "none";
-  const displayVideo = appTabId.value === "VIDEO" ? "block" : "none";
-  const displayImage = appTabId.value === "IMAGE" ? "block" : "none";
+  const display3d = appTabId.value === "3D";
+  const display2d = appTabId.value === "2D";
+  const displayVideo = appTabId.value === "VIDEO";
+  const displayImage = appTabId.value === "IMAGE";
+
+  const is3DInit = is3DEditorInitialized.value;
+  const currentAppTabId = appTabId.value;
+  useEffect(() => {
+    if (currentAppTabId !== "3D") {
+      set3DPageMounted(false);
+      return;
+    }
+
+    set3DPageMounted(true);
+  }, [currentAppTabId, editorEngine, is3DInit])
 
   return (
     <div className="w-screen">
@@ -341,91 +352,92 @@ export const PageEditor = () => {
         setAppTabId={setAppTabId}
         is3DInitSignal={is3DEditorInitialized}
       />
-      <>
-        <OnboardingHelper />
-        <div
-          className="relative flex w-screen"
-          style={{ height: "calc(100vh - 68px)", display: display3d }}
-        >
-          {/* Engine section/side panel */}
+      {display3d && (
+        <>
+          <OnboardingHelper />
           <div
-            id="engine-n-panels-wrapper"
-            className="flex"
-            style={{
-              height,
-            }}
+            className="relative flex w-screen"
+            style={{ height: "calc(100vh - 68px)" }}
           >
-            <div className="relative w-full overflow-hidden bg-transparent">
-              <SceneContainer>
-                <EditorCanvas />
-                <PreviewFrameImage />
-              </SceneContainer>
+            {/* Engine section/side panel */}
+            <div
+              id="engine-n-panels-wrapper"
+              className="flex"
+              style={{
+                height,
+              }}
+            >
+              <div className="relative w-full overflow-hidden bg-transparent">
+                <SceneContainer>
+                  <EditorCanvas />
+                  <PreviewFrameImage />
+                </SceneContainer>
 
-              {/* Focal Length Display */}
-              <FocalLengthDisplay />
+                {/* Focal Length Display */}
+                <FocalLengthDisplay />
 
-              {/* Pose Mode Selector */}
-              <PoseModeSelector />
+                {/* Pose Mode Selector */}
+                <PoseModeSelector />
 
-              {/* Top controls */}
-              <div
-                className="absolute left-0 top-0 w-full"
-                onClick={handleOverlayClick}
-              >
-                <div className="grid grid-cols-3 gap-4">
-                  <ControlsTopButtons />
-                  <Controls3D />
-                </div>
-              </div>
-
-              {/* Bottom controls */}
-              <div
-                className="absolute bottom-0 left-0"
-                style={{
-                  width: pageWidth.value,
-                }}
-                onClick={handleOverlayClick}
-              >
+                {/* Top controls */}
                 <div
-                  className="absolute bottom-0 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
-                  style={{ transform: `scale(${getScale()})` }}
+                  className="absolute left-0 top-0 w-full"
+                  onClick={handleOverlayClick}
                 >
-                  <Outliner />
-                  <PreviewEngineCamera />
+                  <div className="grid grid-cols-3 gap-4">
+                    <ControlsTopButtons />
+                    <Controls3D />
+                  </div>
                 </div>
 
-                <ControlPanelSceneObject />
-              </div>
+                {/* Bottom controls */}
+                <div
+                  className="absolute bottom-0 left-0"
+                  style={{
+                    width: pageWidth.value,
+                  }}
+                  onClick={handleOverlayClick}
+                >
+                  <div
+                    className="absolute bottom-0 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
+                    style={{ transform: `scale(${getScale()})` }}
+                  >
+                    <Outliner />
+                    <PreviewEngineCamera />
+                  </div>
 
-              <PromptBox3D
-                cameras={cameras}
-                cameraAspectRatio={cameraAspectRatio}
-                disableHotkeyInput={disableHotkeyInput}
-                enableHotkeyInput={enableHotkeyInput}
-                gridVisibility={gridVisibility}
-                setGridVisibility={setGridVisibility}
-                selectedCameraId={selectedCameraId}
-                deleteCamera={deleteCamera}
-                focalLengthDragging={focalLengthDragging}
-                isPromptBoxFocused={isPromptBoxFocused}
-                uploadImage={uploadImage}
-                handleCameraSelect={handleCameraSelect}
-                handleAddCamera={handleAddCamera}
-                handleCameraNameChange={handleCameraNameChange}
-                handleCameraFocalLengthChange={handleCameraFocalLengthChange}
-                onAspectRatioSelect={onAspectRatioSelect}
-                setEnginePrompt={(prompt) => {
-                  console.log("setEnginePrompt", prompt);
-                  if (!editorEngine) {
-                    console.log("editorEngine is not available");
-                    return;
-                  }
-                  editorEngine!.positive_prompt = prompt;
-                }}
-                snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame.bind(
-                  editorEngine,
-                )}
-              />
+                  <ControlPanelSceneObject />
+                </div>
+
+                <PromptBox3D
+                  cameras={cameras}
+                  cameraAspectRatio={cameraAspectRatio}
+                  disableHotkeyInput={disableHotkeyInput}
+                  enableHotkeyInput={enableHotkeyInput}
+                  gridVisibility={gridVisibility}
+                  setGridVisibility={setGridVisibility}
+                  selectedCameraId={selectedCameraId}
+                  deleteCamera={deleteCamera}
+                  focalLengthDragging={focalLengthDragging}
+                  isPromptBoxFocused={isPromptBoxFocused}
+                  uploadImage={uploadImage}
+                  handleCameraSelect={handleCameraSelect}
+                  handleAddCamera={handleAddCamera}
+                  handleCameraNameChange={handleCameraNameChange}
+                  handleCameraFocalLengthChange={handleCameraFocalLengthChange}
+                  onAspectRatioSelect={onAspectRatioSelect}
+                  setEnginePrompt={(prompt) => {
+                    console.log("setEnginePrompt", prompt);
+                    if (!editorEngine) {
+                      console.log("editorEngine is not available");
+                      return;
+                    }
+                    editorEngine!.positive_prompt = prompt;
+                  }}
+                  snapshotCurrentFrame={editorEngine?.snapShotOfCurrentFrame.bind(
+                    editorEngine,
+                  )}
+                />
 
               <LoadingDots
                 className="absolute left-0 top-0 z-50"
@@ -444,19 +456,23 @@ export const PageEditor = () => {
         <PageDraw />
       </div>
 
-      <div style={{ display: displayVideo }}>
-        <ImageToVideo
-          imageMediaId={topNavMediaId.value}
-          imageUrl={topNavMediaUrl.value}
-        />
-      </div>
+      {displayVideo && (
+        <div>
+          <ImageToVideo
+            imageMediaId={topNavMediaId.value}
+            imageUrl={topNavMediaUrl.value}
+          />
+        </div>
+      )}
 
-      <div style={{ display: displayImage }}>
-        <TextToImage
-          imageMediaId={topNavMediaId.value}
-          imageUrl={topNavMediaUrl.value}
-        />
-      </div>
+      {displayImage && (
+        <div>
+          <TextToImage
+            imageMediaId={topNavMediaId.value}
+            imageUrl={topNavMediaUrl.value}
+          />
+        </div>
+      )}
 
       {/* <LoginModal
         onClose={() => { }}

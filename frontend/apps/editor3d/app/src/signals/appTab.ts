@@ -20,7 +20,11 @@ export const setAppTabId = (newId: string) => {
 };
 
 export const is3DEditorInitialized = signal(false);
-
 export const setIs3DEditorInitialized = (isInitialized: boolean) => {
   is3DEditorInitialized.value = isInitialized;
 };
+
+export const is3DPageMounted = signal(false);
+export const set3DPageMounted = (isMounted: boolean) => {
+  is3DPageMounted.value = isMounted;
+}

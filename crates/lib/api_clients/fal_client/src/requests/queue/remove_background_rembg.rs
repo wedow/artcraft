@@ -9,11 +9,6 @@ use futures::StreamExt;
 use std::path::Path;
 use url::Url;
 
-pub struct RemBgArgs<'a, P: AsRef<Path>> {
-  pub image_path: P,
-  pub api_key: &'a FalApiKey,
-}
-
 pub struct RemBgResponse {
   pub image_url: Url,
 }
@@ -59,7 +54,7 @@ pub async fn remove_background_rembg<P: AsRef<Path>>(image_path: P, api_key: &Fa
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::remove_background_rembg::remove_background_rembg;
+  use crate::requests::queue::remove_background_rembg::remove_background_rembg;
   use errors::AnyhowResult;
   use testing::test_file_path::test_file_path;
 

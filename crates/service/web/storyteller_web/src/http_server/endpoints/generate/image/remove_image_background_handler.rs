@@ -1,0 +1,215 @@
+use std::fmt;
+use std::sync::Arc;
+
+use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
+use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::deprecated_endpoints::engine::create_scene_handler::CreateSceneError;
+use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
+use crate::http_server::web_utils::response_success_helpers::simple_json_success;
+use crate::state::server_state::ServerState;
+use crate::util::delete_role_disambiguation::{delete_role_disambiguation, DeleteRole};
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::{web, HttpRequest, HttpResponse};
+use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
+use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
+use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use enums::common::visibility::Visibility;
+use fal_client::requests::webhook::image::remove_background_rembg_webhook::{remove_background_rembg_webhook, RemoveBackgroundRembgWebhookArgs};
+use http_server_common::request::get_request_ip::get_request_ip;
+use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
+use idempotency::uuid::generate_random_uuid;
+use log::{error, info, warn};
+use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
+use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::FalCategory;
+use mysql_queries::queries::generic_inference::web::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
+use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
+use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
+use tokens::tokens::media_files::MediaFileToken;
+use utoipa::ToSchema;
+use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
+use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
+// =============== Error Response ===============
+
+
+#[derive(Debug, Serialize, ToSchema)]
+pub enum RemoveImageBackgroundError {
+  BadInput(String),
+  NotFound,
+  NotAuthorized,
+  ServerError,
+}
+
+impl ResponseError for RemoveImageBackgroundError {
+  fn status_code(&self) -> StatusCode {
+    match *self {
+      RemoveImageBackgroundError::BadInput(_) => StatusCode::BAD_REQUEST,
+      RemoveImageBackgroundError::NotFound => StatusCode::NOT_FOUND,
+      RemoveImageBackgroundError::NotAuthorized => StatusCode::UNAUTHORIZED,
+      RemoveImageBackgroundError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+  }
+
+  fn error_response(&self) -> HttpResponse {
+    serialize_as_json_error(self)
+  }
+}
+
+// NB: Not using derive_more::Display since Clion doesn't understand it.
+impl fmt::Display for RemoveImageBackgroundError {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{:?}", self)
+  }
+}
+
+// =============== Handler ===============
+
+/// Background removal
+#[utoipa::path(
+  post,
+  tag = "Generate Images",
+  path = "/v1/generate/image/remove_background",
+  responses(
+    (status = 200, description = "Success", body = RemoveImageBackgroundResponse),
+    (status = 400, description = "Bad input", body = RemoveImageBackgroundError),
+    (status = 401, description = "Not authorized", body = RemoveImageBackgroundError),
+    (status = 500, description = "Server error", body = RemoveImageBackgroundError),
+  ),
+  params(
+    ("request" = RemoveImageBackgroundRequest, description = "Payload for Request"),
+  )
+)]
+pub async fn remove_image_background_handler(
+  http_request: HttpRequest,
+  request: Json<RemoveImageBackgroundRequest>,
+  server_state: web::Data<Arc<ServerState>>
+) -> Result<Json<RemoveImageBackgroundResponse>, RemoveImageBackgroundError> {
+  let maybe_user_session = server_state
+      .session_checker
+      .maybe_get_user_session(&http_request, &server_state.mysql_pool)
+      .await
+      .map_err(|e| {
+        warn!("Session checker error: {:?}", e);
+        RemoveImageBackgroundError::ServerError
+      })?;
+
+  let maybe_avt_token = server_state
+      .avt_cookie_manager
+      .get_avt_token_from_request(&http_request);
+
+  // TODO: Limit usage for new accounts. Billing, free credits metering, etc.
+
+  //let user_session = match maybe_user_session {
+  //  Some(session) => session,
+  //  None => {
+  //    warn!("not logged in");
+  //    return Err(RemoveImageBackgroundError::NotAuthorized);
+  //  }
+  //};
+
+  let media_file_token = match &request.media_file_token {
+    Some(token) => token,
+    None => {
+      warn!("No media file token provided");
+      return Err(RemoveImageBackgroundError::BadInput("No media file token provided".to_string()));
+    }
+  };
+  
+  if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
+    return Err(RemoveImageBackgroundError::BadInput(reason));
+  }
+
+  insert_idempotency_token(&request.uuid_idempotency_token, &server_state.mysql_pool)
+      .await
+      .map_err(|err| {
+        error!("Error inserting idempotency token: {:?}", err);
+        RemoveImageBackgroundError::BadInput("invalid idempotency token".to_string())
+      })?;
+  const IS_MOD : bool = false;
+  
+  let media_file_lookup_result = get_media_file(
+    media_file_token,
+    IS_MOD,
+    &server_state.mysql_pool,
+  ).await;
+
+  let media_file = match media_file_lookup_result {
+    Ok(Some(media_file)) => media_file,
+    Ok(None) => {
+      warn!("MediaFile not found: {:?}", media_file_token);
+      return Err(RemoveImageBackgroundError::NotFound);
+    },
+    Err(err) => {
+      warn!("Error looking up media_file: {:?}", err);
+      return Err(RemoveImageBackgroundError::ServerError);
+    }
+  };
+
+  if !media_file.media_type.is_jpg_or_png_or_legacy_image() {
+    return Err(RemoveImageBackgroundError::BadInput("Media file must be a JPG or PNG image".to_string()));
+  }
+  
+  let media_domain = get_media_domain(&http_request);
+  
+  let bucket_path = MediaFileBucketPath::from_object_hash(
+    &media_file.public_bucket_directory_hash,
+    media_file.maybe_public_bucket_prefix.as_deref(),
+    media_file.maybe_public_bucket_extension.as_deref());
+  
+  let media_links = MediaLinks::from_media_path_and_env(
+    media_domain, 
+    server_state.server_environment, 
+    &bucket_path);
+  
+  info!("Fal webhook URL: {}", server_state.fal.webhook_url);
+  
+  let args = RemoveBackgroundRembgWebhookArgs {
+    image_url: media_links.cdn_url,
+    webhook_url: &server_state.fal.webhook_url,
+    api_key: &server_state.fal.api_key,
+  };
+
+  let fal_result = remove_background_rembg_webhook(args)
+      .await
+      .map_err(|err| {
+        warn!("Error calling remove_background_rembg_webhook: {:?}", err);
+        RemoveImageBackgroundError::ServerError
+      })?;
+
+  let external_job_id = fal_result.request_id
+      .ok_or_else(|| {
+        warn!("Fal request_id is None");
+        RemoveImageBackgroundError::ServerError
+      })?;
+  
+  info!("Fal request_id: {}", external_job_id);
+  
+  let ip_address = get_request_ip(&http_request);
+
+  let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
+    uuid_idempotency_token: &request.uuid_idempotency_token,
+    maybe_external_third_party_id: &external_job_id,
+    fal_category: FalCategory::BackgroundRemoval,
+    maybe_inference_args: None,
+    maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
+    maybe_avt_token: maybe_avt_token.as_ref(),
+    creator_ip_address: &ip_address,
+    creator_set_visibility: Visibility::Public,
+    mysql_pool: &server_state.mysql_pool,
+  }).await;
+
+  let job_token = match db_result {
+    Ok(token) => token,
+    Err(err) => {
+      warn!("Error inserting generic inference job for FAL queue: {:?}", err);
+      return Err(RemoveImageBackgroundError::ServerError);
+    }
+  };
+
+  Ok(Json(RemoveImageBackgroundResponse {
+    success: true,
+    inference_job_token: job_token,
+  }))
+}

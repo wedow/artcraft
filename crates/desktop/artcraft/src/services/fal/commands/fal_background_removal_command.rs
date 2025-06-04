@@ -24,7 +24,7 @@ use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
 use fal_client::error::fal_error_plus::FalErrorPlus;
-use fal_client::requests::remove_background_rembg::remove_background_rembg;
+use fal_client::requests::queue::remove_background_rembg::remove_background_rembg;
 use filesys::file_read_bytes::file_read_bytes;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, EncodableLayout, ImageReader};

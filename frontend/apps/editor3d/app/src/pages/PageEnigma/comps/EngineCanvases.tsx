@@ -1,20 +1,14 @@
 import { useCallback, useContext } from "react";
-import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
+import { camViewCanvasSignal, editorCanvasSignal, EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
 
 export const EditorCanvas = () => {
-  const editorEngine = useContext(EngineContext);
-
   const canvasCallbackRef = useCallback(
     (node: HTMLCanvasElement) => {
-      if (node && editorEngine) {
-        if (!editorEngine.canvReference) {
-          editorEngine.setEditorCanvas(node);
-        } else {
-          editorEngine.updateEngineCanvas(node);
-        }
+      if (node) {
+        editorCanvasSignal.value = node;
       }
     },
-    [editorEngine],
+    [],
   );
 
   return (
@@ -28,22 +22,16 @@ export const EditorCanvas = () => {
 };
 
 export const CameraViewCanvas = ({ className }: { className?: string }) => {
-  const editorEngine = useContext(EngineContext);
   const canvasCallbackRef = useCallback(
     (node: HTMLCanvasElement) => {
-      if (node && editorEngine) {
-        if (!editorEngine.canvasRenderCamReference) {
-          editorEngine.setCamViewCanvas(node);
-        } else {
-          editorEngine.updateCamViewCanvas(node);
-        }
+      if (node) {
+        camViewCanvasSignal.value = node;
       }
-      //else just do nothing
     },
-    [editorEngine],
+    [],
   );
 
   return (
-    <canvas className={className} ref={canvasCallbackRef} id="camera-view"/>
+    <canvas className={className} ref={canvasCallbackRef} id="camera-view" />
   );
 };

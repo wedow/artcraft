@@ -7,6 +7,7 @@ use actix_helpers::middleware::banned_ip_filter::ip_ban_list::ip_ban_list::IpBan
 use billing_component::stripe::stripe_config::StripeConfig;
 use cloud_storage::bucket_client::BucketClient;
 use email_sender::smtp_email_sender::SmtpEmailSender;
+use fal_client::creds::fal_api_key::FalApiKey;
 use memory_caching::arc_ttl_sieve::ArcTtlSieve;
 use memory_caching::single_item_ttl_cache::SingleItemTtlCache;
 use mysql_queries::mediators::badge_granter::BadgeGranter;
@@ -85,6 +86,8 @@ pub struct ServerState {
   pub public_bucket_client: BucketClient,
   pub auto_gc_bucket_client: BucketClient,
 
+  pub fal: FalData,
+  
   /// Where to store audio uploads for w2l
   pub audio_uploads_bucket_root: String,
 
@@ -282,4 +285,11 @@ pub struct StaticFeatureFlags {
 pub struct TrollBans {
   pub user_tokens: TrollUserBanList,
   pub ip_addresses: IpBanList,
+}
+
+/// Fal integration
+#[derive(Clone)]
+pub struct FalData {
+  pub api_key: FalApiKey,
+  pub webhook_url: String,
 }

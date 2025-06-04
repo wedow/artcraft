@@ -60,6 +60,7 @@ use config::shared_constants::DEFAULT_MYSQL_CONNECTION_STRING;
 use config::shared_constants::DEFAULT_RUST_LOG;
 use email_sender::smtp_email_sender::SmtpEmailSender;
 use errors::AnyhowResult;
+use fal_client::creds::fal_api_key::FalApiKey;
 use memory_caching::arc_ttl_sieve::ArcTtlSieve;
 use memory_caching::single_item_ttl_cache::SingleItemTtlCache;
 use mysql_queries::mediators::badge_granter::BadgeGranter;
@@ -85,7 +86,7 @@ use crate::http_server::web_utils::handle_multipart_error::handle_multipart_erro
 use crate::http_server::web_utils::scoped_temp_dir_creator::ScopedTempDirCreator;
 use crate::state::certs::google_sign_in_cert::GoogleSignInCert;
 use crate::state::memory_cache::model_token_to_info_cache::ModelTokenToInfoCache;
-use crate::state::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, InMemoryCaches, ServerInfo, ServerState, StaticFeatureFlags, StripeSettings, TrollBans};
+use crate::state::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, FalData, InMemoryCaches, ServerInfo, ServerState, StaticFeatureFlags, StripeSettings, TrollBans};
 use crate::threads::db_health_checker_thread::db_health_check_status::HealthCheckStatus;
 use crate::threads::db_health_checker_thread::db_health_checker_thread::db_health_checker_thread;
 use crate::threads::poll_ip_banlist_thread::poll_ip_bans;
@@ -391,6 +392,9 @@ async fn main() -> AnyhowResult<()> {
     ServerEnvironment::Production => server_environment::ServerEnvironment::Production,
     ServerEnvironment::Development => server_environment::ServerEnvironment::Development,
   };
+  
+  let fal_api_key = FalApiKey::new(easyenv::get_env_string_required("FAL_API_KEY")?);
+  let fal_webhook_url = easyenv::get_env_string_required("FAL_WEBHOOK_URL")?;
 
   let server_state = ServerState {
     env_config: EnvConfig {
@@ -431,6 +435,10 @@ async fn main() -> AnyhowResult<()> {
     sort_key_crypto,
     static_api_token_set,
     email_sender,
+    fal: FalData {
+      api_key: fal_api_key,
+      webhook_url: fal_webhook_url,
+    }, 
     caches: InMemoryCaches {
       durable: DurableInMemoryCaches {
         model_token_info: model_token_info_cache,

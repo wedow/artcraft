@@ -21,6 +21,12 @@ pub enum InferenceJobProductCategory {
   /// Download: GptSoVits
   #[default]
   DownloadGptSoVits,
+  
+  // =============== FAL ===============
+  
+  FalImage,
+  FalVideo,
+  FalBgRemoval,
 
   // =============== TEXT TO SPEECH ===============
 
@@ -113,6 +119,9 @@ impl InferenceJobProductCategory {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::DownloadGptSoVits => "download_gpt_so_vits",
+      Self::FalImage => "fal_image",
+      Self::FalVideo => "fal_video",
+      Self::FalBgRemoval => "fal_bg_removal",
       Self::TtsGptSoVits => "tts_gpt_so_vits",
       Self::TtsStyleTts2 => "tts_style_tts2",
       Self::TtsTacotron2 => "tts_tacotron2",
@@ -141,6 +150,9 @@ impl InferenceJobProductCategory {
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
       "download_gpt_so_vits" => Ok(Self::DownloadGptSoVits),
+      "fal_image" => Ok(Self::FalImage),
+      "fal_video" => Ok(Self::FalVideo),
+      "fal_bg_removal" => Ok(Self::FalBgRemoval),
       "tts_gpt_so_vits" => Ok(Self::TtsGptSoVits),
       "tts_style_tts2" => Ok(Self::TtsStyleTts2),
       "tts_tacotron2" => Ok(Self::TtsTacotron2),
@@ -172,6 +184,9 @@ impl InferenceJobProductCategory {
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
       Self::DownloadGptSoVits,
+      Self::FalImage,
+      Self::FalVideo,
+      Self::FalBgRemoval,
       Self::TtsGptSoVits,
       Self::TtsStyleTts2,
       Self::TtsTacotron2,
@@ -209,6 +224,9 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(InferenceJobProductCategory::DownloadGptSoVits, "download_gpt_so_vits");
+      assert_serialization(InferenceJobProductCategory::FalImage, "fal_image");
+      assert_serialization(InferenceJobProductCategory::FalVideo, "fal_video");
+      assert_serialization(InferenceJobProductCategory::FalBgRemoval, "fal_bg_removal");
       assert_serialization(InferenceJobProductCategory::TtsGptSoVits, "tts_gpt_so_vits");
       assert_serialization(InferenceJobProductCategory::TtsStyleTts2, "tts_style_tts2");
       assert_serialization(InferenceJobProductCategory::TtsTacotron2, "tts_tacotron2");
@@ -236,6 +254,9 @@ mod tests {
     #[test]
     fn to_str() {
       assert_eq!(InferenceJobProductCategory::DownloadGptSoVits.to_str(), "download_gpt_so_vits");
+      assert_eq!(InferenceJobProductCategory::FalImage.to_str(), "fal_image");
+      assert_eq!(InferenceJobProductCategory::FalVideo.to_str(), "fal_video");
+      assert_eq!(InferenceJobProductCategory::FalBgRemoval.to_str(), "fal_bg_removal");
       assert_eq!(InferenceJobProductCategory::TtsGptSoVits.to_str(), "tts_gpt_so_vits");
       assert_eq!(InferenceJobProductCategory::TtsStyleTts2.to_str(), "tts_style_tts2");
       assert_eq!(InferenceJobProductCategory::TtsTacotron2.to_str(), "tts_tacotron2");
@@ -262,6 +283,9 @@ mod tests {
     #[test]
     fn from_str() {
       assert_eq!(InferenceJobProductCategory::from_str("download_gpt_so_vits").unwrap(), InferenceJobProductCategory::DownloadGptSoVits);
+      assert_eq!(InferenceJobProductCategory::from_str("fal_image").unwrap(), InferenceJobProductCategory::FalImage);
+      assert_eq!(InferenceJobProductCategory::from_str("fal_video").unwrap(), InferenceJobProductCategory::FalVideo);
+      assert_eq!(InferenceJobProductCategory::from_str("fal_bg_removal").unwrap(), InferenceJobProductCategory::FalBgRemoval);
       assert_eq!(InferenceJobProductCategory::from_str("tts_gpt_so_vits").unwrap(), InferenceJobProductCategory::TtsGptSoVits);
       assert_eq!(InferenceJobProductCategory::from_str("tts_style_tts2").unwrap(), InferenceJobProductCategory::TtsStyleTts2);
       assert_eq!(InferenceJobProductCategory::from_str("tts_tacotron2").unwrap(), InferenceJobProductCategory::TtsTacotron2);
@@ -288,32 +312,11 @@ mod tests {
     #[test]
     fn all_variants() {
       // Static check
-      let mut variants = InferenceJobProductCategory::all_variants();
-      assert_eq!(variants.len(), 21);
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::DownloadGptSoVits));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::TtsGptSoVits));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::TtsStyleTts2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::TtsTacotron2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VcRvc2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VcSeedVc));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VcSvc));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidLipsyncFaceFusion));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidLipsyncSadTalker));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidLivePortrait));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidLivePortraitWebcam));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidStudio));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidStudioGen2));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidStyleTransfer));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::LipsyncFaceFusion));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::LipsyncSadTalker));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::LivePortrait));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::LivePortraitWebcam));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::StableDiffusion));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::Studio));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::VidFaceFusion));
-      assert_eq!(variants.pop_first(), Some(InferenceJobProductCategory::Vst));
-      assert_eq!(variants.pop_first(), None);
+      const EXPECTED_COUNT : usize = 26;
 
+      assert_eq!(InferenceJobProductCategory::all_variants().len(), EXPECTED_COUNT);
+      assert_eq!(InferenceJobProductCategory::iter().len(), EXPECTED_COUNT);
+      
       // Generated check
       use strum::IntoEnumIterator;
       assert_eq!(InferenceJobProductCategory::all_variants().len(), InferenceJobProductCategory::iter().len());

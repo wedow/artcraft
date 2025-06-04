@@ -15,6 +15,8 @@ pub enum FalErrorPlus {
   UrlParseError(url::ParseError),
   /// An endpoint we don't support yet.
   UnhandledEndpoint(String),
+  /// Error from the `reqwest` crate.
+  ReqwestError(reqwest::Error),
 }
 
 impl Display for FalErrorPlus {
@@ -25,6 +27,7 @@ impl Display for FalErrorPlus {
       Self::AnyhowError(err) => write!(f, "FalErrorPlus::AnyhowError: {:?}", err),
       Self::UrlParseError(err) => write!(f, "FalErrorPlus::UrlParseError: {:?}", err),
       Self::UnhandledEndpoint(endpoint) => write!(f, "FalErrorPlus::UnhandledEndpoint: {:?}", endpoint),
+      Self::ReqwestError(err) => write!(f, "FalErrorPlus::ReqwestError: {:?}", err),
     }
   }
 }
@@ -46,5 +49,11 @@ impl From<anyhow::Error> for FalErrorPlus {
 impl From<url::ParseError> for FalErrorPlus {
   fn from(err: url::ParseError) -> Self {
     FalErrorPlus::UrlParseError(err)
+  }
+}
+
+impl From<reqwest::Error> for FalErrorPlus {
+  fn from(err: reqwest::Error) -> Self {
+    FalErrorPlus::ReqwestError(err)
   }
 }

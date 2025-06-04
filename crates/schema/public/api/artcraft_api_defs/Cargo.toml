@@ -1,0 +1,33 @@
+[package]
+name = "artcraft_api_defs"
+edition = "2024"
+version = "0.0.1"
+authors = [
+    "Brandon Thomas <bt@brand.io>",
+    "Brandon Thomas <echelon@gmail.com>",
+]
+publish = false
+
+[lib]
+name = "artcraft_api_defs"
+path = "src/lib.rs"
+
+[package.metadata.cargo-udeps.ignore]
+normal = ["workspace-build-acceleration"]
+
+[dependencies]
+# Hackari workspace (faster compile times)
+workspace-build-acceleration = { workspace = true }
+
+# Internal
+enums = { workspace = true }
+tokens = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_derive = { workspace = true }
+serde_json = { workspace = true }
+
+utoipa = { version = "4", features = ["chrono", "actix_extras"] }
+
+[dev-dependencies]

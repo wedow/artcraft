@@ -13,4 +13,4 @@ export interface EditorExpandedI extends Editor {
   >;
 }
 
-export const EngineContext = createContext<EditorExpandedI | null>(null);
+export const EngineContext = createContext<Editor | null>(null);
