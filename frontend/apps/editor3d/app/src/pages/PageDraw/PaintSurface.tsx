@@ -957,6 +957,7 @@ export const PaintSurface = ({
 
   return (
     <SplitPane
+      singlePaneMode={true}
       initialPercent={50}
       onChange={setLeftPct}
       left={

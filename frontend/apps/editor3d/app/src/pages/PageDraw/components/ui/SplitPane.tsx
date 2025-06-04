@@ -15,6 +15,7 @@ export type SplitPaneProps = {
   onChange?: (percent: number) => void;
   /** Extra classes for the outer wrapper */
   className?: string;
+  singlePaneMode: boolean;
 };
 
 export default function SplitPane({
@@ -25,6 +26,7 @@ export default function SplitPane({
   maxPercent = 85,
   onChange,
   className = "",
+  singlePaneMode = true
 }: SplitPaneProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [leftPct, setLeftPct] = useState(initialPercent);
@@ -60,7 +62,16 @@ export default function SplitPane({
   /* Tailwind handles almost all the styling—only flex-basis is inline */
   const leftStyle: CSSProperties = { flexBasis: `${leftPct}%` };
 
-  return (
+  return singlePaneMode ? (
+    <div
+      ref={rootRef}
+      className={`pegboard-bg relative flex h-screen w-full overflow-hidden items-center justify-center ${className}`}
+    >
+      <div style={leftStyle} className="h-full min-w-0 overflow-hidden">
+        {left}
+      </div>
+    </div>
+  ) : (
     <div
       ref={rootRef}
       className={`pegboard-bg relative flex h-screen w-full overflow-hidden ${className}`}
