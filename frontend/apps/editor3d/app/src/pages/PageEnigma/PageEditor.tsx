@@ -48,10 +48,7 @@ import { EngineContext } from "./contexts/EngineContext";
 import Queue, { QueueNames } from "./Queue";
 import { toEngineActions } from "./Queue/toEngineActions";
 import { UnionedDataTypes } from "./Queue/Queue";
-import { LoginModal } from "@storyteller/ui-login-modal";
-import { DomLevels } from "./signals/hotkeys";
-import { AUTH_STATUS } from "../../enums/authentication";
-import { authentication } from "../../signals/authentication/authentication";
+
 import {
   topNavMediaId,
   topNavMediaUrl,
@@ -69,7 +66,7 @@ import {
   removeImageDropListener,
 } from "@storyteller/ui-gallery-modal";
 
-import {PageDraw} from "../PageDraw/PageDraw"
+import PageDraw from "../PageDraw/PageDraw"
 
 export const PageEditor = () => {
   useSignals();

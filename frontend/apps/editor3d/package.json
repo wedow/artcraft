@@ -71,7 +71,7 @@
     "react-drag-drop-files": "^2.3.10",
     "react-helmet": "^6.1.0",
     "react-image-crop": "^11.0.5",
-    "react-konva": "^19.0.4",
+    "react-konva": "^18.2.10",
     "react-router": "^6.26.1",
     "react-router-dom": "^6.26.1",
     "react-virtualized": "^9.22.6",
