@@ -1,10 +1,4 @@
-import {
-  useRef,
-  useState,
-  useCallback,
-  ReactNode,
-  CSSProperties,
-} from "react";
+import { useRef, useState, useCallback, ReactNode, CSSProperties } from "react";
 
 export type SplitPaneProps = {
   /** What should appear in the left pane */
@@ -38,7 +32,8 @@ export default function SplitPane({
   /** Same logic for mouse + touch */
   const beginDrag = useCallback(() => {
     const move = (clientX: number) => {
-      const { left: rootLeft, width } = rootRef.current!.getBoundingClientRect();
+      const { left: rootLeft, width } =
+        rootRef.current!.getBoundingClientRect();
       const pct = ((clientX - rootLeft) / width) * 100;
       const clamped = Math.min(maxPercent, Math.max(minPercent, pct));
       setLeftPct(clamped);
@@ -63,23 +58,25 @@ export default function SplitPane({
     window.addEventListener("touchend", endDrag, { once: true });
   }, [minPercent, maxPercent, onChange]);
   /* Tailwind handles almost all the styling—only flex-basis is inline */
-  const leftStyle: CSSProperties = { flexBasis: `${leftPct}%`};
+  const leftStyle: CSSProperties = { flexBasis: `${leftPct}%` };
 
   return (
     <div
       ref={rootRef}
-      className={`pegboard-bg flex h-screen w-full overflow-hidden relative ${className}`}
+      className={`pegboard-bg relative flex h-screen w-full overflow-hidden ${className}`}
     >
-      <div style={leftStyle} className="h-full overflow-hidden min-w-0">{left}</div>
+      <div style={leftStyle} className="h-full min-w-0 overflow-hidden">
+        {left}
+      </div>
 
       <div
-        className="w-1 bg-gray-500/80 hover:bg-gray-600 transition
-                   cursor-col-resize select-none"
+        className="w-1 cursor-col-resize select-none bg-gray-500/80
+                   transition hover:bg-gray-600"
         onMouseDown={beginDrag}
         onTouchStart={beginDrag}
       />
 
-      <div className="flex-1 h-full overflow-hidden">{right}</div>
+      <div className="h-full flex-1 overflow-hidden">{right}</div>
     </div>
   );
 }

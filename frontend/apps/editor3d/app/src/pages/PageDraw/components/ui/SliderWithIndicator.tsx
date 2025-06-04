@@ -1,5 +1,5 @@
 // src/SliderWithIndicator.tsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 
 interface SliderWithIndicatorProps {
   value: number;
@@ -16,7 +16,7 @@ const SliderWithIndicator: React.FC<SliderWithIndicatorProps> = ({
   min = 1,
   max = 64,
   label,
-  className = "w-48"
+  className = "w-48",
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(0);
@@ -25,7 +25,7 @@ const SliderWithIndicator: React.FC<SliderWithIndicatorProps> = ({
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
     onChange(newValue);
-    
+
     // Calculate position for the tooltip
     const slider = sliderRef.current;
     if (slider) {
@@ -38,9 +38,7 @@ const SliderWithIndicator: React.FC<SliderWithIndicatorProps> = ({
 
   return (
     <div className="relative">
-      {label && (
-        <p className="mb-2 text-sm font-medium text-zinc-100">{label}</p>
-      )}
+      {label && <p className="mb-2 text-sm font-medium text-white">{label}</p>}
       <div className="relative">
         <input
           ref={sliderRef}
@@ -55,19 +53,17 @@ const SliderWithIndicator: React.FC<SliderWithIndicatorProps> = ({
           className={`${className} accent-black-600`}
         />
         {isDragging && (
-          <div 
+          <div
             className="
-              absolute top-6
-              transform -translate-x-1/2
-              bg-black-600/90 backdrop-blur-sm
-              text-white
-              text-xs font-medium
-              transition-all duration-150
+              absolute
+              top-6 -translate-x-1/2
+              transform rounded
+              bg-[#5F5F68]
               px-2 py-1
-              rounded
-              shadow-lg
-              after:content-[''] after:absolute after:left-1/2 after:-top-1.5 after:-translate-x-1/2
-              after:border-4 after:border-transparent after:border-b-black-600/90
+              text-xs font-medium
+              text-white shadow-lg
+              transition-all
+              duration-150 after:absolute after:-top-1.5 after:left-1/2 after:-translate-x-1/2
             "
             style={{ left: `${sliderPosition}px` }}
           >
