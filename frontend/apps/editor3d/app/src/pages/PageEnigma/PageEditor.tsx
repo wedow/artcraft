@@ -69,6 +69,8 @@ import {
   removeImageDropListener,
 } from "@storyteller/ui-gallery-modal";
 
+import {PageDraw} from "../PageDraw/PageDraw"
+
 export const PageEditor = () => {
   useSignals();
 
@@ -438,9 +440,10 @@ export const PageEditor = () => {
           </div>
         </div>
       </>
-      <KonvaCanvasContainer style={{ display: display2d }}>
+      {/* <KonvaCanvasContainer style={{ display: display2d }}>
         <KonvaRootComponent className="h-full w-full" />
-      </KonvaCanvasContainer>
+      </KonvaCanvasContainer> */}
+      <PageDraw style={{ display: display2d }}> </PageDraw>
 
       <div style={{ display: displayVideo }}>
         <ImageToVideo
@@ -456,7 +459,7 @@ export const PageEditor = () => {
         />
       </div>
 
-      <LoginModal
+      {/* <LoginModal
         onClose={() => { }}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
@@ -472,7 +475,8 @@ export const PageEditor = () => {
           authentication.status.value = AUTH_STATUS.LOGGED_IN;
           authentication.userInfo.value = userInfo;
         }}
-      />
+      /> */}
+    
     </div>
   );
 };

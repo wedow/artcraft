@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mirai } from './Mirai';
+import { PaintSurface } from './PaintSurface';
 // https://github.com/SaladTechnologies/comfyui-api
 import './App.css'
 import PromptEditor from './PromptEditor/PromptEditor';
-import SideToolbar from './SideToolbar';
+import SideToolbar from './components/ui/SideToolbar';
 // Import the Zustand store
-import { useSceneStore } from './SceneState';
+import { useSceneStore } from './stores/SceneState';
 import { useUndoRedoHotkeys } from './hooks/useUndoRedoHotkeys';
 import { useDeleteHotkeys } from './hooks/useDeleteHotkeys';
 import { useCopyPasteHotkeys } from './hooks/useCopyPasteHotkeys'; // Import the hook
 
-const App = (): JSX.Element => {
+const PageDraw = (): JSX.Element => {
 
   // State for canvas dimensions
   const canvasWidth = React.useRef<number>(1024);
@@ -138,7 +138,7 @@ const App = (): JSX.Element => {
       activeToolId={store.activeTool}
     />
     <div className="relative z-0">
-        <Mirai 
+        <PaintSurface 
           nodes={store.nodes}
           selectedNodeIds={store.selectedNodeIds}
           onCanvasSizeChange={(width: number, height: number): void => {
@@ -156,4 +156,4 @@ const App = (): JSX.Element => {
   );
 };
 
-export default App;
+export default PageDraw;

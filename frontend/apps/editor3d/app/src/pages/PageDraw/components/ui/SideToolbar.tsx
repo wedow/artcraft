@@ -18,12 +18,12 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from "@/components/ui/tooltip";
-import "@/App.css";
+} from "../../components/ui/tooltip";
+import "../../App.css";
 import { HsvaColorPicker, HsvaColor } from "react-colorful";
 import { hsvaToHex } from "@uiw/color-convert";
 import SliderWithIndicator from './SliderWithIndicator';
-import { useSceneStore } from "./SceneState";
+import { useSceneStore } from "../../stores/SceneState";
 
 /* visual constants */
 const panelBg = "bg-zinc-800";

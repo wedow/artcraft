@@ -2,14 +2,14 @@ import React, { useState, useEffect,useLayoutEffect } from 'react';
 import { Stage, Layer, Rect, Circle, Text, Line,Image,RegularPolygon, Transformer } from 'react-konva';
 import Konva from 'konva'; // Import Konva namespace for types
 
-import { LineNode } from './SceneState';
+import { LineNode } from './stores/SceneState';
 import { Node, NodeType } from './Node';
 import { useStageSnapshot } from './hooks/useUpdateSnapshot';
 // https://github.com/SaladTechnologies/comfyui-api
 import './App.css'
-import SplitPane from './SplitPane';
+import SplitPane from './components/ui/SplitPane';
 
-import { useSceneStore } from './SceneState';
+import { useSceneStore } from './stores/SceneState';
 import { useRightPanelLayoutManagement } from './hooks/useRightPanelLayoutManagement';
 import { useStageCentering } from './hooks/useCenteredStage';
 import { useGlobalMouseUp } from './hooks/useGlobalMouseUp';
@@ -25,7 +25,7 @@ type MiraiProps = {
   onSelectionChange?: (isSelecting: boolean) => void;
 };
 
-export const Mirai = ({
+export const PaintSurface = ({
   nodes,
   selectedNodeIds,
   onCanvasSizeChange,
@@ -87,7 +87,7 @@ export const Mirai = ({
     //   transformerRefs
     // );
 
-    let previewScale = useRightPanelLayoutManagement(
+    const previewScale = useRightPanelLayoutManagement(
       rightContainerRef,
       NATURAL_WIDTH,
       NATURAL_HEIGHT,

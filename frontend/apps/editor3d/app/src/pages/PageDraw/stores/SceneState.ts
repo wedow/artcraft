@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Node, NodeType } from './Node';
+import { Node } from '../Node';
 
 // Add LineNode type
 export type LineNode = {
