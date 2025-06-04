@@ -440,7 +440,9 @@ export const PageEditor = () => {
       {/* <KonvaCanvasContainer style={{ display: display2d }}>
         <KonvaRootComponent className="h-full w-full" />
       </KonvaCanvasContainer> */}
-      <PageDraw className="h-full w-full" style={{ display: display2d }} />
+      <div style={{ display: display2d }}>
+        <PageDraw />
+      </div>
 
       <div style={{ display: displayVideo }}>
         <ImageToVideo
