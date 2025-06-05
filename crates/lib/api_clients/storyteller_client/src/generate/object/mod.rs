@@ -1,0 +1,1 @@
+pub mod generate_hunyuan2_image_to_3d;

@@ -3,8 +3,9 @@ use serde::Serialize;
 #[derive(Debug, Copy, Clone, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GenerationServiceProvider {
-  Sora,
+  Artcraft,
   Fal,
+  Sora,
 }
 
 #[derive(Debug, Copy, Clone, Serialize)]

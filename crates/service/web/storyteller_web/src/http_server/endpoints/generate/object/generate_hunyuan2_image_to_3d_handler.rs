@@ -167,11 +167,6 @@ pub async fn generate_hunyuan_2_image_to_3d_handler(
   
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
-  let prompt = request.prompt
-      .as_deref()
-      .map(|prompt| prompt.trim())
-      .unwrap_or_else(|| "");
-  
   let args = Hunyuan2Args {
     image_url: media_links.cdn_url,
     webhook_url: &server_state.fal.webhook_url,

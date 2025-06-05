@@ -23,10 +23,12 @@ tauri-build = { version = "2.1.1", features = [] }
 workspace-build-acceleration = { workspace =  true }
 
 # Internal
+artcraft_api_defs = { workspace = true }
 build_metadata = { workspace = true }
 errors = { workspace = true }
 fal_client = { workspace = true }
 filesys = { workspace = true }
+idempotency = { workspace = true }
 memory_store = { workspace = true }
 mimetypes = { workspace = true }
 openai_sora_client = { workspace = true }

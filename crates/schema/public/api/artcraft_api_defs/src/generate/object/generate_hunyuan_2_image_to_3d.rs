@@ -3,7 +3,7 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-const GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH: &str = "/v1/generate/object/hunyuan_2_image_to_3d";
+pub const GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH: &str = "/v1/generate/object/hunyuan_2_image_to_3d";
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct GenerateHunyuan2ImageTo3dRequest {
@@ -13,9 +13,6 @@ pub struct GenerateHunyuan2ImageTo3dRequest {
   /// Source of the file to convert to 3D
   /// It must be an image.
   pub media_file_token: Option<MediaFileToken>,
-
-  /// Optional text prompt.
-  pub prompt: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

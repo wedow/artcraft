@@ -2,14 +2,17 @@ use base64::DecodeError;
 use errors::AnyhowError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
 use storyteller_client::error::api_error::ApiError;
+use storyteller_client::error::storyteller_error::StorytellerError;
 
 #[derive(Debug)]
 pub enum InternalObjectError {
   NoModelSpecified,
   NeedsFalApiKey,
   NeedsSoraCredentials,
+  NeedsStorytellerCredentials,
   FalError(FalErrorPlus),
   AnyhowError(AnyhowError),
+  StorytellerError(StorytellerError),
   StorytellerApiError(ApiError),
   DecodeError(DecodeError),
   IoError(std::io::Error),

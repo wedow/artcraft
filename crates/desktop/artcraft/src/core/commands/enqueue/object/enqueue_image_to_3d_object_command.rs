@@ -57,6 +57,7 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::commands::enqueue::object::handle_object_artcraft::handle_object_artcraft;
 
 #[derive(Deserialize)]
 pub struct EnqueueImageTo3dObjectRequest {
@@ -163,16 +164,9 @@ pub async fn handle_request(
 
   if fal_creds_manager.has_apparent_api_token()? {
     handle_object_fal(&app, app_data_root, request, fal_creds_manager, fal_task_queue).await?;
+  } else {
+    handle_object_artcraft(request, &app, app_data_root, storyteller_creds_manager).await?;
   }
-  
-  //match request.model {
-  //  None => {
-  //    return Err(InternalObjectError::NoModelSpecified);
-  //  }
-  //  Some(EnqueueImageTo3dObjectModel::Hunyuan3d2) => {
-  //    handle_fal().await?;
-  //  },
-  //};
 
   Ok(())
 }

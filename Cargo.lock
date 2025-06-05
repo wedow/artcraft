@@ -648,6 +648,7 @@ name = "artcraft"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "artcraft_api_defs",
  "base64 0.22.1",
  "build_metadata",
  "bytes 1.10.1",
@@ -659,6 +660,7 @@ dependencies = [
  "fal_client",
  "filesys",
  "futures 0.3.31",
+ "idempotency",
  "image",
  "indexmap 2.9.0",
  "log",
@@ -9994,6 +9996,7 @@ name = "storyteller_client"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "artcraft_api_defs",
  "backoff",
  "chrono",
  "cookie 0.18.1",

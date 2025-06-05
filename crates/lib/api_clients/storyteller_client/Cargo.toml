@@ -17,6 +17,7 @@ path = "src/lib.rs"
 workspace-build-acceleration = { workspace =  true }
 
 # Internal
+artcraft_api_defs = { workspace = true }
 enums = { workspace = true }
 enums_public = { workspace = true }
 errors = { workspace = true }
