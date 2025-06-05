@@ -580,16 +580,6 @@ export const PaintSurface = ({
       targetNode.lastX = targetNode.x();
       targetNode.lastY = targetNode.y();
 
-      // Print movement values
-      console.log("Node Movement:", {
-        currentX: targetNode.x(),
-        currentY: targetNode.y(),
-        lastX: targetNode.lastX,
-        lastY: targetNode.lastY,
-        deltaX: dx,
-        deltaY: dy,
-      });
-
       store.moveNode(nodeId, targetNode.x(), targetNode.y(), dx, dy, false);
     };
 

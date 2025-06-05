@@ -74,8 +74,15 @@ const PageDraw = () => {
     setSelectedModel(item.label);
   };
 
-  const onEnqueuedPressed = () => {
-    console.log("Enqueued")
+  const onEnqueuedPressed = async () => {
+    // takes snap shot and then a global variable in the engine will invoke the inference.
+    const image = await captureStageImageBitmap(stageRef,transformerRefs)
+    if (!image) {
+      console.error('Failed to capture stage image');
+      return;
+    } else {
+      setCanvasRenderBitmap(image);
+    }
   }
 
   return (
@@ -144,7 +151,6 @@ const PageDraw = () => {
           // Add image generation logic here
         }}
         onUploadImage={(): void => {
-          console.log("Clicking");
           // Create input element dynamically like in PromptEditor
           const input = document.createElement("input");
           input.type = "file";
