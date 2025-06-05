@@ -70,7 +70,6 @@ export const TopBar = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const handleOpenGalleryModal = () => {
-    console.log("TRIGGERED")
     galleryModalVisibleViewMode.value = true;
     galleryModalVisibleDuringDrag.value = true;
   };
