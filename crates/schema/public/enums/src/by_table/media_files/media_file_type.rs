@@ -112,10 +112,10 @@ impl MediaFileType {
       "image/jpeg" => Some(Self::Jpg),
       "image/png" => Some(Self::Png),
       "video/mp4" => Some(Self::Mp4),
+      "model/gltf-binary" => Some(Self::Glb),
       //"audio/wav" => Some(Self::Wav), // NB: Not sure if this is correct
       //"audio/mpeg" => Some(Self::Mp3), // NB: Not sure if this is correct
       //"image/gif" => Some(Self::Gif), // NB: Not sure if this is correct
-      //"model/gltf-binary" => Some(Self::Glb), // NB: Not sure if this is correct
       //"model/gltf+json" => Some(Self::Gltf), // NB: Not sure if this is correct
       _ => None,
     }

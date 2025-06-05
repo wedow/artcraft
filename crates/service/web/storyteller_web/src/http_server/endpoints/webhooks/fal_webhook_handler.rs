@@ -2,6 +2,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::http_server::endpoints::webhooks::handle_image_payload::handle_image_payload;
+use crate::http_server::endpoints::webhooks::handle_model_mesh_payload::handle_model_mesh_payload;
 use crate::http_server::endpoints::webhooks::handle_video_payload::handle_video_payload;
 use crate::state::server_state::ServerState;
 use actix_web::error::ResponseError;
@@ -144,9 +145,8 @@ pub async fn fal_webhook_handler(
       handle_image_payload(payload_obj, &job, &server_state).await?;
     } else if payload_obj.contains_key("video") {
       handle_video_payload(payload_obj, &job, &server_state).await?;
-    }
-    if payload_obj.contains_key("video") {
-      handle_video_payload(payload_obj, &job, &server_state).await?;
+    } else if payload_obj.contains_key("model_mesh") {
+      handle_model_mesh_payload(payload_obj, &job, &server_state).await?;
     }
   }
 
