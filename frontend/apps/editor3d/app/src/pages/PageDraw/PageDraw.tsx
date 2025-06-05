@@ -9,6 +9,9 @@ import { useSceneStore } from "./stores/SceneState";
 import { useUndoRedoHotkeys } from "./hooks/useUndoRedoHotkeys";
 import { useDeleteHotkeys } from "./hooks/useDeleteHotkeys";
 import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys"; // Import the hook
+import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
 
 const PageDraw = () => {
   // State for canvas dimensions
@@ -16,7 +19,7 @@ const PageDraw = () => {
   const canvasHeight = React.useRef<number>(1024);
   // Add new state to track if user is selecting
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
-
+  const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
   // Use the Zustand store
   const store = useSceneStore();
 
@@ -40,6 +43,27 @@ const PageDraw = () => {
         file,
       );
     });
+  };
+
+  const modelList: PopoverItem[] = [
+    {
+      label: "GPT-4o",
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
+      selected: selectedModel === "GPT-4o",
+      description: "High quality model",
+      badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
+    },
+    {
+      label: "FLUX.1 Kontext",
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
+      selected: selectedModel === "FLUX.1 Kontext",
+      description: "Fast and high-quality model",
+      badges: [{ label: "20 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+    },
+  ];
+
+  const handleModelSelect = (item: PopoverItem) => {
+    setSelectedModel(item.label);
   };
 
   return (
@@ -151,6 +175,19 @@ const PageDraw = () => {
           brushColor={store.brushColor}
           brushSize={store.brushSize}
           onSelectionChange={setIsSelecting}
+        />
+      </div>
+
+      <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
+        <PopoverMenu
+          items={modelList}
+          onSelect={handleModelSelect}
+          mode="hoverSelect"
+          panelTitle="Select Model"
+          panelClassName="min-w-[280px]"
+          buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
+          showIconsInList
+          triggerLabel="Model"
         />
       </div>
     </>
