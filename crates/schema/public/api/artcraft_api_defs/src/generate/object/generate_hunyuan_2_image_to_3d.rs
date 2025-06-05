@@ -1,25 +1,25 @@
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-const GENERATE_KLING_1_6_IMAGE_TO_VIDEO_URL_PATH: &str = "/v1/generate/video/kling_16_image_to_video";
+const GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH: &str = "/v1/generate/object/hunyuan_2_image_to_3d";
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct GenerateKling16ImageToVideoRequest {
+pub struct GenerateHunyuan2ImageTo3dRequest {
   /// Idempotency token to prevent duplicate requests.
   pub uuid_idempotency_token: String,
-  
-  /// Source of the image file to convert to video.
+
+  /// Source of the file to convert to 3D
   /// It must be an image.
   pub media_file_token: Option<MediaFileToken>,
-  
+
   /// Optional text prompt.
   pub prompt: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct GenerateKling16ImageToVideoResponse {
+pub struct GenerateHunyuan2ImageTo3dResponse {
   pub success: bool,
   pub inference_job_token: InferenceJobToken,
 }

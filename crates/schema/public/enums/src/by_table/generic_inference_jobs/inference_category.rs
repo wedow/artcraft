@@ -43,6 +43,10 @@ pub enum InferenceCategory {
   #[serde(rename = "video_generation")]
   VideoGeneration,
   
+  /// FAL-powered 3D object generation
+  #[serde(rename = "object_generation")]
+  ObjectGeneration,
+  
   /// FAL-powered image background removal
   #[serde(rename = "background_removal")]
   BackgroundRemoval,
@@ -98,6 +102,7 @@ impl InferenceCategory {
       Self::VoiceConversion => "voice_conversion",
       Self::ImageGeneration => "image_generation",
       Self::VideoGeneration => "video_generation",
+      Self::ObjectGeneration => "object_generation",
       Self::BackgroundRemoval => "background_removal",
       Self::Mocap => "mocap",
       Self::Workflow => "workflow",
@@ -118,6 +123,7 @@ impl InferenceCategory {
       "voice_conversion" => Ok(Self::VoiceConversion),
       "image_generation" => Ok(Self::ImageGeneration),
       "video_generation" => Ok(Self::VideoGeneration),
+      "object_generation" => Ok(Self::ObjectGeneration),
       "background_removal" => Ok(Self::BackgroundRemoval),
       "f5_tts" => Ok(Self::F5TTS),
       "mocap" => Ok(Self::Mocap),
@@ -140,6 +146,7 @@ impl InferenceCategory {
       Self::TextToSpeech,
       Self::VoiceConversion,
       Self::ImageGeneration,
+      Self::ObjectGeneration,
       Self::VideoGeneration,
       Self::BackgroundRemoval,
       Self::Mocap,
@@ -170,6 +177,7 @@ mod tests {
       assert_serialization(InferenceCategory::VoiceConversion, "voice_conversion");
       assert_serialization(InferenceCategory::ImageGeneration, "image_generation");
       assert_serialization(InferenceCategory::VideoGeneration, "video_generation");
+      assert_serialization(InferenceCategory::ObjectGeneration, "object_generation");
       assert_serialization(InferenceCategory::BackgroundRemoval, "background_removal");
       assert_serialization(InferenceCategory::Mocap, "mocap");
       assert_serialization(InferenceCategory::F5TTS, "f5_tts");
@@ -189,6 +197,7 @@ mod tests {
       assert_eq!(InferenceCategory::VoiceConversion.to_str(), "voice_conversion");
       assert_eq!(InferenceCategory::ImageGeneration.to_str(), "image_generation");
       assert_eq!(InferenceCategory::VideoGeneration.to_str(), "video_generation");
+      assert_eq!(InferenceCategory::ObjectGeneration.to_str(), "object_generation");
       assert_eq!(InferenceCategory::BackgroundRemoval.to_str(), "background_removal");
       assert_eq!(InferenceCategory::F5TTS.to_str(), "f5_tts");
       assert_eq!(InferenceCategory::SeedVc.to_str(), "seed_vc");
@@ -208,6 +217,7 @@ mod tests {
       assert_eq!(InferenceCategory::from_str("voice_conversion").unwrap(), InferenceCategory::VoiceConversion);
       assert_eq!(InferenceCategory::from_str("image_generation").unwrap(), InferenceCategory::ImageGeneration);
       assert_eq!(InferenceCategory::from_str("video_generation").unwrap(), InferenceCategory::VideoGeneration);
+      assert_eq!(InferenceCategory::from_str("object_generation").unwrap(), InferenceCategory::ObjectGeneration);
       assert_eq!(InferenceCategory::from_str("background_removal").unwrap(), InferenceCategory::BackgroundRemoval);
       assert_eq!(InferenceCategory::from_str("f5_tts").unwrap(), InferenceCategory::F5TTS);
       assert_eq!(InferenceCategory::from_str("seed_vc").unwrap(), InferenceCategory::SeedVc);
@@ -222,7 +232,7 @@ mod tests {
     #[test]
     fn all_variants() {
       // Static check
-      const EXPECTED_COUNT : usize = 15;
+      const EXPECTED_COUNT : usize = 16;
 
       assert_eq!(InferenceCategory::all_variants().len(), EXPECTED_COUNT);
       assert_eq!(InferenceCategory::iter().len(), EXPECTED_COUNT);
