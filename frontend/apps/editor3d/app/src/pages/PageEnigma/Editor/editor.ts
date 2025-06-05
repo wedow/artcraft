@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { signal } from "@preact/signals-react";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FreeCam } from "./free_cam";
 import { TransformControls } from "./TransformControls.js";
@@ -53,13 +54,23 @@ import FindSurfaces from "./FindSurfaces.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { CharacterAnimationEngine } from "./Engines/CharacterAnimationEngine";
 import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
-import { is3DEditorInitialized, is3DPageMounted, setIs3DEditorInitialized } from "~/signals/appTab";
+
 
 export type EditorInitializeConfig = {
   sceneToken: string;
   editorCanvasEl: HTMLCanvasElement;
   camViewCanvasEl: HTMLCanvasElement;
   sceneContainerEl: HTMLDivElement;
+};
+
+// ONLY USED IN THIS CLASS 
+const is3DPageMounted = signal(false);
+export const set3DPageMounted = (isMounted: boolean) => {
+  is3DPageMounted.value = isMounted;
+}
+export const is3DEditorInitialized = signal(false);
+export const setIs3DEditorInitialized = (isInitialized: boolean) => {
+  is3DEditorInitialized.value = isInitialized;
 };
 
 class Editor {

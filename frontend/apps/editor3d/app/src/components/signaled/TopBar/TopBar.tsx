@@ -23,16 +23,15 @@ import {
   MenuIconSelector,
   MenuIconItem,
 } from "@storyteller/ui-menu-icon-selector";
-import { Signal, signal } from "@preact/signals-react";
+import {  signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTabStore } from "~/pages/Stores/TabState";
-
+import { set3DPageMounted } from "~/pages/PageEnigma/Editor/editor";
 interface Props {
   pageName: string;
-  is3DInitSignal: Signal<boolean>;
 }
 
 // This is the tab we start with.
@@ -99,7 +98,12 @@ export const TopBar = ({
               activeMenu={tabStore.activeTabId}
               disabled={false}
               onMenuChange={(tabId) => {
-
+                // Disable 3d engine to prevent memory leak.
+                if (tabId === "3D") {
+                  set3DPageMounted(true);
+                } else {
+                  set3DPageMounted(false);
+                }
                 useTabStore
                   .getState()
                   .setActiveTab(tabId);

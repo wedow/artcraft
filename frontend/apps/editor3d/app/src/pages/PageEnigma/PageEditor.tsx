@@ -31,7 +31,7 @@ import { PopoverItem } from "@storyteller/ui-popover";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-import { is3DEditorInitialized, set3DPageMounted } from "~/signals/appTab";
+
 
 import {
   addCamera,
@@ -330,22 +330,13 @@ export const PageEditor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabStore.activeTabId, editorEngine]);
 
-  const is3DInit = is3DEditorInitialized.value;
-  useEffect(() => {
-    console.log('Active Tab ID:', tabStore.activeTabId);
-    if (tabStore.activeTabId !== "3D") {
-      set3DPageMounted(false);
-      return;
-    } 
-    set3DPageMounted(true);
-  }, [tabStore.activeTabId, editorEngine, is3DInit])
+
 
   return (
     <div className="w-screen">
       <TopBar
         pageName="Edit Scene"
-
-        is3DInitSignal={is3DEditorInitialized}
+      
       />
       {tabStore.activeTabId == "3D" && (
         <div>
