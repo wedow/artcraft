@@ -96,6 +96,10 @@ interface SceneState {
   importSceneFromJson: (jsonString: string) => boolean;
   saveSceneToFile: () => Promise<void>;
   loadSceneFromFile: (file: File) => Promise<boolean>;
+
+  // Add these two properties
+  serializeSceneToString: () => Promise<string>;
+  loadSceneFromString: (jsonString: string) => boolean;
 }
 
 const generateId = (): string => {
