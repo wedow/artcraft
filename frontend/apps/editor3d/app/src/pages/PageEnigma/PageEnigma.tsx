@@ -28,7 +28,7 @@ import { useGenerationCompleteEvent } from "./TauriEvents/generations/useGenerat
 import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
 import { LoadingDots } from "@storyteller/ui-loading";
-
+import { useTabStore } from "../Stores/TabState";
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
   useActiveJobs();
@@ -52,26 +52,12 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     const { getGPUTier } = gpu;
     getGPUTier().then((gpuTier) => {
       console.log("GPU tier", gpuTier);
-      // Previous implementation:
-      //
-      //   if (gpuTier.gpu === "apple gpu (Apple GPU)") {
-      //     setValidGpu("valid");
-      //   }
-      //   setValidGpu(gpuTier.type !== "BENCHMARK" ? "error" : "valid");
-      //
 
       let isValid = false;
-
-      // TODO: Not sure what this test does.
-      //if (gpuTier.type === "BENCHMARK") {
-      //  isValid = true;
-      //}
 
       const fps = gpuTier.fps || 0;
 
       if (gpuTier.tier > 1) {
-        // Tier 2 and above is an estimated 30 FPS and above of rendering power.
-        // https://www.npmjs.com/package/detect-gpu
         isValid = true;
       }
 
@@ -81,8 +67,6 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
 
       switch (gpuTier.gpu) {
         case "apple gpu (Apple GPU)":
-          // TODO(bt,2025-04-08): We may want to disable this heuristic.
-          // We're getting lack of hardware acceleration using Tauri on Mac and Linux.
           isValid = true;
           break;
         default:

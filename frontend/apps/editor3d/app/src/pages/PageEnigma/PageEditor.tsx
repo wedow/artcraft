@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
@@ -31,9 +31,8 @@ import { PopoverItem } from "@storyteller/ui-popover";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-import { appTabId, is3DEditorInitialized, is3DPageMounted, set3DPageMounted, setAppTabId } from "~/signals/appTab";
-import { KonvaCanvasContainer } from "../Page2d/KonvaCanvasContainer";
-import { KonvaRootComponent } from "../Page2d/KonvaRootComponent";
+import { is3DEditorInitialized, set3DPageMounted } from "~/signals/appTab";
+
 import {
   addCamera,
   cameras,
@@ -67,11 +66,13 @@ import {
 } from "@storyteller/ui-gallery-modal";
 
 import PageDraw from "../PageDraw/PageDraw";
-import { PageEnigma } from "./PageEnigma";
+import { useTabStore } from "../Stores/TabState";
+
 
 export const PageEditor = () => {
   useSignals();
 
+  const tabStore = useTabStore();
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
@@ -249,13 +250,13 @@ export const PageEditor = () => {
       data: newRatio,
     });
   };
-
+  // MOVE THIS don't throw this in here
   // Image drop from gallery/library modal logic
   useEffect(() => {
     let handler: unknown;
-
     // 3D Drag and Drop Logic
-    if (appTabId.value === "3D") {
+   
+    if (tabStore.activeTabId === "3D") {
       handler = onImageDrop(
         (item: GalleryItem, position: { x: number; y: number }) => {
           console.log("3D Drop debug (event):", {
@@ -313,7 +314,7 @@ export const PageEditor = () => {
       );
 
       // 2D Drag and Drop Logic
-    } else if (appTabId.value === "2D") {
+    } else if (tabStore.activeTabId === "2D") {
       handler = onImageDrop(
         (item: GalleryItem, position: { x: number; y: number }) => {
           // ...2D drop logic... - TODO FOR MICHAEL
@@ -327,33 +328,26 @@ export const PageEditor = () => {
       if (handler) removeImageDropListener(handler as any);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appTabId.value, editorEngine]);
-
-  const display3d = appTabId.value === "3D";
-  const display2d = appTabId.value === "2D";
-  const displayVideo = appTabId.value === "VIDEO";
-  const displayImage = appTabId.value === "IMAGE";
+  }, [tabStore.activeTabId, editorEngine]);
 
   const is3DInit = is3DEditorInitialized.value;
-  const currentAppTabId = appTabId.value;
   useEffect(() => {
-    if (currentAppTabId !== "3D") {
+    console.log('Active Tab ID:', tabStore.activeTabId);
+    if (tabStore.activeTabId !== "3D") {
       set3DPageMounted(false);
       return;
-    }
-
+    } 
     set3DPageMounted(true);
-  }, [currentAppTabId, editorEngine, is3DInit])
+  }, [tabStore.activeTabId, editorEngine, is3DInit])
 
   return (
     <div className="w-screen">
       <TopBar
         pageName="Edit Scene"
-        appTabIdSignal={appTabId}
-        setAppTabId={setAppTabId}
+
         is3DInitSignal={is3DEditorInitialized}
       />
-      {display3d && (
+      {tabStore.activeTabId == "3D" && (
         <div>
           <OnboardingHelper />
           <div
@@ -451,12 +445,12 @@ export const PageEditor = () => {
           </div>
         </div>
       )}
-      {display2d && (
+      {tabStore.activeTabId == "2D" && (
         <div>
           <PageDraw />
         </div>
       )}
-      {displayVideo && (
+      {tabStore.activeTabId == "IMAGE" && (
         <div>
           <ImageToVideo
             imageMediaId={topNavMediaId.value}
@@ -464,7 +458,7 @@ export const PageEditor = () => {
           />
         </div>
       )}
-      {displayImage && (
+      {tabStore.activeTabId == "VIDEO" && (
         <div>
           <TextToImage
             imageMediaId={topNavMediaId.value}

@@ -17,7 +17,7 @@ interface TabState {
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
-  activeTabId: '3D',
+  activeTabId: '2D',
   tabData: {},
 
   setActiveTab: (tabId) => {
