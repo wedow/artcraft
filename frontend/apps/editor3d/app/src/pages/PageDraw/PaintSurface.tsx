@@ -99,7 +99,6 @@ export const PaintSurface = ({
   // transform variables
   const multiSelectTransformerRef = React.useRef<Konva.Transformer>(null);
 
-
   // better to double buffer and use a queue and submit to a queue
   // useStageSnapshot(
   //   stageRef,
@@ -108,7 +107,6 @@ export const PaintSurface = ({
   //   transformerRefs
   // );
   
-
   const previewScale = useRightPanelLayoutManagement(
     rightContainerRef,
     NATURAL_WIDTH,
