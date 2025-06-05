@@ -67,6 +67,7 @@ import {
 } from "@storyteller/ui-gallery-modal";
 
 import PageDraw from "../PageDraw/PageDraw";
+import { PageEnigma } from "./PageEnigma";
 
 export const PageEditor = () => {
   useSignals();
@@ -457,18 +458,12 @@ export const PageEditor = () => {
       )}
       {displayVideo && (
         <div>
-          <PageDraw />
-        </div>
-      )}
-      {displayVideo && (
-        <div>
           <ImageToVideo
             imageMediaId={topNavMediaId.value}
             imageUrl={topNavMediaUrl.value}
           />
         </div>
       )}
-
       {displayImage && (
         <div>
           <TextToImage
