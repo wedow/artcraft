@@ -93,6 +93,8 @@ pub enum EnqueueImageTo3dObjectErrorType {
   NeedsFalApiKey,
   /// Fal had an API error
   FalError,
+  /// Needs to be logged into Artcraft
+  NeedsStorytellerCredentials,
 }
 
 #[tauri::command]
@@ -136,6 +138,11 @@ pub async fn enqueue_image_to_3d_object_command(
           error_type = EnqueueImageTo3dObjectErrorType::NeedsFalApiKey;
           error_message = "You need to set a FAL api key";
         },
+        InternalObjectError::NeedsStorytellerCredentials => {
+          status = CommandErrorStatus::Unauthorized;
+          error_type = EnqueueImageTo3dObjectErrorType::NeedsStorytellerCredentials;
+          error_message = "You need to be logged into Artcraft.";
+        }
         _ => {}, // Fall-through
       }
 

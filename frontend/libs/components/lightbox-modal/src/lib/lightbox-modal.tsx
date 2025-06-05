@@ -5,8 +5,9 @@ import { createPortal } from "react-dom";
 import dayjs from "dayjs";
 import { faDownToLine } from "@fortawesome/pro-solid-svg-icons";
 import {
-  FalKlingImageToVideo,
   FalHunyuanImageTo3d,
+  EnqueueImageTo3dObject,
+  EnqueueImageTo3dObjectModel,
 } from "@storyteller/tauri-api";
 
 interface LightboxModalProps {
@@ -129,9 +130,13 @@ export function LightboxModal({
                     <div className="mt-15 mb-15 flex justify-end gap-2">
                       <Button
                         onClick={async (e) => {
-                          let _result = await FalHunyuanImageTo3d({
+                          //let _result = await FalHunyuanImageTo3d({
+                          //  image_media_token: mediaId,
+                          //  //base64_image: downloadUrl,
+                          //});
+                          let _result = await EnqueueImageTo3dObject({
                             image_media_token: mediaId,
-                            //base64_image: downloadUrl,
+                            model: EnqueueImageTo3dObjectModel.Hunyuan3d2,
                           });
                           //e.stopPropagation();
                           //await onAddToSceneClicked(downloadUrl, mediaId);
