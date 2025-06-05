@@ -16,8 +16,11 @@ import Konva from 'konva';
 
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot"
-
+import { useStateSceneLoader } from "./hooks/useStateSceneLoader";
 const PageDraw = () => {
+
+  //useStateSceneLoader();
+
   // State for canvas dimensions
   const canvasWidth = React.useRef<number>(1024);
   const canvasHeight = React.useRef<number>(1024);

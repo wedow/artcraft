@@ -867,4 +867,11 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       return false;
     }
   },
+  
+  serializeSceneToString: async (): Promise<string> => {
+    return get().exportSceneAsJson();
+  },
+  loadSceneFromString: (jsonString: string): boolean => {
+    return get().importSceneFromJson(jsonString);
+  }
 }));

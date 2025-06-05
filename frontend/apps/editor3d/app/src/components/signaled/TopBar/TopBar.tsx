@@ -34,8 +34,7 @@ interface Props {
   pageName: string;
 }
 
-// This is the tab we start with.
-export const STARTING_APP_TAB_ID = "2D";
+
 
 const appMenuTabs: MenuIconItem[] = [
   {
