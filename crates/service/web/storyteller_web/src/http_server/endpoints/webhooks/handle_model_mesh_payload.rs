@@ -14,10 +14,11 @@ use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use images::image_info::image_info::ImageInfo;
 use log::{info, warn};
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
-use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::FalJobDetails;
+use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id::FalJobDetails;
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use serde_json::{Map, Value};
 use std::sync::Arc;
+use tokens::tokens::media_files::MediaFileToken;
 
 const PREFIX : Option<&str> = Some("artcraft_");
 
@@ -33,7 +34,7 @@ pub async fn handle_model_mesh_payload(
   payload: &Map<String, Value>,
   job: &FalJobDetails,
   server_state: &ServerState,
-) -> AnyhowResult<()> {
+) -> AnyhowResult<MediaFileToken> {
   
   let model_mesh_value = payload.get("model_mesh")
       .ok_or_else(|| anyhow!("no `model_mesh` key in payload"))?;
@@ -98,5 +99,5 @@ pub async fn handle_model_mesh_payload(
   
   info!("Mesh media file uploaded with token: {}", media_token);
 
-  Ok(())
+  Ok(media_token)
 }

@@ -14,7 +14,8 @@ use errors::AnyhowResult;
 use http_server_common::response::response_success_helpers::SimpleGenericJsonSuccess;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::{info, warn};
-use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::get_inference_job_by_fal_id;
+use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id::get_inference_job_by_fal_id;
+use mysql_queries::queries::generic_inference::fal::mark_fal_generic_inference_job_successfully_done::mark_fal_generic_inference_job_successfully_done;
 use serde_json::Value;
 use utoipa::ToSchema;
 
@@ -139,15 +140,33 @@ pub async fn fal_webhook_handler(
       return Err(FalWebhookError::ServerError);
     }
   };
+  
+  let mut maybe_media_token = None;
 
   if let Some(payload_obj) = payload.as_object() {
     if payload_obj.contains_key("image") {
-      handle_image_payload(payload_obj, &job, &server_state).await?;
+      let token = handle_image_payload(payload_obj, &job, &server_state).await?;
+      maybe_media_token = Some(token);
     } else if payload_obj.contains_key("video") {
-      handle_video_payload(payload_obj, &job, &server_state).await?;
+      let token = handle_video_payload(payload_obj, &job, &server_state).await?;
+      maybe_media_token = Some(token);
     } else if payload_obj.contains_key("model_mesh") {
-      handle_model_mesh_payload(payload_obj, &job, &server_state).await?;
+      let token = handle_model_mesh_payload(payload_obj, &job, &server_state).await?;
+      maybe_media_token = Some(token);
     }
+  }
+  
+  if let Some(media_token) = maybe_media_token {
+    info!("Media file token: {:?}", media_token);
+    // TODO: Update job metadata.
+    mark_fal_generic_inference_job_successfully_done(
+      &server_state.mysql_pool,
+      &job.job_token,
+      media_token,
+    ).await.map_err(|err| {
+      warn!("Error marking job as successfully done: {:?}", err);
+      FalWebhookError::ServerError
+    })?;
   }
 
   Ok(SimpleGenericJsonSuccess::wrapped(true))
