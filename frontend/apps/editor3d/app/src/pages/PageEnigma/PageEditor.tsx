@@ -353,7 +353,7 @@ export const PageEditor = () => {
         is3DInitSignal={is3DEditorInitialized}
       />
       {display3d && (
-        <>
+        <div>
           <OnboardingHelper />
           <div
             className="relative flex w-screen"
@@ -439,23 +439,27 @@ export const PageEditor = () => {
                   )}
                 />
 
-              <LoadingDots
-                className="absolute left-0 top-0 z-50"
-                isShowing={editorLoader.value.isShowing}
-                type="bricks"
-                message={editorLoader.value.message}
-              />
+                <LoadingDots
+                  className="absolute left-0 top-0 z-50"
+                  isShowing={editorLoader.value.isShowing}
+                  type="bricks"
+                  message={editorLoader.value.message}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </>
-      {/* <KonvaCanvasContainer style={{ display: display2d }}>
-        <KonvaRootComponent className="h-full w-full" />
-      </KonvaCanvasContainer> */}
-      <div style={{ display: display2d }}>
-        <PageDraw />
-      </div>
-
+      )}
+      {display2d && (
+        <div>
+          <PageDraw />
+        </div>
+      )}
+      {displayVideo && (
+        <div>
+          <PageDraw />
+        </div>
+      )}
       {displayVideo && (
         <div>
           <ImageToVideo
@@ -493,4 +497,4 @@ export const PageEditor = () => {
       /> */}
     </div>
   );
-};
+}; 
