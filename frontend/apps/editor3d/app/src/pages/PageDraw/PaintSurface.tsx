@@ -33,6 +33,8 @@ type MiraiProps = {
   brushColor?: string;
   brushSize?: number;
   onSelectionChange?: (isSelecting: boolean) => void;
+  stageRef: React.RefObject<Konva.Stage>;
+  transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>;
 };
 
 export const PaintSurface = ({
@@ -44,14 +46,15 @@ export const PaintSurface = ({
   brushColor = "#000000",
   brushSize = 5,
   onSelectionChange,
+  stageRef,
+  transformerRefs,
 }: MiraiProps) => {
   const store = useSceneStore(); // Use store directly
-
+  const imageRef = React.useRef<HTMLImageElement>(null);
   const [snapshotImage, setSnapshotImage] = useState<HTMLImageElement | null>(
     null,
   );
   const leftPanelRef = React.useRef<Konva.Layer>(null);
-  const stageRef = React.useRef<Konva.Stage>(null);
   const rightContainerRef = React.useRef<HTMLDivElement>(null);
   const cursorLayerRef = React.useRef<Konva.Layer>(null);
   const cursorShapeRef = React.useRef<Konva.Circle>(null);
@@ -94,11 +97,8 @@ export const PaintSurface = ({
   const NATURAL_HEIGHT = rightPanelHeight;
 
   // transform variables
-  const transformerRefs = React.useRef<{
-    [key: string]: Konva.Transformer | null;
-  }>({});
   const multiSelectTransformerRef = React.useRef<Konva.Transformer>(null);
-  const imageRef = React.useRef<Konva.Image>(null);
+
 
   // better to double buffer and use a queue and submit to a queue
   // useStageSnapshot(
@@ -107,6 +107,7 @@ export const PaintSurface = ({
   //   isSelectingRef,
   //   transformerRefs
   // );
+  
 
   const previewScale = useRightPanelLayoutManagement(
     rightContainerRef,

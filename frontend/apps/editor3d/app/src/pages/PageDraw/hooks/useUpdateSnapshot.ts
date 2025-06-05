@@ -9,6 +9,47 @@ const debugOutput = (uri:string, name:string)=> {
     document.body.removeChild(link);
   }
 
+
+ export const captureStageImageBitmap = async (stageRef: any,transformerRefs: any): Promise<ImageBitmap | undefined> => {
+    if (!stageRef.current) {
+      return undefined;
+    }
+  
+    const oldPos = { ...stageRef.current.position() };
+    const oldScale = { x: stageRef.current.scaleX(), y: stageRef.current.scaleY() };
+  
+    // Hide all transformers
+    Object.values(transformerRefs.current).forEach(transformer => {
+      transformer.visible(false);
+    });
+  
+    stageRef.current.position({ x: 0, y: 0 });
+    stageRef.current.scale({ x: 1, y: 1 });
+    stageRef.current.draw();
+  
+    try {
+      const canvas = stageRef.current.toCanvas({ 
+        width: 1024, 
+        height: 1024, 
+        pixelRatio: 1 
+      });
+      
+      return await createImageBitmap(canvas);
+    } catch (error) {
+      console.error('Failed to create ImageBitmap:', error);
+      return undefined;
+    } finally {
+      // Restore transformers
+      Object.values(transformerRefs.current).forEach(transformer => {
+        transformer.visible(true);
+      });
+  
+      stageRef.current.position(oldPos);
+      stageRef.current.scale(oldScale);
+      stageRef.current.draw();
+    }
+  };
+
  export const useStageSnapshot = (
     stageRef: React.RefObject<any>,
     imageRef: React.RefObject<any>,

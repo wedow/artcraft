@@ -68,7 +68,6 @@ export const PromptBox2D = ({
 }: PromptBox2DProps) => {
   useSignals();
 
-  console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
   const { addJobToken } = useJobContext();

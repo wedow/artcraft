@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { PaintSurface } from "./PaintSurface";
 // https://github.com/SaladTechnologies/comfyui-api
 import "./App.css";
@@ -9,6 +9,10 @@ import { useSceneStore } from "./stores/SceneState";
 import { useUndoRedoHotkeys } from "./hooks/useUndoRedoHotkeys";
 import { useDeleteHotkeys } from "./hooks/useDeleteHotkeys";
 import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys"; // Import the hook
+import Konva from 'konva';
+
+import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
+import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot"
 
 const PageDraw = () => {
   // State for canvas dimensions
@@ -16,6 +20,10 @@ const PageDraw = () => {
   const canvasHeight = React.useRef<number>(1024);
   // Add new state to track if user is selecting
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
+
+  // Create refs for stage and image
+  const stageRef = useRef<Konva.Stage>({});
+  const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
 
   // Use the Zustand store
   const store = useSceneStore();
@@ -42,6 +50,10 @@ const PageDraw = () => {
     });
   };
 
+  const onEnqueuedPressed = () => {
+    console.log("Enqueued")
+  }
+
   return (
     <>
       <div
@@ -63,15 +75,12 @@ const PageDraw = () => {
             console.log("Vary clicked");
             // Handle vary action here
           }}
-          onAIStrengthChange={(strength: number) => {
-            console.log("AI Strength:", strength);
-            // Handle AI strength changes here
-          }}
           onAspectRatioChange={(ratio: string) => {
             console.log("Aspect ratio:", ratio);
             // Handle aspect ratio changes here
           }}
-        />
+          onEnqueuePressed={onEnqueuedPressed}
+        /> 
       </div>
       <SideToolbar
         className="fixed left-0 top-1/2 z-10 -translate-y-1/2 transform"
@@ -151,6 +160,8 @@ const PageDraw = () => {
           brushColor={store.brushColor}
           brushSize={store.brushSize}
           onSelectionChange={setIsSelecting}
+          stageRef={stageRef}
+          transformerRefs={transformerRefs}
         />
       </div>
     </>

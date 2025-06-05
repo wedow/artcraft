@@ -6,6 +6,7 @@ export interface PromptEditorProps {
   onAIStrengthChange?: (strength: number) => void;
   onAspectRatioChange?: (ratio: AspectRatio) => void;
   onImageStyleChange?: (images: ImageStyle[]) => void;
+  onEnqueuePressed?: () => void;
 }
 
 export type AspectRatio = '1:1' | '3:2' | '2:3';
