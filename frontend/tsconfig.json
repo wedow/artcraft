@@ -131,6 +131,9 @@
     },
     {
       "path": "./libs/components/action-reminder-modal"
+    },
+    {
+      "path": "./libs/components/model-selector"
     }
   ]
 }

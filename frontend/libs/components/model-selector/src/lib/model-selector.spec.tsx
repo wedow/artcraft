@@ -1,0 +1,12 @@
+import { render } from '@testing-library/react';
+
+import ModelSelector from './model-selector';
+
+describe('ModelSelector', () => {
+  
+  it('should render successfully', () => {
+    const { baseElement } = render(<ModelSelector />);
+    expect(baseElement).toBeTruthy();
+  });
+  
+});

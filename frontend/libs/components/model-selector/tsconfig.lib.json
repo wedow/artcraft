@@ -44,43 +44,7 @@
   ],
   "references": [
     {
-      "path": "../camera-settings-modal/tsconfig.lib.json"
-    },
-    {
-      "path": "../action-reminder-modal/tsconfig.lib.json"
-    },
-    {
-      "path": "../../soundboard/tsconfig.lib.json"
-    },
-    {
-      "path": "../../tauri-api/tsconfig.lib.json"
-    },
-    {
-      "path": "../gallery-modal/tsconfig.lib.json"
-    },
-    {
-      "path": "../../tauri-utils/tsconfig.lib.json"
-    },
-    {
-      "path": "../modal/tsconfig.lib.json"
-    },
-    {
-      "path": "../button/tsconfig.lib.json"
-    },
-    {
-      "path": "../tooltip/tsconfig.lib.json"
-    },
-    {
       "path": "../popover/tsconfig.lib.json"
-    },
-    {
-      "path": "../../api/tsconfig.lib.json"
-    },
-    {
-      "path": "../../common/tsconfig.lib.json"
-    },
-    {
-      "path": "../toaster/tsconfig.lib.json"
     }
   ]
 }

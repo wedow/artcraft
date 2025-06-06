@@ -29,6 +29,9 @@
   },
   "references": [
     {
+      "path": "../../libs/components/model-selector"
+    },
+    {
       "path": "../../libs/components/pagination"
     },
     {
