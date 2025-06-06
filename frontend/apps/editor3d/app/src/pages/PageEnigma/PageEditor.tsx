@@ -75,7 +75,10 @@ import {
 } from "@storyteller/ui-gallery-modal";
 import {
   imageGenerationModels,
+  // ModelCategory,
   ModelSelector,
+  // videoGenerationModels,
+  // useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
 
 export const PageEditor = () => {
@@ -84,6 +87,12 @@ export const PageEditor = () => {
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
+
+  // TODO: For 3d Promptbox to accept this later on
+  // const { selectedModels } = useModelSelectorStore();
+  // const selectedModel =
+  // selectedModels[ModelCategory.Editor3D] ||
+  // videoGenerationModels[0]?.label;
 
   useEffect(() => {
     timelineHeight.value = 0; //timelineHeight.value = 208;
@@ -460,7 +469,7 @@ export const PageEditor = () => {
                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
                   <ModelSelector
                     items={imageGenerationModels}
-                    category="image-generation"
+                    category="3d-editor"
                     panelTitle="Select Model"
                     panelClassName="min-w-[280px]"
                     buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"

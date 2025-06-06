@@ -1,10 +1,11 @@
 import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
 import { useModelSelectorStore } from "./model-selector-store";
 import { useMemo } from "react";
+import { ModelCategory } from "./model-categories";
 
 interface ModelSelectorProps {
   items: Omit<PopoverItem, "selected">[];
-  category: string;
+  category: ModelCategory;
   mode?: "hoverSelect" | "default" | "toggle" | "button";
   panelTitle?: string;
   buttonClassName?: string;

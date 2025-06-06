@@ -3,6 +3,7 @@ import { JobContextType } from "@storyteller/common";
 import { PromptBoxVideo } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
 import {
+  ModelCategory,
   ModelSelector,
   useModelSelectorStore,
   videoGenerationModels,
@@ -17,7 +18,8 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedModels } = useModelSelectorStore();
   const selectedModel =
-    selectedModels["image-to-video"] || videoGenerationModels[0]?.label;
+    selectedModels[ModelCategory.ImageToVideo] ||
+    videoGenerationModels[0]?.label;
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -59,7 +61,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
             <ModelSelector
               items={videoGenerationModels}
-              category="image-to-video"
+              category={ModelCategory.ImageToVideo}
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"
               buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"

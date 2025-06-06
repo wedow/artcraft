@@ -4,6 +4,7 @@ import { PromptBoxImage } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
 import {
   imageGenerationModels,
+  ModelCategory,
   ModelSelector,
   useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
@@ -17,7 +18,8 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedModels } = useModelSelectorStore();
   const selectedModel =
-    selectedModels["text-to-image"] || imageGenerationModels[0]?.label;
+    selectedModels[ModelCategory.TextToImage] ||
+    imageGenerationModels[0]?.label;
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -58,7 +60,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
             <ModelSelector
               items={imageGenerationModels}
-              category="text-to-image"
+              category={ModelCategory.TextToImage}
               mode="hoverSelect"
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"

@@ -38,6 +38,12 @@ export const allModels = {
       description: "Fast and high-quality model",
       badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
     },
+    {
+      label: "Flux.1 Kontext",
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
+      description: "New model with advanced context",
+      badges: [{ label: "25 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+    },
   ],
 };
 

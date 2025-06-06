@@ -1,8 +1,9 @@
 import { create } from "zustand";
+import { ModelCategory } from "./model-categories";
 
 interface ModelSelectorState {
-  selectedModels: { [category: string]: string | undefined };
-  setSelectedModel: (category: string, modelLabel: string) => void;
+  selectedModels: { [category in ModelCategory]?: string };
+  setSelectedModel: (category: ModelCategory, modelLabel: string) => void;
 }
 
 export const useModelSelectorStore = create<ModelSelectorState>((set) => ({
