@@ -75,6 +75,7 @@ import {
 } from "@storyteller/ui-gallery-modal";
 import {
   imageGenerationModels,
+  ModelCategory,
   // ModelCategory,
   ModelSelector,
   // videoGenerationModels,
@@ -469,7 +470,7 @@ export const PageEditor = () => {
                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
                   <ModelSelector
                     items={imageGenerationModels}
-                    category="3d-editor"
+                    category={ModelCategory.Editor3D}
                     panelTitle="Select Model"
                     panelClassName="min-w-[280px]"
                     buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
