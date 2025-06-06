@@ -10,7 +10,7 @@ pub struct GenerateKling16ImageToVideoRequest {
   /// Idempotency token to prevent duplicate requests.
   pub uuid_idempotency_token: String,
   
-  /// Source of the file to remove the background from.
+  /// Source of the image file to convert to video.
   /// It must be an image.
   pub media_file_token: Option<MediaFileToken>,
   

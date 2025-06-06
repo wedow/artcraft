@@ -1,10 +1,13 @@
-import { useState, useRef } from "react";
-import { JobContextType } from "libs/common/src/lib/types";
+import { useRef } from "react";
+import { JobContextType } from "@storyteller/common";
 import { PromptBoxImage } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
-import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
-import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  imageGenerationModels,
+  ModelCategory,
+  ModelSelector,
+  useModelSelectorStore,
+} from "@storyteller/ui-model-selector";
 
 interface TextToImageProps {
   imageMediaId?: string;
@@ -13,48 +16,16 @@ interface TextToImageProps {
 
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedModel, setSelectedModel] = useState<string>(
-    "GPT Image 1 (GPT-4o)",
-  );
-  const [useSystemPrompt, setUseSystemPrompt] = useState(false);
-  const [isImageBeingProcessed, setIsImageBeingProcessed] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { selectedModels } = useModelSelectorStore();
+  const selectedModel =
+    selectedModels[ModelCategory.TextToImage] ||
+    imageGenerationModels[0]?.label;
 
   const jobContext: JobContextType = {
     jobTokens: [],
     addJobToken: () => {},
     removeJobToken: () => {},
     clearJobTokens: () => {},
-  };
-
-  const modelList: PopoverItem[] = [
-    {
-      label: "GPT Image 1 (GPT-4o)",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
-      selected: selectedModel === "GPT Image 1 (GPT-4o)",
-      description: "Slow, ultra instructive model",
-      badges: [{ label: "45 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-    {
-      label: "Flux Pro Ultra",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
-      selected: selectedModel === "Flux Pro Ultra",
-      description: "High quality model",
-      badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-    {
-      label: "Recraft 3",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
-      selected: selectedModel === "Recraft 3",
-      description: "Fast and high-quality model",
-      badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-  ];
-
-  const handleModelSelect = (item: PopoverItem) => {
-    setSelectedModel(item.label);
   };
 
   return (
@@ -73,13 +44,12 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
 
           <PromptBoxImage
             useJobContext={() => {
-              // TODO: Implement job context logic
               console.log("Using job context");
               return jobContext;
             }}
             model={selectedModel}
             imageMediaId={imageMediaId}
-            url={imageUrl ?? imagePreviewUrl ?? undefined}
+            url={imageUrl ?? undefined}
             onEnqueuePressed={async () => {
               console.log("Enqueue pressed");
             }}
@@ -88,9 +58,9 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
           <BackgroundGallery />
 
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-            <PopoverMenu
-              items={modelList}
-              onSelect={handleModelSelect}
+            <ModelSelector
+              items={imageGenerationModels}
+              category={ModelCategory.TextToImage}
               mode="hoverSelect"
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"

@@ -8,6 +8,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Footer from "../../components/footer";
 import { useState, useRef, useEffect } from "react";
 
+const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.06.04.dmg";
+
+const WINDOWS_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/windows/ArtCraft_0.0.1_x64-setup_2025.06.04.exe";
+
 const fadeUpVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -87,8 +91,8 @@ const Landing = () => {
               animate="visible"
               variants={fadeUpVariants}
             >
-              Your vision, amplified. Create stunning art with unparalleled AI
-              control and precision.
+              Text prompting sucks. Bring your true vision to life with 
+              unparalleled control and precision.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -110,7 +114,7 @@ const Landing = () => {
                   <Button
                     className="text-md px-4 py-3 font-semibold rounded-xl shadow-lg gap-3"
                     as="link"
-                    href="/"
+                    href={WINDOWS_LINK}
                   >
                     <FontAwesomeIcon icon={faWindows} />
                     Download Windows
@@ -118,7 +122,7 @@ const Landing = () => {
                   <Button
                     className="text-md px-4 py-3 font-semibold rounded-xl shadow-lg gap-3"
                     as="link"
-                    href="/"
+                    href={MAC_LINK}
                   >
                     <FontAwesomeIcon icon={faApple} />
                     Download Mac
@@ -259,7 +263,7 @@ const Landing = () => {
               <div className="max-w-2xl lg:mx-0 mb-10 md:mb-16">
                 <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl !leading-tight">
                   Our tool lets you design, control, and achieve{" "}
-                  <span className="text-primary">great consistency.</span>
+                  <span className="text-primary">perfect consistency</span>
                 </h2>
               </div>
               <DiscordButton />
@@ -317,7 +321,7 @@ const Landing = () => {
               <div className=" max-w-2xl lg:mx-0 mb-10 md:mb-16">
                 <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl xl:text-[3.8rem] !leading-tight">
                   <span className="text-primary">Patented</span> Brain to Art
-                  Interface
+                  Interface lets you Sketch and Composite 
                 </h2>
               </div>
               <DiscordButton />

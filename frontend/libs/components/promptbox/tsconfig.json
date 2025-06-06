@@ -3,16 +3,16 @@
   "include": [],
   "references": [
     {
-      "path": "../../tauri-api"
-    },
-    {
       "path": "../camera-settings-modal"
     },
     {
-      "path": "../toaster"
+      "path": "../action-reminder-modal"
     },
     {
       "path": "../../soundboard"
+    },
+    {
+      "path": "../../tauri-api"
     },
     {
       "path": "../gallery-modal"
@@ -37,6 +37,9 @@
     },
     {
       "path": "../../common"
+    },
+    {
+      "path": "../toaster"
     },
     {
       "path": "./tsconfig.lib.json"

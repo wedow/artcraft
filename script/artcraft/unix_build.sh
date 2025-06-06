@@ -18,7 +18,7 @@ config_path="${rust_crate_path}/tauri.artcraft_3d.no_dev.conf.toml"
 
 pushd "${frontend_path}" || exit
 
-npm install
+npm install --verbose
 
 popd || exit
 

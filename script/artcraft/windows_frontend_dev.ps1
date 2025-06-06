@@ -16,7 +16,7 @@ try
     Write-Host "You may need to run ./clean_modules.sh or manually clean up occasionally!"  -ForegroundColor red -BackgroundColor white
     Write-Host ""
 
-    npm install
+    npm install --verbose
 
     Write-Host "Running dev server..."
     Write-Host ""

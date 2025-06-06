@@ -15,12 +15,13 @@ use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use images::image_info::image_info::ImageInfo;
 use log::{info, warn};
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
-use mysql_queries::queries::generic_inference::web::get_inference_job_by_fal_id::FalJobDetails;
+use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id::FalJobDetails;
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use serde_json::{Map, Value};
 use std::io::Write;
 use std::sync::Arc;
 use tempfile::NamedTempFile;
+use tokens::tokens::media_files::MediaFileToken;
 use videos::ffprobe_get_info::ffprobe_get_info;
 
 const PREFIX : Option<&str> = Some("artcraft_");
@@ -39,7 +40,7 @@ pub async fn handle_video_payload(
   payload: &Map<String, Value>,
   job: &FalJobDetails,
   server_state: &ServerState,
-) -> AnyhowResult<()> {
+) -> AnyhowResult<MediaFileToken> {
   
   let video_value = payload.get("video")
       .ok_or_else(|| anyhow!("no `image` key in payload"))?;
@@ -128,5 +129,5 @@ pub async fn handle_video_payload(
   
   info!("Video media file uploaded with token: {}", media_token);
 
-  Ok(())
+  Ok(media_token)
 }

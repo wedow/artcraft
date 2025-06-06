@@ -1,4 +1,3 @@
-import { TrackProvider } from "~/pages/PageEnigma/contexts/TrackContext/TrackProvider";
 import { DragComponent } from "~/pages/PageEnigma/comps/DragComponent/DragComponent";
 import { EngineProvider } from "./contexts/EngineContext";
 import { useActiveJobs } from "~/hooks/useActiveJobs";
@@ -28,12 +27,17 @@ import { useGenerationCompleteEvent } from "./TauriEvents/generations/useGenerat
 import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
 import { LoadingDots } from "@storyteller/ui-loading";
-import { useTabStore } from "../Stores/TabState";
+
+import {
+  isActionReminderOpen,
+  actionReminderProps,
+  ActionReminderModal,
+} from "@storyteller/ui-action-reminder-modal";
+
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
   useActiveJobs();
   useBackgroundLoadingMedia();
-  // implement the code to handle incoming messages from the Engine
   useQueueHandler();
 
   const [validGpu, setValidGpu] = useState("unknown");
@@ -94,8 +98,9 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     return <TurnOnGpu />;
   }
 
-  return (
+  const currentReminderModalProps = actionReminderProps.value;
 
+  return (
     <EngineProvider sceneToken={sceneToken}>
       <PageEditor />
       <DragComponent />
@@ -111,7 +116,22 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
 
       <EditorLoadingBar />
       <Toaster offsetTop={70} offsetRight={12} />
-    </EngineProvider>
 
+      {currentReminderModalProps && (
+        <ActionReminderModal
+          isOpen={isActionReminderOpen.value}
+          onClose={currentReminderModalProps.onClose}
+          reminderType={currentReminderModalProps.reminderType}
+          onPrimaryAction={currentReminderModalProps.onPrimaryAction}
+          title={currentReminderModalProps.title}
+          message={currentReminderModalProps.message}
+          primaryActionText={currentReminderModalProps.primaryActionText}
+          secondaryActionText={currentReminderModalProps.secondaryActionText}
+          onSecondaryAction={currentReminderModalProps.onSecondaryAction}
+          isLoading={currentReminderModalProps.isLoading}
+          openAiLogo={currentReminderModalProps.openAiLogo}
+        />
+      )}
+    </EngineProvider>
   );
 };

@@ -26,6 +26,8 @@ pub enum InferenceJobProductCategory {
   
   FalImage,
   FalVideo,
+  /// Fal: 3D Object Generation
+  FalObject,
   FalBgRemoval,
 
   // =============== TEXT TO SPEECH ===============
@@ -121,6 +123,7 @@ impl InferenceJobProductCategory {
       Self::DownloadGptSoVits => "download_gpt_so_vits",
       Self::FalImage => "fal_image",
       Self::FalVideo => "fal_video",
+      Self::FalObject => "fal_object",
       Self::FalBgRemoval => "fal_bg_removal",
       Self::TtsGptSoVits => "tts_gpt_so_vits",
       Self::TtsStyleTts2 => "tts_style_tts2",
@@ -152,6 +155,7 @@ impl InferenceJobProductCategory {
       "download_gpt_so_vits" => Ok(Self::DownloadGptSoVits),
       "fal_image" => Ok(Self::FalImage),
       "fal_video" => Ok(Self::FalVideo),
+      "fal_object" => Ok(Self::FalObject),
       "fal_bg_removal" => Ok(Self::FalBgRemoval),
       "tts_gpt_so_vits" => Ok(Self::TtsGptSoVits),
       "tts_style_tts2" => Ok(Self::TtsStyleTts2),
@@ -186,6 +190,7 @@ impl InferenceJobProductCategory {
       Self::DownloadGptSoVits,
       Self::FalImage,
       Self::FalVideo,
+      Self::FalObject,
       Self::FalBgRemoval,
       Self::TtsGptSoVits,
       Self::TtsStyleTts2,
@@ -226,6 +231,7 @@ mod tests {
       assert_serialization(InferenceJobProductCategory::DownloadGptSoVits, "download_gpt_so_vits");
       assert_serialization(InferenceJobProductCategory::FalImage, "fal_image");
       assert_serialization(InferenceJobProductCategory::FalVideo, "fal_video");
+      assert_serialization(InferenceJobProductCategory::FalObject, "fal_object");
       assert_serialization(InferenceJobProductCategory::FalBgRemoval, "fal_bg_removal");
       assert_serialization(InferenceJobProductCategory::TtsGptSoVits, "tts_gpt_so_vits");
       assert_serialization(InferenceJobProductCategory::TtsStyleTts2, "tts_style_tts2");
@@ -256,6 +262,7 @@ mod tests {
       assert_eq!(InferenceJobProductCategory::DownloadGptSoVits.to_str(), "download_gpt_so_vits");
       assert_eq!(InferenceJobProductCategory::FalImage.to_str(), "fal_image");
       assert_eq!(InferenceJobProductCategory::FalVideo.to_str(), "fal_video");
+      assert_eq!(InferenceJobProductCategory::FalObject.to_str(), "fal_object");
       assert_eq!(InferenceJobProductCategory::FalBgRemoval.to_str(), "fal_bg_removal");
       assert_eq!(InferenceJobProductCategory::TtsGptSoVits.to_str(), "tts_gpt_so_vits");
       assert_eq!(InferenceJobProductCategory::TtsStyleTts2.to_str(), "tts_style_tts2");
@@ -285,6 +292,7 @@ mod tests {
       assert_eq!(InferenceJobProductCategory::from_str("download_gpt_so_vits").unwrap(), InferenceJobProductCategory::DownloadGptSoVits);
       assert_eq!(InferenceJobProductCategory::from_str("fal_image").unwrap(), InferenceJobProductCategory::FalImage);
       assert_eq!(InferenceJobProductCategory::from_str("fal_video").unwrap(), InferenceJobProductCategory::FalVideo);
+      assert_eq!(InferenceJobProductCategory::from_str("fal_object").unwrap(), InferenceJobProductCategory::FalObject);
       assert_eq!(InferenceJobProductCategory::from_str("fal_bg_removal").unwrap(), InferenceJobProductCategory::FalBgRemoval);
       assert_eq!(InferenceJobProductCategory::from_str("tts_gpt_so_vits").unwrap(), InferenceJobProductCategory::TtsGptSoVits);
       assert_eq!(InferenceJobProductCategory::from_str("tts_style_tts2").unwrap(), InferenceJobProductCategory::TtsStyleTts2);
@@ -312,7 +320,7 @@ mod tests {
     #[test]
     fn all_variants() {
       // Static check
-      const EXPECTED_COUNT : usize = 26;
+      const EXPECTED_COUNT : usize = 27;
 
       assert_eq!(InferenceJobProductCategory::all_variants().len(), EXPECTED_COUNT);
       assert_eq!(InferenceJobProductCategory::iter().len(), EXPECTED_COUNT);

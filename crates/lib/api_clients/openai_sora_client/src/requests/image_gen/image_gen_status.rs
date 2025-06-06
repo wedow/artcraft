@@ -6,9 +6,10 @@ use reqwest::Url;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Debug, Display};
 use std::{fs::File, io::Write, path::Path};
-use log::{debug, warn};
+use log::{debug, error, warn};
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
+use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
 
@@ -241,9 +242,10 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
 
   debug!("response_body: {}", response_body);
 
-  if status != reqwest::StatusCode::OK {
-    // TODO: Handle non-200 status codes, esp. JWT errors and credential errors
-    return Err(SoraError::AnyhowError(anyhow::anyhow!("The physical status request failed; status = {:?}, message = {:?}", status, response_body)));
+  if !status.is_success() {
+    error!("The sora status request failed; status = {:?} ; response body = {}", status, response_body);
+    let error = classify_general_http_status_code_and_body(status, &response_body).await;
+    return Err(error);
   }
 
   let maybe_response = serde_json::from_str::<VideoGenStatusResponse>(response_body);

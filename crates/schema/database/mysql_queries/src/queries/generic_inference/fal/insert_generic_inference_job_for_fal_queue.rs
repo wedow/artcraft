@@ -24,6 +24,7 @@ pub enum FalCategory {
   ImageGeneration,
   VideoGeneration,
   BackgroundRemoval,
+  ObjectGeneration,
 }
 
 pub struct InsertGenericInferenceForFalArgs<'a> {
@@ -68,6 +69,10 @@ pub async fn insert_generic_inference_job_for_fal_queue(args: InsertGenericInfer
         FalCategory::BackgroundRemoval => (
           InferenceCategory::BackgroundRemoval,
           InferenceJobProductCategory::FalBgRemoval
+        ),
+        FalCategory::ObjectGeneration => (
+          InferenceCategory::ObjectGeneration,
+          InferenceJobProductCategory::FalObject,
         ),
       };
 
