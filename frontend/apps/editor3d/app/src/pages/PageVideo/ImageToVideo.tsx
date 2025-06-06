@@ -59,7 +59,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
             <ModelSelector
               items={videoGenerationModels}
-              category="video-generation"
+              category="image-to-video"
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"
               buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"

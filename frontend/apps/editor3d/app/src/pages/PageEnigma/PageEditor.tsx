@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
@@ -31,7 +31,12 @@ import { PopoverItem } from "@storyteller/ui-popover";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
-import { appTabId, is3DEditorInitialized, is3DPageMounted, set3DPageMounted, setAppTabId } from "~/signals/appTab";
+import {
+  appTabId,
+  is3DEditorInitialized,
+  set3DPageMounted,
+  setAppTabId,
+} from "~/signals/appTab";
 import { KonvaCanvasContainer } from "../Page2d/KonvaCanvasContainer";
 import { KonvaRootComponent } from "../Page2d/KonvaRootComponent";
 import {
@@ -68,6 +73,10 @@ import {
   onImageDrop,
   removeImageDropListener,
 } from "@storyteller/ui-gallery-modal";
+import {
+  imageGenerationModels,
+  ModelSelector,
+} from "@storyteller/ui-model-selector";
 
 export const PageEditor = () => {
   useSignals();
@@ -343,7 +352,7 @@ export const PageEditor = () => {
     }
 
     set3DPageMounted(true);
-  }, [currentAppTabId, editorEngine, is3DInit])
+  }, [currentAppTabId, editorEngine, is3DInit]);
 
   return (
     <div className="w-screen">
@@ -356,6 +365,7 @@ export const PageEditor = () => {
       {display3d && (
         <>
           <OnboardingHelper />
+
           <div
             className="relative flex w-screen"
             style={{ height: "calc(100vh - 68px)" }}
@@ -446,6 +456,18 @@ export const PageEditor = () => {
                   type="bricks"
                   message={editorLoader.value.message}
                 />
+
+                <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
+                  <ModelSelector
+                    items={imageGenerationModels}
+                    category="image-generation"
+                    panelTitle="Select Model"
+                    panelClassName="min-w-[280px]"
+                    buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
+                    showIconsInList
+                    triggerLabel="Model"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -477,7 +499,7 @@ export const PageEditor = () => {
       )}
 
       <LoginModal
-        onClose={() => { }}
+        onClose={() => {}}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
         openAiLogo="/resources/images/openai-logo.png"

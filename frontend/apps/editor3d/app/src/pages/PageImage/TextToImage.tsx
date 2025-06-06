@@ -58,7 +58,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
             <ModelSelector
               items={imageGenerationModels}
-              category="image-generation"
+              category="text-to-image"
               mode="hoverSelect"
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"
