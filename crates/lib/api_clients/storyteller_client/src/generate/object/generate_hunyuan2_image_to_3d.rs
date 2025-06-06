@@ -6,7 +6,7 @@ use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::{GenerateHunyuan2ImageTo3dRequest, GenerateHunyuan2ImageTo3dResponse, GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH};
-use log::debug;
+use log::{debug, info};
 use reqwest::Client;
 
 /// Upload an image media file from a file.
@@ -18,7 +18,7 @@ pub async fn generate_hunyuan2_image_to_3d(
 
   let url = get_route(api_host);
 
-  debug!("Requesting {:?}", &url);
+  info!("Requesting {:?}", &url);
 
   let client = Client::builder()
       .gzip(true)
