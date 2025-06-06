@@ -17,7 +17,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedModels } = useModelSelectorStore();
   const selectedModel =
-    selectedModels["image-generation"] || imageGenerationModels[0]?.label;
+    selectedModels["text-to-image"] || imageGenerationModels[0]?.label;
 
   const jobContext: JobContextType = {
     jobTokens: [],

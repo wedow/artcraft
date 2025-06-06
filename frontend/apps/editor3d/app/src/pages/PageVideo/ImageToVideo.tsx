@@ -17,7 +17,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedModels } = useModelSelectorStore();
   const selectedModel =
-    selectedModels["video-generation"] || videoGenerationModels[0]?.label;
+    selectedModels["image-to-video"] || videoGenerationModels[0]?.label;
 
   const jobContext: JobContextType = {
     jobTokens: [],
