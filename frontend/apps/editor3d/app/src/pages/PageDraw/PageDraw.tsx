@@ -47,12 +47,21 @@ const PageDraw = () => {
     const centerX = 512; // leftPanelWidth / 2
     const centerY = 512; // leftPanelHeight / 2
 
+    console.log('Image upload started with files:', files);
+    console.log('Center coordinates:', { centerX, centerY });
+
     files.forEach((file, index) => {
+      console.log(`Processing file ${index}:`, file.name);
+      
       store.createImageFromFile(
         centerX + index * 60, // Offset each image
         centerY + index * 60,
         file,
       );
+      console.log(`Created image at position:`, { 
+        x: centerX + index * 60, 
+        y: centerY + index * 60 
+      });
     });
   };
 
@@ -155,23 +164,42 @@ const PageDraw = () => {
         }}
         onUploadImage={(): void => {
           // Create input element dynamically like in PromptEditor
+          console.log("Upload image activated");
           const input = document.createElement("input");
           input.type = "file";
           input.accept = "image/*";
-          input.multiple = true; // Allow multiple file selection
+          input.multiple = true;
+          input.style.display = "none"; // Hide the input
+
+          // Attach to DOM
+          document.body.appendChild(input);
+
           input.onchange = (e: Event) => {
+            console.log("File change event triggered");
             const target = e.target as HTMLInputElement;
             if (target.files) {
               const files = Array.from(target.files);
+              console.log("Selected files:", files);
               const imageFiles = files.filter((file) =>
                 file.type.startsWith("image/"),
               );
+              console.log("Filtered image files:", imageFiles);
 
               if (imageFiles.length > 0) {
+                console.log("Uploading images:", imageFiles);
                 handleImageUpload(imageFiles);
+              } else {
+                console.log("No valid image files selected");
               }
+            } else {
+              console.log("No files selected");
             }
+            // Clean up: remove input from DOM after use
+            document.body.removeChild(input);
           };
+
+          // Reset value before click (for same file selection)
+          input.value = "";
           input.click();
         }}
         onDelete={(): void => {

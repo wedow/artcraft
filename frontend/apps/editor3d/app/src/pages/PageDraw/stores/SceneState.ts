@@ -515,7 +515,12 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           const aspectRatio = img.naturalWidth / img.naturalHeight;
           const finalWidth = width || Math.min(img.naturalWidth, 300);
           const finalHeight = height || finalWidth / aspectRatio;
-          
+          console.log('Image loaded with dimensions:', {
+            naturalWidth: img.naturalWidth,
+            naturalHeight: img.naturalHeight,
+            finalWidth: finalWidth,
+            finalHeight: finalHeight
+          });
           get().createImage(x, y, file, finalWidth, finalHeight);
         };
         img.src = dataUrl;
@@ -576,8 +581,9 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     // Load the image asynchronously
     node.setImage(source).then(() => {
       // Update the node in the store after image loads
+      console.log('Image loaded for node:', node.id);
       get().updateNode(node.id, node, false);
-    }).catch(console.error);
+    }).catch((error)=>console.error('Error loading image:', error));
     
     get().addNode(node);
   },
