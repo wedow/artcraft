@@ -63,13 +63,22 @@ export type EditorInitializeConfig = {
 };
 
 // ONLY USED IN THIS CLASS
+// Need this one to ensure the canvas is inflated and non-zero sized
 const is3DPageMounted = signal(false);
 export const set3DPageMounted = (isMounted: boolean) => {
   is3DPageMounted.value = isMounted;
 };
+
+// Need this one to know when the engine has initialized (but not necessarily loaded saves)
 export const is3DEditorInitialized = signal(false);
 export const setIs3DEditorInitialized = (isInitialized: boolean) => {
   is3DEditorInitialized.value = isInitialized;
+};
+
+// Need this one to know when the engine is done loading stuff into the scene for display
+export const is3DSceneLoaded = signal(false);
+export const setIs3DSceneLoaded = (isLoaded: boolean) => {
+  is3DSceneLoaded.value = isLoaded;
 };
 
 class Editor {
@@ -660,10 +669,15 @@ class Editor {
     // Attach freecam state controller
     this.mouseOverEventHandler = this.mouseOverEventHandler.bind(this);
 
+    const onloadCallback = () => {
+      console.log("Setting Scene is loaded");
+      setIs3DSceneLoaded(true);
+    };
+
     if (!this.utils.isEmpty(cacheJson)) {
-      this.loadCache(cacheJson);
+      this.loadCache(cacheJson).then(onloadCallback);
     } else if (!this.utils.isEmpty(sceneToken)) {
-      this.loadScene(sceneToken);
+      this.loadScene(sceneToken).then(onloadCallback);
     } else {
       signalScene({
         title: "Untitled New Scene",
@@ -671,6 +685,7 @@ class Editor {
         ownerToken: authentication.userInfo.value?.user_token,
         isModified: false,
       });
+      onloadCallback();
     }
 
     this._configurePostProcessingRaw();
@@ -1484,6 +1499,7 @@ class Editor {
   }
 
   unmountEngine() {
+    setIs3DSceneLoaded(false);
     this.stopRenderLoop();
     this.sceneManager?.detachEventListeners();
     this.disableFreeCamControls();
@@ -1496,6 +1512,7 @@ class Editor {
     this.rawRenderer?.dispose();
 
     this.isMounted = false;
+    setIs3DEditorInitialized(false);
     console.log("3D Editor Engine unmounted");
   }
 

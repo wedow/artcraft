@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { EngineContext } from "./EngineContext";
 
-import Editor from "~/pages/PageEnigma/Editor/editor";
+import Editor, { is3DSceneLoaded } from "~/pages/PageEnigma/Editor/editor";
 import { useSignals } from "@preact/signals-react/runtime";
 
 import { signal } from "@preact/signals-react";
@@ -59,16 +59,20 @@ export const EngineProvider = ({ sceneToken, children }: Props) => {
       }
 
       // If the tab is changed, cache state, unmount the editor and clear all input params
-      const sceneGenerationMetadata = getSceneGenerationMetaData(
-        activeEditorRef.current,
-      );
-      const cacheJson = activeEditorRef.current.cacheScene({
-        sceneTitle: "",
-        sceneToken: "",
-        sceneGenerationMetadata: sceneGenerationMetadata,
-      });
-      const cacheString = JSON.stringify(cacheJson);
-      tabStore.updateTabData("3D", cacheString);
+      // This condition makes sure the editor saves a fully loaded scene so it doesn't lose data
+      // If the load was incomplete, we'll preserve the last cache anyway.
+      if (is3DSceneLoaded.peek()) {
+        const sceneGenerationMetadata = getSceneGenerationMetaData(
+          activeEditorRef.current,
+        );
+        const cacheJson = activeEditorRef.current.cacheScene({
+          sceneTitle: "",
+          sceneToken: "",
+          sceneGenerationMetadata: sceneGenerationMetadata,
+        });
+        const cacheString = JSON.stringify(cacheJson);
+        tabStore.updateTabData("3D", cacheString);
+      }
 
       // Unmount/Destructor flow
       activeEditorRef.current?.unmountEngine();

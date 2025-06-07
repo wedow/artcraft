@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import { useState } from "react";
 import {
   faGear,
   faImages,
@@ -23,18 +23,20 @@ import {
   MenuIconSelector,
   MenuIconItem,
 } from "@storyteller/ui-menu-icon-selector";
-import {  signal } from "@preact/signals-react";
+import { signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTabStore } from "~/pages/Stores/TabState";
-import { set3DPageMounted } from "~/pages/PageEnigma/Editor/editor";
+import {
+  is3DEditorInitialized,
+  is3DSceneLoaded,
+  set3DPageMounted,
+} from "~/pages/PageEnigma/Editor/editor";
 interface Props {
   pageName: string;
 }
-
-
 
 const appMenuTabs: MenuIconItem[] = [
   {
@@ -62,9 +64,7 @@ const appMenuTabs: MenuIconItem[] = [
 export const topNavMediaId = signal<string>("");
 export const topNavMediaUrl = signal<string>("");
 
-export const TopBar = ({
-  pageName
-}: Props) => {
+export const TopBar = ({ pageName }: Props) => {
   useSignals();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -73,8 +73,18 @@ export const TopBar = ({
     galleryModalVisibleViewMode.value = true;
     galleryModalVisibleDuringDrag.value = true;
   };
-  
+
   const tabStore = useTabStore();
+
+  const is3DSceneReady = is3DSceneLoaded.value;
+  const is3DEditorReady = is3DEditorInitialized.value;
+  const disableTabSwitcher = () => {
+    return (
+      useTabStore.getState().activeTabId === "3D" &&
+      !is3DEditorReady &&
+      !is3DSceneReady
+    );
+  };
 
   return (
     <>
@@ -95,7 +105,7 @@ export const TopBar = ({
             <MenuIconSelector
               menuItems={appMenuTabs}
               activeMenu={tabStore.activeTabId}
-              disabled={false}
+              disabled={disableTabSwitcher()}
               onMenuChange={(tabId) => {
                 // Disable 3d engine to prevent memory leak.
                 if (tabId === "3D") {
@@ -103,9 +113,7 @@ export const TopBar = ({
                 } else {
                   set3DPageMounted(false);
                 }
-                useTabStore
-                  .getState()
-                  .setActiveTab(tabId);
+                useTabStore.getState().setActiveTab(tabId);
               }}
               className="w-fit"
             />
@@ -158,10 +166,7 @@ export const TopBar = ({
         globalAccountLogoutCallback={() => setLogoutStates()}
       />
 
-      <GalleryModal
-        mode="view"
-        onDownloadClicked={downloadFileFromUrl}
-      />
+      <GalleryModal mode="view" onDownloadClicked={downloadFileFromUrl} />
     </>
   );
 };
