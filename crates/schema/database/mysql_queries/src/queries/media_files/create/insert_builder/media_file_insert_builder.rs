@@ -9,6 +9,7 @@ use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
 use sqlx::MySqlPool;
+use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::users::UserToken;
@@ -51,6 +52,9 @@ pub struct MediaFileInsertBuilder {
   maybe_frame_height: Option<u32>,
   checksum_sha2: Option<String>, // NB: Non-nullable field
 
+  // Media info for certain product areas
+  pub maybe_engine_category: Option<MediaFileEngineCategory>, // TODO: Deprecate
+  
   // // User text information
   // maybe_title: Option<&'a str>,
   // maybe_text_transcript: Option<&'a str>,
@@ -94,6 +98,7 @@ impl MediaFileInsertBuilder {
       maybe_frame_width: None,
       maybe_frame_height: None,
       checksum_sha2: None,
+      maybe_engine_category: None,
       public_bucket_directory_hash: None,
     }
   }
@@ -207,6 +212,11 @@ impl MediaFileInsertBuilder {
     self
   }
 
+  pub fn maybe_engine_category(mut self, maybe_engine_category: Option<MediaFileEngineCategory>) -> Self {
+    self.maybe_engine_category = maybe_engine_category;
+    self
+  }
+
   // TODO: maybe_title
   // TODO: maybe_text_transcript
   // TODO: maybe_scene_source_media_file_token
@@ -258,6 +268,7 @@ impl MediaFileInsertBuilder {
       maybe_video_encoding: None, // TODO
       maybe_frame_width: self.maybe_frame_width,
       maybe_frame_height: self.maybe_frame_height,
+      maybe_engine_category: self.maybe_engine_category,
       checksum_sha2: &checksum_sha2,
       maybe_title: None, // TODO
       maybe_text_transcript: None, // TODO

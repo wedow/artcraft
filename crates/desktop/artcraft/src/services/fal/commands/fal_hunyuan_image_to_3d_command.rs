@@ -196,7 +196,6 @@ pub async fn image_to_3d(
 ) -> Result<(), InnerError> {
 
   let api_key = fal_creds_manager.get_key_required()?;
-  let creds = storyteller_creds_manager.get_credentials_required()?;
 
   let mut temp_download;
 

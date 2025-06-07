@@ -4,6 +4,7 @@ use sqlx::MySqlPool;
 
 use enums::by_table::generic_synthetic_ids::id_category::IdCategory;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
+use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_files::media_file_origin_model_type::MediaFileOriginModelType;
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
@@ -51,6 +52,9 @@ pub struct InsertArgs<'a> {
     pub maybe_frame_width: Option<u32>,
     pub maybe_frame_height: Option<u32>,
     pub checksum_sha2: &'a str,
+    
+    // Media info for certain product areas
+    pub maybe_engine_category: Option<MediaFileEngineCategory>, // TODO: Deprecate
 
     // User text information
     pub maybe_title: Option<&'a str>,
@@ -152,6 +156,8 @@ pub async fn insert_media_file_generic(
             maybe_frame_height = ?,
             maybe_prompt_token = ?,
             checksum_sha2 = ?,
+            
+            maybe_engine_category = ?,
 
             maybe_title = ?,
             maybe_text_transcript = ?,
@@ -204,6 +210,8 @@ pub async fn insert_media_file_generic(
         args.maybe_frame_height,
         args.maybe_prompt_token.map(|t| t.as_str()),
         args.checksum_sha2,
+
+        args.maybe_engine_category.map(|e| e.to_str()),
 
         args.maybe_title,
         args.maybe_text_transcript,

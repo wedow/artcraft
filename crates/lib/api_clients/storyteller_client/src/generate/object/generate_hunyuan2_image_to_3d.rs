@@ -65,5 +65,5 @@ pub async fn generate_hunyuan2_image_to_3d(
 
 fn get_route(api_host: &ApiHost) -> String {
   let api_hostname = api_host.to_api_hostname();
-  format!("https://{}/{}", api_hostname, GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH)
+  format!("https://{}{}", api_hostname, GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH)
 }

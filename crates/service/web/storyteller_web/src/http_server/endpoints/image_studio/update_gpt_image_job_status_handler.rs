@@ -32,7 +32,6 @@ use mysql_queries::queries::generic_inference::web::get_inference_job_status::{g
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_cancelled_by_user::mark_generic_inference_job_cancelled_by_user;
 use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_successfully_done_by_token::mark_generic_inference_job_successfully_done_by_token;
-use mysql_queries::queries::media_files::create::generic_insert::insert_media_file_generic::{insert_media_file_generic, InsertArgs};
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
 use mysql_queries::queries::tts::tts_inference_jobs::mark_tts_inference_job_permanently_dead::mark_tts_inference_job_permanently_dead;

@@ -111,6 +111,7 @@ pub async fn insert_media_file_from_studio_scene_render(
     maybe_batch_token: None,
     maybe_prompt_token: None,
     maybe_mod_user_token: None,
+    maybe_engine_category: None,
   }).await?;
 
   Ok(new_media_token)

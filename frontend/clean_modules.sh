@@ -14,6 +14,7 @@ rm -rf ./apps/editor2d/node_modules/
 rm -rf ./apps/editor3d/node_modules/
 
 echo "Removing Build directories..."
+rm -rf ./apps/artcraft-website/dist/
 rm -rf ./apps/editor2d/dist/
 rm -rf ./apps/editor3d/dist/
 rm -rf ./libs/api/dist/

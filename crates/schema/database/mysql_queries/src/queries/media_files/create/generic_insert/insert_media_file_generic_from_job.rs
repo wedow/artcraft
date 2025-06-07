@@ -107,6 +107,7 @@ pub async fn insert_media_file_generic_from_job(
         maybe_extra_media_info: args.maybe_extra_media_info,
         maybe_frame_height: args.maybe_frame_height,
         maybe_frame_width: args.maybe_frame_width,
+        maybe_engine_category: None,
         maybe_mime_type: args.maybe_mime_type,
         maybe_mod_user_token: args.maybe_mod_user_token,
         maybe_origin_filename: args.maybe_origin_filename,

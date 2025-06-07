@@ -18,6 +18,7 @@ use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id:
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use serde_json::{Map, Value};
 use std::sync::Arc;
+use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use tokens::tokens::media_files::MediaFileToken;
 
 const PREFIX : Option<&str> = Some("artcraft_");
@@ -90,6 +91,7 @@ pub async fn handle_model_mesh_payload(
       .media_file_class(MediaFileClass::Dimensional)
       .media_file_type(media_file_type)
       .media_file_origin_category(MediaFileOriginCategory::Inference)
+      .maybe_engine_category(Some(MediaFileEngineCategory::Object))
       //.media_file_origin_product_category(MediaFileOriginProductCategory::Unknown)
       .mime_type(mime_type)
       .file_size_bytes(file_size_bytes as u64)
