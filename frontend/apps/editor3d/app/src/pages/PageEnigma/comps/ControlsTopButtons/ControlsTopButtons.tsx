@@ -7,11 +7,8 @@ import {
   faQuestion,
   faSquare,
 } from "@fortawesome/pro-solid-svg-icons";
-import {
-  EditorExpandedI,
-  EngineContext,
-} from "~/pages/PageEnigma/contexts/EngineContext";
-import { ToastTypes, getArtStyle } from "~/enums";
+import { EngineContext } from "~/pages/PageEnigma/contexts/EngineContext";
+import { ToastTypes } from "~/enums";
 import { scene, signalScene, authentication, addToast } from "~/signals";
 import { outlinerIsShowing } from "~/pages/PageEnigma/signals/outliner/outliner";
 import { ButtonDropdown } from "@storyteller/ui-button-dropdown";
@@ -20,22 +17,12 @@ import { Button } from "@storyteller/ui-button";
 import { TestFeaturesButtons } from "./TestFeaturesButtons";
 import { LoadUserScenes } from "./LoadUserScenes";
 import { getCurrentLocationWithoutParams, isNumberString } from "~/utilities";
-import { SceneGenereationMetaData as SceneGenerationMetaData } from "~/pages/PageEnigma/models/sceneGenerationMetadata";
-import {
-  cameraAspectRatio,
-  cinematic,
-  enginePreProcessing,
-  faceDetail,
-  globalIPAMediaToken,
-  lipSync,
-  resetSceneGenerationMetadata,
-  styleStrength,
-  upscale,
-} from "~/pages/PageEnigma/signals";
+import { resetSceneGenerationMetadata } from "~/pages/PageEnigma/signals";
 import { CameraAspectRatio } from "~/pages/PageEnigma/enums";
 import { twMerge } from "tailwind-merge";
 import { Help } from "./Help";
 import { Modal } from "@storyteller/ui-modal";
+import { getSceneGenerationMetaData } from "../../Editor/SceneMetadata";
 
 export const ControlsTopButtons = () => {
   useSignals();
@@ -61,32 +48,12 @@ export const ControlsTopButtons = () => {
     );
   };
 
-  const getSceneGenereationMetaData = useCallback(
-    (editorEngine: EditorExpandedI): SceneGenerationMetaData => {
-      // when this is called, editor engine is guarunteed by it's caller
-      return {
-        positivePrompt: editorEngine.positive_prompt,
-        negativePrompt: editorEngine.negative_prompt,
-        artisticStyle: getArtStyle(editorEngine.art_style.toString()),
-        cameraAspectRatio: cameraAspectRatio.value,
-        globalIPAMediaToken: globalIPAMediaToken.value || undefined,
-        upscale: upscale.value,
-        faceDetail: faceDetail.value,
-        styleStrength: styleStrength.value,
-        lipSync: lipSync.value,
-        cinematic: cinematic.value,
-        enginePreProcessing: enginePreProcessing.value,
-      };
-    },
-    [],
-  );
-
   const handleButtonSave = async () => {
     if (!editorEngine) {
       addToast(ToastTypes.ERROR, "No Engine Error in Saving Scenes");
       return;
     }
-    const sceneGenerationMetadata = getSceneGenereationMetaData(editorEngine);
+    const sceneGenerationMetadata = getSceneGenerationMetaData(editorEngine);
 
     const retSceneMediaToken = await editorEngine.saveScene({
       sceneTitle: scene.value.title || "",
@@ -114,7 +81,7 @@ export const ControlsTopButtons = () => {
       addToast(ToastTypes.ERROR, "No Engine Error in Saving Scenes");
       return;
     }
-    const sceneGenerationMetadata = getSceneGenereationMetaData(editorEngine);
+    const sceneGenerationMetadata = getSceneGenerationMetaData(editorEngine);
     const retSceneMediaToken = await editorEngine.saveScene({
       sceneTitle: sceneTitleInput,
       sceneToken: undefined,
@@ -129,7 +96,7 @@ export const ControlsTopButtons = () => {
         title: sceneTitleInput,
       });
     }
-  }, [sceneTitleInput, editorEngine, getSceneGenereationMetaData]);
+  }, [sceneTitleInput, editorEngine, getSceneGenerationMetaData]);
 
   const handleButtonLoadScene = () => {
     handleResetScene();

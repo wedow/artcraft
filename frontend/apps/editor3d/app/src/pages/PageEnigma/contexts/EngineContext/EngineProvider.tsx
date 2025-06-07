@@ -5,7 +5,8 @@ import Editor from "~/pages/PageEnigma/Editor/editor";
 import { useSignals } from "@preact/signals-react/runtime";
 
 import { signal } from "@preact/signals-react";
-import { useTabStore } from "../../../Stores/TabState"
+import { useTabStore } from "../../../Stores/TabState";
+import { getSceneGenerationMetaData } from "../../Editor/SceneMetadata";
 interface Props {
   sceneToken?: string;
   children: ReactNode;
@@ -23,10 +24,10 @@ export const EngineProvider = ({ sceneToken, children }: Props) => {
 
   const createEditor = () => {
     return new Editor();
-  }
+  };
   const tabStore = useTabStore();
   const tab = tabStore.activeTabId;
-  
+
   const sceneContainer = sceneContainerSignal.value;
   const editorCanvas = editorCanvasSignal.value;
   const camViewCanvas = camViewCanvasSignal.value;
@@ -36,19 +37,40 @@ export const EngineProvider = ({ sceneToken, children }: Props) => {
       if (activeEditorRef.current) {
         return;
       }
-      
+
       const newEditor = createEditor();
       console.warn("Creating new Editor instance", newEditor);
       activeEditorRef.current = newEditor;
+
+      // Check if we have a cached state
+      const cacheString = tabStore.getTabData("3D") as string;
+
       newEditor.initialize({
         sceneToken: sceneToken || "",
         sceneContainerEl: sceneContainer,
         editorCanvasEl: editorCanvas,
         camViewCanvasEl: camViewCanvas,
-      })
+        cacheJsonString: cacheString,
+      });
       setEditor(newEditor);
     } else if (tab !== "3D") {
-      // If the tab is changed, we unmount the editor and clear all input params
+      if (!activeEditorRef.current) {
+        return;
+      }
+
+      // If the tab is changed, cache state, unmount the editor and clear all input params
+      const sceneGenerationMetadata = getSceneGenerationMetaData(
+        activeEditorRef.current,
+      );
+      const cacheJson = activeEditorRef.current.cacheScene({
+        sceneTitle: "",
+        sceneToken: "",
+        sceneGenerationMetadata: sceneGenerationMetadata,
+      });
+      const cacheString = JSON.stringify(cacheJson);
+      tabStore.updateTabData("3D", cacheString);
+
+      // Unmount/Destructor flow
       activeEditorRef.current?.unmountEngine();
       activeEditorRef.current = null;
       sceneContainerSignal.value = null;

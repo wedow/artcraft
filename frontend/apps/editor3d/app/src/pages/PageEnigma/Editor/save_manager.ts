@@ -53,8 +53,6 @@ export class SaveManager {
     );
     const scene_json = await proxyScene.saveToScene(this.editor.version);
 
-  
-  
     const check_sum_data = {
       scene: scene_json,
       timeline: "",
@@ -80,8 +78,6 @@ export class SaveManager {
       this.editor.activeScene,
     );
     const scene_json = await proxyScene.saveToScene(this.editor.version);
-
-   
 
     // Save all cameras data
     const camerasData = cameras.value.map((cam: Camera) => ({
@@ -112,28 +108,18 @@ export class SaveManager {
     return jsonString;
   }
 
-  // TODO Move this function into scene manager.
-  public async saveScene({
-    sceneTitle,
-    sceneToken,
+  public getSceneJson({
     sceneGenerationMetadata,
   }: {
-    sceneTitle: string;
-    sceneToken?: string;
     sceneGenerationMetadata: SceneGenereationMetaData;
-  }): Promise<string> {
-    this.editor.generating_preview = true; // Set this to true to stop control panel from flipping out.
-    // remove controls when saving scene.
-    this.editor.utils.removeTransformControls();
-    showEditorLoader();
-
+  }) {
     const proxyScene = new StoryTellerProxyScene(
       this.editor.version,
       this.editor.activeScene,
     );
-    const scene_json = await proxyScene.saveToScene(this.editor.version);
+    const scene_json = proxyScene.saveToScene(this.editor.version);
     console.log(scene_json);
- 
+
     // Save all cameras data
     const camerasData = cameras.value.map((cam: Camera) => ({
       id: cam.id,
@@ -159,6 +145,28 @@ export class SaveManager {
       selectedCameraId: selectedCameraId.value,
     };
 
+    return save_data;
+  }
+
+  // TODO Move this function into scene manager.
+  public async saveScene({
+    sceneTitle,
+    sceneToken,
+    sceneGenerationMetadata,
+  }: {
+    sceneTitle: string;
+    sceneToken?: string;
+    sceneGenerationMetadata: SceneGenereationMetaData;
+  }): Promise<string> {
+    this.editor.generating_preview = true; // Set this to true to stop control panel from flipping out.
+    // remove controls when saving scene.
+    this.editor.utils.removeTransformControls();
+    showEditorLoader();
+
+    const sceneJson = this.getSceneJson({
+      sceneGenerationMetadata,
+    });
+
     // TODO turn scene information into and object ...
     let sceneThumbnail = undefined;
 
@@ -169,7 +177,7 @@ export class SaveManager {
     }
 
     const result = await this.editor.api_manager.saveSceneState({
-      saveJson: JSON.stringify(save_data),
+      saveJson: JSON.stringify(sceneJson),
       sceneTitle,
       sceneToken,
       sceneThumbnail,
@@ -186,19 +194,7 @@ export class SaveManager {
     return result; // if this is an empty string it is an error. need to migrate to api manager.
   }
 
-  // TODO Refactor remove editor.
-  public async loadScene(scene_media_token: string) {
-    showEditorLoader();
-
-    this.editor.current_scene_media_token = scene_media_token;
-
-    const scene_json = await this.editor.api_manager
-      .loadSceneState(this.editor.current_scene_media_token)
-      .catch((err) => {
-        hideEditorLoader();
-        throw err;
-      });
-
+  private async loadFromJson(scene_json: any) {
     const proxyScene = new StoryTellerProxyScene(
       this.editor.version,
       this.editor.activeScene,
@@ -273,6 +269,32 @@ export class SaveManager {
     console.debug("Loading Timeline", scene_json["timeline"]);
 
     this.editor.timeline.checkEditorCanPlay();
+  }
+
+  public async loadCache(cacheJson: string) {
+    showEditorLoader();
+
+    const scene_json = JSON.parse(cacheJson);
+    await this.loadFromJson(scene_json);
+
+    hideEditorLoader();
+    this.editor.timeline.scrub({ currentTime: 0 });
+  }
+
+  // TODO Refactor remove editor.
+  public async loadScene(scene_media_token: string) {
+    showEditorLoader();
+
+    this.editor.current_scene_media_token = scene_media_token;
+
+    const scene_json = await this.editor.api_manager
+      .loadSceneState(this.editor.current_scene_media_token)
+      .catch((err) => {
+        hideEditorLoader();
+        throw err;
+      });
+
+    await this.loadFromJson(scene_json);
 
     hideEditorLoader();
     // TODO figure out if this is a bug.

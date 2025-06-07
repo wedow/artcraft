@@ -105,7 +105,7 @@ export class StoryTellerProxy3DObject {
     this.locked = object.userData["locked"];
   }
 
-  public async toJSON(): Promise<ObjectJSON> {
+  public toJSON(): ObjectJSON {
     const json: ObjectJSON = {
       version: this.version,
       position: {

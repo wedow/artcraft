@@ -27,7 +27,7 @@ export class StoryTellerProxyScene {
     this.sceneItemProxy = [];
   }
 
-  async getChildren(child: THREE.Object3D) {
+  getChildren(child: THREE.Object3D) {
     if (this.lookUpDictionary[child.uuid] == null) {
       this.lookUpDictionary[child.uuid] = new StoryTellerProxy3DObject(
         this.version,
@@ -54,11 +54,11 @@ export class StoryTellerProxyScene {
     const boneHelper = new BoneJSONHelper(child);
     proxyObject3D.rigData = boneHelper.toJSON();
 
-    const json_data = await proxyObject3D.toJSON();
+    const json_data = proxyObject3D.toJSON();
     return json_data;
   }
 
-  public async saveToSceneOlder(): Promise<any> {
+  public saveToSceneOlder(): ObjectJSON[] {
     const results: ObjectJSON[] = [];
     if (this.scene.scene != null) {
       for (const child of this.scene.scene.children) {
@@ -82,7 +82,7 @@ export class StoryTellerProxyScene {
           proxyObject3D.shininess = child.userData["shininess"];
           proxyObject3D.specular = child.userData["specular"];
           proxyObject3D.locked = child.userData["locked"];
-          const json_data = await proxyObject3D.toJSON();
+          const json_data = proxyObject3D.toJSON();
           results.push(json_data);
         }
       }
@@ -93,7 +93,7 @@ export class StoryTellerProxyScene {
     return results;
   }
 
-  public async saveToScene(version: number): Promise<any> {
+  public saveToScene(version: number): ObjectJSON[] {
     this.version = version;
     console.log("Saving with version:", this.version);
     const results: ObjectJSON[] = [];
@@ -101,8 +101,8 @@ export class StoryTellerProxyScene {
       for (const pchild of this.scene.scene.children) {
         if (this.version >= 1.0) {
           if (pchild.userData["media_id"] != undefined) {
-            console.debug("Object JSON:", pchild.toJSON())
-            results.push(await this.getChildren(pchild));
+            console.debug("Object JSON:", pchild.toJSON());
+            results.push(this.getChildren(pchild));
           }
         } else {
           console.log("Saving older.");
