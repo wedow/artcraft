@@ -13,6 +13,8 @@ import {
   faSparkles,
   faFileImport,
   faFileExport,
+  faUndo,
+  faRedo
 } from "@fortawesome/pro-solid-svg-icons";
 import "../../App.css";
 import { HsvaColorPicker, HsvaColor } from "react-colorful";
@@ -179,14 +181,14 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
         </div>
       ),
     },
-    {
-      id: "generate",
-      label: "Generate Image",
-      icon: <FontAwesomeIcon icon={faSparkles} className="h-5 w-5" />,
-      onClick: () => {
-        onGenerateImage();
-      },
-    },
+    // {
+    //   id: "generate",
+    //   label: "Generate Image",
+    //   icon: <FontAwesomeIcon icon={faSparkles} className="h-5 w-5" />,
+    //   onClick: () => {
+    //     onGenerateImage();
+    //   },
+    // },
     {
       id: "upload",
       label: "Upload Image",
@@ -251,35 +253,51 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       popout: BgPopout,
     },
     {
-      id: "save-scene",
-      label: "Save Scene",
-      icon: <FontAwesomeIcon icon={faFileExport} className="h-5 w-5" />,
+      id: "undo",
+      label: "Undo",
+      icon: <FontAwesomeIcon icon={faUndo} className="h-5 w-5" />,
       onClick: () => {
-        store.saveSceneToFile();
+        store.undo(); // Assuming store has an undo method
       },
     },
     {
-      id: "load-scene",
-      label: "Load Scene",
-      icon: <FontAwesomeIcon icon={faFileImport} className="h-5 w-5" />,
+      id: "redo",
+      label: "Redo",
+      icon: <FontAwesomeIcon icon={faRedo} className="h-5 w-5" />,
       onClick: () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = ".json";
-        input.onchange = async (e: Event) => {
-          const target = e.target as HTMLInputElement;
-          if (target.files && target.files[0]) {
-            const success = await store.loadSceneFromFile(target.files[0]);
-            if (success) {
-              console.log("Scene loaded successfully");
-            } else {
-              console.error("Failed to load scene");
-            }
-          }
-        };
-        input.click();
+        store.redo(); // Assuming store has a redo method
       },
     },
+    // {
+    //   id: "save-scene",
+    //   label: "Save Scene",
+    //   icon: <FontAwesomeIcon icon={faFileExport} className="h-5 w-5" />,
+    //   onClick: () => {
+    //     store.saveSceneToFile();
+    //   },
+    // },
+    // {
+    //   id: "load-scene",
+    //   label: "Load Scene",
+    //   icon: <FontAwesomeIcon icon={faFileImport} className="h-5 w-5" />,
+    //   onClick: () => {
+    //     const input = document.createElement("input");
+    //     input.type = "file";
+    //     input.accept = ".json";
+    //     input.onchange = async (e: Event) => {
+    //       const target = e.target as HTMLInputElement;
+    //       if (target.files && target.files[0]) {
+    //         const success = await store.loadSceneFromFile(target.files[0]);
+    //         if (success) {
+    //           console.log("Scene loaded successfully");
+    //         } else {
+    //           console.error("Failed to load scene");
+    //         }
+    //       }
+    //     };
+    //     input.click();
+    //   },
+    // },
   ];
 
   /* ------------------------------------------------ render ---------- */

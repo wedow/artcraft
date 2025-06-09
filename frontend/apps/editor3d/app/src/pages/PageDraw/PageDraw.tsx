@@ -16,7 +16,7 @@ import Konva from 'konva';
 
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot"
-import { useStateSceneLoader } from "./hooks/useStateSceneLoader";
+import { ContextMenuContainer } from "./components/ui/ContextMenu";
 const PageDraw = () => {
 
   //useStateSceneLoader();
@@ -209,6 +209,7 @@ const PageDraw = () => {
         activeToolId={store.activeTool}
       />
       <div className="relative z-0">
+      <ContextMenuContainer>
         <PaintSurface
           nodes={store.nodes}
           selectedNodeIds={store.selectedNodeIds}
@@ -224,6 +225,7 @@ const PageDraw = () => {
           stageRef={stageRef}
           transformerRefs={transformerRefs}
         />
+          </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <PopoverMenu
