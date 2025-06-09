@@ -185,6 +185,14 @@ export const PaintSurface = ({
       isWithinLeftPanel(stagePoint)
     ) {
       const lineId = `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      let opacity;
+
+      if (activeTool === "draw") {
+        opacity = store.brushOpacity
+      } else {
+        opacity = 1
+      }
+
       const newLineNode: LineNode = {
         id: lineId,
         type: "line",
@@ -192,6 +200,7 @@ export const PaintSurface = ({
         stroke: activeTool === "draw" ? brushColor : fillColor || "#ffffff",
         strokeWidth: brushSize / stage.scaleX(),
         draggable: true,
+        opacity: opacity  // Add opacity to the line node
       };
       store.selectNode(null);
       store.addLineNode(newLineNode);
@@ -738,11 +747,12 @@ export const PaintSurface = ({
             id={lineNode.id}
             points={lineNode.points}
             stroke={lineNode.stroke}
+            opacity={lineNode.opacity ?? 1}  // Use the line node's opacity or default to 1
             strokeWidth={
               isSelected
                 ? (lineNode.strokeWidth || 0) + 2
                 : lineNode.strokeWidth
-            } // Ensure strokeWidth is number
+            }
             tension={0.5}
             lineCap="round"
             lineJoin="round"

@@ -142,10 +142,11 @@ const PageDraw = () => {
             store.createTriangle(centerX, centerY);
           }
         }}
-        onPaintBrush={(hex: string, size: number): void => {
+        onPaintBrush={(hex: string, size: number, opacity: number): void => {
           store.setActiveTool("draw");
           store.setBrushColor(hex);
           store.setBrushSize(size);
+          store.setBrushOpacity(opacity);
         }}
         onEraser={(size: number): void => {
           store.setActiveTool("eraser");

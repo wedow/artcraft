@@ -9,6 +9,7 @@ export type LineNode = {
   stroke: string;
   strokeWidth: number;
   draggable: boolean;
+  opacity?: number;  // Add opacity property
   x?: number;
   y?: number;
   rotation?: number;
@@ -33,6 +34,7 @@ interface SceneState {
   activeTool: ActiveTool;
   brushColor: string;
   brushSize: number;
+  brushOpacity: number;
   fillColor: string;
   
   // Cursor state
@@ -84,6 +86,7 @@ interface SceneState {
   // Toolbar actions
   setActiveTool: (tool: ActiveTool) => void;
   setBrushColor: (color: string) => void;
+  setBrushOpacity: (opacity: number) => void;
   setBrushSize: (size: number) => void;
   setFillColor: (color: string) => void;
 
@@ -122,6 +125,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   activeTool: 'select',
   brushColor: '#000000',
   brushSize: 5,
+  brushOpacity: 1,
   fillColor: 'white',
   
   // Cursor initial state
@@ -719,6 +723,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   setBrushColor: (color: string) => set({ brushColor: color }),
   setBrushSize: (size: number) => set({ brushSize: size }),
   setFillColor: (color: string) => set({ fillColor: color }),
+  setBrushOpacity: (opacity: number) => set({ brushOpacity: opacity }),
 
   // Cursor actions
   setCursorPosition: (position: { x: number; y: number } | null) => set({ cursorPosition: position }),
