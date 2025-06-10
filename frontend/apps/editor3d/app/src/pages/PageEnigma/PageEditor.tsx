@@ -295,31 +295,50 @@ export const PageEditor = () => {
 
           (async () => {
             try {
-              // Place the object immediately to avoid upload delay affecting placement
-              const mediaItem: MediaItem = {
-                version: 1,
-                type: AssetType.OBJECT,
-                media_id: item.id || uuidv4(),
-                name: item.label || "Image Plane",
-                ...(worldPosition && {
-                  position: {
-                    x: worldPosition.x,
-                    y: worldPosition.y,
-                    z: worldPosition.z,
-                  },
-                }),
-              };
-              addObject(mediaItem);
+              if (item.mediaClass === "dimensional") {
+                // Handle 3D models
+                const mediaItem: MediaItem = {
+                  version: 1,
+                  type: AssetType.OBJECT,
+                  media_id: item.id || uuidv4(),
+                  name: item.label || "3D Object",
+                  ...(worldPosition && {
+                    position: {
+                      x: worldPosition.x,
+                      y: worldPosition.y,
+                      z: worldPosition.z,
+                    },
+                  }),
+                };
+                addObject(mediaItem);
+              } else {
+                // Handle images (create image planes)
+                const mediaItem: MediaItem = {
+                  version: 1,
+                  type: AssetType.OBJECT,
+                  media_id: item.id || uuidv4(),
+                  name: item.label || "Image Plane",
+                  ...(worldPosition && {
+                    position: {
+                      x: worldPosition.x,
+                      y: worldPosition.y,
+                      z: worldPosition.z,
+                    },
+                  }),
+                };
+                addObject(mediaItem);
 
-              await uploadPlaneFromMediaToken({
-                title: item.label || "Image Plane",
-                mediaToken: item.id,
-                progressCallback: (state: UploaderState) => {
-                  if (state.status) console.log("Upload status:", state.status);
-                },
-              });
+                await uploadPlaneFromMediaToken({
+                  title: item.label || "Image Plane",
+                  mediaToken: item.id,
+                  progressCallback: (state: UploaderState) => {
+                    if (state.status)
+                      console.log("Upload status:", state.status);
+                  },
+                });
+              }
             } catch (err) {
-              console.error("Failed to add image plane:", err);
+              console.error("Failed to add object to scene:", err);
             }
           })();
         },

@@ -80,7 +80,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
       {/* Media class badge on hover */}
       {!disableTooltipAndBadge && item.mediaClass && (
         <div className="pointer-events-none absolute right-2 top-2 z-20 rounded-full bg-black/50 backdrop-blur-lg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-          {item.mediaClass}
+          {item.mediaClass === "dimensional" ? "3D" : item.mediaClass}
         </div>
       )}
       {/* Tooltip on hover */}
@@ -138,7 +138,11 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
               {item.mediaClass !== "video" && (
                 <span>
                   <span className="font-bold">Drag</span>
-                  <span className="opacity-50"> to add</span>
+                  <span className="opacity-50">
+                    {item.mediaClass === "dimensional"
+                      ? " to add to scene"
+                      : " to add"}
+                  </span>
                 </span>
               )}
               <span>

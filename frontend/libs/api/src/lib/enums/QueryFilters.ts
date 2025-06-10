@@ -2,6 +2,7 @@ export enum FilterMediaClasses {
   AUDIO = "audio",
   IMAGE = "image",
   VIDEO = "video",
+  DIMENSIONAL = "dimensional",
 }
 
 export enum FilterMediaType {

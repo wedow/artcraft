@@ -173,8 +173,14 @@ export const GalleryModal = React.memo(
           return [FilterMediaClasses.IMAGE];
         case "video":
           return [FilterMediaClasses.VIDEO];
+        case "3d":
+          return [FilterMediaClasses.DIMENSIONAL];
         case "uploaded":
-          return [FilterMediaClasses.IMAGE, FilterMediaClasses.VIDEO];
+          return [
+            FilterMediaClasses.IMAGE,
+            FilterMediaClasses.VIDEO,
+            FilterMediaClasses.DIMENSIONAL,
+          ];
         default:
           return undefined;
       }
@@ -190,7 +196,9 @@ export const GalleryModal = React.memo(
           filter_media_classes: filterMediaClasses,
           username: username,
           include_user_uploads:
-            activeFilter === "uploaded" || activeFilter === "all",
+            activeFilter === "uploaded" ||
+            activeFilter === "all" ||
+            activeFilter === "3d",
           user_uploads_only: activeFilter === "uploaded",
           page_index: reset ? 0 : pageIndex,
           page_size: pageSize,
@@ -205,6 +213,8 @@ export const GalleryModal = React.memo(
             thumbnail:
               item.media_class === "video"
                 ? item.media_links.maybe_video_previews.still
+                : item.media_class === "dimensional"
+                ? item.cover_image?.maybe_cover_image_public_bucket_url
                 : item.media_links.maybe_thumbnail_template?.replace(
                     "{WIDTH}",
                     thumbnail_size.toString()
@@ -480,7 +490,7 @@ export const GalleryModal = React.memo(
                     ([date, dateItems]) => {
                       const filteredItems = dateItems.filter((item) => {
                         if (activeFilter === "3d")
-                          return item.mediaClass === "3d";
+                          return item.mediaClass === "dimensional";
                         if (activeFilter === "all")
                           return item.mediaClass !== "audio";
                         return true;
