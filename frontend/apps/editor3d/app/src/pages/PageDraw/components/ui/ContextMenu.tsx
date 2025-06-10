@@ -64,15 +64,15 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ items, onClose, positi
 
 // Example usage with icons
 const menuItems: MenuItem[] = [
-  {
-    icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M12 3L4 7.5L12 12L20 7.5L12 3Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M4 16.5L12 21L20 16.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M4 12L12 16.5L20 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>,
-    label: 'Convert to 3D',
-    onClick: () => console.log('Convert to 3D')
-  },
+  // {
+  //   icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+  //     <path d="M12 3L4 7.5L12 12L20 7.5L12 3Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  //     <path d="M4 16.5L12 21L20 16.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  //     <path d="M4 12L12 16.5L20 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  //   </svg>,
+  //   label: 'Convert to 3D',
+  //   onClick: () => console.log('Convert to 3D')
+  // },
   {
     icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <path d="M4 4v16h16M4 20l16-16" strokeWidth="2" strokeLinecap="round"/>
@@ -124,28 +124,28 @@ const menuItems: MenuItem[] = [
     label: 'Duplicate',
     onClick: () => console.log('Duplicate')
   },
-  {
-    icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M7 16L17 8M7 8L17 16" strokeWidth="2" strokeLinecap="round"/>
-    </svg>,
-    label: 'Flip Horizontal',
-    onClick: () => console.log('Flip Horizontal')
-  },
-  {
-    icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M8 7L16 17M8 17L16 7" strokeWidth="2" strokeLinecap="round"/>
-    </svg>,
-    label: 'Flip Vertical',
-    onClick: () => console.log('Flip Vertical')
-  },
-  {
-    icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M4 12V6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H12" strokeWidth="2" strokeLinecap="round"/>
-      <path d="M9 15H4V20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>,
-    label: 'Fit to screen',
-    onClick: () => console.log('Fit to screen')
-  }
+  // {
+  //   icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+  //     <path d="M7 16L17 8M7 8L17 16" strokeWidth="2" strokeLinecap="round"/>
+  //   </svg>,
+  //   label: 'Flip Horizontal',
+  //   onClick: () => console.log('Flip Horizontal')
+  // },
+  // {
+  //   icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+  //     <path d="M8 7L16 17M8 17L16 7" strokeWidth="2" strokeLinecap="round"/>
+  //   </svg>,
+  //   label: 'Flip Vertical',
+  //   onClick: () => console.log('Flip Vertical')
+  // },
+  // {
+  //   icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+  //     <path d="M4 12V6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H12" strokeWidth="2" strokeLinecap="round"/>
+  //     <path d="M9 15H4V20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  //   </svg>,
+  //   label: 'Fit to screen',
+  //   onClick: () => console.log('Fit to screen')
+  // }
 ];
 
 // Container component that handles the right-click

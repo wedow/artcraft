@@ -17,6 +17,7 @@ export type LineNode = {
   scaleY?: number;
   offsetX?: number;
   offsetY?: number;
+  zIndex: number;
 };
 
 export type ActiveTool = 'select' | 'draw' | 'eraser' | 'backgroundColor' | 'shape';
@@ -112,6 +113,22 @@ const generateId = (): string => {
 // Add a flag to prevent saving state during restoration
 let isRestoring = false;
 
+// Add this helper function at the top of the store (before create<SceneState>)
+const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
+  const allZIndices = [
+    ...nodes.map((n, index) => {
+      console.log(`Node: ${JSON.stringify(n)}, Index: ${index}`);
+      return n.zIndex || 0;
+    }),
+    ...lineNodes.map((n, index) => {
+      console.log(`LineNode: ${JSON.stringify(n)}, Index: ${index}`);
+      return n.zIndex || 0;
+    })
+  ];
+
+  return allZIndices.length > 0 ? Math.max(...allZIndices) : 0;
+};
+
 export const useSceneStore = create<SceneState>((set, get) => ({
   // Initial state
   nodes: [],
@@ -135,8 +152,17 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   // Actions
   addNode: (node: Node) => {
     set((state) => {
-      const newNodes = [...state.nodes, node];
-      return { nodes: newNodes };
+      const nextZ = getNextZIndex(state.nodes, state.lineNodes);
+      // console.log(`NextZ for node ID ${node.id}: ${nextZ}`);
+      const newNode = new Node({
+        ...node,
+        zIndex: nextZ
+      });
+      // console.log("New Node with ID:", newNode.id);
+      let nodes =  [...state.nodes, newNode]
+      // console.log("Nodes after update")
+      // console.log(nodes)
+      return { nodes: nodes };
     });
     get().saveState();
   },
@@ -161,9 +187,17 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   
   updateNode: (id: string, updates: Partial<Node>, shouldSaveState: boolean = true) => {
     set((state) => {
+   
       const newNodes = state.nodes.map(node => {
+        let newZIndex = updates.zIndex !== undefined ? updates.zIndex : node.zIndex 
+        
+
         if (node.id === id) {
-          return new Node({ ...node, ...updates });
+          return new Node({ 
+            ...node, 
+            ...updates,
+            zIndex: newZIndex
+          });
         }
         return node;
       });
@@ -451,8 +485,14 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   // Add new line node actions
   addLineNode: (lineNode: LineNode) => {
     set((state) => {
-      const newLineNodes = [...state.lineNodes, lineNode];
-      return { lineNodes: newLineNodes };
+      let nextZ = getNextZIndex(state.nodes, state.lineNodes);
+      nextZ = 0
+
+      const newLineNode = {
+        ...lineNode,
+        zIndex: nextZ
+      };
+      return { lineNodes: [...state.lineNodes, newLineNode] };
     });
     get().saveState();
   },
@@ -479,7 +519,11 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     set((state) => {
       const newLineNodes = state.lineNodes.map(node => {
         if (node.id === id) {
-          return { ...node, ...updates };
+          return { 
+            ...node, 
+            ...updates,
+            zIndex: updates.zIndex !== undefined ? updates.zIndex : node.zIndex 
+          };
         }
         return node;
       });
@@ -585,7 +629,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     // Load the image asynchronously
     node.setImage(source).then(() => {
       // Update the node in the store after image loads
-      console.log('Image loaded for node:', node.id);
+      // get nodes z index so it doesn't reset ...
       get().updateNode(node.id, node, false);
     }).catch((error)=>console.error('Error loading image:', error));
     

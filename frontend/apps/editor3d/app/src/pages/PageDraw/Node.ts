@@ -20,6 +20,7 @@ export interface NodeProps {
   scaleY?: number;
   offsetX?: number;
   offsetY?: number;
+  zIndex?: number;
 }
 
 export class Node {
@@ -42,6 +43,7 @@ export class Node {
   scaleY: number;
   offsetX: number;
   offsetY: number;
+  zIndex: number;
   
   constructor({
     id,
@@ -62,7 +64,8 @@ export class Node {
     scaleX = 1,
     scaleY = 1,
     offsetX = 0,
-    offsetY = 0
+    offsetY = 0,
+    zIndex = 0
   }: NodeProps) {
     this.id = id;
     this.x = x;
@@ -83,6 +86,7 @@ export class Node {
     this.scaleY = scaleY;
     this.offsetX = offsetX;
     this.offsetY = offsetY;
+    this.zIndex = zIndex;
   }
 
   setPosition(x: number, y: number): void {

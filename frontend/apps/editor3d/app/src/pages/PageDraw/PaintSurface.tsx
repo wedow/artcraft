@@ -774,6 +774,7 @@ export const PaintSurface = ({
             rotation={lineNode.rotation || 0}
             offsetX={lineNode.offsetX || 0}
             offsetY={lineNode.offsetY || 0}
+            zIndex={lineNode.zIndex}
           />
           {renderTransformer()}
         </React.Fragment>
@@ -797,6 +798,7 @@ export const PaintSurface = ({
             scaleY={node.scaleY || 1}
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
+            zIndex={node.zIndex}
             draggable={draggableIfToolsNotActive(activeTool, node.draggable)}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
@@ -828,6 +830,7 @@ export const PaintSurface = ({
             scaleY={node.scaleY || 1}
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
+            zIndex={node.zIndex}
             draggable={draggableIfToolsNotActive(activeTool, node.draggable)}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
@@ -859,6 +862,7 @@ export const PaintSurface = ({
             scaleY={node.scaleY || 1}
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
+            zIndex={node.zIndex}
             draggable={draggableIfToolsNotActive(activeTool, node.draggable)}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
@@ -892,6 +896,7 @@ export const PaintSurface = ({
               offsetX={node.offsetX || 0}
               offsetY={node.offsetY || 0}
               listening={false}
+              zIndex={node.zIndex}
             />
           )}
           <Image
@@ -999,7 +1004,10 @@ export const PaintSurface = ({
               />
 
               {/* Render all nodes including line nodes */}
-              {[...nodes, ...store.lineNodes].map((node) => renderNode(node))}
+              {[...nodes, ...store.lineNodes].map((node, index) => {
+                // console.log(`Node ${index}:`, node);
+                return renderNode(node);
+              })}
 
               {/* Render selection rectangle */}
               {selectionRect && (
