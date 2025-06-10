@@ -32,7 +32,6 @@ import { LoadingDots } from "@storyteller/ui-loading";
 import { OnboardingHelper } from "./comps/OnboardingHelper";
 import { FocalLengthDisplay } from "./comps/FocalLengthDisplay/FocalLengthDisplay";
 
-
 import {
   addCamera,
   cameras,
@@ -75,7 +74,6 @@ import {
 
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
-
 
 export const PageEditor = () => {
   useSignals();
@@ -269,7 +267,7 @@ export const PageEditor = () => {
   useEffect(() => {
     let handler: unknown;
     // 3D Drag and Drop Logic
-   
+
     if (tabStore.activeTabId === "3D") {
       handler = onImageDrop(
         (item: GalleryItem, position: { x: number; y: number }) => {
@@ -331,8 +329,52 @@ export const PageEditor = () => {
     } else if (tabStore.activeTabId === "2D") {
       handler = onImageDrop(
         (item: GalleryItem, position: { x: number; y: number }) => {
-          // ...2D drop logic... - TODO FOR MICHAEL
-          console.log("2D drop logic here", item, position);
+          console.log("2D Drop debug (event):", {
+            item,
+            position,
+          });
+
+          // Find the main Konva canvas element - get the first canvas (left panel)
+          const canvasElements = document.querySelectorAll("canvas");
+          const canvasElement = canvasElements[0]; // Get the main drawing canvas (left panel)
+          if (!canvasElement) {
+            console.error("Could not find canvas element for 2D drop");
+            return;
+          }
+
+          const rect = canvasElement.getBoundingClientRect();
+
+          // Convert screen coordinates to canvas coordinates
+          const canvasX = position.x - rect.left;
+          const canvasY = position.y - rect.top;
+
+          // Ensure the drop position is within canvas bounds
+          if (
+            canvasX < 0 ||
+            canvasY < 0 ||
+            canvasX > rect.width ||
+            canvasY > rect.height
+          ) {
+            console.log("Drop position outside canvas bounds");
+            return;
+          }
+
+          console.log("Canvas drop position:", { canvasX, canvasY });
+
+          (async () => {
+            try {
+              // event that PageDraw listens for
+              const dropEvent = new CustomEvent("gallery-2d-drop", {
+                detail: {
+                  item,
+                  canvasPosition: { x: canvasX, y: canvasY },
+                },
+              });
+              window.dispatchEvent(dropEvent);
+            } catch (err) {
+              console.error("Failed to add image to 2D canvas:", err);
+            }
+          })();
         },
       );
     }
@@ -344,14 +386,9 @@ export const PageEditor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabStore.activeTabId, editorEngine]);
 
-
-
   return (
     <div className="w-screen">
-      <TopBar
-        pageName="Edit Scene"
-      
-      />
+      <TopBar pageName="Edit Scene" />
       {tabStore.activeTabId == "3D" && (
         <div>
           <OnboardingHelper />
@@ -504,4 +541,4 @@ export const PageEditor = () => {
       /> */}
     </div>
   );
-}; 
+};

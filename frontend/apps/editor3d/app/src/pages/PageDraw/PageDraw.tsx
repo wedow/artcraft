@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PaintSurface } from "./PaintSurface";
 // https://github.com/SaladTechnologies/comfyui-api
 import "./App.css";
@@ -12,23 +12,22 @@ import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys"; // Import the
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
-import Konva from 'konva';
+import Konva from "konva"; // just for types
 
-import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
-import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot"
+import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
+import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
 const PageDraw = () => {
-
   //useStateSceneLoader();
 
   // State for canvas dimensions
-  const canvasWidth = React.useRef<number>(1024);
-  const canvasHeight = React.useRef<number>(1024);
+  const canvasWidth = useRef<number>(1024);
+  const canvasHeight = useRef<number>(1024);
   // Add new state to track if user is selecting
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
   const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
   // Create refs for stage and image
-  const stageRef = useRef<Konva.Stage>({});
+  const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
 
   // Use the Zustand store
@@ -42,25 +41,87 @@ const PageDraw = () => {
     onPaste: store.pasteItems,
   });
 
+  // Listen for gallery drag and drop events
+  useEffect(() => {
+    const handleGallery2DDrop = (event: CustomEvent) => {
+      const { item, canvasPosition } = event.detail;
+      console.log("Received 2D gallery drop:", { item, canvasPosition });
+
+      // Get the stage to transform coordinates properly
+      const stage = stageRef.current;
+      if (!stage) {
+        console.error(
+          "Stage reference not available for coordinate transformation",
+        );
+        return;
+      }
+
+      // Transform canvas coordinates to stage coordinates
+      // Account for stage position, scale, and transformations
+      const stageX = stage.x();
+      const stageY = stage.y();
+      const scaleX = stage.scaleX();
+      const scaleY = stage.scaleY();
+
+      const stagePoint = {
+        x: (canvasPosition.x - stageX) / scaleX,
+        y: (canvasPosition.y - stageY) / scaleY,
+      };
+
+      console.log("Transformed stage coordinates:", stagePoint);
+
+      // Use the direct URL for the image
+      const imageUrl = item.fullImage || item.thumbnail;
+      if (!imageUrl) {
+        console.error("No image URL available for dropped item");
+        return;
+      }
+
+      console.log("Creating image from URL:", imageUrl);
+
+      // Use the store's createImageFromUrl method directly
+      store.createImageFromUrl(stagePoint.x, stagePoint.y, imageUrl);
+
+      console.log(
+        `Created image "${item.label}" at stage position:`,
+        stagePoint,
+      );
+    };
+
+    // Add event listener
+    window.addEventListener(
+      "gallery-2d-drop",
+      handleGallery2DDrop as EventListener,
+    );
+
+    // Cleanup
+    return () => {
+      window.removeEventListener(
+        "gallery-2d-drop",
+        handleGallery2DDrop as EventListener,
+      );
+    };
+  }, [store]);
+
   const handleImageUpload = (files: File[]): void => {
     // Place images at center of viewport with offset for multiple images
     const centerX = 512; // leftPanelWidth / 2
     const centerY = 512; // leftPanelHeight / 2
 
-    console.log('Image upload started with files:', files);
-    console.log('Center coordinates:', { centerX, centerY });
+    console.log("Image upload started with files:", files);
+    console.log("Center coordinates:", { centerX, centerY });
 
     files.forEach((file, index) => {
       console.log(`Processing file ${index}:`, file.name);
-      
+
       store.createImageFromFile(
         centerX + index * 60, // Offset each image
         centerY + index * 60,
         file,
       );
-      console.log(`Created image at position:`, { 
-        x: centerX + index * 60, 
-        y: centerY + index * 60 
+      console.log(`Created image at position:`, {
+        x: centerX + index * 60,
+        y: centerY + index * 60,
       });
     });
   };
@@ -88,14 +149,14 @@ const PageDraw = () => {
 
   const onEnqueuedPressed = async () => {
     // takes snap shot and then a global variable in the engine will invoke the inference.
-    const image = await captureStageImageBitmap(stageRef,transformerRefs)
+    const image = await captureStageImageBitmap(stageRef, transformerRefs);
     if (!image) {
-      console.error('Failed to capture stage image');
+      console.error("Failed to capture stage image");
       return;
     } else {
       setCanvasRenderBitmap(image);
     }
-  }
+  };
 
   return (
     <>
@@ -123,7 +184,7 @@ const PageDraw = () => {
             // Handle aspect ratio changes here
           }}
           onEnqueuePressed={onEnqueuedPressed}
-        /> 
+        />
       </div>
       <SideToolbar
         className="fixed left-0 top-1/2 z-10 -translate-y-1/2 transform"
@@ -210,23 +271,23 @@ const PageDraw = () => {
         activeToolId={store.activeTool}
       />
       <div className="relative z-0">
-      <ContextMenuContainer>
-        <PaintSurface
-          nodes={store.nodes}
-          selectedNodeIds={store.selectedNodeIds}
-          onCanvasSizeChange={(width: number, height: number): void => {
-            canvasWidth.current = width;
-            canvasHeight.current = height;
-          }}
-          fillColor={store.fillColor}
-          activeTool={store.activeTool}
-          brushColor={store.brushColor}
-          brushSize={store.brushSize}
-          onSelectionChange={setIsSelecting}
-          stageRef={stageRef}
-          transformerRefs={transformerRefs}
-        />
-          </ContextMenuContainer>
+        <ContextMenuContainer>
+          <PaintSurface
+            nodes={store.nodes}
+            selectedNodeIds={store.selectedNodeIds}
+            onCanvasSizeChange={(width: number, height: number): void => {
+              canvasWidth.current = width;
+              canvasHeight.current = height;
+            }}
+            fillColor={store.fillColor}
+            activeTool={store.activeTool}
+            brushColor={store.brushColor}
+            brushSize={store.brushSize}
+            onSelectionChange={setIsSelecting}
+            stageRef={stageRef}
+            transformerRefs={transformerRefs}
+          />
+        </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <PopoverMenu
