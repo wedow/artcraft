@@ -210,7 +210,50 @@ const PageDraw = () => {
         activeToolId={store.activeTool}
       />
       <div className="relative z-0">
-      <ContextMenuContainer>
+      <ContextMenuContainer 
+        onAction={(e, action) => {
+
+          if (action === "contextMenu") {
+            const hasSelection = store.selectedNodeIds.length > 0;
+            if (hasSelection) {
+              console.log("An item is selected.");
+              // You can add additional actions here based on the selection
+              return true 
+            } else {
+              console.log("No item is selected.");
+              return false
+            }
+          }
+
+          console.log(`Action triggered: ${action}`);
+        }} 
+        onMenuAction={(action) => {
+          console.log(`Menu action: ${action}`);
+      
+          switch (action) {
+            case 'BRING_TO_FRONT':
+              store.bringToFront(store.selectedNodeIds);
+              console.log("Nodes after BRING_TO_FRONT:", store.nodes);
+              break;
+            case 'BRING_FORWARD':
+              store.bringForward(store.selectedNodeIds);
+              console.log("Nodes after BRING_FORWARD:", store.nodes);
+              break;
+            case 'SEND_BACKWARD':
+              store.sendBackward(store.selectedNodeIds);
+              console.log("Nodes after SEND_BACKWARD:", store.nodes);
+              break;
+            case 'SEND_TO_BACK':
+              store.sendToBack(store.selectedNodeIds);
+              console.log("Nodes after SEND_TO_BACK:", store.nodes);
+              break;
+            default:
+              console.log(`Unhandled action: ${action}`);
+          }
+      
+
+        }}
+      >
         <PaintSurface
           nodes={store.nodes}
           selectedNodeIds={store.selectedNodeIds}
