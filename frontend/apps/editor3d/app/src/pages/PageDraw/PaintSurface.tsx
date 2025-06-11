@@ -1004,7 +1004,9 @@ export const PaintSurface = ({
               />
 
               {/* Render all nodes including line nodes */}
-              {[...nodes, ...store.lineNodes].map((node, index) => {
+              {[...nodes, ...store.lineNodes]
+                .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
+                .map((node, index) => {
                 // console.log(`Node ${index}:`, node);
                 return renderNode(node);
               })}

@@ -117,11 +117,11 @@ let isRestoring = false;
 const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
   const allZIndices = [
     ...nodes.map((n, index) => {
-      console.log(`Node: ${JSON.stringify(n)}, Index: ${index}`);
+      //console.log(`Node: ${JSON.stringify(n)}, Index: ${index}`);
       return n.zIndex || 0;
     }),
     ...lineNodes.map((n, index) => {
-      console.log(`LineNode: ${JSON.stringify(n)}, Index: ${index}`);
+      //console.log(`LineNode: ${JSON.stringify(n)}, Index: ${index}`);
       return n.zIndex || 0;
     })
   ];
@@ -152,16 +152,16 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   // Actions
   addNode: (node: Node) => {
     set((state) => {
-      const nextZ = getNextZIndex(state.nodes, state.lineNodes);
-      // console.log(`NextZ for node ID ${node.id}: ${nextZ}`);
+      const nextZ = getNextZIndex(state.nodes, state.lineNodes) + 1;
+      console.log(`NextZ for node ID ${node.id}: ${nextZ}`);
       const newNode = new Node({
         ...node,
         zIndex: nextZ
       });
       // console.log("New Node with ID:", newNode.id);
       let nodes =  [...state.nodes, newNode]
-      // console.log("Nodes after update")
-      // console.log(nodes)
+      console.log("Nodes after update")
+      console.log(nodes)
       return { nodes: nodes };
     });
     get().saveState();
@@ -485,8 +485,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   // Add new line node actions
   addLineNode: (lineNode: LineNode) => {
     set((state) => {
-      let nextZ = getNextZIndex(state.nodes, state.lineNodes);
-      nextZ = 0
+      const nextZ = getNextZIndex(state.nodes, state.lineNodes) + 1;
 
       const newLineNode = {
         ...lineNode,
@@ -629,11 +628,11 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     // Load the image asynchronously
     node.setImage(source).then(() => {
       // Update the node in the store after image loads
-      // get nodes z index so it doesn't reset ...
-      get().updateNode(node.id, node, false);
+      get().addNode(node);
+      //get().updateNode(node.id, node, false);
     }).catch((error)=>console.error('Error loading image:', error));
     
-    get().addNode(node);
+    
   },
 
   // Action for deleting selected items
