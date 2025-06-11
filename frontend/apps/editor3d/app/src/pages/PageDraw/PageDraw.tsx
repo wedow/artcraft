@@ -229,23 +229,27 @@ const PageDraw = () => {
         }} 
         onMenuAction={(action) => {
           console.log(`Menu action: ${action}`);
-      
+          const sortNodesByZIndex = (nodes: Node[]): Node[] => {
+            return nodes.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+          };
           switch (action) {
+           
+
             case 'BRING_TO_FRONT':
               store.bringToFront(store.selectedNodeIds);
-              console.log("Nodes after BRING_TO_FRONT:", store.nodes);
+              console.log("Nodes after BRING_TO_FRONT:", sortNodesByZIndex(store.nodes));
               break;
             case 'BRING_FORWARD':
               store.bringForward(store.selectedNodeIds);
-              console.log("Nodes after BRING_FORWARD:", store.nodes);
+              console.log("Nodes after BRING_FORWARD:", sortNodesByZIndex(store.nodes));
               break;
             case 'SEND_BACKWARD':
               store.sendBackward(store.selectedNodeIds);
-              console.log("Nodes after SEND_BACKWARD:", store.nodes);
+              console.log("Nodes after SEND_BACKWARD:", sortNodesByZIndex(store.nodes));
               break;
             case 'SEND_TO_BACK':
               store.sendToBack(store.selectedNodeIds);
-              console.log("Nodes after SEND_TO_BACK:", store.nodes);
+              console.log("Nodes after SEND_TO_BACK:", sortNodesByZIndex(store.nodes));
               break;
             default:
               console.log(`Unhandled action: ${action}`);
