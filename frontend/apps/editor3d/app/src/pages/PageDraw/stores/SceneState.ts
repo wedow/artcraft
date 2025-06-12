@@ -20,6 +20,28 @@ export type LineNode = {
   zIndex: number;
 };
 
+
+   // Logic to remove background from image nodes would go here
+const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onloadend = () => {
+            if (reader.result) {
+                resolve(reader.result as string);
+            } else {
+                reject(new Error("Failed to convert file to base64."));
+            }
+        };
+        
+        reader.onerror = () => {
+            reject(new Error("Error reading file."));
+        };
+        
+        reader.readAsDataURL(file);
+    });
+};
+
 export type ActiveTool = 'select' | 'draw' | 'eraser' | 'backgroundColor' | 'shape';
 
 interface SceneState {
@@ -110,7 +132,7 @@ interface SceneState {
   sendToBack: (nodeIds: string[]) => void;
   bringForward: (nodeIds: string[]) => void;
   sendBackward: (nodeIds: string[]) => void;
-  removeBackground: (nodeIds: string[], operation: (success: boolean, message: string) => { success: boolean; file?: File }) => void;
+  removeBackground: (nodeIds: string[], operation: (success: boolean,base64_image:string, message: string) => Promise<{ success: boolean; file?: File }>) => Promise<void>;
 }
 
 const generateId = (): string => {
@@ -1132,7 +1154,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     });
     get().saveState();
   },
-  removeBackground: (nodeIds: string[], operation: (success: boolean, message: string) => { success: boolean; file?: File }) => {
+  removeBackground: async (nodeIds: string[], operation:  (success: boolean, base64_image:string,message: string) => Promise<{ success: boolean; file?: File }>) => {
    
     const hasImageNodes = nodeIds.some(id => {
         const node = get().nodes.find(n => n.id === id);
@@ -1141,18 +1163,47 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     let callbackSuccess = false
     if (hasImageNodes) {
         console.log("Selected nodes include image types.");
-        // Logic to remove background from image nodes would go here
-        const { success, file } = operation(true, "Removing Background."); // Indicate success in removing background
-        callbackSuccess = success
-        if (callbackSuccess) {
-          // save the state of the image.
-          set(state => {
-            
-          })
+     
+        const firstNode = get().nodes.find(node => nodeIds.includes(node.id) && node.type === 'image');
+        if (firstNode) {
+            const imageFile = firstNode.imageFile; // Assuming the file is stored in the node
+            if (imageFile !== undefined) {
+              try {
+                const base64Image = await convertFileToBase64(imageFile);
+                console.log("Base64 Image:", base64Image);
+                // Additional logic to handle the base64 image can be added here
+                const { success, file } = await operation(true, base64Image, "Removing Background."); // Indicate success in removing background
+                callbackSuccess = success;
+                if (callbackSuccess) {
+                  // save the state of the image.
+                  set((state: SceneState) => ({
+                    nodes: state.nodes.map((node: Node) => {
+                      if (node.id === firstNode.id) {
+                        // Create an object URL for immediate preview if needed
+                        console.log("Updated Node!")
+                        const updatedImageUrl: string | undefined = file ? URL.createObjectURL(file) : node.imageUrl;
+                        return new Node({
+                          ...node,
+                          imageFile: file,
+                          imageUrl: updatedImageUrl,
+                        });
+                      }
+                      return node;
+                    }),
+                  }));
+                
+                }
+              } catch (error) {
+                console.error("Error converting file to base64:", error);
+              }
+            }
+            console.log("Image File:", imageFile);
+        } else {
+            console.warn("No image node found or first node is not an image.");
         }
     } else {
         console.log("No selected nodes are of image type.");
-        operation(false,"Did not select a Images"); // Indicate failure to remove background
+        operation(false,"","Did not select a Images"); // Indicate failure to remove background
     }
   
   },

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { PaintSurface } from "./PaintSurface";
 // https://github.com/SaladTechnologies/comfyui-api
+
 import "./App.css";
 import PromptEditor from "./PromptEditor/PromptEditor";
 import SideToolbar from "./components/ui/SideToolbar";
@@ -17,6 +18,43 @@ import Konva from "konva"; // just for types
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot"
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
+import {
+  FalBackgroundRemoval,
+  FalBackgroundRemovalRequest,
+} from "@storyteller/tauri-api";
+
+
+  /**
+ * This decodes Base64 encoded PNG images into an image element.
+ * @param base64String a standard (not "web safe") base64-encoded string
+ */
+  export const DecodeBase64ToImage = async (base64String: string) : Promise<ImageBitmap> => {
+    // Create an image element
+    const img = document.createElement("img");
+  
+    // Convert base64 to data URL if it doesn't include the prefix
+    const dataUrl = base64String.startsWith("data:")
+      ? base64String
+      : `data:image/png;base64,${base64String}`;
+  
+    // Create a promise to handle the image loading
+    return new Promise((resolve, reject) => {
+      img.onload = async () => {
+        try {
+          const bitmap = await createImageBitmap(img);
+          resolve(bitmap);
+        } catch (error) {
+          reject(error);
+        }
+      };
+  
+      img.onerror = () => reject(new Error("Failed to load image"));
+  
+      // Set the source to trigger loading
+      img.src = dataUrl;
+    });
+  }
+
 const PageDraw = () => {
   //useStateSceneLoader();
 
@@ -287,17 +325,33 @@ const PageDraw = () => {
           }
 
         }} 
-        onMenuAction={(action) => {
+        onMenuAction={async (action) => {
         
           switch (action) {
             case 'REMOVE_BACKGROUND':
               // returns a success if we have selected images only
-              store.removeBackground(store.selectedNodeIds, (success: boolean, message: string) => {
-                if (success) {
-                  console.log(message);
-                  return { success: true, file: new File([], "temp.png") }; // Replace with actual file when ready
-                } else {
+              await store.removeBackground(store.selectedNodeIds, 
+                async (success: boolean, image_base64: string, message: string) => {
+                if (!success) {
                   console.error(message);
+                  return { success: false };
+                }
+
+                try {
+                  const response = await FalBackgroundRemoval({ base64_image: image_base64 });
+                  if (response.status !== "success" || !("payload" in response)) {
+                    console.error("Failed to remove background", response);
+                    return { success: false };
+                  }
+
+                  const base64String = response.payload?.base64_bytes as string;
+                  const binaryString = atob(base64String);
+                  const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+                  const blob = new Blob([bytes], { type: "image/png" });
+                  const file = new File([blob], "generated_image.png", { type: blob.type });
+                  return { success: true, file };
+                } catch (error) {
+                  console.error("Failed to remove background", error);
                   return { success: false };
                 }
               });
