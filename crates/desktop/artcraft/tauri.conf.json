@@ -16,7 +16,8 @@
         "width": 2400,
         "height": 1300,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "dragDropEnabled": false
       }
     ],
     "security": {
@@ -33,7 +34,7 @@
           "https://www.googletagmanager.com",
           "ipc://localhost",
           "tauri://localhost"
-        ], 
+        ],
         "connect-src": [
           "'self'",
           "'unsafe-eval'",

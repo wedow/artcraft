@@ -6,7 +6,10 @@ import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
-import { EnqueueTextToImage, EnqueueTextToImageModel } from "@storyteller/tauri-api";
+import {
+  EnqueueTextToImage,
+  EnqueueTextToImageModel,
+} from "@storyteller/tauri-api";
 import {
   faMessageXmark,
   faMessageCheck,
@@ -221,7 +224,7 @@ export const PromptBoxImage = ({
     return iconElement.props.icon;
   };
 
-  const getModelByName = (name: string) : EnqueueTextToImageModel => {
+  const getModelByName = (name: string): EnqueueTextToImageModel => {
     switch (name) {
       case "Flux Pro Ultra":
         return EnqueueTextToImageModel.FluxProUltra;
@@ -401,6 +404,7 @@ export const PromptBoxImage = ({
         maxSelections={1}
         onUseSelected={handleGalleryImages}
         onDownloadClicked={downloadFileFromUrl}
+        forceFilter="image"
       />
     </>
   );

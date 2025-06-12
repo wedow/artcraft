@@ -89,12 +89,12 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           type="button"
           tabIndex={0}
           className={twMerge(
-            "w-full group relative overflow-visible rounded-md border-[3px] transition-all focus:outline-none focus:ring-2 focus:ring-primary",
+            "w-full group relative overflow-visible rounded-md border-transparent border-[3px] transition-all",
             activeFilter === "video" ? "aspect-square" : "aspect-square",
             selected
               ? "border-primary"
-              : "border-transparent hover:border-primary",
-            item.mediaClass === "video"
+              : "border-transparent hover:border-primary/80",
+            mode === "select" || item.mediaClass === "video"
               ? "cursor-pointer"
               : "cursor-grab hover:cursor-grab active:cursor-grabbing"
           )}
@@ -161,7 +161,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
               selected
                 ? "border-primary"
                 : "border-transparent hover:border-primary",
-              item.mediaClass === "video"
+              mode === "select" || item.mediaClass === "video"
                 ? "cursor-pointer"
                 : "cursor-grab hover:cursor-grab active:cursor-grabbing"
             )}

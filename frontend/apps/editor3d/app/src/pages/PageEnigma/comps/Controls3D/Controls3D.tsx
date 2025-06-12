@@ -19,6 +19,7 @@ import { assetModalVisibleDuringDrag, assetModalVisible } from "../../signals";
 import {
   Create3dModal,
   useCreate3dModalStore,
+  // eslint-disable-next-line import/no-unresolved
 } from "@storyteller/ui-create-3d-modal";
 import { v4 as uuidv4 } from "uuid";
 import { addObject } from "../../signals/objectGroup/addObject";

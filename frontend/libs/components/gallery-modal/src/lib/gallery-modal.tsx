@@ -3,7 +3,13 @@ import { LightboxModal } from "@storyteller/ui-lightbox-modal";
 import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   FilterMediaClasses,
   GalleryModalApi,
@@ -61,6 +67,11 @@ interface GalleryModalProps {
     media_id: string | undefined
   ) => Promise<void>;
   isOpen?: boolean;
+  /**
+   * Optional filter to force when opening the modal. When set, users cannot change the filter.
+   * Possible values: "all", "image", "video", "3d", "uploaded"
+   */
+  forceFilter?: string;
 }
 
 export const GalleryModal = React.memo(
@@ -74,6 +85,7 @@ export const GalleryModal = React.memo(
     onDownloadClicked,
     onAddToSceneClicked,
     isOpen,
+    forceFilter,
   }: GalleryModalProps) => {
     const [loading, setLoading] = useState(false);
     const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(
@@ -82,7 +94,15 @@ export const GalleryModal = React.memo(
     const [isLightboxVisible, setIsLightboxVisible] = useState(false);
     const [failedImageUrls] = useState<Set<string>>(new Set());
     const [username, setUsername] = useState<string>("");
-    const [activeFilter, setActiveFilter] = useState("all");
+    const forceFilterRef = useRef(forceFilter);
+    const [activeFilter, setActiveFilter] = useState(forceFilter || "all");
+
+    // If forceFilter is provided, always use it
+    useEffect(() => {
+      if (forceFilterRef.current) {
+        setActiveFilter(forceFilterRef.current);
+      }
+    }, [forceFilterRef]);
     const minColumns = 3;
     const maxColumns = 12;
     // Default gridColumns to 5
@@ -436,23 +456,40 @@ export const GalleryModal = React.memo(
                     />
                   </div>
                   {/* Filter popover */}
-                  <Tooltip position="top" content="Filter" closeOnClick={true}>
+                  <Tooltip
+                    position="top"
+                    content={
+                      forceFilterRef.current ? "Filter locked" : "Filter"
+                    }
+                    closeOnClick={true}
+                  >
                     <PopoverMenu
                       panelTitle="Filter"
                       position="bottom"
                       align="end"
-                      buttonClassName="relative z-[51] mr-3"
+                      buttonClassName={`relative z-[51] mr-3 ${
+                        forceFilterRef.current
+                          ? "opacity-70 pointer-events-none"
+                          : ""
+                      }`}
                       panelClassName="min-w-36"
                       items={FILTERS.map((f) => ({
                         label: f.label,
                         selected: activeFilter === f.id,
                         icon: f.icon,
+                        // Use a custom property that will be passed through but not cause type errors
+                        customProps: {
+                          disabled: forceFilterRef.current !== undefined,
+                        },
                       }))}
                       onSelect={(item) => {
-                        const filter = FILTERS.find(
-                          (f) => f.label === item.label
-                        );
-                        if (filter) setActiveFilter(filter.id);
+                        // Only allow filter changes if no forceFilter was provided
+                        if (!forceFilterRef.current) {
+                          const filter = FILTERS.find(
+                            (f) => f.label === item.label
+                          );
+                          if (filter) setActiveFilter(filter.id);
+                        }
                       }}
                       triggerIcon={<FontAwesomeIcon icon={faFilter} />}
                       triggerLabel={

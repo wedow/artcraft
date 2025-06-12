@@ -375,6 +375,7 @@ export const PromptBoxVideo = ({
         maxSelections={1}
         onUseSelected={handleGalleryImages}
         onDownloadClicked={downloadFileFromUrl}
+        forceFilter="image"
       />
     </>
   );

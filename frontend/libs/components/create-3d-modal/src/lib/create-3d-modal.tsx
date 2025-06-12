@@ -250,6 +250,7 @@ export const Create3dModal = ({ onModelComplete }: Create3dModalProps = {}) => {
         selectedItemIds={selectedGalleryImages}
         onSelectItem={handleImageSelect}
         maxSelections={1}
+        forceFilter="image"
         onUseSelected={handleGalleryImages}
       />
     </>
