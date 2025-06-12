@@ -20,7 +20,11 @@ enum GenerationAction {
   ImageTo3d = "image_to_3d",
 }
 
-export const Create3dModal = () => {
+interface Create3dModalProps {
+  onModelComplete?: (mediaToken: string) => void;
+}
+
+export const Create3dModal = ({ onModelComplete }: Create3dModalProps = {}) => {
   const { isOpen, close } = useCreate3dModalStore();
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
@@ -42,6 +46,9 @@ export const Create3dModal = () => {
 
         // Check if this is an ImageTo3d completion event
         const eventData = event.payload?.data;
+
+        console.log("eventData", eventData);
+
         if (eventData?.action === GenerationAction.ImageTo3d) {
           // Find any active toasts for 3D model generation and update them
           Object.entries(activeToastIds.current).forEach(
@@ -49,10 +56,10 @@ export const Create3dModal = () => {
               // Dismiss the loading toast
               toast.dismiss(toastId);
 
-              // Add the completed model to the Zustand store
-              useCreate3dModalStore.getState().addCompletedModel({
-                mediaToken: mediaToken,
-              });
+              // Call the callback if provided
+              if (onModelComplete) {
+                onModelComplete(mediaToken);
+              }
 
               // Remove from active toasts
               delete activeToastIds.current[mediaToken];

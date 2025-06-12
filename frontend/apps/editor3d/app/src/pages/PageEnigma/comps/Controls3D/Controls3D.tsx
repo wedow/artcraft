@@ -19,7 +19,6 @@ import { assetModalVisibleDuringDrag, assetModalVisible } from "../../signals";
 import {
   Create3dModal,
   useCreate3dModalStore,
-  // eslint-disable-next-line import/no-unresolved
 } from "@storyteller/ui-create-3d-modal";
 import { v4 as uuidv4 } from "uuid";
 import { addObject } from "../../signals/objectGroup/addObject";
@@ -103,31 +102,20 @@ export const Controls3D = () => {
   };
 
   // Function to add the generated 3D model to the scene
-  const addGeneratedModelToScene = useCallback(
-    (mediaToken: string) => {
-      if (!editorEngine) {
-        console.error("Engine not available to add 3D model to scene");
-        return;
-      }
+  const addGeneratedModelToScene = useCallback((mediaToken: string) => {
+    // Create a MediaItem object for the 3D model
+    const mediaItem: MediaItem = {
+      version: 1,
+      type: AssetType.OBJECT,
+      media_id: mediaToken,
+      name: "Generated 3D Model",
+      object_uuid: uuidv4(),
+    };
 
-      try {
-        // Create a MediaItem object for the 3D model
-        const mediaItem: MediaItem = {
-          version: 1,
-          type: AssetType.OBJECT,
-          media_id: mediaToken,
-          name: "Generated 3D Model",
-          object_uuid: uuidv4(),
-        };
-
-        // Add the object to the scene
-        addObject(mediaItem);
-      } catch (error) {
-        console.error("Error adding generated 3D model to scene:", error);
-      }
-    },
-    [editorEngine],
-  );
+    // Add the object to the scene
+    console.log("Adding 3D model to scene with media token:", mediaToken);
+    addObject(mediaItem);
+  }, []);
 
   const handleOpenModal = () => {
     assetModalVisibleDuringDrag.value = true;
@@ -171,37 +159,22 @@ export const Controls3D = () => {
     setIsSettingsModalOpen(true);
   };
 
-  // Check for completed models from the Create3dModal component
-  useEffect(() => {
-    // Set up an interval to check for completed models
-    const intervalId = setInterval(() => {
-      const completedModels = useCreate3dModalStore
-        .getState()
-        .getAndClearCompletedModels();
+  // Handle completed models from the Create3dModal component
+  const handleModelComplete = useCallback(
+    (mediaToken: string) => {
+      console.log("Model generation complete callback received:", mediaToken);
 
-      if (completedModels.length > 0) {
-        console.log("Found completed models:", completedModels);
+      // Check if we've already processed this model
+      if (mediaToken && !processedModelsRef.current[mediaToken]) {
+        // Mark this model as processed to avoid duplicates
+        processedModelsRef.current[mediaToken] = true;
 
-        // Process each completed model
-        completedModels.forEach((model) => {
-          const { mediaToken } = model;
-
-          // Check if we've already processed this model
-          if (mediaToken && !processedModelsRef.current[mediaToken]) {
-            // Mark this model as processed to avoid duplicates
-            processedModelsRef.current[mediaToken] = true;
-
-            // Add the generated 3D model to the scene
-            addGeneratedModelToScene(mediaToken);
-          }
-        });
+        // Add the generated 3D model to the scene
+        addGeneratedModelToScene(mediaToken);
       }
-    }, 1000); // Check every second
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [addGeneratedModelToScene]);
+    },
+    [addGeneratedModelToScene],
+  );
 
   const modes = [
     {
@@ -285,7 +258,7 @@ export const Controls3D = () => {
       </div>
 
       <AssetModal />
-      <Create3dModal />
+      <Create3dModal onModelComplete={handleModelComplete} />
 
       {/* Action reminder is now handled through showActionReminder function */}
 
