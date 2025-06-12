@@ -17,6 +17,7 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   globalAccountLogoutCallback: () => void;
+  initialSection?: SettingsSection;
 }
 
 //type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
@@ -26,9 +27,10 @@ export const SettingsModal = ({
   isOpen,
   onClose,
   globalAccountLogoutCallback,
+  initialSection = "general",
 }: SettingsModalProps) => {
   const [selectedSection, setSelectedSection] =
-    useState<SettingsSection>("general");
+    useState<SettingsSection>(initialSection);
 
   const sections = [
     { id: "general" as const, label: "General", icon: faCog },

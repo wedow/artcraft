@@ -134,6 +134,12 @@
     },
     {
       "path": "./libs/components/model-selector"
+    },
+    {
+      "path": "./libs/components/create-3d-modal"
+    },
+    {
+      "path": "./libs/components/image-input"
     }
   ]
 }

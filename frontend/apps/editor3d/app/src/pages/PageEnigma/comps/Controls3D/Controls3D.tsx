@@ -8,19 +8,42 @@ import {
 import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { Button } from "@storyteller/ui-button";
 import { Tooltip } from "@storyteller/ui-tooltip";
+import {
+  showActionReminder,
+  isActionReminderOpen,
+} from "@storyteller/ui-action-reminder-modal";
+import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { EngineContext } from "../../contexts/EngineContext";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import { assetModalVisibleDuringDrag, assetModalVisible } from "../../signals";
+import {
+  Create3dModal,
+  useCreate3dModalStore,
+  // eslint-disable-next-line import/no-unresolved
+} from "@storyteller/ui-create-3d-modal";
+import { v4 as uuidv4 } from "uuid";
+import { addObject } from "../../signals/objectGroup/addObject";
+import { MediaItem } from "../../models/assets";
+import { GetFalApiKey } from "@storyteller/tauri-api"; // Fix import path
+// eslint-disable-next-line import/no-unresolved
+import { AssetType } from "~/enums";
 import { AssetModal } from "../AssetMenu/AssetModal";
 import { selectedMode } from "../../signals/selectedMode";
 import { useSignals } from "@preact/signals-react/runtime";
 import { outlinerState } from "../../signals/outliner/outliner";
 import { twMerge } from "tailwind-merge";
+// eslint-disable-next-line import/no-unresolved
+import { setLogoutStates } from "~/signals/authentication/utilities";
 
 export const Controls3D = () => {
   useSignals();
   const editorEngine = useContext(EngineContext);
   const [showEmptySceneTooltip, setShowEmptySceneTooltip] = useState(false);
+  // Action reminder is now handled through signals
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  // Track processed 3D models by their media token to prevent duplicates
+  const processedModelsRef = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     // Check if scene is empty and onboarding helper is not visible
@@ -79,6 +102,107 @@ export const Controls3D = () => {
     editorEngine.change_mode("scale");
   };
 
+  // Function to add the generated 3D model to the scene
+  const addGeneratedModelToScene = useCallback(
+    (mediaToken: string) => {
+      if (!editorEngine) {
+        console.error("Engine not available to add 3D model to scene");
+        return;
+      }
+
+      try {
+        // Create a MediaItem object for the 3D model
+        const mediaItem: MediaItem = {
+          version: 1,
+          type: AssetType.OBJECT,
+          media_id: mediaToken,
+          name: "Generated 3D Model",
+          object_uuid: uuidv4(),
+        };
+
+        // Add the object to the scene
+        addObject(mediaItem);
+      } catch (error) {
+        console.error("Error adding generated 3D model to scene:", error);
+      }
+    },
+    [editorEngine],
+  );
+
+  const handleOpenModal = () => {
+    assetModalVisibleDuringDrag.value = true;
+    assetModalVisible.value = true;
+  };
+
+  const handleOpenCreate3dModal = async () => {
+    try {
+      const falApiKeyResult = await GetFalApiKey();
+
+      if (
+        falApiKeyResult.status === "success" &&
+        "payload" in falApiKeyResult &&
+        falApiKeyResult.payload?.key
+      ) {
+        // API key exists, open the create 3D modal
+        useCreate3dModalStore.getState().open();
+      } else {
+        // No API key, show the action reminder modal
+        showActionReminder({
+          reminderType: "default",
+          title: "FAL API Key Required",
+          message:
+            "To generate 3D models, you need to add a valid FAL API key in your settings.",
+          primaryActionText: "Add now",
+          secondaryActionText: "Cancel",
+          onPrimaryAction: () => {
+            // Close the action reminder modal first
+            isActionReminderOpen.value = false;
+            // Then open the settings modal
+            openSettingsModal();
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error checking FAL API key:", error);
+    }
+  };
+
+  const openSettingsModal = () => {
+    setIsSettingsModalOpen(true);
+  };
+
+  // Check for completed models from the Create3dModal component
+  useEffect(() => {
+    // Set up an interval to check for completed models
+    const intervalId = setInterval(() => {
+      const completedModels = useCreate3dModalStore
+        .getState()
+        .getAndClearCompletedModels();
+
+      if (completedModels.length > 0) {
+        console.log("Found completed models:", completedModels);
+
+        // Process each completed model
+        completedModels.forEach((model) => {
+          const { mediaToken } = model;
+
+          // Check if we've already processed this model
+          if (mediaToken && !processedModelsRef.current[mediaToken]) {
+            // Mark this model as processed to avoid duplicates
+            processedModelsRef.current[mediaToken] = true;
+
+            // Add the generated 3D model to the scene
+            addGeneratedModelToScene(mediaToken);
+          }
+        });
+      }
+    }, 1000); // Check every second
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [addGeneratedModelToScene]);
+
   const modes = [
     {
       value: "move",
@@ -99,11 +223,6 @@ export const Controls3D = () => {
       tooltip: "Scale (G)",
     },
   ];
-
-  const handleOpenModal = () => {
-    assetModalVisibleDuringDrag.value = true;
-    assetModalVisible.value = true;
-  };
 
   return (
     <>
@@ -148,10 +267,9 @@ export const Controls3D = () => {
               >
                 <Button
                   icon={faMagicWandSparkles}
-                  className="text-md h-9 w-9 rounded-[10px] bg-white/10"
+                  className="text-md h-9 w-9 rounded-[10px] bg-white/15 transition-colors hover:bg-white/25"
                   variant="secondary"
-                  disabled={true}
-                  onClick={handleOpenModal}
+                  onClick={handleOpenCreate3dModal}
                 />
               </Tooltip>
             </div>
@@ -167,6 +285,16 @@ export const Controls3D = () => {
       </div>
 
       <AssetModal />
+      <Create3dModal />
+
+      {/* Action reminder is now handled through showActionReminder function */}
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        globalAccountLogoutCallback={() => setLogoutStates()}
+        initialSection="accounts"
+      />
     </>
   );
 };
