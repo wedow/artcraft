@@ -290,6 +290,18 @@ const PageDraw = () => {
         onMenuAction={(action) => {
         
           switch (action) {
+            case 'REMOVE_BACKGROUND':
+              // returns a success if we have selected images only
+              store.removeBackground(store.selectedNodeIds, (success: boolean, message: string) => {
+                if (success) {
+                  console.log(message);
+                  return { success: true, file: new File([], "temp.png") }; // Replace with actual file when ready
+                } else {
+                  console.error(message);
+                  return { success: false };
+                }
+              });
+              break;
             case 'BRING_TO_FRONT':
               store.bringToFront(store.selectedNodeIds);
               break;

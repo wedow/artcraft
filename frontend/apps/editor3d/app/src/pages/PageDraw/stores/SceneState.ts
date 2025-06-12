@@ -110,7 +110,7 @@ interface SceneState {
   sendToBack: (nodeIds: string[]) => void;
   bringForward: (nodeIds: string[]) => void;
   sendBackward: (nodeIds: string[]) => void;
-  removeBackground: (nodeIds: string[],operation: (success: boolean) => void) => void;
+  removeBackground: (nodeIds: string[], operation: (success: boolean, message: string) => { success: boolean; file?: File }) => void;
 }
 
 const generateId = (): string => {
@@ -1132,9 +1132,28 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     });
     get().saveState();
   },
-  removeBackground: (nodeIds: string[], operation: (success: boolean) => void): void => {
-    // Implement the logic for removing the background here
-    const success = true; // Placeholder for actual implementation
-    operation(success);
+  removeBackground: (nodeIds: string[], operation: (success: boolean, message: string) => { success: boolean; file?: File }) => {
+   
+    const hasImageNodes = nodeIds.some(id => {
+        const node = get().nodes.find(n => n.id === id);
+        return node ? node.type === 'image': false;
+    });
+    let callbackSuccess = false
+    if (hasImageNodes) {
+        console.log("Selected nodes include image types.");
+        // Logic to remove background from image nodes would go here
+        const { success, file } = operation(true, "Removing Background."); // Indicate success in removing background
+        callbackSuccess = success
+        if (callbackSuccess) {
+          // save the state of the image.
+          set(state => {
+            
+          })
+        }
+    } else {
+        console.log("No selected nodes are of image type.");
+        operation(false,"Did not select a Images"); // Indicate failure to remove background
+    }
+  
   },
 }));
