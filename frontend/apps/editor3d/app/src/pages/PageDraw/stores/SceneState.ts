@@ -110,6 +110,7 @@ interface SceneState {
   sendToBack: (nodeIds: string[]) => void;
   bringForward: (nodeIds: string[]) => void;
   sendBackward: (nodeIds: string[]) => void;
+  removeBackground: (nodeIds: string[],operation: (success: boolean) => void) => void;
 }
 
 const generateId = (): string => {
@@ -1130,5 +1131,10 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       };
     });
     get().saveState();
+  },
+  removeBackground: (nodeIds: string[], operation: (success: boolean) => void): void => {
+    // Implement the logic for removing the background here
+    const success = true; // Placeholder for actual implementation
+    operation(success);
   },
 }));
