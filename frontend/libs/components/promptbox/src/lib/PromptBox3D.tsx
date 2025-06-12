@@ -315,6 +315,7 @@ export const PromptBox3D = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
     setPrompt(e.target.value);
   };
 
