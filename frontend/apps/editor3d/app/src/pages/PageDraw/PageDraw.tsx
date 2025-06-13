@@ -311,7 +311,6 @@ const PageDraw = () => {
       <div className="relative z-0">
       <ContextMenuContainer 
         onAction={(e, action) => {
-
           if (action === "contextMenu") {
             const hasSelection = store.selectedNodeIds.length > 0;
             if (hasSelection) {
@@ -323,11 +322,13 @@ const PageDraw = () => {
               return false
             }
           }
-
+          return false
         }} 
         onMenuAction={async (action) => {
-        
           switch (action) {
+            case 'LOCK':
+              store.toggleLock(store.selectedNodeIds);
+              break;
             case 'REMOVE_BACKGROUND':
               // returns a success if we have selected images only
               await store.removeBackground(store.selectedNodeIds, 
@@ -378,6 +379,11 @@ const PageDraw = () => {
               // No action needed for unhandled cases
           }
         }}
+        isLocked={store.selectedNodeIds.some(id => {
+          const node = store.nodes.find(n => n.id === id);
+          const lineNode = store.lineNodes.find(n => n.id === id);
+          return (node?.locked || lineNode?.locked) ?? false;
+        })}
       >
         <PaintSurface
           nodes={store.nodes}

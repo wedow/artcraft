@@ -546,6 +546,25 @@ export const PaintSurface = ({
         return;
       }
 
+      // allow selection
+      if (e.evt.button === 2) {
+        const node = store.nodes.find(n => n.id === nodeId);
+        const lineNode = store.lineNodes.find(n => n.id === nodeId);
+        const isLocked = (node?.locked || lineNode?.locked) ?? false;
+        
+        // If locked, only allow selection for context menu
+        if (isLocked) {
+          store.selectNode(nodeId);
+          return;
+        }
+      }
+      
+      // Don't select locked nodes
+      const node = nodes.find(n => n.id === nodeId) || store.lineNodes.find(n => n.id === nodeId);
+      if (node?.locked) {
+        return;
+      }
+
       // Check if Ctrl/Cmd key is pressed
       const isMultiSelect = e.evt.ctrlKey || e.evt.metaKey;
 
@@ -762,7 +781,7 @@ export const PaintSurface = ({
             onMouseLeave={handleNodeMouseLeave}
             draggable={draggableIfToolsNotActive(
               activeTool,
-              lineNode.draggable,
+              lineNode.draggable && lineNode.locked == false,
             )}
             onDragMove={(e) => handleLineDragMove(e, lineNode.id)}
             onDragStart={(e) => handleLineDragStart(e, lineNode.id)}
@@ -799,7 +818,7 @@ export const PaintSurface = ({
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
             zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable)}
+            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
             onMouseEnter={handleNodeMouseEnter}
@@ -831,7 +850,7 @@ export const PaintSurface = ({
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
             zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable)}
+            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
             onMouseEnter={handleNodeMouseEnter}
@@ -863,7 +882,7 @@ export const PaintSurface = ({
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
             zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable)}
+            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
             onMouseEnter={handleNodeMouseEnter}
@@ -911,7 +930,7 @@ export const PaintSurface = ({
             scaleY={node.scaleY || 1}
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable)}
+            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
             onMouseEnter={handleNodeMouseEnter}

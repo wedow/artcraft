@@ -18,6 +18,7 @@ export type LineNode = {
   offsetX?: number;
   offsetY?: number;
   zIndex: number;
+  locked?: boolean; // Add locked property
 };
 
 
@@ -133,6 +134,9 @@ interface SceneState {
   bringForward: (nodeIds: string[]) => void;
   sendBackward: (nodeIds: string[]) => void;
   removeBackground: (nodeIds: string[], operation: (success: boolean,base64_image:string, message: string) => Promise<{ success: boolean; file?: File }>) => Promise<void>;
+
+  // Add new lock action
+  toggleLock: (nodeIds: string[]) => void;
 }
 
 const generateId = (): string => {
@@ -1207,4 +1211,37 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     }
   
   },
+
+  // Add toggleLock action
+  toggleLock: (nodeIds: string[]) => {
+    set((state) => {
+      // Update regular nodes
+      const updatedNodes = state.nodes.map(node => {
+        if (nodeIds.includes(node.id)) {
+          return new Node({
+            ...node,
+            locked: !node.locked
+          });
+        }
+        return node;
+      });
+
+      // Update line nodes
+      const updatedLineNodes = state.lineNodes.map(node => {
+        if (nodeIds.includes(node.id)) {
+          return {
+            ...node,
+            locked: !node.locked
+          };
+        }
+        return node;
+      });
+
+      return {
+        nodes: updatedNodes,
+        lineNodes: updatedLineNodes
+      };
+    });
+    get().saveState();
+  }
 }));
