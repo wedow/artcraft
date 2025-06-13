@@ -336,7 +336,6 @@ const PageDraw = () => {
                   console.error(message);
                   return { success: false };
                 }
-
                 try {
                   const response = await FalBackgroundRemoval({ base64_image: image_base64 });
                   if (response.status !== "success" || !("payload" in response)) {
@@ -367,6 +366,10 @@ const PageDraw = () => {
               break;
             case 'SEND_TO_BACK':
               store.sendToBack(store.selectedNodeIds);
+              break;
+            case 'DUPLICATE':
+              store.copySelectedItems()
+              store.pasteItems()
               break;
             default:
               // No action needed for unhandled cases

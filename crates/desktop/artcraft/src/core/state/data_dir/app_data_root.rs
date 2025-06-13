@@ -33,6 +33,7 @@ pub struct AppDataRoot {
 impl AppDataRoot {
   pub fn create_default() -> anyhow::Result<Self> {
     let directory = get_default_data_dir()?;
+    println!("App data directory: {:?}", directory);
     Self::create_existing(directory)
   }
 
