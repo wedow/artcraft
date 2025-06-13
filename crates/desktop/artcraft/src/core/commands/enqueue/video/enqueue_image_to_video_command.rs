@@ -1,6 +1,6 @@
 use crate::core::commands::enqueue::object::handle_object_artcraft::handle_object_artcraft;
 use crate::core::commands::enqueue::object::handle_object_fal::handle_object_fal;
-use crate::core::commands::enqueue::object::internal_object_error::InternalObjectError;
+use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
@@ -58,31 +58,31 @@ use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize)]
-pub struct EnqueueImageTo3dObjectRequest {
+pub struct EnqueueImageToVideoRequest {
   /// Image media file; the image to remove the background from.
   /// TODO: In the future we may support base64 images, URLs, or file paths here.
   pub image_media_token: Option<MediaFileToken>,
   
   /// The model to use.
-  pub model: Option<EnqueueImageTo3dObjectModel>,
+  pub model: Option<EnqueueImageToVideoModel>,
 }
 
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
-pub enum EnqueueImageTo3dObjectModel {
-  #[serde(rename = "hunyuan_3d_2")]
-  Hunyuan3d2,
+pub enum EnqueueImageToVideoModel {
+  #[serde(rename = "kling1_6")]
+  Kling16,
 }
 
 #[derive(Serialize)]
-pub struct EnqueueImageTo3dObjectSuccessResponse {
+pub struct EnqueueImageToVideoSuccessResponse {
 }
 
-impl SerializeMarker for EnqueueImageTo3dObjectSuccessResponse {}
+impl SerializeMarker for EnqueueImageToVideoSuccessResponse {}
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "snake_case")]
-pub enum EnqueueImageTo3dObjectErrorType {
+pub enum EnqueueImageToVideoErrorType {
   /// Caller didn't specify a model
   ModelNotSpecified,
   /// Generic server error
@@ -96,17 +96,17 @@ pub enum EnqueueImageTo3dObjectErrorType {
 }
 
 #[tauri::command]
-pub async fn enqueue_image_to_3d_object_command(
+pub async fn enqueue_image_to_video_command(
   app: AppHandle,
-  request: EnqueueImageTo3dObjectRequest,
+  request: EnqueueImageToVideoRequest,
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   fal_task_queue: State<'_, FalTaskQueue>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
-) -> Response<EnqueueImageTo3dObjectSuccessResponse, EnqueueImageTo3dObjectErrorType, ()> {
+) -> Response<EnqueueImageToVideoSuccessResponse, EnqueueImageToVideoErrorType, ()> {
 
-  info!("enqueue_image_to_3d_object_command called");
+  info!("enqueue_image_to_video_command called");
 
   let result = handle_request(
     &app,
@@ -122,23 +122,23 @@ pub async fn enqueue_image_to_3d_object_command(
       error!("error: {:?}", err);
 
       let mut status = CommandErrorStatus::ServerError;
-      let mut error_type = EnqueueImageTo3dObjectErrorType::ServerError;
+      let mut error_type = EnqueueImageToVideoErrorType::ServerError;
       let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
 
       match err {
-        InternalObjectError::NoModelSpecified => {
+        InternalVideoError::NoModelSpecified => {
           status = CommandErrorStatus::BadRequest;
-          error_type = EnqueueImageTo3dObjectErrorType::ModelNotSpecified;
+          error_type = EnqueueImageToVideoErrorType::ModelNotSpecified;
           error_message = "No model specified for image generation";
         }
-        InternalObjectError::NeedsFalApiKey => {
+        InternalVideoError::NeedsFalApiKey => {
           status = CommandErrorStatus::Unauthorized;
-          error_type = EnqueueImageTo3dObjectErrorType::NeedsFalApiKey;
+          error_type = EnqueueImageToVideoErrorType::NeedsFalApiKey;
           error_message = "You need to set a FAL api key";
         },
-        InternalObjectError::NeedsStorytellerCredentials => {
+        InternalVideoError::NeedsStorytellerCredentials => {
           status = CommandErrorStatus::Unauthorized;
-          error_type = EnqueueImageTo3dObjectErrorType::NeedsStorytellerCredentials;
+          error_type = EnqueueImageToVideoErrorType::NeedsStorytellerCredentials;
           error_message = "You need to be logged into Artcraft.";
         }
         _ => {}, // Fall-through
@@ -152,7 +152,7 @@ pub async fn enqueue_image_to_3d_object_command(
       })
     }
     Ok(()) => {
-      Ok(EnqueueImageTo3dObjectSuccessResponse {}.into())
+      Ok(EnqueueImageToVideoSuccessResponse {}.into())
     }
   }
 }
@@ -160,12 +160,12 @@ pub async fn enqueue_image_to_3d_object_command(
 
 pub async fn handle_request(
   app: &AppHandle,
-  request: EnqueueImageTo3dObjectRequest,
+  request: EnqueueImageToVideoRequest,
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<(), InternalObjectError> {
+) -> Result<(), InternalVideoError> {
 
   if fal_creds_manager.has_apparent_api_token()? {
     handle_object_fal(&app, app_data_root, request, fal_creds_manager, fal_task_queue).await?;

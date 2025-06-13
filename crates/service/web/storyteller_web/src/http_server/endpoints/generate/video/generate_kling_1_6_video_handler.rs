@@ -37,6 +37,29 @@ use utoipa::ToSchema;
 // =============== Error Response ===============
 
 
+/*
+ TODO: Either on the Tauri client or as an API, make "generic" image / video / object endpoints. 
+  Take a reference image payload: 
+  
+    ReferenceImage {
+      media_token: MediaFileToken,
+      reference_type: ReferenceType
+    } 
+    
+    enum ReferenceType {
+      PrimaryReference,
+      CharacterReference,
+      LocationReference,
+      StyleReference,
+      ...
+      GenericReference,
+    }
+    
+    // **ORDER MATTERS**
+    reference_images: Vec<ReferenceImage>,
+
+*/
+
 #[derive(Debug, Serialize, ToSchema)]
 pub enum GenerateKling16VideoError {
   BadInput(String),
