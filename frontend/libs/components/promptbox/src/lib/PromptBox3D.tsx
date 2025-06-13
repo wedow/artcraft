@@ -310,11 +310,13 @@ export const PromptBox3D = ({
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     const pastedText = e.clipboardData.getData("text").trim();
     setPrompt(pastedText);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    e.stopPropagation();
     setPrompt(e.target.value);
   };
 
@@ -484,6 +486,8 @@ export const PromptBox3D = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    e.stopPropagation();
+
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleEnqueue();

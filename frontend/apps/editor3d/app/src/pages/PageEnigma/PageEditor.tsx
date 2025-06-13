@@ -6,7 +6,7 @@ import { ControlsTopButtons } from "./comps/ControlsTopButtons";
 import { ControlPanelSceneObject } from "./comps/ControlPanelSceneObject";
 import { PreviewEngineCamera } from "./comps/PreviewEngineCamera";
 import { PreviewFrameImage } from "./comps/PreviewFrameImage";
-import { pageHeight, pageWidth } from "~/signals";
+import { authentication, pageHeight, pageWidth } from "~/signals";
 import { PoseModeSelector } from "./comps/PoseModeSelector";
 import ImageToVideo from "../PageVideo/ImageToVideo";
 import TextToImage from "../PageImage/TextToImage";
@@ -21,6 +21,7 @@ import {
   enableHotkeyInput,
   gridVisibility,
   setGridVisibility,
+  DomLevels,
 } from "~/pages/PageEnigma/signals";
 import { EditorCanvas } from "./comps/EngineCanvases";
 import { SceneContainer } from "./comps/SceneContainer";
@@ -53,7 +54,7 @@ import {
 } from "~/components/signaled/TopBar/TopBar";
 import { uploadPlaneFromMediaToken } from "~/components/reusable/UploadModalMedia/uploadPlane";
 import { addObject } from "./signals/objectGroup/addObject";
-import { AssetType } from "~/enums";
+import { AssetType, AUTH_STATUS } from "~/enums";
 import { v4 as uuidv4 } from "uuid";
 import { MediaItem } from "~/pages/PageEnigma/models";
 import { UploaderState } from "~/models";
@@ -71,7 +72,7 @@ import {
   // videoGenerationModels,
   // useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
-
+import { LoginModal } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
 
@@ -541,7 +542,7 @@ export const PageEditor = () => {
         </div>
       )}
 
-      {/*<LoginModal
+      <LoginModal
         onClose={() => {}}
         videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
         videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
@@ -557,7 +558,7 @@ export const PageEditor = () => {
           authentication.status.value = AUTH_STATUS.LOGGED_IN;
           authentication.userInfo.value = userInfo;
         }}
-      /> */}
+      />
     </div>
   );
 };
