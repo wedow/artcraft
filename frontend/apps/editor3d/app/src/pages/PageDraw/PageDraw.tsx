@@ -371,6 +371,9 @@ const PageDraw = () => {
               store.copySelectedItems()
               store.pasteItems()
               break;
+            case 'DELETE':
+              store.deleteSelectedItems()
+              break;
             default:
               // No action needed for unhandled cases
           }
