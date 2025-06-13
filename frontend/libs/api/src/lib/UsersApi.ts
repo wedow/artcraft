@@ -1,7 +1,34 @@
 import { ApiManager, ApiResponse } from "./ApiManager.js";
 import { UserInfo } from "./models/Users.js";
+import { FetchProxy as fetch } from "@storyteller/tauri-utils";
 
 export class UsersApi extends ApiManager {
+  private async authFetch<B, T>(
+    endpoint: string,
+    {
+      method,
+      body,
+    }: {
+      method: string;
+      body?: B;
+    }
+  ): Promise<T> {
+    const bodyInString = JSON.stringify(body);
+
+    const response = await fetch(endpoint, {
+      method,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: bodyInString,
+    });
+
+    const responseData = await response.json();
+    return responseData as T;
+  }
+
   public GetSession(): Promise<
     ApiResponse<{
       loggedIn: boolean;
@@ -25,7 +52,7 @@ export class UsersApi extends ApiManager {
       .catch((err) => {
         return {
           success: false,
-          errorMessage: err.mesasge,
+          errorMessage: err.message,
         };
       });
   }
@@ -51,7 +78,7 @@ export class UsersApi extends ApiManager {
       .catch((err) => {
         return {
           success: false,
-          error_message: err.message,
+          errorMessage: err.message,
         };
       });
   }
@@ -69,29 +96,34 @@ export class UsersApi extends ApiManager {
       username_or_email: usernameOrEmail,
       password: password,
     };
-    return await this.post<
-      { username_or_email: string; password: string },
-      {
-        success: boolean;
-        signed_session?: string;
-        error_message?: string;
-        error_type?: string;
-      }
-    >({
-      endpoint: endpoint,
-      body: body,
-    })
-      .then((response) => ({
-        success: response.success,
-        data: { signedSession: response.signed_session },
-        errorMessage: response.error_message,
-      }))
-      .catch((err) => {
-        return {
-          success: false,
-          error_message: err.message,
-        };
+
+    try {
+      const response = await this.authFetch<
+        { username_or_email: string; password: string },
+        {
+          success: boolean;
+          signed_session?: string;
+          error_message?: string;
+          error_type?: string;
+        }
+      >(endpoint, {
+        method: "POST",
+        body: body,
       });
+
+      return {
+        success: response.success,
+        data: response.success
+          ? { signedSession: response.signed_session }
+          : undefined,
+        errorMessage: response.error_message,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        errorMessage: err.message,
+      };
+    }
   }
 
   public Logout(): Promise<ApiResponse<null>> {
@@ -128,36 +160,41 @@ export class UsersApi extends ApiManager {
       password_confirmation: passwordConfirmation,
       username,
     };
-    return await this.post<
-      {
-        username: string;
-        email_address: string;
-        password: string;
-        password_confirmation: string;
-      },
-      {
-        success: boolean;
-        signed_session?: string;
-        error_fields?: Record<string, string>;
-        error_message?: string;
-        error_type?: string;
-      }
-    >({
-      endpoint: endpoint,
-      body: body,
-    })
-      .then((response) => {
-        return {
-          success: response.success,
-          data: { signedSession: response.signed_session },
-          errorMessage: Object.values(response.error_fields ?? {}).join(","),
-        };
-      })
-      .catch((err) => {
-        return {
-          success: false,
-          error_message: err.message,
-        };
+
+    try {
+      const response = await this.authFetch<
+        {
+          username: string;
+          email_address: string;
+          password: string;
+          password_confirmation: string;
+        },
+        {
+          success: boolean;
+          signed_session?: string;
+          error_fields?: Record<string, string>;
+          error_message?: string;
+          error_type?: string;
+        }
+      >(endpoint, {
+        method: "POST",
+        body: body,
       });
+
+      return {
+        success: response.success,
+        data: response.success
+          ? { signedSession: response.signed_session }
+          : undefined,
+        errorMessage:
+          response.error_message ||
+          Object.values(response.error_fields ?? {}).join(", "),
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        errorMessage: err.message,
+      };
+    }
   }
 }
