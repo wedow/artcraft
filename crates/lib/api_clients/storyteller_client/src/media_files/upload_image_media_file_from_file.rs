@@ -1,5 +1,7 @@
 use crate::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use crate::error::api_error::ApiError;
+use crate::error::client_error::ClientError;
+use crate::error::storyteller_error::StorytellerError;
 use crate::shared_response_types::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::shared_response_types::media_links::MediaLinks;
 use crate::shared_response_types::simple_entity_stats::SimpleEntityStats;
@@ -36,7 +38,7 @@ pub async fn upload_image_media_file_from_file<P: AsRef<Path>>(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,
   path: P,
-) -> Result<UploadImageMediaFileSuccessResponse, ApiError> {
+) -> Result<UploadImageMediaFileSuccessResponse, StorytellerError> {
 
   let url = get_route(api_host);
 
@@ -46,12 +48,14 @@ pub async fn upload_image_media_file_from_file<P: AsRef<Path>>(
 
   let client = Client::builder()
       .gzip(true)
-      .build()?;
+      .build()
+      .map_err(|err| StorytellerError::Client(ClientError::from(err)))?;
 
   let form = Form::new()
       .text("uuid_idempotency_token", generate_random_uuid())
       .file("file", path)
-      .await?;
+      .await
+      .map_err(|err| StorytellerError::Client(ClientError::from(err)))?;
 
   let mut request_builder = client.post(url)
       .header("User-Agent", USER_AGENT)
@@ -66,12 +70,15 @@ pub async fn upload_image_media_file_from_file<P: AsRef<Path>>(
   let response = request_builder
       .multipart(form)
       .send()
-      .await?;
+      .await
+      .map_err(|err| StorytellerError::Api(ApiError::from(err)))?;
 
   let response = filter_bad_response(response).await?;
-  let response_body = &response.text().await?;
+  let response_body = &response.text().await
+      .map_err(|err| StorytellerError::Api(ApiError::from(err)))?;
 
-  let media_file = serde_json::from_str(&response_body)?;
+  let media_file = serde_json::from_str(&response_body)
+      .map_err(|err| StorytellerError::Api(ApiError::from(err)))?;
 
   Ok(media_file)
 }

@@ -1,3 +1,4 @@
+use crate::core::artcraft_error::ArtcraftError;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -49,6 +50,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::api_error::ApiError::InternalServerError;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::get_media_file::{get_media_file, GetMediaFileSuccessResponse};
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
@@ -152,9 +154,10 @@ pub async fn fal_hunyuan_image_to_3d_command(
 enum InnerError {
   FalError(FalErrorPlus),
   AnyhowError(AnyhowError),
-  StorytellerApiError(ApiError),
+  StorytellerError(StorytellerError),
   DecodeError(DecodeError),
   IoError(std::io::Error),
+  ArtcraftError(ArtcraftError),
 }
 
 impl From<AnyhowError> for InnerError {
@@ -169,9 +172,9 @@ impl From<FalErrorPlus> for InnerError {
   }
 }
 
-impl From<ApiError> for InnerError {
-  fn from(value: ApiError) -> Self {
-    Self::StorytellerApiError(value)
+impl From<StorytellerError> for InnerError {
+  fn from(value: StorytellerError) -> Self {
+    Self::StorytellerError(value)
   }
 }
 
@@ -186,6 +189,19 @@ impl From<std::io::Error> for InnerError {
     Self::IoError(value)
   }
 }
+
+impl From<ArtcraftError> for InnerError {
+  fn from(value: ArtcraftError) -> Self {
+    match value {
+      ArtcraftError::AnyhowError(e) => Self::AnyhowError(e),
+      ArtcraftError::DecodeError(e) => Self::DecodeError(e),
+      ArtcraftError::IoError(e) => Self::IoError(e),
+      ArtcraftError::StorytellerError(e) => Self::StorytellerError(e),
+      _ => Self::ArtcraftError(value),
+    }
+  }
+}
+
 
 pub async fn image_to_3d(
   request: FalHunyuanImageTo3dRequest,

@@ -54,7 +54,7 @@ pub async fn upload_media_file_from_file<P: AsRef<Path>>(
           success: result.success,
           media_file_token: result.media_file_token,
         }),
-        Err(err) => Err(StorytellerError::Api(err)),
+        Err(err) => Err(err),
       }
     }
     Some(_) => Err(StorytellerError::Client(ClientError::FileTypeNotHandled(path.as_ref().to_path_buf()))),

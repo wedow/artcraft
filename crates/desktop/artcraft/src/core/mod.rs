@@ -1,3 +1,4 @@
+pub mod artcraft_error;
 pub mod commands;
 pub mod events;
 pub mod state;
