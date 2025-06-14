@@ -22,7 +22,7 @@ pub async fn remove_background_rembg<P: AsRef<Path>>(image_path: P, api_key: &Fa
     crop_to_bbox: None,
     sync_mode: None
   };
-  
+
   let result = rembg(request)
       .with_api_key(&api_key.0)
       .queue()
@@ -56,6 +56,7 @@ mod tests {
   use crate::creds::fal_api_key::FalApiKey;
   use crate::requests::queue::remove_background_rembg::remove_background_rembg;
   use errors::AnyhowResult;
+  use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
 
   #[tokio::test]
@@ -63,9 +64,9 @@ mod tests {
   async fn test_remove_background_rembg() -> AnyhowResult<()> {
     let image = test_file_path("test_data/image/juno.jpg")?;
 
-    // TODO: DO NOT COMMIT SECRET !
-    const KEY : &str = "DO NOT COMMIT";
-    let api_key = FalApiKey::from_str(KEY);
+    // XXX: Don't commit secrets!
+    let secret = read_to_string("/Users/bt/Artcraft/credentials/fal_api_key.txt")?;
+    let api_key = FalApiKey::from_str(&secret);
 
     let result = remove_background_rembg(image, &api_key).await?;
 

@@ -22,11 +22,14 @@ pub enum Status {
     Completed,
 }
 
+// NB(bt, 2025-06-13): Some of these fields have started to become optional.
+// eg, errors:
+//   "missing field `source`", line: 1, column: 1019
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestLog {
     pub timestamp: String,
-    pub level: String,
-    pub source: String,
+    pub level: Option<String>, // NB(bt): Now optional
+    pub source: Option<String>, // NB(bt): Now optional
     pub message: String,
 }
 
