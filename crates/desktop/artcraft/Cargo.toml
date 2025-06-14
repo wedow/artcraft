@@ -35,6 +35,7 @@ openai_sora_client = { workspace = true }
 primitives = { workspace = true }
 storyteller_client = { workspace = true }
 tokens = { workspace = true }
+web_base64 = { workspace = true }
 
 # External
 anyhow = { workspace = true }

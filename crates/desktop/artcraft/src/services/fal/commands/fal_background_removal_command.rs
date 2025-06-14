@@ -238,9 +238,11 @@ pub async fn remove_background(
   let mut temp_download;
   
   if let Some(media_token) = request.image_media_token {
+    info!("From media token: {:?}", &media_token);
     temp_download = download_media_file_to_temp_dir(&app_data_root, &media_token).await?;
     
   } else if let Some(base64_bytes) = request.base64_image {
+    info!("From base64 bytes...");
     temp_download = save_base64_image_to_temp_dir(&app_data_root, base64_bytes).await?;
   } else {
     return Err(InnerError::AnyhowError(anyhow!("No image media token or base64 image provided")));
@@ -251,6 +253,8 @@ pub async fn remove_background(
   let filename = temp_download.path().to_path_buf();
   
   let result = remove_background_rembg(filename, &api_key).await?;
+  
+  info!("Unpacking FAL result...");
 
   let extension_with_dot = get_url_file_extension(&result.image_url)
       .map(|ext| format!(".{}", ext))
