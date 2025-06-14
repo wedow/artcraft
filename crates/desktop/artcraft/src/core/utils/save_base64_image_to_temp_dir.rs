@@ -1,14 +1,12 @@
+use crate::core::artcraft_error::ArtcraftError;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use errors::AnyhowResult;
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use std::io::Write;
 use tempfile::NamedTempFile;
 
-// TODO: Retain error types (io/decode)
-
-pub async fn save_base64_image_to_temp_dir(app_data_root: &AppDataRoot, base64_image: String) -> AnyhowResult<NamedTempFile> {
+pub async fn save_base64_image_to_temp_dir(app_data_root: &AppDataRoot, base64_image: String) -> Result<NamedTempFile, ArtcraftError> {
   let bytes = BASE64_STANDARD.decode(base64_image)?;
 
   let extension = MimetypeInfo::get_for_bytes(&bytes)

@@ -1,3 +1,5 @@
+use crate::core::artcraft_error::ArtcraftError;
+use anyhow::anyhow;
 use base64::DecodeError;
 use errors::AnyhowError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
@@ -45,5 +47,19 @@ impl From<DecodeError> for InternalObjectError {
 impl From<std::io::Error> for InternalObjectError {
   fn from(value: std::io::Error) -> Self {
     Self::IoError(value)
+  }
+}
+
+impl From<ArtcraftError> for InternalObjectError {
+  fn from(value: ArtcraftError) -> Self {
+    match value {
+      ArtcraftError::AnyhowError(e) => Self::AnyhowError(e),
+      ArtcraftError::DecodeError(e) => Self::DecodeError(e),
+      ArtcraftError::IoError(e) => Self::IoError(e),
+      ArtcraftError::StorytellerError(e) => Self::StorytellerError(e),
+      _ => {
+        Self::AnyhowError(anyhow!("Other error: {:?}", value))
+      }
+    }
   }
 }

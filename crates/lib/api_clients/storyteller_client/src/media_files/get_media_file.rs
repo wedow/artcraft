@@ -1,4 +1,5 @@
 use crate::error::api_error::ApiError;
+use crate::error::storyteller_error::StorytellerError;
 use crate::shared_response_types::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::shared_response_types::media_links::MediaLinks;
 use crate::shared_response_types::simple_entity_stats::SimpleEntityStats;
@@ -23,16 +24,18 @@ use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::prompts::PromptToken;
 
 /// Get details about a media file from our backend
-pub async fn get_media_file(api_host: &ApiHost, media_file_token: &MediaFileToken) -> Result<GetMediaFileSuccessResponse, ApiError> {
+pub async fn get_media_file(api_host: &ApiHost, media_file_token: &MediaFileToken) -> Result<GetMediaFileSuccessResponse, StorytellerError> {
   let url = get_media_file_token_route(api_host, media_file_token);
 
   debug!("Requesting {:?}", &url);
 
   let response = http_get_anonymous(url).await?;
   let response = filter_bad_response(response).await?;
-  let response_body = &response.text().await?;
+  let response_body = &response.text().await
+      .map_err(|err| StorytellerError::Api(ApiError::from(err)))?;
 
-  let media_file = serde_json::from_str(&response_body)?;
+  let media_file = serde_json::from_str(&response_body)
+      .map_err(|err| StorytellerError::Api(ApiError::from(err)))?;
 
   Ok(media_file)
 }

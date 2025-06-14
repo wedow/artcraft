@@ -1,7 +1,7 @@
+use crate::core::artcraft_error::ArtcraftError;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
 use crate::core::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
-use errors::AnyhowResult;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tempfile::NamedTempFile;
@@ -9,7 +9,7 @@ use tokens::tokens::media_files::MediaFileToken;
 
 // TODO: Better more concrete error handling
 
-pub async fn download_media_file_to_temp_dir(app_data_root: &AppDataRoot, token: &MediaFileToken) -> AnyhowResult<NamedTempFile> {
+pub async fn download_media_file_to_temp_dir(app_data_root: &AppDataRoot, token: &MediaFileToken) -> Result<NamedTempFile, ArtcraftError> {
   let response = get_media_file(&ApiHost::Storyteller, token).await?;
 
   let media_file_url = &response.media_file.media_links.cdn_url;

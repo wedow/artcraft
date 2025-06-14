@@ -54,7 +54,9 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::artcraft_error::ArtcraftError;
 
 #[derive(Deserialize)]
 pub struct FalKlingImageToVideoRequest {
@@ -157,9 +159,10 @@ pub async fn fal_kling_image_to_video_command(
 enum InnerError {
   FalError(FalErrorPlus),
   AnyhowError(AnyhowError),
-  StorytellerApiError(ApiError),
+  StorytellerError(StorytellerError),
   DecodeError(DecodeError),
   IoError(std::io::Error),
+  ArtcraftError(ArtcraftError),
 }
 
 impl From<AnyhowError> for InnerError {
@@ -174,9 +177,9 @@ impl From<FalErrorPlus> for InnerError {
   }
 }
 
-impl From<ApiError> for InnerError {
-  fn from(value: ApiError) -> Self {
-    Self::StorytellerApiError(value)
+impl From<StorytellerError> for InnerError {
+  fn from(value: StorytellerError) -> Self {
+    Self::StorytellerError(value)
   }
 }
 
@@ -189,6 +192,18 @@ impl From<DecodeError> for InnerError {
 impl From<std::io::Error> for InnerError {
   fn from(value: std::io::Error) -> Self {
     Self::IoError(value)
+  }
+}
+
+impl From<ArtcraftError> for InnerError {
+  fn from(value: ArtcraftError) -> Self {
+    match value {
+      ArtcraftError::AnyhowError(e) => Self::AnyhowError(e),
+      ArtcraftError::DecodeError(e) => Self::DecodeError(e),
+      ArtcraftError::IoError(e) => Self::IoError(e),
+      ArtcraftError::StorytellerError(e) => Self::StorytellerError(e),
+      _ => Self::ArtcraftError(value),
+    }
   }
 }
 

@@ -39,6 +39,7 @@ use storyteller_client::error::api_error::ApiError::InternalServerError;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
+use storyteller_client::error::storyteller_error::StorytellerError;
 use tokens::tokens::media_files::MediaFileToken;
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
@@ -199,7 +200,7 @@ pub async fn sora_image_remix_command(
 enum InnerError {
   SoraError(SoraError),
   AnyhowError(AnyhowError),
-  StorytellerApiError(ApiError),
+  StorytellerError(StorytellerError),
 }
 
 impl From<AnyhowError> for InnerError {
@@ -214,9 +215,9 @@ impl From<SoraError> for InnerError {
   }
 }
 
-impl From<ApiError> for InnerError {
-  fn from(value: ApiError) -> Self {
-    Self::StorytellerApiError(value)
+impl From<StorytellerError> for InnerError {
+  fn from(value: StorytellerError) -> Self {
+    Self::StorytellerError(value)
   }
 }
 
