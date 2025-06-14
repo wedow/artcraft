@@ -23,6 +23,7 @@ errors = { workspace = true }
 # External
 anyhow = { workspace = true }
 futures = { workspace = true }
+log = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }
