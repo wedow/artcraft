@@ -141,6 +141,20 @@ pub mod bria;
 #[cfg(any(
     feature = "endpoints",
     feature = "endpoints_fal-ai",
+    feature = "endpoints_fal-ai_bytedance"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "endpoints",
+        feature = "endpoints_fal-ai",
+        feature = "endpoints_fal-ai_bytedance"
+    )))
+)]
+pub mod bytedance;
+#[cfg(any(
+    feature = "endpoints",
+    feature = "endpoints_fal-ai",
     feature = "endpoints_fal-ai_cat-vton"
 ))]
 #[cfg_attr(
