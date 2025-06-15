@@ -1,1 +1,2 @@
+pub mod generate_flux_pro_ultra_text_to_image_handler;
 pub mod remove_image_background_handler;

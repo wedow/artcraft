@@ -11,6 +11,8 @@ pub enum GenerationServiceProvider {
 #[derive(Debug, Copy, Clone, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GenerationModel {
+  #[serde(rename = "flux_pro_1.1_ultra")]
+  FluxPro11Ultra,
   #[serde(rename = "kling_1.6")]
   Kling1_6,
   #[serde(rename = "kling_2.0")]

@@ -13,6 +13,7 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
+use artcraft_api_defs::generate::image::generate_flux_pro_ultra_text_to_image::GenerateFluxProUltraTextToImageRequest;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
 use artcraft_api_defs::generate::video::generate_kling_1_6_image_to_video::GenerateKling16ImageToVideoRequest;
 use fal_client::creds::fal_api_key::FalApiKey;
@@ -21,6 +22,7 @@ use fal_client::requests::queue::image_gen::enqueue_flux_pro_ultra_text_to_image
 use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
+use storyteller_client::generate::image::generate_flux_pro_ultra_text_to_image::generate_flux_pro_ultra_text_to_image;
 use storyteller_client::generate::object::generate_hunyuan2_image_to_3d::generate_hunyuan2_image_to_3d;
 use storyteller_client::generate::video::generate_kling16_image_to_video::generate_kling16_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
@@ -52,58 +54,42 @@ pub async fn handle_image_artcraft(
 
   let uuid_idempotency_token = generate_random_uuid();
   
-  //let mut selected_model = None;
+  let mut selected_model = None;
   
   let job_token = match request.model {
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    _ => {
-      // TODO: This is not offered serverside yet.
-      return Err(InternalImageError::NoModelSpecified);
+    Some(EnqueueTextToImageModel::GptImage1) => {
+      return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: artcraft is handling sora images")));
     }
-    //Some(EnqueueImageToVideoModel::Kling16) => {
-    //  //info!("enqueue Kling 1.6");
-    //  selected_model = Some(GenerationModel::Kling1_6);
-    //  let request = GenerateKling16ImageToVideoRequest { 
-    //    uuid_idempotency_token,
-    //    media_file_token: request.image_media_token,
-    //    prompt: None,
-    //  };
-    //  let result = generate_kling16_image_to_video(
-    //    &ApiHost::Storyteller,
-    //    Some(&creds),
-    //    request,
-    //  ).await;
-    //  match result {
-    //    Ok(enqueued) => {
-    //      info!("Successfully enqueued Artcraft Kling 1.6 video generation");
-    //      enqueued.inference_job_token
-    //    }
-    //    Err(err) => {
-    //      error!("Failed to use Artcraft Kling 1.6 video generation: {:?}", err);
-    //      return Err(InternalImageError::StorytellerError(err));
-    //    }
-    //  }
-    //}
+    Some(EnqueueTextToImageModel::Recraft3) => {
+      return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented in Artcraft")));
+    }
+    Some(EnqueueTextToImageModel::FluxProUltra) => {
+      info!("enqueue Flux Pro Ultra");
+      selected_model = Some(GenerationModel::FluxPro11Ultra);
+      let request = GenerateFluxProUltraTextToImageRequest {
+        uuid_idempotency_token,
+        prompt: request.prompt,
+      };
+      let result = generate_flux_pro_ultra_text_to_image(
+        &ApiHost::Storyteller,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft flux pro ultra text to image generation");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft flux pro ultra text to image generation: {:?}", err);
+          return Err(InternalImageError::StorytellerError(err));
+        }
+      }
+    }
   };
-
-//  info!("Successfully enqueued video generation");
-//  
-//  let event = GenerationEnqueueSuccessEvent {
-//    action: GenerationAction::GenerateVideo,
-//    service: GenerationServiceProvider::Artcraft,
-//    model: selected_model,
-//  };
-//  
-//  if let Err(err) = event.send(app) {
-//    error!("Failed to emit event: {:?}", err); // Fail open.
-//  }
-//  
-//  //if let Err(err) = fal_task_queue.insert(&enqueued) {
-//  //  error!("Failed to enqueue task: {:?}", err);
-//  //  return Err(InternalImageError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
-//  //}
 
   Ok(())
 }

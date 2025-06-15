@@ -1,1 +1,2 @@
+pub mod enqueue_flux_pro_ultra_text_to_image_webhook;
 pub mod remove_background_rembg_webhook;
