@@ -15,13 +15,14 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
-use artcraft_api_defs::generate::video::generate_kling_1_6_image_to_video::GenerateKling16ImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_kling_1_6_image_to_video::GenerateKling16ImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProAspectRatio, GenerateKling16ProImageToVideoRequest};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::video::enqueue_kling_16_image_to_video_webhook::enqueue_kling_16_image_to_video_webhook;
-use fal_client::requests::webhook::video::enqueue_kling_16_image_to_video_webhook::Kling16Args;
-use fal_client::requests::webhook::video::enqueue_kling_16_image_to_video_webhook::Kling16Duration;
+use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::enqueue_kling_16_pro_image_to_video_webhook;
+use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::Kling16Duration;
+use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::Kling16ProArgs;
+use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::Kling16ProAspectRatio;
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use idempotency::uuid::generate_random_uuid;
@@ -96,7 +97,7 @@ impl fmt::Display for GenerateKling16VideoError {
 #[utoipa::path(
   post,
   tag = "Generate Videos",
-  path = "/v1/generate/video/kling_16_image_to_video",
+  path = "/v1/generate/video/kling_1.6_pro_image_to_video",
   responses(
     (status = 200, description = "Success", body = RemoveImageBackgroundResponse),
     (status = 400, description = "Bad input", body = RemoveImageBackgroundError),
@@ -107,11 +108,11 @@ impl fmt::Display for GenerateKling16VideoError {
     ("request" = RemoveImageBackgroundRequest, description = "Payload for Request"),
   )
 )]
-pub async fn generate_kling_1_6_video_handler(
+pub async fn generate_kling_1_6_pro_video_handler(
   http_request: HttpRequest,
-  request: Json<GenerateKling16ImageToVideoRequest>,
+  request: Json<GenerateKling16ProImageToVideoRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<GenerateKling16ImageToVideoResponse>, GenerateKling16VideoError> {
+) -> Result<Json<GenerateKling16ProImageToVideoResponse>, GenerateKling16VideoError> {
   let maybe_user_session = server_state
       .session_checker
       .maybe_get_user_session(&http_request, &server_state.mysql_pool)
@@ -196,15 +197,23 @@ pub async fn generate_kling_1_6_video_handler(
       .map(|prompt| prompt.trim())
       .unwrap_or_else(|| "");
   
-  let args = Kling16Args {
+  let aspect_ratio = match &request.aspect_ratio {
+    Some(GenerateKling16ProAspectRatio::Square) => Kling16ProAspectRatio::Square,
+    Some(GenerateKling16ProAspectRatio::WideSixteenNine) => Kling16ProAspectRatio::WideSixteenNine,
+    Some(GenerateKling16ProAspectRatio::TallNineSixteen) => Kling16ProAspectRatio::TallNineSixteen,
+    None => Kling16ProAspectRatio::WideSixteenNine, // Default to 16:9
+  };
+  
+  let args = Kling16ProArgs {
     image_url: media_links.cdn_url,
     webhook_url: &server_state.fal.webhook_url,
     duration: Kling16Duration::Default,
     prompt: prompt,
+    aspect_ratio: aspect_ratio,
     api_key: &server_state.fal.api_key,
   };
 
-  let fal_result = enqueue_kling_16_image_to_video_webhook(args)
+  let fal_result = enqueue_kling_16_pro_image_to_video_webhook(args)
       .await
       .map_err(|err| {
         warn!("Error calling remove_background_rembg_webhook: {:?}", err);
@@ -241,7 +250,7 @@ pub async fn generate_kling_1_6_video_handler(
     }
   };
 
-  Ok(Json(GenerateKling16ImageToVideoResponse {
+  Ok(Json(GenerateKling16ProImageToVideoResponse {
     success: true,
     inference_job_token: job_token,
   }))

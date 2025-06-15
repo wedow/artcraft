@@ -16,17 +16,18 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProAspectRatio, GenerateKling16ProImageToVideoRequest};
 use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::requests::queue::enqueue_hunyuan2_image_to_3d::{enqueue_hunyuan2_image_to_3d, Hunyuan2Args};
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
+use fal_client::requests::queue::video_gen::enqueue_kling_16_pro_image_to_video::Kling16ProAspectRatio;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use storyteller_client::generate::object::generate_hunyuan2_image_to_3d::generate_hunyuan2_image_to_3d;
+use storyteller_client::generate::video::generate_kling_16_pro_image_to_video::generate_kling_16_pro_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, State};
-use artcraft_api_defs::generate::video::generate_kling_1_6_image_to_video::GenerateKling16ImageToVideoRequest;
-use storyteller_client::generate::video::generate_kling16_image_to_video::generate_kling16_image_to_video;
 
 pub async fn handle_video_artcraft(
   request: EnqueueImageToVideoRequest,
@@ -71,12 +72,13 @@ pub async fn handle_video_artcraft(
     Some(EnqueueImageToVideoModel::Kling16) => {
       info!("enqueue Kling 1.6");
       selected_model = Some(GenerationModel::Kling1_6);
-      let request = GenerateKling16ImageToVideoRequest { 
+      let request = GenerateKling16ProImageToVideoRequest { 
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
+        aspect_ratio: Some(GenerateKling16ProAspectRatio::WideSixteenNine),
         prompt: None,
       };
-      let result = generate_kling16_image_to_video(
+      let result = generate_kling_16_pro_image_to_video(
         &ApiHost::Storyteller,
         Some(&creds),
         request,

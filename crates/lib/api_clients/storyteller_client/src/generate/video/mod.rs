@@ -1,1 +1,1 @@
-pub mod generate_kling16_image_to_video;
+pub mod generate_kling_16_pro_image_to_video;

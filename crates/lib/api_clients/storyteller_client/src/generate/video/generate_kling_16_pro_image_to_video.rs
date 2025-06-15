@@ -5,15 +5,15 @@ use crate::error::storyteller_error::StorytellerError;
 use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
-use artcraft_api_defs::generate::video::generate_kling_1_6_image_to_video::{GenerateKling16ImageToVideoRequest, GenerateKling16ImageToVideoResponse, GENERATE_KLING_1_6_IMAGE_TO_VIDEO_URL_PATH};
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProImageToVideoRequest, GenerateKling16ProImageToVideoResponse, GENERATE_KLING_1_6_PRO_IMAGE_TO_VIDEO_URL_PATH};
 use log::{debug, info};
 use reqwest::Client;
 
-pub async fn generate_kling16_image_to_video(
+pub async fn generate_kling_16_pro_image_to_video(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,
-  request: GenerateKling16ImageToVideoRequest,
-) -> Result<GenerateKling16ImageToVideoResponse, StorytellerError> {
+  request: GenerateKling16ProImageToVideoRequest,
+) -> Result<GenerateKling16ProImageToVideoResponse, StorytellerError> {
 
   let url = get_route(api_host);
 
@@ -64,5 +64,5 @@ pub async fn generate_kling16_image_to_video(
 
 fn get_route(api_host: &ApiHost) -> String {
   let api_hostname = api_host.to_api_hostname();
-  format!("https://{}{}", api_hostname, GENERATE_KLING_1_6_IMAGE_TO_VIDEO_URL_PATH)
+  format!("https://{}{}", api_hostname, GENERATE_KLING_1_6_PRO_IMAGE_TO_VIDEO_URL_PATH)
 }

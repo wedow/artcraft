@@ -5,12 +5,13 @@ use fal::endpoints::fal_ai::kling_video::v1_6::pro::image_to_video::{image_to_vi
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
-pub struct Kling16Args<'a, U: IntoUrl, V: IntoUrl> {
+pub struct Kling16ProArgs<'a, U: IntoUrl, V: IntoUrl> {
   pub image_url: U,
   pub webhook_url: V,
   pub prompt: &'a str,
   pub api_key: &'a FalApiKey,
   pub duration: Kling16Duration,
+  pub aspect_ratio: Kling16ProAspectRatio,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -20,8 +21,15 @@ pub enum Kling16Duration {
   TenSeconds,
 }
 
-pub async fn enqueue_kling_16_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
-  args: Kling16Args<'_, U, V>
+#[derive(Copy, Clone, Debug)]
+pub enum Kling16ProAspectRatio {
+  Square, // 1:1
+  WideSixteenNine, // 16:9
+  TallNineSixteen, // 9:16
+}
+
+pub async fn enqueue_kling_16_pro_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
+  args: Kling16ProArgs<'_, U, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
     Kling16Duration::Default => None,
@@ -29,14 +37,21 @@ pub async fn enqueue_kling_16_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
     Kling16Duration::TenSeconds => Some("10".to_string()),
   };
   
+  let aspect_ratio = match args.aspect_ratio {
+    Kling16ProAspectRatio::Square => Some("1:1".to_string()),
+    Kling16ProAspectRatio::WideSixteenNine => Some("16:9".to_string()),
+    Kling16ProAspectRatio::TallNineSixteen => Some("9:16".to_string()),
+  };
+
   let image_url = args.image_url.as_str().to_string();
 
   let request = ProImageToVideoRequest {
     image_url,
     prompt: args.prompt.to_string(),
-    aspect_ratio: None,
-    cfg_scale: None,
+    aspect_ratio,
     duration,
+    // Maybe expose these later
+    cfg_scale: None,
     negative_prompt: None,
     tail_image_url: None,
   };

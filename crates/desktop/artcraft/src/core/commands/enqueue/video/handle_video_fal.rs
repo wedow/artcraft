@@ -18,7 +18,7 @@ use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::requests::queue::enqueue_hunyuan2_image_to_3d::{enqueue_hunyuan2_image_to_3d, Hunyuan2Args};
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
-use fal_client::requests::queue::video_gen::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
+use fal_client::requests::queue::video_gen::enqueue_kling_16_pro_image_to_video::{enqueue_kling_16_pro_image_to_video, Kling16ProArgs, Kling16ProAspectRatio, Kling16ProDuration};
 use log::{error, info, warn};
 use tauri::AppHandle;
 
@@ -73,10 +73,11 @@ pub async fn handle_video_fal(
     Some(EnqueueImageToVideoModel::Kling16) => {
       info!("enqueue Kling 1.6 image to video");
       selected_model = Some(GenerationModel::Kling1_6);
-      enqueue_kling_16_image_to_video(Kling16Args {
+      enqueue_kling_16_pro_image_to_video(Kling16ProArgs {
         image_path: filename,
         api_key: &api_key,
-        duration: Kling16Duration::Default,
+        duration: Kling16ProDuration::Default,
+        aspect_ratio: Kling16ProAspectRatio::WideSixteenNine,
         prompt: "",
       }).await
     }

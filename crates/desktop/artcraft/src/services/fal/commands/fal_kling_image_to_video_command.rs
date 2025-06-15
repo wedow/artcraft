@@ -1,3 +1,4 @@
+use crate::core::artcraft_error::ArtcraftError;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -24,7 +25,7 @@ use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::{AnyhowError, AnyhowResult};
 use fal_client::error::fal_error_plus::FalErrorPlus;
-use fal_client::requests::queue::video_gen::enqueue_kling_16_image_to_video::{enqueue_kling_16_image_to_video, Kling16Args, Kling16Duration};
+use fal_client::requests::queue::video_gen::enqueue_kling_16_pro_image_to_video::{enqueue_kling_16_pro_image_to_video, Kling16ProArgs, Kling16ProAspectRatio, Kling16ProDuration};
 use filesys::file_read_bytes::file_read_bytes;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
 use image::{DynamicImage, EncodableLayout, ImageReader};
@@ -49,14 +50,13 @@ use std::path::PathBuf;
 use std::time::Duration;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::api_error::ApiError::InternalServerError;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::get_media_file::{get_media_file, GetMediaFileSuccessResponse};
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
-use storyteller_client::error::storyteller_error::StorytellerError;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::artcraft_error::ArtcraftError;
 
 #[derive(Deserialize)]
 pub struct FalKlingImageToVideoRequest {
@@ -233,10 +233,11 @@ pub async fn image_to_video(
 
   let filename = temp_download.path().to_path_buf();
 
-  let enqueued = enqueue_kling_16_image_to_video(Kling16Args {
+  let enqueued = enqueue_kling_16_pro_image_to_video(Kling16ProArgs {
     image_path: filename,
     api_key: &api_key,
-    duration: Kling16Duration::Default,
+    duration: Kling16ProDuration::Default,
+    aspect_ratio: Kling16ProAspectRatio::WideSixteenNine,
     prompt: request.prompt.as_deref().unwrap_or(""),
   }).await?;
 
