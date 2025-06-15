@@ -1,1 +1,2 @@
 pub mod enqueue_kling_16_pro_image_to_video_webhook;
+pub mod enqueue_kling_20_pro_image_to_video_webhook;
