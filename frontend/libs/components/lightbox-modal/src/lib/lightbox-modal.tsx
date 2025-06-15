@@ -46,6 +46,11 @@ export function LightboxModal({
   onAddToSceneClicked,
   mediaClass,
 }: LightboxModalProps) {
+  // NB(bt,2025-06-14): We add ?cors=1 to the image url to prevent caching "sec-fetch-mode: no-cors" from 
+  // the <image> tag request from being cached. If we then drag it into the canvas after it's been cached,
+  // it won't be able to load in cors mode and will show blank in the canvas and 3D engine. This is a really
+  // stupid hack around this behavior.
+  const imageTagImageUrl = imageUrl ? imageUrl + "?cors=1" : "";
   return createPortal(
     <Transition appear show={isOpen}>
       <div className="fixed inset-0 z-[100]">
@@ -102,7 +107,7 @@ export function LightboxModal({
                     </video>
                   ) : (
                     <img
-                      src={imageUrl}
+                      src={imageTagImageUrl}
                       alt={imageAlt}
                       className="h-full w-full object-contain"
                       onError={onImageError}
