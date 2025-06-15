@@ -15,12 +15,12 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
-use artcraft_api_defs::generate::image::generate_flux_pro_ultra_text_to_image::GenerateFluxProUltraTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_ultra_text_to_image::GenerateFluxProUltraTextToImageResponse;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::image::enqueue_flux_pro_ultra_text_to_image_webhook::enqueue_flux_pro_ultra_text_to_image_webhook;
-use fal_client::requests::webhook::image::enqueue_flux_pro_ultra_text_to_image_webhook::FluxProUltraArgs;
+use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::enqueue_flux_pro_11_ultra_text_to_image_webhook;
+use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::FluxPro11UltraArgs;
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use idempotency::uuid::generate_random_uuid;
@@ -72,7 +72,7 @@ impl fmt::Display for GenerateFluxProUltraTextToImageError {
 #[utoipa::path(
   post,
   tag = "Generate Images",
-  path = "/v1/generate/image/flux_pro_ultra_text_to_image",
+  path = "/v1/generate/image/flux_pro_1.1_ultra_text_to_image",
   responses(
     (status = 200, description = "Success", body = GenerateFluxProUltraTextToImageResponse),
     (status = 400, description = "Bad input", body = GenerateFluxProUltraTextToImageError),
@@ -83,11 +83,11 @@ impl fmt::Display for GenerateFluxProUltraTextToImageError {
     ("request" = GenerateFluxProUltraTextToImageRequest, description = "Payload for Request"),
   )
 )]
-pub async fn generate_flux_pro_ultra_text_to_image_handler(
+pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
   http_request: HttpRequest,
-  request: Json<GenerateFluxProUltraTextToImageRequest>,
+  request: Json<GenerateFluxPro11UltraTextToImageRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<GenerateFluxProUltraTextToImageResponse>, GenerateFluxProUltraTextToImageError> {
+) -> Result<Json<GenerateFluxPro11UltraTextToImageResponse>, GenerateFluxProUltraTextToImageError> {
   let maybe_user_session = server_state
       .session_checker
       .maybe_get_user_session(&http_request, &server_state.mysql_pool)
@@ -110,7 +110,7 @@ pub async fn generate_flux_pro_ultra_text_to_image_handler(
   //    return Err(GenerateFluxProUltraTextToImageError::NotAuthorized);
   //  }
   //};
-  
+
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
     return Err(GenerateFluxProUltraTextToImageError::BadInput(reason));
   }
@@ -125,13 +125,13 @@ pub async fn generate_flux_pro_ultra_text_to_image_handler(
   
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
-  let args = FluxProUltraArgs {
+  let args = FluxPro11UltraArgs {
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
   };
 
-  let fal_result = enqueue_flux_pro_ultra_text_to_image_webhook(args)
+  let fal_result = enqueue_flux_pro_11_ultra_text_to_image_webhook(args)
       .await
       .map_err(|err| {
         warn!("Error calling enqueue_flux_pro_ultra_text_to_image_webhook: {:?}", err);
@@ -168,7 +168,7 @@ pub async fn generate_flux_pro_ultra_text_to_image_handler(
     }
   };
 
-  Ok(Json(GenerateFluxProUltraTextToImageResponse {
+  Ok(Json(GenerateFluxPro11UltraTextToImageResponse {
     success: true,
     inference_job_token: job_token,
   }))

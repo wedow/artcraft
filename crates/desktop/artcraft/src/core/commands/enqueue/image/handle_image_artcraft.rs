@@ -13,16 +13,16 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::generate::image::generate_flux_pro_ultra_text_to_image::GenerateFluxProUltraTextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
 use artcraft_api_defs::generate::video::generate_kling_1_6_image_to_video::GenerateKling16ImageToVideoRequest;
 use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::requests::queue::enqueue_hunyuan2_image_to_3d::{enqueue_hunyuan2_image_to_3d, Hunyuan2Args};
-use fal_client::requests::queue::image_gen::enqueue_flux_pro_ultra_text_to_image::{enqueue_flux_pro_ultra_text_to_image, FluxProUltraTextToImageArgs};
+use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
-use storyteller_client::generate::image::generate_flux_pro_ultra_text_to_image::generate_flux_pro_ultra_text_to_image;
+use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
 use storyteller_client::generate::object::generate_hunyuan2_image_to_3d::generate_hunyuan2_image_to_3d;
 use storyteller_client::generate::video::generate_kling16_image_to_video::generate_kling16_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
@@ -69,11 +69,11 @@ pub async fn handle_image_artcraft(
     Some(EnqueueTextToImageModel::FluxProUltra) => {
       info!("enqueue Flux Pro Ultra");
       selected_model = Some(GenerationModel::FluxPro11Ultra);
-      let request = GenerateFluxProUltraTextToImageRequest {
+      let request = GenerateFluxPro11UltraTextToImageRequest {
         uuid_idempotency_token,
         prompt: request.prompt,
       };
-      let result = generate_flux_pro_ultra_text_to_image(
+      let result = generate_flux_pro_11_ultra_text_to_image(
         &ApiHost::Storyteller,
         Some(&creds),
         request,
