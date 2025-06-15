@@ -19,8 +19,8 @@ use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::Generat
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::object::enqueue_hunyuan2_image_to_3d_webhook::enqueue_hunyuan2_image_to_3d_webhook;
-use fal_client::requests::webhook::object::enqueue_hunyuan2_image_to_3d_webhook::Hunyuan2Args;
+use fal_client::requests::webhook::object::enqueue_hunyuan_3d_2_image_to_3d_webhook::enqueue_hunyuan_3d_2_image_to_3d_webhook;
+use fal_client::requests::webhook::object::enqueue_hunyuan_3d_2_image_to_3d_webhook::Hunyuan3d2Args;
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use idempotency::uuid::generate_random_uuid;
@@ -167,13 +167,13 @@ pub async fn generate_hunyuan_2_image_to_3d_handler(
   
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
-  let args = Hunyuan2Args {
+  let args = Hunyuan3d2Args {
     image_url: media_links.cdn_url,
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
   };
 
-  let fal_result = enqueue_hunyuan2_image_to_3d_webhook(args)
+  let fal_result = enqueue_hunyuan_3d_2_image_to_3d_webhook(args)
       .await
       .map_err(|err| {
         warn!("Error calling enqueue_hunyuan2_image_to_3d_webhook: {:?}", err);

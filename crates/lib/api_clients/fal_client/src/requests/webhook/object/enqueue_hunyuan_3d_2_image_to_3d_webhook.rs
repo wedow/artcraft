@@ -5,21 +5,14 @@ use fal::endpoints::fal_ai::hunyuan3d::v2::{v2, Hunyuan3DInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
-pub struct Hunyuan2Args<'a, U: IntoUrl, V: IntoUrl> {
+pub struct Hunyuan3d2Args<'a, U: IntoUrl, V: IntoUrl> {
   pub image_url: U,
   pub webhook_url: V,
   pub api_key: &'a FalApiKey,
 }
 
-#[derive(Copy, Clone, Debug)]
-pub enum Kling16Duration {
-  Default,
-  FiveSeconds,
-  TenSeconds,
-}
-
-pub async fn enqueue_hunyuan2_image_to_3d_webhook<U: IntoUrl, V: IntoUrl>(
-  args: Hunyuan2Args<'_, U, V>
+pub async fn enqueue_hunyuan_3d_2_image_to_3d_webhook<U: IntoUrl, V: IntoUrl>(
+  args: Hunyuan3d2Args<'_, U, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   
   let image_url = args.image_url.as_str().to_string();

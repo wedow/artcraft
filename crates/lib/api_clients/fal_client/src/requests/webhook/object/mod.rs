@@ -1,1 +1,2 @@
-pub mod enqueue_hunyuan2_image_to_3d_webhook;
+pub mod enqueue_hunyuan_3d_2_image_to_3d_webhook;
+pub mod enqueue_hunyuan_3d_21_image_to_3d_webhook;
