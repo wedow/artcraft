@@ -1,7 +1,7 @@
+use crate::core::artcraft_error::ArtcraftError;
 use base64::DecodeError;
 use errors::AnyhowError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
-use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 
 #[derive(Debug)]
@@ -13,9 +13,9 @@ pub enum InternalVideoError {
   FalError(FalErrorPlus),
   AnyhowError(AnyhowError),
   StorytellerError(StorytellerError),
-  StorytellerApiError(ApiError),
   DecodeError(DecodeError),
   IoError(std::io::Error),
+  ArtcraftError(ArtcraftError),
 }
 
 impl From<AnyhowError> for InternalVideoError {
@@ -30,9 +30,9 @@ impl From<FalErrorPlus> for InternalVideoError {
   }
 }
 
-impl From<ApiError> for InternalVideoError {
-  fn from(value: ApiError) -> Self {
-    Self::StorytellerApiError(value)
+impl From<StorytellerError> for InternalVideoError {
+  fn from(value: StorytellerError) -> Self {
+    Self::StorytellerError(value)
   }
 }
 
@@ -45,5 +45,17 @@ impl From<DecodeError> for InternalVideoError {
 impl From<std::io::Error> for InternalVideoError {
   fn from(value: std::io::Error) -> Self {
     Self::IoError(value)
+  }
+}
+
+impl From<ArtcraftError> for InternalVideoError {
+  fn from(value: ArtcraftError) -> Self {
+    match value {
+      ArtcraftError::AnyhowError(e) => Self::AnyhowError(e),
+      ArtcraftError::DecodeError(e) => Self::DecodeError(e),
+      ArtcraftError::IoError(e) => Self::IoError(e),
+      ArtcraftError::StorytellerError(e) => Self::StorytellerError(e),
+      _ => Self::ArtcraftError(value),
+    }
   }
 }

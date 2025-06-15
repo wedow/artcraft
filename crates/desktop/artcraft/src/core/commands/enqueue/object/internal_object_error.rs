@@ -1,9 +1,7 @@
 use crate::core::artcraft_error::ArtcraftError;
-use anyhow::anyhow;
 use base64::DecodeError;
 use errors::AnyhowError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
-use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 
 #[derive(Debug)]
@@ -15,9 +13,9 @@ pub enum InternalObjectError {
   FalError(FalErrorPlus),
   AnyhowError(AnyhowError),
   StorytellerError(StorytellerError),
-  StorytellerApiError(ApiError),
   DecodeError(DecodeError),
   IoError(std::io::Error),
+  ArtcraftError(ArtcraftError),
 }
 
 impl From<AnyhowError> for InternalObjectError {
@@ -32,9 +30,9 @@ impl From<FalErrorPlus> for InternalObjectError {
   }
 }
 
-impl From<ApiError> for InternalObjectError {
-  fn from(value: ApiError) -> Self {
-    Self::StorytellerApiError(value)
+impl From<StorytellerError> for InternalObjectError {
+  fn from(value: StorytellerError) -> Self {
+    Self::StorytellerError(value)
   }
 }
 
@@ -57,9 +55,7 @@ impl From<ArtcraftError> for InternalObjectError {
       ArtcraftError::DecodeError(e) => Self::DecodeError(e),
       ArtcraftError::IoError(e) => Self::IoError(e),
       ArtcraftError::StorytellerError(e) => Self::StorytellerError(e),
-      _ => {
-        Self::AnyhowError(anyhow!("Other error: {:?}", value))
-      }
+      _ => Self::ArtcraftError(value),
     }
   }
 }

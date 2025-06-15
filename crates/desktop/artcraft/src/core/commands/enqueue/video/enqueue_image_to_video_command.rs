@@ -1,5 +1,7 @@
 use crate::core::commands::enqueue::object::handle_object_artcraft::handle_object_artcraft;
 use crate::core::commands::enqueue::object::handle_object_fal::handle_object_fal;
+use crate::core::commands::enqueue::video::handle_video_artcraft::handle_video_artcraft;
+use crate::core::commands::enqueue::video::handle_video_fal::handle_video_fal;
 use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -168,9 +170,9 @@ pub async fn handle_request(
 ) -> Result<(), InternalVideoError> {
 
   if fal_creds_manager.has_apparent_api_token()? {
-    handle_object_fal(&app, app_data_root, request, fal_creds_manager, fal_task_queue).await?;
+    handle_video_fal(&app, app_data_root, request, fal_creds_manager, fal_task_queue).await?;
   } else {
-    handle_object_artcraft(request, &app, app_data_root, storyteller_creds_manager).await?;
+    handle_video_artcraft(request, &app, app_data_root, storyteller_creds_manager).await?;
   }
 
   Ok(())

@@ -1,8 +1,9 @@
+use crate::core::artcraft_error::ArtcraftError;
 use base64::DecodeError;
 use errors::AnyhowError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
 use openai_sora_client::sora_error::SoraError;
-use storyteller_client::error::api_error::ApiError;
+use storyteller_client::error::storyteller_error::StorytellerError;
 
 #[derive(Debug)]
 pub enum InternalImageError {
@@ -12,9 +13,10 @@ pub enum InternalImageError {
   FalError(FalErrorPlus),
   SoraError(SoraError),
   AnyhowError(AnyhowError),
-  StorytellerApiError(ApiError),
+  StorytellerError(StorytellerError),
   DecodeError(DecodeError),
   IoError(std::io::Error),
+  ArtcraftError(ArtcraftError),
 }
 
 impl From<AnyhowError> for InternalImageError {
@@ -35,9 +37,9 @@ impl From<SoraError> for InternalImageError {
   }
 }
 
-impl From<ApiError> for InternalImageError {
-  fn from(value: ApiError) -> Self {
-    Self::StorytellerApiError(value)
+impl From<StorytellerError> for InternalImageError {
+  fn from(value: StorytellerError) -> Self {
+    Self::StorytellerError(value)
   }
 }
 
@@ -50,5 +52,17 @@ impl From<DecodeError> for InternalImageError {
 impl From<std::io::Error> for InternalImageError {
   fn from(value: std::io::Error) -> Self {
     Self::IoError(value)
+  }
+}
+
+impl From<ArtcraftError> for InternalImageError {
+  fn from(value: ArtcraftError) -> Self {
+    match value {
+      ArtcraftError::AnyhowError(e) => Self::AnyhowError(e),
+      ArtcraftError::DecodeError(e) => Self::DecodeError(e),
+      ArtcraftError::IoError(e) => Self::IoError(e),
+      ArtcraftError::StorytellerError(e) => Self::StorytellerError(e),
+      _ => Self::ArtcraftError(value),
+    }
   }
 }

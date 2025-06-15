@@ -3,7 +3,7 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-const GENERATE_KLING_1_6_IMAGE_TO_VIDEO_URL_PATH: &str = "/v1/generate/video/kling_16_image_to_video";
+pub const GENERATE_KLING_1_6_IMAGE_TO_VIDEO_URL_PATH: &str = "/v1/generate/video/kling_16_image_to_video";
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct GenerateKling16ImageToVideoRequest {
