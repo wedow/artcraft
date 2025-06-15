@@ -25,7 +25,7 @@ use tauri::AppHandle;
 
 const SORA_SIMPLE_IMAGE_GEN_TIMEOUT : Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
-pub async fn handle_sora(
+pub async fn handle_image_sora(
   app: &AppHandle,
   request: EnqueueTextToImageRequest,
   sora_creds_manager: &SoraCredentialManager,

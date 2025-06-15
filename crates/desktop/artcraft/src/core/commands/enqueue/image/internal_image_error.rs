@@ -10,6 +10,7 @@ pub enum InternalImageError {
   NoModelSpecified,
   NeedsFalApiKey,
   NeedsSoraCredentials,
+  NeedsStorytellerCredentials,
   FalError(FalErrorPlus),
   SoraError(SoraError),
   AnyhowError(AnyhowError),

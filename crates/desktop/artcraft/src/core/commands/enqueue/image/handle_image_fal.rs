@@ -17,7 +17,7 @@ use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enq
 use log::{error, info, warn};
 use tauri::AppHandle;
 
-pub async fn handle_fal(
+pub async fn handle_image_fal(
   app: &AppHandle,
   request: EnqueueTextToImageRequest,
   fal_creds_manager: &FalCredentialManager,

@@ -1,5 +1,5 @@
-use crate::core::commands::enqueue::image::handle_fal::handle_fal;
-use crate::core::commands::enqueue::image::handle_sora::handle_sora;
+use crate::core::commands::enqueue::image::handle_image_fal::handle_image_fal;
+use crate::core::commands::enqueue::image::handle_image_sora::handle_image_sora;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -55,6 +55,8 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
+use crate::core::commands::enqueue::image::handle_image_artcraft::handle_image_artcraft;
+use crate::core::commands::enqueue::object::handle_object_artcraft::handle_object_artcraft;
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
@@ -93,6 +95,8 @@ pub enum EnqueueTextToImageErrorType {
   NeedsFalApiKey,
   /// Fal had an API error
   FalError,
+  /// Needs to be logged into Artcraft
+  NeedsStorytellerCredentials,
 }
 
 
@@ -172,13 +176,20 @@ pub async fn handle_request(
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    Some(EnqueueTextToImageModel::FluxProUltra) | Some(EnqueueTextToImageModel::Recraft3) => {
-      handle_fal(&app, request, fal_creds_manager, fal_task_queue).await?;
-    },
     Some(EnqueueTextToImageModel::GptImage1) => {
-      handle_sora(&app, request, sora_creds_manager, sora_task_queue).await?;
+      handle_image_sora(&app, request, sora_creds_manager, sora_task_queue).await?;
+      return Ok(());
+    }
+    _ => {
+      // Fall-through
     }
   };
+
+  if fal_creds_manager.has_apparent_api_token()? {
+    handle_image_fal(&app, request, fal_creds_manager, fal_task_queue).await?;
+  } else {
+    handle_image_artcraft(request, &app, app_data_root, storyteller_creds_manager).await?;
+  }
 
   Ok(())
 }
