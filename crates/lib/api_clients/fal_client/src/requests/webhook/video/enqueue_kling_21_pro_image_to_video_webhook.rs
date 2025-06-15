@@ -68,13 +68,13 @@ pub async fn enqueue_kling_21_pro_image_to_video_webhook<U: IntoUrl, V: IntoUrl>
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::video::enqueue_kling_20_pro_image_to_video_webhook::{enqueue_kling_21_pro_image_to_video_webhook, Kling21ProArgs, Kling21ProAspectRatio, Kling21ProDuration};
+  use crate::requests::webhook::video::enqueue_kling_21_pro_image_to_video_webhook::{enqueue_kling_21_pro_image_to_video_webhook, Kling21ProArgs, Kling21ProAspectRatio, Kling21ProDuration};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
 
   #[tokio::test]
   #[ignore]
-  async fn test_Kling21_video() -> AnyhowResult<()> {
+  async fn test_kling21_pro_video() -> AnyhowResult<()> {
     let image_url = "https://cdn-2.fakeyou.com/media/3/4/h/f/s/34hfsmt8e38rvne6mwa4pwbxr6292sgy/image_34hfsmt8e38rvne6mwa4pwbxr6292sgy.png";
 
     // XXX: Don't commit secrets!
