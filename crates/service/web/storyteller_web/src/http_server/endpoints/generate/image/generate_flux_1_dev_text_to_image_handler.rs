@@ -16,12 +16,11 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::{GenerateFlux1DevTextToImageRequest, GenerateFlux1DevTextToImageResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::FluxPro11UltraArgs;
-use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::{enqueue_flux_pro_11_ultra_text_to_image_webhook, FluxPro11UltraAspectRatio, FluxPro11UltraNumImages};
+use fal_client::requests::webhook::image::enqueue_flux_1_dev_text_to_image_webhook::enqueue_flux_1_dev_text_to_image_webhook;
+use fal_client::requests::webhook::image::enqueue_flux_1_dev_text_to_image_webhook::{Flux1DevArgs, Flux1DevAspectRatio, Flux1DevNumImages};
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use idempotency::uuid::generate_random_uuid;
@@ -34,24 +33,23 @@ use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, M
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-
 /// Flux pro ultra text to image
 #[utoipa::path(
   post,
   tag = "Generate Images",
-  path = "/v1/generate/image/flux_pro_1.1_ultra_text_to_image",
+  path = "/v1/generate/image/flux_1_dev_text_to_image",
   responses(
-    (status = 200, description = "Success", body = GenerateFluxProUltraTextToImageResponse),
+    (status = 200, description = "Success", body = GenerateFlux1DevTextToImageResponse),
   ),
   params(
-    ("request" = GenerateFluxProUltraTextToImageRequest, description = "Payload for Request"),
+    ("request" = GenerateFlux1DevTextToImageRequest, description = "Payload for Request"),
   )
 )]
-pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
+pub async fn generate_flux_1_dev_text_to_image_handler(
   http_request: HttpRequest,
-  request: Json<GenerateFluxPro11UltraTextToImageRequest>,
+  request: Json<GenerateFlux1DevTextToImageRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<GenerateFluxPro11UltraTextToImageResponse>, CommonWebError> {
+) -> Result<Json<GenerateFlux1DevTextToImageResponse>, CommonWebError> {
   let maybe_user_session = server_state
       .session_checker
       .maybe_get_user_session(&http_request, &server_state.mysql_pool)
@@ -71,7 +69,7 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
   //  Some(session) => session,
   //  None => {
   //    warn!("not logged in");
-  //    return Err(GenerateFluxProUltraTextToImageError::NotAuthorized);
+  //    return Err(CommonWebError::NotAuthorized);
   //  }
   //};
 
@@ -83,25 +81,25 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
       .await
       .map_err(|err| {
         error!("Error inserting idempotency token: {:?}", err);
-        CommonWebError::BadInputWithSimpleMessage("invalid idempotency token".to_string())
+        CommonWebError::BadInputWithSimpleMessage("repeated idempotency token".to_string())
       })?;
   
   const IS_MOD : bool = false;
-  
+
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
-  
-  let args = FluxPro11UltraArgs {
+
+  let args = Flux1DevArgs {
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
-    aspect_ratio: FluxPro11UltraAspectRatio::LandscapeSixteenByNine,
-    num_images: FluxPro11UltraNumImages::One,
+    aspect_ratio: Flux1DevAspectRatio::LandscapeSixteenByNine,
+    num_images: Flux1DevNumImages::One,
   };
 
-  let fal_result = enqueue_flux_pro_11_ultra_text_to_image_webhook(args)
+  let fal_result = enqueue_flux_1_dev_text_to_image_webhook(args)
       .await
       .map_err(|err| {
-        warn!("Error calling enqueue_flux_pro_ultra_text_to_image_webhook: {:?}", err);
+        warn!("Error calling enqueue_flux_1_dev_text_to_image_webhook: {:?}", err);
         CommonWebError::ServerError
       })?;
 
@@ -110,9 +108,9 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
         warn!("Fal request_id is None");
         CommonWebError::ServerError
       })?;
-  
+
   info!("Fal request_id: {}", external_job_id);
-  
+
   let ip_address = get_request_ip(&http_request);
 
   let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
@@ -135,7 +133,7 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
     }
   };
 
-  Ok(Json(GenerateFluxPro11UltraTextToImageResponse {
+  Ok(Json(GenerateFlux1DevTextToImageResponse {
     success: true,
     inference_job_token: job_token,
   }))

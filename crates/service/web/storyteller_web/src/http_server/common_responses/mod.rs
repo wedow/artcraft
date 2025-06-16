@@ -1,3 +1,4 @@
+pub mod common_web_error;
 pub mod media;
 pub mod media_file_origin_details;
 pub mod media_file_social_meta_lite;
