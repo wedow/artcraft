@@ -16,7 +16,7 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::{GenerateFlux1DevTextToImageRequest, GenerateFlux1DevTextToImageResponse};
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::{GenerateFlux1DevTextToImageAspectRatio, GenerateFlux1DevTextToImageNumImages, GenerateFlux1DevTextToImageRequest, GenerateFlux1DevTextToImageResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::image::enqueue_flux_1_dev_text_to_image_webhook::enqueue_flux_1_dev_text_to_image_webhook;
@@ -87,13 +87,31 @@ pub async fn generate_flux_1_dev_text_to_image_handler(
   const IS_MOD : bool = false;
 
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
+  
+  let aspect_ratio = match request.aspect_ratio {
+    Some(GenerateFlux1DevTextToImageAspectRatio::Square) => Flux1DevAspectRatio::Square,
+    Some(GenerateFlux1DevTextToImageAspectRatio::SquareHd) => Flux1DevAspectRatio::SquareHd,
+    Some(GenerateFlux1DevTextToImageAspectRatio::LandscapeFourByThree) => Flux1DevAspectRatio::LandscapeFourByThree,
+    Some(GenerateFlux1DevTextToImageAspectRatio::LandscapeSixteenByNine) => Flux1DevAspectRatio::LandscapeSixteenByNine,
+    Some(GenerateFlux1DevTextToImageAspectRatio::PortraitThreeByFour) => Flux1DevAspectRatio::PortraitThreeByFour,
+    Some(GenerateFlux1DevTextToImageAspectRatio::PortraitNineBySixteen) => Flux1DevAspectRatio::PortraitNineBySixteen,
+    None => Flux1DevAspectRatio::LandscapeSixteenByNine, // Default
+  };
+  
+  let num_images = match request.num_images {
+    Some(GenerateFlux1DevTextToImageNumImages::One) => Flux1DevNumImages::One,
+    Some(GenerateFlux1DevTextToImageNumImages::Two) => Flux1DevNumImages::Two,
+    Some(GenerateFlux1DevTextToImageNumImages::Three) => Flux1DevNumImages::Three,
+    Some(GenerateFlux1DevTextToImageNumImages::Four) => Flux1DevNumImages::Four,
+    None => Flux1DevNumImages::One, // Default
+  };
 
   let args = Flux1DevArgs {
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
-    aspect_ratio: Flux1DevAspectRatio::LandscapeSixteenByNine,
-    num_images: Flux1DevNumImages::One,
+    aspect_ratio,
+    num_images,
   };
 
   let fal_result = enqueue_flux_1_dev_text_to_image_webhook(args)

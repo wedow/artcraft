@@ -1,5 +1,7 @@
 use utoipa::OpenApi;
 
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageResponse;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
@@ -463,6 +465,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     FeaturedMediaFile,
     FeaturedModelWeightForList,
     FundamentalFrequencyMethod,
+    GenerateFlux1DevTextToImageAspectRatio,
+    GenerateFlux1DevTextToImageNumImages,
     GenerateFlux1DevTextToImageRequest,
     GenerateFlux1DevTextToImageResponse,
     GenerateFluxPro11UltraTextToImageRequest,
