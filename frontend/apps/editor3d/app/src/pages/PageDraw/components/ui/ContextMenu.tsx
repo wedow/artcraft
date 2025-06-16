@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface MenuPosition {
   x: number;
@@ -33,14 +34,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ items, onAction, onClo
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  return (
+  return createPortal(
     <div
       ref={menuRef}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
-      className="fixed z-50 min-w-[220px] bg-[#1A1A1A] rounded-lg shadow-xl border border-[#333333] py-1 select-none"
+      className="fixed z-[9999999] min-w-[220px] bg-[#1A1A1A] rounded-lg shadow-xl border border-[#333333] py-1 select-none"
     >
       {items.map((item, index) => (
         <React.Fragment key={index}>
@@ -59,7 +60,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ items, onAction, onClo
           {item.divider && <div className="h-[1px] bg-[#333333] mx-2 my-1" />}
         </React.Fragment>
       ))}
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -123,7 +125,7 @@ export const ContextMenuContainer: React.FC<ContextMenuContainerProps> = ({
     <div 
       onClick={handleClick}
       onContextMenu={handleContextMenu} 
-      className={`w-full h-full ${className}`}
+      className={`w-full h-full relative z-[99999] ${className}`}
     >
       {children}
       {showMenu && (
