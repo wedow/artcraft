@@ -43,11 +43,17 @@ const appMenuTabs: MenuIconItem[] = [
     id: "2D",
     label: "2D Canvas",
     icon: <FontAwesomeIcon icon={faPaintbrush} />,
+    imageSrc: "/resources/gifs/artcraft-canvas-demo.gif",
+    description: "Easy edits. Great for graphic design.",
+    large: true,
   },
   {
     id: "3D",
     label: "3D Editor",
     icon: <FontAwesomeIcon icon={faCube} />,
+    imageSrc: "/resources/gifs/artcraft-3d-demo.gif",
+    description: "Precision control. Great for AI film.",
+    large: true,
   },
   {
     id: "IMAGE",

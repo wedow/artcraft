@@ -9,6 +9,8 @@ interface TooltipProps {
   className?: string;
   delay?: number;
   closeOnClick?: boolean;
+  imageSrc?: string;
+  description?: string;
 }
 
 export const Tooltip = ({
@@ -18,6 +20,8 @@ export const Tooltip = ({
   className,
   delay = 300,
   closeOnClick = false,
+  imageSrc,
+  description,
 }: TooltipProps) => {
   const [isShowing, setIsShowing] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -142,7 +146,19 @@ export const Tooltip = ({
             className ? className : ""
           )}
         >
-          {content}
+          <div className="flex flex-col gap-1">
+            {content}
+            {imageSrc && (
+              <img
+                src={imageSrc}
+                alt="tooltip"
+                className="mb-1 max-h-40 w-auto rounded-md"
+              />
+            )}
+            {description && (
+              <p className="text-sm text-white font-normal">{description}</p>
+            )}
+          </div>
         </div>
       </Transition>
     </div>

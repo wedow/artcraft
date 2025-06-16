@@ -6,6 +6,9 @@ export interface MenuIconItem {
   id: string;
   label: string;
   icon: React.ReactNode;
+  imageSrc?: string;
+  description?: string;
+  large?: boolean;
 }
 
 interface MenuIconSelectorProps {
@@ -114,7 +117,12 @@ export const MenuIconSelector: React.FC<MenuIconSelectorProps> = ({
             position="bottom"
             delay={100}
             closeOnClick={true}
-            className="font-medium"
+            className={twMerge(
+              "text-sm font-semibold",
+              item.large && "text-md"
+            )}
+            imageSrc={item.imageSrc || undefined}
+            description={item.description || undefined}
           >
             <button
               ref={(el) => {
