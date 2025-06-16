@@ -8,6 +8,10 @@ use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::G
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageNumImages;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageResponse;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageAspectRatio;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageNumImages;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageResponse;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageAspectRatio;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageNumImages;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
@@ -139,6 +143,7 @@ use crate::http_server::endpoints::media_files::upsert_upload::write_error::Medi
 use crate::http_server::endpoints::media_files::upsert_upload::write_scene_file::write_scene_file_media_file_handler::*;
 use crate::http_server::endpoints::model_download::enqueue_gptsovits_model_download_handler::*;
 use crate::http_server::endpoints::moderation::user_feature_flags::edit_user_feature_flags_handler::*;
+use crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler;
 use crate::http_server::endpoints::prompts::get_prompt_handler::*;
 use crate::http_server::endpoints::service::status_alert_handler::*;
 use crate::http_server::endpoints::stats::get_unified_queue_stats_handler::*;
@@ -203,7 +208,9 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::featured_items::get_is_featured_item_handler::get_is_featured_item_handler,
     crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler,
     crate::http_server::endpoints::generate::image::generate_flux_1_schnell_text_to_image_handler::generate_flux_1_schnell_text_to_image_handler,
+    crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler,
     crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler,
+    crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler,
     crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::enqueue_studio_image_generation_handler,
     crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::upload_snapshot_media_file_handler,
     crate::http_server::endpoints::inference_job::delete::dismiss_finished_session_jobs_handler::dismiss_finished_session_jobs_handler,
@@ -243,7 +250,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::model_download::enqueue_gptsovits_model_download_handler::enqueue_gptsovits_model_download_handler,
     crate::http_server::endpoints::moderation::user_feature_flags::edit_user_feature_flags_handler::edit_user_feature_flags_handler,
     crate::http_server::endpoints::prompts::get_prompt_handler::get_prompt_handler,
-    crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler,
     crate::http_server::endpoints::service::status_alert_handler::status_alert_handler,
     crate::http_server::endpoints::stats::get_unified_queue_stats_handler::get_unified_queue_stats_handler,
     crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::enqueue_studio_gen2_handler,
@@ -481,6 +487,10 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GenerateFlux1SchnellTextToImageNumImages,
     GenerateFlux1SchnellTextToImageRequest,
     GenerateFlux1SchnellTextToImageResponse,
+    GenerateFluxPro11TextToImageAspectRatio,
+    GenerateFluxPro11TextToImageNumImages,
+    GenerateFluxPro11TextToImageRequest,
+    GenerateFluxPro11TextToImageResponse,
     GenerateFluxPro11UltraTextToImageAspectRatio,
     GenerateFluxPro11UltraTextToImageNumImages,
     GenerateFluxPro11UltraTextToImageRequest,
