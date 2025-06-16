@@ -11,6 +11,32 @@ pub struct GenerateFluxPro11UltraTextToImageRequest {
 
   /// Text prompt to generate the image from.
   pub prompt: Option<String>,
+
+  /// Aspect ratio of the output images.
+  pub aspect_ratio: Option<GenerateFluxPro11UltraTextToImageAspectRatio>,
+
+  /// Number of images to generate. Default is one.
+  pub num_images: Option<GenerateFluxPro11UltraTextToImageNumImages>,
+}
+
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum GenerateFluxPro11UltraTextToImageAspectRatio {
+  Square, // 1:1
+  LandscapeFourByThree, // 4:3
+  LandscapeSixteenByNine, // 16:9
+  PortraitThreeByFour, // 3:4
+  PortraitNineBySixteen, // 9:16
+  //Custom { width: u32, height: u32 }, // TODO
+}
+
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum GenerateFluxPro11UltraTextToImageNumImages {
+  One, // Default
+  Two,
+  Three,
+  Four,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

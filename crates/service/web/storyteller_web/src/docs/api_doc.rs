@@ -8,6 +8,8 @@ use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::G
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageNumImages;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageResponse;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageAspectRatio;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageNumImages;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
@@ -379,8 +381,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     BatchStatusDetailsResponse,
     BetaKeyItem,
     BookmarkRow,
-    RemoveImageBackgroundResponse,
-    RemoveImageBackgroundRequest,
     ByQueueStats,
     ChangeMediaFileAnimationTypeError,
     ChangeMediaFileAnimationTypeRequest,
@@ -481,6 +481,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GenerateFlux1SchnellTextToImageNumImages,
     GenerateFlux1SchnellTextToImageRequest,
     GenerateFlux1SchnellTextToImageResponse,
+    GenerateFluxPro11UltraTextToImageAspectRatio,
+    GenerateFluxPro11UltraTextToImageNumImages,
     GenerateFluxPro11UltraTextToImageRequest,
     GenerateFluxPro11UltraTextToImageResponse,
     GetInferenceJobStatusError,
@@ -595,6 +597,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     RedeemBetaKeyError,
     RedeemBetaKeyRequest,
     RedeemBetaKeySuccessResponse,
+    RemoveImageBackgroundRequest,
+    RemoveImageBackgroundResponse,
     RenameMediaFileError,
     RenameMediaFileRequest,
     RequestDetailsResponse,

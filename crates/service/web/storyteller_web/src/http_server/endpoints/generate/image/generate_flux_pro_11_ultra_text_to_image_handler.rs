@@ -16,8 +16,8 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::{GenerateFluxPro11UltraTextToImageAspectRatio, GenerateFluxPro11UltraTextToImageNumImages, GenerateFluxPro11UltraTextToImageRequest};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::FluxPro11UltraArgs;
@@ -90,12 +90,29 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
   
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
+  let aspect_ratio = match request.aspect_ratio {
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::Square) => FluxPro11UltraAspectRatio::Square,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::LandscapeFourByThree) => FluxPro11UltraAspectRatio::LandscapeFourByThree,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::LandscapeSixteenByNine) => FluxPro11UltraAspectRatio::LandscapeSixteenByNine,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::PortraitThreeByFour) => FluxPro11UltraAspectRatio::PortraitThreeByFour,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::PortraitNineBySixteen) => FluxPro11UltraAspectRatio::PortraitNineBySixteen,
+    None => FluxPro11UltraAspectRatio::LandscapeSixteenByNine, // Default
+  };
+  
+  let num_images = match request.num_images {
+    Some(GenerateFluxPro11UltraTextToImageNumImages::One) => FluxPro11UltraNumImages::One,
+    Some(GenerateFluxPro11UltraTextToImageNumImages::Two) => FluxPro11UltraNumImages::Two,
+    Some(GenerateFluxPro11UltraTextToImageNumImages::Three) => FluxPro11UltraNumImages::Three,
+    Some(GenerateFluxPro11UltraTextToImageNumImages::Four) => FluxPro11UltraNumImages::Four,
+    None => FluxPro11UltraNumImages::One, // Default
+  };
+
   let args = FluxPro11UltraArgs {
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
-    aspect_ratio: FluxPro11UltraAspectRatio::LandscapeSixteenByNine,
-    num_images: FluxPro11UltraNumImages::One,
+    aspect_ratio,
+    num_images,
   };
 
   let fal_result = enqueue_flux_pro_11_ultra_text_to_image_webhook(args)
