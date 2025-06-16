@@ -1,5 +1,9 @@
 use utoipa::OpenApi;
 
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageResponse;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
@@ -83,6 +87,8 @@ use crate::http_server::endpoints::comments::list_comments_handler::*;
 use crate::http_server::endpoints::featured_items::create_featured_item_handler::*;
 use crate::http_server::endpoints::featured_items::delete_featured_item_handler::*;
 use crate::http_server::endpoints::featured_items::get_is_featured_item_handler::*;
+use crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler;
+use crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler;
 use crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::*;
 use crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::*;
 use crate::http_server::endpoints::inference_job::common_responses::live_portrait::JobDetailsLivePortraitRequest;
@@ -187,6 +193,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::featured_items::create_featured_item_handler::create_featured_item_handler,
     crate::http_server::endpoints::featured_items::delete_featured_item_handler::delete_featured_item_handler,
     crate::http_server::endpoints::featured_items::get_is_featured_item_handler::get_is_featured_item_handler,
+    crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler,
+    crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler,
     crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::enqueue_studio_image_generation_handler,
     crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::upload_snapshot_media_file_handler,
     crate::http_server::endpoints::inference_job::delete::dismiss_finished_session_jobs_handler::dismiss_finished_session_jobs_handler,
@@ -340,9 +348,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     AppStateServerInfo,
     AppStateStatusAlertCategory,
     AppStateStatusAlertInfo,
-    EnqueueStudioImageGenRequest,
-    EnqueueImageGenRequestSuccessResponse,
-    EnqueueImageGenRequestError,
     AppStateSubscriptionProductKey,
     AppStateUserInfo,
     AppStateUserLocale,
@@ -354,8 +359,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     BatchGetMediaFilesQueryParams,
     BatchGetMediaFilesSuccessResponse,
     BatchGetUserBookmarksError,
-    UploadSnapshotMediaFileForm,
-    UploadSnapshotMediaFileSuccessResponse,
     BatchGetUserBookmarksQueryParams,
     BatchGetUserBookmarksResponse,
     BatchGetUserRatingError,
@@ -429,9 +432,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     EditUsernameResponse,
     EnqueueFaceFusionCropDimensions,
     EnqueueFaceFusionWorkflowError,
-    EnqueueStudioGen2Request,
-    EnqueueStudioGen2Response,
-    EnqueueStudioGen2Error,
     EnqueueFaceFusionWorkflowRequest,
     EnqueueFaceFusionWorkflowSuccessResponse,
     EnqueueFbxToGltfRequest,
@@ -440,10 +440,16 @@ use crate::http_server::web_utils::response_success_helpers::*;
     EnqueueGptSovitsModelDownloadError,
     EnqueueGptSovitsModelDownloadRequest,
     EnqueueGptSovitsModelDownloadSuccessResponse,
+    EnqueueImageGenRequestError,
+    EnqueueImageGenRequestSuccessResponse,
     EnqueueLivePortraitCropDimensions,
     EnqueueLivePortraitWorkflowError,
     EnqueueLivePortraitWorkflowRequest,
     EnqueueLivePortraitWorkflowSuccessResponse,
+    EnqueueStudioGen2Error,
+    EnqueueStudioGen2Request,
+    EnqueueStudioGen2Response,
+    EnqueueStudioImageGenRequest,
     EnqueueTTSRequest,
     EnqueueTTSRequestError,
     EnqueueTTSRequestSuccessResponse,
@@ -457,6 +463,10 @@ use crate::http_server::web_utils::response_success_helpers::*;
     FeaturedMediaFile,
     FeaturedModelWeightForList,
     FundamentalFrequencyMethod,
+    GenerateFlux1DevTextToImageRequest,
+    GenerateFlux1DevTextToImageResponse,
+    GenerateFluxPro11UltraTextToImageRequest,
+    GenerateFluxPro11UltraTextToImageResponse,
     GetInferenceJobStatusError,
     GetInferenceJobStatusPathInfo,
     GetInferenceJobStatusSuccessResponse,
@@ -636,6 +646,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     UploadSavedSceneMediaFileSuccessResponse,
     UploadSceneSnapshotMediaFileForm,
     UploadSceneSnapshotMediaFileSuccessResponse,
+    UploadSnapshotMediaFileForm,
+    UploadSnapshotMediaFileSuccessResponse,
     UploadStudioShotFileForm,
     UploadStudioShotSuccessResponse,
     UploadVideoMediaSuccessResponse,
