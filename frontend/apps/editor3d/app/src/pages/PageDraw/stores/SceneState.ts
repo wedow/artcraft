@@ -89,9 +89,9 @@ interface SceneState {
   saveState: () => void;
   
   // Add new actions for line nodes
-  addLineNode: (lineNode: LineNode) => void;
+  addLineNode: (lineNode: LineNode, shouldSaveState: boolean) => void;
   removeLineNode: (id: string, shouldSaveState?: boolean) => void;
-  updateLineNode: (id: string, updates: Partial<LineNode>) => void;
+  updateLineNode: (id: string, updates: Partial<LineNode>, shouldSaveState: boolean) => void;
   moveLineNode: (id: string, dx: number, dy: number) => void;
   
   // Add a specific method for file uploads
@@ -516,17 +516,18 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   },
   
   // Add new line node actions
-  addLineNode: (lineNode: LineNode) => {
+  addLineNode: (lineNode: LineNode, shouldSaveState: boolean = true) => {
     set((state) => {
       const nextZ = getNextZIndex(state.nodes, state.lineNodes);
-
       const newLineNode = {
         ...lineNode,
         zIndex: nextZ
       };
       return { lineNodes: [...state.lineNodes, newLineNode] };
     });
-    get().saveState();
+    if (shouldSaveState) {
+      get().saveState();
+    }
   },
   
   removeLineNode: (id: string, shouldSaveState: boolean = true) => {
@@ -547,7 +548,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     }
   },
   
-  updateLineNode: (id: string, updates: Partial<LineNode>) => {
+  updateLineNode: (id: string, updates: Partial<LineNode>, shouldSaveState: boolean = true) => {
     set((state) => {
       const newLineNodes = state.lineNodes.map(node => {
         if (node.id === id) {
@@ -561,7 +562,9 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       });
       return { lineNodes: newLineNodes };
     });
-    get().saveState();
+    if (shouldSaveState) {
+      get().saveState();
+    }
   },
   
   moveLineNode: (id: string, dx: number, dy: number) => {

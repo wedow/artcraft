@@ -185,13 +185,7 @@ export const PaintSurface = ({
       isWithinLeftPanel(stagePoint)
     ) {
       const lineId = `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      let opacity;
-
-      if (activeTool === "draw") {
-        opacity = store.brushOpacity
-      } else {
-        opacity = 1
-      }
+      let opacity = activeTool === "draw" ? store.brushOpacity : 1;
 
       const newLineNode: LineNode = {
         id: lineId,
@@ -200,10 +194,10 @@ export const PaintSurface = ({
         stroke: activeTool === "draw" ? brushColor : fillColor || "#ffffff",
         strokeWidth: brushSize / stage.scaleX(),
         draggable: true,
-        opacity: opacity  // Add opacity to the line node
+        opacity: opacity
       };
       store.selectNode(null);
-      store.addLineNode(newLineNode);
+      store.addLineNode(newLineNode, false);  // Don't save state when starting line
       setCurrentLineId(lineId);
       setIsDrawing(true);
       setLastPoint(stagePoint);
@@ -280,7 +274,6 @@ export const PaintSurface = ({
         y: (point.y - stage.y()) / stage.scaleY(),
       };
 
-      // Only add point if it's within the left panel bounds
       if (isWithinLeftPanel(stagePoint)) {
         const currentLine = store.lineNodes.find(
           (line) => line.id === currentLineId,
@@ -291,7 +284,7 @@ export const PaintSurface = ({
             stagePoint.x,
             stagePoint.y,
           ];
-          store.updateLineNode(currentLineId, { points: updatedPoints });
+          store.updateLineNode(currentLineId, { points: updatedPoints }, false);  // Don't save state while drawing
         }
         setLastPoint(stagePoint);
       } else {
@@ -339,6 +332,10 @@ export const PaintSurface = ({
   };
 
   const handleStageMouseUp = () => {
+    if (isDrawing) {
+      store.saveState();  // Save state only when the stroke is complete
+    }
+
     if (isSelecting && selectionRect) {
       // Calculate the bounds of the selection rectangle
       const left = Math.min(selectionRect.startX, selectionRect.endX);
