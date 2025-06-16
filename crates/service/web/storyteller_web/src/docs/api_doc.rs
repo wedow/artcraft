@@ -10,6 +10,8 @@ use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::G
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageResponse;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
+use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
+use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
@@ -93,9 +95,6 @@ use crate::http_server::endpoints::comments::list_comments_handler::*;
 use crate::http_server::endpoints::featured_items::create_featured_item_handler::*;
 use crate::http_server::endpoints::featured_items::delete_featured_item_handler::*;
 use crate::http_server::endpoints::featured_items::get_is_featured_item_handler::*;
-use crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler;
-use crate::http_server::endpoints::generate::image::generate_flux_1_schnell_text_to_image_handler::generate_flux_1_schnell_text_to_image_handler;
-use crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler;
 use crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::*;
 use crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::*;
 use crate::http_server::endpoints::inference_job::common_responses::live_portrait::JobDetailsLivePortraitRequest;
@@ -242,6 +241,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::model_download::enqueue_gptsovits_model_download_handler::enqueue_gptsovits_model_download_handler,
     crate::http_server::endpoints::moderation::user_feature_flags::edit_user_feature_flags_handler::edit_user_feature_flags_handler,
     crate::http_server::endpoints::prompts::get_prompt_handler::get_prompt_handler,
+    crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler,
     crate::http_server::endpoints::service::status_alert_handler::status_alert_handler,
     crate::http_server::endpoints::stats::get_unified_queue_stats_handler::get_unified_queue_stats_handler,
     crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::enqueue_studio_gen2_handler,
@@ -379,6 +379,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     BatchStatusDetailsResponse,
     BetaKeyItem,
     BookmarkRow,
+    RemoveImageBackgroundResponse,
+    RemoveImageBackgroundRequest,
     ByQueueStats,
     ChangeMediaFileAnimationTypeError,
     ChangeMediaFileAnimationTypeRequest,

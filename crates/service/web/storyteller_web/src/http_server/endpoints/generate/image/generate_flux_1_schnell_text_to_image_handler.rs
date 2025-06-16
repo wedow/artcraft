@@ -33,7 +33,7 @@ use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, M
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-/// Flux pro ultra text to image
+/// Flux 1 Schnell text to image
 #[utoipa::path(
   post,
   tag = "Generate Images",

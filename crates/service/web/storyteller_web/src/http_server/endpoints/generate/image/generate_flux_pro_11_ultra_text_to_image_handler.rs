@@ -35,16 +35,16 @@ use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
 
-/// Flux pro ultra text to image
+/// Flux Pro 1.1 Ultra
 #[utoipa::path(
   post,
   tag = "Generate Images",
   path = "/v1/generate/image/flux_pro_1.1_ultra_text_to_image",
   responses(
-    (status = 200, description = "Success", body = GenerateFluxProUltraTextToImageResponse),
+    (status = 200, description = "Success", body = GenerateFluxPro11UltraTextToImageResponse),
   ),
   params(
-    ("request" = GenerateFluxProUltraTextToImageRequest, description = "Payload for Request"),
+    ("request" = GenerateFluxPro11UltraTextToImageRequest, description = "Payload for Request"),
   )
 )]
 pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
