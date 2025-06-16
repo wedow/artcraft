@@ -1,7 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
-use fal::endpoints::fal_ai::flux_pro::v1_1_ultra::{v1_1_ultra, FluxProUltraTextToImageInput};
+use fal::endpoints::fal_ai::flux_pro::v1_1_ultra::{v1_1_ultra, AspectRatioProperty, FluxProUltraTextToImageInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
@@ -9,17 +9,52 @@ pub struct FluxPro11UltraArgs<'a, U: IntoUrl> {
   pub prompt: &'a str,
   pub webhook_url: U,
   pub api_key: &'a FalApiKey,
+  pub aspect_ratio: FluxPro11UltraAspectRatio,
+  pub num_images: FluxPro11UltraNumImages,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum FluxPro11UltraAspectRatio {
+  Square, // 1:1
+  LandscapeFourByThree, // 4:3
+  LandscapeSixteenByNine, // 16:9
+  PortraitThreeByFour, // 3:4
+  PortraitNineBySixteen, // 9:16
+  //Custom { width: u32, height: u32 }, // TODO
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum FluxPro11UltraNumImages {
+  One, // Default
+  Two,
+  Three,
+  Four,
 }
 
 pub async fn enqueue_flux_pro_11_ultra_text_to_image_webhook<U: IntoUrl>(
   args: FluxPro11UltraArgs<'_, U>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   
+  let num_images = match args.num_images {
+    FluxPro11UltraNumImages::One => 1,
+    FluxPro11UltraNumImages::Two => 2,
+    FluxPro11UltraNumImages::Three => 3,
+    FluxPro11UltraNumImages::Four => 4,
+  };
+
+  let aspect_ratio = match args.aspect_ratio {
+    FluxPro11UltraAspectRatio::Square => AspectRatioProperty::Property_1_1,
+    FluxPro11UltraAspectRatio::LandscapeFourByThree => AspectRatioProperty::Property_4_3,
+    FluxPro11UltraAspectRatio::LandscapeSixteenByNine => AspectRatioProperty::Property_16_9,
+    FluxPro11UltraAspectRatio::PortraitThreeByFour => AspectRatioProperty::Property_3_4,
+    FluxPro11UltraAspectRatio::PortraitNineBySixteen => AspectRatioProperty::Property_9_16,
+  };
+  
   let request = FluxProUltraTextToImageInput {
     prompt: args.prompt.to_string(),
+    num_images: Some(num_images),
+    aspect_ratio: Some(aspect_ratio),
     // Maybe expose
-    num_images: Some(1), // Default is 1
-    aspect_ratio: None, // Default is "16:9"
     seed: None,
     raw: Some(true), // Generate less processed, more natural-looking images. Default is false.
     // Maybe abstract

@@ -19,8 +19,8 @@ use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::enqueue_flux_pro_11_ultra_text_to_image_webhook;
 use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::FluxPro11UltraArgs;
+use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::{enqueue_flux_pro_11_ultra_text_to_image_webhook, FluxPro11UltraAspectRatio, FluxPro11UltraNumImages};
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use idempotency::uuid::generate_random_uuid;
@@ -129,6 +129,8 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
+    aspect_ratio: FluxPro11UltraAspectRatio::LandscapeSixteenByNine,
+    num_images: FluxPro11UltraNumImages::One,
   };
 
   let fal_result = enqueue_flux_pro_11_ultra_text_to_image_webhook(args)

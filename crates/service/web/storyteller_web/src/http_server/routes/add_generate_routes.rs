@@ -1,4 +1,4 @@
-use crate::http_server::endpoints::generate::image::generate_flux_pro_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler;
+use crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler;
 use crate::http_server::endpoints::generate::object::generate_hunyuan2_image_to_3d_handler::generate_hunyuan_2_image_to_3d_handler;
 use crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler;
