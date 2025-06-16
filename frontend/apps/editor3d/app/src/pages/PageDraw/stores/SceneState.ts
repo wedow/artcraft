@@ -593,7 +593,8 @@ export const useSceneStore = create<SceneState>((set, get) => ({
         const img = new Image();
         img.onload = () => {
           const aspectRatio = img.naturalWidth / img.naturalHeight;
-          const finalWidth = width || Math.min(img.naturalWidth, 300);
+          // Increase default size to 512px width while maintaining aspect ratio
+          const finalWidth = width || Math.min(img.naturalWidth, 512);
           const finalHeight = height || finalWidth / aspectRatio;
           console.log('Image loaded with dimensions:', {
             naturalWidth: img.naturalWidth,
