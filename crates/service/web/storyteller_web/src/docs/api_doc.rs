@@ -26,6 +26,10 @@ use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::G
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProDuration;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterAspectRatio;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterDuration;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterImageToVideoResponse;
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProAspectRatio;
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProDuration;
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoRequest;
@@ -124,7 +128,6 @@ use crate::http_server::endpoints::inference_job::list::list_session_jobs_handle
 use crate::http_server::endpoints::media_files::common_responses::live_portrait::MediaFileLivePortraitDetails;
 use crate::http_server::endpoints::media_files::delete::delete_media_file_handler::*;
 use crate::http_server::endpoints::media_files::edit::change_media_file_animation_type_handler::*;
-use crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler;
 use crate::http_server::endpoints::media_files::edit::change_media_file_engine_category_handler::*;
 use crate::http_server::endpoints::media_files::edit::change_media_file_visibility_handler::*;
 use crate::http_server::endpoints::media_files::edit::rename_media_file_handler::*;
@@ -211,6 +214,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::beta_keys::edit_beta_key_distributed_flag_handler::edit_beta_key_distributed_flag_handler,
     crate::http_server::endpoints::beta_keys::edit_beta_key_note_handler::edit_beta_key_note_handler,
     crate::http_server::endpoints::beta_keys::list_beta_keys_handler::list_beta_keys_handler,
+    crate::http_server::endpoints::generate::video::generate_kling_2_1_master_video_handler::generate_kling_2_1_master_video_handler,
     crate::http_server::endpoints::beta_keys::redeem_beta_key_handler::redeem_beta_key_handler,
     crate::http_server::endpoints::comments::create_comment_handler::create_comment_handler,
     crate::http_server::endpoints::comments::delete_comment_handler::delete_comment_handler,
@@ -440,6 +444,10 @@ use crate::http_server::web_utils::response_success_helpers::*;
     DeleteCommentRequest,
     DeleteFeaturedItemError,
     DeleteFeaturedItemRequest,
+    GenerateKling21MasterImageToVideoResponse,
+    GenerateKling21MasterDuration,
+    GenerateKling21MasterAspectRatio,
+    GenerateKling21MasterImageToVideoRequest,
     DeleteMediaFileError,
     DeleteMediaFilePathInfo,
     DeleteMediaFileRequest,
