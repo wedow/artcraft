@@ -20,6 +20,8 @@ use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBack
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
@@ -212,6 +214,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler,
     crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler,
     crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler,
+    crate::http_server::endpoints::generate::object::generate_hunyuan_21_image_to_3d_handler::generate_hunyuan_21_image_to_3d_handler,
+    crate::http_server::endpoints::generate::object::generate_hunyuan_2_image_to_3d_handler::generate_hunyuan_2_image_to_3d_handler,
     crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::enqueue_studio_image_generation_handler,
     crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::upload_snapshot_media_file_handler,
     crate::http_server::endpoints::inference_job::delete::dismiss_finished_session_jobs_handler::dismiss_finished_session_jobs_handler,
@@ -229,7 +233,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::media_files::get::get_media_file_handler::get_media_file_handler,
     crate::http_server::endpoints::media_files::list::list_featured_media_files_handler::list_featured_media_files_handler,
     crate::http_server::endpoints::media_files::list::list_media_files_by_batch_token_handler::list_media_files_by_batch_token_handler,
-    crate::http_server::endpoints::generate::object::generate_hunyuan2_image_to_3d_handler::generate_hunyuan_2_image_to_3d_handler,
     crate::http_server::endpoints::media_files::list::list_media_files_for_user_handler::list_media_files_for_user_handler,
     crate::http_server::endpoints::media_files::list::list_media_files_handler::list_media_files_handler,
     crate::http_server::endpoints::media_files::list::list_pinned_media_files_handler::list_pinned_media_files_handler,
@@ -497,6 +500,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GenerateFluxPro11UltraTextToImageNumImages,
     GenerateFluxPro11UltraTextToImageRequest,
     GenerateFluxPro11UltraTextToImageResponse,
+    GenerateHunyuan21ImageTo3dRequest,
+    GenerateHunyuan21ImageTo3dResponse,
     GenerateHunyuan2ImageTo3dRequest,
     GenerateHunyuan2ImageTo3dResponse,
     GetInferenceJobStatusError,

@@ -1,1 +1,2 @@
+pub mod generate_hunyuan_21_image_to_3d;
 pub mod generate_hunyuan_2_image_to_3d;
