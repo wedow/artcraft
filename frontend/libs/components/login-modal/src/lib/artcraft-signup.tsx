@@ -9,8 +9,6 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { DomLevels } from "@storyteller/common";
-
 interface ArtCraftSignUpProps {
   onSubmit: (
     username: string,
@@ -72,11 +70,11 @@ export const ArtCraftSignUp = ({
   };
 
   const handleInputFocus = () => {
-    disableHotkeyInput(DomLevels.INPUT);
+
   };
 
   const handleInputBlur = () => {
-    enableHotkeyInput(DomLevels.INPUT);
+
   };
 
   return (

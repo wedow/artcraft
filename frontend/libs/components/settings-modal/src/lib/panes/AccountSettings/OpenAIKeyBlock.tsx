@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-// import { GetOpenAIApiKey, SetOpenAIApiKey } from "@storyteller/tauri-api";
+import { GetOpenAIApiKey, SetOpenAIApiKey } from "@storyteller/tauri-api";
 import { Input } from "@storyteller/ui-input";
 
 
@@ -15,7 +15,7 @@ export const OpenAIApiKeyBlock = () => {
     const fetchKey = async () => {
       setIsCheckingOpenAIApiKey(true);
       try {
-        //const result = await GetOpenAIApiKey();
+        const result = await GetOpenAIApiKey();
         if ("payload" in result) {
           setOpenAIApiKey(result.payload.key);
         }
@@ -30,7 +30,7 @@ export const OpenAIApiKeyBlock = () => {
   }, []);
 
   const syncOpenAIApiKey = async (key: string) => {
-    //await SetOpenAIApiKey(key);
+    await SetOpenAIApiKey(key);
     setOpenAIApiKey(key);
   };
 
