@@ -2,6 +2,10 @@ use utoipa::OpenApi;
 
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2AspectRatio;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2Duration;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageResponse;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageAspectRatio;
@@ -79,6 +83,7 @@ use crate::http_server::common_responses::media::media_file_cover_image_details:
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileDefaultCover;
 use crate::http_server::common_responses::media::media_links::*;
 use crate::http_server::common_responses::media::weights_cover_image_details::*;
+use crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler;
 use crate::http_server::common_responses::media_file_origin_details::*;
 use crate::http_server::common_responses::media_file_social_meta_lite::MediaFileSocialMetaLight;
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
@@ -213,6 +218,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::beta_keys::create_beta_keys_handler::create_beta_keys_handler,
     crate::http_server::endpoints::beta_keys::edit_beta_key_distributed_flag_handler::edit_beta_key_distributed_flag_handler,
     crate::http_server::endpoints::beta_keys::edit_beta_key_note_handler::edit_beta_key_note_handler,
+    crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler,
     crate::http_server::endpoints::beta_keys::list_beta_keys_handler::list_beta_keys_handler,
     crate::http_server::endpoints::generate::video::generate_kling_2_1_master_video_handler::generate_kling_2_1_master_video_handler,
     crate::http_server::endpoints::beta_keys::redeem_beta_key_handler::redeem_beta_key_handler,
@@ -433,6 +439,10 @@ use crate::http_server::web_utils::response_success_helpers::*;
     CreateCommentSuccessResponse,
     CreateFeaturedItemError,
     CreateFeaturedItemRequest,
+    GenerateVeo2AspectRatio,
+    GenerateVeo2Duration,
+    GenerateVeo2ImageToVideoRequest,
+    GenerateVeo2ImageToVideoResponse,
     CreateFeaturedItemSuccessResponse,
     CreateSceneError,
     CreateSceneSuccessResponse,

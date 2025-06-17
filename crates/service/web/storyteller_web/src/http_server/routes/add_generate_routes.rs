@@ -12,6 +12,7 @@ use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error, HttpResponse};
+use crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler;
 
 pub fn add_generate_routes<T, B> (app: App<T>) -> App<T>
 where
@@ -58,6 +59,10 @@ where
           )
           .service(web::resource("/kling_2.1_pro_image_to_video")
               .route(web::post().to(generate_kling_2_1_pro_video_handler))
+              .route(web::head().to(|| HttpResponse::Ok()))
+          )
+          .service(web::resource("/veo_2_image_to_video")
+              .route(web::post().to(generate_veo_2_image_to_video_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
           )
       )
