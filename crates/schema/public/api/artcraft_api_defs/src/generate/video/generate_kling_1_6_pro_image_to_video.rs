@@ -17,11 +17,15 @@ pub struct GenerateKling16ProImageToVideoRequest {
   /// Optional text prompt.
   pub prompt: Option<String>,
   
-  /// Optional: apsect ratio of the generated video.
+  /// Optional: aspect ratio of the generated video.
   pub aspect_ratio: Option<GenerateKling16ProAspectRatio>,
+
+  /// Optional: aspect ratio of the generated video.
+  pub duration: Option<GenerateKling16ProDuration>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum GenerateKling16ProAspectRatio {
   /// 16:9 aspect ratio
   WideSixteenNine,
@@ -29,6 +33,13 @@ pub enum GenerateKling16ProAspectRatio {
   TallNineSixteen,
   /// 1:1 aspect ratio
   Square,
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum GenerateKling16ProDuration {
+  FiveSeconds,
+  TenSeconds,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

@@ -16,8 +16,8 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
-use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProAspectRatio, GenerateKling16ProImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProDuration, GenerateKling16ProImageToVideoResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::enqueue_kling_16_pro_image_to_video_webhook;
@@ -166,12 +166,18 @@ pub async fn generate_kling_1_6_pro_video_handler(
     None => Kling16ProAspectRatio::WideSixteenNine, // Default to 16:9
   };
   
+  let duration = match &request.duration {
+    Some(GenerateKling16ProDuration::FiveSeconds) => Kling16Duration::FiveSeconds,
+    Some(GenerateKling16ProDuration::TenSeconds) => Kling16Duration::TenSeconds,
+    None => Kling16Duration::FiveSeconds, 
+  };
+  
   let args = Kling16ProArgs {
     image_url: media_links.cdn_url,
     webhook_url: &server_state.fal.webhook_url,
-    duration: Kling16Duration::Default,
-    prompt: prompt,
-    aspect_ratio: aspect_ratio,
+    duration,
+    prompt,
+    aspect_ratio,
     api_key: &server_state.fal.api_key,
   };
 

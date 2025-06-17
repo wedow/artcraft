@@ -23,6 +23,7 @@ use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::Genera
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dResponse;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProAspectRatio;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProDuration;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
@@ -506,6 +507,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GenerateFluxPro11UltraTextToImageRequest,
     GenerateFluxPro11UltraTextToImageResponse,
     GenerateHunyuan21ImageTo3dRequest,
+    GenerateKling16ProDuration,
     GenerateHunyuan21ImageTo3dResponse,
     GenerateHunyuan2ImageTo3dRequest,
     GenerateHunyuan2ImageTo3dResponse,
