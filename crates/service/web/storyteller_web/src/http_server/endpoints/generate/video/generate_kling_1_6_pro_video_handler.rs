@@ -2,6 +2,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
+use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::common_responses::media::media_links::MediaLinks;
 use crate::http_server::deprecated_endpoints::engine::create_scene_handler::CreateSceneError;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
@@ -34,10 +35,6 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
-
-// =============== Error Response ===============
-
-
 /*
  TODO: Either on the Tauri client or as an API, make "generic" image / video / object endpoints. 
   Take a reference image payload: 
@@ -61,65 +58,30 @@ use utoipa::ToSchema;
 
 */
 
-#[derive(Debug, Serialize, ToSchema)]
-pub enum GenerateKling16VideoError {
-  BadInput(String),
-  NotFound,
-  NotAuthorized,
-  ServerError,
-}
-
-impl ResponseError for GenerateKling16VideoError {
-  fn status_code(&self) -> StatusCode {
-    match *self {
-      GenerateKling16VideoError::BadInput(_) => StatusCode::BAD_REQUEST,
-      GenerateKling16VideoError::NotFound => StatusCode::NOT_FOUND,
-      GenerateKling16VideoError::NotAuthorized => StatusCode::UNAUTHORIZED,
-      GenerateKling16VideoError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
-    }
-  }
-
-  fn error_response(&self) -> HttpResponse {
-    serialize_as_json_error(self)
-  }
-}
-
-// NB: Not using derive_more::Display since Clion doesn't understand it.
-impl fmt::Display for GenerateKling16VideoError {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "{:?}", self)
-  }
-}
-
-// =============== Handler ===============
-
-/// Background removal
+/// Kling 1.6 Pro Image to Video
 #[utoipa::path(
   post,
   tag = "Generate Videos",
   path = "/v1/generate/video/kling_1.6_pro_image_to_video",
   responses(
-    (status = 200, description = "Success", body = RemoveImageBackgroundResponse),
-    (status = 400, description = "Bad input", body = RemoveImageBackgroundError),
-    (status = 401, description = "Not authorized", body = RemoveImageBackgroundError),
-    (status = 500, description = "Server error", body = RemoveImageBackgroundError),
+    (status = 200, description = "Success", body = GenerateKling16ProImageToVideoResponse),
   ),
   params(
-    ("request" = RemoveImageBackgroundRequest, description = "Payload for Request"),
+    ("request" = GenerateKling16ProImageToVideoRequest, description = "Payload for Request"),
   )
 )]
 pub async fn generate_kling_1_6_pro_video_handler(
   http_request: HttpRequest,
   request: Json<GenerateKling16ProImageToVideoRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<GenerateKling16ProImageToVideoResponse>, GenerateKling16VideoError> {
+) -> Result<Json<GenerateKling16ProImageToVideoResponse>, CommonWebError> {
   let maybe_user_session = server_state
       .session_checker
       .maybe_get_user_session(&http_request, &server_state.mysql_pool)
       .await
       .map_err(|e| {
         warn!("Session checker error: {:?}", e);
-        GenerateKling16VideoError::ServerError
+        CommonWebError::ServerError
       })?;
 
   let maybe_avt_token = server_state
@@ -140,19 +102,19 @@ pub async fn generate_kling_1_6_pro_video_handler(
     Some(token) => token,
     None => {
       warn!("No media file token provided");
-      return Err(GenerateKling16VideoError::BadInput("No media file token provided".to_string()));
+      return Err(CommonWebError::BadInputWithSimpleMessage("No media file token provided".to_string()));
     }
   };
   
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
-    return Err(GenerateKling16VideoError::BadInput(reason));
+    return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
 
   insert_idempotency_token(&request.uuid_idempotency_token, &server_state.mysql_pool)
       .await
       .map_err(|err| {
         error!("Error inserting idempotency token: {:?}", err);
-        GenerateKling16VideoError::BadInput("invalid idempotency token".to_string())
+        CommonWebError::BadInputWithSimpleMessage("invalid idempotency token".to_string())
       })?;
   const IS_MOD : bool = false;
   
@@ -166,16 +128,16 @@ pub async fn generate_kling_1_6_pro_video_handler(
     Ok(Some(media_file)) => media_file,
     Ok(None) => {
       warn!("MediaFile not found: {:?}", media_file_token);
-      return Err(GenerateKling16VideoError::NotFound);
+      return Err(CommonWebError::NotFound);
     },
     Err(err) => {
       warn!("Error looking up media_file: {:?}", err);
-      return Err(GenerateKling16VideoError::ServerError);
+      return Err(CommonWebError::ServerError);
     }
   };
 
   if !media_file.media_type.is_jpg_or_png_or_legacy_image() {
-    return Err(GenerateKling16VideoError::BadInput("Media file must be a JPG or PNG image".to_string()));
+    return Err(CommonWebError::BadInputWithSimpleMessage("Media file must be a JPG or PNG image".to_string()));
   }
   
   let media_domain = get_media_domain(&http_request);
@@ -217,13 +179,13 @@ pub async fn generate_kling_1_6_pro_video_handler(
       .await
       .map_err(|err| {
         warn!("Error calling remove_background_rembg_webhook: {:?}", err);
-        GenerateKling16VideoError::ServerError
+        CommonWebError::ServerError
       })?;
 
   let external_job_id = fal_result.request_id
       .ok_or_else(|| {
         warn!("Fal request_id is None");
-        GenerateKling16VideoError::ServerError
+        CommonWebError::ServerError
       })?;
   
   info!("Fal request_id: {}", external_job_id);
@@ -246,7 +208,7 @@ pub async fn generate_kling_1_6_pro_video_handler(
     Ok(token) => token,
     Err(err) => {
       warn!("Error inserting generic inference job for FAL queue: {:?}", err);
-      return Err(GenerateKling16VideoError::ServerError);
+      return Err(CommonWebError::ServerError);
     }
   };
 

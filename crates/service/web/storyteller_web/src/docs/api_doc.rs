@@ -18,10 +18,13 @@ use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dResponse;
 use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
 use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dResponse;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProAspectRatio;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
@@ -65,6 +68,7 @@ use crate::http_server::common_requests::media_file_token_path_info::MediaFileTo
 use crate::http_server::common_responses::media::cover_image_links::CoverImageLinks;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileDefaultCover;
+use crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler;
 use crate::http_server::common_responses::media::media_links::*;
 use crate::http_server::common_responses::media::weights_cover_image_details::*;
 use crate::http_server::common_responses::media_file_origin_details::*;
@@ -226,6 +230,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::media_files::delete::delete_media_file_handler::delete_media_file_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_animation_type_handler::change_media_file_animation_type_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_engine_category_handler::change_media_file_engine_category_handler,
+    crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_visibility_handler::change_media_file_visibility_handler,
     crate::http_server::endpoints::media_files::edit::rename_media_file_handler::rename_media_file_handler,
     crate::http_server::endpoints::media_files::edit::set_media_file_cover_image_handler::set_media_file_cover_image_handler,
@@ -514,6 +519,9 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GetMediaFileModelInfo,
     GetMediaFileModeratorFields,
     GetMediaFilePathInfo,
+    GenerateKling16ProImageToVideoResponse,
+    GenerateKling16ProAspectRatio,
+    GenerateKling16ProImageToVideoRequest,
     GetMediaFileSuccessResponse,
     GetProfilePathInfo,
     GetPromptError,
