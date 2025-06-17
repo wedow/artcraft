@@ -2,10 +2,6 @@ use utoipa::OpenApi;
 
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2AspectRatio;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2Duration;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageResponse;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageAspectRatio;
@@ -38,6 +34,14 @@ use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::G
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProDuration;
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteDuration;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteResolution;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2AspectRatio;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2Duration;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
@@ -83,7 +87,6 @@ use crate::http_server::common_responses::media::media_file_cover_image_details:
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileDefaultCover;
 use crate::http_server::common_responses::media::media_links::*;
 use crate::http_server::common_responses::media::weights_cover_image_details::*;
-use crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler;
 use crate::http_server::common_responses::media_file_origin_details::*;
 use crate::http_server::common_responses::media_file_social_meta_lite::MediaFileSocialMetaLight;
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
@@ -218,9 +221,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::beta_keys::create_beta_keys_handler::create_beta_keys_handler,
     crate::http_server::endpoints::beta_keys::edit_beta_key_distributed_flag_handler::edit_beta_key_distributed_flag_handler,
     crate::http_server::endpoints::beta_keys::edit_beta_key_note_handler::edit_beta_key_note_handler,
-    crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler,
     crate::http_server::endpoints::beta_keys::list_beta_keys_handler::list_beta_keys_handler,
-    crate::http_server::endpoints::generate::video::generate_kling_2_1_master_video_handler::generate_kling_2_1_master_video_handler,
     crate::http_server::endpoints::beta_keys::redeem_beta_key_handler::redeem_beta_key_handler,
     crate::http_server::endpoints::comments::create_comment_handler::create_comment_handler,
     crate::http_server::endpoints::comments::delete_comment_handler::delete_comment_handler,
@@ -235,6 +236,11 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler,
     crate::http_server::endpoints::generate::object::generate_hunyuan_21_image_to_3d_handler::generate_hunyuan_21_image_to_3d_handler,
     crate::http_server::endpoints::generate::object::generate_hunyuan_2_image_to_3d_handler::generate_hunyuan_2_image_to_3d_handler,
+    crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler,
+    crate::http_server::endpoints::generate::video::generate_kling_2_1_master_video_handler::generate_kling_2_1_master_video_handler,
+    crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler,
+    crate::http_server::endpoints::generate::video::generate_seedance_1_0_lite_image_to_video_handler::generate_seedance_1_0_lite_image_to_video_handler,
+    crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler,
     crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::enqueue_studio_image_generation_handler,
     crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::upload_snapshot_media_file_handler,
     crate::http_server::endpoints::inference_job::delete::dismiss_finished_session_jobs_handler::dismiss_finished_session_jobs_handler,
@@ -242,11 +248,9 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::inference_job::get::batch_get_inference_job_status_handler::batch_get_inference_job_status_handler,
     crate::http_server::endpoints::inference_job::get::get_inference_job_status_handler::get_inference_job_status_handler,
     crate::http_server::endpoints::inference_job::list::list_session_jobs_handler::list_session_jobs_handler,
-    crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler,
     crate::http_server::endpoints::media_files::delete::delete_media_file_handler::delete_media_file_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_animation_type_handler::change_media_file_animation_type_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_engine_category_handler::change_media_file_engine_category_handler,
-    crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_visibility_handler::change_media_file_visibility_handler,
     crate::http_server::endpoints::media_files::edit::rename_media_file_handler::rename_media_file_handler,
     crate::http_server::endpoints::media_files::edit::set_media_file_cover_image_handler::set_media_file_cover_image_handler,
@@ -426,10 +430,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     CreateAccountSuccessResponse,
     CreateBetaKeysError,
     CreateBetaKeysRequest,
-    GenerateKling21ProAspectRatio,
-    GenerateKling21ProDuration,
-    GenerateKling21ProImageToVideoRequest,
-    GenerateKling21ProImageToVideoResponse,
     CreateBetaKeysSuccessResponse,
     CreateCheckoutSessionError,
     CreateCheckoutSessionRequest,
@@ -439,10 +439,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     CreateCommentSuccessResponse,
     CreateFeaturedItemError,
     CreateFeaturedItemRequest,
-    GenerateVeo2AspectRatio,
-    GenerateVeo2Duration,
-    GenerateVeo2ImageToVideoRequest,
-    GenerateVeo2ImageToVideoResponse,
     CreateFeaturedItemSuccessResponse,
     CreateSceneError,
     CreateSceneSuccessResponse,
@@ -454,10 +450,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     DeleteCommentRequest,
     DeleteFeaturedItemError,
     DeleteFeaturedItemRequest,
-    GenerateKling21MasterImageToVideoResponse,
-    GenerateKling21MasterDuration,
-    GenerateKling21MasterAspectRatio,
-    GenerateKling21MasterImageToVideoRequest,
     DeleteMediaFileError,
     DeleteMediaFilePathInfo,
     DeleteMediaFileRequest,
@@ -534,10 +526,29 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GenerateFluxPro11UltraTextToImageRequest,
     GenerateFluxPro11UltraTextToImageResponse,
     GenerateHunyuan21ImageTo3dRequest,
-    GenerateKling16ProDuration,
     GenerateHunyuan21ImageTo3dResponse,
     GenerateHunyuan2ImageTo3dRequest,
     GenerateHunyuan2ImageTo3dResponse,
+    GenerateKling16ProAspectRatio,
+    GenerateKling16ProDuration,
+    GenerateKling16ProImageToVideoRequest,
+    GenerateKling16ProImageToVideoResponse,
+    GenerateKling21MasterAspectRatio,
+    GenerateKling21MasterDuration,
+    GenerateKling21MasterImageToVideoRequest,
+    GenerateKling21MasterImageToVideoResponse,
+    GenerateKling21ProAspectRatio,
+    GenerateKling21ProDuration,
+    GenerateKling21ProImageToVideoRequest,
+    GenerateKling21ProImageToVideoResponse,
+    GenerateSeedance10LiteDuration,
+    GenerateSeedance10LiteImageToVideoRequest,
+    GenerateSeedance10LiteImageToVideoResponse,
+    GenerateSeedance10LiteResolution,
+    GenerateVeo2AspectRatio,
+    GenerateVeo2Duration,
+    GenerateVeo2ImageToVideoRequest,
+    GenerateVeo2ImageToVideoResponse,
     GetInferenceJobStatusError,
     GetInferenceJobStatusPathInfo,
     GetInferenceJobStatusSuccessResponse,
@@ -548,9 +559,6 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GetMediaFileModelInfo,
     GetMediaFileModeratorFields,
     GetMediaFilePathInfo,
-    GenerateKling16ProImageToVideoResponse,
-    GenerateKling16ProAspectRatio,
-    GenerateKling16ProImageToVideoRequest,
     GetMediaFileSuccessResponse,
     GetProfilePathInfo,
     GetPromptError,
