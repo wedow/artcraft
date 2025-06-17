@@ -72,6 +72,8 @@ pub async fn handle_image_artcraft(
       let request = GenerateFluxPro11UltraTextToImageRequest {
         uuid_idempotency_token,
         prompt: request.prompt,
+        aspect_ratio: None,
+        num_images: None,
       };
       let result = generate_flux_pro_11_ultra_text_to_image(
         &ApiHost::Storyteller,

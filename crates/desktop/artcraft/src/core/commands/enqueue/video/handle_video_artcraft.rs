@@ -77,6 +77,7 @@ pub async fn handle_video_artcraft(
         media_file_token: request.image_media_token,
         aspect_ratio: Some(GenerateKling16ProAspectRatio::WideSixteenNine),
         prompt: None,
+        duration: None,
       };
       let result = generate_kling_16_pro_image_to_video(
         &ApiHost::Storyteller,
