@@ -689,7 +689,7 @@ export const PaintSurface = ({
                   scaleY: finalScaleY,
                   offsetX: finalOffsetX,
                   offsetY: finalOffsetY,
-                });
+                }, true);
               } else {
                 store.updateNode(
                   nodeId,

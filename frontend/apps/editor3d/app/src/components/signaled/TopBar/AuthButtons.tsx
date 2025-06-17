@@ -1,38 +1,53 @@
 import { useSignals } from "@preact/signals-react/runtime";
 import { AUTH_STATUS } from "~/enums";
 import { authentication } from "~/signals";
-//import { ButtonLink } from "@storyteller/ui-button-link";
+import { Button } from "@storyteller/ui-button";
 import ProfileDropdown from "./ProfileDropdown";
+import { LoginModal } from "@storyteller/ui-login-modal";
+import { useState } from "react";
+
+import { stat } from "fs";
 
 export const AuthButtons = () => {
   useSignals();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const { status } = authentication;
-
+  const { status, userInfo } = authentication;
+  
+  console.log("Current State:")
+  console.log(status.value)
   if (status.value === AUTH_STATUS.LOGGED_IN) {
+    console.log("SHOWING DROPDOWN")
     return <ProfileDropdown />;
   } else {
     return (
-      <div className="flex items-center gap-3.5">
-        <span className="text-white/20">|</span>
-        <div className="flex items-center gap-2">
-         {/* <ButtonLink
-            to="/login"
-            variant="secondary"
-            reloadDocument={true}
-            className="h-[38px]" // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
+      <>
+        <div className="flex items-center gap-3.5">
+          <span className="text-white/20">|</span>
+          <Button
+            className="h-[38px]"
+            onClick={() => {
+              setIsSignUp(true);
+              setShowLoginModal(true);
+            }}
           >
-            Login
-          </ButtonLink>
-          <ButtonLink
-            to="/signup"
-            reloadDocument={true}
-            className="h-[38px]" // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
-          > 
-            Sign Up
-          </ButtonLink> */}
+            Login / Sign Up
+          </Button>
         </div>
-      </div>
+
+        {showLoginModal && (
+          <LoginModal
+            onClose={() => setShowLoginModal(false)}
+            isSignUp={isSignUp}
+            onArtCraftAuthSuccess={(userInfo_value) => {
+              userInfo.value = userInfo_value
+              status.value = AUTH_STATUS.LOGGED_IN
+              setShowLoginModal(false);
+            }}
+          />
+        )}
+      </>
     );
   }
 };

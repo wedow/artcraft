@@ -7,6 +7,15 @@ interface DeleteHotkeysProps {
 
 export const useDeleteHotkeys = ({ onDelete, target = document }: DeleteHotkeysProps): void => {
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Check if the event target is an input field or contentEditable element
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' || 
+        target.isContentEditable ||
+        target.getAttribute('role') === 'textbox') {
+      return; // Don't prevent default for input fields
+    }
+
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const isDelete = event.key === 'Delete' || 
                     event.key === 'Backspace' || 
