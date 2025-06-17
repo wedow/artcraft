@@ -1,1 +1,2 @@
 pub mod generate_kling_1_6_pro_image_to_video;
+pub mod generate_kling_2_1_pro_image_to_video;

@@ -26,6 +26,10 @@ use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::G
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProDuration;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProAspectRatio;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProDuration;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
@@ -69,7 +73,6 @@ use crate::http_server::common_requests::media_file_token_path_info::MediaFileTo
 use crate::http_server::common_responses::media::cover_image_links::CoverImageLinks;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileDefaultCover;
-use crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler;
 use crate::http_server::common_responses::media::media_links::*;
 use crate::http_server::common_responses::media::weights_cover_image_details::*;
 use crate::http_server::common_responses::media_file_origin_details::*;
@@ -121,6 +124,7 @@ use crate::http_server::endpoints::inference_job::list::list_session_jobs_handle
 use crate::http_server::endpoints::media_files::common_responses::live_portrait::MediaFileLivePortraitDetails;
 use crate::http_server::endpoints::media_files::delete::delete_media_file_handler::*;
 use crate::http_server::endpoints::media_files::edit::change_media_file_animation_type_handler::*;
+use crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler;
 use crate::http_server::endpoints::media_files::edit::change_media_file_engine_category_handler::*;
 use crate::http_server::endpoints::media_files::edit::change_media_file_visibility_handler::*;
 use crate::http_server::endpoints::media_files::edit::rename_media_file_handler::*;
@@ -228,6 +232,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::inference_job::get::batch_get_inference_job_status_handler::batch_get_inference_job_status_handler,
     crate::http_server::endpoints::inference_job::get::get_inference_job_status_handler::get_inference_job_status_handler,
     crate::http_server::endpoints::inference_job::list::list_session_jobs_handler::list_session_jobs_handler,
+    crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler,
     crate::http_server::endpoints::media_files::delete::delete_media_file_handler::delete_media_file_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_animation_type_handler::change_media_file_animation_type_handler,
     crate::http_server::endpoints::media_files::edit::change_media_file_engine_category_handler::change_media_file_engine_category_handler,
@@ -411,6 +416,10 @@ use crate::http_server::web_utils::response_success_helpers::*;
     CreateAccountSuccessResponse,
     CreateBetaKeysError,
     CreateBetaKeysRequest,
+    GenerateKling21ProAspectRatio,
+    GenerateKling21ProDuration,
+    GenerateKling21ProImageToVideoRequest,
+    GenerateKling21ProImageToVideoResponse,
     CreateBetaKeysSuccessResponse,
     CreateCheckoutSessionError,
     CreateCheckoutSessionRequest,
