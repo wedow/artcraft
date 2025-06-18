@@ -27,6 +27,8 @@ use storyteller_client::generate::object::generate_hunyuan2_image_to_3d::generat
 use storyteller_client::generate::video::generate_kling_16_pro_image_to_video::generate_kling_16_pro_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, State};
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
+use storyteller_client::generate::image::generate_flux_1_dev_text_to_image::generate_flux_1_dev_text_to_image;
 
 pub async fn handle_image_artcraft(
   request: EnqueueTextToImageRequest,
@@ -65,6 +67,31 @@ pub async fn handle_image_artcraft(
     }
     Some(EnqueueTextToImageModel::Recraft3) => {
       return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented in Artcraft")));
+    }
+    Some(EnqueueTextToImageModel::Flux1Dev) => {
+      info!("enqueue Flux 1 Dev");
+      selected_model = Some(GenerationModel::Flux1Dev);
+      let request = GenerateFlux1DevTextToImageRequest {
+        uuid_idempotency_token,
+        prompt: request.prompt,
+        aspect_ratio: None,
+        num_images: None,
+      };
+      let result = generate_flux_1_dev_text_to_image(
+        &ApiHost::Storyteller,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft Flux 1 dev text to image generation");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft flux 1 dev text to image generation: {:?}", err);
+          return Err(InternalImageError::StorytellerError(err));
+        }
+      }
     }
     Some(EnqueueTextToImageModel::FluxProUltra) => {
       info!("enqueue Flux Pro Ultra");

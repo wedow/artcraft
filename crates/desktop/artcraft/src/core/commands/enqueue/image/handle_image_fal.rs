@@ -54,6 +54,9 @@ pub async fn handle_image_fal(
     Some(EnqueueTextToImageModel::GptImage1) => {
       return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: fal is handling sora images")));
     }
+    Some(EnqueueTextToImageModel::Flux1Dev) => {
+      return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented")));
+    }
     Some(EnqueueTextToImageModel::FluxProUltra) => {
       info!("enqueue Flux Pro Ultra text-to-image with prompt: {}", prompt);
       enqueue_flux_pro_11_ultra_text_to_image(FluxPro11UltraTextToImageArgs {

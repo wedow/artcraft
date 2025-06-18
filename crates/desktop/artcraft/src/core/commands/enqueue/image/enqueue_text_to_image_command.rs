@@ -70,6 +70,8 @@ pub struct EnqueueTextToImageRequest {
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum EnqueueTextToImageModel {
+  #[serde(rename = "flux_1_dev")]
+  Flux1Dev,
   #[serde(rename = "flux_pro_ultra")]
   FluxProUltra,
   #[serde(rename = "gpt_image_1")]
