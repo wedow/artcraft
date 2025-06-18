@@ -74,8 +74,13 @@ pub enum EnqueueTextToImageModel {
   Flux1Dev,
   #[serde(rename = "flux_1_schnell")]
   Flux1Schnell,
+  #[deprecated(note="use `flux_pro_11_ultra` instead")]
   #[serde(rename = "flux_pro_ultra")]
   FluxProUltra,
+  #[serde(rename = "flux_pro_11")]
+  FluxPro11,
+  #[serde(rename = "flux_pro_11_ultra")]
+  FluxPro11Ultra,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
   #[serde(rename = "recraft_3")]
