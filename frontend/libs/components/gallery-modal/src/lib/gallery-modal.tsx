@@ -355,7 +355,7 @@ export const GalleryModal = React.memo(
           }}
           className={twMerge(
             "h-[620px] max-w-4xl",
-            mode === "view" && "h-[640px] max-w-4xl"
+            mode === "view" && "h-[640px] w-[56rem]"
           )}
           childPadding={false}
           showClose={false}
