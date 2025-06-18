@@ -18,6 +18,49 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { DomLevels } from "@storyteller/common";
 
+// ---------------------------------------------------------------------------
+// GLOBAL inert / aria-hidden stripper – applies once per page load
+// Overrides the inert attribute set by Headless UI to allow background interaction / stacked modals
+// ---------------------------------------------------------------------------
+declare global {
+  interface Window {
+    __inertStripperInstalled?: boolean;
+  }
+}
+
+if (!window.__inertStripperInstalled) {
+  window.__inertStripperInstalled = true;
+
+  const strip = (el: Element) => {
+    if (el.hasAttribute("inert")) el.removeAttribute("inert");
+    // @ts-ignore – some browsers expose .inert as a property
+    if ((el as any).inert) (el as any).inert = false;
+    if (el.getAttribute("aria-hidden") === "true")
+      el.removeAttribute("aria-hidden");
+  };
+
+  // 1. Clean anything that already exists
+  document.querySelectorAll("[inert]").forEach(strip);
+
+  // 2. Keep document clean forever
+  const inertObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.type === "attributes" && m.attributeName === "inert") {
+        strip(m.target as Element);
+      }
+    }
+  });
+
+  inertObserver.observe(document.documentElement, {
+    attributes: true,
+    subtree: true,
+    attributeFilter: ["inert"],
+  });
+}
+
+// Simple global z-index tracker for stacked modals
+let modalZCounter = 70;
+
 const DialogBackdrop = ({
   className,
   onClose,
@@ -180,6 +223,7 @@ export const Modal = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const positionRef = useRef<{ x: number; y: number } | null>(null);
   const lastPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const [zIndex, setZIndex] = useState<number>(() => ++modalZCounter);
 
   // Expanded state
   const [expanded, setExpanded] = useState(false);
@@ -200,7 +244,7 @@ export const Modal = ({
         modalRef.current.style.top = "0px";
         modalRef.current.style.margin = "0";
         modalRef.current.style.position = "fixed";
-        modalRef.current.style.zIndex = "70";
+        modalRef.current.style.zIndex = String(zIndex);
       }
     } else {
       // Restore last non-expanded position
@@ -213,12 +257,12 @@ export const Modal = ({
           modalRef.current.style.top = lastNonExpandedPosition.current.y + "px";
           modalRef.current.style.margin = "0";
           modalRef.current.style.position = "fixed";
-          modalRef.current.style.zIndex = "70";
+          modalRef.current.style.zIndex = String(zIndex);
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expanded]);
+  }, [expanded, zIndex]);
   const toggleExpanded = () => setExpanded((v) => !v);
 
   // Reset position when modal is closed or opened
@@ -240,7 +284,7 @@ export const Modal = ({
           modalRef.current.style.top = lastPositionRef.current.y + "px";
           modalRef.current.style.margin = "0";
           modalRef.current.style.position = "fixed";
-          modalRef.current.style.zIndex = "70";
+          modalRef.current.style.zIndex = String(zIndex);
         }
       } else if (initialPosition) {
         setPosition({ ...initialPosition });
@@ -250,11 +294,11 @@ export const Modal = ({
           modalRef.current.style.top = initialPosition.y + "px";
           modalRef.current.style.margin = "0";
           modalRef.current.style.position = "fixed";
-          modalRef.current.style.zIndex = "70";
+          modalRef.current.style.zIndex = String(zIndex);
         }
       }
     }
-  }, [isOpen]);
+  }, [isOpen, zIndex]);
 
   // Handle mouse move and up events
   useEffect(() => {
@@ -287,7 +331,7 @@ export const Modal = ({
             modalRef.current.style.top = positionRef.current.y + "px";
             modalRef.current.style.margin = "0";
             modalRef.current.style.position = "fixed";
-            modalRef.current.style.zIndex = "70";
+            modalRef.current.style.zIndex = String(zIndex);
           }
         });
       }
@@ -304,7 +348,7 @@ export const Modal = ({
       window.removeEventListener("mouseup", handleMouseUp);
       if (animationFrame) cancelAnimationFrame(animationFrame);
     };
-  }, [dragging]);
+  }, [dragging, zIndex]);
 
   // Center modal if not being dragged
   const getModalStyle = (): React.CSSProperties => {
@@ -320,7 +364,7 @@ export const Modal = ({
       left: position.x,
       top: position.y,
       margin: 0,
-      zIndex: 70,
+      zIndex,
       ...(size ? { width: size.width, height: size.height } : {}),
       ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
     };
@@ -359,7 +403,7 @@ export const Modal = ({
         modalRef.current.style.top = y + "px";
         modalRef.current.style.margin = "0";
         modalRef.current.style.position = "fixed";
-        modalRef.current.style.zIndex = "70";
+        modalRef.current.style.zIndex = String(zIndex);
       }
     }
   };
@@ -484,6 +528,7 @@ export const Modal = ({
       newHeight = Math.max(minHeight, newHeight);
 
       positionRef.current = { x: newX, y: newY };
+      sizeRef.current = { width: newWidth, height: newHeight };
 
       if (animationFrame) cancelAnimationFrame(animationFrame);
       animationFrame = requestAnimationFrame(() => {
@@ -494,7 +539,7 @@ export const Modal = ({
           modalRef.current.style.top = positionRef.current.y + "px";
           modalRef.current.style.margin = "0";
           modalRef.current.style.position = "fixed";
-          modalRef.current.style.zIndex = "70";
+          modalRef.current.style.zIndex = String(zIndex);
         }
       });
     };
@@ -502,6 +547,7 @@ export const Modal = ({
     const handleMouseUp = () => {
       setResizing(false);
       if (positionRef.current) setPosition({ ...positionRef.current });
+      if (sizeRef.current) setSize({ ...sizeRef.current });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -512,7 +558,7 @@ export const Modal = ({
       window.removeEventListener("mouseup", handleMouseUp);
       if (animationFrame) cancelAnimationFrame(animationFrame);
     };
-  }, [resizing]);
+  }, [resizing, zIndex]);
 
   // Render resize handles if resizable and not expanded
   const renderResizeHandles = () => {
@@ -595,12 +641,118 @@ export const Modal = ({
     }
   }, [isOpen]);
 
+  // Bring to front when user interacts with modal (mouse down anywhere inside)
+  useEffect(() => {
+    const handleBringToFront = () => {
+      if (modalRef.current) {
+        if (zIndex < modalZCounter) {
+          modalZCounter += 1;
+          setZIndex(modalZCounter);
+          modalRef.current.style.zIndex = String(modalZCounter);
+        }
+      }
+    };
+
+    const node = modalRef.current;
+    if (node) {
+      node.addEventListener("mousedown", handleBringToFront);
+    }
+    return () => {
+      if (node) node.removeEventListener("mousedown", handleBringToFront);
+    };
+  }, [zIndex]);
+
+  // If background interaction is allowed, ensure this modal (and its ancestors)
+  // never get the "inert" attribute Headless-UI uses to lock background dialogs.
+  useEffect(() => {
+    if (!allowBackgroundInteraction) return;
+    const node = modalRef.current as HTMLElement | null;
+    if (!node) return;
+
+    const stripInert = (el: HTMLElement | null) => {
+      if (!el) return;
+      if (el.hasAttribute("inert")) el.removeAttribute("inert");
+      // Also clear the property for browsers implementing it as mutable prop
+      // @ts-ignore
+      if ((el as any).inert) (el as any).inert = false;
+      if (el.getAttribute("aria-hidden") === "true") {
+        el.removeAttribute("aria-hidden");
+      }
+    };
+
+    // Remove inert from this modal and all its ancestors (Headless UI sets it on the modal container)
+    let cur: HTMLElement | null = node;
+    while (cur) {
+      stripInert(cur);
+      cur = cur.parentElement as HTMLElement | null;
+    }
+
+    // MutationObserver to keep stripping inert from THIS modal element if reapplied
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((m) => {
+        if (
+          m.type === "attributes" &&
+          m.attributeName === "inert" &&
+          m.target instanceof HTMLElement
+        ) {
+          const target = m.target as HTMLElement;
+          // Only touch if the target is this modal or one of its ancestors
+          if (target === node || node.contains(target)) {
+            stripInert(target);
+          }
+        }
+      });
+    });
+    observer.observe(node, {
+      attributes: true,
+      subtree: false,
+      attributeFilter: ["inert"],
+    });
+
+    // Additionally, Headless UI adds inert to previous portal containers that are
+    // siblings of the one just created. We strip inert from ANY portal container
+    // so long as background interaction is requested.
+    const stripInertFromPortals = () => {
+      const portals = document.querySelectorAll(
+        "[data-headlessui-portal][inert]"
+      );
+      portals.forEach((el) => el.removeAttribute("inert"));
+    };
+
+    stripInertFromPortals();
+
+    const globalObserver = new MutationObserver((mutList) => {
+      mutList.forEach((m) => {
+        if (
+          m.type === "attributes" &&
+          m.attributeName === "inert" &&
+          (m.target as HTMLElement).hasAttribute("inert")
+        ) {
+          const target = m.target as HTMLElement;
+          if (target.hasAttribute("data-headlessui-portal")) {
+            stripInert(target as HTMLElement);
+          }
+        }
+      });
+    });
+    globalObserver.observe(document.body, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["inert"],
+    });
+
+    return () => {
+      observer.disconnect();
+      globalObserver.disconnect();
+    };
+  }, [allowBackgroundInteraction]);
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
         as="div"
         className="relative z-[70]"
-        onClose={onClose}
+        onClose={closeOnOutsideClick ? onClose : () => null}
         static={allowBackgroundInteraction}
       >
         <div
@@ -612,7 +764,10 @@ export const Modal = ({
           {/* Backdrop always rendered first in stacking context */}
           {!allowBackgroundInteraction && (
             <DialogBackdrop
-              className={backdropClassName}
+              className={twMerge(
+                allowBackgroundInteraction ? "pointer-events-none" : "",
+                backdropClassName
+              )}
               onClose={onClose}
               closeOnOutsideClick={closeOnOutsideClick}
               disableHotkeyInput={disableHotkeyInput}
@@ -626,7 +781,14 @@ export const Modal = ({
             />
           )}
           <ModalExpandContext.Provider value={{ expanded, toggleExpanded }}>
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <div
+              className="flex min-h-full items-center justify-center p-4 text-center"
+              style={
+                allowBackgroundInteraction
+                  ? { pointerEvents: "none" }
+                  : undefined
+              }
+            >
               <TransitionChild
                 as="div"
                 enter="ease-out duration-200"

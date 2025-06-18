@@ -6,6 +6,8 @@ import {
   EnqueueImageTo3dObject,
   EnqueueImageTo3dObjectModel,
 } from "@storyteller/tauri-api";
+import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
+import React from "react";
 
 interface LightboxModalProps {
   isOpen: boolean;
@@ -49,6 +51,13 @@ export function LightboxModal({
   // stupid hack around this behavior.
   const imageTagImageUrl = imageUrl ? imageUrl + "?cors=1" : "";
 
+  const [mediaLoaded, setMediaLoaded] = React.useState<boolean>(false);
+
+  // Reset when imageUrl changes
+  React.useEffect(() => {
+    setMediaLoaded(false);
+  }, [imageUrl]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -59,6 +68,7 @@ export function LightboxModal({
       showClose={true}
       closeOnOutsideClick={false}
       resizable={true}
+      backdropClassName="pointer-events-none hidden"
     >
       {/* Invisible drag handle strip at the very top for moving */}
       <Modal.DragHandle>
@@ -68,13 +78,17 @@ export function LightboxModal({
       {/* content grid */}
       <div className="grid h-full grid-cols-3 gap-6">
         {/* image panel */}
-        <div className="col-span-2 flex h-full items-center justify-center overflow-hidden rounded-l-xl bg-black/40">
+        <div className="col-span-2 relative flex h-full items-center justify-center overflow-hidden rounded-l-xl bg-[#1A1A1A]">
           {!imageUrl ? (
             <div className="flex h-full w-full items-center justify-center bg-gray-800">
               <span className="text-white/60">Image not available</span>
             </div>
           ) : mediaClass === "video" ? (
-            <video controls className="h-full w-full object-contain">
+            <video
+              controls
+              className="h-full w-full object-contain"
+              onLoadedData={() => setMediaLoaded(true)}
+            >
               <source src={imageUrl} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
@@ -84,7 +98,14 @@ export function LightboxModal({
               alt={imageAlt}
               className="h-full w-full object-contain"
               onError={onImageError}
+              onLoad={() => setMediaLoaded(true)}
             />
+          )}
+
+          {!mediaLoaded && imageUrl && (
+            <div className="absolute inset-0 bg-[#1A1A1A] flex items-center justify-center">
+              <LoadingSpinner className="h-12 w-12 text-white" />
+            </div>
           )}
         </div>
 

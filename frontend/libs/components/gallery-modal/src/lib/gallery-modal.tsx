@@ -12,6 +12,7 @@ import React, {
 } from "react";
 import {
   FilterMediaClasses,
+  FilterMediaType,
   GalleryModalApi,
   UsersApi,
 } from "@storyteller/api";
@@ -218,7 +219,8 @@ export const GalleryModal = React.memo(
           include_user_uploads:
             activeFilter === "uploaded" ||
             activeFilter === "all" ||
-            activeFilter === "3d",
+            activeFilter === "3d" ||
+            activeFilter === "image",
           user_uploads_only: activeFilter === "uploaded",
           page_index: reset ? 0 : pageIndex,
           page_size: pageSize,
@@ -227,26 +229,30 @@ export const GalleryModal = React.memo(
 
         if (response.success && response.data) {
           const thumbnail_size = 250;
-          const newItems = response.data.map((item: any) => ({
-            id: item.token,
-            label: item.maybe_title || "Image Generation",
-            thumbnail:
-              item.media_class === "video"
-                ? item.media_links.maybe_video_previews.still
-                : item.media_class === "dimensional"
-                ? item.cover_image?.maybe_cover_image_public_bucket_url
-                : item.media_links.maybe_thumbnail_template?.replace(
-                    "{WIDTH}",
-                    thumbnail_size.toString()
-                  ),
-            fullImage: item.media_links.cdn_url,
-            createdAt: item.created_at,
-            mediaClass:
-              item.media_class ||
-              (item.filter_media_classes
-                ? item.filter_media_classes[0]
-                : "image"),
-          }));
+          const newItems = response.data
+            .filter(
+              (item: any) => item.media_type !== FilterMediaType.SCENE_JSON
+            )
+            .map((item: any) => ({
+              id: item.token,
+              label: item.maybe_title || "Image Generation",
+              thumbnail:
+                item.media_class === "video"
+                  ? item.media_links.maybe_video_previews.still
+                  : item.media_class === "dimensional"
+                  ? item.cover_image?.maybe_cover_image_public_bucket_url
+                  : item.media_links.maybe_thumbnail_template?.replace(
+                      "{WIDTH}",
+                      thumbnail_size.toString()
+                    ),
+              fullImage: item.media_links.cdn_url,
+              createdAt: item.created_at,
+              mediaClass:
+                item.media_class ||
+                (item.filter_media_classes
+                  ? item.filter_media_classes[0]
+                  : "image"),
+            }));
           setAllItems((prev) => (reset ? newItems : [...prev, ...newItems]));
           // Pagination logic
           const current = response.pagination?.current ?? 0;
@@ -361,7 +367,7 @@ export const GalleryModal = React.memo(
           showClose={false}
           draggable={mode === "view"}
           allowBackgroundInteraction={mode === "view" ? true : false}
-          closeOnOutsideClick={false}
+          closeOnOutsideClick={mode === "view" ? false : true}
         >
           {mode === "view" && (
             <Modal.DragHandle>
@@ -526,10 +532,23 @@ export const GalleryModal = React.memo(
                   {Object.entries(groupItemsByDate(allItems)).map(
                     ([date, dateItems]) => {
                       const filteredItems = dateItems.filter((item) => {
-                        if (activeFilter === "3d")
+                        if ((item as any).mediaType === "scene_json")
+                          return false;
+                        if (activeFilter === "3d") {
                           return item.mediaClass === "dimensional";
-                        if (activeFilter === "all")
-                          return item.mediaClass !== "audio";
+                        }
+                        if (activeFilter === "image") {
+                          return item.mediaClass === "image";
+                        }
+                        if (activeFilter === "video") {
+                          return item.mediaClass === "video";
+                        }
+                        if (activeFilter === "all") {
+                          return (
+                            item.mediaClass !== "audio" &&
+                            (item as any).mediaType !== "scene_json"
+                          );
+                        }
                         return true;
                       });
                       if (filteredItems.length === 0) return null;
