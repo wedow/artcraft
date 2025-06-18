@@ -28,6 +28,10 @@ use storyteller_client::generate::object::generate_hunyuan2_image_to_3d::generat
 use storyteller_client::generate::video::generate_kling_16_pro_image_to_video::generate_kling_16_pro_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, State};
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::{GenerateKling21MasterAspectRatio, GenerateKling21MasterImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
+use storyteller_client::generate::video::generate_kling_21_master_image_to_video::generate_kling_21_master_image_to_video;
+use storyteller_client::generate::video::generate_kling_21_pro_image_to_video::generate_kling_21_pro_image_to_video;
 
 pub async fn handle_video_artcraft(
   request: EnqueueImageToVideoRequest,
@@ -69,8 +73,11 @@ pub async fn handle_video_artcraft(
     None => {
       return Err(InternalVideoError::NoModelSpecified);
     }
-    Some(EnqueueImageToVideoModel::Kling16) => {
-      info!("enqueue Kling 1.6");
+    Some(
+      EnqueueImageToVideoModel::Kling16 |
+      EnqueueImageToVideoModel::Kling16Pro
+    ) => {
+      info!("enqueue Kling 1.6 Pro with Artcraft API");
       selected_model = Some(GenerationModel::Kling1_6);
       let request = GenerateKling16ProImageToVideoRequest { 
         uuid_idempotency_token,
@@ -91,6 +98,58 @@ pub async fn handle_video_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Kling 1.6 video generation: {:?}", err);
+          return Err(InternalVideoError::StorytellerError(err));
+        }
+      }
+    }
+    Some(EnqueueImageToVideoModel::Kling21Master) => {
+      info!("enqueue Kling 2.1 Master with Artcraft API");
+      selected_model = Some(GenerationModel::Kling21Master);
+      let request = GenerateKling21MasterImageToVideoRequest {
+        uuid_idempotency_token,
+        media_file_token: request.image_media_token,
+        aspect_ratio: Some(GenerateKling21MasterAspectRatio::WideSixteenNine),
+        prompt: None,
+        duration: None,
+      };
+      let result = generate_kling_21_master_image_to_video(
+        &ApiHost::Storyteller,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft Kling 2.1 Master video generation");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft Kling 2.1 Master video generation: {:?}", err);
+          return Err(InternalVideoError::StorytellerError(err));
+        }
+      }
+    }
+    Some(EnqueueImageToVideoModel::Kling21Pro) => {
+      info!("enqueue Kling 2.1 Pro with Artcraft API");
+      selected_model = Some(GenerationModel::Kling21Pro);
+      let request = GenerateKling21ProImageToVideoRequest {
+        uuid_idempotency_token,
+        media_file_token: request.image_media_token,
+        aspect_ratio: Some(GenerateKling21ProAspectRatio::WideSixteenNine),
+        prompt: None,
+        duration: None,
+      };
+      let result = generate_kling_21_pro_image_to_video(
+        &ApiHost::Storyteller,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft Kling 2.1 Pro video generation");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft Kling 2.1 Pro video generation: {:?}", err);
           return Err(InternalVideoError::StorytellerError(err));
         }
       }

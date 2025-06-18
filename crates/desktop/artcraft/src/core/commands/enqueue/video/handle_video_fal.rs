@@ -60,8 +60,6 @@ pub async fn handle_video_fal(
     return Err(InternalVideoError::AnyhowError(anyhow!("No image media token provided")));
   }
 
-  info!("Calling FAL image to 3d ...");
-
   let filename = temp_download.path().to_path_buf();
   
   let mut selected_model = None;
@@ -70,8 +68,11 @@ pub async fn handle_video_fal(
     None => {
       return Err(InternalVideoError::NoModelSpecified);
     }
-    Some(EnqueueImageToVideoModel::Kling16) => {
-      info!("enqueue Kling 1.6 image to video");
+    Some(
+      EnqueueImageToVideoModel::Kling16 |
+      EnqueueImageToVideoModel::Kling16Pro
+    ) => {
+      info!("enqueue Kling 1.6 image to video with Kling API");
       selected_model = Some(GenerationModel::Kling1_6);
       enqueue_kling_16_pro_image_to_video(Kling16ProArgs {
         image_path: filename,
@@ -80,6 +81,9 @@ pub async fn handle_video_fal(
         aspect_ratio: Kling16ProAspectRatio::WideSixteenNine,
         prompt: "",
       }).await
+    }
+    _ => {
+      return Err(InternalVideoError::AnyhowError(anyhow!("Unsupported model: {:?}", request.model)));
     }
   };
 
