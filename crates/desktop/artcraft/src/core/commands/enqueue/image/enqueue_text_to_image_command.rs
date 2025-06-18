@@ -72,6 +72,8 @@ pub struct EnqueueTextToImageRequest {
 pub enum EnqueueTextToImageModel {
   #[serde(rename = "flux_1_dev")]
   Flux1Dev,
+  #[serde(rename = "flux_1_schnell")]
+  Flux1Schnell,
   #[serde(rename = "flux_pro_ultra")]
   FluxProUltra,
   #[serde(rename = "gpt_image_1")]
