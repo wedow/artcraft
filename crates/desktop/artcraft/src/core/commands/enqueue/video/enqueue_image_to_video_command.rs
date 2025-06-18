@@ -81,6 +81,10 @@ pub enum EnqueueImageToVideoModel {
   Kling21Pro,
   #[serde(rename = "kling_2_1_master")]
   Kling21Master,
+  #[serde(rename = "seedance_1_0_lite")]
+  Seedance10Lite,
+  #[serde(rename = "veo_2")]
+  Veo2,
 }
 
 #[derive(Serialize)]

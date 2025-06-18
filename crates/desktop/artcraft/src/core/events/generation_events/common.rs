@@ -28,6 +28,10 @@ pub enum GenerationModel {
   #[serde(rename = "kling_2.1_pro")]
   Kling21Pro,
   Sora,
+  #[serde(rename = "seedance_1.0_lite")]
+  Seedance10Lite,
+  #[serde(rename = "veo_2")]
+  Veo2,
 }
 
 #[derive(Debug, Copy, Clone, Serialize)]

@@ -30,8 +30,13 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, State};
 use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::{GenerateKling21MasterAspectRatio, GenerateKling21MasterImageToVideoRequest};
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::{GenerateVeo2AspectRatio, GenerateVeo2ImageToVideoRequest};
+use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2AspectRatio;
 use storyteller_client::generate::video::generate_kling_21_master_image_to_video::generate_kling_21_master_image_to_video;
 use storyteller_client::generate::video::generate_kling_21_pro_image_to_video::generate_kling_21_pro_image_to_video;
+use storyteller_client::generate::video::generate_seedance_1_0_lite_image_to_video::generate_seedance_1_0_lite_image_to_video;
+use storyteller_client::generate::video::generate_veo_2_image_to_video::generate_veo_2_image_to_video;
 
 pub async fn handle_video_artcraft(
   request: EnqueueImageToVideoRequest,
@@ -150,6 +155,58 @@ pub async fn handle_video_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Kling 2.1 Pro video generation: {:?}", err);
+          return Err(InternalVideoError::StorytellerError(err));
+        }
+      }
+    }
+    Some(EnqueueImageToVideoModel::Seedance10Lite) => {
+      info!("enqueue Seedance 1.0 Lite with Artcraft API");
+      selected_model = Some(GenerationModel::Seedance10Lite);
+      let request = GenerateSeedance10LiteImageToVideoRequest {
+        uuid_idempotency_token,
+        media_file_token: request.image_media_token,
+        prompt: None,
+        resolution: None,
+        duration: None,
+      };
+      let result = generate_seedance_1_0_lite_image_to_video(
+        &ApiHost::Storyteller,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft Seedance 1.0 Lite video generation");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft Seedance 1.0 Lite video generation: {:?}", err);
+          return Err(InternalVideoError::StorytellerError(err));
+        }
+      }
+    }
+    Some(EnqueueImageToVideoModel::Veo2) => {
+      info!("enqueue Veo 2 with Artcraft API");
+      selected_model = Some(GenerationModel::Veo2);
+      let request = GenerateVeo2ImageToVideoRequest {
+        uuid_idempotency_token,
+        media_file_token: request.image_media_token,
+        aspect_ratio: Some(GenerateVeo2AspectRatio::WideSixteenNine),
+        prompt: None,
+        duration: None,
+      };
+      let result = generate_veo_2_image_to_video(
+        &ApiHost::Storyteller,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft Veo 2 video generation");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft Veo 2 video generation: {:?}", err);
           return Err(InternalVideoError::StorytellerError(err));
         }
       }
