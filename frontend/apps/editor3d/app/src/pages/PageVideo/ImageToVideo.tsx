@@ -21,6 +21,10 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
     selectedModels[ModelCategory.ImageToVideo] ||
     videoGenerationModels[0]?.label;
 
+  console.log("Selected model:", selectedModel)
+  console.log("Image Media Id:", imageMediaId)
+  console.log("Image URL:", imageUrl)
+
   const jobContext: JobContextType = {
     jobTokens: [],
     addJobToken: () => {},

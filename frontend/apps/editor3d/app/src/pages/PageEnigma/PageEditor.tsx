@@ -527,7 +527,7 @@ export const PageEditor = () => {
       )}
       {tabStore.activeTabId == "IMAGE" && (
         <div>
-          <ImageToVideo
+          <TextToImage
             imageMediaId={topNavMediaId.value}
             imageUrl={topNavMediaUrl.value}
           />
@@ -535,7 +535,7 @@ export const PageEditor = () => {
       )}
       {tabStore.activeTabId == "VIDEO" && (
         <div>
-          <TextToImage
+          <ImageToVideo
             imageMediaId={topNavMediaId.value}
             imageUrl={topNavMediaUrl.value}
           />

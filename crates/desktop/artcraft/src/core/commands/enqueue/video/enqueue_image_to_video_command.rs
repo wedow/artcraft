@@ -7,6 +7,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::model::video_models::VideoModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
@@ -66,26 +67,9 @@ pub struct EnqueueImageToVideoRequest {
   pub image_media_token: Option<MediaFileToken>,
   
   /// The model to use.
-  pub model: Option<EnqueueImageToVideoModel>,
+  pub model: Option<VideoModel>,
 }
 
-#[derive(Deserialize, Debug, Copy, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum EnqueueImageToVideoModel {
-  #[deprecated(note = "Use `kling_1_6_pro` instead")]
-  #[serde(rename = "kling1_6")]
-  Kling16,
-  #[serde(rename = "kling_1_6_pro")]
-  Kling16Pro,
-  #[serde(rename = "kling_2_1_pro")]
-  Kling21Pro,
-  #[serde(rename = "kling_2_1_master")]
-  Kling21Master,
-  #[serde(rename = "seedance_1_0_lite")]
-  Seedance10Lite,
-  #[serde(rename = "veo_2")]
-  Veo2,
-}
 
 #[derive(Serialize)]
 pub struct EnqueueImageToVideoSuccessResponse {

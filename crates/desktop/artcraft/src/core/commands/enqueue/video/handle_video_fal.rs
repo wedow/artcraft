@@ -1,10 +1,11 @@
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
-use crate::core::commands::enqueue::video::enqueue_image_to_video_command::{EnqueueImageToVideoModel, EnqueueImageToVideoRequest};
+use crate::core::commands::enqueue::video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
 use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::model::video_models::VideoModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
 use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
@@ -68,10 +69,7 @@ pub async fn handle_video_fal(
     None => {
       return Err(InternalVideoError::NoModelSpecified);
     }
-    Some(
-      EnqueueImageToVideoModel::Kling16 |
-      EnqueueImageToVideoModel::Kling16Pro
-    ) => {
+    Some(VideoModel::Kling16Pro) => {
       info!("enqueue Kling 1.6 image to video with Kling API");
       selected_model = Some(GenerationModel::Kling1_6);
       enqueue_kling_16_pro_image_to_video(Kling16ProArgs {

@@ -1,11 +1,12 @@
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
 use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::{EnqueueImageTo3dObjectModel, EnqueueImageTo3dObjectRequest};
-use crate::core::commands::enqueue::video::enqueue_image_to_video_command::{EnqueueImageToVideoModel, EnqueueImageToVideoRequest};
+use crate::core::commands::enqueue::video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
 use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::model::video_models::VideoModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
 use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
@@ -17,26 +18,26 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use anyhow::anyhow;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProAspectRatio, GenerateKling16ProImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::{GenerateKling21MasterAspectRatio, GenerateKling21MasterImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::{GenerateVeo2AspectRatio, GenerateVeo2ImageToVideoRequest};
 use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::requests::queue::enqueue_hunyuan2_image_to_3d::{enqueue_hunyuan2_image_to_3d, Hunyuan2Args};
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use fal_client::requests::queue::video_gen::enqueue_kling_16_pro_image_to_video::Kling16ProAspectRatio;
+use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2AspectRatio;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use storyteller_client::generate::object::generate_hunyuan_3d_2_0_image_to_3d::generate_hunyuan3d_2_0_image_to_3d;
 use storyteller_client::generate::video::generate_kling_16_pro_image_to_video::generate_kling_16_pro_image_to_video;
-use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle, State};
-use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::{GenerateKling21MasterAspectRatio, GenerateKling21MasterImageToVideoRequest};
-use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
-use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::{GenerateVeo2AspectRatio, GenerateVeo2ImageToVideoRequest};
-use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2AspectRatio;
 use storyteller_client::generate::video::generate_kling_21_master_image_to_video::generate_kling_21_master_image_to_video;
 use storyteller_client::generate::video::generate_kling_21_pro_image_to_video::generate_kling_21_pro_image_to_video;
 use storyteller_client::generate::video::generate_seedance_1_0_lite_image_to_video::generate_seedance_1_0_lite_image_to_video;
 use storyteller_client::generate::video::generate_veo_2_image_to_video::generate_veo_2_image_to_video;
+use storyteller_client::utils::api_host::ApiHost;
+use tauri::{AppHandle, State};
 
 pub async fn handle_video_artcraft(
   request: EnqueueImageToVideoRequest,
@@ -78,10 +79,7 @@ pub async fn handle_video_artcraft(
     None => {
       return Err(InternalVideoError::NoModelSpecified);
     }
-    Some(
-      EnqueueImageToVideoModel::Kling16 |
-      EnqueueImageToVideoModel::Kling16Pro
-    ) => {
+    Some(VideoModel::Kling16Pro) => {
       info!("enqueue Kling 1.6 Pro with Artcraft API");
       selected_model = Some(GenerationModel::Kling1_6);
       let request = GenerateKling16ProImageToVideoRequest { 
@@ -107,7 +105,7 @@ pub async fn handle_video_artcraft(
         }
       }
     }
-    Some(EnqueueImageToVideoModel::Kling21Master) => {
+    Some(VideoModel::Kling21Master) => {
       info!("enqueue Kling 2.1 Master with Artcraft API");
       selected_model = Some(GenerationModel::Kling21Master);
       let request = GenerateKling21MasterImageToVideoRequest {
@@ -133,7 +131,7 @@ pub async fn handle_video_artcraft(
         }
       }
     }
-    Some(EnqueueImageToVideoModel::Kling21Pro) => {
+    Some(VideoModel::Kling21Pro) => {
       info!("enqueue Kling 2.1 Pro with Artcraft API");
       selected_model = Some(GenerationModel::Kling21Pro);
       let request = GenerateKling21ProImageToVideoRequest {
@@ -159,7 +157,7 @@ pub async fn handle_video_artcraft(
         }
       }
     }
-    Some(EnqueueImageToVideoModel::Seedance10Lite) => {
+    Some(VideoModel::Seedance10Lite) => {
       info!("enqueue Seedance 1.0 Lite with Artcraft API");
       selected_model = Some(GenerationModel::Seedance10Lite);
       let request = GenerateSeedance10LiteImageToVideoRequest {
@@ -185,7 +183,7 @@ pub async fn handle_video_artcraft(
         }
       }
     }
-    Some(EnqueueImageToVideoModel::Veo2) => {
+    Some(VideoModel::Veo2) => {
       info!("enqueue Veo 2 with Artcraft API");
       selected_model = Some(GenerationModel::Veo2);
       let request = GenerateVeo2ImageToVideoRequest {
