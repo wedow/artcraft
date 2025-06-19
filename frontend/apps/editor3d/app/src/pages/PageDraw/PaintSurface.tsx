@@ -49,6 +49,9 @@ export const PaintSurface = ({
   stageRef,
   transformerRefs,
 }: MiraiProps) => {
+  // switch off to be preview panel mode.
+  const singlePaneMode = true
+  
   const store = useSceneStore(); // Use store directly
   const imageRef = React.useRef<HTMLImageElement>(null);
   const [snapshotImage, setSnapshotImage] = useState<HTMLImageElement | null>(
@@ -66,7 +69,7 @@ export const PaintSurface = ({
   const [rightPanelHeight, setRightPanelHeight] = useState(1024);
 
   /* 1️⃣ Track SplitPane percent so we can re-measure */
-  const [leftPct, setLeftPct] = useState(50);
+  const [leftPct, setLeftPct] = useState(singlePaneMode ? 100:50);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(
     null,
@@ -975,10 +978,11 @@ export const PaintSurface = ({
     }
   }, [selectedNodeIds]);
 
+
   return (
     <SplitPane
-      singlePaneMode={true}
-      initialPercent={50}
+      singlePaneMode={singlePaneMode}
+      initialPercent={singlePaneMode?100 : 50}
       onChange={setLeftPct}
       left={
         <div className="flex h-full w-full items-center justify-center overflow-hidden">
@@ -989,7 +993,7 @@ export const PaintSurface = ({
             scaleX={1} // Initial scale, controlled by wheel/zoom
             scaleY={1} // Initial scale, controlled by wheel/zoom
             style={{
-              display: "block",
+              // display: "block",
               background: "transparent", // Or use fillColor if stage background is desired directly
             }}
             x={stagePosition.x} // Set the x position
@@ -1012,8 +1016,8 @@ export const PaintSurface = ({
               <Rect
                 x={0}
                 y={0}
-                width={leftPanelWidth}
-                height={leftPanelHeight}
+                width={1280}
+                height={720}
                 fill={fillColor}
                 listening={false}
                 zIndex={-1}
