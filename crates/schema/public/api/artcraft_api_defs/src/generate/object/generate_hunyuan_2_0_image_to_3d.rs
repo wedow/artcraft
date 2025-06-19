@@ -3,10 +3,10 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-pub const GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH: &str = "/v1/generate/object/hunyuan_2_image_to_3d";
+pub const GENERATE_HUNYUAN_2_0_IMAGE_TO_3D_URL_PATH: &str = "/v1/generate/object/hunyuan_2.0_image_to_3d";
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct GenerateHunyuan2ImageTo3dRequest {
+pub struct GenerateHunyuan20ImageTo3dRequest {
   /// Idempotency token to prevent duplicate requests.
   pub uuid_idempotency_token: String,
 
@@ -16,7 +16,7 @@ pub struct GenerateHunyuan2ImageTo3dRequest {
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct GenerateHunyuan2ImageTo3dResponse {
+pub struct GenerateHunyuan20ImageTo3dResponse {
   pub success: bool,
   pub inference_job_token: InferenceJobToken,
 }
