@@ -134,17 +134,17 @@ export const PaintSurface = ({
     y: number;
   }): { x: number; y: number } => {
     return {
-      x: Math.max(0, Math.min(point.x, leftPanelWidth)),
-      y: Math.max(0, Math.min(point.y, leftPanelHeight)),
+      x: Math.max(0, Math.min(point.x, store.getAspectRatioDimensions().width)), //leftPanelWidth)),
+      y: Math.max(0, Math.min(point.y, store.getAspectRatioDimensions().height))//leftPanelHeight)),
     };
   };
 
   const isWithinLeftPanel = (point: { x: number; y: number }): boolean => {
     return (
       point.x >= 0 &&
-      point.x <= leftPanelWidth &&
+      point.x <= store.getAspectRatioDimensions().width && //leftPanelWidth &&
       point.y >= 0 &&
-      point.y <= leftPanelHeight
+      point.y <= store.getAspectRatioDimensions().height // leftPanelHeight
     );
   };
 
