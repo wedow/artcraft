@@ -133,7 +133,7 @@ interface SceneState {
   sendToBack: (nodeIds: string[]) => void;
   bringForward: (nodeIds: string[]) => void;
   sendBackward: (nodeIds: string[]) => void;
-  removeBackground: (nodeIds: string[], operation: (success: boolean,base64_image:string, message: string) => Promise<{ success: boolean; file?: File }>) => Promise<void>;
+  removeBackground: (nodeIds: string[], operation: (success: boolean, base64_image: string, message: string) => Promise<{ success: boolean; file?: File }>) => Promise<void>;
 
   // Add new lock action
   toggleLock: (nodeIds: string[]) => void;
@@ -1162,58 +1162,46 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     });
     get().saveState();
   },
-  removeBackground: async (nodeIds: string[], operation:  (success: boolean, base64_image:string,message: string) => Promise<{ success: boolean; file?: File }>) => {
-   
+  removeBackground: async (nodeIds: string[], operation: (success: boolean, base64_image: string, message: string) => Promise<{ success: boolean; file?: File }>) => {
     const hasImageNodes = nodeIds.some(id => {
-        const node = get().nodes.find(n => n.id === id);
-        return node ? node.type === 'image': false;
+      const node = get().nodes.find(n => n.id === id);
+      return node ? node.type === 'image' : false;
     });
-    let callbackSuccess = false
+    
     if (hasImageNodes) {
-        console.log("Selected nodes include image types.");
-     
-        const firstNode = get().nodes.find(node => nodeIds.includes(node.id) && node.type === 'image');
-        if (firstNode) {
-            const imageFile = firstNode.imageFile; // Assuming the file is stored in the node
-            if (imageFile !== undefined) {
-              try {
-                const base64Image = await convertFileToBase64(imageFile);
-                console.log("Base64 Image:", base64Image);
-                // Additional logic to handle the base64 image can be added here
-                const { success, file } = await operation(true, base64Image, "Removing Background."); // Indicate success in removing background
-                callbackSuccess = success;
-                if (callbackSuccess) {
-                  // save the state of the image.
-                  set((state: SceneState) => ({
-                    nodes: state.nodes.map((node: Node) => {
-                      if (node.id === firstNode.id) {
-                        // Create an object URL for immediate preview if needed
-                        console.log("Updated Node!")
-                        const updatedImageUrl: string | undefined = file ? URL.createObjectURL(file) : node.imageUrl;
-                        return new Node({
-                          ...node,
-                          imageFile: file,
-                          imageUrl: updatedImageUrl,
-                        });
-                      }
-                      return node;
-                    }),
-                  }));
-                
+      const firstNode = get().nodes.find(node => nodeIds.includes(node.id) && node.type === 'image');
+      if (firstNode && firstNode.imageFile) {
+        try {
+          const base64Image = await convertFileToBase64(firstNode.imageFile);
+          const { success, file } = await operation(true, base64Image, "Removing Background.");
+          
+          if (success && file) {
+            // Create a new node instance
+            const updatedNode = new Node({
+              ...firstNode,
+              imageFile: file
+            });
+            
+            // Load the new image
+            await updatedNode.setImageFromFile(file);
+            
+            // Update the store with the fully loaded node
+            set((state: SceneState) => ({
+              nodes: state.nodes.map((node: Node) => {
+                if (node.id === firstNode.id) {
+                  return updatedNode;
                 }
-              } catch (error) {
-                console.error("Error converting file to base64:", error);
-              }
-            }
-            console.log("Image File:", imageFile);
-        } else {
-            console.warn("No image node found or first node is not an image.");
+                return node;
+              }),
+            }));
+            
+            get().saveState();
+          }
+        } catch (error) {
+          console.error("Error updating image:", error);
         }
-    } else {
-        console.log("No selected nodes are of image type.");
-        operation(false,"","Did not select a Images"); // Indicate failure to remove background
+      }
     }
-  
   },
 
   // Add toggleLock action
