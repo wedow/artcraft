@@ -1010,7 +1010,7 @@ export const PaintSurface = ({
             <Layer
               ref={leftPanelRef}
               clipFunc={(ctx) => {
-                ctx.rect(0, 0, leftPanelWidth, leftPanelHeight);
+                ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
               }}
             >
               <Rect
