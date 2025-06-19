@@ -11,6 +11,7 @@ use crate::core::commands::enqueue::video::enqueue_image_to_video_command::enque
 use crate::core::commands::flip_image::flip_image;
 use crate::core::commands::get_build_info_command::get_build_info_command;
 use crate::core::commands::platform_info_command::platform_info_command;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::main_window_position::MainWindowPosition;
@@ -71,6 +72,9 @@ pub fn run() {
 
   let fal_task_queue = FalTaskQueue::new();
   let fal_task_queue_2 = fal_task_queue.clone();
+  
+  let app_env_configs = AppEnvConfigs::load_from_filesystem(&app_data_root)
+    .expect("AppEnvConfigs should be loaded from disk");
 
   println!("Initializing backend runtime...");
 
@@ -155,6 +159,7 @@ pub fn run() {
       Ok(())
     })
     .manage(app_data_root)
+    .manage(app_env_configs)
     .manage(app_preferences)
     .manage(fal_creds_manager)
     .manage(fal_task_queue)

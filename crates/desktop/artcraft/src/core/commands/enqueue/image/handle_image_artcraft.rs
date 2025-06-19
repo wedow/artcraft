@@ -4,6 +4,7 @@ use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
 use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
@@ -37,6 +38,7 @@ use tauri::{AppHandle, State};
 pub async fn handle_image_artcraft(
   request: EnqueueTextToImageRequest,
   app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<(), InternalImageError> {
@@ -82,7 +84,7 @@ pub async fn handle_image_artcraft(
         num_images: None,
       };
       let result = generate_flux_1_dev_text_to_image(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -107,7 +109,7 @@ pub async fn handle_image_artcraft(
         num_images: None,
       };
       let result = generate_flux_1_schnell_text_to_image(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -132,7 +134,7 @@ pub async fn handle_image_artcraft(
         num_images: None,
       };
       let result = generate_flux_pro_11_text_to_image(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -160,7 +162,7 @@ pub async fn handle_image_artcraft(
         num_images: None,
       };
       let result = generate_flux_pro_11_ultra_text_to_image(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;

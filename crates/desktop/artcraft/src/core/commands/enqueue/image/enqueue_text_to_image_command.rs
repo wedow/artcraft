@@ -1,10 +1,13 @@
+use crate::core::commands::enqueue::image::handle_image_artcraft::handle_image_artcraft;
 use crate::core::commands::enqueue::image::handle_image_fal::handle_image_fal;
 use crate::core::commands::enqueue::image::handle_image_sora::handle_image_sora;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::commands::enqueue::object::handle_object_artcraft::handle_object_artcraft;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
@@ -55,8 +58,6 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
-use crate::core::commands::enqueue::image::handle_image_artcraft::handle_image_artcraft;
-use crate::core::commands::enqueue::object::handle_object_artcraft::handle_object_artcraft;
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
@@ -114,6 +115,7 @@ pub async fn enqueue_text_to_image_command(
   app: AppHandle,
   request: EnqueueTextToImageRequest,
   app_data_root: State<'_, AppDataRoot>,
+  app_env_configs: State<'_, AppEnvConfigs>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   fal_task_queue: State<'_, FalTaskQueue>,
@@ -129,6 +131,7 @@ pub async fn enqueue_text_to_image_command(
     &app_data_root,
     &fal_creds_manager,
     &storyteller_creds_manager,
+    &app_env_configs,
     &fal_task_queue,
     &sora_creds_manager,
     &sora_task_queue,
@@ -176,6 +179,7 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
+  app_env_configs: &AppEnvConfigs,
   fal_task_queue: &FalTaskQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
@@ -197,7 +201,7 @@ pub async fn handle_request(
   if fal_creds_manager.has_apparent_api_token()? {
     handle_image_fal(&app, request, fal_creds_manager, fal_task_queue).await?;
   } else {
-    handle_image_artcraft(request, &app, app_data_root, storyteller_creds_manager).await?;
+    handle_image_artcraft(request, &app, app_env_configs, app_data_root, storyteller_creds_manager).await?;
   }
 
   Ok(())
