@@ -2,6 +2,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::http_server::endpoints::webhooks::handle_image_payload::handle_image_payload;
+use crate::http_server::endpoints::webhooks::handle_images_payload::handle_images_payload;
 use crate::http_server::endpoints::webhooks::handle_model_mesh_payload::handle_model_mesh_payload;
 use crate::http_server::endpoints::webhooks::handle_video_payload::handle_video_payload;
 use crate::state::server_state::ServerState;
@@ -18,7 +19,6 @@ use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id:
 use mysql_queries::queries::generic_inference::fal::mark_fal_generic_inference_job_successfully_done::mark_fal_generic_inference_job_successfully_done;
 use serde_json::Value;
 use utoipa::ToSchema;
-
 // 1. tauri --> hit endpoint to enqueue
 //
 // 2. webhook 
@@ -147,6 +147,8 @@ pub async fn fal_webhook_handler(
     if payload_obj.contains_key("image") {
       let token = handle_image_payload(payload_obj, &job, &server_state).await?;
       maybe_media_token = Some(token);
+    } else if payload_obj.contains_key("images") {
+      maybe_media_token = handle_images_payload(payload_obj, &job, &server_state).await?;
     } else if payload_obj.contains_key("video") {
       let token = handle_video_payload(payload_obj, &job, &server_state).await?;
       maybe_media_token = Some(token);
