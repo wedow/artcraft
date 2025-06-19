@@ -6,7 +6,7 @@ import "./App.css";
 import PromptEditor from "./PromptEditor/PromptEditor";
 import SideToolbar from "./components/ui/SideToolbar";
 // Import the Zustand store
-import { useSceneStore } from "./stores/SceneState";
+import { AspectRatioType, useSceneStore } from "./stores/SceneState";
 import { useUndoRedoHotkeys } from "./hooks/useUndoRedoHotkeys";
 import { useDeleteHotkeys } from "./hooks/useDeleteHotkeys";
 import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys"; // Import the hook
@@ -219,7 +219,22 @@ const PageDraw = () => {
           }}
           onAspectRatioChange={(ratio: string) => {
             console.log("Aspect ratio:", ratio);
-            // Handle aspect ratio changes here
+            // Convert ratio string to AspectRatioType enum
+            const ratioToType = (ratio: string): AspectRatioType => {
+              switch (ratio) {
+                case "2:3":
+                  return AspectRatioType.PORTRAIT;
+                case "3:2":
+                  return AspectRatioType.LANDSCAPE;
+                case "1:1":
+                  return AspectRatioType.SQUARE;
+                default:
+                  return AspectRatioType.NONE;
+              }
+            };
+
+            const aspectRatioType = ratioToType(ratio);
+            store.setAspectRatioType(aspectRatioType);
           }}
           onEnqueuePressed={onEnqueuedPressed}
         />

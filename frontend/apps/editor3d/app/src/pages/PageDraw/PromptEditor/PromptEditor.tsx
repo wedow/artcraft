@@ -12,6 +12,7 @@ import { getCanvasRenderBitmap } from "../../../signals/canvasRenderBitmap"
 const PromptEditor: React.FC<PromptEditorProps> = ({
   onImageStyleChange,
   onEnqueuePressed,
+  onAspectRatioChange,
 }) => {
   const [images, setImages] = useState<ImageStyle[]>([]);
 
@@ -40,6 +41,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
           EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
           useJobContext={useJobContext}
           onEnqueuePressed={onEnqueuePressed}
+          onAspectRatioChange={onAspectRatioChange}
         />
       </JobProvider>
 

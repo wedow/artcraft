@@ -1016,8 +1016,8 @@ export const PaintSurface = ({
               <Rect
                 x={0}
                 y={0}
-                width={1280}
-                height={720}
+                width={store.getAspectRatioDimensions().width}
+                height={store.getAspectRatioDimensions().height}
                 fill={fillColor}
                 listening={false}
                 zIndex={-1}

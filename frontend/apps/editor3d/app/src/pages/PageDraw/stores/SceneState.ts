@@ -21,6 +21,13 @@ export type LineNode = {
   locked?: boolean; // Add locked property
 };
 
+// Add this enum at the top of the file with other types
+export enum AspectRatioType {
+  PORTRAIT = '2:3',    // 683 x 1024
+  LANDSCAPE = '3:2',   // 1024 x 683
+  SQUARE = '1:1',      // 1024 x 1024
+  NONE = 'none'        // No aspect ratio constraint
+}
 
    // Logic to remove background from image nodes would go here
 const convertFileToBase64 = (file: File): Promise<string> => {
@@ -137,6 +144,13 @@ interface SceneState {
 
   // Add new lock action
   toggleLock: (nodeIds: string[]) => void;
+
+  // Add minimal aspect ratio property
+  aspectRatioType: AspectRatioType;
+
+  // Add aspect ratio action
+  setAspectRatioType: (type: AspectRatioType) => void;
+  getAspectRatioDimensions: () => { width: number; height: number };
 }
 
 const generateId = (): string => {
@@ -181,6 +195,9 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   // Cursor initial state
   cursorPosition: null,
   cursorVisible: false,
+  
+  // Add initial aspect ratio state
+  aspectRatioType: AspectRatioType.NONE,
   
   // Actions
   addNode: (node: Node) => {
@@ -866,6 +883,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       brushColor: state.brushColor,
       brushSize: state.brushSize,
       fillColor: state.fillColor,
+      aspectRatioType: state.aspectRatioType,
       version: "1.0"
     };
     
@@ -924,7 +942,8 @@ export const useSceneStore = create<SceneState>((set, get) => ({
         selectedNodeIds: [],
         brushColor: sceneData.brushColor || '#000000',
         brushSize: sceneData.brushSize || 5,
-        fillColor: sceneData.fillColor || 'white'
+        fillColor: sceneData.fillColor || 'white',
+        aspectRatioType: sceneData.aspectRatioType || AspectRatioType.NONE
       });
       
       isRestoring = false;
@@ -1247,5 +1266,25 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       };
     });
     get().saveState();
-  }
+  },
+
+  // Add aspect ratio actions
+  setAspectRatioType: (type: AspectRatioType) => {
+    set({ aspectRatioType: type });
+    get().saveState();
+  },
+
+  getAspectRatioDimensions: () => {
+    const { aspectRatioType } = get();
+    switch (aspectRatioType) {
+      case AspectRatioType.PORTRAIT:
+        return { width: 683, height: 1024 };
+      case AspectRatioType.LANDSCAPE:
+        return { width: 1024, height: 683 };
+      case AspectRatioType.SQUARE:
+        return { width: 1024, height: 1024 };
+      default:
+        return { width: 1024, height: 683 }; // Default to landscape
+    }
+  },
 }));

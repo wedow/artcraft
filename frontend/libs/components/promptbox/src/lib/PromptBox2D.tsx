@@ -63,6 +63,7 @@ interface PromptBox2DProps {
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
+  onAspectRatioChange?: (ratio: AspectRatio) => void;
 }
 
 export const PromptBox2D = ({
@@ -71,6 +72,7 @@ export const PromptBox2D = ({
   EncodeImageBitmapToBase64,
   useJobContext,
   onEnqueuePressed,
+  onAspectRatioChange,
 }: PromptBox2DProps) => {
   useSignals();
 
@@ -120,6 +122,7 @@ export const PromptBox2D = ({
   });
 
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
+    onAspectRatioChange?.(selectedItem.label);
     setAspectRatioList((prev) =>
       prev.map((item) => ({
         ...item,
@@ -448,7 +451,7 @@ export const PromptBox2D = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Stop propagation of keyboard events to prevent them from reaching the canvas
     e.stopPropagation();
-    
+
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleEnqueue();
