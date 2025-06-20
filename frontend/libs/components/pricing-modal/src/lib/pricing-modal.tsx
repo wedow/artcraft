@@ -169,7 +169,7 @@ export function PricingModal({
     >
       <div className="p-16 py-24 flex-1 overflow-y-auto min-h-0">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <h1 className="text-5xl font-bold text-white mb-4">
             {pricingConfig.header.title}
           </h1>
@@ -187,7 +187,7 @@ export function PricingModal({
               tabClassName="w-24 text-md"
               selectedTabClassName="bg-white text-black"
             />
-            <span className="bg-primary text-white px-3 py-0.5 rounded-full text-sm font-medium -top-3 -left-6 absolute">
+            <span className="bg-primary text-white px-3 py-0.5 rounded-full text-sm font-medium -top-3 -left-6 absolute pointer-events-none">
               -{pricingConfig.yearlyDiscount}%
             </span>
           </div>
@@ -215,7 +215,7 @@ export function PricingModal({
 
                 {/* Tier Header */}
                 <div className="text-center mb-8">
-                  <h3 className="text-4xl font-bold text-white mb-2">
+                  <h3 className="text-4xl font-bold text-white mb-4">
                     {tier.name}
                   </h3>
                   <div className="flex items-baseline justify-center gap-2">
