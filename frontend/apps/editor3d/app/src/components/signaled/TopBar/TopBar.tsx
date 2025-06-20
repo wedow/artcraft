@@ -146,14 +146,14 @@ export const TopBar = ({ pageName }: Props) => {
 
           <div className="flex justify-end gap-3.5">
             <div className="flex gap-2">
-              <Button
+              {/* <Button
                 variant="primary"
                 icon={faGem}
                 onClick={toggleModal}
                 className="shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
               >
                 Upgrade Now
-              </Button>
+              </Button> */}
               <Tooltip content="Settings" position="bottom" delay={300}>
                 <Button
                   variant="secondary"
