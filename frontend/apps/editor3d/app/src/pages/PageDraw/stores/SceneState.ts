@@ -614,34 +614,21 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   },
   
   // Add method for URL-based images
-  createImageFromUrl: (x: number, y: number, url: string, width?: number, height?: number) => {
-    // Similar to createImageFromFile but handles URL
-    const img = new Image();
-    img.crossOrigin = "Anonymous"; // Handle CORS if necessary
-    img.onload = () => {
-      const aspectRatio = img.width / img.height;
-      const newWidth = width || (height ? height * aspectRatio : 200); // Default width or calculate from height
-      const newHeight = height || (width ? width / aspectRatio : newWidth / aspectRatio); // Default height or calculate from width
+  createImageFromUrl: async (x: number, y: number, url: string, width?: number, height?: number) => {
+    try {
+      // Fetch the image and convert to blob
+      const response = await fetch(url);
+      const blob = await response.blob();
       
-      const node = new Node({
-        id: generateId(),
-        type: 'image',
-        x,
-        y,
-        width: newWidth,
-        height: newHeight,
-        fill: 'transparent',
-        imageElement: img, // Use the loaded image object
-        draggable: true,
-        imageUrl: url // Store the URL as the source
-      });
-      get().addNode(node);
-    };
-    img.onerror = () => {
-      console.error("Error loading image from URL:", url);
-      // Optionally handle the error, e.g., by creating a placeholder or notifying the user
-    };
-    img.src = url;
+      // Create a File from the blob
+      const filename = url.split('/').pop() || 'image.png';
+      const file = new File([blob], filename, { type: blob.type });
+      
+      // Use existing createImage function
+      get().createImage(x, y, file, width, height);
+    } catch (error) {
+      console.error("Error loading image from URL:", url, error);
+    }
   },
   
   // Update the createImage method to handle both URLs and Files
