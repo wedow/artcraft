@@ -251,15 +251,19 @@ export function LoginModal({
                     setIsLoading(false);
                     return;
                   }
+                  console.log("Path 1")
                   loginResponse = await usersApi.Login({
                     usernameOrEmail: username || email,
                     password,
                   });
+                  console.log(loginResponse)
                 } else {
+                  console.log("Path 2")
                   loginResponse = await usersApi.Login({
                     usernameOrEmail: username || email,
                     password,
                   });
+                  console.log(loginResponse)
                 }
                 
                 if (!loginResponse.success) {

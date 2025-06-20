@@ -98,6 +98,7 @@ export class UsersApi extends ApiManager {
     };
 
     try {
+      console.log("calling auth fetch")
       const response = await this.authFetch<
         { username_or_email: string; password: string },
         {
@@ -110,7 +111,8 @@ export class UsersApi extends ApiManager {
         method: "POST",
         body: body,
       });
-
+      console.log(response)
+      console.log("Auth fetch response!!! above")
       return {
         success: response.success,
         data: response.success
