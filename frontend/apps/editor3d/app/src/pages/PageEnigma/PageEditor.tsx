@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
@@ -73,21 +73,21 @@ import {
   // videoGenerationModels,
   // useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
-import { LoginModal } from "@storyteller/ui-login-modal";
+import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
 
 export const PageEditor = () => {
   useSignals();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const { triggerRecheck } = useLoginModalStore();
 
   const { status } = authentication;
   useEffect(() => {
-    if (status.value !== AUTH_STATUS.LOGGED_OUT) {
-      setIsLoginModalOpen(true);
+    if (status.value === AUTH_STATUS.LOGGED_OUT) {
+      triggerRecheck();
     }
-  }, [status.value]);
-  
+  }, [status.value, triggerRecheck]);
+
   const tabStore = useTabStore();
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -415,33 +415,30 @@ export const PageEditor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabStore.activeTabId, editorEngine]);
 
-
-
-
   return (
     <div className="w-screen">
-      <TopBar loginSignUpPressed={()=> {
-        console.log("PRESSED")
-        setIsLoginModalOpen(true)
-      }} pageName="Edit Scene" />
-      {isLoginModalOpen && (
-        <LoginModal
-          onClose={() => setIsLoginModalOpen(false)}
-          videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
-          videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
-          onOpenChange={(isOpen: boolean) => {
-            if (isOpen) {
-              disableHotkeyInput(DomLevels.DIALOGUE);
-            } else {
-              enableHotkeyInput(DomLevels.DIALOGUE);
-            }
-          }}
-          onArtCraftAuthSuccess={(userInfo: any) => {
-            authentication.status.value = AUTH_STATUS.LOGGED_IN;
-            authentication.userInfo.value = userInfo;
-          }}
-        />
-      )}
+      <TopBar
+        loginSignUpPressed={() => {
+          console.log("PRESSED");
+          triggerRecheck();
+        }}
+        pageName="Edit Scene"
+      />
+      <LoginModal
+        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
+        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
+        onOpenChange={(isOpen: boolean) => {
+          if (isOpen) {
+            disableHotkeyInput(DomLevels.DIALOGUE);
+          } else {
+            enableHotkeyInput(DomLevels.DIALOGUE);
+          }
+        }}
+        onArtCraftAuthSuccess={(userInfo: any) => {
+          authentication.status.value = AUTH_STATUS.LOGGED_IN;
+          authentication.userInfo.value = userInfo;
+        }}
+      />
       {tabStore.activeTabId == "3D" && (
         <div>
           <OnboardingHelper />
@@ -574,8 +571,6 @@ export const PageEditor = () => {
           />
         </div>
       )}
-
- 
     </div>
   );
 };

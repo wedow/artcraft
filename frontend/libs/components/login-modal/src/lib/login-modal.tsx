@@ -1,9 +1,7 @@
 import { Button } from "@storyteller/ui-button";
 import { Transition, TransitionChild } from "@headlessui/react";
 import { useState, useEffect, useRef } from "react";
-import {
-  faArrowRight,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faArrowRight } from "@fortawesome/pro-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import {
   CheckSoraSession,
@@ -12,8 +10,9 @@ import {
 } from "@storyteller/tauri-api";
 import { ArtCraftSignUp } from "./artcraft-signup";
 import { UsersApi } from "@storyteller/api";
+import { useLoginModalStore } from "./useLoginModalStore";
 interface LoginModalProps {
-  onClose: () => void;
+  onClose?: () => void;
   videoSrc2D?: string;
   videoSrc3D?: string;
   onOpenChange?: (isOpen: boolean) => void;
@@ -29,9 +28,9 @@ export function LoginModal({
   onArtCraftAuthSuccess,
   isSignUp: initialIsSignUp = true,
 }: LoginModalProps) {
+  const { isOpen, recheckTrigger, closeModal } = useLoginModalStore();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
   const [isLoggedInArtCraft, setIsLoggedInArtCraft] = useState(false);
   const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
   const [errorMessage, setErrorMessage] = useState("");
@@ -61,26 +60,35 @@ export function LoginModal({
     setStep(4); // Always go to the final step after Sora login
   });
 
-  // Check session on component mount
+  // Check session on component mount and when recheckTrigger changes
   useEffect(() => {
     checkArtCraftLogin().then((loggedIn) => {
       if (loggedIn) {
         setIsLoggedInArtCraft(true);
-        setIsOpen(false);
+        closeModal();
       } else {
-        setIsOpen(true);
-        setStep(1); // Always start at step 1
+        // Reset all modal state to initial values
+        setStep(1);
+        setIsLoading(false);
+        setIsSignUp(initialIsSignUp);
+        setErrorMessage("");
+        setShowDiscord(false);
+        setShowSuccess(false);
+        setIsLoggedInArtCraft(false);
+
+        const { openModal } = useLoginModalStore.getState();
+        openModal();
       }
     });
-  }, []);
+  }, [recheckTrigger, closeModal, initialIsSignUp]);
 
   useEffect(() => {
     if (onOpenChange) onOpenChange(isOpen);
   }, [isOpen, onOpenChange]);
 
   const handleClose = () => {
-    setIsOpen(false);
-    onClose();
+    closeModal();
+    onClose?.();
   };
 
   const handleNext = async () => {
@@ -149,7 +157,8 @@ export function LoginModal({
             Join Our Community
           </h2>
           <p className="text-white/70 mb-6 text-center px-24">
-            Connect with other creators, share your work, and get the latest updates in our Discord community.
+            Connect with other creators, share your work, and get the latest
+            updates in our Discord community.
           </p>
           <div className="flex gap-4">
             <Button
@@ -234,15 +243,15 @@ export function LoginModal({
               try {
                 let signupResponse, loginResponse;
                 if (isSignUp) {
-                  console.log("Sign up!")
+                  console.log("Sign up!");
                   signupResponse = await usersApi.Signup({
                     username,
                     email,
                     password,
                     passwordConfirmation,
                   });
-                  console.log(signupResponse)
-                  
+                  console.log(signupResponse);
+
                   if (!signupResponse.success) {
                     setErrorMessage(
                       signupResponse.errorMessage ||
@@ -251,21 +260,21 @@ export function LoginModal({
                     setIsLoading(false);
                     return;
                   }
-                  console.log("Path 1")
+                  console.log("Path 1");
                   loginResponse = await usersApi.Login({
                     usernameOrEmail: username || email,
                     password,
                   });
-                  console.log(loginResponse)
+                  console.log(loginResponse);
                 } else {
-                  console.log("Path 2")
+                  console.log("Path 2");
                   loginResponse = await usersApi.Login({
                     usernameOrEmail: username || email,
                     password,
                   });
-                  console.log(loginResponse)
+                  console.log(loginResponse);
                 }
-                
+
                 if (!loginResponse.success) {
                   setErrorMessage(
                     loginResponse.errorMessage ||
@@ -276,12 +285,12 @@ export function LoginModal({
                 }
 
                 setIsLoggedInArtCraft(true);
-                console.log("ARTCRAFT LOGIN SUCCeSS")
+                console.log("ARTCRAFT LOGIN SUCCeSS");
                 if (onArtCraftAuthSuccess) {
                   const session = await usersApi.GetSession();
                   const userInfo = session.data?.user;
-                  console.log("USERINFO")
-                  console.log(userInfo)
+                  console.log("USERINFO");
+                  console.log(userInfo);
                   if (userInfo) onArtCraftAuthSuccess(userInfo);
                 }
                 setShowDiscord(true); // Show Discord step after successful login
@@ -313,11 +322,7 @@ export function LoginModal({
     return (
       <div className="flex items-end justify-center gap-2.5 mt-10 grow">
         {step === 2 && (
-          <Button
-            variant="secondary"
-            onClick={handleBack}
-            disabled={isLoading}
-          >
+          <Button variant="secondary" onClick={handleBack} disabled={isLoading}>
             Back
           </Button>
         )}
@@ -334,7 +339,8 @@ export function LoginModal({
     );
   };
 
-  return <Transition appear show={isOpen}>
+  return (
+    <Transition appear show={isOpen}>
       <div className="fixed inset-0 z-[100]">
         <TransitionChild
           enter="ease-out duration-300"
@@ -376,6 +382,7 @@ export function LoginModal({
         </div>
       </div>
     </Transition>
+  );
 }
 
 export default LoginModal;

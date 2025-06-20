@@ -6,12 +6,14 @@ import {
   faCog,
   faVolumeHigh,
   faCircleInfo,
+  faRoute,
 } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 import { AboutSettingsPane } from "./panes/AboutSettingsPane";
+import { RouterPrioritySettingsPane } from "./panes/RouterPrioritySettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -20,8 +22,12 @@ interface SettingsModalProps {
   initialSection?: SettingsSection;
 }
 
-//type SettingsSection = "misc" | "audio" | "accounts" | "video" | "image";
-type SettingsSection = "general" | "accounts" | "alerts" | "about";
+type SettingsSection =
+  | "general"
+  | "accounts"
+  | "alerts"
+  | "about"
+  | "router_priority";
 
 export const SettingsModal = ({
   isOpen,
@@ -37,6 +43,11 @@ export const SettingsModal = ({
     { id: "accounts" as const, label: "Accounts", icon: faUser },
     { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
     { id: "about" as const, label: "About", icon: faCircleInfo },
+    {
+      id: "router_priority" as const,
+      label: "Model Router Priority",
+      icon: faRoute,
+    },
     //{ id: "video" as const, label: "Video", icon: faVideo },
     //{ id: "image" as const, label: "Image", icon: faImage },
   ];
@@ -55,6 +66,8 @@ export const SettingsModal = ({
         );
       case "about":
         return <AboutSettingsPane />;
+      case "router_priority":
+        return <RouterPrioritySettingsPane />;
     }
   };
 

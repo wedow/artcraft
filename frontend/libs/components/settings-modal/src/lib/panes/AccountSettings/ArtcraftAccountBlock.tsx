@@ -5,6 +5,7 @@ import { Button } from "@storyteller/ui-button";
 
 import { UsersApi } from "@storyteller/api";
 import { UserInfo } from "@storyteller/api";
+import { useLoginModalStore } from "@storyteller/ui-login-modal";
 
 const usersApi = new UsersApi();
 
@@ -15,6 +16,7 @@ export interface ArtcraftAccountBlockProps {
 export const ArtcraftAccountBlock = ({
   globalAccountLogoutCallback,
 }: ArtcraftAccountBlockProps) => {
+  const { triggerRecheck } = useLoginModalStore();
   const [artcraftSession, setArtcraftSession] = useState<UserInfo | undefined>(
     undefined
   );
@@ -50,8 +52,9 @@ export const ArtcraftAccountBlock = ({
       setIsLoggedIn(false);
       setIsCheckingArtcraftSession(false);
       globalAccountLogoutCallback(); // TODO: This resets the old global application state
+      triggerRecheck(); // Trigger modal to recheck session and potentially open
     } else {
-      window.location.href = "/login"; // TODO(bt,2025-05-08): Once we have in-page routing, get rid of this.
+      triggerRecheck(); // Open login modal instead of redirecting
     }
   };
 
