@@ -140,19 +140,24 @@ pub async fn fal_webhook_handler(
       return Err(FalWebhookError::ServerError);
     }
   };
-  
-  let mut maybe_media_token = None;
+
+  info!("Fal webhook job record: {:?}", job);
+
+ let mut maybe_media_token = None;
 
   if let Some(payload_obj) = payload.as_object() {
     if payload_obj.contains_key("image") {
+      info!("Handling image payload for job: {:?}", job.job_token);
       let token = handle_image_payload(payload_obj, &job, &server_state).await?;
       maybe_media_token = Some(token);
     } else if payload_obj.contains_key("images") {
       maybe_media_token = handle_images_payload(payload_obj, &job, &server_state).await?;
     } else if payload_obj.contains_key("video") {
+      info!("Handling video payload for job: {:?}", job.job_token);
       let token = handle_video_payload(payload_obj, &job, &server_state).await?;
       maybe_media_token = Some(token);
     } else if payload_obj.contains_key("model_mesh") {
+      info!("Handling model_mesh payload for job: {:?}", job.job_token);
       let token = handle_model_mesh_payload(payload_obj, &job, &server_state).await?;
       maybe_media_token = Some(token);
     }
@@ -169,6 +174,8 @@ pub async fn fal_webhook_handler(
       warn!("Error marking job as successfully done: {:?}", err);
       FalWebhookError::ServerError
     })?;
+  } else {
+    warn!("No media token found in payload for job: {:?}", job.job_token);
   }
 
   Ok(SimpleGenericJsonSuccess::wrapped(true))

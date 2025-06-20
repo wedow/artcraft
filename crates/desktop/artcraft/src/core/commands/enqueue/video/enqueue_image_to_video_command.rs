@@ -70,7 +70,6 @@ pub struct EnqueueImageToVideoRequest {
   pub model: Option<VideoModel>,
 }
 
-
 #[derive(Serialize)]
 pub struct EnqueueImageToVideoSuccessResponse {
 }

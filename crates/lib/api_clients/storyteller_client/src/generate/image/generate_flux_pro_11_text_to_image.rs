@@ -4,6 +4,7 @@ use crate::utils::api_host::ApiHost;
 use crate::utils::basic_json_post_request::basic_json_post_request;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::{GenerateFluxPro11TextToImageRequest, GenerateFluxPro11TextToImageResponse, GENERATE_FLUX_PRO_11_TEXT_TO_IMAGE_PATH};
 
+
 pub async fn generate_flux_pro_11_text_to_image(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,

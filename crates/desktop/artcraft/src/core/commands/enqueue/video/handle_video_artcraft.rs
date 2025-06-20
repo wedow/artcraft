@@ -38,6 +38,15 @@ use storyteller_client::generate::video::generate_seedance_1_0_lite_image_to_vid
 use storyteller_client::generate::video::generate_veo_2_image_to_video::generate_veo_2_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, State};
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::{GenerateKling21MasterAspectRatio, GenerateKling21MasterImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::{GenerateVeo2AspectRatio, GenerateVeo2ImageToVideoRequest};
+use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2AspectRatio;
+use storyteller_client::generate::video::generate_kling_21_master_image_to_video::generate_kling_21_master_image_to_video;
+use storyteller_client::generate::video::generate_kling_21_pro_image_to_video::generate_kling_21_pro_image_to_video;
+use storyteller_client::generate::video::generate_seedance_1_0_lite_image_to_video::generate_seedance_1_0_lite_image_to_video;
+use storyteller_client::generate::video::generate_veo_2_image_to_video::generate_veo_2_image_to_video;
 
 pub async fn handle_video_artcraft(
   request: EnqueueImageToVideoRequest,
@@ -132,6 +141,7 @@ pub async fn handle_video_artcraft(
       }
     }
     Some(VideoModel::Kling21Pro) => {
+
       info!("enqueue Kling 2.1 Pro with Artcraft API");
       selected_model = Some(GenerationModel::Kling21Pro);
       let request = GenerateKling21ProImageToVideoRequest {
