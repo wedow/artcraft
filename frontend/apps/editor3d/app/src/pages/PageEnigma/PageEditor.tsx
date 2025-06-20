@@ -80,7 +80,7 @@ import { useTabStore } from "../Stores/TabState";
 export const PageEditor = () => {
   useSignals();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
-
+  
   const { status } = authentication;
   useEffect(() => {
     if (status.value !== AUTH_STATUS.LOGGED_OUT) {
@@ -92,13 +92,7 @@ export const PageEditor = () => {
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
-
-  // TODO: For 3d Promptbox to accept this later on
-  // const { selectedModels } = useModelSelectorStore();
-  // const selectedModel =
-  // selectedModels[ModelCategory.Editor3D] ||
-  // videoGenerationModels[0]?.label;
-
+  
   useEffect(() => {
     timelineHeight.value = 0; //timelineHeight.value = 208;
     sidePanelWidth.value = 340;
@@ -416,12 +410,9 @@ export const PageEditor = () => {
   }, [tabStore.activeTabId, editorEngine]);
 
 
-
-
   return (
     <div className="w-screen">
       <TopBar loginSignUpPressed={()=> {
-        console.log("PRESSED")
         setIsLoginModalOpen(true)
       }} pageName="Edit Scene" />
       {isLoginModalOpen && (
