@@ -47,7 +47,7 @@ export const AboutSettingsPane = (args: AboutSettingsPaneProps) => {
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="success-sound">Storyteller Host</Label>
+          <Label htmlFor="success-sound">Artcraft Host</Label>
           <div>{appInfo?.storyteller_host}</div>
         </div>
       </div>
