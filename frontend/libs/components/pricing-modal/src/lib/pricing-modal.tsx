@@ -185,7 +185,8 @@ export function PricingModal({
               onTabChange={setBillingType}
               className="w-fit"
               tabClassName="w-24 text-md"
-              selectedTabClassName="bg-white text-black"
+              indicatorClassName="bg-white"
+              selectedTabClassName="text-black"
             />
             <span className="bg-primary text-white px-3 py-0.5 rounded-full text-sm font-medium -top-3 -left-6 absolute pointer-events-none">
               -{pricingConfig.yearlyDiscount}%

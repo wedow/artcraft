@@ -16,6 +16,7 @@ interface TabSelectorProps {
   disabled?: boolean;
   disabledMessage?: string;
   tabClassName?: string;
+  indicatorClassName?: string;
   selectedTabClassName?: string;
 }
 
@@ -27,6 +28,7 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
   disabled,
   disabledMessage,
   tabClassName,
+  indicatorClassName,
   selectedTabClassName,
 }) => {
   // Find the index of the active tab
@@ -67,7 +69,10 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
         <TabList className="glass glass-no-hover relative inline-flex min-w-fit overflow-x-auto rounded-lg p-0.5 py-1 !shadow-none">
           {/* Animated indicator */}
           <div
-            className="absolute top-1 z-10 h-[calc(100%-8px)] rounded-md bg-primary/30 transition-all duration-200 ease-in-out"
+            className={twMerge(
+              "absolute top-1 z-10 h-[calc(100%-8px)] rounded-md bg-primary/30 transition-all duration-200 ease-in-out",
+              indicatorClassName
+            )}
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
