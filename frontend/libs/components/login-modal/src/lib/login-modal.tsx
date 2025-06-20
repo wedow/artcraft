@@ -7,13 +7,13 @@ import {
   faRightToBracket,
 } from "@fortawesome/pro-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
-import { IsDesktopApp } from "@storyteller/tauri-utils";
+
 import {
   CheckSoraSession,
   SoraSessionState,
   useSoraLoginListener,
 } from "@storyteller/tauri-api";
-import { invoke } from "@tauri-apps/api/core";
+
 import { ArtCraftSignUp } from "./artcraft-signup";
 import { UsersApi } from "@storyteller/api";
 interface LoginModalProps {
@@ -336,8 +336,7 @@ export function LoginModal({
     );
   };
 
-  return createPortal(
-    <Transition appear show={isOpen}>
+  return <Transition appear show={isOpen}>
       <div className="fixed inset-0 z-[100]">
         <TransitionChild
           enter="ease-out duration-300"
@@ -378,9 +377,7 @@ export function LoginModal({
           </TransitionChild>
         </div>
       </div>
-    </Transition>,
-    document.body
-  );
+    </Transition>
 }
 
 export default LoginModal;
