@@ -9,7 +9,7 @@ use crate::core::commands::enqueue::image::enqueue_text_to_image_command::enqueu
 use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::enqueue_image_to_3d_object_command;
 use crate::core::commands::enqueue::video::enqueue_image_to_video_command::enqueue_image_to_video_command;
 use crate::core::commands::flip_image::flip_image;
-use crate::core::commands::get_build_info_command::get_build_info_command;
+use crate::core::commands::get_app_info_command::get_app_info_command;
 use crate::core::commands::platform_info_command::platform_info_command;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
@@ -175,8 +175,8 @@ pub fn run() {
       fal_hunyuan_image_to_3d_command,
       fal_kling_image_to_video_command,
       flip_image,
+      get_app_info_command,
       get_app_preferences_command,
-      get_build_info_command,
       get_fal_api_key_command,
       open_sora_login_command,
       platform_info_command,
