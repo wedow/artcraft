@@ -421,6 +421,7 @@ export const PageEditor = () => {
   return (
     <div className="w-screen">
       <TopBar loginSignUpPressed={()=> {
+        console.log("PRESSED")
         setIsLoginModalOpen(true)
       }} pageName="Edit Scene" />
       {isLoginModalOpen && (
@@ -559,7 +560,7 @@ export const PageEditor = () => {
       )}
       {tabStore.activeTabId == "IMAGE" && (
         <div>
-          <ImageToVideo
+          <TextToImage
             imageMediaId={topNavMediaId.value}
             imageUrl={topNavMediaUrl.value}
           />
@@ -567,7 +568,7 @@ export const PageEditor = () => {
       )}
       {tabStore.activeTabId == "VIDEO" && (
         <div>
-          <TextToImage
+          <ImageToVideo
             imageMediaId={topNavMediaId.value}
             imageUrl={topNavMediaUrl.value}
           />

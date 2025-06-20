@@ -1,26 +1,21 @@
 import { Button } from "@storyteller/ui-button";
 import { Transition, TransitionChild } from "@headlessui/react";
-import { createPortal } from "react-dom";
 import { useState, useEffect, useRef } from "react";
 import {
   faArrowRight,
-  faRightToBracket,
 } from "@fortawesome/pro-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
-
 import {
   CheckSoraSession,
   SoraSessionState,
   useSoraLoginListener,
 } from "@storyteller/tauri-api";
-
 import { ArtCraftSignUp } from "./artcraft-signup";
 import { UsersApi } from "@storyteller/api";
 interface LoginModalProps {
   onClose: () => void;
   videoSrc2D?: string;
   videoSrc3D?: string;
-  openAiLogo?: string;
   onOpenChange?: (isOpen: boolean) => void;
   onArtCraftAuthSuccess?: (userInfo: any) => void;
   isSignUp?: boolean;
@@ -30,14 +25,13 @@ export function LoginModal({
   onClose,
   videoSrc2D,
   videoSrc3D,
-  openAiLogo,
   onOpenChange,
   onArtCraftAuthSuccess,
   isSignUp: initialIsSignUp = true,
 }: LoginModalProps) {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [isLoggedInArtCraft, setIsLoggedInArtCraft] = useState(false);
   const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
   const [errorMessage, setErrorMessage] = useState("");
