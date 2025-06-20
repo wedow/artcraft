@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { TopBar } from "~/components";
 import { Controls3D } from "./comps/Controls3D";
@@ -10,6 +10,7 @@ import { authentication, pageHeight, pageWidth } from "~/signals";
 import { PoseModeSelector } from "./comps/PoseModeSelector";
 import ImageToVideo from "../PageVideo/ImageToVideo";
 import TextToImage from "../PageImage/TextToImage";
+
 import {
   timelineHeight,
   sidePanelWidth,
@@ -78,7 +79,14 @@ import { useTabStore } from "../Stores/TabState";
 
 export const PageEditor = () => {
   useSignals();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
+  const { status } = authentication;
+  useEffect(() => {
+    if (status.value !== AUTH_STATUS.LOGGED_OUT) {
+      setIsLoginModalOpen(true);
+    }
+  }, [status.value]);
   const tabStore = useTabStore();
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -406,9 +414,32 @@ export const PageEditor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabStore.activeTabId, editorEngine]);
 
+
+
+
   return (
     <div className="w-screen">
-      <TopBar pageName="Edit Scene" />
+      <TopBar loginSignUpPressed={()=> {
+        setIsLoginModalOpen(true)
+      }} pageName="Edit Scene" />
+      {isLoginModalOpen && (
+        <LoginModal
+          onClose={() => setIsLoginModalOpen(false)}
+          videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
+          videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
+          onOpenChange={(isOpen: boolean) => {
+            if (isOpen) {
+              disableHotkeyInput(DomLevels.DIALOGUE);
+            } else {
+              enableHotkeyInput(DomLevels.DIALOGUE);
+            }
+          }}
+          onArtCraftAuthSuccess={(userInfo: any) => {
+            authentication.status.value = AUTH_STATUS.LOGGED_IN;
+            authentication.userInfo.value = userInfo;
+          }}
+        />
+      )}
       {tabStore.activeTabId == "3D" && (
         <div>
           <OnboardingHelper />
@@ -542,23 +573,7 @@ export const PageEditor = () => {
         </div>
       )}
 
-      <LoginModal
-        onClose={() => {}}
-        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
-        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
-        openAiLogo="/resources/images/openai-logo.png"
-        onOpenChange={(isOpen: boolean) => {
-          if (isOpen) {
-            disableHotkeyInput(DomLevels.DIALOGUE);
-          } else {
-            enableHotkeyInput(DomLevels.DIALOGUE);
-          }
-        }}
-        onArtCraftAuthSuccess={(userInfo: any) => {
-          authentication.status.value = AUTH_STATUS.LOGGED_IN;
-          authentication.userInfo.value = userInfo;
-        }}
-      />
+ 
     </div>
   );
 };

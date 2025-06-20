@@ -36,6 +36,7 @@ import {
 } from "~/pages/PageEnigma/Editor/editor";
 interface Props {
   pageName: string;
+  loginSignUpPressed: () => void;
 }
 
 const appMenuTabs: MenuIconItem[] = [
@@ -70,7 +71,7 @@ const appMenuTabs: MenuIconItem[] = [
 export const topNavMediaId = signal<string>("");
 export const topNavMediaUrl = signal<string>("");
 
-export const TopBar = ({ pageName }: Props) => {
+export const TopBar = ({ pageName,loginSignUpPressed }: Props) => {
   useSignals();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -160,7 +161,7 @@ export const TopBar = ({ pageName }: Props) => {
               <Activity />
             </div>
             <div className="flex justify-end gap-2">
-              <AuthButtons />
+              <AuthButtons loginSignUpPressed={loginSignUpPressed}/>
             </div>
           </div>
         </nav>
