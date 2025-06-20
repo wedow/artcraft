@@ -3,13 +3,16 @@
   "include": [],
   "references": [
     {
+      "path": "../loading-spinner"
+    },
+    {
       "path": "../../tauri-api"
     },
     {
       "path": "../button"
     },
     {
-      "path": "../close-button"
+      "path": "../modal"
     },
     {
       "path": "./tsconfig.lib.json"

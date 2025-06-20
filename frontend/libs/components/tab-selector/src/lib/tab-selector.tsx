@@ -15,6 +15,8 @@ interface TabSelectorProps {
   className?: string;
   disabled?: boolean;
   disabledMessage?: string;
+  tabClassName?: string;
+  selectedTabClassName?: string;
 }
 
 export const TabSelector: React.FC<TabSelectorProps> = ({
@@ -24,6 +26,8 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
   className,
   disabled,
   disabledMessage,
+  tabClassName,
+  selectedTabClassName,
 }) => {
   // Find the index of the active tab
   const selectedIndex = tabs.findIndex((tab) => tab.id === activeTab);
@@ -83,8 +87,11 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
                 twMerge(
                   "relative z-20 mx-0.5 min-w-max rounded-md border-2 border-transparent px-4 py-0.5 text-center text-sm font-semibold transition-all duration-200 ease-in-out",
                   "focus-visible:outline-none focus-visible:ring-0",
-                  selected ? "text-white" : "text-gray-300 hover:text-white",
-                  disabled ? "cursor-not-allowed opacity-60" : ""
+                  selected
+                    ? twMerge("text-white", selectedTabClassName)
+                    : "text-gray-300 hover:text-white",
+                  disabled ? "cursor-not-allowed opacity-60" : "",
+                  tabClassName
                 )
               }
             >

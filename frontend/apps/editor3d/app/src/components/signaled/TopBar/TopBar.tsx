@@ -6,6 +6,8 @@ import {
   faFilm,
   faPaintbrush,
   faImage,
+  faDiamond,
+  faGem,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "@storyteller/ui-button";
 import { AuthButtons } from "./AuthButtons";
@@ -34,6 +36,7 @@ import {
   is3DSceneLoaded,
   set3DPageMounted,
 } from "~/pages/PageEnigma/Editor/editor";
+import { usePricingModalStore } from "@storyteller/ui-pricing-modal";
 interface Props {
   pageName: string;
 }
@@ -92,6 +95,8 @@ export const TopBar = ({ pageName }: Props) => {
     );
   };
 
+  const { toggleModal } = usePricingModalStore();
+
   return (
     <>
       <header className="fixed left-0 top-0 z-[60] w-full border-b border-white/5 bg-ui-background">
@@ -140,6 +145,14 @@ export const TopBar = ({ pageName }: Props) => {
           </div>
 
           <div className="flex justify-end gap-3.5">
+            <Button
+              variant="primary"
+              icon={faGem}
+              onClick={toggleModal}
+              className="shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
+            >
+              Upgrade Now
+            </Button>
             <div className="flex gap-2">
               <Tooltip content="Settings" position="bottom" delay={300}>
                 <Button

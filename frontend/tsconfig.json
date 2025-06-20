@@ -140,6 +140,9 @@
     },
     {
       "path": "./libs/components/image-input"
+    },
+    {
+      "path": "./libs/components/pricing-modal"
     }
   ]
 }
