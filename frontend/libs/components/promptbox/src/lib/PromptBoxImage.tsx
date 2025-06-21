@@ -52,6 +52,8 @@ export const PromptBoxImage = ({
 }: PromptBoxImageProps) => {
   useSignals();
 
+  console.log("PromptBoxImage - model", model);
+
   // for the image media id and url, we need to set the reference image gallery panel.
   useEffect(() => {
     if (imageMediaId && url) {

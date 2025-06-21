@@ -6,6 +6,9 @@
       "path": "../popover"
     },
     {
+      "path": "../../model-list"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

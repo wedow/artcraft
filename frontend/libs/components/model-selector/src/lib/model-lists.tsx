@@ -1,6 +1,7 @@
 import type { PopoverItem } from "@storyteller/ui-popover";
 import { faClock, faFilm, faImage } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IMAGE_MODELS } from "@storyteller/model-list";
 
 export type ModelList = Omit<PopoverItem, "selected">[];
 
@@ -44,39 +45,39 @@ export const allModels = {
   ],
   image: [
     {
-      id: "todo",
       label: "Flux Pro 1.1 Ultra",
       icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       description: "High quality model",
       badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+      modelInfo: IMAGE_MODELS.flux_pro_1_1_ultra,
     },
     {
-      id: "todo",
       label: "Flux Pro 1.1",
       icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       description: "High quality model",
       badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+      modelInfo: IMAGE_MODELS.flux_pro_1_1,
     },
     {
-      id: "todo",
       label: "Flux 1 Dev",
       icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       description: "High quality model",
       badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+      modelInfo: IMAGE_MODELS.flux_1_dev,
     },
     {
-      id: "todo",
       label: "Flux 1 Schnell",
       icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       description: "High quality model",
       badges: [{ label: "15 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+      modelInfo: IMAGE_MODELS.flux_1_schnell,
     },
     {
-      id: "todo",
       label: "GPT Image 1 (GPT-4o)",
       icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
       description: "Slow, ultra instructive model",
       badges: [{ label: "45 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+      modelInfo: IMAGE_MODELS.gpt_image_1,
     },
     //{
     //  id: "todo",
