@@ -13,13 +13,23 @@ interface TextToImageProps {
   imageMediaId?: string;
   imageUrl?: string;
 }
+import { IMAGE_MODELS_BY_LABEL } from "@storyteller/model-list";
+import { ModelInfo } from "@storyteller/model-list";
 
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedModels } = useModelSelectorStore();
+
   const selectedModel =
     selectedModels[ModelCategory.TextToImage] ||
     imageGenerationModels[0]?.label;
+
+  const selectedModelInfo : ModelInfo | undefined = IMAGE_MODELS_BY_LABEL[selectedModel];
+
+  console.log("TextToImage - selectedModels", selectedModels);
+  console.log("TextToImage - selectedModel", selectedModel);
+  console.log("TextToImage - selectedModelInfo", selectedModelInfo);
+
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -48,6 +58,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
               return jobContext;
             }}
             model={selectedModel}
+            modelInfo={selectedModelInfo}
             imageMediaId={imageMediaId}
             url={imageUrl ?? undefined}
             onEnqueuePressed={async () => {

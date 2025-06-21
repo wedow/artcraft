@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
+import { ModelInfo } from "@storyteller/model-list";
 
 export enum EnqueueTextToImageErrorType {
   /// Caller didn't specify a model
@@ -14,7 +15,7 @@ export enum EnqueueTextToImageErrorType {
 
 export interface EnqueueTextToImageRequest {
   prompt?: string;
-  model?: EnqueueTextToImageModel;
+  model?: ModelInfo | EnqueueTextToImageModel;
 }
 
 export enum EnqueueTextToImageModel {
@@ -41,11 +42,22 @@ export interface EnqueueTextToImageSuccess extends CommandResult {
 export type EnqueueTextToImageResult = EnqueueTextToImageSuccess | EnqueueTextToImageError;
 
 export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : Promise<EnqueueTextToImageResult> => {
+  let modelName = undefined;
+
+  if (!!request.model) {
+    if (typeof request.model === "string") {
+      modelName = request.model;
+    } else {
+      modelName = request.model.tauri_id;
+    }
+  }
+
   let result = await invoke("enqueue_text_to_image_command", { 
     request: {
       prompt: request.prompt,
-      model: request.model,
+      model: modelName,
     }
   });
+
   return (result as EnqueueTextToImageResult);
 }
