@@ -3,3 +3,4 @@ pub mod handle_image_artcraft;
 pub mod handle_image_fal;
 pub mod handle_image_sora;
 pub mod internal_image_error;
+mod success_event;

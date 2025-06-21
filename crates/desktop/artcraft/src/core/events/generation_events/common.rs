@@ -19,6 +19,8 @@ pub enum GenerationModel {
   FluxPro11,
   #[serde(rename = "flux_pro_1.1_ultra")]
   FluxPro11Ultra,
+  #[serde(rename = "gpt_image_1")]
+  GptImage1,
   #[serde(rename = "kling_1.6")]
   Kling1_6,
   #[serde(rename = "kling_2.0")]
@@ -27,6 +29,9 @@ pub enum GenerationModel {
   Kling21Master,
   #[serde(rename = "kling_2.1_pro")]
   Kling21Pro,
+  #[serde(rename = "recraft_3")]
+  Recraft3,
+  #[serde(rename = "sora")]
   Sora,
   #[serde(rename = "seedance_1.0_lite")]
   Seedance10Lite,

@@ -59,6 +59,10 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
+use crate::core::commands::enqueue::image::success_event::SuccessEvent;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
@@ -148,7 +152,17 @@ pub async fn enqueue_text_to_image_command(
         error_details: None,
       })
     }
-    Ok(()) => {
+    Ok(event) => {
+      let event = GenerationEnqueueSuccessEvent {
+        action: GenerationAction::GenerateImage,
+        service: event.service_provider,
+        model: Some(event.tauri_event_model()),
+      };
+
+      if let Err(err) = event.send(&app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
+      }
+
       Ok(EnqueueTextToImageSuccessResponse {}.into())
     }
   }
@@ -165,7 +179,7 @@ pub async fn handle_request(
   fal_task_queue: &FalTaskQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> Result<(), InternalImageError> {
+) -> Result<SuccessEvent, InternalImageError> {
 
   match request.model {
     None => {
@@ -173,7 +187,10 @@ pub async fn handle_request(
     }
     Some(ImageModel::GptImage1) => {
       handle_image_sora(&app, request, sora_creds_manager, sora_task_queue).await?;
-      return Ok(());
+      return Ok(SuccessEvent {
+        service_provider: GenerationServiceProvider::Sora,
+        model: ImageModel::GptImage1,
+      });
     }
     _ => {
       // Fall-through
@@ -181,10 +198,8 @@ pub async fn handle_request(
   };
 
   if fal_creds_manager.has_apparent_api_token()? {
-    handle_image_fal(&app, request, fal_creds_manager, fal_task_queue).await?;
+    handle_image_fal(&app, request, fal_creds_manager, fal_task_queue).await
   } else {
-    handle_image_artcraft(request, &app, app_env_configs, app_data_root, storyteller_creds_manager).await?;
+    handle_image_artcraft(request, &app, app_env_configs, app_data_root, storyteller_creds_manager).await
   }
-
-  Ok(())
 }

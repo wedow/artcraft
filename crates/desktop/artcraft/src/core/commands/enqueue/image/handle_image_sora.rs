@@ -90,15 +90,5 @@ pub async fn handle_image_sora(
 
   sora_task_queue.insert(&response.task_id)?;
 
-  let event = GenerationEnqueueSuccessEvent {
-    action: GenerationAction::GenerateImage,
-    service: GenerationServiceProvider::Sora,
-    model: None,
-  };
-
-  if let Err(err) = event.send(app) {
-    error!("Failed to emit event: {:?}", err); // Fail open.
-  }
-
   Ok(())
 }
