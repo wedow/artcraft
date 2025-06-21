@@ -7,6 +7,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::model::image_models::ImageModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
@@ -65,28 +66,9 @@ pub struct EnqueueTextToImageRequest {
   pub prompt: Option<String>,
 
   /// The model to use.
-  pub model: Option<EnqueueTextToImageModel>,
+  pub model: Option<ImageModel>,
 }
 
-#[derive(Deserialize, Debug, Copy, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum EnqueueTextToImageModel {
-  #[serde(rename = "flux_1_dev")]
-  Flux1Dev,
-  #[serde(rename = "flux_1_schnell")]
-  Flux1Schnell,
-  #[deprecated(note="use `flux_pro_11_ultra` instead")]
-  #[serde(rename = "flux_pro_ultra")]
-  FluxProUltra,
-  #[serde(rename = "flux_pro_11")]
-  FluxPro11,
-  #[serde(rename = "flux_pro_11_ultra")]
-  FluxPro11Ultra,
-  #[serde(rename = "gpt_image_1")]
-  GptImage1,
-  #[serde(rename = "recraft_3")]
-  Recraft3,
-}
 
 #[derive(Serialize)]
 pub struct EnqueueTextToImageSuccessResponse {
@@ -189,7 +171,7 @@ pub async fn handle_request(
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    Some(EnqueueTextToImageModel::GptImage1) => {
+    Some(ImageModel::GptImage1) => {
       handle_image_sora(&app, request, sora_creds_manager, sora_task_queue).await?;
       return Ok(());
     }

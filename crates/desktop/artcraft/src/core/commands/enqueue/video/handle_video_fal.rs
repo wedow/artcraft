@@ -1,4 +1,3 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
 use crate::core::commands::enqueue::video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
 use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;

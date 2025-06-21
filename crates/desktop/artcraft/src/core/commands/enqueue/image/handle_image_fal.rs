@@ -1,9 +1,10 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::model::image_models::ImageModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
@@ -51,27 +52,24 @@ pub async fn handle_image_fal(
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    Some(EnqueueTextToImageModel::GptImage1) => {
+    Some(ImageModel::GptImage1) => {
       return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: fal is handling sora images")));
     }
     Some(
-      EnqueueTextToImageModel::Flux1Dev | 
-      EnqueueTextToImageModel::Flux1Schnell | 
-      EnqueueTextToImageModel::FluxPro11
+      ImageModel::Flux1Dev | 
+      ImageModel::Flux1Schnell | 
+      ImageModel::FluxPro11
     ) => {
       return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented: {:?}", request.model)));
     }
-    Some(
-      EnqueueTextToImageModel::FluxProUltra |
-      EnqueueTextToImageModel::FluxPro11Ultra
-    ) => {
+    Some(ImageModel::FluxPro11Ultra) => {
       info!("enqueue Flux Pro 1.1 Ultra text-to-image with prompt: {}", prompt);
       enqueue_flux_pro_11_ultra_text_to_image(FluxPro11UltraTextToImageArgs {
         prompt,
         api_key: &api_key,
       }).await
     }
-    Some(EnqueueTextToImageModel::Recraft3) => {
+    Some(ImageModel::Recraft3) => {
       info!("enqueue Recraft v3 text-to-image with prompt: {}", prompt);
       enqueue_recraft3_text_to_image(Recraft3TextToImageArgs {
         prompt,

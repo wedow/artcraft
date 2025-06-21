@@ -1,9 +1,10 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::model::image_models::ImageModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
@@ -68,13 +69,13 @@ pub async fn handle_image_artcraft(
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    Some(EnqueueTextToImageModel::GptImage1) => {
+    Some(ImageModel::GptImage1) => {
       return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: artcraft is handling sora images")));
     }
-    Some(EnqueueTextToImageModel::Recraft3) => {
+    Some(ImageModel::Recraft3) => {
       return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented in Artcraft")));
     }
-    Some(EnqueueTextToImageModel::Flux1Dev) => {
+    Some(ImageModel::Flux1Dev) => {
       info!("enqueue Flux 1 Dev");
       selected_model = Some(GenerationModel::Flux1Dev);
       let request = GenerateFlux1DevTextToImageRequest {
@@ -99,7 +100,7 @@ pub async fn handle_image_artcraft(
         }
       }
     }
-    Some(EnqueueTextToImageModel::Flux1Schnell) => {
+    Some(ImageModel::Flux1Schnell) => {
       info!("enqueue Flux 1 Schnell");
       selected_model = Some(GenerationModel::Flux1Schnell);
       let request = GenerateFlux1SchnellTextToImageRequest {
@@ -124,7 +125,7 @@ pub async fn handle_image_artcraft(
         }
       }
     }
-    Some(EnqueueTextToImageModel::FluxPro11) => {
+    Some(ImageModel::FluxPro11) => {
       info!("enqueue Flux Pro 1.1");
       selected_model = Some(GenerationModel::FluxPro11);
       let request = GenerateFluxPro11TextToImageRequest {
@@ -149,10 +150,7 @@ pub async fn handle_image_artcraft(
         }
       }
     }
-    Some(
-      EnqueueTextToImageModel::FluxProUltra |
-      EnqueueTextToImageModel::FluxPro11Ultra
-    ) => {
+    Some(ImageModel::FluxPro11Ultra) => {
       info!("enqueue Flux Pro 1.1 Ultra");
       selected_model = Some(GenerationModel::FluxPro11Ultra);
       let request = GenerateFluxPro11UltraTextToImageRequest {
