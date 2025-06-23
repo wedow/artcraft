@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   faGear,
   faImages,
@@ -42,6 +42,8 @@ interface Props {
   loginSignUpPressed: () => void;
 }
 
+const SWITCHER_THROTTLE_TIME = 500; // milliseconds
+
 const appMenuTabs: MenuIconItem[] = [
   {
     id: "2D",
@@ -74,7 +76,7 @@ const appMenuTabs: MenuIconItem[] = [
 export const topNavMediaId = signal<string>("");
 export const topNavMediaUrl = signal<string>("");
 
-export const TopBar = ({ pageName,loginSignUpPressed }: Props) => {
+export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
   useSignals();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -88,15 +90,18 @@ export const TopBar = ({ pageName,loginSignUpPressed }: Props) => {
 
   const is3DSceneReady = is3DSceneLoaded.value;
   const is3DEditorReady = is3DEditorInitialized.value;
+  const [disableSwitcher, setDisableSwitcher] = useState(false);
+  const switcherThrottle = useRef(false);
+
   const disableTabSwitcher = () => {
-    return (
+    return disableSwitcher || (
       useTabStore.getState().activeTabId === "3D" &&
       !is3DEditorReady &&
       !is3DSceneReady
     );
   };
 
-  const { toggleModal } = usePricingModalStore();
+  // const { toggleModal } = usePricingModalStore();
 
   return (
     <>
@@ -119,6 +124,13 @@ export const TopBar = ({ pageName,loginSignUpPressed }: Props) => {
               activeMenu={tabStore.activeTabId}
               disabled={disableTabSwitcher()}
               onMenuChange={(tabId) => {
+                // Prevent a second input if the switcher is throttled.
+                if (switcherThrottle.current) {
+                  return;
+                }
+                switcherThrottle.current = true;
+                setDisableSwitcher(true);
+
                 // Disable 3d engine to prevent memory leak.
                 if (tabId === "3D") {
                   set3DPageMounted(true);
@@ -126,6 +138,12 @@ export const TopBar = ({ pageName,loginSignUpPressed }: Props) => {
                   set3DPageMounted(false);
                 }
                 useTabStore.getState().setActiveTab(tabId);
+                setTimeout(() => {
+                  // Clear the throttle
+                  switcherThrottle.current = false;
+                  // Trigger a new re-render (important)
+                  setDisableSwitcher(false);
+                }, SWITCHER_THROTTLE_TIME);
               }}
               className="w-fit"
             />
@@ -174,7 +192,7 @@ export const TopBar = ({ pageName,loginSignUpPressed }: Props) => {
               <Activity />
             </div>
             <div className="flex justify-end gap-2">
-              <AuthButtons loginSignUpPressed={loginSignUpPressed}/>
+              <AuthButtons loginSignUpPressed={loginSignUpPressed} />
             </div>
           </div>
         </nav>
