@@ -7,6 +7,7 @@ import {
   faVolumeHigh,
   faCircleInfo,
   faRoute,
+  faMessageCheck,
 } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { MiscSettingsPane } from "./panes/MiscSettingsPane";
@@ -14,6 +15,7 @@ import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 import { AboutSettingsPane } from "./panes/AboutSettingsPane";
 import { RouterPrioritySettingsPane } from "./panes/RouterPrioritySettingsPane";
+import { SystemPromptsPane } from "./panes/SystemPromptsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -26,6 +28,7 @@ type SettingsSection =
   | "general"
   | "accounts"
   | "alerts"
+  | "system_prompts"
   | "about"
   | "router_priority";
 
@@ -42,6 +45,11 @@ export const SettingsModal = ({
     { id: "general" as const, label: "General", icon: faCog },
     { id: "accounts" as const, label: "Accounts", icon: faUser },
     { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
+    {
+      id: "system_prompts" as const,
+      label: "System Prompts",
+      icon: faMessageCheck,
+    },
     { id: "about" as const, label: "About", icon: faCircleInfo },
     {
       id: "router_priority" as const,
@@ -64,6 +72,8 @@ export const SettingsModal = ({
             globalAccountLogoutCallback={globalAccountLogoutCallback}
           />
         );
+      case "system_prompts":
+        return <SystemPromptsPane />;
       case "about":
         return <AboutSettingsPane />;
       case "router_priority":
