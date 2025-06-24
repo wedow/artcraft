@@ -44,6 +44,15 @@
   ],
   "references": [
     {
+      "path": "../../tauri-api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../api/tsconfig.lib.json"
+    },
+    {
+      "path": "../image-input/tsconfig.lib.json"
+    },
+    {
       "path": "../gallery-modal/tsconfig.lib.json"
     },
     {

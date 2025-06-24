@@ -3,8 +3,8 @@ use crate::http_server::endpoints::generate::image::generate_flux_1_schnell_text
 use crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler;
-use crate::http_server::endpoints::generate::object::generate_hunyuan_21_image_to_3d_handler::generate_hunyuan_21_image_to_3d_handler;
-use crate::http_server::endpoints::generate::object::generate_hunyuan_2_image_to_3d_handler::generate_hunyuan_2_image_to_3d_handler;
+use crate::http_server::endpoints::generate::object::generate_hunyuan_2_0_image_to_3d_handler::generate_hunyuan_2_0_image_to_3d_handler;
+use crate::http_server::endpoints::generate::object::generate_hunyuan_2_1_image_to_3d_handler::generate_hunyuan_2_1_image_to_3d_handler;
 use crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler;
 use crate::http_server::endpoints::generate::video::generate_kling_2_1_master_video_handler::generate_kling_2_1_master_video_handler;
 use crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler;
@@ -72,12 +72,12 @@ where
           )
       )
       .service(web::scope("/object")
-          .service(web::resource("/hunyuan_2_image_to_3d")
-              .route(web::post().to(generate_hunyuan_2_image_to_3d_handler))
+          .service(web::resource("/hunyuan_2.0_image_to_3d")
+              .route(web::post().to(generate_hunyuan_2_0_image_to_3d_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
           )
           .service(web::resource("/hunyuan_2.1_image_to_3d")
-              .route(web::post().to(generate_hunyuan_21_image_to_3d_handler))
+              .route(web::post().to(generate_hunyuan_2_1_image_to_3d_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
           )
       )

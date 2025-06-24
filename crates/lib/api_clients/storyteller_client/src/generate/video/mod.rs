@@ -1,1 +1,5 @@
 pub mod generate_kling_16_pro_image_to_video;
+pub mod generate_kling_21_master_image_to_video;
+pub mod generate_kling_21_pro_image_to_video;
+pub mod generate_seedance_1_0_lite_image_to_video;
+pub mod generate_veo_2_image_to_video;

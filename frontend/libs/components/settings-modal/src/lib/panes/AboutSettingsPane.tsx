@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 import {
-  GetBuildInfo,
-  GetBuildInfoPayload,
+  GetAppInfo,
+  GetAppInfoPayload,
 } from "@storyteller/tauri-api";
 import { Label } from "@storyteller/ui-label";
 
 interface AboutSettingsPaneProps {}
 
 export const AboutSettingsPane = (args: AboutSettingsPaneProps) => {
-  const [buildInfo, setBuildInfo] = useState<
-    GetBuildInfoPayload | undefined
+  const [appInfo, setAppInfo] = useState<
+    GetAppInfoPayload | undefined
   >(undefined);
 
   useEffect(() => {
     const fetchData = async () => {
-      const prefs = await GetBuildInfo();
-      setBuildInfo(prefs.payload);
+      const prefs = await GetAppInfo();
+      setAppInfo(prefs.payload);
     };
     fetchData();
   }, []);
@@ -28,22 +28,27 @@ export const AboutSettingsPane = (args: AboutSettingsPaneProps) => {
           <Label htmlFor="play-sounds">
             Build Timestamp
           </Label>
-          <div>{buildInfo?.build_timestamp}</div>
+          <div>{appInfo?.build_timestamp}</div>
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="success-sound">Git Commit ID</Label>
-          <div>{buildInfo?.git_commit_id}</div>
+          <div>{appInfo?.git_commit_id}</div>
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="success-sound">Git Commit Short ID</Label>
-          <div>{buildInfo?.git_commit_short_id}</div>
+          <div>{appInfo?.git_commit_short_id}</div>
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="success-sound">Git Commit Timestamp</Label>
-          <div>{buildInfo?.git_commit_timestamp}</div>
+          <div>{appInfo?.git_commit_timestamp}</div>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="success-sound">Artcraft Host</Label>
+          <div>{appInfo?.storyteller_host}</div>
         </div>
       </div>
     </>

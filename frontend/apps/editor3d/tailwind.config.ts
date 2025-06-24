@@ -29,6 +29,12 @@ export default {
       white: colors.white,
       gray: colors.gray,
       black: colors.black,
+      blue: colors.blue,
+      green: colors.green,
+      yellow: colors.yellow,
+      purple: colors.purple,
+      pink: colors.pink,
+      orange: colors.orange,
       primary: {
         DEFAULT: "#2d81ff",
         "50": "#eef6ff",

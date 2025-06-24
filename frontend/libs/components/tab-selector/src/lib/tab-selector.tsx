@@ -15,6 +15,9 @@ interface TabSelectorProps {
   className?: string;
   disabled?: boolean;
   disabledMessage?: string;
+  tabClassName?: string;
+  indicatorClassName?: string;
+  selectedTabClassName?: string;
 }
 
 export const TabSelector: React.FC<TabSelectorProps> = ({
@@ -24,6 +27,9 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
   className,
   disabled,
   disabledMessage,
+  tabClassName,
+  indicatorClassName,
+  selectedTabClassName,
 }) => {
   // Find the index of the active tab
   const selectedIndex = tabs.findIndex((tab) => tab.id === activeTab);
@@ -63,7 +69,10 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
         <TabList className="glass glass-no-hover relative inline-flex min-w-fit overflow-x-auto rounded-lg p-0.5 py-1 !shadow-none">
           {/* Animated indicator */}
           <div
-            className="absolute top-1 z-10 h-[calc(100%-8px)] rounded-md bg-primary/30 transition-all duration-200 ease-in-out"
+            className={twMerge(
+              "absolute top-1 z-10 h-[calc(100%-8px)] rounded-md bg-primary/30 transition-all duration-200 ease-in-out",
+              indicatorClassName
+            )}
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
@@ -83,8 +92,11 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
                 twMerge(
                   "relative z-20 mx-0.5 min-w-max rounded-md border-2 border-transparent px-4 py-0.5 text-center text-sm font-semibold transition-all duration-200 ease-in-out",
                   "focus-visible:outline-none focus-visible:ring-0",
-                  selected ? "text-white" : "text-gray-300 hover:text-white",
-                  disabled ? "cursor-not-allowed opacity-60" : ""
+                  selected
+                    ? twMerge("text-white", selectedTabClassName)
+                    : "text-gray-300 hover:text-white",
+                  disabled ? "cursor-not-allowed opacity-60" : "",
+                  tabClassName
                 )
               }
             >

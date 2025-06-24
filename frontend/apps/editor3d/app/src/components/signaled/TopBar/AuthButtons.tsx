@@ -2,19 +2,14 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { AUTH_STATUS } from "~/enums";
 import { authentication } from "~/signals";
 import { Button } from "@storyteller/ui-button";
-import ProfileDropdown from "./ProfileDropdown";
-import { LoginModal } from "@storyteller/ui-login-modal";
-import { useState } from "react";
-import {
-  disableHotkeyInput,
-  DomLevels,
-  enableHotkeyInput,
-} from "~/pages/PageEnigma/signals";
+// import ProfileDropdown from "./ProfileDropdown";
 
-export const AuthButtons = () => {
+export const AuthButtons = ({
+  loginSignUpPressed,
+}: {
+  loginSignUpPressed: () => void;
+}) => {
   useSignals();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
 
   const { status, userInfo } = authentication;
 
@@ -22,7 +17,7 @@ export const AuthButtons = () => {
   console.log(status.value);
   if (status.value === AUTH_STATUS.LOGGED_IN) {
     console.log("SHOWING DROPDOWN");
-    return <ProfileDropdown />;
+    return null;
   } else {
     return (
       <>
@@ -31,34 +26,12 @@ export const AuthButtons = () => {
           <Button
             className="h-[38px]"
             onClick={() => {
-              setIsSignUp(true);
-              setShowLoginModal(true);
+              loginSignUpPressed();
             }}
           >
             Login / Sign Up
           </Button>
         </div>
-
-        {showLoginModal && (
-          <LoginModal
-            onClose={() => setShowLoginModal(false)}
-            isSignUp={isSignUp}
-            videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
-            videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
-            onArtCraftAuthSuccess={(userInfo_value) => {
-              userInfo.value = userInfo_value;
-              status.value = AUTH_STATUS.LOGGED_IN;
-              setShowLoginModal(false);
-            }}
-            onOpenChange={(isOpen: boolean) => {
-              if (isOpen) {
-                disableHotkeyInput(DomLevels.DIALOGUE);
-              } else {
-                enableHotkeyInput(DomLevels.DIALOGUE);
-              }
-            }}
-          />
-        )}
       </>
     );
   }

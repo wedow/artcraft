@@ -16,12 +16,12 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
-use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
-use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::object::enqueue_hunyuan_3d_21_image_to_3d_webhook::enqueue_hunyuan_3d_2_1_image_to_3d_webhook;
-use fal_client::requests::webhook::object::enqueue_hunyuan_3d_21_image_to_3d_webhook::Hunyuan3d21Args;
+use fal_client::requests::webhook::object::enqueue_hunyuan_3d_2_image_to_3d_webhook::enqueue_hunyuan_3d_2_image_to_3d_webhook;
+use fal_client::requests::webhook::object::enqueue_hunyuan_3d_2_image_to_3d_webhook::Hunyuan3d2Args;
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use idempotency::uuid::generate_random_uuid;
@@ -34,23 +34,23 @@ use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, M
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-/// Hunyuan 2.1 Image to 3D
+/// Hunyuan 2.0 Image to 3D
 #[utoipa::path(
   post,
   tag = "Generate Objects",
-  path = "/v1/generate/object/hunyuan_2.1_image_to_3d",
+  path = "/v1/generate/object/hunyuan_2.0_image_to_3d",
   responses(
-    (status = 200, description = "Success", body = GenerateHunyuan21ImageTo3dResponse),
+    (status = 200, description = "Success", body = GenerateHunyuan2ImageTo3dResponse),
   ),
   params(
-    ("request" = GenerateHunyuan21ImageTo3dRequest, description = "Payload for Request"),
+    ("request" = GenerateHunyuan2ImageTo3dRequest, description = "Payload for Request"),
   )
 )]
-pub async fn generate_hunyuan_21_image_to_3d_handler(
+pub async fn generate_hunyuan_2_0_image_to_3d_handler(
   http_request: HttpRequest,
-  request: Json<GenerateHunyuan21ImageTo3dRequest>,
+  request: Json<GenerateHunyuan20ImageTo3dRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<GenerateHunyuan21ImageTo3dResponse>, CommonWebError> {
+) -> Result<Json<GenerateHunyuan20ImageTo3dResponse>, CommonWebError> {
   let maybe_user_session = server_state
       .session_checker
       .maybe_get_user_session(&http_request, &server_state.mysql_pool)
@@ -130,16 +130,16 @@ pub async fn generate_hunyuan_21_image_to_3d_handler(
   
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
-  let args = Hunyuan3d21Args {
+  let args = Hunyuan3d2Args {
     image_url: media_links.cdn_url,
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
   };
 
-  let fal_result = enqueue_hunyuan_3d_2_1_image_to_3d_webhook(args)
+  let fal_result = enqueue_hunyuan_3d_2_image_to_3d_webhook(args)
       .await
       .map_err(|err| {
-        warn!("Error calling enqueue_hunyuan_3d_2_1_image_to_3d_webhook: {:?}", err);
+        warn!("Error calling enqueue_hunyuan2_image_to_3d_webhook: {:?}", err);
         CommonWebError::ServerError
       })?;
 
@@ -173,7 +173,7 @@ pub async fn generate_hunyuan_21_image_to_3d_handler(
     }
   };
 
-  Ok(Json(GenerateHunyuan21ImageTo3dResponse {
+  Ok(Json(GenerateHunyuan20ImageTo3dResponse {
     success: true,
     inference_job_token: job_token,
   }))

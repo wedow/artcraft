@@ -5,15 +5,15 @@ use crate::error::storyteller_error::StorytellerError;
 use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::{GenerateHunyuan2ImageTo3dRequest, GenerateHunyuan2ImageTo3dResponse, GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH};
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::{GenerateVeo2ImageToVideoRequest, GenerateVeo2ImageToVideoResponse, GENERATE_VEO_2_IMAGE_TO_VIDEO_URL_PATH};
 use log::{debug, info};
 use reqwest::Client;
 
-pub async fn generate_hunyuan2_image_to_3d(
+pub async fn generate_veo_2_image_to_video(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,
-  request: GenerateHunyuan2ImageTo3dRequest,
-) -> Result<GenerateHunyuan2ImageTo3dResponse, StorytellerError> {
+  request: GenerateVeo2ImageToVideoRequest,
+) -> Result<GenerateVeo2ImageToVideoResponse, StorytellerError> {
 
   let url = get_route(api_host);
 
@@ -64,5 +64,5 @@ pub async fn generate_hunyuan2_image_to_3d(
 
 fn get_route(api_host: &ApiHost) -> String {
   let api_hostname = api_host.to_api_hostname();
-  format!("https://{}{}", api_hostname, GENERATE_HUNYUAN_2_IMAGE_TO_3D_URL_PATH)
+  format!("https://{}{}", api_hostname, GENERATE_VEO_2_IMAGE_TO_VIDEO_URL_PATH)
 }

@@ -25,6 +25,7 @@ import { DomLevels } from "@storyteller/common";
 declare global {
   interface Window {
     __inertStripperInstalled?: boolean;
+    __modalEscListenerInstalled?: boolean;
   }
 }
 
@@ -55,6 +56,56 @@ if (!window.__inertStripperInstalled) {
     attributes: true,
     subtree: true,
     attributeFilter: ["inert"],
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Modal ESC handling & stack tracking
+// If several modals are stacked, Esc will dismiss the one visually on top (highest z-index).
+// ---------------------------------------------------------------------------
+
+interface ModalRegistryEntry {
+  id: number;
+  zIndex: number;
+  onClose: () => void;
+  closeOnEsc: boolean;
+}
+
+const modalRegistry: ModalRegistryEntry[] = [];
+
+const registerModal = (entry: ModalRegistryEntry) => {
+  modalRegistry.push(entry);
+};
+
+const unregisterModal = (id: number) => {
+  const idx = modalRegistry.findIndex((m) => m.id === id);
+  if (idx !== -1) modalRegistry.splice(idx, 1);
+};
+
+const updateModal = (
+  id: number,
+  data: Partial<{ zIndex: number; onClose: () => void; closeOnEsc: boolean }>
+) => {
+  const entry = modalRegistry.find((m) => m.id === id);
+  if (entry) Object.assign(entry, data);
+};
+
+const getTopEscapableModal = (): ModalRegistryEntry | undefined => {
+  return modalRegistry
+    .filter((m) => m.closeOnEsc)
+    .sort((a, b) => b.zIndex - a.zIndex)[0];
+};
+
+// Install one global ESC listener (once per page load)
+if (typeof window !== "undefined" && !window.__modalEscListenerInstalled) {
+  window.__modalEscListenerInstalled = true;
+  window.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key !== "Escape" && e.key !== "Esc") return;
+    const top = getTopEscapableModal();
+    if (top) {
+      e.preventDefault();
+      top.onClose();
+    }
   });
 }
 
@@ -176,6 +227,7 @@ export const Modal = ({
   resizable = false,
   initialPosition,
   closeOnOutsideClick = true,
+  closeOnEsc = true,
   allowBackgroundInteraction = false,
   expandable = false,
 }: {
@@ -203,6 +255,10 @@ export const Modal = ({
    * If false, clicking the backdrop will NOT close the modal
    */
   closeOnOutsideClick?: boolean;
+  /**
+   * If true, pressing the Escape key will close the modal
+   */
+  closeOnEsc?: boolean;
   /**
    * If true, allow interacting with background (removes pointer events from backdrop)
    */
@@ -746,6 +802,31 @@ export const Modal = ({
       globalObserver.disconnect();
     };
   }, [allowBackgroundInteraction]);
+
+  // Register this modal in the global registry for ESC handling
+  const idRef = useRef<number>(Math.floor(Math.random() * 1e9));
+
+  useEffect(() => {
+    if (!isOpen) return;
+    registerModal({
+      id: idRef.current,
+      zIndex,
+      onClose,
+      closeOnEsc,
+    });
+
+    return () => {
+      unregisterModal(idRef.current);
+    };
+    // We intentionally want to run this only on mount/unmount when isOpen true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Keep registry entry updated when props change
+  useEffect(() => {
+    if (!isOpen) return;
+    updateModal(idRef.current, { zIndex, onClose, closeOnEsc });
+  }, [isOpen, zIndex, onClose, closeOnEsc]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>

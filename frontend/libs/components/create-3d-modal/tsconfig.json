@@ -3,6 +3,15 @@
   "include": [],
   "references": [
     {
+      "path": "../../tauri-api"
+    },
+    {
+      "path": "../../api"
+    },
+    {
+      "path": "../image-input"
+    },
+    {
       "path": "../gallery-modal"
     },
     {

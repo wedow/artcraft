@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   faGear,
   faImages,
@@ -6,6 +6,7 @@ import {
   faFilm,
   faPaintbrush,
   faImage,
+  // faGem,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "@storyteller/ui-button";
 import { AuthButtons } from "./AuthButtons";
@@ -18,7 +19,7 @@ import {
 } from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
-import { downloadFileFromUrl } from "@storyteller/api";
+import { downloadFileFromUrl, FilterMediaClasses } from "@storyteller/api";
 import {
   MenuIconSelector,
   MenuIconItem,
@@ -34,9 +35,14 @@ import {
   is3DSceneLoaded,
   set3DPageMounted,
 } from "~/pages/PageEnigma/Editor/editor";
+// import { usePricingModalStore } from "@storyteller/ui-pricing-modal"; - Uncomment for pricing modal - BFlat
+import toast from "react-hot-toast";
 interface Props {
   pageName: string;
+  loginSignUpPressed: () => void;
 }
+
+const SWITCHER_THROTTLE_TIME = 500; // milliseconds
 
 const appMenuTabs: MenuIconItem[] = [
   {
@@ -70,7 +76,7 @@ const appMenuTabs: MenuIconItem[] = [
 export const topNavMediaId = signal<string>("");
 export const topNavMediaUrl = signal<string>("");
 
-export const TopBar = ({ pageName }: Props) => {
+export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
   useSignals();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -84,13 +90,32 @@ export const TopBar = ({ pageName }: Props) => {
 
   const is3DSceneReady = is3DSceneLoaded.value;
   const is3DEditorReady = is3DEditorInitialized.value;
+  const [disableSwitcher, setDisableSwitcher] = useState(false);
+  const switcherThrottle = useRef(false);
+
   const disableTabSwitcher = () => {
     return (
-      useTabStore.getState().activeTabId === "3D" &&
-      !is3DEditorReady &&
-      !is3DSceneReady
+      disableSwitcher ||
+      (useTabStore.getState().activeTabId === "3D" &&
+        !is3DEditorReady &&
+        !is3DSceneReady)
     );
   };
+
+  const downloadFile = async (url: string, mediaClass?: string) => {
+    try {
+      await downloadFileFromUrl(url);
+      if (mediaClass === FilterMediaClasses.DIMENSIONAL) {
+        toast.success(`Downloaded 3D model`);
+      } else {
+        toast.success(`Downloaded ${mediaClass}`);
+      }
+    } catch (error) {
+      toast.error("Failed to download file");
+    }
+  };
+
+  // const { toggleModal } = usePricingModalStore(); - Uncomment for pricing modal - BFlat
 
   return (
     <>
@@ -113,6 +138,13 @@ export const TopBar = ({ pageName }: Props) => {
               activeMenu={tabStore.activeTabId}
               disabled={disableTabSwitcher()}
               onMenuChange={(tabId) => {
+                // Prevent a second input if the switcher is throttled.
+                if (switcherThrottle.current) {
+                  return;
+                }
+                switcherThrottle.current = true;
+                setDisableSwitcher(true);
+
                 // Disable 3d engine to prevent memory leak.
                 if (tabId === "3D") {
                   set3DPageMounted(true);
@@ -120,6 +152,12 @@ export const TopBar = ({ pageName }: Props) => {
                   set3DPageMounted(false);
                 }
                 useTabStore.getState().setActiveTab(tabId);
+                setTimeout(() => {
+                  // Clear the throttle
+                  switcherThrottle.current = false;
+                  // Trigger a new re-render (important)
+                  setDisableSwitcher(false);
+                }, SWITCHER_THROTTLE_TIME);
               }}
               className="w-fit"
             />
@@ -139,8 +177,17 @@ export const TopBar = ({ pageName }: Props) => {
             )}
           </div>
 
-          <div className="flex justify-end gap-3.5">
+          <div className="flex justify-end gap-3.5 pr-2">
             <div className="flex gap-2">
+              {/* - Uncomment for pricing modal - BFlat */}
+              {/* <Button
+                variant="primary"
+                icon={faGem}
+                onClick={toggleModal}
+                className="shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
+              >
+                Upgrade Now
+              </Button> */}
               <Tooltip content="Settings" position="bottom" delay={300}>
                 <Button
                   variant="secondary"
@@ -159,9 +206,7 @@ export const TopBar = ({ pageName }: Props) => {
 
               <Activity />
             </div>
-            <div className="flex justify-end gap-2">
-              <AuthButtons />
-            </div>
+            <AuthButtons loginSignUpPressed={loginSignUpPressed} />
           </div>
         </nav>
       </header>
@@ -172,7 +217,7 @@ export const TopBar = ({ pageName }: Props) => {
         globalAccountLogoutCallback={() => setLogoutStates()}
       />
 
-      <GalleryModal mode="view" onDownloadClicked={downloadFileFromUrl} />
+      <GalleryModal mode="view" onDownloadClicked={downloadFile} />
     </>
   );
 };

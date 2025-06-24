@@ -62,7 +62,7 @@ interface GalleryModalProps {
   onSelectItem?: (id: string) => void;
   maxSelections?: number;
   onUseSelected?: (selectedItems: GalleryItem[]) => void;
-  onDownloadClicked?: (url: string) => Promise<void>;
+  onDownloadClicked?: (url: string, mediaClass?: string) => Promise<void>;
   onAddToSceneClicked?: (
     url: string,
     media_id: string | undefined
@@ -376,7 +376,7 @@ export const GalleryModal = React.memo(
           )}
           <div className="flex h-full flex-col">
             <div className="border-b border-white/10 p-4 py-3">
-              <div className="grid grid-cols-2 items-center">
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
                   <h2 className="text-xl font-semibold">
                     {mode === "select" ? "Select Images" : "My Library"}

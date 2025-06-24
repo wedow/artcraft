@@ -10,6 +10,7 @@ import { authentication, pageHeight, pageWidth } from "~/signals";
 import { PoseModeSelector } from "./comps/PoseModeSelector";
 import ImageToVideo from "../PageVideo/ImageToVideo";
 import TextToImage from "../PageImage/TextToImage";
+
 import {
   timelineHeight,
   sidePanelWidth,
@@ -72,12 +73,20 @@ import {
   // videoGenerationModels,
   // useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
-import { LoginModal } from "@storyteller/ui-login-modal";
+import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
 
 export const PageEditor = () => {
   useSignals();
+  const { triggerRecheck } = useLoginModalStore();
+
+  const { status } = authentication;
+  useEffect(() => {
+    if (status.value === AUTH_STATUS.LOGGED_OUT) {
+      triggerRecheck();
+    }
+  }, [status.value, triggerRecheck]);
 
   const tabStore = useTabStore();
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -408,7 +417,28 @@ export const PageEditor = () => {
 
   return (
     <div className="w-screen">
-      <TopBar pageName="Edit Scene" />
+      <TopBar
+        loginSignUpPressed={() => {
+          console.log("PRESSED");
+          triggerRecheck();
+        }}
+        pageName="Edit Scene"
+      />
+      <LoginModal
+        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
+        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
+        onOpenChange={(isOpen: boolean) => {
+          if (isOpen) {
+            disableHotkeyInput(DomLevels.DIALOGUE);
+          } else {
+            enableHotkeyInput(DomLevels.DIALOGUE);
+          }
+        }}
+        onArtCraftAuthSuccess={(userInfo: any) => {
+          authentication.status.value = AUTH_STATUS.LOGGED_IN;
+          authentication.userInfo.value = userInfo;
+        }}
+      />
       {tabStore.activeTabId == "3D" && (
         <div>
           <OnboardingHelper />
@@ -527,7 +557,7 @@ export const PageEditor = () => {
       )}
       {tabStore.activeTabId == "IMAGE" && (
         <div>
-          <ImageToVideo
+          <TextToImage
             imageMediaId={topNavMediaId.value}
             imageUrl={topNavMediaUrl.value}
           />
@@ -535,30 +565,12 @@ export const PageEditor = () => {
       )}
       {tabStore.activeTabId == "VIDEO" && (
         <div>
-          <TextToImage
+          <ImageToVideo
             imageMediaId={topNavMediaId.value}
             imageUrl={topNavMediaUrl.value}
           />
         </div>
       )}
-
-      <LoginModal
-        onClose={() => {}}
-        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
-        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
-        openAiLogo="/resources/images/openai-logo.png"
-        onOpenChange={(isOpen: boolean) => {
-          if (isOpen) {
-            disableHotkeyInput(DomLevels.DIALOGUE);
-          } else {
-            enableHotkeyInput(DomLevels.DIALOGUE);
-          }
-        }}
-        onArtCraftAuthSuccess={(userInfo: any) => {
-          authentication.status.value = AUTH_STATUS.LOGGED_IN;
-          authentication.userInfo.value = userInfo;
-        }}
-      />
     </div>
   );
 };

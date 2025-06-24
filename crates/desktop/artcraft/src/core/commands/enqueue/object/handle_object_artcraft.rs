@@ -14,16 +14,18 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
 use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::requests::queue::enqueue_hunyuan2_image_to_3d::{enqueue_hunyuan2_image_to_3d, Hunyuan2Args};
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
-use storyteller_client::generate::object::generate_hunyuan2_image_to_3d::generate_hunyuan2_image_to_3d;
+use storyteller_client::generate::object::generate_hunyuan_3d_2_0_image_to_3d::generate_hunyuan3d_2_0_image_to_3d;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, State};
+use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
+use storyteller_client::generate::object::generate_hunyuan_3d_2_1_image_to_3d::generate_hunyuan3d_2_1_image_to_3d;
 
 pub async fn handle_object_artcraft(
   request: EnqueueImageTo3dObjectRequest,
@@ -63,13 +65,16 @@ pub async fn handle_object_artcraft(
     None => {
       return Err(InternalObjectError::NoModelSpecified);
     }
-    Some(EnqueueImageTo3dObjectModel::Hunyuan3d2) => {
-      info!("enqueue Hunyuan 3D 2.0");
-      let request = GenerateHunyuan2ImageTo3dRequest { 
+    Some(
+      EnqueueImageTo3dObjectModel::Hunyuan3d2 |
+      EnqueueImageTo3dObjectModel::Hunyuan3d2_0
+    ) => {
+      info!("enqueue Artcraft Hunyuan 3D 2.0");
+      let request = GenerateHunyuan20ImageTo3dRequest { 
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
       };
-      let result = generate_hunyuan2_image_to_3d(
+      let result = generate_hunyuan3d_2_0_image_to_3d(
         &ApiHost::Storyteller,
         Some(&creds),
         request,
@@ -81,6 +86,28 @@ pub async fn handle_object_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Hunyuan 3D 2.0: {:?}", err);
+          return Err(InternalObjectError::StorytellerError(err));
+        }
+      }
+    }
+    Some(EnqueueImageTo3dObjectModel::Hunyuan3d2_1) => {
+      info!("enqueue Artcraft Hunyuan 3D 2.1");
+      let request = GenerateHunyuan21ImageTo3dRequest {
+        uuid_idempotency_token,
+        media_file_token: request.image_media_token,
+      };
+      let result = generate_hunyuan3d_2_1_image_to_3d(
+        &ApiHost::Storyteller,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft Hunyuan 3D 2.1");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft Hunyuan 3D 2.1: {:?}", err);
           return Err(InternalObjectError::StorytellerError(err));
         }
       }

@@ -27,6 +27,7 @@ import { useGenerationCompleteEvent } from "./TauriEvents/generations/useGenerat
 import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
 import { LoadingDots } from "@storyteller/ui-loading";
+import { PricingModal } from "@storyteller/ui-pricing-modal";
 
 import {
   isActionReminderOpen,
@@ -132,6 +133,8 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
           openAiLogo={currentReminderModalProps.openAiLogo}
         />
       )}
+
+      <PricingModal />
     </EngineProvider>
   );
 };

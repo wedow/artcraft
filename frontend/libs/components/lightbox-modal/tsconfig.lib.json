@@ -44,13 +44,16 @@
   ],
   "references": [
     {
+      "path": "../loading-spinner/tsconfig.lib.json"
+    },
+    {
       "path": "../../tauri-api/tsconfig.lib.json"
     },
     {
       "path": "../button/tsconfig.lib.json"
     },
     {
-      "path": "../close-button/tsconfig.lib.json"
+      "path": "../modal/tsconfig.lib.json"
     }
   ]
 }

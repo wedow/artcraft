@@ -7,6 +7,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::model::video_models::VideoModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
@@ -66,14 +67,7 @@ pub struct EnqueueImageToVideoRequest {
   pub image_media_token: Option<MediaFileToken>,
   
   /// The model to use.
-  pub model: Option<EnqueueImageToVideoModel>,
-}
-
-#[derive(Deserialize, Debug, Copy, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum EnqueueImageToVideoModel {
-  #[serde(rename = "kling1_6")]
-  Kling16,
+  pub model: Option<VideoModel>,
 }
 
 #[derive(Serialize)]

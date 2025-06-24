@@ -67,12 +67,18 @@ pub async fn handle_object_fal(
     None => {
       return Err(InternalObjectError::NoModelSpecified);
     }
-    Some(EnqueueImageTo3dObjectModel::Hunyuan3d2) => {
+    Some(
+      EnqueueImageTo3dObjectModel::Hunyuan3d2_0 |
+      EnqueueImageTo3dObjectModel::Hunyuan3d2
+    ) => {
       info!("enqueue Hunyuan 3D 2.0");
       enqueue_hunyuan2_image_to_3d(Hunyuan2Args {
         image_path: filename,
         api_key: &api_key,
       }).await
+    }
+    _ => {
+      return Err(InternalObjectError::AnyhowError(anyhow!("Wrong model specified: {:?}", request.model)));
     }
   };
 

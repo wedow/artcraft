@@ -70,8 +70,13 @@ pub struct EnqueueImageTo3dObjectRequest {
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum EnqueueImageTo3dObjectModel {
+  #[deprecated(note="Use `hunyuan_3d_2_0` instead")]
   #[serde(rename = "hunyuan_3d_2")]
   Hunyuan3d2,
+  #[serde(rename = "hunyuan_3d_2_0")]
+  Hunyuan3d2_0,
+  #[serde(rename = "hunyuan_3d_2_1")]
+  Hunyuan3d2_1,
 }
 
 #[derive(Serialize)]

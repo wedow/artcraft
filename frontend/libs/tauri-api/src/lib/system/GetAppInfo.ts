@@ -1,22 +1,23 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 
-export interface GetBuildInfoSuccess extends CommandResult {
-  payload: GetBuildInfoPayload;
+export interface GetAppInfoSuccess extends CommandResult {
+  payload: GetAppInfoPayload;
 }
 
-export interface GetBuildInfoPayload {
+export interface GetAppInfoPayload {
   build_timestamp: string;
   git_commit_id?: string | null;
   git_commit_short_id?: string | null;
   git_commit_timestamp?: string | null;
+  storyteller_host?: string | null;
 }
 
 // Returns the Success and Error variants directly.
 // Throws on Network/Tauri errors.
-export const GetBuildInfo = async () : Promise<GetBuildInfoSuccess> => {
+export const GetAppInfo = async () : Promise<GetAppInfoSuccess> => {
   try {
-    return await invoke("get_build_info_command") as GetBuildInfoSuccess;
+    return await invoke("get_app_info_command") as GetAppInfoSuccess;
   } catch (error) {
     // NB: Endpoint should be infalliable
     throw error;

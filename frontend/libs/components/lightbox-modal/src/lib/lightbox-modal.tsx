@@ -21,7 +21,7 @@ interface LightboxModalProps {
   additionalInfo?: React.ReactNode;
   downloadUrl?: string;
   mediaId?: string;
-  onDownloadClicked?: (url: string) => Promise<void>;
+  onDownloadClicked?: (url: string, mediaClass?: string) => Promise<void>;
   onAddToSceneClicked?: (
     url: string,
     media_id: string | undefined
@@ -164,7 +164,7 @@ export function LightboxModal({
                     icon={faDownToLine}
                     onClick={async (e) => {
                       e.stopPropagation();
-                      await onDownloadClicked(downloadUrl);
+                      await onDownloadClicked(downloadUrl, mediaClass);
                     }}
                   >
                     Download

@@ -18,10 +18,10 @@ use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
-use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
-use artcraft_api_defs::generate::object::generate_hunyuan_21_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dRequest;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_image_to_3d::GenerateHunyuan2ImageTo3dResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dResponse;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProAspectRatio;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProDuration;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
@@ -527,8 +527,8 @@ use crate::http_server::web_utils::response_success_helpers::*;
     GenerateFluxPro11UltraTextToImageResponse,
     GenerateHunyuan21ImageTo3dRequest,
     GenerateHunyuan21ImageTo3dResponse,
-    GenerateHunyuan2ImageTo3dRequest,
-    GenerateHunyuan2ImageTo3dResponse,
+    GenerateHunyuan20ImageTo3dRequest,
+    GenerateHunyuan20ImageTo3dResponse,
     GenerateKling16ProAspectRatio,
     GenerateKling16ProDuration,
     GenerateKling16ProImageToVideoRequest,

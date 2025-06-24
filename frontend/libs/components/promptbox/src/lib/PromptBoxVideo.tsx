@@ -183,6 +183,8 @@ export const PromptBoxVideo = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
+    console.log("Handle Enqueue");
+
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
       // the backend hangs on a given request.
