@@ -197,7 +197,8 @@ export const PaintSurface = ({
         stroke: activeTool === "draw" ? brushColor : fillColor || "#ffffff",
         strokeWidth: brushSize / stage.scaleX(),
         draggable: true,
-        opacity: opacity
+        opacity: opacity,
+        locked: false,
       };
       store.selectNode(null);
       store.addLineNode(newLineNode, false);  // Don't save state when starting line
