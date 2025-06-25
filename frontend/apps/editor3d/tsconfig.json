@@ -29,6 +29,9 @@
   },
   "references": [
     {
+      "path": "../../libs/model-list"
+    },
+    {
       "path": "../../libs/components/pagination"
     },
     {
@@ -74,6 +77,9 @@
       "path": "../../libs/components/toaster"
     },
     {
+      "path": "../../libs/components/login-modal"
+    },
+    {
       "path": "../../libs/components/model-selector"
     },
     {
@@ -108,9 +114,6 @@
     },
     {
       "path": "../../libs/components/gravatar"
-    },
-    {
-      "path": "../../libs/components/login-modal"
     },
     {
       "path": "../../libs/components/select"

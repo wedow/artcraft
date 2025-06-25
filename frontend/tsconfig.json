@@ -146,6 +146,9 @@
     },
     {
       "path": "./libs/model-list"
+    },
+    {
+      "path": "./libs/components/upload-modal-3d"
     }
   ]
 }

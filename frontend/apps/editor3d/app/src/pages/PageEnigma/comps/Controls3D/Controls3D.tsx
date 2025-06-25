@@ -15,11 +15,9 @@ import {
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { EngineContext } from "../../contexts/EngineContext";
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
-import { assetModalVisibleDuringDrag, assetModalVisible } from "../../signals";
 import {
   Create3dModal,
   useCreate3dModalStore,
-  // eslint-disable-next-line import/no-unresolved
 } from "@storyteller/ui-create-3d-modal";
 // import { v4 as uuidv4 } from "uuid";
 // import { addObject } from "../../signals/objectGroup/addObject";
@@ -27,13 +25,13 @@ import {
 import { GetFalApiKey } from "@storyteller/tauri-api"; // Fix import path
 // eslint-disable-next-line import/no-unresolved
 // import { AssetType } from "~/enums";
-import { AssetModal } from "../AssetMenu/AssetModal";
 import { selectedMode } from "../../signals/selectedMode";
 import { useSignals } from "@preact/signals-react/runtime";
 import { outlinerState } from "../../signals/outliner/outliner";
 import { twMerge } from "tailwind-merge";
 // eslint-disable-next-line import/no-unresolved
 import { setLogoutStates } from "~/signals/authentication/utilities";
+import { useGalleryModal } from "@storyteller/ui-gallery-modal";
 
 export const Controls3D = () => {
   useSignals();
@@ -45,12 +43,12 @@ export const Controls3D = () => {
   // Track processed 3D models by their media token to prevent duplicates
   const processedModelsRef = useRef<Record<string, boolean>>({});
 
+  const { openView, isOpen: isGalleryOpen } = useGalleryModal();
+
   useEffect(() => {
-    // Check if scene is empty and onboarding helper is not visible
     const checkSceneEmpty = () => {
       const isSceneEmpty =
-        outlinerState.items.value.length === 0 && !assetModalVisible.value;
-
+        outlinerState.items.value.length === 0 && !isGalleryOpen;
       setShowEmptySceneTooltip(isSceneEmpty);
     };
 
@@ -63,8 +61,7 @@ export const Controls3D = () => {
     return () => {
       unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetModalVisible.value]);
+  }, [isGalleryOpen]);
 
   const handleModeChange = (value: string) => {
     selectedMode.value = value;
@@ -128,8 +125,7 @@ export const Controls3D = () => {
   // }, []);
 
   const handleOpenModal = () => {
-    assetModalVisibleDuringDrag.value = true;
-    assetModalVisible.value = true;
+    openView("3d");
   };
 
   const handleOpenCreate3dModal = async () => {
@@ -261,8 +257,6 @@ export const Controls3D = () => {
           </div>
         </div>
       </div>
-
-      <AssetModal />
 
       <Create3dModal onModelComplete={handleModelComplete} />
 

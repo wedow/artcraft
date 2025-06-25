@@ -9,9 +9,6 @@
       "path": "../../tauri-api"
     },
     {
-      "path": "../../tauri-utils"
-    },
-    {
       "path": "../button"
     },
     {

@@ -3,34 +3,37 @@
   "include": [],
   "references": [
     {
-      "path": "../upload-modal-3d"
-    },
-    {
-      "path": "../slider-v2"
-    },
-    {
-      "path": "../popover"
-    },
-    {
       "path": "../../api"
     },
     {
-      "path": "../loading-spinner"
+      "path": "../select"
     },
     {
-      "path": "../close-button"
-    },
-    {
-      "path": "../button"
-    },
-    {
-      "path": "../lightbox-modal"
+      "path": "../upload-modal"
     },
     {
       "path": "../modal"
     },
     {
-      "path": "../tooltip"
+      "path": "../loading"
+    },
+    {
+      "path": "../../../apps/editor3d"
+    },
+    {
+      "path": "../file-uploader"
+    },
+    {
+      "path": "../label"
+    },
+    {
+      "path": "../input"
+    },
+    {
+      "path": "../button"
+    },
+    {
+      "path": "../list-dropdown"
     },
     {
       "path": "./tsconfig.lib.json"

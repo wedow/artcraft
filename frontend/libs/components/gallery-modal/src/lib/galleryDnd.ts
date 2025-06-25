@@ -1,8 +1,5 @@
 import { GalleryItem } from "./gallery-modal";
-import {
-  galleryModalVisibleDuringDrag,
-  galleryReopenAfterDragSignal,
-} from "./galleryModalSignals";
+import { useGalleryModalStore } from "./galleryModalStore";
 
 interface DragState {
   item: GalleryItem | null;
@@ -32,7 +29,7 @@ function onPointerDown(event: React.PointerEvent, item: GalleryItem) {
   dragState.currX = event.pageX;
   dragState.currY = event.pageY;
   dragState.isDragging = false;
-  galleryModalVisibleDuringDrag.value = false;
+  useGalleryModalStore.setState({ visibleDuringDrag: false });
   document.body.style.cursor = "grabbing";
   window.addEventListener("pointermove", onPointerMove);
   window.addEventListener("pointerup", onPointerUp);
@@ -88,7 +85,8 @@ function onPointerUp(event: PointerEvent) {
   }
   dragState.item = null;
   dragState.isDragging = false;
-  galleryModalVisibleDuringDrag.value = galleryReopenAfterDragSignal.value;
+  const { reopenAfterDrag } = useGalleryModalStore.getState();
+  useGalleryModalStore.setState({ visibleDuringDrag: reopenAfterDrag });
   document.body.style.cursor = "";
   window.removeEventListener("pointermove", onPointerMove);
   window.removeEventListener("pointerup", onPointerUp);

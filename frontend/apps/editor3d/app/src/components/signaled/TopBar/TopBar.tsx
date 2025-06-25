@@ -12,14 +12,10 @@ import { Button } from "@storyteller/ui-button";
 import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
-import {
-  GalleryModal,
-  galleryModalVisibleViewMode,
-  galleryModalVisibleDuringDrag,
-} from "@storyteller/ui-gallery-modal";
+import { useGalleryModal } from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
-import { downloadFileFromUrl, FilterMediaClasses } from "@storyteller/api";
+// import { downloadFileFromUrl, FilterMediaClasses } from "@storyteller/api";
 import {
   MenuIconSelector,
   MenuIconItem,
@@ -36,7 +32,8 @@ import {
   set3DPageMounted,
 } from "~/pages/PageEnigma/Editor/editor";
 // import { usePricingModalStore } from "@storyteller/ui-pricing-modal"; - Uncomment for pricing modal - BFlat
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
+
 interface Props {
   pageName: string;
   loginSignUpPressed: () => void;
@@ -81,9 +78,10 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
+  const { openView } = useGalleryModal();
+
   const handleOpenGalleryModal = () => {
-    galleryModalVisibleViewMode.value = true;
-    galleryModalVisibleDuringDrag.value = true;
+    openView();
   };
 
   const tabStore = useTabStore();
@@ -100,19 +98,6 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
         !is3DEditorReady &&
         !is3DSceneReady)
     );
-  };
-
-  const downloadFile = async (url: string, mediaClass?: string) => {
-    try {
-      await downloadFileFromUrl(url);
-      if (mediaClass === FilterMediaClasses.DIMENSIONAL) {
-        toast.success(`Downloaded 3D model`);
-      } else {
-        toast.success(`Downloaded ${mediaClass}`);
-      }
-    } catch (error) {
-      toast.error("Failed to download file");
-    }
   };
 
   // const { toggleModal } = usePricingModalStore(); - Uncomment for pricing modal - BFlat
@@ -217,7 +202,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
         globalAccountLogoutCallback={() => setLogoutStates()}
       />
 
-      <GalleryModal mode="view" onDownloadClicked={downloadFile} />
+      {/* GalleryModalRoot is now mounted higher in the tree (PageEnigma). */}
     </>
   );
 };

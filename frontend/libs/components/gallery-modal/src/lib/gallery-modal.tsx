@@ -1,5 +1,4 @@
 import { Modal } from "@storyteller/ui-modal";
-import { LightboxModal } from "@storyteller/ui-lightbox-modal";
 import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
@@ -19,11 +18,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { GalleryDraggableItem } from "./GalleryDraggableItem";
 import { useSignals } from "@preact/signals-react/runtime";
-import {
-  galleryModalVisibleDuringDrag,
-  galleryReopenAfterDragSignal,
-  galleryModalVisibleViewMode,
-} from "./galleryModalSignals";
+import { useGalleryModalStore } from "./galleryModalStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilter,
@@ -35,10 +30,21 @@ import {
   faExpand,
   faCompress,
   faArrowsRotate,
+  faUser,
+  faSun,
+  faMountainCity,
+  faDog,
+  faUpFromLine,
 } from "@fortawesome/pro-solid-svg-icons";
 import { PopoverMenu } from "@storyteller/ui-popover";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
 import { Tooltip } from "@storyteller/ui-tooltip";
+import { UploadModal3D } from "@storyteller/ui-upload-modal-3d";
+import {
+  MediaFilesApi,
+  FilterEngineCategories,
+  MediaFile,
+} from "@storyteller/api";
 
 export interface GalleryItem {
   id: string;
@@ -47,6 +53,9 @@ export interface GalleryItem {
   fullImage?: string | null;
   createdAt: string;
   mediaClass?: string;
+  name?: string;
+  description?: string;
+  engineCategory?: FilterEngineCategories;
 }
 
 interface GroupedItems {
@@ -85,21 +94,34 @@ export const GalleryModal = React.memo(
     forceFilter,
   }: GalleryModalProps) => {
     const [loading, setLoading] = useState(false);
-    const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(
-      null
-    );
-    const [isLightboxVisible, setIsLightboxVisible] = useState(false);
     const [failedImageUrls] = useState<Set<string>>(new Set());
     const [username, setUsername] = useState<string>("");
-    const forceFilterRef = useRef(forceFilter);
-    const [activeFilter, setActiveFilter] = useState(forceFilter || "all");
+    const { initialFilter } = useGalleryModalStore();
 
-    // If forceFilter is provided, always use it
+    const [activeFilter, setActiveFilter] = useState(
+      initialFilter || forceFilter || "all"
+    );
+    const [active3DCategory, setActive3DCategory] = useState("all");
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] =
+      useState<FilterEngineCategories | null>(null);
+    const [isSelectVisible, setIsSelectVisible] = useState(true);
+
+    const {
+      visibleDuringDrag,
+      reopenAfterDrag,
+      setReopenAfterDrag,
+      openLightbox,
+    } = useGalleryModalStore();
+
     useEffect(() => {
-      if (forceFilterRef.current) {
-        setActiveFilter(forceFilterRef.current);
+      if (initialFilter) {
+        setActiveFilter(initialFilter);
+      } else if (forceFilter) {
+        setActiveFilter(forceFilter);
       }
-    }, [forceFilterRef]);
+    }, [initialFilter, forceFilter]);
+
     const minColumns = 3;
     const maxColumns = 12;
     // Default gridColumns to 5
@@ -114,9 +136,8 @@ export const GalleryModal = React.memo(
     const [hasMore, setHasMore] = useState(true);
     const pageSize = 25;
 
-    const imageUrl = lightboxImage?.fullImage || "";
-
     const api = useMemo(() => new GalleryModalApi(), []);
+    const mediaFilesApi = useMemo(() => new MediaFilesApi(), []);
     const usersApi = useMemo(() => new UsersApi(), []);
 
     const formatDate = useCallback((date: string) => {
@@ -165,10 +186,10 @@ export const GalleryModal = React.memo(
           setUsername(session.data.user.username);
         }
       };
-      if (isOpen || (mode === "view" && galleryModalVisibleViewMode.value)) {
+      if (typeof isOpen === "boolean" ? isOpen : true) {
         getUsername();
       }
-    }, [usersApi, mode, galleryModalVisibleViewMode.value, isOpen]);
+    }, [usersApi, isOpen]);
 
     // filter state
     const FILTERS = [
@@ -203,9 +224,118 @@ export const GalleryModal = React.memo(
       }
     };
 
+    const asset3DCategories = useMemo(
+      () => [
+        { id: "all", label: "All", icon: faBorderAll },
+        {
+          id: "character",
+          label: "Characters",
+          icon: faUser,
+          engineCategory: FilterEngineCategories.CHARACTER,
+        },
+        {
+          id: "objects",
+          label: "Objects",
+          icon: faCube,
+          engineCategory: FilterEngineCategories.OBJECT,
+        },
+        {
+          id: "sets",
+          label: "Sets",
+          icon: faMountainCity,
+          engineCategory: FilterEngineCategories.LOCATION,
+        },
+        {
+          id: "creatures",
+          label: "Creatures",
+          icon: faDog,
+          engineCategory: FilterEngineCategories.CREATURE,
+        },
+        {
+          id: "skybox",
+          label: "Skybox",
+          icon: faSun,
+          engineCategory: FilterEngineCategories.SKYBOX,
+        },
+      ],
+      []
+    );
+
     const loadItems = async (reset = false) => {
       if (!username) return;
       setLoading(true);
+
+      if (activeFilter === "3d") {
+        try {
+          const category = asset3DCategories.find(
+            (c) => c.id === active3DCategory
+          );
+          const filter_engine_categories = category?.engineCategory
+            ? [category.engineCategory]
+            : undefined;
+
+          const [userFilesResponse, featuredFilesResponse] = await Promise.all([
+            mediaFilesApi.ListUserMediaFiles({
+              username: username,
+              include_user_uploads: true,
+              filter_engine_categories,
+              filter_media_classes: [FilterMediaClasses.DIMENSIONAL],
+              page_index: reset ? 0 : pageIndex,
+              page_size: pageSize,
+            }),
+            mediaFilesApi.ListFeaturedMediaFiles({
+              filter_engine_categories,
+              filter_media_classes: [FilterMediaClasses.DIMENSIONAL],
+            }),
+          ]);
+
+          let combinedItems: MediaFile[] = [];
+          if (userFilesResponse.success && userFilesResponse.data) {
+            combinedItems = combinedItems.concat(userFilesResponse.data);
+          }
+          if (featuredFilesResponse.success && featuredFilesResponse.data) {
+            combinedItems = combinedItems.concat(featuredFilesResponse.data);
+          }
+
+          const uniqueItems = Array.from(
+            new Map(combinedItems.map((item) => [item.token, item])).values()
+          );
+
+          if (uniqueItems.length > 0) {
+            const thumbnail_size = 250;
+            const newItems = uniqueItems.map((item: MediaFile) => ({
+              id: item.token,
+              label: item.maybe_title || "3D Asset",
+              thumbnail:
+                item.cover_image?.maybe_cover_image_public_bucket_path ||
+                item.media_links.thumbnail_template?.replace(
+                  "{WIDTH}",
+                  thumbnail_size.toString()
+                ),
+              fullImage: item.media_links.cdn_url,
+              createdAt: item.created_at,
+              mediaClass: "dimensional",
+              engineCategory: item.origin_category as FilterEngineCategories,
+              name: item.maybe_title ?? undefined,
+            }));
+
+            setAllItems((prev) => (reset ? newItems : [...prev, ...newItems]));
+            const userPagination = userFilesResponse.pagination;
+            const current = userPagination?.current ?? 0;
+            const total = userPagination?.total_page_count ?? 1;
+            setPageIndex(current + 1);
+            setHasMore(current + 1 < total);
+          } else {
+            if (reset) setAllItems([]);
+            setHasMore(false);
+          }
+        } catch (error) {
+          console.error("Failed to fetch 3d library items:", error);
+        }
+        setLoading(false);
+        return;
+      }
+
       try {
         let response = null;
         const filterMediaClasses = getFilterMediaClass(activeFilter);
@@ -272,41 +402,30 @@ export const GalleryModal = React.memo(
 
     useEffect(() => {
       // Refresh every time the modal is opened
-      const modalIsOpen =
-        mode === "view"
-          ? galleryModalVisibleViewMode.value
-          : typeof isOpen === "boolean"
-          ? isOpen
-          : true;
+      const modalIsOpen = typeof isOpen === "boolean" ? isOpen : true;
       if (modalIsOpen && username) {
         refreshGallery();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-      mode,
-      isOpen,
-      galleryModalVisibleViewMode.value,
-      username,
-      activeFilter,
-    ]);
+    }, [mode, isOpen, username, activeFilter]);
+
+    useEffect(() => {
+      // Refresh when active 3D category changes
+      if (activeFilter === "3d") {
+        refreshGallery();
+      }
+    }, [active3DCategory]);
 
     const handleItemClick = useCallback(
       (item: GalleryItem) => {
         if (mode === "select" && onSelectItem) {
           onSelectItem(item.id);
         } else {
-          setLightboxImage(item);
-          setIsLightboxVisible(true);
+          openLightbox(item);
         }
       },
-      [mode, onSelectItem]
+      [mode, onSelectItem, openLightbox]
     );
-
-    const handleCloseLightbox = useCallback(() => {
-      setIsLightboxVisible(false);
-      // Wait for animation to complete before removing the image
-      setTimeout(() => setLightboxImage(null), 300);
-    }, []);
 
     const handleDeselectAll = useCallback(() => {
       selectedItemIds.forEach((id: any) => onSelectItem?.(id));
@@ -337,24 +456,40 @@ export const GalleryModal = React.memo(
       }
     };
 
+    const handleAddAsset = () => {
+      setIsUploadModalOpen(true);
+      setSelectedCategory(null);
+      setIsSelectVisible(true);
+    };
+
+    const handleUploadSuccess = (category: FilterEngineCategories) => {
+      setIsUploadModalOpen(false);
+      // Optional: set the category filter to the newly uploaded type
+      const categoryId = asset3DCategories.find(
+        (c) => c.engineCategory === category
+      )?.id;
+      if (categoryId) {
+        setActive3DCategory(categoryId);
+      } else {
+        setActive3DCategory("all");
+      }
+      refreshGallery();
+    };
+
     return (
       <>
         <Modal
           resizable={mode === "view"}
           isOpen={
             mode === "view"
-              ? galleryModalVisibleViewMode.value &&
-                galleryModalVisibleDuringDrag.value
+              ? (typeof isOpen === "boolean" ? isOpen : true) &&
+                visibleDuringDrag
               : typeof isOpen === "boolean"
               ? isOpen
               : true
           }
           onClose={() => {
-            if (mode === "view") {
-              onClose?.() || (galleryModalVisibleViewMode.value = false);
-            } else {
-              onClose?.();
-            }
+            onClose?.();
           }}
           className={twMerge(
             "h-[620px] max-w-4xl",
@@ -384,11 +519,8 @@ export const GalleryModal = React.memo(
                       <input
                         type="checkbox"
                         id="gallery-reopen-after-drag"
-                        checked={galleryReopenAfterDragSignal.value}
-                        onChange={(e) =>
-                          (galleryReopenAfterDragSignal.value =
-                            e.target.checked)
-                        }
+                        checked={reopenAfterDrag}
+                        onChange={(e) => setReopenAfterDrag(e.target.checked)}
                         className="h-4 w-4 cursor-pointer rounded-lg border-gray-300 bg-gray-700 text-primary focus:ring-primary"
                       />
                       <label
@@ -401,7 +533,20 @@ export const GalleryModal = React.memo(
                   )}
                 </div>
                 <div className="flex justify-end gap-2 items-center">
-                  {/* Refresh button */}
+                  {activeFilter === "3d" && (
+                    <Tooltip position="top" content="Upload 3D Asset">
+                      <Button
+                        variant="action"
+                        onClick={handleAddAsset}
+                        className="relative z-[51] h-9 w-9 bg-primary/80 hover:bg-primary"
+                      >
+                        <FontAwesomeIcon
+                          icon={faUpFromLine}
+                          className="text-lg text-white"
+                        />
+                      </Button>
+                    </Tooltip>
+                  )}
                   <Tooltip
                     position="top"
                     content="Refresh list"
@@ -420,7 +565,6 @@ export const GalleryModal = React.memo(
                       />
                     </Button>
                   </Tooltip>
-                  {/* Image fit toggle button */}
                   <Tooltip
                     position="top"
                     content="Toggle image fit"
@@ -442,7 +586,6 @@ export const GalleryModal = React.memo(
                     </Button>
                   </Tooltip>
 
-                  {/* Slider */}
                   <div className="w-48 mx-3 relative z-[51] flex items-center gap-2">
                     <SliderV2
                       min={minColumns}
@@ -459,12 +602,9 @@ export const GalleryModal = React.memo(
                       } columns`}
                     />
                   </div>
-                  {/* Filter popover */}
                   <Tooltip
                     position="top"
-                    content={
-                      forceFilterRef.current ? "Filter locked" : "Filter"
-                    }
+                    content={forceFilter ? "Filter locked" : "Filter"}
                     closeOnClick={true}
                   >
                     <PopoverMenu
@@ -472,23 +612,19 @@ export const GalleryModal = React.memo(
                       position="bottom"
                       align="end"
                       buttonClassName={`relative z-[51] mr-3 ${
-                        forceFilterRef.current
-                          ? "opacity-70 pointer-events-none"
-                          : ""
+                        forceFilter ? "opacity-70 pointer-events-none" : ""
                       }`}
                       panelClassName="min-w-36"
                       items={FILTERS.map((f) => ({
                         label: f.label,
                         selected: activeFilter === f.id,
                         icon: f.icon,
-                        // Use a custom property that will be passed through but not cause type errors
                         customProps: {
-                          disabled: forceFilterRef.current !== undefined,
+                          disabled: forceFilter !== undefined,
                         },
                       }))}
                       onSelect={(item) => {
-                        // Only allow filter changes if no forceFilter was provided
-                        if (!forceFilterRef.current) {
+                        if (!forceFilter) {
                           const filter = FILTERS.find(
                             (f) => f.label === item.label
                           );
@@ -506,17 +642,31 @@ export const GalleryModal = React.memo(
                   {mode === "view" && <Modal.ExpandButton />}
                   <CloseButton
                     onClick={() => {
-                      if (mode === "view") {
-                        galleryModalVisibleViewMode.value = false;
-                      } else {
-                        onClose?.();
-                      }
+                      onClose?.();
                     }}
                     className="relative z-[51]"
                   />
                 </div>
               </div>
             </div>
+
+            {activeFilter === "3d" && (
+              <div className="px-4 py-2.5 flex items-center gap-2 border-white/10">
+                {asset3DCategories.map((cat) => (
+                  <Button
+                    key={cat.id}
+                    variant={
+                      active3DCategory === cat.id ? "primary" : "secondary"
+                    }
+                    onClick={() => setActive3DCategory(cat.id)}
+                    className="px-3 py-1.5 text-xs"
+                  >
+                    <FontAwesomeIcon icon={cat.icon} />
+                    {cat.label}
+                  </Button>
+                ))}
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
               {loading && allItems.length === 0 ? (
@@ -624,24 +774,20 @@ export const GalleryModal = React.memo(
           </div>
         </Modal>
 
-        <LightboxModal
-          isOpen={isLightboxVisible}
-          onClose={handleCloseLightbox}
-          onCloseGallery={() =>
-            mode === "view"
-              ? (galleryModalVisibleViewMode.value = false)
-              : onClose?.()
+        <UploadModal3D
+          onClose={() => {
+            setIsUploadModalOpen(false);
+          }}
+          onSuccess={(category: FilterEngineCategories) =>
+            handleUploadSuccess(category)
           }
-          imageUrl={imageUrl}
-          imageAlt={lightboxImage?.label || ""}
-          onImageError={() => imageUrl && handleImageError(imageUrl)}
-          title={lightboxImage?.label}
-          createdAt={lightboxImage?.createdAt}
-          downloadUrl={imageUrl}
-          mediaId={lightboxImage?.id}
-          onDownloadClicked={onDownloadClicked}
-          onAddToSceneClicked={onAddToSceneClicked}
-          mediaClass={lightboxImage?.mediaClass}
+          isOpen={isUploadModalOpen}
+          title={`Upload 3D Asset`}
+          titleIcon={faUpFromLine}
+          preselectedCategory={
+            selectedCategory || FilterEngineCategories.OBJECT
+          }
+          isSelectVisible={isSelectVisible}
         />
       </>
     );

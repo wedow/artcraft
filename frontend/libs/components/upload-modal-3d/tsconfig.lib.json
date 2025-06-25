@@ -44,13 +44,37 @@
   ],
   "references": [
     {
-      "path": "../tab-selector/tsconfig.lib.json"
+      "path": "../../api/tsconfig.lib.json"
+    },
+    {
+      "path": "../select/tsconfig.lib.json"
+    },
+    {
+      "path": "../upload-modal/tsconfig.lib.json"
+    },
+    {
+      "path": "../modal/tsconfig.lib.json"
+    },
+    {
+      "path": "../loading/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../apps/editor3d"
+    },
+    {
+      "path": "../file-uploader/tsconfig.lib.json"
+    },
+    {
+      "path": "../label/tsconfig.lib.json"
+    },
+    {
+      "path": "../input/tsconfig.lib.json"
     },
     {
       "path": "../button/tsconfig.lib.json"
     },
     {
-      "path": "../modal/tsconfig.lib.json"
+      "path": "../list-dropdown/tsconfig.lib.json"
     }
   ]
 }
