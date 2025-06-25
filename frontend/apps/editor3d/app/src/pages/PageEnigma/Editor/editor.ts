@@ -217,7 +217,11 @@ class Editor {
   // Allows us to cancel the queued render
   private renderEventToken: number;
   private shouldRender: boolean;
-  private isMounted: boolean;
+  private isMounted: boolean = false;
+  private _isEngineDataLoaded: boolean = false;
+  isEngineDataLoaded() {
+    return this._isEngineDataLoaded;
+  }
 
   constructor() {
     this.processingHasFailed = false;
@@ -471,10 +475,11 @@ class Editor {
     cacheJsonString: cacheJson = "",
   }: EditorInitializeConfig) {
     if (!this.can_initialize) {
-      console.log("Reinitializing 3D editor");
-      // return;
+      console.log("3D editor is already initialized");
+      return;
     }
 
+    this._isEngineDataLoaded = false;
     this.can_initialize = false;
 
     // This is to prevent recording processing from happening twice there is an update loop bug at its core.
@@ -671,6 +676,7 @@ class Editor {
 
     const onloadCallback = () => {
       console.log("Setting Scene is loaded");
+      this._isEngineDataLoaded = true;
       setIs3DSceneLoaded(true);
     };
 
@@ -1216,10 +1222,10 @@ class Editor {
             : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 576
               : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 900
                 : this.render_camera_aspect_ratio ===
-                    meraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 600
                   : 1000;
         const height =
@@ -1228,10 +1234,10 @@ class Editor {
             : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 1024
               : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 600
                 : this.render_camera_aspect_ratio ===
-                    meraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 900
                   : 1000;
 

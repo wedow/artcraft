@@ -61,7 +61,8 @@ export const EngineProvider = ({ sceneToken, children }: Props) => {
       // If the tab is changed, cache state, unmount the editor and clear all input params
       // This condition makes sure the editor saves a fully loaded scene so it doesn't lose data
       // If the load was incomplete, we'll preserve the last cache anyway.
-      if (is3DSceneLoaded.peek()) {
+      // FIX: Only save the JSON if the engine scene was loaded and has valid data to be saved
+      if (activeEditorRef.current.isEngineDataLoaded()) {
         const sceneGenerationMetadata = getSceneGenerationMetaData(
           activeEditorRef.current,
         );
