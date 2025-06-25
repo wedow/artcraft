@@ -131,7 +131,6 @@ pub async fn handle_video_artcraft(
       }
     }
     Some(VideoModel::Kling21Pro) => {
-
       info!("enqueue Kling 2.1 Pro with Artcraft API");
       selected_model = Some(GenerationModel::Kling21Pro);
       let request = GenerateKling21ProImageToVideoRequest {

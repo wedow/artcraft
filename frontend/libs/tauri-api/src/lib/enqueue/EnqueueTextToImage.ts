@@ -52,7 +52,7 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
     }
   }
 
-  let result = await invoke("enqueue_text_to_image_command", { 
+   const result = await invoke("enqueue_text_to_image_command", { 
     request: {
       prompt: request.prompt,
       model: modelName,

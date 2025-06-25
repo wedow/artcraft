@@ -26,11 +26,6 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
 
   const selectedModelInfo : ModelInfo | undefined = IMAGE_MODELS_BY_LABEL[selectedModel];
 
-  console.log("TextToImage - selectedModels", selectedModels);
-  console.log("TextToImage - selectedModel", selectedModel);
-  console.log("TextToImage - selectedModelInfo", selectedModelInfo);
-
-
   const jobContext: JobContextType = {
     jobTokens: [],
     addJobToken: () => {},

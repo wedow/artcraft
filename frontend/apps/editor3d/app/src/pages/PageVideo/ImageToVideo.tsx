@@ -8,6 +8,8 @@ import {
   useModelSelectorStore,
   videoGenerationModels,
 } from "@storyteller/ui-model-selector";
+import { VIDEO_MODELS_BY_LABEL } from "@storyteller/model-list";
+import { ModelInfo } from "@storyteller/model-list";
 
 interface ImageToVideoProps {
   imageMediaId?: string;
@@ -17,13 +19,12 @@ interface ImageToVideoProps {
 const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedModels } = useModelSelectorStore();
+
   const selectedModel =
     selectedModels[ModelCategory.ImageToVideo] ||
     videoGenerationModels[0]?.label;
 
-  console.log("Selected model:", selectedModel)
-  console.log("Image Media Id:", imageMediaId)
-  console.log("Image URL:", imageUrl)
+  const selectedModelInfo : ModelInfo | undefined = VIDEO_MODELS_BY_LABEL[selectedModel];
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -53,6 +54,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
               return jobContext;
             }}
             model={selectedModel}
+            modelInfo={selectedModelInfo}
             imageMediaId={imageMediaId}
             url={imageUrl ?? undefined}
             onEnqueuePressed={async () => {
