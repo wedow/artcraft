@@ -35,6 +35,7 @@ import {
   faMountainCity,
   faDog,
   faUpFromLine,
+  faChevronRight,
 } from "@fortawesome/pro-solid-svg-icons";
 import { PopoverMenu } from "@storyteller/ui-popover";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
@@ -45,21 +46,16 @@ import {
   FilterEngineCategories,
   MediaFile,
 } from "@storyteller/api";
-
-export interface GalleryItem {
-  id: string;
-  label: string;
-  thumbnail: string | null;
-  fullImage?: string | null;
-  createdAt: string;
-  mediaClass?: string;
-  name?: string;
-  description?: string;
-  engineCategory?: FilterEngineCategories;
-}
+import { Switch } from "@storyteller/ui-switch";
+import { GalleryItem } from "./types";
+import { demoCharacters, demoShapes } from "./demoData";
 
 interface GroupedItems {
   [date: string]: GalleryItem[];
+}
+
+interface Grouped3DItems {
+  [categoryName: string]: GalleryItem[];
 }
 
 type ModalMode = "select" | "view";
@@ -106,6 +102,7 @@ export const GalleryModal = React.memo(
     const [selectedCategory, setSelectedCategory] =
       useState<FilterEngineCategories | null>(null);
     const [isSelectVisible, setIsSelectVisible] = useState(true);
+    const [showArtCraftOnly, setShowArtCraftOnly] = useState(false);
 
     const {
       visibleDuringDrag,
@@ -113,6 +110,19 @@ export const GalleryModal = React.memo(
       setReopenAfterDrag,
       openLightbox,
     } = useGalleryModalStore();
+
+    const [featuredItems, setFeaturedItems] = useState<GalleryItem[]>([]);
+    const [grouped3dItems, setGrouped3dItems] = useState<Grouped3DItems>({});
+
+    const requestCounter = useRef(0);
+
+    const cache = useRef<{
+      user: { [category: string]: GalleryItem[] };
+      featured: { [category: string]: GalleryItem[] };
+      userPagination: {
+        [category: string]: { pageIndex: number; hasMore: boolean };
+      };
+    }>({ user: {}, featured: {}, userPagination: {} }).current;
 
     useEffect(() => {
       if (initialFilter) {
@@ -262,76 +272,159 @@ export const GalleryModal = React.memo(
     );
 
     const loadItems = async (reset = false) => {
+      const currentRequest = ++requestCounter.current;
       if (!username) return;
+
       setLoading(true);
 
       if (activeFilter === "3d") {
-        try {
-          const category = asset3DCategories.find(
-            (c) => c.id === active3DCategory
-          );
-          const filter_engine_categories = category?.engineCategory
-            ? [category.engineCategory]
-            : undefined;
+        const categoryId = active3DCategory;
+        const isAllTab = categoryId === "all";
 
-          const [userFilesResponse, featuredFilesResponse] = await Promise.all([
-            mediaFilesApi.ListUserMediaFiles({
-              username: username,
+        if (reset) {
+          setAllItems([]);
+          setPageIndex(0);
+          setHasMore(true);
+          if (isAllTab) {
+            setGrouped3dItems({});
+          }
+        }
+
+        const category = asset3DCategories.find((c) => c.id === categoryId);
+
+        // Step 1: Fetch featured items
+        let featured: GalleryItem[] = [];
+        if (reset) {
+          if (isAllTab) {
+            const categoriesToFetch = asset3DCategories.filter(
+              (c) => c.id !== "all" && c.engineCategory
+            );
+
+            const promises = categoriesToFetch.map(async (cat) => {
+              const response = await mediaFilesApi.ListFeaturedMediaFiles({
+                filter_engine_categories: [cat.engineCategory!],
+                filter_media_classes: [FilterMediaClasses.DIMENSIONAL],
+                page_size: 4,
+              });
+              return {
+                category: cat.label,
+                items:
+                  response.success && response.data
+                    ? response.data
+                        .filter(
+                          (item) => !item.media_links.cdn_url?.endsWith(".pmx")
+                        )
+                        .map((item) => mapToGalleryItem(item, true))
+                    : [],
+              };
+            });
+
+            const results = await Promise.all(promises);
+
+            if (currentRequest === requestCounter.current) {
+              const newGroupedItems: Grouped3DItems = {};
+              results.forEach((result) => {
+                if (result.items.length > 0) {
+                  newGroupedItems[result.category] = result.items;
+                }
+              });
+
+              // Special handling for demo items
+              newGroupedItems["Characters"] = [
+                ...demoCharacters,
+                ...(newGroupedItems["Characters"] || []),
+              ].slice(0, 4);
+              newGroupedItems["Objects"] = [
+                ...demoShapes,
+                ...(newGroupedItems["Objects"] || []),
+              ].slice(0, 4);
+
+              setGrouped3dItems(newGroupedItems);
+            }
+            // For the "All" tab, we still need to proceed to fetch user items below.
+          } else {
+            const featuredResponse = await mediaFilesApi.ListFeaturedMediaFiles(
+              {
+                filter_engine_categories: category?.engineCategory
+                  ? [category.engineCategory]
+                  : undefined,
+                filter_media_classes: [FilterMediaClasses.DIMENSIONAL],
+              }
+            );
+            if (
+              currentRequest === requestCounter.current &&
+              featuredResponse.success &&
+              featuredResponse.data
+            ) {
+              featured = featuredResponse.data
+                .filter((item) => !item.media_links.cdn_url?.endsWith(".pmx"))
+                .map((item) => mapToGalleryItem(item, true));
+            }
+          }
+          if (!isAllTab) setFeaturedItems(featured);
+        } else {
+          featured = featuredItems;
+        }
+
+        // Step 2: Fetch user items (paginated)
+        const userResponse = showArtCraftOnly
+          ? { success: false, data: [], pagination: undefined }
+          : await mediaFilesApi.ListUserMediaFiles({
+              username,
               include_user_uploads: true,
-              filter_engine_categories,
+              filter_engine_categories:
+                !isAllTab && category?.engineCategory
+                  ? [category.engineCategory]
+                  : undefined,
               filter_media_classes: [FilterMediaClasses.DIMENSIONAL],
               page_index: reset ? 0 : pageIndex,
               page_size: pageSize,
-            }),
-            mediaFilesApi.ListFeaturedMediaFiles({
-              filter_engine_categories,
-              filter_media_classes: [FilterMediaClasses.DIMENSIONAL],
-            }),
-          ]);
+            });
 
-          let combinedItems: MediaFile[] = [];
-          if (userFilesResponse.success && userFilesResponse.data) {
-            combinedItems = combinedItems.concat(userFilesResponse.data);
-          }
-          if (featuredFilesResponse.success && featuredFilesResponse.data) {
-            combinedItems = combinedItems.concat(featuredFilesResponse.data);
-          }
+        if (currentRequest !== requestCounter.current) return setLoading(false);
 
-          const uniqueItems = Array.from(
-            new Map(combinedItems.map((item) => [item.token, item])).values()
-          );
-
-          if (uniqueItems.length > 0) {
-            const thumbnail_size = 250;
-            const newItems = uniqueItems.map((item: MediaFile) => ({
-              id: item.token,
-              label: item.maybe_title || "3D Asset",
-              thumbnail:
-                item.cover_image?.maybe_cover_image_public_bucket_path ||
-                item.media_links.thumbnail_template?.replace(
-                  "{WIDTH}",
-                  thumbnail_size.toString()
-                ),
-              fullImage: item.media_links.cdn_url,
-              createdAt: item.created_at,
-              mediaClass: "dimensional",
-              engineCategory: item.origin_category as FilterEngineCategories,
-              name: item.maybe_title ?? undefined,
-            }));
-
-            setAllItems((prev) => (reset ? newItems : [...prev, ...newItems]));
-            const userPagination = userFilesResponse.pagination;
-            const current = userPagination?.current ?? 0;
-            const total = userPagination?.total_page_count ?? 1;
-            setPageIndex(current + 1);
-            setHasMore(current + 1 < total);
-          } else {
-            if (reset) setAllItems([]);
-            setHasMore(false);
-          }
-        } catch (error) {
-          console.error("Failed to fetch 3d library items:", error);
+        let user: GalleryItem[] = [];
+        if (userResponse.success && userResponse.data) {
+          user = userResponse.data
+            .filter((item) => !item.media_links.cdn_url?.endsWith(".pmx"))
+            .map((item) => mapToGalleryItem(item, false));
         }
+
+        // Step 3: Combine, sort, and set state
+        setAllItems((prev) => {
+          if (isAllTab) {
+            // For 'All' tab, allItems is only user items.
+            return reset ? user : [...prev, ...user];
+          }
+
+          // For specific category tabs:
+          let initialItems: GalleryItem[] = [];
+          if (reset) {
+            if (categoryId === "character")
+              initialItems.push(...demoCharacters);
+            if (categoryId === "objects") initialItems.push(...demoShapes);
+            initialItems.push(...featured);
+          }
+
+          const combined = reset
+            ? [...initialItems, ...user]
+            : [...prev, ...user];
+
+          // De-duplicate
+          const seen = new Set();
+          return combined.filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+        });
+
+        const pagination = (userResponse as any).pagination;
+        setPageIndex((pagination?.current ?? 0) + 1);
+        setHasMore(
+          !showArtCraftOnly &&
+            (pagination?.current ?? 0) + 1 < (pagination?.total_page_count ?? 1)
+        );
         setLoading(false);
         return;
       }
@@ -357,7 +450,9 @@ export const GalleryModal = React.memo(
           const thumbnail_size = 250;
           const newItems = response.data
             .filter(
-              (item: any) => item.media_type !== FilterMediaType.SCENE_JSON
+              (item: any) =>
+                item.media_type !== FilterMediaType.SCENE_JSON &&
+                !item.media_links.cdn_url?.endsWith(".pmx")
             )
             .map((item: any) => ({
               id: item.token,
@@ -366,7 +461,13 @@ export const GalleryModal = React.memo(
                 item.media_class === "video"
                   ? item.media_links.maybe_video_previews.still
                   : item.media_class === "dimensional"
-                  ? item.cover_image?.maybe_cover_image_public_bucket_url
+                  ? (item.cover_image as any)
+                      ?.maybe_cover_image_public_bucket_url ||
+                    item.cover_image?.maybe_cover_image_public_bucket_path ||
+                    item.media_links.maybe_thumbnail_template?.replace(
+                      "{WIDTH}",
+                      thumbnail_size.toString()
+                    )
                   : item.media_links.maybe_thumbnail_template?.replace(
                       "{WIDTH}",
                       thumbnail_size.toString()
@@ -379,12 +480,21 @@ export const GalleryModal = React.memo(
                   ? item.filter_media_classes[0]
                   : "image"),
             }));
-          setAllItems((prev) => (reset ? newItems : [...prev, ...newItems]));
+          setAllItems((prev) => {
+            if (reset) return newItems;
+            const existingIds = new Set(prev.map((i) => i.id));
+            const deduped = newItems.filter((i) => !existingIds.has(i.id));
+            return [...prev, ...deduped];
+          });
           // Pagination logic
           const current = response.pagination?.current ?? 0;
           const total = response.pagination?.total_page_count ?? 1;
           setPageIndex(current + 1);
-          setHasMore(current + 1 < total);
+          if (showArtCraftOnly) {
+            setHasMore(false);
+          } else {
+            setHasMore(current + 1 < total);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch library items:", error);
@@ -392,13 +502,37 @@ export const GalleryModal = React.memo(
       setLoading(false);
     };
 
+    // Helper function to be defined inside the component
+    const mapToGalleryItem = (
+      item: MediaFile,
+      isFeatured: boolean
+    ): GalleryItem => ({
+      id: item.token,
+      label: item.maybe_title || "3D Asset",
+      thumbnail:
+        (item.cover_image as any)?.maybe_cover_image_public_bucket_url ||
+        item.cover_image?.maybe_cover_image_public_bucket_path ||
+        item.media_links.thumbnail_template?.replace("{WIDTH}", "250"),
+      fullImage: item.media_links.cdn_url,
+      createdAt: item.created_at,
+      mediaClass: "dimensional",
+      engineCategory: item.origin_category as FilterEngineCategories,
+      name: item.maybe_title ?? undefined,
+      assetType: "object",
+      isFeatured,
+    });
+
     // refresh logic
     const refreshGallery = useCallback(() => {
+      cache.user = {};
+      cache.featured = {};
+      cache.userPagination = {};
       setAllItems([]);
+      setGrouped3dItems({});
       setPageIndex(0);
       setHasMore(true);
       loadItems(true);
-    }, [setAllItems, setPageIndex, setHasMore, loadItems]);
+    }, [loadItems]);
 
     useEffect(() => {
       // Refresh every time the modal is opened
@@ -415,6 +549,13 @@ export const GalleryModal = React.memo(
         refreshGallery();
       }
     }, [active3DCategory]);
+
+    useEffect(() => {
+      if (activeFilter === "3d") {
+        refreshGallery();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showArtCraftOnly]);
 
     const handleItemClick = useCallback(
       (item: GalleryItem) => {
@@ -665,72 +806,189 @@ export const GalleryModal = React.memo(
                     {cat.label}
                   </Button>
                 ))}
+                <div className="ml-auto flex items-center">
+                  <Tooltip content="ArtCraft assets only" position="top">
+                    <Switch
+                      enabled={showArtCraftOnly}
+                      setEnabled={(v) => setShowArtCraftOnly(v)}
+                    />
+                  </Tooltip>
+                </div>
               </div>
             )}
 
             <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
-              {loading && allItems.length === 0 ? (
+              {loading &&
+              allItems.length === 0 &&
+              !Object.keys(grouped3dItems).length ? (
                 <div className="flex h-full items-center justify-center">
                   <div className="text-white/60">
                     <LoadingSpinner className="h-12 w-12" />
                   </div>
                 </div>
+              ) : activeFilter === "3d" && active3DCategory === "all" ? (
+                <div className="space-y-6 p-4">
+                  {Object.entries(grouped3dItems).map(
+                    ([categoryName, items]) => (
+                      <div key={categoryName}>
+                        <div className="mb-2 flex items-center justify-between">
+                          <h3 className="font-semibold text-lg">
+                            {categoryName}
+                          </h3>
+                          <Button
+                            variant="secondary"
+                            onClick={() => {
+                              const catId = asset3DCategories.find(
+                                (c) => c.label === categoryName
+                              )?.id;
+                              if (catId) setActive3DCategory(catId);
+                            }}
+                            className="text-sm text-white/60 hover:text-white bg-transparent hover:bg-white/10"
+                          >
+                            View all{" "}
+                            <FontAwesomeIcon
+                              icon={faChevronRight}
+                              className="ml-2"
+                            />
+                          </Button>
+                        </div>
+                        <div
+                          className={twMerge("grid", gapClass)}
+                          style={{
+                            gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+                          }}
+                        >
+                          {items.map((item) => (
+                            <GalleryDraggableItem
+                              key={item.id}
+                              item={item}
+                              mode={mode}
+                              activeFilter={activeFilter}
+                              selected={selectedItemIds.includes(item.id)}
+                              onClick={() => handleItemClick(item)}
+                              onImageError={() =>
+                                handleImageError(item.thumbnail!)
+                              }
+                              disableTooltipAndBadge={mode === "select"}
+                              imageFit={imageFit}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  )}
+
+                  {/* User's Library Section */}
+                  {allItems.length > 0 && (
+                    <div>
+                      <div className="mb-2 mt-8 flex items-center justify-between border-t border-white/10 pt-4">
+                        <h3 className="font-semibold text-lg">Your Library</h3>
+                      </div>
+                      <div
+                        className={twMerge("grid", gapClass)}
+                        style={{
+                          gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+                        }}
+                      >
+                        {allItems.map((item) => (
+                          <GalleryDraggableItem
+                            key={item.id}
+                            item={item}
+                            mode={mode}
+                            activeFilter={activeFilter}
+                            selected={selectedItemIds.includes(item.id)}
+                            onClick={() => handleItemClick(item)}
+                            onImageError={() =>
+                              handleImageError(item.thumbnail!)
+                            }
+                            disableTooltipAndBadge={mode === "select"}
+                            imageFit={imageFit}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {loading && allItems.length > 0 && (
+                    <div className="flex justify-center py-4">
+                      <LoadingSpinner className="h-8 w-8" />
+                    </div>
+                  )}
+                  {!hasMore && allItems.length > 0 && (
+                    <div className="flex justify-center py-4 text-white/40 text-xs">
+                      No more items
+                    </div>
+                  )}
+                </div>
+              ) : activeFilter === "3d" && active3DCategory !== "all" ? (
+                <div className="space-y-6 p-4">
+                  <div className="mb-2 flex items-center justify-between font-semibold">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setActive3DCategory("all")}
+                    >
+                      Back
+                    </Button>
+                    <h3>
+                      {
+                        asset3DCategories.find((c) => c.id === active3DCategory)
+                          ?.label
+                      }
+                    </h3>
+                  </div>
+                  <div
+                    className={twMerge("grid", gapClass)}
+                    style={{
+                      gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {allItems.map((item) => (
+                      <GalleryDraggableItem
+                        key={item.id}
+                        item={item}
+                        mode={mode}
+                        activeFilter={activeFilter}
+                        selected={selectedItemIds.includes(item.id)}
+                        onClick={() => handleItemClick(item)}
+                        onImageError={() => handleImageError(item.thumbnail!)}
+                        disableTooltipAndBadge={mode === "select"}
+                        imageFit={imageFit}
+                      />
+                    ))}
+                  </div>
+                  {loading && allItems.length > 0 && (
+                    <div className="flex justify-center py-4">
+                      <LoadingSpinner className="h-8 w-8" />
+                    </div>
+                  )}
+                  {!hasMore && allItems.length > 0 && (
+                    <div className="flex justify-center py-4 text-white/40 text-xs">
+                      No more items
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="space-y-6 p-4">
-                  {Object.entries(groupItemsByDate(allItems)).map(
-                    ([date, dateItems]) => {
-                      const filteredItems = dateItems.filter((item) => {
-                        if ((item as any).mediaType === "scene_json")
-                          return false;
-                        if (activeFilter === "3d") {
-                          return item.mediaClass === "dimensional";
-                        }
-                        if (activeFilter === "image") {
-                          return item.mediaClass === "image";
-                        }
-                        if (activeFilter === "video") {
-                          return item.mediaClass === "video";
-                        }
-                        if (activeFilter === "all") {
-                          return (
-                            item.mediaClass !== "audio" &&
-                            (item as any).mediaType !== "scene_json"
-                          );
-                        }
-                        return true;
-                      });
-                      if (filteredItems.length === 0) return null;
-                      return (
-                        <div key={date}>
-                          <h3 className="text-md mb-2 font-medium text-white/60">
-                            {date}
-                          </h3>
-                          <div
-                            className={twMerge("grid", gapClass)}
-                            style={{
-                              gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
-                            }}
-                          >
-                            {filteredItems.map((item) => (
-                              <GalleryDraggableItem
-                                key={item.id}
-                                item={item}
-                                mode={mode}
-                                activeFilter={activeFilter}
-                                selected={selectedItemIds.includes(item.id)}
-                                onClick={() => handleItemClick(item)}
-                                onImageError={() =>
-                                  handleImageError(item.thumbnail!)
-                                }
-                                disableTooltipAndBadge={mode === "select"}
-                                imageFit={imageFit}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-                  )}
+                  <div
+                    className={twMerge("grid", gapClass)}
+                    style={{
+                      gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {allItems.map((item) => (
+                      <GalleryDraggableItem
+                        key={item.id}
+                        item={item}
+                        mode={mode}
+                        activeFilter={activeFilter}
+                        selected={selectedItemIds.includes(item.id)}
+                        onClick={() => handleItemClick(item)}
+                        onImageError={() => handleImageError(item.thumbnail!)}
+                        disableTooltipAndBadge={mode === "select"}
+                        imageFit={imageFit}
+                      />
+                    ))}
+                  </div>
                   {loading && allItems.length > 0 && (
                     <div className="flex justify-center py-4">
                       <LoadingSpinner className="h-8 w-8" />

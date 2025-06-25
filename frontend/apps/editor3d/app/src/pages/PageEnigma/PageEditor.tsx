@@ -64,18 +64,18 @@ import {
   GalleryItem,
   onImageDrop,
   removeImageDropListener,
+  onShapeDrop,
+  removeShapeDropListener,
 } from "@storyteller/ui-gallery-modal";
 import {
   imageGenerationModels,
   ModelCategory,
-  // ModelCategory,
   ModelSelector,
-  // videoGenerationModels,
-  // useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
 import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
+import { addShape } from "./signals/shape";
 
 export const PageEditor = () => {
   useSignals();
@@ -275,11 +275,12 @@ export const PageEditor = () => {
   // MOVE THIS don't throw this in here
   // Image drop from gallery/library modal logic
   useEffect(() => {
-    let handler: unknown;
+    let imageDropHandler: unknown;
+    let shapeDropHandler: unknown;
     // 3D Drag and Drop Logic
 
     if (tabStore.activeTabId === "3D") {
-      handler = onImageDrop(
+      imageDropHandler = onImageDrop(
         (item: GalleryItem, position: { x: number; y: number }) => {
           console.log("3D Drop debug (event):", {
             editorEngine,
@@ -353,10 +354,43 @@ export const PageEditor = () => {
           })();
         },
       );
+      shapeDropHandler = onShapeDrop(
+        (item: GalleryItem, position: { x: number; y: number }) => {
+          // Calculate world position from cursor immediately on drop
+          let worldPosition = undefined;
+          if (editorEngine?.camera && editorEngine?.renderer && position) {
+            const rect =
+              editorEngine.renderer.domElement.getBoundingClientRect();
+            // Convert client coordinates to canvas coordinates
+            const canvasX = position.x - rect.left;
+            const canvasY = position.y - rect.top;
+            const ndcX = (canvasX / rect.width) * 2 - 1;
+            const ndcY = -(canvasY / rect.height) * 2 + 1;
+            const vector = new THREE.Vector3(ndcX, ndcY, 0.5);
+            vector.unproject(editorEngine.camera);
+            worldPosition = vector;
+          }
+
+          const mediaItem: MediaItem = {
+            version: 1,
+            type: AssetType.SHAPE,
+            media_id: item.id, // This is "Box", "Cylinder" etc.
+            name: item.name || item.label || "Shape",
+            ...(worldPosition && {
+              position: {
+                x: worldPosition.x,
+                y: worldPosition.y,
+                z: worldPosition.z,
+              },
+            }),
+          };
+          addShape(mediaItem);
+        },
+      );
 
       // 2D Drag and Drop Logic
     } else if (tabStore.activeTabId === "2D") {
-      handler = onImageDrop(
+      imageDropHandler = onImageDrop(
         (item: GalleryItem, position: { x: number; y: number }) => {
           console.log("2D Drop debug (event):", {
             item,
@@ -409,8 +443,10 @@ export const PageEditor = () => {
     }
 
     return () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (handler) removeImageDropListener(handler as any);
+      if (imageDropHandler)
+        removeImageDropListener(imageDropHandler as (e: CustomEvent) => void);
+      if (shapeDropHandler)
+        removeShapeDropListener(shapeDropHandler as (e: CustomEvent) => void);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabStore.activeTabId, editorEngine]);

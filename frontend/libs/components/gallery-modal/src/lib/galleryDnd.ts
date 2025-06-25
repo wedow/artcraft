@@ -50,6 +50,7 @@ function onPointerMove(event: PointerEvent) {
 }
 
 export const IMAGE_DROP_EVENT = "gallery-image-drop";
+export const SHAPE_DROP_EVENT = "gallery-shape-drop";
 
 export function emitImageDrop(
   item: GalleryItem,
@@ -57,6 +58,15 @@ export function emitImageDrop(
 ) {
   window.dispatchEvent(
     new CustomEvent(IMAGE_DROP_EVENT, { detail: { item, position } })
+  );
+}
+
+export function emitShapeDrop(
+  item: GalleryItem,
+  position: { x: number; y: number }
+) {
+  window.dispatchEvent(
+    new CustomEvent(SHAPE_DROP_EVENT, { detail: { item, position } })
   );
 }
 
@@ -70,19 +80,36 @@ export function onImageDrop(
   return handler;
 }
 
+export function onShapeDrop(
+  callback: (item: GalleryItem, position: { x: number; y: number }) => void
+) {
+  const handler = (e: any) => {
+    callback(e.detail.item, e.detail.position);
+  };
+  window.addEventListener(SHAPE_DROP_EVENT, handler);
+  return handler;
+}
+
 export function removeImageDropListener(handler: (e: any) => void) {
   window.removeEventListener(IMAGE_DROP_EVENT, handler);
 }
 
+export function removeShapeDropListener(handler: (e: any) => void) {
+  window.removeEventListener(SHAPE_DROP_EVENT, handler);
+}
+
 function onPointerUp(event: PointerEvent) {
-  if (
-    dragState.item &&
-    dragState.isDragging &&
-    (dragState.item.mediaClass === "image" ||
-      dragState.item.mediaClass === "dimensional")
-  ) {
-    emitImageDrop(dragState.item, { x: event.pageX, y: event.pageY });
+  if (dragState.item && dragState.isDragging) {
+    if (dragState.item.assetType === "shape") {
+      emitShapeDrop(dragState.item, { x: event.pageX, y: event.pageY });
+    } else if (
+      dragState.item.mediaClass === "image" ||
+      dragState.item.mediaClass === "dimensional"
+    ) {
+      emitImageDrop(dragState.item, { x: event.pageX, y: event.pageY });
+    }
   }
+
   dragState.item = null;
   dragState.isDragging = false;
   const { reopenAfterDrag } = useGalleryModalStore.getState();
