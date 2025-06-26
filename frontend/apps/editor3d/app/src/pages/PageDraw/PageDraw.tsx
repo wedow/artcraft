@@ -196,6 +196,26 @@ const PageDraw = () => {
     }
   };
 
+  const onFitPressed = async () => { 
+    // Get the stage and its container dimensions
+    const stage = stageRef.current;
+
+    // Get container dimensions
+    const containerWidth = stage.container().offsetWidth;
+    const containerHeight = stage.container().offsetHeight;
+
+    // Get canvas dimensions from store aspect ratio
+    const canvasW = store.getAspectRatioDimensions().width;
+    const canvasH = store.getAspectRatioDimensions().height;
+
+    // Calculate position to center canvas in container
+    stage.position({
+      x: (containerWidth - canvasW) / 2,
+      y: (containerHeight - canvasH) / 2
+    });
+
+   }
+
   return (
     <>
       <div
@@ -235,6 +255,7 @@ const PageDraw = () => {
 
             const aspectRatioType = ratioToType(ratio);
             store.setAspectRatioType(aspectRatioType);
+            onFitPressed()
           }}
           onEnqueuePressed={onEnqueuedPressed}
         />
@@ -428,6 +449,12 @@ const PageDraw = () => {
           showIconsInList
           triggerLabel="Model"
         />
+       <button
+         className="bg-transparent p-2 text-lg text-white hover:text-white hover:bg-white/20 rounded transition"
+         onClick={onFitPressed}
+       >
+        Fit
+       </button>
       </div>
     </>
   );
