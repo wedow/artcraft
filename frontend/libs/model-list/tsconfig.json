@@ -1,19 +1,13 @@
 {
+  "extends": "../../tsconfig.base.json",
   "files": [],
   "include": [],
   "references": [
-    {
-      "path": "../popover"
-    },
-    {
-      "path": "../../model-list"
-    },
     {
       "path": "./tsconfig.lib.json"
     },
     {
       "path": "./tsconfig.spec.json"
     }
-  ],
-  "extends": "../../../tsconfig.base.json"
+  ]
 }

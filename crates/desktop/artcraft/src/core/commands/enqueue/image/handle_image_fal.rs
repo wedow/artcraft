@@ -1,9 +1,11 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::commands::enqueue::image::success_event::SuccessEvent;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::model::image_models::ImageModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
@@ -22,7 +24,7 @@ pub async fn handle_image_fal(
   request: EnqueueTextToImageRequest,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<(), InternalImageError> {
+) -> Result<SuccessEvent, InternalImageError> {
 
   let api_key = match fal_creds_manager.get_key()? {
     Some(key) => key,
@@ -47,31 +49,32 @@ pub async fn handle_image_fal(
 
   let prompt = request.prompt.as_deref().unwrap_or("");
 
+  let model;
+  
   let result = match request.model {
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    Some(EnqueueTextToImageModel::GptImage1) => {
+    Some(ImageModel::GptImage1) => {
       return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: fal is handling sora images")));
     }
     Some(
-      EnqueueTextToImageModel::Flux1Dev | 
-      EnqueueTextToImageModel::Flux1Schnell | 
-      EnqueueTextToImageModel::FluxPro11
+      ImageModel::Flux1Dev | 
+      ImageModel::Flux1Schnell | 
+      ImageModel::FluxPro11
     ) => {
       return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented: {:?}", request.model)));
     }
-    Some(
-      EnqueueTextToImageModel::FluxProUltra |
-      EnqueueTextToImageModel::FluxPro11Ultra
-    ) => {
+    Some(ImageModel::FluxPro11Ultra) => {
+      model = ImageModel::FluxPro11Ultra;
       info!("enqueue Flux Pro 1.1 Ultra text-to-image with prompt: {}", prompt);
       enqueue_flux_pro_11_ultra_text_to_image(FluxPro11UltraTextToImageArgs {
         prompt,
         api_key: &api_key,
       }).await
     }
-    Some(EnqueueTextToImageModel::Recraft3) => {
+    Some(ImageModel::Recraft3) => {
+      model = ImageModel::Recraft3;
       info!("enqueue Recraft v3 text-to-image with prompt: {}", prompt);
       enqueue_recraft3_text_to_image(Recraft3TextToImageArgs {
         prompt,
@@ -84,15 +87,15 @@ pub async fn handle_image_fal(
     Ok(enqueued) => {
       info!("Successfully enqueued text to image");
 
-      let event = GenerationEnqueueSuccessEvent {
-        action: GenerationAction::GenerateImage,
-        service: GenerationServiceProvider::Fal,
-        model: None,
-      };
+      //let event = GenerationEnqueueSuccessEvent {
+      //  action: GenerationAction::GenerateImage,
+      //  service: GenerationServiceProvider::Fal,
+      //  model: None,
+      //};
 
-      if let Err(err) = event.send(app) {
-        error!("Failed to emit event: {:?}", err); // Fail open.
-      }
+      //if let Err(err) = event.send(app) {
+      //  error!("Failed to emit event: {:?}", err); // Fail open.
+      //}
 
       if let Err(err) = fal_task_queue.insert(&enqueued) {
         error!("Failed to enqueue task: {:?}", err);
@@ -117,5 +120,8 @@ pub async fn handle_image_fal(
     }
   }
 
-  Ok(())
+  Ok(SuccessEvent {
+    service_provider: GenerationServiceProvider::Fal,
+    model,
+  })
 }

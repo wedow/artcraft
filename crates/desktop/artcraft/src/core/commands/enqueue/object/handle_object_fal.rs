@@ -1,4 +1,3 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
 use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::{EnqueueImageTo3dObjectModel, EnqueueImageTo3dObjectRequest};
 use crate::core::commands::enqueue::object::internal_object_error::InternalObjectError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;

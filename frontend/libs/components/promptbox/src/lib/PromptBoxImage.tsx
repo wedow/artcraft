@@ -27,6 +27,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
+import { ModelInfo } from "@storyteller/model-list";
 
 interface ReferenceImage {
   id: string;
@@ -39,6 +40,7 @@ interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
   model: string;
+  modelInfo?: ModelInfo;
   imageMediaId?: string;
   url?: string;
 }
@@ -47,6 +49,7 @@ export const PromptBoxImage = ({
   useJobContext,
   onEnqueuePressed,
   model,
+  modelInfo,
   imageMediaId,
   url,
 }: PromptBoxImageProps) => {
@@ -65,11 +68,8 @@ export const PromptBoxImage = ({
     }
   }, [imageMediaId, url]);
 
-  console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
-  //const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
-  //  useJobContext();
 
   const [prompt, setPrompt] = useState("");
   const [isEnqueueing, setIsEnqueueing] = useState(false);
@@ -196,7 +196,7 @@ export const PromptBoxImage = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
-    console.log("Prompting");
+    console.log("PromptBoxImage - Prompting with model", modelInfo);
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
@@ -205,14 +205,12 @@ export const PromptBoxImage = ({
       setIsEnqueueing(false);
     }, 10000);
 
-    const modelName = getModelByName(model);
-
     const generateResponse = await EnqueueTextToImage({
       prompt: prompt,
-      model: modelName,
+      model: modelInfo,
     });
 
-    console.log("generateResponse", generateResponse);
+    console.log("PromptBoxImage - generateResponse", generateResponse);
 
     onEnqueuePressed?.();
 

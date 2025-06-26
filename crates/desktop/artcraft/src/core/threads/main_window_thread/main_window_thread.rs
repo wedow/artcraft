@@ -2,12 +2,14 @@ use crate::core::state::app_startup_time::AppStartupTime;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::main_window_position::MainWindowPosition;
 use crate::core::state::main_window_size::MainWindowSize;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::core::threads::main_window_thread::persist_storyteller_cookies_task::persist_storyteller_cookies_task;
 use crate::core::threads::main_window_thread::persist_window_position_task::persist_window_position_task;
 use crate::core::threads::main_window_thread::persist_window_resize_task::persist_window_resize_task;
+use crate::core::utils::clear_all_webview_cookies::clear_all_webview_cookies;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use anyhow::anyhow;
 use errors::AnyhowResult;
-use log::{error, info};
+use log::{error, info, warn};
 use memory_store::clone_slot::CloneSlot;
 use tauri::{AppHandle, Manager, Webview, Window};
 
@@ -31,6 +33,8 @@ pub async fn main_window_thread(
     .unwrap_or_else(|| "unknown".to_string()));
   info!("build timestamp: {:?}", build_metadata::build_timestamp()
     .to_string());
+  
+  // debug_try_clear_all_webview_data(&app);
 
   loop {
     for (window_name, window) in app.windows() {
@@ -73,5 +77,17 @@ pub async fn handle_main_window(
 pub fn log_errors<T>(result: AnyhowResult<T>) {
   if let Err(err) = result {
     error!("Error persisting window size: {:?}", err);
+  }
+}
+
+fn debug_try_clear_all_webview_data(app: &AppHandle) {
+  warn!("[!!!] THIS IS ONLY FOR DEBUGGING PURPOSES: Attempting to clear webview data...");
+  
+  for (name, webview) in app.webviews() {
+    if let Err(err) = webview.clear_all_browsing_data() {
+      error!("Failed to clear cookies for '{}' window webview: {:?}", name, err);
+    } else {
+      warn!("Successfully cleared cookies for '{}' window webview", name);
+    }
   }
 }

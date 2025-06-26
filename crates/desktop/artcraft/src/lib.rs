@@ -53,8 +53,10 @@ pub fn run() {
   println!("Loading app preferences...");
   let app_preferences = load_app_preferences_or_default(&app_data_root);
   
-  println!("Attempting to read existing artcraft credentials...");
-  let storyteller_creds_manager = StorytellerCredentialManager::initialize_from_disk_infallible(&app_data_root);
+  // NB: tauri-plugin-http stores the credentials on disk, so we can defer to that for now.
+  // println!("Attempting to read existing artcraft credentials...");
+  // let storyteller_creds_manager = StorytellerCredentialManager::initialize_from_disk_infallible(&app_data_root);
+  let storyteller_creds_manager = StorytellerCredentialManager::initialize_empty(&app_data_root);
   let storyteller_creds_manager_2 = storyteller_creds_manager.clone();
   let storyteller_creds_manager_3 = storyteller_creds_manager.clone();
   

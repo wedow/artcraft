@@ -1,4 +1,4 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageRequest};
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
@@ -89,16 +89,6 @@ pub async fn handle_image_sora(
   info!("New Sora Task ID: {:?} ", response.task_id);
 
   sora_task_queue.insert(&response.task_id)?;
-
-  let event = GenerationEnqueueSuccessEvent {
-    action: GenerationAction::GenerateImage,
-    service: GenerationServiceProvider::Sora,
-    model: None,
-  };
-
-  if let Err(err) = event.send(app) {
-    error!("Failed to emit event: {:?}", err); // Fail open.
-  }
 
   Ok(())
 }

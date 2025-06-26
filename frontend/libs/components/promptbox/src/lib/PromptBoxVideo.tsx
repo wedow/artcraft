@@ -6,7 +6,7 @@ import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
-import { FalKlingImageToVideo } from "@storyteller/tauri-api";
+import { EnqueueImageToVideo } from "@storyteller/tauri-api";
 import {
   faMessageXmark,
   faMessageCheck,
@@ -20,6 +20,7 @@ import { faRectangle } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
+import { ModelInfo } from "@storyteller/model-list";
 
 interface ReferenceImage {
   id: string;
@@ -32,6 +33,7 @@ interface PromptBoxVideoProps {
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
   model: string;
+  modelInfo?: ModelInfo;
   imageMediaId?: string;
   url?: string;
 }
@@ -40,6 +42,7 @@ export const PromptBoxVideo = ({
   useJobContext,
   onEnqueuePressed,
   model,
+  modelInfo,
   imageMediaId,
   url,
 }: PromptBoxVideoProps) => {
@@ -183,7 +186,7 @@ export const PromptBoxVideo = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
-    console.log("Handle Enqueue");
+    console.log("PromptBoxVideo - Prompting with model", modelInfo);
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
@@ -192,8 +195,10 @@ export const PromptBoxVideo = ({
       setIsEnqueueing(false);
     }, 10000);
 
-    const generateResponse = await FalKlingImageToVideo({
+    const generateResponse = await EnqueueImageToVideo({
+      model: modelInfo,
       image_media_token: referenceImages[0].mediaToken,
+      //prompt: prompt,
     });
 
     console.log("generateResponse", generateResponse);

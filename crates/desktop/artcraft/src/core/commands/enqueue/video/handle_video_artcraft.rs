@@ -1,4 +1,3 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageModel, EnqueueTextToImageRequest};
 use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::{EnqueueImageTo3dObjectModel, EnqueueImageTo3dObjectRequest};
 use crate::core::commands::enqueue::video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
 use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
@@ -132,7 +131,6 @@ pub async fn handle_video_artcraft(
       }
     }
     Some(VideoModel::Kling21Pro) => {
-
       info!("enqueue Kling 2.1 Pro with Artcraft API");
       selected_model = Some(GenerationModel::Kling21Pro);
       let request = GenerateKling21ProImageToVideoRequest {

@@ -7,6 +7,9 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "../model-list"
     }
   ],
   "extends": "../../tsconfig.base.json"

@@ -21,7 +21,10 @@ pub enum ApiError {
   TooManyRequests(String),
 
   /// 500. An internal server error occurred.
-  InternalServerError(String),
+  InternalServerError {
+    body: String,
+    backend_hostname: Option<String>,
+  },
 
   /// A deserialization error with the response.
   DeserializationError(serde_json::Error),
@@ -53,7 +56,8 @@ impl Display for ApiError {
       ApiError::Forbidden(msg) => write!(f, "Forbidden: {}", msg),
       ApiError::NotFound(msg) => write!(f, "Not found: {}", msg),
       ApiError::TooManyRequests(msg) => write!(f, "Too many requests: {}", msg),
-      ApiError::InternalServerError(msg) => write!(f, "Internal server error: {}", msg),
+      ApiError::InternalServerError {body, backend_hostname} => 
+        write!(f, "Internal Server Error; backend hostname: {:?} ; body: {}; ", backend_hostname, body),
       // Server response handling errors
       ApiError::DeserializationError(error) => write!(f, "Deserialization error: {}", error),
       // Network errors

@@ -20,6 +20,13 @@ pub struct StorytellerCredentialManager {
 
 impl StorytellerCredentialManager {
 
+  pub fn initialize_empty(app_data_root: &AppDataRoot) -> Self {
+    Self {
+      holder: StorytellerCredentialHolder::new(),
+      app_data_root: app_data_root.clone(),
+    }
+  }
+  
   pub fn initialize_from_disk_infallible(app_data_root: &AppDataRoot) -> Self {
     let holder = StorytellerCredentialHolder::new();
 

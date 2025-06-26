@@ -143,6 +143,9 @@
     },
     {
       "path": "./libs/components/pricing-modal"
+    },
+    {
+      "path": "./libs/model-list"
     }
   ]
 }
