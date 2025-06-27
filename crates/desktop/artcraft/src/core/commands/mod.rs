@@ -3,4 +3,5 @@ pub mod enqueue;
 pub mod flip_image;
 pub mod get_app_info_command;
 pub mod platform_info_command;
+pub mod providers;
 pub mod response;

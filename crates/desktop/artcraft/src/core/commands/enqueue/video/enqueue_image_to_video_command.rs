@@ -4,7 +4,6 @@ use crate::core::commands::enqueue::video::internal_video_error::InternalVideoEr
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
-use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::model::video_models::VideoModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;

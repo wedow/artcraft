@@ -11,6 +11,8 @@ use crate::core::commands::enqueue::video::enqueue_image_to_video_command::enque
 use crate::core::commands::flip_image::flip_image;
 use crate::core::commands::get_app_info_command::get_app_info_command;
 use crate::core::commands::platform_info_command::platform_info_command;
+use crate::core::commands::providers::get_provider_order_command::get_provider_order_command;
+use crate::core::commands::providers::set_provider_order_command::set_provider_order_command;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -197,6 +199,8 @@ pub fn run() {
       get_app_info_command,
       get_app_preferences_command,
       get_fal_api_key_command,
+      get_provider_order_command,
+      set_provider_order_command,
       open_sora_login_command,
       platform_info_command,
       set_fal_api_key_command,

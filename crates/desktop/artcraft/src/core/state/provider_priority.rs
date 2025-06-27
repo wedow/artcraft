@@ -84,7 +84,7 @@ impl ProviderPriorityStore {
     }
   }
 
-  pub fn set_priority(&mut self, ordered_list: &[Provider]) -> AnyhowResult<()> {
+  pub fn set_priority(&self, ordered_list: &[Provider]) -> AnyhowResult<()> {
     match self.provider_priority.write() {
       Err(err) => {
         Err(anyhow::anyhow!("Failed to acquire write lock on provider priority: {}", err))

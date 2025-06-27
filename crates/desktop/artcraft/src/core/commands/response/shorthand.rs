@@ -30,3 +30,19 @@ pub type Response<SuccessPayload, ErrType, ErrPayload> =
 
 /// No inner payloads for this type. Just strings as messages.
 pub type SimpleResponse = Response<(), (), ()>;
+
+/// Either an empty success payload or error message.
+pub type SuccessOrErrorMessage =
+  Result<CommandSuccessResponseWrapper<()>, CommandErrorResponseWrapper<(), ()>>;
+
+/// Either a success or error message.
+pub type ResponseOrErrorMessage<SuccessPayload> =
+  Result<CommandSuccessResponseWrapper<SuccessPayload>, CommandErrorResponseWrapper<(), ()>>;
+
+/// Either a success or error type.
+pub type ResponseOrErrorType<SuccessPayload, ErrType> =
+  Result<CommandSuccessResponseWrapper<SuccessPayload>, CommandErrorResponseWrapper<ErrType, ()>>;
+
+/// Either a success or error payload.
+pub type ResponseOrError<SuccessPayload, ErrPayload> =
+  Result<CommandSuccessResponseWrapper<SuccessPayload>, CommandErrorResponseWrapper<(), ErrPayload>>;
