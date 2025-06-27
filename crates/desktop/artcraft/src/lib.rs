@@ -16,6 +16,7 @@ use crate::core::state::app_preferences::app_preferences_manager::load_app_prefe
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::main_window_position::MainWindowPosition;
 use crate::core::state::main_window_size::MainWindowSize;
+use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::threads::discord_presence_thread::discord_presence_thread;
 use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
 use crate::core::utils::webview_unsafe::webview_unsafe_for_app;
@@ -77,6 +78,21 @@ pub fn run() {
   
   let app_env_configs = AppEnvConfigs::load_from_filesystem(&app_data_root)
     .expect("AppEnvConfigs should be loaded from disk");
+  
+  let provider_priority = match ProviderPriorityStore::from_filesystem_configs(&app_data_root) {
+    Ok(Some(priority)) => {
+      println!("Loaded provider priority from disk: {:?}", priority.get_priority());
+      priority
+    }
+    Ok(None) => {
+      println!("No provider priority found on disk, using default.");
+      ProviderPriorityStore::default()
+    }
+    Err(err) => {
+      eprintln!("Failed to read provider priority from disk: {:?}", err);
+      ProviderPriorityStore::default()
+    }
+  };
 
   println!("Initializing backend runtime...");
 
@@ -165,6 +181,7 @@ pub fn run() {
     .manage(app_preferences)
     .manage(fal_creds_manager)
     .manage(fal_task_queue)
+    .manage(provider_priority)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)

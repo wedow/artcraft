@@ -36,6 +36,10 @@ impl AppSettingsDir {
     self.path.join("env_configs.json")
   }
 
+  pub fn get_provider_preferences_path(&self) -> PathBuf {
+    self.path.join("provider_preferences.json")
+  }
+
   pub fn write_app_preferences(&self, prefs: &AppPreferences) -> AnyhowResult<()> {
     let serializable = prefs.to_serializable();
 
