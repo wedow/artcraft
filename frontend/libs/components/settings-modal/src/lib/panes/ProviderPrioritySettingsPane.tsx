@@ -21,9 +21,10 @@ import {
   faGripVertical,
   faSpinnerThird,
 } from "@fortawesome/pro-solid-svg-icons";
+import { SetProviderOrder, Provider } from "@storyteller/tauri-api";
 
-interface RouterItem {
-  id: string;
+interface ProviderItem {
+  id: Provider;
   name: string;
   emoji: string;
 }
@@ -81,13 +82,11 @@ const SortableItem = ({
   );
 };
 
-export const RouterPrioritySettingsPane = () => {
-  const [items, setItems] = useState<RouterItem[]>([
-    { id: "artcraft-3d", name: "ArtCraft 3D", emoji: "🎨" },
-    { id: "gpt-image-1", name: "GPT Image 1 (GPT-4o)", emoji: "🤖" },
-    { id: "flux-pro-ultra", name: "Flux Pro Ultra", emoji: "⚡" },
-    { id: "recraft-3", name: "Recraft 3", emoji: "🌟" },
-    { id: "flux-kontext", name: "Flux.1 Kontext", emoji: "🔮" },
+export const ProviderPrioritySettingsPane = () => {
+  const [items, setItems] = useState<ProviderItem[]>([
+    { id: Provider.ArtCraft, name: "ArtCraft", emoji: "🎨" },
+    { id: Provider.Fal, name: "Fal", emoji: "🤖" },
+    { id: Provider.Sora, name: "Sora / ChatGPT", emoji: "⚡" },
   ]);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -98,19 +97,20 @@ export const RouterPrioritySettingsPane = () => {
     })
   );
 
-  const updateRouterPriorityOnBackend = async (newOrder: RouterItem[]) => {
+  const updateProviderPriorityOnBackend = async (newOrder: ProviderItem[]) => {
     try {
       setIsUpdating(true);
-      console.log("Updating router priority on backend:", newOrder);
+      console.log("Updating provider priority on backend:", newOrder);
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 500)); //remove this - BFlat
+      let ordering = newOrder.map((item) => item.id);
+      console.log("Provider order:", ordering);
 
-      //api call here
+      await SetProviderOrder({ providers: ordering });
 
-      console.log("Router priority updated successfully");
+
+      console.log("Provider priority updated successfully");
     } catch (error) {
-      console.error("Failed to update router priority:", error);
+      console.error("Failed to update provider priority:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -127,7 +127,7 @@ export const RouterPrioritySettingsPane = () => {
         const newOrder = arrayMove(prevItems, oldIndex, newIndex);
 
         // Send update to backend
-        updateRouterPriorityOnBackend(newOrder);
+        updateProviderPriorityOnBackend(newOrder);
 
         return newOrder;
       });
@@ -138,8 +138,8 @@ export const RouterPrioritySettingsPane = () => {
     <div className="space-y-4">
       <div>
         <p className="text-sm text-white/70 mb-4">
-          Drag and drop to reorder model priority. Higher items will be tried
-          first.
+          Drag and drop to reorder model provider priority. Higher items will be tried
+          first. You can use this to control favorite services and spending.
         </p>
       </div>
 

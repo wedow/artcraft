@@ -13,7 +13,7 @@ import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 import { AboutSettingsPane } from "./panes/AboutSettingsPane";
-import { RouterPrioritySettingsPane } from "./panes/RouterPrioritySettingsPane";
+import { ProviderPrioritySettingsPane } from "./panes/ProviderPrioritySettingsPane";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ type SettingsSection =
   | "accounts"
   | "alerts"
   | "about"
-  | "router_priority";
+  | "provider_priority";
 
 export const SettingsModal = ({
   isOpen,
@@ -41,13 +41,13 @@ export const SettingsModal = ({
   const sections = [
     { id: "general" as const, label: "General", icon: faCog },
     { id: "accounts" as const, label: "Accounts", icon: faUser },
-    { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
-    { id: "about" as const, label: "About", icon: faCircleInfo },
     {
-      id: "router_priority" as const,
-      label: "Model Router Priority",
+      id: "provider_priority" as const,
+      label: "Provider Priority",
       icon: faRoute,
     },
+    { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
+    { id: "about" as const, label: "About", icon: faCircleInfo },
     //{ id: "video" as const, label: "Video", icon: faVideo },
     //{ id: "image" as const, label: "Image", icon: faImage },
   ];
@@ -66,8 +66,8 @@ export const SettingsModal = ({
         );
       case "about":
         return <AboutSettingsPane />;
-      case "router_priority":
-        return <RouterPrioritySettingsPane />;
+      case "provider_priority":
+        return <ProviderPrioritySettingsPane />;
     }
   };
 
