@@ -19,4 +19,5 @@ export * from "./lib/sora/waitForSoraLogin.js";
 export * from "./lib/system/GetAppInfo.js";
 export * from "./lib/providers/SetProviderOrder.js";
 export * from "./lib/providers/Provider.js";
+export * from "./lib/providers/GetProviderOrder.js";
 

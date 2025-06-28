@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -21,7 +21,7 @@ import {
   faGripVertical,
   faSpinnerThird,
 } from "@fortawesome/pro-solid-svg-icons";
-import { SetProviderOrder, Provider } from "@storyteller/tauri-api";
+import { SetProviderOrder, Provider, GetProviderOrder } from "@storyteller/tauri-api";
 
 interface ProviderItem {
   id: Provider;
@@ -82,13 +82,39 @@ const SortableItem = ({
   );
 };
 
+const ProviderItemMap = {
+  [Provider.ArtCraft]: { id: Provider.ArtCraft, name: "ArtCraft", emoji: "🎨" },
+  [Provider.Fal]: { id: Provider.Fal, name: "Fal", emoji: "🤖" },
+  [Provider.Sora]: { id: Provider.Sora, name: "Sora / ChatGPT", emoji: "⚡" },
+};
+
 export const ProviderPrioritySettingsPane = () => {
-  const [items, setItems] = useState<ProviderItem[]>([
-    { id: Provider.ArtCraft, name: "ArtCraft", emoji: "🎨" },
-    { id: Provider.Fal, name: "Fal", emoji: "🤖" },
-    { id: Provider.Sora, name: "Sora / ChatGPT", emoji: "⚡" },
-  ]);
+  const [items, setItems] = useState<ProviderItem[]>([]);
+
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const providers = await GetProviderOrder();
+
+      let items: ProviderItem[] = [];
+
+      // Add providers from backend (in order)
+      for (let provider of providers.payload.providers) {
+        items.push(ProviderItemMap[provider]);
+      }
+
+      // Add providers not in backend (in order)
+      for (const [key, value] of Object.entries(ProviderItemMap)) {
+        if (!providers.payload.providers.includes(key as Provider)) {
+          items.push(value)
+        }
+      }
+
+      setItems(items);
+    };
+    fetchData();
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -106,7 +132,6 @@ export const ProviderPrioritySettingsPane = () => {
       console.log("Provider order:", ordering);
 
       await SetProviderOrder({ providers: ordering });
-
 
       console.log("Provider priority updated successfully");
     } catch (error) {
