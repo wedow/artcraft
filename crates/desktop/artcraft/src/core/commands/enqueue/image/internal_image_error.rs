@@ -8,6 +8,7 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 #[derive(Debug)]
 pub enum InternalImageError {
   NoModelSpecified,
+  NoProviderAvailable,
   NeedsFalApiKey,
   NeedsSoraCredentials,
   NeedsStorytellerCredentials,

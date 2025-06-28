@@ -56,6 +56,9 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageErrorType;
+use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 
 #[derive(Deserialize)]
 pub struct EnqueueImageTo3dObjectRequest {
@@ -90,6 +93,8 @@ impl SerializeMarker for EnqueueImageTo3dObjectSuccessResponse {}
 pub enum EnqueueImageTo3dObjectErrorType {
   /// Caller didn't specify a model
   ModelNotSpecified,
+  /// No model available for object generation
+  NoProviderAvailable,
   /// Generic server error
   ServerError,
   /// No Fal API key available
@@ -105,6 +110,7 @@ pub async fn enqueue_image_to_3d_object_command(
   app: AppHandle,
   request: EnqueueImageTo3dObjectRequest,
   app_data_root: State<'_, AppDataRoot>,
+  provider_priority_store: State<'_, ProviderPriorityStore>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   fal_task_queue: State<'_, FalTaskQueue>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -117,6 +123,7 @@ pub async fn enqueue_image_to_3d_object_command(
     &app,
     request,
     &app_data_root,
+    &provider_priority_store,
     &fal_creds_manager,
     &storyteller_creds_manager,
     &fal_task_queue,
@@ -134,7 +141,12 @@ pub async fn enqueue_image_to_3d_object_command(
         InternalObjectError::NoModelSpecified => {
           status = CommandErrorStatus::BadRequest;
           error_type = EnqueueImageTo3dObjectErrorType::ModelNotSpecified;
-          error_message = "No model specified for image generation";
+          error_message = "No model specified for object generation";
+        }
+        InternalObjectError::NoProviderAvailable => {
+          status = CommandErrorStatus::ServerError;
+          error_type = EnqueueImageTo3dObjectErrorType::NoProviderAvailable;
+          error_message = "No configured provider available for object generation";
         }
         InternalObjectError::NeedsFalApiKey => {
           status = CommandErrorStatus::Unauthorized;
@@ -167,16 +179,29 @@ pub async fn handle_request(
   app: &AppHandle,
   request: EnqueueImageTo3dObjectRequest,
   app_data_root: &AppDataRoot,
+  provider_priority_store: &ProviderPriorityStore,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
 ) -> Result<(), InternalObjectError> {
 
-  if fal_creds_manager.has_apparent_api_token()? {
-    handle_object_fal(&app, app_data_root, request, fal_creds_manager, fal_task_queue).await?;
-  } else {
-    handle_object_artcraft(request, &app, app_data_root, storyteller_creds_manager).await?;
+  let priority = provider_priority_store.get_priority()?;
+
+  for provider in priority.iter() {
+    match provider {
+      Provider::Sora => {} // Fallthrough
+      Provider::Artcraft => {
+        return Ok(handle_object_artcraft(
+          request, &app, app_data_root, storyteller_creds_manager).await?);
+      }
+      Provider::Fal => {
+        if fal_creds_manager.has_apparent_api_token()? {
+          return Ok(handle_object_fal(
+            &app, app_data_root, request, fal_creds_manager, fal_task_queue).await?);
+        }
+      }
+    }
   }
 
-  Ok(())
+  Err(InternalObjectError::NoProviderAvailable)
 }

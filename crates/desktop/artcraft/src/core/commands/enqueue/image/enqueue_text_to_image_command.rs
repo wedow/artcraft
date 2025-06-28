@@ -2,15 +2,20 @@ use crate::core::commands::enqueue::image::handle_image_artcraft::handle_image_a
 use crate::core::commands::enqueue::image::handle_image_fal::handle_image_fal;
 use crate::core::commands::enqueue::image::handle_image_sora::handle_image_sora;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::commands::enqueue::image::success_event::SuccessEvent;
 use crate::core::commands::enqueue::object::handle_object_artcraft::handle_object_artcraft;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::model::image_models::ImageModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
 use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
@@ -59,10 +64,6 @@ use storyteller_client::media_files::upload_image_media_file_from_file::upload_i
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
-use crate::core::commands::enqueue::image::success_event::SuccessEvent;
-use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
-use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
@@ -85,6 +86,8 @@ impl SerializeMarker for EnqueueTextToImageSuccessResponse {}
 pub enum EnqueueTextToImageErrorType {
   /// Caller didn't specify a model
   ModelNotSpecified,
+  /// No model available for image generation
+  NoProviderAvailable,
   /// Generic server error
   ServerError,
   /// No Fal API key available
@@ -102,6 +105,7 @@ pub async fn enqueue_text_to_image_command(
   request: EnqueueTextToImageRequest,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
+  provider_priority_store: State<'_, ProviderPriorityStore>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   fal_task_queue: State<'_, FalTaskQueue>,
@@ -115,6 +119,7 @@ pub async fn enqueue_text_to_image_command(
     &app,
     request,
     &app_data_root,
+    &provider_priority_store,
     &fal_creds_manager,
     &storyteller_creds_manager,
     &app_env_configs,
@@ -136,6 +141,11 @@ pub async fn enqueue_text_to_image_command(
           status = CommandErrorStatus::BadRequest;
           error_type = EnqueueTextToImageErrorType::ModelNotSpecified;
           error_message = "No model specified for image generation";
+        }
+        InternalImageError::NoProviderAvailable => {
+          status = CommandErrorStatus::ServerError;
+          error_type = EnqueueTextToImageErrorType::NoProviderAvailable;
+          error_message = "No configured provider available for image generation";
         }
         InternalImageError::NeedsFalApiKey => {
           status = CommandErrorStatus::Unauthorized;
@@ -173,6 +183,7 @@ pub async fn handle_request(
   app: &AppHandle,
   request: EnqueueTextToImageRequest,
   app_data_root: &AppDataRoot,
+  provider_priority_store: &ProviderPriorityStore,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   app_env_configs: &AppEnvConfigs,
@@ -197,9 +208,22 @@ pub async fn handle_request(
     }
   };
 
-  if fal_creds_manager.has_apparent_api_token()? {
-    handle_image_fal(&app, request, fal_creds_manager, fal_task_queue).await
-  } else {
-    handle_image_artcraft(request, &app, app_env_configs, app_data_root, storyteller_creds_manager).await
+  let priority = provider_priority_store.get_priority()?;
+  
+  for provider in priority.iter() {
+    match provider {
+      Provider::Sora => {} // Fallthrough
+      Provider::Artcraft => {
+        return handle_image_artcraft(
+          request, &app, app_env_configs, app_data_root, storyteller_creds_manager).await;
+      }
+      Provider::Fal => {
+        if fal_creds_manager.has_apparent_api_token()? {
+          return handle_image_fal(&app, request, fal_creds_manager, fal_task_queue).await;
+        }
+      }
+    }
   }
+  
+  Err(InternalImageError::NoProviderAvailable)
 }

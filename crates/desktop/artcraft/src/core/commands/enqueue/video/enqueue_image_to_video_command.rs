@@ -56,6 +56,9 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::EnqueueImageTo3dObjectErrorType;
+use crate::core::commands::enqueue::object::internal_object_error::InternalObjectError;
+use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 
 #[derive(Deserialize)]
 pub struct EnqueueImageToVideoRequest {
@@ -78,6 +81,8 @@ impl SerializeMarker for EnqueueImageToVideoSuccessResponse {}
 pub enum EnqueueImageToVideoErrorType {
   /// Caller didn't specify a model
   ModelNotSpecified,
+  /// No model available for video generation
+  NoProviderAvailable,
   /// Generic server error
   ServerError,
   /// No Fal API key available
@@ -93,6 +98,7 @@ pub async fn enqueue_image_to_video_command(
   app: AppHandle,
   request: EnqueueImageToVideoRequest,
   app_data_root: State<'_, AppDataRoot>,
+  provider_priority_store: State<'_, ProviderPriorityStore>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   fal_task_queue: State<'_, FalTaskQueue>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -105,6 +111,7 @@ pub async fn enqueue_image_to_video_command(
     &app,
     request,
     &app_data_root,
+    &provider_priority_store,
     &fal_creds_manager,
     &storyteller_creds_manager,
     &fal_task_queue,
@@ -122,7 +129,12 @@ pub async fn enqueue_image_to_video_command(
         InternalVideoError::NoModelSpecified => {
           status = CommandErrorStatus::BadRequest;
           error_type = EnqueueImageToVideoErrorType::ModelNotSpecified;
-          error_message = "No model specified for image generation";
+          error_message = "No model specified for video generation";
+        }
+        InternalVideoError::NoProviderAvailable => {
+          status = CommandErrorStatus::ServerError;
+          error_type = EnqueueImageToVideoErrorType::NoProviderAvailable;
+          error_message = "No configured provider available for video generation";
         }
         InternalVideoError::NeedsFalApiKey => {
           status = CommandErrorStatus::Unauthorized;
@@ -155,16 +167,29 @@ pub async fn handle_request(
   app: &AppHandle,
   request: EnqueueImageToVideoRequest,
   app_data_root: &AppDataRoot,
+  provider_priority_store: &ProviderPriorityStore,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
 ) -> Result<(), InternalVideoError> {
 
-  if fal_creds_manager.has_apparent_api_token()? {
-    handle_video_fal(&app, app_data_root, request, fal_creds_manager, fal_task_queue).await?;
-  } else {
-    handle_video_artcraft(request, &app, app_data_root, storyteller_creds_manager).await?;
+  let priority = provider_priority_store.get_priority()?;
+  
+  for provider in priority.iter() {
+    match provider {
+      Provider::Sora => {} // Fallthrough
+      Provider::Artcraft => {
+        return Ok(handle_video_artcraft(
+          request, &app, app_data_root, storyteller_creds_manager).await?);
+      }
+      Provider::Fal => {
+        if fal_creds_manager.has_apparent_api_token()? {
+          return Ok(handle_video_fal(
+            &app, app_data_root, request, fal_creds_manager, fal_task_queue).await?);
+        }
+      }
+    }
   }
 
-  Ok(())
+  Err(InternalVideoError::NoProviderAvailable)
 }

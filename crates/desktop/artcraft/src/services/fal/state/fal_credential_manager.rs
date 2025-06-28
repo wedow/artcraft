@@ -1,5 +1,5 @@
-use crate::services::fal::state::read_fal_api_key_from_disk::read_fal_api_key_from_disk;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::fal::state::read_fal_api_key_from_disk::read_fal_api_key_from_disk;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use fal_client::creds::fal_api_key::FalApiKey;
@@ -42,6 +42,9 @@ impl FalCredentialManager {
   }
 
   pub fn set_key(&self, key: &FalApiKey) -> AnyhowResult<()> {
+    if key.0.trim().is_empty() {
+      return Err(anyhow!("FAL API key cannot be empty")); // TODO: Also handle upstream.
+    }
     self.key.set_clone(key)
   }
 

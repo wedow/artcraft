@@ -7,6 +7,7 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 #[derive(Debug)]
 pub enum InternalVideoError {
   NoModelSpecified,
+  NoProviderAvailable,
   NeedsFalApiKey,
   NeedsSoraCredentials,
   NeedsStorytellerCredentials,
