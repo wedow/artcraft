@@ -1,9 +1,9 @@
-use crate::core::commands::response::shorthand::{SuccessOrErrorMessage};
+use crate::core::commands::response::shorthand::SuccessOrErrorMessage;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use log::{error, info};
-use serde_derive::{Deserialize};
-use tauri::{State};
+use serde_derive::Deserialize;
+use tauri::State;
 
 #[derive(Deserialize)]
 pub struct SetProviderOrderRequest {

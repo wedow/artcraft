@@ -3,8 +3,8 @@ use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use errors::AnyhowResult;
 use fal_client::creds::fal_api_key::FalApiKey;
 use log::{error, info};
-use serde_derive::{Deserialize};
-use tauri::{State};
+use serde_derive::Deserialize;
+use tauri::State;
 
 /// For now, we'll only update a single preference at a time.
 #[derive(Deserialize)]

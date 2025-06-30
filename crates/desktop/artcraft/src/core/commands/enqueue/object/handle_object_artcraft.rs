@@ -14,7 +14,7 @@ use log::{error, info};
 use storyteller_client::generate::object::generate_hunyuan_3d_2_0_image_to_3d::generate_hunyuan3d_2_0_image_to_3d;
 use storyteller_client::generate::object::generate_hunyuan_3d_2_1_image_to_3d::generate_hunyuan3d_2_1_image_to_3d;
 use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle};
+use tauri::AppHandle;
 
 pub async fn handle_object_artcraft(
   request: EnqueueImageTo3dObjectRequest,

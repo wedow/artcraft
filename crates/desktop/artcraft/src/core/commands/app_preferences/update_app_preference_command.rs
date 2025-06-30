@@ -5,7 +5,7 @@ use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use tauri::{State};
+use tauri::State;
 
 /// For now, we'll only update a single preference at a time.
 #[derive(Deserialize)]

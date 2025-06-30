@@ -20,7 +20,7 @@ use storyteller_client::generate::image::generate_flux_1_dev_text_to_image::gene
 use storyteller_client::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
-use tauri::{AppHandle};
+use tauri::AppHandle;
 
 pub async fn handle_image_artcraft(
   request: EnqueueTextToImageRequest,

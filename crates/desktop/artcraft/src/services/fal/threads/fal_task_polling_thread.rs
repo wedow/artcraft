@@ -1,5 +1,5 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationServiceProvider};
+use crate::core::events::generation_events::common::GenerationServiceProvider;
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;
@@ -13,7 +13,7 @@ use fal_client::utils::queue_status_checker::QueueStatusChecker;
 use log::{error, info, warn};
 use storyteller_client::recipes::upload_media_file_from_file::upload_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle};
+use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn fal_task_polling_thread(

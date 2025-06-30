@@ -2,9 +2,9 @@ use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use errors::AnyhowResult;
-use log::{error};
-use serde_derive::{Serialize};
-use tauri::{State};
+use log::error;
+use serde_derive::Serialize;
+use tauri::State;
 
 #[derive(Serialize)]
 pub struct GetFalApiKeyResponse {

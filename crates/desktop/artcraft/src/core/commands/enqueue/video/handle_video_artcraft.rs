@@ -23,7 +23,7 @@ use storyteller_client::generate::video::generate_kling_21_pro_image_to_video::g
 use storyteller_client::generate::video::generate_seedance_1_0_lite_image_to_video::generate_seedance_1_0_lite_image_to_video;
 use storyteller_client::generate::video::generate_veo_2_image_to_video::generate_veo_2_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle};
+use tauri::AppHandle;
 
 pub async fn handle_video_artcraft(
   request: EnqueueImageToVideoRequest,

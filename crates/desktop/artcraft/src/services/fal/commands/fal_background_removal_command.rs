@@ -18,7 +18,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use anyhow::anyhow;
 use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
-use errors::{AnyhowError};
+use errors::AnyhowError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
 use fal_client::requests::queue::remove_background_rembg::remove_background_rembg;
 use filesys::file_read_bytes::file_read_bytes;

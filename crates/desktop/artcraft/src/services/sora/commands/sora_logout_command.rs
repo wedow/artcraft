@@ -1,7 +1,7 @@
 use crate::core::commands::response::shorthand::SimpleResponse;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use log::{error, info};
-use tauri::{State};
+use tauri::State;
 
 #[tauri::command]
 pub async fn sora_logout_command(

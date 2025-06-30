@@ -3,7 +3,7 @@ use crate::core::state::app_preferences::preferred_download_directory::Preferred
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::Serialize;
-use tauri::{State};
+use tauri::State;
 
 #[derive(Serialize)]
 pub struct GetAppPreferencesResponse {

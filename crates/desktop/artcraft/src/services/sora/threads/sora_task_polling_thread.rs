@@ -18,7 +18,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle};
+use tauri::AppHandle;
 use tempdir::TempDir;
 
 pub async fn sora_task_polling_thread(
