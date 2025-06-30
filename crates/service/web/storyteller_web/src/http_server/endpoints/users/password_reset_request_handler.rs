@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use log::{error, warn};
 use serde::Deserialize;
 use sqlx::MySqlPool;

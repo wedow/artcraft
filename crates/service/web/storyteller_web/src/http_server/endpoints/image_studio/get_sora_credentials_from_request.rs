@@ -1,11 +1,11 @@
 use actix_web::HttpRequest;
 use anyhow::anyhow;
-use log::{error, info};
-use r2d2_redis::r2d2::PooledConnection;
-use r2d2_redis::RedisConnectionManager;
 use errors::AnyhowResult;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
+use log::{error, info};
 use openai_sora_client::credentials::SoraCredentials;
+use r2d2_redis::r2d2::PooledConnection;
+use r2d2_redis::RedisConnectionManager;
 use shared_service_components::sora_redis_credentials::get_sora_credentials_from_redis::get_sora_credentials_from_redis;
 
 const SORA_BEARER_HEADER_NAME : &str = "sora-bearer";

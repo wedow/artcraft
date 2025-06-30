@@ -2,7 +2,7 @@
 
 use std::fmt::Debug;
 use std::fmt::{Display, Formatter};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use actix_web::error::ResponseError;
@@ -14,7 +14,6 @@ use cloud_storage::bucket_client::BucketClient;
 use log::warn;
 use log::{debug, error};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use openai_sora_client::credentials::SoraCredentials;
 use openai_sora_client::requests::image_gen::SoraImageGenError;
 use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
 use serde::Deserialize;
@@ -43,16 +42,13 @@ use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_g
 use openai_sora_client::requests::upload::upload_media_from_file::sora_media_upload_from_file;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::users::UserToken;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::http_server::endpoints::image_studio::get_sora_credentials_from_request::get_sora_credentials_from_request;
-use crate::http_server::endpoints::tts::get_tts_inference_job_status::GetTtsInferenceStatusError;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
-use crate::util::allowed_studio_access::allowed_studio_access;
 
 /// This is the number of images (batch size) to generate for each request.
 /// We should allow all users to have multiple images generated at once as this

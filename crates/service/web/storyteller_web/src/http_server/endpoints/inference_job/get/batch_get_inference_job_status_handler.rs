@@ -4,12 +4,12 @@ use std::sync::Arc;
 
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
-use actix_web::web::{Json, Path};
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
 use actix_web_lab::extract::Query;
 use chrono::{DateTime, Utc};
 use log::error;
-use r2d2_redis::redis::{Commands, RedisResult};
+use r2d2_redis::redis::Commands;
 use utoipa::{IntoParams, ToSchema};
 
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
@@ -20,7 +20,6 @@ use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_lipsync_details::extract_lipsync_details;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_live_portrait_details::extract_live_portrait_details;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_polymorphic_inference_args::extract_polymorphic_inference_args;
-use crate::http_server::endpoints::media_files::get::batch_get_media_files_handler::BatchGetMediaFilesQueryParams;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::web_utils::filter_model_name::maybe_filter_model_name;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
@@ -35,7 +34,6 @@ use mysql_queries::queries::generic_inference::web::batch_get_inference_job_stat
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
 
 /// For certain jobs or job classes (eg. non-premium), we kill the jobs if the user hasn't
 /// maintained a keepalive. This prevents wasted work when users who are unlikely to return

@@ -1,6 +1,6 @@
-use utoipa::ToSchema;
 use mysql_queries::payloads::media_file_extra_info::media_file_extra_info::MediaFileExtraInfo;
 use tokens::tokens::media_files::MediaFileToken;
+use utoipa::ToSchema;
 
 /// Details about submitted live portrait jobs (request arguments only)
 #[derive(Serialize, ToSchema)]

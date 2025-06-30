@@ -6,18 +6,18 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Json, Path};
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, info, warn};
 
 use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_ip::get_request_ip;
-use mysql_queries::queries::w2l::w2l_templates::edit_w2l_template::{CreatorOrModFields, edit_w2l_template, EditW2lTemplateArgs, ModFields};
+use markdown::simple_markdown_to_html::simple_markdown_to_html;
+use mysql_queries::queries::w2l::w2l_templates::edit_w2l_template::{edit_w2l_template, CreatorOrModFields, EditW2lTemplateArgs, ModFields};
 use mysql_queries::queries::w2l::w2l_templates::get_w2l_template::select_w2l_template_by_token;
 use user_input_common::check_for_slurs::contains_slurs;
-use markdown::simple_markdown_to_html::simple_markdown_to_html;
 
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::http_server::web_utils::response_success_helpers::simple_json_success;

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use log::{error, info};
 
 use http_server_common::request::get_request_ip::get_request_ip;

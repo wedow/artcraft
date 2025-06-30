@@ -22,21 +22,20 @@ use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::{
-    GenericInferenceArgs,
-    InferenceCategoryAbbreviated,
-    PolymorphicInferenceArgs,
+  GenericInferenceArgs,
+  InferenceCategoryAbbreviated,
+  PolymorphicInferenceArgs,
 };
 use mysql_queries::payloads::generic_inference_args::inner_payloads::workflow_payload::WorkflowArgs;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{
-    insert_generic_inference_job,
-    InsertGenericInferenceArgs,
+  insert_generic_inference_job,
+  InsertGenericInferenceArgs,
 };
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use primitives::str_to_bool::str_to_bool;
 use primitives::try_str_to_num::try_str_to_num;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::users::UserToken;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
@@ -45,7 +44,6 @@ use crate::http_server::requests::request_headers::has_debug_header::has_debug_h
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
-use crate::util::allowed_studio_access::allowed_studio_access;
 
 #[derive(Deserialize, ToSchema)]
 pub struct EnqueueWorkFlowRequest {

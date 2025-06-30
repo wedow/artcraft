@@ -1,10 +1,10 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
-use log::{log, warn};
+use actix_web::{web, HttpRequest, HttpResponse};
+use log::warn;
 
 use mysql_queries::queries::users::user_roles::list_user_roles::{list_user_roles, UserRoleForList};
 

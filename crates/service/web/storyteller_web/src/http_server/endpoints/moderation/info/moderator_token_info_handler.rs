@@ -1,11 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
-use log::{log, warn};
+use actix_web::{web, HttpRequest, HttpResponse};
+use log::warn;
 use serde::Serialize;
 use sqlx::MySqlPool;
 use utoipa::ToSchema;
@@ -14,20 +14,17 @@ use errors::AnyhowResult;
 use mysql_queries::queries::generic_inference::web::get_inference_job_status::get_inference_job_status;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use mysql_queries::queries::model_weights::get::get_weight::get_weight_by_token;
-use mysql_queries::queries::model_weights::model_weight_info_lite::get_model_weight_info_lite::get_model_weight_info_lite;
 use mysql_queries::queries::prompts::get_prompt::get_prompt;
-use mysql_queries::queries::tts::tts_inference_jobs::get_pending_tts_inference_job_detailed_stats::{get_pending_tts_inference_job_detailed_stats, PendingCountResult};
 use mysql_queries::queries::users::user_profiles::get_user_profile_by_token::get_user_profile_by_token;
 use mysql_queries::queries::users::user_profiles::get_user_profile_by_username::get_user_profile_by_username;
-use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
 
-use crate::http_server::web_utils::user_session::require_moderator::{require_moderator, RequireModeratorError, UseDatabase};
 use crate::http_server::web_utils::serialize_as_json_error::serialize_as_json_error;
+use crate::http_server::web_utils::user_session::require_moderator::{require_moderator, RequireModeratorError, UseDatabase};
 use crate::state::server_state::ServerState;
 
 /// For the URL PathInfo

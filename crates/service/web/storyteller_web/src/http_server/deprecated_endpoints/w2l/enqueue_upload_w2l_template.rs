@@ -6,9 +6,9 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
 
 use config::is_bad_video_download_url::is_bad_video_download_url;
@@ -17,9 +17,9 @@ use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::queries::w2l::w2l_template_upload_jobs::insert_w2l_template_upload_job::{insert_w2l_template_upload_job, InsertW2lTemplateUploadJobArgs};
 use user_input_common::check_for_slurs::contains_slurs;
 
+use crate::http_server::validations::validate_model_title::validate_model_title;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
-use crate::http_server::validations::validate_model_title::validate_model_title;
 
 #[derive(Deserialize)]
 pub enum W2lTemplateType {

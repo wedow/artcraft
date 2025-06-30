@@ -5,10 +5,8 @@
 
 use std::sync::Arc;
 
-use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
 use actix_web::web::Json;
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{web, HttpRequest};
 use log::{error, info, warn};
 use utoipa::ToSchema;
 
@@ -17,7 +15,6 @@ use enums::by_table::generic_inference_jobs::inference_job_product_category::Inf
 use enums::by_table::generic_inference_jobs::inference_job_type::InferenceJobType;
 use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
 use enums::common::visibility::Visibility;
-use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::payloads::generic_inference_args::common::watermark_type::WatermarkType;
@@ -30,7 +27,6 @@ use primitives::str_to_bool::str_to_bool;
 use primitives::traits::trim_or_emptyable::TrimOrEmptyable;
 use primitives::try_str_to_num::try_str_to_num;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::configs::plans::plan_category::PlanCategory;
@@ -43,7 +39,6 @@ use crate::http_server::requests::request_headers::get_routing_tag_header::get_r
 use crate::http_server::requests::request_headers::has_debug_header::has_debug_header;
 use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
-use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
 use crate::util::allowed_video_style_transfer_access::allowed_video_style_transfer_access;
 use crate::util::cleaners::empty_media_file_token_to_null::empty_media_file_token_to_null;

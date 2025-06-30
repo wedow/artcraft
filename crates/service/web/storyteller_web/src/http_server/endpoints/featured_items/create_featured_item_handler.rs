@@ -1,11 +1,10 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, warn};
-use r2d2_redis::redis::transaction;
 use sqlx::Acquire;
 use utoipa::ToSchema;
 
@@ -15,25 +14,13 @@ use enums::by_table::audit_logs::audit_log_entity_action::AuditLogEntityAction;
 use enums::by_table::featured_items::featured_item_entity_type::FeaturedItemEntityType;
 use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_ip::get_request_ip;
-use mysql_queries::queries::audit_logs::insert_audit_log::{insert_audit_log, InsertAuditLogArgs};
 use mysql_queries::queries::audit_logs::insert_audit_log_transactional::{insert_audit_log_transactional, InsertAuditLogTransactionalArgs};
-use mysql_queries::queries::entity_stats::stats_entity_token::StatsEntityToken;
-use mysql_queries::queries::entity_stats::upsert_entity_stats_on_bookmark_event::{BookmarkAction, upsert_entity_stats_on_bookmark_event, UpsertEntityStatsArgs};
 use mysql_queries::queries::featured_items::upsert_featured_item::{upsert_featured_item, UpsertFeaturedItemArgs};
 use mysql_queries::queries::media_files::edit::update_media_file_visibility_transactional::{update_media_file_visibility_transactional, UpdateMediaFileTransactionalArgs};
-use mysql_queries::queries::users::user_bookmarks::get_total_bookmark_count_for_entity::get_total_bookmark_count_for_entity;
-use mysql_queries::queries::users::user_bookmarks::get_user_bookmark_transactional_locking::{BookmarkIdentifier, get_user_bookmark_transactional_locking};
-use mysql_queries::queries::users::user_bookmarks::user_bookmark_entity_token::UserBookmarkEntityToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
-use tokens::tokens::tts_models::TtsModelToken;
-use tokens::tokens::tts_results::TtsResultToken;
-use tokens::tokens::user_bookmarks::UserBookmarkToken;
 use tokens::tokens::users::UserToken;
-use tokens::tokens::voice_conversion_models::VoiceConversionModelToken;
-use tokens::tokens::w2l_results::W2lResultToken;
 use tokens::tokens::w2l_templates::W2lTemplateToken;
-use tokens::tokens::zs_voices::ZsVoiceToken;
 
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;

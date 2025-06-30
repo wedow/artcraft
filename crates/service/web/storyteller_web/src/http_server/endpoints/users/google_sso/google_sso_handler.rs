@@ -3,52 +3,28 @@
 //#![forbid(unused_mut)]
 //#![forbid(unused_variables)]
 
-use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fmt::Formatter;
 
-use crate::http_server::endpoints::beta_keys::redeem_beta_key_handler::RedeemBetaKeyError;
-use crate::http_server::endpoints::users::create_account_handler::{CreateAccountErrorResponse, CreateAccountSuccessResponse};
 use crate::http_server::endpoints::users::google_sso::check_claims::check_claims;
+use crate::http_server::endpoints::users::google_sso::handle_existing_sso_account::{handle_existing_sso_account, ExistingAccountArgs};
 use crate::http_server::endpoints::users::google_sso::handle_new_sso_account::{handle_new_sso_account, NewSsoArgs};
-use crate::http_server::endpoints::users::session_info_handler::SessionInfoError;
 use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
-use crate::http_server::validations::is_reserved_username::is_reserved_username;
-use crate::http_server::validations::validate_passwords::validate_passwords;
-use crate::http_server::validations::validate_username::validate_username;
 use crate::state::certs::google_sign_in_cert::GoogleSignInCert;
-use crate::util::email_to_gravatar::email_to_gravatar;
-use crate::util::enroll_in_studio::enroll_in_studio;
-use crate::util::generate_random_username::generate_random_username;
-use actix_helpers::extractors::get_request_origin_uri::get_request_origin_uri;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json};
-use actix_web::{web, HttpRequest, HttpResponse};
-use errors::AnyhowResult;
-use google_sign_in::certs::download_certs::download_cert_key_set;
-use google_sign_in::claims::claims::Claims;
-use google_sign_in::decode_and_verify_token_claims::decode_and_verify_token_claims;
-use google_sign_in::VerificationOptions;
+use actix_web::{HttpRequest, HttpResponse};
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
-use log::{error, info, warn};
-use mysql_queries::mediators::firehose_publisher::FirehosePublisher;
-use mysql_queries::queries::google_sign_in_accounts::get_google_sign_in_account_by_subject::{get_google_sign_in_account, GoogleSignInAccount};
-use mysql_queries::queries::google_sign_in_accounts::insert_google_sign_in_account::{insert_google_sign_in_account, InsertGoogleSignInArgs};
-use mysql_queries::queries::users::user::create::create_account_error::CreateAccountError;
-use mysql_queries::queries::users::user::create::create_account_from_google_sso::{create_account_from_google_sso, CreateAccountFromGoogleSsoArgs};
-use mysql_queries::queries::users::user_sessions::create_user_session::create_user_session;
+use log::{info, warn};
+use mysql_queries::queries::google_sign_in_accounts::get_google_sign_in_account_by_subject::get_google_sign_in_account;
 use mysql_queries::queries::users::user_sessions::create_user_session_with_transactor::create_user_session_with_transactor;
 use mysql_queries::utils::transactor::Transactor;
-use password::bcrypt_hash_password::bcrypt_hash_password;
-use sqlx::pool::PoolConnection;
-use sqlx::{Acquire, MySql, MySqlPool};
+use sqlx::{Acquire, MySqlPool};
 use tokens::tokens::user_sessions::UserSessionToken;
 use tokens::tokens::users::UserToken;
-use user_input_common::check_for_slurs::contains_slurs;
 use utoipa::ToSchema;
-use crate::http_server::endpoints::users::google_sso::handle_existing_sso_account::{handle_existing_sso_account, ExistingAccountArgs};
 /* ALGORITHM
 --> [SSO RECORD LOOKUP]
   --> I. SSO Record Exists

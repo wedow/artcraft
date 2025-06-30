@@ -1,18 +1,14 @@
 use std::error::Error;
-use std::fmt::{Display, Formatter};
 
 use actix_web::HttpRequest;
 use log::warn;
-use sqlx::{MySql, MySqlConnection};
 use sqlx::pool::PoolConnection;
+use sqlx::MySql;
 
-use mysql_queries::queries::users::user_sessions::get_user_session_by_token::SessionUserRecord;
 
-use crate::http_server::endpoints::beta_keys::create_beta_keys_handler::CreateBetaKeysError;
 use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 use crate::http_server::session::session_checker::SessionChecker;
 use crate::http_server::web_utils::user_session::require_user_session::RequireUserSessionError;
-use crate::state::server_state::ServerState;
 
 pub async fn require_user_session_using_connection(
   http_request: &HttpRequest,

@@ -1,11 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
-use log::{log, warn};
+use log::warn;
 
 use mysql_queries::queries::w2l::w2l_templates::list_pending_w2l_templates::list_pending_w2l_templates;
 

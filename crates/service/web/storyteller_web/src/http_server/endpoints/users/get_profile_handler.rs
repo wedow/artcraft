@@ -6,15 +6,15 @@
 use std::collections::BTreeSet;
 use std::fmt;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::{error, warn};
-use r2d2_redis::{r2d2, RedisConnectionManager};
 use r2d2_redis::r2d2::PooledConnection;
 use r2d2_redis::redis::Commands;
+use r2d2_redis::{r2d2, RedisConnectionManager};
 use sqlx::MySqlPool;
 use utoipa::ToSchema;
 

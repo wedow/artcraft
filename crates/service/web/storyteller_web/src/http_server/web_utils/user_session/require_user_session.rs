@@ -6,7 +6,6 @@ use log::warn;
 
 use mysql_queries::queries::users::user_sessions::get_user_session_by_token::SessionUserRecord;
 
-use crate::http_server::endpoints::beta_keys::create_beta_keys_handler::CreateBetaKeysError;
 use crate::state::server_state::ServerState;
 
 #[derive(Debug)]

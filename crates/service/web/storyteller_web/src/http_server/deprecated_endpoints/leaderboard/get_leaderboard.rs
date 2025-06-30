@@ -6,19 +6,19 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{debug, error, warn};
 use sqlx::MySqlPool;
 
+use crate::http_server::common_responses::user_avatars::default_avatar_color_from_username::default_avatar_color_from_username;
+use crate::http_server::common_responses::user_avatars::default_avatar_from_username::default_avatar_from_username;
+use crate::http_server::common_responses::user_details_lite::{UserDefaultAvatarInfo, UserDetailsLight};
 use errors::AnyhowResult;
 use mysql_queries::queries::tts::stats::calculate_tts_model_leaderboard::calculate_tts_model_leaderboard;
 use mysql_queries::queries::w2l::stats::calculate_w2l_template_leaderboard::calculate_w2l_template_leaderboard;
 use tokens::tokens::users::UserToken;
-use crate::http_server::common_responses::user_avatars::default_avatar_color_from_username::default_avatar_color_from_username;
-use crate::http_server::common_responses::user_avatars::default_avatar_from_username::default_avatar_from_username;
-use crate::http_server::common_responses::user_details_lite::{UserDefaultAvatarInfo, UserDetailsLight};
 
 use crate::http_server::web_utils::serialize_as_json_error::serialize_as_json_error;
 use crate::state::server_state::ServerState;

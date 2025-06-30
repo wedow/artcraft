@@ -5,9 +5,9 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
 use serde::Deserialize;
 use serde::Serialize;
@@ -21,14 +21,14 @@ use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::{
-    GenericInferenceArgs,
-    InferenceCategoryAbbreviated,
-    PolymorphicInferenceArgs,
+  GenericInferenceArgs,
+  InferenceCategoryAbbreviated,
+  PolymorphicInferenceArgs,
 };
 use mysql_queries::payloads::generic_inference_args::inner_payloads::tts_payload::TTSArgs;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{
-    insert_generic_inference_job,
-    InsertGenericInferenceArgs,
+  insert_generic_inference_job,
+  InsertGenericInferenceArgs,
 };
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::users::UserToken;

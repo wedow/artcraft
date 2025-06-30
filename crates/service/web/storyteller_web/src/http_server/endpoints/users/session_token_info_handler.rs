@@ -1,22 +1,15 @@
-use std::collections::BTreeSet;
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
-use sqlx::MySqlPool;
 use utoipa::ToSchema;
 
-use enums::by_table::users::user_feature_flag::UserFeatureFlag;
 use http_server_common::response::response_error_helpers::to_simple_json_error;
-use tokens::tokens::users::UserToken;
 
-use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
-use crate::http_server::cookies::anonymous_visitor_tracking::avt_cookie_manager::AvtCookieManager;
-use crate::http_server::session::lookup::user_session_feature_flags::UserSessionFeatureFlags;
 use crate::http_server::session::session_checker::SessionChecker;
 use crate::state::server_state::ServerState;
 

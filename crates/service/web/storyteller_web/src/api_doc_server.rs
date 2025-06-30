@@ -20,8 +20,6 @@
 use std::error::Error;
 
 use actix_web::{App, HttpServer};
-use r2d2_redis::redis::Commands;
-use sqlx::MySqlPool;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -29,7 +27,6 @@ use docs::api_doc::ApiDoc;
 use errors::AnyhowResult;
 
 use crate::configs::static_api_tokens::StaticApiTokenSet;
-use crate::state::server_state::ServerState;
 
 pub mod billing;
 pub mod configs;

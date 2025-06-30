@@ -3,13 +3,11 @@ use std::fmt::{Display, Formatter};
 
 use actix_web::HttpRequest;
 use log::warn;
-use r2d2_redis::r2d2::PooledConnection;
-use sqlx::MySql;
 use sqlx::pool::PoolConnection;
+use sqlx::MySql;
 
 use mysql_queries::queries::users::user_sessions::get_user_session_by_token::SessionUserRecord;
 
-use crate::http_server::endpoints::beta_keys::create_beta_keys_handler::CreateBetaKeysError;
 use crate::state::server_state::ServerState;
 
 #[derive(Debug)]

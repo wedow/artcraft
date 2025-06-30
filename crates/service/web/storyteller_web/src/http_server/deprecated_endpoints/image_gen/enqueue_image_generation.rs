@@ -1,13 +1,13 @@
 #![forbid(unused_mut)]
 
-use std::fmt::{Display, Formatter};
 use std::fmt::Debug;
+use std::fmt::{Display, Formatter};
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::error;
 use log::warn;
 use serde::Deserialize;
@@ -38,10 +38,9 @@ use tokens::tokens::users::UserToken;
 
 use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
 use crate::http_server::deprecated_endpoints::image_gen::prompt_enrichment::enrich_prompt;
+use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
-use crate::util::allowed_studio_access::allowed_studio_access;
-use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 
 /// This is the number of images (batch size) to generate for each request.
 /// We should allow all users to have multiple images generated at once as this

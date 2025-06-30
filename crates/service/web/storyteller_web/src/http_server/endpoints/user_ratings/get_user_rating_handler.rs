@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use log::{error, info};
 use utoipa::ToSchema;
 
@@ -9,7 +9,7 @@ use enums::by_table::user_ratings::entity_type::UserRatingEntityType;
 use enums::by_table::user_ratings::rating_value::UserRatingValue;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::composite_keys::by_table::user_ratings::user_rating_entity::UserRatingEntity;
-use mysql_queries::queries::users::user_ratings::get_user_rating::{Args, get_user_rating};
+use mysql_queries::queries::users::user_ratings::get_user_rating::{get_user_rating, Args};
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;

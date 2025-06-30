@@ -1,7 +1,7 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{http::StatusCode, HttpRequest, HttpResponse, ResponseError, web};
+use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, ResponseError};
 use chrono::NaiveDateTime;
 use log::{debug, error, warn};
 

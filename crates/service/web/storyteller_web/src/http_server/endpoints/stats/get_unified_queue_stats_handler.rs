@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use actix_web::{http::StatusCode, HttpRequest, HttpResponse, ResponseError, web};
+use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, ResponseError};
 use chrono::NaiveDateTime;
 use log::{debug, error, warn};
-use utoipa::ToSchema;
 use mysql_queries::queries::stats::get_unified_queue_stats::get_unified_queue_stats;
 use redis_common::redis_cache_keys::RedisCacheKeys;
+use utoipa::ToSchema;
 
-use crate::http_server::endpoints::stats::result_transformer::{CacheableQueueStats, database_result_to_cacheable};
+use crate::http_server::endpoints::stats::result_transformer::{database_result_to_cacheable, CacheableQueueStats};
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
 

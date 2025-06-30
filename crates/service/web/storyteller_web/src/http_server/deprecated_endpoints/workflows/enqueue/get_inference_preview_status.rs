@@ -1,27 +1,21 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Json, Path};
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::error;
 use r2d2_redis::redis::{Commands, RedisResult};
-use reqwest::Url;
 use utoipa::ToSchema;
 
-use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
-use bucket_paths::legacy::typified_paths::public::voice_conversion_results::bucket_file_path::VoiceConversionResultOriginalFilePath;
 use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
-use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::common::job_status_plus::JobStatusPlus;
-use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use mysql_queries::queries::generic_inference::web::get_inference_job_status::get_inference_job_status;
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
-use redis_common::redis_keys::RedisKeys;
 use redis_schema::keys::inference_job::style_transfer_progress_key::StyleTransferProgressKey;
-use redis_schema::payloads::inference_job::style_transfer_progress_state::{InferenceProgressDetailsResponse, InferenceStageDetails};
+use redis_schema::payloads::inference_job::style_transfer_progress_state::InferenceProgressDetailsResponse;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
 use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job_progress::estimate_job_progress;

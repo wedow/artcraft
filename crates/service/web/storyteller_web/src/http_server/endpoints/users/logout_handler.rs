@@ -5,9 +5,9 @@
 
 use std::fmt;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
 use sqlx::MySqlPool;
 use utoipa::ToSchema;

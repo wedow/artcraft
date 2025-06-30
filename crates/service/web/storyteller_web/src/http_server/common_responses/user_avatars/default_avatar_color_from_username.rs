@@ -29,9 +29,9 @@ pub fn default_avatar_color_from_username(username: &str) -> u8 {
 
 #[cfg(test)]
 mod tests {
-  use std::collections::HashSet;
-  use rand::distr::{Alphanumeric, SampleString};
   use crate::http_server::common_responses::user_avatars::default_avatar_color_from_username::default_avatar_color_from_username;
+  use rand::distr::{Alphanumeric, SampleString};
+  use std::collections::HashSet;
 
   #[test]
   fn test_stability() {

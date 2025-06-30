@@ -1,14 +1,13 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
 use actix_web::web::{Path, Query};
-use log::{info, log, warn};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use log::warn;
 
-use http_server_common::error::simple_json_error_response::simple_json_error_response;
 use mysql_queries::queries::tts::tts_results::list_tts_results_query_builder::{ListTtsResultsQueryBuilder, TtsInferenceRecordForList};
 
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;

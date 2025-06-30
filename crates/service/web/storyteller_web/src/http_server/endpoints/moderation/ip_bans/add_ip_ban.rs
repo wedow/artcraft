@@ -1,10 +1,10 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
-use log::{info, log, warn};
+use actix_web::{web, HttpRequest, HttpResponse};
+use log::{info, warn};
 
 use mysql_queries::queries::ip_bans::upsert_ip_ban::{upsert_ip_ban, UpsertIpBanArgs};
 use user_input_common::validate_user_provided_ip_address::validate_user_provided_ip_address;

@@ -4,12 +4,12 @@ use std::sync::Arc;
 
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
-use actix_web::web::{Json, Path};
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
 use actix_web_lab::extract::Query;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use log::{error, warn};
-use r2d2_redis::redis::{Commands, RedisResult};
+use r2d2_redis::redis::Commands;
 use utoipa::{IntoParams, ToSchema};
 
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
@@ -36,7 +36,6 @@ use primitives::numerics::i64_to_u64_zero_clamped::i64_to_u64_zero_clamped;
 use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::users::UserToken;
 
 /// For certain jobs or job classes (eg. non-premium), we kill the jobs if the user hasn't
 /// maintained a keepalive. This prevents wasted work when users who are unlikely to return

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use actix_web::http::StatusCode;
-use actix_web::HttpResponse;
 use actix_web::web::Data;
+use actix_web::HttpResponse;
 use log::debug;
 
 use crate::state::server_state::ServerState;

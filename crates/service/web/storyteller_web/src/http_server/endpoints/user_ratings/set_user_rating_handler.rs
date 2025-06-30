@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use log::{error, info, warn};
 use sqlx::Acquire;
 use utoipa::ToSchema;
@@ -12,11 +12,11 @@ use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::composite_keys::by_table::user_ratings::user_rating_entity::UserRatingEntity;
 use mysql_queries::queries::entity_stats::stats_entity_token::StatsEntityToken;
-use mysql_queries::queries::entity_stats::upsert_entity_stats_on_ratings_event::{RatingsAction, upsert_entity_stats_on_ratings_event, UpsertEntityStatsArgs};
+use mysql_queries::queries::entity_stats::upsert_entity_stats_on_ratings_event::{upsert_entity_stats_on_ratings_event, RatingsAction, UpsertEntityStatsArgs};
 use mysql_queries::queries::users::user_ratings::get_total_user_rating_count_for_entity::get_total_user_rating_count_for_entity;
 use mysql_queries::queries::users::user_ratings::get_user_rating_transactional_locking::get_user_rating_transactional_locking;
 use mysql_queries::queries::users::user_ratings::update_tts_model_ratings::update_tts_model_ratings;
-use mysql_queries::queries::users::user_ratings::upsert_user_rating::{Args, upsert_user_rating};
+use mysql_queries::queries::users::user_ratings::upsert_user_rating::{upsert_user_rating, Args};
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::tts_models::TtsModelToken;

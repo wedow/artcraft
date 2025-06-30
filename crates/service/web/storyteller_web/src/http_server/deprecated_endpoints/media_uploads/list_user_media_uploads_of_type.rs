@@ -1,19 +1,19 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
-use log::{log, warn};
+use log::warn;
 
+use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 use enums::by_table::media_uploads::media_upload_type::MediaUploadType;
 use enums::common::visibility::Visibility;
 use mysql_queries::queries::media_uploads::reverse_list_user_media_uploads_of_type::reverse_list_user_media_uploads_of_type_with_connection;
 use tokens::tokens::media_uploads::MediaUploadToken;
 use tokens::tokens::users::UserToken;
-use crate::http_server::session::lookup::user_session_extended::UserSessionExtended;
 
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;

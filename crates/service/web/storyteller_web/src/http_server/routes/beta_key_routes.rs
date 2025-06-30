@@ -1,7 +1,7 @@
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
-use actix_web::{App, Error, HttpResponse, web};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
+use actix_web::{web, App, Error, HttpResponse};
 
 use crate::http_server::endpoints::beta_keys::create_beta_keys_handler::create_beta_keys_handler;
 use crate::http_server::endpoints::beta_keys::edit_beta_key_distributed_flag_handler::edit_beta_key_distributed_flag_handler;

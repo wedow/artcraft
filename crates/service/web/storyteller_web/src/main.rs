@@ -6,7 +6,7 @@
 // Okay to toggle
 //#![forbid(warnings)]
 #![allow(unreachable_patterns)]
-#![forbid(unused_imports)]
+#![allow(unused_imports)]
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
@@ -17,7 +17,6 @@
 #[macro_use] extern crate magic_crypt;
 #[macro_use] extern crate serde_derive;
 
-use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -28,13 +27,9 @@ use actix_web::{middleware, web, App, HttpServer};
 use anyhow::anyhow;
 use elasticsearch::http::transport::Transport;
 use elasticsearch::Elasticsearch;
-use futures::Future;
 use log::info;
 use r2d2_redis::r2d2;
-use r2d2_redis::redis::Commands;
 use r2d2_redis::RedisConnectionManager;
-use sqlx::mysql::MySqlPoolOptions;
-use sqlx::MySqlPool;
 use tokio::runtime::Runtime;
 
 use actix_cors_configs::cors::build_cors_config;
@@ -56,7 +51,6 @@ use billing_component::stripe::traits::internal_user_lookup::InternalUserLookup;
 use bootstrap::bootstrap::{bootstrap, BootstrapArgs};
 use cloud_storage::bucket_client::BucketClient;
 use config::common_env::CommonEnv;
-use config::shared_constants::DEFAULT_MYSQL_CONNECTION_STRING;
 use config::shared_constants::DEFAULT_RUST_LOG;
 use email_sender::smtp_email_sender::SmtpEmailSender;
 use errors::AnyhowResult;

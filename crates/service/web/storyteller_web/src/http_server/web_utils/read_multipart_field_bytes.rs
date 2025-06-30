@@ -3,7 +3,7 @@ use actix_multipart::Field;
 use actix_web::web::BytesMut;
 use anyhow::anyhow;
 use futures::{StreamExt, TryStreamExt};
-use log::{info, warn};
+use log::warn;
 
 const MIN_BYTES : usize = 10;
 //const MAX_BYTES : usize = 1024 * 1024 * 20; // 20 Mb

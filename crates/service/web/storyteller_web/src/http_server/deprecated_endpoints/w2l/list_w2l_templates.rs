@@ -1,10 +1,10 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
-use log::{error, log, warn};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use log::{error, warn};
 
 use mysql_queries::queries::w2l::w2l_templates::list_w2l_templates::{list_w2l_templates, W2lTemplateRecordForList};
 

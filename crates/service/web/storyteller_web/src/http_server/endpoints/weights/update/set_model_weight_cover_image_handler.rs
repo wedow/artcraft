@@ -1,15 +1,14 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
 use utoipa::ToSchema;
 
 use enums::by_table::media_files::media_file_type::MediaFileType;
-use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::response_success_helpers::simple_json_success;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;

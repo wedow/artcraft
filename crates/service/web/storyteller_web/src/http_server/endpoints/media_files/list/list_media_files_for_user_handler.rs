@@ -1,10 +1,9 @@
-use std::collections::HashSet;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Path, Query};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::{info, warn};
 use utoipa::{IntoParams, ToSchema};
@@ -23,9 +22,9 @@ use enums_public::by_table::media_files::public_media_file_model_type::PublicMed
 use mysql_queries::queries::media_files::list::list_media_files_for_user::{list_media_files_for_user, ListMediaFileForUserArgs};
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::http_server::common_responses::media::media_file_cover_image_details::{MediaFileCoverImageDetails, MediaFileDefaultCover};
-use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
+use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::pagination_page::PaginationPage;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;

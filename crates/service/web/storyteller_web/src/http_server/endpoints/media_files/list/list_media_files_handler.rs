@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Query;
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::warn;
 use utoipa::{IntoParams, ToSchema};
@@ -22,9 +22,9 @@ use enums_public::by_table::media_files::public_media_file_model_type::PublicMed
 use mysql_queries::queries::media_files::list::list_media_files::{list_media_files, ListMediaFilesArgs};
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::http_server::common_responses::media::media_file_cover_image_details::{MediaFileCoverImageDetails, MediaFileDefaultCover};
-use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
+use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
@@ -36,7 +36,6 @@ use crate::http_server::web_utils::bucket_urls::bucket_url_string_from_media_pat
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
 use crate::util::allowed_explore_media_access::allowed_explore_media_access;
-use crate::util::allowed_studio_access::allowed_studio_access;
 
 #[derive(Deserialize, ToSchema, IntoParams)]
 pub struct ListMediaFilesQueryParams {

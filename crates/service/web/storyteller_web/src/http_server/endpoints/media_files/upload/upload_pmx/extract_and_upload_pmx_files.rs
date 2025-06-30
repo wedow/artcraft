@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::io::{BufReader, Cursor, Read};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use log::{error, info, warn};
 use once_cell::sync::Lazy;
@@ -8,12 +8,10 @@ use zip::ZipArchive;
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use cloud_storage::bucket_client::BucketClient;
-use errors::AnyhowResult;
 use filesys::path_to_string::path_to_string;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
 
-use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
 
 static ALLOWED_EXTENSIONS : Lazy<HashSet<&'static str>> = Lazy::new(|| {
   HashSet::from([

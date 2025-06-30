@@ -1,14 +1,12 @@
 use anyhow::bail;
 use log::{error, info};
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
 
 use errors::AnyhowResult;
-use filesys::path_to_string::path_to_string;
 use videos::ffmpeg_timestamp_from_duration::ffmpeg_timestamp_from_duration;
-use videos::ffprobe_get_info::{ffprobe_get_info, VideoDimensions, VideoDuration, VideoFrameRate};
 
 pub struct Args<'a> {
   pub video_input_path: &'a Path,

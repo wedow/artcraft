@@ -1,10 +1,10 @@
 use url::Url;
 use utoipa::ToSchema;
 
+use crate::http_server::common_responses::media::cdn_link::{get_cdn_host, new_cdn_url};
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use server_environment::ServerEnvironment;
-use crate::http_server::common_responses::media::cdn_link::{get_cdn_host, new_cdn_url};
 
 // TODO(bt,2024-09-05): Worth reducing the quality at all?
 const QUALITY : u8 = 95;
@@ -153,8 +153,8 @@ mod tests {
   use crate::http_server::common_responses::media::media_links::MediaLinks;
 
   mod fakeyou {
-    use server_environment::ServerEnvironment;
     use super::*;
+    use server_environment::ServerEnvironment;
 
     const DOMAIN : MediaDomain = MediaDomain::FakeYou;
 

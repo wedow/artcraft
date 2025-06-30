@@ -1,5 +1,4 @@
 use crate::http_server::endpoints::users::google_sso::google_sso_handler::GoogleCreateAccountErrorResponse;
-use crate::http_server::endpoints::users::google_sso::handle_new_sso_account::NewSsoAccountInfo;
 use actix_web::HttpRequest;
 use google_sign_in::claims::claims::Claims;
 use http_server_common::request::get_request_ip::get_request_ip;

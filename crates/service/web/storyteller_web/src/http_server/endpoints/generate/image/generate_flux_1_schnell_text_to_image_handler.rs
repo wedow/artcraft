@@ -1,36 +1,20 @@
-use std::fmt;
 use std::sync::Arc;
 
-use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
 use crate::http_server::common_responses::common_web_error::CommonWebError;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
-use crate::http_server::deprecated_endpoints::engine::create_scene_handler::CreateSceneError;
-use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
-use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
-use crate::http_server::web_utils::response_success_helpers::simple_json_success;
 use crate::state::server_state::ServerState;
-use crate::util::delete_role_disambiguation::{delete_role_disambiguation, DeleteRole};
-use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
 use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageAspectRatio, GenerateFlux1SchnellTextToImageNumImages, GenerateFlux1SchnellTextToImageRequest, GenerateFlux1SchnellTextToImageResponse};
-use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::image::enqueue_flux_1_schnell_text_to_image_webhook::enqueue_flux_1_schnell_text_to_image_webhook;
 use fal_client::requests::webhook::image::enqueue_flux_1_schnell_text_to_image_webhook::{Flux1SchnellArgs, Flux1SchnellAspectRatio, Flux1SchnellNumImages};
 use http_server_common::request::get_request_ip::get_request_ip;
-use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
-use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, MediaFile};
-use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
 /// Flux 1 Schnell text to image

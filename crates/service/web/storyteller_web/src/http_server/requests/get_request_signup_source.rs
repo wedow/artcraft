@@ -1,4 +1,3 @@
-use actix_http::header::HOST;
 use actix_helpers::extractors::get_request_origin_uri::get_request_origin_uri;
 use actix_web::HttpRequest;
 use log::warn;

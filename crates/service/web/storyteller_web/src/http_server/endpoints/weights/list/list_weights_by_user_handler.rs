@@ -18,10 +18,10 @@ use mysql_queries::queries::model_weights::list::list_weights_by_user::{list_wei
 use primitives::numerics::u64_to_u32_saturating::u64_to_u32_saturating;
 use tokens::tokens::model_weights::ModelWeightToken;
 
+use crate::http_server::common_responses::media::weights_cover_image_details::WeightsCoverImageDetails;
 use crate::http_server::common_responses::pagination_page::PaginationPage;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
-use crate::http_server::common_responses::media::weights_cover_image_details::WeightsCoverImageDetails;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::state::server_state::ServerState;
 use crate::util::title_to_url_slug::title_to_url_slug;

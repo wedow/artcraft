@@ -8,6 +8,9 @@ authors = [
 ]
 publish = false
 
+#[lints.rust]
+#unused_imports = "forbid"
+
 # Main server monolith
 [[bin]]
 name = "storyteller-web"

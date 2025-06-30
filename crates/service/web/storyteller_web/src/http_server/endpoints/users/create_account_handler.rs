@@ -7,6 +7,13 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 
+use crate::http_server::requests::get_request_signup_source::get_request_signup_source;
+use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
+use crate::http_server::validations::is_reserved_username::is_reserved_username;
+use crate::http_server::validations::validate_passwords::validate_passwords;
+use crate::http_server::validations::validate_username::validate_username;
+use crate::util::email_to_gravatar::email_to_gravatar;
+use crate::util::enroll_in_studio::enroll_in_studio;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse};
@@ -22,13 +29,6 @@ use sqlx::MySqlPool;
 use tokens::tokens::user_sessions::UserSessionToken;
 use user_input_common::check_for_slurs::contains_slurs;
 use utoipa::ToSchema;
-use crate::http_server::requests::get_request_signup_source::get_request_signup_source;
-use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
-use crate::http_server::validations::is_reserved_username::is_reserved_username;
-use crate::http_server::validations::validate_passwords::validate_passwords;
-use crate::http_server::validations::validate_username::validate_username;
-use crate::util::email_to_gravatar::email_to_gravatar;
-use crate::util::enroll_in_studio::enroll_in_studio;
 
 #[derive(ToSchema, Deserialize)]
 pub struct CreateAccountRequest {

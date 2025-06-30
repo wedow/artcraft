@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use derive_more::Display;
-use log::{log, warn};
+use log::warn;
 use r2d2_redis::redis::Commands;
 
 use redis_common::redis_keys::RedisKeys;

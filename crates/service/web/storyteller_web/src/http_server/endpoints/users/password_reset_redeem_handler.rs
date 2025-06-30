@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use log::{error, warn};
 use serde::Deserialize;
 use sqlx::MySqlPool;
@@ -15,7 +15,6 @@ use mysql_queries::queries::users::user_sessions::create_user_session::create_us
 use password::bcrypt_hash_password::bcrypt_hash_password;
 use tokens::tokens::user_sessions::UserSessionToken;
 
-use crate::http_server::endpoints::users::login_handler::LoginErrorResponse;
 use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
 
 #[derive(Deserialize)]

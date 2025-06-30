@@ -1,12 +1,12 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
 use actix_web::web::{Path, Query};
-use log::{info, log, warn};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use log::{info, warn};
 
 use mysql_queries::queries::w2l::w2l_results::list_w2l_inference_results_query_builder::ListW2lResultsQueryBuilder;
 use mysql_queries::queries::w2l::w2l_results::list_w2l_inference_results_query_builder::W2lInferenceRecordForList;

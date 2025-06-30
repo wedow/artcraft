@@ -10,7 +10,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, info};
 
 use tokens::tokens::model_categories::ModelCategoryToken;

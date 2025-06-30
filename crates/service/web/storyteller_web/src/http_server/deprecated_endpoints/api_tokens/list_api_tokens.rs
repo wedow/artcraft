@@ -1,11 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
-use log::{log, warn};
+use log::warn;
 
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::queries::api_tokens::list_available_api_tokens_for_user::list_available_api_tokens_for_user;

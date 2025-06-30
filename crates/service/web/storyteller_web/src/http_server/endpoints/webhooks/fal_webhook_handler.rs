@@ -11,7 +11,6 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use anyhow::Error;
-use errors::AnyhowResult;
 use http_server_common::response::response_success_helpers::SimpleGenericJsonSuccess;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::{info, warn};

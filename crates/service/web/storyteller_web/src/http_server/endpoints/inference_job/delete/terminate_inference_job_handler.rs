@@ -1,15 +1,15 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use log::{error, warn};
 use utoipa::ToSchema;
 
 use http_server_common::request::get_request_ip::get_request_ip;
-use mysql_queries::queries::generic_inference::web::get_inference_job_status::{get_inference_job_status, get_inference_job_status_from_connection};
+use mysql_queries::queries::generic_inference::web::get_inference_job_status::get_inference_job_status_from_connection;
 use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_cancelled_by_user::mark_generic_inference_job_cancelled_by_user;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 

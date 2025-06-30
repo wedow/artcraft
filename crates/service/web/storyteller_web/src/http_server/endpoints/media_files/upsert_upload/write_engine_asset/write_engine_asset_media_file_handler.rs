@@ -1,13 +1,9 @@
-use std::collections::HashSet;
-use std::io::{BufReader, Cursor};
 use std::path::PathBuf;
 use std::sync::Arc;
 
 use actix_multipart::Multipart;
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, info, warn};
-use once_cell::sync::Lazy;
-use stripe::CreatePaymentLinkShippingAddressCollectionAllowedCountries::Mf;
 use utoipa::ToSchema;
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
@@ -16,19 +12,16 @@ use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use http_server_common::request::get_request_ip::get_request_ip;
-use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
-use mimetypes::mimetype_to_extension::mimetype_to_extension;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use mysql_queries::queries::media_files::upsert::upsert_media_file_from_file_upload::{UploadType, upsert_media_file_from_file_upload, UpsertMediaFileFromUploadArgs};
+use mysql_queries::queries::media_files::upsert::upsert_media_file_from_file_upload::{upsert_media_file_from_file_upload, UploadType, UpsertMediaFileFromUploadArgs};
 use tokens::tokens::media_files::MediaFileToken;
-use videos::get_mp4_info::{get_mp4_info, get_mp4_info_for_bytes, get_mp4_info_for_bytes_and_len};
 
 use crate::http_server::endpoints::media_files::upsert_upload::write_engine_asset::drain_multipart_request::drain_multipart_request;
 use crate::http_server::endpoints::media_files::upsert_upload::write_error::MediaFileWriteError;
+use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
 use crate::util::check_creator_tokens::{check_creator_tokens, CheckCreatorTokenArgs, CheckCreatorTokenResult};
-use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 
 // Unlike the "upload" endpoints, which are pure inserts, these endpoints are *upserts*.
 #[derive(Serialize, ToSchema)]

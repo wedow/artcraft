@@ -6,19 +6,19 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, warn};
 use sqlx::Acquire;
 use utoipa::ToSchema;
 
 use enums::by_table::user_bookmarks::user_bookmark_entity_type::UserBookmarkEntityType;
 use mysql_queries::queries::entity_stats::stats_entity_token::StatsEntityToken;
-use mysql_queries::queries::entity_stats::upsert_entity_stats_on_bookmark_event::{BookmarkAction, upsert_entity_stats_on_bookmark_event, UpsertEntityStatsArgs};
+use mysql_queries::queries::entity_stats::upsert_entity_stats_on_bookmark_event::{upsert_entity_stats_on_bookmark_event, BookmarkAction, UpsertEntityStatsArgs};
 use mysql_queries::queries::users::user_bookmarks::get_total_bookmark_count_for_entity::get_total_bookmark_count_for_entity;
-use mysql_queries::queries::users::user_bookmarks::get_user_bookmark_transactional_locking::{BookmarkIdentifier, get_user_bookmark_transactional_locking};
-use mysql_queries::queries::users::user_bookmarks::upsert_user_bookmark::{CreateUserBookmarkArgs, upsert_user_bookmark};
+use mysql_queries::queries::users::user_bookmarks::get_user_bookmark_transactional_locking::{get_user_bookmark_transactional_locking, BookmarkIdentifier};
+use mysql_queries::queries::users::user_bookmarks::upsert_user_bookmark::{upsert_user_bookmark, CreateUserBookmarkArgs};
 use mysql_queries::queries::users::user_bookmarks::user_bookmark_entity_token::UserBookmarkEntityToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;

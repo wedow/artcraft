@@ -1,7 +1,7 @@
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
-use actix_web::{App, Error, HttpResponse, web};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
+use actix_web::{web, App, Error, HttpResponse};
 
 use actix_helpers::route_builder::RouteBuilder;
 

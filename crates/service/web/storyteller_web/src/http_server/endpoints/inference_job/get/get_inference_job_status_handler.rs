@@ -4,7 +4,7 @@ use std::sync::Arc;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Json, Path};
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::error;
 use r2d2_redis::redis::{Commands, RedisResult};

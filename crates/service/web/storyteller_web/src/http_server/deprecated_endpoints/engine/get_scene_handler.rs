@@ -1,25 +1,19 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::warn;
 use utoipa::ToSchema;
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::media_files::media_file_type::MediaFileType;
-use enums::by_table::model_weights::weights_category::WeightsCategory;
-use enums::common::visibility::Visibility;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use mysql_queries::queries::tts::tts_results::query_tts_result::select_tts_result_by_token;
 use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::model_weights::ModelWeightToken;
 
-use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
-use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
 

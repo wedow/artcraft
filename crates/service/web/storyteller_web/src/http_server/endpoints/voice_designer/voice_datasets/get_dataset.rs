@@ -1,19 +1,17 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::warn;
 
+use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use enums::common::visibility::Visibility;
 use mysql_queries::queries::voice_designer::datasets::get_dataset::get_dataset_by_token;
-use mysql_queries::queries::voice_designer::datasets::list_datasets_by_username::list_datasets_by_username;
-use tokens::tokens::users::UserToken;
 use tokens::tokens::zs_voice_datasets::ZsVoiceDatasetToken;
-use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 
 use crate::state::server_state::ServerState;
 

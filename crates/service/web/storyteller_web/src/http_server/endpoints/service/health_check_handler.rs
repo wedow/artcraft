@@ -1,11 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::NaiveDateTime;
-use log::{error, log};
+use log::error;
 
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 

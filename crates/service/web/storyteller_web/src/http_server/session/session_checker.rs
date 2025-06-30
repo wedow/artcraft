@@ -5,8 +5,8 @@
 
 use actix_web::HttpRequest;
 use log::warn;
-use sqlx::{Executor, MySql, MySqlPool};
 use sqlx::pool::PoolConnection;
+use sqlx::{Executor, MySql, MySqlPool};
 
 use errors::AnyhowResult;
 use mysql_queries::queries::users::user_sessions::get_user_session_by_token::{get_user_session_by_token, get_user_session_by_token_pooled_connection, SessionUserRecord};

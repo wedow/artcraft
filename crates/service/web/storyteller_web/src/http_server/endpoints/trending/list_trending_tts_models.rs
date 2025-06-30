@@ -11,9 +11,9 @@ use std::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::error;
 
 use enums::by_table::trending_model_analytics::window_name::WindowName;

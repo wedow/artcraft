@@ -2,7 +2,6 @@ use actix_http::StatusCode;
 use actix_web::{HttpResponse, HttpResponseBuilder, ResponseError};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use utoipa::ToSchema;
 
 #[derive(Debug)]
 pub enum CommonWebError {

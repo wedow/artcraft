@@ -1,12 +1,12 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
-use log::{info, log, warn};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use log::{info, warn};
 
 use mysql_queries::queries::tts::tts_models::list_tts_models::{list_tts_models, TtsModelRecordForList};
 

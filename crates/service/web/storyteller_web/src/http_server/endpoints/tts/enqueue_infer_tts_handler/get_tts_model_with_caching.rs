@@ -1,6 +1,6 @@
 use log::error;
-use sqlx::MySql;
 use sqlx::pool::PoolConnection;
+use sqlx::MySql;
 
 use errors::AnyhowResult;
 use migration::text_to_speech::get_tts_model_for_enqueue_inference_migration::{get_tts_model_for_enqueue_inference_migration, TtsModelForEnqueueInferenceMigrationWrapper};

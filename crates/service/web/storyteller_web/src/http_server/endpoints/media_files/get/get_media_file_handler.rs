@@ -2,16 +2,16 @@ use std::fmt;
 use std::sync::Arc;
 
 use actix_web::error::ResponseError;
-use actix_web::http::{StatusCode, Uri};
+use actix_web::http::StatusCode;
 use actix_web::web::{Json, Path};
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::warn;
 use url::Url;
 use utoipa::ToSchema;
 
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
-use crate::http_server::common_responses::media::media_file_cover_image_details::{MediaFileCoverImageDetails, MediaFileDefaultCover};
+use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_links::MediaLinks;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;

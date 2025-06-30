@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::{debug, error, warn};
 use r2d2_redis::redis::Commands;
@@ -20,9 +20,9 @@ use enums_public::by_table::media_files::public_media_file_model_type::PublicMed
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::batch_get_media_files_by_tokens;
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::http_server::common_responses::media::media_file_cover_image_details::{MediaFileCoverImageDetails, MediaFileDefaultCover};
-use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
+use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;

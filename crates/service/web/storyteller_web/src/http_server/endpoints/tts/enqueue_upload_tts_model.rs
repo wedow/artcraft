@@ -6,9 +6,9 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
 
 use config::bad_urls::is_bad_tts_model_download_url;
@@ -18,9 +18,9 @@ use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::queries::generic_download::web::insert_generic_download_job::{insert_generic_download_job, InsertGenericDownloadJobArgs};
 use mysql_queries::queries::tts::tts_model_upload_jobs::insert_tts_model_upload_job::{insert_tts_model_upload_job, InsertTtsModelUploadJobArgs};
 
+use crate::http_server::validations::validate_model_title::validate_model_title;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
-use crate::http_server::validations::validate_model_title::validate_model_title;
 
 #[derive(Deserialize, Copy, Clone)]
 pub enum SupportedTtsModelType {

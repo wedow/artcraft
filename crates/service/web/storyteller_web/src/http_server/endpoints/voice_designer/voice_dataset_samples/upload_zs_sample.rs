@@ -7,7 +7,6 @@ use log::{error, info, warn};
 use once_cell::sync::Lazy;
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
-use enums::by_table::generic_inference_jobs::inference_input_source_token_type::InferenceInputSourceTokenType::MediaUpload;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_uploads::media_upload_type::MediaUploadType;
 use enums::common::visibility::Visibility;
@@ -17,7 +16,6 @@ use http_server_common::response::serialize_as_json_error::serialize_as_json_err
 use media::decode_basic_audio_info::decode_basic_audio_bytes_info;
 use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
 use mimetypes::mimetype_to_extension::mimetype_to_extension;
-use mysql_queries::queries::media_uploads::insert_media_upload::insert_media_upload;
 use mysql_queries::queries::voice_designer::voice_samples::get_dataset_sample_by_uuid::get_dataset_sample_by_uuid_with_connection;
 use mysql_queries::queries::voice_designer::voice_samples::insert_dataset_sample_and_media_file::{insert_dataset_sample_and_media_file, InsertDatasetSampleAndMediaFileArgs};
 use tokens::tokens::media_files::MediaFileToken;
@@ -25,7 +23,6 @@ use tokens::tokens::zs_voice_dataset_samples::ZsVoiceDatasetSampleToken;
 use tokens::tokens::zs_voice_datasets::ZsVoiceDatasetToken;
 
 use crate::http_server::deprecated_endpoints::media_uploads::common::drain_multipart_request::{drain_multipart_request, MediaSource};
-use crate::http_server::deprecated_endpoints::media_uploads::common::upload_error::UploadError;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
 

@@ -3,25 +3,20 @@ use std::fmt;
 use std::iter::FromIterator;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json, Path};
-use log::{info, log, warn};
-use r2d2_redis::{r2d2, RedisConnectionManager};
+use actix_web::{HttpRequest, HttpResponse};
+use log::warn;
 use r2d2_redis::redis::Commands;
+use r2d2_redis::{r2d2, RedisConnectionManager};
 use utoipa::ToSchema;
 
-use composite_identifiers::by_table::audit_logs::audit_log_entity::AuditLogEntity;
-use enums::by_table::audit_logs::audit_log_entity_action::AuditLogEntityAction;
 use enums::by_table::users::user_feature_flag::UserFeatureFlag;
 use http_server_common::request::get_request_ip::get_request_ip;
-use mysql_queries::queries::audit_logs::insert_audit_log::{insert_audit_log, InsertAuditLogArgs};
 use mysql_queries::queries::users::user::get::get_user_token_by_username::get_user_token_by_username;
 use mysql_queries::queries::users::user::update::set_user_feature_flags::{set_user_feature_flags, SetUserFeatureFlagArgs};
 use mysql_queries::queries::users::user_profiles::get_user_profile_by_token::get_user_profile_by_token;
-use mysql_queries::queries::users::user_sessions::get_user_session_by_token::get_user_session_by_token;
-use redis_caching::redis_ttl_cache::RedisTtlCache;
 use tokens::tokens::users::UserToken;
 
 use crate::http_server::session::lookup::user_session_feature_flags::UserSessionFeatureFlags;

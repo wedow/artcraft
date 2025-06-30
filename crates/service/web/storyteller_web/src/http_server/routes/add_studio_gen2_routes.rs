@@ -1,8 +1,8 @@
+use crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::enqueue_studio_gen2_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
-use actix_web::{App, Error, HttpResponse, web};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
-use crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::enqueue_studio_gen2_handler;
+use actix_web::{web, App, Error, HttpResponse};
 
 pub fn add_studio_gen2_routes<T, B> (app: App<T>) -> App<T>
 where

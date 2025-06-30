@@ -6,13 +6,15 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::warn;
 
+use crate::http_server::common_responses::user_avatars::default_avatar_color_from_username::default_avatar_color_from_username;
+use crate::http_server::common_responses::user_avatars::default_avatar_from_username::default_avatar_from_username;
 use enums::by_table::tts_models::tts_model_type::TtsModelType;
 use enums::common::visibility::Visibility;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
@@ -22,8 +24,6 @@ use redis_common::redis_cache_keys::RedisCacheKeys;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tts_common::text_pipelines::guess_pipeline::guess_text_pipeline_heuristic;
 use tts_common::text_pipelines::text_pipeline_type::TextPipelineType;
-use crate::http_server::common_responses::user_avatars::default_avatar_color_from_username::default_avatar_color_from_username;
-use crate::http_server::common_responses::user_avatars::default_avatar_from_username::default_avatar_from_username;
 
 use crate::state::server_state::ServerState;
 use crate::util::title_to_url_slug::title_to_url_slug;

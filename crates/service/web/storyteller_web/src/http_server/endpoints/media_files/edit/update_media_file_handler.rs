@@ -1,11 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
-use log::{error, log, warn};
+use actix_web::{web, HttpRequest, HttpResponse};
+use log::warn;
 
 use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_ip::get_request_ip;

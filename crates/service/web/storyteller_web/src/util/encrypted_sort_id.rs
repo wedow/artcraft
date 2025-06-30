@@ -2,12 +2,11 @@ use std::io::Cursor;
 
 use base64;
 use base64::alphabet::{Alphabet, URL_SAFE};
-use base64::engine::{Config, DecodePaddingMode, GeneralPurpose, GeneralPurposeConfig};
+use base64::engine::{DecodePaddingMode, GeneralPurpose, GeneralPurposeConfig};
 use base64::Engine;
 use magic_crypt::{MagicCrypt256, MagicCryptTrait};
 use magic_crypt::generic_array::typenum::U256;
 use magic_crypt::new_magic_crypt;
-use rand::RngCore;
 
 use errors::AnyhowResult;
 

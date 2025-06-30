@@ -1,8 +1,8 @@
 use std::ops::Deref;
 use std::sync::Arc;
 
-use actix_web::{get, HttpRequest, HttpResponse, Responder, web};
 use actix_web::http::header::LOCATION;
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use log::info;
 
 use crate::http_server::endpoints::misc::alpha_cookie::alpha_cookie;

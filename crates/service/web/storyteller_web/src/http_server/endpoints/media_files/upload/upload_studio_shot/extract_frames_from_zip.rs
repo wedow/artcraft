@@ -1,8 +1,8 @@
-use std::collections::{HashMap, HashSet};
-use std::io::{BufReader, Cursor, Read};
+use std::collections::HashSet;
+use std::io::{BufReader, Cursor};
 use std::path::{Path, PathBuf};
 
-use log::{debug, error, info, warn};
+use log::{debug, error, info};
 use once_cell::sync::Lazy;
 use zip::ZipArchive;
 

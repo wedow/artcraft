@@ -1,25 +1,22 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
+use actix_web::{web, HttpRequest, HttpResponse};
 use log::{info, warn};
 use utoipa::ToSchema;
 
 use enums::by_table::media_files::media_file_type::MediaFileType;
-use enums::common::visibility::Visibility;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::queries::media_files::edit::set_media_file_cover_image::{set_media_file_cover_image, UpdateArgs};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use tokens::tokens::media_files::MediaFileToken;
 
 use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
-use crate::http_server::endpoints::weights::update::set_model_weight_cover_image_handler::SetModelWeightCoverImageError;
 use crate::http_server::web_utils::response_success_helpers::simple_json_success;
 use crate::state::server_state::ServerState;
-use crate::util::delete_role_disambiguation::{delete_role_disambiguation, DeleteRole};
 
 #[derive(Deserialize, ToSchema)]
 pub struct SetMediaFileCoverImageRequest {

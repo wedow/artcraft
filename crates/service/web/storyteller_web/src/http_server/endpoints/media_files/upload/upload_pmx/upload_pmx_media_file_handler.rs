@@ -1,41 +1,30 @@
-use std::collections::HashSet;
-use std::io::{BufReader, Cursor, Read};
+use std::io::Read;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use actix_multipart::form::MultipartForm;
 use actix_multipart::form::tempfile::TempFile;
 use actix_multipart::form::text::Text;
-use actix_multipart::Multipart;
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_multipart::form::MultipartForm;
 use actix_web::web::Json;
+use actix_web::{web, HttpRequest};
 use log::{error, info, warn};
-use once_cell::sync::Lazy;
 use utoipa::ToSchema;
 
-use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
-use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use http_server_common::request::get_request_ip::get_request_ip;
-use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
-use mimetypes::mimetype_to_extension::mimetype_to_extension;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
 use tokens::tokens::media_files::MediaFileToken;
-use videos::get_mp4_info::{get_mp4_info, get_mp4_info_for_bytes, get_mp4_info_for_bytes_and_len};
 
-use crate::http_server::endpoints::beta_keys::create_beta_keys_handler::CreateBetaKeysError;
-use crate::http_server::endpoints::media_files::upload::upload_engine_asset::drain_multipart_request::drain_multipart_request;
 use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
-use crate::http_server::endpoints::media_files::upload::upload_new_scene_media_file_handler::UploadNewSceneMediaFileForm;
 use crate::http_server::endpoints::media_files::upload::upload_pmx::extract_and_upload_pmx_files::{extract_and_upload_pmx_files, PmxError};
+use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::http_server::web_utils::user_session::require_moderator::{require_moderator, RequireModeratorError, UseDatabase};
 use crate::state::server_state::ServerState;
-use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 
 /// Form-multipart request fields.
 ///

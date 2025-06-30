@@ -17,11 +17,9 @@
 #[macro_use] extern crate magic_crypt;
 #[macro_use] extern crate serde_derive;
 
-use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 
-use r2d2_redis::redis::Commands;
 use utoipa::OpenApi;
 
 use docs::api_doc::ApiDoc;

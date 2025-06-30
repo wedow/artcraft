@@ -1,24 +1,18 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web, Either};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
-use actix_web::web::{Form, Json, Path};
-use anyhow::anyhow;
-use log::{error, log, warn};
+use actix_web::web::{Form, Json};
+use actix_web::{web, HttpRequest, HttpResponse};
+use log::error;
 use r2d2_redis::redis::Commands;
 use utoipa::ToSchema;
 
-use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
-use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
-use mysql_queries::queries::media_files::edit::update_media_file_animation_type::update_media_file_animation_type;
-use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use shared_service_components::sora_redis_credentials::get_sora_credentials_from_redis::get_sora_credentials_from_redis;
 use shared_service_components::sora_redis_credentials::keys::RedisSoraCredentialSubkey;
 use shared_service_components::sora_redis_credentials::set_sora_credential_field_in_redis::set_sora_credential_field_in_redis;
-use tokens::tokens::media_files::MediaFileToken;
 
 use crate::state::server_state::ServerState;
 

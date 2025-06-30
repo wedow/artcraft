@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use actix_web::{get, HttpMessage, HttpRequest, HttpResponse, Responder, web};
 use actix_web::http::StatusCode;
 use actix_web::web::Query;
+use actix_web::{get, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use log::info;
 
 use crate::http_server::endpoints::misc::alpha_cookie::{alpha_cookie, ALPHA_COOKIE_NAME};

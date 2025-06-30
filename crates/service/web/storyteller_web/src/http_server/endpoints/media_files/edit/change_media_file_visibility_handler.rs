@@ -1,11 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
-use log::{error, log, warn};
+use actix_web::{web, HttpRequest, HttpResponse};
+use log::warn;
 use utoipa::ToSchema;
 
 use enums::common::visibility::Visibility;
@@ -14,7 +14,6 @@ use http_server_common::response::response_success_helpers::simple_json_success;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::queries::media_files::edit::update_media_file_visibility::{update_media_file_visibility, UpdateMediaFileArgs};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use tokens::tokens::media_files::MediaFileToken;
 
 use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
 use crate::state::server_state::ServerState;
