@@ -6,7 +6,7 @@
 // Okay to toggle
 //#![forbid(warnings)]
 #![allow(unreachable_patterns)]
-#![allow(unused_imports)]
+#![forbid(unused_imports)]
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
