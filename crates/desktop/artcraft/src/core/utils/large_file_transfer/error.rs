@@ -1,7 +1,7 @@
 //! Implemented from https://github.com/huggingface/hf_transfer/blob/main/src/lib.rs
 
-use std::fmt::Display;
 use reqwest::header::ToStrError;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum Error {

@@ -1,10 +1,8 @@
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use errors::AnyhowResult;
 use log::{error, info};
-use once_cell::sync::Lazy;
 use tauri::{AppHandle, State};
 
 #[tauri::command]

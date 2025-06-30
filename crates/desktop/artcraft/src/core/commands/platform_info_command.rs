@@ -1,13 +1,8 @@
 use crate::core::commands::response::shorthand::InfallibleResponse;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::state::os_platform::OsPlatform;
-use base64::prelude::BASE64_STANDARD;
-use base64::Engine;
-use image::codecs::png::{CompressionType, FilterType, PngEncoder};
-use image::ImageReader;
 use log::info;
 use serde_derive::Serialize;
-use std::io::Cursor;
 
 #[derive(Debug, Serialize)]
 pub struct PlatformInfoResponse {

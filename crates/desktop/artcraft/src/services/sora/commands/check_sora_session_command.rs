@@ -1,13 +1,7 @@
-use crate::core::commands::app_preferences::get_app_preferences_command::AppPreferencesPayload;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
-use chrono::{DateTime, TimeDelta, Utc};
+use chrono::{TimeDelta, Utc};
 use errors::AnyhowResult;
 use log::{error, info};
-use once_cell::sync::Lazy;
-use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::requests::list_media::list_media::list_media;
 use serde_derive::Serialize;

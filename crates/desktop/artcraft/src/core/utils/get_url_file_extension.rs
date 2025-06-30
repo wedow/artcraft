@@ -1,5 +1,5 @@
-use std::path::Path;
 use reqwest::Url;
+use std::path::Path;
 
 pub fn get_url_file_extension(url: &Url) -> Option<&str> {
   Path::new(url.path())

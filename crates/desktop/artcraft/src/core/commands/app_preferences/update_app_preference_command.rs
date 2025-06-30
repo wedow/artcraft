@@ -4,9 +4,8 @@ use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info};
-use openai_sora_client::sora_error::SoraError::AnyhowError;
 use serde_derive::{Deserialize, Serialize};
-use tauri::{AppHandle, State};
+use tauri::{State};
 
 /// For now, we'll only update a single preference at a time.
 #[derive(Deserialize)]

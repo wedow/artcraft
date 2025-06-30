@@ -1,17 +1,10 @@
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
-use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
-use crate::core::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use anyhow::anyhow;
 use errors::AnyhowResult;
-use fal_client::creds::fal_api_key::FalApiKey;
-use log::{error, info};
-use openai_sora_client::sora_error::SoraError::AnyhowError;
-use primitives::traits::trim_or_emptyable::TrimOrEmptyable;
-use serde_derive::{Deserialize, Serialize};
-use tauri::{AppHandle, State};
+use log::{error};
+use serde_derive::{Serialize};
+use tauri::{State};
 
 #[derive(Serialize)]
 pub struct GetFalApiKeyResponse {

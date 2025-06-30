@@ -1,7 +1,5 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::main_window_position::MainWindowPosition;
-use crate::core::state::main_window_size::MainWindowSize;
-use crate::core::utils::best_window_size_heuristic::best_window_size_heuristic;
 use errors::AnyhowResult;
 use log::info;
 use memory_store::clone_slot::CloneSlot;

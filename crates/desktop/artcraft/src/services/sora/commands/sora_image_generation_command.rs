@@ -1,21 +1,16 @@
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::sora::state::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
 use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use errors::AnyhowResult;
-use image::codecs::png::{CompressionType, FilterType, PngEncoder};
-use image::{DynamicImage, ImageReader};
 use log::{error, info};
-use openai_sora_client::credentials::SoraCredentials;
 use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
-use std::fs::read_to_string;
-use std::io::Cursor;
 use std::time::Duration;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, State};
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 

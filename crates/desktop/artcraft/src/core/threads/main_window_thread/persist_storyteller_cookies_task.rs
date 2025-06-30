@@ -1,18 +1,15 @@
 use crate::core::state::app_startup_time::AppStartupTime;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
 use chrono::TimeDelta;
 use errors::AnyhowResult;
-use log::{debug, error, info};
+use log::{error, info};
 use once_cell::sync::Lazy;
 use reqwest::Url;
-use std::fs;
-use std::sync::LockResult;
 use storyteller_client::credentials::storyteller_avt_cookie::StorytellerAvtCookie;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::credentials::storyteller_session_cookie::StorytellerSessionCookie;
-use tauri::{AppHandle, Manager, Webview, Window};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_http::reqwest_cookie_store::CookieStore;
 use tauri_plugin_http::Http;
 

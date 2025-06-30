@@ -1,7 +1,7 @@
 use anyhow::anyhow;
+use errors::AnyhowResult;
 use log::info;
 use tauri::Webview;
-use errors::AnyhowResult;
 
 // This is just so we have a way to clear browsing data while debugging / building.
 pub fn clear_browsing_data_on_test_domain(webview: &Webview) -> AnyhowResult<()> {

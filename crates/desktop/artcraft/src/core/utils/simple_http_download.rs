@@ -1,9 +1,9 @@
+use errors::AnyhowResult;
+use reqwest::Client;
+use reqwest::Url;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
-use reqwest::Url;
-use reqwest::Client;
-use errors::AnyhowResult;
 
 const USER_AGENT: &str = "storyteller-client/1.0";
 

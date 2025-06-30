@@ -7,19 +7,12 @@ use crate::core::events::generation_events::generation_enqueue_success_event::Ge
 use crate::core::model::video_models::VideoModel;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
-use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use fal_client::creds::fal_api_key::FalApiKey;
-use fal_client::requests::queue::enqueue_hunyuan2_image_to_3d::{enqueue_hunyuan2_image_to_3d, Hunyuan2Args};
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
-use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
 use fal_client::requests::queue::video_gen::enqueue_kling_16_pro_image_to_video::{enqueue_kling_16_pro_image_to_video, Kling16ProArgs, Kling16ProAspectRatio, Kling16ProDuration};
-use log::{error, info, warn};
+use log::{error, info};
 use tauri::AppHandle;
 
 pub async fn handle_video_fal(

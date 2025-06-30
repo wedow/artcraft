@@ -1,6 +1,6 @@
-use serde_derive::{Deserialize, Serialize};
-use errors::AnyhowResult;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use errors::AnyhowResult;
+use serde_derive::{Deserialize, Serialize};
 
 const CURRENT_VERSION: &str = "1";
 

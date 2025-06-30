@@ -1,7 +1,6 @@
 //! Implemented from https://github.com/huggingface/hf_transfer/blob/main/src/lib.rs
 
 use rand::{thread_rng, Rng};
-use std::fmt::Display;
 
 pub const BASE_WAIT_TIME: usize = 300;
 pub const MAX_WAIT_TIME: usize = 10_000;

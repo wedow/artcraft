@@ -6,7 +6,6 @@ use fal_client::creds::fal_api_key::FalApiKey;
 use memory_store::clone_slot::CloneSlot;
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::path::Path;
 use std::{fs, io};
 
 #[derive(Clone)]

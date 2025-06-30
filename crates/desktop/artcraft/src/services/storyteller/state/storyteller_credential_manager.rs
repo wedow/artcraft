@@ -1,11 +1,8 @@
-use crate::services::sora::state::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
-use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::read_storyteller_credentials_from_disk::read_storyteller_credentials_from_disk;
 use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
-use anyhow::anyhow;
 use errors::AnyhowResult;
-use log::{error, info, warn};
+use log::{info, warn};
 use std::fs::OpenOptions;
 use std::io::Write;
 use storyteller_client::credentials::storyteller_avt_cookie::StorytellerAvtCookie;

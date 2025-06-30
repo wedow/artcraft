@@ -6,7 +6,6 @@ use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use reqwest::header::CONTENT_LENGTH;
 use std::collections::HashMap;
-use std::fmt::Display;
 use std::io::SeekFrom;
 use std::sync::Arc;
 use std::time::Duration;

@@ -1,25 +1,15 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageRequest};
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
-use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use anyhow::anyhow;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
-use fal_client::requests::queue::image_gen::enqueue_recraft3_text_to_image::{enqueue_recraft3_text_to_image, Recraft3TextToImageArgs};
-use log::{error, info, warn};
-use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
-use openai_sora_client::recipes::image_remix_with_session_auto_renew::{image_remix_with_session_auto_renew, ImageRemixAutoRenewRequest};
+use log::{error, info};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simple_image_gen_with_session_auto_renew, SimpleImageGenAutoRenewRequest};
-use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
-use openai_sora_client::sora_error::SoraError;
+use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use std::time::Duration;
 use tauri::AppHandle;
 

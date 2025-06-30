@@ -1,8 +1,7 @@
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::sora::state::read_sora_credentials_from_disk::read_sora_credentials_from_disk;
 use crate::services::sora::state::sora_credential_holder::SoraCredentialHolder;
 use crate::services::sora::state::sora_credential_stats::SoraCredentialStats;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
 use memory_store::clone_cell::CloneCell;

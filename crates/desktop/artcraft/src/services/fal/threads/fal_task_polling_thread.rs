@@ -1,38 +1,20 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::common::{GenerationServiceProvider};
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
-use fal_client::error::fal_error_plus::FalErrorPlus;
 use fal_client::export::queue::Status;
 use fal_client::model::fal_request_id::FalRequestId;
 use fal_client::utils::queue_status_checker::QueueStatusChecker;
 use log::{error, info, warn};
-use mimetypes::mimetype_for_file::get_mimetype_for_file;
-use mimetypes::mimetype_info::file_extension::FileExtension;
-use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
-use openai_sora_client::requests::image_gen::image_gen_status::{Generation, TaskId, TaskStatus};
-use serde_derive::Serialize;
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
-use storyteller_client::error::api_error::ApiError;
-use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
-use storyteller_client::media_files::upload_new_engine_asset_from_file::upload_new_engine_asset_from_file;
-use storyteller_client::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoMediaFileSuccessResponse};
 use storyteller_client::recipes::upload_media_file_from_file::upload_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle, Emitter};
-use tempdir::TempDir;
-use tempfile::NamedTempFile;
+use tauri::{AppHandle};
 use tokens::tokens::media_files::MediaFileToken;
-use url::Url;
 
 pub async fn fal_task_polling_thread(
   app_handle: AppHandle,

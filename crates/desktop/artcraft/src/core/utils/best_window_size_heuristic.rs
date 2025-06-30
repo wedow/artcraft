@@ -1,5 +1,5 @@
-use tauri::{PhysicalSize, Window};
 use errors::AnyhowResult;
+use tauri::{PhysicalSize, Window};
 
 // A typical height difference when dev tools are open:
 //   Window inner size = PhysicalSize { width: 3704, height: 732 }

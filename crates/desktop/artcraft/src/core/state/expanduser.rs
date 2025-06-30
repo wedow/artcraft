@@ -43,11 +43,11 @@ pub fn home_dir() -> io::Result<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::state::expanduser::expanduser;
-    use std::env;
-    use std::path::PathBuf;
+  use crate::core::state::expanduser::expanduser;
+  use std::env;
+  use std::path::PathBuf;
 
-    #[test]
+  #[test]
     #[serial_test::serial]
     fn test_success() {
         let old_home = env::var("HOME").expect("no home dir set");

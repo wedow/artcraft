@@ -60,7 +60,7 @@ impl Display for SystemDownloadDirectory {
 mod tests {
   use crate::core::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
   use crate::core::state::app_preferences::preferred_download_directory::SystemDownloadDirectory;
-  use std::str::FromStr;
+  
 
   mod json {
     use super::*;

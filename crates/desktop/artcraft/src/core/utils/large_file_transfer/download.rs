@@ -11,8 +11,6 @@ use reqwest::header::{
 };
 use reqwest::Url;
 use std::collections::HashMap;
-use std::fmt::Display;
-use std::fs::remove_file;
 use std::io::SeekFrom;
 use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};

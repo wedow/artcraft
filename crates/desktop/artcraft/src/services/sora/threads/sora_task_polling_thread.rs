@@ -13,15 +13,13 @@ use log::{error, info};
 use openai_sora_client::recipes::list_sora_task_status_with_session_auto_renew::{list_sora_task_status_with_session_auto_renew, StatusRequestArgs};
 use openai_sora_client::requests::image_gen::image_gen_status::{Generation, TaskId, TaskStatus};
 use reqwest::Url;
-use serde_derive::Serialize;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use storyteller_client::utils::api_host::ApiHost;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle};
 use tempdir::TempDir;
-use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn sora_task_polling_thread(
   app_handle: AppHandle,

@@ -1,16 +1,9 @@
 use crate::core::commands::response::shorthand::InfallibleResponse;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::core::state::os_platform::OsPlatform;
-use crate::services::fal::commands::fal_background_removal_command::FalBackgroundRemovalSuccessResponse;
-use base64::prelude::BASE64_STANDARD;
-use base64::Engine;
 use chrono::{DateTime, Utc};
-use image::codecs::png::{CompressionType, FilterType, PngEncoder};
-use image::ImageReader;
 use log::info;
 use serde_derive::Serialize;
-use std::io::Cursor;
 use tauri::State;
 
 #[derive(Debug, Serialize)]
