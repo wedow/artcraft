@@ -247,25 +247,10 @@ export const Modal = ({
   resizable?: boolean;
   disableHotkeyInput?: (level: number) => void;
   enableHotkeyInput?: (level: number) => void;
-  /**
-   * Optional initial position for the modal (only used on first open, if no previous position is stored)
-   */
   initialPosition?: { x: number; y: number };
-  /**
-   * If false, clicking the backdrop will NOT close the modal
-   */
   closeOnOutsideClick?: boolean;
-  /**
-   * If true, pressing the Escape key will close the modal
-   */
   closeOnEsc?: boolean;
-  /**
-   * If true, allow interacting with background (removes pointer events from backdrop)
-   */
   allowBackgroundInteraction?: boolean;
-  /**
-   * If true, show expand button and allow expanding modal to fill window
-   */
   expandable?: boolean;
 }) => {
   // Draggable logic
@@ -405,26 +390,6 @@ export const Modal = ({
       if (animationFrame) cancelAnimationFrame(animationFrame);
     };
   }, [dragging, zIndex]);
-
-  // Center modal if not being dragged
-  const getModalStyle = (): React.CSSProperties => {
-    if (!draggable || !position) {
-      // If allowBackgroundInteraction, set pointerEvents: 'auto' for modal
-      return {
-        ...(size ? { width: size.width, height: size.height } : {}),
-        ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
-      };
-    }
-    return {
-      position: "fixed",
-      left: position.x,
-      top: position.y,
-      margin: 0,
-      zIndex,
-      ...(size ? { width: size.width, height: size.height } : {}),
-      ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
-    };
-  };
 
   // Calculate initial center position on first drag
   const handleDragStart = (e: React.MouseEvent) => {
@@ -827,6 +792,39 @@ export const Modal = ({
     if (!isOpen) return;
     updateModal(idRef.current, { zIndex, onClose, closeOnEsc });
   }, [isOpen, zIndex, onClose, closeOnEsc]);
+
+  const getModalStyle = (): React.CSSProperties => {
+    // fill the entire viewport even if theres a stored size or position
+    if (expanded) {
+      return {
+        position: "fixed",
+        left: 0,
+        top: 0,
+        margin: 0,
+        zIndex,
+        width: "100vw",
+        height: "100vh",
+        ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
+      };
+    }
+
+    if (!draggable || !position) {
+      // If allowBackgroundInteraction, set pointerEvents: 'auto' for modal
+      return {
+        ...(size ? { width: size.width, height: size.height } : {}),
+        ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
+      };
+    }
+    return {
+      position: "fixed",
+      left: position.x,
+      top: position.y,
+      margin: 0,
+      zIndex,
+      ...(size ? { width: size.width, height: size.height } : {}),
+      ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
+    };
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
