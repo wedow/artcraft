@@ -68,10 +68,6 @@ interface GalleryModalProps {
     media_id: string | undefined
   ) => Promise<void>;
   isOpen?: boolean;
-  /**
-   * Optional filter to force when opening the modal. When set, users cannot change the filter.
-   * Possible values: "all", "image", "video", "3d", "uploaded"
-   */
   forceFilter?: string;
 }
 
@@ -344,6 +340,7 @@ export const GalleryModal = React.memo(
     return (
       <>
         <Modal
+          resizable={mode === "view"}
           isOpen={
             mode === "view"
               ? galleryModalVisibleViewMode.value &&
@@ -361,7 +358,8 @@ export const GalleryModal = React.memo(
           }}
           className={twMerge(
             "h-[620px] max-w-4xl",
-            mode === "view" && "h-[640px] w-[56rem]"
+            mode === "view" &&
+              "h-[640px] min-h-[640px] min-w-[56rem] w-[56rem] max-w-none"
           )}
           childPadding={false}
           showClose={false}

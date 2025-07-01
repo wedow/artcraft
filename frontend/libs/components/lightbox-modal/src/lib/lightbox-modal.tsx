@@ -62,7 +62,7 @@ export function LightboxModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="rounded-xl bg-[#2C2C2C] h-[80vh] w-[60vw] max-w-screen"
+      className="rounded-xl bg-[#2C2C2C] h-[80vh] w-[60vw] max-w-screen min-w-[35vw] min-h-[40vh]"
       draggable
       allowBackgroundInteraction={true}
       showClose={true}
