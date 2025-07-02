@@ -1216,10 +1216,10 @@ class Editor {
             : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 576
               : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 900
                 : this.render_camera_aspect_ratio ===
-                    meraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 600
                   : 1000;
         const height =
@@ -1228,10 +1228,10 @@ class Editor {
             : this.render_camera_aspect_ratio === meraAspectRatio.VERTICAL_9_16
               ? 1024
               : this.render_camera_aspect_ratio ===
-                  meraAspectRatio.HORIZONTAL_3_2
+                meraAspectRatio.HORIZONTAL_3_2
                 ? 600
                 : this.render_camera_aspect_ratio ===
-                    meraAspectRatio.VERTICAL_2_3
+                  meraAspectRatio.VERTICAL_2_3
                   ? 900
                   : 1000;
 
@@ -1323,7 +1323,7 @@ class Editor {
     ) {
       this.composer.render();
       //this.rawRenderer.render(this.activeScene.scene, this.render_camera!);
-      this.render_composer.render();
+      // this.render_composer.render();
     } else if (this.renderer && this.render_camera && !this.rendering) {
       this.renderer.setSize(this.render_width, this.render_height);
       this.renderer.render(this.activeScene.scene, this.render_camera);
