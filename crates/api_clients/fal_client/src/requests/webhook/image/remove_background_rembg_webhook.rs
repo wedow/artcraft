@@ -55,8 +55,6 @@ mod tests {
 
     println!("{:?}", response);
 
-    assert_eq!(1, 2);
-    
     Ok(())
   }
 }
