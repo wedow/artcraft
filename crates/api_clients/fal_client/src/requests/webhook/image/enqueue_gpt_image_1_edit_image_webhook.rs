@@ -76,7 +76,7 @@ pub async fn enqueue_gpt_image_1_edit_image_webhook<V: IntoUrl>(
     image_size: image_size.to_string(),
     num_images,
     quality: quality.to_string(),
-    openai_api_key: "".to_string(),
+    openai_api_key: args.open_ai_api_key.0.to_string(),
   };
 
   let result = gpt_edit_image(request)
