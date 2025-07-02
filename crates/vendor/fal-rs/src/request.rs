@@ -137,40 +137,28 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
             .api_key
             .expect("No fal API key provided, and FAL_API_KEY environment variable is not set");
 
-        println!("Getting URL...");
-        
         let url_encoded = url.into_url()?;
         //let url_encoded = utf8_percent_encode(url_encoded.as_str(), NON_ALPHANUMERIC).to_string();
 
         let request_url = format!("https://queue.fal.run/{}?fal_webhook={}", self.endpoint, url_encoded);
 
         info!("Sending request to FAL queue webhook: {}", request_url);
-        println!("Sending request to FAL queue webhook: {}", request_url);
 
         let builder = self
             .client
             .post(request_url);
-
-        println!("Builder 1");
-        println!("key is {}", &key);
         
         let builder = builder
             .json(&self.params)
             .header("Authorization", format!("Key {}", &key))
             .header("Content-Type", "application/json");
 
-        println!("Builder 2");
-        
         let response = builder
             .send();
-        
-        println!("Builder sent");
         
         let response = response
             .await?;
 
-        println!("Response status: {:?}", response.status());
-        
         if response.status() != 200 {
             let error = response.text().await?;
             return Err(error.into());

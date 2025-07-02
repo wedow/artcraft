@@ -9,6 +9,7 @@ impl OpenAiApiKey {
   }
 
   pub fn from_str(api_key: &str) -> Self {
-    Self(api_key.to_string())
+    let api_key = api_key.trim().to_string();
+    Self(api_key)
   }
 }
