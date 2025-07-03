@@ -95,6 +95,7 @@ mod tests {
   use crate::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::{enqueue_gpt_image_1_edit_image_webhook, GptEditImageByokArgs, GptEditImageNumImages, GptEditImageQuality, GptEditImageSize};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
+  use test_data::web::image_urls::{ERNEST_SCARED_STUPID_IMAGE_URL, GHOST_IMAGE_URL, GRASSY_HILL_TRANSPARENT_IMAGE_URL};
 
   #[tokio::test]
   #[ignore]
@@ -111,12 +112,16 @@ mod tests {
     let open_ai_api_key = OpenAiApiKey::from_str(&secret);
 
     let args = GptEditImageByokArgs {
-      image_urls: vec![image_url.to_string()],
-      prompt: "make this a photo sitting on a coffee table",
+      image_urls: vec![
+        ERNEST_SCARED_STUPID_IMAGE_URL.to_string(),
+        GHOST_IMAGE_URL.to_string(),
+        GRASSY_HILL_TRANSPARENT_IMAGE_URL.to_string(),
+      ],
+      prompt: "put the man and the ghost on the grassy hill. the man is scared of the friendly ghost.",
       api_key: &fal_api_key,
       open_ai_api_key: &open_ai_api_key,
       webhook_url: "https://example.com/webhook",
-      image_size: GptEditImageSize::Vertical,
+      image_size: GptEditImageSize::Horizontal,
       num_images: GptEditImageNumImages::One,
       quality: GptEditImageQuality::High,
     };

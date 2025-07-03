@@ -16,8 +16,8 @@ path = "src/lib.rs"
 workspace-build-acceleration.workspace = true
 
 # Internal
-file_to_base64_url.workspace = true
 errors.workspace = true
+file_to_base64_url.workspace = true
 
 # External
 anyhow.workspace = true
@@ -35,3 +35,4 @@ fal = { path = "../../vendor/fal-rs", features = ["endpoints"] }
 
 [dev-dependencies]
 testing = { path = "../../lib/testing" }
+test_data.workspace = true
