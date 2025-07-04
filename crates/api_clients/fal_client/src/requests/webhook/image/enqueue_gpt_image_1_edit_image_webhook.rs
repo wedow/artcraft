@@ -16,7 +16,7 @@ pub struct GptEditImageByokArgs<'a, V: IntoUrl> {
   
   // Fulfillment
   pub api_key: &'a FalApiKey,
-  pub open_ai_api_key: &'a OpenAiApiKey,
+  pub openai_api_key: &'a OpenAiApiKey,
   pub webhook_url: V,
 }
 
@@ -76,7 +76,7 @@ pub async fn enqueue_gpt_image_1_edit_image_webhook<V: IntoUrl>(
     image_size: image_size.to_string(),
     num_images,
     quality: quality.to_string(),
-    openai_api_key: args.open_ai_api_key.0.to_string(),
+    openai_api_key: args.openai_api_key.0.to_string(),
   };
 
   let result = gpt_edit_image(request)
@@ -119,7 +119,7 @@ mod tests {
       ],
       prompt: "put the man and the ghost on the grassy hill. the man is scared of the friendly ghost.",
       api_key: &fal_api_key,
-      open_ai_api_key: &open_ai_api_key,
+      openai_api_key: &open_ai_api_key,
       webhook_url: "https://example.com/webhook",
       image_size: GptEditImageSize::Horizontal,
       num_images: GptEditImageNumImages::One,

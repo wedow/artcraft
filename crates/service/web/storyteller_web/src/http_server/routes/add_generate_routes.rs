@@ -14,6 +14,7 @@ use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error, HttpResponse};
+use crate::http_server::endpoints::generate::image::edit::gpt_image_1_edit_image_handler::gpt_image_1_edit_image_handler;
 
 pub fn add_generate_routes<T, B> (app: App<T>) -> App<T>
 where
@@ -28,6 +29,12 @@ where
 {
   app.service(web::scope("/v1/generate")
       .service(web::scope("/image")
+          .service(web::scope("/edit")
+              .service(web::resource("/gpt_image_1")
+                  .route(web::post().to(gpt_image_1_edit_image_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+          )
           .service(web::resource("/flux_1_dev_text_to_image")
               .route(web::post().to(generate_flux_1_dev_text_to_image_handler))
               .route(web::head().to(|| HttpResponse::Ok()))

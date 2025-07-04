@@ -1,5 +1,6 @@
 use utoipa::OpenApi;
 
+use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::*;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
@@ -18,10 +19,10 @@ use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProAspectRatio;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProDuration;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
@@ -158,6 +159,7 @@ use crate::http_server::endpoints::media_files::upload::upload_new_engine_asset_
 use crate::http_server::endpoints::media_files::upload::upload_new_scene_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_pmx::upload_pmx_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_saved_scene_media_file_handler::*;
+use crate::http_server::endpoints::generate::image::edit::gpt_image_1_edit_image_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_scene_snapshot_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_studio_shot::upload_studio_shot_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_video_new::upload_new_video_media_file_handler::*;
@@ -234,6 +236,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
     crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler,
     crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler,
     crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler,
+    crate::http_server::endpoints::generate::image::edit::gpt_image_1_edit_image_handler::gpt_image_1_edit_image_handler,
     crate::http_server::endpoints::generate::object::generate_hunyuan_2_1_image_to_3d_handler::generate_hunyuan_2_1_image_to_3d_handler,
     crate::http_server::endpoints::generate::object::generate_hunyuan_2_0_image_to_3d_handler::generate_hunyuan_2_0_image_to_3d_handler,
     crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler,
@@ -473,6 +476,11 @@ use crate::http_server::web_utils::response_success_helpers::*;
     EditUserFeatureFlagsError,
     EditUserFeatureFlagsOption,
     EditUserFeatureFlagsRequest,
+    GptImage1EditImageRequest,
+    GptImage1EditImageImageSize,
+    GptImage1EditImageNumImages,
+    GptImage1EditImageImageQuality,
+    GptImage1EditImageResponse,
     EditUsernameError,
     EditUsernameRequest,
     EditUsernameResponse,

@@ -88,6 +88,8 @@ pub struct ServerState {
 
   pub fal: FalData,
   
+  pub openai: OpenAiData,
+  
   /// Where to store audio uploads for w2l
   pub audio_uploads_bucket_root: String,
 
@@ -292,4 +294,10 @@ pub struct TrollBans {
 pub struct FalData {
   pub api_key: FalApiKey,
   pub webhook_url: String,
+}
+
+/// OpenAI integration
+#[derive(Clone)]
+pub struct OpenAiData {
+  pub api_key: String,
 }
