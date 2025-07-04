@@ -18,6 +18,10 @@ use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use utoipa::ToSchema;
+use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::batch_get_media_files_by_tokens;
+use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 
 /// Gpt Image 1 Image Editing
 #[utoipa::path(
@@ -63,14 +67,59 @@ pub async fn gpt_image_1_edit_image_handler(
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
 
+  const CAN_SEE_DELETED: bool = false;
+  
+  let tokens = match request.image_media_tokens.as_ref() {
+    Some(tokens) => tokens,
+    None => {
+      warn!("No image media tokens provided");
+      return Err(CommonWebError::BadInputWithSimpleMessage("No image media tokens provided".to_string()));
+    }
+  };
+  
+  let result = batch_get_media_files_by_tokens(
+    &server_state.mysql_pool,
+    tokens,
+    CAN_SEE_DELETED,
+  ).await;
+  
+  let media_files = match result {
+    Ok(files) => files,
+    Err(err) => {
+      error!("Error getting media files by tokens: {:?}", err);
+      return Err(CommonWebError::ServerError);
+    }
+  };
+  
+  if media_files.len() != tokens.len() {
+    warn!("Wrong number of media files returned for tokens");
+    return Err(CommonWebError::BadInputWithSimpleMessage("Not all media files could be found.".to_string()));
+  }
+
+  let media_domain = get_media_domain(&http_request);
+  
+  let image_urls = media_files.iter()
+      .map(|file| {
+        let public_bucket_path = MediaFileBucketPath::from_object_hash(
+          &file.public_bucket_directory_hash,
+          file.maybe_public_bucket_prefix.as_deref(),
+          file.maybe_public_bucket_extension.as_deref());
+        
+        let media_links = MediaLinks::from_media_path_and_env(
+          media_domain, 
+          server_state.server_environment, 
+          &public_bucket_path);
+        
+        media_links.cdn_url.to_string()
+      })
+      .collect::<Vec<_>>();
+
   insert_idempotency_token(&request.uuid_idempotency_token, &server_state.mysql_pool)
       .await
       .map_err(|err| {
         error!("Error inserting idempotency token: {:?}", err);
         CommonWebError::BadInputWithSimpleMessage("repeated idempotency token".to_string())
       })?;
-
-  const IS_MOD : bool = false;
 
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
 
@@ -102,7 +151,7 @@ pub async fn gpt_image_1_edit_image_handler(
   let openai_api_key = OpenAiApiKey::from_str(&server_state.openai.api_key);
 
   let args = GptEditImageByokArgs {
-    image_urls: vec![],
+    image_urls,
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,

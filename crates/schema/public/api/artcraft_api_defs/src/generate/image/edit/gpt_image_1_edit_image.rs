@@ -15,7 +15,7 @@ pub struct GptImage1EditImageRequest {
 
   // TODO: OneOf for image_urls or image_media_tokens
   /// Image media tokens to include in the editing context.
-  pub image_media_tokens: Option<MediaFileToken>,
+  pub image_media_tokens: Option<Vec<MediaFileToken>>,
 
   /// Size of the image to generate. Default is Square.
   pub image_size: Option<GptImage1EditImageImageSize>,
