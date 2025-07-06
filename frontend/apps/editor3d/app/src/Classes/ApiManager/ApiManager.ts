@@ -1,8 +1,8 @@
 import { GetBuildEnvironment } from "~/BuildEnvironment";
 import environmentVariables from "../EnvironmentVariables";
 import { Configs } from "~/configs";
-//import { fetch } from '@tauri-apps/plugin-http'
 import { FetchProxy as fetch } from "@storyteller/tauri-utils";
+import { StorytellerApiHostStore } from "@storyteller/api";
 
 type NonNullableObject<T extends object> = NonNullable<T>;
 
@@ -21,6 +21,8 @@ export class ApiManager {
     const configs = new Configs(environmentType);
     const baseApi = configs.baseApi;
 
+    console.log("baseApi", baseApi);
+
     // look at the .env file
     this.ApiTargets = {
       //BaseApi: environmentVariables.values.BASE_API as string,
@@ -31,6 +33,10 @@ export class ApiManager {
       GravatarApi: environmentVariables.values.GRAVATAR_API as string,
       uploadApi: environmentVariables.values.UPLOAD_API_VIDEO as string,
     };
+  }
+
+  protected getApiSchemeAndHost(): string {
+    return StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
   }
 
   public async fetch<B, T>(

@@ -7,7 +7,7 @@ export class PromptsApi extends ApiManager {
   }: {
     token: string;
   }): Promise<ApiResponse<Prompts>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/prompts/${token}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/prompts/${token}`;
 
     return this.get<{
       success: boolean;

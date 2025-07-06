@@ -12,7 +12,7 @@ export class CommentsApi extends ApiManager {
     entityType: string;
     uuidIdempotencyToken: string;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/comments/new`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/comments/new`;
 
     const body = {
       comment_markdown: commentMarkdown,
@@ -49,7 +49,7 @@ export class CommentsApi extends ApiManager {
   }: {
     commentToken: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/comments/delete/${commentToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/comments/delete/${commentToken}`;
 
     return this.post<
       { as_mod: boolean },
@@ -74,7 +74,7 @@ export class CommentsApi extends ApiManager {
     entityType: string;
     entityToken: string;
   }): Promise<ApiResponse<string[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/comments/list/${entityType}/${entityToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/comments/list/${entityType}/${entityToken}`;
 
     return this.get<{
       success: boolean;

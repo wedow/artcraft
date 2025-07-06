@@ -14,7 +14,7 @@ export class BetaKeysApi extends ApiManager {
     numberOfKeys: number;
     uuidIdempotencyToken: string;
   }): Promise<ApiResponse<string[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/beta_keys/create`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/beta_keys/create`;
 
     const body = {
       maybe_note: maybeNote,
@@ -59,7 +59,7 @@ export class BetaKeysApi extends ApiManager {
     maybeReferrerUsername?: string;
     onlyListRemaining?: boolean;
   }): Promise<ApiResponse<BetaKey[], Pagination>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/beta_keys/list`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/beta_keys/list`;
 
     const query = {
       sort_ascending: sortAscending,
@@ -91,7 +91,7 @@ export class BetaKeysApi extends ApiManager {
   }: {
     betaKey: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/beta_keys/redeem`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/beta_keys/redeem`;
 
     return this.post<
       {
@@ -118,7 +118,7 @@ export class BetaKeysApi extends ApiManager {
     betaKey: string;
     isDistributed: boolean;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/beta_keys/${betaKey}/distributed`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/beta_keys/${betaKey}/distributed`;
 
     return this.post<
       {
@@ -145,7 +145,7 @@ export class BetaKeysApi extends ApiManager {
     token: string;
     note?: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/beta_keys/${token}/note`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/beta_keys/${token}/note`;
 
     return this.post<
       {

@@ -13,8 +13,8 @@ export const AuthButtons = ({
 
   const { status, userInfo } = authentication;
 
-  console.log("Current State:");
-  console.log(status.value);
+  console.log("Current State:", status.value);
+
   if (status.value === AUTH_STATUS.LOGGED_IN) {
     console.log("SHOWING DROPDOWN");
     return null;

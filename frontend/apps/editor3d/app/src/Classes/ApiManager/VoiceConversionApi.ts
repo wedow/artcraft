@@ -26,7 +26,7 @@ export class VoiceConversionApi extends ApiManager {
   public ConvertVoice(
     params: VoiceConversionParams,
   ): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/voice_conversion/inference`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/voice_conversion/inference`;
 
     const body = this.parseBodyValues<
       VoiceConversionParams,

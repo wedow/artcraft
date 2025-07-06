@@ -95,7 +95,7 @@ export class WeightsApi extends ApiManager {
     ...params
   }: ListWeightsByUserRequest): Promise<ApiResponse<Weight[], Pagination>> {
     const user = username;
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/by_user/${user}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/by_user/${user}`;
 
     const query = this.parseQueryValues(params);
 
@@ -117,7 +117,7 @@ export class WeightsApi extends ApiManager {
   public ListWeights({
     ...params
   }: ListWeightsRequest): Promise<ApiResponse<Weight[], PaginationInfinite>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/list`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/list`;
 
     const query = this.parseQueryValues(params);
 
@@ -141,7 +141,7 @@ export class WeightsApi extends ApiManager {
   }: ListFeaturedWeightsRequest): Promise<
     ApiResponse<Weight[], PaginationInfinite>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/list_featured`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/list_featured`;
 
     const query = this.parseQueryValues(params);
 
@@ -161,7 +161,7 @@ export class WeightsApi extends ApiManager {
   }
 
   public ListWeightsPinned(): Promise<ApiResponse<Weight[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/list_pinned`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/list_pinned`;
 
     return this.get<{
       success: boolean;
@@ -179,7 +179,7 @@ export class WeightsApi extends ApiManager {
   public SearchWeights(
     params: SearchWeightParams,
   ): Promise<ApiResponse<Weight[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/search`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/search`;
 
     const body = this.parseBodyValues<SearchWeightParams, SearchWeightRequest>(
       params,
@@ -206,7 +206,7 @@ export class WeightsApi extends ApiManager {
   }: {
     weightToken: string;
   }): Promise<ApiResponse<Weight>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/weight/${weightToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/weight/${weightToken}`;
 
     return this.get<GetWeightByTokenResponse>({ endpoint })
       .then(({ success, ...mediaFile }) => ({
@@ -222,7 +222,7 @@ export class WeightsApi extends ApiManager {
     weightToken,
     ...params
   }: UpdateWeightByTokenParams): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/weight/${weightToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/weight/${weightToken}`;
 
     const body = this.parseBodyValues<
       Omit<UpdateWeightByTokenParams, "weightToken">,
@@ -247,7 +247,7 @@ export class WeightsApi extends ApiManager {
   }: {
     weightToken: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/weight/${weightToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/weight/${weightToken}`;
 
     const body = {
       as_mod: true,
@@ -274,7 +274,7 @@ export class WeightsApi extends ApiManager {
     weightToken: string;
     coverImageMediaFileToken: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/weights/${weightToken}/cover_image`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/weights/${weightToken}/cover_image`;
 
     const body = {
       cover_image_media_file_token: coverImageMediaFileToken,

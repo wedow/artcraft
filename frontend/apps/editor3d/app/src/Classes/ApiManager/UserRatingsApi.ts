@@ -8,7 +8,7 @@ export interface UserRating {
 
 export class UserRatingApi extends ApiManager {
   public ListUserRatings(): Promise<ApiResponse<UserRating[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_rating/batch`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_rating/batch`;
 
     return this.get<{
       success?: boolean;
@@ -34,7 +34,7 @@ export class UserRatingApi extends ApiManager {
     entityType: string;
     ratingValue: string;
   }): Promise<ApiResponse<number>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_rating/rate`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_rating/rate`;
 
     const body = {
       entity_token: entityToken,
@@ -71,7 +71,7 @@ export class UserRatingApi extends ApiManager {
     entityType: string;
     entityToken: string;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_rating/view/${entityType}/${entityToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_rating/view/${entityType}/${entityToken}`;
 
     return this.get<{
       success?: boolean;

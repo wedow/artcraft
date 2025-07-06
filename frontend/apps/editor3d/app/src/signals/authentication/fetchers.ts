@@ -92,6 +92,7 @@ export const persistLogin = async () => {
 };
 
 async function getUserInfoAndSubcriptions() {
+  console.log('getUserInfoAndSubcriptions()')
   updateAuthStatus(AUTH_STATUS.GET_USER_INFO);
   const usersApi = new UsersApi();
   const sessionResponse = await usersApi.GetSession();

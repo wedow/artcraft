@@ -7,7 +7,7 @@ export class JobsApi extends ApiManager {
   }: {
     token: string;
   }): Promise<ApiResponse<JobState>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/job/${token}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/jobs/job/${token}`;
 
     return this.get<{
       success: boolean;
@@ -23,7 +23,7 @@ export class JobsApi extends ApiManager {
   }
 
   public ListJobs(): Promise<ApiResponse<JobState[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/batch`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/jobs/batch`;
 
     return this.get<{
       success: boolean;
@@ -39,7 +39,7 @@ export class JobsApi extends ApiManager {
   }
 
   public ListRecentJobs(): Promise<ApiResponse<Job[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/session`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/jobs/session`;
     
     return this.get<{
       success: boolean;
@@ -56,7 +56,7 @@ export class JobsApi extends ApiManager {
   }
 
   public DeleteJobByToken(jobToken: string): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/job/${jobToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/jobs/job/${jobToken}`;
 
     return this.delete<
       undefined,

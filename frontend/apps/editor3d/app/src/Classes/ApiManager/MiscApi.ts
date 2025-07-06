@@ -3,7 +3,7 @@ import { StatusAlert } from "~/models/StatusAlert";
 
 export class MiscApi extends ApiManager {
   public GetStatusAlertCheck(): Promise<ApiResponse<StatusAlert>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/session`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/session`;
     return this.get<{
       success: boolean;
       maybe_alert?: Omit<StatusAlert, "refresh_interval_millis">;

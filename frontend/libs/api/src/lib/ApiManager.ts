@@ -1,4 +1,5 @@
 // import { bool } from "@techstark/opencv-js";
+import { StorytellerApiHostStore } from "./config/StorytellerApiHostStore.js";
 import { API_TARGETS } from "./enums/Api.js";
 //import { fetch } from '@tauri-apps/plugin-http'
 import { FetchProxy as fetch } from "@storyteller/tauri-utils";
@@ -17,12 +18,15 @@ export class ApiManager {
 
   constructor() {
     this.ApiTargets = {
-      BaseApi: API_TARGETS.BASE_API,
       GoggleApi: API_TARGETS.GOOGLE_API,
       FunnelApi: API_TARGETS.FUNNEL_API,
       CdnApi: API_TARGETS.CDN_API,
       GravatarApi: API_TARGETS.GRAVATAR_API,
     };
+  }
+
+  protected getApiSchemeAndHost(): string {
+    return StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
   }
 
   public async fetch<B, T>(
