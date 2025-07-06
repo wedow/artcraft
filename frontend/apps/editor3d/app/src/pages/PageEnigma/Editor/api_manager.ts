@@ -6,6 +6,7 @@ import { updateExistingScene, uploadNewScene } from "./api_fetchers";
 import { uploadThumbnail } from "~/api";
 import environmentVariables from "~/Classes/EnvironmentVariables";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
+import { StorytellerApiHostStore } from "@storyteller/api";
 
 interface StylizeVideoParams {
   media_token: string;
@@ -111,10 +112,14 @@ class APIManagerResponseError extends Error {
 }
 
 export class APIManager {
-  baseUrl: string;
 
   constructor() {
-    this.baseUrl = environmentVariables.values.BASE_API as string;
+    // NB(bt,2025-07-06): Cleaning this up. The code was duplicated a half dozen times.
+    //  I think all of the code in this file is legacy, but to be safe I'm continuing to update it.
+  }
+
+  protected getApiSchemeAndHost() {
+    return StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
   }
 
   /**
@@ -225,7 +230,7 @@ export class APIManager {
    * @returns
    */
   public async getMediaFile(media_file_token: string): Promise<string> {
-    const url = `${this.baseUrl}/v1/media_files/file/${media_file_token}`;
+    const url = `${this.getApiSchemeAndHost()}/v1/media_files/file/${media_file_token}`;
     const response = await fetch(url);
     const json = await JSON.parse(await response.text());
     const bucketPath = json["media_file"]["public_bucket_path"];
@@ -250,7 +255,7 @@ export class APIManager {
   }
 
   public async uploadMediaSceneThumbnail(blob: Blob | File, fileName: string) {
-    const url = `${this.baseUrl}/v1/media_files/upload/image`;
+    const url = `${this.getApiSchemeAndHost()}/v1/media_files/upload/image`;
     const uuid = uuidv4();
 
     const formData = new FormData();
@@ -294,7 +299,7 @@ export class APIManager {
   }) {
     // Promise<APIManagerResponseSuccess>
     //TODO: UPDATE ENDPOINT!!!!
-    const url = `${this.baseUrl}/v1/media_files/upload/new_video`;
+    const url = `${this.getApiSchemeAndHost()}/v1/media_files/upload/new_video`;
     const uuid = uuidv4();
 
     const formData = new FormData();
@@ -369,7 +374,7 @@ export class APIManager {
 
   public async getMediaBatch(media_tokens: string[]): Promise<MediaFile[]> {
     const tokens = media_tokens;
-    const url = new URL(`${this.baseUrl}/v1/media_files/batch`);
+    const url = new URL(`${this.getApiSchemeAndHost()}/v1/media_files/batch`);
     tokens.forEach((token) => url.searchParams.append("tokens", token));
     const result = await fetch(url)
       .then((response) => response.json())
@@ -429,7 +434,7 @@ export class APIManager {
     const json_data = JSON.stringify(data);
 
     const response = await fetch(
-      `${this.baseUrl}/v1/workflows/enqueue_studio`,
+      `${this.getApiSchemeAndHost()}/v1/workflows/enqueue_studio`,
       {
         method: "POST",
         credentials: "include",

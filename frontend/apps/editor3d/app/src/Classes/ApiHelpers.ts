@@ -1,10 +1,10 @@
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
-import environmentVariables from "./EnvironmentVariables";
+import { StorytellerApiHostStore } from "@storyteller/api";
 
 export async function get_media_url(mediaId: string) {
   //This is for prod when we have the proper info on the url.
-  const api_base_url = environmentVariables.values.BASE_API;
-  const url = `${api_base_url}/v1/media_files/file/${mediaId}`;
+  const apiSchemeAndHost = StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
+  const url = `${apiSchemeAndHost}/v1/media_files/file/${mediaId}`;
 
   const response = await fetch(url);
   const json = await JSON.parse(await response.text());

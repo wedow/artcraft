@@ -1,8 +1,8 @@
 import { LipSync } from "../Editor/lipsync";
 import * as THREE from "three";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
-import environmentVariables from "~/Classes/EnvironmentVariables";
 import Ijson from "~/interfaces/Ijson";
+import { StorytellerApiHostStore } from "@storyteller/api";
 
 interface AudioDataInterface {
   audioContext: AudioContext;
@@ -58,10 +58,10 @@ export class LipSyncClip implements Ijson {
   // lip sync will be generated through TTS
   async get_media_url() {
     //This is for prod when we have the proper info on the url.
-    const api_base_url = environmentVariables.values.BASE_API;
-    const url = `${api_base_url}/v1/media_files/file/${this.media_id}`;
+    const apiSchemeAndHost = StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
+    const url = `${apiSchemeAndHost}/v1/media_files/file/${this.media_id}`;
 
-    console.log(`API BASE URL? ${api_base_url}`);
+    console.log(`API BASE URL? ${apiSchemeAndHost}`);
     console.log(`CALLED URL? ${url}`);
 
     const response = await fetch(url);

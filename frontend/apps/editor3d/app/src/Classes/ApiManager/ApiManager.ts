@@ -19,14 +19,12 @@ export class ApiManager {
   constructor() {
     const environmentType = GetBuildEnvironment().getBuildEnvironmentType();
     const configs = new Configs(environmentType);
-    const baseApi = configs.baseApi;
 
-    console.log("baseApi", baseApi);
-
+    // TODO(bt,2025-07-06): Not sure that any of this is used anymore.
+    // If so, try to use Configs, StorytellerApiHostStore, or another configuration source.
+    
     // look at the .env file
     this.ApiTargets = {
-      //BaseApi: environmentVariables.values.BASE_API as string,
-      BaseApi: baseApi,
       GoggleApi: environmentVariables.values.GOOGLE_API as string,
       FunnelApi: environmentVariables.values.FUNNEL_API as string,
       CdnApi: environmentVariables.values.CDN_API as string,

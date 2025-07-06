@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
-
-import environmentVariables from "~/Classes/EnvironmentVariables";
 import Ijson from "~/interfaces/Ijson";
+import { StorytellerApiHostStore } from "@storyteller/api";
+
 interface CsvJson {
   [key: string]: string[];
 }
@@ -26,8 +26,8 @@ export class EmotionClip implements Ijson {
 
   async get_media_url() {
     //This is for prod when we have the proper info on the url.
-    const api_base_url = environmentVariables.values.BASE_API;
-    const url = `${api_base_url}/v1/media_files/file/${this.media_id}`;
+    const apiSchemeAndHost = StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
+    const url = `${apiSchemeAndHost}/v1/media_files/file/${this.media_id}`;
 
     const response = await fetch(url);
     const json = await JSON.parse(await response.text());
