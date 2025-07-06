@@ -22,9 +22,18 @@ use crate::core::commands::response::success_response_wrapper::CommandSuccessRes
 //  - sora_image_remix_command
 
 /// Easy to use infallible response.
+/// This always contains a success payload and never results in an error.
 pub type InfallibleResponse<SuccessPayload> = CommandSuccessResponseWrapper<SuccessPayload>;
 
 /// Easy to use Result<T, E> type.
+/// 
+/// There are easier ways to use Response<S, Et, Ep> : 
+///  - `SimpleResponse` just returns strings on success or error (but provides clues to the frontend)
+///  - `SuccessOrErrorMessage` returns an empty success payload or an error message
+///  - `ResponseOrErrorMessage<SuccessPayload>` returns a success payload or an error message
+///  - `ResponseOrErrorType<SuccessPayload, ErrType>` returns a success payload or an error type
+///  - `ResponseOrError<SuccessPayload, ErrPayload>` returns a success payload or an error payload
+/// 
 pub type Response<SuccessPayload, ErrType, ErrPayload> =
   Result<CommandSuccessResponseWrapper<SuccessPayload>, CommandErrorResponseWrapper<ErrType, ErrPayload>>;
 

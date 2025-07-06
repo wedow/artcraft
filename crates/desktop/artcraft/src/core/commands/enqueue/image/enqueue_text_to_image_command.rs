@@ -21,7 +21,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use log::{error, info, warn};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 
 #[derive(Deserialize)]

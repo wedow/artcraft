@@ -1,3 +1,4 @@
 pub mod image;
+pub mod image_edit;
 pub mod object;
 pub mod video;
