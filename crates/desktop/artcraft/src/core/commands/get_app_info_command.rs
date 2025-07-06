@@ -28,7 +28,7 @@ pub fn get_app_info_command(
   let git_commit_short_id = build_metadata::git_commit_short_id();
   let git_commit_timestamp = build_metadata::git_commit_timestamp();
 
-  let storyteller_host = app_env_configs.storyteller_host.to_api_hostname();
+  let storyteller_host = app_env_configs.storyteller_host.to_api_hostname_and_scheme();
 
   AppInfoResponse {
     build_timestamp,

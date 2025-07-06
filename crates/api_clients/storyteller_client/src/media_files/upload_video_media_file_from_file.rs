@@ -50,8 +50,6 @@ pub async fn upload_video_media_file_from_file<P: AsRef<Path>>(
 
   debug!("Requesting {:?}", &url);
 
-  //let mut file = File::open(path)?;
-
   let client = Client::builder()
       .gzip(true)
       .build()?;
@@ -85,7 +83,7 @@ pub async fn upload_video_media_file_from_file<P: AsRef<Path>>(
 }
 
 fn get_route(api_host: &ApiHost) -> String {
-  let api_hostname = api_host.to_api_hostname();
-  format!("https://{}/v1/media_files/upload/new_video", api_hostname)
+  let api_hostname_and_scheme = api_host.to_api_hostname_and_scheme();
+  format!("{}/v1/media_files/upload/new_video", api_hostname_and_scheme)
 }
 
