@@ -41,9 +41,9 @@ pub async fn get_media_file(api_host: &ApiHost, media_file_token: &MediaFileToke
 }
 
 fn get_media_file_token_route(api_host: &ApiHost, media_file_token: &MediaFileToken) -> String {
-  let api_hostname = api_host.to_api_hostname();
+  let api_hostname_and_scheme = api_host.to_api_hostname_and_scheme();
   let media_file_token = media_file_token.as_str();
-  format!("https://{}/v1/media_files/file/{}", api_hostname, media_file_token)
+  format!("{}/v1/media_files/file/{}", api_hostname_and_scheme, media_file_token)
 }
 
 // TODO(bt,2025-04-22): Share API definitions between client and server in common crate.

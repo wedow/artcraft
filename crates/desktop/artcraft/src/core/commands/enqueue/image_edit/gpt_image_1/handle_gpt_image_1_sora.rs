@@ -77,6 +77,8 @@ pub async fn handle_gpt_image_1_sora(
         requested: request.image_media_tokens.len() as u32,
       })?;
 
+  info!("Calling get media file API: {:?}", app_env_configs.storyteller_host);
+  
   let response = get_media_file(
     &app_env_configs.storyteller_host,
     first_image_token
