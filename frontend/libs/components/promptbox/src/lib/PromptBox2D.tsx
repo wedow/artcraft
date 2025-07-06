@@ -37,6 +37,8 @@ import {
   CheckSoraSession,
   SoraSessionState,
   waitForSoraLogin,
+  EnqueueContextualEditImage,
+  EnqueueContextualEditImageModel,
 } from "@storyteller/tauri-api";
 
 import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
@@ -264,13 +266,14 @@ export const PromptBox2D = ({
   };
 
   const handleTauriEnqueue = async () => {
-    // Check if the Sora session is valid
-    const soraSession = await CheckSoraSession();
-    if (soraSession.state !== SoraSessionState.Valid) {
-      setIsEnqueueing(false);
-      await handleSoraLoginReminder();
-      return;
-    }
+    // NB(bt): This needs to move to an error handler.
+    // // Check if the Sora session is valid
+    // const soraSession = await CheckSoraSession();
+    // if (soraSession.state !== SoraSessionState.Valid) {
+    //   setIsEnqueueing(false);
+    //   await handleSoraLoginReminder();
+    //   return;
+    // }
 
     const api = new PromptsApi();
     let image = getCanvasRenderBitmap();
@@ -318,15 +321,22 @@ export const PromptBox2D = ({
     //console.log("Generate response:", generateResponse);
     //toast.success("Please wait while we process your image.");
 
-    const aspectRatio = getCurrentSoraRemixAspectRatio();
+    // TODO: Add context tokens
+    //  maybe_additional_images: referenceImages.map((image) => image.mediaToken),
+    const imageMediaTokens = [
+      snapshotMediaToken.data
+    ]; 
 
-    const generateResponse = await SoraImageRemix({
-      snapshot_media_token: snapshotMediaToken.data,
+    // TODO: Aspect ratio
+    // const aspectRatio = getCurrentSoraRemixAspectRatio();
+
+    const generateResponse = await EnqueueContextualEditImage({
+      model: EnqueueContextualEditImageModel.GptImage1,
+      image_media_tokens: imageMediaTokens,
       disable_system_prompt: !useSystemPrompt,
       prompt: prompt,
-      maybe_additional_images: referenceImages.map((image) => image.mediaToken),
-      maybe_number_of_samples: 1,
-      aspect_ratio: aspectRatio,
+      image_count: 1,
+      //aspect_ratio: aspectRatio,
     });
 
     console.log("generateResponse", generateResponse);

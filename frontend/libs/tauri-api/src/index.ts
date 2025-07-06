@@ -1,4 +1,5 @@
 export * from "./lib/common/CommandStatus.js";
+export * from "./lib/enqueue/EnqueueContextualEditImage.js";
 export * from "./lib/enqueue/EnqueueImageTo3dObject.js";
 export * from "./lib/enqueue/EnqueueTextToImage.js";
 export * from "./lib/enqueue/EnqueueImageToVideo.js";
