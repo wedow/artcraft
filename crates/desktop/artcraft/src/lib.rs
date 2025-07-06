@@ -82,6 +82,8 @@ pub fn run() {
   let app_env_configs = AppEnvConfigs::load_from_filesystem(&app_data_root)
     .expect("AppEnvConfigs should be loaded from disk");
   
+  let app_env_configs_2 = app_env_configs.clone();
+  
   let provider_priority = match ProviderPriorityStore::from_filesystem_configs(&app_data_root) {
     Ok(Some(priority)) => {
       println!("Loaded provider priority from disk: {:?}", priority.get_priority());
@@ -173,7 +175,7 @@ pub fn run() {
       }
 
       tauri::async_runtime::spawn(main_window_thread(app_3, app_data_root_3, storyteller_creds_manager_2));
-      tauri::async_runtime::spawn(sora_task_polling_thread(app_4, app_data_root_4, sora_creds_manager_3, storyteller_creds_manager_3, sora_task_queue_2));
+      tauri::async_runtime::spawn(sora_task_polling_thread(app_4, app_env_configs_2, app_data_root_4, sora_creds_manager_3, storyteller_creds_manager_3, sora_task_queue_2));
       tauri::async_runtime::spawn(discord_presence_thread());
       tauri::async_runtime::spawn(fal_task_polling_thread(app_5, app_data_root_5, fal_creds_manager_3, storyteller_creds_manager_4, fal_task_queue_3));
 

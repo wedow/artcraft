@@ -52,7 +52,7 @@ pub async fn handle_gpt_image_1_sora(
   app_env_configs: &AppEnvConfigs,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-  
+
 ) -> Result<ContextualEditImageSuccessEvent, InternalContextualEditImageError> {
 
   let sora_creds = match sora_creds_manager.get_credentials() {
@@ -66,7 +66,7 @@ pub async fn handle_gpt_image_1_sora(
       return Err(InternalContextualEditImageError::AnyhowError(err));
     }
   };
-  
+
   // TODO(bt,2025-07-08): Handle many images.
   // TODO(bt,2025-07-08): Handle authenticated sessions (for private images).
   // TODO(bt,2025-07-08): Handle HTTP batch get requests.
@@ -78,7 +78,7 @@ pub async fn handle_gpt_image_1_sora(
       })?;
 
   info!("Calling get media file API: {:?}", app_env_configs.storyteller_host);
-  
+
   let response = get_media_file(
     &app_env_configs.storyteller_host,
     first_image_token

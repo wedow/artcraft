@@ -3,6 +3,7 @@ use crate::core::events::generation_events::common::{GenerationAction, Generatio
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::events::generation_events::generation_failed_event::GenerationFailedEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -17,12 +18,12 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
-use storyteller_client::utils::api_host::ApiHost;
 use tauri::AppHandle;
 use tempdir::TempDir;
 
 pub async fn sora_task_polling_thread(
   app_handle: AppHandle,
+  app_env_configs: AppEnvConfigs,
   app_data_root: AppDataRoot,
   sora_creds_manager: SoraCredentialManager,
   storyteller_creds_manager: StorytellerCredentialManager,
@@ -31,6 +32,7 @@ pub async fn sora_task_polling_thread(
   loop {
     let res = polling_loop(
       &app_handle,
+      &app_env_configs,
       &sora_creds_manager, 
       &storyteller_creds_manager, 
       &sora_task_queue,
@@ -45,6 +47,7 @@ pub async fn sora_task_polling_thread(
 
 async fn polling_loop(
   app_handle: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   sora_creds_manager: &SoraCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   sora_task_queue: &SoraTaskQueue,
@@ -119,7 +122,6 @@ async fn polling_loop(
     sora_task_queue.remove_list(&failed_task_ids)?;
     
     let creds = storyteller_creds_manager.get_credentials_required()?;
-    let api_host = ApiHost::Storyteller;
 
     for task in succeeded_tasks.iter() {
       if !sora_task_queue.contains_key(&task.id)? {
@@ -132,7 +134,11 @@ async fn polling_loop(
         let download_path = download_generation(generation, &app_data_root).await?;
 
         info!("Uploading to backend...");
-        let result = upload_image_media_file_from_file(&api_host, Some(&creds), download_path).await?;
+        let result = upload_image_media_file_from_file(
+          &app_env_configs.storyteller_host, 
+          Some(&creds), 
+          download_path
+        ).await?;
         
         info!("Uploaded to API backend: {:?}", result.media_file_token);
 

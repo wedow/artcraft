@@ -84,8 +84,8 @@ pub async fn upload_image_media_file_from_file<P: AsRef<Path>>(
 }
 
 fn get_route(api_host: &ApiHost) -> String {
-  let api_hostname = api_host.to_api_hostname();
-  format!("https://{}/v1/media_files/upload/image", api_hostname)
+  let api_hostname_and_scheme = api_host.to_api_hostname_and_scheme();
+  format!("{}/v1/media_files/upload/image", api_hostname_and_scheme)
 }
 
 // TODO(bt,2025-04-22): Share API definitions between client and server in common crate.
