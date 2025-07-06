@@ -4,6 +4,7 @@ use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
@@ -13,12 +14,12 @@ use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use storyteller_client::generate::object::generate_hunyuan_3d_2_0_image_to_3d::generate_hunyuan3d_2_0_image_to_3d;
 use storyteller_client::generate::object::generate_hunyuan_3d_2_1_image_to_3d::generate_hunyuan3d_2_1_image_to_3d;
-use storyteller_client::utils::api_host::ApiHost;
 use tauri::AppHandle;
 
 pub async fn handle_object_artcraft(
   request: EnqueueImageTo3dObjectRequest,
   app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<(), InternalObjectError> {
@@ -64,7 +65,7 @@ pub async fn handle_object_artcraft(
         media_file_token: request.image_media_token,
       };
       let result = generate_hunyuan3d_2_0_image_to_3d(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -86,7 +87,7 @@ pub async fn handle_object_artcraft(
         media_file_token: request.image_media_token,
       };
       let result = generate_hunyuan3d_2_1_image_to_3d(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;

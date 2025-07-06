@@ -7,6 +7,7 @@ use crate::core::events::generation_events::common::{GenerationAction, Generatio
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
@@ -68,6 +69,7 @@ pub enum BackgroundRemovalErrorType {
 pub async fn fal_background_removal_command(
   app: AppHandle,
   request: FalBackgroundRemovalRequest,
+  app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -107,7 +109,8 @@ pub async fn fal_background_removal_command(
   }
 
   let result = remove_background(
-    request, 
+    request,
+    &app_env_configs,
     &app_data_root, 
     &fal_creds_manager, 
     &storyteller_creds_manager
@@ -202,6 +205,7 @@ impl From<ArtcraftError> for InnerError {
 
 pub async fn remove_background(
   request: FalBackgroundRemovalRequest,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -214,8 +218,11 @@ pub async fn remove_background(
   
   if let Some(media_token) = request.image_media_token {
     info!("From media token: {:?}", &media_token);
-    temp_download = download_media_file_to_temp_dir(&app_data_root, &media_token).await?;
-    
+    temp_download = download_media_file_to_temp_dir(
+      app_env_configs,
+      app_data_root, 
+      &media_token
+    ).await?;
   } else if let Some(base64_bytes) = request.base64_image {
     info!("From base64 bytes...");
     temp_download = save_base64_image_to_temp_dir(&app_data_root, base64_bytes).await?;
@@ -250,15 +257,18 @@ pub async fn remove_background(
   info!("Uploading image media file...");
 
   let upload_result = upload_image_media_file_from_file(
-    &ApiHost::Storyteller, 
+    &app_env_configs.storyteller_host, 
     Some(&creds), 
-    result_filename
+    result_filename,
   ).await?;
 
   // TODO: Don't re-request to simply build MediaLinks (or CDN URL). Get those from the upload API in one turn.
   info!("Re-requesting media file...");
   
-  let response = get_media_file(&ApiHost::Storyteller, &upload_result.media_file_token).await?;
+  let response = get_media_file(
+    &app_env_configs.storyteller_host,
+    &upload_result.media_file_token,
+  ).await?;
   
   info!("Uploaded media file: {:?}", response.media_file.token);
 

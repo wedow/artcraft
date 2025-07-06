@@ -15,6 +15,7 @@ use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 
 #[derive(Deserialize)]
 pub struct EnqueueImageTo3dObjectRequest {
@@ -65,6 +66,7 @@ pub enum EnqueueImageTo3dObjectErrorType {
 pub async fn enqueue_image_to_3d_object_command(
   app: AppHandle,
   request: EnqueueImageTo3dObjectRequest,
+  app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   fal_creds_manager: State<'_, FalCredentialManager>,
@@ -76,8 +78,9 @@ pub async fn enqueue_image_to_3d_object_command(
   info!("enqueue_image_to_3d_object_command called");
 
   let result = handle_request(
-    &app,
     request,
+    &app,
+    &app_env_configs,
     &app_data_root,
     &provider_priority_store,
     &fal_creds_manager,
@@ -132,8 +135,9 @@ pub async fn enqueue_image_to_3d_object_command(
 
 
 pub async fn handle_request(
-  app: &AppHandle,
   request: EnqueueImageTo3dObjectRequest,
+  app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,
   fal_creds_manager: &FalCredentialManager,
@@ -148,12 +152,23 @@ pub async fn handle_request(
       Provider::Sora => {} // Fallthrough
       Provider::Artcraft => {
         return Ok(handle_object_artcraft(
-          request, &app, app_data_root, storyteller_creds_manager).await?);
+          request, 
+          app, 
+          app_env_configs,
+          app_data_root, 
+          storyteller_creds_manager
+        ).await?);
       }
       Provider::Fal => {
         if fal_creds_manager.has_apparent_api_token()? {
           return Ok(handle_object_fal(
-            &app, app_data_root, request, fal_creds_manager, fal_task_queue).await?);
+            &app, 
+            app_env_configs,
+            app_data_root, 
+            request, 
+            fal_creds_manager, 
+            fal_task_queue
+          ).await?);
         }
       }
     }

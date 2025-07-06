@@ -6,6 +6,7 @@ use crate::core::events::generation_events::common::{GenerationAction, Generatio
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
@@ -52,6 +53,7 @@ pub enum KlingImageToVideoErrorType {
 pub async fn fal_kling_image_to_video_command(
   app: AppHandle,
   request: FalKlingImageToVideoRequest,
+  app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -76,6 +78,7 @@ pub async fn fal_kling_image_to_video_command(
 
   let result = image_to_video(
     request,
+    &app_env_configs,
     &app_data_root,
     &fal_creds_manager,
     &storyteller_creds_manager,
@@ -175,6 +178,7 @@ impl From<ArtcraftError> for InnerError {
 
 pub async fn image_to_video(
   request: FalKlingImageToVideoRequest,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -187,7 +191,11 @@ pub async fn image_to_video(
   let mut temp_download;
 
   if let Some(media_token) = request.image_media_token {
-    temp_download = download_media_file_to_temp_dir(&app_data_root, &media_token).await?;
+    temp_download = download_media_file_to_temp_dir(
+      app_env_configs,
+      app_data_root, 
+      &media_token
+    ).await?;
 
   } else if let Some(base64_bytes) = request.base64_image {
     temp_download = save_base64_image_to_temp_dir(&app_data_root, base64_bytes).await?;

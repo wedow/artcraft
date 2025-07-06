@@ -4,6 +4,7 @@ use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_media_file_to_temp_dir::download_media_file_to_temp_dir;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
@@ -16,6 +17,7 @@ use tauri::AppHandle;
 
 pub async fn handle_object_fal(
   app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   request: EnqueueImageTo3dObjectRequest,
   fal_creds_manager: &FalCredentialManager,
@@ -46,8 +48,11 @@ pub async fn handle_object_fal(
   let mut temp_download;
 
   if let Some(media_token) = request.image_media_token {
-    temp_download = download_media_file_to_temp_dir(&app_data_root, &media_token).await?;
-
+    temp_download = download_media_file_to_temp_dir(
+      app_env_configs, 
+      app_data_root, 
+      &media_token
+    ).await?;
   } else {
     return Err(InternalObjectError::AnyhowError(anyhow!("No image media token provided")));
   }

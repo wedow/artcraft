@@ -15,20 +15,23 @@ use storyteller_client::recipes::upload_media_file_from_file::upload_media_file_
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 
 pub async fn fal_task_polling_thread(
   app_handle: AppHandle,
+  app_env_configs: AppEnvConfigs,
   app_data_root: AppDataRoot,
   fal_creds_manager: FalCredentialManager,
-  storyteller_creds_manager: StorytellerCredentialManager,
   fal_task_queue: FalTaskQueue,
+  storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
   loop {
     let res = polling_loop(
       &app_handle,
+      &app_env_configs,
       &fal_creds_manager,
-      &storyteller_creds_manager,
       &fal_task_queue,
+      &storyteller_creds_manager,
       &app_data_root,
     ).await;
     if let Err(err) = res {
@@ -40,9 +43,10 @@ pub async fn fal_task_polling_thread(
 
 async fn polling_loop(
   app_handle: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   fal_creds_manager: &FalCredentialManager,
-  storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
+  storyteller_creds_manager: &StorytellerCredentialManager,
   app_data_root: &AppDataRoot,
 ) -> AnyhowResult<()> {
   loop {
@@ -119,7 +123,7 @@ async fn polling_loop(
       let download_file = download_url_to_temp_dir(&url, &app_data_root).await?;
       
       let result = upload_media_file_from_file(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&storyteller_creds),
         download_file
       ).await;

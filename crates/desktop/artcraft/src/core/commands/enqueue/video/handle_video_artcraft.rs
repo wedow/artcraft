@@ -5,6 +5,7 @@ use crate::core::events::generation_events::common::{GenerationAction, Generatio
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::model::video_models::VideoModel;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProAspectRatio, GenerateKling16ProImageToVideoRequest};
@@ -28,6 +29,7 @@ use tauri::AppHandle;
 pub async fn handle_video_artcraft(
   request: EnqueueImageToVideoRequest,
   app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<(), InternalVideoError> {
@@ -76,7 +78,7 @@ pub async fn handle_video_artcraft(
         duration: None,
       };
       let result = generate_kling_16_pro_image_to_video(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -102,7 +104,7 @@ pub async fn handle_video_artcraft(
         duration: None,
       };
       let result = generate_kling_21_master_image_to_video(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -128,7 +130,7 @@ pub async fn handle_video_artcraft(
         duration: None,
       };
       let result = generate_kling_21_pro_image_to_video(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -154,7 +156,7 @@ pub async fn handle_video_artcraft(
         duration: None,
       };
       let result = generate_seedance_1_0_lite_image_to_video(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;
@@ -180,7 +182,7 @@ pub async fn handle_video_artcraft(
         duration: None,
       };
       let result = generate_veo_2_image_to_video(
-        &ApiHost::Storyteller,
+        &app_env_configs.storyteller_host,
         Some(&creds),
         request,
       ).await;

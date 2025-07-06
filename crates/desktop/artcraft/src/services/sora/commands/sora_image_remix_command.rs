@@ -5,6 +5,7 @@ use crate::core::events::generation_events::common::{GenerationAction, Generatio
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
@@ -22,7 +23,6 @@ use serde_derive::{Deserialize, Serialize};
 use std::time::Duration;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::get_media_file::get_media_file;
-use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
 
@@ -79,6 +79,7 @@ pub enum SoraImageRemixErrorType {
 pub async fn sora_image_remix_command(
   app: AppHandle,
   request: SoraImageRemixCommand,
+  app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
@@ -117,7 +118,13 @@ pub async fn sora_image_remix_command(
     });
   }
 
-  let result = generate_image(request, &app_data_root, &sora_creds_manager, &sora_task_queue).await;
+  let result = generate_image(
+    request, 
+    &app_env_configs,
+    &app_data_root,
+    &sora_creds_manager, 
+    &sora_task_queue
+  ).await;
   
   match result {
     Err(err) => {
@@ -207,12 +214,16 @@ impl From<StorytellerError> for InnerError {
 
 pub async fn generate_image(
   request: SoraImageRemixCommand,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<(), InnerError> {
 
-  let response = get_media_file(&ApiHost::Storyteller, &request.snapshot_media_token).await?;
+  let response = get_media_file(
+    &app_env_configs.storyteller_host,
+    &request.snapshot_media_token
+  ).await?;
 
   let media_file_url = &response.media_file.media_links.cdn_url;
   let extension_with_dot = get_url_file_extension(media_file_url)

@@ -5,6 +5,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::model::video_models::VideoModel;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
@@ -54,6 +55,7 @@ pub enum EnqueueImageToVideoErrorType {
 pub async fn enqueue_image_to_video_command(
   app: AppHandle,
   request: EnqueueImageToVideoRequest,
+  app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   fal_creds_manager: State<'_, FalCredentialManager>,
@@ -65,8 +67,9 @@ pub async fn enqueue_image_to_video_command(
   info!("enqueue_image_to_video_command called");
 
   let result = handle_request(
-    &app,
     request,
+    &app,
+    &app_env_configs,
     &app_data_root,
     &provider_priority_store,
     &fal_creds_manager,
@@ -121,8 +124,9 @@ pub async fn enqueue_image_to_video_command(
 
 
 pub async fn handle_request(
-  app: &AppHandle,
   request: EnqueueImageToVideoRequest,
+  app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,
   fal_creds_manager: &FalCredentialManager,
@@ -137,12 +141,23 @@ pub async fn handle_request(
       Provider::Sora => {} // Fallthrough
       Provider::Artcraft => {
         return Ok(handle_video_artcraft(
-          request, &app, app_data_root, storyteller_creds_manager).await?);
+          request, 
+          &app, 
+          app_env_configs,
+          app_data_root, 
+          storyteller_creds_manager
+        ).await?);
       }
       Provider::Fal => {
         if fal_creds_manager.has_apparent_api_token()? {
           return Ok(handle_video_fal(
-            &app, app_data_root, request, fal_creds_manager, fal_task_queue).await?);
+            &app, 
+            app_env_configs,
+            app_data_root, 
+            request, 
+            fal_creds_manager, 
+            fal_task_queue
+          ).await?);
         }
       }
     }
