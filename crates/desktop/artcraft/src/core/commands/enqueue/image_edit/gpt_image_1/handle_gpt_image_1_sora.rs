@@ -36,12 +36,7 @@ use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_o
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::sora_error::SoraError;
 use std::time::Duration;
-use storyteller_client::generate::image::generate_flux_1_dev_text_to_image::generate_flux_1_dev_text_to_image;
-use storyteller_client::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
-use storyteller_client::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
-use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
 use storyteller_client::media_files::get_media_file::get_media_file;
-use storyteller_client::utils::api_host::ApiHost;
 use tauri::AppHandle;
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
@@ -82,7 +77,10 @@ pub async fn handle_gpt_image_1_sora(
         requested: request.image_media_tokens.len() as u32,
       })?;
 
-  let response = get_media_file(&ApiHost::Storyteller, first_image_token).await?;
+  let response = get_media_file(
+    &app_env_configs.storyteller_host,
+    first_image_token
+  ).await?;
 
   let media_file_url = &response.media_file.media_links.cdn_url;
   let extension_with_dot = get_url_file_extension(media_file_url)
