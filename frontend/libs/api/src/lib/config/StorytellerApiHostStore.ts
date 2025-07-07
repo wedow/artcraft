@@ -1,5 +1,4 @@
-
-//const DEFAULT_API_HOST = "http://localhost:12345";
+// Artcraft / Storyteller API backend
 const DEFAULT_API_HOST = "https://api.storyteller.ai";
 
 export class StorytellerApiHostStore {
@@ -21,12 +20,15 @@ export class StorytellerApiHostStore {
     return instance;
   }
 
-  /** Get the API host. */
+  /** Get the API scheme and host. */
   public getApiSchemeAndHost(): string {
     return this.apiSchemeAndHost;
   }
 
-  /** Externally update the API host. */
+  /** 
+   * Externally update the API host. 
+   * This is used to sync with Tauri for enabling easier development.
+   */
   public setApiSchemeAndHost(apiSchemeAndHost: string) {
     // TODO(bt,2025-07-06): Actually parse URL.
     if (!apiSchemeAndHost.startsWith("http://") && !apiSchemeAndHost.startsWith("https://")) {
