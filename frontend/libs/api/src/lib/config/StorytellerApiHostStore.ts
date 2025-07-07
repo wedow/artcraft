@@ -32,7 +32,8 @@ export class StorytellerApiHostStore {
     if (!apiSchemeAndHost.startsWith("http://") && !apiSchemeAndHost.startsWith("https://")) {
       throw new Error(`Scheme not included in URL: ${apiSchemeAndHost}`);
     }
-    if (apiSchemeAndHost.includes("/")) {
+    const FINAL_VALID_SLASH = "https://".lastIndexOf("/");
+    if (apiSchemeAndHost.lastIndexOf("/") > FINAL_VALID_SLASH) {
       throw new Error(`Path components should not be included in URL: ${apiSchemeAndHost}`);
     }
     this.apiSchemeAndHost = apiSchemeAndHost;
