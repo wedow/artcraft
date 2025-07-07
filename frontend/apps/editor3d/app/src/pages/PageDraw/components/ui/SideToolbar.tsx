@@ -3,18 +3,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMousePointer,
   faShapes,
-  faEraser,
   faTrash,
   faEyeDropper,
   faImage,
   faSquare,
   faCircle,
   faPlay,
-  faSparkles,
-  faFileImport,
-  faFileExport,
   faUndo,
   faRedo,
+  faPaintBrush,
 } from "@fortawesome/pro-solid-svg-icons";
 import "../../App.css";
 import { HsvaColorPicker, HsvaColor } from "react-colorful";
@@ -43,9 +40,7 @@ export interface SideToolbarProps {
   onSelect: () => void;
   onAddShape: (shape: "rectangle" | "circle" | "triangle") => void;
   onPaintBrush: (hex: string, size: number, opacity: number) => void;
-  onEraser: (size: number) => void;
   onCanvasBackground: (hex: string) => void;
-  onGenerateImage: () => void;
   onUploadImage: () => void;
   onDelete: () => void;
   activeToolId: string;
@@ -56,9 +51,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   onSelect,
   onAddShape,
   onPaintBrush,
-  onEraser,
   onCanvasBackground,
-  onGenerateImage,
   onUploadImage,
   onDelete,
   activeToolId,
@@ -86,7 +79,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   const sendPaint = useDebounced<
     (hex: string, size: number, opacity: number) => void,
     [string, number, number]
-  >(onPaintBrush, 75, 1);
+  >(onPaintBrush, 75);
 
   const sendBg = useDebounced<(hex: string) => void, [string]>(
     onCanvasBackground,
@@ -202,16 +195,12 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     },
     { id: "separator-2", type: "separator" },
     {
-      id: "paint",
+      id: "draw",
       label: "Brush",
-      icon: (
-        <span
-          className="inline-block h-5 w-5 rounded-full border-2 border-white"
-          style={{ backgroundColor: hsvaToHex(brushHsva) }}
-        />
-      ),
+      icon: null,
       onClick: () => {
         sendPaint(hsvaToHex(brushHsva), brushSize, brushHsva.a);
+        store.setActiveTool("draw");
       },
       popout: BrushPopout,
     },
@@ -323,6 +312,19 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
           ? "bg-primary/30 border-2 !border-primary text-white"
           : "hover:bg-white/10 text-white";
 
+        // Dynamic icon for brush/draw tool
+        let displayIcon = icon;
+        if (id === "draw") {
+          displayIcon = active ? (
+            <span
+              className="inline-block h-5 w-5 rounded-full border-2 border-white"
+              style={{ backgroundColor: hsvaToHex(brushHsva) }}
+            />
+          ) : (
+            <FontAwesomeIcon icon={faPaintBrush} className="h-5 w-5" />
+          );
+        }
+
         return (
           <div key={id} className="relative">
             <Tooltip
@@ -340,7 +342,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
                   }}
                   className={`${baseBtn} ${btnStyle}`}
                 >
-                  {icon}
+                  {displayIcon}
                 </button>
               ) : (
                 <button
@@ -349,7 +351,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
                   }}
                   className={`${baseBtn} ${btnStyle}`}
                 >
-                  {icon}
+                  {displayIcon}
                 </button>
               )}
             </Tooltip>
