@@ -38,7 +38,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_visibility?: Visibility;
   }): Promise<ApiResponse<string>> {
     // This function is a bit special it requires that
-    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/studio_shot`;
+    const endpoint = `${this.ApiTargets.uploadApi}/v1/media_files/upload/studio_shot`;
 
     if (!this.sessionToken) {
       console.log("Session Token");
