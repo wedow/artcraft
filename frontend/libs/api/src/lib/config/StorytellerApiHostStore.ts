@@ -1,6 +1,6 @@
 
-//const DEFAULT_API_HOST = "https://api.storyteller.ai";
-const DEFAULT_API_HOST = "http://localhost:12345";
+//const DEFAULT_API_HOST = "http://localhost:12345";
+const DEFAULT_API_HOST = "https://api.storyteller.ai";
 
 export class StorytellerApiHostStore {
   private static instance: StorytellerApiHostStore;

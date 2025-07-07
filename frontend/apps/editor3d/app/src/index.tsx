@@ -10,7 +10,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import EnvironmentVariables from "~/Classes/EnvironmentVariables";
 import { pageHeight, pageWidth, persistLogin } from "~/signals";
-
+import { SyncStorytellerApiConfig } from "./api/SyncStorytellerApiConfig";
 import { posthog } from "posthog-js";
 
 config.autoAddCss = false; /* eslint-disable import/first */
@@ -25,7 +25,12 @@ const ENV = {
 };
 
 const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
+  console.log("GlobalSettingsManager()");
+
+  SyncStorytellerApiConfig();
+
   useSignals();
+
   useSignalEffect(() => {
     persistLogin();
   });

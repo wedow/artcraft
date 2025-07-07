@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 import { signalScene, startPollingActiveJobs } from "~/signals";
 import { updateExistingScene, uploadNewScene } from "./api_fetchers";
-import { uploadThumbnail } from "~/api";
 import environmentVariables from "~/Classes/EnvironmentVariables";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
 import { StorytellerApiHostStore } from "@storyteller/api";
@@ -164,7 +163,9 @@ export class APIManager {
 
       if (image_resp["media_file_token"]) {
         const image_token = image_resp["media_file_token"];
-        await fetch(uploadThumbnail + uploadSceneResponse["media_file_token"], {
+        const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/cover_image/${uploadSceneResponse["media_file_token"]}`;
+
+        await fetch(endpoint, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -183,8 +184,7 @@ export class APIManager {
   public async loadSceneState(
     scene_media_file_token: string | null,
   ): Promise<any> {
-    const api_base_url = environmentVariables.values.BASE_API;
-    const url = `${api_base_url}/v1/media_files/file/${scene_media_file_token}`;
+    const url = `${this.getApiSchemeAndHost()}/v1/media_files/file/${scene_media_file_token}`;
     const response = await fetch(url);
     if (response.status > 200) {
       throw new APIManagerResponseError("Failed to load scene");
