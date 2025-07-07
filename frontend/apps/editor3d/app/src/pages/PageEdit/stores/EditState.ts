@@ -1,58 +1,9 @@
 import { create } from 'zustand';
-import { Node } from '../Node';
+import { LineNode, ActiveTool, AspectRatioType, convertFileToBase64, generateId } from '~/pages/PageDraw/stores/SceneState';
+import { SceneState } from '~/pages/PageEnigma/Editor/Commands';
+import { Node } from "~/pages/PageDraw/Node";
 
-// Add LineNode type
-export type LineNode = {
-  id: string;
-  type: 'line';
-  points: number[];
-  stroke: string;
-  strokeWidth: number;
-  draggable: boolean;
-  opacity?: number;  // Add opacity property
-  x?: number;
-  y?: number;
-  rotation?: number;
-  scaleX?: number;
-  scaleY?: number;
-  offsetX?: number;
-  offsetY?: number;
-  zIndex: number;
-  locked?: boolean; // Add locked property
-};
-
-// Add this enum at the top of the file with other types
-export enum AspectRatioType {
-  PORTRAIT = '2:3',    // 683 x 1024
-  LANDSCAPE = '3:2',   // 1024 x 683
-  SQUARE = '1:1',      // 1024 x 1024
-  NONE = 'none'        // No aspect ratio constraint
-}
-
-// Logic to remove background from image nodes would go here
-export const convertFileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      if (reader.result) {
-        resolve(reader.result as string);
-      } else {
-        reject(new Error("Failed to convert file to base64."));
-      }
-    };
-
-    reader.onerror = () => {
-      reject(new Error("Error reading file."));
-    };
-
-    reader.readAsDataURL(file);
-  });
-};
-
-export type ActiveTool = 'select' | 'draw' | 'eraser' | 'backgroundColor' | 'shape';
-
-interface SceneState {
+interface EditState {
   // Nodes
   nodes: Node[];
   selectedNodeIds: string[];
@@ -153,10 +104,6 @@ interface SceneState {
   getAspectRatioDimensions: () => { width: number; height: number };
 }
 
-export const generateId = (): string => {
-  return Math.random().toString(36).substring(2, 9);
-};
-
 // Add a flag to prevent saving state during restoration
 let isRestoring = false;
 
@@ -176,7 +123,7 @@ const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
   return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 0;
 };
 
-export const useSceneStore = create<SceneState>((set, get) => ({
+export const useEditStore = create<EditState>((set, get) => ({
   // Initial state
   nodes: [],
   lineNodes: [],
