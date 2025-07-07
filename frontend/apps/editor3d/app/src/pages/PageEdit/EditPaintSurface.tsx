@@ -4,7 +4,6 @@ import {
   Layer,
   Rect,
   Circle,
-  Text,
   Line,
   Image,
   RegularPolygon,
@@ -12,32 +11,18 @@ import {
 } from "react-konva";
 import Konva from "konva"; // Import Konva namespace for types
 
-import { LineNode } from "./stores/SceneState";
-import { Node, NodeType } from "./Node";
-import { useStageSnapshot } from "./hooks/useUpdateSnapshot";
 // https://github.com/SaladTechnologies/comfyui-api
-import "./App.css";
-import SplitPane from "./components/ui/SplitPane";
 
-import { useSceneStore } from "./stores/SceneState";
-import { useRightPanelLayoutManagement } from "./hooks/useRightPanelLayoutManagement";
-import { useStageCentering } from "./hooks/useCenteredStage";
-import { useGlobalMouseUp } from "./hooks/useGlobalMouseUp";
+import { useEditStore } from "./stores/EditState";
+import { MiraiProps } from "../PageDraw/PaintSurface";
+import SplitPane from "../PageDraw/components/ui/SplitPane";
+import { useStageCentering } from "../PageDraw/hooks/useCenteredStage";
+import { useGlobalMouseUp } from "../PageDraw/hooks/useGlobalMouseUp";
+import { useRightPanelLayoutManagement } from "../PageDraw/hooks/useRightPanelLayoutManagement";
+import { LineNode } from "../PageDraw/stores/SceneState";
+import { Node } from "../PageDraw/Node";
 
-export type MiraiProps = {
-  nodes: Node[];
-  selectedNodeIds: string[];
-  onCanvasSizeChange?: (width: number, height: number) => void;
-  fillColor?: string;
-  activeTool?: "select" | "draw" | "eraser" | "backgroundColor" | "shape";
-  brushColor?: string;
-  brushSize?: number;
-  onSelectionChange?: (isSelecting: boolean) => void;
-  stageRef: React.RefObject<Konva.Stage>;
-  transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>;
-};
-
-export const PaintSurface = ({
+export const EditPaintSurface = ({
   nodes,
   selectedNodeIds,
   onCanvasSizeChange,
@@ -51,8 +36,8 @@ export const PaintSurface = ({
 }: MiraiProps) => {
   // switch off to be preview panel mode.
   const singlePaneMode = true
-  
-  const store = useSceneStore(); // Use store directly
+
+  const store = useEditStore(); // Use store directly
   const imageRef = React.useRef<HTMLImageElement>(null);
   const [snapshotImage, setSnapshotImage] = useState<HTMLImageElement | null>(
     null,
@@ -69,7 +54,7 @@ export const PaintSurface = ({
   const [rightPanelHeight, setRightPanelHeight] = useState(1024);
 
   /* 1️⃣ Track SplitPane percent so we can re-measure */
-  const [leftPct, setLeftPct] = useState(singlePaneMode ? 100:50);
+  const [leftPct, setLeftPct] = useState(singlePaneMode ? 100 : 50);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(
     null,
@@ -109,7 +94,7 @@ export const PaintSurface = ({
   //   isSelectingRef,
   //   transformerRefs
   // );
-  
+
   const previewScale = useRightPanelLayoutManagement(
     rightContainerRef,
     NATURAL_WIDTH,
@@ -188,7 +173,7 @@ export const PaintSurface = ({
       isWithinLeftPanel(stagePoint)
     ) {
       const lineId = `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      let opacity = activeTool === "draw" ? store.brushOpacity : 1;
+      const opacity = activeTool === "draw" ? store.brushOpacity : 1;
 
       const newLineNode: LineNode = {
         id: lineId,
@@ -325,11 +310,11 @@ export const PaintSurface = ({
       setSelectionRect((prev) =>
         prev
           ? {
-              // Ensure prev is not null
-              ...prev,
-              endX: clampedPoint.x,
-              endY: clampedPoint.y,
-            }
+            // Ensure prev is not null
+            ...prev,
+            endX: clampedPoint.x,
+            endY: clampedPoint.y,
+          }
           : null,
       );
     }
@@ -552,14 +537,14 @@ export const PaintSurface = ({
         const node = store.nodes.find(n => n.id === nodeId);
         const lineNode = store.lineNodes.find(n => n.id === nodeId);
         const isLocked = (node?.locked || lineNode?.locked) ?? false;
-        
+
         // If locked, only allow selection for context menu
         if (isLocked) {
           store.selectNode(nodeId);
           return;
         }
       }
-      
+
       // Don't select locked nodes
       const node = nodes.find(n => n.id === nodeId) || store.lineNodes.find(n => n.id === nodeId);
       if (node?.locked) {
@@ -984,7 +969,7 @@ export const PaintSurface = ({
   return (
     <SplitPane
       singlePaneMode={singlePaneMode}
-      initialPercent={singlePaneMode?100 : 50}
+      initialPercent={singlePaneMode ? 100 : 50}
       onChange={setLeftPct}
       left={
         <div className="flex h-full w-full items-center justify-center overflow-hidden">
@@ -1029,9 +1014,9 @@ export const PaintSurface = ({
               {[...nodes, ...store.lineNodes]
                 .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
                 .map((node, index) => {
-                // console.log(`Node ${index}:`, node);
-                return renderNode(node);
-              })}
+                  // console.log(`Node ${index}:`, node);
+                  return renderNode(node);
+                })}
 
               {/* Render selection rectangle */}
               {selectionRect && (
@@ -1067,11 +1052,11 @@ export const PaintSurface = ({
             scaleY={previewScale}
             x={0}
             y={0}
-            // style={{
-            //   background: '#f5f5f5',
-            //   border: '1px solid #ddd',
-            //   borderRadius: '8px',
-            // }}
+          // style={{
+          //   background: '#f5f5f5',
+          //   border: '1px solid #ddd',
+          //   borderRadius: '8px',
+          // }}
           >
             <Layer>
               <Image

@@ -16,10 +16,10 @@ import { useCopyPasteHotkeys } from "../PageDraw/hooks/useCopyPasteHotkeys";
 import { useDeleteHotkeys } from "../PageDraw/hooks/useDeleteHotkeys";
 import { useUndoRedoHotkeys } from "../PageDraw/hooks/useUndoRedoHotkeys";
 import { captureStageImageBitmap } from "../PageDraw/hooks/useUpdateSnapshot";
-import { PaintSurface } from "../PageDraw/PaintSurface";
 import PromptEditor from "../PageDraw/PromptEditor/PromptEditor";
 import { AspectRatioType } from "../PageDraw/stores/SceneState";
 import { useEditStore } from "./stores/EditState";
+import { EditPaintSurface } from "./EditPaintSurface";
 
 const PageEdit = () => {
   //useStateSceneLoader();
@@ -386,7 +386,7 @@ const PageEdit = () => {
             return (node?.locked || lineNode?.locked) ?? false;
           })}
         >
-          <PaintSurface
+          <EditPaintSurface
             nodes={store.nodes}
             selectedNodeIds={store.selectedNodeIds}
             onCanvasSizeChange={(width: number, height: number): void => {
