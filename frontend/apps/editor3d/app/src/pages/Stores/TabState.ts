@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { useSceneStore } from '../PageDraw/stores/SceneState';
 
-export type TabId = '2D' | '3D' | 'VIDEO' | 'IMAGE';
+export type TabId = '2D' | '3D' | 'VIDEO' | 'IMAGE' | 'EDIT';
 
 interface TabState {
   // Current active tab
@@ -23,7 +23,7 @@ export const useTabStore = create<TabState>((set, get) => ({
 
   setActiveTab: async (newTabId) => {
     const currentTabId = get().activeTabId;
-    
+
     // Don't do anything if we're already on this tab
     if (currentTabId === newTabId) return true;
 

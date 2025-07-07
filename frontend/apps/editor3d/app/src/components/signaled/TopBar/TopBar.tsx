@@ -6,6 +6,7 @@ import {
   faFilm,
   faPaintbrush,
   faImage,
+  faPenNib,
   // faGem,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "@storyteller/ui-button";
@@ -71,6 +72,11 @@ const appMenuTabs: MenuIconItem[] = [
     label: "Image to Video",
     icon: <FontAwesomeIcon icon={faFilm} />,
   },
+  {
+    id: "EDIT",
+    label: "Edit Image",
+    icon: <FontAwesomeIcon icon={faPenNib} />,
+  }
 ];
 
 export const topNavMediaId = signal<string>("");
