@@ -15,45 +15,43 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
 import Konva from "konva"; // just for types
 
-import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
-import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot"
+import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
+import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
-import {
-  FalBackgroundRemoval,
-  FalBackgroundRemovalRequest,
-} from "@storyteller/tauri-api";
+import { FalBackgroundRemoval } from "@storyteller/tauri-api";
 
-
-  /**
+/**
  * This decodes Base64 encoded PNG images into an image element.
  * @param base64String a standard (not "web safe") base64-encoded string
  */
-  export const DecodeBase64ToImage = async (base64String: string) : Promise<ImageBitmap> => {
-    // Create an image element
-    const img = document.createElement("img");
-  
-    // Convert base64 to data URL if it doesn't include the prefix
-    const dataUrl = base64String.startsWith("data:")
-      ? base64String
-      : `data:image/png;base64,${base64String}`;
-  
-    // Create a promise to handle the image loading
-    return new Promise((resolve, reject) => {
-      img.onload = async () => {
-        try {
-          const bitmap = await createImageBitmap(img);
-          resolve(bitmap);
-        } catch (error) {
-          reject(error);
-        }
-      };
-  
-      img.onerror = () => reject(new Error("Failed to load image"));
-  
-      // Set the source to trigger loading
-      img.src = dataUrl;
-    });
-  }
+export const DecodeBase64ToImage = async (
+  base64String: string,
+): Promise<ImageBitmap> => {
+  // Create an image element
+  const img = document.createElement("img");
+
+  // Convert base64 to data URL if it doesn't include the prefix
+  const dataUrl = base64String.startsWith("data:")
+    ? base64String
+    : `data:image/png;base64,${base64String}`;
+
+  // Create a promise to handle the image loading
+  return new Promise((resolve, reject) => {
+    img.onload = async () => {
+      try {
+        const bitmap = await createImageBitmap(img);
+        resolve(bitmap);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    img.onerror = () => reject(new Error("Failed to load image"));
+
+    // Set the source to trigger loading
+    img.src = dataUrl;
+  });
+};
 
 const PageDraw = () => {
   //useStateSceneLoader();
@@ -196,9 +194,10 @@ const PageDraw = () => {
     }
   };
 
-  const onFitPressed = async () => { 
+  const onFitPressed = async () => {
     // Get the stage and its container dimensions
     const stage = stageRef.current;
+    if (!stage) return;
 
     // Get container dimensions
     const containerWidth = stage.container().offsetWidth;
@@ -208,13 +207,31 @@ const PageDraw = () => {
     const canvasW = store.getAspectRatioDimensions().width;
     const canvasH = store.getAspectRatioDimensions().height;
 
-    // Calculate position to center canvas in container
+    // Add padding to ensure canvas doesn't touch the edges
+    const padding = 40;
+    const availableWidth = containerWidth - padding * 2;
+    const availableHeight = containerHeight - padding * 2;
+
+    // Calculate scale to fit canvas within container while maintaining aspect ratio
+    const scaleX = availableWidth / canvasW;
+    const scaleY = availableHeight / canvasH;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+
+    // Set the scale
+    stage.scale({ x: scale, y: scale });
+
+    // Calculate position to center the scaled canvas in container
+    const scaledCanvasW = canvasW * scale;
+    const scaledCanvasH = canvasH * scale;
+
     stage.position({
-      x: (containerWidth - canvasW) / 2,
-      y: (containerHeight - canvasH) / 2
+      x: (containerWidth - scaledCanvasW) / 2,
+      y: (containerHeight - scaledCanvasH) / 2,
     });
 
-   }
+    // Redraw the stage
+    stage.batchDraw();
+  };
 
   return (
     <>
@@ -237,7 +254,7 @@ const PageDraw = () => {
             console.log("Vary clicked");
             // Handle vary action here
           }}
-          onAspectRatioChange={(ratio: string) => {
+          onAspectRatioChange={async (ratio: string) => {
             console.log("Aspect ratio:", ratio);
             // Convert ratio string to AspectRatioType enum
             const ratioToType = (ratio: string): AspectRatioType => {
@@ -255,9 +272,13 @@ const PageDraw = () => {
 
             const aspectRatioType = ratioToType(ratio);
             store.setAspectRatioType(aspectRatioType);
-            onFitPressed()
+
+            // Wait for the next frame to ensure the store has updated
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            onFitPressed();
           }}
           onEnqueuePressed={onEnqueuedPressed}
+          onFitPressed={onFitPressed}
         />
       </div>
       <SideToolbar
@@ -345,98 +366,114 @@ const PageDraw = () => {
         activeToolId={store.activeTool}
       />
       <div className="relative z-0">
-      <ContextMenuContainer 
-        onAction={(e, action) => {
-          if (action === "contextMenu") {
-            const hasSelection = store.selectedNodeIds.length > 0;
-            if (hasSelection) {
-              console.log("An item is selected.");
-              // You can add additional actions here based on the selection
-              return true 
-            } else {
-              console.log("No item is selected.");
-              return false
+        <ContextMenuContainer
+          onAction={(e, action) => {
+            if (action === "contextMenu") {
+              const hasSelection = store.selectedNodeIds.length > 0;
+              if (hasSelection) {
+                console.log("An item is selected.");
+                // You can add additional actions here based on the selection
+                return true;
+              } else {
+                console.log("No item is selected.");
+                return false;
+              }
             }
-          }
-          return false
-        }} 
-        onMenuAction={async (action) => {
-          switch (action) {
-            case 'LOCK':
-              store.toggleLock(store.selectedNodeIds);
-              break;
-            case 'REMOVE_BACKGROUND':
-              // returns a success if we have selected images only
-              await store.removeBackground(store.selectedNodeIds, 
-                async (success: boolean, image_base64: string, message: string) => {
-                if (!success) {
-                  console.error(message);
-                  return { success: false };
-                }
-                try {
-                  const response = await FalBackgroundRemoval({ base64_image: image_base64 });
-                  if (response.status !== "success" || !("payload" in response)) {
-                    console.error("Failed to remove background", response);
-                    return { success: false };
-                  }
-
-                  const base64String = response.payload?.base64_bytes as string;
-                  const binaryString = atob(base64String);
-                  const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
-                  const blob = new Blob([bytes], { type: "image/png" });
-                  const file = new File([blob], "generated_image.png", { type: blob.type });
-                  return { success: true, file };
-                } catch (error) {
-                  console.error("Failed to remove background", error);
-                  return { success: false };
-                }
-              });
-              break;
-            case 'BRING_TO_FRONT':
-              store.bringToFront(store.selectedNodeIds);
-              break;
-            case 'BRING_FORWARD':
-              store.bringForward(store.selectedNodeIds);
-              break;
-            case 'SEND_BACKWARD':
-              store.sendBackward(store.selectedNodeIds);
-              break;
-            case 'SEND_TO_BACK':
-              store.sendToBack(store.selectedNodeIds);
-              break;
-            case 'DUPLICATE':
-              store.copySelectedItems()
-              store.pasteItems()
-              break;
-            case 'DELETE':
-              store.deleteSelectedItems()
-              break;
-            default:
-              // No action needed for unhandled cases
-          }
-        }}
-        isLocked={store.selectedNodeIds.some(id => {
-          const node = store.nodes.find(n => n.id === id);
-          const lineNode = store.lineNodes.find(n => n.id === id);
-          return (node?.locked || lineNode?.locked) ?? false;
-        })}
-      >
-        <PaintSurface
-          nodes={store.nodes}
-          selectedNodeIds={store.selectedNodeIds}
-          onCanvasSizeChange={(width: number, height: number): void => {
-            canvasWidth.current = width;
-            canvasHeight.current = height;
+            return false;
           }}
-          fillColor={store.fillColor}
-          activeTool={store.activeTool}
-          brushColor={store.brushColor}
-          brushSize={store.brushSize}
-          onSelectionChange={setIsSelecting}
-          stageRef={stageRef}
-          transformerRefs={transformerRefs}
-        />
-          </ContextMenuContainer>
+          onMenuAction={async (action) => {
+            switch (action) {
+              case "LOCK":
+                store.toggleLock(store.selectedNodeIds);
+                break;
+              case "REMOVE_BACKGROUND":
+                // returns a success if we have selected images only
+                await store.removeBackground(
+                  store.selectedNodeIds,
+                  async (
+                    success: boolean,
+                    image_base64: string,
+                    message: string,
+                  ) => {
+                    if (!success) {
+                      console.error(message);
+                      return { success: false };
+                    }
+                    try {
+                      const response = await FalBackgroundRemoval({
+                        base64_image: image_base64,
+                      });
+                      if (
+                        response.status !== "success" ||
+                        !("payload" in response)
+                      ) {
+                        console.error("Failed to remove background", response);
+                        return { success: false };
+                      }
+
+                      const base64String = response.payload
+                        ?.base64_bytes as string;
+                      const binaryString = atob(base64String);
+                      const bytes = Uint8Array.from(binaryString, (c) =>
+                        c.charCodeAt(0),
+                      );
+                      const blob = new Blob([bytes], { type: "image/png" });
+                      const file = new File([blob], "generated_image.png", {
+                        type: blob.type,
+                      });
+                      return { success: true, file };
+                    } catch (error) {
+                      console.error("Failed to remove background", error);
+                      return { success: false };
+                    }
+                  },
+                );
+                break;
+              case "BRING_TO_FRONT":
+                store.bringToFront(store.selectedNodeIds);
+                break;
+              case "BRING_FORWARD":
+                store.bringForward(store.selectedNodeIds);
+                break;
+              case "SEND_BACKWARD":
+                store.sendBackward(store.selectedNodeIds);
+                break;
+              case "SEND_TO_BACK":
+                store.sendToBack(store.selectedNodeIds);
+                break;
+              case "DUPLICATE":
+                store.copySelectedItems();
+                store.pasteItems();
+                break;
+              case "DELETE":
+                store.deleteSelectedItems();
+                break;
+              default:
+              // No action needed for unhandled cases
+            }
+          }}
+          isLocked={store.selectedNodeIds.some((id) => {
+            const node = store.nodes.find((n) => n.id === id);
+            const lineNode = store.lineNodes.find((n) => n.id === id);
+            return (node?.locked || lineNode?.locked) ?? false;
+          })}
+        >
+          <PaintSurface
+            nodes={store.nodes}
+            selectedNodeIds={store.selectedNodeIds}
+            onCanvasSizeChange={(width: number, height: number): void => {
+              canvasWidth.current = width;
+              canvasHeight.current = height;
+            }}
+            fillColor={store.fillColor}
+            activeTool={store.activeTool}
+            brushColor={store.brushColor}
+            brushSize={store.brushSize}
+            onSelectionChange={setIsSelecting}
+            stageRef={stageRef}
+            transformerRefs={transformerRefs}
+          />
+        </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <PopoverMenu
@@ -449,12 +486,6 @@ const PageDraw = () => {
           showIconsInList
           triggerLabel="Model"
         />
-       <button
-         className="bg-transparent p-2 text-lg text-white hover:text-white hover:bg-white/20 rounded transition"
-         onClick={onFitPressed}
-       >
-        Fit
-       </button>
       </div>
     </>
   );

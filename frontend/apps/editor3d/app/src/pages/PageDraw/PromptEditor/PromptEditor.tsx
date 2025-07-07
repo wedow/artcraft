@@ -8,11 +8,12 @@ import { EncodeImageBitmapToBase64 } from "../utilities/EncodeImageBitmapToBase6
 import { JobProvider, useJobContext } from "../JobContext";
 
 // Set this value on when enqueue is pressed nasty global variable.
-import { getCanvasRenderBitmap } from "../../../signals/canvasRenderBitmap"
+import { getCanvasRenderBitmap } from "../../../signals/canvasRenderBitmap";
 const PromptEditor: React.FC<PromptEditorProps> = ({
   onImageStyleChange,
   onEnqueuePressed,
   onAspectRatioChange,
+  onFitPressed,
 }) => {
   const [images, setImages] = useState<ImageStyle[]>([]);
 
@@ -31,8 +32,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col space-y-2">
-      <div className="flex w-full justify-center">
-      </div>
+      <div className="flex w-full justify-center"></div>
 
       <JobProvider>
         <PromptBox2D
@@ -42,6 +42,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
           useJobContext={useJobContext}
           onEnqueuePressed={onEnqueuePressed}
           onAspectRatioChange={onAspectRatioChange}
+          onFitPressed={onFitPressed}
         />
       </JobProvider>
 

@@ -7,9 +7,10 @@ export interface PromptEditorProps {
   onAspectRatioChange?: (ratio: AspectRatio) => void;
   onImageStyleChange?: (images: ImageStyle[]) => void;
   onEnqueuePressed?: () => void;
+  onFitPressed?: () => void;
 }
 
-export type AspectRatio = '1:1' | '3:2' | '2:3';
+export type AspectRatio = "1:1" | "3:2" | "2:3";
 
 export interface ImageStyle {
   id: string;

@@ -26,7 +26,7 @@ export default function SplitPane({
   maxPercent = 85,
   onChange,
   className = "",
-  singlePaneMode = true
+  singlePaneMode = true,
 }: SplitPaneProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [leftPct, setLeftPct] = useState(initialPercent);
@@ -65,7 +65,7 @@ export default function SplitPane({
   return singlePaneMode ? (
     <div
       ref={rootRef}
-      className={`pegboard-bg relative flex h-screen w-full overflow-hidden items-center justify-center ${className}`}
+      className={`pegboard-bg relative flex h-[calc(100vh-56px)] w-full items-center justify-center overflow-hidden ${className}`}
     >
       <div style={leftStyle} className="h-full min-w-0 overflow-hidden">
         {left}
@@ -74,7 +74,7 @@ export default function SplitPane({
   ) : (
     <div
       ref={rootRef}
-      className={`pegboard-bg relative flex h-screen w-full overflow-hidden ${className}`}
+      className={`pegboard-bg relative flex h-[calc(100vh-56px)] w-full overflow-hidden ${className}`}
     >
       <div style={leftStyle} className="h-full min-w-0 overflow-hidden">
         {left}

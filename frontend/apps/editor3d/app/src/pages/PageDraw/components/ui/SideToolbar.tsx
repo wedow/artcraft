@@ -14,7 +14,7 @@ import {
   faFileImport,
   faFileExport,
   faUndo,
-  faRedo
+  faRedo,
 } from "@fortawesome/pro-solid-svg-icons";
 import "../../App.css";
 import { HsvaColorPicker, HsvaColor } from "react-colorful";
@@ -42,7 +42,7 @@ function useDebounced<T extends (...args: A) => void, A extends unknown[]>(
 export interface SideToolbarProps {
   onSelect: () => void;
   onAddShape: (shape: "rectangle" | "circle" | "triangle") => void;
-  onPaintBrush: (hex: string, size: number,opacity: number) => void;
+  onPaintBrush: (hex: string, size: number, opacity: number) => void;
   onEraser: (size: number) => void;
   onCanvasBackground: (hex: string) => void;
   onGenerateImage: () => void;
@@ -88,7 +88,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     [string, number, number]
   >(onPaintBrush, 75, 1);
 
-
   const sendBg = useDebounced<(hex: string) => void, [string]>(
     onCanvasBackground,
     75,
@@ -123,7 +122,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     brushHsva,
     setBrushHsva,
     (hex) => sendPaint(hex, brushSize, brushHsva.a),
-    
+
     <>
       <div className="relative">
         <p className="mb-2 text-sm font-medium text-white">Brush Size</p>
@@ -216,26 +215,27 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       },
       popout: BrushPopout,
     },
-    {
-      id: "eraser",
-      label: "Eraser",
-      icon: <FontAwesomeIcon icon={faEraser} className="h-5 w-5" />,
-      onClick: () => {
-        onEraser(brushSize);
-      },
-      popout: (
-        <div className="p-4">
-          <SliderWithIndicator
-            value={brushSize}
-            onChange={(size) => {
-              setBrushSize(size);
-              onEraser(size);
-            }}
-            label="Eraser Size"
-          />
-        </div>
-      ),
-    },
+    // Commented out for now
+    // {
+    //   id: "eraser",
+    //   label: "Eraser",
+    //   icon: <FontAwesomeIcon icon={faEraser} className="h-5 w-5" />,
+    //   onClick: () => {
+    //     onEraser(brushSize);
+    //   },
+    //   popout: (
+    //     <div className="p-4">
+    //       <SliderWithIndicator
+    //         value={brushSize}
+    //         onChange={(size) => {
+    //           setBrushSize(size);
+    //           onEraser(size);
+    //         }}
+    //         label="Eraser Size"
+    //       />
+    //     </div>
+    //   ),
+    // },
     {
       id: "delete",
       label: "Delete",
