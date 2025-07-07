@@ -6,6 +6,11 @@ export interface EnqueueContextualEditImageRequest {
   /// The model to use.
   model?: EnqueueContextualEditImageModel;
 
+  /// If set, this is the first image in the contextual image set.
+  /// This gets submitted along with `image_media_tokens` and will 
+  // be prompt engineered by Tauri.
+  scene_image_media_token?: string;
+
   /// Images to use for the image edit.
   /// The first image is typically a 2D canvas or 3D stage, but doesn't have to be.
   /// There must be at least one image.

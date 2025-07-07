@@ -326,18 +326,15 @@ export const PromptBox2D = ({
     //console.log("Generate response:", generateResponse);
     //toast.success("Please wait while we process your image.");
 
-    // TODO: Add context tokens
-    //  maybe_additional_images: referenceImages.map((image) => image.mediaToken),
-    const imageMediaTokens = [
-      snapshotMediaToken.data
-    ]; 
-
     // TODO: Aspect ratio
     // const aspectRatio = getCurrentSoraRemixAspectRatio();
 
     const generateResponse = await EnqueueContextualEditImage({
       model: EnqueueContextualEditImageModel.GptImage1,
-      image_media_tokens: imageMediaTokens,
+      scene_image_media_token: snapshotMediaToken.data!,
+      image_media_tokens: referenceImages.map(
+        (image) => image.mediaToken
+      ),
       disable_system_prompt: !useSystemPrompt,
       prompt: prompt,
       image_count: 1,

@@ -459,15 +459,12 @@ export const PromptBox3D = ({
         //  aspect_ratio: aspectRatio,
         //});
 
-        // TODO: Add context tokens
-        //  maybe_additional_images: referenceImages.map((image) => image.mediaToken),
-        const imageMediaTokens = [
-          snapshotResult.data!
-        ]; 
-
         const generateResponse = await EnqueueContextualEditImage({
           model: EnqueueContextualEditImageModel.GptImage1,
-          image_media_tokens: imageMediaTokens,
+          scene_image_media_token: snapshotResult.data!,
+          image_media_tokens: referenceImages.map(
+           (image) => image.mediaToken
+          ),
           disable_system_prompt: !useSystemPrompt,
           prompt: prompt,
           image_count: 1,
