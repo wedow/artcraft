@@ -14,6 +14,8 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use log::info;
 use tauri::AppHandle;
 
+pub(super) const MAX_IMAGES: usize = 10;
+
 pub async fn handle_gpt_image_1(
   request: &EnqueueContextualEditImageCommand,
   app: &AppHandle,

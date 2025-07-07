@@ -51,7 +51,12 @@ pub struct EnqueueContextualEditImageCommand {
   /// Images to use for the image edit.
   /// The first image is typically a 2D canvas or 3D stage, but doesn't have to be.
   /// There must be at least one image.
-  pub image_media_tokens: Vec<MediaFileToken>,
+  pub image_media_tokens: Option<Vec<MediaFileToken>>,
+  
+  /// If set, this becomes the first image in the image media tokens (pushing back 
+  /// each of the `image_media_tokens` by one).
+  /// This is useful if we want to do prompt engineering.
+  pub scene_image_media_token: Option<MediaFileToken>,
 
   /// The user's image generation prompt.
   pub prompt: String,

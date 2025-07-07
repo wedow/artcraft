@@ -2,6 +2,7 @@ use crate::core::commands::enqueue::image::enqueue_text_to_image_command::Enqueu
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
+use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1::MAX_IMAGES;
 use crate::core::commands::enqueue::image_edit::success_event::ContextualEditImageSuccessEvent;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
@@ -82,11 +83,29 @@ pub async fn handle_gpt_image_1_artcraft(
       });
     },
   };
+  
+  let mut media_tokens = Vec::with_capacity(10);
+  
+  if let Some(scene_image_media_token) = request.scene_image_media_token.clone() {
+    media_tokens.push(scene_image_media_token);
+  }
+  
+  if let Some(image_media_tokens) = request.image_media_tokens.as_ref() {
+    media_tokens.extend_from_slice(image_media_tokens);
+  }
+  
+  if media_tokens.len() > MAX_IMAGES {
+    return Err(InternalContextualEditImageError::InvalidNumberOfInputImages { 
+      min: 1,
+      max: MAX_IMAGES as u32,
+      requested: media_tokens.len() as u32,
+    });
+  }
 
   let request = GptImage1EditImageRequest {
     uuid_idempotency_token,
     prompt: Some(request.prompt.clone()),
-    image_media_tokens: Some(request.image_media_tokens.clone()),
+    image_media_tokens: Some(media_tokens),
     image_size,
     num_images,
     image_quality,

@@ -2,6 +2,7 @@ use crate::core::commands::enqueue::image::enqueue_text_to_image_command::Enqueu
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageSize, EnqueueContextualEditImageCommand, EnqueueContextualEditImageErrorType};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
+use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1::MAX_IMAGES;
 use crate::core::commands::enqueue::image_edit::success_event::ContextualEditImageSuccessEvent;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -67,34 +68,50 @@ pub async fn handle_gpt_image_1_sora(
     }
   };
 
-  // TODO(bt,2025-07-08): Handle many images.
-  // TODO(bt,2025-07-08): Handle authenticated sessions (for private images).
-  // TODO(bt,2025-07-08): Handle HTTP batch get requests.
-  let first_image_token = request.image_media_tokens.first()
-      .ok_or_else(|| InternalContextualEditImageError::InvalidNumberOfInputImages {
-        min: 1,
-        max: 10, // TODO Confirm
-        requested: request.image_media_tokens.len() as u32,
-      })?;
+  let mut media_tokens = Vec::with_capacity(10);
+
+  if let Some(scene_image_media_token) = request.scene_image_media_token.clone() {
+    media_tokens.push(scene_image_media_token);
+  }
+
+  if let Some(image_media_tokens) = request.image_media_tokens.as_ref() {
+    media_tokens.extend_from_slice(image_media_tokens);
+  }
+
+  if media_tokens.len() > MAX_IMAGES {
+    return Err(InternalContextualEditImageError::InvalidNumberOfInputImages {
+      min: 1,
+      max: MAX_IMAGES as u32,
+      requested: media_tokens.len() as u32,
+    });
+  }
 
   info!("Calling get media file API: {:?}", app_env_configs.storyteller_host);
+  
+  let mut files_to_upload_to_sora = Vec::with_capacity(10);
+  
+  // TODO(bt,2025-07-07): This is inefficient. Cache and parallelize this.
+  for media_token in media_tokens.iter() {
+    info!("Using media token: {:?}", media_token);
 
-  let response = get_media_file(
-    &app_env_configs.storyteller_host,
-    first_image_token
-  ).await?;
+    let response = get_media_file(
+      &app_env_configs.storyteller_host,
+      media_token
+    ).await?;
 
-  let media_file_url = &response.media_file.media_links.cdn_url;
-  let extension_with_dot = get_url_file_extension(media_file_url)
-      .map(|ext| format!(".{}", ext))
-      .unwrap_or_else(|| ".png".to_string());
+    let media_file_url = &response.media_file.media_links.cdn_url;
+    let extension_with_dot = get_url_file_extension(media_file_url)
+        .map(|ext| format!(".{}", ext))
+        .unwrap_or_else(|| ".png".to_string());
 
-  let filename = format!("{}{}", response.media_file.token.as_str(), extension_with_dot);
-  let filename = app_data_root.downloads_dir().path().join(&filename);
+    let filename = format!("{}{}", response.media_file.token.as_str(), extension_with_dot);
+    let filename = app_data_root.downloads_dir().path().join(&filename);
 
-  simple_http_download(&media_file_url, &filename).await?;
+    simple_http_download(&media_file_url, &filename).await?;
+    
+    files_to_upload_to_sora.push(filename);
+  }
 
-  let files_to_upload = vec![filename];
 
   let mut creds = sora_creds_manager.get_credentials_required()?;
 
@@ -110,10 +127,10 @@ pub async fn handle_gpt_image_1_sora(
     sora_creds_manager.set_credentials(&creds)?;
   }
 
-  let mut sora_media_tokens = Vec::with_capacity(files_to_upload.len());
+  let mut sora_media_tokens = Vec::with_capacity(files_to_upload_to_sora.len());
 
-  for (i, file_path) in files_to_upload.iter().enumerate() {
-    info!("Uploading image {} of {}...", (i+1), files_to_upload.len());
+  for (i, file_path) in files_to_upload_to_sora.iter().enumerate() {
+    info!("Uploading image {} of {}...", (i+1), files_to_upload_to_sora.len());
 
     let (response, maybe_new_credentials) =
         image_upload_from_file_with_session_auto_renew(ImageUploadFromFileAutoRenewRequest {
