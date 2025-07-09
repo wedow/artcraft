@@ -21,6 +21,9 @@ import {
   faPlus,
   faUpload,
   faImages,
+  faMousePointer,
+  faEdit,
+  faExpand,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faRectangleVertical,
@@ -41,6 +44,7 @@ import {
 
 import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
 import { invoke } from "@tauri-apps/api/core";
+import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 
 interface ReferenceImage {
   id: string;
@@ -63,7 +67,8 @@ interface PromptBoxEditProps {
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
-  onAspectRatioChange?: (ratio: AspectRatio) => void;
+  onModeSelectionChange?: (mode: string) => void;
+  selectedMode?: string;
 }
 
 export const PromptBoxEdit = ({
@@ -72,7 +77,8 @@ export const PromptBoxEdit = ({
   EncodeImageBitmapToBase64,
   useJobContext,
   onEnqueuePressed,
-  onAspectRatioChange,
+  onModeSelectionChange,
+  selectedMode,
 }: PromptBoxEditProps) => {
   useSignals();
 
@@ -91,23 +97,6 @@ export const PromptBoxEdit = ({
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
-  const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
-    {
-      label: "3:2",
-      selected: true,
-      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
-    },
-    {
-      label: "2:3",
-      selected: false,
-      icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
-    },
-    {
-      label: "1:1",
-      selected: false,
-      icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
-    },
-  ]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -120,16 +109,6 @@ export const PromptBoxEdit = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   });
-
-  const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
-    onAspectRatioChange?.(selectedItem.label);
-    setAspectRatioList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === selectedItem.label,
-      }))
-    );
-  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -428,12 +407,6 @@ export const PromptBoxEdit = ({
     }
   };
 
-  const getCurrentAspectRatioIcon = () => {
-    const selected = aspectRatioList.find((item) => item.selected);
-    if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement<any, any>;
-    return iconElement.props.icon;
-  };
 
   const getCurrentSoraRemixAspectRatio = (): SoraImageRemixAspectRatio => {
     const selected = aspectRatioList.find((item) => item.selected);
@@ -457,6 +430,27 @@ export const PromptBoxEdit = ({
       handleEnqueue();
     }
   };
+
+  const modes = [
+    {
+      value: "select",
+      icon: faMousePointer,
+      text: "Select",
+      tooltip: "Selection mode",
+    },
+    {
+      value: "edit",
+      icon: faEdit,
+      text: "Edit Region",
+      tooltip: "Edit area for inpainting",
+    },
+    {
+      value: "expand",
+      icon: faExpand,
+      text: "Expand",
+      tooltip: "Expand area for outpainting",
+    },
+  ];
 
   return (
     <>
@@ -516,40 +510,7 @@ export const PromptBoxEdit = ({
           </div>
         )}
         <div className="glass w-[730px] rounded-xl p-4">
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={handleFileUpload}
-            multiple
-          />
           <div className="flex justify-center gap-2">
-            <PopoverMenu
-              mode="button"
-              panelTitle="Add Image"
-              items={[
-                {
-                  label: "Upload from device",
-                  selected: false,
-                  icon: <FontAwesomeIcon icon={faUpload} className="h-4 w-4" />,
-                  action: "upload",
-                },
-                {
-                  label: "Choose from library",
-                  selected: false,
-                  icon: <FontAwesomeIcon icon={faImages} className="h-4 w-4" />,
-                  action: "gallery",
-                },
-              ]}
-              onPanelAction={handleAction}
-              showIconsInList
-              buttonClassName="bg-transparent hover:bg-transparent py-1.5 px-0 pr-1 m-0 hover:opacity-50 transition-opacity duration-100 ring-0 border-none focus:ring-0 outline-none"
-              triggerIcon={
-                <FontAwesomeIcon icon={faPlus} className="text-xl" />
-              }
-            />
-
             <textarea
               ref={textareaRef}
               rows={1}
@@ -565,26 +526,11 @@ export const PromptBoxEdit = ({
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Tooltip
-                content="Aspect ratio"
-                position="top"
-                className="z-50"
-                closeOnClick={true}
-              >
-                <PopoverMenu
-                  items={aspectRatioList}
-                  onSelect={handleAspectRatioSelect}
-                  mode="toggle"
-                  panelTitle="Aspect Ratio"
-                  showIconsInList
-                  triggerIcon={
-                    <FontAwesomeIcon
-                      icon={getCurrentAspectRatioIcon()}
-                      className="h-4 w-4"
-                    />
-                  }
-                />
-              </Tooltip>
+              <ButtonIconSelect
+                options={modes}
+                onOptionChange={onModeSelectionChange}
+                selectedOption={selectedMode}
+              />
               <Tooltip
                 content={
                   useSystemPrompt

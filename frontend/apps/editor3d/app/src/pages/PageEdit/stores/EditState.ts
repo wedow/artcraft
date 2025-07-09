@@ -1,7 +1,9 @@
 import { create } from 'zustand';
-import { LineNode, ActiveTool, AspectRatioType, convertFileToBase64, generateId } from '~/pages/PageDraw/stores/SceneState';
-import { SceneState } from '~/pages/PageEnigma/Editor/Commands';
+import { LineNode, AspectRatioType, generateId } from '~/pages/PageDraw/stores/SceneState';
 import { Node } from "~/pages/PageDraw/Node";
+
+export type ActiveEditTool = 'select' | 'edit' | 'expand';
+export type EditOperation = 'add' | 'minus';
 
 interface EditState {
   // Nodes
@@ -13,7 +15,8 @@ interface EditState {
   clipboard: (Node | LineNode)[]; // To store copied items
 
   // Toolbar state
-  activeTool: ActiveTool;
+  activeTool: ActiveEditTool;
+  editOperation: EditOperation;
   brushColor: string;
   brushSize: number;
   brushOpacity: number;
@@ -32,12 +35,6 @@ interface EditState {
 
   // Batch operations
   setNodes: (nodes: Node[]) => void;
-
-  // Node creation helpers
-  createRectangle: (x: number, y: number, width?: number, height?: number, fill?: string) => void;
-  createCircle: (x: number, y: number, radius?: number, fill?: string) => void;
-  createTriangle: (x: number, y: number, width?: number, height?: number, fill?: string) => void;
-  createImage: (x: number, y: number, source: string | File, width?: number, height?: number) => void;
 
   // History management
   history: { nodes: Node[]; lineNodes: LineNode[] }[];
@@ -66,7 +63,7 @@ interface EditState {
   pasteItems: () => void;
 
   // Toolbar actions
-  setActiveTool: (tool: ActiveTool) => void;
+  setActiveTool: (tool: ActiveEditTool) => void;
   setBrushColor: (color: string) => void;
   setBrushOpacity: (opacity: number) => void;
   setBrushSize: (size: number) => void;
@@ -85,16 +82,6 @@ interface EditState {
   // Add these two properties
   serializeSceneToString: () => Promise<string>;
   loadSceneFromString: (jsonString: string) => boolean;
-
-  // New functions
-  bringToFront: (nodeIds: string[]) => void;
-  sendToBack: (nodeIds: string[]) => void;
-  bringForward: (nodeIds: string[]) => void;
-  sendBackward: (nodeIds: string[]) => void;
-  removeBackground: (nodeIds: string[], operation: (success: boolean, base64_image: string, message: string) => Promise<{ success: boolean; file?: File }>) => Promise<void>;
-
-  // Add new lock action
-  toggleLock: (nodeIds: string[]) => void;
 
   // Add minimal aspect ratio property
   aspectRatioType: AspectRatioType;
@@ -133,11 +120,12 @@ export const useEditStore = create<EditState>((set, get) => ({
   historyIndex: -1,
 
   // Toolbar initial state
-  activeTool: 'select',
+  activeTool: 'select', // Default to 'select' tool
+  editOperation: 'add', // Default to 'add' operation
   brushColor: '#000000',
-  brushSize: 5,
+  brushSize: 30,
   brushOpacity: 1,
-  fillColor: 'white',
+  fillColor: 'rgba(0, 0, 255, 0.5)',
 
   // Cursor initial state
   cursorPosition: null,
@@ -263,58 +251,6 @@ export const useEditStore = create<EditState>((set, get) => ({
     get().saveState();
   },
 
-  // Node creation helpers
-  createRectangle: (x: number, y: number, width = 100, height = 100, fill = '#e0e0e0') => {
-    const node = new Node({
-      id: generateId(),
-      type: 'rectangle',
-      x,
-      y,
-      width,
-      height,
-      fill,
-      stroke: '#444',
-      strokeWidth: 2,
-      draggable: true
-    });
-    get().addNode(node);
-    get().setActiveTool('select'); // Switch to select tool after creating
-  },
-
-  createCircle: (x: number, y: number, radius = 50, fill = '#f0f0f0') => {
-    const node = new Node({
-      id: generateId(),
-      type: 'circle',
-      x,
-      y,
-      width: radius * 2,
-      height: radius * 2,
-      fill,
-      stroke: '#333',
-      strokeWidth: 2,
-      draggable: true
-    });
-    get().addNode(node);
-    get().setActiveTool('select'); // Switch to select tool after creating
-  },
-
-  createTriangle: (x: number, y: number, width = 100, height = 100, fill = '#d0d0d0') => {
-    const node = new Node({
-      id: generateId(),
-      type: 'triangle',
-      x,
-      y,
-      width,
-      height,
-      fill,
-      stroke: '#555',
-      strokeWidth: 2,
-      draggable: true
-    });
-    get().addNode(node);
-    get().setActiveTool('select'); // Switch to select tool after creating
-  },
-
   // History management
   saveState: () => {
     // Don't save state if we're in the middle of restoring
@@ -351,7 +287,8 @@ export const useEditStore = create<EditState>((set, get) => ({
 
       return {
         history: newHistory,
-        historyIndex: newHistory.length - 1
+        historyIndex: newHistory.length - 1,
+        editOperation: state.editOperation === "add" ? "minus" : "add",
       };
     });
   },
@@ -750,7 +687,7 @@ export const useEditStore = create<EditState>((set, get) => ({
   },
 
   // Toolbar actions
-  setActiveTool: (tool: ActiveTool) => set({ activeTool: tool }),
+  setActiveTool: (tool: ActiveEditTool) => set({ activeTool: tool }),
   setBrushColor: (color: string) => set({ brushColor: color }),
   setBrushSize: (size: number) => set({ brushSize: size }),
   setFillColor: (color: string) => set({ fillColor: color }),
@@ -921,273 +858,6 @@ export const useEditStore = create<EditState>((set, get) => ({
   },
   loadSceneFromString: (jsonString: string): boolean => {
     return get().importSceneFromJson(jsonString);
-  },
-
-  // New functions
-  bringToFront: (nodeIds: string[]) => {
-    set(state => {
-      // Get highest zIndex from all nodes and line nodes
-      const allZIndices = [
-        ...state.nodes.map(n => n.zIndex || 0),
-        ...state.lineNodes.map(n => n.zIndex || 0)
-      ];
-      const maxZ = Math.max(...allZIndices, 0) + 1;
-
-      return {
-        nodes: state.nodes.map(node =>
-          nodeIds.includes(node.id)
-            ? new Node({ ...node, zIndex: maxZ })
-            : node
-        ),
-        lineNodes: state.lineNodes.map(node =>
-          nodeIds.includes(node.id)
-            ? { ...node, zIndex: maxZ }
-            : node
-        )
-      };
-    });
-    get().saveState();
-  },
-
-  sendToBack: (nodeIds: string[]) => {
-    set(state => {
-      // Get lowest zIndex from all nodes and line nodes
-      const allZIndices = [
-        ...state.nodes.map(n => n.zIndex || 0),
-        ...state.lineNodes.map(n => n.zIndex || 0)
-      ];
-      const minZ = Math.min(...allZIndices, 0) - 1;
-
-      return {
-        nodes: state.nodes.map(node =>
-          nodeIds.includes(node.id)
-            ? new Node({ ...node, zIndex: minZ })
-            : node
-        ),
-        lineNodes: state.lineNodes.map(node =>
-          nodeIds.includes(node.id)
-            ? { ...node, zIndex: minZ }
-            : node
-        )
-      };
-    });
-    get().saveState();
-  },
-
-  bringForward: (nodeIds: string[]) => {
-    set(state => {
-      // Combine all items with their current zIndex
-      const allItems = [
-        ...state.nodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) })),
-        ...state.lineNodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) }))
-      ].sort((a, b) => a.z - b.z);
-
-      // Find the highest z-index among selected items
-      const selectedItems = allItems.filter(item => item.selected);
-      if (selectedItems.length === 0) return state;
-
-      const highestSelectedZ = Math.max(...selectedItems.map(item => item.z));
-
-      // Find the closest item above our selection
-      const nextItem = allItems.find(item => !item.selected && item.z > highestSelectedZ);
-
-      // If no item above, swap with the highest non-selected item
-      if (!nextItem) {
-        const highestNonSelected = allItems.filter(item => !item.selected)
-          .sort((a, b) => b.z - a.z)[0];
-        if (!highestNonSelected) return state;
-
-        // Swap positions
-        return {
-          nodes: state.nodes.map(node => {
-            if (nodeIds.includes(node.id)) {
-              return new Node({ ...node, zIndex: highestNonSelected.z });
-            }
-            if (node.id === highestNonSelected.id) {
-              return new Node({ ...node, zIndex: highestSelectedZ });
-            }
-            return node;
-          }),
-          lineNodes: state.lineNodes.map(node => {
-            if (nodeIds.includes(node.id)) {
-              return { ...node, zIndex: highestNonSelected.z };
-            }
-            if (node.id === highestNonSelected.id) {
-              return { ...node, zIndex: highestSelectedZ };
-            }
-            return node;
-          })
-        };
-      }
-
-      const newZ = nextItem.z;
-      return {
-        nodes: state.nodes.map(node => {
-          if (nodeIds.includes(node.id)) {
-            return new Node({ ...node, zIndex: newZ });
-          }
-          if (node.id === nextItem.id) {
-            return new Node({ ...node, zIndex: highestSelectedZ });
-          }
-          return node;
-        }),
-        lineNodes: state.lineNodes.map(node => {
-          if (nodeIds.includes(node.id)) {
-            return { ...node, zIndex: newZ };
-          }
-          if (node.id === nextItem.id) {
-            return { ...node, zIndex: highestSelectedZ };
-          }
-          return node;
-        })
-      };
-    });
-    get().saveState();
-  },
-
-  sendBackward: (nodeIds: string[]) => {
-    set(state => {
-      // Combine all items with their current zIndex
-      const allItems = [
-        ...state.nodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) })),
-        ...state.lineNodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) }))
-      ].sort((a, b) => b.z - a.z);
-
-      // Find the lowest z-index among selected items
-      const selectedItems = allItems.filter(item => item.selected);
-      if (selectedItems.length === 0) return state;
-
-      const lowestSelectedZ = Math.min(...selectedItems.map(item => item.z));
-
-      // Find the closest item below our selection
-      const nextItem = allItems.find(item => !item.selected && item.z < lowestSelectedZ);
-
-      // If no item below, swap with the lowest non-selected item
-      if (!nextItem) {
-        const lowestNonSelected = allItems.filter(item => !item.selected)
-          .sort((a, b) => a.z - b.z)[0];
-        if (!lowestNonSelected) return state;
-
-        // Swap positions
-        return {
-          nodes: state.nodes.map(node => {
-            if (nodeIds.includes(node.id)) {
-              return new Node({ ...node, zIndex: lowestNonSelected.z });
-            }
-            if (node.id === lowestNonSelected.id) {
-              return new Node({ ...node, zIndex: lowestSelectedZ });
-            }
-            return node;
-          }),
-          lineNodes: state.lineNodes.map(node => {
-            if (nodeIds.includes(node.id)) {
-              return { ...node, zIndex: lowestNonSelected.z };
-            }
-            if (node.id === lowestNonSelected.id) {
-              return { ...node, zIndex: lowestSelectedZ };
-            }
-            return node;
-          })
-        };
-      }
-
-      const newZ = nextItem.z;
-      return {
-        nodes: state.nodes.map(node => {
-          if (nodeIds.includes(node.id)) {
-            return new Node({ ...node, zIndex: newZ });
-          }
-          if (node.id === nextItem.id) {
-            return new Node({ ...node, zIndex: lowestSelectedZ });
-          }
-          return node;
-        }),
-        lineNodes: state.lineNodes.map(node => {
-          if (nodeIds.includes(node.id)) {
-            return { ...node, zIndex: newZ };
-          }
-          if (node.id === nextItem.id) {
-            return { ...node, zIndex: lowestSelectedZ };
-          }
-          return node;
-        })
-      };
-    });
-    get().saveState();
-  },
-  removeBackground: async (nodeIds: string[], operation: (success: boolean, base64_image: string, message: string) => Promise<{ success: boolean; file?: File }>) => {
-    const hasImageNodes = nodeIds.some(id => {
-      const node = get().nodes.find(n => n.id === id);
-      return node ? node.type === 'image' : false;
-    });
-
-    if (hasImageNodes) {
-      const firstNode = get().nodes.find(node => nodeIds.includes(node.id) && node.type === 'image');
-      if (firstNode && firstNode.imageFile) {
-        try {
-          const base64Image = await convertFileToBase64(firstNode.imageFile);
-          const { success, file } = await operation(true, base64Image, "Removing Background.");
-
-          if (success && file) {
-            // Create a new node instance
-            const updatedNode = new Node({
-              ...firstNode,
-              imageFile: file
-            });
-
-            // Load the new image
-            await updatedNode.setImageFromFile(file);
-
-            // Update the store with the fully loaded node
-            set((state: SceneState) => ({
-              nodes: state.nodes.map((node: Node) => {
-                if (node.id === firstNode.id) {
-                  return updatedNode;
-                }
-                return node;
-              }),
-            }));
-
-            get().saveState();
-          }
-        } catch (error) {
-          console.error("Error updating image:", error);
-        }
-      }
-    }
-  },
-
-  // Add toggleLock action
-  toggleLock: (nodeIds: string[]) => {
-    set((state) => {
-      // Update regular nodes
-      const updatedNodes = state.nodes.map(node => {
-        if (nodeIds.includes(node.id)) {
-          return new Node({
-            ...node,
-            locked: !node.locked
-          });
-        }
-        return node;
-      });
-
-      // Update line nodes
-      const updatedLineNodes = state.lineNodes.map(node => {
-        if (nodeIds.includes(node.id)) {
-          return {
-            ...node,
-            locked: !node.locked
-          };
-        }
-        return node;
-      });
-
-      return {
-        nodes: updatedNodes,
-        lineNodes: updatedLineNodes
-      };
-    });
-    get().saveState();
   },
 
   // Add aspect ratio actions

@@ -13,14 +13,26 @@ import Konva from "konva"; // Import Konva namespace for types
 
 // https://github.com/SaladTechnologies/comfyui-api
 
-import { useEditStore } from "./stores/EditState";
-import { MiraiProps } from "../PageDraw/PaintSurface";
+import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import SplitPane from "../PageDraw/components/ui/SplitPane";
 import { useStageCentering } from "../PageDraw/hooks/useCenteredStage";
 import { useGlobalMouseUp } from "../PageDraw/hooks/useGlobalMouseUp";
 import { useRightPanelLayoutManagement } from "../PageDraw/hooks/useRightPanelLayoutManagement";
 import { LineNode } from "../PageDraw/stores/SceneState";
 import { Node } from "../PageDraw/Node";
+
+export type EditPaintSurfaceProps = {
+  nodes: Node[];
+  selectedNodeIds: string[];
+  onCanvasSizeChange?: (width: number, height: number) => void;
+  fillColor?: string;
+  activeTool?: ActiveEditTool;
+  brushColor?: string;
+  brushSize?: number;
+  onSelectionChange?: (isSelecting: boolean) => void;
+  stageRef: React.RefObject<Konva.Stage>;
+  transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>;
+};
 
 export const EditPaintSurface = ({
   nodes,
@@ -33,7 +45,7 @@ export const EditPaintSurface = ({
   onSelectionChange,
   stageRef,
   transformerRefs,
-}: MiraiProps) => {
+}: EditPaintSurfaceProps) => {
   // switch off to be preview panel mode.
   const singlePaneMode = true
 
@@ -138,7 +150,7 @@ export const EditPaintSurface = ({
     activeTool: string,
     nodeDraggable: boolean,
   ): boolean => {
-    return activeTool !== "draw" && activeTool !== "eraser" && nodeDraggable;
+    return activeTool !== "edit" && nodeDraggable;
   };
 
   // Combined mouse handlers
@@ -169,21 +181,25 @@ export const EditPaintSurface = ({
 
     // Handle drawing tools - only start if within bounds
     if (
-      (activeTool === "draw" || activeTool === "eraser") &&
+      (activeTool === "edit") &&
       isWithinLeftPanel(stagePoint)
     ) {
       const lineId = `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const opacity = activeTool === "draw" ? store.brushOpacity : 1;
+      const opacity = activeTool === "edit" ? store.brushOpacity : 1;
+      const composite = store.editOperation === "add" ? "source-over" : "destination-out";
+      const strokeColor = store.editOperation === "add" ? brushColor : "#FFFFFF"; // Eraser uses transparent stroke
 
       const newLineNode: LineNode = {
         id: lineId,
         type: "line",
         points: [stagePoint.x, stagePoint.y],
-        stroke: activeTool === "draw" ? brushColor : fillColor || "#ffffff",
+        stroke: strokeColor,
         strokeWidth: brushSize / stage.scaleX(),
         draggable: true,
         opacity: opacity,
         locked: false,
+        zIndex: 0, // Default zIndex, can be adjusted later
+        globalCompositeOperation: composite,
       };
       store.selectNode(null);
       store.addLineNode(newLineNode, false);  // Don't save state when starting line
@@ -227,7 +243,7 @@ export const EditPaintSurface = ({
     if (!stage) return;
 
     // Update cursor position for draw/eraser tools
-    if (activeTool === "draw" || activeTool === "eraser") {
+    if (activeTool === "edit") {
       const pointer = stage.getPointerPosition();
       if (pointer) {
         store.setCursorPosition(pointer);
@@ -253,7 +269,7 @@ export const EditPaintSurface = ({
     if (
       isDrawing &&
       currentLineId &&
-      (activeTool === "draw" || activeTool === "eraser")
+      (activeTool === "edit")
     ) {
       const point = stage.getPointerPosition();
       if (!point) return;
@@ -435,7 +451,7 @@ export const EditPaintSurface = ({
     const container = e.target.getStage()?.container();
     if (!container) return;
     const defaultCursor =
-      activeTool === "draw" || activeTool === "eraser"
+      activeTool === "edit"
         ? "none"
         : activeTool === "select"
           ? "grab"
@@ -451,7 +467,7 @@ export const EditPaintSurface = ({
       return;
     }
 
-    if (activeTool === "draw" || activeTool === "eraser") {
+    if (activeTool === "edit") {
       stage.container().style.cursor = "none";
       const pointer = stage.getPointerPosition();
       if (pointer) {
@@ -483,7 +499,7 @@ export const EditPaintSurface = ({
     if (
       store.cursorVisible &&
       store.cursorPosition &&
-      (activeTool === "draw" || activeTool === "eraser")
+      (activeTool === "edit")
     ) {
       // Counteract stage transforms to position cursor in screen space
       const stageX = stage.x();
@@ -500,7 +516,7 @@ export const EditPaintSurface = ({
       cursorNode.position(store.cursorPosition);
       cursorNode.radius(brushSize / 2);
 
-      if (activeTool === "draw") {
+      if (store.editOperation === "add") {
         cursorNode.fill(brushColor);
         cursorNode.stroke("rgba(255, 255, 255, 0.7)");
         cursorNode.strokeWidth(1);
@@ -513,13 +529,7 @@ export const EditPaintSurface = ({
       cursorNode.visible(false);
     }
     cursorLayer.batchDraw();
-  }, [
-    store.cursorVisible,
-    store.cursorPosition,
-    activeTool,
-    brushColor,
-    brushSize,
-  ]);
+  }, [store.cursorVisible, store.cursorPosition, activeTool, brushColor, brushSize, stageRef, store.editOperation]);
 
   const renderNode = (node: Node | LineNode) => {
     // Node Callbacks
@@ -528,7 +538,7 @@ export const EditPaintSurface = ({
       nodeId: string,
     ) => {
       // Don't select nodes when draw or erase tools are active
-      if (activeTool === "draw" || activeTool === "eraser") {
+      if (activeTool === "edit") {
         return;
       }
 
@@ -781,6 +791,8 @@ export const EditPaintSurface = ({
             offsetX={lineNode.offsetX || 0}
             offsetY={lineNode.offsetY || 0}
             zIndex={lineNode.zIndex}
+            // @ts-expect-error: We don't have globalCompositeOperation in the type definition
+            globalCompositeOperation={lineNode.globalCompositeOperation || "source-over"}
           />
           {renderTransformer()}
         </React.Fragment>
@@ -993,9 +1005,7 @@ export const EditPaintSurface = ({
             onMouseEnter={handleStageMouseEnter}
             onMouseLeave={handleStageMouseLeave}
           >
-            {/* Left Panel */}
             <Layer
-              ref={leftPanelRef}
               clipFunc={(ctx) => {
                 ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
               }}
@@ -1009,7 +1019,14 @@ export const EditPaintSurface = ({
                 listening={false}
                 zIndex={-1}
               />
-
+            </Layer>
+            {/* Left Panel */}
+            <Layer
+              ref={leftPanelRef}
+              clipFunc={(ctx) => {
+                ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
+              }}
+            >
               {/* Render all nodes including line nodes */}
               {[...nodes, ...store.lineNodes]
                 .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))

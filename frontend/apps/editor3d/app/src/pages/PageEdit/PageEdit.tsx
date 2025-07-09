@@ -16,9 +16,9 @@ import { useCopyPasteHotkeys } from "../PageDraw/hooks/useCopyPasteHotkeys";
 import { useDeleteHotkeys } from "../PageDraw/hooks/useDeleteHotkeys";
 import { useUndoRedoHotkeys } from "../PageDraw/hooks/useUndoRedoHotkeys";
 import { captureStageImageBitmap } from "../PageDraw/hooks/useUpdateSnapshot";
-import PromptEditor from "../PageDraw/PromptEditor/PromptEditor";
+import PromptEditor from "./PromptEditor/PromptEditor";
 import { AspectRatioType } from "../PageDraw/stores/SceneState";
-import { useEditStore } from "./stores/EditState";
+import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import { EditPaintSurface } from "./EditPaintSurface";
 
 const PageEdit = () => {
@@ -202,26 +202,8 @@ const PageEdit = () => {
             console.log("Vary clicked");
             // Handle vary action here
           }}
-          onAspectRatioChange={(ratio: string) => {
-            console.log("Aspect ratio:", ratio);
-            // Convert ratio string to AspectRatioType enum
-            const ratioToType = (ratio: string): AspectRatioType => {
-              switch (ratio) {
-                case "2:3":
-                  return AspectRatioType.PORTRAIT;
-                case "3:2":
-                  return AspectRatioType.LANDSCAPE;
-                case "1:1":
-                  return AspectRatioType.SQUARE;
-                default:
-                  return AspectRatioType.NONE;
-              }
-            };
-
-            const aspectRatioType = ratioToType(ratio);
-            store.setAspectRatioType(aspectRatioType);
-            onFitPressed()
-          }}
+          onModeChange={(mode: string) => { store.setActiveTool(mode as ActiveEditTool) }}
+          selectedMode={store.activeTool}
           onEnqueuePressed={onEnqueuedPressed}
         />
       </div>
@@ -231,26 +213,16 @@ const PageEdit = () => {
           store.setActiveTool("select");
         }}
         onAddShape={(shape: "rectangle" | "circle" | "triangle"): void => {
-          // Calculate center position based on canvas dimensions
-          const centerX = canvasWidth.current / 3;
-          const centerY = canvasHeight.current / 3;
-          if (shape === "rectangle") {
-            store.createRectangle(centerX, centerY);
-          } else if (shape === "circle") {
-            store.createCircle(centerX, centerY);
-          } else if (shape === "triangle") {
-            store.createTriangle(centerX, centerY);
-          }
         }}
         onPaintBrush={(hex: string, size: number, opacity: number): void => {
-          store.setActiveTool("draw");
-          store.setBrushColor(hex);
-          store.setBrushSize(size);
-          store.setBrushOpacity(opacity);
+          // store.setActiveTool("draw");
+          // store.setBrushColor(hex);
+          // store.setBrushSize(size);
+          // store.setBrushOpacity(opacity);
         }}
         onEraser={(size: number): void => {
-          store.setActiveTool("eraser");
-          store.setBrushSize(size);
+          // store.setActiveTool("eraser");
+          // store.setBrushSize(size);
         }}
         onCanvasBackground={(hex: string): void => {
           console.log("Canvas background activated", { color: hex });
@@ -327,48 +299,6 @@ const PageEdit = () => {
           }}
           onMenuAction={async (action) => {
             switch (action) {
-              case 'LOCK':
-                store.toggleLock(store.selectedNodeIds);
-                break;
-              case 'REMOVE_BACKGROUND':
-                // returns a success if we have selected images only
-                await store.removeBackground(store.selectedNodeIds,
-                  async (success: boolean, image_base64: string, message: string) => {
-                    if (!success) {
-                      console.error(message);
-                      return { success: false };
-                    }
-                    try {
-                      const response = await FalBackgroundRemoval({ base64_image: image_base64 });
-                      if (response.status !== "success" || !("payload" in response)) {
-                        console.error("Failed to remove background", response);
-                        return { success: false };
-                      }
-
-                      const base64String = response.payload?.base64_bytes as string;
-                      const binaryString = atob(base64String);
-                      const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
-                      const blob = new Blob([bytes], { type: "image/png" });
-                      const file = new File([blob], "generated_image.png", { type: blob.type });
-                      return { success: true, file };
-                    } catch (error) {
-                      console.error("Failed to remove background", error);
-                      return { success: false };
-                    }
-                  });
-                break;
-              case 'BRING_TO_FRONT':
-                store.bringToFront(store.selectedNodeIds);
-                break;
-              case 'BRING_FORWARD':
-                store.bringForward(store.selectedNodeIds);
-                break;
-              case 'SEND_BACKWARD':
-                store.sendBackward(store.selectedNodeIds);
-                break;
-              case 'SEND_TO_BACK':
-                store.sendToBack(store.selectedNodeIds);
-                break;
               case 'DUPLICATE':
                 store.copySelectedItems()
                 store.pasteItems()

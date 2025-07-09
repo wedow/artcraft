@@ -19,6 +19,7 @@ export type LineNode = {
   offsetY?: number;
   zIndex: number;
   locked?: boolean; // Add locked property
+  globalCompositeOperation?: string; // Add globalCompositeOperation property
 };
 
 // Add this enum at the top of the file with other types
