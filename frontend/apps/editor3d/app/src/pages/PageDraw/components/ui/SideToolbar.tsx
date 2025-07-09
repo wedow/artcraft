@@ -8,10 +8,10 @@ import {
   faImage,
   faSquare,
   faCircle,
-  faPlay,
   faUndo,
   faRedo,
   faPaintBrush,
+  faTriangle,
 } from "@fortawesome/pro-solid-svg-icons";
 import "../../App.css";
 import { HsvaColorPicker, HsvaColor } from "react-colorful";
@@ -165,7 +165,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       },
       popout: (
         <div className="flex items-center gap-1.5 rounded-full px-1.5 py-1.5 shadow-lg">
-          {[faSquare, faCircle, faPlay].map((faIcon, i) => (
+          {[faSquare, faCircle, faTriangle].map((faIcon, i) => (
             <button
               key={i}
               className={shapeIconBtn}
@@ -277,7 +277,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
           const shapeIcons = {
             rectangle: faSquare,
             circle: faCircle,
-            triangle: faPlay,
+            triangle: faTriangle,
           } as const;
           displayIcon = (
             <FontAwesomeIcon
