@@ -279,24 +279,49 @@ export const PaintSurface = ({
     const stage = stageRef.current;
     if (!stage) return;
 
-    // Update cursor position for draw/eraser tools
-    if (activeTool === "draw" || activeTool === "eraser") {
-      const pointer = stage.getPointerPosition();
-      if (pointer) {
-        store.setCursorPosition(pointer);
-        store.setCursorVisible(true);
+    // Get pointer position and check if it's within canvas bounds
+    const pointer = stage.getPointerPosition();
+    if (pointer) {
+      const stagePoint = {
+        x: (pointer.x - stage.x()) / stage.scaleX(),
+        y: (pointer.y - stage.y()) / stage.scaleY(),
+      };
+      
+      const isWithinCanvas = isWithinLeftPanel(stagePoint);
+      
+      // Update cursor based on position and tool
+      if (activeTool === "draw" || activeTool === "eraser") {
+        if (isWithinCanvas) {
+          stage.container().style.cursor = "none";
+          store.setCursorPosition(pointer);
+          store.setCursorVisible(true);
+        } else {
+          stage.container().style.cursor = "grab";
+          store.setCursorVisible(false);
+        }
+      } else {
+        if (isWithinCanvas) {
+          stage.container().style.cursor = "default";
+        } else {
+          stage.container().style.cursor = "grab";
+        }
+        store.setCursorVisible(false);
       }
-    } else {
-      store.setCursorVisible(false);
     }
 
     // Only handle panning if we're actually dragging
     if (isDragging) {
       const currentStage = e.target.getStage();
       if (!currentStage) return;
+      
+      // Update cursor to grabbing while dragging
+      currentStage.container().style.cursor = "grabbing";
+      
+             // Use a multiplier to make middle mouse dragging more responsive
+       const dragSensitivity = 3.0; // Much higher sensitivity for faster dragging
       const newPos = {
-        x: currentStage.x() + e.evt.movementX,
-        y: currentStage.y() + e.evt.movementY,
+        x: currentStage.x() + (e.evt.movementX * dragSensitivity),
+        y: currentStage.y() + (e.evt.movementY * dragSensitivity),
       };
       currentStage.position(newPos);
       return;
@@ -438,6 +463,32 @@ export const PaintSurface = ({
     setLastPoint(null);
   };
 
+  // State for tracking pinch gestures
+  const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
+  const [isPinching, setIsPinching] = useState(false);
+
+  // Helper function to get distance between two touch points
+  const getTouchDistance = (touches: TouchList) => {
+    if (touches.length < 2) return 0;
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) + 
+      Math.pow(touch2.clientY - touch1.clientY, 2)
+    );
+  };
+
+  // Helper function to get center point between two touches
+  const getTouchCenter = (touches: TouchList) => {
+    if (touches.length < 2) return null;
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2,
+    };
+  };
+
   const handleStageWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const stage = e.target.getStage();
@@ -451,17 +502,103 @@ export const PaintSurface = ({
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-    // Calculate new scale
-    const newScale = e.evt.deltaY < 0 ? oldScale * 1.1 : oldScale / 1.1;
+    // Detect if this is a pinch gesture (ctrlKey is set on Mac trackpad pinch)
+    const isPinchGesture = e.evt.ctrlKey;
+    const deltaY = e.evt.deltaY;
+    const absDelta = Math.abs(deltaY);
+    
+    // Detect Mac trackpad vs mouse wheel more precisely
+    const isMac = navigator.userAgent.includes('Mac');
 
-    // Calculate new position
-    const newPos = {
-      x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
-    };
+    // Track-pad scroll on Mac: pixel-based (deltaMode===0) and very small deltas (|delta|≤10)
+    const isMacTrackpadScroll =
+      isMac && !isPinchGesture && e.evt.deltaMode === 0 && absDelta <= 10;
+    
+    let zoomFactor;
+    
+    if (isPinchGesture) {
+      // Mac trackpad pinch gesture – fast & smooth
+      const pinchSensitivity = 0.2;
+      zoomFactor = 1 + deltaY * pinchSensitivity * -0.01; // invert
+    } else if (isMacTrackpadScroll) {
+      // Block two-finger scroll on Mac track-pads – no zoom
+      return;
+    } else {
+      // Mouse wheel on any platform → smooth exponential scale
+      const mouseSensitivity = 0.0005; // reduced sensitivity for slower zoom
+      zoomFactor = Math.exp(-deltaY * mouseSensitivity);
+    }
 
-    stage.scale({ x: newScale, y: newScale });
-    stage.position(newPos);
+    // Apply zoom limits
+    const newScale = Math.max(0.1, Math.min(10, oldScale * zoomFactor));
+    
+    // Only apply zoom if within limits
+    if (newScale !== oldScale) {
+      // Calculate new position for zoom-to-cursor
+      const newPos = {
+        x: pointer.x - mousePointTo.x * newScale,
+        y: pointer.y - mousePointTo.y * newScale,
+      };
+
+      stage.scale({ x: newScale, y: newScale });
+      stage.position(newPos);
+    }
+  };
+
+  // Handle touch events for proper pinch-to-zoom on mobile/trackpad
+  const handleTouchStart = (e: Konva.KonvaEventObject<TouchEvent>) => {
+    const touches = e.evt.touches;
+    if (touches.length === 2) {
+      setIsPinching(true);
+      setLastPinchDistance(getTouchDistance(touches));
+    }
+  };
+
+  const handleTouchMove = (e: Konva.KonvaEventObject<TouchEvent>) => {
+    const touches = e.evt.touches;
+    if (touches.length === 2 && isPinching && lastPinchDistance) {
+      e.evt.preventDefault();
+      
+      const stage = e.target.getStage();
+      if (!stage) return;
+      
+      const currentDistance = getTouchDistance(touches);
+      const center = getTouchCenter(touches);
+      if (!center) return;
+      
+      const oldScale = stage.scaleX();
+      const scaleChange = currentDistance / lastPinchDistance;
+      
+      // Apply smooth scaling with limits
+      const newScale = Math.max(0.1, Math.min(10, oldScale * scaleChange));
+      
+      if (newScale !== oldScale) {
+        // Get stage coordinates for the center point
+        const stageCenter = {
+          x: (center.x - stage.x()) / oldScale,
+          y: (center.y - stage.y()) / oldScale,
+        };
+        
+        // Calculate new position to zoom toward the center of the pinch
+        const newPos = {
+          x: center.x - stageCenter.x * newScale,
+          y: center.y - stageCenter.y * newScale,
+        };
+        
+        stage.scale({ x: newScale, y: newScale });
+        stage.position(newPos);
+      }
+      
+      setLastPinchDistance(currentDistance);
+    }
+  };
+
+  const handleTouchEnd = (e: Konva.KonvaEventObject<TouchEvent>) => {
+    const touches = e.evt.touches;
+    if (touches.length < 2) {
+      setIsPinching(false);
+      setLastPinchDistance(null);
+    }
   };
 
   // Add click handler for the stage to clear selection
@@ -1065,6 +1202,9 @@ export const PaintSurface = ({
             onClick={handleStageClick}
             onMouseEnter={handleStageMouseEnter}
             onMouseLeave={handleStageMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             {/* Left Panel */}
             <Layer

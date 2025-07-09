@@ -233,6 +233,35 @@ const PageDraw = () => {
     stage.batchDraw();
   };
 
+  // Auto-fit canvas to screen on initial load
+  useEffect(() => {
+    const autoFitCanvas = async () => {
+      let attempts = 0;
+      const maxAttempts = 20; // Increased attempts
+      
+      const tryFit = async () => {
+        const stage = stageRef.current;
+        if (stage && stage.container && stage.container().offsetWidth > 0) {
+          // Wait a bit more to ensure everything is rendered
+          await new Promise(resolve => setTimeout(resolve, 50));
+          onFitPressed();
+          return true;
+        }
+        
+        attempts++;
+        if (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          return tryFit();
+        }
+        return false;
+      };
+      
+      await tryFit();
+    };
+
+    autoFitCanvas();
+  }, []); // Run once on mount
+
   return (
     <>
       <div

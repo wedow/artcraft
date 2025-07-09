@@ -21,7 +21,7 @@ import {
   faPlus,
   faUpload,
   faImages,
-  faExpandWide,
+  faFrame,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faRectangleVertical,
@@ -626,7 +626,7 @@ export const PromptBox2D = ({
                     className="h-9 w-9"
                     onClick={onFitPressed}
                   >
-                    <FontAwesomeIcon icon={faExpandWide} className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faFrame} className="h-4 w-4" />
                   </Button>
                 </Tooltip>
               )}
