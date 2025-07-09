@@ -3,6 +3,7 @@ import {
   Stage,
   Layer,
   Rect,
+  Ellipse,
   Circle,
   Text,
   Line,
@@ -96,6 +97,20 @@ export const PaintSurface = ({
 
   // Add state to track the current line being drawn
   const [currentLineId, setCurrentLineId] = useState<string | null>(null);
+
+  /* ---------- shape drawing state ---------- */
+  const [isDrawingShape, setIsDrawingShape] = useState(false);
+  const [currentShapeId, setCurrentShapeId] = useState<string | null>(null);
+  const [shapeStartPoint, setShapeStartPoint] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [shapePreview, setShapePreview] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   // Add useLayoutEffect to measure container dimensions
   useLayoutEffect(() => {
@@ -191,7 +206,12 @@ export const PaintSurface = ({
     activeTool: string,
     nodeDraggable: boolean,
   ): boolean => {
-    return activeTool !== "draw" && activeTool !== "eraser" && nodeDraggable;
+    return (
+      activeTool !== "draw" &&
+      activeTool !== "eraser" &&
+      activeTool !== "shape" &&
+      nodeDraggable
+    );
   };
 
   // Combined mouse handlers
@@ -271,6 +291,53 @@ export const PaintSurface = ({
         endY: clampedPoint.y,
       });
     }
+
+    // Handle shape drawing tool
+    if (
+      activeTool === "shape" &&
+      store.currentShape &&
+      isWithinLeftPanel(stagePoint) &&
+      e.target === e.target.getStage()
+    ) {
+      const id = `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const commonProps = {
+        id,
+        x: stagePoint.x,
+        y: stagePoint.y,
+        width: 1,
+        height: 1,
+        fill: "#e0e0e0",
+        stroke: "#444",
+        strokeWidth: 2,
+        draggable: true,
+      } as const;
+
+      let newNode: Node;
+      switch (store.currentShape) {
+        case "circle":
+          newNode = new Node({ ...commonProps, type: "circle" });
+          break;
+        case "triangle":
+          newNode = new Node({ ...commonProps, type: "triangle" });
+          break;
+        case "rectangle":
+        default:
+          newNode = new Node({ ...commonProps, type: "rectangle" });
+          break;
+      }
+
+      store.addNode(newNode);
+      setIsDrawingShape(true);
+      setCurrentShapeId(id);
+      setShapeStartPoint(stagePoint);
+      setShapePreview({
+        x: stagePoint.x,
+        y: stagePoint.y,
+        width: 0,
+        height: 0,
+      });
+      return;
+    }
   };
 
   const handleStageMouseMove = (
@@ -286,9 +353,9 @@ export const PaintSurface = ({
         x: (pointer.x - stage.x()) / stage.scaleX(),
         y: (pointer.y - stage.y()) / stage.scaleY(),
       };
-      
+
       const isWithinCanvas = isWithinLeftPanel(stagePoint);
-      
+
       // Update cursor based on position and tool
       if (activeTool === "draw" || activeTool === "eraser") {
         if (isWithinCanvas) {
@@ -313,15 +380,15 @@ export const PaintSurface = ({
     if (isDragging) {
       const currentStage = e.target.getStage();
       if (!currentStage) return;
-      
+
       // Update cursor to grabbing while dragging
       currentStage.container().style.cursor = "grabbing";
-      
-             // Use a multiplier to make middle mouse dragging more responsive
-       const dragSensitivity = 3.0; // Much higher sensitivity for faster dragging
+
+      // Use a multiplier to make middle mouse dragging more responsive
+      const dragSensitivity = 3.0; // Much higher sensitivity for faster dragging
       const newPos = {
-        x: currentStage.x() + (e.evt.movementX * dragSensitivity),
-        y: currentStage.y() + (e.evt.movementY * dragSensitivity),
+        x: currentStage.x() + e.evt.movementX * dragSensitivity,
+        y: currentStage.y() + e.evt.movementY * dragSensitivity,
       };
       currentStage.position(newPos);
       return;
@@ -360,6 +427,52 @@ export const PaintSurface = ({
         setCurrentLineId(null);
         setLastPoint(null);
       }
+    }
+
+    // Handle shape resizing during drawing
+    if (isDrawingShape && currentShapeId && shapeStartPoint) {
+      const point = stage.getPointerPosition();
+      if (!point) return;
+
+      const stagePoint = {
+        x: (point.x - stage.x()) / stage.scaleX(),
+        y: (point.y - stage.y()) / stage.scaleY(),
+      };
+
+      // Clamp within bounds
+      const clamped = clampToLeftPanel(stagePoint);
+
+      const start = shapeStartPoint;
+
+      // Deltas
+      let dx = clamped.x - start.x;
+      let dy = clamped.y - start.y;
+
+      // If Shift key is held, constrain to proportional (square / circle / equilateral triangle)
+      const shiftHeld = (e.evt as MouseEvent).shiftKey;
+      const keepSquare = shiftHeld;
+      if (keepSquare) {
+        const side = Math.max(Math.abs(dx), Math.abs(dy));
+        dx = dx < 0 ? -side : side;
+        dy = dy < 0 ? -side : side;
+      }
+
+      // Compute top-left corner & positive width/height
+      let newX = dx < 0 ? start.x + dx : start.x;
+      let newY = dy < 0 ? start.y + dy : start.y;
+      const newWidth = Math.abs(dx);
+      const newHeight = Math.abs(dy);
+
+      const updateProps = {
+        x: newX,
+        y: newY,
+        width: newWidth,
+        height: newHeight,
+      };
+
+      store.updateNode(currentShapeId, updateProps, false);
+
+      setShapePreview({ x: newX, y: newY, width: newWidth, height: newHeight });
     }
 
     // Handle selection rectangle - Update directly through Konva
@@ -401,6 +514,13 @@ export const PaintSurface = ({
   const handleStageMouseUp = () => {
     if (isDrawing) {
       store.saveState(); // Save state only when the stroke is complete
+    }
+
+    if (isDrawingShape && currentShapeId) {
+      store.saveState();
+      // Automatically return to select tool after shape creation and select the new node
+      store.setActiveTool("select");
+      store.selectNode(currentShapeId);
     }
 
     if (isSelecting && selectionRect) {
@@ -461,10 +581,16 @@ export const PaintSurface = ({
     onSelectionChange?.(false);
     setSelectionRect(null);
     setLastPoint(null);
+    setIsDrawingShape(false);
+    setCurrentShapeId(null);
+    setShapeStartPoint(null);
+    setShapePreview(null);
   };
 
   // State for tracking pinch gestures
-  const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
+  const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(
+    null,
+  );
   const [isPinching, setIsPinching] = useState(false);
 
   // Helper function to get distance between two touch points
@@ -473,8 +599,8 @@ export const PaintSurface = ({
     const touch1 = touches[0];
     const touch2 = touches[1];
     return Math.sqrt(
-      Math.pow(touch2.clientX - touch1.clientX, 2) + 
-      Math.pow(touch2.clientY - touch1.clientY, 2)
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   };
 
@@ -506,16 +632,16 @@ export const PaintSurface = ({
     const isPinchGesture = e.evt.ctrlKey;
     const deltaY = e.evt.deltaY;
     const absDelta = Math.abs(deltaY);
-    
+
     // Detect Mac trackpad vs mouse wheel more precisely
-    const isMac = navigator.userAgent.includes('Mac');
+    const isMac = navigator.userAgent.includes("Mac");
 
     // Track-pad scroll on Mac: pixel-based (deltaMode===0) and very small deltas (|delta|≤10)
     const isMacTrackpadScroll =
       isMac && !isPinchGesture && e.evt.deltaMode === 0 && absDelta <= 10;
-    
+
     let zoomFactor;
-    
+
     if (isPinchGesture) {
       // Mac trackpad pinch gesture – fast & smooth
       const pinchSensitivity = 0.2;
@@ -531,7 +657,7 @@ export const PaintSurface = ({
 
     // Apply zoom limits
     const newScale = Math.max(0.1, Math.min(10, oldScale * zoomFactor));
-    
+
     // Only apply zoom if within limits
     if (newScale !== oldScale) {
       // Calculate new position for zoom-to-cursor
@@ -558,37 +684,37 @@ export const PaintSurface = ({
     const touches = e.evt.touches;
     if (touches.length === 2 && isPinching && lastPinchDistance) {
       e.evt.preventDefault();
-      
+
       const stage = e.target.getStage();
       if (!stage) return;
-      
+
       const currentDistance = getTouchDistance(touches);
       const center = getTouchCenter(touches);
       if (!center) return;
-      
+
       const oldScale = stage.scaleX();
       const scaleChange = currentDistance / lastPinchDistance;
-      
+
       // Apply smooth scaling with limits
       const newScale = Math.max(0.1, Math.min(10, oldScale * scaleChange));
-      
+
       if (newScale !== oldScale) {
         // Get stage coordinates for the center point
         const stageCenter = {
           x: (center.x - stage.x()) / oldScale,
           y: (center.y - stage.y()) / oldScale,
         };
-        
+
         // Calculate new position to zoom toward the center of the pinch
         const newPos = {
           x: center.x - stageCenter.x * newScale,
           y: center.y - stageCenter.y * newScale,
         };
-        
+
         stage.scale({ x: newScale, y: newScale });
         stage.position(newPos);
       }
-      
+
       setLastPinchDistance(currentDistance);
     }
   };
@@ -717,8 +843,12 @@ export const PaintSurface = ({
       e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
       nodeId: string,
     ) => {
-      // Don't select nodes when draw or erase tools are active
-      if (activeTool === "draw" || activeTool === "eraser") {
+      // Don't select nodes when draw, erase, or shape tools are active
+      if (
+        activeTool === "draw" ||
+        activeTool === "eraser" ||
+        activeTool === "shape"
+      ) {
         return;
       }
 
@@ -766,7 +896,16 @@ export const PaintSurface = ({
       targetNode.lastX = targetNode.x();
       targetNode.lastY = targetNode.y();
 
-      store.moveNode(nodeId, targetNode.x(), targetNode.y(), 0, 0, false);
+      let newX = targetNode.x();
+      let newY = targetNode.y();
+      const draggedNode =
+        nodes.find((n) => n.id === nodeId) ||
+        (store.lineNodes as any).find((n: any) => n.id === nodeId);
+      if (draggedNode && draggedNode.type === "circle") {
+        newX = targetNode.x() - draggedNode.width / 2;
+        newY = targetNode.y() - draggedNode.height / 2;
+      }
+      store.moveNode(nodeId, newX, newY, 0, 0, false);
     };
 
     const handleNodeDragMove = (
@@ -786,7 +925,16 @@ export const PaintSurface = ({
       targetNode.lastX = targetNode.x();
       targetNode.lastY = targetNode.y();
 
-      store.moveNode(nodeId, targetNode.x(), targetNode.y(), dx, dy, false);
+      let newXMove = targetNode.x();
+      let newYMove = targetNode.y();
+      const movingNode =
+        nodes.find((n) => n.id === nodeId) ||
+        (store.lineNodes as any).find((n: any) => n.id === nodeId);
+      if (movingNode && movingNode.type === "circle") {
+        newXMove = targetNode.x() - movingNode.width / 2;
+        newYMove = targetNode.y() - movingNode.height / 2;
+      }
+      store.moveNode(nodeId, newXMove, newYMove, dx, dy, false);
     };
 
     const handleNodeDragEnd = (
@@ -800,7 +948,16 @@ export const PaintSurface = ({
       targetNode.lastX = targetNode.x();
       targetNode.lastY = targetNode.y();
 
-      store.moveNode(nodeId, targetNode.x(), targetNode.y(), 0, 0, true);
+      let endX = targetNode.x();
+      let endY = targetNode.y();
+      const endNode =
+        nodes.find((n) => n.id === nodeId) ||
+        (store.lineNodes as any).find((n: any) => n.id === nodeId);
+      if (endNode && endNode.type === "circle") {
+        endX = targetNode.x() - endNode.width / 2;
+        endY = targetNode.y() - endNode.height / 2;
+      }
+      store.moveNode(nodeId, endX, endY, 0, 0, true);
     };
 
     const isSelected = selectedNodeIds.includes(node.id);
@@ -898,6 +1055,8 @@ export const PaintSurface = ({
       return null;
     };
 
+    const listeningEnabled = activeTool !== "shape";
+
     if (node.type === "line") {
       const lineNode = node as LineNode;
 
@@ -977,6 +1136,7 @@ export const PaintSurface = ({
             offsetX={lineNode.offsetX || 0}
             offsetY={lineNode.offsetY || 0}
             zIndex={lineNode.zIndex}
+            listening={listeningEnabled}
           />
           {renderTransformer()}
         </React.Fragment>
@@ -986,12 +1146,12 @@ export const PaintSurface = ({
     if (node.type === "circle") {
       return (
         <React.Fragment key={node.id}>
-          <Circle
+          <Ellipse
             id={node.id}
-            x={node.x}
-            y={node.y}
-            width={node.width}
-            height={node.height}
+            x={node.x + node.width / 2}
+            y={node.y + node.height / 2}
+            radiusX={node.width / 2}
+            radiusY={node.height / 2}
             fill={node.fill}
             stroke={node.stroke}
             strokeWidth={0}
@@ -1012,6 +1172,7 @@ export const PaintSurface = ({
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
+            listening={listeningEnabled}
           />
           {renderTransformer()}
         </React.Fragment>
@@ -1047,6 +1208,7 @@ export const PaintSurface = ({
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
+            listening={listeningEnabled}
           />
           {renderTransformer()}
         </React.Fragment>
@@ -1054,14 +1216,23 @@ export const PaintSurface = ({
     }
 
     if (node.type === "triangle") {
+      const points = [
+        0,
+        node.height, // bottom-left
+        node.width / 2,
+        0, // top-center
+        node.width,
+        node.height, // bottom-right
+      ];
+
       return (
         <React.Fragment key={node.id}>
-          <RegularPolygon
+          <Line
             id={node.id}
             x={node.x}
             y={node.y}
-            sides={3}
-            radius={Math.min(node.width, node.height) / 2}
+            points={points}
+            closed
             fill={node.fill}
             stroke={node.stroke}
             strokeWidth={0}
@@ -1082,6 +1253,7 @@ export const PaintSurface = ({
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
+            listening={listeningEnabled}
           />
           {renderTransformer()}
         </React.Fragment>
@@ -1133,6 +1305,7 @@ export const PaintSurface = ({
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
+            listening={listeningEnabled}
           />
           {renderTransformer()}
         </React.Fragment>
@@ -1249,6 +1422,20 @@ export const PaintSurface = ({
                   strokeWidth={1}
                   listening={false}
                   cornerRadius={2}
+                />
+              )}
+
+              {/* Shape preview bounding box */}
+              {shapePreview && (
+                <Rect
+                  x={shapePreview.x}
+                  y={shapePreview.y}
+                  width={shapePreview.width}
+                  height={shapePreview.height}
+                  stroke="#3b82f6"
+                  dash={[4, 4]}
+                  strokeWidth={1}
+                  listening={false}
                 />
               )}
             </Layer>

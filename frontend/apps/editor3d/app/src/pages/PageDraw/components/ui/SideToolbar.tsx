@@ -38,7 +38,8 @@ function useDebounced<T extends (...args: A) => void, A extends unknown[]>(
 
 export interface SideToolbarProps {
   onSelect: () => void;
-  onAddShape: (shape: "rectangle" | "circle" | "triangle") => void;
+  onActivateShapeTool: (shape: "rectangle" | "circle" | "triangle") => void;
+  currentShape: "rectangle" | "circle" | "triangle" | null;
   onPaintBrush: (hex: string, size: number, opacity: number) => void;
   onCanvasBackground: (hex: string) => void;
   onUploadImage: () => void;
@@ -49,7 +50,8 @@ export interface SideToolbarProps {
 
 const SideToolbar: React.FC<SideToolbarProps> = ({
   onSelect,
-  onAddShape,
+  onActivateShapeTool,
+  currentShape,
   onPaintBrush,
   onCanvasBackground,
   onUploadImage,
@@ -153,21 +155,23 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       id: "add-shape",
       label: "Add Shape",
       icon: <FontAwesomeIcon icon={faShapes} className="h-5 w-5" />,
+      onClick: () => {
+        // Activate shape tool using currently selected shape if any and clear selection
+        store.selectNode(null);
+        if (!store.currentShape) {
+          store.setCurrentShape("rectangle");
+        }
+        store.setActiveTool("shape");
+      },
       popout: (
-        <div
-          className={`flex items-center gap-1.5 rounded-full px-1.5 py-1.5 shadow-lg`}
-        >
-          {[
-            faSquare,
-            faCircle,
-            faPlay, // triangle
-          ].map((faIcon, i) => (
+        <div className="flex items-center gap-1.5 rounded-full px-1.5 py-1.5 shadow-lg">
+          {[faSquare, faCircle, faPlay].map((faIcon, i) => (
             <button
               key={i}
               className={shapeIconBtn}
               onClick={() => {
                 const shapes = ["rectangle", "circle", "triangle"] as const;
-                onAddShape(shapes[i]);
+                onActivateShapeTool(shapes[i]);
                 setOpen(null);
               }}
             >
@@ -177,14 +181,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
         </div>
       ),
     },
-    // {
-    //   id: "generate",
-    //   label: "Generate Image",
-    //   icon: <FontAwesomeIcon icon={faSparkles} className="h-5 w-5" />,
-    //   onClick: () => {
-    //     onGenerateImage();
-    //   },
-    // },
     {
       id: "upload",
       label: "Upload Image",
@@ -204,27 +200,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       },
       popout: BrushPopout,
     },
-    // Commented out for now
-    // {
-    //   id: "eraser",
-    //   label: "Eraser",
-    //   icon: <FontAwesomeIcon icon={faEraser} className="h-5 w-5" />,
-    //   onClick: () => {
-    //     onEraser(brushSize);
-    //   },
-    //   popout: (
-    //     <div className="p-4">
-    //       <SliderWithIndicator
-    //         value={brushSize}
-    //         onChange={(size) => {
-    //           setBrushSize(size);
-    //           onEraser(size);
-    //         }}
-    //         label="Eraser Size"
-    //       />
-    //     </div>
-    //   ),
-    // },
     {
       id: "delete",
       label: "Delete",
@@ -261,36 +236,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
         store.redo(); // Assuming store has a redo method
       },
     },
-    // {
-    //   id: "save-scene",
-    //   label: "Save Scene",
-    //   icon: <FontAwesomeIcon icon={faFileExport} className="h-5 w-5" />,
-    //   onClick: () => {
-    //     store.saveSceneToFile();
-    //   },
-    // },
-    // {
-    //   id: "load-scene",
-    //   label: "Load Scene",
-    //   icon: <FontAwesomeIcon icon={faFileImport} className="h-5 w-5" />,
-    //   onClick: () => {
-    //     const input = document.createElement("input");
-    //     input.type = "file";
-    //     input.accept = ".json";
-    //     input.onchange = async (e: Event) => {
-    //       const target = e.target as HTMLInputElement;
-    //       if (target.files && target.files[0]) {
-    //         const success = await store.loadSceneFromFile(target.files[0]);
-    //         if (success) {
-    //           console.log("Scene loaded successfully");
-    //         } else {
-    //           console.error("Failed to load scene");
-    //         }
-    //       }
-    //     };
-    //     input.click();
-    //   },
-    // },
   ];
 
   /* ------------------------------------------------ render ---------- */
@@ -307,7 +252,9 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
         }
 
         const { id, icon, onClick, popout, label } = tool;
-        const active = id === activeToolId;
+        const active =
+          id === activeToolId ||
+          (id === "add-shape" && activeToolId === "shape");
         const btnStyle = active
           ? "bg-primary/30 border-2 !border-primary text-white"
           : "hover:bg-white/10 text-white";
@@ -322,6 +269,21 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
             />
           ) : (
             <FontAwesomeIcon icon={faPaintBrush} className="h-5 w-5" />
+          );
+        }
+
+        // Dynamic icon for shape tool
+        if (id === "add-shape" && activeToolId === "shape" && currentShape) {
+          const shapeIcons = {
+            rectangle: faSquare,
+            circle: faCircle,
+            triangle: faPlay,
+          } as const;
+          displayIcon = (
+            <FontAwesomeIcon
+              icon={shapeIcons[currentShape]}
+              className="h-5 w-5"
+            />
           );
         }
 

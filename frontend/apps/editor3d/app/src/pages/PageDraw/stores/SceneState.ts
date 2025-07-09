@@ -1,15 +1,15 @@
-import { create } from 'zustand';
-import { Node } from '../Node';
+import { create } from "zustand";
+import { Node } from "../Node";
 
 // Add LineNode type
 export type LineNode = {
   id: string;
-  type: 'line';
+  type: "line";
   points: number[];
   stroke: string;
   strokeWidth: number;
   draggable: boolean;
-  opacity?: number;  // Add opacity property
+  opacity?: number; // Add opacity property
   x?: number;
   y?: number;
   rotation?: number;
@@ -23,89 +23,141 @@ export type LineNode = {
 
 // Add this enum at the top of the file with other types
 export enum AspectRatioType {
-  PORTRAIT = '2:3',    // 683 x 1024
-  LANDSCAPE = '3:2',   // 1024 x 683
-  SQUARE = '1:1',      // 1024 x 1024
-  NONE = 'none'        // No aspect ratio constraint
+  PORTRAIT = "2:3", // 683 x 1024
+  LANDSCAPE = "3:2", // 1024 x 683
+  SQUARE = "1:1", // 1024 x 1024
+  NONE = "none", // No aspect ratio constraint
 }
 
-   // Logic to remove background from image nodes would go here
+// Logic to remove background from image nodes would go here
 const convertFileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onloadend = () => {
-            if (reader.result) {
-                resolve(reader.result as string);
-            } else {
-                reject(new Error("Failed to convert file to base64."));
-            }
-        };
-        
-        reader.onerror = () => {
-            reject(new Error("Error reading file."));
-        };
-        
-        reader.readAsDataURL(file);
-    });
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      if (reader.result) {
+        resolve(reader.result as string);
+      } else {
+        reject(new Error("Failed to convert file to base64."));
+      }
+    };
+
+    reader.onerror = () => {
+      reject(new Error("Error reading file."));
+    };
+
+    reader.readAsDataURL(file);
+  });
 };
 
-export type ActiveTool = 'select' | 'draw' | 'eraser' | 'backgroundColor' | 'shape';
+export type ActiveTool =
+  | "select"
+  | "draw"
+  | "eraser"
+  | "backgroundColor"
+  | "shape";
 
 interface SceneState {
   // Nodes
   nodes: Node[];
   selectedNodeIds: string[];
   lineNodes: LineNode[]; // Add lineNodes to state
-  
+
   // Clipboard
   clipboard: (Node | LineNode)[]; // To store copied items
-  
+
   // Toolbar state
   activeTool: ActiveTool;
   brushColor: string;
   brushSize: number;
   brushOpacity: number;
   fillColor: string;
-  
+  // Currently selected shape when shape tool is active
+  currentShape: "rectangle" | "circle" | "triangle" | null;
+
   // Cursor state
   cursorPosition: { x: number; y: number } | null;
   cursorVisible: boolean;
-  
+
   // Actions
   addNode: (node: Node) => void;
   removeNode: (id: string, shouldSaveState?: boolean) => void;
-  updateNode: (id: string, updates: Partial<Node>, shouldSaveState: boolean) => void;
+  updateNode: (
+    id: string,
+    updates: Partial<Node>,
+    shouldSaveState: boolean,
+  ) => void;
   selectNode: (id: string | null, isMultiSelect?: boolean) => void;
-  moveNode: (id: string, x: number, y: number, dx?: number, dy?: number, shouldSaveState?: boolean) => void;
-  
+  moveNode: (
+    id: string,
+    x: number,
+    y: number,
+    dx?: number,
+    dy?: number,
+    shouldSaveState?: boolean,
+  ) => void;
+
   // Batch operations
   setNodes: (nodes: Node[]) => void;
-  
+
   // Node creation helpers
-  createRectangle: (x: number, y: number, width?: number, height?: number, fill?: string) => void;
+  createRectangle: (
+    x: number,
+    y: number,
+    width?: number,
+    height?: number,
+    fill?: string,
+  ) => void;
   createCircle: (x: number, y: number, radius?: number, fill?: string) => void;
-  createTriangle: (x: number, y: number, width?: number, height?: number, fill?: string) => void;
-  createImage: (x: number, y: number, source: string | File, width?: number, height?: number) => void;
-  
+  createTriangle: (
+    x: number,
+    y: number,
+    width?: number,
+    height?: number,
+    fill?: string,
+  ) => void;
+  createImage: (
+    x: number,
+    y: number,
+    source: string | File,
+    width?: number,
+    height?: number,
+  ) => void;
+
   // History management
   history: { nodes: Node[]; lineNodes: LineNode[] }[];
   historyIndex: number;
   undo: () => void;
   redo: () => void;
   saveState: () => void;
-  
+
   // Add new actions for line nodes
   addLineNode: (lineNode: LineNode, shouldSaveState: boolean) => void;
   removeLineNode: (id: string, shouldSaveState?: boolean) => void;
-  updateLineNode: (id: string, updates: Partial<LineNode>, shouldSaveState: boolean) => void;
+  updateLineNode: (
+    id: string,
+    updates: Partial<LineNode>,
+    shouldSaveState: boolean,
+  ) => void;
   moveLineNode: (id: string, dx: number, dy: number) => void;
-  
+
   // Add a specific method for file uploads
-  createImageFromFile: (x: number, y: number, file: File, width?: number, height?: number) => void;
-  
+  createImageFromFile: (
+    x: number,
+    y: number,
+    file: File,
+    width?: number,
+    height?: number,
+  ) => void;
+
   // Add method for URL-based images
-  createImageFromUrl: (x: number, y: number, url: string, width?: number, height?: number) => void;
+  createImageFromUrl: (
+    x: number,
+    y: number,
+    url: string,
+    width?: number,
+    height?: number,
+  ) => void;
 
   // Action for deleting selected items
   deleteSelectedItems: () => void;
@@ -120,6 +172,9 @@ interface SceneState {
   setBrushOpacity: (opacity: number) => void;
   setBrushSize: (size: number) => void;
   setFillColor: (color: string) => void;
+
+  // Shape tool actions
+  setCurrentShape: (shape: "rectangle" | "circle" | "triangle") => void;
 
   // Cursor actions
   setCursorPosition: (position: { x: number; y: number } | null) => void;
@@ -140,7 +195,14 @@ interface SceneState {
   sendToBack: (nodeIds: string[]) => void;
   bringForward: (nodeIds: string[]) => void;
   sendBackward: (nodeIds: string[]) => void;
-  removeBackground: (nodeIds: string[], operation: (success: boolean, base64_image: string, message: string) => Promise<{ success: boolean; file?: File }>) => Promise<void>;
+  removeBackground: (
+    nodeIds: string[],
+    operation: (
+      success: boolean,
+      base64_image: string,
+      message: string,
+    ) => Promise<{ success: boolean; file?: File }>,
+  ) => Promise<void>;
 
   // Add new lock action
   toggleLock: (nodeIds: string[]) => void;
@@ -170,7 +232,7 @@ const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
     ...lineNodes.map((n, index) => {
       //console.log(`LineNode: ${JSON.stringify(n)}, Index: ${index}`);
       return n.zIndex || 0;
-    })
+    }),
   ];
 
   return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 0;
@@ -184,21 +246,23 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   clipboard: [], // Initialize clipboard
   history: [],
   historyIndex: -1,
-  
+
   // Toolbar initial state
-  activeTool: 'select',
-  brushColor: '#000000',
+  activeTool: "select",
+  brushColor: "#000000",
   brushSize: 5,
   brushOpacity: 1,
-  fillColor: 'white',
-  
+  fillColor: "white",
+  // Shape tool initial state
+  currentShape: null,
+
   // Cursor initial state
   cursorPosition: null,
   cursorVisible: false,
-  
+
   // Add initial aspect ratio state
   aspectRatioType: AspectRatioType.NONE,
-  
+
   // Actions
   addNode: (node: Node) => {
     set((state) => {
@@ -206,47 +270,52 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       console.log(`NextZ for node ID ${node.id}: ${nextZ}`);
       const newNode = new Node({
         ...node,
-        zIndex: nextZ
+        zIndex: nextZ,
       });
       // console.log("New Node with ID:", newNode.id);
-      let nodes =  [...state.nodes, newNode]
-      console.log("Nodes after update")
-      console.log(nodes)
+      let nodes = [...state.nodes, newNode];
+      console.log("Nodes after update");
+      console.log(nodes);
       return { nodes: nodes };
     });
     get().saveState();
   },
-  
+
   removeNode: (id: string, shouldSaveState: boolean = true) => {
     set((state) => {
       // Remove the node
-      const newNodes = state.nodes.filter(node => node.id !== id);
-      
+      const newNodes = state.nodes.filter((node) => node.id !== id);
+
       // Update selection state
-      const newSelectedIds = state.selectedNodeIds.filter(nodeId => nodeId !== id);
-      
-      return { 
+      const newSelectedIds = state.selectedNodeIds.filter(
+        (nodeId) => nodeId !== id,
+      );
+
+      return {
         nodes: newNodes,
-        selectedNodeIds: newSelectedIds
+        selectedNodeIds: newSelectedIds,
       };
     });
     if (shouldSaveState) {
       get().saveState();
     }
   },
-  
-  updateNode: (id: string, updates: Partial<Node>, shouldSaveState: boolean = true) => {
+
+  updateNode: (
+    id: string,
+    updates: Partial<Node>,
+    shouldSaveState: boolean = true,
+  ) => {
     set((state) => {
-   
-      const newNodes = state.nodes.map(node => {
-        let newZIndex = updates.zIndex !== undefined ? updates.zIndex : node.zIndex 
-        
+      const newNodes = state.nodes.map((node) => {
+        let newZIndex =
+          updates.zIndex !== undefined ? updates.zIndex : node.zIndex;
 
         if (node.id === id) {
-          return new Node({ 
-            ...node, 
+          return new Node({
+            ...node,
             ...updates,
-            zIndex: newZIndex
+            zIndex: newZIndex,
           });
         }
         return node;
@@ -257,126 +326,150 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       get().saveState();
     }
   },
-  
+
   selectNode: (id: string | null, isMultiSelect = false) => {
     set((state) => {
       if (!id) {
         return { selectedNodeIds: [] };
       }
-      
+
       if (isMultiSelect) {
         // Toggle selection if already selected
         if (state.selectedNodeIds.includes(id)) {
-          return { 
-            selectedNodeIds: state.selectedNodeIds.filter(nodeId => nodeId !== id)
+          return {
+            selectedNodeIds: state.selectedNodeIds.filter(
+              (nodeId) => nodeId !== id,
+            ),
           };
         }
         // Add to selection
-        return { 
-          selectedNodeIds: [...state.selectedNodeIds, id]
+        return {
+          selectedNodeIds: [...state.selectedNodeIds, id],
         };
       }
-      
+
       // Single select
       return { selectedNodeIds: [id] };
     });
   },
-  
-  moveNode: (id: string, x: number, y: number, dx?: number, dy?: number, shouldSaveState: boolean = false) => {
+
+  moveNode: (
+    id: string,
+    x: number,
+    y: number,
+    dx?: number,
+    dy?: number,
+    shouldSaveState: boolean = false,
+  ) => {
     set((state) => {
       // Handle regular nodes
-      const newNodes = state.nodes.map(node => {
+      const newNodes = state.nodes.map((node) => {
         if (node.id === id) {
           node.setPosition(x, y);
           return node;
         }
-        if (state.selectedNodeIds.includes(node.id) && dx !== undefined && dy !== undefined) {
+        if (
+          state.selectedNodeIds.includes(node.id) &&
+          dx !== undefined &&
+          dy !== undefined
+        ) {
           node.setPosition(node.x + dx, node.y + dy);
           return node;
         }
         return node;
       });
-      
-      
-      const newState = { 
-        nodes: newNodes
+
+      const newState = {
+        nodes: newNodes,
       };
 
       // Only save state if explicitly requested
       if (shouldSaveState) {
         get().saveState();
       }
-      
+
       return newState;
     });
   },
-  
+
   setNodes: (nodes: Node[]) => {
     set({ nodes });
     get().saveState();
   },
-  
+
   // Node creation helpers
-  createRectangle: (x: number, y: number, width = 100, height = 100, fill = '#e0e0e0') => {
+  createRectangle: (
+    x: number,
+    y: number,
+    width = 100,
+    height = 100,
+    fill = "#e0e0e0",
+  ) => {
     const node = new Node({
       id: generateId(),
-      type: 'rectangle',
+      type: "rectangle",
       x,
       y,
       width,
       height,
       fill,
-      stroke: '#444',
+      stroke: "#444",
       strokeWidth: 2,
-      draggable: true
+      draggable: true,
     });
     get().addNode(node);
-    get().setActiveTool('select'); // Switch to select tool after creating
+    get().setActiveTool("select"); // Switch to select tool after creating
   },
-  
-  createCircle: (x: number, y: number, radius = 50, fill = '#f0f0f0') => {
+
+  createCircle: (x: number, y: number, radius = 50, fill = "#f0f0f0") => {
     const node = new Node({
       id: generateId(),
-      type: 'circle',
+      type: "circle",
       x,
       y,
       width: radius * 2,
       height: radius * 2,
       fill,
-      stroke: '#333',
+      stroke: "#333",
       strokeWidth: 2,
-      draggable: true
+      draggable: true,
     });
     get().addNode(node);
-    get().setActiveTool('select'); // Switch to select tool after creating
+    get().setActiveTool("select"); // Switch to select tool after creating
   },
-  
-  createTriangle: (x: number, y: number, width = 100, height = 100, fill = '#d0d0d0') => {
+
+  createTriangle: (
+    x: number,
+    y: number,
+    width = 100,
+    height = 100,
+    fill = "#d0d0d0",
+  ) => {
     const node = new Node({
       id: generateId(),
-      type: 'triangle',
+      type: "triangle",
       x,
       y,
       width,
       height,
       fill,
-      stroke: '#555',
+      stroke: "#555",
       strokeWidth: 2,
-      draggable: true
+      draggable: true,
     });
     get().addNode(node);
-    get().setActiveTool('select'); // Switch to select tool after creating
+    get().setActiveTool("select"); // Switch to select tool after creating
   },
-  
+
   // History management
   saveState: () => {
     // Don't save state if we're in the middle of restoring
     if (isRestoring) return;
-    
+
     set((state) => {
       // Create a deep copy but exclude non-serializable properties
       const serializableState = {
-        nodes: state.nodes.map(node => ({
+        nodes: state.nodes.map((node) => ({
           id: node.id,
           x: node.x,
           y: node.y,
@@ -393,49 +486,49 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           rotation: node.rotation || 0,
           scaleX: node.scaleX || 1,
           scaleY: node.scaleY || 1,
-          offsetX: node.offsetX || 0,  // Include offset in history
-          offsetY: node.offsetY || 0,  // Include offset in history
+          offsetX: node.offsetX || 0, // Include offset in history
+          offsetY: node.offsetY || 0, // Include offset in history
         })),
-        lineNodes: JSON.parse(JSON.stringify(state.lineNodes))
+        lineNodes: JSON.parse(JSON.stringify(state.lineNodes)),
       };
-      
+
       const newHistory = state.history.slice(0, state.historyIndex + 1);
       newHistory.push(serializableState);
-      
+
       return {
         history: newHistory,
-        historyIndex: newHistory.length - 1
+        historyIndex: newHistory.length - 1,
       };
     });
   },
-  
+
   undo: () => {
     set((state) => {
       if (state.historyIndex < 0) return state;
-      
+
       const newIndex = state.historyIndex - 1;
-      
+
       // If we're going back to before the first saved state, return to initial empty state
       if (newIndex < 0) {
         return {
           nodes: [],
           lineNodes: [],
           selectedNodeIds: [],
-          historyIndex: newIndex
+          historyIndex: newIndex,
         };
       }
-      
+
       const previousState = state.history[newIndex];
-      
+
       // Set the restoring flag
       isRestoring = true;
 
       // Recreate nodes and immediately start loading images
-      const restoredNodes = previousState.nodes.map(nodeData => {
+      const restoredNodes = previousState.nodes.map((nodeData) => {
         const node = new Node(nodeData as any);
-        
+
         // If it's an image node, start loading the image immediately
-        if (node.type === 'image' && (node.imageUrl || node.imageFile)) {
+        if (node.type === "image" && (node.imageUrl || node.imageFile)) {
           const loadImage = async () => {
             try {
               if (node.imageUrl) {
@@ -446,7 +539,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
               // Update the specific node without triggering state save
               get().updateNode(node.id, node, false);
             } catch (error) {
-              console.error('Failed to restore image:', error);
+              console.error("Failed to restore image:", error);
             } finally {
               // Reset the flag after a delay to ensure all async operations complete
               setTimeout(() => {
@@ -454,44 +547,44 @@ export const useSceneStore = create<SceneState>((set, get) => ({
               }, 100);
             }
           };
-          
+
           loadImage();
         }
-        
+
         return node;
       });
-      
+
       // Reset the flag if no images to load
-      const hasImages = restoredNodes.some(node => node.type === 'image');
+      const hasImages = restoredNodes.some((node) => node.type === "image");
       if (!hasImages) {
         isRestoring = false;
       }
-      
+
       return {
         nodes: restoredNodes,
         lineNodes: previousState.lineNodes,
         selectedNodeIds: [], // Clear selection on undo
-        historyIndex: newIndex
+        historyIndex: newIndex,
       };
     });
   },
-  
+
   redo: () => {
     set((state) => {
       if (state.historyIndex >= state.history.length - 1) return state;
-      
+
       const newIndex = state.historyIndex + 1;
       const nextState = state.history[newIndex];
-      
+
       // Set the restoring flag
       isRestoring = true;
-      
+
       // Recreate nodes and immediately start loading images
-      const restoredNodes = nextState.nodes.map(nodeData => {
+      const restoredNodes = nextState.nodes.map((nodeData) => {
         const node = new Node(nodeData as any);
-        
+
         // If it's an image node, start loading the image immediately
-        if (node.type === 'image' && (node.imageUrl || node.imageFile)) {
+        if (node.type === "image" && (node.imageUrl || node.imageFile)) {
           const loadImage = async () => {
             try {
               if (node.imageUrl) {
@@ -502,7 +595,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
               // Update the specific node without triggering state save
               get().updateNode(node.id, node, false);
             } catch (error) {
-              console.error('Failed to restore image:', error);
+              console.error("Failed to restore image:", error);
             } finally {
               // Reset the flag after a delay to ensure all async operations complete
               setTimeout(() => {
@@ -510,35 +603,35 @@ export const useSceneStore = create<SceneState>((set, get) => ({
               }, 100);
             }
           };
-          
+
           loadImage();
         }
-        
+
         return node;
       });
-      
+
       // Reset the flag if no images to load
-      const hasImages = restoredNodes.some(node => node.type === 'image');
+      const hasImages = restoredNodes.some((node) => node.type === "image");
       if (!hasImages) {
         isRestoring = false;
       }
-      
+
       return {
         nodes: restoredNodes,
         lineNodes: nextState.lineNodes,
         selectedNodeIds: [], // Clear selection on redo
-        historyIndex: newIndex
+        historyIndex: newIndex,
       };
     });
   },
-  
+
   // Add new line node actions
   addLineNode: (lineNode: LineNode, shouldSaveState: boolean = true) => {
     set((state) => {
       const nextZ = getNextZIndex(state.nodes, state.lineNodes);
       const newLineNode = {
         ...lineNode,
-        zIndex: nextZ
+        zIndex: nextZ,
       };
       return { lineNodes: [...state.lineNodes, newLineNode] };
     });
@@ -546,33 +639,39 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       get().saveState();
     }
   },
-  
+
   removeLineNode: (id: string, shouldSaveState: boolean = true) => {
     set((state) => {
       // Remove the line node
-      const newLineNodes = state.lineNodes.filter(node => node.id !== id);
-      
+      const newLineNodes = state.lineNodes.filter((node) => node.id !== id);
+
       // Update selection state
-      const newSelectedIds = state.selectedNodeIds.filter(nodeId => nodeId !== id);
-      
-      return { 
+      const newSelectedIds = state.selectedNodeIds.filter(
+        (nodeId) => nodeId !== id,
+      );
+
+      return {
         lineNodes: newLineNodes,
-        selectedNodeIds: newSelectedIds 
+        selectedNodeIds: newSelectedIds,
       };
     });
     if (shouldSaveState) {
       get().saveState();
     }
   },
-  
-  updateLineNode: (id: string, updates: Partial<LineNode>, shouldSaveState: boolean = true) => {
+
+  updateLineNode: (
+    id: string,
+    updates: Partial<LineNode>,
+    shouldSaveState: boolean = true,
+  ) => {
     set((state) => {
-      const newLineNodes = state.lineNodes.map(node => {
+      const newLineNodes = state.lineNodes.map((node) => {
         if (node.id === id) {
-          return { 
-            ...node, 
+          return {
+            ...node,
             ...updates,
-            zIndex: updates.zIndex !== undefined ? updates.zIndex : node.zIndex 
+            zIndex: updates.zIndex !== undefined ? updates.zIndex : node.zIndex,
           };
         }
         return node;
@@ -583,17 +682,17 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       get().saveState();
     }
   },
-  
+
   moveLineNode: (id: string, dx: number, dy: number) => {
     set((state) => {
-      const newLineNodes = state.lineNodes.map(node => {
+      const newLineNodes = state.lineNodes.map((node) => {
         if (node.id === id) {
           return {
             ...node,
             points: node.points.map((point, index) => {
               // Even indices are x coordinates, odd are y
               return index % 2 === 0 ? point + dx : point + dy;
-            })
+            }),
           };
         }
         return node;
@@ -602,9 +701,15 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     });
     get().saveState();
   },
-  
+
   // Add a specific method for file uploads
-  createImageFromFile: (x: number, y: number, file: File, width?: number, height?: number) => {
+  createImageFromFile: (
+    x: number,
+    y: number,
+    file: File,
+    width?: number,
+    height?: number,
+  ) => {
     // Auto-detect dimensions from the image if not provided
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -616,11 +721,11 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           // Increase default size to 512px width while maintaining aspect ratio
           const finalWidth = width || Math.min(img.naturalWidth, 512);
           const finalHeight = height || finalWidth / aspectRatio;
-          console.log('Image loaded with dimensions:', {
+          console.log("Image loaded with dimensions:", {
             naturalWidth: img.naturalWidth,
             naturalHeight: img.naturalHeight,
             finalWidth: finalWidth,
-            finalHeight: finalHeight
+            finalHeight: finalHeight,
           });
           get().createImage(x, y, file, finalWidth, finalHeight);
         };
@@ -629,51 +734,64 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     };
     reader.readAsDataURL(file);
   },
-  
+
   // Add method for URL-based images
-  createImageFromUrl: async (x: number, y: number, url: string, width?: number, height?: number) => {
+  createImageFromUrl: async (
+    x: number,
+    y: number,
+    url: string,
+    width?: number,
+    height?: number,
+  ) => {
     try {
       // Fetch the image and convert to blob
       const response = await fetch(url);
       const blob = await response.blob();
-      
+
       // Create a File from the blob
-      const filename = url.split('/').pop() || 'image.png';
+      const filename = url.split("/").pop() || "image.png";
       const file = new File([blob], filename, { type: blob.type });
-      
+
       // Use existing createImage function
       get().createImageFromFile(x, y, file, width, height);
     } catch (error) {
       console.error("Error loading image from URL:", url, error);
     }
   },
-  
+
   // Update the createImage method to handle both URLs and Files
-  createImage: (x: number, y: number, source: string | File, width = 200, height = 200) => {
+  createImage: (
+    x: number,
+    y: number,
+    source: string | File,
+    width = 200,
+    height = 200,
+  ) => {
     const nodeId = generateId(); // Define nodeId here to use it in the catch block for logging
     const node = new Node({
       id: nodeId,
-      type: 'image',
+      type: "image",
       x,
       y,
       width,
       height,
-      fill: 'transparent',
-      stroke: '#333',
+      fill: "transparent",
+      stroke: "#333",
       strokeWidth: 2,
       draggable: true,
-      imageUrl: typeof source === 'string' ? source : undefined,
-      imageFile: typeof source === 'string' ? undefined : source
+      imageUrl: typeof source === "string" ? source : undefined,
+      imageFile: typeof source === "string" ? undefined : source,
     });
-    
+
     // Load the image asynchronously
-    node.setImage(source).then(() => {
-      // Update the node in the store after image loads
-      get().addNode(node);
-      //get().updateNode(node.id, node, false);
-    }).catch((error)=>console.error('Error loading image:', error));
-    
-    
+    node
+      .setImage(source)
+      .then(() => {
+        // Update the node in the store after image loads
+        get().addNode(node);
+        //get().updateNode(node.id, node, false);
+      })
+      .catch((error) => console.error("Error loading image:", error));
   },
 
   // Action for deleting selected items
@@ -681,17 +799,17 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     const initialSelectedIds = [...get().selectedNodeIds]; // Operate on a copy of the original selection
 
     if (initialSelectedIds.length > 0) {
-      initialSelectedIds.forEach(id => {
-        get().removeNode(id, false);       // Pass shouldSaveState = false
-        get().removeLineNode(id, false);   // Pass shouldSaveState = false
+      initialSelectedIds.forEach((id) => {
+        get().removeNode(id, false); // Pass shouldSaveState = false
+        get().removeLineNode(id, false); // Pass shouldSaveState = false
       });
 
       // After all deletions, ensure selectedNodeIds is empty in the state.
-      set(state => ({
+      set((state) => ({
         ...state, // Preserve other state properties
-        selectedNodeIds: [] 
+        selectedNodeIds: [],
       }));
-      
+
       get().saveState(); // Save the final state once
     }
   },
@@ -699,11 +817,15 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   // Clipboard actions
   copySelectedItems: () => {
     set((state) => {
-      const selectedNodes = state.nodes.filter(node => state.selectedNodeIds.includes(node.id));
-      const selectedLineNodes = state.lineNodes.filter(lineNode => state.selectedNodeIds.includes(lineNode.id));
+      const selectedNodes = state.nodes.filter((node) =>
+        state.selectedNodeIds.includes(node.id),
+      );
+      const selectedLineNodes = state.lineNodes.filter((lineNode) =>
+        state.selectedNodeIds.includes(lineNode.id),
+      );
 
       // Deep copy nodes. For Node instances, we create new instances.
-      const copiedNodes = selectedNodes.map(node => {
+      const copiedNodes = selectedNodes.map((node) => {
         // Create a new Node instance with the properties of the old one.
         // This ensures methods are available if needed.
         // For imageFile (File object), the reference is copied. The new Node
@@ -730,7 +852,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     const nodesToAdd: Node[] = [];
     const lineNodesToAdd: LineNode[] = [];
 
-    clipboard.forEach(item => {
+    clipboard.forEach((item) => {
       const newId = generateId();
       newPastedItemIds.push(newId);
 
@@ -746,29 +868,78 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           // The new Node instance's constructor or setImage method will handle loading
         };
         const newNodeInstance = new Node(pastedNodeData);
-        
+
         // If it's an image, and its dimensions might change upon load,
         // we need to ensure the store is updated after the image is loaded.
         // The Node constructor itself might call setImage.
         // Similar to createImage, an updateNode call after image load is robust.
-        if (newNodeInstance.type === 'image' && (newNodeInstance.imageUrl || newNodeInstance.imageFile)) {
+        if (
+          newNodeInstance.type === "image" &&
+          (newNodeInstance.imageUrl || newNodeInstance.imageFile)
+        ) {
           const source = newNodeInstance.imageUrl || newNodeInstance.imageFile;
           if (source) {
-            newNodeInstance.setImage(source)
+            newNodeInstance
+              .setImage(source)
               .then(() => {
-                if (get().nodes.find(n => n.id === newId)) {
-                  const { id, x, y, width, height, fill, stroke, strokeWidth, draggable, imageUrl, imageFile, rotation, scaleX, scaleY, offsetX, offsetY } = newNodeInstance;
-                  get().updateNode(id, { x, y, width, height, fill, stroke, strokeWidth, draggable, imageUrl, imageFile, rotation, scaleX, scaleY, offsetX, offsetY }, false);
+                if (get().nodes.find((n) => n.id === newId)) {
+                  const {
+                    id,
+                    x,
+                    y,
+                    width,
+                    height,
+                    fill,
+                    stroke,
+                    strokeWidth,
+                    draggable,
+                    imageUrl,
+                    imageFile,
+                    rotation,
+                    scaleX,
+                    scaleY,
+                    offsetX,
+                    offsetY,
+                  } = newNodeInstance;
+                  get().updateNode(
+                    id,
+                    {
+                      x,
+                      y,
+                      width,
+                      height,
+                      fill,
+                      stroke,
+                      strokeWidth,
+                      draggable,
+                      imageUrl,
+                      imageFile,
+                      rotation,
+                      scaleX,
+                      scaleY,
+                      offsetX,
+                      offsetY,
+                    },
+                    false,
+                  );
                 }
               })
-              .catch(error => {
-                console.error(`Failed to load image for pasted node ${newId}:`, error);
+              .catch((error) => {
+                console.error(
+                  `Failed to load image for pasted node ${newId}:`,
+                  error,
+                );
               });
           }
         }
         nodesToAdd.push(newNodeInstance);
-
-      } else if (item && typeof item === 'object' && 'points' in item && 'type' in item && item.type === 'line') {
+      } else if (
+        item &&
+        typeof item === "object" &&
+        "points" in item &&
+        "type" in item &&
+        item.type === "line"
+      ) {
         // It's a LineNode (duck-typing for safety)
         const lineNode = item as LineNode;
         const pastedLineNode: LineNode = {
@@ -789,13 +960,13 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       }
     });
 
-    set(state => {
+    set((state) => {
       const newNodes = [...state.nodes, ...nodesToAdd];
       const newLineNodes = [...state.lineNodes, ...lineNodesToAdd];
       return {
         nodes: newNodes,
         lineNodes: newLineNodes,
-        selectedNodeIds: newPastedItemIds // Select the newly pasted items
+        selectedNodeIds: newPastedItemIds, // Select the newly pasted items
       };
     });
 
@@ -809,14 +980,19 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   setFillColor: (color: string) => set({ fillColor: color }),
   setBrushOpacity: (opacity: number) => set({ brushOpacity: opacity }),
 
+  // Shape tool actions
+  setCurrentShape: (shape: "rectangle" | "circle" | "triangle") =>
+    set({ currentShape: shape }),
+
   // Cursor actions
-  setCursorPosition: (position: { x: number; y: number } | null) => set({ cursorPosition: position }),
+  setCursorPosition: (position: { x: number; y: number } | null) =>
+    set({ cursorPosition: position }),
   setCursorVisible: (visible: boolean) => set({ cursorVisible: visible }),
 
   // Scene save/load actions
   exportSceneAsJson: async () => {
     const state = get();
-    
+
     // Helper function to convert File to base64
     const fileToBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
@@ -856,12 +1032,12 @@ export const useSceneStore = create<SceneState>((set, get) => ({
             const base64 = await fileToBase64(node.imageFile);
             return { ...nodeData, imageDataUrl: base64 };
           } catch (error) {
-            console.error('Failed to convert image file to base64:', error);
+            console.error("Failed to convert image file to base64:", error);
           }
         }
 
         return nodeData;
-      })
+      }),
     );
 
     const sceneData = {
@@ -871,22 +1047,22 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       brushSize: state.brushSize,
       fillColor: state.fillColor,
       aspectRatioType: state.aspectRatioType,
-      version: "1.0"
+      version: "1.0",
     };
-    
+
     return JSON.stringify(sceneData, null, 2);
   },
 
   importSceneFromJson: (jsonString: string) => {
     try {
       const sceneData = JSON.parse(jsonString);
-      
+
       isRestoring = true;
-      
+
       // Helper function to convert base64 to File
       const base64ToFile = (base64: string, filename: string): File => {
-        const arr = base64.split(',');
-        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+        const arr = base64.split(",");
+        const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
         const bstr = atob(arr[1]);
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
@@ -899,14 +1075,17 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       // Recreate nodes
       const restoredNodes = sceneData.nodes.map((nodeData: any) => {
         const node = new Node(nodeData);
-        
+
         // Handle image restoration
-        if (node.type === 'image') {
+        if (node.type === "image") {
           const loadImage = async () => {
             try {
               if (nodeData.imageDataUrl) {
                 // Restore from base64 data URL
-                const file = base64ToFile(nodeData.imageDataUrl, `restored-image-${node.id}.png`);
+                const file = base64ToFile(
+                  nodeData.imageDataUrl,
+                  `restored-image-${node.id}.png`,
+                );
                 await node.setImageFromFile(file);
               } else if (node.imageUrl) {
                 // Restore from URL
@@ -914,31 +1093,31 @@ export const useSceneStore = create<SceneState>((set, get) => ({
               }
               get().updateNode(node.id, node, false);
             } catch (error) {
-              console.error('Failed to restore image:', error);
+              console.error("Failed to restore image:", error);
             }
           };
           loadImage();
         }
-        
+
         return node;
       });
-      
+
       set({
         nodes: restoredNodes,
         lineNodes: sceneData.lineNodes || [],
         selectedNodeIds: [],
-        brushColor: sceneData.brushColor || '#000000',
+        brushColor: sceneData.brushColor || "#000000",
         brushSize: sceneData.brushSize || 5,
-        fillColor: sceneData.fillColor || 'white',
-        aspectRatioType: sceneData.aspectRatioType || AspectRatioType.NONE
+        fillColor: sceneData.fillColor || "white",
+        aspectRatioType: sceneData.aspectRatioType || AspectRatioType.NONE,
       });
-      
+
       isRestoring = false;
       get().saveState(); // Save the loaded state to history
-      
+
       return true;
     } catch (error) {
-      console.error('Failed to import scene:', error);
+      console.error("Failed to import scene:", error);
       isRestoring = false;
       return false;
     }
@@ -946,16 +1125,16 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
   saveSceneToFile: async () => {
     const jsonString = await get().exportSceneAsJson();
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
+
+    const link = document.createElement("a");
     link.href = url;
     link.download = `mirai-scene-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     URL.revokeObjectURL(url);
   },
 
@@ -964,11 +1143,11 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       const text = await file.text();
       return get().importSceneFromJson(text);
     } catch (error) {
-      console.error('Failed to load scene from file:', error);
+      console.error("Failed to load scene from file:", error);
       return false;
     }
   },
-  
+
   serializeSceneToString: async (): Promise<string> => {
     return get().exportSceneAsJson();
   },
@@ -978,81 +1157,88 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
   // New functions
   bringToFront: (nodeIds: string[]) => {
-    set(state => {
+    set((state) => {
       // Get highest zIndex from all nodes and line nodes
       const allZIndices = [
-        ...state.nodes.map(n => n.zIndex || 0),
-        ...state.lineNodes.map(n => n.zIndex || 0)
+        ...state.nodes.map((n) => n.zIndex || 0),
+        ...state.lineNodes.map((n) => n.zIndex || 0),
       ];
       const maxZ = Math.max(...allZIndices, 0) + 1;
 
       return {
-        nodes: state.nodes.map(node => 
-          nodeIds.includes(node.id) 
-            ? new Node({ ...node, zIndex: maxZ })
-            : node
-        ),
-        lineNodes: state.lineNodes.map(node =>
+        nodes: state.nodes.map((node) =>
           nodeIds.includes(node.id)
-            ? { ...node, zIndex: maxZ }
-            : node
-        )
+            ? new Node({ ...node, zIndex: maxZ })
+            : node,
+        ),
+        lineNodes: state.lineNodes.map((node) =>
+          nodeIds.includes(node.id) ? { ...node, zIndex: maxZ } : node,
+        ),
       };
     });
     get().saveState();
   },
 
   sendToBack: (nodeIds: string[]) => {
-    set(state => {
+    set((state) => {
       // Get lowest zIndex from all nodes and line nodes
       const allZIndices = [
-        ...state.nodes.map(n => n.zIndex || 0),
-        ...state.lineNodes.map(n => n.zIndex || 0)
+        ...state.nodes.map((n) => n.zIndex || 0),
+        ...state.lineNodes.map((n) => n.zIndex || 0),
       ];
       const minZ = Math.min(...allZIndices, 0) - 1;
 
       return {
-        nodes: state.nodes.map(node =>
+        nodes: state.nodes.map((node) =>
           nodeIds.includes(node.id)
             ? new Node({ ...node, zIndex: minZ })
-            : node
+            : node,
         ),
-        lineNodes: state.lineNodes.map(node =>
-          nodeIds.includes(node.id)
-            ? { ...node, zIndex: minZ }
-            : node
-        )
+        lineNodes: state.lineNodes.map((node) =>
+          nodeIds.includes(node.id) ? { ...node, zIndex: minZ } : node,
+        ),
       };
     });
     get().saveState();
   },
 
   bringForward: (nodeIds: string[]) => {
-    set(state => {
+    set((state) => {
       // Combine all items with their current zIndex
       const allItems = [
-        ...state.nodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) })),
-        ...state.lineNodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) }))
+        ...state.nodes.map((n) => ({
+          id: n.id,
+          z: Math.max(0, n.zIndex || 0),
+          selected: nodeIds.includes(n.id),
+        })),
+        ...state.lineNodes.map((n) => ({
+          id: n.id,
+          z: Math.max(0, n.zIndex || 0),
+          selected: nodeIds.includes(n.id),
+        })),
       ].sort((a, b) => a.z - b.z);
 
       // Find the highest z-index among selected items
-      const selectedItems = allItems.filter(item => item.selected);
+      const selectedItems = allItems.filter((item) => item.selected);
       if (selectedItems.length === 0) return state;
-      
-      const highestSelectedZ = Math.max(...selectedItems.map(item => item.z));
+
+      const highestSelectedZ = Math.max(...selectedItems.map((item) => item.z));
 
       // Find the closest item above our selection
-      const nextItem = allItems.find(item => !item.selected && item.z > highestSelectedZ);
+      const nextItem = allItems.find(
+        (item) => !item.selected && item.z > highestSelectedZ,
+      );
 
       // If no item above, swap with the highest non-selected item
       if (!nextItem) {
-        const highestNonSelected = allItems.filter(item => !item.selected)
-                                         .sort((a, b) => b.z - a.z)[0];
+        const highestNonSelected = allItems
+          .filter((item) => !item.selected)
+          .sort((a, b) => b.z - a.z)[0];
         if (!highestNonSelected) return state;
 
         // Swap positions
         return {
-          nodes: state.nodes.map(node => {
+          nodes: state.nodes.map((node) => {
             if (nodeIds.includes(node.id)) {
               return new Node({ ...node, zIndex: highestNonSelected.z });
             }
@@ -1061,7 +1247,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
             }
             return node;
           }),
-          lineNodes: state.lineNodes.map(node => {
+          lineNodes: state.lineNodes.map((node) => {
             if (nodeIds.includes(node.id)) {
               return { ...node, zIndex: highestNonSelected.z };
             }
@@ -1069,13 +1255,13 @@ export const useSceneStore = create<SceneState>((set, get) => ({
               return { ...node, zIndex: highestSelectedZ };
             }
             return node;
-          })
+          }),
         };
       }
 
       const newZ = nextItem.z;
       return {
-        nodes: state.nodes.map(node => {
+        nodes: state.nodes.map((node) => {
           if (nodeIds.includes(node.id)) {
             return new Node({ ...node, zIndex: newZ });
           }
@@ -1084,7 +1270,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           }
           return node;
         }),
-        lineNodes: state.lineNodes.map(node => {
+        lineNodes: state.lineNodes.map((node) => {
           if (nodeIds.includes(node.id)) {
             return { ...node, zIndex: newZ };
           }
@@ -1092,38 +1278,49 @@ export const useSceneStore = create<SceneState>((set, get) => ({
             return { ...node, zIndex: highestSelectedZ };
           }
           return node;
-        })
+        }),
       };
     });
     get().saveState();
   },
 
   sendBackward: (nodeIds: string[]) => {
-    set(state => {
+    set((state) => {
       // Combine all items with their current zIndex
       const allItems = [
-        ...state.nodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) })),
-        ...state.lineNodes.map(n => ({ id: n.id, z: Math.max(0, n.zIndex || 0), selected: nodeIds.includes(n.id) }))
+        ...state.nodes.map((n) => ({
+          id: n.id,
+          z: Math.max(0, n.zIndex || 0),
+          selected: nodeIds.includes(n.id),
+        })),
+        ...state.lineNodes.map((n) => ({
+          id: n.id,
+          z: Math.max(0, n.zIndex || 0),
+          selected: nodeIds.includes(n.id),
+        })),
       ].sort((a, b) => b.z - a.z);
 
       // Find the lowest z-index among selected items
-      const selectedItems = allItems.filter(item => item.selected);
+      const selectedItems = allItems.filter((item) => item.selected);
       if (selectedItems.length === 0) return state;
 
-      const lowestSelectedZ = Math.min(...selectedItems.map(item => item.z));
+      const lowestSelectedZ = Math.min(...selectedItems.map((item) => item.z));
 
       // Find the closest item below our selection
-      const nextItem = allItems.find(item => !item.selected && item.z < lowestSelectedZ);
+      const nextItem = allItems.find(
+        (item) => !item.selected && item.z < lowestSelectedZ,
+      );
 
       // If no item below, swap with the lowest non-selected item
       if (!nextItem) {
-        const lowestNonSelected = allItems.filter(item => !item.selected)
-                                        .sort((a, b) => a.z - b.z)[0];
+        const lowestNonSelected = allItems
+          .filter((item) => !item.selected)
+          .sort((a, b) => a.z - b.z)[0];
         if (!lowestNonSelected) return state;
 
         // Swap positions
         return {
-          nodes: state.nodes.map(node => {
+          nodes: state.nodes.map((node) => {
             if (nodeIds.includes(node.id)) {
               return new Node({ ...node, zIndex: lowestNonSelected.z });
             }
@@ -1132,7 +1329,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
             }
             return node;
           }),
-          lineNodes: state.lineNodes.map(node => {
+          lineNodes: state.lineNodes.map((node) => {
             if (nodeIds.includes(node.id)) {
               return { ...node, zIndex: lowestNonSelected.z };
             }
@@ -1140,13 +1337,13 @@ export const useSceneStore = create<SceneState>((set, get) => ({
               return { ...node, zIndex: lowestSelectedZ };
             }
             return node;
-          })
+          }),
         };
       }
 
       const newZ = nextItem.z;
       return {
-        nodes: state.nodes.map(node => {
+        nodes: state.nodes.map((node) => {
           if (nodeIds.includes(node.id)) {
             return new Node({ ...node, zIndex: newZ });
           }
@@ -1155,7 +1352,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           }
           return node;
         }),
-        lineNodes: state.lineNodes.map(node => {
+        lineNodes: state.lineNodes.map((node) => {
           if (nodeIds.includes(node.id)) {
             return { ...node, zIndex: newZ };
           }
@@ -1163,34 +1360,47 @@ export const useSceneStore = create<SceneState>((set, get) => ({
             return { ...node, zIndex: lowestSelectedZ };
           }
           return node;
-        })
+        }),
       };
     });
     get().saveState();
   },
-  removeBackground: async (nodeIds: string[], operation: (success: boolean, base64_image: string, message: string) => Promise<{ success: boolean; file?: File }>) => {
-    const hasImageNodes = nodeIds.some(id => {
-      const node = get().nodes.find(n => n.id === id);
-      return node ? node.type === 'image' : false;
+  removeBackground: async (
+    nodeIds: string[],
+    operation: (
+      success: boolean,
+      base64_image: string,
+      message: string,
+    ) => Promise<{ success: boolean; file?: File }>,
+  ) => {
+    const hasImageNodes = nodeIds.some((id) => {
+      const node = get().nodes.find((n) => n.id === id);
+      return node ? node.type === "image" : false;
     });
-    
+
     if (hasImageNodes) {
-      const firstNode = get().nodes.find(node => nodeIds.includes(node.id) && node.type === 'image');
+      const firstNode = get().nodes.find(
+        (node) => nodeIds.includes(node.id) && node.type === "image",
+      );
       if (firstNode && firstNode.imageFile) {
         try {
           const base64Image = await convertFileToBase64(firstNode.imageFile);
-          const { success, file } = await operation(true, base64Image, "Removing Background.");
-          
+          const { success, file } = await operation(
+            true,
+            base64Image,
+            "Removing Background.",
+          );
+
           if (success && file) {
             // Create a new node instance
             const updatedNode = new Node({
               ...firstNode,
-              imageFile: file
+              imageFile: file,
             });
-            
+
             // Load the new image
             await updatedNode.setImageFromFile(file);
-            
+
             // Update the store with the fully loaded node
             set((state: SceneState) => ({
               nodes: state.nodes.map((node: Node) => {
@@ -1200,7 +1410,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
                 return node;
               }),
             }));
-            
+
             get().saveState();
           }
         } catch (error) {
@@ -1214,22 +1424,22 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   toggleLock: (nodeIds: string[]) => {
     set((state) => {
       // Update regular nodes
-      const updatedNodes = state.nodes.map(node => {
+      const updatedNodes = state.nodes.map((node) => {
         if (nodeIds.includes(node.id)) {
           return new Node({
             ...node,
-            locked: !node.locked
+            locked: !node.locked,
           });
         }
         return node;
       });
 
       // Update line nodes
-      const updatedLineNodes = state.lineNodes.map(node => {
+      const updatedLineNodes = state.lineNodes.map((node) => {
         if (nodeIds.includes(node.id)) {
           return {
             ...node,
-            locked: !node.locked
+            locked: !node.locked,
           };
         }
         return node;
@@ -1237,7 +1447,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
       return {
         nodes: updatedNodes,
-        lineNodes: updatedLineNodes
+        lineNodes: updatedLineNodes,
       };
     });
     get().saveState();

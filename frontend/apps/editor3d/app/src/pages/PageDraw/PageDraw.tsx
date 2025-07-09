@@ -238,24 +238,24 @@ const PageDraw = () => {
     const autoFitCanvas = async () => {
       let attempts = 0;
       const maxAttempts = 20; // Increased attempts
-      
+
       const tryFit = async () => {
         const stage = stageRef.current;
         if (stage && stage.container && stage.container().offsetWidth > 0) {
           // Wait a bit more to ensure everything is rendered
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 50));
           onFitPressed();
           return true;
         }
-        
+
         attempts++;
         if (attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
           return tryFit();
         }
         return false;
       };
-      
+
       await tryFit();
     };
 
@@ -315,17 +315,13 @@ const PageDraw = () => {
         onSelect={(): void => {
           store.setActiveTool("select");
         }}
-        onAddShape={(shape: "rectangle" | "circle" | "triangle"): void => {
-          // Calculate center position based on canvas dimensions
-          const centerX = canvasWidth.current / 3;
-          const centerY = canvasHeight.current / 3;
-          if (shape === "rectangle") {
-            store.createRectangle(centerX, centerY);
-          } else if (shape === "circle") {
-            store.createCircle(centerX, centerY);
-          } else if (shape === "triangle") {
-            store.createTriangle(centerX, centerY);
-          }
+        onActivateShapeTool={(
+          shape: "rectangle" | "circle" | "triangle",
+        ): void => {
+          store.selectNode(null);
+          store.setCurrentShape(shape);
+          store.setActiveTool("shape");
+          store.selectNode(null);
         }}
         onPaintBrush={(hex: string, size: number, opacity: number): void => {
           store.setActiveTool("draw");
@@ -333,20 +329,12 @@ const PageDraw = () => {
           store.setBrushSize(size);
           store.setBrushOpacity(opacity);
         }}
-        onEraser={(size: number): void => {
-          store.setActiveTool("eraser");
-          store.setBrushSize(size);
-        }}
         onCanvasBackground={(hex: string): void => {
           console.log("Canvas background activated", { color: hex });
           // Add background change logic here
           // TODO: minor bug needs to update the preview panel
           // Debounce also causes issues with real time color change.
           store.setFillColor(hex);
-        }}
-        onGenerateImage={(): void => {
-          console.log("Generate image activated");
-          // Add image generation logic here
         }}
         onUploadImage={(): void => {
           // Create input element dynamically like in PromptEditor
@@ -393,6 +381,7 @@ const PageDraw = () => {
           store.deleteSelectedItems();
         }}
         activeToolId={store.activeTool}
+        currentShape={store.currentShape}
       />
       <div className="relative z-0">
         <ContextMenuContainer
