@@ -72,7 +72,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
 
   const [bgHsva, setBgHsva] = useState<HsvaColor>({
     h: 0,
-    s: 100,
+    s: 0,
     v: 100,
     a: 1,
   });
