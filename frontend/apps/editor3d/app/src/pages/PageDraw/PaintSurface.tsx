@@ -366,6 +366,13 @@ export const PaintSurface = ({
           stage.container().style.cursor = "grab";
           store.setCursorVisible(false);
         }
+      } else if (activeTool === "shape") {
+        if (isWithinCanvas) {
+          stage.container().style.cursor = "crosshair";
+        } else {
+          stage.container().style.cursor = "grab";
+        }
+        store.setCursorVisible(false);
       } else {
         if (isWithinCanvas) {
           stage.container().style.cursor = "default";
