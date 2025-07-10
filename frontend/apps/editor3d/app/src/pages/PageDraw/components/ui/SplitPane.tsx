@@ -65,7 +65,7 @@ export default function SplitPane({
   return singlePaneMode ? (
     <div
       ref={rootRef}
-      className={`pegboard-bg relative flex h-[calc(100vh-56px)] w-full items-center justify-center overflow-hidden ${className}`}
+      className={`pegboard-bg relative flex h-full w-full items-center justify-center overflow-hidden ${className}`}
     >
       <div style={leftStyle} className="h-full min-w-0 overflow-hidden">
         {left}
