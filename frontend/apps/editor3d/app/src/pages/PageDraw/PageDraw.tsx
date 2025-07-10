@@ -1,41 +1,31 @@
 import { useState, useRef, useEffect } from "react";
 import { PaintSurface } from "./PaintSurface";
-// https://github.com/SaladTechnologies/comfyui-api
-
 import "./App.css";
 import PromptEditor from "./PromptEditor/PromptEditor";
 import SideToolbar from "./components/ui/SideToolbar";
-// Import the Zustand store
 import { AspectRatioType, useSceneStore } from "./stores/SceneState";
 import { useUndoRedoHotkeys } from "./hooks/useUndoRedoHotkeys";
 import { useDeleteHotkeys } from "./hooks/useDeleteHotkeys";
-import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys"; // Import the hook
+import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys";
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
-import Konva from "konva"; // just for types
+import Konva from "konva";
 
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
 import { FalBackgroundRemoval } from "@storyteller/tauri-api";
 
-/**
- * This decodes Base64 encoded PNG images into an image element.
- * @param base64String a standard (not "web safe") base64-encoded string
- */
 export const DecodeBase64ToImage = async (
   base64String: string,
 ): Promise<ImageBitmap> => {
-  // Create an image element
   const img = document.createElement("img");
 
-  // Convert base64 to data URL if it doesn't include the prefix
   const dataUrl = base64String.startsWith("data:")
     ? base64String
     : `data:image/png;base64,${base64String}`;
 
-  // Create a promise to handle the image loading
   return new Promise((resolve, reject) => {
     img.onload = async () => {
       try {
@@ -48,28 +38,19 @@ export const DecodeBase64ToImage = async (
 
     img.onerror = () => reject(new Error("Failed to load image"));
 
-    // Set the source to trigger loading
     img.src = dataUrl;
   });
 };
 
 const PageDraw = () => {
-  //useStateSceneLoader();
-
-  // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
-  // Add new state to track if user is selecting
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
   const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
-  // Create refs for stage and image
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
-
-  // Use the Zustand store
   const store = useSceneStore();
 
-  // Pass store actions directly as callbacks
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
   useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
   useCopyPasteHotkeys({
@@ -83,7 +64,6 @@ const PageDraw = () => {
       const { item, canvasPosition } = event.detail;
       console.log("Received 2D gallery drop:", { item, canvasPosition });
 
-      // Get the stage to transform coordinates properly
       const stage = stageRef.current;
       if (!stage) {
         console.error(
@@ -91,7 +71,6 @@ const PageDraw = () => {
         );
         return;
       }
-
       // Transform canvas coordinates to stage coordinates
       // Account for stage position, scale, and transformations
       const stageX = stage.x();
@@ -106,7 +85,6 @@ const PageDraw = () => {
 
       console.log("Transformed stage coordinates:", stagePoint);
 
-      // Use the direct URL for the image
       const imageUrl = item.fullImage || item.thumbnail;
       if (!imageUrl) {
         console.error("No image URL available for dropped item");
@@ -115,7 +93,6 @@ const PageDraw = () => {
 
       console.log("Creating image from URL:", imageUrl);
 
-      // Use the store's createImageFromUrl method directly
       store.createImageFromUrl(stagePoint.x, stagePoint.y, imageUrl);
 
       console.log(
@@ -124,13 +101,11 @@ const PageDraw = () => {
       );
     };
 
-    // Add event listener
     window.addEventListener(
       "gallery-2d-drop",
       handleGallery2DDrop as EventListener,
     );
 
-    // Cleanup
     return () => {
       window.removeEventListener(
         "gallery-2d-drop",
@@ -140,9 +115,8 @@ const PageDraw = () => {
   }, [store]);
 
   const handleImageUpload = (files: File[]): void => {
-    // Place images at center of viewport with offset for multiple images
-    const centerX = 512; // leftPanelWidth / 2
-    const centerY = 512; // leftPanelHeight / 2
+    const centerX = 512;
+    const centerY = 512;
 
     console.log("Image upload started with files:", files);
     console.log("Center coordinates:", { centerX, centerY });
@@ -151,7 +125,7 @@ const PageDraw = () => {
       console.log(`Processing file ${index}:`, file.name);
 
       store.createImageFromFile(
-        centerX + index * 60, // Offset each image
+        centerX + index * 60,
         centerY + index * 60,
         file,
       );
@@ -237,12 +211,11 @@ const PageDraw = () => {
   useEffect(() => {
     const autoFitCanvas = async () => {
       let attempts = 0;
-      const maxAttempts = 20; // Increased attempts
+      const maxAttempts = 20;
 
       const tryFit = async () => {
         const stage = stageRef.current;
         if (stage && stage.container && stage.container().offsetWidth > 0) {
-          // Wait a bit more to ensure everything is rendered
           await new Promise((resolve) => setTimeout(resolve, 50));
           onFitPressed();
           return true;
@@ -260,7 +233,8 @@ const PageDraw = () => {
     };
 
     autoFitCanvas();
-  }, []); // Run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -273,19 +247,14 @@ const PageDraw = () => {
           initialPrompt=""
           onPromptChange={(prompt: string) => {
             console.log("Prompt changed:", prompt);
-            // Handle prompt changes here
           }}
           onRandomize={() => {
             console.log("Randomize clicked");
-            // Handle randomize action here
           }}
           onVary={() => {
             console.log("Vary clicked");
-            // Handle vary action here
           }}
           onAspectRatioChange={async (ratio: string) => {
-            console.log("Aspect ratio:", ratio);
-            // Convert ratio string to AspectRatioType enum
             const ratioToType = (ratio: string): AspectRatioType => {
               switch (ratio) {
                 case "2:3":
@@ -302,7 +271,6 @@ const PageDraw = () => {
             const aspectRatioType = ratioToType(ratio);
             store.setAspectRatioType(aspectRatioType);
 
-            // Wait for the next frame to ensure the store has updated
             await new Promise((resolve) => requestAnimationFrame(resolve));
             onFitPressed();
           }}
@@ -343,9 +311,7 @@ const PageDraw = () => {
           input.type = "file";
           input.accept = "image/*";
           input.multiple = true;
-          input.style.display = "none"; // Hide the input
-
-          // Attach to DOM
+          input.style.display = "none";
           document.body.appendChild(input);
 
           input.onchange = (e: Event) => {
@@ -368,16 +334,13 @@ const PageDraw = () => {
             } else {
               console.log("No files selected");
             }
-            // Clean up: remove input from DOM after use
             document.body.removeChild(input);
           };
 
-          // Reset value before click (for same file selection)
           input.value = "";
           input.click();
         }}
         onDelete={(): void => {
-          // This onDelete prop for SideToolbar might still be needed for the button
           store.deleteSelectedItems();
         }}
         activeToolId={store.activeTool}
@@ -390,7 +353,6 @@ const PageDraw = () => {
               const hasSelection = store.selectedNodeIds.length > 0;
               if (hasSelection) {
                 console.log("An item is selected.");
-                // You can add additional actions here based on the selection
                 return true;
               } else {
                 console.log("No item is selected.");
@@ -405,7 +367,6 @@ const PageDraw = () => {
                 store.toggleLock(store.selectedNodeIds);
                 break;
               case "REMOVE_BACKGROUND":
-                // returns a success if we have selected images only
                 await store.removeBackground(
                   store.selectedNodeIds,
                   async (
@@ -467,7 +428,7 @@ const PageDraw = () => {
                 store.deleteSelectedItems();
                 break;
               default:
-              // No action needed for unhandled cases
+              // No action
             }
           }}
           isLocked={store.selectedNodeIds.some((id) => {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMousePointer,
@@ -92,15 +92,14 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
 
   // State for shape color picker
   const [shapeHsva, setShapeHsva] = useState<HsvaColor>({
-    h: 240, // Blue hue
-    s: 100, // Full saturation
-    v: 70, // Medium brightness blue
+    h: 240,
+    s: 100,
+    v: 70,
     a: 1,
   });
 
   // Update shape color picker when selection changes or store's shapeColor changes
-  React.useEffect(() => {
-    // Use selected node's color if available, otherwise use store's default shapeColor
+  useEffect(() => {
     const colorToUse = firstSelectedNode?.fill || store.shapeColor;
 
     if (colorToUse && colorToUse.startsWith("#")) {
@@ -127,7 +126,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     }
   }, [firstSelectedNode?.fill, store.shapeColor]);
 
-  /* debounced parent calls */
   const sendPaint = useDebounced<
     (hex: string, size: number, opacity: number) => void,
     [string, number, number]
@@ -138,17 +136,14 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     75,
   );
 
-  // Debounced shape color update - now updates ALL selected nodes AND store's shapeColor
   const sendShapeColor = useDebounced<(hex: string) => void, [string]>(
     (hex: string) => {
-      // Update the store's default shape color for future shapes
       store.setShapeColor(hex);
 
-      // Update all selected nodes
       selectedNodes.forEach((node) => {
-        store.updateNode(node.id, { fill: hex }, false); // Don't save state for each individual update
+        store.updateNode(node.id, { fill: hex }, false);
       });
-      // Save state once after all updates
+
       if (selectedNodes.length > 0) {
         store.saveState();
       }
@@ -203,8 +198,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   );
 
   const BgPopout = makePicker(bgHsva, setBgHsva, sendBg);
-
-  // Shape color popout
   const ShapePopout = makePicker(shapeHsva, setShapeHsva, sendShapeColor);
 
   /* ------------------------------------------------ tools ---------- */
@@ -226,7 +219,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       label: "Add Shape",
       icon: <FontAwesomeIcon icon={faShapes} className="h-5 w-5" />,
       onClick: () => {
-        // Activate shape tool using currently selected shape if any and clear selection
         store.selectNode(null);
         if (!store.currentShape) {
           store.setCurrentShape("rectangle");
@@ -304,7 +296,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       label: "Undo",
       icon: <FontAwesomeIcon icon={faUndo} className="h-5 w-5" />,
       onClick: () => {
-        store.undo(); // Assuming store has an undo method
+        store.undo();
       },
     },
     {
@@ -312,12 +304,11 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       label: "Redo",
       icon: <FontAwesomeIcon icon={faRedo} className="h-5 w-5" />,
       onClick: () => {
-        store.redo(); // Assuming store has a redo method
+        store.redo();
       },
     },
   ];
 
-  /* ------------------------------------------------ render ---------- */
   const baseBtn =
     "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors border-2 border-transparent";
 
@@ -377,7 +368,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
           );
         }
 
-        // Dynamic icon for shape tool
         if (id === "add-shape" && activeToolId === "shape" && currentShape) {
           const shapeIcons = {
             rectangle: faSquare,
@@ -407,23 +397,18 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
                   <button
                     onClick={() => {
                       onClick?.();
-                      // For brush tool, don't toggle popout on click when active - only show on hover
                       if (id !== "draw" || !active) {
                         setOpen(open === id ? null : id);
                       }
                     }}
                     onMouseEnter={() => {
-                      // Show popover on hover for active brush tool
                       if (id === "draw" && active) {
                         setOpen(id);
                       }
                     }}
                     onMouseLeave={() => {
-                      // Don't immediately hide popover for active brush tool - let popover handle it
                       if (id === "draw" && active) {
-                        // Add a small delay to allow moving to popover
                         setTimeout(() => {
-                          // Only close if mouse is not over the popover
                           const popoverElement = document.querySelector(
                             `[data-popover="${id}"]`,
                           );
@@ -460,23 +445,18 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
                   <button
                     onClick={() => {
                       onClick?.();
-                      // For brush tool, don't toggle popout on click when active - only show on hover
                       if (id !== "draw" || !active) {
                         setOpen(open === id ? null : id);
                       }
                     }}
                     onMouseEnter={() => {
-                      // Show popover on hover for active brush tool
                       if (id === "draw" && active) {
                         setOpen(id);
                       }
                     }}
                     onMouseLeave={() => {
-                      // Don't immediately hide popover for active brush tool - let popover handle it
                       if (id === "draw" && active) {
-                        // Add a small delay to allow moving to popover
                         setTimeout(() => {
-                          // Only close if mouse is not over the popover
                           const popoverElement = document.querySelector(
                             `[data-popover="${id}"]`,
                           );
@@ -510,7 +490,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
               <div
                 data-popover={id}
                 onMouseEnter={() => {
-                  // Keep popover open when mouse enters
                   if (id === "draw" && active) {
                     setOpen(id);
                   }
