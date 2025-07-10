@@ -23,11 +23,10 @@ import SliderWithIndicator from "./SliderWithIndicator";
 import { useSceneStore } from "../../stores/SceneState";
 import { Tooltip } from "@storyteller/ui-tooltip";
 
-/* visual constants */
 const shapeIconBtn =
   "flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/10";
 
-/* small debounce */
+// Debounce function
 function useDebounced<T extends (...args: A) => void, A extends unknown[]>(
   fn: T,
   ms = 75,
@@ -62,10 +61,8 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   activeToolId,
   className = "",
 }) => {
-  /* ------------------------------------------------ state ---------- */
   const store = useSceneStore();
   const [open, setOpen] = useState<string | null>(null);
-
   const [brushSize, setBrushSize] = useState(16);
   const [brushHsva, setBrushHsva] = useState<HsvaColor>({
     h: 120,
@@ -73,7 +70,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     v: 100,
     a: 1,
   });
-
   const [bgHsva, setBgHsva] = useState<HsvaColor>({
     h: 0,
     s: 0,
@@ -151,7 +147,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     75,
   );
 
-  /* picker helper */
+  // Picker helper
   const makePicker = (
     hsva: HsvaColor,
     setHsva: React.Dispatch<React.SetStateAction<HsvaColor>>,
@@ -200,8 +196,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   const BgPopout = makePicker(bgHsva, setBgHsva, sendBg);
   const ShapePopout = makePicker(shapeHsva, setShapeHsva, sendShapeColor);
 
-  /* ------------------------------------------------ tools ---------- */
-
+  // Tools
   const tools = [
     {
       id: "select",
@@ -355,7 +350,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
           ? "bg-primary/30 border-2 !border-primary text-white"
           : "hover:bg-white/10 text-white";
 
-        // Dynamic icon for brush/draw tool
         let displayIcon = icon;
         if (id === "draw") {
           displayIcon = active ? (
