@@ -195,7 +195,14 @@ export const PaintSurface = ({
       y: (point.y - stage.y()) / stage.scaleY(),
     };
 
-    if (!isWithinLeftPanel(stagePoint)) {
+    // Check if the target is a transformer or its children (handles)
+    const isTransformerTarget =
+      e.target.getClassName() === "Transformer" ||
+      e.target.getParent()?.getClassName() === "Transformer" ||
+      e.target.name()?.includes("_anchor") ||
+      e.target.name()?.includes("rotater");
+
+    if (!isWithinLeftPanel(stagePoint) && !isTransformerTarget) {
       setIsDragging(true);
       return;
     }
@@ -204,7 +211,9 @@ export const PaintSurface = ({
       "button" in e.evt &&
       ((e.evt as MouseEvent).button === 1 || (e.evt as MouseEvent).button === 2)
     ) {
-      setIsDragging(true);
+      if (!isTransformerTarget) {
+        setIsDragging(true);
+      }
       return;
     }
 
@@ -319,7 +328,7 @@ export const PaintSurface = ({
       const isWithinCanvas = isWithinLeftPanel(stagePoint);
 
       if (activeTool === "draw" || activeTool === "eraser") {
-        if (isWithinCanvas) {
+        if (isWithinCanvas || isDrawing) {
           stage.container().style.cursor = "none";
           store.setCursorPosition(pointer);
           store.setCursorVisible(true);
@@ -379,24 +388,19 @@ export const PaintSurface = ({
         y: (point.y - stage.y()) / stage.scaleY(),
       };
 
-      if (isWithinLeftPanel(stagePoint)) {
-        const currentLine = store.lineNodes.find(
-          (line) => line.id === currentLineId,
-        );
-        if (currentLine) {
-          const updatedPoints = [
-            ...currentLine.points,
-            stagePoint.x,
-            stagePoint.y,
-          ];
-          store.updateLineNode(currentLineId, { points: updatedPoints }, false);
-        }
-        setLastPoint(stagePoint);
-      } else {
-        setIsDrawing(false);
-        setCurrentLineId(null);
-        setLastPoint(null);
+      // Continue drawing regardless of canvas boundaries
+      const currentLine = store.lineNodes.find(
+        (line) => line.id === currentLineId,
+      );
+      if (currentLine) {
+        const updatedPoints = [
+          ...currentLine.points,
+          stagePoint.x,
+          stagePoint.y,
+        ];
+        store.updateLineNode(currentLineId, { points: updatedPoints }, false);
       }
+      setLastPoint(stagePoint);
     }
 
     if (isDrawingShape && currentShapeId && shapeStartPoint) {
@@ -882,96 +886,6 @@ export const PaintSurface = ({
     };
 
     const isSelected = selectedNodeIds.includes(node.id);
-
-    const renderTransformer = () => {
-      if (isSelected) {
-        return (
-          <Transformer
-            ref={(ref: Konva.Transformer | null) => {
-              if (ref) {
-                transformerRefs.current[node.id] = ref;
-              }
-            }}
-            boundBoxFunc={(oldBox, newBox) => {
-              const minSize = 5;
-              const maxSize = Math.max(leftPanelWidth, leftPanelHeight);
-
-              if (
-                newBox.width < minSize ||
-                newBox.height < minSize ||
-                newBox.width > maxSize ||
-                newBox.height > maxSize
-              ) {
-                return oldBox;
-              }
-              return newBox;
-            }}
-            enabledAnchors={[
-              "top-left",
-              "top-center",
-              "top-right",
-              "middle-right",
-              "middle-left",
-              "bottom-left",
-              "bottom-center",
-              "bottom-right",
-            ]}
-            rotateEnabled={true}
-            keepRatio={true}
-            centeredScaling={true}
-            padding={5}
-            shiftBehavior="inverted"
-            ignoreStroke={true}
-            onTransformEnd={(e: Konva.KonvaEventObject<Event>) => {
-              const konvaNode = e.target;
-              const nodeId = konvaNode.id();
-
-              const finalRotation = konvaNode.rotation();
-              const finalScaleX = konvaNode.scaleX();
-              const finalScaleY = konvaNode.scaleY();
-              const finalX = konvaNode.x();
-              const finalY = konvaNode.y();
-              const finalOffsetX = konvaNode.offsetX();
-              const finalOffsetY = konvaNode.offsetY();
-
-              const isLineNode = store.lineNodes.find((ln) => ln.id === nodeId);
-
-              if (isLineNode) {
-                store.updateLineNode(
-                  nodeId,
-                  {
-                    x: finalX,
-                    y: finalY,
-                    rotation: finalRotation,
-                    scaleX: finalScaleX,
-                    scaleY: finalScaleY,
-                    offsetX: finalOffsetX,
-                    offsetY: finalOffsetY,
-                  },
-                  true,
-                );
-              } else {
-                store.updateNode(
-                  nodeId,
-                  {
-                    x: finalX,
-                    y: finalY,
-                    rotation: finalRotation,
-                    scaleX: finalScaleX,
-                    scaleY: finalScaleY,
-                    offsetX: finalOffsetX,
-                    offsetY: finalOffsetY,
-                  },
-                  true,
-                );
-              }
-            }}
-          />
-        );
-      }
-      return null;
-    };
-
     const listeningEnabled = activeTool !== "shape";
 
     if (node.type === "line") {
@@ -1024,130 +938,122 @@ export const PaintSurface = ({
       };
 
       return (
-        <React.Fragment key={lineNode.id}>
-          <Line
-            id={lineNode.id}
-            points={lineNode.points}
-            stroke={lineNode.stroke}
-            opacity={lineNode.opacity ?? 1}
-            strokeWidth={
-              isSelected
-                ? (lineNode.strokeWidth || 0) + 2
-                : lineNode.strokeWidth
-            }
-            tension={0.5}
-            lineCap="round"
-            lineJoin="round"
-            onMouseDown={(e) => handleNodeMouseDown(e, lineNode.id)}
-            onTap={(e) =>
-              handleNodeMouseDown(
-                e as Konva.KonvaEventObject<MouseEvent>,
-                lineNode.id,
-              )
-            }
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
-            draggable={draggableIfToolsNotActive(
-              activeTool,
-              lineNode.draggable && lineNode.locked == false,
-            )}
-            onDragMove={(e) => handleLineDragMove(e, lineNode.id)}
-            onDragStart={(e) => handleLineDragStart(e, lineNode.id)}
-            onDragEnd={(e) => handleLineDragEnd(e, lineNode.id)}
-            x={lineNode.x || 0}
-            y={lineNode.y || 0}
-            scaleX={lineNode.scaleX || 1}
-            scaleY={lineNode.scaleY || 1}
-            rotation={lineNode.rotation || 0}
-            offsetX={lineNode.offsetX || 0}
-            offsetY={lineNode.offsetY || 0}
-            zIndex={lineNode.zIndex}
-            listening={listeningEnabled}
-          />
-          {renderTransformer()}
-        </React.Fragment>
+        <Line
+          key={lineNode.id}
+          id={lineNode.id}
+          points={lineNode.points}
+          stroke={lineNode.stroke}
+          opacity={lineNode.opacity ?? 1}
+          strokeWidth={
+            isSelected ? (lineNode.strokeWidth || 0) + 2 : lineNode.strokeWidth
+          }
+          tension={0.5}
+          lineCap="round"
+          lineJoin="round"
+          onMouseDown={(e) => handleNodeMouseDown(e, lineNode.id)}
+          onTap={(e) =>
+            handleNodeMouseDown(
+              e as Konva.KonvaEventObject<MouseEvent>,
+              lineNode.id,
+            )
+          }
+          onMouseEnter={handleNodeMouseEnter}
+          onMouseLeave={handleNodeMouseLeave}
+          draggable={draggableIfToolsNotActive(
+            activeTool,
+            lineNode.draggable && lineNode.locked == false,
+          )}
+          onDragMove={(e) => handleLineDragMove(e, lineNode.id)}
+          onDragStart={(e) => handleLineDragStart(e, lineNode.id)}
+          onDragEnd={(e) => handleLineDragEnd(e, lineNode.id)}
+          x={lineNode.x || 0}
+          y={lineNode.y || 0}
+          scaleX={lineNode.scaleX || 1}
+          scaleY={lineNode.scaleY || 1}
+          rotation={lineNode.rotation || 0}
+          offsetX={lineNode.offsetX || 0}
+          offsetY={lineNode.offsetY || 0}
+          zIndex={lineNode.zIndex}
+          listening={listeningEnabled}
+        />
       );
     }
 
     if (node.type === "circle") {
       return (
-        <React.Fragment key={node.id}>
-          <Ellipse
-            id={node.id}
-            x={node.x + node.width / 2}
-            y={node.y + node.height / 2}
-            radiusX={node.width / 2}
-            radiusY={node.height / 2}
-            fill={node.fill}
-            stroke={node.stroke}
-            strokeWidth={0}
-            rotation={node.rotation || 0}
-            scaleX={node.scaleX || 1}
-            scaleY={node.scaleY || 1}
-            offsetX={node.offsetX || 0}
-            offsetY={node.offsetY || 0}
-            zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(
-              activeTool,
-              node.draggable && node.locked == false,
-            )}
-            onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
-            onTap={(e) =>
-              handleNodeMouseDown(
-                e as Konva.KonvaEventObject<MouseEvent>,
-                node.id,
-              )
-            }
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
-            onDragMove={(e) => handleNodeDragMove(e, node.id)}
-            onDragStart={(e) => handleNodeDragStart(e, node.id)}
-            onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
-            listening={listeningEnabled}
-          />
-          {renderTransformer()}
-        </React.Fragment>
+        <Ellipse
+          key={node.id}
+          id={node.id}
+          x={node.x + node.width / 2}
+          y={node.y + node.height / 2}
+          radiusX={node.width / 2}
+          radiusY={node.height / 2}
+          fill={node.fill}
+          stroke={node.stroke}
+          strokeWidth={0}
+          rotation={node.rotation || 0}
+          scaleX={node.scaleX || 1}
+          scaleY={node.scaleY || 1}
+          offsetX={node.offsetX || 0}
+          offsetY={node.offsetY || 0}
+          zIndex={node.zIndex}
+          draggable={draggableIfToolsNotActive(
+            activeTool,
+            node.draggable && node.locked == false,
+          )}
+          onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
+          onTap={(e) =>
+            handleNodeMouseDown(
+              e as Konva.KonvaEventObject<MouseEvent>,
+              node.id,
+            )
+          }
+          onMouseEnter={handleNodeMouseEnter}
+          onMouseLeave={handleNodeMouseLeave}
+          onDragMove={(e) => handleNodeDragMove(e, node.id)}
+          onDragStart={(e) => handleNodeDragStart(e, node.id)}
+          onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
+          listening={listeningEnabled}
+        />
       );
     }
 
     if (node.type === "rectangle") {
       return (
-        <React.Fragment key={node.id}>
-          <Rect
-            id={node.id}
-            x={node.x}
-            y={node.y}
-            width={node.width}
-            height={node.height}
-            fill={node.fill}
-            stroke={node.stroke}
-            strokeWidth={0}
-            rotation={node.rotation || 0}
-            scaleX={node.scaleX || 1}
-            scaleY={node.scaleY || 1}
-            offsetX={node.offsetX || 0}
-            offsetY={node.offsetY || 0}
-            zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(
-              activeTool,
-              node.draggable && node.locked == false,
-            )}
-            onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
-            onTap={(e) =>
-              handleNodeMouseDown(
-                e as Konva.KonvaEventObject<MouseEvent>,
-                node.id,
-              )
-            }
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
-            onDragMove={(e) => handleNodeDragMove(e, node.id)}
-            onDragStart={(e) => handleNodeDragStart(e, node.id)}
-            onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
-            listening={listeningEnabled}
-          />
-          {renderTransformer()}
-        </React.Fragment>
+        <Rect
+          key={node.id}
+          id={node.id}
+          x={node.x}
+          y={node.y}
+          width={node.width}
+          height={node.height}
+          fill={node.fill}
+          stroke={node.stroke}
+          strokeWidth={0}
+          rotation={node.rotation || 0}
+          scaleX={node.scaleX || 1}
+          scaleY={node.scaleY || 1}
+          offsetX={node.offsetX || 0}
+          offsetY={node.offsetY || 0}
+          zIndex={node.zIndex}
+          draggable={draggableIfToolsNotActive(
+            activeTool,
+            node.draggable && node.locked == false,
+          )}
+          onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
+          onTap={(e) =>
+            handleNodeMouseDown(
+              e as Konva.KonvaEventObject<MouseEvent>,
+              node.id,
+            )
+          }
+          onMouseEnter={handleNodeMouseEnter}
+          onMouseLeave={handleNodeMouseLeave}
+          onDragMove={(e) => handleNodeDragMove(e, node.id)}
+          onDragStart={(e) => handleNodeDragStart(e, node.id)}
+          onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
+          listening={listeningEnabled}
+        />
       );
     }
 
@@ -1155,42 +1061,40 @@ export const PaintSurface = ({
       const radius = Math.max(node.width, node.height) / 2;
 
       return (
-        <React.Fragment key={node.id}>
-          <RegularPolygon
-            id={node.id}
-            x={node.x + node.width / 2}
-            y={node.y + node.height / 2}
-            sides={3}
-            radius={radius}
-            fill={node.fill}
-            stroke={node.stroke}
-            strokeWidth={0}
-            rotation={node.rotation || 0}
-            scaleX={node.scaleX || 1}
-            scaleY={node.scaleY || 1}
-            offsetX={node.offsetX || 0}
-            offsetY={node.offsetY || 0}
-            zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(
-              activeTool,
-              node.draggable && node.locked == false,
-            )}
-            onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
-            onTap={(e) =>
-              handleNodeMouseDown(
-                e as Konva.KonvaEventObject<MouseEvent>,
-                node.id,
-              )
-            }
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
-            onDragMove={(e) => handleNodeDragMove(e, node.id)}
-            onDragStart={(e) => handleNodeDragStart(e, node.id)}
-            onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
-            listening={listeningEnabled}
-          />
-          {renderTransformer()}
-        </React.Fragment>
+        <RegularPolygon
+          key={node.id}
+          id={node.id}
+          x={node.x + node.width / 2}
+          y={node.y + node.height / 2}
+          sides={3}
+          radius={radius}
+          fill={node.fill}
+          stroke={node.stroke}
+          strokeWidth={0}
+          rotation={node.rotation || 0}
+          scaleX={node.scaleX || 1}
+          scaleY={node.scaleY || 1}
+          offsetX={node.offsetX || 0}
+          offsetY={node.offsetY || 0}
+          zIndex={node.zIndex}
+          draggable={draggableIfToolsNotActive(
+            activeTool,
+            node.draggable && node.locked == false,
+          )}
+          onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
+          onTap={(e) =>
+            handleNodeMouseDown(
+              e as Konva.KonvaEventObject<MouseEvent>,
+              node.id,
+            )
+          }
+          onMouseEnter={handleNodeMouseEnter}
+          onMouseLeave={handleNodeMouseLeave}
+          onDragMove={(e) => handleNodeDragMove(e, node.id)}
+          onDragStart={(e) => handleNodeDragStart(e, node.id)}
+          onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
+          listening={listeningEnabled}
+        />
       );
     }
 
@@ -1245,12 +1149,98 @@ export const PaintSurface = ({
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
             listening={listeningEnabled}
           />
-          {renderTransformer()}
         </React.Fragment>
       );
     }
 
     return null;
+  };
+
+  // Separate function to render transformers on their own layer
+  const renderTransformers = () => {
+    return [...nodes, ...store.lineNodes].map((node) => {
+      const isSelected = selectedNodeIds.includes(node.id);
+      if (!isSelected) return null;
+
+      return (
+        <Transformer
+          key={`transformer-${node.id}`}
+          ref={(ref: Konva.Transformer | null) => {
+            if (ref) {
+              transformerRefs.current[node.id] = ref;
+            }
+          }}
+          boundBoxFunc={(oldBox, newBox) => {
+            const minSize = 5;
+
+            if (newBox.width < minSize || newBox.height < minSize) {
+              return oldBox;
+            }
+            return newBox;
+          }}
+          enabledAnchors={[
+            "top-left",
+            "top-center",
+            "top-right",
+            "middle-right",
+            "middle-left",
+            "bottom-left",
+            "bottom-center",
+            "bottom-right",
+          ]}
+          rotateEnabled={true}
+          keepRatio={true}
+          centeredScaling={true}
+          padding={5}
+          shiftBehavior="inverted"
+          ignoreStroke={true}
+          onTransformEnd={(e: Konva.KonvaEventObject<Event>) => {
+            const konvaNode = e.target;
+            const nodeId = konvaNode.id();
+
+            const finalRotation = konvaNode.rotation();
+            const finalScaleX = konvaNode.scaleX();
+            const finalScaleY = konvaNode.scaleY();
+            const finalX = konvaNode.x();
+            const finalY = konvaNode.y();
+            const finalOffsetX = konvaNode.offsetX();
+            const finalOffsetY = konvaNode.offsetY();
+
+            const isLineNode = store.lineNodes.find((ln) => ln.id === nodeId);
+
+            if (isLineNode) {
+              store.updateLineNode(
+                nodeId,
+                {
+                  x: finalX,
+                  y: finalY,
+                  rotation: finalRotation,
+                  scaleX: finalScaleX,
+                  scaleY: finalScaleY,
+                  offsetX: finalOffsetX,
+                  offsetY: finalOffsetY,
+                },
+                true,
+              );
+            } else {
+              store.updateNode(
+                nodeId,
+                {
+                  x: finalX,
+                  y: finalY,
+                  rotation: finalRotation,
+                  scaleX: finalScaleX,
+                  scaleY: finalScaleY,
+                  offsetX: finalOffsetX,
+                  offsetY: finalOffsetY,
+                },
+                true,
+              );
+            }
+          }}
+        />
+      );
+    });
   };
 
   useEffect(() => {
@@ -1369,6 +1359,10 @@ export const PaintSurface = ({
             </Layer>
             <Layer ref={cursorLayerRef} listening={false} draggable={false}>
               <Circle ref={cursorShapeRef} visible={false} />
+            </Layer>
+            {/* Separate layer for transformers - no clipping so they remain visible when nodes extend beyond canvas */}
+            <Layer listening={true} zIndex={1000}>
+              {renderTransformers()}
             </Layer>
           </Stage>
         </div>

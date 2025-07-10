@@ -11,7 +11,6 @@ import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
 import Konva from "konva";
-
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
@@ -114,26 +113,34 @@ const PageDraw = () => {
     };
   }, [store]);
 
-  const handleImageUpload = (files: File[]): void => {
-    const centerX = 512;
-    const centerY = 512;
+  const handleImageUpload = async (files: File[]): Promise<void> => {
+    // Determine current canvas dimensions from the store (according to aspect-ratio)
+    const { width: canvasW, height: canvasH } =
+      store.getAspectRatioDimensions();
 
-    console.log("Image upload started with files:", files);
-    console.log("Center coordinates:", { centerX, centerY });
+    // Target maximum size – 85 % of the canvas in each direction
+    const maxW = canvasW * 0.85;
+    const maxH = canvasH * 0.85;
 
-    files.forEach((file, index) => {
-      console.log(`Processing file ${index}:`, file.name);
+    for (const file of files) {
+      // Pre-load the image to get its intrinsic dimensions
+      const img = new Image();
+      img.onload = () => {
+        const { naturalWidth, naturalHeight } = img;
 
-      store.createImageFromFile(
-        centerX + index * 60,
-        centerY + index * 60,
-        file,
-      );
-      console.log(`Created image at position:`, {
-        x: centerX + index * 60,
-        y: centerY + index * 60,
-      });
-    });
+        // Compute scale to fit within the frame while preserving aspect-ratio
+        const scale = Math.min(maxW / naturalWidth, maxH / naturalHeight, 1);
+        const finalW = naturalWidth * scale;
+        const finalH = naturalHeight * scale;
+
+        // Center the image in the canvas
+        const x = (canvasW - finalW) / 2;
+        const y = (canvasH - finalH) / 2;
+
+        store.createImageFromFile(x, y, file, finalW, finalH);
+      };
+      img.src = URL.createObjectURL(file);
+    }
   };
 
   const modelList: PopoverItem[] = [
