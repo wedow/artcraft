@@ -1162,6 +1162,11 @@ export const PaintSurface = ({
       const isSelected = selectedNodeIds.includes(node.id);
       if (!isSelected) return null;
 
+      const isShape =
+        node.type === "rectangle" ||
+        node.type === "circle" ||
+        node.type === "triangle";
+
       return (
         <Transformer
           key={`transformer-${node.id}`}
@@ -1189,10 +1194,10 @@ export const PaintSurface = ({
             "bottom-right",
           ]}
           rotateEnabled={true}
-          keepRatio={true}
+          keepRatio={!isShape}
           centeredScaling={true}
           padding={5}
-          shiftBehavior="inverted"
+          shiftBehavior={isShape ? "normal" : "inverted"}
           ignoreStroke={true}
           onTransformEnd={(e: Konva.KonvaEventObject<Event>) => {
             const konvaNode = e.target;
