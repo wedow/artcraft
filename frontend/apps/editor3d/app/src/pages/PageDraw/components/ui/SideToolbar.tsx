@@ -83,8 +83,14 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       ? store.nodes.filter((node) => store.selectedNodeIds.includes(node.id))
       : [];
 
-  // Get first selected node for color preview (when multiple selected, show first one's color)
-  const firstSelectedNode = selectedNodes.length > 0 ? selectedNodes[0] : null;
+  // Get only colorable nodes (shapes, not images)
+  const selectedColorableNodes = selectedNodes.filter(
+    (node) => node.type !== "image",
+  );
+
+  // Get first selected colorable node for color preview (when multiple selected, show first one's color)
+  const firstSelectedColorableNode =
+    selectedColorableNodes.length > 0 ? selectedColorableNodes[0] : null;
 
   // State for shape color picker
   const [shapeHsva, setShapeHsva] = useState<HsvaColor>({
@@ -96,7 +102,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
 
   // Update shape color picker when selection changes or store's shapeColor changes
   useEffect(() => {
-    const colorToUse = firstSelectedNode?.fill || store.shapeColor;
+    const colorToUse = firstSelectedColorableNode?.fill || store.shapeColor;
 
     if (colorToUse && colorToUse.startsWith("#")) {
       // Convert hex to HSVA (simplified - might want to change to proper converter later)
@@ -120,7 +126,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
 
       setShapeHsva({ h, s: s * 100, v: v * 100, a: 1 });
     }
-  }, [firstSelectedNode?.fill, store.shapeColor]);
+  }, [firstSelectedColorableNode?.fill, store.shapeColor]);
 
   const sendPaint = useDebounced<
     (hex: string, size: number, opacity: number) => void,
@@ -136,11 +142,11 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     (hex: string) => {
       store.setShapeColor(hex);
 
-      selectedNodes.forEach((node) => {
+      selectedColorableNodes.forEach((node) => {
         store.updateNode(node.id, { fill: hex }, false);
       });
 
-      if (selectedNodes.length > 0) {
+      if (selectedColorableNodes.length > 0) {
         store.saveState();
       }
     },
@@ -312,7 +318,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       className={`glass ml-4 flex flex-col items-center gap-3 rounded-xl p-1.5 shadow-lg ${className}`}
     >
       {/* Shape Color Picker - appears above toolbar when shape is selected */}
-      {selectedNodes.length > 0 && (
+      {selectedColorableNodes.length > 0 && (
         <div className="glass absolute -top-14 left-1/2 -translate-x-1/2 rounded-xl border-2 border-primary/50 shadow-lg">
           <div className="relative">
             <button
@@ -321,7 +327,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
             >
               <span
                 className="inline-block h-5 w-5 rounded-full border-2 border-white"
-                style={{ backgroundColor: firstSelectedNode?.fill }}
+                style={{ backgroundColor: firstSelectedColorableNode?.fill }}
               />
             </button>
 

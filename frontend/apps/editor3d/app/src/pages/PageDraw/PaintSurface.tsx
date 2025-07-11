@@ -93,6 +93,7 @@ export const PaintSurface = ({
     width: number;
     height: number;
   } | null>(null);
+  const [isMiddleMousePressed, setIsMiddleMousePressed] = useState(false);
 
   useLayoutEffect(() => {
     const updateDimensions = () => {
@@ -180,7 +181,8 @@ export const PaintSurface = ({
       activeTool !== "draw" &&
       activeTool !== "eraser" &&
       activeTool !== "shape" &&
-      nodeDraggable
+      nodeDraggable &&
+      !isMiddleMousePressed
     );
   };
 
@@ -211,6 +213,11 @@ export const PaintSurface = ({
       "button" in e.evt &&
       ((e.evt as MouseEvent).button === 1 || (e.evt as MouseEvent).button === 2)
     ) {
+      if ((e.evt as MouseEvent).button === 1) {
+        setIsMiddleMousePressed(true);
+        setIsDragging(true);
+        return;
+      }
       if (!isTransformerTarget) {
         setIsDragging(true);
       }
@@ -541,6 +548,7 @@ export const PaintSurface = ({
     setCurrentShapeId(null);
     setShapeStartPoint(null);
     setShapePreview(null);
+    setIsMiddleMousePressed(false);
   };
 
   const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(
@@ -783,6 +791,12 @@ export const PaintSurface = ({
         return;
       }
 
+      // Prevent middle mouse button from interacting with nodes (canvas panning only)
+      if ("button" in e.evt && (e.evt as MouseEvent).button === 1) {
+        setIsMiddleMousePressed(true);
+        return;
+      }
+
       if ("button" in e.evt && (e.evt as MouseEvent).button === 2) {
         const node = store.nodes.find((n) => n.id === nodeId);
         const lineNode = store.lineNodes.find((n) => n.id === nodeId);
@@ -809,6 +823,15 @@ export const PaintSurface = ({
         return;
       }
 
+      // If the node is already selected and we're not multi-selecting, preserve the current selection
+      // This allows dragging multiple selected nodes without changing the selection
+      const isAlreadySelected = selectedNodeIds.includes(nodeId);
+
+      if (isAlreadySelected && !isMultiSelect && selectedNodeIds.length > 1) {
+        // Don't change selection - preserve multi-select for dragging
+        return;
+      }
+
       store.selectNode(nodeId, isMultiSelect);
     };
 
@@ -828,7 +851,10 @@ export const PaintSurface = ({
       const draggedNode =
         (nodes.find((n) => n.id === nodeId) as Node | LineNode | undefined) ||
         store.lineNodes.find((ln) => ln.id === nodeId);
-      if (draggedNode && draggedNode.type === "circle") {
+      if (
+        draggedNode &&
+        (draggedNode.type === "circle" || draggedNode.type === "triangle")
+      ) {
         newX = targetNode.x() - draggedNode.width / 2;
         newY = targetNode.y() - draggedNode.height / 2;
       }
@@ -855,10 +881,14 @@ export const PaintSurface = ({
       const movingNode =
         (nodes.find((n) => n.id === nodeId) as Node | LineNode | undefined) ||
         store.lineNodes.find((ln) => ln.id === nodeId);
-      if (movingNode && movingNode.type === "circle") {
+      if (
+        movingNode &&
+        (movingNode.type === "circle" || movingNode.type === "triangle")
+      ) {
         newXMove = targetNode.x() - movingNode.width / 2;
         newYMove = targetNode.y() - movingNode.height / 2;
       }
+
       store.moveNode(nodeId, newXMove, newYMove, dx, dy, false);
     };
 
@@ -878,7 +908,10 @@ export const PaintSurface = ({
       const endNode =
         (nodes.find((n) => n.id === nodeId) as Node | LineNode | undefined) ||
         store.lineNodes.find((ln) => ln.id === nodeId);
-      if (endNode && endNode.type === "circle") {
+      if (
+        endNode &&
+        (endNode.type === "circle" || endNode.type === "triangle")
+      ) {
         endX = targetNode.x() - endNode.width / 2;
         endY = targetNode.y() - endNode.height / 2;
       }
@@ -905,15 +938,42 @@ export const PaintSurface = ({
       };
       const handleLineDragMove = (
         e: Konva.KonvaEventObject<DragEvent>,
-        _nodeId: string,
+        nodeId: string,
       ) => {
-        void _nodeId;
         const targetNode = e.target as Konva.Node & {
           lastX?: number;
           lastY?: number;
         };
+
+        const dx = targetNode.x() - (targetNode.lastX || targetNode.x());
+        const dy = targetNode.y() - (targetNode.lastY || targetNode.y());
+
         targetNode.lastX = targetNode.x();
         targetNode.lastY = targetNode.y();
+
+        // Move all selected nodes if multiple are selected
+        if (selectedNodeIds.length > 1 && selectedNodeIds.includes(nodeId)) {
+          selectedNodeIds.forEach((id) => {
+            if (id !== nodeId) {
+              const isLineNode = store.lineNodes.find((ln) => ln.id === id);
+              if (isLineNode) {
+                store.moveLineNode(id, dx, dy);
+              } else {
+                const regularNode = nodes.find((n) => n.id === id);
+                if (regularNode) {
+                  store.moveNode(
+                    id,
+                    regularNode.x + dx,
+                    regularNode.y + dy,
+                    dx,
+                    dy,
+                    false,
+                  );
+                }
+              }
+            }
+          });
+        }
       };
       const handleLineDragEnd = (
         e: Konva.KonvaEventObject<DragEvent>,
@@ -1158,6 +1218,9 @@ export const PaintSurface = ({
 
   // Separate function to render transformers on their own layer
   const renderTransformers = () => {
+    // Don't render individual transformers when multiple nodes are selected
+    if (selectedNodeIds.length > 1) return null;
+
     return [...nodes, ...store.lineNodes].map((node) => {
       const isSelected = selectedNodeIds.includes(node.id);
       if (!isSelected) return null;
@@ -1250,29 +1313,50 @@ export const PaintSurface = ({
 
   useEffect(() => {
     if (!stageRef.current) return;
+
+    // Handle individual transformers (only visible when single selection)
     Object.entries(transformerRefs.current).forEach(([nodeId, transformer]) => {
       if (!transformer) return;
 
       const isSelected = selectedNodeIds.includes(nodeId);
-      transformer.visible(isSelected);
+      const shouldShowIndividual = isSelected && selectedNodeIds.length === 1;
 
-      if (isSelected) {
+      transformer.visible(shouldShowIndividual);
+
+      if (shouldShowIndividual) {
         const node = stageRef.current!.findOne(`#${nodeId}`);
         if (node) {
           transformer.nodes([node]);
           transformer.getLayer()?.batchDraw();
         }
+      } else {
+        // Clear transformer nodes when not showing individual transformer
+        transformer.nodes([]);
       }
     });
 
-    if (multiSelectTransformerRef.current && selectedNodeIds.length > 1) {
-      const nodesToTransform = selectedNodeIds
-        .map((id) => stageRef.current!.findOne<Konva.Node>(`#${id}`))
-        .filter((n): n is Konva.Node => Boolean(n));
-      if (nodesToTransform.length > 0) {
-        multiSelectTransformerRef.current.nodes(nodesToTransform);
+    // Handle multi-select transformer (only visible when multiple selections)
+    if (multiSelectTransformerRef.current) {
+      if (selectedNodeIds.length > 1) {
+        const nodesToTransform = selectedNodeIds
+          .map((id) => stageRef.current!.findOne<Konva.Node>(`#${id}`))
+          .filter((n): n is Konva.Node => Boolean(n));
+        if (nodesToTransform.length > 0) {
+          multiSelectTransformerRef.current.nodes(nodesToTransform);
+          multiSelectTransformerRef.current.visible(true);
+          multiSelectTransformerRef.current.getLayer()?.batchDraw();
+        }
+      } else {
+        // Clear multi-select transformer when not needed
+        multiSelectTransformerRef.current.nodes([]);
+        multiSelectTransformerRef.current.visible(false);
         multiSelectTransformerRef.current.getLayer()?.batchDraw();
       }
+    }
+
+    // Force stage redraw to ensure transformers update properly
+    if (stageRef.current) {
+      stageRef.current.batchDraw();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedNodeIds]);
@@ -1368,6 +1452,85 @@ export const PaintSurface = ({
             {/* Separate layer for transformers - no clipping so they remain visible when nodes extend beyond canvas */}
             <Layer listening={true} zIndex={1000}>
               {renderTransformers()}
+              {/* Multi-select transformer for when multiple nodes are selected */}
+              {selectedNodeIds.length > 1 && (
+                <Transformer
+                  ref={multiSelectTransformerRef}
+                  boundBoxFunc={(oldBox, newBox) => {
+                    const minSize = 5;
+                    if (newBox.width < minSize || newBox.height < minSize) {
+                      return oldBox;
+                    }
+                    return newBox;
+                  }}
+                  enabledAnchors={[
+                    "top-left",
+                    "top-center",
+                    "top-right",
+                    "middle-right",
+                    "middle-left",
+                    "bottom-left",
+                    "bottom-center",
+                    "bottom-right",
+                  ]}
+                  rotateEnabled={true}
+                  keepRatio={true}
+                  centeredScaling={false}
+                  padding={5}
+                  ignoreStroke={true}
+                  onTransformEnd={() => {
+                    // Update all selected nodes after multi-select transform
+                    selectedNodeIds.forEach((nodeId) => {
+                      const konvaNode = stageRef.current!.findOne(`#${nodeId}`);
+                      if (konvaNode) {
+                        const finalRotation = konvaNode.rotation();
+                        const finalScaleX = konvaNode.scaleX();
+                        const finalScaleY = konvaNode.scaleY();
+                        const finalX = konvaNode.x();
+                        const finalY = konvaNode.y();
+                        const finalOffsetX = konvaNode.offsetX();
+                        const finalOffsetY = konvaNode.offsetY();
+
+                        const isLineNode = store.lineNodes.find(
+                          (ln) => ln.id === nodeId,
+                        );
+
+                        if (isLineNode) {
+                          store.updateLineNode(
+                            nodeId,
+                            {
+                              x: finalX,
+                              y: finalY,
+                              rotation: finalRotation,
+                              scaleX: finalScaleX,
+                              scaleY: finalScaleY,
+                              offsetX: finalOffsetX,
+                              offsetY: finalOffsetY,
+                            },
+                            false, // Don't save state for each node
+                          );
+                        } else {
+                          store.updateNode(
+                            nodeId,
+                            {
+                              x: finalX,
+                              y: finalY,
+                              rotation: finalRotation,
+                              scaleX: finalScaleX,
+                              scaleY: finalScaleY,
+                              offsetX: finalOffsetX,
+                              offsetY: finalOffsetY,
+                            },
+                            false, // Don't save state for each node
+                          );
+                        }
+                      }
+                    });
+                    // Save state once after all updates
+                    store.saveState();
+                  }}
+                />
+              )}
             </Layer>
           </Stage>
         </div>
