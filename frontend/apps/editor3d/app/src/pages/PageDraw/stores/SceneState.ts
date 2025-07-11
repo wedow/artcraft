@@ -217,7 +217,8 @@ interface SceneState {
   serializeSceneToString: () => Promise<string>;
   loadSceneFromString: (jsonString: string) => boolean;
 
-  // New functions
+  // Layer management functions
+  normalizeZIndices: () => void;
   bringToFront: (nodeIds: string[]) => void;
   sendToBack: (nodeIds: string[]) => void;
   bringForward: (nodeIds: string[]) => void;
@@ -256,7 +257,7 @@ const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
     ...lineNodes.map((n) => n.zIndex || 0),
   ];
 
-  return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 0;
+  return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 1;
 };
 
 export const useSceneStore = create<SceneState>((set, get) => ({
@@ -264,22 +265,16 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   nodes: [],
   lineNodes: [],
   selectedNodeIds: [],
-  clipboard: [], // Initialize clipboard
+  clipboard: [],
   history: [],
   historyIndex: -1,
-
-  // Toolbar initial state
   activeTool: "select",
   brushColor: "#000000",
   brushSize: 5,
   brushOpacity: 1,
   fillColor: "white",
-  // Shape tool initial state
   currentShape: null,
-  // Default color for new shapes
   shapeColor: "#4d79b3",
-
-  // Cursor initial state
   cursorPosition: null,
   cursorVisible: false,
 
@@ -290,15 +285,15 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   addNode: (node: Node) => {
     set((state) => {
       const nextZ = getNextZIndex(state.nodes, state.lineNodes);
-      console.log(`NextZ for node ID ${node.id}: ${nextZ}`);
+      // console.log(`NextZ for node ID ${node.id}: ${nextZ}`);
       const newNode = new Node({
         ...node,
         zIndex: nextZ,
       });
       // console.log("New Node with ID:", newNode.id);
       const nodes = [...state.nodes, newNode];
-      console.log("Nodes after update");
-      console.log(nodes);
+      // console.log("Nodes after update");
+      // console.log(nodes);
       return { nodes: nodes };
     });
     get().saveState();
@@ -726,12 +721,12 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           // Increase default size to 512px width while maintaining aspect ratio
           const finalWidth = width || Math.min(img.naturalWidth, 512);
           const finalHeight = height || finalWidth / aspectRatio;
-          console.log("Image loaded with dimensions:", {
-            naturalWidth: img.naturalWidth,
-            naturalHeight: img.naturalHeight,
-            finalWidth: finalWidth,
-            finalHeight: finalHeight,
-          });
+          // console.log("Image loaded with dimensions:", {
+          //   naturalWidth: img.naturalWidth,
+          //   naturalHeight: img.naturalHeight,
+          //   finalWidth: finalWidth,
+          //   finalHeight: finalHeight,
+          // });
           get().createImage(x, y, file, finalWidth, finalHeight);
         };
         img.src = dataUrl;
@@ -1163,25 +1158,88 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     return get().importSceneFromJson(jsonString);
   },
 
-  // New functions
-  bringToFront: (nodeIds: string[]) => {
+  // Helper function to normalize all z-indices
+  normalizeZIndices: () => {
     set((state) => {
-      // Get highest zIndex from all nodes and line nodes
-      const allZIndices = [
-        ...state.nodes.map((n) => n.zIndex || 0),
-        ...state.lineNodes.map((n) => n.zIndex || 0),
-      ];
-      const maxZ = Math.max(...allZIndices, 0) + 1;
+      // Get all items and sort by current z-index
+      const allItems = [
+        ...state.nodes.map((n) => ({
+          id: n.id,
+          z: n.zIndex || 0,
+          type: "node" as const,
+        })),
+        ...state.lineNodes.map((n) => ({
+          id: n.id,
+          z: n.zIndex || 0,
+          type: "lineNode" as const,
+        })),
+      ].sort((a, b) => a.z - b.z);
+
+      // Reassign z-indices starting from 1 (above canvas background at -1)
+      const zIndexMap = new Map<string, number>();
+      allItems.forEach((item, index) => {
+        zIndexMap.set(item.id, index + 1);
+      });
 
       return {
-        nodes: state.nodes.map((node) =>
-          nodeIds.includes(node.id)
-            ? new Node({ ...node, zIndex: maxZ })
-            : node,
-        ),
-        lineNodes: state.lineNodes.map((node) =>
-          nodeIds.includes(node.id) ? { ...node, zIndex: maxZ } : node,
-        ),
+        nodes: state.nodes.map((node) => {
+          const newZ = zIndexMap.get(node.id) || 1;
+          return new Node({ ...node, zIndex: newZ });
+        }),
+        lineNodes: state.lineNodes.map((node) => {
+          const newZ = zIndexMap.get(node.id) || 1;
+          return { ...node, zIndex: newZ };
+        }),
+      };
+    });
+  },
+
+  // Layer management functions
+  bringToFront: (nodeIds: string[]) => {
+    set((state) => {
+      if (nodeIds.length === 0) return state;
+
+      // First normalize all z-indices to ensure clean state
+      const allItems = [
+        ...state.nodes.map((n) => ({
+          id: n.id,
+          z: n.zIndex || 0,
+          type: "node" as const,
+        })),
+        ...state.lineNodes.map((n) => ({
+          id: n.id,
+          z: n.zIndex || 0,
+          type: "lineNode" as const,
+        })),
+      ].sort((a, b) => a.z - b.z);
+
+      // Create normalized z-index mapping
+      const zIndexMap = new Map<string, number>();
+      let currentZ = 1; // Start from 1 to stay above canvas background
+
+      // Assign z-indices: non-selected items first, then selected items on top
+      allItems.forEach((item) => {
+        if (!nodeIds.includes(item.id)) {
+          zIndexMap.set(item.id, currentZ++);
+        }
+      });
+
+      // Put selected items on top
+      allItems.forEach((item) => {
+        if (nodeIds.includes(item.id)) {
+          zIndexMap.set(item.id, currentZ++);
+        }
+      });
+
+      return {
+        nodes: state.nodes.map((node) => {
+          const newZ = zIndexMap.get(node.id) || 1;
+          return new Node({ ...node, zIndex: newZ });
+        }),
+        lineNodes: state.lineNodes.map((node) => {
+          const newZ = zIndexMap.get(node.id) || 1;
+          return { ...node, zIndex: newZ };
+        }),
       };
     });
     get().saveState();
@@ -1189,22 +1247,52 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
   sendToBack: (nodeIds: string[]) => {
     set((state) => {
-      // Get lowest zIndex from all nodes and line nodes
-      const allZIndices = [
-        ...state.nodes.map((n) => n.zIndex || 0),
-        ...state.lineNodes.map((n) => n.zIndex || 0),
-      ];
-      const minZ = Math.min(...allZIndices, 0) - 1;
+      if (nodeIds.length === 0) return state;
+
+      // Get all items sorted by current z-index
+      const allItems = [
+        ...state.nodes.map((n) => ({
+          id: n.id,
+          z: n.zIndex || 0,
+          type: "node" as const,
+        })),
+        ...state.lineNodes.map((n) => ({
+          id: n.id,
+          z: n.zIndex || 0,
+          type: "lineNode" as const,
+        })),
+      ].sort((a, b) => a.z - b.z);
+
+      // Create normalized z-index mapping
+      const zIndexMap = new Map<string, number>();
+      let currentZ = 1; // Start from 1 to stay above canvas background
+
+      // Get selected items and sort by current z-index (highest first)
+      // This ensures the item that was on top goes to the very back
+      const selectedItems = allItems
+        .filter((item) => nodeIds.includes(item.id))
+        .sort((a, b) => b.z - a.z); // Reverse order: highest z-index first
+
+      // Assign z-indices: selected items first (in reverse order), then non-selected items
+      selectedItems.forEach((item) => {
+        zIndexMap.set(item.id, currentZ++);
+      });
+
+      allItems.forEach((item) => {
+        if (!nodeIds.includes(item.id)) {
+          zIndexMap.set(item.id, currentZ++);
+        }
+      });
 
       return {
-        nodes: state.nodes.map((node) =>
-          nodeIds.includes(node.id)
-            ? new Node({ ...node, zIndex: minZ })
-            : node,
-        ),
-        lineNodes: state.lineNodes.map((node) =>
-          nodeIds.includes(node.id) ? { ...node, zIndex: minZ } : node,
-        ),
+        nodes: state.nodes.map((node) => {
+          const newZ = zIndexMap.get(node.id) || 1;
+          return new Node({ ...node, zIndex: newZ });
+        }),
+        lineNodes: state.lineNodes.map((node) => {
+          const newZ = zIndexMap.get(node.id) || 1;
+          return { ...node, zIndex: newZ };
+        }),
       };
     });
     get().saveState();
@@ -1212,80 +1300,55 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
   bringForward: (nodeIds: string[]) => {
     set((state) => {
-      // Combine all items with their current zIndex
+      if (nodeIds.length === 0) return state;
+
+      // Get all items sorted by current z-index (this represents the layer stack)
       const allItems = [
         ...state.nodes.map((n) => ({
           id: n.id,
-          z: Math.max(0, n.zIndex || 0),
-          selected: nodeIds.includes(n.id),
+          z: n.zIndex || 0,
+          type: "node" as const,
         })),
         ...state.lineNodes.map((n) => ({
           id: n.id,
-          z: Math.max(0, n.zIndex || 0),
-          selected: nodeIds.includes(n.id),
+          z: n.zIndex || 0,
+          type: "lineNode" as const,
         })),
       ].sort((a, b) => a.z - b.z);
 
-      // Find the highest z-index among selected items
-      const selectedItems = allItems.filter((item) => item.selected);
-      if (selectedItems.length === 0) return state;
+      // Create array to track new layer order
+      const newOrder = [...allItems];
 
-      const highestSelectedZ = Math.max(...selectedItems.map((item) => item.z));
+      // Process selected items from highest to lowest z-index to avoid conflicts
+      const selectedIndices = allItems
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => nodeIds.includes(item.id))
+        .sort((a, b) => b.index - a.index); // Sort by position in array (highest z-index first)
 
-      // Find the closest item above our selection
-      const nextItem = allItems.find(
-        (item) => !item.selected && item.z > highestSelectedZ,
-      );
+      // Move each selected item forward by one position if possible
+      selectedIndices.forEach(({ index }) => {
+        if (index < newOrder.length - 1) {
+          // Swap with the item directly in front of it
+          const temp = newOrder[index];
+          newOrder[index] = newOrder[index + 1];
+          newOrder[index + 1] = temp;
+        }
+      });
 
-      // If no item above, swap with the highest non-selected item
-      if (!nextItem) {
-        const highestNonSelected = allItems
-          .filter((item) => !item.selected)
-          .sort((a, b) => b.z - a.z)[0];
-        if (!highestNonSelected) return state;
+      // Reassign z-indices based on new order (starting from 1 to stay above canvas)
+      const zIndexMap = new Map<string, number>();
+      newOrder.forEach((item, index) => {
+        zIndexMap.set(item.id, index + 1);
+      });
 
-        // Swap positions
-        return {
-          nodes: state.nodes.map((node) => {
-            if (nodeIds.includes(node.id)) {
-              return new Node({ ...node, zIndex: highestNonSelected.z });
-            }
-            if (node.id === highestNonSelected.id) {
-              return new Node({ ...node, zIndex: highestSelectedZ });
-            }
-            return node;
-          }),
-          lineNodes: state.lineNodes.map((node) => {
-            if (nodeIds.includes(node.id)) {
-              return { ...node, zIndex: highestNonSelected.z };
-            }
-            if (node.id === highestNonSelected.id) {
-              return { ...node, zIndex: highestSelectedZ };
-            }
-            return node;
-          }),
-        };
-      }
-
-      const newZ = nextItem.z;
       return {
         nodes: state.nodes.map((node) => {
-          if (nodeIds.includes(node.id)) {
-            return new Node({ ...node, zIndex: newZ });
-          }
-          if (node.id === nextItem.id) {
-            return new Node({ ...node, zIndex: highestSelectedZ });
-          }
-          return node;
+          const newZ = zIndexMap.get(node.id) || 1;
+          return new Node({ ...node, zIndex: newZ });
         }),
         lineNodes: state.lineNodes.map((node) => {
-          if (nodeIds.includes(node.id)) {
-            return { ...node, zIndex: newZ };
-          }
-          if (node.id === nextItem.id) {
-            return { ...node, zIndex: highestSelectedZ };
-          }
-          return node;
+          const newZ = zIndexMap.get(node.id) || 1;
+          return { ...node, zIndex: newZ };
         }),
       };
     });
@@ -1294,80 +1357,55 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
   sendBackward: (nodeIds: string[]) => {
     set((state) => {
-      // Combine all items with their current zIndex
+      if (nodeIds.length === 0) return state;
+
+      // Get all items sorted by current z-index (this represents the layer stack)
       const allItems = [
         ...state.nodes.map((n) => ({
           id: n.id,
-          z: Math.max(0, n.zIndex || 0),
-          selected: nodeIds.includes(n.id),
+          z: n.zIndex || 0,
+          type: "node" as const,
         })),
         ...state.lineNodes.map((n) => ({
           id: n.id,
-          z: Math.max(0, n.zIndex || 0),
-          selected: nodeIds.includes(n.id),
+          z: n.zIndex || 0,
+          type: "lineNode" as const,
         })),
-      ].sort((a, b) => b.z - a.z);
+      ].sort((a, b) => a.z - b.z);
 
-      // Find the lowest z-index among selected items
-      const selectedItems = allItems.filter((item) => item.selected);
-      if (selectedItems.length === 0) return state;
+      // Create array to track new layer order
+      const newOrder = [...allItems];
 
-      const lowestSelectedZ = Math.min(...selectedItems.map((item) => item.z));
+      // Process selected items from lowest to highest z-index to avoid conflicts
+      const selectedIndices = allItems
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => nodeIds.includes(item.id))
+        .sort((a, b) => a.index - b.index); // Sort by position in array (lowest z-index first)
 
-      // Find the closest item below our selection
-      const nextItem = allItems.find(
-        (item) => !item.selected && item.z < lowestSelectedZ,
-      );
+      // Move each selected item backward by one position if possible
+      selectedIndices.forEach(({ index }) => {
+        if (index > 0) {
+          // Swap with the item directly behind it
+          const temp = newOrder[index];
+          newOrder[index] = newOrder[index - 1];
+          newOrder[index - 1] = temp;
+        }
+      });
 
-      // If no item below, swap with the lowest non-selected item
-      if (!nextItem) {
-        const lowestNonSelected = allItems
-          .filter((item) => !item.selected)
-          .sort((a, b) => a.z - b.z)[0];
-        if (!lowestNonSelected) return state;
+      // Reassign z-indices based on new order (starting from 1 to stay above canvas)
+      const zIndexMap = new Map<string, number>();
+      newOrder.forEach((item, index) => {
+        zIndexMap.set(item.id, index + 1);
+      });
 
-        // Swap positions
-        return {
-          nodes: state.nodes.map((node) => {
-            if (nodeIds.includes(node.id)) {
-              return new Node({ ...node, zIndex: lowestNonSelected.z });
-            }
-            if (node.id === lowestNonSelected.id) {
-              return new Node({ ...node, zIndex: lowestSelectedZ });
-            }
-            return node;
-          }),
-          lineNodes: state.lineNodes.map((node) => {
-            if (nodeIds.includes(node.id)) {
-              return { ...node, zIndex: lowestNonSelected.z };
-            }
-            if (node.id === lowestNonSelected.id) {
-              return { ...node, zIndex: lowestSelectedZ };
-            }
-            return node;
-          }),
-        };
-      }
-
-      const newZ = nextItem.z;
       return {
         nodes: state.nodes.map((node) => {
-          if (nodeIds.includes(node.id)) {
-            return new Node({ ...node, zIndex: newZ });
-          }
-          if (node.id === nextItem.id) {
-            return new Node({ ...node, zIndex: lowestSelectedZ });
-          }
-          return node;
+          const newZ = zIndexMap.get(node.id) || 1;
+          return new Node({ ...node, zIndex: newZ });
         }),
         lineNodes: state.lineNodes.map((node) => {
-          if (nodeIds.includes(node.id)) {
-            return { ...node, zIndex: newZ };
-          }
-          if (node.id === nextItem.id) {
-            return { ...node, zIndex: lowestSelectedZ };
-          }
-          return node;
+          const newZ = zIndexMap.get(node.id) || 1;
+          return { ...node, zIndex: newZ };
         }),
       };
     });

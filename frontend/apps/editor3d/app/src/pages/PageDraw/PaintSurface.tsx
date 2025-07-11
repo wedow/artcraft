@@ -1023,7 +1023,6 @@ export const PaintSurface = ({
           rotation={lineNode.rotation || 0}
           offsetX={lineNode.offsetX || 0}
           offsetY={lineNode.offsetY || 0}
-          zIndex={lineNode.zIndex}
           listening={listeningEnabled}
         />
       );
@@ -1046,7 +1045,6 @@ export const PaintSurface = ({
           scaleY={node.scaleY || 1}
           offsetX={node.offsetX || 0}
           offsetY={node.offsetY || 0}
-          zIndex={node.zIndex}
           draggable={draggableIfToolsNotActive(
             activeTool,
             node.draggable && node.locked == false,
@@ -1085,7 +1083,6 @@ export const PaintSurface = ({
           scaleY={node.scaleY || 1}
           offsetX={node.offsetX || 0}
           offsetY={node.offsetY || 0}
-          zIndex={node.zIndex}
           draggable={draggableIfToolsNotActive(
             activeTool,
             node.draggable && node.locked == false,
@@ -1135,7 +1132,6 @@ export const PaintSurface = ({
           scaleY={node.scaleY || 1}
           offsetX={node.offsetX || 0}
           offsetY={node.offsetY || 0}
-          zIndex={node.zIndex}
           draggable={draggableIfToolsNotActive(
             activeTool,
             node.draggable && node.locked == false,
@@ -1175,7 +1171,6 @@ export const PaintSurface = ({
               offsetX={node.offsetX || 0}
               offsetY={node.offsetY || 0}
               listening={false}
-              zIndex={node.zIndex}
             />
           )}
           <Image
@@ -1268,10 +1263,22 @@ export const PaintSurface = ({
             const finalRotation = konvaNode.rotation();
             const finalScaleX = konvaNode.scaleX();
             const finalScaleY = konvaNode.scaleY();
-            const finalX = konvaNode.x();
-            const finalY = konvaNode.y();
+            let finalX = konvaNode.x();
+            let finalY = konvaNode.y();
             const finalOffsetX = konvaNode.offsetX();
             const finalOffsetY = konvaNode.offsetY();
+
+            // Find the corresponding node in the store to check its type
+            const storeNode = store.nodes.find((n) => n.id === nodeId);
+
+            // For circles, convert from center positioning back to top-left positioning
+            if (storeNode && storeNode.type === "circle") {
+              const width = storeNode.width;
+              const height = storeNode.height;
+
+              finalX = finalX - width / 2;
+              finalY = finalY - height / 2;
+            }
 
             const isLineNode = store.lineNodes.find((ln) => ln.id === nodeId);
 
@@ -1485,10 +1492,23 @@ export const PaintSurface = ({
                         const finalRotation = konvaNode.rotation();
                         const finalScaleX = konvaNode.scaleX();
                         const finalScaleY = konvaNode.scaleY();
-                        const finalX = konvaNode.x();
-                        const finalY = konvaNode.y();
+                        let finalX = konvaNode.x();
+                        let finalY = konvaNode.y();
                         const finalOffsetX = konvaNode.offsetX();
                         const finalOffsetY = konvaNode.offsetY();
+
+                        // Find the corresponding node in the store to check its type
+                        const storeNode = store.nodes.find(
+                          (n) => n.id === nodeId,
+                        );
+
+                        // For circles, convert from center positioning back to top-left positioning
+                        if (storeNode && storeNode.type === "circle") {
+                          const width = storeNode.width;
+                          const height = storeNode.height;
+                          finalX = finalX - width / 2;
+                          finalY = finalY - height / 2;
+                        }
 
                         const isLineNode = store.lineNodes.find(
                           (ln) => ln.id === nodeId,
