@@ -1195,7 +1195,7 @@ export const PaintSurface = ({
           ]}
           rotateEnabled={true}
           keepRatio={!isShape}
-          centeredScaling={true}
+          centeredScaling={false}
           padding={5}
           shiftBehavior={isShape ? "normal" : "inverted"}
           ignoreStroke={true}
