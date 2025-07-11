@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Node } from "../Node";
+import { Node, NodeType } from "../Node";
 
 // Add LineNode type
 export type LineNode = {
@@ -56,6 +56,30 @@ export type ActiveTool =
   | "eraser"
   | "backgroundColor"
   | "shape";
+
+// Type for serialized node data stored in history
+type SerializedNodeData = {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: string;
+  type: NodeType;
+  stroke: string;
+  strokeWidth: number;
+  draggable: boolean;
+  imageUrl?: string;
+  imageFile?: File;
+  backgroundColor?: string;
+  rotation: number;
+  scaleX: number;
+  scaleY: number;
+  offsetX: number;
+  offsetY: number;
+  zIndex: number;
+  locked: boolean;
+};
 
 interface SceneState {
   // Nodes
@@ -127,10 +151,10 @@ interface SceneState {
   ) => void;
 
   // History management
-  history: { nodes: Node[]; lineNodes: LineNode[] }[];
+  history: { nodes: SerializedNodeData[]; lineNodes: LineNode[] }[];
   historyIndex: number;
-  undo: () => void;
-  redo: () => void;
+  undo: () => Promise<void>;
+  redo: () => Promise<void>;
   saveState: () => void;
 
   // Add new actions for line nodes
@@ -228,14 +252,8 @@ let isRestoring = false;
 // Add this helper function at the top of the store (before create<SceneState>)
 const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
   const allZIndices = [
-    ...nodes.map((n, index) => {
-      //console.log(`Node: ${JSON.stringify(n)}, Index: ${index}`);
-      return n.zIndex || 0;
-    }),
-    ...lineNodes.map((n, index) => {
-      //console.log(`LineNode: ${JSON.stringify(n)}, Index: ${index}`);
-      return n.zIndex || 0;
-    }),
+    ...nodes.map((n) => n.zIndex || 0),
+    ...lineNodes.map((n) => n.zIndex || 0),
   ];
 
   return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 0;
@@ -278,7 +296,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
         zIndex: nextZ,
       });
       // console.log("New Node with ID:", newNode.id);
-      let nodes = [...state.nodes, newNode];
+      const nodes = [...state.nodes, newNode];
       console.log("Nodes after update");
       console.log(nodes);
       return { nodes: nodes };
@@ -313,7 +331,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   ) => {
     set((state) => {
       const newNodes = state.nodes.map((node) => {
-        let newZIndex =
+        const newZIndex =
           updates.zIndex !== undefined ? updates.zIndex : node.zIndex;
 
         if (node.id === id) {
@@ -496,6 +514,8 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           scaleY: node.scaleY || 1,
           offsetX: node.offsetX || 0, // Include offset in history
           offsetY: node.offsetY || 0, // Include offset in history
+          zIndex: node.zIndex || 0,
+          locked: node.locked || false,
         })),
         lineNodes: JSON.parse(JSON.stringify(state.lineNodes)),
       };
@@ -510,126 +530,103 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     });
   },
 
-  undo: () => {
-    set((state) => {
-      if (state.historyIndex < 0) return state;
+  undo: async () => {
+    const state = get();
+    if (state.historyIndex < 0) return;
 
-      const newIndex = state.historyIndex - 1;
+    const newIndex = state.historyIndex - 1;
 
-      // If we're going back to before the first saved state, return to initial empty state
-      if (newIndex < 0) {
-        return {
-          nodes: [],
-          lineNodes: [],
-          selectedNodeIds: [],
-          historyIndex: newIndex,
-        };
-      }
+    // If we're going back to before the first saved state, return to initial empty state
+    if (newIndex < 0) {
+      set({
+        nodes: [],
+        lineNodes: [],
+        selectedNodeIds: [],
+        historyIndex: newIndex,
+      });
+      return;
+    }
 
-      const previousState = state.history[newIndex];
+    const previousState = state.history[newIndex];
 
-      // Set the restoring flag
-      isRestoring = true;
+    // Set the restoring flag
+    isRestoring = true;
 
-      // Recreate nodes and immediately start loading images
-      const restoredNodes = previousState.nodes.map((nodeData) => {
-        const node = new Node(nodeData as any);
+    // Recreate nodes and load images BEFORE setting state
+    const restoredNodes = await Promise.all(
+      previousState.nodes.map(async (nodeData: SerializedNodeData) => {
+        const node = new Node(nodeData);
 
-        // If it's an image node, start loading the image immediately
+        // If it's an image node, load the image before returning the node
         if (node.type === "image" && (node.imageUrl || node.imageFile)) {
-          const loadImage = async () => {
-            try {
-              if (node.imageUrl) {
-                await node.setImageFromUrl(node.imageUrl);
-              } else if (node.imageFile) {
-                await node.setImageFromFile(node.imageFile);
-              }
-              // Update the specific node without triggering state save
-              get().updateNode(node.id, node, false);
-            } catch (error) {
-              console.error("Failed to restore image:", error);
-            } finally {
-              // Reset the flag after a delay to ensure all async operations complete
-              setTimeout(() => {
-                isRestoring = false;
-              }, 100);
+          try {
+            if (node.imageUrl) {
+              await node.setImageFromUrl(node.imageUrl);
+            } else if (node.imageFile) {
+              await node.setImageFromFile(node.imageFile);
             }
-          };
-
-          loadImage();
+          } catch (error) {
+            console.error("Failed to restore image:", error);
+          }
         }
 
         return node;
-      });
+      }),
+    );
 
-      // Reset the flag if no images to load
-      const hasImages = restoredNodes.some((node) => node.type === "image");
-      if (!hasImages) {
-        isRestoring = false;
-      }
+    // Reset the flag
+    isRestoring = false;
 
-      return {
-        nodes: restoredNodes,
-        lineNodes: previousState.lineNodes,
-        selectedNodeIds: [], // Clear selection on undo
-        historyIndex: newIndex,
-      };
+    // Set the state with fully loaded nodes
+    set({
+      nodes: restoredNodes,
+      lineNodes: previousState.lineNodes,
+      selectedNodeIds: [], // Clear selection on undo
+      historyIndex: newIndex,
     });
   },
 
-  redo: () => {
-    set((state) => {
-      if (state.historyIndex >= state.history.length - 1) return state;
+  redo: async () => {
+    const state = get();
+    if (state.historyIndex >= state.history.length - 1) return;
 
-      const newIndex = state.historyIndex + 1;
-      const nextState = state.history[newIndex];
+    const newIndex = state.historyIndex + 1;
+    const nextState = state.history[newIndex];
 
-      // Set the restoring flag
-      isRestoring = true;
+    // Set the restoring flag
+    isRestoring = true;
 
-      // Recreate nodes and immediately start loading images
-      const restoredNodes = nextState.nodes.map((nodeData) => {
-        const node = new Node(nodeData as any);
+    // Recreate nodes and load images BEFORE setting state
+    const restoredNodes = await Promise.all(
+      nextState.nodes.map(async (nodeData: SerializedNodeData) => {
+        const node = new Node(nodeData);
 
-        // If it's an image node, start loading the image immediately
+        // If it's an image node, load the image before returning the node
         if (node.type === "image" && (node.imageUrl || node.imageFile)) {
-          const loadImage = async () => {
-            try {
-              if (node.imageUrl) {
-                await node.setImageFromUrl(node.imageUrl);
-              } else if (node.imageFile) {
-                await node.setImageFromFile(node.imageFile);
-              }
-              // Update the specific node without triggering state save
-              get().updateNode(node.id, node, false);
-            } catch (error) {
-              console.error("Failed to restore image:", error);
-            } finally {
-              // Reset the flag after a delay to ensure all async operations complete
-              setTimeout(() => {
-                isRestoring = false;
-              }, 100);
+          try {
+            if (node.imageUrl) {
+              await node.setImageFromUrl(node.imageUrl);
+            } else if (node.imageFile) {
+              await node.setImageFromFile(node.imageFile);
             }
-          };
-
-          loadImage();
+          } catch (error) {
+            console.error("Failed to restore image:", error);
+          }
         }
 
         return node;
-      });
+      }),
+    );
 
-      // Reset the flag if no images to load
-      const hasImages = restoredNodes.some((node) => node.type === "image");
-      if (!hasImages) {
-        isRestoring = false;
-      }
+    // Reset the flag
+    isRestoring = false;
 
-      return {
-        nodes: restoredNodes,
-        lineNodes: nextState.lineNodes,
-        selectedNodeIds: [], // Clear selection on redo
-        historyIndex: newIndex,
-      };
+    // Set the state with fully loaded nodes
+    set({
+      nodes: restoredNodes,
+      lineNodes: nextState.lineNodes,
+      selectedNodeIds: [], // Clear selection on redo
+      historyIndex: newIndex,
     });
   },
 
@@ -1082,34 +1079,36 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       };
 
       // Recreate nodes
-      const restoredNodes = sceneData.nodes.map((nodeData: any) => {
-        const node = new Node(nodeData);
+      const restoredNodes = sceneData.nodes.map(
+        (nodeData: SerializedNodeData & { imageDataUrl?: string }) => {
+          const node = new Node(nodeData);
 
-        // Handle image restoration
-        if (node.type === "image") {
-          const loadImage = async () => {
-            try {
-              if (nodeData.imageDataUrl) {
-                // Restore from base64 data URL
-                const file = base64ToFile(
-                  nodeData.imageDataUrl,
-                  `restored-image-${node.id}.png`,
-                );
-                await node.setImageFromFile(file);
-              } else if (node.imageUrl) {
-                // Restore from URL
-                await node.setImageFromUrl(node.imageUrl);
+          // Handle image restoration
+          if (node.type === "image") {
+            const loadImage = async () => {
+              try {
+                if (nodeData.imageDataUrl) {
+                  // Restore from base64 data URL
+                  const file = base64ToFile(
+                    nodeData.imageDataUrl,
+                    `restored-image-${node.id}.png`,
+                  );
+                  await node.setImageFromFile(file);
+                } else if (node.imageUrl) {
+                  // Restore from URL
+                  await node.setImageFromUrl(node.imageUrl);
+                }
+                get().updateNode(node.id, node, false);
+              } catch (error) {
+                console.error("Failed to restore image:", error);
               }
-              get().updateNode(node.id, node, false);
-            } catch (error) {
-              console.error("Failed to restore image:", error);
-            }
-          };
-          loadImage();
-        }
+            };
+            loadImage();
+          }
 
-        return node;
-      });
+          return node;
+        },
+      );
 
       set({
         nodes: restoredNodes,
