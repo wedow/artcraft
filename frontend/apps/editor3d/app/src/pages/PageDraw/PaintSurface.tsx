@@ -7,7 +7,6 @@ import {
   Circle,
   Line,
   Image,
-  RegularPolygon,
   Transformer,
 } from "react-konva";
 import Konva from "konva";
@@ -851,10 +850,7 @@ export const PaintSurface = ({
       const draggedNode =
         (nodes.find((n) => n.id === nodeId) as Node | LineNode | undefined) ||
         store.lineNodes.find((ln) => ln.id === nodeId);
-      if (
-        draggedNode &&
-        (draggedNode.type === "circle" || draggedNode.type === "triangle")
-      ) {
+      if (draggedNode && draggedNode.type === "circle") {
         newX = targetNode.x() - draggedNode.width / 2;
         newY = targetNode.y() - draggedNode.height / 2;
       }
@@ -881,10 +877,7 @@ export const PaintSurface = ({
       const movingNode =
         (nodes.find((n) => n.id === nodeId) as Node | LineNode | undefined) ||
         store.lineNodes.find((ln) => ln.id === nodeId);
-      if (
-        movingNode &&
-        (movingNode.type === "circle" || movingNode.type === "triangle")
-      ) {
+      if (movingNode && movingNode.type === "circle") {
         newXMove = targetNode.x() - movingNode.width / 2;
         newYMove = targetNode.y() - movingNode.height / 2;
       }
@@ -908,10 +901,7 @@ export const PaintSurface = ({
       const endNode =
         (nodes.find((n) => n.id === nodeId) as Node | LineNode | undefined) ||
         store.lineNodes.find((ln) => ln.id === nodeId);
-      if (
-        endNode &&
-        (endNode.type === "circle" || endNode.type === "triangle")
-      ) {
+      if (endNode && endNode.type === "circle") {
         endX = targetNode.x() - endNode.width / 2;
         endY = targetNode.y() - endNode.height / 2;
       }
@@ -1118,19 +1108,28 @@ export const PaintSurface = ({
     }
 
     if (node.type === "triangle") {
-      const radius = Math.max(node.width, node.height) / 2;
+      const points = [
+        node.width / 2,
+        0,
+        0,
+        node.height,
+        node.width,
+        node.height,
+        node.width / 2,
+        0,
+      ];
 
       return (
-        <RegularPolygon
+        <Line
           key={node.id}
           id={node.id}
-          x={node.x + node.width / 2}
-          y={node.y + node.height / 2}
-          sides={3}
-          radius={radius}
+          x={node.x}
+          y={node.y}
+          points={points}
           fill={node.fill}
           stroke={node.stroke}
           strokeWidth={0}
+          closed={true}
           rotation={node.rotation || 0}
           scaleX={node.scaleX || 1}
           scaleY={node.scaleY || 1}
