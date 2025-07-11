@@ -6,14 +6,15 @@
 
 @custom-variant dark (&:is(.dark *));
 .pegboard-bg {
-  position: fixed;
   inset: 0;
   z-index: 0;
   background-color: #1b1b1b;
   /* background-image: radial-gradient(#bbb 1px, transparent 1px),
                     radial-gradient(#bbb 1px, transparent 1px); */
   background-size: 50px 50px;
-  background-position: 0 0, 15px 15px;
+  background-position:
+    0 0,
+    15px 15px;
 }
 /* 
 @theme inline {
@@ -139,18 +140,18 @@
 
 .brush-picker .react-colorful__saturation {
   border: 1px solid rgb(255, 255, 255);
-  border-radius: 15px 15px 15px 15px;         /* top-rounded square */
+  border-radius: 15px 15px 15px 15px; /* top-rounded square */
   margin-bottom: 12px;
 }
 
 .brush-picker .react-colorful__hue {
-  border: 1px solid rgba(255, 255, 255, 0.2);                        /* bar thickness       */
-  border-radius: 30px 30px 30px 30px;            /* rounded bottom only */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* bar thickness       */
+  border-radius: 30px 30px 30px 30px; /* rounded bottom only */
   margin-bottom: 12px;
 }
 
 .brush-picker .react-colorful__alpha {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 15px 15px 15px 15px;
-  margin-bottom: 12px;   
+  margin-bottom: 12px;
 }
