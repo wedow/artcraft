@@ -125,14 +125,14 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
           aria-label="navigation"
         >
           <div className="flex items-center gap-7">
-            <a href="/">
+            <div>
               <span className="sr-only">ArtCraft</span>
               <img
                 className="h-[24px] w-auto"
                 src="/resources/images/artcraft-logo-3.png"
                 alt="Logo ArtCraft"
               />
-            </a>
+            </div>
             <MenuIconSelector
               menuItems={appMenuTabs}
               activeMenu={tabStore.activeTabId}
