@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../tab-selector"
+    },
+    {
       "path": "../button"
     },
     {

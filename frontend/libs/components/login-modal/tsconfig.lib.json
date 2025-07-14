@@ -50,9 +50,6 @@
       "path": "../../tauri-api/tsconfig.lib.json"
     },
     {
-      "path": "../../tauri-utils/tsconfig.lib.json"
-    },
-    {
       "path": "../button/tsconfig.lib.json"
     },
     {

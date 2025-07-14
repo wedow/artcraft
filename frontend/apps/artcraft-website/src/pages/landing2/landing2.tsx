@@ -197,6 +197,250 @@ const Landing = () => {
                 className="text-primary"
                 style={{ textShadow: "0 0 15px var(--color-primary)" }}
               >
+                Four Reasons
+              </span>
+              &nbsp;Why ArtCraft is the&nbsp;
+              <span
+                className="text-primary"
+                style={{ textShadow: "0 0 15px var(--color-primary)" }}
+              >
+                Best Tool
+              </span>
+            </h1>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-150px] bottom-[-100px] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-10 blur-[110px] z-0 pointer-events-none" />
+        <motion.div
+          className="mx-auto max-w-[88rem] md:px-6 lg:px-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariants}
+        >
+          <div className="grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-2 lg:items-center">
+            <motion.div
+              className="px-2 sm:px-6 lg:px-0 lg:pt-4 lg:pr-4"
+              variants={fadeUpVariants}
+            >
+              <div className="max-w-2xl lg:mx-0 mb-10 md:mb-16">
+                <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl !leading-tight">
+                  Reason #1. Text Prompting Sucks {" "}
+                  <span className="text-primary">Our tool lets you design visually, like Figma. It's as if you're playing a video game.</span>
+                </h2>
+              </div>
+              <DiscordButton />
+            </motion.div>
+            <div className="sm:px-2 sm:mx-auto lg:px-0">
+              <div className="relative isolate overflow-hidden bg-indigo-500 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:pr-0 lg:mx-0 lg:max-w-none">
+                <div className="mx-auto max-w-full sm:max-w-2xl sm:mx-0 sm:max-w-none p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                  <video
+                    src="/videos/artcraft-3d-demo.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="aspect-square w-full max-w-none rounded-lg bg-gray-800 object-cover h-full overflow-hidden"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+
+      <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute right-[-200px] top-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-700 via-[#00AABA] to-pink-500 opacity-10 blur-[120px] z-0 pointer-events-none" />
+        <motion.div
+          className="mx-auto max-w-[88rem] md:px-6 lg:px-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariants}
+        >
+          <div className="grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-2 lg:items-center">
+            <div className="sm:px-2 sm:mx-auto lg:px-0 order-2 lg:order-1">
+              <motion.div
+                className="relative isolate overflow-hidden bg-indigo-500 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:pr-0 lg:mx-0 lg:max-w-none"
+                variants={fadeUpVariants}
+              >
+                <div className="mx-auto max-w-full sm:max-w-2xl sm:mx-0 sm:max-w-none p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                  <video
+                    src="/videos/artcraft-canvas-demo.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="aspect-square w-full max-w-none rounded-lg bg-gray-800 object-cover h-full overflow-hidden"
+                  />
+                </div>
+              </motion.div>
+            </div>
+            <motion.div
+              className="px-2 sm:px-6 lg:px-0 lg:pt-4 lg:pr-4 order-1 lg:order-2"
+              variants={fadeUpVariants}
+            >
+              <div className=" max-w-2xl lg:mx-0 mb-10 md:mb-16">
+                <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl xl:text-[3.8rem] !leading-tight">
+                  Reason #2. You'll be able to use EVERY (we mean EVERY) image and video model all in one place. You can log into your existing subscriptions and use them all in ArtCraft.
+                </h2>
+              </div>
+              <DiscordButton />
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
+
+
+      <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-150px] bottom-[-100px] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-10 blur-[110px] z-0 pointer-events-none" />
+        <motion.div
+          className="mx-auto max-w-[88rem] md:px-6 lg:px-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariants}
+        >
+          <div className="grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-2 lg:items-center">
+            <motion.div
+              className="px-2 sm:px-6 lg:px-0 lg:pt-4 lg:pr-4"
+              variants={fadeUpVariants}
+            >
+              <div className="max-w-2xl lg:mx-0 mb-10 md:mb-16">
+                <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl !leading-tight">
+                  Reason #3. It's a Desktop App
+                  <span className="text-primary">No more hunting for the hundreth tab. This app works on Windows, Mac, and soon Linux and Tablets. It's a first class experience for real artists.</span>
+                </h2>
+              </div>
+              <DiscordButton />
+            </motion.div>
+            <div className="sm:px-2 sm:mx-auto lg:px-0">
+              <div className="relative isolate overflow-hidden bg-indigo-500 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:pr-0 lg:mx-0 lg:max-w-none">
+                <div className="mx-auto max-w-full sm:max-w-2xl sm:mx-0 sm:max-w-none p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                  <video
+                    src="/videos/artcraft-3d-demo.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="aspect-square w-full max-w-none rounded-lg bg-gray-800 object-cover h-full overflow-hidden"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+
+      <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute right-[-200px] top-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-700 via-[#00AABA] to-pink-500 opacity-10 blur-[120px] z-0 pointer-events-none" />
+        <motion.div
+          className="mx-auto max-w-[88rem] md:px-6 lg:px-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariants}
+        >
+          <div className="grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-2 lg:items-center">
+            <div className="sm:px-2 sm:mx-auto lg:px-0 order-2 lg:order-1">
+              <motion.div
+                className="relative isolate overflow-hidden bg-indigo-500 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:pr-0 lg:mx-0 lg:max-w-none"
+                variants={fadeUpVariants}
+              >
+                <div className="mx-auto max-w-full sm:max-w-2xl sm:mx-0 sm:max-w-none p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                  <video
+                    src="/videos/artcraft-canvas-demo.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="aspect-square w-full max-w-none rounded-lg bg-gray-800 object-cover h-full overflow-hidden"
+                  />
+                </div>
+              </motion.div>
+            </div>
+            <motion.div
+              className="px-2 sm:px-6 lg:px-0 lg:pt-4 lg:pr-4 order-1 lg:order-2"
+              variants={fadeUpVariants}
+            >
+              <div className=" max-w-2xl lg:mx-0 mb-10 md:mb-16">
+                <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl xl:text-[3.8rem] !leading-tight">
+
+                  Reason #4. It's Open Source
+                  We'll be releasing the code behind our desktop app, server, models, and infrastructure as open source. You own this!
+                </h2>
+              </div>
+              <DiscordButton />
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-150px] bottom-[-100px] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-10 blur-[110px] z-0 pointer-events-none" />
+        <motion.div
+          className="mx-auto max-w-[88rem] md:px-6 lg:px-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariants}
+        >
+          <div className="grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-2 lg:items-center">
+            <motion.div
+              className="px-2 sm:px-6 lg:px-0 lg:pt-4 lg:pr-4"
+              variants={fadeUpVariants}
+            >
+              <div className="max-w-2xl lg:mx-0 mb-10 md:mb-16">
+                <h2 className="relative font-bold text-4xl md:text-5xl lg:text-6xl !leading-tight">
+                  Reason #5. Artcraft was created by artists and filmmakers.
+                  <span className="text-primary">The other leading platforms were created by the Google ad team, crypto bros, and other non-artists. Not us. We're one of you.</span>
+                </h2>
+              </div>
+              <DiscordButton />
+            </motion.div>
+            <div className="sm:px-2 sm:mx-auto lg:px-0">
+              <div className="relative isolate overflow-hidden bg-indigo-500 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:pr-0 lg:mx-0 lg:max-w-none">
+                <div className="mx-auto max-w-full sm:max-w-2xl sm:mx-0 sm:max-w-none p-2 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                  <video
+                    src="/videos/artcraft-3d-demo.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="aspect-square w-full max-w-none rounded-lg bg-gray-800 object-cover h-full overflow-hidden"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="relative flex overflow-visible xl:items-center xl:pt-0 mb-4 md:mb-12 px-2 sm:px-4 md:px-0">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-200px] top-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-15 blur-[120px] z-0 pointer-events-none" />
+        <motion.div
+          className="w-full flex flex-col items-center justify-center text-center pt-16 sm:pt-24 md:pt-32 px-2 sm:px-6 md:px-10"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariants}
+        >
+          <motion.div className="relative" variants={fadeUpVariants}>
+            <h1 className="relative mb-4 sm:mb-6 md:mb-10 font-bold text-3xl sm:text-4xl md:text-[3rem] lg:text-[4rem] xl:text-[5rem] !leading-none text-shadow-lg">
+              <span
+                className="text-primary"
+                style={{ textShadow: "0 0 15px var(--color-primary)" }}
+              >
                 “
               </span>
               Is this really AI?
@@ -246,6 +490,32 @@ const Landing = () => {
           <DiscordButton />
         </motion.div>
       </div>
+
+
+      <div className="relative flex overflow-visible xl:items-center xl:pt-0 mb-4 md:mb-12 px-2 sm:px-4 md:px-0">
+        {/* Gradient Orb for Section */}
+        <div className="absolute left-[-200px] top-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[#00AABA] via-blue-500 to-blue-700 opacity-15 blur-[120px] z-0 pointer-events-none" />
+        <motion.div
+          className="w-full flex flex-col items-center justify-center text-center pt-16 sm:pt-24 md:pt-32 px-2 sm:px-6 md:px-10"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariants}
+        >
+          <motion.div className="relative" variants={fadeUpVariants}>
+            <h1 className="relative mb-4 sm:mb-6 md:mb-10 font-bold text-3xl sm:text-4xl md:text-[3rem] lg:text-[4rem] xl:text-[5rem] !leading-none text-shadow-lg">
+              <span
+                className="text-primary"
+                style={{ textShadow: "0 0 15px var(--color-primary)" }}
+              >
+                Again &mdash; We're Pulling You Out of Prompting
+              </span>
+            </h1>
+          </motion.div>
+        </motion.div>
+      </div>
+
+
 
       <div className="overflow-visible py-10 sm:py-20 md:py-28 lg:py-32 relative px-4">
         {/* Gradient Orb for Section */}

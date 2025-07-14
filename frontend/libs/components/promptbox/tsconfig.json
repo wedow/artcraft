@@ -3,13 +3,16 @@
   "include": [],
   "references": [
     {
+      "path": "../../model-list"
+    },
+    {
       "path": "../camera-settings-modal"
     },
     {
-      "path": "../action-reminder-modal"
+      "path": "../../soundboard"
     },
     {
-      "path": "../../soundboard"
+      "path": "../action-reminder-modal"
     },
     {
       "path": "../../tauri-api"

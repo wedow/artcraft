@@ -44,13 +44,16 @@
   ],
   "references": [
     {
+      "path": "../../model-list/tsconfig.lib.json"
+    },
+    {
       "path": "../camera-settings-modal/tsconfig.lib.json"
     },
     {
-      "path": "../action-reminder-modal/tsconfig.lib.json"
+      "path": "../../soundboard/tsconfig.lib.json"
     },
     {
-      "path": "../../soundboard/tsconfig.lib.json"
+      "path": "../action-reminder-modal/tsconfig.lib.json"
     },
     {
       "path": "../../tauri-api/tsconfig.lib.json"
