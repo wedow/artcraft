@@ -22,10 +22,7 @@ import {
   faRectangle,
   faTableCellsLarge,
 } from "@fortawesome/pro-regular-svg-icons";
-import { invoke } from "@tauri-apps/api/core";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -37,11 +34,9 @@ import {
   FocalLengthDragging,
   UploadImageArgs,
 } from "@storyteller/common";
-
 import { PromptsApi } from "@storyteller/api";
-import { SoundRegistry } from "@storyteller/soundboard";
+// import { SoundRegistry } from "@storyteller/soundboard";
 import { toast } from "@storyteller/ui-toaster";
-
 import { EngineApi } from "@storyteller/api";
 import { CameraSettingsModal } from "@storyteller/ui-camera-settings-modal";
 import { twMerge } from "tailwind-merge";
@@ -49,19 +44,14 @@ import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
 import { Modal } from "@storyteller/ui-modal";
 import { Signal } from "@preact/signals-react";
 import {
-  CheckSoraSession,
   CommandSuccessStatus,
   EnqueueContextualEditImage,
   EnqueueContextualEditImageModel,
   EnqueueContextualEditImageSize,
-  GetAppPreferences,
-  SoraImageRemix,
-  SoraImageRemixAspectRatio,
-  SoraImageRemixErrorType,
-  SoraSessionState,
-  waitForSoraLogin,
+  // waitForSoraLogin,
 } from "@storyteller/tauri-api";
-import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
+// import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
+import { usePrompt3DStore } from "./promptStore";
 
 interface ReferenceImage {
   id: string;
@@ -122,9 +112,11 @@ export const PromptBox3D = ({
   const [content, setContent] = useState<React.ReactNode>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [prompt, setPrompt] = useState("");
+  const prompt = usePrompt3DStore((s) => s.prompt);
+  const setPrompt = usePrompt3DStore((s) => s.setPrompt);
+  const useSystemPrompt = usePrompt3DStore((s) => s.useSystemPrompt);
+  const setUseSystemPrompt = usePrompt3DStore((s) => s.setUseSystemPrompt);
   const [isEnqueueing, setIsEnqueueing] = useState(false);
-  const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
@@ -395,19 +387,19 @@ export const PromptBox3D = ({
   };
 
   // Helper to show Sora login reminder and wait for login
-  const handleSoraLoginReminder = async () => {
-    return new Promise<void>((resolve) => {
-      showActionReminder({
-        reminderType: "soraLogin",
-        onPrimaryAction: async () => {
-          await invoke("open_sora_login_command");
-          await waitForSoraLogin();
-          toast.success("Logged in to Sora!");
-          resolve();
-        },
-      });
-    });
-  };
+  // const handleSoraLoginReminder = async () => {
+  //   return new Promise<void>((resolve) => {
+  //     showActionReminder({
+  //       reminderType: "soraLogin",
+  //       onPrimaryAction: async () => {
+  //         await invoke("open_sora_login_command");
+  //         await waitForSoraLogin();
+  //         toast.success("Logged in to Sora!");
+  //         resolve();
+  //       },
+  //     });
+  //   });
+  // };
 
   const handleTauriEnqueue = async () => {
     if (!prompt.trim()) return;
@@ -452,9 +444,7 @@ export const PromptBox3D = ({
         const generateResponse = await EnqueueContextualEditImage({
           model: EnqueueContextualEditImageModel.GptImage1,
           scene_image_media_token: snapshotResult.data!,
-          image_media_tokens: referenceImages.map(
-           (image) => image.mediaToken
-          ),
+          image_media_tokens: referenceImages.map((image) => image.mediaToken),
           disable_system_prompt: !useSystemPrompt,
           prompt: prompt,
           image_count: 1,

@@ -29,22 +29,23 @@ import {
   faRectangle,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { PromptsApi } from "@storyteller/api";
 import {
-  SoraImageRemix,
-  SoraImageRemixAspectRatio,
-  CheckSoraSession,
-  SoraSessionState,
-  waitForSoraLogin,
+  // SoraImageRemix,
+  // SoraImageRemixAspectRatio,
+  // CheckSoraSession,
+  // SoraSessionState,
+  // waitForSoraLogin,
   EnqueueContextualEditImage,
   EnqueueContextualEditImageModel,
   EnqueueContextualEditImageSize,
 } from "@storyteller/tauri-api";
-
-import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
-import { invoke } from "@tauri-apps/api/core";
+// import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
+// import { invoke } from "@tauri-apps/api/core";
+import { usePrompt2DStore } from "./promptStore";
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";
 
@@ -89,9 +90,14 @@ export const PromptBox2D = ({
   const { addJobToken } = useJobContext();
 
   //const { lastRenderedBitmap } = useCanvasSignal();
-  const [prompt, setPrompt] = useState("");
+  const prompt = usePrompt2DStore((s) => s.prompt);
+  const setPrompt = usePrompt2DStore((s) => s.setPrompt);
+  const useSystemPrompt = usePrompt2DStore((s) => s.useSystemPrompt);
+  const setUseSystemPrompt = usePrompt2DStore((s) => s.setUseSystemPrompt);
+  const aspectRatio = usePrompt2DStore((s) => s.aspectRatio);
+  const setAspectRatio = usePrompt2DStore((s) => s.setAspectRatio);
+
   const [isEnqueueing, setIsEnqueueing] = useState(false);
-  const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
@@ -102,17 +108,17 @@ export const PromptBox2D = ({
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
       label: "3:2",
-      selected: true,
+      selected: aspectRatio === "3:2",
       icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
     },
     {
       label: "2:3",
-      selected: false,
+      selected: aspectRatio === "2:3",
       icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
     },
     {
       label: "1:1",
-      selected: false,
+      selected: aspectRatio === "1:1",
       icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
     },
   ]);
@@ -131,6 +137,7 @@ export const PromptBox2D = ({
 
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
     onAspectRatioChange?.(selectedItem.label as AspectRatio);
+    setAspectRatio(selectedItem.label as AspectRatio);
     setAspectRatioList((prev) =>
       prev.map((item) => ({
         ...item,
@@ -257,19 +264,19 @@ export const PromptBox2D = ({
   };
 
   // Helper to show Sora login reminder and wait for login
-  const handleSoraLoginReminder = async () => {
-    return new Promise<void>((resolve) => {
-      showActionReminder({
-        reminderType: "soraLogin",
-        onPrimaryAction: async () => {
-          await invoke("open_sora_login_command");
-          await waitForSoraLogin();
-          toast.success("Logged in to Sora!");
-          resolve();
-        },
-      });
-    });
-  };
+  // const handleSoraLoginReminder = async () => {
+  //   return new Promise<void>((resolve) => {
+  //     showActionReminder({
+  //       reminderType: "soraLogin",
+  //       onPrimaryAction: async () => {
+  //         await invoke("open_sora_login_command");
+  //         await waitForSoraLogin();
+  //         toast.success("Logged in to Sora!");
+  //         resolve();
+  //       },
+  //     });
+  //   });
+  // };
 
   const handleTauriEnqueue = async () => {
     // NB(bt): This needs to move to an error handler.
@@ -428,7 +435,7 @@ export const PromptBox2D = ({
   const getCurrentAspectRatioIcon = () => {
     const selected = aspectRatioList.find((item) => item.selected);
     if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement<any, any>;
+    const iconElement = selected.icon as React.ReactElement<{ icon: IconProp }>;
     return iconElement.props.icon;
   };
 

@@ -110,7 +110,7 @@ export function LightboxModal({
         </div>
 
         {/* info + actions */}
-        <div className="flex h-full flex-col py-5 pe-5">
+        <div className="flex h-full flex-col">
           <div className="flex-1 space-y-4">
             <div className="text-xl font-medium">
               {title || "Image Generation"}
