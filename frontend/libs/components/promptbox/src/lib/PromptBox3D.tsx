@@ -53,6 +53,7 @@ import {
   CommandSuccessStatus,
   EnqueueContextualEditImage,
   EnqueueContextualEditImageModel,
+  EnqueueContextualEditImageSize,
   GetAppPreferences,
   SoraImageRemix,
   SoraImageRemixAspectRatio,
@@ -446,18 +447,7 @@ export const PromptBox3D = ({
 
         console.log("snapshotResult", snapshotResult);
 
-        const aspectRatio = getCurrentSoraRemixAspectRatio();
-
-        //const generateResponse = await SoraImageRemix({
-        //  snapshot_media_token: snapshotResult.data!,
-        //  disable_system_prompt: !useSystemPrompt,
-        //  prompt: prompt,
-        //  maybe_additional_images: referenceImages.map(
-        //    (image) => image.mediaToken
-        //  ),
-        //  maybe_number_of_samples: 1,
-        //  aspect_ratio: aspectRatio,
-        //});
+        const aspectRatio = getCurrentAspectRatio();
 
         const generateResponse = await EnqueueContextualEditImage({
           model: EnqueueContextualEditImageModel.GptImage1,
@@ -468,7 +458,7 @@ export const PromptBox3D = ({
           disable_system_prompt: !useSystemPrompt,
           prompt: prompt,
           image_count: 1,
-          //aspect_ratio: aspectRatio,
+          aspect_ratio: aspectRatio,
         });
 
         console.log("generateResponse", generateResponse);
@@ -525,16 +515,16 @@ export const PromptBox3D = ({
     }
   };
 
-  const getCurrentSoraRemixAspectRatio = (): SoraImageRemixAspectRatio => {
+  const getCurrentAspectRatio = (): EnqueueContextualEditImageSize => {
     switch (cameraAspectRatio.value) {
       case CameraAspectRatio.HORIZONTAL_3_2:
-        return SoraImageRemixAspectRatio.Wide;
+        return EnqueueContextualEditImageSize.Wide;
       case CameraAspectRatio.VERTICAL_2_3:
       case CameraAspectRatio.VERTICAL_9_16:
-        return SoraImageRemixAspectRatio.Tall;
+        return EnqueueContextualEditImageSize.Tall;
       case CameraAspectRatio.SQUARE_1_1:
       default:
-        return SoraImageRemixAspectRatio.Square;
+        return EnqueueContextualEditImageSize.Square;
     }
   };
 

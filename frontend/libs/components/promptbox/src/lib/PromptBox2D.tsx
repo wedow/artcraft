@@ -40,6 +40,7 @@ import {
   waitForSoraLogin,
   EnqueueContextualEditImage,
   EnqueueContextualEditImageModel,
+  EnqueueContextualEditImageSize,
 } from "@storyteller/tauri-api";
 
 import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
@@ -309,25 +310,11 @@ export const PromptBox2D = ({
       toast.error("Error: Unable to upload scene snapshot Please try again.");
       return;
     }
+
     console.log("useSystemPrompt", useSystemPrompt);
     console.log("Snapshot media token:", snapshotMediaToken.data);
 
-    //const generateResponse = await invoke("sora_image_remix_command", {
-    //  request: {
-    //    snapshot_media_token: snapshotMediaToken.data,
-    //    disable_system_prompt: !useSystemPrompt,
-    //    prompt: prompt,
-    //    maybe_additional_images: referenceImages.map(
-    //      (image) => image.mediaToken
-    //    ),
-    //    maybe_number_of_samples: 1,
-    //  },
-    //});
-    //console.log("Generate response:", generateResponse);
-    //toast.success("Please wait while we process your image.");
-
-    // TODO: Aspect ratio
-    // const aspectRatio = getCurrentSoraRemixAspectRatio();
+    const aspectRatio = getCurrentAspectRatio();
 
     const generateResponse = await EnqueueContextualEditImage({
       model: EnqueueContextualEditImageModel.GptImage1,
@@ -336,7 +323,7 @@ export const PromptBox2D = ({
       disable_system_prompt: !useSystemPrompt,
       prompt: prompt,
       image_count: 1,
-      //aspect_ratio: aspectRatio,
+      aspect_ratio: aspectRatio,
     });
 
     console.log("generateResponse", generateResponse);
@@ -445,16 +432,16 @@ export const PromptBox2D = ({
     return iconElement.props.icon;
   };
 
-  const getCurrentSoraRemixAspectRatio = (): SoraImageRemixAspectRatio => {
+  const getCurrentAspectRatio = (): EnqueueContextualEditImageSize => {
     const selected = aspectRatioList.find((item) => item.selected);
     switch (selected?.label) {
       case "3:2":
-        return SoraImageRemixAspectRatio.Wide;
+        return EnqueueContextualEditImageSize.Wide;
       case "2:3":
-        return SoraImageRemixAspectRatio.Tall;
+        return EnqueueContextualEditImageSize.Tall;
       case "1:1":
       default:
-        return SoraImageRemixAspectRatio.Square;
+        return EnqueueContextualEditImageSize.Square;
     }
   };
 
