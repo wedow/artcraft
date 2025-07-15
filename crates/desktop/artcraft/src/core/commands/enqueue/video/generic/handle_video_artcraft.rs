@@ -77,7 +77,7 @@ pub async fn handle_video_artcraft(
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
         aspect_ratio: Some(GenerateKling16ProAspectRatio::WideSixteenNine),
-        prompt: None,
+        prompt: request.prompt,
         duration: None,
       };
       let result = generate_kling_16_pro_image_to_video(
@@ -103,7 +103,7 @@ pub async fn handle_video_artcraft(
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
         aspect_ratio: Some(GenerateKling21MasterAspectRatio::WideSixteenNine),
-        prompt: None,
+        prompt: request.prompt,
         duration: None,
       };
       let result = generate_kling_21_master_image_to_video(
@@ -129,7 +129,7 @@ pub async fn handle_video_artcraft(
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
         aspect_ratio: Some(GenerateKling21ProAspectRatio::WideSixteenNine),
-        prompt: None,
+        prompt: request.prompt,
         duration: None,
       };
       let result = generate_kling_21_pro_image_to_video(
@@ -154,7 +154,7 @@ pub async fn handle_video_artcraft(
       let request = GenerateSeedance10LiteImageToVideoRequest {
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
-        prompt: None,
+        prompt: request.prompt,
         resolution: None,
         duration: None,
       };
@@ -181,7 +181,7 @@ pub async fn handle_video_artcraft(
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
         aspect_ratio: Some(GenerateVeo2AspectRatio::WideSixteenNine),
-        prompt: None,
+        prompt: request.prompt,
         duration: None,
       };
       let result = generate_veo_2_image_to_video(

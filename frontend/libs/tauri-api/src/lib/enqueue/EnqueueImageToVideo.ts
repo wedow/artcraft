@@ -16,6 +16,13 @@ export enum EnqueueImageToVideoErrorType {
 export interface EnqueueImageToVideoRequest {
   image_media_token?: string;
   model?: ModelInfo;
+  prompt?: string;
+}
+
+interface RawEnqueueImageToVideoRequest {
+  image_media_token?: string;
+  model?: string;
+  prompt?: string;
 }
 
 export interface EnqueueImageToVideoError extends CommandResult {
@@ -38,11 +45,17 @@ export type EnqueueImageToVideoResult = EnqueueImageToVideoSuccess | EnqueueImag
 export const EnqueueImageToVideo = async (request: EnqueueImageToVideoRequest) : Promise<EnqueueImageToVideoResult> => {
   const modelName = request.model?.tauri_id;
 
+  let mutableRequest : RawEnqueueImageToVideoRequest = {
+    image_media_token: request.image_media_token,
+    model: modelName,
+  };
+
+  if (!!request.prompt) {
+    mutableRequest.prompt = request.prompt;
+  }
+
   const result = await invoke("enqueue_image_to_video_command", { 
-    request: {
-      image_media_token: request.image_media_token,
-      model: modelName,
-    }
+    request: mutableRequest,
   });
 
   return (result as EnqueueImageToVideoResult);

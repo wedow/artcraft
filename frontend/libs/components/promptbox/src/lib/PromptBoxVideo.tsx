@@ -198,7 +198,7 @@ export const PromptBoxVideo = ({
     const generateResponse = await EnqueueImageToVideo({
       model: modelInfo,
       image_media_token: referenceImages[0].mediaToken,
-      //prompt: prompt,
+      prompt: prompt,
     });
 
     console.log("generateResponse", generateResponse);
