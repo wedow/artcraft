@@ -2,7 +2,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job_progress::estimate_job_progress;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_lipsync_details::extract_lipsync_details;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_live_portrait_details::extract_live_portrait_details;
@@ -16,6 +16,7 @@ use actix_web::http::StatusCode;
 use actix_web::web::{Json, Path};
 use actix_web::{web, HttpRequest, HttpResponse};
 use artcraft_api_defs::common::responses::job_details::{JobDetailsLipsyncRequest, JobDetailsLivePortraitRequest};
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use bucket_paths::legacy::typified_paths::public::voice_conversion_results::bucket_file_path::VoiceConversionResultOriginalFilePath;
 use chrono::{DateTime, Utc};
@@ -367,7 +368,7 @@ fn record_to_payload(
       ResultDetailsResponse {
         entity_type: result_details.entity_type,
         entity_token: result_details.entity_token,
-        media_links: MediaLinks::from_rooted_path(media_domain, &public_bucket_media_path),
+        media_links: MediaLinksBuilder::from_rooted_path(media_domain, &public_bucket_media_path),
         maybe_public_bucket_media_path: Some(public_bucket_media_path),
         maybe_successfully_completed_at: result_details.maybe_successfully_completed_at,
       }

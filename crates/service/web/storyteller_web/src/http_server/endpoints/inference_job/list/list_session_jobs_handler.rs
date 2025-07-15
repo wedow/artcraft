@@ -3,7 +3,6 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
 use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job_progress::estimate_job_progress;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_lipsync_details::extract_lipsync_details;

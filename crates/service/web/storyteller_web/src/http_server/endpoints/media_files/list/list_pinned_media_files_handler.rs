@@ -3,12 +3,9 @@ use std::sync::Arc;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse};
-use chrono::{DateTime, Utc};
-use log::{debug, error, warn};
-use r2d2_redis::redis::Commands;
-use utoipa::ToSchema;
-
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use chrono::{DateTime, Utc};
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
@@ -17,11 +14,14 @@ use enums::by_table::media_files::media_file_origin_product_category::MediaFileO
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
+use log::{debug, error, warn};
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::batch_get_media_files_by_tokens;
+use r2d2_redis::redis::Commands;
 use tokens::tokens::media_files::MediaFileToken;
+use utoipa::ToSchema;
 
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
@@ -215,7 +215,7 @@ pub async fn list_pinned_media_files_handler(
             media_type: m.media_type,
             maybe_engine_category: m.maybe_engine_category,
             maybe_animation_type: m.maybe_animation_type,
-            media_links: MediaLinks::from_media_path(media_domain, &public_bucket_path),
+            media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
             public_bucket_path: public_bucket_path
                 .get_full_object_path_str()
                 .to_string(),
