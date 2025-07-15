@@ -698,11 +698,13 @@ dependencies = [
 name = "artcraft_api_defs"
 version = "0.0.1"
 dependencies = [
+ "chrono",
  "enums",
  "serde",
  "serde_derive",
  "serde_json",
  "tokens",
+ "url",
  "utoipa",
  "workspace-build-acceleration",
 ]

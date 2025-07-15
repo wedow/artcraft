@@ -1,6 +1,5 @@
+use artcraft_api_defs::common::responses::job_details::JobDetailsLivePortraitRequest;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::PolymorphicInferenceArgs;
-
-use crate::http_server::endpoints::inference_job::common_responses::live_portrait::JobDetailsLivePortraitRequest;
 
 pub fn extract_live_portrait_details(args: &PolymorphicInferenceArgs) -> Option<JobDetailsLivePortraitRequest> {
   let lp =

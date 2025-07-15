@@ -1,19 +1,8 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
-use actix_web::web::{Json, Path};
-use actix_web::{web, HttpRequest, HttpResponse};
-use chrono::{DateTime, Utc};
-use log::error;
-use r2d2_redis::redis::{Commands, RedisResult};
-use utoipa::ToSchema;
-
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
 use crate::http_server::common_responses::media::media_links::MediaLinks;
-use crate::http_server::endpoints::inference_job::common_responses::lipsync::JobDetailsLipsyncRequest;
-use crate::http_server::endpoints::inference_job::common_responses::live_portrait::JobDetailsLivePortraitRequest;
 use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job_progress::estimate_job_progress;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_lipsync_details::extract_lipsync_details;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_live_portrait_details::extract_live_portrait_details;
@@ -22,16 +11,25 @@ use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_m
 use crate::http_server::web_utils::filter_model_name::maybe_filter_model_name;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::{Json, Path};
+use actix_web::{web, HttpRequest, HttpResponse};
+use artcraft_api_defs::common::responses::job_details::{JobDetailsLipsyncRequest, JobDetailsLivePortraitRequest};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use bucket_paths::legacy::typified_paths::public::voice_conversion_results::bucket_file_path::VoiceConversionResultOriginalFilePath;
+use chrono::{DateTime, Utc};
 use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use log::error;
 use mysql_queries::queries::generic_inference::web::get_inference_job_status::get_inference_job_status;
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
+use r2d2_redis::redis::{Commands, RedisResult};
 use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use utoipa::ToSchema;
 
 /// For certain jobs or job classes (eg. non-premium), we kill the jobs if the user hasn't
 /// maintained a keepalive. This prevents wasted work when users who are unlikely to return
