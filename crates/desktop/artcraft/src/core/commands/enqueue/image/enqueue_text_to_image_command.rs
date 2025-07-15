@@ -36,8 +36,25 @@ pub struct EnqueueTextToImageRequest {
 
   /// The model to use.
   pub model: Option<ImageModel>,
+
+  /// Aspect ratio.
+  pub aspect_ratio: Option<TextToImageSize>,
 }
 
+// TODO(bt,2025-07-14): Support other aspect ratios / resolutions -
+//  Flux Dev has: 4:3, 16:9, 3:4, 9:16, and custom.
+//  Flux Schnell has: 4:3, 16:9, 3:4, 9:16, and custom.
+//  Flux Pro has: 4:3, 16:9, 3:4, 9:16, and custom.
+//  Flux Pro Ulra has: 4:3, 16:9, 3:4, 9:16, and custom.
+
+#[derive(Deserialize, Debug, Copy, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum TextToImageSize {
+  Auto,
+  Square,
+  Wide,
+  Tall,
+}
 
 #[derive(Serialize)]
 pub struct EnqueueTextToImageSuccessResponse {
@@ -65,8 +82,8 @@ pub enum EnqueueTextToImageErrorType {
 
 #[tauri::command]
 pub async fn enqueue_text_to_image_command(
-  app: AppHandle,
   request: EnqueueTextToImageRequest,
+  app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
@@ -81,8 +98,8 @@ pub async fn enqueue_text_to_image_command(
   info!("enqueue_text_to_image called");
 
   let result = handle_request(
-    &app,
     request,
+    &app,
     &app_data_root,
     &provider_priority_store,
     &task_database,
@@ -146,8 +163,8 @@ pub async fn enqueue_text_to_image_command(
 
 
 pub async fn handle_request(
-  app: &AppHandle,
   request: EnqueueTextToImageRequest,
+  app: &AppHandle,
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
@@ -160,8 +177,8 @@ pub async fn handle_request(
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {
   
   let result = dispatch_request(
-    &app,
     request,
+    &app,
     &app_data_root,
     &provider_priority_store,
     &fal_creds_manager,
@@ -190,8 +207,8 @@ pub async fn handle_request(
 }
 
 pub async fn dispatch_request(
-  app: &AppHandle,
   request: EnqueueTextToImageRequest,
+  app: &AppHandle,
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,
   fal_creds_manager: &FalCredentialManager,

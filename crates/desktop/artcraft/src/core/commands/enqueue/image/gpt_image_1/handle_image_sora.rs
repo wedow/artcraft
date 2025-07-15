@@ -1,4 +1,4 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -46,12 +46,20 @@ pub async fn handle_image_sora(
   }
 
   let prompt = request.prompt.as_deref().unwrap_or("");
+  
+  let size = match request.aspect_ratio {
+    None => ImageSize::Square,
+    Some(TextToImageSize::Auto) => ImageSize::Square,
+    Some(TextToImageSize::Square) => ImageSize::Square,
+    Some(TextToImageSize::Tall) => ImageSize::Tall,
+    Some(TextToImageSize::Wide) => ImageSize::Wide,
+  };
 
   let result =
       simple_image_gen_with_session_auto_renew(SimpleImageGenAutoRenewRequest {
         prompt: prompt.to_string(),
         num_images: NumImages::One,
-        image_size: ImageSize::Square,
+        image_size: size,
         credentials: &creds,
         request_timeout: Some(SORA_SIMPLE_IMAGE_GEN_TIMEOUT),
       }).await;
