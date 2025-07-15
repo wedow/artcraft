@@ -9,6 +9,7 @@ import { Modal } from "@storyteller/ui-modal";
 import {
   EnqueueTextToImage,
   EnqueueTextToImageModel,
+  EnqueueTextToImageSize,
 } from "@storyteller/tauri-api";
 import {
   faMessageXmark,
@@ -205,9 +206,12 @@ export const PromptBoxImage = ({
       setIsEnqueueing(false);
     }, 10000);
 
+    const aspectRatio = getCurrentAspectRatio();
+
     const generateResponse = await EnqueueTextToImage({
       prompt: prompt,
       model: modelInfo,
+      aspect_ratio: aspectRatio,
     });
 
     console.log("PromptBoxImage - generateResponse", generateResponse);
@@ -222,6 +226,19 @@ export const PromptBoxImage = ({
     if (!selected || !selected.icon) return faRectangle;
     const iconElement = selected.icon as React.ReactElement;
     return iconElement.props.icon;
+  };
+
+  const getCurrentAspectRatio = (): EnqueueTextToImageSize => {
+    const selected = aspectRatioList.find((item) => item.selected);
+    switch (selected?.label) {
+      case "3:2":
+        return EnqueueTextToImageSize.Wide;
+      case "2:3":
+        return EnqueueTextToImageSize.Tall;
+      case "1:1":
+      default:
+        return EnqueueTextToImageSize.Square;
+    }
   };
 
   const getModelByName = (name: string): EnqueueTextToImageModel => {
