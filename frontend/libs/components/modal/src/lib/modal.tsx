@@ -638,17 +638,18 @@ export const Modal = ({
   const sizeRef = useRef<{ width: number; height: number } | null>(null);
   const lastSizeRef = useRef<{ width: number; height: number } | null>(null);
 
-  // Capture initial size on first open
+  // Capture initial size on first open (only for resizable modals)
   useEffect(() => {
-    if (isOpen && !size && modalRef.current) {
+    if (isOpen && !size && modalRef.current && resizable) {
       const { width, height } = modalRef.current.getBoundingClientRect();
       setSize({ width, height });
       sizeRef.current = { width, height };
     }
-  }, [isOpen, size]);
+  }, [isOpen, size, resizable]);
 
-  // Persist size across close / reopen
+  // Persist size across close / reopen (only for resizable modals)
   useEffect(() => {
+    if (!resizable) return;
     if (!isOpen) {
       if (sizeRef.current) lastSizeRef.current = { ...sizeRef.current };
     } else {
@@ -660,7 +661,7 @@ export const Modal = ({
         sizeRef.current = { width, height };
       }
     }
-  }, [isOpen]);
+  }, [isOpen, resizable]);
 
   // Bring to front when user interacts with modal (mouse down anywhere inside)
   useEffect(() => {
@@ -809,9 +810,11 @@ export const Modal = ({
     }
 
     if (!draggable || !position) {
-      // If allowBackgroundInteraction, set pointerEvents: 'auto' for modal
+      // For regular modals, only apply size if resizable to prevent layout issues
       return {
-        ...(size ? { width: size.width, height: size.height } : {}),
+        ...(resizable && size
+          ? { width: size.width, height: size.height }
+          : {}),
         ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
       };
     }
@@ -821,7 +824,7 @@ export const Modal = ({
       top: position.y,
       margin: 0,
       zIndex,
-      ...(size ? { width: size.width, height: size.height } : {}),
+      ...(resizable && size ? { width: size.width, height: size.height } : {}),
       ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
     };
   };
@@ -894,7 +897,7 @@ export const Modal = ({
                     <DialogTitle
                       as="div"
                       className={twMerge(
-                        "mb-5 flex justify-between pb-0 text-xl font-bold text-white"
+                        "mb-4 flex justify-between pb-0 text-xl font-bold text-white"
                       )}
                     >
                       <>
