@@ -2,6 +2,7 @@ use utoipa::OpenApi;
 
 use artcraft_api_defs::common::responses::job_details::JobDetailsLipsyncRequest;
 use artcraft_api_defs::common::responses::job_details::JobDetailsLivePortraitRequest;
+use artcraft_api_defs::common::responses::media_links::*;
 use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::*;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
@@ -54,7 +55,6 @@ use crate::http_server::common_requests::media_file_token_path_info::MediaFileTo
 use crate::http_server::common_responses::media::cover_image_links::CoverImageLinks;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileDefaultCover;
-use crate::http_server::common_responses::media::media_links::*;
 use crate::http_server::common_responses::media::weights_cover_image_details::*;
 use crate::http_server::common_responses::media_file_origin_details::*;
 use crate::http_server::common_responses::media_file_social_meta_lite::MediaFileSocialMetaLight;
