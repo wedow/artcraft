@@ -51,14 +51,7 @@ import {
   // waitForSoraLogin,
 } from "@storyteller/tauri-api";
 // import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
-import { usePrompt3DStore } from "./promptStore";
-
-interface ReferenceImage {
-  id: string;
-  url: string;
-  file: File;
-  mediaToken: string;
-}
+import { usePrompt3DStore, RefImage } from "./promptStore";
 
 interface PromptBox3DProps {
   cameras: Signal<Camera[]>;
@@ -117,7 +110,8 @@ export const PromptBox3D = ({
   const useSystemPrompt = usePrompt3DStore((s) => s.useSystemPrompt);
   const setUseSystemPrompt = usePrompt3DStore((s) => s.setUseSystemPrompt);
   const [isEnqueueing, setIsEnqueueing] = useState(false);
-  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
+  const referenceImages = usePrompt3DStore((s) => s.referenceImages);
+  const setReferenceImages = usePrompt3DStore((s) => s.setReferenceImages);
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
@@ -217,13 +211,13 @@ export const PromptBox3D = ({
             progressCallback: (newState) => {
               console.debug("Upload progress:", newState.data);
               if (newState.status === UploaderStates.success && newState.data) {
-                const referenceImage: ReferenceImage = {
+                const referenceImage: RefImage = {
                   id: Math.random().toString(36).substring(7),
                   url: reader.result as string,
                   file,
                   mediaToken: newState.data || "",
                 };
-                setReferenceImages((prev) => [...prev, referenceImage]);
+                setReferenceImages([...referenceImages, referenceImage]);
                 setUploadingImages((prev) =>
                   prev.filter((img) => img.id !== uploadId)
                 );
@@ -247,7 +241,7 @@ export const PromptBox3D = ({
   };
 
   const handleRemoveReference = (id: string) => {
-    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+    setReferenceImages(referenceImages.filter((img) => img.id !== id));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -276,16 +270,17 @@ export const PromptBox3D = ({
   };
 
   const handleGalleryImages = (selectedItems: GalleryItem[]) => {
+    const newRefs = [...referenceImages];
     selectedItems.forEach((item) => {
       if (!item.fullImage) return;
-      const referenceImage: ReferenceImage = {
+      newRefs.push({
         id: Math.random().toString(36).substring(7),
         url: item.fullImage,
         file: new File([], "gallery-image"),
         mediaToken: item.id,
-      };
-      setReferenceImages((prev) => [...prev, referenceImage]);
+      });
     });
+    setReferenceImages(newRefs);
     setIsGalleryModalOpen(false);
     setSelectedGalleryImages([]);
   };

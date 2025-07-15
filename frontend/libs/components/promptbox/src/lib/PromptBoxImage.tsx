@@ -28,14 +28,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { ModelInfo } from "@storyteller/model-list";
-import { usePromptImageStore } from "./promptStore";
-
-interface ReferenceImage {
-  id: string;
-  url: string;
-  file: File;
-  mediaToken: string;
-}
+import { usePromptImageStore, RefImage } from "./promptStore";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -59,7 +52,7 @@ export const PromptBoxImage = ({
   // for the image media id and url, we need to set the reference image gallery panel.
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -82,7 +75,8 @@ export const PromptBoxImage = ({
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
+  const referenceImages = usePromptImageStore((s) => s.referenceImages);
+  const setReferenceImages = usePromptImageStore((s) => s.setReferenceImages);
   const [uploadingImages, _setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
@@ -116,7 +110,7 @@ export const PromptBoxImage = ({
 
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -137,7 +131,7 @@ export const PromptBoxImage = ({
   };
 
   const handleRemoveReference = (id: string) => {
-    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+    setReferenceImages(referenceImages.filter((img) => img.id !== id));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -168,7 +162,7 @@ export const PromptBoxImage = ({
     const item = selectedItems[0];
     if (!item || !item.fullImage) return;
 
-    const referenceImage: ReferenceImage = {
+    const referenceImage: RefImage = {
       id: Math.random().toString(36).substring(7),
       url: item.fullImage,
       file: new File([], "library-image"),

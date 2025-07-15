@@ -45,16 +45,9 @@ import {
 } from "@storyteller/tauri-api";
 // import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
 // import { invoke } from "@tauri-apps/api/core";
-import { usePrompt2DStore } from "./promptStore";
+import { usePrompt2DStore, RefImage } from "./promptStore";
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";
-
-interface ReferenceImage {
-  id: string;
-  url: string;
-  file: File;
-  mediaToken: string;
-}
 
 interface PromptBox2DProps {
   uploadImage: ({
@@ -101,7 +94,8 @@ export const PromptBox2D = ({
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
+  const referenceImages = usePrompt2DStore((s) => s.referenceImages);
+  const setReferenceImages = usePrompt2DStore((s) => s.setReferenceImages);
   const [uploadingImages, setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
@@ -163,13 +157,13 @@ export const PromptBox2D = ({
             progressCallback: (newState) => {
               console.debug("Upload progress:", newState.data);
               if (newState.status === UploaderStates.success && newState.data) {
-                const referenceImage: ReferenceImage = {
+                const referenceImage: RefImage = {
                   id: Math.random().toString(36).substring(7),
                   url: reader.result as string,
                   file,
                   mediaToken: newState.data || "",
                 };
-                setReferenceImages((prev) => [...prev, referenceImage]);
+                setReferenceImages([...referenceImages, referenceImage]);
                 setUploadingImages((prev) =>
                   prev.filter((img) => img.id !== uploadId)
                 );
@@ -194,7 +188,7 @@ export const PromptBox2D = ({
   };
 
   const handleRemoveReference = (id: string) => {
-    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+    setReferenceImages(referenceImages.filter((img) => img.id !== id));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -224,16 +218,17 @@ export const PromptBox2D = ({
   };
 
   const handleGalleryImages = (selectedItems: GalleryItem[]) => {
+    const newRefs = [...referenceImages];
     selectedItems.forEach((item) => {
       if (!item.fullImage) return;
-      const referenceImage: ReferenceImage = {
+      newRefs.push({
         id: Math.random().toString(36).substring(7),
         url: item.fullImage,
         file: new File([], "library-image"),
         mediaToken: item.id,
-      };
-      setReferenceImages((prev) => [...prev, referenceImage]);
+      });
     });
+    setReferenceImages(newRefs);
     setIsGalleryModalOpen(false);
     setSelectedGalleryImages([]);
   };
