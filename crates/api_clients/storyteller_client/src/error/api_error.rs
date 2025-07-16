@@ -26,6 +26,9 @@ pub enum ApiError {
     backend_hostname: Option<String>,
   },
 
+  /// 504. Cloudflare timed out waiting for the backend server.
+  Cloudflare504Timeout(String),
+
   /// A deserialization error with the response.
   DeserializationError(serde_json::Error),
 
@@ -59,6 +62,8 @@ impl Display for ApiError {
       ApiError::InternalServerError {body, backend_hostname} => 
         write!(f, "Internal Server Error; backend hostname: {:?} ; body: {}; ", backend_hostname, body),
       // Server response handling errors
+      ApiError::Cloudflare504Timeout(body) =>
+        write!(f, "Cloudflare 504 Timeout; body: {}", body),
       ApiError::DeserializationError(error) => write!(f, "Deserialization error: {}", error),
       // Network errors
       ApiError::Timeout(msg) => write!(f, "Timeout: {}", msg),
