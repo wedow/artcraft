@@ -7,6 +7,10 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use tauri::{AppHandle, Manager, PhysicalSize, Window};
 
+const MIN_WIDTH : u32 = 800;
+
+const MIN_HEIGHT: u32 = 600;
+
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct MainWindowSize {
   pub width: u32,
@@ -44,6 +48,11 @@ impl MainWindowSize {
   }
 
   pub fn apply_to_main_window(&self, app: &AppHandle) -> AnyhowResult<()> {
+    if self.is_not_wide_enough() {
+      return Err(anyhow::anyhow!("Width must be at least {}", MIN_WIDTH));
+    } else if self.is_not_tall_enough() {
+      return Err(anyhow::anyhow!("Height must be at least {}", MIN_HEIGHT));
+    }
     let windows = app.windows();
     let window = windows.get(MAIN_WINDOW_NAME)
         .ok_or_else(|| anyhow::anyhow!("Main window not found"))?;
@@ -62,6 +71,21 @@ impl MainWindowSize {
     file.write_all(json.as_bytes())?;
     file.flush()?;
     Ok(())
+  }
+
+  /// Window size is not wide enough to persist or apply.
+  pub fn is_not_wide_enough(&self) -> bool {
+    self.width < MIN_WIDTH
+  }
+
+  /// Window size is not tall enough to persist or apply.
+  pub fn is_not_tall_enough(&self) -> bool {
+    self.height < MIN_HEIGHT
+  }
+
+  /// Window size is not big enough (tall or wide) to persist or apply.
+  pub fn is_not_big_enough(&self) -> bool {
+    self.is_not_wide_enough() || self.is_not_tall_enough()
   }
 
   pub fn to_physical_size(&self) -> PhysicalSize<u32> {

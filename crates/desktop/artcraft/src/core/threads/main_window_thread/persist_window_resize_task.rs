@@ -22,6 +22,10 @@ pub async fn persist_window_resize_task(
       save_size_to_disk = false;
     }
   }
+
+  if current_window_size.is_not_big_enough() {
+    save_size_to_disk = false;
+  }
   
   if save_size_to_disk {
     info!("Saving window size configs to disk...");
