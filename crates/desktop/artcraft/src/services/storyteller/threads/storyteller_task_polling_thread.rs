@@ -125,10 +125,10 @@ async fn polling_loop(
         TaskStatus::CompleteSuccess => continue,
         _ => {} // Fall-through.
       }
-      
+
       update_task_status(UpdateTaskArgs {
         db: task_database.get_connection(),
-        task_id: task.id.clone(),
+        task_id: &task.id,
         status: TaskStatus::CompleteSuccess,
       }).await?;
 
