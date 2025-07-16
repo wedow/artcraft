@@ -16,6 +16,8 @@ pub fn position_main_window(
   // On Mac, this prevents the windows from being positioned off to the top-left,
   // as (0,0) is the top left directly under the top menu bar.
   if position.x < 0 {
+    // TODO(bt,2025-07-16): just in the case of x/width, allow slight placement off
+    //  screen as long as the app is wide enough.
     return Err(anyhow::anyhow!("X position must be non-negative"));
   } else if position.y < 0 {
     return Err(anyhow::anyhow!("Y position must be non-negative"));
@@ -37,8 +39,8 @@ pub fn position_main_window(
     println!("Current monitor - scale factor: {:?}", monitor.scale_factor());
     println!("Current monitor - position: {:?}", monitor.position());
 
-    let width_padding = monitor_size.width.div_ceil(4);
-    let height_padding = monitor_size.height.div_ceil(4);
+    let width_padding = monitor_size.width.div_ceil(6);
+    let height_padding = monitor_size.height.div_ceil(6);
 
     let max_width = monitor_size.width.saturating_sub(width_padding);
     let max_height = monitor_size.height.saturating_sub(height_padding);
@@ -46,6 +48,8 @@ pub fn position_main_window(
     let max_width = i32::try_from(max_width)?;
     let max_height = i32::try_from(max_height)?;
 
+    // Prevent the window from being positioned off the screen to the bottom, right, and bottom right.
+    // This works on MacBook (single screen), but should be tested on Windows, Linux, and multiscreen setups.
     if position.x > max_width {
       return Err(anyhow::anyhow!("X position must be less than or equal to {} (monitor width {})",
         max_width, monitor_size.width));
