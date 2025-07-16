@@ -1,6 +1,7 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use enums::common::generation_provider::GenerationProvider;
+use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use sqlx::{QueryBuilder, Sqlite};
@@ -21,6 +22,7 @@ pub struct Task {
   pub id: TaskId,
   pub status: TaskStatus,
   pub task_type: TaskType,
+  pub model_type: TaskModelType,
   pub provider: GenerationProvider,
   pub provider_job_id: Option<String>,
   pub frontend_subscriber_id: Option<String>,
@@ -33,6 +35,7 @@ struct RawTask {
   id: String,
   task_status: String,
   task_type: String,
+  model_type: String,
   provider: String,
   provider_job_id: Option<String>,
   frontend_subscriber_id: Option<String>,
@@ -48,6 +51,7 @@ pub async fn list_tasks_by_provider_and_tokens(
       id,
       task_status,
       task_type,
+      model_type,
       provider,
       provider_job_id,
       frontend_subscriber_id,
@@ -86,6 +90,8 @@ pub async fn list_tasks_by_provider_and_tokens(
       status: TaskStatus::from_str(&task.task_status)
           .map_err(|err| SqliteTasksError::TaskParseError(err))?,
       task_type: TaskType::from_str(&task.task_type)
+          .map_err(|err| SqliteTasksError::TaskParseError(err))?,
+      model_type: TaskModelType::from_str(&task.model_type)
           .map_err(|err| SqliteTasksError::TaskParseError(err))?,
       provider: GenerationProvider::from_str(&task.provider)
           .map_err(|err| SqliteTasksError::TaskParseError(err))?,
