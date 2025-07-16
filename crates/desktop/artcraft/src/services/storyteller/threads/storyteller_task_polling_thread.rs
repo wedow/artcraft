@@ -28,6 +28,7 @@ use storyteller_client::jobs::list_session_jobs::{list_session_jobs, States};
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
 use tempdir::TempDir;
+use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 
 pub async fn storyteller_task_polling_thread(
   app_handle: AppHandle,
@@ -124,6 +125,12 @@ async fn polling_loop(
         TaskStatus::CompleteSuccess => continue,
         _ => {} // Fall-through.
       }
+      
+      update_task_status(UpdateTaskArgs {
+        db: task_database.get_connection(),
+        task_id: task.id.clone(),
+        status: TaskStatus::CompleteSuccess,
+      }).await?;
 
       let event = GenerationCompleteEvent {
         //media_file_token: result.media_file_token,

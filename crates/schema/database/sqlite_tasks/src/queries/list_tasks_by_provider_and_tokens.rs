@@ -3,8 +3,7 @@ use crate::error::SqliteTasksError;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
-use log::info;
-use sqlx::{Execute, QueryBuilder, Sqlite};
+use sqlx::{QueryBuilder, Sqlite};
 use tokens::tokens::sqlite::tasks::TaskId;
 
 pub struct ListTasksArgs<'a> {
@@ -62,7 +61,6 @@ pub async fn list_tasks_by_provider_and_tokens(
 
   query_builder.push_bind(provider);
 
-  /*
   if let Some(provider_job_ids) = args.provider_job_ids {
     query_builder.push(" AND provider_job_id IN (");
     let mut separated = query_builder.separated(", ");
@@ -73,13 +71,10 @@ pub async fn list_tasks_by_provider_and_tokens(
 
     separated.push_unseparated(") ");
   }
-  */
-
-  //let query = query_builder.build();
 
   let query = query_builder.build_query_as::<RawTask>();
 
-  info!("Query: {:?}", query.sql());
+  // info!("Query: {:?}", query.sql());
 
   let results = query.fetch_all(args.db.get_pool()).await?;
 
