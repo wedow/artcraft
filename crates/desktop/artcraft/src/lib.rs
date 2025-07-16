@@ -92,15 +92,6 @@ pub fn run() {
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_upload::init())
-    .plugin(tauri_plugin_log::Builder::new()
-      .level(log::LevelFilter::Info)
-      .targets(vec![
-        Target::new(TargetKind::Stdout),
-        Target::new(TargetKind::LogDir {
-          file_name: Some(app_data_root.log_file_name_str().to_string())
-        }),
-      ])
-      .build())
     .setup(move |app| {
       // TODO(bt): This is broken on windows
       // log_environment_details();
