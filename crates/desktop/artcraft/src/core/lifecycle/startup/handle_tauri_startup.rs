@@ -1,4 +1,5 @@
 use crate::core::lifecycle::startup::tasks::bootstrap_task_database::bootstrap_task_database;
+use crate::core::lifecycle::startup::tasks::load_provider_priority_state::load_provider_priority_state;
 use crate::core::lifecycle::startup::tasks::print_startup_debug_info::print_startup_debug_info;
 use crate::core::lifecycle::startup::tasks::size_and_position_windows::size_and_position_windows;
 use crate::core::lifecycle::startup::tasks::spawn_discord_presence_thread::spawn_discord_presence_thread;
@@ -28,9 +29,14 @@ pub async fn handle_tauri_startup(
 ) -> AnyhowResult<()> {
   
   print_startup_debug_info();
-  
+
   let task_database =
       bootstrap_task_database(&app, &root).await?;
+  
+  load_provider_priority_state(
+    &app,
+    &root,
+  )?;
 
   spawn_main_window_thread(
     &app,

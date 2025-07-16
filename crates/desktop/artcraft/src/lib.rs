@@ -86,21 +86,6 @@ pub fn run() {
   
   let app_env_configs_2 = app_env_configs.clone();
   
-  let provider_priority = match ProviderPriorityStore::from_filesystem_configs(&app_data_root) {
-    Ok(Some(priority)) => {
-      println!("Loaded provider priority from disk: {:?}", priority.get_priority());
-      priority
-    }
-    Ok(None) => {
-      println!("No provider priority found on disk, using default.");
-      ProviderPriorityStore::default()
-    }
-    Err(err) => {
-      eprintln!("Failed to read provider priority from disk: {:?}", err);
-      ProviderPriorityStore::default()
-    }
-  };
-
   println!("Initializing backend runtime...");
 
   tauri::Builder::default()
@@ -162,7 +147,6 @@ pub fn run() {
     .manage(app_preferences)
     .manage(fal_creds_manager)
     .manage(fal_task_queue)
-    .manage(provider_priority)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)
