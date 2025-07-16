@@ -1,15 +1,12 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::utils::best_window_size_heuristic::best_window_size_heuristic;
-use crate::core::windows::main_window::constants::MAIN_WINDOW_NAME;
+use crate::core::utils::window::get_window_size_heuristic::get_window_size_heuristic;
+use crate::core::windows::main_window::constants::{MAIN_WINDOW_MIN_HEIGHT, MAIN_WINDOW_MIN_WIDTH, MAIN_WINDOW_NAME};
 use errors::AnyhowResult;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::Write;
 use tauri::{AppHandle, Manager, PhysicalSize, Window};
 
-const MIN_WIDTH : u32 = 800;
-
-const MIN_HEIGHT: u32 = 600;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct MainWindowSize {
@@ -30,7 +27,7 @@ impl MainWindowSize {
   }
 
   pub fn from_window(window: &Window) -> AnyhowResult<Self> {
-    let size = best_window_size_heuristic(window)?;
+    let size = get_window_size_heuristic(window)?;
     Ok(Self {
       width: size.width,
       height: size.height,
@@ -45,19 +42,6 @@ impl MainWindowSize {
     let contents = std::fs::read_to_string(filename)?;
     let size: MainWindowSize = serde_json::from_str(&contents)?;
     Ok(Some(size))
-  }
-
-  pub fn apply_to_main_window(&self, app: &AppHandle) -> AnyhowResult<()> {
-    if self.is_not_wide_enough() {
-      return Err(anyhow::anyhow!("Width must be at least {}", MIN_WIDTH));
-    } else if self.is_not_tall_enough() {
-      return Err(anyhow::anyhow!("Height must be at least {}", MIN_HEIGHT));
-    }
-    let windows = app.windows();
-    let window = windows.get(MAIN_WINDOW_NAME)
-        .ok_or_else(|| anyhow::anyhow!("Main window not found"))?;
-    window.set_size(PhysicalSize::new(self.width, self.height))?;
-    Ok(())
   }
 
   pub fn persist_to_filesystem(&self, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
@@ -75,12 +59,12 @@ impl MainWindowSize {
 
   /// Window size is not wide enough to persist or apply.
   pub fn is_not_wide_enough(&self) -> bool {
-    self.width < MIN_WIDTH
+    self.width < MAIN_WINDOW_MIN_WIDTH
   }
 
   /// Window size is not tall enough to persist or apply.
   pub fn is_not_tall_enough(&self) -> bool {
-    self.height < MIN_HEIGHT
+    self.height < MAIN_WINDOW_MIN_HEIGHT
   }
 
   /// Window size is not big enough (tall or wide) to persist or apply.

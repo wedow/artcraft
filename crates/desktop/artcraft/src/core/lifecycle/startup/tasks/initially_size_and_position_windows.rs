@@ -1,9 +1,10 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::window::main_window_position::MainWindowPosition;
 use crate::core::state::window::main_window_size::MainWindowSize;
+use crate::core::utils::window::resize_main_window::resize_main_window;
 use tauri::AppHandle;
 
-pub fn size_and_position_windows(
+pub fn initially_size_and_position_windows(
   app: &AppHandle,
   root: &AppDataRoot,
 ) {
@@ -14,7 +15,7 @@ pub fn size_and_position_windows(
     Ok(None) => {}
     Ok(Some(size)) => {
       println!("Resizing window to: {:?}", size);
-      let result = size.apply_to_main_window(&app);
+      let result = resize_main_window(app, &size);
       if let Err(err) = result {
         eprintln!("Could not set window size: {:?}", err);
       }
