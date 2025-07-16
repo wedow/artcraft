@@ -11,6 +11,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
   onEnqueuePressed,
   onModeChange,
   selectedMode,
+  onGenerateClick,
 }) => {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col space-y-2">
@@ -26,6 +27,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
           onEnqueuePressed={onEnqueuePressed}
           onModeSelectionChange={onModeChange}
           selectedMode={selectedMode}
+          onGenerateClick={onGenerateClick}
         />
       </JobProvider>
     </div>

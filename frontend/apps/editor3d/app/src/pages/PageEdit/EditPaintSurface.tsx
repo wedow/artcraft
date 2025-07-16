@@ -32,6 +32,8 @@ export type EditPaintSurfaceProps = {
   onSelectionChange?: (isSelecting: boolean) => void;
   stageRef: React.RefObject<Konva.Stage>;
   transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>;
+  leftPanelRef: React.RefObject<Konva.Layer>;
+  rectRef: React.RefObject<Konva.Rect>;
 };
 
 export const EditPaintSurface = ({
@@ -45,6 +47,8 @@ export const EditPaintSurface = ({
   onSelectionChange,
   stageRef,
   transformerRefs,
+  leftPanelRef,
+  rectRef
 }: EditPaintSurfaceProps) => {
   // switch off to be preview panel mode.
   const singlePaneMode = true
@@ -54,7 +58,6 @@ export const EditPaintSurface = ({
   const [snapshotImage, setSnapshotImage] = useState<HTMLImageElement | null>(
     null,
   );
-  const leftPanelRef = React.useRef<Konva.Layer>(null);
   const rightContainerRef = React.useRef<HTMLDivElement>(null);
   const cursorLayerRef = React.useRef<Konva.Layer>(null);
   const cursorShapeRef = React.useRef<Konva.Circle>(null);
@@ -977,7 +980,6 @@ export const EditPaintSurface = ({
     }
   }, [selectedNodeIds]);
 
-
   return (
     <SplitPane
       singlePaneMode={singlePaneMode}
@@ -1011,6 +1013,7 @@ export const EditPaintSurface = ({
               }}
             >
               <Rect
+                ref={rectRef}
                 x={0}
                 y={0}
                 width={store.getAspectRatioDimensions().width}

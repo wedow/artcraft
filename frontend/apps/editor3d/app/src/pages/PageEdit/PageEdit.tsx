@@ -20,6 +20,7 @@ import PromptEditor from "./PromptEditor/PromptEditor";
 import { AspectRatioType } from "../PageDraw/stores/SceneState";
 import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import { EditPaintSurface } from "./EditPaintSurface";
+import { normalizeCanvas } from "~/Helpers/CanvasHelpers";
 
 const PageEdit = () => {
   //useStateSceneLoader();
@@ -32,6 +33,8 @@ const PageEdit = () => {
   const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
   // Create refs for stage and image
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
+  const leftPanelRef = useRef<Konva.Layer>({} as Konva.Layer);
+  const rectRef = useRef<Konva.Rect>({} as Konva.Rect);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
 
   // Use the Zustand store
@@ -179,8 +182,46 @@ const PageEdit = () => {
       x: (containerWidth - canvasW) / 2,
       y: (containerHeight - canvasH) / 2
     });
-
   }
+
+  // Create a function to use the left layer ref and download the bitmap from it
+  const downloadLeftPanelBitmap = () => {
+    if (!stageRef.current || !leftPanelRef.current || !rectRef.current) {
+      console.error("Stage or left panel ref is not available");
+      return;
+    }
+
+    const layer = leftPanelRef.current;
+
+    // Get the canvas area that's covered by the image/rectangle
+    const rect = rectRef.current;
+    const layerCrop = layer.toCanvas({
+      x: stageRef.current.x(),
+      y: stageRef.current.y(),
+      width: rect.width() * stageRef.current.scaleX(),
+      height: rect.height() * stageRef.current.scaleY(),
+      pixelRatio: 1 / stageRef.current.scaleX(),
+    });
+
+    // Using the pixelRatio scaling may result in off-by-one rounding errors,
+    // So we re-fit the image to a canvas of precise size.
+    const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
+
+    const downloadCallback = (blob: Blob | null) => {
+      if (!blob) {
+        console.error("Failed to create blob from canvas");
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "artcraft_snapshot.png";
+      link.click();
+    }
+
+    fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
+  };
 
   return (
     <>
@@ -205,6 +246,7 @@ const PageEdit = () => {
           onModeChange={(mode: string) => { store.setActiveTool(mode as ActiveEditTool) }}
           selectedMode={store.activeTool}
           onEnqueuePressed={onEnqueuedPressed}
+          onGenerateClick={downloadLeftPanelBitmap}
         />
       </div>
       <SideToolbar
@@ -330,6 +372,8 @@ const PageEdit = () => {
             onSelectionChange={setIsSelecting}
             stageRef={stageRef}
             transformerRefs={transformerRefs}
+            leftPanelRef={leftPanelRef}
+            rectRef={rectRef}
           />
         </ContextMenuContainer>
       </div>

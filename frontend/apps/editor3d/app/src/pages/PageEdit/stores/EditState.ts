@@ -26,6 +26,9 @@ interface EditState {
   cursorPosition: { x: number; y: number } | null;
   cursorVisible: boolean;
 
+  // Base image state
+  baseImage: ImageBitmap | null;
+
   // Actions
   addNode: (node: Node) => void;
   removeNode: (id: string, shouldSaveState?: boolean) => void;
@@ -130,6 +133,9 @@ export const useEditStore = create<EditState>((set, get) => ({
   // Cursor initial state
   cursorPosition: null,
   cursorVisible: false,
+
+  // Base image initial state
+  baseImage: null,
 
   // Add initial aspect ratio state
   aspectRatioType: AspectRatioType.NONE,

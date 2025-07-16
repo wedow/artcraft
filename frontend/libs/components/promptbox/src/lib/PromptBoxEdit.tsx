@@ -69,6 +69,7 @@ interface PromptBoxEditProps {
   onEnqueuePressed?: () => void | Promise<void>;
   onModeSelectionChange?: (mode: string) => void;
   selectedMode?: string;
+  onGenerateClick: () => void;
 }
 
 export const PromptBoxEdit = ({
@@ -79,6 +80,7 @@ export const PromptBoxEdit = ({
   onEnqueuePressed,
   onModeSelectionChange,
   selectedMode,
+  onGenerateClick
 }: PromptBoxEditProps) => {
   useSignals();
 
@@ -553,7 +555,7 @@ export const PromptBoxEdit = ({
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isEnqueueing ? faSparkles : undefined}
-                onClick={handleEnqueue}
+                onClick={onGenerateClick}
                 disabled={isEnqueueing || !prompt.trim()}
               >
                 {isEnqueueing ? (

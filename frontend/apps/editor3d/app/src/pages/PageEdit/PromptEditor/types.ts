@@ -8,6 +8,7 @@ export interface PromptEditorProps {
   onEnqueuePressed?: () => void;
   onModeChange?: (mode: string) => void;
   selectedMode?: string;
+  onGenerateClick: () => void;
 }
 
 export type AspectRatio = '1:1' | '3:2' | '2:3';
