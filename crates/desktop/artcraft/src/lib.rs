@@ -129,11 +129,13 @@ pub fn run() {
       //  )?;
       //}
       let app = app.handle().clone();
-      let app2 = app.clone();
+      let handle = app.clone();
       let root = app_data_root_2.clone();
+      let env_config = app_env_configs_2.clone();
+      let storyteller_creds = storyteller_creds_manager_2.clone();
 
       tauri::async_runtime::block_on(async move {
-        if let Err(err) = handle_tauri_startup(app2, root).await {
+        if let Err(err) = handle_tauri_startup(handle, root, env_config, storyteller_creds).await {
           error!("Failed to handle Tauri startup: {:?}", err);
           panic!("Failed to handle Tauri startup: {:?}", err);
         }

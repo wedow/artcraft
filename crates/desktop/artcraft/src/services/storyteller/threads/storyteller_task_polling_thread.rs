@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
@@ -7,32 +6,32 @@ use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::core::state::task_database::TaskDatabase;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use errors::AnyhowResult;
-use log::{error, info};
-use reqwest::Url;
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
 use anyhow::anyhow;
-use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
-use tauri::AppHandle;
-use tempdir::TempDir;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::tauri::tasks::task_status::TaskStatus;
+use errors::AnyhowResult;
+use log::{error, info};
+use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::Write;
+use std::path::PathBuf;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::jobs::list_session_jobs::{list_session_jobs, States};
-use crate::core::state::task_database::TaskDatabase;
+use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use tauri::AppHandle;
+use tempdir::TempDir;
 
 pub async fn storyteller_task_polling_thread(
   app_handle: AppHandle,
   app_env_configs: AppEnvConfigs,
-  app_data_root: AppDataRoot,
   task_database: TaskDatabase,
   storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
@@ -40,7 +39,6 @@ pub async fn storyteller_task_polling_thread(
     let res = polling_loop(
       &app_handle,
       &app_env_configs,
-      &app_data_root,
       &task_database,
       &storyteller_creds_manager,
     ).await;
@@ -55,7 +53,6 @@ pub async fn storyteller_task_polling_thread(
 async fn polling_loop(
   app_handle: &AppHandle,
   app_env_configs: &AppEnvConfigs,
-  app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> AnyhowResult<()> {

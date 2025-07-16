@@ -3,7 +3,9 @@ use crate::error::SqliteTasksError;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
-use sqlx::{QueryBuilder, Sqlite};
+use log::info;
+use sqlx::{Execute, QueryBuilder, Sqlite};
+use tokens::tokens::sqlite::tasks::TaskId;
 
 pub struct ListTasksArgs<'a> {
   pub db: &'a TaskDbConnection,
@@ -17,6 +19,7 @@ pub struct TaskList {
 
 #[derive(Debug, Clone)]
 pub struct Task {
+  pub id: TaskId,
   pub status: TaskStatus,
   pub task_type: TaskType,
   pub provider: GenerationProvider,
@@ -28,7 +31,8 @@ pub struct Task {
 #[derive(Debug)]
 #[derive(sqlx::FromRow)]
 struct RawTask {
-  status: String,
+  id: String,
+  task_status: String,
   task_type: String,
   provider: String,
   provider_job_id: Option<String>,
@@ -50,7 +54,7 @@ pub async fn list_tasks_by_provider_and_tokens(
       frontend_subscriber_id,
       frontend_subscriber_payload
     FROM tasks
-    WHERE provider = ?
+    WHERE provider =
   "#);
 
   // TODO(bt,2025-07-15): Fix this. The sqlx mysql queries never required temporaries
@@ -58,16 +62,9 @@ pub async fn list_tasks_by_provider_and_tokens(
 
   query_builder.push_bind(provider);
 
+  /*
   if let Some(provider_job_ids) = args.provider_job_ids {
     query_builder.push(" AND provider_job_id IN (");
-    //for (i, job_id) in provider_job_ids.iter().enumerate() {
-    //  if i > 0 {
-    //    query_builder.push(", ");
-    //  }
-    //  query_builder.push_bind(job_id);
-    //}
-    //query_builder.push(")");
-
     let mut separated = query_builder.separated(", ");
 
     for job_id in provider_job_ids.into_iter() {
@@ -76,17 +73,22 @@ pub async fn list_tasks_by_provider_and_tokens(
 
     separated.push_unseparated(") ");
   }
+  */
 
   //let query = query_builder.build();
 
   let query = query_builder.build_query_as::<RawTask>();
+
+  info!("Query: {:?}", query.sql());
+
   let results = query.fetch_all(args.db.get_pool()).await?;
 
   let mut tasks: Vec<Task> = Vec::new();
 
   for task in results {
     tasks.push(Task {
-      status: TaskStatus::from_str(&task.status)
+      id: TaskId::new_from_str(&task.id),
+      status: TaskStatus::from_str(&task.task_status)
           .map_err(|err| SqliteTasksError::TaskParseError(err))?,
       task_type: TaskType::from_str(&task.task_type)
           .map_err(|err| SqliteTasksError::TaskParseError(err))?,
