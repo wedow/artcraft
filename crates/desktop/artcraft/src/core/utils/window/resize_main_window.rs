@@ -10,16 +10,19 @@ pub fn resize_main_window(
   size: &MainWindowSize,
 ) -> errors::AnyhowResult<()> {
 
-  if size.width < MAIN_WINDOW_MIN_WIDTH {
-    return Err(anyhow::anyhow!("Width must be at least {}", MAIN_WINDOW_MIN_WIDTH));
-  } else if size.height < MAIN_WINDOW_MIN_HEIGHT {
-    return Err(anyhow::anyhow!("Height must be at least {}", MAIN_WINDOW_MIN_HEIGHT));
+  let mut resize_width = size.width;
+  let mut resize_height = size.height;
+
+  if resize_width < MAIN_WINDOW_MIN_WIDTH {
+    resize_width = MAIN_WINDOW_MIN_WIDTH;
+  }
+  if resize_height < MAIN_WINDOW_MIN_HEIGHT {
+    resize_height = MAIN_WINDOW_MIN_HEIGHT;
   }
 
   let windows = app.windows();
   let window = windows.get(MAIN_WINDOW_NAME)
       .ok_or_else(|| anyhow::anyhow!("Main window not found"))?;
-
 
   if let Ok(Some(monitor)) = window.current_monitor() {
     let scale_factor = monitor.scale_factor();
@@ -33,17 +36,16 @@ pub fn resize_main_window(
       let min_width = min_width as u32;
       let min_height = min_height as u32;
 
-      if size.width < min_width {
-        return Err(anyhow::anyhow!("Width must be at least {} (given scale factor {})",
-          min_width, scale_factor));
-      } else if size.height < min_height {
-        return Err(anyhow::anyhow!("Height must be at least {} (given scale factor {})",
-          min_height, scale_factor));
+      if resize_width < min_width {
+        resize_width = min_width;
+      }
+      if resize_height < min_height {
+        resize_height = min_height;
       }
     }
   }
 
-  window.set_size(PhysicalSize::new(size.width, size.height))?;
+  window.set_size(PhysicalSize::new(resize_width, resize_height))?;
 
   Ok(())
 }
