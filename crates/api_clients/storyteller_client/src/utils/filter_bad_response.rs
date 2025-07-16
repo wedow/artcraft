@@ -1,6 +1,7 @@
 use crate::error::api_error::ApiError;
 use crate::utils::status_codes::*;
 use anyhow::anyhow;
+use cloudflare_errors::filter_cloudflare_errors::filter_cloudflare_errors;
 use log::error;
 
 /// Pass request errors to this method for standard error handling behavior.
@@ -30,21 +31,12 @@ pub async fn filter_bad_response(response: reqwest::Response) -> Result<reqwest:
     Ok(text) => text.to_string(),
     Err(err) => format!("Could not read response body: {:?}", err),
   };
+  
+  let status_code = status.as_u16();
 
-  let is_cloudflare = response_body.contains("cloudflare.com")
-      || response_body.contains("Cloudflare Ray ID");
+  filter_cloudflare_errors(status_code, &response_body)?;
 
-  if is_cloudflare {
-    if status.as_u16() == 504
-        || response_body.contains("errorcode_504")
-        || response_body.contains("Gateway time-out")
-        || response_body.contains("Error code 504")
-    {
-      return Err(ApiError::Cloudflare504Timeout(response_body));
-    }
-  }
-
-  match status.as_u16() {
+  match status_code {
     STATUS_401_UNAUTHORIZED => Err(ApiError::Unauthorized(response_body)),
     STATUS_403_FORBIDDEN => Err(ApiError::Forbidden(response_body)),
     STATUS_404_NOT_FOUND => Err(ApiError::NotFound(response_body)),

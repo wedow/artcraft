@@ -1919,6 +1919,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "cloudflare_errors"
+version = "0.0.1"
+dependencies = [
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "coarsetime"
 version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9634,7 +9641,6 @@ dependencies = [
  "sqlx",
  "tempfile",
  "tokens",
- "tokio",
  "workspace-build-acceleration",
 ]
 
@@ -9992,6 +9998,7 @@ dependencies = [
  "artcraft_api_defs",
  "backoff",
  "chrono",
+ "cloudflare_errors",
  "cookie 0.18.1",
  "enums",
  "enums_public",

@@ -1,7 +1,8 @@
+use cloudflare_errors::cloudflare_error::CloudflareError;
+use errors::AnyhowError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::io;
-use errors::AnyhowError;
 
 #[derive(Debug)]
 pub enum ApiError {
@@ -26,8 +27,8 @@ pub enum ApiError {
     backend_hostname: Option<String>,
   },
 
-  /// 504. Cloudflare timed out waiting for the backend server.
-  Cloudflare504Timeout(String),
+  /// Cloudflare errors.
+  CloudflareError(CloudflareError),
 
   /// A deserialization error with the response.
   DeserializationError(serde_json::Error),
@@ -62,12 +63,12 @@ impl Display for ApiError {
       ApiError::InternalServerError {body, backend_hostname} => 
         write!(f, "Internal Server Error; backend hostname: {:?} ; body: {}; ", backend_hostname, body),
       // Server response handling errors
-      ApiError::Cloudflare504Timeout(body) =>
-        write!(f, "Cloudflare 504 Timeout; body: {}", body),
       ApiError::DeserializationError(error) => write!(f, "Deserialization error: {}", error),
       // Network errors
       ApiError::Timeout(msg) => write!(f, "Timeout: {}", msg),
       ApiError::NetworkError(msg) => write!(f, "Network error: {}", msg),
+      // Cloudflare errors
+      ApiError::CloudflareError(error) => write!(f, "Cloudflare Error: {}", error),
       // I/O errors
       ApiError::IoError(error) => write!(f, "IO error: {}", error),
       // Other
@@ -98,5 +99,11 @@ impl From<serde_json::Error> for ApiError {
 impl From<io::Error> for ApiError {
   fn from(error: io::Error) -> Self {
     ApiError::IoError(error)
+  }
+}
+
+impl From<CloudflareError> for ApiError {
+  fn from(error: CloudflareError) -> Self {
+    ApiError::CloudflareError(error)
   }
 }
