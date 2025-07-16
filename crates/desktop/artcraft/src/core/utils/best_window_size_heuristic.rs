@@ -13,7 +13,7 @@ pub fn best_window_size_heuristic(window: &Window) -> AnyhowResult<PhysicalSize<
   // prefer the outer size.
   let inner = window.inner_size()?;
   let outer = window.outer_size()?;
-  
+
   let height_delta = outer.height.saturating_sub(inner.height);
   if height_delta > HEIGHT_DIFFERENCE_THRESHOLD {
     // Dev tools are open, use the outer size
