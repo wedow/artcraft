@@ -1,3 +1,4 @@
+use cloudflare_errors::cloudflare_error::CloudflareError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::io;
@@ -52,6 +53,9 @@ pub enum SoraError {
   /// We preserve the message for debugging
   CloudFlareTimeout(String),
 
+  /// Specific Cloudflare errors.
+  CloudflareError(CloudflareError),
+
   /// Another error occurred.
   OtherBadStatus(anyhow::Error),
 
@@ -104,6 +108,9 @@ impl Display for SoraError {
       Self::CloudFlareTimeout(message) => {
         write!(f, "Cloudflare Timeout (524); Sora is likely having issues: {:?}", message)
       }
+      Self::CloudflareError(error) => {
+        write!(f, "Cloudflare error: {}", error)
+      }
       Self::OtherBadStatus(err) => {
         write!(f, "Other error: {}", err)
       }
@@ -147,5 +154,11 @@ impl From<anyhow::Error> for SoraError {
 impl From<serde_json::Error> for SoraError {
   fn from(err: serde_json::Error) -> Self {
     Self::JsonError(err)
+  }
+}
+
+impl From<CloudflareError> for SoraError {
+  fn from(err: CloudflareError) -> Self {
+    Self::CloudflareError(err)
   }
 }

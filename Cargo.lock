@@ -6848,6 +6848,7 @@ dependencies = [
  "anyhow",
  "base64 0.22.1",
  "chrono",
+ "cloudflare_errors",
  "cookie 0.18.1",
  "errors",
  "idempotency",
