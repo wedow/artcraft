@@ -1,5 +1,7 @@
 use crate::core::lifecycle::startup::bootstrap_task_database::bootstrap_task_database;
+use crate::core::lifecycle::startup::print_startup_debug_info::print_startup_debug_info;
 use crate::core::lifecycle::startup::size_and_position_windows::size_and_position_windows;
+use crate::core::lifecycle::startup::spawn_discord_presence_thread::spawn_discord_presence_thread;
 use crate::core::lifecycle::startup::spawn_fal_task_polling_thread::spawn_fal_task_polling_thread;
 use crate::core::lifecycle::startup::spawn_main_window_thread::spawn_main_window_thread;
 use crate::core::lifecycle::startup::spawn_sora_task_polling_thread::spawn_sora_task_polling_thread;
@@ -13,7 +15,6 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;
 use tauri::{AppHandle, Manager};
-use crate::core::lifecycle::startup::spawn_discord_presence_thread::spawn_discord_presence_thread;
 
 pub async fn handle_tauri_startup(
   app: AppHandle,
@@ -26,7 +27,9 @@ pub async fn handle_tauri_startup(
   fal_task_queue: FalTaskQueue,
 ) -> AnyhowResult<()> {
   
-  let task_database = 
+  print_startup_debug_info();
+  
+  let task_database =
       bootstrap_task_database(&app, &root).await?;
 
   spawn_main_window_thread(
@@ -41,7 +44,7 @@ pub async fn handle_tauri_startup(
     &task_database,
     &storyteller_creds_manager,
   )?;
-  
+
   spawn_sora_task_polling_thread(
     &app,
     &root,
@@ -50,7 +53,7 @@ pub async fn handle_tauri_startup(
     &storyteller_creds_manager,
     &sora_task_queue,
   )?;
-  
+
   spawn_fal_task_polling_thread(
     &app,
     &root,
@@ -59,9 +62,9 @@ pub async fn handle_tauri_startup(
     &fal_task_queue,
     &storyteller_creds_manager,
   )?;
-  
+
   spawn_discord_presence_thread()?;
-  
+
   size_and_position_windows(&app, &root);
 
   Ok(())

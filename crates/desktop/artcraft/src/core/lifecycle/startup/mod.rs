@@ -6,3 +6,4 @@ mod spawn_storytoller_task_polling_thread;
 pub mod handle_tauri_startup;
 mod spawn_fal_task_polling_thread;
 mod spawn_discord_presence_thread;
+mod print_startup_debug_info;
