@@ -295,11 +295,6 @@ export const EditPaintSurface = ({
           store.updateLineNode(currentLineId, { points: updatedPoints }, false);  // Don't save state while drawing
         }
         setLastPoint(stagePoint);
-      } else {
-        // Stop drawing when going out of bounds
-        setIsDrawing(false);
-        setCurrentLineId(null);
-        setLastPoint(null);
       }
     }
 
