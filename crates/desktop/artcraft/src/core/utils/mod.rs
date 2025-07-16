@@ -10,4 +10,3 @@ pub mod object_store;
 pub mod save_base64_image_to_temp_dir;
 pub mod simple_http_download;
 pub mod simple_http_download_to_tempfile;
-pub mod webview_unsafe;

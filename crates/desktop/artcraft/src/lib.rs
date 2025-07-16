@@ -24,7 +24,6 @@ use crate::core::state::main_window_size::MainWindowSize;
 use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::threads::discord_presence_thread::discord_presence_thread;
 use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
-use crate::core::utils::webview_unsafe::webview_unsafe_for_app;
 use crate::services::fal::commands::fal_background_removal_command::fal_background_removal_command;
 use crate::services::fal::commands::fal_hunyuan_image_to_3d_command::fal_hunyuan_image_to_3d_command;
 use crate::services::fal::commands::fal_kling_image_to_video_command::fal_kling_image_to_video_command;
@@ -133,66 +132,28 @@ pub fn run() {
       let root = app_data_root_2.clone();
       let env_config = app_env_configs_2.clone();
       let storyteller_creds = storyteller_creds_manager_2.clone();
+      let sora_creds = sora_creds_manager_2.clone();
+      let sora_tasks = sora_task_queue_2.clone();
+      let fal_creds = fal_creds_manager_2.clone();
+      let fal_tasks = fal_task_queue_2.clone();
 
       tauri::async_runtime::block_on(async move {
-        if let Err(err) = handle_tauri_startup(handle, root, env_config, storyteller_creds).await {
+        let result = handle_tauri_startup(
+          handle,
+          root,
+          env_config,
+          storyteller_creds,
+          sora_creds,
+          sora_tasks,
+          fal_creds,
+          fal_tasks,
+        ).await;
+
+        if let Err(err) = result {
           error!("Failed to handle Tauri startup: {:?}", err);
           panic!("Failed to handle Tauri startup: {:?}", err);
         }
       });
-      
-      let result = webview_unsafe_for_app(&app);
-      if let Err(err) = result {
-        eprintln!("Error setting webview unsafe: {:?}", err);
-      }
-
-      // TODO(bt): Clean this up. We can just clone at the callsite. Also clean initialization
-      let app_2 = app.clone();
-      let app_3 = app.clone();
-      let app_4 = app.clone();
-      let app_5 = app.clone();
-      let app_env_configs_3 = app_env_configs_2.clone();
-      let app_data_root_3 = app_data_root_2.clone();
-      let app_data_root_4 = app_data_root_2.clone();
-      let app_data_root_5 = app_data_root_2.clone();
-      let sora_creds_manager_3 = sora_creds_manager_2.clone();
-      let storyteller_creds_manager_3 = storyteller_creds_manager.clone();
-      let storyteller_creds_manager_4 = storyteller_creds_manager.clone();
-      let fal_creds_manager_3 = fal_creds_manager_2.clone();
-      let fal_task_queue_3 = fal_task_queue_2.clone();
-
-      match MainWindowSize::from_filesystem_configs(&app_data_root_3) {
-        Ok(None) => {}
-        Ok(Some(size)) => {
-          println!("Resizing window to: {:?}", size);
-          let result = size.apply_to_main_window(&app);
-          if let Err(err) = result {
-            eprintln!("Could not set window size: {:?}", err);
-          }
-        }
-        Err(err) => {
-          eprintln!("Failed to read window size from disk: {:?}", err);
-        }
-      }
-
-      match MainWindowPosition::from_filesystem_configs(&app_data_root_3) {
-        Ok(None) => {}
-        Ok(Some(pos)) => {
-          println!("Moving window to: {:?}", pos);
-          let result = pos.apply_to_main_window(&app);
-          if let Err(err) = result {
-            eprintln!("Could not set window position: {:?}", err);
-          }
-        }
-        Err(err) => {
-          eprintln!("Failed to read window position from disk: {:?}", err);
-        }
-      }
-
-      tauri::async_runtime::spawn(main_window_thread(app_3, app_data_root_3, storyteller_creds_manager_2));
-      tauri::async_runtime::spawn(sora_task_polling_thread(app_4, app_env_configs_2, app_data_root_4, sora_creds_manager_3, storyteller_creds_manager_3, sora_task_queue_2));
-      tauri::async_runtime::spawn(discord_presence_thread());
-      tauri::async_runtime::spawn(fal_task_polling_thread(app_5, app_env_configs_3, app_data_root_5, fal_creds_manager_3, fal_task_queue_3, storyteller_creds_manager_4));
 
       Ok(())
     })
