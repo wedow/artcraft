@@ -6,7 +6,7 @@ use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageRequest, GenerateFlux1SchnellTextToImageResponse, GENERATE_FLUX_1_SCHNELL_TEXT_TO_IMAGE_PATH};
-use log::{debug, info};
+use log::debug;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,7 @@ pub async fn basic_json_get_request<Res: DeserializeOwned>(
 
   let url = get_route(api_host, route_path);
 
-  info!("Requesting {:?}", &url);
+  debug!("Requesting {:?}", &url);
 
   let client = Client::builder()
       .gzip(true)

@@ -18,6 +18,7 @@ use errors::AnyhowResult;
 use log::{error, info};
 use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
+use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -28,7 +29,6 @@ use storyteller_client::jobs::list_session_jobs::{list_session_jobs, States};
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
 use tempdir::TempDir;
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 
 pub async fn storyteller_task_polling_thread(
   app_handle: AppHandle,
@@ -126,11 +126,15 @@ async fn polling_loop(
         _ => {} // Fall-through.
       }
 
-      update_task_status(UpdateTaskArgs {
+      let updated = update_task_status(UpdateTaskArgs {
         db: task_database.get_connection(),
         task_id: &task.id,
         status: TaskStatus::CompleteSuccess,
       }).await?;
+
+      if !updated {
+        continue; // If anything breaks with queries, don't spam events.
+      }
 
       let event = GenerationCompleteEvent {
         //media_file_token: result.media_file_token,
