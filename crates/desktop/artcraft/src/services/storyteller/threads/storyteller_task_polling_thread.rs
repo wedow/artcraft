@@ -7,6 +7,8 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::state::task_database::TaskDatabase;
+use crate::core::utils::enum_conversion::generation_provider::to_generation_service_provider;
+use crate::core::utils::enum_conversion::task_type::to_generation_action;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -135,11 +137,13 @@ async fn polling_loop(
       if !updated {
         continue; // If anything breaks with queries, don't spam events.
       }
+      
+      let service = to_generation_service_provider(task.provider);
+      let action = to_generation_action(task.task_type);
 
       let event = GenerationCompleteEvent {
-        //media_file_token: result.media_file_token,
-        action: Some(GenerationAction::GenerateImage), // TODO
-        service: GenerationServiceProvider::Artcraft, // TODO
+        action: Some(action),
+        service,
         model: None, // TODO
       };
 
