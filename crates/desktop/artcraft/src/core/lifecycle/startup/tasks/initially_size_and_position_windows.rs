@@ -1,6 +1,7 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::window::main_window_position::MainWindowPosition;
 use crate::core::state::window::main_window_size::MainWindowSize;
+use crate::core::utils::window::position_main_window::position_main_window;
 use crate::core::utils::window::resize_main_window::resize_main_window;
 use tauri::AppHandle;
 
@@ -29,7 +30,7 @@ pub fn initially_size_and_position_windows(
     Ok(None) => {}
     Ok(Some(pos)) => {
       println!("Moving window to: {:?}", pos);
-      let result = pos.apply_to_main_window(&app);
+      let result = position_main_window(app, &pos);
       if let Err(err) = result {
         eprintln!("Could not set window position: {:?}", err);
       }

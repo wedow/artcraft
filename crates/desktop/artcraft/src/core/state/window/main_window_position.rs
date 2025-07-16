@@ -42,14 +42,6 @@ impl MainWindowPosition {
     Ok(Some(pos))
   }
 
-  pub fn apply_to_main_window(&self, app: &AppHandle) -> AnyhowResult<()> {
-    let windows = app.windows();
-    let window = windows.get(MAIN_WINDOW_NAME)
-        .ok_or_else(|| anyhow::anyhow!("Main window not found"))?;
-    window.set_position(PhysicalPosition::new(self.x, self.y))?;
-    Ok(())
-  }
-
   pub fn persist_to_filesystem(&self, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
     let filename = app_data_root.get_window_position_config_file();
     let json = serde_json::to_string(self)?;
