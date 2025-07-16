@@ -1,9 +1,10 @@
+use serde::Deserialize;
 use serde::Serialize;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
 /// Details about submitted live portrait jobs (request arguments only)
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct JobDetailsLivePortraitRequest {
   /// Source media token
   /// This can be an image or a video media file token
@@ -20,7 +21,7 @@ pub struct JobDetailsLivePortraitRequest {
 }
 
 /// Details about submitted lipsync jobs (request arguments only)
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct JobDetailsLipsyncRequest {
   /// Media file token for the source audio.
   /// This is probably an audio file, but in the future we might pull audio from video.

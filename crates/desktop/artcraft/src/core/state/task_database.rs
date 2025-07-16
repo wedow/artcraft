@@ -2,6 +2,7 @@ use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
 use sqlite_tasks::connection::TaskDbConnection;
 
+#[derive(Clone)]
 pub struct TaskDatabase {
   connection: TaskDbConnection,
 }

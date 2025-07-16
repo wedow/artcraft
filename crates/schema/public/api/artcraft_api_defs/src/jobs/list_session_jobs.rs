@@ -27,7 +27,7 @@ pub struct ListSessionJobsQueryParams {
 
   // TODO(bt,2024-04-23): Add the ability for users to dismiss completed/dead jobs from view.
 }
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct ListSessionJobsSuccessResponse {
   pub success: bool,
 
@@ -35,7 +35,7 @@ pub struct ListSessionJobsSuccessResponse {
   pub jobs: Vec<ListSessionJobsItem>,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct ListSessionJobsItem {
   pub job_token: InferenceJobToken,
 
@@ -48,7 +48,7 @@ pub struct ListSessionJobsItem {
 }
 
 /// Details about what the user requested for generation
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct ListSessionRequestDetailsResponse {
   pub inference_category: InferenceCategory,
   pub maybe_model_type: Option<String>,
@@ -73,7 +73,7 @@ pub struct ListSessionRequestDetailsResponse {
 }
 
 /// Details about the ongoing job status
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct ListSessionStatusDetailsResponse {
   /// Primary status from the database (a state machine).
   pub status: JobStatusPlus,
@@ -107,7 +107,7 @@ pub struct ListSessionStatusDetailsResponse {
 }
 
 /// Details about the completed result (if any)
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct ListSessionResultDetailsResponse {
   pub entity_type: String,
   pub entity_token: String,

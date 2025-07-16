@@ -1,9 +1,10 @@
+use serde::Deserialize;
 use serde::Serialize;
-use utoipa::ToSchema;
 use url::Url;
+use utoipa::ToSchema;
 
 /// Links to media file locations (bucket, CDN, etc.)
-#[derive(Serialize, ToSchema, Debug, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone, Eq, PartialEq)]
 pub struct MediaLinks {
   /// Primary link to the asset via the CDN.
   pub cdn_url: Url,
@@ -20,7 +21,7 @@ pub struct MediaLinks {
   pub maybe_video_previews: Option<VideoPreviews>,
 }
 
-#[derive(Serialize, ToSchema, Debug, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone, Eq, PartialEq)]
 pub struct VideoPreviews {
   /// A static single frame preview image of the video.
   pub still: Url,

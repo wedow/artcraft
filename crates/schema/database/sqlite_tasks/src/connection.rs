@@ -3,6 +3,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
 use sqlx::{Pool, Sqlite, SqlitePool};
 use std::path::Path;
 
+#[derive(Clone)]
 pub struct TaskDbConnection {
   pool: Pool<Sqlite>,
 }
