@@ -43,15 +43,6 @@ pub enum SoraError {
   /// Typically served from Cloudflare
   /// We preserve the message for debugging.
   BadGateway(String),
-  
-  /// HTTP 403 + Cloudflare Challenge Interstitial
-  /// Cloudflare decided to block the request and present a challenge.
-  CloudFlareChallenge,
-  
-  /// HTTP 524 (Cloudflare-specific)
-  /// Cloudflare formed a TCP connection to Sora, but no payload was delivered before timeout
-  /// We preserve the message for debugging
-  CloudFlareTimeout(String),
 
   /// Specific Cloudflare errors.
   CloudflareError(CloudflareError),
@@ -74,6 +65,17 @@ pub enum SoraError {
   /// serde_json::Error, likely from JSON deserialization schema mismatch.
   /// Includes the original body.
   JsonErrorWithBody(serde_json::Error, String),
+}
+
+impl SoraError {
+  pub fn is_sora_having_downtime_issues(&self) -> bool {
+    match self {
+      Self::BadGateway(_) => true,
+      Self::CloudflareError(CloudflareError::GatewayTimeout504) => true,
+      Self::CloudflareError(CloudflareError::TimeoutOccurred524) => true,
+      _ => false,
+    }
+  }
 }
 
 impl Error for SoraError {}
@@ -101,12 +103,6 @@ impl Display for SoraError {
       }
       Self::BadGateway(message) => {
         write!(f, "Bad Gateway; Sora is likely having issues: {:?}", message)
-      }
-      Self::CloudFlareChallenge => {
-        write!(f, "Cloudflare Challenge (403); Cloudflare wants to verify the request with a CAPTCHA challenge.")
-      }
-      Self::CloudFlareTimeout(message) => {
-        write!(f, "Cloudflare Timeout (524); Sora is likely having issues: {:?}", message)
       }
       Self::CloudflareError(error) => {
         write!(f, "Cloudflare error: {}", error)

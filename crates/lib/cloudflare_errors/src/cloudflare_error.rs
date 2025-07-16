@@ -3,8 +3,13 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum CloudflareError {
+  /// Cloudflare wants to verify the request with a CAPTCHA challenge.
   ChallengeInterstitial403,
+  
+  /// Cloudflare could not form a connection to the backend server.
   GatewayTimeout504,
+
+  /// Cloudflare formed a TCP connection to the backend server, but no payload was delivered before timeout
   TimeoutOccurred524,
 }
 
