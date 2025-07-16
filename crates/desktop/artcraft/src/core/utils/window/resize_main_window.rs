@@ -12,12 +12,15 @@ pub fn resize_main_window(
 
   let mut resize_width = size.width;
   let mut resize_height = size.height;
+  let mut resize_was_corrected = false;
 
   if resize_width < MAIN_WINDOW_MIN_WIDTH {
     resize_width = MAIN_WINDOW_MIN_WIDTH;
+    resize_was_corrected = true;
   }
   if resize_height < MAIN_WINDOW_MIN_HEIGHT {
     resize_height = MAIN_WINDOW_MIN_HEIGHT;
+    resize_was_corrected = true;
   }
 
   let windows = app.windows();
@@ -38,11 +41,20 @@ pub fn resize_main_window(
 
       if resize_width < min_width {
         resize_width = min_width;
+        resize_was_corrected = true;
       }
       if resize_height < min_height {
         resize_height = min_height;
+        resize_was_corrected = true;
       }
     }
+  }
+
+  if resize_was_corrected {
+    println!("Resizing window to: {}x{} (corrected from {}x{})",
+      resize_width, resize_height, size.width, size.height);
+  } else {
+    println!("Resizing window to: {}x{} (no correction needed)", resize_width, resize_height);
   }
 
   window.set_size(PhysicalSize::new(resize_width, resize_height))?;
