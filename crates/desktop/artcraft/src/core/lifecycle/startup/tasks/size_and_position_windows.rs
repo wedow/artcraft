@@ -1,6 +1,6 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::main_window_position::MainWindowPosition;
-use crate::core::state::main_window_size::MainWindowSize;
+use crate::core::state::window::main_window_position::MainWindowPosition;
+use crate::core::state::window::main_window_size::MainWindowSize;
 use tauri::AppHandle;
 
 pub fn size_and_position_windows(

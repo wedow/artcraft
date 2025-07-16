@@ -1,7 +1,7 @@
 use crate::core::state::app_startup_time::AppStartupTime;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::main_window_position::MainWindowPosition;
-use crate::core::state::main_window_size::MainWindowSize;
+use crate::core::state::window::main_window_position::MainWindowPosition;
+use crate::core::state::window::main_window_size::MainWindowSize;
 use crate::core::threads::main_window_thread::persist_storyteller_cookies_task::persist_storyteller_cookies_task;
 use crate::core::threads::main_window_thread::persist_window_position_task::persist_window_position_task;
 use crate::core::threads::main_window_thread::persist_window_resize_task::persist_window_resize_task;

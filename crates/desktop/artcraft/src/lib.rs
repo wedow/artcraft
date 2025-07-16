@@ -19,8 +19,6 @@ use crate::core::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::main_window_position::MainWindowPosition;
-use crate::core::state::main_window_size::MainWindowSize;
 use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::threads::discord_presence_thread::discord_presence_thread;
 use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
