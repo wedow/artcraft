@@ -1,9 +1,2 @@
-mod bootstrap_task_database;
-mod size_and_position_windows;
-mod spawn_main_window_thread;
-mod spawn_sora_task_polling_thread;
-mod spawn_storytoller_task_polling_thread;
 pub mod handle_tauri_startup;
-mod spawn_fal_task_polling_thread;
-mod spawn_discord_presence_thread;
-mod print_startup_debug_info;
+mod tasks;
