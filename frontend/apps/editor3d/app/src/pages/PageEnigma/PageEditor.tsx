@@ -66,7 +66,7 @@ import {
   removeImageDropListener,
 } from "@storyteller/ui-gallery-modal";
 import {
-  imageGenerationModels,
+  instructiveImageEditModels,
   ModelCategory,
   // ModelCategory,
   ModelSelector,
@@ -536,7 +536,7 @@ export const PageEditor = () => {
 
                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
                   <ModelSelector
-                    items={imageGenerationModels}
+                    items={instructiveImageEditModels}
                     category={ModelCategory.Editor3D}
                     panelTitle="Select Model"
                     panelClassName="min-w-[280px]"

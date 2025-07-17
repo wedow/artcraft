@@ -89,7 +89,25 @@ export const allModels = {
     //  badges: [{ label: "25 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
     //},
   ],
+  // These models are used for 2D and 3D editing and scene building.
+  instructiveImageEdits: [
+    {
+      label: "GPT-4o",
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
+      description: "High quality model",
+      badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
+      modelInfo: IMAGE_MODELS.gpt_image_1,
+    },
+    {
+      label: "FLUX.1 Kontext",
+      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
+      description: "Fast and high-quality model",
+      badges: [{ label: "20 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
+      modelInfo: IMAGE_MODELS.gpt_image_1, // TODO: Wrong metadata!
+    },
+  ],
 };
 
 export const videoGenerationModels: ModelList = allModels.video;
 export const imageGenerationModels: ModelList = allModels.image;
+export const instructiveImageEditModels: ModelList = allModels.instructiveImageEdits;
