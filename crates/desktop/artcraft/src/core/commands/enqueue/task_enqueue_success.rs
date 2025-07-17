@@ -48,12 +48,13 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Kling21Master) => Some(TaskModelType::Kling21Master),
       Some(GenerationModel::Seedance10Lite) => Some(TaskModelType::Seedance10Lite),
       Some(GenerationModel::Veo2) => Some(TaskModelType::Veo2),
+      Some(GenerationModel::Hunyuan3d2_0) => Some(TaskModelType::Hunyuan3d2_0),
+      Some(GenerationModel::Hunyuan3d2_1) => Some(TaskModelType::Hunyuan3d2_1),
 
+      // TODO: These seem wrong -
       Some(GenerationModel::Kling1_6) => Some(TaskModelType::Kling16Pro), // NB: `VideoModel::Kling16Pro`.
-      Some(GenerationModel::Hunyuan3d2_0) => None, // TODO
-      Some(GenerationModel::Hunyuan3d2_1) => None, // TODO
       Some(GenerationModel::Kling2_0) => None, // TODO: unused elsewhere?
-      Some(GenerationModel::Sora) => None, // TODO
+      Some(GenerationModel::Sora) => None, // TODO: unused elsewhere?
     };
 
     create_task(CreateTaskArgs {
