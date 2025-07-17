@@ -12,6 +12,7 @@ interface Props {
     updated_at: string;
     public_bucket_path: string;
     maybe_style_name?: string;
+    maybe_media_links_thumbnail?: string;
   };
 }
 
@@ -21,8 +22,12 @@ export function CompletedCard({ job }: Props) {
   const cdnOrigin = GetCdnOrigin();
   const mediaPath = job?.public_bucket_path || "";
   const downloadLink = `${cdnOrigin}${mediaPath}`;
-  const imageUrl = downloadLink;
+  //const imageUrl = downloadLink;
   const fullImageUrl = downloadLink;
+
+  // NB: Try to use the thumbnail instead of the link to the full asset.
+  // Passing around full asset URLs and putting them into image tags is causing CORS errors if those assets are not images.
+  const thumbnailUrl = job?.maybe_media_links_thumbnail;
 
   if (!job) return null;
 
@@ -36,11 +41,11 @@ export function CompletedCard({ job }: Props) {
           <div className="flex aspect-square h-14 w-14 justify-center overflow-hidden rounded-lg border border-[#A9A9A9]/50 bg-black/60">
             <img
               src={
-                loadError ? "/resources/images/movie-placeholder.png" : imageUrl
+                loadError ? "/resources/images/movie-placeholder.png" : thumbnailUrl
               }
               className="h-full w-full object-cover"
               alt={job.maybe_title ?? "unknown"}
-              crossOrigin="anonymous"
+              //crossOrigin="anonymous"
               onError={() => setLoadError(true)}
               loading="lazy"
             />

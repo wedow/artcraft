@@ -14,7 +14,20 @@ export interface JobMaybeResult {
   entity_type: string;
   maybe_public_bucket_media_path: string;
   maybe_successfully_completed_at: string;
+  media_links?: JobMediaLinks;
 }
+
+export interface JobMediaLinks {
+  cdn_url: string;
+  maybe_thumbnail_template?: string;
+  maybe_video_previews?: JobMediaLinksVideoPreviews;
+}
+
+export interface JobMediaLinksVideoPreviews {
+  still: string;
+  animated: string;
+}
+
 export interface JobRequest {
   inference_category: string;
   maybe_model_title: string;
