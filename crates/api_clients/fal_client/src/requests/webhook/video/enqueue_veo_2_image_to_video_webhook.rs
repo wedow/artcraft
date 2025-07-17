@@ -37,10 +37,10 @@ pub async fn enqueue_veo_2_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
     Veo2Duration::Default => None,
-    Veo2Duration::FiveSeconds => Some("5".to_string()),
-    Veo2Duration::SixSeconds => Some("6".to_string()),
-    Veo2Duration::SevenSeconds => Some("7".to_string()),
-    Veo2Duration::EightSeconds => Some("8".to_string()),
+    Veo2Duration::FiveSeconds => Some("5s".to_string()),
+    Veo2Duration::SixSeconds => Some("6s".to_string()),
+    Veo2Duration::SevenSeconds => Some("7s".to_string()),
+    Veo2Duration::EightSeconds => Some("8s".to_string()),
   };
   
   let aspect_ratio = match args.aspect_ratio {
