@@ -86,6 +86,8 @@ export function LightboxModal({
           ) : mediaClass === "video" ? (
             <video
               controls
+              loop={true}
+              autoPlay={true}
               className="h-full w-full object-contain"
               onLoadedData={() => setMediaLoaded(true)}
             >
