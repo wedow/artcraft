@@ -35,6 +35,7 @@ impl TaskEnqueueSuccess{
   }
   
   pub async fn insert_into_task_database(&self, task_database: &TaskDatabase) -> Result<TaskId, SqliteTasksError> {
+    // TODO: Move this mapping elsewhere, or remove the other models.
     let model_type = match self.model {
       None => None,
       Some(GenerationModel::Flux1Dev) => Some(TaskModelType::Flux1Dev),
@@ -48,10 +49,10 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Seedance10Lite) => Some(TaskModelType::Seedance10Lite),
       Some(GenerationModel::Veo2) => Some(TaskModelType::Veo2),
 
-      Some(GenerationModel::Kling1_6) => Some(TaskModelType::Kling16Pro), // TODO: not accurate!
+      Some(GenerationModel::Kling1_6) => Some(TaskModelType::Kling16Pro), // NB: `VideoModel::Kling16Pro`.
       Some(GenerationModel::Hunyuan3d2_0) => None, // TODO
       Some(GenerationModel::Hunyuan3d2_1) => None, // TODO
-      Some(GenerationModel::Kling2_0) => None, // TODO
+      Some(GenerationModel::Kling2_0) => None, // TODO: unused elsewhere?
       Some(GenerationModel::Sora) => None, // TODO
     };
 
