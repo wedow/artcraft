@@ -134,7 +134,7 @@ export function LightboxModal({
                   //});
                   let result = await EnqueueImageTo3dObject({
                     image_media_token: mediaId,
-                    model: EnqueueImageTo3dObjectModel.Hunyuan3d2,
+                    model: EnqueueImageTo3dObjectModel.Hunyuan3d2_0,
                   });
                   //e.stopPropagation();
                   //await onAddToSceneClicked(downloadUrl, mediaId);
