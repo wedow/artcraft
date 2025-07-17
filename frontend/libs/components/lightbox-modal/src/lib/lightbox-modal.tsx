@@ -94,6 +94,7 @@ export function LightboxModal({
             </video>
           ) : (
             <img
+              data-lightbox-modal="true"
               src={imageTagImageUrl}
               alt={imageAlt}
               className="h-full w-full object-contain"
