@@ -349,8 +349,12 @@ async fn main() -> AnyhowResult<()> {
 
   set_up_directories(&job_dependencies)?;
 
-  std::thread::spawn(move || async {
-    reap_jobs_thread(mysql_pool_2).await;
+  std::thread::spawn(move || {
+    let actix_runtime = actix_web::rt::System::new();
+
+    actix_runtime.block_on(reap_jobs_thread(mysql_pool_2));
+
+    warn!("Reap jobs thread terminated");
   });
 
   std::thread::spawn(move || {

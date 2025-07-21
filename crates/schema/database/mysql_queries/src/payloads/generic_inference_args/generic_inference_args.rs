@@ -185,6 +185,8 @@ impl GenericInferenceArgs {
     match json {
       None => Ok(None),
       Some("" | "null" | "NULL" | "undefined" | "UNDEFINED") => {
+        // NB: Something inserted a few of these records (only in local dev).
+        // It's better not to stall the job queue than to assert correctness.
         warn!("Received empty or null JSON `{json:?}` for GenericInferenceArgs, returning None.");
         Ok(None)
       },

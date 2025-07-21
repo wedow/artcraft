@@ -122,8 +122,6 @@ pub async fn list_available_generic_inference_jobs(
             .as_deref()
             .map(|s| AnonymousVisitorTrackingToken::new_from_str(s));
 
-        debug!("Record: {:?}", record);
-        
         Ok(AvailableInferenceJob {
           id: GenericInferenceJobId(record.id),
           inference_job_token: InferenceJobToken::new(record.inference_job_token),

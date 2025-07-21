@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use log::info;
 use sqlx;
 use sqlx::pool::PoolConnection;
 use sqlx::{MySql, MySqlPool};
@@ -39,9 +40,13 @@ LIMIT 5000
       .execute(&mut **mysql_connection)
       .await;
 
-  if let Err(err) = query_result {
-    return Err(anyhow!("error with reaping stale jobs: {:?}", err));
+  match query_result {
+    Ok(result) => {
+      info!("Reaped stale FakeYou jobs: {} rows affected.", result.rows_affected());
+      Ok(())
+    },
+    Err(err) => {
+      Err(anyhow!("error with reaping stale jobs: {:?}", err))
+    }
   }
-
-  Ok(())
 }
