@@ -1,3 +1,3 @@
 export function modelList(): string {
-  return 'model-list';
+  return "model-list";
 }

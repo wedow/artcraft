@@ -26,10 +26,10 @@ export const IMAGE_MODELS: Record<string, ModelInfo> = {
     name: "GPT Image 1 (GPT-4o)",
     tauri_id: "gpt_image_1",
     creator: ModelCreator.OpenAi,
-  }
-}
+  },
+};
 
-// This is a hack to get the old model selector code to work since it's keyed off 
+// This is a hack to get the old model selector code to work since it's keyed off
 // of the human-readable label of the model. Long term, that should be fixed.
 export const IMAGE_MODELS_BY_LABEL: Record<string, ModelInfo> = {
   "Flux Pro 1.1 Ultra": IMAGE_MODELS.flux_pro_1_1_ultra,
@@ -37,5 +37,4 @@ export const IMAGE_MODELS_BY_LABEL: Record<string, ModelInfo> = {
   "Flux 1 Dev": IMAGE_MODELS.flux_1_dev,
   "Flux 1 Schnell": IMAGE_MODELS.flux_1_schnell,
   "GPT Image 1 (GPT-4o)": IMAGE_MODELS.gpt_image_1,
-}
-
+};
