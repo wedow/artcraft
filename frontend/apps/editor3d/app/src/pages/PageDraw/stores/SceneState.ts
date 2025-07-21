@@ -1035,6 +1035,8 @@ export const useSceneStore = create<SceneState>((set, get) => ({
           scaleY: node.scaleY || 1,
           offsetX: node.offsetX || 0,
           offsetY: node.offsetY || 0,
+          zIndex: node.zIndex || 0,
+          locked: node.locked || false,
         };
 
         // Convert imageFile to base64 if it exists
