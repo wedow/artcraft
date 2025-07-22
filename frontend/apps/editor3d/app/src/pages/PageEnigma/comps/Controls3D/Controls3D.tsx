@@ -44,6 +44,7 @@ import {
   galleryModalVisibleDuringDrag,
 } from "@storyteller/ui-gallery-modal";
 import { twMerge } from "tailwind-merge";
+import { UploadModalImage } from "~/components/reusable/UploadModalImage";
 
 export const Controls3D = () => {
   useSignals();
@@ -54,7 +55,6 @@ export const Controls3D = () => {
   const [upload3DIsShowing, setUpload3DIsShowing] = useState(false);
   const [isAddAssetPopoverOpen, setIsAddAssetPopoverOpen] = useState(false);
   const [uploadImageIsShowing, setUploadImageIsShowing] = useState(false);
-  const [isUploadPopoverOpen, setIsUploadPopoverOpen] = useState(false);
 
   // Track processed 3D models by their media token to prevent duplicates
   const processedModelsRef = useRef<Record<string, boolean>>({});
@@ -67,7 +67,8 @@ export const Controls3D = () => {
         !assetModalVisible.value &&
         !galleryModalVisibleViewMode.value &&
         !isAddAssetPopoverOpen &&
-        !isUploadPopoverOpen;
+        !upload3DIsShowing &&
+        !uploadImageIsShowing;
 
       setShowEmptySceneTooltip(isSceneEmpty);
     };
@@ -86,7 +87,8 @@ export const Controls3D = () => {
     assetModalVisible.value,
     galleryModalVisibleViewMode.value,
     isAddAssetPopoverOpen,
-    isUploadPopoverOpen,
+    upload3DIsShowing,
+    uploadImageIsShowing,
   ]);
 
   const handleModeChange = (value: string) => {
@@ -288,7 +290,7 @@ export const Controls3D = () => {
                     onOpenChange={setIsAddAssetPopoverOpen}
                     items={[
                       {
-                        label: "ArtCraft 3D Presets (B)",
+                        label: "ArtCraft Presets (B)",
                         selected: false,
                         icon: (
                           <FontAwesomeIcon icon={faCube} className="h-4 w-4" />
@@ -401,6 +403,14 @@ export const Controls3D = () => {
         onSuccess={() => setUpload3DIsShowing(false)}
         title="Upload a 3D Model"
         titleIcon={faCube}
+      />
+
+      <UploadModalImage
+        isOpen={uploadImageIsShowing}
+        onClose={() => setUploadImageIsShowing(false)}
+        onSuccess={() => setUploadImageIsShowing(false)}
+        title="Upload an Image"
+        titleIcon={faImages}
       />
     </>
   );

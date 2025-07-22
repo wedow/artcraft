@@ -499,7 +499,7 @@ export const AssetModal = () => {
           <div className="relative col-span-3 flex h-full flex-col p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-gray-200 after:bg-white/10">
             <div className="flex items-center justify-between gap-2.5 py-0.5">
               <h2 className="text-[18px] font-semibold opacity-80">
-                ArtCraft 3D Presets
+                ArtCraft Presets
               </h2>
               {/* <Tooltip content="Upload model" position="top" delay={200}>
                 <Button
