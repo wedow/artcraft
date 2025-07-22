@@ -11,9 +11,7 @@ import { ChromaKeyMaterial } from "./chromakey";
 import { TimeLine } from "./timeline";
 import { ClipGroup, ClipType } from "~/enums";
 import { ClipUI } from "../clips/clip_ui";
-
-import { GetFrontendEnvironment } from "~/Classes/GetFrontendEnvironment";
-
+import { LoadWithoutCors } from "@storyteller/tauri-api";
 import { gridVisibility } from "../signals/engine";
 import { InfiniteGridHelper } from "./InfiniteGridHelper";
 import { cameras, selectedCameraId } from "../signals/camera";
@@ -625,6 +623,7 @@ class Scene {
 
     // await this.delay(3000); // artificial delay.
 
+    /*
     const glb = await this.load_glb_wrapped(url, async (progress) => {
       const total_loaded = progress.loaded / progress.total;
       //const percent = this.floatToPercent(total_loaded);
@@ -638,6 +637,19 @@ class Scene {
         await this.placeholder_manager.remove(key);
       }
     }).catch((error: Error) => {
+      throw error;
+    });
+    */
+
+    console.log("load_glb_wrapped_no_cors", url);
+
+    const glb = await this.load_glb_wrapped_no_cors(url, async () => {
+      if (this.placeholder_manager === undefined) {
+        throw Error("Place holder Manager is undefined");
+      }
+      await this.placeholder_manager.remove(key);
+    }).catch((error: Error) => {
+      console.error("load_glb_wrapped_no_cors error", error);
       throw error;
     });
 
@@ -733,6 +745,37 @@ class Scene {
     }
     this.updateSurfaceIdAttributeToMesh(this.scene);
     return child_result;
+  }
+
+  /**
+   * Load a full media_url via Tauri (without browser cors)
+   * @param media_url
+   * @param onComplete
+   * @param onError
+   * @returns
+   */
+  private async load_glb_wrapped_no_cors(
+    media_url: string,
+    onComplete: () => void,
+    //onError: () => void,
+  ) {
+    return new Promise(async (resolve, reject) => {
+      const glbLoader = new GLTFLoader();
+      const buffer = await LoadWithoutCors(media_url); // Load via Tauri!
+      glbLoader.parse(
+        buffer,
+        "", // No relative path to load additional assets!
+        (gltf) => {
+          resolve(gltf);
+          onComplete();
+        },
+        (error) => {
+          console.error("load_glb_wrapped_no_cors error", error)
+          reject(error);
+          //onError();
+        },
+      );
+    });
   }
 
   /**

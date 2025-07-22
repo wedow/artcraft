@@ -12,6 +12,7 @@ use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::
 use crate::core::commands::enqueue::video::enqueue_image_to_video_command::enqueue_image_to_video_command;
 use crate::core::commands::flip_image::flip_image;
 use crate::core::commands::get_app_info_command::get_app_info_command;
+use crate::core::commands::load_without_cors_command::load_without_cors_command;
 use crate::core::commands::platform_info_command::platform_info_command;
 use crate::core::commands::providers::get_provider_order_command::get_provider_order_command;
 use crate::core::commands::providers::set_provider_order_command::set_provider_order_command;
@@ -154,6 +155,7 @@ pub fn run() {
       get_app_preferences_command,
       get_fal_api_key_command,
       get_provider_order_command,
+      load_without_cors_command,
       open_sora_login_command,
       platform_info_command,
       set_fal_api_key_command,
