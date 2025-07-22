@@ -21,6 +21,7 @@ export interface PopoverItem {
   icon?: ReactNode;
   action?: string;
   disabled?: boolean;
+  divider?: boolean;
   description?: string;
   badges?: Array<{
     label: string;
@@ -272,70 +273,74 @@ export const PopoverMenu = ({
                   ) : mode === "hoverSelect" ? (
                     <div className="flex flex-col gap-0 text-sm text-white">
                       {items.map((item, index) => (
-                        <div
-                          key={index}
-                          onClick={() => {
-                            if (!item.disabled) {
-                              handleItemClick(item, close);
-                            }
-                          }}
-                          className={twMerge(
-                            "group flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 transition-all",
-                            item.selected
-                              ? "bg-black/40 border-l-4 border-primary"
-                              : "hover:bg-black/20",
-                            item.disabled
-                              ? "!cursor-not-allowed opacity-50"
-                              : ""
-                          )}
-                          style={{ minHeight: 48 }}
-                        >
-                          <div className="flex items-center gap-2 w-full">
-                            <div className="flex items-start gap-2 grow">
-                              {showIconsInList && (
-                                <span className="mt-1 flex h-5 w-5 items-center justify-center text-lg text-white/80">
-                                  {item.icon}
-                                </span>
-                              )}
-                              <div className="flex flex-1 flex-col min-w-0">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="truncate font-semibold text-white text-base">
-                                    {item.label}
+                        <div key={index}>
+                          <div
+                            onClick={() => {
+                              if (!item.disabled) {
+                                handleItemClick(item, close);
+                              }
+                            }}
+                            className={twMerge(
+                              "group flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 transition-all",
+                              item.selected
+                                ? "bg-black/40 border-l-4 border-primary"
+                                : "hover:bg-black/20",
+                              item.disabled
+                                ? "!cursor-not-allowed opacity-50"
+                                : ""
+                            )}
+                            style={{ minHeight: 48 }}
+                          >
+                            <div className="flex items-center gap-2 w-full">
+                              <div className="flex items-start gap-2 grow">
+                                {showIconsInList && (
+                                  <span className="mt-1 flex h-5 w-5 items-center justify-center text-lg text-white/80">
+                                    {item.icon}
                                   </span>
-                                </div>
-
-                                {item.description && (
-                                  <div className="truncate text-xs text-white/60 mt-0.5">
-                                    {item.description}
-                                  </div>
                                 )}
+                                <div className="flex flex-1 flex-col min-w-0">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="truncate font-semibold text-white text-base">
+                                      {item.label}
+                                    </span>
+                                  </div>
 
-                                <div className="flex flex-row gap-1 flex-wrap mt-1.5">
-                                  {item.badges &&
-                                    Array.isArray(item.badges) &&
-                                    item.badges.map((badge, i) => (
-                                      <div
-                                        key={i}
-                                        className="flex items-center gap-1 min-w-0"
-                                      >
-                                        <span className="inline-flex items-center rounded bg-black/40 px-1.5 py-0.5 text-xs font-medium text-white gap-1">
-                                          {badge?.icon && (
-                                            <span>{badge.icon}</span>
-                                          )}
-                                          {badge?.label || ""}
-                                        </span>
-                                      </div>
-                                    ))}
+                                  {item.description && (
+                                    <div className="truncate text-xs text-white/60 mt-0.5">
+                                      {item.description}
+                                    </div>
+                                  )}
+
+                                  <div className="flex flex-row gap-1 flex-wrap mt-1.5">
+                                    {item.badges &&
+                                      Array.isArray(item.badges) &&
+                                      item.badges.map((badge, i) => (
+                                        <div
+                                          key={i}
+                                          className="flex items-center gap-1 min-w-0"
+                                        >
+                                          <span className="inline-flex items-center rounded bg-black/40 px-1.5 py-0.5 text-xs font-medium text-white gap-1">
+                                            {badge?.icon && (
+                                              <span>{badge.icon}</span>
+                                            )}
+                                            {badge?.label || ""}
+                                          </span>
+                                        </div>
+                                      ))}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                            {item.selected && (
-                              <span className="text-primary text-xl font-bold bg-white rounded-full p-0 h-4 w-4 flex items-center justify-center mr-1">
-                                <FontAwesomeIcon icon={faCircleCheck} />
-                              </span>
-                            )}
+                              {item.selected && (
+                                <span className="text-primary text-xl font-bold bg-white rounded-full p-0 h-4 w-4 flex items-center justify-center mr-1">
+                                  <FontAwesomeIcon icon={faCircleCheck} />
+                                </span>
+                              )}
+                            </div>
                           </div>
+                          {item.divider && (
+                            <div className="my-1 border-t border-white/10" />
+                          )}
                         </div>
                       ))}
                       {showAddButton && onAdd && (
@@ -357,57 +362,63 @@ export const PopoverMenu = ({
                   ) : (
                     <div className="flex flex-col gap-0 text-sm text-white">
                       {items.map((item, index) => (
-                        <Button
-                          key={index}
-                          className={twMerge(
-                            "flex w-full items-center justify-between border-transparent bg-transparent px-1.5",
-                            "hover:bg-[#63636B]/60",
-                            mode === "toggle" && item.selected
-                              ? "hover:bg-[#63636B]"
-                              : "bg-transparent",
-                            item.disabled
-                              ? "!cursor-not-allowed opacity-50"
-                              : ""
-                          )}
-                          onClick={() =>
-                            !item.disabled && handleItemClick(item, close)
-                          }
-                          variant="secondary"
-                          disabled={item.disabled}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            {showIconsInList && item.icon}
-                            {mode === "toggle" ? (
+                        <div key={index}>
+                          <Button
+                            className={twMerge(
+                              "flex w-full items-center justify-between border-transparent bg-transparent px-1.5",
+                              "hover:bg-[#63636B]/60",
+                              mode === "toggle" && item.selected
+                                ? "hover:bg-[#63636B]"
+                                : "bg-transparent",
+                              item.disabled
+                                ? "!cursor-not-allowed opacity-50"
+                                : ""
+                            )}
+                            onClick={() =>
+                              !item.disabled && handleItemClick(item, close)
+                            }
+                            variant="secondary"
+                            disabled={item.disabled}
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              {showIconsInList && item.icon}
+                              {mode === "toggle" ? (
+                                <span
+                                  className={twMerge(
+                                    "truncate",
+                                    item.selected
+                                      ? "text-white"
+                                      : "text-white/70"
+                                  )}
+                                >
+                                  {item.label}
+                                </span>
+                              ) : (
+                                <span className="truncate">{item.label}</span>
+                              )}
+                            </div>
+                            {mode === "toggle" && (
                               <span
                                 className={twMerge(
-                                  "truncate",
-                                  item.selected ? "text-white" : "text-white/70"
+                                  "ml-2 h-5 w-5 rounded-full border flex items-center justify-center transition-colors",
+                                  item.selected
+                                    ? "border-primary bg-primary"
+                                    : "border-transparent bg-transparent"
                                 )}
                               >
-                                {item.label}
+                                {item.selected && (
+                                  <FontAwesomeIcon
+                                    icon={faCheck}
+                                    className="text-white text-xs font-bold"
+                                  />
+                                )}
                               </span>
-                            ) : (
-                              <span className="truncate">{item.label}</span>
                             )}
-                          </div>
-                          {mode === "toggle" && (
-                            <span
-                              className={twMerge(
-                                "ml-2 h-5 w-5 rounded-full border flex items-center justify-center transition-colors",
-                                item.selected
-                                  ? "border-primary bg-primary"
-                                  : "border-transparent bg-transparent"
-                              )}
-                            >
-                              {item.selected && (
-                                <FontAwesomeIcon
-                                  icon={faCheck}
-                                  className="text-white text-xs font-bold"
-                                />
-                              )}
-                            </span>
+                          </Button>
+                          {item.divider && (
+                            <div className="my-1 border-t border-white/10" />
                           )}
-                        </Button>
+                        </div>
                       ))}
                       {showAddButton && onAdd && (
                         <Button

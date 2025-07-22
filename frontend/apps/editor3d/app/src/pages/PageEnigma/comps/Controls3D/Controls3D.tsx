@@ -5,8 +5,8 @@ import {
   faPlus,
   faUpRightAndDownLeftFromCenter,
   faCube,
-  faArrowUpFromBracket,
   faImages,
+  faArrowUpFromBracket,
 } from "@fortawesome/pro-solid-svg-icons";
 import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { Button } from "@storyteller/ui-button";
@@ -44,7 +44,7 @@ import {
   galleryModalVisibleDuringDrag,
 } from "@storyteller/ui-gallery-modal";
 import { twMerge } from "tailwind-merge";
-import { UploadModalImage } from "~/components/reusable/UploadModalImage";
+import { UploadModalImage } from "../../../../components/reusable/UploadModalImage";
 
 export const Controls3D = () => {
   useSignals();
@@ -190,19 +190,6 @@ export const Controls3D = () => {
     }
   };
 
-  const handleUploadAction = (action: string) => {
-    switch (action) {
-      case "3d":
-        setUpload3DIsShowing(true);
-        break;
-      case "image":
-        setUploadImageIsShowing(true);
-        break;
-      default:
-        break;
-    }
-  };
-
   // Open global Gallery modal
   const handleOpenGalleryModal = () => {
     galleryModalVisibleViewMode.value = true;
@@ -216,6 +203,12 @@ export const Controls3D = () => {
         break;
       case "library":
         handleOpenGalleryModal();
+        break;
+      case "upload-3d":
+        setUpload3DIsShowing(true);
+        break;
+      case "upload-image":
+        setUploadImageIsShowing(true);
         break;
       default:
         break;
@@ -286,7 +279,7 @@ export const Controls3D = () => {
                   <PopoverMenu
                     mode="button"
                     position="bottom"
-                    panelTitle="Add asset from"
+                    panelTitle="Add an asset to scene"
                     onOpenChange={setIsAddAssetPopoverOpen}
                     items={[
                       {
@@ -307,6 +300,29 @@ export const Controls3D = () => {
                           />
                         ),
                         action: "library",
+                        divider: true,
+                      },
+                      {
+                        label: "Upload 3D Model",
+                        selected: false,
+                        icon: (
+                          <FontAwesomeIcon
+                            icon={faArrowUpFromBracket}
+                            className="h-4 w-4"
+                          />
+                        ),
+                        action: "upload-3d",
+                      },
+                      {
+                        label: "Upload Image",
+                        selected: false,
+                        icon: (
+                          <FontAwesomeIcon
+                            icon={faArrowUpFromBracket}
+                            className="h-4 w-4"
+                          />
+                        ),
+                        action: "upload-image",
                       },
                     ]}
                     onPanelAction={handleAddAssetAction}
@@ -322,45 +338,6 @@ export const Controls3D = () => {
                   />
                 </Tooltip>
               </div>
-              <Tooltip
-                content="Upload an asset"
-                position="bottom"
-                delay={300}
-                closeOnClick
-              >
-                <PopoverMenu
-                  mode="button"
-                  position="bottom"
-                  panelTitle="Upload an asset"
-                  items={[
-                    {
-                      label: "3D Model",
-                      selected: false,
-                      icon: (
-                        <FontAwesomeIcon icon={faCube} className="h-4 w-4" />
-                      ),
-                      action: "3d",
-                    },
-                    {
-                      label: "Image",
-                      selected: false,
-                      icon: (
-                        <FontAwesomeIcon icon={faImages} className="h-4 w-4" />
-                      ),
-                      action: "image",
-                    },
-                  ]}
-                  onPanelAction={handleUploadAction}
-                  showIconsInList
-                  buttonClassName="h-9 w-9 rounded-[10px] text-lg bg-white/15 transition-colors hover:bg-white/25"
-                  triggerIcon={
-                    <FontAwesomeIcon
-                      icon={faArrowUpFromBracket}
-                      className="text-lg"
-                    />
-                  }
-                />
-              </Tooltip>
               <Tooltip
                 content="Create 3D model from image"
                 position="bottom"
