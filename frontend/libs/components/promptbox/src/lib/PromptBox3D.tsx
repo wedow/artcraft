@@ -52,6 +52,7 @@ import {
 } from "@storyteller/tauri-api";
 // import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
 import { usePrompt3DStore, RefImage } from "./promptStore";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBox3DProps {
   cameras: Signal<Camera[]>;
@@ -316,6 +317,7 @@ export const PromptBox3D = ({
   };
 
   const handleEnqueue = async () => {
+    gtagEvent("enqueue_3d");
     const isDesktop = IsDesktopApp();
     console.log("Is Desktop?", isDesktop);
     if (isDesktop) {

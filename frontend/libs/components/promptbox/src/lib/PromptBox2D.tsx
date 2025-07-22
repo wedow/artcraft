@@ -46,6 +46,7 @@ import {
 // import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
 // import { invoke } from "@tauri-apps/api/core";
 import { usePrompt2DStore, RefImage } from "./promptStore";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";
 
@@ -396,6 +397,8 @@ export const PromptBox2D = ({
         return;
       }
     }
+
+    gtagEvent("enqueue_2d");
 
     if (isEnqueueing) return;
     setIsEnqueueing(true);

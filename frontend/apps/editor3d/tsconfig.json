@@ -144,6 +144,9 @@
     },
     {
       "path": "../../libs/api"
+    },
+    {
+      "path": "../../libs/analytics/google-analytics"
     }
   ]
 }
