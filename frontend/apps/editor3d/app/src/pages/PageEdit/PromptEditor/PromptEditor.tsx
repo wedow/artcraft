@@ -1,14 +1,9 @@
 import React from "react";
-import { PromptEditorProps } from "./types";
-import { PromptBoxEdit } from "@storyteller/ui-promptbox";
-import { uploadImage } from "../../../components/reusable/UploadModalMedia/uploadImage";
+import { PromptBoxEdit, PromptBoxEditProps } from "@storyteller/ui-promptbox";
 
 // Set this value on when enqueue is pressed nasty global variable.
-import { getCanvasRenderBitmap } from "../../../signals/canvasRenderBitmap"
-import { JobProvider, useJobContext } from "~/pages/PageDraw/JobContext";
-import { EncodeImageBitmapToBase64 } from "~/pages/PageDraw/utilities/EncodeImageBitmapToBase64";
-const PromptEditor: React.FC<PromptEditorProps> = ({
-  onEnqueuePressed,
+import { JobProvider } from "~/pages/PageDraw/JobContext";
+const PromptEditor: React.FC<PromptBoxEditProps> = ({
   onModeChange,
   selectedMode,
   onGenerateClick,
@@ -20,14 +15,10 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
 
       <JobProvider>
         <PromptBoxEdit
-          uploadImage={uploadImage}
-          getCanvasRenderBitmap={getCanvasRenderBitmap}
-          EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
-          useJobContext={useJobContext}
-          onEnqueuePressed={onEnqueuePressed}
-          onModeSelectionChange={onModeChange}
+          onModeChange={onModeChange}
           selectedMode={selectedMode}
           onGenerateClick={onGenerateClick}
+          isDisabled={false}
         />
       </JobProvider>
     </div>

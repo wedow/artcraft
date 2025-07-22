@@ -1,16 +1,3 @@
-export interface PromptEditorProps {
-  initialPrompt?: string;
-  onPromptChange?: (prompt: string) => void;
-  onRandomize?: () => void;
-  onVary?: () => void;
-  onAIStrengthChange?: (strength: number) => void;
-  onImageStyleChange?: (images: ImageStyle[]) => void;
-  onEnqueuePressed?: () => void;
-  onModeChange?: (mode: string) => void;
-  selectedMode?: string;
-  onGenerateClick: () => void;
-}
-
 export type AspectRatio = '1:1' | '3:2' | '2:3';
 
 export interface ImageStyle {
