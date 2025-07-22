@@ -42,7 +42,7 @@ export const UploadFilesImage = ({
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <FileUploader
           fileTypes={fileTypes}
           file={assetFile.value ?? undefined}

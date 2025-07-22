@@ -123,7 +123,7 @@ export const UploadFiles3D = ({
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <div className="flex flex-col">
           <Label required>Asset Name</Label>
           <Input
