@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { Modal } from "@storyteller/ui-modal";
-import { Label } from "@storyteller/ui-label";
 import { UploadAssetError, UploadSuccess } from "@storyteller/ui-upload-modal";
 import { UploadFiles3D } from "./UploadFiles3D";
 import { initialUploaderState, UploaderState } from "../../../models";
-import { Select } from "@storyteller/ui-select";
 import {
   FilterEngineCategories,
   UploaderStates,
   OBJECT_FILE_TYPE,
-  CHARACTER_MIXAMO_FILE_TYPE,
-  IMAGEPLANE_FILE_TYPE,
 } from "../../../enums";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import {
+  galleryModalVisibleViewMode,
+  galleryModalVisibleDuringDrag,
+} from "@storyteller/ui-gallery-modal";
 
 interface Props {
   onClose: () => void;
@@ -26,63 +26,17 @@ interface Props {
     hasLength?: boolean;
     hasThumbnailUpload?: boolean;
   };
-  preselectedCategory?: FilterEngineCategories;
-  isSelectVisible: boolean;
 }
 
-// Map categories to their allowed file types
-const categoryFileTypes: Partial<Record<FilterEngineCategories, string[]>> = {
-  [FilterEngineCategories.OBJECT]: Object.values(OBJECT_FILE_TYPE),
-  [FilterEngineCategories.CHARACTER]: [
-    ...Object.values(CHARACTER_MIXAMO_FILE_TYPE),
-  ],
-  [FilterEngineCategories.IMAGE_PLANE]: Object.values(IMAGEPLANE_FILE_TYPE),
-  [FilterEngineCategories.LOCATION]: Object.values(OBJECT_FILE_TYPE),
-  [FilterEngineCategories.CREATURE]: Object.values(OBJECT_FILE_TYPE),
-};
-// Excluded category options for the upload modal
-const categoryOptions = Object.entries(FilterEngineCategories)
-  .filter(
-    ([, value]) =>
-      ![
-        "audio",
-        "video_plane",
-        "skybox",
-        "set_dressing",
-        "expression",
-        "animation",
-        "image_plane",
-        "scene",
-      ].includes(value),
-  )
-  .sort(([, a], [, b]) => (a === "object" ? -1 : b === "object" ? 1 : 0))
-  .map(([key, value]) => ({
-    // This is because sets is location i guess - BFlat
-    label:
-      key === "LOCATION"
-        ? "Set"
-        : key.charAt(0) + key.slice(1).toLowerCase().replace(/_/g, " "),
-    value: value,
-  }));
+const objectFileTypes = Object.values(OBJECT_FILE_TYPE);
 
-export function UploadModal3D({
-  isOpen,
-  onClose,
-  onSuccess,
-  title,
-  titleIcon,
-  options,
-  preselectedCategory,
-  isSelectVisible,
-}: Props & { preselectedCategory?: FilterEngineCategories }) {
+export function UploadModal3D(props: Props) {
+  const { isOpen, onClose, onSuccess, title, titleIcon, options } = props;
   const [uploaderState, setUploaderState] =
     useState<UploaderState>(initialUploaderState);
-  const [selectedCategory, setSelectedCategory] =
-    useState<FilterEngineCategories>(
-      preselectedCategory !== undefined
-        ? preselectedCategory
-        : FilterEngineCategories.OBJECT,
-    );
+
+  // Category fixed to OBJECT
+  const selectedCategory = FilterEngineCategories.OBJECT;
 
   const updateUploaderState = (newState: UploaderState) => {
     setUploaderState(newState);
@@ -99,18 +53,11 @@ export function UploadModal3D({
   }, [isOpen]);
 
   useEffect(() => {
-    if (preselectedCategory !== undefined) {
-      setSelectedCategory(preselectedCategory);
-    }
-  }, [preselectedCategory]);
-
-  useEffect(() => {
-    console.log("Preselected category:", preselectedCategory);
-    console.log("Initial selected category:", selectedCategory);
-  }, [preselectedCategory, selectedCategory]);
-
-  useEffect(() => {
     if (uploaderState.status === UploaderStates.success) {
+      // Automatically open the global Gallery modal after a successful upload
+      galleryModalVisibleViewMode.value = true;
+      galleryModalVisibleDuringDrag.value = true;
+
       onSuccess(selectedCategory);
       onClose();
     }
@@ -122,31 +69,10 @@ export function UploadModal3D({
       case UploaderStates.ready:
         return (
           <div className="space-y-4">
-            {isSelectVisible && (
-              <div className="flex w-full flex-col">
-                <Label className="mb-1">Category</Label>
-                <Select
-                  id="category-select"
-                  options={categoryOptions}
-                  value={selectedCategory}
-                  onChange={(value) => {
-                    if (
-                      typeof value === "string" &&
-                      Object.values(FilterEngineCategories).includes(
-                        value as FilterEngineCategories,
-                      )
-                    ) {
-                      setSelectedCategory(value as FilterEngineCategories);
-                    }
-                  }}
-                  placeholder="Select a category"
-                />
-              </div>
-            )}
             <UploadFiles3D
               title={title}
               engineCategory={selectedCategory}
-              fileTypes={categoryFileTypes[selectedCategory] || []}
+              fileTypes={objectFileTypes}
               options={options}
               onClose={onClose}
               onUploadProgress={updateUploaderState}

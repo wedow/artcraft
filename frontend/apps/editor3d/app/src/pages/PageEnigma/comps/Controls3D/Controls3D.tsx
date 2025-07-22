@@ -300,7 +300,6 @@ export const Controls3D = () => {
         onSuccess={() => setUpload3DIsShowing(false)}
         title="Upload 3D Asset"
         titleIcon={faCube}
-        isSelectVisible={true}
       />
     </>
   );
