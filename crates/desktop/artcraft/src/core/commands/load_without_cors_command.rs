@@ -1,6 +1,5 @@
 use futures::TryFutureExt;
 use log::{error, info};
-use rand::Rng;
 use reqwest::Client;
 use tauri::ipc::Response;
 
@@ -10,17 +9,7 @@ pub async fn load_without_cors_command(url: String) -> Result<Response, String> 
 
   info!("load_without_cors_command for URL: {}", url);
 
-  let maybe_fail = {
-    // Simulate a failure for testing purposes
-    let mut rng = rand::thread_rng();
-    rng.gen_bool(0.5)
-  };
-
-  if maybe_fail {
-    error!("Simulated failure for URL: {}", url);
-    return Err(format!("Simulated failure for URL: {}", url));
-  }
-
+  // TODO(bt,2025-07-22): Make sure the URL is valid and safe to fetch. Check an allowlist.
 
   // TODO(bt,2025-07-22): Should we cache clients so we don't need to SSL handshake every time?
   let client = Client::builder()
