@@ -58,7 +58,7 @@ export const UploadFilesImage = ({
         )}
 
         {assetFile.value && (
-          <div className="relative m-auto aspect-square w-full overflow-hidden rounded-lg bg-brand-secondary">
+          <div className="relative m-auto flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg bg-brand-secondary">
             <img
               alt="Preview"
               className="m-auto max-h-full max-w-full object-contain"
