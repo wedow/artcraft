@@ -47,6 +47,7 @@ interface PopoverMenuProps {
   position?: "top" | "bottom";
   align?: "start" | "center" | "end";
   panelActionLabel?: string;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const PopoverMenu = ({
@@ -67,6 +68,7 @@ export const PopoverMenu = ({
   position = "top",
   align = "start",
   panelActionLabel,
+  onOpenChange,
 }: PopoverMenuProps) => {
   const selectedItem = items.find((item) => item.selected);
 
@@ -172,6 +174,12 @@ export const PopoverMenu = ({
       <Popover>
         {({ open, close }) => (
           <>
+            {(() => {
+              useEffect(() => {
+                onOpenChange?.(open);
+              }, [open]);
+              return null;
+            })()}
             <PopoverButton
               className={className}
               onMouseEnter={() =>
