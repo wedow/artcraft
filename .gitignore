@@ -24,11 +24,13 @@ twitch_secrets.toml
 *-secrets.env
 
 # Utilities with secrets
-script/production_database_secret_backup.sh
-script/production_database_secret_connect.sh
 production_database_secret_connect.sh
 production_database_secret_query.sh
 production_database_voice_clone_report_download.sh
+script/artcraft/mac_signing_build.sh
+script/production_database_secret_backup.sh
+script/production_database_secret_connect.sh
+script/socat_dev_database_connect.sh
 
 # Scratch data
 scratch/

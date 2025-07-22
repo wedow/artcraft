@@ -1,6 +1,7 @@
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::state::task_database::TaskDatabase;
 use enums::common::generation_provider::GenerationProvider;
+use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use sqlite_tasks::error::SqliteTasksError;
@@ -34,10 +35,33 @@ impl TaskEnqueueSuccess{
   }
   
   pub async fn insert_into_task_database(&self, task_database: &TaskDatabase) -> Result<TaskId, SqliteTasksError> {
+    // TODO: Move this mapping elsewhere, or remove the other models.
+    let model_type = match self.model {
+      None => None,
+      Some(GenerationModel::Flux1Dev) => Some(TaskModelType::Flux1Dev),
+      Some(GenerationModel::Flux1Schnell) => Some(TaskModelType::Flux1Schnell),
+      Some(GenerationModel::FluxPro11) => Some(TaskModelType::FluxPro11),
+      Some(GenerationModel::FluxPro11Ultra) => Some(TaskModelType::FluxPro11Ultra),
+      Some(GenerationModel::GptImage1) => Some(TaskModelType::GptImage1),
+      Some(GenerationModel::Recraft3) => Some(TaskModelType::Recraft3),
+      Some(GenerationModel::Kling21Pro) => Some(TaskModelType::Kling21Pro),
+      Some(GenerationModel::Kling21Master) => Some(TaskModelType::Kling21Master),
+      Some(GenerationModel::Seedance10Lite) => Some(TaskModelType::Seedance10Lite),
+      Some(GenerationModel::Veo2) => Some(TaskModelType::Veo2),
+      Some(GenerationModel::Hunyuan3d2_0) => Some(TaskModelType::Hunyuan3d2_0),
+      Some(GenerationModel::Hunyuan3d2_1) => Some(TaskModelType::Hunyuan3d2_1),
+
+      // TODO: These seem wrong -
+      Some(GenerationModel::Kling1_6) => Some(TaskModelType::Kling16Pro), // NB: `VideoModel::Kling16Pro`.
+      Some(GenerationModel::Kling2_0) => None, // TODO: unused elsewhere?
+      Some(GenerationModel::Sora) => None, // TODO: unused elsewhere?
+    };
+
     create_task(CreateTaskArgs {
       db: task_database.get_connection(),
       status: TaskStatus::Pending,
       task_type: self.task_type,
+      model_type: model_type,
       provider: self.provider,
       provider_job_id: self.provider_job_id.as_deref(),
       frontend_subscriber_id: None,

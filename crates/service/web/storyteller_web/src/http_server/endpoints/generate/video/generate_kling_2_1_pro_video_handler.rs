@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
@@ -136,7 +136,7 @@ pub async fn generate_kling_2_1_pro_video_handler(
     media_file.maybe_public_bucket_prefix.as_deref(),
     media_file.maybe_public_bucket_extension.as_deref());
   
-  let media_links = MediaLinks::from_media_path_and_env(
+  let media_links = MediaLinksBuilder::from_media_path_and_env(
     media_domain, 
     server_state.server_environment, 
     &bucket_path);

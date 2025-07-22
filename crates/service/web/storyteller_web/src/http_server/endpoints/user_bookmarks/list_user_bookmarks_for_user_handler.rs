@@ -6,16 +6,8 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
-use actix_web::web::{Json, Path, Query};
-use actix_web::{web, HttpRequest, HttpResponse};
-use chrono::{DateTime, Utc};
-use log::warn;
-use utoipa::{IntoParams, ToSchema};
-
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::common_responses::media::weights_cover_image_details::WeightsCoverImageDetails;
 use crate::http_server::common_responses::pagination_page::PaginationPage;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
@@ -23,16 +15,24 @@ use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::{Json, Path, Query};
+use actix_web::{web, HttpRequest, HttpResponse};
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use chrono::{DateTime, Utc};
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::by_table::model_weights::weights_category::WeightsCategory;
 use enums::by_table::model_weights::weights_types::WeightsType;
 use enums::by_table::user_bookmarks::user_bookmark_entity_type::UserBookmarkEntityType;
 use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
+use log::warn;
 use mysql_queries::queries::users::user_bookmarks::list_user_bookmarks::{list_user_bookmarks_by_maybe_entity_type, ListUserBookmarksForUserArgs};
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::user_bookmarks::UserBookmarkToken;
+use utoipa::{IntoParams, ToSchema};
 
 #[derive(Deserialize, ToSchema)]
 pub struct ListUserBookmarksPathInfo {
@@ -230,7 +230,7 @@ pub async fn list_user_bookmarks_for_user_handler(
               });
 
           let maybe_media_file_media_links = maybe_media_file_bucket_path.as_ref()
-              .map(|bucket_path| MediaLinks::from_media_path(media_domain, bucket_path));
+              .map(|bucket_path| MediaLinksBuilder::from_media_path(media_domain, bucket_path));
 
           let mut maybe_media_file_cover = None;
           let mut maybe_model_weight_cover = None;

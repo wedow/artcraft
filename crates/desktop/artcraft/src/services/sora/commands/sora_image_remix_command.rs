@@ -145,10 +145,12 @@ pub async fn sora_image_remix_command(
           status = CommandErrorStatus::BadRequest;
           error_message = "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";
         },
-        InnerError::SoraError(SoraError::BadGateway(_) | SoraError::CloudFlareTimeout(_)) => {
-          error_type = SoraImageRemixErrorType::SoraIsHavingProblems;
-          status = CommandErrorStatus::ServerError;
-          error_message = "Sora is having problems. Please try again later.";
+        InnerError::SoraError(err) => {
+          if err.is_sora_having_downtime_issues() {
+            error_type = SoraImageRemixErrorType::SoraIsHavingProblems;
+            status = CommandErrorStatus::ServerError;
+            error_message = "Sora is having problems. Please try again later.";
+          }
         }
         _ => {},
       }

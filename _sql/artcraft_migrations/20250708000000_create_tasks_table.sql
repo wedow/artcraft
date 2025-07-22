@@ -1,10 +1,15 @@
 -- noinspection SqlDialectInspectionForFile
+-- Migration history:
+--   tasks_v1.sqlite - initial version
+--   tasks_v2.sqlite - added model_type (nullable)
 
 CREATE TABLE tasks (
     id TEXT NOT NULL PRIMARY KEY,
 
     task_status TEXT NOT NULL,
     task_type TEXT NOT NULL,
+
+    model_type TEXT,
 
     provider TEXT,
     provider_job_id TEXT,

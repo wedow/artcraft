@@ -8,7 +8,7 @@ import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
 import {
   EnqueueTextToImage,
-  EnqueueTextToImageModel,
+  EnqueueTextToImageSize,
 } from "@storyteller/tauri-api";
 import {
   faMessageXmark,
@@ -25,16 +25,10 @@ import {
   faRectangleVertical,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IsDesktopApp } from "@storyteller/tauri-utils";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { ModelInfo } from "@storyteller/model-list";
-
-interface ReferenceImage {
-  id: string;
-  url: string;
-  file: File;
-  mediaToken: string;
-}
+import { usePromptImageStore, RefImage } from "./promptStore";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -58,7 +52,7 @@ export const PromptBoxImage = ({
   // for the image media id and url, we need to set the reference image gallery panel.
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -71,30 +65,35 @@ export const PromptBoxImage = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
 
-  const [prompt, setPrompt] = useState("");
+  const prompt = usePromptImageStore((s) => s.prompt);
+  const setPrompt = usePromptImageStore((s) => s.setPrompt);
+  const useSystemPrompt = usePromptImageStore((s) => s.useSystemPrompt);
+  const setUseSystemPrompt = usePromptImageStore((s) => s.setUseSystemPrompt);
+  const aspectRatio = usePromptImageStore((s) => s.aspectRatio);
+  const setAspectRatio = usePromptImageStore((s) => s.setAspectRatio);
   const [isEnqueueing, setIsEnqueueing] = useState(false);
-  const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
-  const [uploadingImages, setUploadingImages] = useState<
+  const referenceImages = usePromptImageStore((s) => s.referenceImages);
+  const setReferenceImages = usePromptImageStore((s) => s.setReferenceImages);
+  const [uploadingImages, _setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
       label: "3:2",
-      selected: true,
+      selected: aspectRatio === "3:2",
       icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
     },
     {
       label: "2:3",
-      selected: false,
+      selected: aspectRatio === "2:3",
       icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
     },
     {
       label: "1:1",
-      selected: false,
+      selected: aspectRatio === "1:1",
       icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
     },
   ]);
@@ -111,7 +110,7 @@ export const PromptBoxImage = ({
 
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -122,6 +121,7 @@ export const PromptBoxImage = ({
   }, [imageMediaId, url]);
 
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
+    setAspectRatio(selectedItem.label as any);
     setAspectRatioList((prev) =>
       prev.map((item) => ({
         ...item,
@@ -131,7 +131,7 @@ export const PromptBoxImage = ({
   };
 
   const handleRemoveReference = (id: string) => {
-    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+    setReferenceImages(referenceImages.filter((img) => img.id !== id));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -162,7 +162,7 @@ export const PromptBoxImage = ({
     const item = selectedItems[0];
     if (!item || !item.fullImage) return;
 
-    const referenceImage: ReferenceImage = {
+    const referenceImage: RefImage = {
       id: Math.random().toString(36).substring(7),
       url: item.fullImage,
       file: new File([], "library-image"),
@@ -205,9 +205,12 @@ export const PromptBoxImage = ({
       setIsEnqueueing(false);
     }, 10000);
 
+    const aspectRatio = getCurrentAspectRatio();
+
     const generateResponse = await EnqueueTextToImage({
       prompt: prompt,
       model: modelInfo,
+      aspect_ratio: aspectRatio,
     });
 
     console.log("PromptBoxImage - generateResponse", generateResponse);
@@ -220,20 +223,20 @@ export const PromptBoxImage = ({
   const getCurrentResolutionIcon = () => {
     const selected = aspectRatioList.find((item) => item.selected);
     if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement;
+    const iconElement = selected.icon as React.ReactElement<{ icon: IconProp }>;
     return iconElement.props.icon;
   };
 
-  const getModelByName = (name: string): EnqueueTextToImageModel => {
-    switch (name) {
-      case "Flux Pro Ultra":
-        return EnqueueTextToImageModel.FluxProUltra;
-      case "Recraft 3":
-        return EnqueueTextToImageModel.Recraft3;
-      case "GPT Image 1 (GPT-4o)":
-        return EnqueueTextToImageModel.GptImage1;
+  const getCurrentAspectRatio = (): EnqueueTextToImageSize => {
+    const selected = aspectRatioList.find((item) => item.selected);
+    switch (selected?.label) {
+      case "3:2":
+        return EnqueueTextToImageSize.Wide;
+      case "2:3":
+        return EnqueueTextToImageSize.Tall;
+      case "1:1":
       default:
-        return EnqueueTextToImageModel.GptImage1;
+        return EnqueueTextToImageSize.Square;
     }
   };
 

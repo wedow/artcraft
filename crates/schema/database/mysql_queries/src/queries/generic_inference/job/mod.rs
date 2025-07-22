@@ -5,3 +5,4 @@ pub mod mark_generic_inference_job_completely_failed;
 pub mod mark_generic_inference_job_failure;
 pub mod mark_generic_inference_job_pending_and_grab_lock;
 pub mod mark_generic_inference_job_successfully_done;
+pub mod reap_stale_fakeyou_jobs;

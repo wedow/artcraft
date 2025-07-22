@@ -1,11 +1,14 @@
 use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
+use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::{GptImage1EditImageImageQuality, GptImage1EditImageImageSize, GptImage1EditImageNumImages, GptImage1EditImageRequest, GptImage1EditImageResponse};
+use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
 use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::enqueue_gpt_image_1_edit_image_webhook;
@@ -17,11 +20,8 @@ use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use utoipa::ToSchema;
-use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::batch_get_media_files_by_tokens;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
-use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
+use utoipa::ToSchema;
 
 /// Gpt Image 1 Image Editing
 #[utoipa::path(
@@ -107,7 +107,7 @@ pub async fn gpt_image_1_edit_image_handler(
           file.maybe_public_bucket_prefix.as_deref(),
           file.maybe_public_bucket_extension.as_deref());
         
-        let media_links = MediaLinks::from_media_path_and_env(
+        let media_links = MediaLinksBuilder::from_media_path_and_env(
           media_domain, 
           server_state.server_environment, 
           &public_bucket_path);

@@ -1,4 +1,4 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
+use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -9,10 +9,10 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::{GenerateFlux1DevTextToImageAspectRatio, GenerateFlux1DevTextToImageRequest};
+use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageAspectRatio, GenerateFlux1SchnellTextToImageRequest};
+use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::{GenerateFluxPro11TextToImageAspectRatio, GenerateFluxPro11TextToImageRequest};
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::{GenerateFluxPro11UltraTextToImageAspectRatio, GenerateFluxPro11UltraTextToImageRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
@@ -66,10 +66,18 @@ pub async fn handle_image_artcraft(
     Some(ImageModel::Flux1Dev) => {
       info!("enqueue Flux 1 Dev");
       selected_model = GenerationModel::Flux1Dev;
+      let aspect_ratio = request.aspect_ratio
+          .map(|aspect| match aspect {
+            // TODO(bt,2025-07-14): Support other aspect ratios.
+            TextToImageSize::Tall => GenerateFlux1DevTextToImageAspectRatio::PortraitNineBySixteen,
+            TextToImageSize::Wide => GenerateFlux1DevTextToImageAspectRatio::LandscapeSixteenByNine,
+            TextToImageSize::Auto => GenerateFlux1DevTextToImageAspectRatio::SquareHd,
+            TextToImageSize::Square => GenerateFlux1DevTextToImageAspectRatio::SquareHd,
+          });
       let request = GenerateFlux1DevTextToImageRequest {
         uuid_idempotency_token,
         prompt: request.prompt,
-        aspect_ratio: None,
+        aspect_ratio,
         num_images: None,
       };
       let result = generate_flux_1_dev_text_to_image(
@@ -91,10 +99,18 @@ pub async fn handle_image_artcraft(
     Some(ImageModel::Flux1Schnell) => {
       info!("enqueue Flux 1 Schnell");
       selected_model = GenerationModel::Flux1Schnell;
+      let aspect_ratio = request.aspect_ratio
+          .map(|aspect| match aspect {
+            // TODO(bt,2025-07-14): Support other aspect ratios.
+            TextToImageSize::Tall => GenerateFlux1SchnellTextToImageAspectRatio::PortraitNineBySixteen,
+            TextToImageSize::Wide => GenerateFlux1SchnellTextToImageAspectRatio::LandscapeSixteenByNine,
+            TextToImageSize::Auto => GenerateFlux1SchnellTextToImageAspectRatio::SquareHd,
+            TextToImageSize::Square => GenerateFlux1SchnellTextToImageAspectRatio::SquareHd,
+          });
       let request = GenerateFlux1SchnellTextToImageRequest {
         uuid_idempotency_token,
         prompt: request.prompt,
-        aspect_ratio: None,
+        aspect_ratio,
         num_images: None,
       };
       let result = generate_flux_1_schnell_text_to_image(
@@ -116,10 +132,18 @@ pub async fn handle_image_artcraft(
     Some(ImageModel::FluxPro11) => {
       info!("enqueue Flux Pro 1.1");
       selected_model = GenerationModel::FluxPro11;
+      let aspect_ratio = request.aspect_ratio
+          .map(|aspect| match aspect {
+            // TODO(bt,2025-07-14): Support other aspect ratios.
+            TextToImageSize::Tall => GenerateFluxPro11TextToImageAspectRatio::PortraitNineBySixteen,
+            TextToImageSize::Wide => GenerateFluxPro11TextToImageAspectRatio::LandscapeSixteenByNine,
+            TextToImageSize::Auto => GenerateFluxPro11TextToImageAspectRatio::Square,
+            TextToImageSize::Square => GenerateFluxPro11TextToImageAspectRatio::Square,
+          });
       let request = GenerateFluxPro11TextToImageRequest {
         uuid_idempotency_token,
         prompt: request.prompt,
-        aspect_ratio: None,
+        aspect_ratio,
         num_images: None,
       };
       let result = generate_flux_pro_11_text_to_image(
@@ -141,10 +165,18 @@ pub async fn handle_image_artcraft(
     Some(ImageModel::FluxPro11Ultra) => {
       info!("enqueue Flux Pro 1.1 Ultra");
       selected_model = GenerationModel::FluxPro11Ultra;
+      let aspect_ratio = request.aspect_ratio
+          .map(|aspect| match aspect {
+            // TODO(bt,2025-07-14): Support other aspect ratios.
+            TextToImageSize::Tall => GenerateFluxPro11UltraTextToImageAspectRatio::PortraitNineBySixteen,
+            TextToImageSize::Wide => GenerateFluxPro11UltraTextToImageAspectRatio::LandscapeSixteenByNine,
+            TextToImageSize::Auto => GenerateFluxPro11UltraTextToImageAspectRatio::Square,
+            TextToImageSize::Square => GenerateFluxPro11UltraTextToImageAspectRatio::Square,
+          });
       let request = GenerateFluxPro11UltraTextToImageRequest {
         uuid_idempotency_token,
         prompt: request.prompt,
-        aspect_ratio: None,
+        aspect_ratio,
         num_images: None,
       };
       let result = generate_flux_pro_11_ultra_text_to_image(

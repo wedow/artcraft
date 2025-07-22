@@ -4,11 +4,9 @@ use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Query;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
-use chrono::{DateTime, Utc};
-use log::warn;
-use utoipa::{IntoParams, ToSchema};
-
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use chrono::{DateTime, Utc};
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
@@ -19,11 +17,13 @@ use enums::common::view_as::ViewAs;
 use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
+use log::warn;
 use mysql_queries::queries::media_files::list::list_media_files::{list_media_files, ListMediaFilesArgs};
 use tokens::tokens::media_files::MediaFileToken;
+use utoipa::{IntoParams, ToSchema};
 
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::common_responses::media_file_origin_details::MediaFileOriginDetails;
 use crate::http_server::common_responses::pagination_cursors::PaginationCursors;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
@@ -345,7 +345,7 @@ pub async fn list_media_files_handler(
           maybe_origin_model_type: record.maybe_origin_model_type
               .map(|m| PublicMediaFileModelType::from_enum(m)),
           maybe_origin_model_token: record.maybe_origin_model_token,
-          media_links: MediaLinks::from_media_path(media_domain, &public_bucket_path),
+          media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
           public_bucket_path: public_bucket_path
               .get_full_object_path_str()
               .to_string(),

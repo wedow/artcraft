@@ -22,7 +22,7 @@ impl DataSubdir for AppStateDir{
 
 impl AppStateDir {
   pub fn get_tasks_sqlite_database_path(&self) -> PathBuf {
-    self.path.join("tasks_v1.sqlite")
+    self.path.join("tasks_v2.sqlite")
   }
 
   pub fn get_window_size_config_file(&self) -> PathBuf {

@@ -7,11 +7,9 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use actix_web_lab::extract::Query;
-use chrono::{DateTime, Utc};
-use log::warn;
-use utoipa::{IntoParams, ToSchema};
-
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use chrono::{DateTime, Utc};
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
@@ -22,14 +20,16 @@ use enums::by_table::model_weights::weights_types::WeightsType;
 use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
+use log::warn;
 use mysql_queries::queries::media_files::get::batch_get_media_files::batch_get_media_files;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::prompts::PromptToken;
+use utoipa::{IntoParams, ToSchema};
 
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::endpoints::media_files::common_responses::live_portrait::MediaFileLivePortraitDetails;
@@ -333,7 +333,7 @@ pub async fn batch_get_media_files_handler(
           maybe_media_subtype: result.maybe_media_subtype,
           maybe_engine_extension,
           maybe_batch_token: result.maybe_batch_token,
-          media_links: MediaLinks::from_media_path(media_domain, &public_bucket_path),
+          media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
           public_bucket_path: public_bucket_path
               .get_full_object_path_str()
               .to_string(),

@@ -77,7 +77,7 @@ pub async fn handle_video_fal(
         api_key: &api_key,
         duration: Kling16ProDuration::Default,
         aspect_ratio: Kling16ProAspectRatio::WideSixteenNine,
-        prompt: "",
+        prompt: request.prompt.as_deref().unwrap_or(""),
       }).await
     }
     _ => {

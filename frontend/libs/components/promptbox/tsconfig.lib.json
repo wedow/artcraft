@@ -50,9 +50,6 @@
       "path": "../camera-settings-modal/tsconfig.lib.json"
     },
     {
-      "path": "../../soundboard/tsconfig.lib.json"
-    },
-    {
       "path": "../action-reminder-modal/tsconfig.lib.json"
     },
     {

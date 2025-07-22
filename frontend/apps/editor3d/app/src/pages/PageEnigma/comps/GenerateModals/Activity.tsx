@@ -10,11 +10,13 @@ import { JobsApi } from "~/Classes/ApiManager/JobsApi";
 import { toast } from "@storyteller/ui-toaster";
 import { ActiveJob } from "~/pages/PageEnigma/models";
 import { IsJobPollingDisabled } from "~/flags/DevConsoleFlags";
+
 // TODO ensure we de-dupe all this extra code.
 interface CompletedItem {
   token: string;
   maybe_title: string;
-  public_bucket_path: string;
+  public_bucket_path: string; // TODO: STOP USING THIS.
+  maybe_media_links_thumbnail?: string;
   updated_at: string;
 }
 
@@ -140,6 +142,12 @@ export function Activity() {
             maybe_title: job.request?.maybe_model_title || "Image Generation",
             public_bucket_path:
               job.maybe_result?.maybe_public_bucket_media_path || "",
+            maybe_media_links_thumbnail: ((job) => {
+              // Try the video thumbnail first, then the regular thumbnail.
+              const maybeVideoThumb = job.maybe_result?.media_links?.maybe_video_previews?.animated;
+              const maybeGenericThumb = (job.maybe_result?.media_links?.maybe_thumbnail_template || "").replace("{WIDTH}", "500");
+              return maybeVideoThumb || maybeGenericThumb;
+            })(job),
             updated_at: job.updated_at || new Date().toISOString(),
           }));
 

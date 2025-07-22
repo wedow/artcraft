@@ -1,3 +1,4 @@
+use log::{debug, warn};
 use crate::payloads::generic_inference_args::inner_payloads::f5_tts_payload::F5TTSPayload;
 use crate::payloads::generic_inference_args::inner_payloads::face_fusion_payload::FaceFusionPayload;
 use crate::payloads::generic_inference_args::inner_payloads::gptsovits_payload::GptSovitsPayload;
@@ -178,6 +179,19 @@ impl GenericInferenceArgs {
 
   pub fn from_json(json: &str) -> AnyhowResult<Self> {
     Ok(serde_json::from_str(json)?)
+  }
+
+  pub fn from_json_optional(json: Option<&str>) -> AnyhowResult<Option<Self>> {
+    match json {
+      None => Ok(None),
+      Some("" | "null" | "NULL" | "undefined" | "UNDEFINED") => {
+        // NB: Something inserted a few of these records (only in local dev).
+        // It's better not to stall the job queue than to assert correctness.
+        warn!("Received empty or null JSON `{json:?}` for GenericInferenceArgs, returning None.");
+        Ok(None)
+      },
+      Some(json_str) => Ok(Some(Self::from_json(json_str)?)),
+    }
   }
 
   pub fn to_json(&self) -> AnyhowResult<String> {

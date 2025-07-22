@@ -1,5 +1,8 @@
 use utoipa::OpenApi;
 
+use artcraft_api_defs::common::responses::job_details::JobDetailsLipsyncRequest;
+use artcraft_api_defs::common::responses::job_details::JobDetailsLivePortraitRequest;
+use artcraft_api_defs::common::responses::media_links::*;
 use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::*;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
@@ -43,50 +46,15 @@ use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateV
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2Duration;
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
+use artcraft_api_defs::jobs::list_session_jobs::*;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
-use enums::by_table::beta_keys::beta_key_product::BetaKeyProduct;
-use enums::by_table::comments::comment_entity_type::CommentEntityType;
-use enums::by_table::featured_items::featured_item_entity_type::FeaturedItemEntityType;
-use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
-use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
-use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
-use enums::by_table::media_files::media_file_class::MediaFileClass;
-use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
-use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
-use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
-use enums::by_table::media_files::media_file_subtype::MediaFileSubtype;
-use enums::by_table::media_files::media_file_type::MediaFileType;
-use enums::by_table::model_weights::{weights_category::WeightsCategory, weights_types::WeightsType};
-use enums::by_table::prompts::prompt_type::PromptType;
-use enums::by_table::user_bookmarks::user_bookmark_entity_type::UserBookmarkEntityType;
-use enums::by_table::user_ratings::entity_type::UserRatingEntityType;
-use enums::by_table::user_ratings::rating_value::UserRatingValue;
-use enums::by_table::users::user_feature_flag::UserFeatureFlag;
-use enums::common::job_status_plus::JobStatusPlus;
-use enums::common::visibility::Visibility;
-use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
-use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
-use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
-use tokens::tokens::batch_generations::*;
-use tokens::tokens::beta_keys::*;
-use tokens::tokens::browser_session_logs::*;
-use tokens::tokens::comments::*;
-use tokens::tokens::generic_inference_jobs::*;
-use tokens::tokens::media_files::*;
-use tokens::tokens::model_weights::*;
-use tokens::tokens::prompts::*;
-use tokens::tokens::user_bookmarks::*;
-use tokens::tokens::users::*;
-use tokens::tokens::zs_voice_datasets::*;
-
 use crate::http_server::common_requests::auto_product_category::AutoProductCategory;
 use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
 use crate::http_server::common_responses::media::cover_image_links::CoverImageLinks;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileDefaultCover;
-use crate::http_server::common_responses::media::media_links::*;
 use crate::http_server::common_responses::media::weights_cover_image_details::*;
 use crate::http_server::common_responses::media_file_origin_details::*;
 use crate::http_server::common_responses::media_file_social_meta_lite::MediaFileSocialMetaLight;
@@ -128,7 +96,40 @@ use crate::http_server::endpoints::featured_items::delete_featured_item_handler:
 use crate::http_server::endpoints::featured_items::get_is_featured_item_handler::*;
 use crate::http_server::endpoints::image_studio::prompt::enqueue_studio_image_generation_handler::*;
 use crate::http_server::endpoints::image_studio::upload::upload_snapshot_media_file_handler::*;
-use crate::http_server::endpoints::inference_job::common_responses::live_portrait::JobDetailsLivePortraitRequest;
+use enums::by_table::beta_keys::beta_key_product::BetaKeyProduct;
+use enums::by_table::comments::comment_entity_type::CommentEntityType;
+use enums::by_table::featured_items::featured_item_entity_type::FeaturedItemEntityType;
+use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
+use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
+use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
+use enums::by_table::media_files::media_file_class::MediaFileClass;
+use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
+use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
+use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
+use enums::by_table::media_files::media_file_subtype::MediaFileSubtype;
+use enums::by_table::media_files::media_file_type::MediaFileType;
+use enums::by_table::model_weights::{weights_category::WeightsCategory, weights_types::WeightsType};
+use enums::by_table::prompts::prompt_type::PromptType;
+use enums::by_table::users::user_feature_flag::UserFeatureFlag;
+use enums::by_table::user_bookmarks::user_bookmark_entity_type::UserBookmarkEntityType;
+use enums::by_table::user_ratings::entity_type::UserRatingEntityType;
+use enums::by_table::user_ratings::rating_value::UserRatingValue;
+use enums::common::job_status_plus::JobStatusPlus;
+use enums::common::visibility::Visibility;
+use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
+use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
+use tokens::tokens::batch_generations::*;
+use tokens::tokens::beta_keys::*;
+use tokens::tokens::browser_session_logs::*;
+use tokens::tokens::comments::*;
+use tokens::tokens::generic_inference_jobs::*;
+use tokens::tokens::media_files::*;
+use tokens::tokens::model_weights::*;
+use tokens::tokens::prompts::*;
+use tokens::tokens::users::*;
+use tokens::tokens::user_bookmarks::*;
+use tokens::tokens::zs_voice_datasets::*;
 use crate::http_server::endpoints::inference_job::delete::dismiss_finished_session_jobs_handler::*;
 use crate::http_server::endpoints::inference_job::delete::terminate_inference_job_handler::*;
 use crate::http_server::endpoints::inference_job::get::batch_get_inference_job_status_handler::*;
@@ -363,6 +364,7 @@ use crate::http_server::web_utils::response_success_helpers::*;
 
     // Common response structs
     JobDetailsLivePortraitRequest,
+    JobDetailsLipsyncRequest,
     MediaFileLivePortraitDetails,
     MediaFileModelDetails,
     MediaFileOriginDetails,

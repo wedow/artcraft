@@ -184,6 +184,7 @@ export const GalleryModal = React.memo(
 
     const handleImageError = useCallback(
       (url: string) => {
+        console.error(`Failed to load gallery modal image: ${url}`);
         failedImageUrls.add(url);
       },
       [failedImageUrls]
@@ -459,7 +460,7 @@ export const GalleryModal = React.memo(
               label: item.maybe_title || "Image Generation",
               thumbnail:
                 item.media_class === "video"
-                  ? item.media_links.maybe_video_previews.still
+                  ? item.media_links.maybe_video_previews.animated
                   : item.media_class === "dimensional"
                   ? (item.cover_image as any)
                       ?.maybe_cover_image_public_bucket_url ||

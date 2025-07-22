@@ -1,0 +1,11 @@
+use crate::core::events::generation_events::common::GenerationServiceProvider;
+use enums::common::generation_provider::GenerationProvider;
+
+// TODO(bt,2025-07-15): Get rid of GenerationServiceProvider
+pub fn to_generation_service_provider(provider: GenerationProvider) -> GenerationServiceProvider {
+  match provider {
+    GenerationProvider::Artcraft => GenerationServiceProvider::Artcraft,
+    GenerationProvider::Fal => GenerationServiceProvider::Fal,
+    GenerationProvider::Sora => GenerationServiceProvider::Sora,
+  }
+}

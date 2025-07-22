@@ -2,20 +2,8 @@ use std::collections::HashSet;
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
-use actix_web::web::Json;
-use actix_web::{web, HttpRequest, HttpResponse};
-use actix_web_lab::extract::Query;
-use chrono::{DateTime, Utc};
-use log::{error, warn};
-use r2d2_redis::redis::Commands;
-use utoipa::{IntoParams, ToSchema};
-
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
-use crate::http_server::endpoints::inference_job::common_responses::lipsync::JobDetailsLipsyncRequest;
-use crate::http_server::endpoints::inference_job::common_responses::live_portrait::JobDetailsLivePortraitRequest;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job_progress::estimate_job_progress;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_lipsync_details::extract_lipsync_details;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_live_portrait_details::extract_live_portrait_details;
@@ -24,136 +12,34 @@ use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_m
 use crate::http_server::web_utils::filter_model_name::maybe_filter_model_name;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web_lab::extract::Query;
+use artcraft_api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionJobsQueryParams, ListSessionJobsSuccessResponse, ListSessionRequestDetailsResponse, ListSessionResultDetailsResponse, ListSessionStatusDetailsResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use bucket_paths::legacy::typified_paths::public::voice_conversion_results::bucket_file_path::VoiceConversionResultOriginalFilePath;
+use chrono::{DateTime, Utc};
 use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use log::{error, warn};
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use mysql_queries::queries::generic_inference::web::list_session_jobs::{list_session_jobs_from_connection, ListSessionJobsForUserArgs, SessionUser};
 use primitives::numerics::i64_to_u64_zero_clamped::i64_to_u64_zero_clamped;
+use r2d2_redis::redis::Commands;
 use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
+use utoipa::{IntoParams, ToSchema};
 
 /// For certain jobs or job classes (eg. non-premium), we kill the jobs if the user hasn't
 /// maintained a keepalive. This prevents wasted work when users who are unlikely to return
 /// navigate away. Premium users have accounts and can always return to the site, so they
 /// typically do not require keepalive.
 const JOB_KEEPALIVE_TTL_SECONDS : usize = 60 * 3;
-
-#[derive(Deserialize, ToSchema, IntoParams)]
-pub struct ListSessionJobsQueryParams {
-  //pub sort_ascending: Option<bool>,
-  //pub page_size: Option<usize>, // TODO(bt,2024-04-23): One page for now.
-  //pub page_index: Option<usize>, // TODO(bt,2024-04-23): One page for now.
-
-  /// NB: This can be one (or more comma-separated values) from `JobStatusPlus`.
-  /// ?include_states=pending or ?include_states=pending,started,complete_success (etc.)
-  pub include_states: Option<String>,
-
-  /// The opposite of include_states, this filters out states from view.
-  pub exclude_states: Option<String>,
-
-  // TODO(bt,2024-04-23): Add the ability for users to dismiss completed/dead jobs from view.
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct ListSessionJobsSuccessResponse {
-  pub success: bool,
-
-  /// This is not paginated and is limited to showing 100 jobs.
-  pub jobs: Vec<ListSessionJobsItem>,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct ListSessionJobsItem {
-  pub job_token: InferenceJobToken,
-
-  pub request: ListSessionRequestDetailsResponse,
-  pub status: ListSessionStatusDetailsResponse,
-  pub maybe_result: Option<ListSessionResultDetailsResponse>,
-
-  pub created_at: DateTime<Utc>,
-  pub updated_at: DateTime<Utc>,
-}
-
-/// Details about what the user requested for generation
-#[derive(Serialize, ToSchema)]
-pub struct ListSessionRequestDetailsResponse {
-  pub inference_category: InferenceCategory,
-  pub maybe_model_type: Option<String>,
-  pub maybe_model_token: Option<String>,
-
-  /// OPTIONAL. Title of the model, if it has one
-  pub maybe_model_title: Option<String>,
-
-  /// OPTIONAL. If the result was TTS, this is the raw inference text.
-  pub maybe_raw_inference_text: Option<String>,
-
-  /// OPTIONAL. For Comfy / Video Style Transfer jobs, this might include
-  /// the name of the selected style.
-  pub maybe_style_name: Option<StyleTransferName>,
-
-  /// OPTIONAL. For Live Portrait jobs, this is additional information on the request.
-  pub maybe_live_portrait_details: Option<JobDetailsLivePortraitRequest>,
-
-  /// OPTIONAL. For lipsync jobs (face fusion and sad talker), this is additional
-  /// information on the request.
-  pub maybe_lipsync_details: Option<JobDetailsLipsyncRequest>,
-}
-
-/// Details about the ongoing job status
-#[derive(Serialize, ToSchema)]
-pub struct ListSessionStatusDetailsResponse {
-  /// Primary status from the database (a state machine).
-  pub status: JobStatusPlus,
-
-  /// Extra, temporary status from Redis.
-  /// This can denote inference progress, and the Python code can write to it.
-  pub maybe_extra_status_description: Option<String>,
-
-  pub maybe_assigned_worker: Option<String>,
-  pub maybe_assigned_cluster: Option<String>,
-
-  pub maybe_first_started_at: Option<DateTime<Utc>>,
-
-  /// If the job is currently running, this is how long it has been running in seconds.
-  /// This is heuristic estimate since we don't record the precise start time across runs.
-  pub maybe_current_execution_duration_seconds: Option<u64>,
-
-  pub attempt_count: u8,
-
-  /// Whether the frontend needs to maintain a keepalive check.
-  /// This is typically only for non-premium users.
-  pub requires_keepalive: bool,
-
-  /// An enum the frontend can use to display localized/I18N error
-  /// messages. These pertain to both transient and permanent failures.
-  pub maybe_failure_category: Option<FrontendFailureCategory>,
-
-  /// This is an integer number between 0 and 100 (both inclusive) that
-  /// reports the completeness.
-  pub progress_percentage: u8,
-}
-
-/// Details about the completed result (if any)
-#[derive(Serialize, ToSchema)]
-pub struct ListSessionResultDetailsResponse {
-  pub entity_type: String,
-  pub entity_token: String,
-
-  /// (DEPRECATED) URL path to the media file
-  #[deprecated(note="This field doesn't point to the full URL. Use media_links instead to leverage the CDN.")]
-  pub maybe_public_bucket_media_path: Option<String>,
-
-  /// Rich CDN links to the media, including thumbnails, previews, and more.
-  pub media_links: MediaLinks,
-
-  pub maybe_successfully_completed_at: Option<DateTime<Utc>>,
-}
-
 
 #[derive(Debug, ToSchema)]
 pub enum ListSessionJobsError {
@@ -472,7 +358,7 @@ fn db_record_to_response_payload(
       ListSessionResultDetailsResponse {
         entity_type: result_details.entity_type,
         entity_token: result_details.entity_token,
-        media_links: MediaLinks::from_rooted_path(media_domain, &public_bucket_media_path),
+        media_links: MediaLinksBuilder::from_rooted_path(media_domain, &public_bucket_media_path),
         maybe_public_bucket_media_path: Some(public_bucket_media_path),
         maybe_successfully_completed_at: result_details.maybe_successfully_completed_at,
       }
@@ -481,4 +367,3 @@ fn db_record_to_response_payload(
     updated_at: record.updated_at,
   }
 }
-

@@ -4,22 +4,22 @@ use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::{Json, Query};
 use actix_web::{web, HttpRequest, HttpResponse};
-use chrono::{DateTime, Utc};
-use log::warn;
-use utoipa::{IntoParams, ToSchema};
-
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use chrono::{DateTime, Utc};
 use elasticsearch_schema::searches::search_media_files::{search_media_files, SearchArgs};
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
+use log::warn;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::users::UserToken;
+use utoipa::{IntoParams, ToSchema};
 
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::endpoints::media_files::helpers::get_scoped_engine_categories::get_scoped_engine_categories;
@@ -254,7 +254,7 @@ pub async fn search_session_media_files_handler(
           media_type: result.media_type,
           maybe_engine_category: result.maybe_engine_category,
           maybe_animation_type: result.maybe_animation_type,
-          media_links: MediaLinks::from_media_path(media_domain, &public_bucket_path),
+          media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
           public_bucket_path: public_bucket_path
               .get_full_object_path_str()
               .to_string(),

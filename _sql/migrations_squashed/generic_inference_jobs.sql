@@ -21,6 +21,8 @@ CREATE TABLE generic_inference_jobs (
   -- The new enum for the type of job, which will eventually replace `inference_category` and `maybe_model_type`.
   -- This isn't fully supported yet in the inference-job, but we'll start populating it and adding logic around it.
   -- We'll start this out as nullable, then migrate the old rows with a default column value.
+  --
+  -- Fal jobs have the type `fal_queue`.
   job_type VARCHAR(32) DEFAULT NULL,
 
   -- There is an index on this column.

@@ -8,6 +8,8 @@ import {
   faUndo,
   faRedo,
   faPaintBrush,
+  faXmark,
+  faTrashXmark,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faShapes,
@@ -22,6 +24,10 @@ import { hsvaToHex } from "@uiw/color-convert";
 import SliderWithIndicator from "./SliderWithIndicator";
 import { useSceneStore } from "../../stores/SceneState";
 import { Tooltip } from "@storyteller/ui-tooltip";
+import {
+  showActionReminder,
+  isActionReminderOpen,
+} from "@storyteller/ui-action-reminder-modal";
 
 const shapeIconBtn =
   "flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/10";
@@ -313,6 +319,33 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   const baseBtn =
     "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors border-2 border-transparent";
 
+  // Reset canvas function with confirmation
+  const handleResetCanvas = () => {
+    showActionReminder({
+      reminderType: "default",
+      title: "Reset Canvas",
+      primaryActionIcon: faTrashXmark,
+      primaryActionBtnClassName: "bg-red hover:bg-red/80",
+      message: (
+        <p className="text-sm text-white/70">
+          Are you sure you want to reset the canvas? This will clear all your
+          work and cannot be undone.
+        </p>
+      ),
+      primaryActionText: "Reset all",
+      onPrimaryAction: () => {
+        store.setNodes([]);
+        store.lineNodes.forEach((lineNode) => {
+          store.removeLineNode(lineNode.id, false);
+        });
+        store.selectNode(null);
+        store.copySelectedItems();
+        store.saveState();
+        isActionReminderOpen.value = false;
+      },
+    });
+  };
+
   return (
     <aside
       className={`glass ml-4 flex flex-col items-center gap-3 rounded-xl p-1.5 shadow-lg ${className}`}
@@ -505,6 +538,26 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
           </div>
         );
       })}
+
+      {/* Reset canvas button */}
+      <div className="glass absolute -bottom-14 left-1/2 -translate-x-1/2 rounded-xl border-2 border-red/50 shadow-lg hover:border-red/80">
+        <div className="relative">
+          <Tooltip
+            content="Reset Canvas"
+            position="right"
+            closeOnClick={true}
+            className="ms-1 rounded-md bg-red px-3 py-1"
+            delay={100}
+          >
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-transparent text-white transition-colors hover:bg-red/50"
+              onClick={handleResetCanvas}
+            >
+              <FontAwesomeIcon icon={faXmark} className="h-5 w-5 text-xl" />
+            </button>
+          </Tooltip>
+        </div>
+      </div>
     </aside>
   );
 };

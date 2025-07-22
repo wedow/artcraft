@@ -1,6 +1,6 @@
 use crate::sora_error::SoraError;
+use cloudflare_errors::filter_cloudflare_errors::filter_cloudflare_errors;
 use reqwest::StatusCode;
-
 /*
 
 Old cookie - 
@@ -50,31 +50,14 @@ pub async fn classify_general_http_status_code_and_body(status: StatusCode, resp
   }
 
   let status_code = status.as_u16();
-  
+
+  if let Err(err) = filter_cloudflare_errors(status_code, &response_body) {
+    return SoraError::CloudflareError(err);
+  }
+
   match status_code {
-    403 => {
-      if message.contains("challenge-platform") 
-          || message.contains("challenge-error-text") 
-          || message.contains("cType: 'managed'")
-          || message.contains("Just a moment...") {
-        return SoraError::CloudFlareChallenge;
-      }
-    }
     502 => {
       return SoraError::BadGateway(message);
-    }
-    504 => {
-      if message.contains("cloudflare") 
-          || message.contains("Cloudflare") {
-        return SoraError::CloudFlareTimeout(message);
-      }
-    }
-    524 => {
-      // NB: 524 is a cloudflare specific gateway timeout error with slightly different semantics than 504.
-      if message.contains("cloudflare") 
-          || message.contains("Cloudflare") {
-        return SoraError::CloudFlareTimeout(message);
-      }
     }
     _ => {}, // Fall-through
   }

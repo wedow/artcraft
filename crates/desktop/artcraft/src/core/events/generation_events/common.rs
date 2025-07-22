@@ -25,8 +25,11 @@ pub enum GenerationModel {
   Hunyuan3d2_0,
   #[serde(rename = "hunyuan_3d_2_1")]
   Hunyuan3d2_1,
+
+  // TODO: Should be Kling16Pro
   #[serde(rename = "kling_1.6")]
   Kling1_6,
+
   #[serde(rename = "kling_2.0")]
   Kling2_0,
   #[serde(rename = "kling_2.1_master")]

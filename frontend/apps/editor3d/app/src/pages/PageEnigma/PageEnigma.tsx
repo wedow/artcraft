@@ -135,6 +135,10 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
           onSecondaryAction={currentReminderModalProps.onSecondaryAction}
           isLoading={currentReminderModalProps.isLoading}
           openAiLogo={currentReminderModalProps.openAiLogo}
+          primaryActionIcon={currentReminderModalProps.primaryActionIcon}
+          primaryActionBtnClassName={
+            currentReminderModalProps.primaryActionBtnClassName
+          }
         />
       )}
 

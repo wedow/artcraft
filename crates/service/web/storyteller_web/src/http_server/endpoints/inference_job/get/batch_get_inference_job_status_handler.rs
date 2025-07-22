@@ -2,20 +2,8 @@ use std::collections::HashSet;
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
-use actix_web::web::Json;
-use actix_web::{web, HttpRequest, HttpResponse};
-use actix_web_lab::extract::Query;
-use chrono::{DateTime, Utc};
-use log::error;
-use r2d2_redis::redis::Commands;
-use utoipa::{IntoParams, ToSchema};
-
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
-use crate::http_server::endpoints::inference_job::common_responses::lipsync::JobDetailsLipsyncRequest;
-use crate::http_server::endpoints::inference_job::common_responses::live_portrait::JobDetailsLivePortraitRequest;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::inference_job::utils::estimates::estimate_job_progress::estimate_job_progress;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_lipsync_details::extract_lipsync_details;
 use crate::http_server::endpoints::inference_job::utils::extractors::extract_live_portrait_details::extract_live_portrait_details;
@@ -24,23 +12,33 @@ use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_m
 use crate::http_server::web_utils::filter_model_name::maybe_filter_model_name;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::Json;
+use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web_lab::extract::Query;
+use artcraft_api_defs::common::responses::job_details::{JobDetailsLipsyncRequest, JobDetailsLivePortraitRequest};
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use bucket_paths::legacy::typified_paths::public::voice_conversion_results::bucket_file_path::VoiceConversionResultOriginalFilePath;
+use chrono::{DateTime, Utc};
 use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use log::error;
 use mysql_queries::queries::generic_inference::web::batch_get_inference_job_status::batch_get_inference_job_status;
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
+use r2d2_redis::redis::Commands;
 use redis_common::redis_keys::RedisKeys;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use utoipa::{IntoParams, ToSchema};
 
 /// For certain jobs or job classes (eg. non-premium), we kill the jobs if the user hasn't
 /// maintained a keepalive. This prevents wasted work when users who are unlikely to return
 /// navigate away. Premium users have accounts and can always return to the site, so they
 /// typically do not require keepalive.
 const JOB_KEEPALIVE_TTL_SECONDS : usize = 60 * 3;
-
 
 #[derive(Deserialize, ToSchema, IntoParams)]
 pub struct BatchGetInferenceJobStatusQueryParams {
@@ -376,7 +374,7 @@ fn db_record_to_response_payload(
       BatchResultDetailsResponse {
         entity_type: result_details.entity_type,
         entity_token: result_details.entity_token,
-        media_links: MediaLinks::from_rooted_path(media_domain, &public_bucket_media_path),
+        media_links: MediaLinksBuilder::from_rooted_path(media_domain, &public_bucket_media_path),
         maybe_public_bucket_media_path: Some(public_bucket_media_path),
         maybe_successfully_completed_at: result_details.maybe_successfully_completed_at,
       }

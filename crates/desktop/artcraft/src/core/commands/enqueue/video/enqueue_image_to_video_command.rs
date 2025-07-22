@@ -29,6 +29,9 @@ pub struct EnqueueImageToVideoRequest {
   
   /// The model to use.
   pub model: Option<VideoModel>,
+  
+  /// Optional text prompt.
+  pub prompt: Option<String>,
 }
 
 #[derive(Serialize)]

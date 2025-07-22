@@ -2,6 +2,8 @@ import { Button } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
 import { ReactNode } from "react";
 import { faRightToBracket } from "@fortawesome/pro-solid-svg-icons";
+import { IconDefinition } from "@fortawesome/pro-solid-svg-icons";
+import { twMerge } from "tailwind-merge";
 
 export type ReminderType = "default" | "soraLogin" | "artcraftLogin";
 
@@ -20,6 +22,8 @@ interface ActionReminderModalProps {
   isLoading?: boolean;
   openAiLogo?: string;
   modalClassName?: string;
+  primaryActionIcon?: IconDefinition;
+  primaryActionBtnClassName?: string;
 }
 
 export function ActionReminderModal({
@@ -35,13 +39,15 @@ export function ActionReminderModal({
   secondaryActionText: customSecondaryActionText,
   onSecondaryAction,
   isLoading = false,
-  openAiLogo,
   modalClassName: customModalClassName = "",
+  primaryActionIcon: customPrimaryActionIcon = faRightToBracket,
+  primaryActionBtnClassName: customPrimaryActionBtnClassName = "",
 }: ActionReminderModalProps) {
   let titleText: string | undefined;
   let messageContent: ReactNode;
   let primaryActionBtnText: string;
   let primaryActionIcon = faRightToBracket;
+  let primaryActionBtnClassName = "";
 
   if (!hideTitle) {
     switch (reminderType) {
@@ -69,6 +75,8 @@ export function ActionReminderModal({
         </p>
       );
       primaryActionBtnText = customPrimaryActionText || "Login with OpenAI";
+      primaryActionIcon = customPrimaryActionIcon || faRightToBracket;
+      primaryActionBtnClassName = customPrimaryActionBtnClassName || "";
       break;
     case "artcraftLogin":
       messageContent = customMessage || (
@@ -78,6 +86,8 @@ export function ActionReminderModal({
         </p>
       );
       primaryActionBtnText = customPrimaryActionText || "Login / Sign Up";
+      primaryActionIcon = customPrimaryActionIcon || faRightToBracket;
+      primaryActionBtnClassName = customPrimaryActionBtnClassName || "";
       break;
     default:
       messageContent = customMessage || (
@@ -86,6 +96,8 @@ export function ActionReminderModal({
         </p>
       );
       primaryActionBtnText = customPrimaryActionText || "Proceed";
+      primaryActionIcon = customPrimaryActionIcon || faRightToBracket;
+      primaryActionBtnClassName = customPrimaryActionBtnClassName || "";
       break;
   }
 
@@ -104,7 +116,7 @@ export function ActionReminderModal({
       title={titleText}
       className={finalModalClassName}
     >
-      <div className="pt-2">
+      <div>
         {customChildren ? (
           <div className="space-y-4">{customChildren}</div>
         ) : (
@@ -117,7 +129,7 @@ export function ActionReminderModal({
             loading={isLoading}
             disabled={isLoading}
             icon={primaryActionIcon}
-            className="w-full sm:w-auto"
+            className={twMerge("w-full sm:w-auto", primaryActionBtnClassName)}
           >
             {primaryActionBtnText}
           </Button>

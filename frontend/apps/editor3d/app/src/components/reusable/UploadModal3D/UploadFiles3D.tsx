@@ -6,8 +6,8 @@ import { Label } from "@storyteller/ui-label";
 import { FileUploader } from "@storyteller/ui-file-uploader";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "./utilities";
 import { upload3DObjects } from "./utilities/upload3DObjects";
-import { UploaderState } from "~/models";
-import { FilterEngineCategories, MediaFileAnimationType } from "~/enums";
+import { UploaderState } from "../../../models";
+import { FilterEngineCategories, MediaFileAnimationType } from "../../../enums";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCube } from "@fortawesome/pro-solid-svg-icons";
 
@@ -136,10 +136,9 @@ export const UploadFiles3D = ({
         </div>
 
         <FileUploader
-          title="Upload 3D Model"
           fileTypes={fileTypes}
-          file={assetFile.value}
-          setFile={(file: File | null) => {
+          file={assetFile.value ?? undefined}
+          handleChange={(file: File) => {
             setAssetFile({
               value: file,
             });

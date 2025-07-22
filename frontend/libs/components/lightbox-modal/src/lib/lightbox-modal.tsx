@@ -86,6 +86,8 @@ export function LightboxModal({
           ) : mediaClass === "video" ? (
             <video
               controls
+              loop={true}
+              autoPlay={true}
               className="h-full w-full object-contain"
               onLoadedData={() => setMediaLoaded(true)}
             >
@@ -94,6 +96,7 @@ export function LightboxModal({
             </video>
           ) : (
             <img
+              data-lightbox-modal="true"
               src={imageTagImageUrl}
               alt={imageAlt}
               className="h-full w-full object-contain"
@@ -110,7 +113,7 @@ export function LightboxModal({
         </div>
 
         {/* info + actions */}
-        <div className="flex h-full flex-col py-5 pe-5">
+        <div className="flex h-full flex-col">
           <div className="flex-1 space-y-4">
             <div className="text-xl font-medium">
               {title || "Image Generation"}
@@ -134,7 +137,7 @@ export function LightboxModal({
                   //});
                   let result = await EnqueueImageTo3dObject({
                     image_media_token: mediaId,
-                    model: EnqueueImageTo3dObjectModel.Hunyuan3d2,
+                    model: EnqueueImageTo3dObjectModel.Hunyuan3d2_0,
                   });
                   //e.stopPropagation();
                   //await onAddToSceneClicked(downloadUrl, mediaId);

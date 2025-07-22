@@ -4,6 +4,8 @@ import {
   faMagicWandSparkles,
   faPlus,
   faUpRightAndDownLeftFromCenter,
+  faCube,
+  faArrowUpFromBracket,
 } from "@fortawesome/pro-solid-svg-icons";
 import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { Button } from "@storyteller/ui-button";
@@ -32,6 +34,7 @@ import { twMerge } from "tailwind-merge";
 // eslint-disable-next-line import/no-unresolved
 import { setLogoutStates } from "~/signals/authentication/utilities";
 import { useGalleryModal } from "@storyteller/ui-gallery-modal";
+import { UploadModal3D } from "../../../../components/reusable/UploadModal3D/UploadModal3D";
 
 export const Controls3D = () => {
   useSignals();
@@ -39,6 +42,7 @@ export const Controls3D = () => {
   const [showEmptySceneTooltip, setShowEmptySceneTooltip] = useState(false);
   // Action reminder is now handled through signals
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [upload3DIsShowing, setUpload3DIsShowing] = useState(false);
 
   // Track processed 3D models by their media token to prevent duplicates
   const processedModelsRef = useRef<Record<string, boolean>>({});
@@ -161,6 +165,10 @@ export const Controls3D = () => {
     }
   };
 
+  const handleOpenUpload3DModal = () => {
+    setUpload3DIsShowing(true);
+  };
+
   const openSettingsModal = () => {
     setIsSettingsModalOpen(true);
   };
@@ -203,7 +211,7 @@ export const Controls3D = () => {
       <div className="flex justify-center">
         <div className="glass rounded-b-xl p-1.5 pr-2 text-white shadow-md">
           <div className="flex items-center justify-center gap-2.5">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <div className="relative">
                 {showEmptySceneTooltip && (
                   <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 transform whitespace-nowrap">
@@ -233,6 +241,19 @@ export const Controls3D = () => {
                   />
                 </Tooltip>
               </div>
+              <Tooltip
+                content="Upload 3D asset"
+                position="bottom"
+                delay={300}
+                closeOnClick
+              >
+                <Button
+                  icon={faArrowUpFromBracket}
+                  className="text-md h-9 w-9 rounded-[10px] bg-white/15 transition-colors hover:bg-white/25"
+                  variant="secondary"
+                  onClick={handleOpenUpload3DModal}
+                />
+              </Tooltip>
               <Tooltip
                 content="Create 3D model from image"
                 position="bottom"
@@ -265,6 +286,15 @@ export const Controls3D = () => {
         onClose={() => setIsSettingsModalOpen(false)}
         globalAccountLogoutCallback={() => setLogoutStates()}
         initialSection="accounts"
+      />
+
+      <UploadModal3D
+        isOpen={upload3DIsShowing}
+        onClose={() => setUpload3DIsShowing(false)}
+        onSuccess={() => setUpload3DIsShowing(false)}
+        title="Upload 3D Asset"
+        titleIcon={faCube}
+        isSelectVisible={true}
       />
     </>
   );

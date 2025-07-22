@@ -24,7 +24,8 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
     selectedModels[ModelCategory.TextToImage] ||
     imageGenerationModels[0]?.label;
 
-  const selectedModelInfo : ModelInfo | undefined = IMAGE_MODELS_BY_LABEL[selectedModel];
+  const selectedModelInfo: ModelInfo | undefined =
+    IMAGE_MODELS_BY_LABEL[selectedModel];
 
   const jobContext: JobContextType = {
     jobTokens: [],

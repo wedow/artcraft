@@ -4,7 +4,7 @@ import { Modal } from "@storyteller/ui-modal";
 import { Label } from "@storyteller/ui-label";
 import { UploadAssetError, UploadSuccess } from "@storyteller/ui-upload-modal";
 import { UploadFiles3D } from "./UploadFiles3D";
-import { initialUploaderState, UploaderState } from "~/models";
+import { initialUploaderState, UploaderState } from "../../../models";
 import { Select } from "@storyteller/ui-select";
 import {
   FilterEngineCategories,
@@ -12,7 +12,7 @@ import {
   OBJECT_FILE_TYPE,
   CHARACTER_MIXAMO_FILE_TYPE,
   IMAGEPLANE_FILE_TYPE,
-} from "~/enums";
+} from "../../../enums";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 interface Props {
@@ -51,6 +51,7 @@ const categoryOptions = Object.entries(FilterEngineCategories)
         "set_dressing",
         "expression",
         "animation",
+        "image_plane",
         "scene",
       ].includes(value),
   )

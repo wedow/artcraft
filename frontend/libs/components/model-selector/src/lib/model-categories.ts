@@ -1,7 +1,3 @@
-/**
- * Defines the unique categories for each product or context where a model
- * selection is required. Using an enum prevents typos and ensures type safety.
- */
 export enum ModelCategory {
   TextToImage = "text-to-image",
   ImageToVideo = "image-to-video",

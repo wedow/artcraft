@@ -15,6 +15,7 @@ import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
 import { FalBackgroundRemoval } from "@storyteller/tauri-api";
+import { getCreatorIcon, ModelCreator } from "@storyteller/model-list";
 
 export const DecodeBase64ToImage = async (
   base64String: string,
@@ -146,14 +147,18 @@ const PageDraw = () => {
   const modelList: PopoverItem[] = [
     {
       label: "GPT-4o",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
+      icon: getCreatorIcon(ModelCreator.OpenAi) || (
+        <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+      ),
       selected: selectedModel === "GPT-4o",
       description: "High quality model",
       badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
     },
     {
       label: "FLUX.1 Kontext",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
+      icon: getCreatorIcon(ModelCreator.BlackForestLabs) || (
+        <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+      ),
       selected: selectedModel === "FLUX.1 Kontext",
       description: "Fast and high-quality model",
       badges: [{ label: "20 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],

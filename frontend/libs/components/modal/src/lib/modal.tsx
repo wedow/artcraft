@@ -638,17 +638,18 @@ export const Modal = ({
   const sizeRef = useRef<{ width: number; height: number } | null>(null);
   const lastSizeRef = useRef<{ width: number; height: number } | null>(null);
 
-  // Capture initial size on first open
+  // Capture initial size on first open (only for resizable modals)
   useEffect(() => {
-    if (isOpen && !size && modalRef.current) {
+    if (isOpen && !size && modalRef.current && resizable) {
       const { width, height } = modalRef.current.getBoundingClientRect();
       setSize({ width, height });
       sizeRef.current = { width, height };
     }
-  }, [isOpen, size]);
+  }, [isOpen, size, resizable]);
 
-  // Persist size across close / reopen
+  // Persist size across close / reopen (only for resizable modals)
   useEffect(() => {
+    if (!resizable) return;
     if (!isOpen) {
       if (sizeRef.current) lastSizeRef.current = { ...sizeRef.current };
     } else {
@@ -660,7 +661,7 @@ export const Modal = ({
         sizeRef.current = { width, height };
       }
     }
-  }, [isOpen]);
+  }, [isOpen, resizable]);
 
   // Bring to front when user interacts with modal (mouse down anywhere inside)
   useEffect(() => {
@@ -682,6 +683,23 @@ export const Modal = ({
       if (node) node.removeEventListener("mousedown", handleBringToFront);
     };
   }, [zIndex]);
+
+  // Block propagation of keyboard events to elements outside the modal so global hot-keys (T / R / G shortcuts in the 3-D editor) don't fire while a modal is open
+  useEffect(() => {
+    if (!isOpen || allowBackgroundInteraction) return;
+
+    const stopKey = (e: KeyboardEvent) => {
+      // Exclude ESC key
+      if (e.key === "Escape" || e.key === "Esc") return;
+      e.stopPropagation();
+    };
+
+    window.addEventListener("keydown", stopKey, true);
+
+    return () => {
+      window.removeEventListener("keydown", stopKey, true);
+    };
+  }, [isOpen, allowBackgroundInteraction]);
 
   // If background interaction is allowed, ensure this modal (and its ancestors)
   // never get the "inert" attribute Headless-UI uses to lock background dialogs.
@@ -809,9 +827,11 @@ export const Modal = ({
     }
 
     if (!draggable || !position) {
-      // If allowBackgroundInteraction, set pointerEvents: 'auto' for modal
+      // For regular modals, only apply size if resizable to prevent layout issues
       return {
-        ...(size ? { width: size.width, height: size.height } : {}),
+        ...(resizable && size
+          ? { width: size.width, height: size.height }
+          : {}),
         ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
       };
     }
@@ -821,7 +841,7 @@ export const Modal = ({
       top: position.y,
       margin: 0,
       zIndex,
-      ...(size ? { width: size.width, height: size.height } : {}),
+      ...(resizable && size ? { width: size.width, height: size.height } : {}),
       ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
     };
   };
@@ -894,7 +914,7 @@ export const Modal = ({
                     <DialogTitle
                       as="div"
                       className={twMerge(
-                        "mb-5 flex justify-between pb-0 text-xl font-bold text-white"
+                        "mb-4 flex justify-between pb-0 text-xl font-bold text-white"
                       )}
                     >
                       <>

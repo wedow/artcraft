@@ -1,6 +1,7 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use enums::common::generation_provider::GenerationProvider;
+use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use tokens::tokens::sqlite::tasks::TaskId;
@@ -9,6 +10,7 @@ pub struct CreateTaskArgs<'a> {
   pub db: &'a TaskDbConnection,
   pub status: TaskStatus,
   pub task_type: TaskType,
+  pub model_type: Option<TaskModelType>,
   pub provider: GenerationProvider,
   pub provider_job_id: Option<&'a str>,
   pub frontend_subscriber_id: Option<&'a str>,
@@ -24,6 +26,7 @@ pub async fn create_task(
   let task_id_temp = task_id.as_str();
   let status_temp = args.status.to_str();
   let task_type_temp = args.task_type.to_str();
+  let model_type_temp = args.model_type.map(|s| s.to_str());
   let provider_temp = args.provider.to_string();
 
   let query = sqlx::query!(r#"
@@ -31,16 +34,18 @@ pub async fn create_task(
       id,
       task_status,
       task_type,
+      model_type,
       provider,
       provider_job_id,
       frontend_subscriber_id,
       frontend_subscriber_payload
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   "#,
       task_id_temp,
       status_temp,
       task_type_temp,
+      model_type_temp,
       provider_temp,
       args.provider_job_id,
       args.frontend_subscriber_id,

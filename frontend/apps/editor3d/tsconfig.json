@@ -89,9 +89,6 @@
       "path": "../../libs/components/promptbox"
     },
     {
-      "path": "../../libs/tauri-api"
-    },
-    {
       "path": "../../libs/components/popover"
     },
     {
@@ -99,9 +96,6 @@
     },
     {
       "path": "../../libs/components/menu-icon-selector"
-    },
-    {
-      "path": "../../libs/api"
     },
     {
       "path": "../../libs/components/tooltip"
@@ -143,7 +137,13 @@
       "path": "../../libs/components/button"
     },
     {
+      "path": "../../libs/tauri-api"
+    },
+    {
       "path": "../../libs/tauri-utils"
+    },
+    {
+      "path": "../../libs/api"
     }
   ]
 }
