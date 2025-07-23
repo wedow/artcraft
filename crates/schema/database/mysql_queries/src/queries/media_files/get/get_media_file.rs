@@ -5,8 +5,6 @@
 
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
-use sqlx::MySqlPool;
-
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
@@ -16,6 +14,8 @@ use enums::by_table::model_weights::weights_category::WeightsCategory;
 use enums::by_table::model_weights::weights_types::WeightsType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
+use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
@@ -212,6 +212,18 @@ pub async fn get_media_file(
     media_file_token,
     can_see_deleted,
     Transactor::for_pool(mysql_pool)
+  ).await
+}
+
+pub async fn get_media_file_with_connection(
+  media_file_token: &MediaFileToken,
+  can_see_deleted: bool,
+  mysql_connection: &mut PoolConnection<MySql>,
+) -> AnyhowResult<Option<MediaFile>> {
+  get_media_file_with_transactor(
+    media_file_token,
+    can_see_deleted,
+    Transactor::for_connection(mysql_connection)
   ).await
 }
 
