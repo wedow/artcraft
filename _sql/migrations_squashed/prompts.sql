@@ -23,8 +23,18 @@ CREATE TABLE prompts (
   --  * 'comfy_ui'
   prompt_type VARCHAR(16) NOT NULL,
 
+  -- What service provided the generation.
+  maybe_generation_provider VARCHAR(16) NOT NULL,
+
+  -- What type of model was used to generate the result.
+  -- NB: We're conflating prompts with outputs, but in a
+  -- sense the model is inextricably part of the prompt.
+  maybe_model_type VARCHAR(32) DEFAULT NULL,
+
   -- Whomever created the prompt
   maybe_creator_user_token VARCHAR(32) DEFAULT NULL,
+
+  -- TODO: maybe_anonymous_visitor_token VARCHAR(32) DEFAULT NULL,
 
   -- ========== PROMPT DETAILS ==========
 
