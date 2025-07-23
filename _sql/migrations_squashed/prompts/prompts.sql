@@ -19,9 +19,9 @@ CREATE TABLE prompts (
   -- Original product to which the prompt applied.
   -- Prompts may or may not be compatible across products.
   -- Possible values:
+  --  * 'artcraft_app'
   --  * 'stable_diffusion' (legacy)
   --  * 'comfy_ui' (legacy)
-  --  * 'artcraft_app'
   prompt_type VARCHAR(16) NOT NULL,
 
   -- What type of model was used to generate the result.

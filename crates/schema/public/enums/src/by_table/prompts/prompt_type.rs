@@ -13,10 +13,15 @@ use utoipa::ToSchema;
 #[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum PromptType {
+  /// Artcraft (App)
+  ArtcraftApp,
+
   /// Stable diffusion
+  #[deprecated]
   StableDiffusion,
 
   /// Comfy UI
+  #[deprecated]
   ComfyUi,
 }
 
@@ -29,6 +34,7 @@ impl_mysql_from_row!(PromptType);
 impl PromptType {
   pub fn to_str(&self) -> &'static str {
     match self {
+      Self::ArtcraftApp => "artcraft_app",
       Self::StableDiffusion => "stable_diffusion",
       Self::ComfyUi => "comfy_ui",
     }
@@ -36,6 +42,7 @@ impl PromptType {
 
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
+      "artcraft_app" => Ok(Self::ArtcraftApp),
       "stable_diffusion" => Ok(Self::StableDiffusion),
       "comfy_ui" => Ok(Self::ComfyUi),
       _ => Err(format!("invalid value: {:?}", value)),
@@ -46,6 +53,7 @@ impl PromptType {
     // NB: BTreeSet is sorted
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
+      Self::ArtcraftApp,
       Self::StableDiffusion,
       Self::ComfyUi,
     ])
@@ -62,6 +70,7 @@ mod tests {
 
     #[test]
     fn test_serialization() {
+      assert_serialization(PromptType::ArtcraftApp, "artcraft_app");
       assert_serialization(PromptType::StableDiffusion, "stable_diffusion");
       assert_serialization(PromptType::ComfyUi, "comfy_ui");
     }
@@ -72,12 +81,14 @@ mod tests {
 
     #[test]
     fn to_str() {
+      assert_eq!(PromptType::ArtcraftApp.to_str(), "artcraft_app");
       assert_eq!(PromptType::StableDiffusion.to_str(), "stable_diffusion");
       assert_eq!(PromptType::ComfyUi.to_str(), "comfy_ui");
     }
 
     #[test]
     fn from_str() {
+      assert_eq!(PromptType::from_str("artcraft_app").unwrap(), PromptType::ArtcraftApp);
       assert_eq!(PromptType::from_str("stable_diffusion").unwrap(), PromptType::StableDiffusion);
       assert_eq!(PromptType::from_str("comfy_ui").unwrap(), PromptType::ComfyUi);
       assert!(PromptType::from_str("foo").is_err());
@@ -90,7 +101,8 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = PromptType::all_variants();
-      assert_eq!(variants.len(), 2);
+      assert_eq!(variants.len(), 3);
+      assert_eq!(variants.pop_first(), Some(PromptType::ArtcraftApp));
       assert_eq!(variants.pop_first(), Some(PromptType::StableDiffusion));
       assert_eq!(variants.pop_first(), Some(PromptType::ComfyUi));
       assert_eq!(variants.pop_first(), None);
