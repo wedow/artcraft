@@ -30,7 +30,7 @@ CREATE TABLE prompts (
   maybe_model_type VARCHAR(32) DEFAULT NULL,
 
   -- What service provided the generation.
-  maybe_generation_provider VARCHAR(16) NOT NULL,
+  maybe_generation_provider VARCHAR(16) NOT NULL, -- TODO
 
   -- Whoever created the prompt
   maybe_creator_user_token VARCHAR(32) DEFAULT NULL,

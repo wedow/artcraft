@@ -15,9 +15,9 @@ CREATE TABLE batch_generations (
 
   -- The type of record this is attached to
   -- Currently supported values:
-  --   * 'model_weight'
+  --   * 'model_weight' (deprecated)
+  --   * 'comment' (deprecated)
   --   * 'media_file'
-  --   * 'comment'
   entity_type VARCHAR(32) NOT NULL,
 
   -- The token for the record.
@@ -37,6 +37,4 @@ CREATE TABLE batch_generations (
   -- NB: Realistically, we probably don't need this index until we have a lot of entity types, and the entity_token
   -- entropy is probably sufficient enough as-is.
   -- KEY index_entity_type_and_token (entity_type, entity_token),
-
-
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
