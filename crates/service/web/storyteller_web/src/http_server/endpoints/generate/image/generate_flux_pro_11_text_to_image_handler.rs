@@ -126,7 +126,8 @@ pub async fn generate_flux_pro_11_text_to_image_handler(
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
-    mysql_pool: &server_state.mysql_pool,
+    mysql_executor: &server_state.mysql_pool,
+    phantom: Default::default(),
   }).await;
 
   let job_token = match db_result {

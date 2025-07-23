@@ -226,7 +226,8 @@ pub async fn generate_veo_2_image_to_video_handler(
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
-    mysql_pool: &server_state.mysql_pool,
+    mysql_executor: &mut *transaction,
+    phantom: Default::default(),
   }).await;
 
   let job_token = match db_result {
