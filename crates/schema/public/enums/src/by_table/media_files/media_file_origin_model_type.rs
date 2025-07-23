@@ -259,7 +259,8 @@ mod tests {
 
     #[test]
     fn serialized_length_ok_for_database() {
-      const MAX_LENGTH : usize = 32;
+      // NB: The media_files table has allocated width for VARCHAR(32), but let's slim it down to 24.
+      const MAX_LENGTH : usize = 24;
       for variant in MediaFileOriginModelType::all_variants() {
         let serialized = variant.to_str();
         assert!(serialized.len() > 0, "variant {:?} is too short", variant);

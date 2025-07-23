@@ -3,4 +3,4 @@
 -- noinspection SqlResolveForFile
 
 ALTER TABLE prompts
-    ADD COLUMN maybe_anonymous_visitor_token VARCHAR(32) DEFAULT NULL;
+    ADD COLUMN maybe_generation_provider VARCHAR(16) DEFAULT NULL;

@@ -19,22 +19,24 @@ CREATE TABLE prompts (
   -- Original product to which the prompt applied.
   -- Prompts may or may not be compatible across products.
   -- Possible values:
-  --  * 'stable_diffusion'
-  --  * 'comfy_ui'
+  --  * 'stable_diffusion' (legacy)
+  --  * 'comfy_ui' (legacy)
+  --  * 'artcraft_app'
   prompt_type VARCHAR(16) NOT NULL,
-
-  -- What service provided the generation.
-  maybe_generation_provider VARCHAR(16) NOT NULL,
 
   -- What type of model was used to generate the result.
   -- NB: We're conflating prompts with outputs, but in a
   -- sense the model is inextricably part of the prompt.
   maybe_model_type VARCHAR(32) DEFAULT NULL,
 
-  -- Whomever created the prompt
+  -- What service provided the generation.
+  maybe_generation_provider VARCHAR(16) NOT NULL,
+
+  -- Whoever created the prompt
   maybe_creator_user_token VARCHAR(32) DEFAULT NULL,
 
-  -- TODO: maybe_anonymous_visitor_token VARCHAR(32) DEFAULT NULL,
+  -- Whoever created the prompt (anonymous user tracking)
+  maybe_anonymous_visitor_token VARCHAR(32) DEFAULT NULL,
 
   -- ========== PROMPT DETAILS ==========
 
