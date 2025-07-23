@@ -14,6 +14,7 @@ use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateV
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::enqueue_veo_2_image_to_video_webhook;
 use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2Args;
@@ -21,16 +22,15 @@ use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::
 use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2Duration;
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
-use sqlx::Acquire;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file_with_connection;
-use utoipa::ToSchema;
-use enums::by_table::prompts::prompt_type::PromptType;
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use sqlx::Acquire;
 use tokens::tokens::prompts::PromptToken;
+use utoipa::ToSchema;
 
 /// Veo 2 Image to Video
 #[utoipa::path(
@@ -183,8 +183,6 @@ pub async fn generate_veo_2_image_to_video_handler(
   
   let ip_address = get_request_ip(&http_request);
 
-  let prompt_token = PromptToken::generate();
-
   let mut transaction = mysql_connection
       .begin()
       .await
@@ -192,10 +190,10 @@ pub async fn generate_veo_2_image_to_video_handler(
         error!("Error starting MySQL transaction: {:?}", err);
         CommonWebError::ServerError
       })?;
-  
+
   // NB: Don't fail the job if the query fails.
   let prompt_result = insert_prompt(InsertPromptArgs {
-    maybe_apriori_prompt_token: Some(&prompt_token),
+    maybe_apriori_prompt_token: None,
     prompt_type: PromptType::ArtcraftApp,
     maybe_creator_user_token: maybe_user_session
         .as_ref()
@@ -208,11 +206,20 @@ pub async fn generate_veo_2_image_to_video_handler(
     phantom: Default::default(),
   }).await;
 
+  let prompt_token = match prompt_result {
+    Ok(token) => Some(token),
+    Err(err) => {
+      warn!("Error inserting prompt: {:?}", err);
+      None // Don't fail the job if the prompt insertion fails.
+    }
+  };
+
   let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::VideoGeneration,
     maybe_inference_args: None,
+    maybe_prompt_token: prompt_token.as_ref(),
     maybe_creator_user_token: maybe_user_session
         .as_ref()
         .map(|s| &s.user_token),
@@ -222,14 +229,6 @@ pub async fn generate_veo_2_image_to_video_handler(
     mysql_pool: &server_state.mysql_pool,
   }).await;
 
-  let _r = transaction
-      .commit()
-      .await
-      .map_err(|err| {
-        error!("Error committing MySQL transaction: {:?}", err);
-        CommonWebError::ServerError
-      })?;
-
   let job_token = match db_result {
     Ok(token) => token,
     Err(err) => {
@@ -237,6 +236,14 @@ pub async fn generate_veo_2_image_to_video_handler(
       return Err(CommonWebError::ServerError);
     }
   };
+
+  let _r = transaction
+      .commit()
+      .await
+      .map_err(|err| {
+        error!("Error committing MySQL transaction: {:?}", err);
+        CommonWebError::ServerError
+      })?;
 
   Ok(Json(GenerateVeo2ImageToVideoResponse {
     success: true,

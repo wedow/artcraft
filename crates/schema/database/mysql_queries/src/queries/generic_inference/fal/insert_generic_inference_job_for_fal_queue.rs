@@ -13,6 +13,7 @@ use enums::common::visibility::Visibility;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
 
 use crate::errors::database_query_error::DatabaseQueryError;
@@ -36,6 +37,8 @@ pub struct InsertGenericInferenceForFalArgs<'a> {
   pub fal_category: FalCategory,
 
   pub maybe_inference_args: Option<GenericInferenceArgs>,
+  
+  pub maybe_prompt_token: Option<&'a PromptToken>,
 
   pub maybe_creator_user_token: Option<&'a UserToken>,
   pub maybe_avt_token: Option<&'a AnonymousVisitorTrackingToken>,
@@ -105,6 +108,8 @@ SET
 
   maybe_download_url = NULL,
   maybe_cover_image_media_file_token = NULL,
+  
+  maybe_prompt_token = ?,
 
   maybe_raw_inference_text = NULL,
 
@@ -134,6 +139,8 @@ SET
 
         product_category.to_str(),
         inference_category.to_str(),
+    
+        args.maybe_prompt_token.map(|t| t.to_string()),
 
         serialized_args_payload,
 
