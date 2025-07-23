@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::mysql::MySqlRow;
 use sqlx::{Acquire, FromRow, MySql, MySqlPool, QueryBuilder, Row};
-
+use sqlx::pool::PoolConnection;
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
@@ -79,6 +79,18 @@ pub async fn batch_get_media_files_by_tokens(
 ) -> AnyhowResult<Vec<MediaFilesByTokensRecord>> {
   batch_get_media_files_by_tokens_with_transactor(
     Transactor::Pool { pool: mysql_pool },
+    media_file_tokens,
+    can_see_deleted
+  ).await
+}
+
+pub async fn batch_get_media_files_by_tokens_with_connection(
+  mysql_connection: &mut PoolConnection<MySql>,
+  media_file_tokens: &[MediaFileToken],
+  can_see_deleted: bool
+) -> AnyhowResult<Vec<MediaFilesByTokensRecord>> {
+  batch_get_media_files_by_tokens_with_transactor(
+    Transactor::Connection{ connection: mysql_connection },
     media_file_tokens,
     can_see_deleted
   ).await
