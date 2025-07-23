@@ -14,6 +14,7 @@ import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 import { AboutSettingsPane } from "./panes/AboutSettingsPane";
 import { ProviderPrioritySettingsPane } from "./panes/ProviderPrioritySettingsPane";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -93,7 +94,10 @@ export const SettingsModal = ({
                     "h-9 w-full rounded-lg p-2 text-left transition-colors duration-100 hover:bg-[#63636B]/40",
                     section.id === selectedSection ? "bg-[#63636B]/40" : ""
                   )}
-                  onClick={() => setSelectedSection(section.id)}
+                  onClick={() => {
+                    gtagEvent("switch_settings_section", { "section": section.id });
+                    setSelectedSection(section.id);
+                  }}
                 >
                   <div className="flex items-center gap-2.5 text-sm">
                     <FontAwesomeIcon icon={section.icon} />

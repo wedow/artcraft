@@ -29,6 +29,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { ModelInfo } from "@storyteller/model-list";
 import { usePromptImageStore, RefImage } from "./promptStore";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -197,6 +198,8 @@ export const PromptBoxImage = ({
     setIsEnqueueing(true);
 
     console.log("PromptBoxImage - Prompting with model", modelInfo);
+
+    gtagEvent("enqueue_image");
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if

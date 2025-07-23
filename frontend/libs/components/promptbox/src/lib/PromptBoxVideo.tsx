@@ -23,6 +23,7 @@ import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { ModelInfo } from "@storyteller/model-list";
 import { usePromptVideoStore, RefImage } from "./promptStore";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxVideoProps {
   useJobContext: () => JobContextType;
@@ -186,6 +187,8 @@ export const PromptBoxVideo = ({
     setIsEnqueueing(true);
 
     console.log("PromptBoxVideo - Prompting with model", modelInfo);
+
+    gtagEvent("enqueue_video");
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if

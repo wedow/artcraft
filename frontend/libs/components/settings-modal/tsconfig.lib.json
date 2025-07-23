@@ -62,6 +62,9 @@
       "path": "../../api/tsconfig.lib.json"
     },
     {
+      "path": "../../analytics/google-analytics/tsconfig.lib.json"
+    },
+    {
       "path": "../input/tsconfig.lib.json"
     },
     {

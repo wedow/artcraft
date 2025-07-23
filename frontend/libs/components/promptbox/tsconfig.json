@@ -39,6 +39,9 @@
       "path": "../toaster"
     },
     {
+      "path": "../../analytics/google-analytics"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

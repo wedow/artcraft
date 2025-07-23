@@ -8,6 +8,7 @@ import {
 } from "@storyteller/tauri-api";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import React from "react";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 interface LightboxModalProps {
   isOpen: boolean;
@@ -131,6 +132,7 @@ export function LightboxModal({
             <div className="mt-15 mb-15 flex justify-end gap-2">
               <Button
                 onClick={async (e) => {
+                  gtagEvent("image_to_3d_clicked");
                   //let _result = await FalHunyuanImageTo3d({
                   //  image_media_token: mediaId,
                   //  //base64_image: downloadUrl,
@@ -152,6 +154,7 @@ export function LightboxModal({
                 <Button
                   onClick={async (e) => {
                     e.stopPropagation();
+                    gtagEvent("add_to_scene_clicked");
                     await onAddToSceneClicked(downloadUrl, mediaId);
                     onClose(); // close the lightbox
                     onCloseGallery(); // close the gallery
@@ -167,6 +170,7 @@ export function LightboxModal({
                     icon={faDownToLine}
                     onClick={async (e) => {
                       e.stopPropagation();
+                      gtagEvent("download_clicked");
                       await onDownloadClicked(downloadUrl, mediaClass);
                     }}
                   >
@@ -176,7 +180,10 @@ export function LightboxModal({
                   <a
                     href={downloadUrl}
                     download
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      gtagEvent("download_clicked");
+                    }}
                     className="no-underline"
                   >
                     <Button icon={faDownToLine}>Download</Button>
