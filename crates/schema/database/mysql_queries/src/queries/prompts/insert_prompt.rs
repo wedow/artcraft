@@ -6,6 +6,8 @@ use sqlx;
 use sqlx::{Executor, MySql};
 
 use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use errors::AnyhowResult;
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
@@ -21,6 +23,10 @@ pub struct InsertPromptArgs<'e, 'c,  E>
   pub prompt_type: PromptType,
 
   pub maybe_creator_user_token: Option<&'e UserToken>,
+  
+  pub maybe_model_type: Option<ModelType>,
+  
+  pub maybe_generation_provider: Option<GenerationProvider>,
 
   pub maybe_positive_prompt: Option<&'e str>,
 
@@ -65,9 +71,13 @@ SET
   prompt_type = ?,
 
   maybe_creator_user_token = ?,
+  
+  maybe_model_type = ?,
+  maybe_generation_provider = ?,
 
   maybe_positive_prompt = ?,
   maybe_negative_prompt = ?,
+  
   maybe_other_args = ?,
 
   creator_ip_address = ?
@@ -75,6 +85,8 @@ SET
     prompt_token.as_str(),
     args.prompt_type.to_str(),
     args.maybe_creator_user_token.map(|t| t.as_str()),
+    args.maybe_model_type.map(|m| m.to_str()),
+    args.maybe_generation_provider.map(|g| g.to_str()),
     args.maybe_positive_prompt,
     args.maybe_negative_prompt,
     maybe_other_args,

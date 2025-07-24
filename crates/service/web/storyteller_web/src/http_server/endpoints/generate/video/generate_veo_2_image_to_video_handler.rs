@@ -15,6 +15,8 @@ use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateV
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::enqueue_veo_2_image_to_video_webhook;
 use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2Args;
@@ -198,6 +200,8 @@ pub async fn generate_veo_2_image_to_video_handler(
     maybe_creator_user_token: maybe_user_session
         .as_ref()
         .map(|s| &s.user_token),
+    maybe_model_type: Some(ModelType::Veo2),
+    maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: Some(prompt),
     maybe_negative_prompt: None,
     maybe_other_args: None,
