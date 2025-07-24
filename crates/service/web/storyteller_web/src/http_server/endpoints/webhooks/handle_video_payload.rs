@@ -119,6 +119,7 @@ pub async fn handle_video_payload(
       .maybe_frame_height(maybe_frame_height)
       .maybe_duration_millis(maybe_duration_millis)
       .checksum_sha2(&file_hash)
+      .maybe_prompt_token(job.maybe_prompt_token.as_ref())
       .insert_pool(&server_state.mysql_pool)
       .await?;
   

@@ -109,6 +109,7 @@ pub async fn upload_image(
       .file_size_bytes(file_size_bytes as u64)
       .frame_width(image_info.width())
       .frame_height(image_info.height())
+      .maybe_prompt_token(job.maybe_prompt_token.as_ref())
       .checksum_sha2(&file_hash)
       .insert_pool(&server_state.mysql_pool)
       .await?;

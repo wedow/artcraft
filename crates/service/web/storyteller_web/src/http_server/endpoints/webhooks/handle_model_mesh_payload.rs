@@ -89,6 +89,7 @@ pub async fn handle_model_mesh_payload(
       //.media_file_origin_product_category(MediaFileOriginProductCategory::Unknown)
       .mime_type(mime_type)
       .file_size_bytes(file_size_bytes as u64)
+      .maybe_prompt_token(job.maybe_prompt_token.as_ref())
       .checksum_sha2(&file_hash)
       .insert_pool(&server_state.mysql_pool)
       .await?;

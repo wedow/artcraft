@@ -86,6 +86,7 @@ pub async fn handle_image_payload(
       .media_file_class(MediaFileClass::Image)
       .media_file_type(media_file_type)
       .media_file_origin_category(MediaFileOriginCategory::Inference)
+      .maybe_prompt_token(job.maybe_prompt_token.as_ref())
       //.media_file_origin_product_category(MediaFileOriginProductCategory::Unknown)
       .mime_type(mime_type)
       .file_size_bytes(file_size_bytes as u64)

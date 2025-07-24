@@ -1,19 +1,18 @@
 use crate::queries::media_files::create::generic_insert::insert_media_file_generic::{insert_media_file_generic, InsertArgs};
-use anyhow::anyhow;
+use crate::queries::media_files::create::insert_builder::media_file_insert_builder_error::MediaFileInsertBuilderError;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::generic_synthetic_ids::id_category::IdCategory;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
+use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_files::media_file_origin_product_category::MediaFileOriginProductCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
-use errors::AnyhowResult;
 use sqlx::MySqlPool;
-use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
 use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
-use crate::queries::media_files::create::insert_builder::media_file_insert_builder_error::MediaFileInsertBuilderError;
 
 /// Builder for inserting a media files into the database.
 /// Resembles an ORM, but can still use statically type checked queries (which is probably
@@ -53,7 +52,9 @@ pub struct MediaFileInsertBuilder {
   checksum_sha2: Option<String>, // NB: Non-nullable field
 
   // Media info for certain product areas
-  pub maybe_engine_category: Option<MediaFileEngineCategory>, // TODO: Deprecate
+  maybe_engine_category: Option<MediaFileEngineCategory>, // TODO: Deprecate
+
+  maybe_prompt_token: Option<PromptToken>,
   
   // // User text information
   // maybe_title: Option<&'a str>,
@@ -100,6 +101,7 @@ impl MediaFileInsertBuilder {
       checksum_sha2: None,
       maybe_engine_category: None,
       public_bucket_directory_hash: None,
+      maybe_prompt_token: None,
     }
   }
 
@@ -162,6 +164,11 @@ impl MediaFileInsertBuilder {
 
   pub fn media_file_origin_product_category(mut self, origin_category: MediaFileOriginProductCategory) -> Self {
     self.origin_product_category = origin_category;
+    self
+  }
+
+  pub fn maybe_prompt_token(mut self, maybe_prompt_token: Option<&PromptToken>) -> Self {
+    self.maybe_prompt_token = maybe_prompt_token.map(|token| token.clone());
     self
   }
 
@@ -273,7 +280,7 @@ impl MediaFileInsertBuilder {
       maybe_title: None, // TODO
       maybe_text_transcript: None, // TODO
       maybe_scene_source_media_file_token: None, // TODO
-      maybe_prompt_token: None, // TODO
+      maybe_prompt_token: self.maybe_prompt_token.as_ref(),
       maybe_batch_token: None, // TODO
       public_bucket_directory_hash: bucket_path.get_object_hash(),
       maybe_public_bucket_prefix: bucket_path.get_optional_prefix(),
