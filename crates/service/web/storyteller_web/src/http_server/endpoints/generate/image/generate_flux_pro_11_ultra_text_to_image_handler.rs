@@ -7,21 +7,21 @@ use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::{GenerateFluxPro11UltraTextToImageAspectRatio, GenerateFluxPro11UltraTextToImageNumImages, GenerateFluxPro11UltraTextToImageRequest};
+use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::FluxPro11UltraArgs;
 use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::{enqueue_flux_pro_11_ultra_text_to_image_webhook, FluxPro11UltraAspectRatio, FluxPro11UltraNumImages};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
-use sqlx::Acquire;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use utoipa::ToSchema;
-use enums::by_table::prompts::prompt_type::PromptType;
-use enums::common::generation_provider::GenerationProvider;
-use enums::common::model_type::ModelType;
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use sqlx::Acquire;
+use utoipa::ToSchema;
 
 /// Flux Pro 1.1 Ultra
 #[utoipa::path(
