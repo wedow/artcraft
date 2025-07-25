@@ -43,11 +43,7 @@ pub async fn remove_image_background_handler(
 ) -> Result<Json<RemoveImageBackgroundResponse>, CommonWebError> {
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
-      .await
-      .map_err(|err| {
-        error!("MySql pool error: {:?}", err);
-        CommonWebError::ServerError
-      })?;
+      .await?;
   
   let maybe_user_session = server_state
       .session_checker

@@ -47,11 +47,7 @@ pub async fn gpt_image_1_edit_image_handler(
 ) -> Result<Json<GptImage1EditImageResponse>, CommonWebError> {
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
-      .await
-      .map_err(|err| {
-        error!("MySql pool error: {:?}", err);
-        CommonWebError::ServerError
-      })?;
+      .await?;
   
   let maybe_user_session = server_state
       .session_checker

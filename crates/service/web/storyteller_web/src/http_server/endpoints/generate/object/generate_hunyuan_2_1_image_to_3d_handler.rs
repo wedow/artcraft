@@ -41,11 +41,7 @@ pub async fn generate_hunyuan_2_1_image_to_3d_handler(
 ) -> Result<Json<GenerateHunyuan21ImageTo3dResponse>, CommonWebError> {
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
-      .await
-      .map_err(|err| {
-        error!("MySql pool error: {:?}", err);
-        CommonWebError::ServerError
-      })?;
+      .await?;
   
   let maybe_user_session = server_state
       .session_checker

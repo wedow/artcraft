@@ -49,11 +49,7 @@ pub async fn generate_seedance_1_0_lite_image_to_video_handler(
 ) -> Result<Json<GenerateSeedance10LiteImageToVideoResponse>, CommonWebError> {
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
-      .await
-      .map_err(|err| {
-        error!("MySql pool error: {:?}", err);
-        CommonWebError::ServerError
-      })?;
+      .await?;
 
   let maybe_user_session = server_state
       .session_checker
