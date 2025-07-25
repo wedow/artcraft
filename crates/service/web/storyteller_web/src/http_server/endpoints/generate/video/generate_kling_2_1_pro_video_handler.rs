@@ -10,6 +10,9 @@ use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProDuration, GenerateKling21ProImageToVideoResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::video::enqueue_kling_21_pro_image_to_video_webhook::enqueue_kling_21_pro_image_to_video_webhook;
 use fal_client::requests::webhook::video::enqueue_kling_21_pro_image_to_video_webhook::Kling21ProArgs;
@@ -21,31 +24,10 @@ use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
+use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, get_media_file_with_connection};
+use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use sqlx::Acquire;
 use utoipa::ToSchema;
-
-/*
- TODO: Either on the Tauri client or as an API, make "generic" image / video / object endpoints. 
-  Take a reference image payload: 
-  
-    ReferenceImage {
-      media_token: MediaFileToken,
-      reference_type: ReferenceType
-    } 
-    
-    enum ReferenceType {
-      PrimaryReference,
-      CharacterReference,
-      LocationReference,
-      StyleReference,
-      ...
-      GenericReference,
-    }
-    
-    // **ORDER MATTERS**
-    reference_images: Vec<ReferenceImage>,
-
-*/
 
 /// Kling 2.1 Pro Image to Video
 #[utoipa::path(
@@ -64,9 +46,18 @@ pub async fn generate_kling_2_1_pro_video_handler(
   request: Json<GenerateKling21ProImageToVideoRequest>,
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<GenerateKling21ProImageToVideoResponse>, CommonWebError> {
+
+  let mut mysql_connection = server_state.mysql_pool
+      .acquire()
+      .await
+      .map_err(|err| {
+        error!("MySql pool error: {:?}", err);
+        CommonWebError::ServerError
+      })?;
+  
   let maybe_user_session = server_state
       .session_checker
-      .maybe_get_user_session(&http_request, &server_state.mysql_pool)
+      .maybe_get_user_session_from_connection(&http_request, &mut mysql_connection)
       .await
       .map_err(|e| {
         warn!("Session checker error: {:?}", e);
@@ -99,7 +90,7 @@ pub async fn generate_kling_2_1_pro_video_handler(
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
 
-  insert_idempotency_token(&request.uuid_idempotency_token, &server_state.mysql_pool)
+  insert_idempotency_token(&request.uuid_idempotency_token, &mut *mysql_connection)
       .await
       .map_err(|err| {
         error!("Error inserting idempotency token: {:?}", err);
@@ -107,10 +98,10 @@ pub async fn generate_kling_2_1_pro_video_handler(
       })?;
   const IS_MOD : bool = false;
   
-  let media_file_lookup_result = get_media_file(
+  let media_file_lookup_result = get_media_file_with_connection(
     media_file_token,
     IS_MOD,
-    &server_state.mysql_pool,
+    &mut mysql_connection,
   ).await;
 
   let media_file = match media_file_lookup_result {
@@ -187,17 +178,50 @@ pub async fn generate_kling_2_1_pro_video_handler(
   
   let ip_address = get_request_ip(&http_request);
 
+  let mut transaction = mysql_connection
+      .begin()
+      .await
+      .map_err(|err| {
+        error!("Error starting MySQL transaction: {:?}", err);
+        CommonWebError::ServerError
+      })?;
+
+  // NB: Don't fail the job if the query fails.
+  let prompt_result = insert_prompt(InsertPromptArgs {
+    maybe_apriori_prompt_token: None,
+    prompt_type: PromptType::ArtcraftApp,
+    maybe_creator_user_token: maybe_user_session
+        .as_ref()
+        .map(|s| &s.user_token),
+    maybe_model_type: Some(ModelType::Kling21Pro),
+    maybe_generation_provider: Some(GenerationProvider::Artcraft),
+    maybe_positive_prompt: Some(prompt),
+    maybe_negative_prompt: None,
+    maybe_other_args: None,
+    creator_ip_address: &ip_address,
+    mysql_executor: &mut *transaction,
+    phantom: Default::default(),
+  }).await;
+
+  let prompt_token = match prompt_result {
+    Ok(token) => Some(token),
+    Err(err) => {
+      warn!("Error inserting prompt: {:?}", err);
+      None // Don't fail the job if the prompt insertion fails.
+    }
+  };
+
   let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::VideoGeneration,
     maybe_inference_args: None,
-    maybe_prompt_token: None,
+    maybe_prompt_token: prompt_token.as_ref(),
     maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
-    mysql_executor: &server_state.mysql_pool,
+    mysql_executor: &mut *transaction,
     phantom: Default::default(),
   }).await;
 
@@ -208,6 +232,14 @@ pub async fn generate_kling_2_1_pro_video_handler(
       return Err(CommonWebError::ServerError);
     }
   };
+
+  let _r = transaction
+      .commit()
+      .await
+      .map_err(|err| {
+        error!("Error committing MySQL transaction: {:?}", err);
+        CommonWebError::ServerError
+      })?;
 
   Ok(Json(GenerateKling21ProImageToVideoResponse {
     success: true,
