@@ -1,24 +1,28 @@
 use std::fmt;
 use std::sync::Arc;
 
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
+use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
+use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
+use crate::state::server_state::ServerState;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
+use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use chrono::{DateTime, Utc};
-use log::warn;
-use utoipa::ToSchema;
-
+use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
-use mysql_queries::queries::prompts::get_prompt::get_prompt;
+use log::{error, warn};
+use mysql_queries::queries::prompt_context_items::list_prompt_context_items::list_prompt_context_items;
+use mysql_queries::queries::prompts::get_prompt::{get_prompt, get_prompt_from_connection};
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
-
-use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
-use crate::state::server_state::ServerState;
+use utoipa::ToSchema;
 
 /// For the URL PathInfo
 #[derive(Deserialize, ToSchema)]
@@ -33,16 +37,23 @@ pub struct GetPromptSuccessResponse {
 }
 
 #[derive(Serialize, ToSchema)]
+pub struct ImageContextItem {
+  pub media_token: MediaFileToken,
+  pub semantic: PromptContextSemanticType,
+  pub media_links: MediaLinks,
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct PromptInfo {
   pub token: PromptToken,
 
   /// The type of prompt.
   /// Note: Prompts may or may not be compatible across systems.
   pub prompt_type: PromptType,
-  
+
   /// The type of model used
   pub maybe_model_type: Option<ModelType>,
-  
+
   /// The service provider used
   pub maybe_generation_provider: Option<GenerationProvider>,
   
@@ -51,6 +62,9 @@ pub struct PromptInfo {
 
   /// Negative prompt (optional)
   pub maybe_negative_prompt: Option<String>,
+
+  /// Context images (optional)
+  pub maybe_context_images: Option<Vec<ImageContextItem>>,
 
   /// Scheduled / travel prompt (optional)
   pub maybe_travel_prompt: Option<String>,
@@ -173,9 +187,17 @@ pub async fn get_prompt_handler(
   path: Path<GetPromptPathInfo>,
   server_state: web::Data<Arc<ServerState>>) -> Result<HttpResponse, GetPromptError>
 {
+  let mut mysql_connection = server_state.mysql_pool
+      .acquire()
+      .await
+      .map_err(|err| {
+        error!("Error acquiring MySQL connection: {:?}", err);
+        GetPromptError::ServerError
+      })?;
+
   let maybe_user_session = server_state
       .session_checker
-      .maybe_get_user_session(&http_request, &server_state.mysql_pool)
+      .maybe_get_user_session_from_connection(&http_request, &mut mysql_connection)
       .await
       .map_err(|e| {
         warn!("Session checker error: {:?}", e);
@@ -188,9 +210,9 @@ pub async fn get_prompt_handler(
 
   let prompt_token = path.into_inner().token;
 
-  let result = get_prompt(
+  let result = get_prompt_from_connection(
     &prompt_token,
-    &server_state.mysql_pool
+    &mut mysql_connection
   ).await;
 
   let result = match result {
@@ -255,6 +277,45 @@ pub async fn get_prompt_handler(
     });
   }
 
+  let media_domain = get_media_domain(&http_request);
+
+  let items_result = list_prompt_context_items(
+    &result.token,
+    &mut mysql_connection
+  ).await;
+
+  let items = items_result.unwrap_or_else(|e| {
+    warn!("Error listing prompt context items: {:?}", e);
+    Vec::new()
+  });
+
+  let items = items.iter().filter_map(|item| {
+    if let Some(public_bucket_directory_hash) = &item.maybe_public_bucket_directory_hash {
+      let bucket_path = MediaFileBucketPath::from_object_hash(
+        public_bucket_directory_hash,
+        item.maybe_public_bucket_prefix.as_deref(),
+        item.maybe_public_bucket_extension.as_deref());
+
+      Some(ImageContextItem {
+        media_token: item.media_token.clone(),
+        semantic: item.context_semantic_type,
+        media_links: MediaLinksBuilder::from_media_path_and_env(
+          media_domain,
+          server_state.server_environment,
+          &bucket_path,
+        ),
+      })
+    } else {
+      None
+    }
+  }).collect::<Vec<ImageContextItem>>();
+
+  let maybe_context_images = if items.is_empty() {
+    None
+  } else {
+    Some(items)
+  };
+
   let response = GetPromptSuccessResponse {
     success: true,
     prompt: PromptInfo {
@@ -264,6 +325,7 @@ pub async fn get_prompt_handler(
       maybe_generation_provider: result.maybe_generation_provider,
       maybe_positive_prompt: result.maybe_positive_prompt,
       maybe_negative_prompt: result.maybe_negative_prompt,
+      maybe_context_images,
       maybe_travel_prompt,
       maybe_style_name,
       maybe_inference_duration_millis,

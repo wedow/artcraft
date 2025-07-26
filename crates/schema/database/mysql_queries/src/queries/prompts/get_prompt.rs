@@ -5,12 +5,12 @@
 
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
-use sqlx::MySqlPool;
-
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use errors::AnyhowResult;
+use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
 
@@ -60,12 +60,21 @@ pub struct PromptRaw {
   pub created_at: DateTime<Utc>,
 }
 
+
 pub async fn get_prompt(
   prompt_token: &PromptToken,
   mysql_pool: &MySqlPool
 ) -> AnyhowResult<Option<Prompt>> {
+  let mut connection = mysql_pool.acquire().await?;
+  get_prompt_from_connection(prompt_token, &mut connection).await
+}
 
-  let record = select_record(prompt_token, mysql_pool).await;
+pub async fn get_prompt_from_connection(
+  prompt_token: &PromptToken,
+  mysql_connection: &mut PoolConnection<MySql>
+) -> AnyhowResult<Option<Prompt>> {
+
+  let record = select_record(prompt_token, mysql_connection).await;
 
   let record = match record {
     Ok(record) => record,
@@ -96,7 +105,7 @@ pub async fn get_prompt(
 
 async fn select_record(
   prompt_token: &PromptToken,
-  mysql_pool: &MySqlPool
+  mysql_connection: &mut PoolConnection<MySql>
 ) -> Result<PromptRaw, sqlx::Error> {
   sqlx::query_as!(
       PromptRaw,
@@ -124,6 +133,6 @@ WHERE
         "#,
       prompt_token
     )
-      .fetch_one(mysql_pool)
+      .fetch_one(&mut **mysql_connection)
       .await
 }
