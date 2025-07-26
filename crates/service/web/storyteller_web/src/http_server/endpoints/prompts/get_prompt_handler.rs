@@ -289,24 +289,20 @@ pub async fn get_prompt_handler(
     Vec::new()
   });
 
-  let items = items.iter().filter_map(|item| {
-    if let Some(public_bucket_directory_hash) = &item.maybe_public_bucket_directory_hash {
-      let bucket_path = MediaFileBucketPath::from_object_hash(
-        public_bucket_directory_hash,
-        item.maybe_public_bucket_prefix.as_deref(),
-        item.maybe_public_bucket_extension.as_deref());
+  let items = items.iter().map(|item| {
+    let bucket_path = MediaFileBucketPath::from_object_hash(
+      &item.public_bucket_directory_hash,
+      item.maybe_public_bucket_prefix.as_deref(),
+      item.maybe_public_bucket_extension.as_deref());
 
-      Some(ImageContextItem {
-        media_token: item.media_token.clone(),
-        semantic: item.context_semantic_type,
-        media_links: MediaLinksBuilder::from_media_path_and_env(
-          media_domain,
-          server_state.server_environment,
-          &bucket_path,
-        ),
-      })
-    } else {
-      None
+    ImageContextItem {
+      media_token: item.media_token.clone(),
+      semantic: item.context_semantic_type,
+      media_links: MediaLinksBuilder::from_media_path_and_env(
+        media_domain,
+        server_state.server_environment,
+        &bucket_path,
+      ),
     }
   }).collect::<Vec<ImageContextItem>>();
 

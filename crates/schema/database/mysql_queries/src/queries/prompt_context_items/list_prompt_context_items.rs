@@ -11,7 +11,7 @@ use tokens::tokens::prompts::PromptToken;
 pub struct PromptContextItem {
   pub media_token: MediaFileToken,
   pub context_semantic_type: PromptContextSemanticType,
-  pub maybe_public_bucket_directory_hash: Option<String>, // NB: Shouldn't be nullable, but the join could loosen this
+  pub public_bucket_directory_hash: String,
   pub maybe_public_bucket_prefix: Option<String>,
   pub maybe_public_bucket_extension: Option<String>,
 }
@@ -19,7 +19,7 @@ pub struct PromptContextItem {
 struct RawPromptContextItem {
   media_token: MediaFileToken,
   context_semantic_type: PromptContextSemanticType,
-  public_bucket_directory_hash: Option<String>,
+  public_bucket_directory_hash: String,
   maybe_public_bucket_prefix: Option<String>,
   maybe_public_bucket_extension: Option<String>,
 }
@@ -40,7 +40,7 @@ SELECT
     m.maybe_public_bucket_extension
 
 FROM prompt_context_items pci
-LEFT OUTER JOIN media_files m
+JOIN media_files m
 ON
     pci.media_token = m.token
 WHERE
@@ -58,7 +58,7 @@ ORDER BY pci.id ASC
         PromptContextItem {
           media_token: item.media_token,
           context_semantic_type: item.context_semantic_type,
-          maybe_public_bucket_directory_hash: item.public_bucket_directory_hash,
+          public_bucket_directory_hash: item.public_bucket_directory_hash,
           maybe_public_bucket_prefix: item.maybe_public_bucket_prefix,
           maybe_public_bucket_extension: item.maybe_public_bucket_extension,
         }
