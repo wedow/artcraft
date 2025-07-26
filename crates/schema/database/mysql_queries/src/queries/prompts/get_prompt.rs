@@ -8,6 +8,8 @@ use chrono::{DateTime, Utc};
 use sqlx::MySqlPool;
 
 use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use errors::AnyhowResult;
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
@@ -19,6 +21,9 @@ pub struct Prompt {
   pub token: PromptToken,
 
   pub prompt_type: PromptType,
+
+  pub maybe_model_type: Option<ModelType>,
+  pub maybe_generation_provider: Option<GenerationProvider>,
 
   pub maybe_creator_user_token: Option<UserToken>,
 
@@ -38,6 +43,9 @@ pub struct PromptRaw {
   pub token: PromptToken,
 
   pub prompt_type: PromptType,
+
+  pub maybe_model_type: Option<ModelType>,
+  pub maybe_generation_provider: Option<GenerationProvider>,
 
   pub maybe_creator_user_token: Option<UserToken>,
 
@@ -72,6 +80,8 @@ pub async fn get_prompt(
   Ok(Some(Prompt {
     token: record.token,
     prompt_type: record.prompt_type,
+    maybe_model_type: record.maybe_model_type,
+    maybe_generation_provider: record.maybe_generation_provider,
     maybe_creator_user_token: record.maybe_creator_user_token,
     maybe_positive_prompt: record.maybe_positive_prompt,
     maybe_negative_prompt: record.maybe_negative_prompt,
@@ -95,6 +105,9 @@ SELECT
     p.token as `token: tokens::tokens::prompts::PromptToken`,
 
     p.prompt_type as `prompt_type: enums::by_table::prompts::prompt_type::PromptType`,
+
+    p.maybe_model_type as `maybe_model_type: enums::common::model_type::ModelType`,
+    p.maybe_generation_provider as `maybe_generation_provider: enums::common::generation_provider::GenerationProvider`,
 
     p.maybe_creator_user_token as `maybe_creator_user_token: tokens::tokens::users::UserToken`,
 

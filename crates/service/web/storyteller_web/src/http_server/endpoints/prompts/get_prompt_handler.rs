@@ -10,6 +10,8 @@ use log::warn;
 use utoipa::ToSchema;
 
 use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use mysql_queries::queries::prompts::get_prompt::get_prompt;
 use tokens::tokens::media_files::MediaFileToken;
@@ -37,6 +39,12 @@ pub struct PromptInfo {
   /// The type of prompt.
   /// Note: Prompts may or may not be compatible across systems.
   pub prompt_type: PromptType,
+  
+  /// The type of model used
+  pub maybe_model_type: Option<ModelType>,
+  
+  /// The service provider used
+  pub maybe_generation_provider: Option<GenerationProvider>,
   
   /// Positive prompt (technically optional, but usually present)
   pub maybe_positive_prompt: Option<String>,
@@ -252,6 +260,8 @@ pub async fn get_prompt_handler(
     prompt: PromptInfo {
       token: result.token,
       maybe_strength,
+      maybe_model_type: result.maybe_model_type,
+      maybe_generation_provider: result.maybe_generation_provider,
       maybe_positive_prompt: result.maybe_positive_prompt,
       maybe_negative_prompt: result.maybe_negative_prompt,
       maybe_travel_prompt,
