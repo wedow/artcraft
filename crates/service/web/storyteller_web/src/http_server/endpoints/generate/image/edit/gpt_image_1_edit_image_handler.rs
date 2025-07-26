@@ -25,8 +25,10 @@ use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::{batch_get_media_files_by_tokens, batch_get_media_files_by_tokens_with_connection};
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use mysql_queries::queries::prompt_context_items::insert_batch_prompt_context_items::{InsertBatchArgs, PromptContextItem, insert_batch_prompt_context_items};
 use sqlx::Acquire;
 use utoipa::ToSchema;
+use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 
 /// Gpt Image 1 Image Editing
 #[utoipa::path(
@@ -221,6 +223,24 @@ pub async fn gpt_image_1_edit_image_handler(
       None // Don't fail the job if the prompt insertion fails.
     }
   };
+  
+  if let Some(token) = prompt_token.as_ref() {
+    let result = insert_batch_prompt_context_items(InsertBatchArgs {
+      prompt_token: token.clone(),
+      items: media_files.iter().map(|media_file| {
+        PromptContextItem {
+          media_token: media_file.token.clone(),
+          context_semantic_type: PromptContextSemanticType::Imgref,
+        }
+      }).collect(),
+      transaction: &mut transaction,
+    }).await;
+    
+    if let Err(err) = result {
+      // NB: Fail open.
+      warn!("Error inserting batch prompt context items: {:?}", err);
+    }
+  }
 
   let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,

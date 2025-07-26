@@ -9,9 +9,6 @@ CREATE TABLE prompt_context_items (
   -- Not used for anything except replication.
   id BIGINT(20) NOT NULL AUTO_INCREMENT,
 
-  -- The semantic type of context.
-  context_semantic_type VARCHAR(16) NOT NULL,
-
   -- Foreign key, many-to-many
   -- There is no uniqueness constraint for (prompt_token, media_token) because a user
   -- might attach many duplicate images to the same prompt.
@@ -21,6 +18,9 @@ CREATE TABLE prompt_context_items (
   -- There is no uniqueness constraint for (prompt_token, media_token) because a user
   -- might attach many duplicate images to the same prompt.
   media_token VARCHAR(32) NOT NULL,
+
+  -- The semantic type of context.
+  context_semantic_type VARCHAR(16) NOT NULL,
 
   -- INDICES --
   PRIMARY KEY (id),
