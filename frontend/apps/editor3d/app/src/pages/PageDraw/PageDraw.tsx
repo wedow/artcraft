@@ -170,8 +170,15 @@ const PageDraw = () => {
   };
 
   const onEnqueuedPressed = async () => {
+    const { width, height } = store.getAspectRatioDimensions();
+
     // takes snap shot and then a global variable in the engine will invoke the inference.
-    const image = await captureStageImageBitmap(stageRef, transformerRefs);
+    const image = await captureStageImageBitmap(
+      stageRef,
+      transformerRefs,
+      width,
+      height,
+    );
     if (!image) {
       console.error("Failed to capture stage image");
       return;
