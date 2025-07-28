@@ -1,20 +1,170 @@
 import { faImage } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { downloadFileFromUrl } from "libs/api/src/lib/LocalApi";
+import Button from "node_modules/@storyteller/ui-button/src/lib/button";
+import GalleryModal, { GalleryItem } from "node_modules/@storyteller/ui-gallery-modal/src/lib/gallery-modal";
+import LoadingSpinner from "node_modules/@storyteller/ui-loading-spinner/src/lib/loading-spinner";
+import { ReferenceImage } from "node_modules/@storyteller/ui-promptbox/src/lib/PromptBox2D";
+import { useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";
+import { UploaderStates } from "~/enums";
 
-export type BaseImageSelectorProps = {
-  onImageSelect: (imageUrl: string) => void;
+export interface BaseSelectorImage {
+  id: string;
+  url: string;
+  mediaToken: string;
 }
 
-const BaseImageSelector = ({
+export type BaseImageSelectorProps = {
+  onImageSelect: (imageUrl: BaseSelectorImage) => void;
+}
+
+const MAX_GALLERY_SELECTIONS = 1;
+
+export const BaseImageSelector = ({
   onImageSelect
 }: BaseImageSelectorProps) => {
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGalleryClick = () => setIsGalleryModalOpen(true);
+
+  const handleGalleryClose = () => {
+    setIsGalleryModalOpen(false);
+    setSelectedGalleryImages([]);
+  };
+
+  const handleImageSelect = (id: string) => {
+    // If already selected, deselect it
+    // Else if not selected and under max limit, select it
+    if (selectedGalleryImages.includes(id)) {
+      setSelectedGalleryImages([]);
+    } else {
+      setSelectedGalleryImages([id]);
+    }
+  }
+
+  const handleUseGalleryImages = (selectedItems: GalleryItem[]) => {
+    // We only want one file
+    if (selectedItems.length !== 1) {
+      return;
+    }
+
+    const item = selectedItems[0];
+    if (!item.fullImage) return;
+    const referenceImage: BaseSelectorImage = {
+      id: Math.random().toString(36).substring(7),
+      url: item.fullImage,
+      mediaToken: item.id,
+    };
+    sendImageEvent(referenceImage);
+  }
+
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      setIsLoading(true);
+
+      Array.from(files).forEach((file) => {
+        const reader = new FileReader(); reader.onloadend = () => {
+          uploadImage({
+            title: `reference-image-${Math.random()
+              .toString(36)
+              .substring(2, 15)}`,
+            assetFile: file,
+            progressCallback: (newState) => {
+              console.debug("Upload progress:", newState.data);
+              if (newState.status === UploaderStates.success && newState.data) {
+                const referenceImage: BaseSelectorImage = {
+                  id: Math.random().toString(36).substring(7),
+                  url: reader.result as string,
+                  mediaToken: newState.data || "",
+                };
+
+                toast.success("Image uploaded successfully!");
+                sendImageEvent(referenceImage);
+              } else if (
+                newState.status === UploaderStates.assetError ||
+                newState.status === UploaderStates.imageCreateError
+              ) {
+                toast.error("Upload failed. Please try again.");
+                setIsLoading(false);
+              }
+            },
+          });
+        };
+
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const sendImageEvent = (image: ReferenceImage) => {
+    handleGalleryClose();
+    onImageSelect(image);
+  }
+
   return (
-    <div className="flex items-center justify-center bg-ui-panel border-ui-panel-border border-4">
-      <FontAwesomeIcon icon={faImage} className="text-6xl text-ui-text-secondary" />
-      <span className="text-ui-text-secondary text-lg ml-2">Click to upload or drag and drop an image here to edit</span>
-      <div className="mt-4">
+    <>
+      <div className="h-1/2 w-1/2 flex items-center justify-center bg-ui-background border-ui-panel-border border-8">
+        {isLoading ? (
+          <div className="flex flex-col items-center gap-4">
+            <span>Uploading image...</span>
+            <LoadingSpinner />
+          </div>
+        ) :
+          <div className="flex flex-col gap-8">
+            <FontAwesomeIcon icon={faImage} className="text-6xl text-ui-controls" />
+            <span className="text-ui-controls text-lg ml-2">Click to upload or drag and drop an image here to edit</span>
+            <div className="mt-4 flex justify-center gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileUpload}
+                multiple
+              />
+              <Button
+                variant="primary"
+                onClick={handleUploadClick}
+              >
+                Upload an image
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleGalleryClick}
+              >
+                Select from library
+              </Button>
+
+            </div>
+          </div>
+        }
       </div>
-    </div>
+      <GalleryModal
+        isOpen={!!isGalleryModalOpen}
+        onClose={handleGalleryClose}
+        mode="select"
+        selectedItemIds={selectedGalleryImages}
+        onSelectItem={handleImageSelect}
+        maxSelections={MAX_GALLERY_SELECTIONS}
+        onUseSelected={handleUseGalleryImages}
+        onDownloadClicked={downloadFileFromUrl}
+        forceFilter="image"
+      />
+    </>
   )
 }

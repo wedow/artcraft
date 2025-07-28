@@ -18,7 +18,7 @@ interface TabState {
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
-  activeTabId: '2D',
+  activeTabId: 'EDIT',
   tabData: {},
 
   setActiveTab: async (newTabId) => {

@@ -21,6 +21,7 @@ import { AspectRatioType } from "../PageDraw/stores/SceneState";
 import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import { EditPaintSurface } from "./EditPaintSurface";
 import { normalizeCanvas } from "~/Helpers/CanvasHelpers";
+import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 
 const PageEdit = () => {
   //useStateSceneLoader();
@@ -36,6 +37,7 @@ const PageEdit = () => {
   const leftPanelRef = useRef<Konva.Layer>({} as Konva.Layer);
   const rectRef = useRef<Konva.Rect>({} as Konva.Rect);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
+  const [baseImage, setBaseImage] = useState<BaseSelectorImage | null>(null);
 
   // Use the Zustand store
   const store = useEditStore();
@@ -223,6 +225,19 @@ const PageEdit = () => {
     fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
   };
 
+  // Display image selector on launch, otherwise hide it
+  if (!baseImage) {
+    return (
+      <div className={"h-screen w-full flex items-center justify-center bg-ui-panel"}>
+        <BaseImageSelector
+          onImageSelect={(image: BaseSelectorImage) => {
+            setBaseImage(image);
+          }}
+        />
+      </div>
+    )
+  }
+
   return (
     <>
       <div
@@ -230,99 +245,11 @@ const PageEdit = () => {
           }`}
       >
         <PromptEditor
-          initialPrompt=""
-          onPromptChange={(prompt: string) => {
-            console.log("Prompt changed:", prompt);
-            // Handle prompt changes here
-          }}
-          onRandomize={() => {
-            console.log("Randomize clicked");
-            // Handle randomize action here
-          }}
-          onVary={() => {
-            console.log("Vary clicked");
-            // Handle vary action here
-          }}
           onModeChange={(mode: string) => { store.setActiveTool(mode as ActiveEditTool) }}
           selectedMode={store.activeTool}
-          onEnqueuePressed={onEnqueuedPressed}
           onGenerateClick={downloadLeftPanelBitmap}
         />
       </div>
-      <SideToolbar
-        className="fixed left-0 top-1/2 z-10 -translate-y-1/2 transform"
-        onSelect={(): void => {
-          store.setActiveTool("select");
-        }}
-        onAddShape={(shape: "rectangle" | "circle" | "triangle"): void => {
-        }}
-        onPaintBrush={(hex: string, size: number, opacity: number): void => {
-          // store.setActiveTool("draw");
-          // store.setBrushColor(hex);
-          // store.setBrushSize(size);
-          // store.setBrushOpacity(opacity);
-        }}
-        onEraser={(size: number): void => {
-          // store.setActiveTool("eraser");
-          // store.setBrushSize(size);
-        }}
-        onCanvasBackground={(hex: string): void => {
-          console.log("Canvas background activated", { color: hex });
-          // Add background change logic here
-          // TODO: minor bug needs to update the preview panel
-          // Debounce also causes issues with real time color change.
-          store.setFillColor(hex);
-        }}
-        onGenerateImage={(): void => {
-          console.log("Generate image activated");
-          // Add image generation logic here
-        }}
-        onUploadImage={(): void => {
-          // Create input element dynamically like in PromptEditor
-          console.log("Upload image activated");
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "image/*";
-          input.multiple = true;
-          input.style.display = "none"; // Hide the input
-
-          // Attach to DOM
-          document.body.appendChild(input);
-
-          input.onchange = (e: Event) => {
-            console.log("File change event triggered");
-            const target = e.target as HTMLInputElement;
-            if (target.files) {
-              const files = Array.from(target.files);
-              console.log("Selected files:", files);
-              const imageFiles = files.filter((file) =>
-                file.type.startsWith("image/"),
-              );
-              console.log("Filtered image files:", imageFiles);
-
-              if (imageFiles.length > 0) {
-                console.log("Uploading images:", imageFiles);
-                handleImageUpload(imageFiles);
-              } else {
-                console.log("No valid image files selected");
-              }
-            } else {
-              console.log("No files selected");
-            }
-            // Clean up: remove input from DOM after use
-            document.body.removeChild(input);
-          };
-
-          // Reset value before click (for same file selection)
-          input.value = "";
-          input.click();
-        }}
-        onDelete={(): void => {
-          // This onDelete prop for SideToolbar might still be needed for the button
-          store.deleteSelectedItems();
-        }}
-        activeToolId={store.activeTool}
-      />
       <div className="relative z-0">
         <ContextMenuContainer
           onAction={(e, action) => {
