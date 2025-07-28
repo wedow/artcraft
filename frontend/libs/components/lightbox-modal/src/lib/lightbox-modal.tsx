@@ -291,6 +291,7 @@ export function LightboxModal({
                           : contextImage.media_links.cdn_url;
 
                         return (
+                          // Hover preview
                           <Tooltip
                             key={contextImage.media_token}
                             className="bg-black p-1.5"
@@ -300,7 +301,7 @@ export function LightboxModal({
                                   <img
                                     src={fullSizeUrl}
                                     alt={`Reference image ${index + 1} preview`}
-                                    className="w-48 h-48 object-cover rounded-lg"
+                                    className="w-auto h-48 object-cover rounded-lg"
                                   />
                                 </div>
                                 {contextImage.semantic && (
