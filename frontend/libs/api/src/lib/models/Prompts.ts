@@ -13,4 +13,22 @@ export interface Prompts {
   use_cinematic: boolean;
   used_face_detailer: boolean;
   used_upscaler: boolean;
+  maybe_model_type: string;
+  maybe_generation_provider: string;
+  maybe_context_images: [
+    {
+      media_links: {
+        cdn_url: string;
+        maybe_thumbnail_template: string;
+        maybe_video_previews: {
+          animated: string;
+          animated_thumbnail_template: string;
+          still: string;
+          still_thumbnail_template: string;
+        };
+      };
+      media_token: string;
+      semantic: string;
+    }
+  ];
 }

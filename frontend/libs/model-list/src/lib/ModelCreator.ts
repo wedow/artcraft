@@ -1,4 +1,3 @@
-
 export enum ModelCreator {
   BlackForestLabs = "BlackForestLabs",
   Bytedance = "Bytedance",
@@ -9,4 +8,6 @@ export enum ModelCreator {
   OpenAi = "OpenAi",
   Runway = "Runway",
   Stability = "Stability",
+  Tencent = "Tencent",
+  Recraft = "Recraft",
 }

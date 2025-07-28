@@ -9,6 +9,8 @@ export const CREATOR_ICON_PATHS: Partial<Record<ModelCreator, string>> = {
   [ModelCreator.OpenAi]: "/resources/images/services/openai.svg",
   [ModelCreator.Bytedance]: "/resources/images/services/bytedance.svg",
   [ModelCreator.Google]: "/resources/images/services/google.svg",
+  [ModelCreator.Recraft]: "/resources/images/services/recraft.svg",
+  [ModelCreator.Tencent]: "/resources/images/services/tencent.svg",
 };
 
 export const getCreatorIconPath = (creator: ModelCreator): string | undefined =>

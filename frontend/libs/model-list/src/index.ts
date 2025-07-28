@@ -4,3 +4,4 @@ export * from "./lib/ModelCreator.js";
 export * from "./lib/ImageModels.js";
 export * from "./lib/VideoModels.js";
 export * from "./lib/ModelCreatorIcons.js";
+export * from "./lib/ModelTypeMapping.js";

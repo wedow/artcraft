@@ -14,6 +14,12 @@ import { toast } from "@storyteller/ui-toaster";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
+import {
+  getModelCreatorIcon,
+  getModelDisplayName,
+  getProviderDisplayName,
+} from "@storyteller/model-list";
+import { Tooltip } from "@storyteller/ui-tooltip";
 
 interface LightboxModalProps {
   isOpen: boolean;
@@ -63,6 +69,18 @@ export function LightboxModal({
   const [promptLoading, setPromptLoading] = React.useState<boolean>(false);
   const [hasPromptToken, setHasPromptToken] = React.useState<boolean>(false);
   const [isPromptHovered, setIsPromptHovered] = React.useState<boolean>(false);
+  const [generationProvider, setGenerationProvider] = React.useState<
+    string | null
+  >(null);
+  const [modelType, setModelType] = React.useState<string | null>(null);
+  const [contextImages, setContextImages] = React.useState<Array<{
+    media_links: {
+      cdn_url: string;
+      maybe_thumbnail_template: string;
+    };
+    media_token: string;
+    semantic: string;
+  }> | null>(null);
 
   // Reset when imageUrl changes
   React.useEffect(() => {
@@ -75,6 +93,9 @@ export function LightboxModal({
       if (!mediaId) {
         setPrompt(null);
         setHasPromptToken(false);
+        setGenerationProvider(null);
+        setModelType(null);
+        setContextImages(null);
         return;
       }
 
@@ -92,22 +113,32 @@ export function LightboxModal({
             token: mediaResponse.data.maybe_prompt_token,
           });
 
-          if (
-            promptResponse.success &&
-            promptResponse.data?.maybe_positive_prompt
-          ) {
-            setPrompt(promptResponse.data.maybe_positive_prompt);
+          if (promptResponse.success && promptResponse.data) {
+            const promptData = promptResponse.data;
+            setPrompt(promptData.maybe_positive_prompt || null);
+            setGenerationProvider(promptData.maybe_generation_provider || null);
+            setModelType(promptData.maybe_model_type || null);
+            setContextImages(promptData.maybe_context_images || null);
           } else {
             setPrompt(null);
+            setGenerationProvider(null);
+            setModelType(null);
+            setContextImages(null);
           }
         } else {
           setHasPromptToken(false);
           setPrompt(null);
+          setGenerationProvider(null);
+          setModelType(null);
+          setContextImages(null);
         }
       } catch (error) {
         console.error("Error fetching prompt:", error);
         setHasPromptToken(false);
         setPrompt(null);
+        setGenerationProvider(null);
+        setModelType(null);
+        setContextImages(null);
       } finally {
         setPromptLoading(false);
       }
@@ -185,51 +216,164 @@ export function LightboxModal({
                 </div>
               </div>
             )}
+
             {hasPromptToken && (
-              <div className="relative space-y-1.5">
-                <div className="text-sm font-medium text-white/90">Prompt</div>
-                <div
-                  className={twMerge(
-                    "relative text-sm text-white/90 break-words bg-black/20 p-3 rounded-lg cursor-pointer transition-colors duration-100 leading-relaxed",
-                    isPromptHovered && "bg-black/30"
-                  )}
-                  onMouseEnter={() => setIsPromptHovered(true)}
-                  onMouseLeave={() => setIsPromptHovered(false)}
-                  onClick={() => {
-                    if (!prompt) return;
-                    navigator.clipboard.writeText(prompt).catch(() => {});
-                    toast.success("Prompt copied");
-                  }}
-                >
-                  {promptLoading ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner className="h-4 w-4" />
-                      <span className="text-sm text-white/80">
-                        Loading prompt...
-                      </span>
+              <>
+                {/* Prompt */}
+                <div className="relative space-y-1.5">
+                  <div className="text-sm font-medium text-white/90">
+                    Prompt
+                  </div>
+                  <div
+                    className={twMerge(
+                      "relative text-sm text-white/90 break-words bg-black/20 p-3 rounded-lg cursor-pointer transition-colors duration-100 leading-relaxed",
+                      isPromptHovered && "bg-black/30"
+                    )}
+                    onMouseEnter={() => setIsPromptHovered(true)}
+                    onMouseLeave={() => setIsPromptHovered(false)}
+                    onClick={() => {
+                      if (!prompt) return;
+                      navigator.clipboard.writeText(prompt).catch(() => {});
+                      toast.success("Prompt copied");
+                    }}
+                  >
+                    {promptLoading ? (
+                      <div className="flex items-center gap-2">
+                        <LoadingSpinner className="h-4 w-4" />
+                        <span className="text-sm text-white/80">
+                          Loading prompt...
+                        </span>
+                      </div>
+                    ) : (
+                      prompt || (
+                        <span className="text-sm text-white/90">No prompt</span>
+                      )
+                    )}
+                  </div>
+
+                  {!promptLoading && (
+                    <div
+                      className={twMerge(
+                        "pointer-events-none absolute inset-0 flex items-end justify-end opacity-0 transition-opacity duration-50",
+                        isPromptHovered && "opacity-100"
+                      )}
+                    >
+                      <div className="flex items-center gap-1 text-xs text-white/80 bg-black/80 backdrop-blur-md p-1.5 rounded-tl-lg rounded-br-lg">
+                        <FontAwesomeIcon icon={faCopy} className="h-3 w-3" />
+                        <span>Copy prompt</span>
+                      </div>
                     </div>
-                  ) : (
-                    prompt || (
-                      <span className="text-sm text-white/90">No prompt</span>
-                    )
                   )}
                 </div>
 
-                {!promptLoading && (
-                  <div
-                    className={twMerge(
-                      "pointer-events-none absolute inset-0 flex items-end justify-end opacity-0 transition-opacity duration-50",
-                      isPromptHovered && "opacity-100"
-                    )}
-                  >
-                    <div className="flex items-center gap-1 text-xs text-white/80 bg-black/80 backdrop-blur-md p-1.5 rounded-tl-lg rounded-br-lg">
-                      <FontAwesomeIcon icon={faCopy} className="h-3 w-3" />
-                      <span>Copy prompt</span>
+                {/* Context Images */}
+                {contextImages && contextImages.length > 0 && (
+                  <div className="space-y-1.5">
+                    <div className="text-sm font-medium text-white/90">
+                      Reference Images
+                    </div>
+                    <div className="grid grid-cols-6 gap-2">
+                      {contextImages.map((contextImage, index) => {
+                        const thumbnailUrl = contextImage.media_links
+                          .maybe_thumbnail_template
+                          ? contextImage.media_links.maybe_thumbnail_template.replace(
+                              "{WIDTH}",
+                              "128"
+                            )
+                          : contextImage.media_links.cdn_url;
+
+                        const fullSizeUrl = contextImage.media_links
+                          .maybe_thumbnail_template
+                          ? contextImage.media_links.maybe_thumbnail_template.replace(
+                              "{WIDTH}",
+                              "512"
+                            )
+                          : contextImage.media_links.cdn_url;
+
+                        return (
+                          <Tooltip
+                            key={contextImage.media_token}
+                            className="bg-black p-1.5"
+                            content={
+                              <div>
+                                <div className="flex flex-col items-center bg-white/10 rounded-lg">
+                                  <img
+                                    src={fullSizeUrl}
+                                    alt={`Reference image ${index + 1} preview`}
+                                    className="w-48 h-48 object-cover rounded-lg"
+                                  />
+                                </div>
+                                {contextImage.semantic && (
+                                  <div className="mt-2 text-xs text-white/90 text-center max-w-48 px-1">
+                                    {contextImage.semantic}
+                                  </div>
+                                )}
+                              </div>
+                            }
+                            position="top"
+                            delay={300}
+                            closeOnClick={true}
+                          >
+                            <div
+                              className="relative group cursor-pointer"
+                              onClick={() => {
+                                window.open(
+                                  contextImage.media_links.cdn_url,
+                                  "_blank"
+                                );
+                              }}
+                            >
+                              <div className="relative overflow-hidden rounded-lg border border-white/5 bg-white/10 aspect-square">
+                                <img
+                                  src={thumbnailUrl}
+                                  alt={`Reference image ${index + 1}`}
+                                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                />
+                              </div>
+                            </div>
+                          </Tooltip>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
-              </div>
+
+                {/* Generation Details */}
+                {(generationProvider || modelType) && (
+                  <div className="space-y-1.5">
+                    <div className="text-sm font-medium text-white/90">
+                      Generation Details
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {generationProvider && (
+                        <div className="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg border border-white/5">
+                          <span className="text-sm text-white/70 font-medium">
+                            Provider
+                          </span>
+                          <span className="text-sm text-white/90 rounded">
+                            {getProviderDisplayName(generationProvider)}
+                          </span>
+                        </div>
+                      )}
+                      {modelType && (
+                        <div className="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg border border-white/5">
+                          <span className="text-sm text-white/70 font-medium">
+                            Model
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {getModelCreatorIcon(modelType)}
+                            <span className="text-sm text-white/90 rounded">
+                              {getModelDisplayName(modelType)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
+
             {additionalInfo}
           </div>
 
