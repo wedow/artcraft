@@ -345,16 +345,6 @@ export function LightboxModal({
                       Generation Details
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      {generationProvider && (
-                        <div className="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg border border-white/5">
-                          <span className="text-sm text-white/70 font-medium">
-                            Provider
-                          </span>
-                          <span className="text-sm text-white/90 rounded">
-                            {getProviderDisplayName(generationProvider)}
-                          </span>
-                        </div>
-                      )}
                       {modelType && (
                         <div className="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg border border-white/5">
                           <span className="text-sm text-white/70 font-medium">
@@ -366,6 +356,16 @@ export function LightboxModal({
                               {getModelDisplayName(modelType)}
                             </span>
                           </div>
+                        </div>
+                      )}
+                      {generationProvider && (
+                        <div className="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg border border-white/5">
+                          <span className="text-sm text-white/70 font-medium">
+                            Provider
+                          </span>
+                          <span className="text-sm text-white/90 rounded">
+                            {getProviderDisplayName(generationProvider)}
+                          </span>
                         </div>
                       )}
                     </div>
