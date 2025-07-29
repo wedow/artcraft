@@ -59,10 +59,12 @@ interface PromptImageStore {
   aspectRatio: AspectRatio;
   useSystemPrompt: boolean;
   referenceImages: RefImage[];
+  generationCount: number;
   setPrompt: (prompt: string) => void;
   setAspectRatio: (ratio: AspectRatio) => void;
   setUseSystemPrompt: (value: boolean) => void;
   setReferenceImages: (images: RefImage[]) => void;
+  setGenerationCount: (count: number) => void;
 }
 
 export const usePromptImageStore = create<PromptImageStore>()((set) => ({
@@ -70,10 +72,12 @@ export const usePromptImageStore = create<PromptImageStore>()((set) => ({
   aspectRatio: "3:2",
   useSystemPrompt: true,
   referenceImages: [],
+  generationCount: 1,
   setPrompt: (prompt) => set({ prompt }),
   setAspectRatio: (aspectRatio) => set({ aspectRatio }),
   setUseSystemPrompt: (useSystemPrompt) => set({ useSystemPrompt }),
   setReferenceImages: (referenceImages) => set({ referenceImages }),
+  setGenerationCount: (generationCount) => set({ generationCount }),
 }));
 
 // ----- Video Prompt Box Store -----

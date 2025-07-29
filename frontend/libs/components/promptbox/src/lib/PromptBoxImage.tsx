@@ -18,6 +18,7 @@ import {
   faTimes,
   faPlus,
   faImages,
+  faCopy,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faRectangle,
@@ -72,6 +73,8 @@ export const PromptBoxImage = ({
   const setUseSystemPrompt = usePromptImageStore((s) => s.setUseSystemPrompt);
   const aspectRatio = usePromptImageStore((s) => s.aspectRatio);
   const setAspectRatio = usePromptImageStore((s) => s.setAspectRatio);
+  const generationCount = usePromptImageStore((s) => s.generationCount);
+  const setGenerationCount = usePromptImageStore((s) => s.setGenerationCount);
   const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
@@ -98,6 +101,30 @@ export const PromptBoxImage = ({
       icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
     },
   ]);
+  const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
+    [
+      {
+        label: "1",
+        selected: generationCount === 1,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+      {
+        label: "2",
+        selected: generationCount === 2,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+      {
+        label: "3",
+        selected: generationCount === 3,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+      {
+        label: "4",
+        selected: generationCount === 4,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+    ]
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -121,9 +148,38 @@ export const PromptBoxImage = ({
     }
   }, [imageMediaId, url]);
 
+  useEffect(() => {
+    setAspectRatioList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === aspectRatio,
+      }))
+    );
+  }, [aspectRatio]);
+
+  useEffect(() => {
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === generationCount.toString(),
+      }))
+    );
+  }, [generationCount]);
+
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
     setAspectRatio(selectedItem.label as any);
     setAspectRatioList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === selectedItem.label,
+      }))
+    );
+  };
+
+  const handleGenerationCountSelect = (selectedItem: PopoverItem) => {
+    const count = parseInt(selectedItem.label, 10);
+    setGenerationCount(count);
+    setGenerationCountList((prev) =>
       prev.map((item) => ({
         ...item,
         selected: item.label === selectedItem.label,
@@ -197,8 +253,6 @@ export const PromptBoxImage = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
-    console.log("PromptBoxImage - Prompting with model", modelInfo);
-
     gtagEvent("enqueue_image");
 
     setTimeout(() => {
@@ -214,6 +268,7 @@ export const PromptBoxImage = ({
       prompt: prompt,
       model: modelInfo,
       aspect_ratio: aspectRatio,
+      //generation_count: generationCount, TODO: Backend doesn't support generation count yet?
     });
 
     console.log("PromptBoxImage - generateResponse", generateResponse);
@@ -382,6 +437,24 @@ export const PromptBoxImage = ({
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
+              <Tooltip
+                content="Number of generations"
+                position="top"
+                className="z-50"
+                closeOnClick={true}
+              >
+                <PopoverMenu
+                  items={generationCountList}
+                  onSelect={handleGenerationCountSelect}
+                  mode="toggle"
+                  triggerIcon={
+                    <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
+                  }
+                  panelClassName="min-w-28"
+                  panelTitle="No. of images"
+                  buttonClassName="h-9"
+                />
+              </Tooltip>
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isEnqueueing ? faSparkles : undefined}
