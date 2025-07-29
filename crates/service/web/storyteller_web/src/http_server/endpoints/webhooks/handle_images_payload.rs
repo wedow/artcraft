@@ -7,8 +7,10 @@ use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCat
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use errors::AnyhowResult;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
+use images::encoding::webp_bytes_to_png_bytes::webp_bytes_to_png_bytes;
 use images::image_info::image_info::ImageInfo;
 use log::info;
+use mimetypes::mimetype_info::file_extension::FileExtension;
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id::FalJobDetails;
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
@@ -53,7 +55,7 @@ pub async fn handle_images_payload(
   Ok(maybe_media_token)
 }
 
-pub async fn upload_image(
+async fn upload_image(
   job: &FalJobDetails,
   server_state: &ServerState,
   image: &FalWebhookImage,
@@ -73,10 +75,57 @@ pub async fn upload_image(
   let mimetype_info = MimetypeInfo::get_for_bytes(&file_bytes)
       .ok_or_else(|| anyhow!("Failed to get mimetype info"))?;
 
+  info!("File type: {}, extension: {:?}",
+       mimetype_info.mime_type(),
+       mimetype_info.file_extension());
+
+  match mimetype_info.file_extension() {
+    Some(FileExtension::Webp) => {
+      info!("Artcraft can't handle WebP images yet; converting to PNG...");
+
+      let file_bytes = webp_bytes_to_png_bytes(&file_bytes)?;
+
+      let mimetype_info = MimetypeInfo::get_for_bytes(&file_bytes)
+          .ok_or_else(|| anyhow!("Failed to get mimetype info"))?;
+
+      info!("Updated file type: {}, extension: {:?}",
+        mimetype_info.mime_type(),
+        mimetype_info.file_extension());
+
+      upload_image_bytes(
+        job,
+        server_state,
+        image,
+        &file_bytes,
+        mimetype_info,
+      ).await
+    }
+    _ => {
+      upload_image_bytes(
+        job,
+        server_state,
+        image,
+        &file_bytes,
+        mimetype_info,
+      ).await
+    }
+  }
+}
+
+async fn upload_image_bytes(
+  job: &FalJobDetails,
+  server_state: &ServerState,
+  image: &FalWebhookImage,
+  file_bytes: &[u8],
+  mimetype_info: MimetypeInfo,
+) -> AnyhowResult<MediaFileToken> {
+
   let mime_type = mimetype_info.mime_type();
 
   let media_file_type = MediaFileType::try_from_mime_type(mime_type)
       .ok_or_else(|| anyhow!("Unsupported media file type: {}", mime_type))?;
+
+  info!("MediaFileType: {:?}", media_file_type);
 
   let extension_with_period = mimetype_info.file_extension()
       .map(|ext| ext.extension_with_period())
