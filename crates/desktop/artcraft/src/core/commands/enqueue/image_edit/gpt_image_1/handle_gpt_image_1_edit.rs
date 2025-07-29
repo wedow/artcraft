@@ -1,7 +1,7 @@
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::EnqueueContextualEditImageCommand;
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_artcraft::handle_gpt_image_1_artcraft;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
+use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_artcraft::handle_gpt_image_1_edit_artcraft;
+use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_sora::handle_gpt_image_1_edit_sora;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -16,7 +16,7 @@ use tauri::AppHandle;
 
 pub(super) const MAX_IMAGES: usize = 10;
 
-pub async fn handle_gpt_image_1(
+pub async fn handle_gpt_image_1_edit(
   request: &EnqueueContextualEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -44,8 +44,8 @@ pub async fn handle_gpt_image_1(
         // the API nicer to deal with, but the user needs an additional key.
       }
       Provider::Artcraft => {
-        info!("Dispatching gpt-image-1 via Artcraft...");
-        return handle_gpt_image_1_artcraft(
+        info!("Dispatching gpt-image-1 (edit) via Artcraft...");
+        return handle_gpt_image_1_edit_artcraft(
           request, 
           app,
           app_data_root,
@@ -54,8 +54,8 @@ pub async fn handle_gpt_image_1(
         ).await;
       }
       Provider::Sora => {
-        info!("Dispatching gpt-image-1 via Sora...");
-        return handle_gpt_image_1_sora(
+        info!("Dispatching gpt-image-1 (edit) via Sora...");
+        return handle_gpt_image_1_edit_sora(
           request, 
           app,
           app_data_root,

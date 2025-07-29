@@ -141,6 +141,11 @@ use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageNumImages;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
+use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageImageQuality;
+use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageImageSize;
+use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageNumImages;
+use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageRequest;
+use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageResponse;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
 use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
@@ -237,6 +242,7 @@ use tokens::tokens::zs_voice_datasets::*;
     crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler,
     crate::http_server::endpoints::generate::image::generate_flux_1_schnell_text_to_image_handler::generate_flux_1_schnell_text_to_image_handler,
     crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler,
+    crate::http_server::endpoints::generate::image::generate_gpt_image_1_text_to_image_handler::generate_gpt_image_1_text_to_image_handler,
     crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler,
     crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler,
     crate::http_server::endpoints::generate::image::edit::gpt_image_1_edit_image_handler::gpt_image_1_edit_image_handler,
@@ -420,6 +426,11 @@ use tokens::tokens::zs_voice_datasets::*;
     BatchGetUserRatingError,
     BatchGetUserRatingQueryParams,
     BatchGetUserRatingResponse,
+    GenerateGptImage1TextToImageImageQuality,
+    GenerateGptImage1TextToImageImageSize,
+    GenerateGptImage1TextToImageNumImages,
+    GenerateGptImage1TextToImageRequest,
+    GenerateGptImage1TextToImageResponse,
     BatchInferenceJobStatusResponsePayload,
     BatchMediaFileInfo,
     BatchRequestDetailsResponse,

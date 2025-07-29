@@ -4,8 +4,8 @@ use crate::core::commands::enqueue::image_bg_removal::generic::handle_generic_bg
 use crate::core::commands::enqueue::image_bg_removal::generic::handle_generic_bg_removal_fal::handle_generic_bg_removal_fal;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::EnqueueContextualEditImageCommand;
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_artcraft::handle_gpt_image_1_artcraft;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
+use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_artcraft::handle_gpt_image_1_edit_artcraft;
+use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_sora::handle_gpt_image_1_edit_sora;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;

@@ -17,12 +17,14 @@ export interface EnqueueTextToImageRequest {
   prompt?: string;
   model?: ModelInfo | EnqueueTextToImageModel;
   aspect_ratio?: EnqueueTextToImageSize;
+  number_images?: number;
 }
 
 interface EnqueueTextToImageRawRequest {
   prompt?: string;
   model?: EnqueueTextToImageModel | string; // TODO: Shouldn't allow string
   aspect_ratio?: EnqueueTextToImageSize;
+  number_images?: number;
 }
 
 export enum EnqueueTextToImageModel {
@@ -73,6 +75,10 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
 
   if (!!request.aspect_ratio) {
     mutableRequest.aspect_ratio = request.aspect_ratio;
+  }
+
+  if (!!request.number_images) {
+    mutableRequest.number_images = request.number_images;
   }
 
   const result = await invoke("enqueue_text_to_image_command", { 

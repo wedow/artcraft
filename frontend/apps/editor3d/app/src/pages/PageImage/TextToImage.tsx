@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { JobContextType } from "@storyteller/common";
 import { PromptBoxImage } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
@@ -27,6 +27,13 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const selectedModelInfo: ModelInfo | undefined =
     IMAGE_MODELS_BY_LABEL[selectedModel];
 
+  const [numberImages, setNumberImages] = useState(1);
+
+  const handleNumberImagesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setNumberImages(parseInt(value));
+  };
+
   const jobContext: JobContextType = {
     jobTokens: [],
     addJobToken: () => {},
@@ -46,6 +53,14 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
             <span className="pt-2 text-xl opacity-80">
               Add a prompt, then generate
             </span>
+
+
+            <select onChange={handleNumberImagesChange} value={numberImages}>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
           </div>
 
           <PromptBoxImage
@@ -53,6 +68,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
               console.log("Using job context");
               return jobContext;
             }}
+            numberImages={numberImages}
             model={selectedModel}
             modelInfo={selectedModelInfo}
             imageMediaId={imageMediaId}

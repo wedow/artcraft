@@ -19,9 +19,9 @@ use tauri::AppHandle;
 
 const SORA_SIMPLE_IMAGE_GEN_TIMEOUT : Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
-pub async fn handle_image_sora(
-  app: &AppHandle,
+pub async fn handle_gpt_image_1_sora(
   request: EnqueueTextToImageRequest,
+  app: &AppHandle,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {
@@ -55,10 +55,19 @@ pub async fn handle_image_sora(
     Some(TextToImageSize::Wide) => ImageSize::Wide,
   };
 
+  let num_images = match request.number_images {
+    None => NumImages::One,
+    Some(1) => NumImages::One,
+    Some(2) => NumImages::Two,
+    Some(3) => NumImages::Two, // NB: There is no option for three images!
+    Some(4) => NumImages::Four,
+    _ => NumImages::One,
+  };
+
   let result =
       simple_image_gen_with_session_auto_renew(SimpleImageGenAutoRenewRequest {
         prompt: prompt.to_string(),
-        num_images: NumImages::One,
+        num_images,
         image_size: size,
         credentials: &creds,
         request_timeout: Some(SORA_SIMPLE_IMAGE_GEN_TIMEOUT),

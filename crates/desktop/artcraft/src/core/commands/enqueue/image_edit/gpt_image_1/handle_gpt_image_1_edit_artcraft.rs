@@ -2,7 +2,7 @@ use crate::core::commands::enqueue::image::enqueue_text_to_image_command::Enqueu
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1::MAX_IMAGES;
+use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::MAX_IMAGES;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -36,7 +36,7 @@ use tauri::AppHandle;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 
-pub async fn handle_gpt_image_1_artcraft(
+pub async fn handle_gpt_image_1_edit_artcraft(
   request: &EnqueueContextualEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -51,7 +51,7 @@ pub async fn handle_gpt_image_1_artcraft(
     },
   };
 
-  info!("Calling Artcraft gpt-image-1 ...");
+  info!("Calling Artcraft gpt-image-1 (edit) ...");
 
   let uuid_idempotency_token = generate_random_uuid();
   

@@ -1,6 +1,7 @@
 use crate::core::commands::enqueue::image::generic::handle_image_artcraft::handle_image_artcraft;
 use crate::core::commands::enqueue::image::generic::handle_image_fal::handle_image_fal;
-use crate::core::commands::enqueue::image::gpt_image_1::handle_image_sora::handle_image_sora;
+use crate::core::commands::enqueue::image::gpt_image_1::handle_gpt_image_1::handle_gpt_image_1;
+use crate::core::commands::enqueue::image::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
@@ -39,6 +40,9 @@ pub struct EnqueueTextToImageRequest {
 
   /// Aspect ratio.
   pub aspect_ratio: Option<TextToImageSize>,
+
+  /// The number of images to generate.
+  pub number_images: Option<u32>,
 }
 
 // TODO(bt,2025-07-14): Support other aspect ratios / resolutions -
@@ -224,7 +228,16 @@ pub async fn dispatch_request(
       return Err(InternalImageError::NoModelSpecified);
     }
     Some(ImageModel::GptImage1) => {
-      return handle_image_sora(&app, request, sora_creds_manager, sora_task_queue).await;
+      return handle_gpt_image_1(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        sora_creds_manager, 
+        sora_task_queue,
+      ).await;
     }
     _ => {
       // Fall-through

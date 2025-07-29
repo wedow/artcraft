@@ -8,6 +8,7 @@ import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
 import {
   EnqueueTextToImage,
+  EnqueueTextToImageRequest,
   EnqueueTextToImageSize,
 } from "@storyteller/tauri-api";
 import {
@@ -37,6 +38,7 @@ interface PromptBoxImageProps {
   model: string;
   modelInfo?: ModelInfo;
   imageMediaId?: string;
+  numberImages: number;
   url?: string;
 }
 
@@ -46,6 +48,7 @@ export const PromptBoxImage = ({
   model,
   modelInfo,
   imageMediaId,
+  numberImages,
   url,
 }: PromptBoxImageProps) => {
   useSignals();
@@ -210,11 +213,17 @@ export const PromptBoxImage = ({
 
     const aspectRatio = getCurrentAspectRatio();
 
-    const generateResponse = await EnqueueTextToImage({
+    let request : EnqueueTextToImageRequest = {
       prompt: prompt,
       model: modelInfo,
       aspect_ratio: aspectRatio,
-    });
+    };
+
+    if (numberImages >= 1 && numberImages <= 4) {
+      request.number_images = numberImages;
+    }
+
+    const generateResponse = await EnqueueTextToImage(request);
 
     console.log("PromptBoxImage - generateResponse", generateResponse);
 
