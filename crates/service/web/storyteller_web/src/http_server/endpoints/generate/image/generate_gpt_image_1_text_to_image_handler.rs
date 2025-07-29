@@ -15,9 +15,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
-use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::enqueue_gpt_image_1_edit_image_webhook;
-use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageNumImages;
-use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::{GptEditImageByokArgs, GptEditImageQuality, GptEditImageSize};
+use fal_client::requests::webhook::image::enqueue_gpt_image_1_text_to_image_webhook::{enqueue_gpt_image_1_text_to_image_webhook, GptTextToImageByokArgs, GptTextToImageNumImages, GptTextToImageQuality, GptTextToImageSize};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -92,34 +90,33 @@ pub async fn generate_gpt_image_1_text_to_image_handler(
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
 
   let image_size = match request.image_size {
-    Some(GenerateGptImage1TextToImageImageSize::Square) => GptEditImageSize::Square,
-    Some(GenerateGptImage1TextToImageImageSize::Horizontal) => GptEditImageSize::Horizontal,
-    Some(GenerateGptImage1TextToImageImageSize::Vertical) => GptEditImageSize::Vertical,
-    None => GptEditImageSize::Square, // Default to Square
+    Some(GenerateGptImage1TextToImageImageSize::Square) => GptTextToImageSize::Square,
+    Some(GenerateGptImage1TextToImageImageSize::Horizontal) => GptTextToImageSize::Horizontal,
+    Some(GenerateGptImage1TextToImageImageSize::Vertical) => GptTextToImageSize::Vertical,
+    None => GptTextToImageSize::Square, // Default to Square
   };
 
   let num_images = match request.num_images {
-    Some(GenerateGptImage1TextToImageNumImages::One) => GptEditImageNumImages::One,
-    Some(GenerateGptImage1TextToImageNumImages::Two) => GptEditImageNumImages::Two,
-    Some(GenerateGptImage1TextToImageNumImages::Three) => GptEditImageNumImages::Three,
-    Some(GenerateGptImage1TextToImageNumImages::Four) => GptEditImageNumImages::Four,
-    None => GptEditImageNumImages::One, // Default to One
+    Some(GenerateGptImage1TextToImageNumImages::One) => GptTextToImageNumImages::One,
+    Some(GenerateGptImage1TextToImageNumImages::Two) => GptTextToImageNumImages::Two,
+    Some(GenerateGptImage1TextToImageNumImages::Three) => GptTextToImageNumImages::Three,
+    Some(GenerateGptImage1TextToImageNumImages::Four) => GptTextToImageNumImages::Four,
+    None => GptTextToImageNumImages::One, // Default to One
   };
   
   let quality = match request.image_quality {
     Some(quality) => match quality {
-      GenerateGptImage1TextToImageImageQuality::Auto => GptEditImageQuality::Auto,
-      GenerateGptImage1TextToImageImageQuality::Low => GptEditImageQuality::Low,
-      GenerateGptImage1TextToImageImageQuality::Medium => GptEditImageQuality::Medium,
-      GenerateGptImage1TextToImageImageQuality::High => GptEditImageQuality::High,
+      GenerateGptImage1TextToImageImageQuality::Auto => GptTextToImageQuality::Auto,
+      GenerateGptImage1TextToImageImageQuality::Low => GptTextToImageQuality::Low,
+      GenerateGptImage1TextToImageImageQuality::Medium => GptTextToImageQuality::Medium,
+      GenerateGptImage1TextToImageImageQuality::High => GptTextToImageQuality::High,
     },
-    None => GptEditImageQuality::High, // Default to High
+    None => GptTextToImageQuality::High, // Default to High
   };
   
   let openai_api_key = OpenAiApiKey::from_str(&server_state.openai.api_key);
 
-  let args = GptEditImageByokArgs {
-    image_urls: vec![], // TODO(bt,2025-07-29): Don't call non-edit endpoint
+  let args = GptTextToImageByokArgs {
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
@@ -129,10 +126,10 @@ pub async fn generate_gpt_image_1_text_to_image_handler(
     openai_api_key: &openai_api_key,
   };
 
-  let fal_result = enqueue_gpt_image_1_edit_image_webhook(args)
+  let fal_result = enqueue_gpt_image_1_text_to_image_webhook(args)
       .await
       .map_err(|err| {
-        warn!("Error calling enqueue_gpt_image_1_edit_image_webhook: {:?}", err);
+        warn!("Error calling enqueue_gpt_image_1_text_to_image_webhook: {:?}", err);
         CommonWebError::ServerError
       })?;
 

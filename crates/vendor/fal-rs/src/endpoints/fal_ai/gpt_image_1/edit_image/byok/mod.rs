@@ -18,6 +18,22 @@ use crate::prelude::{Deserialize, FalRequest, Serialize};
 }
 */
 
+/// This is the non-edit, text-to-image only endpoint
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GptTextToImageRequest {
+  /// The prompt
+  pub prompt: String,
+
+  pub image_size: String,
+
+  pub num_images: u8,
+
+  pub quality: String,
+
+  pub openai_api_key: String,
+}
+
+/// This is edit-only, image-to-image endpoint
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GptEditImageRequest {
   /// The context images
@@ -37,6 +53,10 @@ pub struct GptEditImageRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ImageOutput {
+}
+
+pub fn gpt_text_to_image(params: GptTextToImageRequest) -> FalRequest<GptTextToImageRequest, ImageOutput> {
+  FalRequest::new("fal-ai/gpt-image-1/text-to-image/byok", params)
 }
 
 pub fn gpt_edit_image(params: GptEditImageRequest) -> FalRequest<GptEditImageRequest, ImageOutput> {
