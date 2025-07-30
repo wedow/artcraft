@@ -268,7 +268,7 @@ export const PromptBoxImage = ({
       prompt: prompt,
       model: modelInfo,
       aspect_ratio: aspectRatio,
-      //generation_count: generationCount, TODO: Backend doesn't support generation count yet?
+      number_images: generationCount,
     });
 
     console.log("PromptBoxImage - generateResponse", generateResponse);
