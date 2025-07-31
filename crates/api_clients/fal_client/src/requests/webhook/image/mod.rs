@@ -1,3 +1,4 @@
+pub mod edit;
 pub mod enqueue_flux_1_dev_text_to_image_webhook;
 pub mod enqueue_flux_1_schnell_text_to_image_webhook;
 pub mod enqueue_flux_pro_11_text_to_image_webhook;

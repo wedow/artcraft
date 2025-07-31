@@ -1,49 +1,47 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
-use fal::prelude::fal_ai::flux_pro::v1::fill::fill;
-use fal::prelude::fal_ai::flux_pro::v1::fill::FluxProFillInput;
+use fal::prelude::fal_ai::flux_pro::kontext::max::{max, FluxProKontextMaxInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
-pub struct FluxPro1InfillArgs<'a, U: IntoUrl, R: IntoUrl, L: IntoUrl> {
+pub struct FuxProKontextMaxArgs<'a, U: IntoUrl, R: IntoUrl> {
   // Request
   pub prompt: &'a str,
   pub image_url: U,
-  pub mask_url: R,
-  pub num_images: FluxPro1InfillNumImages,
+  pub num_images: FuxProKontextMaxNumImages,
 
   // Fulfillment
-  pub webhook_url: L,
+  pub webhook_url: R,
   pub api_key: &'a FalApiKey,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum FluxPro1InfillNumImages {
+pub enum FuxProKontextMaxNumImages {
   One, // Default
   Two,
   Three,
   Four,
 }
 
-pub async fn enqueue_flux_pro_1_infill_webhook<U: IntoUrl, R: IntoUrl, L: IntoUrl>(
-  args: FluxPro1InfillArgs<'_, U, R, L>
+pub async fn enqueue_flux_pro_kontext_max_edit_webhook<U: IntoUrl, R: IntoUrl>(
+  args: FuxProKontextMaxArgs<'_, U, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
 
   let num_images = match args.num_images {
-    FluxPro1InfillNumImages::One => 1,
-    FluxPro1InfillNumImages::Two => 2,
-    FluxPro1InfillNumImages::Three => 3,
-    FluxPro1InfillNumImages::Four => 4,
+    FuxProKontextMaxNumImages::One => 1,
+    FuxProKontextMaxNumImages::Two => 2,
+    FuxProKontextMaxNumImages::Three => 3,
+    FuxProKontextMaxNumImages::Four => 4,
   };
 
-  let request = FluxProFillInput {
+  let request = FluxProKontextMaxInput {
     prompt: args.prompt.to_string(),
     image_url: args.image_url.as_str().to_string(),
-    mask_url: args.mask_url.as_str().to_string(),
     num_images: Some(num_images),
 
     // Maybe expose
+    aspect_ratio: None,
     safety_tolerance: Some("5".to_string()), // NB: 5 is most tolerant
     output_format: Some("png".to_string()), // png or jpeg
     seed: None,
@@ -52,7 +50,7 @@ pub async fn enqueue_flux_pro_1_infill_webhook<U: IntoUrl, R: IntoUrl, L: IntoUr
     sync_mode: None, // Synchronous / slow
   };
 
-  let result = fill(request)
+  let result = max(request)
       .with_api_key(&args.api_key.0)
       .queue_webhook(args.webhook_url)
       .await;
@@ -63,10 +61,10 @@ pub async fn enqueue_flux_pro_1_infill_webhook<U: IntoUrl, R: IntoUrl, L: IntoUr
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::image::infill::enqueue_flux_pro_1_infill_webhook::{enqueue_flux_pro_1_infill_webhook, FluxPro1InfillArgs, FluxPro1InfillNumImages};
+  use crate::requests::webhook::image::edit::enqueue_flux_pro_kontext_max_edit_webhook::{enqueue_flux_pro_kontext_max_edit_webhook, FuxProKontextMaxArgs, FuxProKontextMaxNumImages};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use test_data::web::image_urls::{TALL_MOCHI_WITH_GLASSES_GLASSES_MASK_IMAGE_URL, TALL_MOCHI_WITH_GLASSES_IMAGE_URL};
+  use test_data::web::image_urls::TALL_MOCHI_WITH_GLASSES_IMAGE_URL;
 
   #[tokio::test]
   #[ignore]
@@ -76,16 +74,15 @@ mod tests {
 
     let api_key = FalApiKey::from_str(&secret);
 
-    let args = FluxPro1InfillArgs {
+    let args = FuxProKontextMaxArgs {
       image_url: TALL_MOCHI_WITH_GLASSES_IMAGE_URL,
-      mask_url: TALL_MOCHI_WITH_GLASSES_GLASSES_MASK_IMAGE_URL,
-      prompt: "slick sunglasses, cool glasses, reflection in glasses lenses",
+      prompt: "turn the glasses into sunglasses, make them sleek sunglasses with black rims, square shaped",
       api_key: &api_key,
       webhook_url: "https://example.com/webhook",
-      num_images: FluxPro1InfillNumImages::One,
+      num_images: FuxProKontextMaxNumImages::One,
     };
 
-    let result = enqueue_flux_pro_1_infill_webhook(args).await?;
+    let result = enqueue_flux_pro_kontext_max_edit_webhook(args).await?;
 
     Ok(())
   }
