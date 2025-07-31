@@ -1,0 +1,1 @@
+pub mod flux_pro_1_inpaint_handler;

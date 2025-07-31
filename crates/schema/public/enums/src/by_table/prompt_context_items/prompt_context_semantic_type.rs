@@ -19,6 +19,12 @@ pub enum PromptContextSemanticType {
   /// Image-to-Video ending frame
   VidEndFrame,
 
+  /// Source image, eg. for inpainting.
+  Imgsrc,
+
+  /// Image mask, eg. for inpainting.
+  Imgmask,
+
   /// Standard image reference without a semantic type (e.g. Sora/ChatGPT 4o/gpt-image-1)
   Imgref,
 
@@ -38,6 +44,8 @@ impl PromptContextSemanticType {
     match self {
       Self::VidStartFrame => "vid_start_frame",
       Self::VidEndFrame => "vid_end_frame",
+      Self::Imgsrc => "imgsrc",
+      Self::Imgmask => "imgmask",
       Self::Imgref => "imgref",
       Self::ImgrefCharacter => "imgref_character",
       Self::ImgrefStyle => "imgref_style",
@@ -49,6 +57,8 @@ impl PromptContextSemanticType {
     match value {
       "vid_start_frame" => Ok(Self::VidStartFrame),
       "vid_end_frame" => Ok(Self::VidEndFrame),
+      "imgsrc" => Ok(Self::Imgsrc),
+      "imgmask" => Ok(Self::Imgmask),
       "imgref" => Ok(Self::Imgref),
       "imgref_character" => Ok(Self::ImgrefCharacter),
       "imgref_style" => Ok(Self::ImgrefStyle),
@@ -63,6 +73,8 @@ impl PromptContextSemanticType {
     BTreeSet::from([
       Self::VidStartFrame,
       Self::VidEndFrame,
+      Self::Imgsrc,
+      Self::Imgmask,
       Self::Imgref,
       Self::ImgrefCharacter,
       Self::ImgrefStyle,
@@ -83,6 +95,8 @@ mod tests {
     fn test_serialization() {
       assert_serialization(PromptContextSemanticType::VidStartFrame, "vid_start_frame");
       assert_serialization(PromptContextSemanticType::VidEndFrame, "vid_end_frame");
+      assert_serialization(PromptContextSemanticType::Imgsrc, "imgsrc");
+      assert_serialization(PromptContextSemanticType::Imgmask, "imgmask");
       assert_serialization(PromptContextSemanticType::Imgref, "imgref");
       assert_serialization(PromptContextSemanticType::ImgrefCharacter, "imgref_character");
       assert_serialization(PromptContextSemanticType::ImgrefStyle, "imgref_style");
@@ -97,6 +111,8 @@ mod tests {
     fn to_str() {
       assert_eq!(PromptContextSemanticType::VidStartFrame.to_str(), "vid_start_frame");
       assert_eq!(PromptContextSemanticType::VidEndFrame.to_str(), "vid_end_frame");
+      assert_eq!(PromptContextSemanticType::Imgsrc.to_str(), "imgsrc");
+      assert_eq!(PromptContextSemanticType::Imgmask.to_str(), "imgmask");
       assert_eq!(PromptContextSemanticType::Imgref.to_str(), "imgref");
       assert_eq!(PromptContextSemanticType::ImgrefCharacter.to_str(), "imgref_character");
       assert_eq!(PromptContextSemanticType::ImgrefStyle.to_str(), "imgref_style");
@@ -107,6 +123,8 @@ mod tests {
     fn from_str() {
       assert_eq!(PromptContextSemanticType::from_str("vid_start_frame").unwrap(), PromptContextSemanticType::VidStartFrame);
       assert_eq!(PromptContextSemanticType::from_str("vid_end_frame").unwrap(), PromptContextSemanticType::VidEndFrame);
+      assert_eq!(PromptContextSemanticType::from_str("imgsrc").unwrap(), PromptContextSemanticType::Imgsrc);
+      assert_eq!(PromptContextSemanticType::from_str("imgmask").unwrap(), PromptContextSemanticType::Imgmask);
       assert_eq!(PromptContextSemanticType::from_str("imgref").unwrap(), PromptContextSemanticType::Imgref);
       assert_eq!(PromptContextSemanticType::from_str("imgref_character").unwrap(), PromptContextSemanticType::ImgrefCharacter);
       assert_eq!(PromptContextSemanticType::from_str("imgref_style").unwrap(), PromptContextSemanticType::ImgrefStyle);
@@ -121,9 +139,11 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = PromptContextSemanticType::all_variants();
-      assert_eq!(variants.len(), 6);
+      assert_eq!(variants.len(), 8);
       assert_eq!(variants.pop_first(), Some(PromptContextSemanticType::VidStartFrame));
       assert_eq!(variants.pop_first(), Some(PromptContextSemanticType::VidEndFrame));
+      assert_eq!(variants.pop_first(), Some(PromptContextSemanticType::Imgsrc));
+      assert_eq!(variants.pop_first(), Some(PromptContextSemanticType::Imgmask));
       assert_eq!(variants.pop_first(), Some(PromptContextSemanticType::Imgref));
       assert_eq!(variants.pop_first(), Some(PromptContextSemanticType::ImgrefCharacter));
       assert_eq!(variants.pop_first(), Some(PromptContextSemanticType::ImgrefStyle));

@@ -1,2 +1,3 @@
 pub mod gpt_image_1_edit_image;
+mod flux_pro_kontext_max_edit_image;
 
