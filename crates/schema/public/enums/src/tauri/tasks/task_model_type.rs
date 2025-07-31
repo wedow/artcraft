@@ -15,6 +15,9 @@ pub enum TaskModelType {
   Flux1Dev,
   #[serde(rename = "flux_1_schnell")]
   Flux1Schnell,
+  // NB: For inpainting for now
+  #[serde(rename = "flux_pro_1")]
+  FluxPro1,
   #[serde(rename = "flux_pro_1.1")]
   FluxPro11,
   #[serde(rename = "flux_pro_1.1_ultra")]
@@ -55,6 +58,7 @@ impl TaskModelType {
       // Image models
       Self::Flux1Dev => "flux_1_dev",
       Self::Flux1Schnell => "flux_1_schnell",
+      Self::FluxPro1 => "flux_pro_1",
       Self::FluxPro11 => "flux_pro_1.1",
       Self::FluxPro11Ultra => "flux_pro_1.1_ultra",
       Self::GptImage1 => "gpt_image_1",
@@ -76,6 +80,7 @@ impl TaskModelType {
       // Image models
       "flux_1_dev" => Ok(Self::Flux1Dev),
       "flux_1_schnell" => Ok(Self::Flux1Schnell),
+      "flux_pro_1" => Ok(Self::FluxPro1),
       "flux_pro_1.1" => Ok(Self::FluxPro11),
       "flux_pro_1.1_ultra" => Ok(Self::FluxPro11Ultra),
       "gpt_image_1" => Ok(Self::GptImage1),
@@ -100,6 +105,7 @@ impl TaskModelType {
       // Image models
       Self::Flux1Dev,
       Self::Flux1Schnell,
+      Self::FluxPro1,
       Self::FluxPro11,
       Self::FluxPro11Ultra,
       Self::GptImage1,
@@ -119,8 +125,8 @@ impl TaskModelType {
 
 #[cfg(test)]
 mod tests {
-  use crate::test_helpers::assert_serialization;
   use crate::tauri::tasks::task_model_type::TaskModelType;
+  use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;
@@ -130,6 +136,7 @@ mod tests {
       // Image models
       assert_serialization(TaskModelType::Flux1Dev, "flux_1_dev");
       assert_serialization(TaskModelType::Flux1Schnell, "flux_1_schnell");
+      assert_serialization(TaskModelType::FluxPro1, "flux_pro_1");
       assert_serialization(TaskModelType::FluxPro11, "flux_pro_1.1");
       assert_serialization(TaskModelType::FluxPro11Ultra, "flux_pro_1.1_ultra");
       assert_serialization(TaskModelType::GptImage1, "gpt_image_1");
@@ -150,6 +157,7 @@ mod tests {
       // Image models
       assert_eq!(TaskModelType::Flux1Dev.to_str(), "flux_1_dev");
       assert_eq!(TaskModelType::Flux1Schnell.to_str(), "flux_1_schnell");
+      assert_eq!(TaskModelType::FluxPro1.to_str(), "flux_pro_1");
       assert_eq!(TaskModelType::FluxPro11.to_str(), "flux_pro_1.1");
       assert_eq!(TaskModelType::FluxPro11Ultra.to_str(), "flux_pro_1.1_ultra");
       assert_eq!(TaskModelType::GptImage1.to_str(), "gpt_image_1");
@@ -170,6 +178,7 @@ mod tests {
       // Image models
       assert_eq!(TaskModelType::from_str("flux_1_dev").unwrap(), TaskModelType::Flux1Dev);
       assert_eq!(TaskModelType::from_str("flux_1_schnell").unwrap(), TaskModelType::Flux1Schnell);
+      assert_eq!(TaskModelType::from_str("flux_pro_1").unwrap(), TaskModelType::FluxPro1);
       assert_eq!(TaskModelType::from_str("flux_pro_1.1").unwrap(), TaskModelType::FluxPro11);
       assert_eq!(TaskModelType::from_str("flux_pro_1.1_ultra").unwrap(), TaskModelType::FluxPro11Ultra);
       assert_eq!(TaskModelType::from_str("gpt_image_1").unwrap(), TaskModelType::GptImage1);
@@ -188,10 +197,11 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 13);
+      assert_eq!(variants.len(), 14);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro1));
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro11));
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro11Ultra));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GptImage1));

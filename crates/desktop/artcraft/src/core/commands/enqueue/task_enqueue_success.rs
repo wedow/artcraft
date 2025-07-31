@@ -40,6 +40,7 @@ impl TaskEnqueueSuccess{
       None => None,
       Some(GenerationModel::Flux1Dev) => Some(TaskModelType::Flux1Dev),
       Some(GenerationModel::Flux1Schnell) => Some(TaskModelType::Flux1Schnell),
+      Some(GenerationModel::FluxPro1) => Some(TaskModelType::FluxPro1), // NB: This is for inpainting.
       Some(GenerationModel::FluxPro11) => Some(TaskModelType::FluxPro11),
       Some(GenerationModel::FluxPro11Ultra) => Some(TaskModelType::FluxPro11Ultra),
       Some(GenerationModel::GptImage1) => Some(TaskModelType::GptImage1),
