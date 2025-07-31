@@ -23,6 +23,8 @@ pub enum ModelType {
   FluxPro11,
   #[serde(rename = "flux_pro_1p1_ultra")]
   FluxPro11Ultra,
+  #[serde(rename = "flux_pro_kontext_max")]
+  FluxProKontextMax,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
   #[serde(rename = "recraft_3")]
@@ -66,6 +68,7 @@ impl ModelType {
       Self::FluxPro1 => "flux_pro_1",
       Self::FluxPro11 => "flux_pro_1p1",
       Self::FluxPro11Ultra => "flux_pro_1p1_ultra",
+      Self::FluxProKontextMax => "flux_pro_kontext_max",
       Self::GptImage1 => "gpt_image_1",
       Self::Recraft3 => "recraft_3",
 
@@ -90,6 +93,7 @@ impl ModelType {
       "flux_pro_1" => Ok(Self::FluxPro1),
       "flux_pro_1p1" => Ok(Self::FluxPro11),
       "flux_pro_1p1_ultra" => Ok(Self::FluxPro11Ultra),
+      "flux_pro_kontext_max" => Ok(Self::FluxProKontextMax),
       "gpt_image_1" => Ok(Self::GptImage1),
       "recraft_3" => Ok(Self::Recraft3),
 
@@ -118,6 +122,7 @@ impl ModelType {
       Self::FluxPro1,
       Self::FluxPro11,
       Self::FluxPro11Ultra,
+      Self::FluxProKontextMax,
       Self::GptImage1,
       Self::Recraft3,
 
@@ -151,6 +156,7 @@ mod tests {
       assert_serialization(ModelType::FluxPro1, "flux_pro_1");
       assert_serialization(ModelType::FluxPro11, "flux_pro_1p1");
       assert_serialization(ModelType::FluxPro11Ultra, "flux_pro_1p1_ultra");
+      assert_serialization(ModelType::FluxProKontextMax, "flux_pro_kontext_max");
       assert_serialization(ModelType::GptImage1, "gpt_image_1");
       assert_serialization(ModelType::Recraft3, "recraft_3");
       // Video models
@@ -172,6 +178,7 @@ mod tests {
       assert_eq!(ModelType::FluxPro1.to_str(), "flux_pro_1");
       assert_eq!(ModelType::FluxPro11.to_str(), "flux_pro_1p1");
       assert_eq!(ModelType::FluxPro11Ultra.to_str(), "flux_pro_1p1_ultra");
+      assert_eq!(ModelType::FluxProKontextMax.to_str(), "flux_pro_kontext_max");
       assert_eq!(ModelType::GptImage1.to_str(), "gpt_image_1");
       assert_eq!(ModelType::Recraft3.to_str(), "recraft_3");
 
@@ -195,6 +202,7 @@ mod tests {
       assert_eq!(ModelType::from_str("flux_pro_1").unwrap(), ModelType::FluxPro1);
       assert_eq!(ModelType::from_str("flux_pro_1p1").unwrap(), ModelType::FluxPro11);
       assert_eq!(ModelType::from_str("flux_pro_1p1_ultra").unwrap(), ModelType::FluxPro11Ultra);
+      assert_eq!(ModelType::from_str("flux_pro_kontext_max").unwrap(), ModelType::FluxProKontextMax);
       assert_eq!(ModelType::from_str("gpt_image_1").unwrap(), ModelType::GptImage1);
       assert_eq!(ModelType::from_str("recraft_3").unwrap(), ModelType::Recraft3);
       // Video models
@@ -211,13 +219,14 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 14);
+      assert_eq!(variants.len(), 15);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
       assert_eq!(variants.pop_first(), Some(ModelType::FluxPro1));
       assert_eq!(variants.pop_first(), Some(ModelType::FluxPro11));
       assert_eq!(variants.pop_first(), Some(ModelType::FluxPro11Ultra));
+      assert_eq!(variants.pop_first(), Some(ModelType::FluxProKontextMax));
       assert_eq!(variants.pop_first(), Some(ModelType::GptImage1));
       assert_eq!(variants.pop_first(), Some(ModelType::Recraft3));
       // Video models
