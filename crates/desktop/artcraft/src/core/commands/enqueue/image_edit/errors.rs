@@ -30,6 +30,12 @@ pub enum InternalContextualEditImageError {
     requested: u32,
   },
 
+  // TODO: Maybe just reuse the other error enum variant
+  /// An invalid number of input images was requested for Flux Kontext.
+  InvalidNumberOfInputImagesForFluxKontext {
+    message: String,
+  },
+
   /// No sora credentials are set.
   NeedsSoraCredentials,
   
@@ -83,6 +89,11 @@ impl InternalContextualEditImageError {
         status = CommandErrorStatus::BadRequest;
         error_type = EnqueueContextualEditImageErrorType::BadRequest;
         error_message = format!("Invalid number of input images ({}). Must be between {} and {}", requested, min, max);
+      }
+      InternalContextualEditImageError::InvalidNumberOfInputImagesForFluxKontext { message } => {
+        status = CommandErrorStatus::BadRequest;
+        error_type = EnqueueContextualEditImageErrorType::BadRequest;
+        error_message = message.clone();
       }
       InternalContextualEditImageError::SoraError(_) => {}
       InternalContextualEditImageError::AnyhowError(_) => {}

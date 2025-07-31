@@ -7,6 +7,9 @@ use serde_derive::Deserialize;
 pub enum ContextualImageEditModel {
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+
+  #[serde(rename = "flux_pro_kontext_max")]
+  FluxProKontextMax,
   
   // TODO: Flux Kontext models.
 }

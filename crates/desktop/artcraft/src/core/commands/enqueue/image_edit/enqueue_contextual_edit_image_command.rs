@@ -43,6 +43,7 @@ use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit::handle_flux_kontext_edit;
 
 #[derive(Deserialize, Debug)]
 pub struct EnqueueContextualEditImageCommand {
@@ -207,6 +208,20 @@ pub async fn handle_request(
     None => {
       return Err(InternalContextualEditImageError::NoModelSpecified)
     }
+    Some(ContextualImageEditModel::FluxProKontextMax) => {
+      handle_flux_kontext_edit(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        fal_creds_manager,
+        fal_task_queue,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await?
+    }
     Some(ContextualImageEditModel::GptImage1) => {
       handle_gpt_image_1_edit(
         request,
@@ -221,7 +236,6 @@ pub async fn handle_request(
         sora_task_queue,
       ).await?
     }
-    // TODO(bt,2025-07-05): Flux Kontext, etc.
   };
   
   let result = success_event

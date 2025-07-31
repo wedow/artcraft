@@ -80,24 +80,6 @@ pub struct EnqueueInpaintImageCommand {
   pub image_count: Option<u32>,
 }
 
-#[derive(Deserialize, Debug, Copy, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum EditImageSize {
-  Auto,
-  Square,
-  Wide,
-  Tall,
-}
-
-#[derive(Deserialize, Debug, Copy, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum EditImageQuality {
-  Auto,
-  High,
-  Medium,
-  Low,
-}
-
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum EnqueueInpaintImageErrorType {

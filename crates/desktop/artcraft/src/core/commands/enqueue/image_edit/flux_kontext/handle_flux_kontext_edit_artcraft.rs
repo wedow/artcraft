@@ -1,8 +1,7 @@
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
-use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueInpaintImageCommand;
-use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;
+use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -18,53 +17,54 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
+use artcraft_api_defs::generate::image::edit::flux_pro_kontext_max_edit_image::{FluxProKontextMaxEditImageNumImages, FluxProKontextMaxEditImageRequest};
 use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::{GptImage1EditImageImageQuality, GptImage1EditImageImageSize, GptImage1EditImageNumImages, GptImage1EditImageRequest};
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
-use artcraft_api_defs::generate::image::inpaint::flux_pro_1_inpaint_image::{FluxPro1InpaintImageNumImages, FluxPro1InpaintImageRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
+use fal_client::requests::webhook::image::edit::enqueue_flux_pro_kontext_max_edit_webhook::FluxProKontextMaxNumImages;
 use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageQuality;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
+use storyteller_client::generate::image::edit::flux_pro_kontext_max_edit_image::flux_pro_kontext_max_edit_image;
 use storyteller_client::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
 use storyteller_client::generate::image::generate_flux_1_dev_text_to_image::generate_flux_1_dev_text_to_image;
 use storyteller_client::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
-use storyteller_client::generate::image::inpaint::flux_pro_1_inpaint_image::flux_pro_1_inpaint_image;
 use tauri::AppHandle;
 
-pub async fn handle_flux_pro_1_inpaint_artcraft(
-  request: &EnqueueInpaintImageCommand,
+pub async fn handle_flux_kontext_edit_artcraft(
+  request: &EnqueueContextualEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalImageInpaintError> {
+) -> Result<TaskEnqueueSuccess, InternalContextualEditImageError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
-      return Err(InternalImageInpaintError::NeedsStorytellerCredentials);
+      return Err(InternalContextualEditImageError::NeedsStorytellerCredentials);
     },
   };
 
-  info!("Calling Artcraft flux pro 1 inpaint ...");
+  info!("Calling Artcraft flux kontext max edit (edit) ...");
 
   let uuid_idempotency_token = generate_random_uuid();
   
   let num_images = match request.image_count {
     None => None,
-    Some(1) => Some(FluxPro1InpaintImageNumImages::One),
-    Some(2) => Some(FluxPro1InpaintImageNumImages::Two),
-    Some(3) => Some(FluxPro1InpaintImageNumImages::Three),
-    Some(4) => Some(FluxPro1InpaintImageNumImages::Four),
+    Some(1) => Some(FluxProKontextMaxEditImageNumImages::One),
+    Some(2) => Some(FluxProKontextMaxEditImageNumImages::Two),
+    Some(3) => Some(FluxProKontextMaxEditImageNumImages::Three),
+    Some(4) => Some(FluxProKontextMaxEditImageNumImages::Four),
     Some(other) => {
-      return Err(InternalImageInpaintError::InvalidNumberOfRequestedImages {
+      return Err(InternalContextualEditImageError::InvalidNumberOfRequestedImages {
         min: 1,
         max: 4,
         requested: other,
@@ -72,29 +72,55 @@ pub async fn handle_flux_pro_1_inpaint_artcraft(
     },
   };
   
-  let image_media_token = match &request.image_media_token {
-    Some(token) => token.clone(),
+  let mut maybe_media_token = None;
+
+  let list_count = request.image_media_tokens
+      .as_ref()
+      .map(|tokens| tokens.len())
+      .unwrap_or(0);
+
+  if request.scene_image_media_token.is_some() && list_count > 0 {
+    return Err(InternalContextualEditImageError::InvalidNumberOfInputImagesForFluxKontext {
+      message: "Cannot specify both scene_image_media_token and image_media_tokens for Flux Kontext Max".to_string()
+    });
+  }
+
+  if list_count > 1 {
+    return Err(InternalContextualEditImageError::InvalidNumberOfInputImagesForFluxKontext {
+      message: "Cannot specify more than one image in image_media_tokens for Flux Kontext Max".to_string()
+    });
+  }
+
+  if let Some(media_token) = &request.scene_image_media_token {
+    maybe_media_token = Some(media_token.clone());
+  }
+
+  let maybe_list_media_token = request.image_media_tokens
+      .as_ref()
+      .map(|tokens| tokens.first())
+      .flatten();
+
+  if let Some(media_token) = maybe_list_media_token {
+    maybe_media_token = Some(media_token.clone());
+  }
+
+  let media_token = match maybe_media_token {
+    Some(token) => token,
     None => {
-      return Err(InternalImageInpaintError::NoSourceImageSpecified);
+      return Err(InternalContextualEditImageError::InvalidNumberOfInputImagesForFluxKontext {
+        message: "No input image specified for Flux Kontext Max edit".to_string(),
+      });
     },
   };
 
-  let mask_media_token = match &request.mask_media_token {
-    Some(token) => token.clone(),
-    None => {
-      return Err(InternalImageInpaintError::NoMaskImageSpecified);
-    },
-  };
-
-  let request = FluxPro1InpaintImageRequest {
+  let request = FluxProKontextMaxEditImageRequest {
     uuid_idempotency_token,
     prompt: Some(request.prompt.clone()),
-    image_media_token,
-    mask_media_token,
+    image_media_token: media_token,
     num_images,
   };
 
-  let result = flux_pro_1_inpaint_image(
+  let result = flux_pro_kontext_max_edit_image(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -103,13 +129,13 @@ pub async fn handle_flux_pro_1_inpaint_artcraft(
   let job_id = match result {
     Ok(enqueued) => {
       // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued Artcraft flux pro 1 inpaint. Job token: {}",
+      info!("Successfully enqueued Artcraft gpt-image-1. Job token: {}", 
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft flux pro 1 inpaint: {:?}", err);
-      return Err(InternalImageInpaintError::StorytellerError(err));
+      error!("Failed to use Artcraft gpt-image-1: {:?}", err);
+      return Err(InternalContextualEditImageError::StorytellerError(err));
     }
   };
   
