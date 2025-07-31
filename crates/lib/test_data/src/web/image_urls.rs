@@ -30,5 +30,5 @@ pub const JUNO_AT_LAKE_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/s/v/c
 // media token: m_5y81rcnpnrbey55da6cc2s9z4d2f45
 pub const TALL_MOCHI_WITH_GLASSES_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/n/m/f/h/a/nmfhaz9h5wsgzfyz7nh402wxrfwa7c2y/upload_nmfhaz9h5wsgzfyz7nh402wxrfwa7c2y.jpg";
 
-// media token: m_zhynyxjjkmfzcev4yc7p1wy7qf7xjw
-pub const TALL_MOCHI_WITH_GLASSES_GLASSES_MASK_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/h/j/p/m/a/hjpmarfz5mrsx8b0z2xtf2y1msp323fy/upload_hjpmarfz5mrsx8b0z2xtf2y1msp323fy.png";
+// media token: m_7x18h6qnyay4a42kyyyw2xctasx5k9
+pub const TALL_MOCHI_WITH_GLASSES_GLASSES_MASK_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/r/e/j/b/p/rejbp61m56hqx4a498xh7j47vkjd7jnh/upload_rejbp61m56hqx4a498xh7j47vkjd7jnh.png";
