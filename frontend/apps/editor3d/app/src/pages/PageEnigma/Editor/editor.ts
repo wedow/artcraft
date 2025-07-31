@@ -187,7 +187,8 @@ class Editor {
   ///////////////////////////////////////////////
   ///////////////////////////////////////////////
 
-  public outliner_feature_flag: boolean;
+  // Outliner is always enabled; keeping flag for backward compatibility
+  public outliner_feature_flag: boolean = true;
   public engine_preprocessing: boolean = false; // this is to do preprocessing also called render fast.
 
   ///////////////////////////////////////////////
@@ -218,6 +219,7 @@ class Editor {
   private renderEventToken: number;
   private shouldRender: boolean;
   private isMounted: boolean;
+  private keydownHandler: ((e: KeyboardEvent) => void) | undefined;
 
   constructor() {
     this.processingHasFailed = false;
@@ -333,8 +335,6 @@ class Editor {
 
     this.media_upload = new MediaUploadApi();
     this.globalIpAdapterImage = undefined; // used to display when loading in the app. and to serialize to an image token
-    // TODO REMOVE
-    this.outliner_feature_flag = true;
 
     // New Rendering Pipeline Engine Work
     this.globalSetTrackLengthSeconds = 7;
@@ -647,24 +647,20 @@ class Editor {
       this.enable_stats.bind(this),
     );
 
-    if (this.outliner_feature_flag) {
-      this.sceneManager = new SceneManager(
-        this.version,
-        this.mouse_controls,
-        this.activeScene,
-        true,
-        this.updateOutliner.bind(this),
-        this.timeline.isCharacter.bind(this.timeline),
-      ); // Enabled dev mode.
-      this.mouse_controls.sceneManager = this.sceneManager;
-    }
+    // Instantiate SceneManager (devMode enabled only when outliner feature flag is on)
+    this.sceneManager = new SceneManager(
+      this.version,
+      this.mouse_controls,
+      this.activeScene,
+      this.outliner_feature_flag, // devMode
+      this.outliner_feature_flag ? this.updateOutliner.bind(this) : () => {},
+      this.timeline.isCharacter.bind(this.timeline),
+    );
+    this.mouse_controls.sceneManager = this.sceneManager;
 
-    if (this.outliner_feature_flag) {
-      const result = this.sceneManager?.render_outliner(
-        this.timeline.characters,
-      );
-      if (result) outlinerState.items.value = result.items;
-    }
+    // Render outliner
+    const result = this.sceneManager.render_outliner(this.timeline.characters);
+    if (result) outlinerState.items.value = result.items;
 
     // Attach freecam state controller
     this.mouseOverEventHandler = this.mouseOverEventHandler.bind(this);
@@ -1504,6 +1500,12 @@ class Editor {
     this.sceneManager?.detachEventListeners();
     this.disableFreeCamControls();
     this.cameraViewControls?.detachEventListeners();
+
+    // Remove keydown handler
+    if (this.keydownHandler) {
+      window.removeEventListener("keydown", this.keydownHandler);
+      this.keydownHandler = undefined;
+    }
 
     // Fix: dispose 3D contexts
     this.renderer?.dispose();
