@@ -23,3 +23,12 @@ pub const WHITE_HOUSE_SUNSET_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media
 
 // media token: m_z61yg5w7dnnvhb1f9sqt8jf02y61bv
 pub const WIDE_FALL_MOUNTAINS_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/w/6/m/j/p/w6mjpcqkky7f2f3xkyvkcv3qeedkmejs/asset_w6mjpcqkky7f2f3xkyvkcv3qeedkmejs.jpg";
+
+// media token: m_m1bz02z1kkzanxy6rb4vk1kvq9de9g
+pub const JUNO_AT_LAKE_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/s/v/c/p/p/svcpp441gyb6mjtt8413kf5zxw1ehy4t/upload_svcpp441gyb6mjtt8413kf5zxw1ehy4t.jpg";
+
+// media token: m_5y81rcnpnrbey55da6cc2s9z4d2f45
+pub const TALL_MOCHI_WITH_GLASSES_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/n/m/f/h/a/nmfhaz9h5wsgzfyz7nh402wxrfwa7c2y/upload_nmfhaz9h5wsgzfyz7nh402wxrfwa7c2y.jpg";
+
+// media token: m_zhynyxjjkmfzcev4yc7p1wy7qf7xjw
+pub const TALL_MOCHI_WITH_GLASSES_GLASSES_MASK_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/h/j/p/m/a/hjpmarfz5mrsx8b0z2xtf2y1msp323fy/upload_hjpmarfz5mrsx8b0z2xtf2y1msp323fy.png";
