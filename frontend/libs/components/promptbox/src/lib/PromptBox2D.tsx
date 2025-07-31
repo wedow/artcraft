@@ -47,6 +47,7 @@ import {
 // import { invoke } from "@tauri-apps/api/core";
 import { usePrompt2DStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
+import { ModelInfo } from "@storyteller/model-list";
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";
 
@@ -60,6 +61,7 @@ interface PromptBox2DProps {
     assetFile: File;
     progressCallback: (newState: UploaderState) => void;
   }) => Promise<void>;
+  modelInfo?: ModelInfo;
   getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
   useJobContext: () => JobContextType;
@@ -75,6 +77,7 @@ export const PromptBox2D = ({
   useJobContext,
   onEnqueuePressed,
   onAspectRatioChange,
+  modelInfo,
   onFitPressed,
 }: PromptBox2DProps) => {
   useSignals();

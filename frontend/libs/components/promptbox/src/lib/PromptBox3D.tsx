@@ -53,6 +53,7 @@ import {
 // import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
 import { usePrompt3DStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
+import { ModelInfo } from "@storyteller/model-list";
 
 interface PromptBox3DProps {
   cameras: Signal<Camera[]>;
@@ -72,6 +73,7 @@ interface PromptBox3DProps {
   handleCameraFocalLengthChange: (id: string, value: number) => void;
   onAspectRatioSelect: (newRatio: CameraAspectRatio) => void;
   setEnginePrompt: (prompt: string) => void;
+  selectedModelInfo?: ModelInfo;
   snapshotCurrentFrame:
     | ((shouldDownload?: boolean) => {
         base64Snapshot: string;
@@ -98,6 +100,7 @@ export const PromptBox3D = ({
   handleCameraFocalLengthChange,
   onAspectRatioSelect,
   setEnginePrompt,
+  selectedModelInfo,
   snapshotCurrentFrame,
 }: PromptBox3DProps) => {
   useSignals();
@@ -439,7 +442,7 @@ export const PromptBox3D = ({
         const aspectRatio = getCurrentAspectRatio();
 
         const generateResponse = await EnqueueContextualEditImage({
-          model: EnqueueContextualEditImageModel.GptImage1,
+          model: selectedModelInfo,
           scene_image_media_token: snapshotResult.data!,
           image_media_tokens: referenceImages.map((image) => image.mediaToken),
           disable_system_prompt: !useSystemPrompt,

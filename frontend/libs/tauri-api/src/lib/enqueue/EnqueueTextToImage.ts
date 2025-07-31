@@ -20,6 +20,8 @@ export interface EnqueueTextToImageRequest {
   number_images?: number;
 }
 
+// Shape of request sent to Tauri
+// (We do some transformations from the public-facing request object.)
 interface EnqueueTextToImageRawRequest {
   prompt?: string;
   model?: EnqueueTextToImageModel | string; // TODO: Shouldn't allow string
@@ -69,8 +71,8 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
   }
 
   let mutableRequest : EnqueueTextToImageRawRequest = {
-    prompt: request.prompt,
     model: modelName,
+    prompt: request.prompt,
   };
 
   if (!!request.aspect_ratio) {

@@ -1,10 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
+import { ModelInfo } from "@storyteller/model-list";
 
 export interface EnqueueContextualEditImageRequest {
 
   /// The model to use.
-  model?: EnqueueContextualEditImageModel;
+  model?: ModelInfo | EnqueueContextualEditImageModel;
 
   /// If set, this is the first image in the contextual image set.
   /// This gets submitted along with `image_media_tokens` and will 
@@ -30,6 +31,20 @@ export interface EnqueueContextualEditImageRequest {
   image_quality?: EnqueueContextualEditImageQuality;
 }
 
+
+// Shape of request sent to Tauri
+// (We do some transformations from the public-facing request object.)
+interface RawEnqueueContextualEditImageRequest {
+  model?: EnqueueContextualEditImageModel | string;
+  scene_image_media_token?: string;
+  image_media_tokens?: string[];
+  prompt?: string;
+  disable_system_prompt?: boolean;
+  image_count?: number;
+  aspect_ratio?: EnqueueContextualEditImageSize;
+  image_quality?: EnqueueContextualEditImageQuality;
+}
+
 export enum EnqueueContextualEditImageErrorType {
   ModelNotSpecified = "model_not_specified",
   NoProviderAvailable = "no_provider_available",
@@ -43,6 +58,7 @@ export enum EnqueueContextualEditImageErrorType {
 
 export enum EnqueueContextualEditImageModel {
   GptImage1 = "gpt_image_1",
+  FluxProKontextMax = "flux_pro_kontext_max",
 }
 
 export enum EnqueueContextualEditImageSize {
@@ -74,8 +90,48 @@ export interface EnqueueContextualEditImageSuccess extends CommandResult {
 export type EnqueueContextualEditImageResult = EnqueueContextualEditImageSuccess | EnqueueContextualEditImageError;
 
 export const EnqueueContextualEditImage = async (request: EnqueueContextualEditImageRequest) : Promise<EnqueueContextualEditImageResult> => {
+  let modelName = undefined;
+
+  if (!!request.model) {
+    if (typeof request.model === "string") {
+      modelName = request.model;
+    } else {
+      modelName = request.model.tauri_id;
+    }
+  }
+
+  let mutableRequest : RawEnqueueContextualEditImageRequest = {
+    model: modelName,
+    prompt: request.prompt,
+  };
+
+  if (!!request.scene_image_media_token) {
+    mutableRequest.scene_image_media_token = request.scene_image_media_token;
+  }
+
+  if (!!request.image_media_tokens) {
+    mutableRequest.image_media_tokens = request.image_media_tokens;
+  }
+
+  if (!!request.aspect_ratio) {
+    mutableRequest.aspect_ratio = request.aspect_ratio;
+  }
+
+  if (!!request.image_count) {
+    mutableRequest.image_count = request.image_count;
+  }
+
+  if (!!request.image_quality) {
+    mutableRequest.image_quality = request.image_quality;
+  }
+
+  if (!!request.disable_system_prompt) {
+    mutableRequest.disable_system_prompt = request.disable_system_prompt;
+  }
+
   const result = await invoke("enqueue_contextual_edit_image_command", { 
-    request: request,
+    request: mutableRequest,
   });
+  
   return (result as EnqueueContextualEditImageResult);
 }

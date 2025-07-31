@@ -131,13 +131,13 @@ export const allModels = {
       modelInfo: IMAGE_MODELS.gpt_image_1,
     },
     {
-      label: "FLUX.1 Kontext",
+      label: "FLUX.1 Pro Kontext Max",
       icon: getCreatorIcon(ModelCreator.BlackForestLabs) || (
         <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
       ),
       description: "Fast and high-quality model",
       badges: [{ label: "20 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
-      modelInfo: IMAGE_MODELS.gpt_image_1, // TODO: Wrong metadata!
+      modelInfo: IMAGE_MODELS.flux_pro_kontext_max,
     },
   ],
 };
