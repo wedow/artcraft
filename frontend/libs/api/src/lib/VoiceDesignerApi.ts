@@ -20,7 +20,7 @@ export class VoiceDesignerApi extends ApiManager {
   ): Promise<
     ApiResponse<{ inference_job_token?: string; voice_token?: string }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/voice_designer/enqueue_tts`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/voice_designer/enqueue_tts`;
 
     const body = this.parseBodyValues<
       VoiceDesignerParams,
@@ -59,7 +59,7 @@ export class VoiceDesignerApi extends ApiManager {
     username: string;
   }): Promise<ApiResponse<ZsDataset[]>> {
     const user = username;
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/voice_designer/user/${user}/list`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/voice_designer/user/${user}/list`;
 
     return this.get<{
       success: boolean;

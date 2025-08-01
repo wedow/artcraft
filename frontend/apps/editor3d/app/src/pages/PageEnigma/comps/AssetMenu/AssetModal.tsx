@@ -10,14 +10,13 @@ import {
   faChevronRight,
   faMountainCity,
   faDog,
-  faImage,
   faUpFromLine,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { Input } from "@storyteller/ui-input";
-import { TabSelector } from "@storyteller/ui-tab-selector";
+// import { TabSelector } from "@storyteller/ui-tab-selector";
 import React, {
   useState,
   useEffect,
@@ -306,17 +305,17 @@ export const AssetModal = () => {
         icon: faSun,
         items: activeLibraryTab === "library" ? demoSkyboxItems.value : [],
       },
-      {
-        id: "image-planes",
-        label: "Image Planes",
-        labelSingle: "Image Plane",
-        icon: faImage,
-        engineCategory: FilterEngineCategories.IMAGE_PLANE,
-        items:
-          activeLibraryTab === "library"
-            ? (featuredImagePlanes ?? [])
-            : (userImagePlanes ?? []),
-      },
+      // {
+      //   id: "image-planes",
+      //   label: "Image Planes",
+      //   labelSingle: "Image Plane",
+      //   icon: faImage,
+      //   engineCategory: FilterEngineCategories.IMAGE_PLANE,
+      //   items:
+      //     activeLibraryTab === "library"
+      //       ? (featuredImagePlanes ?? [])
+      //       : (userImagePlanes ?? []),
+      // },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -500,7 +499,7 @@ export const AssetModal = () => {
           <div className="relative col-span-3 flex h-full flex-col p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-gray-200 after:bg-white/10">
             <div className="flex items-center justify-between gap-2.5 py-0.5">
               <h2 className="text-[18px] font-semibold opacity-80">
-                3D Assets
+                ArtCraft Presets
               </h2>
               {/* <Tooltip content="Upload model" position="top" delay={200}>
                 <Button
@@ -513,7 +512,7 @@ export const AssetModal = () => {
             </div>
             <hr className="my-2 w-full border-white/10" />
             <div className="flex h-full flex-col space-y-2">
-              <Button
+              {/* <Button
                 variant="primary"
                 className={twMerge(
                   "w-full justify-start rounded-xl border border-white/[2%] bg-white/[4%] px-3.5 py-2.5 text-left hover:bg-white/15",
@@ -526,7 +525,7 @@ export const AssetModal = () => {
                   className="mr-2 text-lg opacity-70"
                 />
                 Upload an asset
-              </Button>
+              </Button> */}
               {assetTabs.map((tab) => (
                 <Button
                   key={tab.id}
@@ -581,12 +580,12 @@ export const AssetModal = () => {
             <div className="flex h-full flex-col">
               <div className="h-full">
                 <div className="flex items-center gap-4">
-                  <TabSelector
+                  {/* <TabSelector
                     tabs={libraryTabs}
                     activeTab={activeLibraryTab}
                     onTabChange={setActiveLibraryTab}
                     className="relative z-[51] w-auto"
-                  />
+                  /> */}
                   <div className="relative grow">
                     <Input
                       ref={searchInputRef}
@@ -633,7 +632,7 @@ export const AssetModal = () => {
                         </Button>
                         {currentTab.label}
                       </div>
-                      {activeAssetTab !== "skybox" &&
+                      {/* {activeAssetTab !== "skybox" &&
                         activeAssetTab !== "all" && (
                           <Button
                             icon={faUpFromLine}
@@ -648,7 +647,7 @@ export const AssetModal = () => {
                             Upload {getArticle(currentTab.labelSingle)}{" "}
                             {currentTab.labelSingle}
                           </Button>
-                        )}
+                        )} */}
                     </div>
                   )}
                   {renderContent()}

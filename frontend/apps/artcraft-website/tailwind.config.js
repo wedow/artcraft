@@ -1,6 +1,6 @@
 const { createGlobPatternsForDependencies } = require("@nx/react/tailwind");
 const { join } = require("path");
-import colors from "tailwindcss/colors";
+import colors, { teal } from "tailwindcss/colors";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -24,6 +24,12 @@ module.exports = {
       gray: colors.gray,
       black: colors.black,
       blue: colors.blue,
+      orange: colors.orange,
+      green: colors.green,
+      emerald: colors.emerald,
+      teal: colors.teal,
+      yellow: colors.yellow,
+      pink: colors.pink,
       purple: colors.purple,
       primary: {
         DEFAULT: "#2d81ff",

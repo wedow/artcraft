@@ -40,6 +40,8 @@ pub fn run_http_server(args: CreateServerArgs) -> AnyhowResult<Server>
   // NB: We shouldn't be logging much as the /_status endpoint is all we aim to expose.
   let log_format = "[%{HOSTNAME}e] IP=[%{X-Forwarded-For}i] \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %T";
 
+  info!("HTTP server will bind to: {}", bind_address);
+
   let handle = HttpServer::new(move || {
     // NB: app_data being clone()'d below should all be safe (dependencies included)
     App::new()

@@ -5,10 +5,12 @@
 
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
-use sqlx::MySqlPool;
-
 use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use errors::AnyhowResult;
+use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
 
@@ -19,6 +21,9 @@ pub struct Prompt {
   pub token: PromptToken,
 
   pub prompt_type: PromptType,
+
+  pub maybe_model_type: Option<ModelType>,
+  pub maybe_generation_provider: Option<GenerationProvider>,
 
   pub maybe_creator_user_token: Option<UserToken>,
 
@@ -39,6 +44,9 @@ pub struct PromptRaw {
 
   pub prompt_type: PromptType,
 
+  pub maybe_model_type: Option<ModelType>,
+  pub maybe_generation_provider: Option<GenerationProvider>,
+
   pub maybe_creator_user_token: Option<UserToken>,
 
   pub maybe_positive_prompt: Option<String>,
@@ -52,12 +60,21 @@ pub struct PromptRaw {
   pub created_at: DateTime<Utc>,
 }
 
+
 pub async fn get_prompt(
   prompt_token: &PromptToken,
   mysql_pool: &MySqlPool
 ) -> AnyhowResult<Option<Prompt>> {
+  let mut connection = mysql_pool.acquire().await?;
+  get_prompt_from_connection(prompt_token, &mut connection).await
+}
 
-  let record = select_record(prompt_token, mysql_pool).await;
+pub async fn get_prompt_from_connection(
+  prompt_token: &PromptToken,
+  mysql_connection: &mut PoolConnection<MySql>
+) -> AnyhowResult<Option<Prompt>> {
+
+  let record = select_record(prompt_token, mysql_connection).await;
 
   let record = match record {
     Ok(record) => record,
@@ -72,6 +89,8 @@ pub async fn get_prompt(
   Ok(Some(Prompt {
     token: record.token,
     prompt_type: record.prompt_type,
+    maybe_model_type: record.maybe_model_type,
+    maybe_generation_provider: record.maybe_generation_provider,
     maybe_creator_user_token: record.maybe_creator_user_token,
     maybe_positive_prompt: record.maybe_positive_prompt,
     maybe_negative_prompt: record.maybe_negative_prompt,
@@ -86,7 +105,7 @@ pub async fn get_prompt(
 
 async fn select_record(
   prompt_token: &PromptToken,
-  mysql_pool: &MySqlPool
+  mysql_connection: &mut PoolConnection<MySql>
 ) -> Result<PromptRaw, sqlx::Error> {
   sqlx::query_as!(
       PromptRaw,
@@ -95,6 +114,9 @@ SELECT
     p.token as `token: tokens::tokens::prompts::PromptToken`,
 
     p.prompt_type as `prompt_type: enums::by_table::prompts::prompt_type::PromptType`,
+
+    p.maybe_model_type as `maybe_model_type: enums::common::model_type::ModelType`,
+    p.maybe_generation_provider as `maybe_generation_provider: enums::common::generation_provider::GenerationProvider`,
 
     p.maybe_creator_user_token as `maybe_creator_user_token: tokens::tokens::users::UserToken`,
 
@@ -111,6 +133,6 @@ WHERE
         "#,
       prompt_token
     )
-      .fetch_one(mysql_pool)
+      .fetch_one(&mut **mysql_connection)
       .await
 }

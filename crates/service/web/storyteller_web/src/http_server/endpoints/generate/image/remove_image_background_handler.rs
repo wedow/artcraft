@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
@@ -10,6 +10,7 @@ use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::image::remove_background_rembg_webhook::{remove_background_rembg_webhook, RemoveBackgroundRembgWebhookArgs};
 use http_server_common::request::get_request_ip::get_request_ip;
@@ -18,7 +19,9 @@ use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
+use mysql_queries::queries::media_files::get::get_media_file::get_media_file_with_connection;
+use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use sqlx::Acquire;
 use utoipa::ToSchema;
 
 /// Background removal
@@ -38,9 +41,13 @@ pub async fn remove_image_background_handler(
   request: Json<RemoveImageBackgroundRequest>,
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<RemoveImageBackgroundResponse>, CommonWebError> {
+  let mut mysql_connection = server_state.mysql_pool
+      .acquire()
+      .await?;
+  
   let maybe_user_session = server_state
       .session_checker
-      .maybe_get_user_session(&http_request, &server_state.mysql_pool)
+      .maybe_get_user_session_from_connection(&http_request, &mut mysql_connection)
       .await
       .map_err(|e| {
         warn!("Session checker error: {:?}", e);
@@ -68,12 +75,12 @@ pub async fn remove_image_background_handler(
       return Err(CommonWebError::BadInputWithSimpleMessage("No media file token provided".to_string()));
     }
   };
-  
+
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
 
-  insert_idempotency_token(&request.uuid_idempotency_token, &server_state.mysql_pool)
+  insert_idempotency_token(&request.uuid_idempotency_token, &mut *mysql_connection)
       .await
       .map_err(|err| {
         error!("Error inserting idempotency token: {:?}", err);
@@ -81,10 +88,10 @@ pub async fn remove_image_background_handler(
       })?;
   const IS_MOD : bool = false;
   
-  let media_file_lookup_result = get_media_file(
+  let media_file_lookup_result = get_media_file_with_connection(
     media_file_token,
     IS_MOD,
-    &server_state.mysql_pool,
+    &mut mysql_connection,
   ).await;
 
   let media_file = match media_file_lookup_result {
@@ -110,7 +117,7 @@ pub async fn remove_image_background_handler(
     media_file.maybe_public_bucket_prefix.as_deref(),
     media_file.maybe_public_bucket_extension.as_deref());
   
-  let media_links = MediaLinks::from_media_path_and_env(
+  let media_links = MediaLinksBuilder::from_media_path_and_env(
     media_domain, 
     server_state.server_environment, 
     &bucket_path);
@@ -145,11 +152,13 @@ pub async fn remove_image_background_handler(
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::BackgroundRemoval,
     maybe_inference_args: None,
+    maybe_prompt_token: None,
     maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
-    mysql_pool: &server_state.mysql_pool,
+    mysql_executor: &mut *mysql_connection,
+    phantom: Default::default(),
   }).await;
 
   let job_token = match db_result {

@@ -24,7 +24,8 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
     selectedModels[ModelCategory.ImageToVideo] ||
     videoGenerationModels[0]?.label;
 
-  const selectedModelInfo : ModelInfo | undefined = VIDEO_MODELS_BY_LABEL[selectedModel];
+  const selectedModelInfo: ModelInfo | undefined =
+    VIDEO_MODELS_BY_LABEL[selectedModel];
 
   const jobContext: JobContextType = {
     jobTokens: [],

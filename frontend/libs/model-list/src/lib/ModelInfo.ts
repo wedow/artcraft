@@ -3,11 +3,11 @@ import { ModelCreator } from "./ModelCreator.js";
 export interface ModelInfo {
   // Human-readible name
   // Other components may want to rename the model, eg. to fit in smaller width elements
-  name: string,
+  name: string;
 
   // The identifier that Tauri uses (it may send different signals downstream)
-  tauri_id: string,
+  tauri_id: string;
 
   // Creator of the model type
-  creator: ModelCreator,
+  creator: ModelCreator;
 }

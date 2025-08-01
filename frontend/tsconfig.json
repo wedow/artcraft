@@ -146,6 +146,9 @@
     },
     {
       "path": "./libs/model-list"
+    },
+    {
+      "path": "./libs/analytics/google-analytics"
     }
   ]
 }

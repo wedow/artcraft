@@ -144,13 +144,19 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
 
         info!("Sending request to FAL queue webhook: {}", request_url);
 
-        let response = self
+        let builder = self
             .client
-            .post(request_url)
+            .post(request_url);
+        
+        let builder = builder
             .json(&self.params)
             .header("Authorization", format!("Key {}", &key))
-            .header("Content-Type", "application/json")
-            .send()
+            .header("Content-Type", "application/json");
+
+        let response = builder
+            .send();
+        
+        let response = response
             .await?;
 
         if response.status() != 200 {

@@ -53,6 +53,7 @@ use crate::state::job_dependencies::{BucketDependencies, ClientDependencies, Dat
 use crate::state::job_specific_dependencies::JobSpecificDependencies;
 use crate::state::scoped_job_type_execution::ScopedJobTypeExecution;
 use crate::state::scoped_model_type_execution::ScopedModelTypeExecution;
+use crate::threads::reap_jobs_thread::reap_jobs_thread;
 use crate::util::filesystem::scoped_temp_dir_creator::ScopedTempDirCreator;
 use crate::util::instrumentation::JobInstruments;
 use crate::util::instrumentation::{init_otel_metrics_pipeline, JobInstrumentLabels};
@@ -61,6 +62,7 @@ use crate::util::model_weights_cache::model_weights_cache_directory::ModelWeight
 pub mod http_server;
 pub mod job;
 pub mod state;
+pub mod threads;
 pub mod util;
 
 // Buckets (shared config)
@@ -162,6 +164,8 @@ async fn main() -> AnyhowResult<()> {
       .max_connections(2)
       .connect(&db_connection_string)
       .await?;
+
+  let mysql_pool_2 = mysql_pool.clone();
 
   info!("Connected to MySQL.");
 
@@ -344,6 +348,14 @@ async fn main() -> AnyhowResult<()> {
   };
 
   set_up_directories(&job_dependencies)?;
+
+  std::thread::spawn(move || {
+    let actix_runtime = actix_web::rt::System::new();
+
+    actix_runtime.block_on(reap_jobs_thread(mysql_pool_2));
+
+    warn!("Reap jobs thread terminated");
+  });
 
   std::thread::spawn(move || {
     let actix_runtime = actix_web::rt::System::new();

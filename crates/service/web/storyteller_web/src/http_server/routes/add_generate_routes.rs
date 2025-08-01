@@ -1,7 +1,11 @@
+use crate::http_server::endpoints::generate::image::edit::flux_pro_kontext_max_edit_image_handler::flux_pro_kontext_max_edit_image_handler;
+use crate::http_server::endpoints::generate::image::edit::gpt_image_1_edit_image_handler::gpt_image_1_edit_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_1_schnell_text_to_image_handler::generate_flux_1_schnell_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler;
+use crate::http_server::endpoints::generate::image::generate_gpt_image_1_text_to_image_handler::generate_gpt_image_1_text_to_image_handler;
+use crate::http_server::endpoints::generate::image::inpaint::flux_pro_1_inpaint_handler::flux_pro_1_inpaint_image_handler;
 use crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler;
 use crate::http_server::endpoints::generate::object::generate_hunyuan_2_0_image_to_3d_handler::generate_hunyuan_2_0_image_to_3d_handler;
 use crate::http_server::endpoints::generate::object::generate_hunyuan_2_1_image_to_3d_handler::generate_hunyuan_2_1_image_to_3d_handler;
@@ -28,6 +32,23 @@ where
 {
   app.service(web::scope("/v1/generate")
       .service(web::scope("/image")
+          .service(web::scope("/edit")
+              .service(web::resource("/flux_pro_kontext_max")
+                  .route(web::post().to(flux_pro_kontext_max_edit_image_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+              .service(web::resource("/gpt_image_1")
+                  .route(web::post().to(gpt_image_1_edit_image_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+            
+          )
+          .service(web::scope("/inpaint")
+              .service(web::resource("/flux_pro_1")
+                  .route(web::post().to(flux_pro_1_inpaint_image_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+          )
           .service(web::resource("/flux_1_dev_text_to_image")
               .route(web::post().to(generate_flux_1_dev_text_to_image_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
@@ -42,6 +63,10 @@ where
           )
           .service(web::resource("/flux_pro_1.1_ultra_text_to_image")
               .route(web::post().to(generate_flux_pro_11_ultra_text_to_image_handler))
+              .route(web::head().to(|| HttpResponse::Ok()))
+          )
+          .service(web::resource("/gpt_image_1_text_to_image")
+              .route(web::post().to(generate_gpt_image_1_text_to_image_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
           )
           .service(web::resource("/remove_background")

@@ -10,14 +10,13 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import EnvironmentVariables from "~/Classes/EnvironmentVariables";
 import { pageHeight, pageWidth, persistLogin } from "~/signals";
-
+import { SyncStorytellerApiConfig } from "./api/SyncStorytellerApiConfig";
 import { posthog } from "posthog-js";
 
 config.autoAddCss = false; /* eslint-disable import/first */
 
 // TODO(bt,2025-04-19): Make these configurable
 const ENV = {
-  BASE_API: "https://api.storyteller.ai",
   GOOGLE_API: "https://studio.storyteller.ai",
   FUNNEL_API: "https://studio.storyteller.ai",
   CDN_API: "https://cdn-2.fakeyou.com",
@@ -26,7 +25,12 @@ const ENV = {
 };
 
 const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
+  console.log("GlobalSettingsManager()");
+
+  SyncStorytellerApiConfig();
+
   useSignals();
+
   useSignalEffect(() => {
     persistLogin();
   });

@@ -8,7 +8,7 @@ import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
 import {
   EnqueueTextToImage,
-  EnqueueTextToImageModel,
+  EnqueueTextToImageSize,
 } from "@storyteller/tauri-api";
 import {
   faMessageXmark,
@@ -18,6 +18,7 @@ import {
   faTimes,
   faPlus,
   faImages,
+  faCopy,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faRectangle,
@@ -25,16 +26,11 @@ import {
   faRectangleVertical,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IsDesktopApp } from "@storyteller/tauri-utils";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { ModelInfo } from "@storyteller/model-list";
-
-interface ReferenceImage {
-  id: string;
-  url: string;
-  file: File;
-  mediaToken: string;
-}
+import { usePromptImageStore, RefImage } from "./promptStore";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -58,7 +54,7 @@ export const PromptBoxImage = ({
   // for the image media id and url, we need to set the reference image gallery panel.
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -71,33 +67,64 @@ export const PromptBoxImage = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
 
-  const [prompt, setPrompt] = useState("");
+  const prompt = usePromptImageStore((s) => s.prompt);
+  const setPrompt = usePromptImageStore((s) => s.setPrompt);
+  const useSystemPrompt = usePromptImageStore((s) => s.useSystemPrompt);
+  const setUseSystemPrompt = usePromptImageStore((s) => s.setUseSystemPrompt);
+  const aspectRatio = usePromptImageStore((s) => s.aspectRatio);
+  const setAspectRatio = usePromptImageStore((s) => s.setAspectRatio);
+  const generationCount = usePromptImageStore((s) => s.generationCount);
+  const setGenerationCount = usePromptImageStore((s) => s.setGenerationCount);
   const [isEnqueueing, setIsEnqueueing] = useState(false);
-  const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
-  const [uploadingImages, setUploadingImages] = useState<
+  const referenceImages = usePromptImageStore((s) => s.referenceImages);
+  const setReferenceImages = usePromptImageStore((s) => s.setReferenceImages);
+  const [uploadingImages, _setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
       label: "3:2",
-      selected: true,
+      selected: aspectRatio === "3:2",
       icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
     },
     {
       label: "2:3",
-      selected: false,
+      selected: aspectRatio === "2:3",
       icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
     },
     {
       label: "1:1",
-      selected: false,
+      selected: aspectRatio === "1:1",
       icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
     },
   ]);
+  const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
+    [
+      {
+        label: "1",
+        selected: generationCount === 1,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+      {
+        label: "2",
+        selected: generationCount === 2,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+      {
+        label: "3",
+        selected: generationCount === 3,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+      {
+        label: "4",
+        selected: generationCount === 4,
+        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+      },
+    ]
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -111,7 +138,7 @@ export const PromptBoxImage = ({
 
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -121,7 +148,26 @@ export const PromptBoxImage = ({
     }
   }, [imageMediaId, url]);
 
+  useEffect(() => {
+    setAspectRatioList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === aspectRatio,
+      }))
+    );
+  }, [aspectRatio]);
+
+  useEffect(() => {
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === generationCount.toString(),
+      }))
+    );
+  }, [generationCount]);
+
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
+    setAspectRatio(selectedItem.label as any);
     setAspectRatioList((prev) =>
       prev.map((item) => ({
         ...item,
@@ -130,8 +176,19 @@ export const PromptBoxImage = ({
     );
   };
 
+  const handleGenerationCountSelect = (selectedItem: PopoverItem) => {
+    const count = parseInt(selectedItem.label, 10);
+    setGenerationCount(count);
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === selectedItem.label,
+      }))
+    );
+  };
+
   const handleRemoveReference = (id: string) => {
-    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+    setReferenceImages(referenceImages.filter((img) => img.id !== id));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -162,7 +219,7 @@ export const PromptBoxImage = ({
     const item = selectedItems[0];
     if (!item || !item.fullImage) return;
 
-    const referenceImage: ReferenceImage = {
+    const referenceImage: RefImage = {
       id: Math.random().toString(36).substring(7),
       url: item.fullImage,
       file: new File([], "library-image"),
@@ -196,7 +253,7 @@ export const PromptBoxImage = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
-    console.log("PromptBoxImage - Prompting with model", modelInfo);
+    gtagEvent("enqueue_image");
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
@@ -205,9 +262,13 @@ export const PromptBoxImage = ({
       setIsEnqueueing(false);
     }, 10000);
 
+    const aspectRatio = getCurrentAspectRatio();
+
     const generateResponse = await EnqueueTextToImage({
       prompt: prompt,
       model: modelInfo,
+      aspect_ratio: aspectRatio,
+      number_images: generationCount,
     });
 
     console.log("PromptBoxImage - generateResponse", generateResponse);
@@ -220,20 +281,20 @@ export const PromptBoxImage = ({
   const getCurrentResolutionIcon = () => {
     const selected = aspectRatioList.find((item) => item.selected);
     if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement;
+    const iconElement = selected.icon as React.ReactElement<{ icon: IconProp }>;
     return iconElement.props.icon;
   };
 
-  const getModelByName = (name: string): EnqueueTextToImageModel => {
-    switch (name) {
-      case "Flux Pro Ultra":
-        return EnqueueTextToImageModel.FluxProUltra;
-      case "Recraft 3":
-        return EnqueueTextToImageModel.Recraft3;
-      case "GPT Image 1 (GPT-4o)":
-        return EnqueueTextToImageModel.GptImage1;
+  const getCurrentAspectRatio = (): EnqueueTextToImageSize => {
+    const selected = aspectRatioList.find((item) => item.selected);
+    switch (selected?.label) {
+      case "3:2":
+        return EnqueueTextToImageSize.Wide;
+      case "2:3":
+        return EnqueueTextToImageSize.Tall;
+      case "1:1":
       default:
-        return EnqueueTextToImageModel.GptImage1;
+        return EnqueueTextToImageSize.Square;
     }
   };
 
@@ -376,6 +437,24 @@ export const PromptBoxImage = ({
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
+              <Tooltip
+                content="Number of generations"
+                position="top"
+                className="z-50"
+                closeOnClick={true}
+              >
+                <PopoverMenu
+                  items={generationCountList}
+                  onSelect={handleGenerationCountSelect}
+                  mode="toggle"
+                  triggerIcon={
+                    <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
+                  }
+                  panelClassName="min-w-28"
+                  panelTitle="No. of images"
+                  buttonClassName="h-9"
+                />
+              </Tooltip>
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isEnqueueing ? faSparkles : undefined}

@@ -9,7 +9,7 @@ export class BillingApi extends ApiManager {
       maybe_loyalty_program?: LoyaltyProgram;
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/billing/active_subscriptions`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/billing/active_subscriptions`;
     return await this.get<{
       success: boolean;
       active_subscriptions?: Subscription[];

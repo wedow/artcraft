@@ -13,7 +13,7 @@ export class ModerationApi extends ApiManager {
       inference_job_token_type?: string;
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/moderation/user_feature_flags/${usernameOrToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/moderation/user_feature_flags/${usernameOrToken}`;
 
     const body = {
       action: {

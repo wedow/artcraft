@@ -10,12 +10,17 @@ import { JobsApi } from "~/Classes/ApiManager/JobsApi";
 import { toast } from "@storyteller/ui-toaster";
 import { ActiveJob } from "~/pages/PageEnigma/models";
 import { IsJobPollingDisabled } from "~/flags/DevConsoleFlags";
+
 // TODO ensure we de-dupe all this extra code.
 interface CompletedItem {
   token: string;
   maybe_title: string;
-  public_bucket_path: string;
+  public_bucket_path: string; // TODO: STOP USING THIS.
+  maybe_media_links_thumbnail?: string;
   updated_at: string;
+  maybe_result?: {
+    entity_token?: string;
+  };
 }
 
 // {
@@ -140,13 +145,25 @@ export function Activity() {
             maybe_title: job.request?.maybe_model_title || "Image Generation",
             public_bucket_path:
               job.maybe_result?.maybe_public_bucket_media_path || "",
+            maybe_media_links_thumbnail: ((job) => {
+              // Try the video thumbnail first, then the regular thumbnail.
+              const maybeVideoThumb =
+                job.maybe_result?.media_links?.maybe_video_previews?.animated;
+              const maybeGenericThumb = (
+                job.maybe_result?.media_links?.maybe_thumbnail_template || ""
+              ).replace("{WIDTH}", "500");
+              return maybeVideoThumb || maybeGenericThumb;
+            })(job),
             updated_at: job.updated_at || new Date().toISOString(),
+            maybe_result: job.maybe_result,
           }));
 
-          // Show toast only if not first load
-          if (!isFirstLoad.current) {
-            showToast(newItems);
-          }
+          // NB(bt,2025-07-28): Don't use eventing from here anymore. 
+          // Tauri is sending direct events we can bind toasts to.
+          // // Show toast only if not first load
+          // if (!isFirstLoad.current) {
+          //   showToast(newItems);
+          // }
 
           // Update state
           setCompletedItems((prev) => {
@@ -209,39 +226,43 @@ export function Activity() {
           </div>
         }
       >
-        <div className="max-h-[480px] overflow-y-auto">
-          {jobs.length > 0 && (
-            <div>
-              {jobs.map((job) => (
-                <InProgressCard key={job.job_token} job={job} />
-              ))}
-            </div>
-          )}
-
-          {isFirstLoad.current ? (
-            <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
-              <FontAwesomeIcon
-                icon={faSpinnerThird}
-                spin
-                size="2x"
-                className="text-gray-400"
-              />
-              <h3 className="text-gray-300">Retrieving Activities</h3>
-            </div>
-          ) : jobs.length === 0 && completedItems.length === 0 ? (
-            <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
-              <h3 className="text-lg text-gray-300">No activities yet</h3>
-            </div>
-          ) : (
-            <div>
-              <div className="flex flex-col">
-                {completedItems.map((item) => (
-                  <CompletedCard key={item.token} job={item} />
+        {(close) => (
+          <div className="max-h-[480px] overflow-y-auto">
+            {jobs.length > 0 && (
+              <div>
+                {jobs.map((job) => (
+                  <InProgressCard key={job.job_token} job={job} />
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+
+            {isFirstLoad.current ? (
+              <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
+                <FontAwesomeIcon
+                  icon={faSpinnerThird}
+                  spin
+                  size="2x"
+                  className="text-gray-400"
+                />
+                <h3 className="text-gray-300">Retrieving Activities</h3>
+              </div>
+            ) : jobs.length === 0 && completedItems.length === 0 ? (
+              <div className="flex h-48 w-full flex-col justify-center gap-4 p-4 text-center align-middle">
+                <h3 className="text-lg text-gray-300">No activities yet</h3>
+              </div>
+            ) : (
+              <div>
+                <div className="flex flex-col">
+                  {completedItems.map((item) => (
+                    <div key={item.token} onClick={close}>
+                      <CompletedCard job={item} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </PopoverMenu>
     </Tooltip>
   );

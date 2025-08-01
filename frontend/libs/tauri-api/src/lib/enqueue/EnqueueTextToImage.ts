@@ -16,12 +16,30 @@ export enum EnqueueTextToImageErrorType {
 export interface EnqueueTextToImageRequest {
   prompt?: string;
   model?: ModelInfo | EnqueueTextToImageModel;
+  aspect_ratio?: EnqueueTextToImageSize;
+  number_images?: number;
+}
+
+// Shape of request sent to Tauri
+// (We do some transformations from the public-facing request object.)
+interface EnqueueTextToImageRawRequest {
+  prompt?: string;
+  model?: EnqueueTextToImageModel | string; // TODO: Shouldn't allow string
+  aspect_ratio?: EnqueueTextToImageSize;
+  number_images?: number;
 }
 
 export enum EnqueueTextToImageModel {
   FluxProUltra = "flux_pro_ultra",
   GptImage1 = "gpt_image_1",
   Recraft3 = "recraft_3",
+}
+
+export enum EnqueueTextToImageSize {
+  Auto = "auto",
+  Square = "square",
+  Wide = "wide",
+  Tall = "tall",
 }
 
 export interface EnqueueTextToImageError extends CommandResult {
@@ -52,11 +70,21 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
     }
   }
 
-   const result = await invoke("enqueue_text_to_image_command", { 
-    request: {
-      prompt: request.prompt,
-      model: modelName,
-    }
+  let mutableRequest : EnqueueTextToImageRawRequest = {
+    model: modelName,
+    prompt: request.prompt,
+  };
+
+  if (!!request.aspect_ratio) {
+    mutableRequest.aspect_ratio = request.aspect_ratio;
+  }
+
+  if (!!request.number_images) {
+    mutableRequest.number_images = request.number_images;
+  }
+
+  const result = await invoke("enqueue_text_to_image_command", { 
+    request: mutableRequest,
   });
 
   return (result as EnqueueTextToImageResult);

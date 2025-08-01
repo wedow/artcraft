@@ -1,6 +1,6 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::main_window_size::MainWindowSize;
-use crate::core::utils::best_window_size_heuristic::best_window_size_heuristic;
+use crate::core::state::window::main_window_size::MainWindowSize;
+use crate::core::utils::window::get_window_size_heuristic::get_window_size_heuristic;
 use errors::AnyhowResult;
 use log::info;
 use memory_store::clone_slot::CloneSlot;
@@ -13,7 +13,7 @@ pub async fn persist_window_resize_task(
 ) -> AnyhowResult<()> {
 
   let current_window_size = MainWindowSize::from_window(window)?;
-  let current_physical_size = best_window_size_heuristic(window)?;
+  let current_physical_size = get_window_size_heuristic(window)?;
 
   let mut save_size_to_disk = true;
   
@@ -21,6 +21,10 @@ pub async fn persist_window_resize_task(
     if old_size.matches_physical_size(&current_physical_size) {
       save_size_to_disk = false;
     }
+  }
+
+  if current_window_size.is_not_big_enough() {
+    save_size_to_disk = false;
   }
   
   if save_size_to_disk {

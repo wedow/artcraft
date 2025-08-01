@@ -44,6 +44,9 @@
   ],
   "references": [
     {
+      "path": "../tab-selector/tsconfig.lib.json"
+    },
+    {
       "path": "../button/tsconfig.lib.json"
     },
     {

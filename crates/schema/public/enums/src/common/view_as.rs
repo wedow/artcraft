@@ -4,10 +4,11 @@ use strum::EnumCount;
 use strum::EnumIter;
 use utoipa::ToSchema;
 
+#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize, ToSchema)]
+#[cfg_attr(feature = "database", derive(sqlx::Type))]
+#[cfg_attr(feature = "database", sqlx(rename_all = "snake_case"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize, sqlx::Type,ToSchema)]
 #[serde(rename_all = "snake_case")]
-#[sqlx(rename_all = "snake_case")]
 pub enum ViewAs {
     /// Public entities are able to be listed in public lists.
     /// It does not mean that they necessarily will be (eg. they could be "mod unapproved" or deleted).

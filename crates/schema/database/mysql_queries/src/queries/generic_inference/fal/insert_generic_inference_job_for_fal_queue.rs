@@ -1,6 +1,8 @@
 use anyhow::anyhow;
 use log::info;
 use sqlx::MySqlPool;
+use sqlx::{Executor, MySql};
+use std::marker::PhantomData;
 
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::by_table::generic_inference_jobs::inference_input_source_token_type::InferenceInputSourceTokenType;
@@ -13,6 +15,7 @@ use enums::common::visibility::Visibility;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
 
 use crate::errors::database_query_error::DatabaseQueryError;
@@ -27,26 +30,35 @@ pub enum FalCategory {
   ObjectGeneration,
 }
 
-pub struct InsertGenericInferenceForFalArgs<'a> {
-  pub uuid_idempotency_token: &'a str,
+pub struct InsertGenericInferenceForFalArgs<'e, 'c, E> 
+  where E: 'e + Executor<'c, Database = MySql>
+{
+  pub uuid_idempotency_token: &'e str,
 
   /// The external primary key identifier for the job.
-  pub maybe_external_third_party_id: &'a str,
+  pub maybe_external_third_party_id: &'e str,
   
   pub fal_category: FalCategory,
 
   pub maybe_inference_args: Option<GenericInferenceArgs>,
+  
+  pub maybe_prompt_token: Option<&'e PromptToken>,
 
-  pub maybe_creator_user_token: Option<&'a UserToken>,
-  pub maybe_avt_token: Option<&'a AnonymousVisitorTrackingToken>,
-  pub creator_ip_address: &'a str,
+  pub maybe_creator_user_token: Option<&'e UserToken>,
+  pub maybe_avt_token: Option<&'e AnonymousVisitorTrackingToken>,
+  pub creator_ip_address: &'e str,
   pub creator_set_visibility: Visibility,
 
-  pub mysql_pool: &'a MySqlPool,
+  pub mysql_executor: E,
+  
+  // TODO: Not sure if this works to tell the compiler we need the lifetime annotation.
+  //  See: https://doc.rust-lang.org/std/marker/struct.PhantomData.html#unused-lifetime-parameters
+  pub phantom: PhantomData<&'c E>,
 }
 
-pub async fn insert_generic_inference_job_for_fal_queue(args: InsertGenericInferenceForFalArgs<'_>)
+pub async fn insert_generic_inference_job_for_fal_queue<'e, 'c : 'e, E>(args: InsertGenericInferenceForFalArgs<'e, 'c, E>)
   -> Result<InferenceJobToken, DatabaseQueryError>
+  where E: 'e + Executor<'c, Database = MySql>
 {
   let job_token = InferenceJobToken::generate();
 
@@ -105,6 +117,8 @@ SET
 
   maybe_download_url = NULL,
   maybe_cover_image_media_file_token = NULL,
+  
+  maybe_prompt_token = ?,
 
   maybe_raw_inference_text = NULL,
 
@@ -134,6 +148,8 @@ SET
 
         product_category.to_str(),
         inference_category.to_str(),
+    
+        args.maybe_prompt_token.map(|t| t.to_string()),
 
         serialized_args_payload,
 
@@ -145,7 +161,7 @@ SET
         STATUS.to_str(),
     );
 
-  let query_result = query.execute(args.mysql_pool)
+  let query_result = query.execute(args.mysql_executor)
       .await;
 
   let record_id = match query_result {

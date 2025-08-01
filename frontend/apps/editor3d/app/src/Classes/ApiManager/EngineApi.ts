@@ -8,7 +8,7 @@ export class EngineApi extends ApiManager {
     mediaFileToken: string;
     uuidIdempotencyToken: string;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/conversion/enqueue_fbx_to_gltf`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/conversion/enqueue_fbx_to_gltf`;
 
     const body = {
       media_file_token: mediaFileToken,
@@ -44,7 +44,7 @@ export class EngineApi extends ApiManager {
     screenshot: File; // base64 encoded PNG
     sceneMediaToken?: string;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/image_studio/scene_snapshot`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/image_studio/scene_snapshot`;
     const formData = new FormData();
     formData.append("snapshot", screenshot); // Changed from "screenshot" to "snapshot" to match API spec
     if (sceneMediaToken) {
@@ -97,7 +97,7 @@ export class EngineApi extends ApiManager {
     snapshotMediaToken: string;
     additionalImages?: string[];
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/image_studio/prompt`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/image_studio/prompt`;
     
     const uuidIdempotencyToken = crypto.randomUUID(); // Generate a new UUID
     const body = {
@@ -144,7 +144,7 @@ export class EngineApi extends ApiManager {
       };
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/jobs/session/${jobToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/jobs/session/${jobToken}`;
 
     const response = await this.get<{
       success?: boolean;
@@ -182,7 +182,7 @@ export class EngineApi extends ApiManager {
       };
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/image_studio/session_jobs/${jobToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/image_studio/session_jobs/${jobToken}`;
 
     const response = await this.get<{
       success?: boolean;

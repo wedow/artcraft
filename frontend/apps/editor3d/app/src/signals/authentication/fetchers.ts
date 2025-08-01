@@ -1,6 +1,7 @@
 import { authentication } from "./authentication";
 import { UsersApi } from "~/Classes/ApiManager/UsersApi";
 import { BillingApi } from "~/Classes/ApiManager/BillingApi";
+import { gtagLogin, gtagLogout } from "@storyteller/google-analytics";
 
 import {
   updateActiveSubscriptions,
@@ -23,6 +24,7 @@ export const logout = async (
   // if success, nothing
   // regarldess of success/fail, clear the state and localstorage
   setLogoutStates();
+  gtagLogout();
 };
 
 export const login = async ({
@@ -91,7 +93,13 @@ export const persistLogin = async () => {
   getUserInfoAndSubcriptions();
 };
 
+// NB: Only for SyncStorytellerApiConfig.
+export const forceGetUserInfoAndSubcriptions = async () => {
+  getUserInfoAndSubcriptions();
+};
+
 async function getUserInfoAndSubcriptions() {
+  console.log('getUserInfoAndSubcriptions()')
   updateAuthStatus(AUTH_STATUS.GET_USER_INFO);
   const usersApi = new UsersApi();
   const sessionResponse = await usersApi.GetSession();
@@ -107,6 +115,11 @@ async function getUserInfoAndSubcriptions() {
   if (sessionResponse.data && !sessionResponse.data.user.can_access_studio) {
     updateAuthStatus(AUTH_STATUS.NO_ACCESS);
     return;
+  }
+  
+  const userToken = sessionResponse.data.user.user_token;
+  if (!!userToken) {
+    gtagLogin(userToken);
   }
 
   const billingApi = new BillingApi();

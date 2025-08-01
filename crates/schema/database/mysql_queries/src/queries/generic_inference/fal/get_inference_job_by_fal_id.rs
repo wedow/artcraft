@@ -13,6 +13,7 @@ use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use errors::AnyhowResult;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
 
 use crate::helpers::boolean_converters::i8_to_bool;
@@ -30,9 +31,33 @@ pub struct FalJobDetails {
   pub maybe_creator_user_token: Option<UserToken>,
   pub maybe_creator_anonymous_visitor_token: Option<AnonymousVisitorTrackingToken>,
   pub creator_ip_address: String,
+  
+  pub maybe_prompt_token: Option<PromptToken>,
 
   pub created_at: DateTime<Utc>,
   pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Default)]
+struct RawJobRecord {
+  job_token: InferenceJobToken,
+
+  status: JobStatusPlus,
+
+  // NB: Nullable, but required to be filled for this query
+  external_third_party: Option<InferenceJobExternalThirdParty>,
+
+  // NB: Nullable, but required to be filled for this query
+  external_third_party_id: Option<String>,
+
+  maybe_creator_user_token: Option<UserToken>,
+  maybe_creator_anonymous_visitor_token: Option<AnonymousVisitorTrackingToken>,
+  creator_ip_address: String,
+
+  maybe_prompt_token: Option<PromptToken>,
+
+  created_at: DateTime<Utc>,
+  updated_at: DateTime<Utc>,
 }
 
 /// Returns Ok(None) when the record cannot be found.
@@ -66,6 +91,8 @@ SELECT
     jobs.maybe_creator_user_token as `maybe_creator_user_token: tokens::tokens::users::UserToken`,
     jobs.maybe_creator_anonymous_visitor_token as `maybe_creator_anonymous_visitor_token: tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken`,
     jobs.creator_ip_address,
+    
+    jobs.maybe_prompt_token as `maybe_prompt_token: tokens::tokens::prompts::PromptToken`,
 
     jobs.created_at,
     jobs.updated_at
@@ -106,28 +133,8 @@ fn raw_record_to_public_result(record: RawJobRecord) -> AnyhowResult<FalJobDetai
     maybe_creator_user_token: record.maybe_creator_user_token,
     maybe_creator_anonymous_visitor_token: record.maybe_creator_anonymous_visitor_token,
     creator_ip_address: record.creator_ip_address,
+    maybe_prompt_token: record.maybe_prompt_token,
     created_at: record.created_at,
     updated_at: record.updated_at,
   })
 }
-
-#[derive(Debug, Default)]
-struct RawJobRecord {
-  pub job_token: InferenceJobToken,
-
-  pub status: JobStatusPlus,
-
-  // NB: Nullable, but required to be filled for this query
-  pub external_third_party: Option<InferenceJobExternalThirdParty>,
-  
-  // NB: Nullable, but required to be filled for this query
-  pub external_third_party_id: Option<String>,
-
-  pub maybe_creator_user_token: Option<UserToken>,
-  pub maybe_creator_anonymous_visitor_token: Option<AnonymousVisitorTrackingToken>,
-  pub creator_ip_address: String,
-
-  pub created_at: DateTime<Utc>,
-  pub updated_at: DateTime<Utc>,
-}
-

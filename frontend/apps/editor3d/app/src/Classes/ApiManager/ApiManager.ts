@@ -1,8 +1,8 @@
 import { GetBuildEnvironment } from "~/BuildEnvironment";
 import environmentVariables from "../EnvironmentVariables";
 import { Configs } from "~/configs";
-//import { fetch } from '@tauri-apps/plugin-http'
 import { FetchProxy as fetch } from "@storyteller/tauri-utils";
+import { StorytellerApiHostStore } from "@storyteller/api";
 
 type NonNullableObject<T extends object> = NonNullable<T>;
 
@@ -19,18 +19,22 @@ export class ApiManager {
   constructor() {
     const environmentType = GetBuildEnvironment().getBuildEnvironmentType();
     const configs = new Configs(environmentType);
-    const baseApi = configs.baseApi;
 
+    // TODO(bt,2025-07-06): Not sure that any of this is used anymore.
+    // If so, try to use Configs, StorytellerApiHostStore, or another configuration source.
+    
     // look at the .env file
     this.ApiTargets = {
-      //BaseApi: environmentVariables.values.BASE_API as string,
-      BaseApi: baseApi,
       GoggleApi: environmentVariables.values.GOOGLE_API as string,
       FunnelApi: environmentVariables.values.FUNNEL_API as string,
       CdnApi: environmentVariables.values.CDN_API as string,
       GravatarApi: environmentVariables.values.GRAVATAR_API as string,
       uploadApi: environmentVariables.values.UPLOAD_API_VIDEO as string,
     };
+  }
+
+  protected getApiSchemeAndHost(): string {
+    return StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
   }
 
   public async fetch<B, T>(

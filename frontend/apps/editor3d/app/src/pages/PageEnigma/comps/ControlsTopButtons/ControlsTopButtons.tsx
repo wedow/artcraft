@@ -152,8 +152,29 @@ export const ControlsTopButtons = () => {
             {
               label: "New scene",
               description: "Ctrl+N",
-              onClick: () => {
-                setSceneTitleInput("Untitled New Scene");
+              dialogProps: {
+                title: "Create New Scene",
+                content: (
+                  <h4>
+                    Make sure you&apos;ve saved your scene. Unsaved changes will
+                    be lost. Continue?
+                  </h4>
+                ),
+                confirmButtonProps: {
+                  label: "Create new scene",
+                  onClick: async () => {
+                    handleResetScene();
+
+                    const defaultTitle = "Untitled New Scene";
+                    setSceneTitleInput(defaultTitle);
+
+                    await editorEngine?.newScene(defaultTitle);
+                  },
+                },
+                closeButtonProps: {
+                  label: "Cancel",
+                },
+                showClose: true,
               },
             },
             {
@@ -186,22 +207,30 @@ export const ControlsTopButtons = () => {
               // save scene should be disabled if there are no changes
               label: "Save scene",
               description: "Ctrl+S",
-              dialogProps: {
-                title: "Save Scene",
-                content: (
-                  <h4>
-                    Save scene to <b>{scene.value.title}</b>?
-                  </h4>
-                ),
-                confirmButtonProps: {
-                  label: "Save",
-                  onClick: handleButtonSave,
-                },
-                closeButtonProps: {
-                  label: "Cancel",
-                },
-                showClose: true,
-              },
+              ...(scene.value.token
+                ? {
+                    // Existing scene → save directly without dialog
+                    onClick: handleButtonSave,
+                  }
+                : {
+                    // New (unsaved) scene → ask for confirmation first
+                    dialogProps: {
+                      title: "Save Scene",
+                      content: (
+                        <h4>
+                          Save scene to <b>{scene.value.title}</b>?
+                        </h4>
+                      ),
+                      confirmButtonProps: {
+                        label: "Save",
+                        onClick: handleButtonSave,
+                      },
+                      closeButtonProps: {
+                        label: "Cancel",
+                      },
+                      showClose: true,
+                    },
+                  }),
               divider: true,
             },
             {

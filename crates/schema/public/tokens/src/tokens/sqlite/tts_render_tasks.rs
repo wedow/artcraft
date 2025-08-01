@@ -6,8 +6,9 @@ use serde::Serialize;
 use crate::prefixes::TokenPrefix;
 
 /// The primary key for TTS render tasks (Sqlite / AiChatBotSidecar)
-#[derive(Clone, PartialEq, Eq, sqlx::Type, Debug, Serialize, Deserialize)]
-#[sqlx(transparent)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "database", derive(sqlx::Type))]
+#[cfg_attr(feature = "database", sqlx(transparent))]
 pub struct TtsRenderTaskToken(pub String);
 
 impl_string_token!(TtsRenderTaskToken);

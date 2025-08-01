@@ -36,7 +36,7 @@ export class VideoApi extends ApiManager {
       inference_job_token_type?: string;
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/workflows/enqueue_studio`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/workflows/enqueue_studio`;
 
     const body = {
       ...enqueueVideo,

@@ -1,12 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
-import {
-  uploadNewScene as uploadNewSceneEndpoint,
-  updateExistingScene as updateExistingSceneEndpoint,
-} from "~/api";
 import { FetchProxy as fetch } from "@storyteller/tauri-utils";
+import { StorytellerApiHostStore } from "@storyteller/api";
 
 export const uploadNewScene = async (file: File, sceneTitle: string) => {
-  const endpoint = uploadNewSceneEndpoint;
+  const apiSchemeAndHost = StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
+  const endpoint = `${apiSchemeAndHost}/v1/media_files/upload/new_scene`;
+
   const formData = new FormData();
   formData.append("uuid_idempotency_token", uuidv4());
   formData.append("file", file);
@@ -36,7 +35,8 @@ export const uploadNewScene = async (file: File, sceneTitle: string) => {
 };
 
 export const updateExistingScene = async (file: File, sceneToken: string) => {
-  const endpoint = updateExistingSceneEndpoint(sceneToken);
+  const apiSchemeAndHost = StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
+  const endpoint = `${apiSchemeAndHost}/v1/media_files/upload/saved_scene/${sceneToken}`;
 
   const formData = new FormData();
   formData.append("uuid_idempotency_token", uuidv4());

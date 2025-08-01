@@ -1,4 +1,4 @@
-use crate::http_server::endpoints::inference_job::common_responses::lipsync::JobDetailsLipsyncRequest;
+use artcraft_api_defs::common::responses::job_details::JobDetailsLipsyncRequest;
 use mysql_queries::payloads::generic_inference_args::generic_inference_args::PolymorphicInferenceArgs;
 use mysql_queries::payloads::generic_inference_args::inner_payloads::face_fusion_payload::FaceFusionPayload;
 use mysql_queries::payloads::generic_inference_args::inner_payloads::lipsync_payload::{LipsyncAnimationAudioSource, LipsyncAnimationImageSource, LipsyncArgs};

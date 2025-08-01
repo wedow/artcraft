@@ -6,7 +6,7 @@ export class MediaUploadApi extends ApiManager {
   private sessionToken = "";
 
   private async getSessionTokenForUploadStudioShot() {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/session_token`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/session_token`;
     return await this.get<{
       maybe_signed_session: string;
     }>({ endpoint })
@@ -156,7 +156,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_title?: string | undefined;
     maybe_visibility?: Visibility | undefined;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/audio`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/audio`;
     const options: Record<string, string | number | undefined> = {
       maybe_title,
       maybe_visibility: maybe_visibility?.toString(),
@@ -179,7 +179,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_visibility?: Visibility | undefined;
     is_intermediate_system_file?: EIntermediateFile;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/image`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/image`;
     const options: Record<string, string | number | undefined> = {
       is_intermediate_system_file: EIntermediateFile[is_intermediate_system_file],
       maybe_title,
@@ -207,7 +207,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_title?: string;
     maybe_visibility?: Visibility;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/new_engine_asset`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/new_engine_asset`;
     const options: Record<string, string | number | undefined> = {
       engine_category,
       maybe_title,
@@ -231,7 +231,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_title?: string;
     maybe_visibility?: Visibility;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/new_scene`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/new_scene`;
     const options: Record<string, string | number | undefined> = {
       maybe_title,
       maybe_visibility: maybe_visibility?.toString(),
@@ -256,7 +256,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_style_name?: string;
     maybe_scene_source_media_file_token?: string;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/new_video`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/new_video`;
     const options: Record<string, string | number | undefined> = {
       is_intermediate_system_file: "true",
       maybe_title,
@@ -286,7 +286,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_title?: string;
     maybe_visibility?: Visibility;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/pmx`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/pmx`;
     const options: Record<string, string | number | undefined> = {
       is_intermediate_system_file: "true",
       engine_category,
@@ -309,7 +309,7 @@ export class MediaUploadApi extends ApiManager {
     uuid: string;
     mediaToken: string;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/saved_scene/${mediaToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/saved_scene/${mediaToken}`;
     const options: Record<string, string | number | undefined> = {};
     return this.Upload({ endpoint, blob, fileName, uuid, options });
   }
@@ -326,7 +326,7 @@ export class MediaUploadApi extends ApiManager {
     maybe_title: string;
     maybe_scene_source_media_file_token: string | undefined;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/upload/scene_snapshot`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/scene_snapshot`;
 
     const options: Record<string, string | number | undefined> = {
       maybe_title: maybe_title,

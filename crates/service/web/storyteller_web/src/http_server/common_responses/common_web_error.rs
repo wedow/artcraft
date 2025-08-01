@@ -2,6 +2,7 @@ use actix_http::StatusCode;
 use actix_web::{HttpResponse, HttpResponseBuilder, ResponseError};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use log::error;
 
 #[derive(Debug)]
 pub enum CommonWebError {
@@ -70,6 +71,13 @@ impl ResponseError for CommonWebError {
             })
       }
     }
+  }
+}
+
+impl From<sqlx::Error> for CommonWebError {
+  fn from(value: sqlx::Error) -> Self {
+    error!("SQLx error: {:?}", value);
+    CommonWebError::ServerError
   }
 }
 

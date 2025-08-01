@@ -6,8 +6,9 @@ use serde::Serialize;
 use crate::prefixes::LegacyTokenPrefix;
 
 /// Primary key for the `tts_model_upload_jobs` table.
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, sqlx::Type, Debug, Serialize, Deserialize)]
-#[sqlx(transparent)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "database", derive(sqlx::Type))]
+#[cfg_attr(feature = "database", sqlx(transparent))]
 pub struct TtsModelUploadJobToken(pub String);
 
 impl_string_token!(TtsModelUploadJobToken);

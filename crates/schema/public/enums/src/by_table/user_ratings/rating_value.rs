@@ -17,10 +17,11 @@ use utoipa::ToSchema;
 ///
 /// *DO NOT CHANGE VALUES WITHOUT A MIGRATION STRATEGY!*
 ///
+#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize, ToSchema)]
+#[cfg_attr(feature = "database", derive(sqlx::Type))]
+#[cfg_attr(feature = "database", sqlx(rename_all = "lowercase"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize, sqlx::Type, ToSchema)]
 #[serde(rename_all = "lowercase")]
-#[sqlx(rename_all = "lowercase")]
 pub enum UserRatingValue {
   /// This is considered a ratings "soft deletion" and does not count towards a total score.
   /// This is the default rating.

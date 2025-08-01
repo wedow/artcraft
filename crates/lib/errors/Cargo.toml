@@ -18,12 +18,12 @@ normal = ["workspace-build-acceleration"]
 
 [dependencies]
 # cargo-hakari workspace hack (faster compile times)
-workspace-build-acceleration = { workspace = true }
+workspace-build-acceleration.workspace = true
 
 # NB: This is one of the most central crates in the monorepo and everything depends on it.
 # Consider the dependencies here wisely.
 # Ideally we have almost nothing as a dependency of this crate.
-anyhow = { workspace = true }
+anyhow.workspace = true
 
 [dev-dependencies]
 # None yet

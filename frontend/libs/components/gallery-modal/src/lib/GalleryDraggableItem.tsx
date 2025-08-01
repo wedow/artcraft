@@ -110,6 +110,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
               </div>
             ) : (
               <img
+                data-gallery-draggable-1="true"
                 ref={imgRef}
                 src={item.thumbnail}
                 alt={item.label}
@@ -177,6 +178,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
                 </div>
               ) : (
                 <img
+                  data-gallery-draggable-2="true"
                   ref={imgRef}
                   src={item.thumbnail}
                   alt={item.label}

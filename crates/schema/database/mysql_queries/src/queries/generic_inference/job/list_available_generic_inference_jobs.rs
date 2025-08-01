@@ -2,6 +2,7 @@ use std::collections::BTreeSet;
 
 use anyhow::anyhow;
 use chrono::Utc;
+use log::debug;
 use sqlx::MySqlPool;
 
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
@@ -151,10 +152,8 @@ pub async fn list_available_generic_inference_jobs(
               .map(|token_type| InferenceInputSourceTokenType::from_str(token_type)
                   .map_err(|err| anyhow!("error: {:?}", err)))
               .transpose()?,
-          maybe_inference_args: record.maybe_inference_args
-              .as_deref()
-              .map(|args| GenericInferenceArgs::from_json(args))
-              .transpose()?,
+          maybe_inference_args: GenericInferenceArgs::from_json_optional(
+              record.maybe_inference_args.as_deref())?,
           maybe_raw_inference_text: record.maybe_raw_inference_text,
           status: JobStatusPlus::from_str(&record.status)
               .map_err(|err| anyhow!("JobStatus failure to parse: {:?}", err))?,

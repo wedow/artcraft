@@ -47,9 +47,6 @@
       "path": "../modal/tsconfig.lib.json"
     },
     {
-      "path": "../label/tsconfig.lib.json"
-    },
-    {
       "path": "../switch/tsconfig.lib.json"
     },
     {
@@ -59,16 +56,25 @@
       "path": "../../soundboard/tsconfig.lib.json"
     },
     {
-      "path": "../../tauri-api/tsconfig.lib.json"
+      "path": "../login-modal/tsconfig.lib.json"
     },
     {
       "path": "../../api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../analytics/google-analytics/tsconfig.lib.json"
     },
     {
       "path": "../input/tsconfig.lib.json"
     },
     {
       "path": "../button/tsconfig.lib.json"
+    },
+    {
+      "path": "../label/tsconfig.lib.json"
+    },
+    {
+      "path": "../../tauri-api/tsconfig.lib.json"
     }
   ]
 }

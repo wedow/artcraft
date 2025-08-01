@@ -61,7 +61,7 @@ export class UserBookmarksApi extends ApiManager {
       user_bookmark_token?: string;
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_bookmarks/create`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_bookmarks/create`;
     const body = {
       entity_token: entityToken,
       entity_type: entityType,
@@ -97,7 +97,7 @@ export class UserBookmarksApi extends ApiManager {
   }: {
     entityToken: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_bookmarks/delete/${entityToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_bookmarks/delete/${entityToken}`;
 
     return this.delete<
       { as_mod: boolean },
@@ -116,7 +116,7 @@ export class UserBookmarksApi extends ApiManager {
   }
 
   public ListUserBookmarks(): Promise<ApiResponse<UserBookmarkBatch[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_bookmarks/batch`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_bookmarks/batch`;
 
     return this.get<{
       success?: boolean;
@@ -145,7 +145,7 @@ export class UserBookmarksApi extends ApiManager {
     ApiResponse<UserBookmarkByUser[], Pagination>
   > {
     const user = username;
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_bookmarks/list/${user}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_bookmarks/list/${user}`;
 
     const query = {
       sort_ascending,
@@ -184,7 +184,7 @@ export class UserBookmarksApi extends ApiManager {
     entityType: string;
     entityToken: string;
   }): Promise<ApiResponse<UserBookmarkByEntity[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/user_bookmarks/list/${entityType}/${entityToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user_bookmarks/list/${entityType}/${entityToken}`;
 
     return this.get<{
       success: boolean;

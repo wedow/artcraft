@@ -23,7 +23,6 @@ const regEx =
 
 // TODO(bt,2025-04-19): Make these configurable
 const ENV = {
-  BASE_API: "https://api.storyteller.ai",
   GOOGLE_API: "https://studio.storyteller.ai",
   FUNNEL_API: "https://studio.storyteller.ai",
   CDN_API: "https://cdn-2.fakeyou.com",

@@ -9,5 +9,8 @@ Write-Host ""
 $env:TAURI_FRONTEND_PATH=".\frontend"
 $env:TAURI_APP_PATH=".\crates\desktop\artcraft"
 
+# Put SQLx into offline mode (no DB hits / migrations).
+$env:SQLX_OFFLINE = "true"
+
 # The config file tells Tauri more instructions for the frontend build.
 cargo tauri dev --config ".\crates\desktop\artcraft\tauri.artcraft_3d.no_dev.conf.json"

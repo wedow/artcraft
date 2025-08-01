@@ -51,7 +51,7 @@ export class MediaFilesApi extends ApiManager {
     asMod?: boolean;
     setDelete?: boolean;
   }): Promise<ApiResponse<MediaFile>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/file/${mediaFileToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/file/${mediaFileToken}`;
 
     const body = { as_mod: asMod, set_delete: setDelete };
     return await this.delete<
@@ -81,7 +81,7 @@ export class MediaFilesApi extends ApiManager {
   }: {
     mediaTokens: string[];
   }): Promise<ApiResponse<MediaFile[]>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/batch`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/batch`;
 
     return await this.get<{
       success: boolean;
@@ -102,7 +102,7 @@ export class MediaFilesApi extends ApiManager {
   }: {
     mediaFileToken: string;
   }): Promise<ApiResponse<MediaFile>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/file/${mediaFileToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/file/${mediaFileToken}`;
     return await this.get<{
       success: boolean;
       media_file: MediaFile;
@@ -122,7 +122,7 @@ export class MediaFilesApi extends ApiManager {
   public async ListMediaFiles(
     query: ListMediaQuery,
   ): Promise<ApiResponse<MediaInfo[], PaginationInfinite>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/list`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/list`;
     const queryWithStrings = {
       ...query,
       filter_media_classes: query.filter_media_classes
@@ -156,7 +156,7 @@ export class MediaFilesApi extends ApiManager {
   public async ListFeaturedMediaFiles(
     query: ListMediaQuery,
   ): Promise<ApiResponse<MediaInfo[], PaginationInfinite>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/list_featured`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/list_featured`;
     const queryWithStrings = {
       ...query,
       filter_media_classes: query.filter_media_classes
@@ -191,7 +191,7 @@ export class MediaFilesApi extends ApiManager {
     query: ListUserMediaQuery,
   ): Promise<ApiResponse<MediaInfo[], Pagination>> {
     const userName = authentication.userInfo.value?.username;
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/list/user/${userName}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/list/user/${userName}`;
     const queryWithStrings = {
       ...query,
       include_user_uploads: true,
@@ -226,7 +226,7 @@ export class MediaFilesApi extends ApiManager {
   public async SearchFeaturedMediaFiles(
     query: SearchFeaturedMediaQuery,
   ): Promise<ApiResponse<MediaInfo[], Pagination>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/search_featured`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/search_featured`;
     const queryWithStrings = {
       search_term: query.search_term,
       filter_media_classes: query.filter_media_classes
@@ -258,7 +258,7 @@ export class MediaFilesApi extends ApiManager {
   public async SearchUserMediaFiles(
     query: SearchFeaturedMediaQuery,
   ): Promise<ApiResponse<MediaInfo[], Pagination>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/search_session`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/search_session`;
     const queryWithStrings = {
       search_term: query.search_term,
       filter_media_classes: query.filter_media_classes
@@ -294,7 +294,7 @@ export class MediaFilesApi extends ApiManager {
     mediaToken: string;
     name: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/rename/${mediaToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/rename/${mediaToken}`;
     const body = { name };
 
     return await this.post<
@@ -320,7 +320,7 @@ export class MediaFilesApi extends ApiManager {
     mediaFileToken: string;
     imageToken: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/cover_image/${mediaFileToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/cover_image/${mediaFileToken}`;
     return await this.post<
       { cover_image_media_file_token: string },
       {
@@ -347,7 +347,7 @@ export class MediaFilesApi extends ApiManager {
     mediaFileToken: string;
     visibility: Visibility;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/media_files/visibility/${mediaFileToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/visibility/${mediaFileToken}`;
     return await this.post<
       { creator_set_visibility: string },
       {

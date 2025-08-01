@@ -8,7 +8,7 @@ export class FeaturedItemsApi extends ApiManager {
     entityToken: string;
     entityType: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/featured_item/create`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/featured_item/create`;
 
     const body = {
       entity_token: entityToken,
@@ -41,7 +41,7 @@ export class FeaturedItemsApi extends ApiManager {
     entityToken: string;
     entityType: string;
   }): Promise<ApiResponse<undefined>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/featured_item/delete`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/featured_item/delete`;
 
     const body = {
       entity_token: entityToken,
@@ -74,7 +74,7 @@ export class FeaturedItemsApi extends ApiManager {
     entityType: string;
     entityToken: string;
   }): Promise<ApiResponse<boolean>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/featured_item/is_featured/${entityType}/${entityToken}`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/featured_item/is_featured/${entityType}/${entityToken}`;
 
     return this.post<
       undefined,

@@ -1,4 +1,5 @@
 pub mod api_host;
+pub mod basic_json_get_request;
 pub mod basic_json_post_request;
 pub mod constants;
 pub mod filter_bad_response;

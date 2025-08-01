@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { ListDropdown } from "@storyteller/ui-list-dropdown";
 import { Button } from "@storyteller/ui-button";
-import { Input } from "@storyteller/ui-input";
-import { Label } from "@storyteller/ui-label";
 import { FileUploader } from "@storyteller/ui-file-uploader";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "./utilities";
 import { upload3DObjects } from "./utilities/upload3DObjects";
-import { UploaderState } from "~/models";
-import { FilterEngineCategories, MediaFileAnimationType } from "~/enums";
+import { UploaderState } from "../../../models";
+import { FilterEngineCategories, MediaFileAnimationType } from "../../../enums";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCube } from "@fortawesome/pro-solid-svg-icons";
 
@@ -48,13 +46,6 @@ export const UploadFiles3D = ({
       : undefined,
   );
 
-  const [uploadTitle, setUploadTitle] = useState<{
-    value: string;
-    error?: string;
-  }>({
-    value: "",
-  });
-
   const [assetFile, setAssetFile] = useState<{
     value: File | null;
     error?: string;
@@ -70,14 +61,6 @@ export const UploadFiles3D = ({
   );
 
   const handleSubmit = () => {
-    if (!uploadTitle.value) {
-      setUploadTitle((curr) => ({
-        ...curr,
-        error: "Please enter a title.",
-      }));
-      return;
-    }
-
     if (!assetFile.value) {
       setAssetFile((curr) => ({
         ...curr,
@@ -86,8 +69,11 @@ export const UploadFiles3D = ({
       return;
     }
 
+    // Use the filename as the title
+    const title = assetFile.value.name.split(".")[0];
+
     upload3DObjects({
-      title: uploadTitle.value,
+      title: title,
       assetFile: assetFile.value,
       thumbnailSnapshot: thumbnailFile,
       engineCategory: engineCategory,
@@ -123,23 +109,11 @@ export const UploadFiles3D = ({
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4">
-        <div className="flex flex-col">
-          <Label required>Asset Name</Label>
-          <Input
-            placeholder="Enter the asset name here"
-            errorMessage={uploadTitle.error}
-            value={uploadTitle.value}
-            onChange={(event) => setUploadTitle({ value: event.target.value })}
-            className={uploadTitle.error ? "mb-3" : ""}
-          />
-        </div>
-
+      <div className="flex flex-col gap-3">
         <FileUploader
-          title="Upload 3D Model"
           fileTypes={fileTypes}
-          file={assetFile.value}
-          setFile={(file: File | null) => {
+          file={assetFile.value ?? undefined}
+          handleChange={(file: File) => {
             setAssetFile({
               value: file,
             });
@@ -184,7 +158,7 @@ export const UploadFiles3D = ({
           <Button
             variant="primary"
             onClick={handleSubmit}
-            disabled={!uploadTitle.value || !assetFile.value}
+            disabled={!assetFile.value}
           >
             Upload
           </Button>

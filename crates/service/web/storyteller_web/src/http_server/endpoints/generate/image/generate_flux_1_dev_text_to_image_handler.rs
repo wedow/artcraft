@@ -6,6 +6,9 @@ use crate::state::server_state::ServerState;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::{GenerateFlux1DevTextToImageAspectRatio, GenerateFlux1DevTextToImageNumImages, GenerateFlux1DevTextToImageRequest, GenerateFlux1DevTextToImageResponse};
+use enums::by_table::prompts::prompt_type::PromptType;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::requests::webhook::image::enqueue_flux_1_dev_text_to_image_webhook::enqueue_flux_1_dev_text_to_image_webhook;
 use fal_client::requests::webhook::image::enqueue_flux_1_dev_text_to_image_webhook::{Flux1DevArgs, Flux1DevAspectRatio, Flux1DevNumImages};
@@ -15,6 +18,8 @@ use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
+use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use sqlx::Acquire;
 use utoipa::ToSchema;
 
 /// Flux 1 Dev text to image
@@ -34,9 +39,13 @@ pub async fn generate_flux_1_dev_text_to_image_handler(
   request: Json<GenerateFlux1DevTextToImageRequest>,
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<GenerateFlux1DevTextToImageResponse>, CommonWebError> {
+  let mut mysql_connection = server_state.mysql_pool
+      .acquire()
+      .await?;
+  
   let maybe_user_session = server_state
       .session_checker
-      .maybe_get_user_session(&http_request, &server_state.mysql_pool)
+      .maybe_get_user_session_from_connection(&http_request, &mut mysql_connection)
       .await
       .map_err(|e| {
         warn!("Session checker error: {:?}", e);
@@ -61,7 +70,7 @@ pub async fn generate_flux_1_dev_text_to_image_handler(
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
 
-  insert_idempotency_token(&request.uuid_idempotency_token, &server_state.mysql_pool)
+  insert_idempotency_token(&request.uuid_idempotency_token, &mut *mysql_connection)
       .await
       .map_err(|err| {
         error!("Error inserting idempotency token: {:?}", err);
@@ -115,16 +124,51 @@ pub async fn generate_flux_1_dev_text_to_image_handler(
 
   let ip_address = get_request_ip(&http_request);
 
+  let mut transaction = mysql_connection
+      .begin()
+      .await
+      .map_err(|err| {
+        error!("Error starting MySQL transaction: {:?}", err);
+        CommonWebError::ServerError
+      })?;
+
+  // NB: Don't fail the job if the query fails.
+  let prompt_result = insert_prompt(InsertPromptArgs {
+    maybe_apriori_prompt_token: None,
+    prompt_type: PromptType::ArtcraftApp,
+    maybe_creator_user_token: maybe_user_session
+        .as_ref()
+        .map(|s| &s.user_token),
+    maybe_model_type: Some(ModelType::Flux1Dev),
+    maybe_generation_provider: Some(GenerationProvider::Artcraft),
+    maybe_positive_prompt: request.prompt.as_deref(),
+    maybe_negative_prompt: None,
+    maybe_other_args: None,
+    creator_ip_address: &ip_address,
+    mysql_executor: &mut *transaction,
+    phantom: Default::default(),
+  }).await;
+
+  let prompt_token = match prompt_result {
+    Ok(token) => Some(token),
+    Err(err) => {
+      warn!("Error inserting prompt: {:?}", err);
+      None // Don't fail the job if the prompt insertion fails.
+    }
+  };
+
   let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
     uuid_idempotency_token: &request.uuid_idempotency_token,
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::ImageGeneration,
     maybe_inference_args: None,
+    maybe_prompt_token: prompt_token.as_ref(),
     maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
-    mysql_pool: &server_state.mysql_pool,
+    mysql_executor: &mut *transaction,
+    phantom: Default::default(),
   }).await;
 
   let job_token = match db_result {
@@ -134,6 +178,14 @@ pub async fn generate_flux_1_dev_text_to_image_handler(
       return Err(CommonWebError::ServerError);
     }
   };
+  
+  let _r = transaction
+      .commit()
+      .await
+      .map_err(|err| {
+        error!("Error committing MySQL transaction: {:?}", err);
+        CommonWebError::ServerError
+      })?;
 
   Ok(Json(GenerateFlux1DevTextToImageResponse {
     success: true,

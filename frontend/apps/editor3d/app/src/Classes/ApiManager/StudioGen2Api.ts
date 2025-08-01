@@ -27,7 +27,7 @@ export class StudioGen2Api extends ApiManager {
       inference_job_token_type?: string;
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/studio_gen2/enqueue`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/studio_gen2/enqueue`;
 
     const body = {
       ...enqueueVideo,

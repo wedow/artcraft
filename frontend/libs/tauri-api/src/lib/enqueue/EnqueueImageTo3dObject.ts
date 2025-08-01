@@ -21,6 +21,8 @@ export interface EnqueueImageTo3dObjectRequest {
 
 export enum EnqueueImageTo3dObjectModel {
   Hunyuan3d2 = "hunyuan_3d_2",
+  Hunyuan3d2_0 = "hunyuan_3d_2_0",
+  Hunyuan3d2_1 = "hunyuan_3d_2_1",
 }
 
 export interface EnqueueImageTo3dObjectError extends CommandResult {

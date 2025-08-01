@@ -1,9 +1,11 @@
 import { useState } from "react";
 import dayjs from "dayjs";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownToLine } from "@fortawesome/pro-solid-svg-icons";
-import { LightboxModal } from "@storyteller/ui-lightbox-modal";
-import { GetCdnOrigin } from "~/api/GetCdnOrigin";
+import {
+  galleryModalLightboxMediaId,
+  galleryModalLightboxVisible,
+  galleryModalLightboxImage,
+} from "@storyteller/ui-gallery-modal";
+import type { GalleryItem } from "@storyteller/ui-gallery-modal";
 
 interface Props {
   job: {
@@ -12,17 +14,23 @@ interface Props {
     updated_at: string;
     public_bucket_path: string;
     maybe_style_name?: string;
+    maybe_media_links_thumbnail?: string;
+    maybe_result?: {
+      entity_token?: string;
+      media_links?: {
+        cdn_url?: string;
+      };
+    };
   };
 }
 
 export function CompletedCard({ job }: Props) {
   const [loadError, setLoadError] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const cdnOrigin = GetCdnOrigin();
-  const mediaPath = job?.public_bucket_path || "";
-  const downloadLink = `${cdnOrigin}${mediaPath}`;
-  const imageUrl = downloadLink;
-  const fullImageUrl = downloadLink;
+  // Info: Gallery modal will handle displaying full media. Compute thumbnail only.
+
+  // NB: Try to use the thumbnail instead of the link to the full asset.
+  // Passing around full asset URLs and putting them into image tags is causing CORS errors if those assets are not images.
+  const thumbnailUrl = job?.maybe_media_links_thumbnail;
 
   if (!job) return null;
 
@@ -30,17 +38,31 @@ export function CompletedCard({ job }: Props) {
     <>
       <div
         className="flex w-full items-center justify-between rounded-lg p-2 text-start transition-all duration-150 hover:cursor-pointer hover:bg-white/10"
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => {
+          galleryModalLightboxMediaId.value =
+            job.maybe_result?.entity_token || null;
+          galleryModalLightboxImage.value = {
+            id: job.maybe_result?.entity_token || job.token,
+            label: job.maybe_title || "Image",
+            thumbnail: thumbnailUrl,
+            fullImage: job.maybe_result?.media_links?.cdn_url || thumbnailUrl,
+            createdAt: job.updated_at,
+            mediaClass: undefined,
+          } as GalleryItem;
+          galleryModalLightboxVisible.value = true;
+        }}
       >
         <div className="flex gap-4">
           <div className="flex aspect-square h-14 w-14 justify-center overflow-hidden rounded-lg border border-[#A9A9A9]/50 bg-black/60">
             <img
               src={
-                loadError ? "/resources/images/movie-placeholder.png" : imageUrl
+                loadError
+                  ? "/resources/images/movie-placeholder.png"
+                  : thumbnailUrl
               }
               className="h-full w-full object-cover"
               alt={job.maybe_title ?? "unknown"}
-              crossOrigin="anonymous"
+              //crossOrigin="anonymous"
               onError={() => setLoadError(true)}
               loading="lazy"
             />
@@ -52,33 +74,17 @@ export function CompletedCard({ job }: Props) {
             </div>
           </div>
         </div>
-        <a
+        {/* <a
           href={downloadLink}
           download
           onClick={(e) => e.stopPropagation()}
           className="flex h-9 w-9 items-center justify-center text-lg text-white/60 transition-all hover:text-white"
         >
           <FontAwesomeIcon icon={faDownToLine} />
-        </a>
+        </a> */}
       </div>
 
-      <LightboxModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        imageUrl={fullImageUrl}
-        imageAlt={job.maybe_title ?? "unknown"}
-        onImageError={() => setLoadError(true)}
-        title={job.maybe_title}
-        createdAt={job.updated_at}
-        downloadUrl={downloadLink}
-        additionalInfo={
-          job.maybe_style_name && (
-            <div className="text-sm text-white/60">
-              Style: {job.maybe_style_name}
-            </div>
-          )
-        }
-      />
+      {/* LightboxModal removed – now using top level GalleryModal */}
     </>
   );
 }

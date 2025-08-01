@@ -1,77 +1,64 @@
 import { useState, useRef, useEffect } from "react";
 import { PaintSurface } from "./PaintSurface";
-// https://github.com/SaladTechnologies/comfyui-api
-
 import "./App.css";
 import PromptEditor from "./PromptEditor/PromptEditor";
 import SideToolbar from "./components/ui/SideToolbar";
-// Import the Zustand store
 import { AspectRatioType, useSceneStore } from "./stores/SceneState";
 import { useUndoRedoHotkeys } from "./hooks/useUndoRedoHotkeys";
 import { useDeleteHotkeys } from "./hooks/useDeleteHotkeys";
-import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys"; // Import the hook
+import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys";
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
-import Konva from "konva"; // just for types
-
-import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
-import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot"
+import Konva from "konva";
+import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
+import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
-import {
-  FalBackgroundRemoval,
-  FalBackgroundRemovalRequest,
-} from "@storyteller/tauri-api";
+import { FalBackgroundRemoval } from "@storyteller/tauri-api";
+import { getCreatorIcon, IMAGE_MODELS_BY_LABEL, ModelCreator, ModelInfo } from "@storyteller/model-list";
+import { instructiveImageEditModels, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
 
+export const DecodeBase64ToImage = async (
+  base64String: string,
+): Promise<ImageBitmap> => {
+  const img = document.createElement("img");
 
-  /**
- * This decodes Base64 encoded PNG images into an image element.
- * @param base64String a standard (not "web safe") base64-encoded string
- */
-  export const DecodeBase64ToImage = async (base64String: string) : Promise<ImageBitmap> => {
-    // Create an image element
-    const img = document.createElement("img");
-  
-    // Convert base64 to data URL if it doesn't include the prefix
-    const dataUrl = base64String.startsWith("data:")
-      ? base64String
-      : `data:image/png;base64,${base64String}`;
-  
-    // Create a promise to handle the image loading
-    return new Promise((resolve, reject) => {
-      img.onload = async () => {
-        try {
-          const bitmap = await createImageBitmap(img);
-          resolve(bitmap);
-        } catch (error) {
-          reject(error);
-        }
-      };
-  
-      img.onerror = () => reject(new Error("Failed to load image"));
-  
-      // Set the source to trigger loading
-      img.src = dataUrl;
-    });
-  }
+  const dataUrl = base64String.startsWith("data:")
+    ? base64String
+    : `data:image/png;base64,${base64String}`;
+
+  return new Promise((resolve, reject) => {
+    img.onload = async () => {
+      try {
+        const bitmap = await createImageBitmap(img);
+        resolve(bitmap);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    img.onerror = () => reject(new Error("Failed to load image"));
+
+    img.src = dataUrl;
+  });
+};
 
 const PageDraw = () => {
-  //useStateSceneLoader();
-
-  // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
-  // Add new state to track if user is selecting
+  const { selectedModels } = useModelSelectorStore();
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
-  const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
-  // Create refs for stage and image
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
-
-  // Use the Zustand store
   const store = useSceneStore();
 
-  // Pass store actions directly as callbacks
+  const selectedModel =
+    selectedModels[ModelCategory.Canvas2D] ||
+    instructiveImageEditModels[0]?.label;
+
+  const selectedModelInfo: ModelInfo | undefined =
+    IMAGE_MODELS_BY_LABEL[selectedModel];
+
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
   useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
   useCopyPasteHotkeys({
@@ -85,7 +72,6 @@ const PageDraw = () => {
       const { item, canvasPosition } = event.detail;
       console.log("Received 2D gallery drop:", { item, canvasPosition });
 
-      // Get the stage to transform coordinates properly
       const stage = stageRef.current;
       if (!stage) {
         console.error(
@@ -93,7 +79,6 @@ const PageDraw = () => {
         );
         return;
       }
-
       // Transform canvas coordinates to stage coordinates
       // Account for stage position, scale, and transformations
       const stageX = stage.x();
@@ -108,7 +93,6 @@ const PageDraw = () => {
 
       console.log("Transformed stage coordinates:", stagePoint);
 
-      // Use the direct URL for the image
       const imageUrl = item.fullImage || item.thumbnail;
       if (!imageUrl) {
         console.error("No image URL available for dropped item");
@@ -117,7 +101,6 @@ const PageDraw = () => {
 
       console.log("Creating image from URL:", imageUrl);
 
-      // Use the store's createImageFromUrl method directly
       store.createImageFromUrl(stagePoint.x, stagePoint.y, imageUrl);
 
       console.log(
@@ -126,13 +109,11 @@ const PageDraw = () => {
       );
     };
 
-    // Add event listener
     window.addEventListener(
       "gallery-2d-drop",
       handleGallery2DDrop as EventListener,
     );
 
-    // Cleanup
     return () => {
       window.removeEventListener(
         "gallery-2d-drop",
@@ -141,53 +122,46 @@ const PageDraw = () => {
     };
   }, [store]);
 
-  const handleImageUpload = (files: File[]): void => {
-    // Place images at center of viewport with offset for multiple images
-    const centerX = 512; // leftPanelWidth / 2
-    const centerY = 512; // leftPanelHeight / 2
+  const handleImageUpload = async (files: File[]): Promise<void> => {
+    // Determine current canvas dimensions from the store (according to aspect-ratio)
+    const { width: canvasW, height: canvasH } =
+      store.getAspectRatioDimensions();
 
-    console.log("Image upload started with files:", files);
-    console.log("Center coordinates:", { centerX, centerY });
+    // Target maximum size – 85 % of the canvas in each direction
+    const maxW = canvasW * 0.85;
+    const maxH = canvasH * 0.85;
 
-    files.forEach((file, index) => {
-      console.log(`Processing file ${index}:`, file.name);
+    for (const file of files) {
+      // Pre-load the image to get its intrinsic dimensions
+      const img = new Image();
+      img.onload = () => {
+        const { naturalWidth, naturalHeight } = img;
 
-      store.createImageFromFile(
-        centerX + index * 60, // Offset each image
-        centerY + index * 60,
-        file,
-      );
-      console.log(`Created image at position:`, {
-        x: centerX + index * 60,
-        y: centerY + index * 60,
-      });
-    });
-  };
+        // Compute scale to fit within the frame while preserving aspect-ratio
+        const scale = Math.min(maxW / naturalWidth, maxH / naturalHeight, 1);
+        const finalW = naturalWidth * scale;
+        const finalH = naturalHeight * scale;
 
-  const modelList: PopoverItem[] = [
-    {
-      label: "GPT-4o",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
-      selected: selectedModel === "GPT-4o",
-      description: "High quality model",
-      badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-    {
-      label: "FLUX.1 Kontext",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
-      selected: selectedModel === "FLUX.1 Kontext",
-      description: "Fast and high-quality model",
-      badges: [{ label: "20 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-  ];
+        // Center the image in the canvas
+        const x = (canvasW - finalW) / 2;
+        const y = (canvasH - finalH) / 2;
 
-  const handleModelSelect = (item: PopoverItem) => {
-    setSelectedModel(item.label);
+        store.createImageFromFile(x, y, file, finalW, finalH);
+      };
+      img.src = URL.createObjectURL(file);
+    }
   };
 
   const onEnqueuedPressed = async () => {
+    const { width, height } = store.getAspectRatioDimensions();
+
     // takes snap shot and then a global variable in the engine will invoke the inference.
-    const image = await captureStageImageBitmap(stageRef, transformerRefs);
+    const image = await captureStageImageBitmap(
+      stageRef,
+      transformerRefs,
+      width,
+      height,
+    );
     if (!image) {
       console.error("Failed to capture stage image");
       return;
@@ -196,9 +170,10 @@ const PageDraw = () => {
     }
   };
 
-  const onFitPressed = async () => { 
+  const onFitPressed = async () => {
     // Get the stage and its container dimensions
     const stage = stageRef.current;
+    if (!stage) return;
 
     // Get container dimensions
     const containerWidth = stage.container().offsetWidth;
@@ -208,13 +183,60 @@ const PageDraw = () => {
     const canvasW = store.getAspectRatioDimensions().width;
     const canvasH = store.getAspectRatioDimensions().height;
 
-    // Calculate position to center canvas in container
+    // Add padding to ensure canvas doesn't touch the edges
+    const padding = 40;
+    const availableWidth = containerWidth - padding * 2;
+    const availableHeight = containerHeight - padding * 2;
+
+    // Calculate scale to fit canvas within container while maintaining aspect ratio
+    const scaleX = availableWidth / canvasW;
+    const scaleY = availableHeight / canvasH;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+
+    // Set the scale
+    stage.scale({ x: scale, y: scale });
+
+    // Calculate position to center the scaled canvas in container
+    const scaledCanvasW = canvasW * scale;
+    const scaledCanvasH = canvasH * scale;
+
     stage.position({
-      x: (containerWidth - canvasW) / 2,
-      y: (containerHeight - canvasH) / 2
+      x: (containerWidth - scaledCanvasW) / 2,
+      y: (containerHeight - scaledCanvasH) / 2,
     });
 
-   }
+    // Redraw the stage
+    stage.batchDraw();
+  };
+
+  // Auto-fit canvas to screen on initial load
+  useEffect(() => {
+    const autoFitCanvas = async () => {
+      let attempts = 0;
+      const maxAttempts = 20;
+
+      const tryFit = async () => {
+        const stage = stageRef.current;
+        if (stage && stage.container && stage.container().offsetWidth > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          onFitPressed();
+          return true;
+        }
+
+        attempts++;
+        if (attempts < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          return tryFit();
+        }
+        return false;
+      };
+
+      await tryFit();
+    };
+
+    autoFitCanvas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -227,19 +249,14 @@ const PageDraw = () => {
           initialPrompt=""
           onPromptChange={(prompt: string) => {
             console.log("Prompt changed:", prompt);
-            // Handle prompt changes here
           }}
           onRandomize={() => {
             console.log("Randomize clicked");
-            // Handle randomize action here
           }}
           onVary={() => {
             console.log("Vary clicked");
-            // Handle vary action here
           }}
-          onAspectRatioChange={(ratio: string) => {
-            console.log("Aspect ratio:", ratio);
-            // Convert ratio string to AspectRatioType enum
+          onAspectRatioChange={async (ratio: string) => {
             const ratioToType = (ratio: string): AspectRatioType => {
               switch (ratio) {
                 case "2:3":
@@ -255,9 +272,13 @@ const PageDraw = () => {
 
             const aspectRatioType = ratioToType(ratio);
             store.setAspectRatioType(aspectRatioType);
-            onFitPressed()
+
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            onFitPressed();
           }}
           onEnqueuePressed={onEnqueuedPressed}
+          onFitPressed={onFitPressed}
+          selectedModelInfo={selectedModelInfo}
         />
       </div>
       <SideToolbar
@@ -265,27 +286,19 @@ const PageDraw = () => {
         onSelect={(): void => {
           store.setActiveTool("select");
         }}
-        onAddShape={(shape: "rectangle" | "circle" | "triangle"): void => {
-          // Calculate center position based on canvas dimensions
-          const centerX = canvasWidth.current / 3;
-          const centerY = canvasHeight.current / 3;
-          if (shape === "rectangle") {
-            store.createRectangle(centerX, centerY);
-          } else if (shape === "circle") {
-            store.createCircle(centerX, centerY);
-          } else if (shape === "triangle") {
-            store.createTriangle(centerX, centerY);
-          }
+        onActivateShapeTool={(
+          shape: "rectangle" | "circle" | "triangle",
+        ): void => {
+          store.selectNode(null);
+          store.setCurrentShape(shape);
+          store.setActiveTool("shape");
+          store.selectNode(null);
         }}
         onPaintBrush={(hex: string, size: number, opacity: number): void => {
           store.setActiveTool("draw");
           store.setBrushColor(hex);
           store.setBrushSize(size);
           store.setBrushOpacity(opacity);
-        }}
-        onEraser={(size: number): void => {
-          store.setActiveTool("eraser");
-          store.setBrushSize(size);
         }}
         onCanvasBackground={(hex: string): void => {
           console.log("Canvas background activated", { color: hex });
@@ -294,10 +307,6 @@ const PageDraw = () => {
           // Debounce also causes issues with real time color change.
           store.setFillColor(hex);
         }}
-        onGenerateImage={(): void => {
-          console.log("Generate image activated");
-          // Add image generation logic here
-        }}
         onUploadImage={(): void => {
           // Create input element dynamically like in PromptEditor
           console.log("Upload image activated");
@@ -305,9 +314,7 @@ const PageDraw = () => {
           input.type = "file";
           input.accept = "image/*";
           input.multiple = true;
-          input.style.display = "none"; // Hide the input
-
-          // Attach to DOM
+          input.style.display = "none";
           document.body.appendChild(input);
 
           input.onchange = (e: Event) => {
@@ -330,131 +337,136 @@ const PageDraw = () => {
             } else {
               console.log("No files selected");
             }
-            // Clean up: remove input from DOM after use
             document.body.removeChild(input);
           };
 
-          // Reset value before click (for same file selection)
           input.value = "";
           input.click();
         }}
         onDelete={(): void => {
-          // This onDelete prop for SideToolbar might still be needed for the button
           store.deleteSelectedItems();
         }}
         activeToolId={store.activeTool}
+        currentShape={store.currentShape}
       />
       <div className="relative z-0">
-      <ContextMenuContainer 
-        onAction={(e, action) => {
-          if (action === "contextMenu") {
-            const hasSelection = store.selectedNodeIds.length > 0;
-            if (hasSelection) {
-              console.log("An item is selected.");
-              // You can add additional actions here based on the selection
-              return true 
-            } else {
-              console.log("No item is selected.");
-              return false
+        <ContextMenuContainer
+          onAction={(e, action) => {
+            if (action === "contextMenu") {
+              const hasSelection = store.selectedNodeIds.length > 0;
+              if (hasSelection) {
+                console.log("An item is selected.");
+                return true;
+              } else {
+                console.log("No item is selected.");
+                return false;
+              }
             }
-          }
-          return false
-        }} 
-        onMenuAction={async (action) => {
-          switch (action) {
-            case 'LOCK':
-              store.toggleLock(store.selectedNodeIds);
-              break;
-            case 'REMOVE_BACKGROUND':
-              // returns a success if we have selected images only
-              await store.removeBackground(store.selectedNodeIds, 
-                async (success: boolean, image_base64: string, message: string) => {
-                if (!success) {
-                  console.error(message);
-                  return { success: false };
-                }
-                try {
-                  const response = await FalBackgroundRemoval({ base64_image: image_base64 });
-                  if (response.status !== "success" || !("payload" in response)) {
-                    console.error("Failed to remove background", response);
-                    return { success: false };
-                  }
-
-                  const base64String = response.payload?.base64_bytes as string;
-                  const binaryString = atob(base64String);
-                  const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
-                  const blob = new Blob([bytes], { type: "image/png" });
-                  const file = new File([blob], "generated_image.png", { type: blob.type });
-                  return { success: true, file };
-                } catch (error) {
-                  console.error("Failed to remove background", error);
-                  return { success: false };
-                }
-              });
-              break;
-            case 'BRING_TO_FRONT':
-              store.bringToFront(store.selectedNodeIds);
-              break;
-            case 'BRING_FORWARD':
-              store.bringForward(store.selectedNodeIds);
-              break;
-            case 'SEND_BACKWARD':
-              store.sendBackward(store.selectedNodeIds);
-              break;
-            case 'SEND_TO_BACK':
-              store.sendToBack(store.selectedNodeIds);
-              break;
-            case 'DUPLICATE':
-              store.copySelectedItems()
-              store.pasteItems()
-              break;
-            case 'DELETE':
-              store.deleteSelectedItems()
-              break;
-            default:
-              // No action needed for unhandled cases
-          }
-        }}
-        isLocked={store.selectedNodeIds.some(id => {
-          const node = store.nodes.find(n => n.id === id);
-          const lineNode = store.lineNodes.find(n => n.id === id);
-          return (node?.locked || lineNode?.locked) ?? false;
-        })}
-      >
-        <PaintSurface
-          nodes={store.nodes}
-          selectedNodeIds={store.selectedNodeIds}
-          onCanvasSizeChange={(width: number, height: number): void => {
-            canvasWidth.current = width;
-            canvasHeight.current = height;
+            return false;
           }}
-          fillColor={store.fillColor}
-          activeTool={store.activeTool}
-          brushColor={store.brushColor}
-          brushSize={store.brushSize}
-          onSelectionChange={setIsSelecting}
-          stageRef={stageRef}
-          transformerRefs={transformerRefs}
-        />
-          </ContextMenuContainer>
+          onMenuAction={async (action) => {
+            switch (action) {
+              case "LOCK":
+                store.toggleLock(store.selectedNodeIds);
+                break;
+              case "REMOVE_BACKGROUND":
+                await store.removeBackground(
+                  store.selectedNodeIds,
+                  async (
+                    success: boolean,
+                    image_base64: string,
+                    message: string,
+                  ) => {
+                    if (!success) {
+                      console.error(message);
+                      return { success: false };
+                    }
+                    try {
+                      const response = await FalBackgroundRemoval({
+                        base64_image: image_base64,
+                      });
+                      if (
+                        response.status !== "success" ||
+                        !("payload" in response)
+                      ) {
+                        console.error("Failed to remove background", response);
+                        return { success: false };
+                      }
+
+                      const base64String = response.payload
+                        ?.base64_bytes as string;
+                      const binaryString = atob(base64String);
+                      const bytes = Uint8Array.from(binaryString, (c) =>
+                        c.charCodeAt(0),
+                      );
+                      const blob = new Blob([bytes], { type: "image/png" });
+                      const file = new File([blob], "generated_image.png", {
+                        type: blob.type,
+                      });
+                      return { success: true, file };
+                    } catch (error) {
+                      console.error("Failed to remove background", error);
+                      return { success: false };
+                    }
+                  },
+                );
+                break;
+              case "BRING_TO_FRONT":
+                store.bringToFront(store.selectedNodeIds);
+                break;
+              case "BRING_FORWARD":
+                store.bringForward(store.selectedNodeIds);
+                break;
+              case "SEND_BACKWARD":
+                store.sendBackward(store.selectedNodeIds);
+                break;
+              case "SEND_TO_BACK":
+                store.sendToBack(store.selectedNodeIds);
+                break;
+              case "DUPLICATE":
+                store.copySelectedItems();
+                store.pasteItems();
+                break;
+              case "DELETE":
+                store.deleteSelectedItems();
+                break;
+              default:
+              // No action
+            }
+          }}
+          isLocked={store.selectedNodeIds.some((id) => {
+            const node = store.nodes.find((n) => n.id === id);
+            const lineNode = store.lineNodes.find((n) => n.id === id);
+            return (node?.locked || lineNode?.locked) ?? false;
+          })}
+        >
+          <PaintSurface
+            nodes={store.nodes}
+            selectedNodeIds={store.selectedNodeIds}
+            onCanvasSizeChange={(width: number, height: number): void => {
+              canvasWidth.current = width;
+              canvasHeight.current = height;
+            }}
+            fillColor={store.fillColor}
+            activeTool={store.activeTool}
+            brushColor={store.brushColor}
+            brushSize={store.brushSize}
+            onSelectionChange={setIsSelecting}
+            stageRef={stageRef}
+            transformerRefs={transformerRefs}
+          />
+        </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-        <PopoverMenu
-          items={modelList}
-          onSelect={handleModelSelect}
-          mode="hoverSelect"
+        <ModelSelector
+          items={instructiveImageEditModels}
+          category={ModelCategory.Canvas2D}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
           showIconsInList
           triggerLabel="Model"
         />
-       <button
-         className="bg-transparent p-2 text-lg text-white hover:text-white hover:bg-white/20 rounded transition"
-         onClick={onFitPressed}
-       >
-        Fit
-       </button>
       </div>
     </>
   );

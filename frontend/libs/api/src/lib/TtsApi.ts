@@ -24,7 +24,7 @@ export class TtsApi extends ApiManager {
       inference_job_token_type?: string;
     }>
   > {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/tts/inference`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/tts/inference`;
 
     const body = {
       ...request,

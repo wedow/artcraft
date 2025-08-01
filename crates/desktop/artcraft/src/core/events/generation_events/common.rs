@@ -15,14 +15,25 @@ pub enum GenerationModel {
   Flux1Dev,
   #[serde(rename = "flux_1_schnell")]
   Flux1Schnell,
+  #[serde(rename = "flux_pro_1")]
+  FluxPro1,
   #[serde(rename = "flux_pro_1.1")]
   FluxPro11,
   #[serde(rename = "flux_pro_1.1_ultra")]
   FluxPro11Ultra,
+  #[serde(rename = "flux_pro_kontext_max")]
+  FluxProKontextMax,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  #[serde(rename = "hunyuan_3d_2_0")]
+  Hunyuan3d2_0,
+  #[serde(rename = "hunyuan_3d_2_1")]
+  Hunyuan3d2_1,
+
+  // TODO: Should be Kling16Pro
   #[serde(rename = "kling_1.6")]
   Kling1_6,
+
   #[serde(rename = "kling_2.0")]
   Kling2_0,
   #[serde(rename = "kling_2.1_master")]

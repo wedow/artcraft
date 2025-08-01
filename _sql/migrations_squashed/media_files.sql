@@ -61,6 +61,9 @@ CREATE TABLE media_files (
   --   * 'workflow' (DEPRECATED)
   origin_product_category VARCHAR(16) NOT NULL DEFAULT "unknown",
 
+  -- What service provided the generation (if any).
+  maybe_generation_provider VARCHAR(16) DEFAULT NULL,
+
   -- For inference that can be tied back to a model, the type of model.
   -- There are multiple indices on this column!
   -- DO NOT EXPOSE THIS TO USERS VIA THE API, as we may leak secrets in doing so.

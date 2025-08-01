@@ -911,6 +911,20 @@ pub mod got_ocr;
 #[cfg(any(
     feature = "endpoints",
     feature = "endpoints_fal-ai",
+    feature = "endpoints_fal-ai_gpt"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "endpoints",
+        feature = "endpoints_fal-ai",
+        feature = "endpoints_fal-ai_gpt"
+    )))
+)]
+pub mod gpt_image_1;
+#[cfg(any(
+    feature = "endpoints",
+    feature = "endpoints_fal-ai",
     feature = "endpoints_fal-ai_hunyuan3d"
 ))]
 #[cfg_attr(

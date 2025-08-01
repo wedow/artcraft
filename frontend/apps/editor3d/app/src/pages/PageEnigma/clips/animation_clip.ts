@@ -8,9 +8,9 @@ import {
 import { MMDLoader } from "three/addons/loaders/MMDLoader.js";
 
 import { MoveAIResult, Retarget } from "../Editor/retargeting";
-import environmentVariables from "~/Classes/EnvironmentVariables";
 import IAnimationClip from "./ClipInterfaces/IAnimationClip";
 import { GetCdnOrigin } from "~/api/GetCdnOrigin";
+import { StorytellerApiHostStore } from "@storyteller/api";
 
 export class AnimationClip implements IAnimationClip {
   version: number;
@@ -76,8 +76,8 @@ export class AnimationClip implements IAnimationClip {
 
   async get_media_url() {
     //This is for prod when we have the proper info on the url.
-    const api_base_url = environmentVariables.values.BASE_API;
-    const url = `${api_base_url}/v1/media_files/file/${this.media_id}`;
+    const apiSchemeAndHost = StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
+    const url = `${apiSchemeAndHost}/v1/media_files/file/${this.media_id}`;
 
     const response = await fetch(url);
     const json = await JSON.parse(await response.text());

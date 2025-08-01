@@ -23,6 +23,9 @@ import {
   galleryModalVisibleDuringDrag,
   galleryReopenAfterDragSignal,
   galleryModalVisibleViewMode,
+  galleryModalLightboxMediaId,
+  galleryModalLightboxImage,
+  galleryModalLightboxVisible,
 } from "./galleryModalSignals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -85,10 +88,9 @@ export const GalleryModal = React.memo(
     forceFilter,
   }: GalleryModalProps) => {
     const [loading, setLoading] = useState(false);
-    const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(
-      null
-    );
-    const [isLightboxVisible, setIsLightboxVisible] = useState(false);
+    // Lightbox state is now handled via signals
+    const lightboxImageSignal = galleryModalLightboxImage;
+    const lightboxVisibleSignal = galleryModalLightboxVisible;
     const [failedImageUrls] = useState<Set<string>>(new Set());
     const [username, setUsername] = useState<string>("");
     const forceFilterRef = useRef(forceFilter);
@@ -114,7 +116,7 @@ export const GalleryModal = React.memo(
     const [hasMore, setHasMore] = useState(true);
     const pageSize = 25;
 
-    const imageUrl = lightboxImage?.fullImage || "";
+    const imageUrl = lightboxImageSignal.value?.fullImage || "";
 
     const api = useMemo(() => new GalleryModalApi(), []);
     const usersApi = useMemo(() => new UsersApi(), []);
@@ -153,6 +155,7 @@ export const GalleryModal = React.memo(
 
     const handleImageError = useCallback(
       (url: string) => {
+        console.error(`Failed to load gallery modal image: ${url}`);
         failedImageUrls.add(url);
       },
       [failedImageUrls]
@@ -234,7 +237,7 @@ export const GalleryModal = React.memo(
               label: item.maybe_title || "Image Generation",
               thumbnail:
                 item.media_class === "video"
-                  ? item.media_links.maybe_video_previews.still
+                  ? item.media_links.maybe_video_previews.animated
                   : item.media_class === "dimensional"
                   ? item.cover_image?.maybe_cover_image_public_bucket_url
                   : item.media_links.maybe_thumbnail_template?.replace(
@@ -295,17 +298,18 @@ export const GalleryModal = React.memo(
         if (mode === "select" && onSelectItem) {
           onSelectItem(item.id);
         } else {
-          setLightboxImage(item);
-          setIsLightboxVisible(true);
+          lightboxImageSignal.value = item;
+          lightboxVisibleSignal.value = true;
+          galleryModalLightboxMediaId.value = item.id;
         }
       },
       [mode, onSelectItem]
     );
 
     const handleCloseLightbox = useCallback(() => {
-      setIsLightboxVisible(false);
-      // Wait for animation to complete before removing the image
-      setTimeout(() => setLightboxImage(null), 300);
+      lightboxVisibleSignal.value = false;
+      lightboxImageSignal.value = null;
+      galleryModalLightboxMediaId.value = null;
     }, []);
 
     const handleDeselectAll = useCallback(() => {
@@ -320,6 +324,18 @@ export const GalleryModal = React.memo(
     }, [groupItemsByDate, selectedItemIds, onUseSelected]);
 
     useSignals();
+
+    // Synchronize lightbox image when external media id signal is set
+    useEffect(() => {
+      if (galleryModalLightboxMediaId.value && allItems.length > 0) {
+        const target = allItems.find(
+          (it) => it.id === galleryModalLightboxMediaId.value
+        );
+        if (target) {
+          lightboxImageSignal.value = target;
+        }
+      }
+    }, [galleryModalLightboxMediaId.value, allItems]);
 
     // Compute gap class based on gridColumns
     let gapClass = "gap-0.5";
@@ -624,25 +640,23 @@ export const GalleryModal = React.memo(
           </div>
         </Modal>
 
-        <LightboxModal
-          isOpen={isLightboxVisible}
-          onClose={handleCloseLightbox}
-          onCloseGallery={() =>
-            mode === "view"
-              ? (galleryModalVisibleViewMode.value = false)
-              : onClose?.()
-          }
-          imageUrl={imageUrl}
-          imageAlt={lightboxImage?.label || ""}
-          onImageError={() => imageUrl && handleImageError(imageUrl)}
-          title={lightboxImage?.label}
-          createdAt={lightboxImage?.createdAt}
-          downloadUrl={imageUrl}
-          mediaId={lightboxImage?.id}
-          onDownloadClicked={onDownloadClicked}
-          onAddToSceneClicked={onAddToSceneClicked}
-          mediaClass={lightboxImage?.mediaClass}
-        />
+        {mode === "view" && (
+          <LightboxModal
+            isOpen={lightboxVisibleSignal.value}
+            onClose={handleCloseLightbox}
+            onCloseGallery={() => (galleryModalVisibleViewMode.value = false)}
+            imageUrl={imageUrl}
+            imageAlt={lightboxImageSignal.value?.label || ""}
+            onImageError={() => imageUrl && handleImageError(imageUrl)}
+            title={lightboxImageSignal.value?.label}
+            createdAt={lightboxImageSignal.value?.createdAt}
+            downloadUrl={imageUrl}
+            mediaId={lightboxImageSignal.value?.id}
+            onDownloadClicked={onDownloadClicked}
+            onAddToSceneClicked={onAddToSceneClicked}
+            mediaClass={lightboxImageSignal.value?.mediaClass}
+          />
+        )}
       </>
     );
   }

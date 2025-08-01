@@ -11,13 +11,12 @@ import { ChromaKeyMaterial } from "./chromakey";
 import { TimeLine } from "./timeline";
 import { ClipGroup, ClipType } from "~/enums";
 import { ClipUI } from "../clips/clip_ui";
-
-import { GetFrontendEnvironment } from "~/Classes/GetFrontendEnvironment";
-
+import { LoadWithoutCors } from "@storyteller/tauri-api";
 import { gridVisibility } from "../signals/engine";
 import { InfiniteGridHelper } from "./InfiniteGridHelper";
 import { cameras, selectedCameraId } from "../signals/camera";
 import { MediaFilesApi } from "@storyteller/api";
+import toast from "react-hot-toast";
 
 class Scene {
   name: string;
@@ -625,19 +624,38 @@ class Scene {
 
     // await this.delay(3000); // artificial delay.
 
-    const glb = await this.load_glb_wrapped(url, async (progress) => {
-      const total_loaded = progress.loaded / progress.total;
-      //const percent = this.floatToPercent(total_loaded);
-      //console.log(`GLB Loading: ${percent}`);
+    
+    // NB(bt,2025-07-22): This is causing a lot of CORS errors in dev, so I'm starting
+    // to funnel everything through Tauri. Not sure if that'll be more inefficient due
+    // to spinning up new HTTP clients with new SSL handshakes without caching, but at
+    // least it should bypass the cors errors.
+    //
+    // const glb = await this.load_glb_wrapped(url, async (progress) => {
+    //   const total_loaded = progress.loaded / progress.total;
+    //   //const percent = this.floatToPercent(total_loaded);
+    //   //console.log(`GLB Loading: ${percent}`);
+    //
+    //   if (total_loaded == 1.0) {
+    //     if (this.placeholder_manager === undefined) {
+    //       throw Error("Place holder Manager is undefined");
+    //     }
+    //     //console.log(`GLB Loading: ${total_loaded} === ${key}`);
+    //     await this.placeholder_manager.remove(key);
+    //   }
+    // }).catch((error: Error) => {
+    //   throw error;
+    // });
 
-      if (total_loaded == 1.0) {
-        if (this.placeholder_manager === undefined) {
-          throw Error("Place holder Manager is undefined");
-        }
-        //console.log(`GLB Loading: ${total_loaded} === ${key}`);
+    const glb = await this.load_glb_wrapped_no_cors(url, async () => {
+      if (this.placeholder_manager === undefined) {
+        throw Error("Place holder Manager is undefined");
+      }
+      await this.placeholder_manager.remove(key);
+    }).catch(async (error) => {
+      if (this.placeholder_manager !== undefined) {
         await this.placeholder_manager.remove(key);
       }
-    }).catch((error: Error) => {
+      toast.error("Failed to load 3D asset.");
       throw error;
     });
 
@@ -733,6 +751,41 @@ class Scene {
     }
     this.updateSurfaceIdAttributeToMesh(this.scene);
     return child_result;
+  }
+
+  /**
+   * Load a full media_url via Tauri (without browser cors)
+   * @param media_url
+   * @param onComplete
+   * @returns
+   */
+  private async load_glb_wrapped_no_cors(
+    media_url: string,
+    onComplete: () => void,
+  ) {
+    return new Promise(async (resolve, reject) => {
+      let buffer;
+      try {
+        buffer = await LoadWithoutCors(media_url); // Load via Tauri!
+      } catch (error) {
+        console.error("load GLB from Tauri error:", error)
+        reject(error);
+        return;
+      }
+      const glbLoader = new GLTFLoader();
+      glbLoader.parse(
+        buffer,
+        "", // NB: No relative path to load additional assets!
+        (gltf) => {
+          resolve(gltf);
+          onComplete();
+        },
+        (error) => {
+          console.error("GLTF loader error:", error)
+          reject(error);
+        },
+      );
+    });
   }
 
   /**

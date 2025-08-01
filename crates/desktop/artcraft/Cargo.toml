@@ -28,6 +28,7 @@ workspace-build-acceleration = { workspace =  true }
 # Internal
 artcraft_api_defs = { workspace = true }
 build_metadata = { workspace = true }
+enums = { workspace = true }
 errors = { workspace = true }
 fal_client = { workspace = true }
 filesys = { workspace = true }
@@ -36,6 +37,7 @@ memory_store = { workspace = true }
 mimetypes = { workspace = true }
 openai_sora_client = { workspace = true }
 primitives = { workspace = true }
+sqlite_tasks.workspace = true
 storyteller_client = { workspace = true }
 tokens = { workspace = true }
 web_base64 = { workspace = true }
@@ -58,6 +60,7 @@ serde = { workspace = true }
 serde_derive = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
+tauri-plugin-dialog = "2"
 tauri-plugin-log = "2.3.1"
 tauri-plugin-upload = "2.2.1"
 tempdir = { workspace = true }
@@ -72,7 +75,6 @@ tauri-plugin-http = { path = "../../vendor/tauri-plugin-http" }
 # NB: The version of the `discord-rich-presence` crate (0.2.5) last published has non-Send/Sync error
 # types and can't do threading. We need to wait for a new version to unpin from Git.
 discord-rich-presence = { git = "https://github.com/vionya/discord-rich-presence" }
-tauri-plugin-dialog = "2"
 
 [dev-dependencies]
 serial_test = "3.2.0"

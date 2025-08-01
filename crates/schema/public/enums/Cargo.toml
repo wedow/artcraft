@@ -8,27 +8,32 @@ authors = [
 ]
 publish = false
 
+[package.metadata.cargo-udeps.ignore]
+normal = ["workspace-build-acceleration"]
+
 [lib]
 name = "enums"
 path = "src/lib.rs"
 
-[package.metadata.cargo-udeps.ignore]
-normal = ["workspace-build-acceleration"]
+[features]
+default = []
+database = ["sqlx", "sqlx-core", "sqlx-mysql"]
 
 [dependencies]
 # Workspace hack (faster compile times)
-workspace-build-acceleration = { workspace = true }
+workspace-build-acceleration.workspace = true
 
 # Internal
 # (None yet)
 
 # Serialization
-serde = { workspace = true }
-serde_derive = { workspace = true }
+serde.workspace = true
+serde_derive.workspace = true
 
-sqlx = { version = "0.7.2", features = [ "mysql", "sqlite", "runtime-tokio-native-tls", "chrono" ] }
-sqlx-core = { version = "0.7.2" }
-sqlx-mysql= { version = "0.7.2" }
+# Database conversion of enum types is optional
+sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio-native-tls", "chrono" ], optional = true }
+sqlx-core = { version = "0.7.4" , optional = true }
+sqlx-mysql = { version = "0.7.4" , optional = true }
 
 utoipa = { version = "4", features = ["chrono","actix_extras"] }
 
@@ -38,5 +43,5 @@ utoipa = { version = "4", features = ["chrono","actix_extras"] }
 strum = { version = "0.26", features = ["derive"] }
 
 # Test serialization
-serde_json = { workspace = true }
-toml = { workspace = true }
+serde_json.workspace = true
+toml.workspace = true

@@ -1,7 +1,8 @@
+use cloudflare_errors::cloudflare_error::CloudflareError;
+use errors::AnyhowError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::io;
-use errors::AnyhowError;
 
 #[derive(Debug)]
 pub enum ApiError {
@@ -25,6 +26,9 @@ pub enum ApiError {
     body: String,
     backend_hostname: Option<String>,
   },
+
+  /// Cloudflare errors.
+  CloudflareError(CloudflareError),
 
   /// A deserialization error with the response.
   DeserializationError(serde_json::Error),
@@ -63,6 +67,8 @@ impl Display for ApiError {
       // Network errors
       ApiError::Timeout(msg) => write!(f, "Timeout: {}", msg),
       ApiError::NetworkError(msg) => write!(f, "Network error: {}", msg),
+      // Cloudflare errors
+      ApiError::CloudflareError(error) => write!(f, "Cloudflare Error: {}", error),
       // I/O errors
       ApiError::IoError(error) => write!(f, "IO error: {}", error),
       // Other
@@ -93,5 +99,11 @@ impl From<serde_json::Error> for ApiError {
 impl From<io::Error> for ApiError {
   fn from(error: io::Error) -> Self {
     ApiError::IoError(error)
+  }
+}
+
+impl From<CloudflareError> for ApiError {
+  fn from(error: CloudflareError) -> Self {
+    ApiError::CloudflareError(error)
   }
 }

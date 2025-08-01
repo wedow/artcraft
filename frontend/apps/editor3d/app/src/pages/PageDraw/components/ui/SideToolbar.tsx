@@ -1,33 +1,38 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMousePointer,
-  faShapes,
-  faEraser,
   faTrash,
   faEyeDropper,
   faImage,
-  faSquare,
-  faCircle,
-  faPlay,
-  faSparkles,
-  faFileImport,
-  faFileExport,
   faUndo,
-  faRedo
+  faRedo,
+  faPaintBrush,
+  faXmark,
+  faTrashXmark,
 } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faShapes,
+  faCircle,
+  faSquare,
+  faTriangle,
+  faDroplet,
+} from "@fortawesome/pro-regular-svg-icons";
 import "../../App.css";
 import { HsvaColorPicker, HsvaColor } from "react-colorful";
 import { hsvaToHex } from "@uiw/color-convert";
 import SliderWithIndicator from "./SliderWithIndicator";
 import { useSceneStore } from "../../stores/SceneState";
 import { Tooltip } from "@storyteller/ui-tooltip";
+import {
+  showActionReminder,
+  isActionReminderOpen,
+} from "@storyteller/ui-action-reminder-modal";
 
-/* visual constants */
 const shapeIconBtn =
   "flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/10";
 
-/* small debounce */
+// Debounce function
 function useDebounced<T extends (...args: A) => void, A extends unknown[]>(
   fn: T,
   ms = 75,
@@ -41,11 +46,10 @@ function useDebounced<T extends (...args: A) => void, A extends unknown[]>(
 
 export interface SideToolbarProps {
   onSelect: () => void;
-  onAddShape: (shape: "rectangle" | "circle" | "triangle") => void;
-  onPaintBrush: (hex: string, size: number,opacity: number) => void;
-  onEraser: (size: number) => void;
+  onActivateShapeTool: (shape: "rectangle" | "circle" | "triangle") => void;
+  currentShape: "rectangle" | "circle" | "triangle" | null;
+  onPaintBrush: (hex: string, size: number, opacity: number) => void;
   onCanvasBackground: (hex: string) => void;
-  onGenerateImage: () => void;
   onUploadImage: () => void;
   onDelete: () => void;
   activeToolId: string;
@@ -54,19 +58,17 @@ export interface SideToolbarProps {
 
 const SideToolbar: React.FC<SideToolbarProps> = ({
   onSelect,
-  onAddShape,
+  onActivateShapeTool,
+  currentShape,
   onPaintBrush,
-  onEraser,
   onCanvasBackground,
-  onGenerateImage,
   onUploadImage,
   onDelete,
   activeToolId,
   className = "",
 }) => {
-  /* ------------------------------------------------ state ---------- */
+  const store = useSceneStore();
   const [open, setOpen] = useState<string | null>(null);
-
   const [brushSize, setBrushSize] = useState(16);
   const [brushHsva, setBrushHsva] = useState<HsvaColor>({
     h: 120,
@@ -74,27 +76,90 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     v: 100,
     a: 1,
   });
-
   const [bgHsva, setBgHsva] = useState<HsvaColor>({
     h: 0,
-    s: 100,
+    s: 0,
     v: 100,
     a: 1,
   });
 
-  /* debounced parent calls */
+  // Get selected nodes for shape color picker
+  const selectedNodes =
+    store.selectedNodeIds.length > 0
+      ? store.nodes.filter((node) => store.selectedNodeIds.includes(node.id))
+      : [];
+
+  // Get only colorable nodes (shapes, not images)
+  const selectedColorableNodes = selectedNodes.filter(
+    (node) => node.type !== "image",
+  );
+
+  // Get first selected colorable node for color preview (when multiple selected, show first one's color)
+  const firstSelectedColorableNode =
+    selectedColorableNodes.length > 0 ? selectedColorableNodes[0] : null;
+
+  // State for shape color picker
+  const [shapeHsva, setShapeHsva] = useState<HsvaColor>({
+    h: 240,
+    s: 100,
+    v: 70,
+    a: 1,
+  });
+
+  // Update shape color picker when selection changes or store's shapeColor changes
+  useEffect(() => {
+    const colorToUse = firstSelectedColorableNode?.fill || store.shapeColor;
+
+    if (colorToUse && colorToUse.startsWith("#")) {
+      // Convert hex to HSVA (simplified - might want to change to proper converter later)
+      const hex = colorToUse;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+
+      // Convert RGB to HSV (simplified)
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const v = max / 255;
+      const s = max === 0 ? 0 : (max - min) / max;
+
+      let h = 0;
+      if (max !== min) {
+        if (max === r) h = (60 * ((g - b) / (max - min)) + 360) % 360;
+        else if (max === g) h = (60 * ((b - r) / (max - min)) + 120) % 360;
+        else h = (60 * ((r - g) / (max - min)) + 240) % 360;
+      }
+
+      setShapeHsva({ h, s: s * 100, v: v * 100, a: 1 });
+    }
+  }, [firstSelectedColorableNode?.fill, store.shapeColor]);
+
   const sendPaint = useDebounced<
     (hex: string, size: number, opacity: number) => void,
     [string, number, number]
-  >(onPaintBrush, 75, 1);
-
+  >(onPaintBrush, 75);
 
   const sendBg = useDebounced<(hex: string) => void, [string]>(
     onCanvasBackground,
     75,
   );
 
-  /* picker helper */
+  const sendShapeColor = useDebounced<(hex: string) => void, [string]>(
+    (hex: string) => {
+      store.setShapeColor(hex);
+
+      selectedColorableNodes.forEach((node) => {
+        store.updateNode(node.id, { fill: hex }, false);
+      });
+
+      if (selectedColorableNodes.length > 0) {
+        store.saveState();
+      }
+    },
+    75,
+  );
+
+  // Picker helper
   const makePicker = (
     hsva: HsvaColor,
     setHsva: React.Dispatch<React.SetStateAction<HsvaColor>>,
@@ -123,7 +188,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     brushHsva,
     setBrushHsva,
     (hex) => sendPaint(hex, brushSize, brushHsva.a),
-    
+
     <>
       <div className="relative">
         <p className="mb-2 text-sm font-medium text-white">Brush Size</p>
@@ -141,10 +206,9 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   );
 
   const BgPopout = makePicker(bgHsva, setBgHsva, sendBg);
+  const ShapePopout = makePicker(shapeHsva, setShapeHsva, sendShapeColor);
 
-  /* ------------------------------------------------ tools ---------- */
-
-  const store = useSceneStore(); // Use store directly
+  // Tools
   const tools = [
     {
       id: "select",
@@ -161,21 +225,22 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       id: "add-shape",
       label: "Add Shape",
       icon: <FontAwesomeIcon icon={faShapes} className="h-5 w-5" />,
+      onClick: () => {
+        store.selectNode(null);
+        if (!store.currentShape) {
+          store.setCurrentShape("rectangle");
+        }
+        store.setActiveTool("shape");
+      },
       popout: (
-        <div
-          className={`flex items-center gap-1.5 rounded-full px-1.5 py-1.5 shadow-lg`}
-        >
-          {[
-            faSquare,
-            faCircle,
-            faPlay, // triangle
-          ].map((faIcon, i) => (
+        <div className="flex items-center gap-1.5 rounded-full px-1.5 py-1.5 shadow-lg">
+          {[faSquare, faCircle, faTriangle].map((faIcon, i) => (
             <button
               key={i}
               className={shapeIconBtn}
               onClick={() => {
                 const shapes = ["rectangle", "circle", "triangle"] as const;
-                onAddShape(shapes[i]);
+                onActivateShapeTool(shapes[i]);
                 setOpen(null);
               }}
             >
@@ -185,14 +250,6 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
         </div>
       ),
     },
-    // {
-    //   id: "generate",
-    //   label: "Generate Image",
-    //   icon: <FontAwesomeIcon icon={faSparkles} className="h-5 w-5" />,
-    //   onClick: () => {
-    //     onGenerateImage();
-    //   },
-    // },
     {
       id: "upload",
       label: "Upload Image",
@@ -203,38 +260,14 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
     },
     { id: "separator-2", type: "separator" },
     {
-      id: "paint",
+      id: "draw",
       label: "Brush",
-      icon: (
-        <span
-          className="inline-block h-5 w-5 rounded-full border-2 border-white"
-          style={{ backgroundColor: hsvaToHex(brushHsva) }}
-        />
-      ),
+      icon: null,
       onClick: () => {
         sendPaint(hsvaToHex(brushHsva), brushSize, brushHsva.a);
+        store.setActiveTool("draw");
       },
       popout: BrushPopout,
-    },
-    {
-      id: "eraser",
-      label: "Eraser",
-      icon: <FontAwesomeIcon icon={faEraser} className="h-5 w-5" />,
-      onClick: () => {
-        onEraser(brushSize);
-      },
-      popout: (
-        <div className="p-4">
-          <SliderWithIndicator
-            value={brushSize}
-            onChange={(size) => {
-              setBrushSize(size);
-              onEraser(size);
-            }}
-            label="Eraser Size"
-          />
-        </div>
-      ),
     },
     {
       id: "delete",
@@ -249,10 +282,19 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       id: "background",
       label: "Canvas Background",
       icon: (
-        <span
-          className="inline-block h-5 w-5 rounded-full border-2 border-white"
-          style={{ backgroundColor: hsvaToHex(bgHsva) }}
-        />
+        <div className="relative inline-flex h-5 w-5 items-center justify-center">
+          <span
+            className="absolute h-5 w-5 rounded-full border-2 border-white"
+            style={{ backgroundColor: hsvaToHex(bgHsva) }}
+          />
+          <FontAwesomeIcon
+            icon={faDroplet}
+            className="relative h-2 w-2 text-white drop-shadow-sm"
+            style={{
+              filter: "drop-shadow(0 0 1px rgba(0,0,0,0.8))",
+            }}
+          />
+        </div>
       ),
       popout: BgPopout,
     },
@@ -261,7 +303,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       label: "Undo",
       icon: <FontAwesomeIcon icon={faUndo} className="h-5 w-5" />,
       onClick: () => {
-        store.undo(); // Assuming store has an undo method
+        store.undo();
       },
     },
     {
@@ -269,93 +311,222 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       label: "Redo",
       icon: <FontAwesomeIcon icon={faRedo} className="h-5 w-5" />,
       onClick: () => {
-        store.redo(); // Assuming store has a redo method
+        store.redo();
       },
     },
-    // {
-    //   id: "save-scene",
-    //   label: "Save Scene",
-    //   icon: <FontAwesomeIcon icon={faFileExport} className="h-5 w-5" />,
-    //   onClick: () => {
-    //     store.saveSceneToFile();
-    //   },
-    // },
-    // {
-    //   id: "load-scene",
-    //   label: "Load Scene",
-    //   icon: <FontAwesomeIcon icon={faFileImport} className="h-5 w-5" />,
-    //   onClick: () => {
-    //     const input = document.createElement("input");
-    //     input.type = "file";
-    //     input.accept = ".json";
-    //     input.onchange = async (e: Event) => {
-    //       const target = e.target as HTMLInputElement;
-    //       if (target.files && target.files[0]) {
-    //         const success = await store.loadSceneFromFile(target.files[0]);
-    //         if (success) {
-    //           console.log("Scene loaded successfully");
-    //         } else {
-    //           console.error("Failed to load scene");
-    //         }
-    //       }
-    //     };
-    //     input.click();
-    //   },
-    // },
   ];
 
-  /* ------------------------------------------------ render ---------- */
   const baseBtn =
     "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors border-2 border-transparent";
+
+  // Reset canvas function with confirmation
+  const handleResetCanvas = () => {
+    showActionReminder({
+      reminderType: "default",
+      title: "Reset Canvas",
+      primaryActionIcon: faTrashXmark,
+      primaryActionBtnClassName: "bg-red hover:bg-red/80",
+      message: (
+        <p className="text-sm text-white/70">
+          Are you sure you want to reset the canvas? This will clear all your
+          work and cannot be undone.
+        </p>
+      ),
+      primaryActionText: "Reset all",
+      onPrimaryAction: () => {
+        store.setNodes([]);
+        store.lineNodes.forEach((lineNode) => {
+          store.removeLineNode(lineNode.id, false);
+        });
+        store.selectNode(null);
+        store.copySelectedItems();
+        store.saveState();
+        isActionReminderOpen.value = false;
+      },
+    });
+  };
 
   return (
     <aside
       className={`glass ml-4 flex flex-col items-center gap-3 rounded-xl p-1.5 shadow-lg ${className}`}
     >
+      {/* Shape Color Picker - appears above toolbar when shape is selected */}
+      {selectedColorableNodes.length > 0 && (
+        <div className="glass absolute -top-14 left-1/2 -translate-x-1/2 rounded-xl border-2 border-primary/50 shadow-lg">
+          <div className="relative">
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-transparent text-white transition-colors hover:bg-white/10"
+              onMouseEnter={() => setOpen("shape-color")}
+            >
+              <span
+                className="inline-block h-5 w-5 rounded-full border-2 border-white"
+                style={{ backgroundColor: firstSelectedColorableNode?.fill }}
+              />
+            </button>
+
+            {open === "shape-color" && (
+              <div
+                onMouseLeave={() => setOpen(null)}
+                className="absolute left-14 top-1/2 -translate-y-1/2 rounded-xl border border-[#404040] bg-[#303030] transition-all duration-200 ease-in-out"
+              >
+                {ShapePopout}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {tools.map((tool) => {
         if (tool.type === "separator") {
           return <div key={tool.id} className="my-1 h-px w-8 bg-white/15" />;
         }
 
         const { id, icon, onClick, popout, label } = tool;
-        const active = id === activeToolId;
+        const active =
+          id === activeToolId ||
+          (id === "add-shape" && activeToolId === "shape");
         const btnStyle = active
           ? "bg-primary/30 border-2 !border-primary text-white"
           : "hover:bg-white/10 text-white";
 
+        let displayIcon = icon;
+        if (id === "draw") {
+          displayIcon = active ? (
+            <span
+              className="inline-block h-5 w-5 rounded-full border-2 border-white"
+              style={{ backgroundColor: hsvaToHex(brushHsva) }}
+            />
+          ) : (
+            <FontAwesomeIcon icon={faPaintBrush} className="h-5 w-5" />
+          );
+        }
+
+        if (id === "add-shape" && activeToolId === "shape" && currentShape) {
+          const shapeIcons = {
+            rectangle: faSquare,
+            circle: faCircle,
+            triangle: faTriangle,
+          } as const;
+          displayIcon = (
+            <FontAwesomeIcon
+              icon={shapeIcons[currentShape]}
+              className="h-5 w-5"
+            />
+          );
+        }
+
         return (
           <div key={id} className="relative">
-            <Tooltip
-              content={label}
-              position="right"
-              closeOnClick={true}
-              className="ms-1 rounded-md px-3 py-1"
-              delay={100}
-            >
-              {popout ? (
-                <button
-                  onClick={() => {
-                    onClick?.();
-                    setOpen(open === id ? null : id);
-                  }}
-                  className={`${baseBtn} ${btnStyle}`}
-                >
-                  {icon}
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    onClick?.();
-                  }}
-                  className={`${baseBtn} ${btnStyle}`}
-                >
-                  {icon}
-                </button>
-              )}
-            </Tooltip>
+            {/* Hide tooltip for brush tool when active and popover is open */}
+            {!(id === "draw" && active && open === id) && (
+              <Tooltip
+                content={label}
+                position="right"
+                closeOnClick={true}
+                className="ms-1 rounded-md px-3 py-1"
+                delay={100}
+              >
+                {popout ? (
+                  <button
+                    onClick={() => {
+                      onClick?.();
+                      if (id !== "draw" || !active) {
+                        setOpen(open === id ? null : id);
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      if (id === "draw" && active) {
+                        setOpen(id);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (id === "draw" && active) {
+                        setTimeout(() => {
+                          const popoverElement = document.querySelector(
+                            `[data-popover="${id}"]`,
+                          );
+                          if (
+                            !popoverElement ||
+                            !popoverElement.matches(":hover")
+                          ) {
+                            setOpen(null);
+                          }
+                        }, 200);
+                      }
+                    }}
+                    className={`${baseBtn} ${btnStyle}`}
+                  >
+                    {displayIcon}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      onClick?.();
+                    }}
+                    className={`${baseBtn} ${btnStyle}`}
+                  >
+                    {displayIcon}
+                  </button>
+                )}
+              </Tooltip>
+            )}
+
+            {/* Render button without tooltip when brush is active and popover is open */}
+            {id === "draw" && active && open === id && (
+              <>
+                {popout ? (
+                  <button
+                    onClick={() => {
+                      onClick?.();
+                      if (id !== "draw" || !active) {
+                        setOpen(open === id ? null : id);
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      if (id === "draw" && active) {
+                        setOpen(id);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (id === "draw" && active) {
+                        setTimeout(() => {
+                          const popoverElement = document.querySelector(
+                            `[data-popover="${id}"]`,
+                          );
+                          if (
+                            !popoverElement ||
+                            !popoverElement.matches(":hover")
+                          ) {
+                            setOpen(null);
+                          }
+                        }, 100);
+                      }
+                    }}
+                    className={`${baseBtn} ${btnStyle}`}
+                  >
+                    {displayIcon}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      onClick?.();
+                    }}
+                    className={`${baseBtn} ${btnStyle}`}
+                  >
+                    {displayIcon}
+                  </button>
+                )}
+              </>
+            )}
 
             {open === id && popout && (
               <div
+                data-popover={id}
+                onMouseEnter={() => {
+                  if (id === "draw" && active) {
+                    setOpen(id);
+                  }
+                }}
                 onMouseLeave={() => {
                   setOpen(null);
                 }}
@@ -367,6 +538,26 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
           </div>
         );
       })}
+
+      {/* Reset canvas button */}
+      <div className="glass absolute -bottom-14 left-1/2 -translate-x-1/2 rounded-xl border-2 border-red/50 shadow-lg hover:border-red/80">
+        <div className="relative">
+          <Tooltip
+            content="Reset Canvas"
+            position="right"
+            closeOnClick={true}
+            className="ms-1 rounded-md bg-red px-3 py-1"
+            delay={100}
+          >
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-transparent text-white transition-colors hover:bg-red/50"
+              onClick={handleResetCanvas}
+            >
+              <FontAwesomeIcon icon={faXmark} className="h-5 w-5 text-xl" />
+            </button>
+          </Tooltip>
+        </div>
+      </div>
     </aside>
   );
 };

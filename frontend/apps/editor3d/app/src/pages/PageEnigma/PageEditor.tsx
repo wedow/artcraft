@@ -66,10 +66,11 @@ import {
   removeImageDropListener,
 } from "@storyteller/ui-gallery-modal";
 import {
-  imageGenerationModels,
+  instructiveImageEditModels,
   ModelCategory,
   // ModelCategory,
   ModelSelector,
+  useModelSelectorStore,
   // videoGenerationModels,
   // useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
@@ -77,12 +78,15 @@ import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
 import PageEdit from "../PageEdit/PageEdit";
+import { IMAGE_MODELS_BY_LABEL } from "@storyteller/model-list";
+import { ModelInfo } from "@storyteller/model-list";
 
 export const PageEditor = () => {
   useSignals();
   const { triggerRecheck } = useLoginModalStore();
-
+  const { selectedModels } = useModelSelectorStore();
   const { status } = authentication;
+
   useEffect(() => {
     if (status.value === AUTH_STATUS.LOGGED_OUT) {
       triggerRecheck();
@@ -107,6 +111,13 @@ export const PageEditor = () => {
       return "You may have unsaved changes.";
     };
   }, []);
+
+  const selectedModel =
+    selectedModels[ModelCategory.Editor3D] ||
+    instructiveImageEditModels[0]?.label;
+
+  const selectedModelInfo: ModelInfo | undefined =
+    IMAGE_MODELS_BY_LABEL[selectedModel];
 
   const height =
     dndTimelineHeight.value > -1
@@ -488,7 +499,7 @@ export const PageEditor = () => {
                   onClick={handleOverlayClick}
                 >
                   <div
-                    className="absolute bottom-0 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
+                    className="absolute bottom-14 mb-4 ml-4 flex origin-bottom-left flex-col gap-2"
                     style={{ transform: `scale(${getScale()})` }}
                   >
                     <Outliner />
@@ -515,6 +526,7 @@ export const PageEditor = () => {
                   handleCameraNameChange={handleCameraNameChange}
                   handleCameraFocalLengthChange={handleCameraFocalLengthChange}
                   onAspectRatioSelect={onAspectRatioSelect}
+                  selectedModelInfo={selectedModelInfo}
                   setEnginePrompt={(prompt) => {
                     console.log("setEnginePrompt", prompt);
                     if (!editorEngine) {
@@ -537,7 +549,7 @@ export const PageEditor = () => {
 
                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
                   <ModelSelector
-                    items={imageGenerationModels}
+                    items={instructiveImageEditModels}
                     category={ModelCategory.Editor3D}
                     panelTitle="Select Model"
                     panelClassName="min-w-[280px]"

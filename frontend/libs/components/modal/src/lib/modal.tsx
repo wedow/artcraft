@@ -1,17 +1,12 @@
-import { Fragment, ReactNode } from "react";
-import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  Transition,
-  TransitionChild,
-} from "@headlessui/react";
+import { ReactNode } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { twMerge } from "tailwind-merge";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/pro-solid-svg-icons";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { useRef, useState, useEffect, useContext, createContext } from "react";
 import { cloneElement, isValidElement } from "react";
+import { useTransition, animated } from "@react-spring/web";
 import {
   faUpRightAndDownLeftFromCenter,
   faDownLeftAndUpRightToCenter,
@@ -20,43 +15,12 @@ import { DomLevels } from "@storyteller/common";
 
 // ---------------------------------------------------------------------------
 // GLOBAL inert / aria-hidden stripper – applies once per page load
-// Overrides the inert attribute set by Headless UI to allow background interaction / stacked modals
+// Overrides the inert attribute set by Radix Dialog to allow background interaction / stacked modals
 // ---------------------------------------------------------------------------
 declare global {
   interface Window {
-    __inertStripperInstalled?: boolean;
     __modalEscListenerInstalled?: boolean;
   }
-}
-
-if (!window.__inertStripperInstalled) {
-  window.__inertStripperInstalled = true;
-
-  const strip = (el: Element) => {
-    if (el.hasAttribute("inert")) el.removeAttribute("inert");
-    // @ts-ignore – some browsers expose .inert as a property
-    if ((el as any).inert) (el as any).inert = false;
-    if (el.getAttribute("aria-hidden") === "true")
-      el.removeAttribute("aria-hidden");
-  };
-
-  // 1. Clean anything that already exists
-  document.querySelectorAll("[inert]").forEach(strip);
-
-  // 2. Keep document clean forever
-  const inertObserver = new MutationObserver((mutations) => {
-    for (const m of mutations) {
-      if (m.type === "attributes" && m.attributeName === "inert") {
-        strip(m.target as Element);
-      }
-    }
-  });
-
-  inertObserver.observe(document.documentElement, {
-    attributes: true,
-    subtree: true,
-    attributeFilter: ["inert"],
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -112,16 +76,14 @@ if (typeof window !== "undefined" && !window.__modalEscListenerInstalled) {
 // Simple global z-index tracker for stacked modals
 let modalZCounter = 70;
 
-const DialogBackdrop = ({
-  className,
-  onClose,
-  closeOnOutsideClick,
+const AnimatedBackdrop = ({
+  styles,
+  backdropClassName,
   disableHotkeyInput,
   enableHotkeyInput,
 }: {
-  className?: string;
-  onClose?: () => void;
-  closeOnOutsideClick?: boolean;
+  styles: any;
+  backdropClassName?: string;
   disableHotkeyInput: (level: number) => void;
   enableHotkeyInput: (level: number) => void;
 }) => {
@@ -130,29 +92,21 @@ const DialogBackdrop = ({
     return () => {
       enableHotkeyInput(DomLevels.DIALOGUE);
     };
-  }, []);
+  }, [disableHotkeyInput, enableHotkeyInput]);
+
   return (
-    <TransitionChild
-      as="div"
-      enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in duration-100"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div
-        className={twMerge("fixed inset-0 bg-black/60 z-[69]", className)}
-        onMouseDown={(e) => {
-          if (closeOnOutsideClick && onClose) {
-            // Only trigger if click is directly on the backdrop, not on children
-            if (e.target === e.currentTarget) {
-              onClose();
-            }
-          }
+    <Dialog.Overlay forceMount asChild>
+      <animated.div
+        className={twMerge(
+          "fixed inset-0 bg-black/60 z-[69]",
+          backdropClassName
+        )}
+        style={{
+          opacity: styles.opacity,
+          pointerEvents: "none",
         }}
       />
-    </TransitionChild>
+    </Dialog.Overlay>
   );
 };
 
@@ -270,6 +224,37 @@ export const Modal = ({
   const [expanded, setExpanded] = useState(false);
   // Track last non-expanded position
   const lastNonExpandedPosition = useRef<{ x: number; y: number } | null>(null);
+
+  // Animation transitions
+  const transitions = useTransition(isOpen, {
+    from: {
+      opacity: 0,
+      transform: "scale(0.95) translateY(-10px)",
+    },
+    enter: {
+      opacity: 1,
+      transform: "scale(1) translateY(0px)",
+    },
+    leave: {
+      opacity: 0,
+      transform: "scale(0.95) translateY(10px)",
+    },
+    config: {
+      tension: 300,
+      friction: 30,
+      mass: 0.8,
+    },
+  });
+
+  const backdropTransitions = useTransition(isOpen, {
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
+    config: {
+      tension: 280,
+      friction: 25,
+    },
+  });
   // When expanding/restoring, update position
   useEffect(() => {
     if (expanded) {
@@ -638,17 +623,18 @@ export const Modal = ({
   const sizeRef = useRef<{ width: number; height: number } | null>(null);
   const lastSizeRef = useRef<{ width: number; height: number } | null>(null);
 
-  // Capture initial size on first open
+  // Capture initial size on first open (only for resizable modals)
   useEffect(() => {
-    if (isOpen && !size && modalRef.current) {
+    if (isOpen && !size && modalRef.current && resizable) {
       const { width, height } = modalRef.current.getBoundingClientRect();
       setSize({ width, height });
       sizeRef.current = { width, height };
     }
-  }, [isOpen, size]);
+  }, [isOpen, size, resizable]);
 
-  // Persist size across close / reopen
+  // Persist size across close / reopen (only for resizable modals)
   useEffect(() => {
+    if (!resizable) return;
     if (!isOpen) {
       if (sizeRef.current) lastSizeRef.current = { ...sizeRef.current };
     } else {
@@ -660,7 +646,7 @@ export const Modal = ({
         sizeRef.current = { width, height };
       }
     }
-  }, [isOpen]);
+  }, [isOpen, resizable]);
 
   // Bring to front when user interacts with modal (mouse down anywhere inside)
   useEffect(() => {
@@ -682,6 +668,40 @@ export const Modal = ({
       if (node) node.removeEventListener("mousedown", handleBringToFront);
     };
   }, [zIndex]);
+
+  // Block propagation of keyboard events to elements outside the modal so global hot-keys (T / R / G shortcuts in the 3-D editor) don't fire while a modal is open
+  useEffect(() => {
+    if (!isOpen || allowBackgroundInteraction) return;
+
+    const stopKey = (e: KeyboardEvent) => {
+      // Exclude ESC key
+      if (e.key === "Escape" || e.key === "Esc") return;
+
+      // Allow keyboard interactions for popovers and other UI elements
+      const target = e.target as HTMLElement;
+      if (target) {
+        // Allow if target is inside a popover, dropdown, or other interactive UI
+        const isInPopover = target.closest(
+          '[role="dialog"], [role="menu"], [role="listbox"], [data-headlessui-portal]'
+        );
+        if (isInPopover) return;
+
+        // Allow if target is a form element that might be outside the modal
+        if (
+          target.matches("input, textarea, select, button, [contenteditable]")
+        )
+          return;
+      }
+
+      e.stopPropagation();
+    };
+
+    window.addEventListener("keydown", stopKey, true);
+
+    return () => {
+      window.removeEventListener("keydown", stopKey, true);
+    };
+  }, [isOpen, allowBackgroundInteraction]);
 
   // If background interaction is allowed, ensure this modal (and its ancestors)
   // never get the "inert" attribute Headless-UI uses to lock background dialogs.
@@ -730,12 +750,12 @@ export const Modal = ({
       attributeFilter: ["inert"],
     });
 
-    // Additionally, Headless UI adds inert to previous portal containers that are
+    // Additionally, dialog libraries add inert to previous portal containers that are
     // siblings of the one just created. We strip inert from ANY portal container
     // so long as background interaction is requested.
     const stripInertFromPortals = () => {
       const portals = document.querySelectorAll(
-        "[data-headlessui-portal][inert]"
+        "[data-radix-portal][inert], [data-headlessui-portal][inert]"
       );
       portals.forEach((el) => el.removeAttribute("inert"));
     };
@@ -750,7 +770,10 @@ export const Modal = ({
           (m.target as HTMLElement).hasAttribute("inert")
         ) {
           const target = m.target as HTMLElement;
-          if (target.hasAttribute("data-headlessui-portal")) {
+          if (
+            target.hasAttribute("data-radix-portal") ||
+            target.hasAttribute("data-headlessui-portal")
+          ) {
             stripInert(target as HTMLElement);
           }
         }
@@ -809,9 +832,11 @@ export const Modal = ({
     }
 
     if (!draggable || !position) {
-      // If allowBackgroundInteraction, set pointerEvents: 'auto' for modal
+      // For regular modals, only apply size if resizable to prevent layout issues
       return {
-        ...(size ? { width: size.width, height: size.height } : {}),
+        ...(resizable && size
+          ? { width: size.width, height: size.height }
+          : {}),
         ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
       };
     }
@@ -821,44 +846,44 @@ export const Modal = ({
       top: position.y,
       margin: 0,
       zIndex,
-      ...(size ? { width: size.width, height: size.height } : {}),
+      ...(resizable && size ? { width: size.width, height: size.height } : {}),
       ...(allowBackgroundInteraction ? { pointerEvents: "auto" } : {}),
     };
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-[70]"
-        onClose={closeOnOutsideClick ? onClose : () => null}
-        static={allowBackgroundInteraction}
-      >
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(open) => !open && closeOnOutsideClick && onClose()}
+      modal={!allowBackgroundInteraction}
+    >
+      <Dialog.Portal>
         <div
-          className="fixed inset-0"
+          className="fixed inset-0 z-[70]"
           style={
             allowBackgroundInteraction ? { pointerEvents: "none" } : undefined
           }
         >
-          {/* Backdrop always rendered first in stacking context */}
-          {!allowBackgroundInteraction && (
-            <DialogBackdrop
-              className={twMerge(
-                allowBackgroundInteraction ? "pointer-events-none" : "",
-                backdropClassName
-              )}
-              onClose={onClose}
-              closeOnOutsideClick={closeOnOutsideClick}
-              disableHotkeyInput={disableHotkeyInput}
-              enableHotkeyInput={enableHotkeyInput}
-            />
-          )}
+          {/* Animated Backdrop */}
+          {!allowBackgroundInteraction &&
+            backdropTransitions((styles, item) =>
+              item ? (
+                <AnimatedBackdrop
+                  key="backdrop"
+                  styles={styles}
+                  backdropClassName={backdropClassName}
+                  disableHotkeyInput={disableHotkeyInput}
+                  enableHotkeyInput={enableHotkeyInput}
+                />
+              ) : null
+            )}
           {allowBackgroundInteraction && (
             <div
               className={twMerge("fixed inset-0 z-[69]", backdropClassName)}
               style={{ pointerEvents: "none" }}
             />
           )}
+
           <ModalExpandContext.Provider value={{ expanded, toggleExpanded }}>
             <div
               className="flex min-h-full items-center justify-center p-4 text-center"
@@ -868,78 +893,104 @@ export const Modal = ({
                   : undefined
               }
             >
-              <TransitionChild
-                as="div"
-                enter="ease-out duration-200"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-                className={twMerge(
-                  "w-full max-w-lg transform rounded-xl relative border border-ui-panel-border bg-[#2C2C2C] text-left align-middle shadow-2xl z-[70]",
-                  childPadding && !expanded ? "p-4" : "",
-                  className,
-                  (dragging || resizing) && !expanded
-                    ? "!transition-none"
-                    : "transition-all",
-                  expanded &&
-                    "w-screen h-screen max-w-screen max-h-screen rounded-none"
-                )}
-                ref={modalRef}
-                style={getModalStyle()}
-              >
-                <DialogPanel className="w-full h-full">
-                  {title && (
-                    <DialogTitle
-                      as="div"
+              {/* Animated Modal Content */}
+              {transitions((styles, item) => {
+                // Debug logging - remove this after testing
+                console.log("Modal animation styles:", styles);
+                return item ? (
+                  <Dialog.Content
+                    forceMount
+                    asChild
+                    onPointerDownOutside={(e) => {
+                      if (!closeOnOutsideClick || allowBackgroundInteraction) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onEscapeKeyDown={(e) => {
+                      if (!closeOnEsc) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onInteractOutside={(e) => {
+                      if (allowBackgroundInteraction) {
+                        e.preventDefault();
+                      }
+                    }}
+                  >
+                    <animated.div
                       className={twMerge(
-                        "mb-5 flex justify-between pb-0 text-xl font-bold text-white"
+                        "w-full max-w-lg rounded-xl relative border border-ui-panel-border bg-[#2C2C2C] text-left align-middle shadow-2xl z-[70]",
+                        childPadding && !expanded ? "p-4" : "",
+                        className,
+                        "!transition-none", // Always disable CSS transitions for spring animations
+                        expanded &&
+                          "w-screen h-screen max-w-screen max-h-screen rounded-none"
                       )}
+                      ref={modalRef}
+                      style={{
+                        ...getModalStyle(),
+                        opacity: styles.opacity,
+                        transform: styles.transform,
+                        transformOrigin: "center center",
+                        willChange: "transform, opacity", // Optimize for animations
+                      }}
                     >
-                      <>
-                        {onTitleIconClick ? (
-                          <button
-                            className="flex items-center gap-3"
-                            onClick={onTitleIconClick}
+                      <div className="w-full h-full">
+                        {title && (
+                          <Dialog.Title
+                            className={twMerge(
+                              "mb-4 flex justify-between pb-0 text-xl font-bold text-white"
+                            )}
                           >
-                            {titleIcon && (
-                              <FontAwesomeIcon
-                                icon={titleIcon}
-                                className={titleIconClassName}
-                              />
-                            )}
-                            {title}
-                          </button>
-                        ) : (
-                          <div className="flex items-center gap-3">
-                            {titleIcon && (
-                              <FontAwesomeIcon
-                                icon={titleIcon}
-                                className={titleIconClassName}
-                              />
-                            )}
-                            {title}
-                          </div>
+                            <>
+                              {onTitleIconClick ? (
+                                <button
+                                  className="flex items-center gap-3"
+                                  onClick={onTitleIconClick}
+                                >
+                                  {titleIcon && (
+                                    <FontAwesomeIcon
+                                      icon={titleIcon}
+                                      className={titleIconClassName}
+                                    />
+                                  )}
+                                  {title}
+                                </button>
+                              ) : (
+                                <div className="flex items-center gap-3">
+                                  {titleIcon && (
+                                    <FontAwesomeIcon
+                                      icon={titleIcon}
+                                      className={titleIconClassName}
+                                    />
+                                  )}
+                                  {title}
+                                </div>
+                              )}
+                            </>
+                          </Dialog.Title>
                         )}
-                      </>
-                    </DialogTitle>
-                  )}
-                  <div className={`h-full`.trim()}>{enhancedChildren}</div>
-                  {/* resize handles inside panel so clicks don't count as outside */}
-                  {renderResizeHandles()}
-                </DialogPanel>
-                {showClose && (
-                  <div className="absolute top-0 right-0 m-2.5 z-[80]">
-                    <CloseButton onClick={onClose} />
-                  </div>
-                )}
-              </TransitionChild>
+                        <div className={`h-full`.trim()}>
+                          {enhancedChildren}
+                        </div>
+                        {/* resize handles inside panel so clicks don't count as outside */}
+                        {renderResizeHandles()}
+                      </div>
+                      {(showClose || expandable) && (
+                        <div className="absolute top-0 right-0 m-2.5 z-[80] flex items-center gap-2">
+                          {expandable && <Modal.ExpandButton />}
+                          {showClose && <CloseButton onClick={onClose} />}
+                        </div>
+                      )}
+                    </animated.div>
+                  </Dialog.Content>
+                ) : null;
+              })}
             </div>
           </ModalExpandContext.Provider>
         </div>
-      </Dialog>
-    </Transition>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };
 

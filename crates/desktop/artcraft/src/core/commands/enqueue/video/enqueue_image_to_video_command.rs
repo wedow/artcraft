@@ -1,12 +1,16 @@
-use crate::core::commands::enqueue::video::handle_video_artcraft::handle_video_artcraft;
-use crate::core::commands::enqueue::video::handle_video_fal::handle_video_fal;
+use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::core::commands::enqueue::video::generic::handle_video::handle_video;
 use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::model::video_models::VideoModel;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
+use crate::core::state::task_database::TaskDatabase;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
@@ -25,6 +29,9 @@ pub struct EnqueueImageToVideoRequest {
   
   /// The model to use.
   pub model: Option<VideoModel>,
+  
+  /// Optional text prompt.
+  pub prompt: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -54,8 +61,10 @@ pub enum EnqueueImageToVideoErrorType {
 pub async fn enqueue_image_to_video_command(
   app: AppHandle,
   request: EnqueueImageToVideoRequest,
+  app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
+  task_database: State<'_, TaskDatabase>,
   fal_creds_manager: State<'_, FalCredentialManager>,
   fal_task_queue: State<'_, FalTaskQueue>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -65,10 +74,12 @@ pub async fn enqueue_image_to_video_command(
   info!("enqueue_image_to_video_command called");
 
   let result = handle_request(
-    &app,
     request,
+    &app,
+    &app_env_configs,
     &app_data_root,
     &provider_priority_store,
+    &task_database,
     &fal_creds_manager,
     &storyteller_creds_manager,
     &fal_task_queue,
@@ -113,7 +124,17 @@ pub async fn enqueue_image_to_video_command(
         error_details: None,
       })
     }
-    Ok(()) => {
+    Ok(event) => {
+      let event = GenerationEnqueueSuccessEvent {
+        action: event.to_frontend_event_action(),
+        service: event.to_frontend_event_service(),
+        model: event.model,
+      };
+
+      if let Err(err) = event.send(&app) {
+        error!("Failed to emit event: {:?}", err); // Fail open.
+      }
+      
       Ok(EnqueueImageToVideoSuccessResponse {}.into())
     }
   }
@@ -121,32 +142,41 @@ pub async fn enqueue_image_to_video_command(
 
 
 pub async fn handle_request(
-  app: &AppHandle,
   request: EnqueueImageToVideoRequest,
+  app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,
+  task_database: &TaskDatabase,
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<(), InternalVideoError> {
+) -> Result<TaskEnqueueSuccess, InternalVideoError> {
 
-  let priority = provider_priority_store.get_priority()?;
-  
-  for provider in priority.iter() {
-    match provider {
-      Provider::Sora => {} // Fallthrough
-      Provider::Artcraft => {
-        return Ok(handle_video_artcraft(
-          request, &app, app_data_root, storyteller_creds_manager).await?);
-      }
-      Provider::Fal => {
-        if fal_creds_manager.has_apparent_api_token()? {
-          return Ok(handle_video_fal(
-            &app, app_data_root, request, fal_creds_manager, fal_task_queue).await?);
-        }
-      }
-    }
+  let result = handle_video(
+    request,
+    &app,
+    &app_env_configs,
+    &app_data_root,
+    &provider_priority_store,
+    &fal_creds_manager,
+    &storyteller_creds_manager,
+    &fal_task_queue,
+  ).await;
+
+  let success_event = match result {
+    Err(err) => return Err(err),
+    Ok(event) => event,
+  };
+
+  let result = success_event
+      .insert_into_task_database(task_database)
+      .await;
+
+  if let Err(err) = result {
+    error!("Failed to create task in database: {:?}", err);
+    // NB: Fail open, but find a way to flag this.
   }
 
-  Err(InternalVideoError::NoProviderAvailable)
+  Ok(success_event)
 }

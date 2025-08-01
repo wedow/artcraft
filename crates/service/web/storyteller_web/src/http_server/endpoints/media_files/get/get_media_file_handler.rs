@@ -1,18 +1,9 @@
 use std::fmt;
 use std::sync::Arc;
 
-use actix_web::error::ResponseError;
-use actix_web::http::StatusCode;
-use actix_web::web::{Json, Path};
-use actix_web::{web, HttpRequest, HttpResponse};
-use chrono::{DateTime, Utc};
-use log::warn;
-use url::Url;
-use utoipa::ToSchema;
-
 use crate::http_server::common_responses::media::media_domain::MediaDomain;
 use crate::http_server::common_responses::media::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::http_server::common_responses::media::media_links::MediaLinks;
+use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::common_responses::simple_entity_stats::SimpleEntityStats;
 use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
 use crate::http_server::endpoints::media_files::common_responses::live_portrait::MediaFileLivePortraitDetails;
@@ -21,7 +12,13 @@ use crate::http_server::web_utils::bucket_urls::bucket_url_from_media_path::buck
 use crate::http_server::web_utils::bucket_urls::bucket_url_from_str_path::bucket_url_from_str_path;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::state::server_state::ServerState;
+use actix_web::error::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::web::{Json, Path};
+use actix_web::{web, HttpRequest, HttpResponse};
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
+use chrono::{DateTime, Utc};
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
@@ -32,12 +29,15 @@ use enums::by_table::model_weights::weights_types::WeightsType;
 use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
+use log::warn;
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
 use mysql_queries::queries::tts::tts_results::query_tts_result::select_tts_result_by_token;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::prompts::PromptToken;
+use url::Url;
+use utoipa::ToSchema;
 
 /// For the URL PathInfo
 #[derive(Deserialize, ToSchema)]
@@ -365,7 +365,7 @@ async fn modern_media_file_lookup(
       maybe_engine_extension,
       maybe_batch_token: result.maybe_batch_token,
       maybe_scene_source_media_file_token: result.maybe_scene_source_media_file_token,
-      media_links: MediaLinks::from_media_path_and_env(media_domain, server_state.server_environment, &public_bucket_path),
+      media_links: MediaLinksBuilder::from_media_path_and_env(media_domain, server_state.server_environment, &public_bucket_path),
       public_bucket_url: bucket_url_from_media_path(&public_bucket_path)
           .map_err(|err| {
             warn!("error creating URL: {:?}", err);
@@ -502,7 +502,7 @@ async fn emulate_media_file_with_legacy_tts_result_lookup(
       maybe_engine_extension: None,
       maybe_batch_token: None,
       maybe_scene_source_media_file_token: None,
-      media_links: MediaLinks::from_rooted_path_and_env(media_domain, server_state.server_environment, &public_bucket_path),
+      media_links: MediaLinksBuilder::from_rooted_path_and_env(media_domain, server_state.server_environment, &public_bucket_path),
       public_bucket_url: bucket_url_from_str_path(&public_bucket_path)
           .map_err(|err| {
             warn!("error creating URL: {:?}", err);

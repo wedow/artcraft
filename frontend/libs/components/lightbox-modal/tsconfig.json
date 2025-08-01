@@ -9,6 +9,9 @@
       "path": "../../tauri-api"
     },
     {
+      "path": "../../analytics/google-analytics"
+    },
+    {
       "path": "../button"
     },
     {

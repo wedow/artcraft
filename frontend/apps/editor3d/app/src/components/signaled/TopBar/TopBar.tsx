@@ -38,6 +38,8 @@ import {
 } from "~/pages/PageEnigma/Editor/editor";
 // import { usePricingModalStore } from "@storyteller/ui-pricing-modal"; - Uncomment for pricing modal - BFlat
 import toast from "react-hot-toast";
+import { gtagEvent } from "@storyteller/google-analytics";
+
 interface Props {
   pageName: string;
   loginSignUpPressed: () => void;
@@ -90,6 +92,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
   const handleOpenGalleryModal = () => {
     galleryModalVisibleViewMode.value = true;
     galleryModalVisibleDuringDrag.value = true;
+    gtagEvent("open_gallery_modal", { "tab": tabStore.activeTabId });
   };
 
   const tabStore = useTabStore();
@@ -131,19 +134,21 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
           aria-label="navigation"
         >
           <div className="flex items-center gap-7">
-            <a href="/">
+            <div>
               <span className="sr-only">ArtCraft</span>
               <img
                 className="h-[24px] w-auto"
                 src="/resources/images/artcraft-logo-3.png"
                 alt="Logo ArtCraft"
               />
-            </a>
+            </div>
             <MenuIconSelector
               menuItems={appMenuTabs}
               activeMenu={tabStore.activeTabId}
               disabled={disableTabSwitcher()}
               onMenuChange={(tabId) => {
+                gtagEvent("switch_tab", { "tab": tabId });
+
                 // Prevent a second input if the switcher is throttled.
                 if (switcherThrottle.current) {
                   return;
@@ -199,7 +204,10 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                   variant="secondary"
                   icon={faGear}
                   className="h-[38px] w-[38px]"
-                  onClick={() => setIsSettingsModalOpen(true)}
+                  onClick={() => {
+                    setIsSettingsModalOpen(true);
+                    gtagEvent("open_settings_modal");
+                  }}
                 />
               </Tooltip>
               <Button

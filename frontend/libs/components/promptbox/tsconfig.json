@@ -3,13 +3,10 @@
   "include": [],
   "references": [
     {
+      "path": "../../model-list"
+    },
+    {
       "path": "../camera-settings-modal"
-    },
-    {
-      "path": "../action-reminder-modal"
-    },
-    {
-      "path": "../../soundboard"
     },
     {
       "path": "../../tauri-api"
@@ -40,6 +37,9 @@
     },
     {
       "path": "../toaster"
+    },
+    {
+      "path": "../../analytics/google-analytics"
     },
     {
       "path": "./tsconfig.lib.json"

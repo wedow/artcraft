@@ -8,7 +8,7 @@ export class AnalyticsApi extends ApiManager {
     maybeLastAction: string;
     maybeLogToken: string;
   }): Promise<ApiResponse<string>> {
-    const endpoint = `${this.ApiTargets.BaseApi}/v1/analytics/log_session`;
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/analytics/log_session`;
 
     const body = {
       maybe_last_action: maybeLastAction,

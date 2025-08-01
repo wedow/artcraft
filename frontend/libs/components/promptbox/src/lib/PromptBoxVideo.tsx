@@ -18,16 +18,12 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { faRectangle } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { ModelInfo } from "@storyteller/model-list";
-
-interface ReferenceImage {
-  id: string;
-  url: string;
-  file: File;
-  mediaToken: string;
-}
+import { usePromptVideoStore, RefImage } from "./promptStore";
+import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxVideoProps {
   useJobContext: () => JobContextType;
@@ -51,7 +47,7 @@ export const PromptBoxVideo = ({
   // for the image media id and url, we need to set the reference image gallery panel.
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -64,27 +60,30 @@ export const PromptBoxVideo = ({
   console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
-  const { jobTokens, addJobToken, removeJobToken, clearJobTokens } =
-    useJobContext();
-  const [prompt, setPrompt] = useState("");
+  const prompt = usePromptVideoStore((s) => s.prompt);
+  const setPrompt = usePromptVideoStore((s) => s.setPrompt);
+  const useSystemPrompt = usePromptVideoStore((s) => s.useSystemPrompt);
+  const setUseSystemPrompt = usePromptVideoStore((s) => s.setUseSystemPrompt);
+  const resolution = usePromptVideoStore((s) => s.resolution);
+  const setResolution = usePromptVideoStore((s) => s.setResolution);
   const [isEnqueueing, setIsEnqueueing] = useState(false);
-  const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
     []
   );
-  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
-  const [uploadingImages, setUploadingImages] = useState<
+  const referenceImages = usePromptVideoStore((s) => s.referenceImages);
+  const setReferenceImages = usePromptVideoStore((s) => s.setReferenceImages);
+  const [uploadingImages, _setUploadingImages] = useState<
     { id: string; file: File }[]
   >([]);
   const [resolutionList, setResolutionList] = useState<PopoverItem[]>([
     {
       label: "720p",
-      selected: true,
+      selected: resolution === "720p",
       icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
     },
     {
       label: "480p",
-      selected: false,
+      selected: resolution === "480p",
       icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
     },
   ]);
@@ -101,7 +100,7 @@ export const PromptBoxVideo = ({
 
   useEffect(() => {
     if (imageMediaId && url) {
-      const referenceImage: ReferenceImage = {
+      const referenceImage: RefImage = {
         id: Math.random().toString(36).substring(7),
         url: url,
         file: new File([], "library-image"),
@@ -112,6 +111,7 @@ export const PromptBoxVideo = ({
   }, [imageMediaId, url]);
 
   const handleResolutionSelect = (selectedItem: PopoverItem) => {
+    setResolution(selectedItem.label as any);
     setResolutionList((prev) =>
       prev.map((item) => ({
         ...item,
@@ -121,7 +121,7 @@ export const PromptBoxVideo = ({
   };
 
   const handleRemoveReference = (id: string) => {
-    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+    setReferenceImages(referenceImages.filter((img) => img.id !== id));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -152,7 +152,7 @@ export const PromptBoxVideo = ({
     const item = selectedItems[0];
     if (!item || !item.fullImage) return;
 
-    const referenceImage: ReferenceImage = {
+    const referenceImage: RefImage = {
       id: Math.random().toString(36).substring(7),
       url: item.fullImage,
       file: new File([], "library-image"),
@@ -188,6 +188,8 @@ export const PromptBoxVideo = ({
 
     console.log("PromptBoxVideo - Prompting with model", modelInfo);
 
+    gtagEvent("enqueue_video");
+
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
       // the backend hangs on a given request.
@@ -198,7 +200,7 @@ export const PromptBoxVideo = ({
     const generateResponse = await EnqueueImageToVideo({
       model: modelInfo,
       image_media_token: referenceImages[0].mediaToken,
-      //prompt: prompt,
+      prompt: prompt,
     });
 
     console.log("generateResponse", generateResponse);
@@ -211,7 +213,7 @@ export const PromptBoxVideo = ({
   const getCurrentResolutionIcon = () => {
     const selected = resolutionList.find((item) => item.selected);
     if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement;
+    const iconElement = selected.icon as React.ReactElement<{ icon: IconProp }>;
     return iconElement.props.icon;
   };
 

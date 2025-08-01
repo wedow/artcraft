@@ -80,7 +80,7 @@ use crate::http_server::web_utils::handle_multipart_error::handle_multipart_erro
 use crate::http_server::web_utils::scoped_temp_dir_creator::ScopedTempDirCreator;
 use crate::state::certs::google_sign_in_cert::GoogleSignInCert;
 use crate::state::memory_cache::model_token_to_info_cache::ModelTokenToInfoCache;
-use crate::state::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, FalData, InMemoryCaches, ServerInfo, ServerState, StaticFeatureFlags, StripeSettings, TrollBans};
+use crate::state::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, FalData, InMemoryCaches, OpenAiData, ServerInfo, ServerState, StaticFeatureFlags, StripeSettings, TrollBans};
 use crate::threads::db_health_checker_thread::db_health_check_status::HealthCheckStatus;
 use crate::threads::db_health_checker_thread::db_health_checker_thread::db_health_checker_thread;
 use crate::threads::poll_ip_banlist_thread::poll_ip_bans;
@@ -390,6 +390,8 @@ async fn main() -> AnyhowResult<()> {
   let fal_api_key = FalApiKey::new(easyenv::get_env_string_required("FAL_API_KEY")?);
   let fal_webhook_url = easyenv::get_env_string_required("FAL_WEBHOOK_URL")?;
 
+  let openai_api_key= easyenv::get_env_string_required("OPENAI_API_KEY")?;
+
   let server_state = ServerState {
     env_config: EnvConfig {
       num_workers,
@@ -433,6 +435,9 @@ async fn main() -> AnyhowResult<()> {
       api_key: fal_api_key,
       webhook_url: fal_webhook_url,
     }, 
+    openai: OpenAiData {
+      api_key: openai_api_key,
+    },
     caches: InMemoryCaches {
       durable: DurableInMemoryCaches {
         model_token_info: model_token_info_cache,
