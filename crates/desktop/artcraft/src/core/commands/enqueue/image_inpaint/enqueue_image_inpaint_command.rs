@@ -60,17 +60,16 @@ pub struct EnqueueInpaintImageCommand {
   pub model: Option<ImageInpaintModel>,
 
   /// REQUIRED (Option<T> is just for error messages).
-  /// Images to use for the image edit.
-  /// The first image is typically a 2D canvas or 3D stage, but doesn't have to be.
-  /// There must be at least one image.
+  /// The source image to edit.
   pub image_media_token: Option<MediaFileToken>,
 
-  // TODO: Allow for bytes.
-  /// REQUIRED (Option<T> is just for error messages).
-  /// Images to use for the image edit.
-  /// The first image is typically a 2D canvas or 3D stage, but doesn't have to be.
-  /// There must be at least one image.
-  pub mask_media_token: Option<MediaFileToken>,
+  /// REQUIRED: Supply this *XOR* `mask_image_raw_bytes`.
+  /// The mask to focus the edit (already uploaded).
+  pub mask_image_media_token: Option<MediaFileToken>,
+
+  /// REQUIRED: Supply this *XOR* `mask_image_media_token`.
+  /// The mask to focus the edit (raw bytes).
+  pub mask_image_raw_bytes: Option<Vec<u8>>,
 
   /// REQUIRED.
   /// The user's image generation prompt.

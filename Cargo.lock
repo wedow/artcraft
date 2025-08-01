@@ -663,6 +663,7 @@ dependencies = [
  "futures 0.3.31",
  "idempotency",
  "image",
+ "images",
  "indexmap 2.9.0",
  "log",
  "memory_store",

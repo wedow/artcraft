@@ -17,6 +17,15 @@ pub enum InternalImageInpaintError {
   
   /// A mask image was not provided
   NoMaskImageSpecified,
+
+  /// Both mask image media token and raw bytes were supplied.
+  MaskMediaTokenAndBytesSupplied,
+  
+  /// Mask image has an unknown MIME type.
+  CouldNotDetermineMaskMimeType,
+  
+  /// Could not encode the mask image to PNG.
+  CouldNotEncodeMask,
   
   /// No storyteller credentials are set.
   NeedsStorytellerCredentials,
