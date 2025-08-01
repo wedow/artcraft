@@ -146,11 +146,6 @@ async fn get_mask(
   let image_bytes = request.mask_image_raw_bytes.as_ref()
     .ok_or(InternalImageInpaintError::NoMaskImageSpecified)?;
 
-  let mimetype_info = MimetypeInfo::get_for_bytes(&image_bytes)
-      .ok_or(InternalImageInpaintError::CouldNotDetermineMaskMimeType)?;
-
-  info!("Mask bytes mimetype info: {:?}", mimetype_info);
-
   let image_bytes = image_bytes_to_png_bytes(image_bytes)
       .map_err(|err| {
         error!("Failed to convert image bytes to png: {:?}", err);

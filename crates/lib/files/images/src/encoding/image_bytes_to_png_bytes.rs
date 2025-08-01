@@ -3,14 +3,10 @@ use image::{ImageFormat, ImageReader};
 use std::io::Cursor;
 
 pub fn image_bytes_to_png_bytes(
-    arbitrary_image_bytes: &[u8],
+  arbitrary_image_bytes: &[u8],
 ) -> Result<Vec<u8>, ImagesError> {
-
   let reader = ImageReader::new(Cursor::new(arbitrary_image_bytes));
-  
-  // TODO: Supply hint argument
-  //reader.set_format(ImageFormat::WebP); // Default to WebP format (as fallback).
-  
+
   let image = reader
       .with_guessed_format()? // NB: Can raise IoError.
       .decode()?;

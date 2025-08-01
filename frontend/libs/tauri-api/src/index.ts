@@ -3,6 +3,7 @@ export * from "./lib/enqueue/EnqueueContextualEditImage.js";
 export * from "./lib/enqueue/EnqueueImageTo3dObject.js";
 export * from "./lib/enqueue/EnqueueTextToImage.js";
 export * from "./lib/enqueue/EnqueueImageToVideo.js";
+export * from "./lib/enqueue/EnqueueImageInpaint.js";
 export * from "./lib/fal/FalBackgroundRemoval.js";
 export * from "./lib/fal/FalHunyuanImageTo3d.js";
 export * from "./lib/fal/FalKlingImageToVideo.js";

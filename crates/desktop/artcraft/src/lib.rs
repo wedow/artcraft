@@ -7,6 +7,7 @@ use crate::core::commands::app_preferences::get_app_preferences_command::get_app
 use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::enqueue_text_to_image_command;
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
+use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::enqueue_image_inpaint_command;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::enqueue_contextual_edit_image_command;
 use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::enqueue_image_to_3d_object_command;
 use crate::core::commands::enqueue::video::enqueue_image_to_video_command::enqueue_image_to_video_command;
@@ -144,6 +145,7 @@ pub fn run() {
       check_sora_session_command,
       enqueue_contextual_edit_image_command,
       enqueue_image_bg_removal_command,
+      enqueue_image_inpaint_command,
       enqueue_image_to_3d_object_command,
       enqueue_image_to_video_command,
       enqueue_text_to_image_command,
