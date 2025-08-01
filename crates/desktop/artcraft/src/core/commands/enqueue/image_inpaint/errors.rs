@@ -20,13 +20,13 @@ pub enum InternalImageInpaintError {
 
   /// Both mask image media token and raw bytes were supplied.
   MaskMediaTokenAndBytesSupplied,
-  
+
   /// Mask image has an unknown MIME type.
   CouldNotDetermineMaskMimeType,
-  
+
   /// Could not encode the mask image to PNG.
   CouldNotEncodeMask,
-  
+
   /// No storyteller credentials are set.
   NeedsStorytellerCredentials,
   
@@ -85,7 +85,22 @@ impl InternalImageInpaintError {
       InternalImageInpaintError::NoMaskImageSpecified => {
         status = CommandErrorStatus::BadRequest;
         error_type = EnqueueInpaintImageErrorType::NoMaskImageSpecified;
-        error_message = "No source image was provided".to_string();
+        error_message = "No mask image was provided".to_string();
+      }
+      InternalImageInpaintError::MaskMediaTokenAndBytesSupplied => {
+        status = CommandErrorStatus::BadRequest;
+        error_type = EnqueueInpaintImageErrorType::MultipleMaskImagesSpecified;
+        error_message = "multiple mask images provided".to_string();
+      }
+      InternalImageInpaintError::CouldNotDetermineMaskMimeType => {
+        status = CommandErrorStatus::BadRequest;
+        error_type = EnqueueInpaintImageErrorType::BadMaskImage;
+        error_message = "bad mask image (mime)".to_string();
+      }
+      InternalImageInpaintError::CouldNotEncodeMask => {
+        status = CommandErrorStatus::BadRequest;
+        error_type = EnqueueInpaintImageErrorType::BadMaskImage;
+        error_message = "bad mask image (encode)".to_string();
       }
       InternalImageInpaintError::InvalidNumberOfRequestedImages { min, max, requested } => {
         status = CommandErrorStatus::BadRequest;

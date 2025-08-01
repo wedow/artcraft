@@ -1,5 +1,7 @@
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
+use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueInpaintImageCommand;
 use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;
@@ -12,6 +14,7 @@ use crate::core::model::image_models::ImageModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::ProviderPriorityStore;
+use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -29,23 +32,20 @@ use enums::tauri::tasks::task_type::TaskType;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageQuality;
 use idempotency::uuid::generate_random_uuid;
+use images::encoding::image_bytes_to_png_bytes::image_bytes_to_png_bytes;
 use log::{error, info};
+use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
+use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
 use storyteller_client::generate::image::generate_flux_1_dev_text_to_image::generate_flux_1_dev_text_to_image;
 use storyteller_client::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
 use storyteller_client::generate::image::inpaint::flux_pro_1_inpaint_image::flux_pro_1_inpaint_image;
-use tauri::AppHandle;
-use images::encoding::image_bytes_to_png_bytes::image_bytes_to_png_bytes;
-use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
-use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::media_files::upload_image_media_file_from_bytes::upload_image_media_file_from_bytes;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
-use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
-use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
 
 pub async fn handle_flux_pro_1_inpaint_artcraft(
   request: &EnqueueInpaintImageCommand,
@@ -65,7 +65,7 @@ pub async fn handle_flux_pro_1_inpaint_artcraft(
   info!("Calling Artcraft flux pro 1 inpaint ...");
 
   let uuid_idempotency_token = generate_random_uuid();
-  
+
   let num_images = match request.image_count {
     None => None,
     Some(1) => Some(FluxPro1InpaintImageNumImages::One),
@@ -80,7 +80,7 @@ pub async fn handle_flux_pro_1_inpaint_artcraft(
       });
     },
   };
-  
+
   let image_media_token = match &request.image_media_token {
     Some(token) => token.clone(),
     None => {
@@ -159,13 +159,15 @@ async fn get_mask(
 
   info!("Uploading image media file from bytes...");
 
-  let result =
-      upload_image_media_file_from_bytes(&app_env_configs.storyteller_host, Some(&storyteller_creds), &image_bytes)
-          .await
-          .map_err(|err| {
-            error!("Failed to upload image media file: {:?}", err);
-            InternalImageInpaintError::StorytellerError(err)
-          })?;
+  let result = upload_image_media_file_from_bytes(
+    &app_env_configs.storyteller_host,
+    Some(&storyteller_creds),
+    image_bytes
+  ).await
+      .map_err(|err| {
+        error!("Failed to upload image media file: {:?}", err);
+        InternalImageInpaintError::StorytellerError(err)
+      })?;
 
   Ok(result.media_file_token)
 }

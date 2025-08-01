@@ -21,7 +21,7 @@ use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
 use idempotency::uuid::generate_random_uuid;
 use log::debug;
-use reqwest::multipart::Form;
+use reqwest::multipart::{Form, Part};
 use reqwest::Client;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
@@ -34,10 +34,11 @@ use tokens::tokens::prompts::PromptToken;
 use uuid::uuid;
 
 /// Upload an image media file from a file.
+/// NB: We need owned bytes for the request.
 pub async fn upload_image_media_file_from_bytes(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,
-  bytes: &[u8],
+  bytes: Vec<u8>,
 ) -> Result<UploadImageMediaFileSuccessResponse, StorytellerError> {
 
   let url = get_route(api_host);
@@ -49,22 +50,14 @@ pub async fn upload_image_media_file_from_bytes(
       .build()
       .map_err(|err| StorytellerError::Client(ClientError::from(err)))?;
 
-
-
-  // TODO TODO IN-MEMORY FORM-MULTIPOST WITH BYTES
-  // TODO TODO IN-MEMORY FORM-MULTIPOST WITH BYTES
-  // TODO TODO IN-MEMORY FORM-MULTIPOST WITH BYTES
-  // TODO TODO IN-MEMORY FORM-MULTIPOST WITH BYTES
-  // TODO TODO IN-MEMORY FORM-MULTIPOST WITH BYTES
-  // TODO TODO IN-MEMORY FORM-MULTIPOST WITH BYTES
-
-
+  let part = Part::bytes(bytes)
+      .file_name("image.png")
+      .mime_str("image/png")
+      .map_err(|err| StorytellerError::Client(ClientError::from(err)))?;
 
   let form = Form::new()
       .text("uuid_idempotency_token", generate_random_uuid())
-      .file("file", path)
-      .await
-      .map_err(|err| StorytellerError::Client(ClientError::from(err)))?;
+      .part("file", part);
 
   let mut request_builder = client.post(url)
       .header("User-Agent", USER_AGENT)

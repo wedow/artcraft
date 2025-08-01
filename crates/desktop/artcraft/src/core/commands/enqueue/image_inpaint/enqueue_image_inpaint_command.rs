@@ -94,20 +94,17 @@ pub enum EnqueueInpaintImageErrorType {
   /// No mask image was supplied.
   NoMaskImageSpecified,
 
+  /// Too many mask images were supplied.
+  MultipleMaskImagesSpecified,
+
+  /// Bad mask image was supplied.
+  BadMaskImage,
+  
   /// Generic bad request error
   BadRequest,
 
   /// Generic server error
   ServerError,
-
-  /// The user is sending too many requests
-  TooManyConcurrentTasks,
-  /// User is not logged into Sora!
-  SoraLoginRequired,
-  /// The user needs to create a Sora account
-  SoraUsernameNotYetCreated,
-  /// The Sora service is having problems. Try again soon.
-  SoraIsHavingProblems,
 }
 
 #[derive(Serialize)]
