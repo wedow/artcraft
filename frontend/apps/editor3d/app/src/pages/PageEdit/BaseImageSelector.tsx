@@ -1,9 +1,9 @@
 import { faImage } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { downloadFileFromUrl } from "libs/api/src/lib/LocalApi";
-import Button from "node_modules/@storyteller/ui-button/src/lib/button";
-import GalleryModal, { GalleryItem } from "node_modules/@storyteller/ui-gallery-modal/src/lib/gallery-modal";
-import LoadingSpinner from "node_modules/@storyteller/ui-loading-spinner/src/lib/loading-spinner";
+import { Button } from "@storyteller/ui-button";
+import { GalleryModal, GalleryItem } from "@storyteller/ui-gallery-modal";
+import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";

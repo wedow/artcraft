@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { LineNode, AspectRatioType, generateId } from '~/pages/PageDraw/stores/SceneState';
+import { LineNode, generateId } from '~/pages/PageDraw/stores/SceneState';
 import { Node } from "~/pages/PageDraw/Node";
 import { BaseSelectorImage } from '../BaseImageSelector';
 
