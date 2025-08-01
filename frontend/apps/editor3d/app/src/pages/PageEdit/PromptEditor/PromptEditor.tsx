@@ -10,8 +10,6 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
 }) => {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col space-y-2">
-      <div className="flex w-full justify-center">
-      </div>
 
       <JobProvider>
         <PromptBoxEdit

@@ -70,6 +70,7 @@ interface EditState {
 
   // Toolbar actions
   setActiveTool: (tool: ActiveEditTool) => void;
+  setEditOperation: (mode: EditOperation) => void;
   setBrushColor: (color: string) => void;
   setBrushOpacity: (opacity: number) => void;
   setBrushSize: (size: number) => void;
@@ -291,7 +292,6 @@ export const useEditStore = create<EditState>((set, get) => ({
       return {
         history: newHistory,
         historyIndex: newHistory.length - 1,
-        editOperation: state.editOperation === "add" ? "minus" : "add",
       };
     });
   },
@@ -684,6 +684,7 @@ export const useEditStore = create<EditState>((set, get) => ({
 
   // Toolbar actions
   setActiveTool: (tool: ActiveEditTool) => set({ activeTool: tool }),
+  setEditOperation: (mode: EditOperation) => set({ editOperation: mode }),
   setBrushColor: (color: string) => set({ brushColor: color }),
   setBrushSize: (size: number) => set({ brushSize: size }),
   setFillColor: (color: string) => set({ fillColor: color }),

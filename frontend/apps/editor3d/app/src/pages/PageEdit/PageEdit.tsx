@@ -22,6 +22,7 @@ import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import { EditPaintSurface } from "./EditPaintSurface";
 import { normalizeCanvas } from "~/Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
+import DrawToolControlBar from "./DrawToolControlBar";
 
 const PageEdit = () => {
   //useStateSceneLoader();
@@ -242,6 +243,18 @@ const PageEdit = () => {
 
   return (
     <>
+      <div
+        className={`preserve-aspect-ratio fixed top-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
+        style={{ display: store.activeTool === "edit" ? "block" : "none" }}
+      >
+        <DrawToolControlBar
+          currentMode={store.editOperation}
+          currentSize={store.brushSize}
+          onModeChange={store.setEditOperation}
+          onSizeChange={store.setBrushSize}
+        />
+      </div>
       <div
         className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
           }`}
