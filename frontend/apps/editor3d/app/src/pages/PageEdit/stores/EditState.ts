@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { LineNode, AspectRatioType, generateId } from '~/pages/PageDraw/stores/SceneState';
 import { Node } from "~/pages/PageDraw/Node";
+import { BaseSelectorImage } from '../BaseImageSelector';
 
 export type ActiveEditTool = 'select' | 'edit' | 'expand';
 export type EditOperation = 'add' | 'minus';
@@ -27,7 +28,9 @@ interface EditState {
   cursorVisible: boolean;
 
   // Base image state
-  baseImage: ImageBitmap | null;
+  baseImageInfo: BaseSelectorImage | null;
+  baseImageBitmap: HTMLImageElement | null;
+  setBaseImageInfo: (image: BaseSelectorImage | null) => void;
 
   // Actions
   addNode: (node: Node) => void;
@@ -86,11 +89,7 @@ interface EditState {
   serializeSceneToString: () => Promise<string>;
   loadSceneFromString: (jsonString: string) => boolean;
 
-  // Add minimal aspect ratio property
-  aspectRatioType: AspectRatioType;
-
   // Add aspect ratio action
-  setAspectRatioType: (type: AspectRatioType) => void;
   getAspectRatioDimensions: () => { width: number; height: number };
 }
 
@@ -135,10 +134,8 @@ export const useEditStore = create<EditState>((set, get) => ({
   cursorVisible: false,
 
   // Base image initial state
-  baseImage: null,
-
-  // Add initial aspect ratio state
-  aspectRatioType: AspectRatioType.NONE,
+  baseImageInfo: null,
+  baseImageBitmap: null,
 
   // Actions
   addNode: (node: Node) => {
@@ -538,32 +535,25 @@ export const useEditStore = create<EditState>((set, get) => ({
     }
   },
 
-  // Update the createImage method to handle both URLs and Files
-  createImage: (x: number, y: number, source: string | File, width = 200, height = 200) => {
-    const nodeId = generateId(); // Define nodeId here to use it in the catch block for logging
-    const node = new Node({
-      id: nodeId,
-      type: 'image',
-      x,
-      y,
-      width,
-      height,
-      fill: 'transparent',
-      stroke: '#333',
-      strokeWidth: 2,
-      draggable: true,
-      imageUrl: typeof source === 'string' ? source : undefined,
-      imageFile: typeof source === 'string' ? undefined : source
-    });
+  setBaseImageInfo: (image: BaseSelectorImage | null) => {
+    set({ baseImageInfo: image });
 
-    // Load the image asynchronously
-    node.setImage(source).then(() => {
-      // Update the node in the store after image loads
-      get().addNode(node);
-      //get().updateNode(node.id, node, false);
-    }).catch((error) => console.error('Error loading image:', error));
+    if (!image) {
+      return;
+    }
 
-
+    // Load the image bitmap as well
+    const imgBitmap = new Image();
+    imgBitmap.onload = () => {
+      set({ baseImageBitmap: imgBitmap });
+    };
+    imgBitmap.onerror = () => {
+      console.error('Failed to load base image, discarding');
+      imgBitmap.src = ''; // Clear the source to avoid memory leaks
+      set({ baseImageInfo: null, baseImageBitmap: null });
+    };
+    imgBitmap.crossOrigin = 'anonymous';
+    imgBitmap.src = image.url;
   },
 
   // Action for deleting selected items
@@ -760,7 +750,6 @@ export const useEditStore = create<EditState>((set, get) => ({
       brushColor: state.brushColor,
       brushSize: state.brushSize,
       fillColor: state.fillColor,
-      aspectRatioType: state.aspectRatioType,
       version: "1.0"
     };
 
@@ -820,7 +809,6 @@ export const useEditStore = create<EditState>((set, get) => ({
         brushColor: sceneData.brushColor || '#000000',
         brushSize: sceneData.brushSize || 5,
         fillColor: sceneData.fillColor || 'white',
-        aspectRatioType: sceneData.aspectRatioType || AspectRatioType.NONE
       });
 
       isRestoring = false;
@@ -867,22 +855,16 @@ export const useEditStore = create<EditState>((set, get) => ({
   },
 
   // Add aspect ratio actions
-  setAspectRatioType: (type: AspectRatioType) => {
-    set({ aspectRatioType: type });
-    get().saveState();
-  },
-
   getAspectRatioDimensions: () => {
-    const { aspectRatioType } = get();
-    switch (aspectRatioType) {
-      case AspectRatioType.PORTRAIT:
-        return { width: 683, height: 1024 };
-      case AspectRatioType.LANDSCAPE:
-        return { width: 1024, height: 683 };
-      case AspectRatioType.SQUARE:
-        return { width: 1024, height: 1024 };
-      default:
-        return { width: 1024, height: 683 }; // Default to landscape
+    // First we check the base image info if it exists
+    // Otherwise we use default landscape
+    const baseImageInfo = get().baseImageBitmap;
+
+    if (!baseImageInfo) {
+      return { width: 1024, height: 683 }; // Default to landscape
     }
-  },
+
+    // If base image exists, use its dimensions
+    return { width: baseImageInfo.width, height: baseImageInfo.height };
+  }
 }));

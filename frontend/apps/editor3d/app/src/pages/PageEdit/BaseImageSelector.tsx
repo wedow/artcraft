@@ -4,7 +4,6 @@ import { downloadFileFromUrl } from "libs/api/src/lib/LocalApi";
 import Button from "node_modules/@storyteller/ui-button/src/lib/button";
 import GalleryModal, { GalleryItem } from "node_modules/@storyteller/ui-gallery-modal/src/lib/gallery-modal";
 import LoadingSpinner from "node_modules/@storyteller/ui-loading-spinner/src/lib/loading-spinner";
-import { ReferenceImage } from "node_modules/@storyteller/ui-promptbox/src/lib/PromptBox2D";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage";
@@ -18,12 +17,14 @@ export interface BaseSelectorImage {
 
 export type BaseImageSelectorProps = {
   onImageSelect: (imageUrl: BaseSelectorImage) => void;
+  showLoading?: boolean;
 }
 
 const MAX_GALLERY_SELECTIONS = 1;
 
 export const BaseImageSelector = ({
-  onImageSelect
+  onImageSelect,
+  showLoading = false,
 }: BaseImageSelectorProps) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,7 +112,7 @@ export const BaseImageSelector = ({
     }
   };
 
-  const sendImageEvent = (image: ReferenceImage) => {
+  const sendImageEvent = (image: BaseSelectorImage) => {
     handleGalleryClose();
     onImageSelect(image);
   }
@@ -119,7 +120,7 @@ export const BaseImageSelector = ({
   return (
     <>
       <div className="h-1/2 w-1/2 flex items-center justify-center bg-ui-background border-ui-panel-border border-8">
-        {isLoading ? (
+        {isLoading || showLoading ? (
           <div className="flex flex-col items-center gap-4">
             <span>Uploading image...</span>
             <LoadingSpinner />

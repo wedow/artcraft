@@ -226,13 +226,15 @@ const PageEdit = () => {
   };
 
   // Display image selector on launch, otherwise hide it
-  if (!baseImage) {
+  // Also show loading state if info is set but image is loading
+  if (!store.baseImageInfo || !store.baseImageBitmap) {
     return (
       <div className={"h-screen w-full flex items-center justify-center bg-ui-panel"}>
         <BaseImageSelector
           onImageSelect={(image: BaseSelectorImage) => {
-            setBaseImage(image);
+            store.setBaseImageInfo(image);
           }}
+          showLoading={store.baseImageInfo !== null && store.baseImageInfo === null}
         />
       </div>
     )
@@ -300,7 +302,7 @@ const PageEdit = () => {
             stageRef={stageRef}
             transformerRefs={transformerRefs}
             leftPanelRef={leftPanelRef}
-            rectRef={rectRef}
+            baseImageRef={rectRef}
           />
         </ContextMenuContainer>
       </div>

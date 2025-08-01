@@ -33,7 +33,7 @@ export type EditPaintSurfaceProps = {
   stageRef: React.RefObject<Konva.Stage>;
   transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>;
   leftPanelRef: React.RefObject<Konva.Layer>;
-  rectRef: React.RefObject<Konva.Rect>;
+  baseImageRef: React.RefObject<Konva.Image>;
 };
 
 export const EditPaintSurface = ({
@@ -48,7 +48,7 @@ export const EditPaintSurface = ({
   stageRef,
   transformerRefs,
   leftPanelRef,
-  rectRef
+  baseImageRef
 }: EditPaintSurfaceProps) => {
   // switch off to be preview panel mode.
   const singlePaneMode = true
@@ -973,7 +973,7 @@ export const EditPaintSurface = ({
         multiSelectTransformerRef.current.getLayer()?.batchDraw();
       }
     }
-  }, [selectedNodeIds]);
+  }, [selectedNodeIds, stageRef, transformerRefs]);
 
   return (
     <SplitPane
@@ -1007,13 +1007,13 @@ export const EditPaintSurface = ({
                 ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
               }}
             >
-              <Rect
-                ref={rectRef}
+              <Image
+                ref={baseImageRef}
                 x={0}
                 y={0}
+                image={store.baseImageBitmap || undefined}
                 width={store.getAspectRatioDimensions().width}
                 height={store.getAspectRatioDimensions().height}
-                fill={fillColor}
                 listening={false}
                 zIndex={-1}
               />
