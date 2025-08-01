@@ -1,3 +1,5 @@
+import { ModelInfo } from "libs/model-list/src/lib/ModelInfo";
+
 export interface PromptEditorProps {
   initialPrompt?: string;
   onPromptChange?: (prompt: string) => void;
@@ -8,6 +10,7 @@ export interface PromptEditorProps {
   onImageStyleChange?: (images: ImageStyle[]) => void;
   onEnqueuePressed?: () => void;
   onFitPressed?: () => void;
+  selectedModelInfo?: ModelInfo;
 }
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";

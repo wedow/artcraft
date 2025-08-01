@@ -15,7 +15,8 @@ import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
 import { FalBackgroundRemoval } from "@storyteller/tauri-api";
-import { getCreatorIcon, ModelCreator } from "@storyteller/model-list";
+import { getCreatorIcon, IMAGE_MODELS_BY_LABEL, ModelCreator, ModelInfo } from "@storyteller/model-list";
+import { instructiveImageEditModels, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
 
 export const DecodeBase64ToImage = async (
   base64String: string,
@@ -45,11 +46,18 @@ export const DecodeBase64ToImage = async (
 const PageDraw = () => {
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
+  const { selectedModels } = useModelSelectorStore();
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
-  const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const store = useSceneStore();
+
+  const selectedModel =
+    selectedModels[ModelCategory.Canvas2D] ||
+    instructiveImageEditModels[0]?.label;
+
+  const selectedModelInfo: ModelInfo | undefined =
+    IMAGE_MODELS_BY_LABEL[selectedModel];
 
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
   useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
@@ -142,31 +150,6 @@ const PageDraw = () => {
       };
       img.src = URL.createObjectURL(file);
     }
-  };
-
-  const modelList: PopoverItem[] = [
-    {
-      label: "GPT-4o",
-      icon: getCreatorIcon(ModelCreator.OpenAi) || (
-        <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-      ),
-      selected: selectedModel === "GPT-4o",
-      description: "High quality model",
-      badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-    {
-      label: "FLUX.1 Kontext",
-      icon: getCreatorIcon(ModelCreator.BlackForestLabs) || (
-        <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-      ),
-      selected: selectedModel === "FLUX.1 Kontext",
-      description: "Fast and high-quality model",
-      badges: [{ label: "20 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-  ];
-
-  const handleModelSelect = (item: PopoverItem) => {
-    setSelectedModel(item.label);
   };
 
   const onEnqueuedPressed = async () => {
@@ -295,6 +278,7 @@ const PageDraw = () => {
           }}
           onEnqueuePressed={onEnqueuedPressed}
           onFitPressed={onFitPressed}
+          selectedModelInfo={selectedModelInfo}
         />
       </div>
       <SideToolbar
@@ -474,10 +458,9 @@ const PageDraw = () => {
         </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-        <PopoverMenu
-          items={modelList}
-          onSelect={handleModelSelect}
-          mode="hoverSelect"
+        <ModelSelector
+          items={instructiveImageEditModels}
+          category={ModelCategory.Canvas2D}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"

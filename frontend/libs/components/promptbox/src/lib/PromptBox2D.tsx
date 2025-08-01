@@ -61,7 +61,7 @@ interface PromptBox2DProps {
     assetFile: File;
     progressCallback: (newState: UploaderState) => void;
   }) => Promise<void>;
-  modelInfo?: ModelInfo;
+  selectedModelInfo?: ModelInfo;
   getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
   useJobContext: () => JobContextType;
@@ -77,7 +77,7 @@ export const PromptBox2D = ({
   useJobContext,
   onEnqueuePressed,
   onAspectRatioChange,
-  modelInfo,
+  selectedModelInfo,
   onFitPressed,
 }: PromptBox2DProps) => {
   useSignals();
@@ -323,7 +323,7 @@ export const PromptBox2D = ({
     const aspectRatio = getCurrentAspectRatio();
 
     const generateResponse = await EnqueueContextualEditImage({
-      model: EnqueueContextualEditImageModel.GptImage1,
+      model: selectedModelInfo,
       scene_image_media_token: snapshotMediaToken.data!,
       image_media_tokens: referenceImages.map((image) => image.mediaToken),
       disable_system_prompt: !useSystemPrompt,

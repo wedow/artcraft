@@ -14,6 +14,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
   onEnqueuePressed,
   onAspectRatioChange,
   onFitPressed,
+  selectedModelInfo,
 }) => {
   const [images, setImages] = useState<ImageStyle[]>([]);
 
@@ -43,6 +44,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
           onEnqueuePressed={onEnqueuePressed}
           onAspectRatioChange={onAspectRatioChange}
           onFitPressed={onFitPressed}
+          selectedModelInfo={selectedModelInfo}
         />
       </JobProvider>
 
