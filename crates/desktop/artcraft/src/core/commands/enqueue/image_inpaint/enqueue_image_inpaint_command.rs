@@ -77,6 +77,9 @@ pub struct EnqueueInpaintImageCommand {
 
   /// Number of images to generate.
   pub image_count: Option<u32>,
+  
+  /// If true, force the dimensions of the source image and mask image to match.
+  pub require_matching_dimensions: Option<bool>,
 }
 
 #[derive(Serialize, Debug)]

@@ -335,12 +335,11 @@ export const PromptBox2D = ({
     });
 
     console.log("generateResponse", generateResponse);
-    console.log("image", image);
 
-    // NB: Tanish, this is an example request
-    // NB: Tanish, this is an example request
-    // NB: Tanish, this is an example request
-    // NB: Tanish, this is an example request
+    // NB: Tanish, this is an example request to inpainting
+    // NB: Tanish, this is an example request to inpainting
+    // NB: Tanish, this is an example request to inpainting
+    // NB: Tanish, this is an example request to inpainting
 
     const EncodeImageBitmapToArray = async (imageBitmap: ImageBitmap): Promise<Uint8Array> => {
       const canvas = new OffscreenCanvas(imageBitmap.width, imageBitmap.height);

@@ -33,6 +33,7 @@ use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_im
 use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageQuality;
 use idempotency::uuid::generate_random_uuid;
 use images::encoding::image_bytes_to_png_bytes::image_bytes_to_png_bytes;
+use images::encoding::image_bytes_to_png_bytes_with_dimensions::image_bytes_to_png_bytes_with_dimensions;
 use log::{error, info};
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
@@ -146,7 +147,7 @@ async fn get_mask(
   let image_bytes = request.mask_image_raw_bytes.as_ref()
     .ok_or(InternalImageInpaintError::NoMaskImageSpecified)?;
 
-  let image_bytes = image_bytes_to_png_bytes(image_bytes)
+  let image_bytes = image_bytes_to_png_bytes_with_dimensions(image_bytes)
       .map_err(|err| {
         error!("Failed to convert image bytes to png: {:?}", err);
         InternalImageInpaintError::CouldNotEncodeMask
