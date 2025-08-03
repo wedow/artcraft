@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
 export interface PromptBoxEditProps {
   onModeChange?: (mode: string) => void;
   selectedMode?: string;
-  onGenerateClick: () => void;
+  onGenerateClick: (prompt: string) => void;
   isDisabled?: boolean;
 }
 
@@ -132,7 +132,7 @@ export const PromptBoxEdit = ({
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isDisabled ? faSparkles : undefined}
-                onClick={onGenerateClick}
+                onClick={() => onGenerateClick(prompt)}
                 disabled={isDisabled || !prompt.trim()}
               >
                 {isDisabled ? (

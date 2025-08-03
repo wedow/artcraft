@@ -34,6 +34,7 @@ use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook
 use idempotency::uuid::generate_random_uuid;
 use images::encoding::image_bytes_to_png_bytes::image_bytes_to_png_bytes;
 use images::encoding::image_bytes_to_png_bytes_with_dimensions::image_bytes_to_png_bytes_with_dimensions;
+use images::mask_images::normalize_image_bytes_to_flux_mask::normalize_image_bytes_to_flux_mask;
 use log::{error, info};
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
@@ -47,7 +48,6 @@ use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::media_files::upload_image_media_file_from_bytes::upload_image_media_file_from_bytes;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
-use images::mask_images::normalize_image_bytes_to_flux_mask::normalize_image_bytes_to_flux_mask;
 use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn handle_flux_pro_1_inpaint_artcraft(

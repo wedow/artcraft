@@ -208,28 +208,22 @@ const PageEdit = () => {
       pixelRatio: 1 / stageRef.current.scaleX(),
     });
 
-    // Using the pixelRatio scaling may result in off-by-one rounding errors,
-    // So we re-fit the image to a canvas of precise size.
-    const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
-
-    const downloadCallback = (blob: Blob | null) => {
-      if (!blob) {
-        console.error("Failed to create blob from canvas");
-        return;
-      }
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "artcraft_snapshot.png";
-      link.click();
-
-      console.log('downloadCallback', url);
-    }
-
-    fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
-
-    // =========================
+    // // Using the pixelRatio scaling may result in off-by-one rounding errors,
+    // // So we re-fit the image to a canvas of precise size.
+    // const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
+    // const downloadCallback = (blob: Blob | null) => {
+    //   if (!blob) {
+    //     console.error("Failed to create blob from canvas");
+    //     return;
+    //   }
+    //   const url = URL.createObjectURL(blob);
+    //   const link = document.createElement("a");
+    //   link.href = url;
+    //   link.download = "artcraft_snapshot.png";
+    //   link.click();
+    //   console.log('downloadCallback', url);
+    // }
+    // fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
 
     const normalizeCanvas2 = (canvas: HTMLCanvasElement, width: number, height: number): OffscreenCanvas => {
       const newCanvas = new OffscreenCanvas(width, height);
@@ -246,10 +240,6 @@ const PageEdit = () => {
 
     const fittedCanvas2 = normalizeCanvas2(layerCrop, rect.width(), rect.height());
 
-
-
-
-
     const blob = await fittedCanvas2.convertToBlob({ type: 'image/png' });
     const arrayBuffer = await blob.arrayBuffer();
   
@@ -257,7 +247,7 @@ const PageEdit = () => {
 
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (prompt: string) => {
     const editedImageToken = store.baseImageInfo?.mediaToken;
 
     if (!editedImageToken) {
@@ -265,23 +255,16 @@ const PageEdit = () => {
       return;
     }
 
-    console.log(">>> editedImageToken", editedImageToken);
-
     // TODO: Call inference API here
     let arrayBuffer = await downloadLeftPanelBitmap();
 
-    console.log(">>> arrayBuffer", arrayBuffer);
-
-    const generateResponse2 = await EnqueueImageInpaint({
+    const response = await EnqueueImageInpaint({
       model: EnqueueImageInpaintModel.FluxPro1,
       image_media_token: editedImageToken,
       mask_image_raw_bytes: arrayBuffer,
-      prompt: "red eyes",
+      prompt: prompt,
       image_count: 1,
     });
-
-
-
   };
 
   // Display image selector on launch, otherwise hide it
