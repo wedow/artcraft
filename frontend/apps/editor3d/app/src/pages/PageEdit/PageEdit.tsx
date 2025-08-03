@@ -8,6 +8,8 @@ import Konva from "konva"; // just for types
 
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
 import {
+  EnqueueImageInpaint,
+  EnqueueImageInpaintModel,
   FalBackgroundRemoval,
 } from "@storyteller/tauri-api";
 import { ContextMenuContainer } from "../PageDraw/components/ui/ContextMenu";
@@ -269,6 +271,16 @@ const PageEdit = () => {
     let arrayBuffer = await downloadLeftPanelBitmap();
 
     console.log(">>> arrayBuffer", arrayBuffer);
+
+    const generateResponse2 = await EnqueueImageInpaint({
+      model: EnqueueImageInpaintModel.FluxPro1,
+      image_media_token: editedImageToken,
+      mask_image_raw_bytes: arrayBuffer,
+      prompt: "red eyes",
+      image_count: 1,
+    });
+
+
 
   };
 
