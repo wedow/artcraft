@@ -131,8 +131,8 @@ pub async fn enqueue_image_inpaint_command(
   sora_task_queue: State<'_, SoraTaskQueue>,
 ) -> ResponseOrErrorType<EnqueueImageInpaintSuccessResponse, EnqueueInpaintImageErrorType> {
 
-  info!("enqueue_image_inpaint_command called; full request: {:?}",
-    &request);
+  info!("enqueue_image_inpaint_command called; model: {:?}, image_media_token: {:?}, prompt: {:?}",
+    &request.model, &request.image_media_token, &request.prompt);
 
   let result = handle_request(
     &request,

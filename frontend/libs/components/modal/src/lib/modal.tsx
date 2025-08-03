@@ -895,8 +895,6 @@ export const Modal = ({
             >
               {/* Animated Modal Content */}
               {transitions((styles, item) => {
-                // Debug logging - remove this after testing
-                console.log("Modal animation styles:", styles);
                 return item ? (
                   <Dialog.Content
                     forceMount

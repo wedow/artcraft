@@ -47,6 +47,7 @@ use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::media_files::upload_image_media_file_from_bytes::upload_image_media_file_from_bytes;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
+use images::mask_images::normalize_image_bytes_to_flux_mask::normalize_image_bytes_to_flux_mask;
 use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn handle_flux_pro_1_inpaint_artcraft(
@@ -156,7 +157,7 @@ async fn get_mask(
   let image_bytes = request.mask_image_raw_bytes.as_ref()
     .ok_or(InternalImageInpaintError::NoMaskImageSpecified)?;
 
-  let png_with_dims = image_bytes_to_png_bytes_with_dimensions(image_bytes)
+  let image_bytes = normalize_image_bytes_to_flux_mask(image_bytes)
       .map_err(|err| {
         error!("Failed to convert image bytes to png: {:?}", err);
         InternalImageInpaintError::CouldNotEncodeMask
@@ -167,7 +168,7 @@ async fn get_mask(
   let result = upload_image_media_file_from_bytes(
     &app_env_configs.storyteller_host,
     Some(&storyteller_creds),
-    png_with_dims.png_bytes
+    image_bytes.0
   ).await
       .map_err(|err| {
         error!("Failed to upload image media file: {:?}", err);
