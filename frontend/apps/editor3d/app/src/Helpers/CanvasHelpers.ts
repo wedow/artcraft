@@ -1,3 +1,4 @@
+
 export const normalizeCanvas = (canvas: HTMLCanvasElement, width: number, height: number): HTMLCanvasElement => {
   const newCanvas = document.createElement("canvas");
   newCanvas.width = width;

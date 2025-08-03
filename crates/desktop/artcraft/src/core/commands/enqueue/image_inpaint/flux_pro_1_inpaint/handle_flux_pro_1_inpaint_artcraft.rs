@@ -43,6 +43,7 @@ use storyteller_client::generate::image::generate_flux_1_schnell_text_to_image::
 use storyteller_client::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
 use storyteller_client::generate::image::inpaint::flux_pro_1_inpaint_image::flux_pro_1_inpaint_image;
+use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::media_files::upload_image_media_file_from_bytes::upload_image_media_file_from_bytes;
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
@@ -63,6 +64,27 @@ pub async fn handle_flux_pro_1_inpaint_artcraft(
     },
   };
 
+  let image_media_token = match &request.image_media_token {
+    Some(token) => token.clone(),
+    None => {
+      return Err(InternalImageInpaintError::NoSourceImageSpecified);
+    },
+  };
+
+  //let image_media_file = get_media_file(
+  //  &app_env_configs.storyteller_host,
+  //  &image_media_token,
+  //).await.map_err(|err| {
+  //  error!("Failed to get media file for image: {:?}", err);
+  //  InternalImageInpaintError::StorytellerError(err)
+  //})?;
+
+  let mask_media_token = get_mask(
+    request,
+    app_env_configs,
+    &creds,
+  ).await?;
+
   info!("Calling Artcraft flux pro 1 inpaint ...");
 
   let uuid_idempotency_token = generate_random_uuid();
@@ -81,19 +103,6 @@ pub async fn handle_flux_pro_1_inpaint_artcraft(
       });
     },
   };
-
-  let image_media_token = match &request.image_media_token {
-    Some(token) => token.clone(),
-    None => {
-      return Err(InternalImageInpaintError::NoSourceImageSpecified);
-    },
-  };
-
-  let mask_media_token = get_mask(
-    request,
-    app_env_configs,
-    &creds,
-  ).await?;
 
   let request = FluxPro1InpaintImageRequest {
     uuid_idempotency_token,
@@ -147,7 +156,7 @@ async fn get_mask(
   let image_bytes = request.mask_image_raw_bytes.as_ref()
     .ok_or(InternalImageInpaintError::NoMaskImageSpecified)?;
 
-  let image_bytes = image_bytes_to_png_bytes_with_dimensions(image_bytes)
+  let png_with_dims = image_bytes_to_png_bytes_with_dimensions(image_bytes)
       .map_err(|err| {
         error!("Failed to convert image bytes to png: {:?}", err);
         InternalImageInpaintError::CouldNotEncodeMask
@@ -158,7 +167,7 @@ async fn get_mask(
   let result = upload_image_media_file_from_bytes(
     &app_env_configs.storyteller_host,
     Some(&storyteller_creds),
-    image_bytes
+    png_with_dims.png_bytes
   ).await
       .map_err(|err| {
         error!("Failed to upload image media file: {:?}", err);

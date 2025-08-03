@@ -188,7 +188,7 @@ const PageEdit = () => {
   }
 
   // Create a function to use the left layer ref and download the bitmap from it
-  const downloadLeftPanelBitmap = () => {
+  const downloadLeftPanelBitmap = async(): Promise<Uint8Array> => {
     if (!stageRef.current || !leftPanelRef.current || !rectRef.current) {
       console.error("Stage or left panel ref is not available");
       return;
@@ -221,9 +221,55 @@ const PageEdit = () => {
       link.href = url;
       link.download = "artcraft_snapshot.png";
       link.click();
+
+      console.log('downloadCallback', url);
     }
 
     fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
+
+    // =========================
+
+    const normalizeCanvas2 = (canvas: HTMLCanvasElement, width: number, height: number): OffscreenCanvas => {
+      const newCanvas = new OffscreenCanvas(width, height);
+
+      const ctx = newCanvas.getContext("2d");
+      if (!ctx) {
+        throw new Error("Failed to get canvas context");
+      }
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(canvas, 0, 0, width, height);
+      return newCanvas;
+    }
+
+    const fittedCanvas2 = normalizeCanvas2(layerCrop, rect.width(), rect.height());
+
+
+
+
+
+    const blob = await fittedCanvas2.convertToBlob({ type: 'image/png' });
+    const arrayBuffer = await blob.arrayBuffer();
+  
+    return new Uint8Array(arrayBuffer);
+
+  };
+
+  const handleGenerate = async () => {
+    const editedImageToken = store.baseImageInfo?.mediaToken;
+
+    if (!editedImageToken) {
+      console.error("Base image is not available");
+      return;
+    }
+
+    console.log(">>> editedImageToken", editedImageToken);
+
+    // TODO: Call inference API here
+    let arrayBuffer = await downloadLeftPanelBitmap();
+
+    console.log(">>> arrayBuffer", arrayBuffer);
+
   };
 
   // Display image selector on launch, otherwise hide it
@@ -262,7 +308,7 @@ const PageEdit = () => {
         <PromptEditor
           onModeChange={(mode: string) => { store.setActiveTool(mode as ActiveEditTool) }}
           selectedMode={store.activeTool}
-          onGenerateClick={downloadLeftPanelBitmap}
+          onGenerateClick={handleGenerate}
         />
       </div>
       <div className="relative z-0">

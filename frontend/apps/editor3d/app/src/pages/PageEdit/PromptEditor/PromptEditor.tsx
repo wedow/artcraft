@@ -3,6 +3,7 @@ import { PromptBoxEdit, PromptBoxEditProps } from "@storyteller/ui-promptbox";
 
 // Set this value on when enqueue is pressed nasty global variable.
 import { JobProvider } from "~/pages/PageDraw/JobContext";
+
 const PromptEditor: React.FC<PromptBoxEditProps> = ({
   onModeChange,
   selectedMode,
