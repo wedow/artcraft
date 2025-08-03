@@ -3,6 +3,8 @@ import { useSceneStore } from '../PageDraw/stores/SceneState';
 
 export type TabId = '2D' | '3D' | 'VIDEO' | 'IMAGE' | 'EDIT';
 
+const DEFAULT_TAB : TabId = '2D';
+
 interface TabState {
   // Current active tab
   activeTabId: TabId;
@@ -18,7 +20,7 @@ interface TabState {
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
-  activeTabId: 'EDIT',
+  activeTabId: DEFAULT_TAB,
   tabData: {},
 
   setActiveTab: async (newTabId) => {
