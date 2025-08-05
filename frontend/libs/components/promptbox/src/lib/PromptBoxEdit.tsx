@@ -8,7 +8,6 @@ import {
   faSpinnerThird
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useSignals } from "@preact/signals-react/runtime";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -27,7 +26,6 @@ export const PromptBoxEdit = ({
   onGenerateClick,
   isDisabled
 }: PromptBoxEditProps) => {
-  useSignals();
 
   const [prompt, setPrompt] = useState("");
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
