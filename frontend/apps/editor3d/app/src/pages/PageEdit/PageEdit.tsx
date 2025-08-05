@@ -38,9 +38,9 @@ const PageEdit = () => {
   // Create refs for stage and image
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const leftPanelRef = useRef<Konva.Layer>({} as Konva.Layer);
-  const rectRef = useRef<Konva.Rect>({} as Konva.Rect);
+  const baseImageKonvaRef = useRef<Konva.Image>({} as Konva.Image);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
-  const [baseImage, setBaseImage] = useState<BaseSelectorImage | null>(null);
+  const [isEnqueuing, setIsEnqueuing] = useState<boolean>(false);
 
   // Use the Zustand store
   const store = useEditStore();
@@ -115,29 +115,6 @@ const PageEdit = () => {
     };
   }, [store]);
 
-  const handleImageUpload = (files: File[]): void => {
-    // Place images at center of viewport with offset for multiple images
-    const centerX = 512; // leftPanelWidth / 2
-    const centerY = 512; // leftPanelHeight / 2
-
-    console.log("Image upload started with files:", files);
-    console.log("Center coordinates:", { centerX, centerY });
-
-    files.forEach((file, index) => {
-      console.log(`Processing file ${index}:`, file.name);
-
-      store.createImageFromFile(
-        centerX + index * 60, // Offset each image
-        centerY + index * 60,
-        file,
-      );
-      console.log(`Created image at position:`, {
-        x: centerX + index * 60,
-        y: centerY + index * 60,
-      });
-    });
-  };
-
   const modelList: PopoverItem[] = [
     {
       label: "GPT-4o",
@@ -157,17 +134,6 @@ const PageEdit = () => {
 
   const handleModelSelect = (item: PopoverItem) => {
     setSelectedModel(item.label);
-  };
-
-  const onEnqueuedPressed = async () => {
-    // takes snap shot and then a global variable in the engine will invoke the inference.
-    const image = await captureStageImageBitmap(stageRef, transformerRefs);
-    if (!image) {
-      console.error("Failed to capture stage image");
-      return;
-    } else {
-      setCanvasRenderBitmap(image);
-    }
   };
 
   const onFitPressed = async () => {
@@ -190,16 +156,16 @@ const PageEdit = () => {
   }
 
   // Create a function to use the left layer ref and download the bitmap from it
-  const downloadLeftPanelBitmap = async(): Promise<Uint8Array> => {
-    if (!stageRef.current || !leftPanelRef.current || !rectRef.current) {
+  const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
+    if (!stageRef.current || !leftPanelRef.current || !baseImageKonvaRef.current) {
       console.error("Stage or left panel ref is not available");
-      return;
+      throw new Error("Stage or left panel or base image ref is not available");
     }
 
     const layer = leftPanelRef.current;
 
     // Get the canvas area that's covered by the image/rectangle
-    const rect = rectRef.current;
+    const rect = baseImageKonvaRef.current;
     const layerCrop = layer.toCanvas({
       x: stageRef.current.x(),
       y: stageRef.current.y(),
@@ -208,46 +174,24 @@ const PageEdit = () => {
       pixelRatio: 1 / stageRef.current.scaleX(),
     });
 
-    // // Using the pixelRatio scaling may result in off-by-one rounding errors,
-    // // So we re-fit the image to a canvas of precise size.
-    // const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
-    // const downloadCallback = (blob: Blob | null) => {
-    //   if (!blob) {
-    //     console.error("Failed to create blob from canvas");
-    //     return;
-    //   }
-    //   const url = URL.createObjectURL(blob);
-    //   const link = document.createElement("a");
-    //   link.href = url;
-    //   link.download = "artcraft_snapshot.png";
-    //   link.click();
-    //   console.log('downloadCallback', url);
-    // }
-    // fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
+    // Using the pixelRatio scaling may result in off-by-one rounding errors,
+    // So we re-fit the image to a canvas of precise size.
+    const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
 
-    const normalizeCanvas2 = (canvas: HTMLCanvasElement, width: number, height: number): OffscreenCanvas => {
-      const newCanvas = new OffscreenCanvas(width, height);
-
-      const ctx = newCanvas.getContext("2d");
-      if (!ctx) {
-        throw new Error("Failed to get canvas context");
-      }
-
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(canvas, 0, 0, width, height);
-      return newCanvas;
-    }
-
-    const fittedCanvas2 = normalizeCanvas2(layerCrop, rect.width(), rect.height());
-
-    const blob = await fittedCanvas2.convertToBlob({ type: 'image/png' });
+    const blob = await fittedCanvas.convertToBlob({ type: 'image/png' });
     const arrayBuffer = await blob.arrayBuffer();
-  
-    return new Uint8Array(arrayBuffer);
 
+    return new Uint8Array(arrayBuffer);
   };
 
   const handleGenerate = async (prompt: string) => {
+    if (isEnqueuing) {
+      console.warn("Already enqueuing an image, please wait.");
+      return;
+    }
+
+    setIsEnqueuing(true);
+
     const editedImageToken = store.baseImageInfo?.mediaToken;
 
     if (!editedImageToken) {
@@ -256,7 +200,7 @@ const PageEdit = () => {
     }
 
     // TODO: Call inference API here
-    let arrayBuffer = await downloadLeftPanelBitmap();
+    const arrayBuffer = await getMaskArrayBuffer();
 
     const response = await EnqueueImageInpaint({
       model: EnqueueImageInpaintModel.FluxPro1,
@@ -265,6 +209,8 @@ const PageEdit = () => {
       prompt: prompt,
       image_count: 1,
     });
+
+    setIsEnqueuing(false);
   };
 
   // Display image selector on launch, otherwise hide it
@@ -304,6 +250,7 @@ const PageEdit = () => {
           onModeChange={(mode: string) => { store.setActiveTool(mode as ActiveEditTool) }}
           selectedMode={store.activeTool}
           onGenerateClick={handleGenerate}
+          isDisabled={isEnqueuing}
         />
       </div>
       <div className="relative z-0">
@@ -356,7 +303,7 @@ const PageEdit = () => {
             stageRef={stageRef}
             transformerRefs={transformerRefs}
             leftPanelRef={leftPanelRef}
-            baseImageRef={rectRef}
+            baseImageRef={baseImageKonvaRef}
           />
         </ContextMenuContainer>
       </div>
