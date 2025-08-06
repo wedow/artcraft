@@ -6,6 +6,7 @@ import {
   faMousePointer,
   faSparkles,
   faSpinnerThird,
+  faFrame,,
   faCopy,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,6 +22,7 @@ export interface PromptBoxEditProps {
   selectedMode?: string;
   onGenerateClick: (prompt: string) => void;
   isDisabled?: boolean;
+  onFitPressed?: () => void | Promise<void>;
   modelInfo?: ModelInfo;
   generationCount?: number;
   onGenerationCountChange?: (count: number) => void;
@@ -31,6 +33,7 @@ export const PromptBoxEdit = ({
   selectedMode,
   onGenerateClick,
   isDisabled,
+  onFitPressed,,
   modelInfo,
   generationCount: generationCountProp,
   onGenerationCountChange,
@@ -189,6 +192,23 @@ export const PromptBoxEdit = ({
                 onOptionChange={onModeSelectionChange}
                 selectedOption={selectedMode}
               />
+              {onFitPressed && (
+                <Tooltip
+                  content={"Fit canvas to screen"}
+                  position="top"
+                  className="z-50"
+                  delay={200}
+                >
+                  <Button
+                    variant="secondary"
+                    className="h-9"
+                    onClick={onFitPressed}
+                  >
+                    <FontAwesomeIcon icon={faFrame} className="h-4 w-4" />
+                    Fit
+                  </Button>
+                </Tooltip>
+              )}
               <Tooltip
                 content={
                   useSystemPrompt

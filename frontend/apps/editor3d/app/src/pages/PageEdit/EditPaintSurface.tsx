@@ -27,7 +27,7 @@ export type EditPaintSurfaceProps = {
   nodes: Node[];
   selectedNodeIds: string[];
   onCanvasSizeChange?: (width: number, height: number) => void;
-  fillColor?: string;
+  //fillColor?: string;
   activeTool?: ActiveEditTool;
   brushColor?: string;
   brushSize?: number;
@@ -42,7 +42,7 @@ export const EditPaintSurface = ({
   nodes,
   selectedNodeIds,
   onCanvasSizeChange,
-  fillColor,
+  //fillColor,
   activeTool = "select",
   brushColor = "#000000",
   brushSize = 5,
@@ -50,35 +50,34 @@ export const EditPaintSurface = ({
   stageRef,
   transformerRefs,
   leftPanelRef,
-  baseImageRef
+  baseImageRef,
 }: EditPaintSurfaceProps) => {
   // switch off to be preview panel mode.
-  const singlePaneMode = true
+  const singlePaneMode = true;
 
   const store = useEditStore(); // Use store directly
-  const imageRef = React.useRef<HTMLImageElement>(null);
-  const [snapshotImage, setSnapshotImage] = useState<HTMLImageElement | null>(
-    null,
-  );
+  const imageRef = React.useRef<Konva.Image>(null);
+  // Snapshot image state used in other components
+  const [snapshotImage] = useState<HTMLImageElement | null>(null);
   // TODO: Polish this by using canvas graphics instead of a bitmap
   // Or at least manually do the pattern fill to avoid image interpolation
-  const [checkerImage, setCheckerImage] = useState<HTMLImageElement | null>(null);
+  const [checkerImage, setCheckerImage] = useState<HTMLImageElement | null>(
+    null,
+  );
   const rightContainerRef = React.useRef<HTMLDivElement>(null);
   const cursorLayerRef = React.useRef<Konva.Layer>(null);
   const cursorShapeRef = React.useRef<Konva.Circle>(null);
 
-  // Layout 683 by 1024
-  const [leftPanelWidth, setLeftPanelWidth] = useState(1024);
-  const [leftPanelHeight, setLeftPanelHeight] = useState(1024);
-  const [rightPanelWidth, setRightPanelWidth] = useState(1024);
-  const [rightPanelHeight, setRightPanelHeight] = useState(1024);
+  // Layout dimensions
+  const leftPanelWidth = 1024;
+  const leftPanelHeight = 1024;
+  const rightPanelWidth = 1024;
+  const rightPanelHeight = 1024;
 
   /* 1️⃣ Track SplitPane percent so we can re-measure */
   const [leftPct, setLeftPct] = useState(singlePaneMode ? 100 : 50);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const [, setLastPoint] = useState<{ x: number; y: number } | null>(null);
 
   const selectionRectRef = React.useRef<Konva.Rect>(null);
   const [selectionRect, setSelectionRect] = useState<{
@@ -140,7 +139,10 @@ export const EditPaintSurface = ({
   }): { x: number; y: number } => {
     return {
       x: Math.max(0, Math.min(point.x, store.getAspectRatioDimensions().width)), //leftPanelWidth)),
-      y: Math.max(0, Math.min(point.y, store.getAspectRatioDimensions().height))//leftPanelHeight)),
+      y: Math.max(
+        0,
+        Math.min(point.y, store.getAspectRatioDimensions().height),
+      ), //leftPanelHeight)),
     };
   };
 
@@ -158,8 +160,11 @@ export const EditPaintSurface = ({
     activeTool: string,
     nodeDraggable: boolean,
   ): boolean => {
-    return activeTool !== "edit" && nodeDraggable;
+    return activeTool !== "edit" && nodeDraggable && !isMiddleMousePressed;
   };
+
+  // Add state for middle mouse button
+  const [isMiddleMousePressed, setIsMiddleMousePressed] = useState(false);
 
   // Combined mouse handlers
   const handleStageMouseDown = (
@@ -175,27 +180,46 @@ export const EditPaintSurface = ({
       y: (point.y - stage.y()) / stage.scaleY(),
     };
 
-    // Only set isDragging if the point is outside the panel bounds first mouse button
-    if (!isWithinLeftPanel(stagePoint)) {
+    // Check if the target is a transformer or its children (handles)
+    const isTransformerTarget =
+      e.target.getClassName() === "Transformer" ||
+      e.target.getParent()?.getClassName() === "Transformer" ||
+      e.target.name()?.includes("_anchor") ||
+      e.target.name()?.includes("rotater");
+
+    if (!isWithinLeftPanel(stagePoint) && !isTransformerTarget) {
       setIsDragging(true);
       return;
     }
 
-    // Dragging and panning the stage given the middle mouse.
-    if (e.evt.button === 1 || e.evt.button === 2) {
-      setIsDragging(true);
-      return;
+    // Improved handling for mouse buttons
+    if ("button" in e.evt) {
+      const mouseEvent = e.evt as MouseEvent;
+
+      if (mouseEvent.button === 1) {
+        // Middle mouse button
+        setIsMiddleMousePressed(true);
+        setIsDragging(true);
+        return;
+      }
+
+      if (mouseEvent.button === 2) {
+        // Right mouse button
+        if (!isTransformerTarget) {
+          setIsDragging(true);
+        }
+        return;
+      }
     }
 
     // Handle drawing tools - only start if within bounds
-    if (
-      (activeTool === "edit") &&
-      isWithinLeftPanel(stagePoint)
-    ) {
+    if (activeTool === "edit" && isWithinLeftPanel(stagePoint)) {
       const lineId = `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const opacity = activeTool === "edit" ? store.brushOpacity : 1;
-      const composite = store.editOperation === "add" ? "source-over" : "destination-out";
-      const strokeColor = store.editOperation === "add" ? brushColor : "#FFFFFF"; // Eraser uses transparent stroke
+      const composite =
+        store.editOperation === "add" ? "source-over" : "destination-out";
+      const strokeColor =
+        store.editOperation === "add" ? brushColor : "#FFFFFF"; // Eraser uses transparent stroke
 
       const newLineNode: LineNode = {
         id: lineId,
@@ -210,7 +234,7 @@ export const EditPaintSurface = ({
         globalCompositeOperation: composite,
       };
       store.selectNode(null);
-      store.addLineNode(newLineNode, false);  // Don't save state when starting line
+      store.addLineNode(newLineNode, false); // Don't save state when starting line
       setCurrentLineId(lineId);
       setIsDrawing(true);
       setLastPoint(stagePoint);
@@ -250,35 +274,59 @@ export const EditPaintSurface = ({
     const stage = stageRef.current;
     if (!stage) return;
 
-    // Update cursor position for draw/eraser tools
-    if (activeTool === "edit") {
-      const pointer = stage.getPointerPosition();
-      if (pointer) {
-        store.setCursorPosition(pointer);
-        store.setCursorVisible(true);
+    const pointer = stage.getPointerPosition();
+    if (pointer) {
+      const stagePoint = {
+        x: (pointer.x - stage.x()) / stage.scaleX(),
+        y: (pointer.y - stage.y()) / stage.scaleY(),
+      };
+
+      const isWithinCanvas = isWithinLeftPanel(stagePoint);
+
+      // Update cursor position and visibility based on tool and canvas position
+      if (activeTool === "edit") {
+        if (isWithinCanvas || isDrawing) {
+          stage.container().style.cursor = "none";
+          store.setCursorPosition(pointer);
+          store.setCursorVisible(true);
+        } else {
+          stage.container().style.cursor = "grab";
+          store.setCursorVisible(false);
+        }
+      } else {
+        if (isWithinCanvas) {
+          stage.container().style.cursor = "default";
+        } else {
+          stage.container().style.cursor = "grab";
+        }
+        store.setCursorVisible(false);
       }
-    } else {
-      store.setCursorVisible(false);
     }
 
-    // Only handle panning if we're actually dragging
+    // Handle panning with improved dragging
     if (isDragging) {
       const currentStage = e.target.getStage();
       if (!currentStage) return;
-      const newPos = {
-        x: currentStage.x() + e.evt.movementX,
-        y: currentStage.y() + e.evt.movementY,
-      };
+
+      currentStage.container().style.cursor = "grabbing";
+
+      const dragSensitivity = 3.0;
+      let newPos = { x: currentStage.x(), y: currentStage.y() };
+
+      if ("movementX" in e.evt && "movementY" in e.evt) {
+        const mouseEvent = e.evt as MouseEvent;
+        newPos = {
+          x: currentStage.x() + mouseEvent.movementX * dragSensitivity,
+          y: currentStage.y() + mouseEvent.movementY * dragSensitivity,
+        };
+      }
+
       currentStage.position(newPos);
       return;
     }
 
     // Handle drawing - only add points if within bounds
-    if (
-      isDrawing &&
-      currentLineId &&
-      (activeTool === "edit")
-    ) {
+    if (isDrawing && currentLineId && activeTool === "edit") {
       const point = stage.getPointerPosition();
       if (!point) return;
 
@@ -287,20 +335,19 @@ export const EditPaintSurface = ({
         y: (point.y - stage.y()) / stage.scaleY(),
       };
 
-      if (isWithinLeftPanel(stagePoint)) {
-        const currentLine = store.lineNodes.find(
-          (line) => line.id === currentLineId,
-        );
-        if (currentLine) {
-          const updatedPoints = [
-            ...currentLine.points,
-            stagePoint.x,
-            stagePoint.y,
-          ];
-          store.updateLineNode(currentLineId, { points: updatedPoints }, false);  // Don't save state while drawing
-        }
-        setLastPoint(stagePoint);
+      // Continue drawing regardless of canvas boundaries
+      const currentLine = store.lineNodes.find(
+        (line) => line.id === currentLineId,
+      );
+      if (currentLine) {
+        const updatedPoints = [
+          ...currentLine.points,
+          stagePoint.x,
+          stagePoint.y,
+        ];
+        store.updateLineNode(currentLineId, { points: updatedPoints }, false); // Don't save state while drawing
       }
+      setLastPoint(stagePoint);
     }
 
     // Handle selection rectangle - Update directly through Konva
@@ -329,11 +376,11 @@ export const EditPaintSurface = ({
       setSelectionRect((prev) =>
         prev
           ? {
-            // Ensure prev is not null
-            ...prev,
-            endX: clampedPoint.x,
-            endY: clampedPoint.y,
-          }
+              // Ensure prev is not null
+              ...prev,
+              endX: clampedPoint.x,
+              endY: clampedPoint.y,
+            }
           : null,
       );
     }
@@ -341,7 +388,7 @@ export const EditPaintSurface = ({
 
   const handleStageMouseUp = () => {
     if (isDrawing) {
-      store.saveState();  // Save state only when the stroke is complete
+      store.saveState(); // Save state only when the stroke is complete
     }
 
     if (isSelecting && selectionRect) {
@@ -402,6 +449,7 @@ export const EditPaintSurface = ({
     onSelectionChange?.(false);
     setSelectionRect(null);
     setLastPoint(null);
+    setIsMiddleMousePressed(false); // Reset middle mouse state
   };
 
   const handleStageWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -417,17 +465,38 @@ export const EditPaintSurface = ({
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-    // Calculate new scale
-    const newScale = e.evt.deltaY < 0 ? oldScale * 1.1 : oldScale / 1.1;
+    // Improved zoom handling with better precision
+    const isPinchGesture = e.evt.ctrlKey;
+    const deltaY = e.evt.deltaY;
+    const absDelta = Math.abs(deltaY);
 
-    // Calculate new position
-    const newPos = {
-      x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
-    };
+    const isMac = navigator.userAgent.includes("Mac");
+    const isMacTrackpadScroll =
+      isMac && !isPinchGesture && e.evt.deltaMode === 0 && absDelta <= 10;
 
-    stage.scale({ x: newScale, y: newScale });
-    stage.position(newPos);
+    let zoomFactor;
+
+    if (isPinchGesture) {
+      const pinchSensitivity = 0.2;
+      zoomFactor = 1 + deltaY * pinchSensitivity * -0.01;
+    } else if (isMacTrackpadScroll) {
+      return;
+    } else {
+      const mouseSensitivity = 0.0005;
+      zoomFactor = Math.exp(-deltaY * mouseSensitivity);
+    }
+
+    const newScale = Math.max(0.1, Math.min(10, oldScale * zoomFactor));
+
+    if (newScale !== oldScale) {
+      const newPos = {
+        x: pointer.x - mousePointTo.x * newScale,
+        y: pointer.y - mousePointTo.y * newScale,
+      };
+
+      stage.scale({ x: newScale, y: newScale });
+      stage.position(newPos);
+    }
   };
 
   // Add click handler for the stage to clear selection
@@ -463,7 +532,7 @@ export const EditPaintSurface = ({
   };
 
   // Add stage hover handlers
-  const handleStageMouseEnter = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleStageMouseEnter = () => {
     const stage = stageRef.current;
     if (!stage) {
       console.error("Stage reference is not available");
@@ -483,7 +552,7 @@ export const EditPaintSurface = ({
     }
   };
 
-  const handleStageMouseLeave = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleStageMouseLeave = () => {
     const stage = stageRef.current;
     if (stage) {
       stage.container().style.cursor = "default";
@@ -493,17 +562,93 @@ export const EditPaintSurface = ({
   };
 
   // Update cursor appearance
+  // Adding touch-related state
+  const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(
+    null,
+  );
+  const [isPinching, setIsPinching] = useState(false);
+
+  // Touch helper functions
+  const getTouchDistance = (touches: TouchList) => {
+    if (touches.length < 2) return 0;
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2),
+    );
+  };
+
+  const getTouchCenter = (touches: TouchList) => {
+    if (touches.length < 2) return null;
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2,
+    };
+  };
+
+  // Touch event handlers
+  const handleTouchStart = (e: Konva.KonvaEventObject<TouchEvent>) => {
+    const touches = e.evt.touches;
+    if (touches.length === 2) {
+      setIsPinching(true);
+      setLastPinchDistance(getTouchDistance(touches));
+    }
+  };
+
+  const handleTouchMove = (e: Konva.KonvaEventObject<TouchEvent>) => {
+    const touches = e.evt.touches;
+    if (touches.length === 2 && isPinching && lastPinchDistance) {
+      e.evt.preventDefault();
+
+      const stage = e.target.getStage();
+      if (!stage) return;
+
+      const currentDistance = getTouchDistance(touches);
+      const center = getTouchCenter(touches);
+      if (!center) return;
+
+      const oldScale = stage.scaleX();
+      const scaleChange = currentDistance / lastPinchDistance;
+
+      const newScale = Math.max(0.1, Math.min(10, oldScale * scaleChange));
+
+      if (newScale !== oldScale) {
+        const stageCenter = {
+          x: (center.x - stage.x()) / oldScale,
+          y: (center.y - stage.y()) / oldScale,
+        };
+
+        const newPos = {
+          x: center.x - stageCenter.x * newScale,
+          y: center.y - stageCenter.y * newScale,
+        };
+
+        stage.scale({ x: newScale, y: newScale });
+        stage.position(newPos);
+      }
+
+      setLastPinchDistance(currentDistance);
+    }
+  };
+
+  const handleTouchEnd = (e: Konva.KonvaEventObject<TouchEvent>) => {
+    const touches = e.evt.touches;
+    if (touches.length < 2) {
+      setIsPinching(false);
+      setLastPinchDistance(null);
+    }
+  };
+
   useLayoutEffect(() => {
     const cursorNode = cursorShapeRef.current;
     const cursorLayer = cursorLayerRef.current;
     const stage = stageRef.current;
     if (!cursorNode || !cursorLayer || !stage) return;
 
-    if (
-      store.cursorVisible &&
-      store.cursorPosition &&
-      (activeTool === "edit")
-    ) {
+    if (store.cursorVisible && store.cursorPosition && activeTool === "edit") {
       // Counteract stage transforms to position cursor in screen space
       const stageX = stage.x();
       const stageY = stage.y();
@@ -532,7 +677,15 @@ export const EditPaintSurface = ({
       cursorNode.visible(false);
     }
     cursorLayer.batchDraw();
-  }, [store.cursorVisible, store.cursorPosition, activeTool, brushColor, brushSize, stageRef, store.editOperation]);
+  }, [
+    store.cursorVisible,
+    store.cursorPosition,
+    activeTool,
+    brushColor,
+    brushSize,
+    stageRef,
+    store.editOperation,
+  ]);
 
   const renderNode = (node: Node | LineNode) => {
     // Node Callbacks
@@ -540,15 +693,21 @@ export const EditPaintSurface = ({
       e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
       nodeId: string,
     ) => {
-      // Don't select nodes when draw or erase tools are active
+      // Don't select nodes when edit tool is active
       if (activeTool === "edit") {
         return;
       }
 
-      // allow selection
-      if (e.evt.button === 2) {
-        const node = store.nodes.find(n => n.id === nodeId);
-        const lineNode = store.lineNodes.find(n => n.id === nodeId);
+      // Prevent middle mouse button from interacting with nodes (canvas panning only)
+      if ("button" in e.evt && (e.evt as MouseEvent).button === 1) {
+        setIsMiddleMousePressed(true);
+        return;
+      }
+
+      // Handle right click for context menu or selection
+      if ("button" in e.evt && (e.evt as MouseEvent).button === 2) {
+        const node = store.nodes.find((n) => n.id === nodeId);
+        const lineNode = store.lineNodes.find((n) => n.id === nodeId);
         const isLocked = (node?.locked || lineNode?.locked) ?? false;
 
         // If locked, only allow selection for context menu
@@ -559,17 +718,29 @@ export const EditPaintSurface = ({
       }
 
       // Don't select locked nodes
-      const node = nodes.find(n => n.id === nodeId) || store.lineNodes.find(n => n.id === nodeId);
+      const node =
+        nodes.find((n) => n.id === nodeId) ||
+        store.lineNodes.find((n) => n.id === nodeId);
       if (node?.locked) {
         return;
       }
 
       // Check if Ctrl/Cmd key is pressed
-      const isMultiSelect = e.evt.ctrlKey || e.evt.metaKey;
+      const isMultiSelect =
+        "ctrlKey" in e.evt
+          ? (e.evt as MouseEvent).ctrlKey || (e.evt as MouseEvent).metaKey
+          : false;
 
       // If clicking directly on the stage, clear selection
       if (e.target === e.target.getStage()) {
         store.selectNode(null);
+        return;
+      }
+
+      // If the node is already selected and we're not multi-selecting, preserve the current selection
+      const isAlreadySelected = selectedNodeIds.includes(nodeId);
+      if (isAlreadySelected && !isMultiSelect && selectedNodeIds.length > 1) {
+        // Don't change selection - preserve multi-select for dragging
         return;
       }
 
@@ -667,6 +838,7 @@ export const EditPaintSurface = ({
             shiftBehavior="inverted"
             ignoreStroke={true}
             onTransformEnd={(e: Konva.KonvaEventObject<Event>) => {
+              // Cast not needed as we're not using event properties that differ between MouseEvent and TouchEvent
               // Typed event
               const konvaNode = e.target;
               const nodeId = konvaNode.id();
@@ -684,15 +856,19 @@ export const EditPaintSurface = ({
 
               // Save all transformation values to the store
               if (isLineNode) {
-                store.updateLineNode(nodeId, {
-                  x: finalX,
-                  y: finalY,
-                  rotation: finalRotation,
-                  scaleX: finalScaleX,
-                  scaleY: finalScaleY,
-                  offsetX: finalOffsetX,
-                  offsetY: finalOffsetY,
-                }, true);
+                store.updateLineNode(
+                  nodeId,
+                  {
+                    x: finalX,
+                    y: finalY,
+                    rotation: finalRotation,
+                    scaleX: finalScaleX,
+                    scaleY: finalScaleY,
+                    offsetX: finalOffsetX,
+                    offsetY: finalOffsetY,
+                  },
+                  true,
+                );
               } else {
                 store.updateNode(
                   nodeId,
@@ -720,7 +896,8 @@ export const EditPaintSurface = ({
 
       const handleLineDragStart = (
         e: Konva.KonvaEventObject<DragEvent>,
-        nodeId: string,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _nodeId: string, // NodeId is not used but kept for function signature compatibility
       ) => {
         const targetNode = e.target as Konva.Node & {
           lastX?: number;
@@ -731,7 +908,8 @@ export const EditPaintSurface = ({
       };
       const handleLineDragMove = (
         e: Konva.KonvaEventObject<DragEvent>,
-        nodeId: string,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _nodeId: string, // NodeId is not used but kept for function signature compatibility
       ) => {
         const targetNode = e.target as Konva.Node & {
           lastX?: number;
@@ -752,12 +930,16 @@ export const EditPaintSurface = ({
         const finalOffsetY = targetNode.offsetY();
 
         // Update the line node in the store with its final position and transformation
-        store.updateLineNode(nodeId, {
-          x: finalX,
-          y: finalY,
-          offsetX: finalOffsetX,
-          offsetY: finalOffsetY,
-        });
+        store.updateLineNode(
+          nodeId,
+          {
+            x: finalX,
+            y: finalY,
+            offsetX: finalOffsetX,
+            offsetY: finalOffsetY,
+          },
+          true,
+        );
       };
 
       return (
@@ -766,7 +948,7 @@ export const EditPaintSurface = ({
             id={lineNode.id}
             points={lineNode.points}
             stroke={lineNode.stroke}
-            opacity={lineNode.opacity ?? 1}  // Use the line node's opacity or default to 1
+            opacity={lineNode.opacity ?? 1} // Use the line node's opacity or default to 1
             strokeWidth={
               isSelected
                 ? (lineNode.strokeWidth || 0) + 2
@@ -777,8 +959,8 @@ export const EditPaintSurface = ({
             lineJoin="round"
             onMouseDown={(e) => handleNodeMouseDown(e, lineNode.id)}
             onTap={(e) => handleNodeMouseDown(e, lineNode.id)}
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
+            onMouseEnter={(e) => handleNodeMouseEnter(e)}
+            onMouseLeave={(e) => handleNodeMouseLeave(e)}
             draggable={draggableIfToolsNotActive(
               activeTool,
               lineNode.draggable && lineNode.locked == false,
@@ -795,7 +977,9 @@ export const EditPaintSurface = ({
             offsetY={lineNode.offsetY || 0}
             zIndex={lineNode.zIndex}
             // @ts-expect-error: We don't have globalCompositeOperation in the type definition
-            globalCompositeOperation={lineNode.globalCompositeOperation || "source-over"}
+            globalCompositeOperation={
+              lineNode.globalCompositeOperation || "source-over"
+            }
           />
           {renderTransformer()}
         </React.Fragment>
@@ -820,11 +1004,14 @@ export const EditPaintSurface = ({
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
             zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
+            draggable={draggableIfToolsNotActive(
+              activeTool,
+              node.draggable && node.locked == false,
+            )}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
+            onMouseEnter={(e) => handleNodeMouseEnter(e)}
+            onMouseLeave={(e) => handleNodeMouseLeave(e)}
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
@@ -852,11 +1039,14 @@ export const EditPaintSurface = ({
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
             zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
+            draggable={draggableIfToolsNotActive(
+              activeTool,
+              node.draggable && node.locked == false,
+            )}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
+            onMouseEnter={(e) => handleNodeMouseEnter(e)}
+            onMouseLeave={(e) => handleNodeMouseLeave(e)}
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
@@ -884,11 +1074,14 @@ export const EditPaintSurface = ({
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
             zIndex={node.zIndex}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
+            draggable={draggableIfToolsNotActive(
+              activeTool,
+              node.draggable && node.locked == false,
+            )}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
+            onMouseEnter={(e) => handleNodeMouseEnter(e)}
+            onMouseLeave={(e) => handleNodeMouseLeave(e)}
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
@@ -932,11 +1125,14 @@ export const EditPaintSurface = ({
             scaleY={node.scaleY || 1}
             offsetX={node.offsetX || 0}
             offsetY={node.offsetY || 0}
-            draggable={draggableIfToolsNotActive(activeTool, node.draggable && node.locked == false)}
+            draggable={draggableIfToolsNotActive(
+              activeTool,
+              node.draggable && node.locked == false,
+            )}
             onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
             onTap={(e) => handleNodeMouseDown(e, node.id)}
-            onMouseEnter={handleNodeMouseEnter}
-            onMouseLeave={handleNodeMouseLeave}
+            onMouseEnter={(e) => handleNodeMouseEnter(e)}
+            onMouseLeave={(e) => handleNodeMouseLeave(e)}
             onDragMove={(e) => handleNodeDragMove(e, node.id)}
             onDragStart={(e) => handleNodeDragStart(e, node.id)}
             onDragEnd={(e) => handleNodeDragEnd(e, node.id)}
@@ -972,7 +1168,7 @@ export const EditPaintSurface = ({
     if (multiSelectTransformerRef.current && selectedNodeIds.length > 1) {
       const nodes = selectedNodeIds
         .map((id) => stageRef.current.findOne(`#${id}`))
-        .filter(Boolean);
+        .filter(Boolean) as Konva.Node[];
       if (nodes.length > 0) {
         multiSelectTransformerRef.current.nodes(nodes);
         multiSelectTransformerRef.current.getLayer()?.batchDraw();
@@ -1007,14 +1203,23 @@ export const EditPaintSurface = ({
             onWheel={handleStageWheel}
             onMouseDown={handleStageMouseDown}
             onMouseMove={handleStageMouseMove}
-            onMouseUp={handleStageMouseUp} // This global mouse up is likely better from useGlobalMouseUp
+            onMouseUp={handleStageMouseUp}
             onClick={handleStageClick}
             onMouseEnter={handleStageMouseEnter}
             onMouseLeave={handleStageMouseLeave}
+            // Touch events
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <Layer
               clipFunc={(ctx) => {
-                ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
+                ctx.rect(
+                  0,
+                  0,
+                  store.getAspectRatioDimensions().width,
+                  store.getAspectRatioDimensions().height,
+                ); // leftPanelWidth, leftPanelHeight);
               }}
               imageSmoothingEnabled={false} // Disable image smoothing for pixel art
             >
@@ -1034,7 +1239,37 @@ export const EditPaintSurface = ({
             </Layer>
             <Layer
               clipFunc={(ctx) => {
-                ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
+                ctx.rect(
+                  0,
+                  0,
+                  store.getAspectRatioDimensions().width,
+                  store.getAspectRatioDimensions().height,
+                ); // leftPanelWidth, leftPanelHeight);
+              }}
+              imageSmoothingEnabled={false} // Disable image smoothing for pixel art
+            >
+              <Rect
+                x={0}
+                y={0}
+                fillPatternImage={checkerImage || undefined}
+                fillPatternRepeat="repeat"
+                fillPatternScaleX={window.devicePixelRatio}
+                fillPatternScaleY={window.devicePixelRatio}
+                width={store.getAspectRatioDimensions().width}
+                height={store.getAspectRatioDimensions().height}
+                listening={false}
+                zIndex={-2}
+                imageSmoothingEnabled={false} // Disable image smoothing for pixel art
+              />
+            </Layer>
+            <Layer
+              clipFunc={(ctx) => {
+                ctx.rect(
+                  0,
+                  0,
+                  store.getAspectRatioDimensions().width,
+                  store.getAspectRatioDimensions().height,
+                ); // leftPanelWidth, leftPanelHeight);
               }}
             >
               <Image
@@ -1052,14 +1287,19 @@ export const EditPaintSurface = ({
             <Layer
               ref={leftPanelRef}
               clipFunc={(ctx) => {
-                ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
+                ctx.rect(
+                  0,
+                  0,
+                  store.getAspectRatioDimensions().width,
+                  store.getAspectRatioDimensions().height,
+                ); // leftPanelWidth, leftPanelHeight);
               }}
             >
               {/* Render all nodes including line nodes */}
               {[...nodes, ...store.lineNodes]
                 .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
-                .map((node, index) => {
-                  // console.log(`Node ${index}:`, node);
+                .map((node) => {
+                  // console.log("Rendering node:", node);
                   return renderNode(node);
                 })}
 
@@ -1097,11 +1337,11 @@ export const EditPaintSurface = ({
             scaleY={previewScale}
             x={0}
             y={0}
-          // style={{
-          //   background: '#f5f5f5',
-          //   border: '1px solid #ddd',
-          //   borderRadius: '8px',
-          // }}
+            // style={{
+            //   background: '#f5f5f5',
+            //   border: '1px solid #ddd',
+            //   borderRadius: '8px',
+            // }}
           >
             <Layer>
               <Image

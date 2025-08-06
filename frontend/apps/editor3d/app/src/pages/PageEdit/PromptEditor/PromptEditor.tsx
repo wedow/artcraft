@@ -1,11 +1,18 @@
 import React from "react";
 import { PromptBoxEdit, PromptBoxEditProps } from "@storyteller/ui-promptbox";
+import { JobProvider } from "~/pages/PageDraw/JobContext";
 
-const PromptEditor: React.FC<PromptBoxEditProps> = ({
+// Extending the props to include onFitPressed
+interface ExtendedPromptEditorProps extends PromptBoxEditProps {
+  onFitPressed?: () => void | Promise<void>;
+}
+
+const PromptEditor: React.FC<ExtendedPromptEditorProps> = ({
   onModeChange,
   selectedMode,
   onGenerateClick,
   isDisabled,
+  onFitPressed,
   ...rest
 }) => {
   return (
@@ -17,6 +24,15 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
         isDisabled={isDisabled}
         {...rest}
       />
+      <JobProvider>
+        <PromptBoxEdit
+          onModeChange={onModeChange}
+          selectedMode={selectedMode}
+          onGenerateClick={onGenerateClick}
+          isDisabled={false}
+          onFitPressed={onFitPressed}
+        />
+      </JobProvider>
     </div>
   );
 };

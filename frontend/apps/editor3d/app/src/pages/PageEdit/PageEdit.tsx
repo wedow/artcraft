@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Konva from "konva"; // just for types
+
+import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import {
   EnqueueImageInpaint,
   EnqueueImageInpaintModel,
@@ -121,9 +123,23 @@ const PageEdit = () => {
     };
   }, [store]);
 
+  // Auto-fit the canvas when base image is loaded
+  useEffect(() => {
+    // When baseImageBitmap changes from null to an actual image, call onFitPressed
+    if (store.baseImageBitmap) {
+      // Use a slight delay to ensure the image dimensions are properly loaded
+      const timer = setTimeout(() => {
+        onFitPressed();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [store.baseImageBitmap]);
+
   const onFitPressed = async () => {
     // Get the stage and its container dimensions
     const stage = stageRef.current;
+    if (!stage) return;
 
     // Get container dimensions
     const containerWidth = stage.container().offsetWidth;
@@ -133,15 +149,30 @@ const PageEdit = () => {
     const canvasW = store.getAspectRatioDimensions().width;
     const canvasH = store.getAspectRatioDimensions().height;
 
+    // Calculate optimal scale to fit the canvas in the container
+    // Use a padding factor to leave some margin around the canvas
+    const paddingFactor = 0.95; // 5% padding on all sides
+    const scaleX = (containerWidth * paddingFactor) / canvasW;
+    const scaleY = (containerHeight * paddingFactor) / canvasH;
+
+    // Use the smaller scale to ensure the canvas fits in both dimensions
+    const scale = Math.min(scaleX, scaleY);
+
+    // Limit the scale between reasonable bounds (0.1 to 3.0)
+    const boundedScale = Math.max(0.1, Math.min(3.0, scale));
+
+    // Apply the calculated scale
+    stage.scale({ x: boundedScale, y: boundedScale });
+
     // Calculate position to center canvas in container
     stage.position({
-      x: (containerWidth - canvasW) / 2,
-      y: (containerHeight - canvasH) / 2,
+      x: (containerWidth - canvasW * boundedScale) / 2,
+      y: (containerHeight - canvasH * boundedScale) / 2,,
     });
   };
 
   // Create a function to use the left layer ref and download the bitmap from it
-  const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
+  const getMaskArrayBuffer = async  (): Promise<Uint8Array> => {
     if (
       !stageRef.current ||
       !leftPanelRef.current ||
@@ -170,8 +201,47 @@ const PageEdit = () => {
       rect.width(),
       rect.height(),
     );
+    // // Using the pixelRatio scaling may result in off-by-one rounding errors,
+    // // So we re-fit the image to a canvas of precise size.
+    // const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
+    // const downloadCallback = (blob: Blob | null) => {
+    //   if (!blob) {
+    //     console.error("Failed to create blob from canvas");
+    //     return;
+    //   }
+    //   const url = URL.createObjectURL(blob);
+    //   const link = document.createElement("a");
+    //   link.href = url;
+    //   link.download = "artcraft_snapshot.png";
+    //   link.click();
+    //   console.log('downloadCallback', url);
+    // }
+    // fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
 
-    const blob = await fittedCanvas.convertToBlob({ type: "image/png" });
+    const normalizeCanvas2 = (
+      canvas: HTMLCanvasElement,
+      width: number,
+      height: number,
+    ): OffscreenCanvas => {
+      const newCanvas = new OffscreenCanvas(width, height);
+
+      const ctx = newCanvas.getContext("2d");
+      if (!ctx) {
+        throw new Error("Failed to get canvas context");
+      }
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(canvas, 0, 0, width, height);
+      return newCanvas;
+    };
+
+    const fittedCanvas2 = normalizeCanvas2(
+      layerCrop,
+      rect.width(),
+      rect.height(),
+    );
+
+    const blob = await fittedCanvas2.convertToBlob({ type: "image/png" });
     const arrayBuffer = await blob.arrayBuffer();
 
     return new Uint8Array(arrayBuffer);
@@ -250,10 +320,13 @@ const PageEdit = () => {
         <PromptEditor
           modelInfo={selectedModelInfo}
           onModeChange={(mode: string) => {
+           
             store.setActiveTool(mode as ActiveEditTool);
+         ;
           }}
           selectedMode={store.activeTool}
           onGenerateClick={handleGenerate}
+          onFitPressed={onFitPressed}
           isDisabled={isEnqueuing}
           generationCount={generationCount}
           onGenerationCountChange={setGenerationCount}
