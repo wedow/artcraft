@@ -137,7 +137,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
     }
   };
 
-  const getPageTitle = () : string => {
+  const getPageTitle = (): string => {
     switch (tabStore.activeTabId) {
       case "2D":
         return "Canvas";
@@ -169,7 +169,6 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
           aria-label="navigation"
         >
           <div className="flex items-center gap-3">
-            
             <div className="mr-2">
               <span className="sr-only">ArtCraft</span>
               <img
@@ -216,9 +215,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
             {tabStore.activeTabId === "3D" ? (
               <SceneTitleInput pageName={pageName} />
             ) : (
-              <h1>
-                {pageTitle}
-              </h1>
+              <h1>{pageTitle}</h1>
             )}
           </div>
 
