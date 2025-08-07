@@ -4,17 +4,37 @@
 --   tasks_v2.sqlite - added model_type (nullable)
 
 CREATE TABLE tasks (
+    -- Task auto-incrementing primary key.
+    -- We don't use this.
     id TEXT NOT NULL PRIMARY KEY,
 
+    -- TaskStatus enum
+    -- This is how the job system manages job states.
+    -- pending, started, complete_success, dead, etc.
     task_status TEXT NOT NULL,
+
+    -- TaskType enum
+    -- image_generation, video_generation, etc.
     task_type TEXT NOT NULL,
 
+    -- TaskModelType enum
+    -- flux_1_dev, veo_2, etc.
     model_type TEXT,
 
+    -- GenerationProvider enum
+    -- Together with `provider_job_id`, this creates a foreign key lookup to the job.
+    -- 'artcraft', 'fal', 'sora', etc.
     provider TEXT,
+
+    -- The primary key for the job in the provider's system.
     provider_job_id TEXT,
 
+    -- OPTIONAL.
+    -- An arbitrary payload the frontend can set.
     frontend_subscriber_id TEXT,
+
+    -- OPTIONAL.
+    -- A JSON payload for the frontend subscriber.
     frontend_subscriber_payload TEXT,
 
     created_at INTEGER NOT NULL DEFAULT (unixepoch('now')),
