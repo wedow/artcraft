@@ -55,6 +55,16 @@ pub struct EnqueueImageBgRemovalCommand {
 
   /// Base64-encoded image
   pub base64_image: Option<String>,
+
+  /// OPTIONAL.
+  /// A frontend-defined identifier that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_id: Option<String>,
+
+  /// OPTIONAL.
+  /// A frontend-defined payload that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_payload: Option<String>,
 }
 
 #[derive(Serialize, Debug)]
@@ -169,7 +179,11 @@ pub async fn handle_request(
   ).await?;
 
   let result = success_event
-      .insert_into_task_database(task_database)
+      .insert_into_task_database_with_frontend_payload(
+        task_database,
+        request.frontend_subscriber_id.as_deref(),
+        request.frontend_subscriber_payload.as_deref()
+      )
       .await;
 
   if let Err(err) = result {
