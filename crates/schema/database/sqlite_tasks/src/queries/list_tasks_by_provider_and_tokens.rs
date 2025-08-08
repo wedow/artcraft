@@ -4,6 +4,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use sqlx::{QueryBuilder, Sqlite};
 use tokens::tokens::sqlite::tasks::TaskId;
 
@@ -25,6 +26,7 @@ pub struct Task {
   pub model_type: TaskModelType,
   pub provider: GenerationProvider,
   pub provider_job_id: Option<String>,
+  pub frontend_caller: Option<TauriCommandCaller>,
   pub frontend_subscriber_id: Option<String>,
   pub frontend_subscriber_payload: Option<String>,
 }
@@ -38,6 +40,7 @@ struct RawTask {
   model_type: String,
   provider: String,
   provider_job_id: Option<String>,
+  frontend_caller: Option<String>,
   frontend_subscriber_id: Option<String>,
   frontend_subscriber_payload: Option<String>,
 }
@@ -54,6 +57,7 @@ pub async fn list_tasks_by_provider_and_tokens(
       model_type,
       provider,
       provider_job_id,
+      frontend_caller,
       frontend_subscriber_id,
       frontend_subscriber_payload
     FROM tasks
@@ -96,6 +100,10 @@ pub async fn list_tasks_by_provider_and_tokens(
       provider: GenerationProvider::from_str(&task.provider)
           .map_err(|err| SqliteTasksError::TaskParseError(err))?,
       provider_job_id: task.provider_job_id,
+      frontend_caller: task.frontend_caller
+          .map(|caller| TauriCommandCaller::from_str(&caller)
+              .map_err(|err| SqliteTasksError::TaskParseError(err)))
+          .transpose()?,
       frontend_subscriber_id: task.frontend_subscriber_id,
       frontend_subscriber_payload: task.frontend_subscriber_payload,
     });

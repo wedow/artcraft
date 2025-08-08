@@ -3,6 +3,7 @@ use crate::core::events::functional_events::canvas_background_removal_complete_e
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use artcraft_api_defs::jobs::list_session_jobs::ListSessionJobsItem;
 use enums::tauri::tasks::task_type::TaskType;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::error;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
@@ -16,9 +17,12 @@ pub async fn maybe_send_background_removal_complete_event(
 
   match task.task_type {
     TaskType::BackgroundRemoval => {} // NB: Fall-through
-    _ => {
-      return Ok(())
-    },
+    _ => return Ok(()),
+  }
+  
+  match task.frontend_caller {
+    Some(TauriCommandCaller::Canvas) => {} // NB: Fall-through
+    _ => return Ok(()),
   }
   
   let result = match job.maybe_result {
