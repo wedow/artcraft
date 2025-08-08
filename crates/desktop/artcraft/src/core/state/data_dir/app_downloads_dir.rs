@@ -1,5 +1,6 @@
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use std::path::{Path, PathBuf};
+use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Clone)]
 pub struct AppDownloadsDir {
@@ -17,5 +18,12 @@ impl DataSubdir for AppDownloadsDir {
 
   fn path(&self) -> &Path {
     &self.path
+  }
+}
+
+impl AppDownloadsDir {
+  pub fn media_file_json_path(&self, media_token: &MediaFileToken) -> PathBuf {
+    let filename = format!("{}.json", media_token.as_str());
+    self.path().join(&filename)
   }
 }
