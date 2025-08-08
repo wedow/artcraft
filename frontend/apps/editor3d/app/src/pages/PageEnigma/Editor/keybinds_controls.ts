@@ -329,18 +329,23 @@ export class MouseControls {
     }
 
     if ((event.ctrlKey || event.metaKey) && !this.isProcessing) {
-      if (event.key === "Z" || event.key === "z") {
+      const keyLower = event.key.toLowerCase();
+      if (keyLower === "z") {
         // redo
         this.isProcessing = true;
         await this.sceneManager?.redo();
         this.isProcessing = false;
-      } else if (event.key === "c") {
-        // redo
+      } else if (keyLower === "c") {
+        // Copy
+        event.preventDefault();
+        event.stopPropagation();
         this.isProcessing = true;
         await this.sceneManager?.copy();
         this.isProcessing = false;
-      } else if (event.key === "v") {
-        // redo
+      } else if (keyLower === "v") {
+        // Paste
+        event.preventDefault();
+        event.stopPropagation();
         this.isProcessing = true;
         await this.sceneManager?.paste();
         this.isProcessing = false;
@@ -406,7 +411,7 @@ export class MouseControls {
 
       // If the mouse is clicked but controls also locked, move the camera with the mouse
       const camera = this.lockControls.getObject();
-      const _euler = new Euler(0, 0, 0, 'YXZ');
+      const _euler = new Euler(0, 0, 0, "YXZ");
       const _MOUSE_SENSITIVITY = 0.002;
       const pointerSpeed = 1.0;
       const _PI_2 = Math.PI / 2;
@@ -418,7 +423,10 @@ export class MouseControls {
       _euler.y -= event.movementX * _MOUSE_SENSITIVITY * pointerSpeed;
       _euler.x -= event.movementY * _MOUSE_SENSITIVITY * pointerSpeed;
 
-      _euler.x = Math.max(_PI_2 - maxPolarAngle, Math.min(_PI_2 - minPolarAngle, _euler.x));
+      _euler.x = Math.max(
+        _PI_2 - maxPolarAngle,
+        Math.min(_PI_2 - minPolarAngle, _euler.x),
+      );
 
       camera.quaternion.setFromEuler(_euler);
     } else if (this.lockControls) {
@@ -452,7 +460,6 @@ export class MouseControls {
     } else {
       this.handleMousePointerLock();
     }
-
   }
 
   // When the mouse clicks the screen.

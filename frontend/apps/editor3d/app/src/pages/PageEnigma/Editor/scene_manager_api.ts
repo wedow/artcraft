@@ -8,6 +8,11 @@ import {
 import Scene from "./scene";
 import { MouseControls } from "./keybinds_controls";
 import { ClipGroup } from "~/enums";
+import Queue from "~/pages/PageEnigma/Queue/Queue";
+import { QueueNames } from "~/pages/PageEnigma/Queue/QueueNames";
+import { fromEngineActions } from "~/pages/PageEnigma/Queue/fromEngineActions";
+import { MediaItem } from "~/pages/PageEnigma/models";
+import { AssetType } from "~/enums";
 import {
   CommandInputTypes,
   CreationSceneItem,
@@ -146,8 +151,7 @@ export class SceneManager implements SceneManagerAPI {
     if (media_token.includes("SKY::")) {
       const token = media_token.replace("SKY::", "");
       this.scene.updateSkybox(token);
-    }
-    else if (media_token !== "Parim") {
+    } else if (media_token !== "Parim") {
       return await this.scene.loadObject(
         media_token,
         name,
@@ -265,11 +269,9 @@ export class SceneManager implements SceneManagerAPI {
   }
 
   public async copy() {
-    // TODO MAKE BETTER FIX: Temp disables copy and paste of characters.
-    const object = this.mouse_controls.selected?.at(0)
-    if (object !== undefined) {
-      if (this.is_character(object.uuid) === false)
-        this.copiedObject = object;
+    const object = this.mouse_controls.selected?.at(0);
+    if (object !== undefined && object.name !== "::CAM::") {
+      this.copiedObject = object;
     }
   }
 
@@ -283,6 +285,7 @@ export class SceneManager implements SceneManagerAPI {
       const media_id = userdata["media_id"];
       const color = userdata["color"];
       const name = this.copiedObject.name;
+      const wasCharacter: boolean = !!this.copiedObject.userData.isCharacter;
 
       const obj = await this.create(media_id, name, position);
       this.scene.setColor(obj.uuid, color);
@@ -290,8 +293,40 @@ export class SceneManager implements SceneManagerAPI {
       obj.rotation.copy(rotation);
       obj.scale.copy(scale);
 
+      // Preserve character stuff on pasted object
+      if (wasCharacter) {
+        obj.userData.isCharacter = true;
+      }
+
       this.mouse_controls.selectObject(obj);
       this.updateOutliner();
+
+      if (wasCharacter) {
+        Queue.publish({
+          queueName: QueueNames.FROM_ENGINE,
+          action: fromEngineActions.UPDATE_CHARACTER_ID,
+          data: {
+            version: 1,
+            type: AssetType.CHARACTER,
+            media_id: media_id,
+            object_uuid: obj.uuid,
+            name: name,
+          } as MediaItem,
+        });
+      } else {
+        Queue.publish({
+          queueName: QueueNames.FROM_ENGINE,
+          action: fromEngineActions.ADD_OBJECT,
+          data: {
+            version: 1,
+            type: AssetType.OBJECT,
+            media_id: media_id,
+            object_uuid: obj.uuid,
+            name: name,
+          } as MediaItem,
+        });
+      }
+
       await this.copy();
       await this.add_creation_undostack(obj);
     }
