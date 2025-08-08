@@ -12,10 +12,12 @@ use crate::core::utils::enum_conversion::task_type::to_generation_action;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::threads::events::maybe_send_background_removal_complete_event::maybe_send_background_removal_complete_event;
 use anyhow::anyhow;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::tauri::tasks::task_status::TaskStatus;
+use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
 use log::{error, info};
 use reqwest::Url;
@@ -137,7 +139,17 @@ async fn polling_loop(
       if !updated {
         continue; // If anything breaks with queries, don't spam events.
       }
-      
+
+      let result = maybe_send_background_removal_complete_event(
+        &app_handle,
+        &task,
+        &job,
+      ).await;
+
+      if let Err(err) = result {
+        error!("Failed to send background removal complete event: {:?}", err);
+      }
+
       let service = to_generation_service_provider(task.provider);
       let action = to_generation_action(task.task_type);
 

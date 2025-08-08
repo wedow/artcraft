@@ -382,6 +382,9 @@ const PageDraw = () => {
                       return { success: false };
                     }
                     try {
+                      // ...
+                      // Call API, on success, return a File object parsed from base64.
+                      // ...
                       const response = await FalBackgroundRemoval({
                         base64_image: image_base64,
                       });

@@ -10,7 +10,6 @@ import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
 import {
   EnqueueImageInpaint,
   EnqueueImageInpaintModel,
-  FalBackgroundRemoval,
 } from "@storyteller/tauri-api";
 import { ContextMenuContainer } from "../PageDraw/components/ui/ContextMenu";
 import SideToolbar from "../PageDraw/components/ui/SideToolbar";
