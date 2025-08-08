@@ -108,7 +108,7 @@ impl ModelType {
       "hunyuan_3d_2p0" => Ok(Self::Hunyuan3d2_0),
       "hunyuan_3d_2p1" => Ok(Self::Hunyuan3d2_1),
 
-      _ => Err(format!("invalid task_state: {:?}", job_status)),
+      _ => Err(format!("invalid model_type: {:?}", job_status)),
     }
   }
 

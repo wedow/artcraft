@@ -1,6 +1,7 @@
 use crate::core::events::basic_sendable_event_trait::{BasicEventStatus, BasicSendableEvent};
 use serde_derive::Serialize;
 use url::Url;
+use enums::tauri::ux::tauri_event_name::TauriEventName;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Clone, Debug, Serialize)]
@@ -11,6 +12,6 @@ pub struct CanvasBackgroundRemovalCompleteEvent {
 }
 
 impl BasicSendableEvent for CanvasBackgroundRemovalCompleteEvent {
-  const FRONTEND_EVENT_NAME: &'static str = "canvas-background-removal-complete-event";
+  const FRONTEND_EVENT_NAME: TauriEventName = TauriEventName::CanvasBgRemovedEvent;
   const EVENT_STATUS: BasicEventStatus = BasicEventStatus::Success;
 }

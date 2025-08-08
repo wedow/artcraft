@@ -10,29 +10,29 @@ CREATE TABLE tasks (
 
     -- TaskStatus enum
     -- This is how the job system manages job states.
-    -- pending, started, complete_success, dead, etc.
+    -- e.g. pending, started, complete_success, dead, etc.
     task_status TEXT NOT NULL,
 
     -- TaskType enum
-    -- image_generation, video_generation, etc.
+    -- e.g. image_generation, video_generation, etc.
     task_type TEXT NOT NULL,
 
     -- TaskModelType enum
-    -- flux_1_dev, veo_2, etc.
+    -- e.g. flux_1_dev, veo_2, etc.
     model_type TEXT,
 
     -- GenerationProvider enum
     -- Together with `provider_job_id`, this creates a foreign key lookup to the job.
-    -- 'artcraft', 'fal', 'sora', etc.
+    -- e.g. 'artcraft', 'fal', 'sora', etc.
     provider TEXT,
 
     -- The primary key for the job in the provider's system.
     provider_job_id TEXT,
 
     -- OPTIONAL.
-    -- Tell the job system which event(s) to send to the frontend
-    -- upon task completion. Comma-separated list of event names.
-    frontend_subscriber_event_names TEXT,
+    -- Tell the job system which caller initiated the task.
+    -- e.g. 'canvas'
+    frontend_caller TEXT,
 
     -- OPTIONAL.
     -- An arbitrary opaque identifier that frontend can set.

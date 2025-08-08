@@ -1,4 +1,5 @@
 use crate::core::events::sendable_event_error::SendableEventError;
+use enums::tauri::ux::tauri_event_name::TauriEventName;
 use log::info;
 use serde::Serialize;
 use std::fmt::Debug;
@@ -29,7 +30,7 @@ struct BasicEventWrapper<T: Serialize + Debug> {
 
 pub trait BasicSendableEvent : Clone + Debug + Serialize {
   /// This is the name of the event that the frontend subscribes to.
-  const FRONTEND_EVENT_NAME: &'static str;
+  const FRONTEND_EVENT_NAME: TauriEventName;
 
   /// This is the status of the event: Success, Failure, etc.
   const EVENT_STATUS: BasicEventStatus;
@@ -41,8 +42,8 @@ pub trait BasicSendableEvent : Clone + Debug + Serialize {
       status: Self::EVENT_STATUS,
       data: self.clone(),
     };
-    info!("Sending event to frontend: {} ; payload = {:?}", Self::FRONTEND_EVENT_NAME, wrapped);
-    let result = app.emit(Self::FRONTEND_EVENT_NAME, wrapped);
+    info!("Sending event to frontend: {} ; payload = {:?}", Self::FRONTEND_EVENT_NAME.to_str(), wrapped);
+    let result = app.emit(Self::FRONTEND_EVENT_NAME.to_str(), wrapped);
     if let Err(err) = result {
       return Err(SendableEventError::from(err));
     }

@@ -37,7 +37,7 @@ impl GenerationProvider {
       "artcraft" => Ok(Self::Artcraft),
       "fal" => Ok(Self::Fal),
       "sora" => Ok(Self::Sora),
-      _ => Err(format!("invalid task_state: {:?}", job_status)),
+      _ => Err(format!("invalid generation_provider: {:?}", job_status)),
     }
   }
 
