@@ -17,6 +17,7 @@ use crate::core::utils::simple_http_download_to_tempfile::simple_http_download_t
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
+use artcraft_api_defs::media_files::get_media_file::GetMediaFileSuccessResponse;
 use base64::prelude::BASE64_STANDARD;
 use base64::{DecodeError, Engine};
 use errors::AnyhowError;
@@ -28,7 +29,7 @@ use log::{error, info, warn};
 use reqwest::Url;
 use serde_derive::{Deserialize, Serialize};
 use storyteller_client::error::storyteller_error::StorytellerError;
-use storyteller_client::media_files::get_media_file::{get_media_file, GetMediaFileSuccessResponse};
+use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};

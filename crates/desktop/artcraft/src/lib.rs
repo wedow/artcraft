@@ -1,19 +1,21 @@
 pub mod core;
 pub mod services;
 
+use log::error;
 use tauri::Manager;
 
 use crate::core::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::enqueue_text_to_image_command;
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
-use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::enqueue_image_inpaint_command;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::enqueue_contextual_edit_image_command;
+use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::enqueue_image_inpaint_command;
 use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::enqueue_image_to_3d_object_command;
 use crate::core::commands::enqueue::video::enqueue_image_to_video_command::enqueue_image_to_video_command;
 use crate::core::commands::flip_image::flip_image;
 use crate::core::commands::get_app_info_command::get_app_info_command;
 use crate::core::commands::load_without_cors_command::load_without_cors_command;
+use crate::core::commands::media_files::get_media_file_command::get_media_file_command;
 use crate::core::commands::platform_info_command::platform_info_command;
 use crate::core::commands::providers::get_provider_order_command::get_provider_order_command;
 use crate::core::commands::providers::set_provider_order_command::set_provider_order_command;
@@ -41,7 +43,6 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_thread;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use log::error;
 
 use tauri_plugin_dialog;
 use tauri_plugin_http;
@@ -156,6 +157,7 @@ pub fn run() {
       get_app_info_command,
       get_app_preferences_command,
       get_fal_api_key_command,
+      get_media_file_command,
       get_provider_order_command,
       load_without_cors_command,
       open_sora_login_command,

@@ -25,7 +25,11 @@ use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::prompts::PromptToken;
 
 /// Get details about a media file from our backend
-pub async fn get_media_file(api_host: &ApiHost, media_file_token: &MediaFileToken) -> Result<GetMediaFileSuccessResponse, StorytellerError> {
+pub async fn get_media_file(
+  api_host: &ApiHost,
+  media_file_token: &MediaFileToken
+) -> Result<GetMediaFileSuccessResponse, StorytellerError> {
+
   let url = get_media_file_token_route(api_host, media_file_token);
 
   debug!("Requesting {:?}", &url);
@@ -46,8 +50,6 @@ fn get_media_file_token_route(api_host: &ApiHost, media_file_token: &MediaFileTo
   let media_file_token = media_file_token.as_str();
   format!("{}/v1/media_files/file/{}", api_hostname_and_scheme, media_file_token)
 }
-
-// TODO(bt,2025-04-22): Share API definitions between client and server in common crate.
 
 
 #[cfg(test)]

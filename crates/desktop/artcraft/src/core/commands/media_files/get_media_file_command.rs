@@ -1,54 +1,70 @@
-use crate::core::commands::response::shorthand::InfallibleResponse;
+use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueImageInpaintSuccessResponse;
+use crate::core::commands::response::shorthand::{InfallibleResponse, ResponseOrErrorType};
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::model::image_models::ImageModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use chrono::{DateTime, Utc};
-use log::info;
-use serde_derive::{Deserialize, Serialize};
-use tauri::{AppHandle, State};
-use tokens::tokens::media_files::MediaFileToken;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use artcraft_api_defs::media_files::get_media_file::MediaFileInfo;
+use chrono::{DateTime, Utc};
+use log::{error, info};
+use serde_derive::{Deserialize, Serialize};
+use storyteller_client::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
+use storyteller_client::media_files::get_media_file::get_media_file;
+use tauri::{AppHandle, State};
+use tokens::tokens::media_files::MediaFileToken;
+use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 
 #[derive(Deserialize)]
 pub struct GetMediaFileRequest {
   pub token: MediaFileToken,
 }
 
-#[derive(Debug, Serialize)]
-pub struct AppInfoResponse {
-  pub build_timestamp: DateTime<Utc>,
-  pub git_commit_id: Option<String>,
-  pub git_commit_short_id: Option<String>,
-  pub git_commit_timestamp: Option<DateTime<Utc>>,
-  pub storyteller_host: String,
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum GetMediaFileErrorType {
+  NotFound,
+  NotAuthorized,
+  ServerError,
 }
 
-impl SerializeMarker for AppInfoResponse {}
+#[derive(Debug, Serialize)]
+pub struct GetMediaFileResponse {
+  pub success: bool,
+  pub media_file: MediaFileInfo,
+}
+
+impl SerializeMarker for GetMediaFileResponse {}
 
 #[tauri::command]
-pub fn get_media_file_command(
+pub async fn get_media_file_command(
   request: GetMediaFileRequest,
-  app: AppHandle,
-  app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
-) -> InfallibleResponse<AppInfoResponse> {
+) -> ResponseOrErrorType<GetMediaFileResponse, GetMediaFileErrorType > {
   info!("get_media_file_command called...");
 
-  let build_timestamp = build_metadata::build_timestamp();
-  let git_commit_id = build_metadata::git_commit_id();
-  let git_commit_short_id = build_metadata::git_commit_short_id();
-  let git_commit_timestamp = build_metadata::git_commit_timestamp();
+  let result = get_media_file(
+    &app_env_configs.storyteller_host,
+    //Some(&creds),
+    &request.token,
+  ).await;
 
-  let storyteller_host = app_env_configs.storyteller_host.to_api_hostname_and_scheme();
+  let result = match result {
+    Ok(result) => result,
+    Err(err) => {
+      error!("Failed to get media file: {:?}", err);
+      return Err(CommandErrorResponseWrapper {
+        status: CommandErrorStatus::ServerError,
+        error_message: None,
+        error_type: Some(GetMediaFileErrorType::ServerError),
+        error_details: None,
+      });
+    }
+  };
 
-  AppInfoResponse {
-    build_timestamp,
-    git_commit_id: git_commit_id.map(|s| s.to_string()),
-    git_commit_short_id: git_commit_short_id.map(|s| s.to_string()),
-    git_commit_timestamp,
-    storyteller_host,
-  }.into()
+  Ok(GetMediaFileResponse {
+    success: true,
+    media_file: result.media_file
+  }.into())
 }
-
