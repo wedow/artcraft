@@ -76,6 +76,13 @@ const PageDraw = () => {
       console.error("No node ID received from background removal");
       return;
     }
+    // const base64String = response.payload?.base64_bytes as string;
+    // const binaryString = atob(base64String);
+    // const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+    // const blob = new Blob([bytes], { type: "image/png" });
+    // const file = new File([blob], "generated_image.png", {
+    //   type: blob.type,
+    // });
     store.finishRemoveBackground(
       nodeId,
       event.media_token,
