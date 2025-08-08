@@ -70,62 +70,17 @@ const PageDraw = () => {
   });
 
   useCanvasBgRemovedEvent(async (event) => {
-    console.log(">>>>>>>>>>>>>>> Canvas bg removed event received:", event);
-    console.log(">>>>>>>>>>>>>>> Canvas bg removed event received:", event);
-    //store.removeNode(event.media_token);
-
-    /*
-                      async (
-                    success: boolean,
-                    image_base64: string,
-                    message: string,
-                  ) => {
-                    if (!success) {
-                      console.error(message);
-                      return { success: false };
-                    }
-                    try {
-                      // ...
-                      // Call API, on success, return a File object parsed from base64.
-                      // ...
-
-                      const response = await EnqueueImageBgRemoval({
-                        base64_image: image_base64,
-                      });
-
-
-                      const response = await FalBackgroundRemoval({
-                        base64_image: image_base64,
-                      });
-                      if (
-                        response.status !== "success" ||
-                        !("payload" in response)
-                      ) {
-                        console.error("Failed to remove background", response);
-                        return { success: false };
-                      }
-
-                      const base64String = response.payload
-                        ?.base64_bytes as string;
-                      const binaryString = atob(base64String);
-                      const bytes = Uint8Array.from(binaryString, (c) =>
-                        c.charCodeAt(0),
-                      );
-                      const blob = new Blob([bytes], { type: "image/png" });
-                      const file = new File([blob], "generated_image.png", {
-                        type: blob.type,
-                      });
-                      return { success: true, file };
-                      return {}
-                    } catch (error) {
-                      console.error("Failed to remove background", error);
-                      return { success: false };
-                    }
-                  },
-
-    */
-
-    store.finishRemoveBackground(event.maybe_frontend_subscriber_id!, event.media_token, event.image_cdn_url);
+    console.log("Canvas bg removed event received:", event);
+    const nodeId = event.maybe_frontend_subscriber_id;
+    if (!nodeId) {
+      console.error("No node ID received from background removal");
+      return;
+    }
+    store.finishRemoveBackground(
+      nodeId,
+      event.media_token,
+      event.image_cdn_url
+    );
   });
 
   // Listen for gallery drag and drop events
@@ -432,9 +387,7 @@ const PageDraw = () => {
                 store.toggleLock(store.selectedNodeIds);
                 break;
               case "REMOVE_BACKGROUND":
-                await store.beginRemoveBackground(
-                  store.selectedNodeIds,
-                );
+                await store.beginRemoveBackground(store.selectedNodeIds);
                 break;
               case "BRING_TO_FRONT":
                 store.bringToFront(store.selectedNodeIds);

@@ -232,21 +232,17 @@ interface SceneState {
   sendToBack: (nodeIds: string[]) => void;
   bringForward: (nodeIds: string[]) => void;
   sendBackward: (nodeIds: string[]) => void;
+
+  // Start background removal (enqueues task with Tauri)
   beginRemoveBackground: (
     nodeIds: string[],
   ) => Promise<void>;
+  
+  // Finish background removal (handoff back from a Tauri-sent event)
   finishRemoveBackground: (
     nodeId: string,
     mediaToken: string,
     imageCdnUrl: string,
-  ) => Promise<void>;
-  removeBackground: (
-    nodeIds: string[],
-    operation: (
-      success: boolean,
-      base64_image: string,
-      message: string,
-    ) => Promise<{ success: boolean; file?: File }>,
   ) => Promise<void>;
 
   // Add new lock action
@@ -1459,38 +1455,15 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     }
     try {
       const base64Image = await convertFileToBase64(firstNode.imageFile);
-      const response = await EnqueueImageBgRemoval({
+      // NB: This handler is async, so we subscribe (externally) and 
+      // wait for the bg removal to complete.
+      const _response = await EnqueueImageBgRemoval({
         base64_image: base64Image,
         frontend_caller: "canvas",
         frontend_subscriber_id: firstNode.id,
       });
-      //const { success, file } = await operation(
-      //  true,
-      //  base64Image,
-      //  "Removing Background.",
-      //);
-      //if (success && file) {
-      //  // Create a new node instance
-      //  const updatedNode = new Node({
-      //      ...firstNode,
-      //      imageFile: file,
-      //    });
-      //    // Load the new image
-      //    await updatedNode.setImageFromFile(file);
-
-      //    // Update the store with the fully loaded node
-      //    set((state: SceneState) => ({
-      //      nodes: state.nodes.map((node: Node) => {
-      //        if (node.id === firstNode.id) {
-      //          return updatedNode;
-      //        }
-      //        return node;
-      //      }),
-      //    }));
-      //    get().saveState();
-      //}
     } catch (error) {
-      console.error("Error updating image:", error);
+      console.error("Error starting background removal:", error);
     }
   },
   finishRemoveBackground: async (
@@ -1507,79 +1480,28 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     if (!firstNode || !firstNode.imageFile) {
       return;
     }
-    // Create a new node instance
-    const updatedNode = new Node({
-      ...firstNode,
-      imageUrl: imageCdnUrl,
-    });
-    // Load the new image
-    await updatedNode.setImageFromUrl(imageCdnUrl);
-    // Update the store with the fully loaded node
-    set((state: SceneState) => ({
-      nodes: state.nodes.map((node: Node) => {
-        if (node.id === firstNode.id) {
-          return updatedNode;
-        }
-        return node;
-      }),
-    }));
-    get().saveState();
-  },
-  removeBackground: async (
-    nodeIds: string[],
-    operation: (
-      success: boolean,
-      base64_image: string,
-      message: string,
-    ) => Promise<{ success: boolean; file?: File }>,
-  ) => {
-    const hasImageNodes = nodeIds.some((id) => {
-      const node = get().nodes.find((n) => n.id === id);
-      return node ? node.type === "image" : false;
-    });
-
-    if (hasImageNodes) {
-      const firstNode = get().nodes.find(
-        (node) => nodeIds.includes(node.id) && node.type === "image",
-      );
-      if (firstNode && firstNode.imageFile) {
-        try {
-          const base64Image = await convertFileToBase64(firstNode.imageFile);
-          const { success, file } = await operation(
-            true,
-            base64Image,
-            "Removing Background.",
-          );
-
-          if (success && file) {
-            // Create a new node instance
-            const updatedNode = new Node({
-              ...firstNode,
-              imageFile: file,
-            });
-
-            // Load the new image
-            await updatedNode.setImageFromFile(file);
-
-            // Update the store with the fully loaded node
-            set((state: SceneState) => ({
-              nodes: state.nodes.map((node: Node) => {
-                if (node.id === firstNode.id) {
-                  return updatedNode;
-                }
-                return node;
-              }),
-            }));
-
-            get().saveState();
+    try {
+      // Create a new node instance from the old node
+      const updatedNode = new Node({
+        ...firstNode,
+        imageUrl: imageCdnUrl,
+      });
+      // Load the new image
+      await updatedNode.setImageFromUrl(imageCdnUrl);
+      // Update the store with the fully loaded node
+      set((state: SceneState) => ({
+        nodes: state.nodes.map((node: Node) => {
+          if (node.id === firstNode.id) {
+            return updatedNode;
           }
-        } catch (error) {
-          console.error("Error updating image:", error);
-        }
-      }
+          return node;
+        }),
+      }));
+      get().saveState();
+    } catch (error) {
+      console.error("Error completing background removal:", error);
     }
   },
-
   // Add toggleLock action
   toggleLock: (nodeIds: string[]) => {
     set((state) => {
