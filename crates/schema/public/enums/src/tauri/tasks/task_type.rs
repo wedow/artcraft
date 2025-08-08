@@ -38,7 +38,7 @@ impl TaskType {
       "video_generation" => Ok(Self::VideoGeneration),
       "object_generation" => Ok(Self::ObjectGeneration),
       "background_removal" => Ok(Self::BackgroundRemoval),
-      _ => Err(format!("invalid task_state: {:?}", job_status)),
+      _ => Err(format!("invalid task_type: {:?}", job_status)),
     }
   }
 

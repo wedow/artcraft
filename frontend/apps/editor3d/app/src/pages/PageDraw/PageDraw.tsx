@@ -15,6 +15,7 @@ import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
 import { FalBackgroundRemoval } from "@storyteller/tauri-api";
+import { EnqueueImageBgRemoval } from "@storyteller/tauri-api";
 import { getCreatorIcon, IMAGE_MODELS_BY_LABEL, ModelCreator, ModelInfo } from "@storyteller/model-list";
 import { instructiveImageEditModels, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
 
@@ -385,6 +386,13 @@ const PageDraw = () => {
                       // ...
                       // Call API, on success, return a File object parsed from base64.
                       // ...
+
+                      const response = await EnqueueImageBgRemoval({
+                        base64_image: image_base64,
+                      });
+
+
+                      /*
                       const response = await FalBackgroundRemoval({
                         base64_image: image_base64,
                       });
@@ -407,6 +415,8 @@ const PageDraw = () => {
                         type: blob.type,
                       });
                       return { success: true, file };
+                      */
+                      return {}
                     } catch (error) {
                       console.error("Failed to remove background", error);
                       return { success: false };

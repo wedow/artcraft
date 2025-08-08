@@ -98,7 +98,7 @@ impl TaskModelType {
       // 3D Object generation models
       "hunyuan_3d_2.0" => Ok(Self::Hunyuan3d2_0),
       "hunyuan_3d_2.1" => Ok(Self::Hunyuan3d2_1),
-      _ => Err(format!("invalid task_state: {:?}", job_status)),
+      _ => Err(format!("invalid task_model_type: {:?}", job_status)),
     }
   }
 

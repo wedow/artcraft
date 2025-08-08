@@ -59,7 +59,7 @@ impl TaskStatus {
       "cancelled_by_user" => Ok(Self::CancelledByUser),
       "cancelled_by_provider" => Ok(Self::CancelledByProvider),
       "cancelled_by_us" => Ok(Self::CancelledByUs),
-      _ => Err(format!("invalid task_state: {:?}", job_status)),
+      _ => Err(format!("invalid task_status: {:?}", job_status)),
     }
   }
 
