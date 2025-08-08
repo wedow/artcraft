@@ -4,6 +4,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use sqlite_tasks::error::SqliteTasksError;
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tokens::tokens::sqlite::tasks::TaskId;
@@ -39,6 +40,7 @@ impl TaskEnqueueSuccess{
       task_database,
       None,
       None,
+      None,
     ).await
   }
 
@@ -46,6 +48,7 @@ impl TaskEnqueueSuccess{
   pub async fn insert_into_task_database_with_frontend_payload(
     &self,
     task_database: &TaskDatabase,
+    frontend_caller: Option<TauriCommandCaller>,
     frontend_subscriber_id: Option<&str>,
     frontend_subscriber_payload: Option<&str>,
   ) -> Result<TaskId, SqliteTasksError> {

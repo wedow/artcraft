@@ -30,6 +30,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowError;
 use log::{error, info, warn};
 use openai_sora_client::recipes::image_remix_with_session_auto_renew::{image_remix_with_session_auto_renew, ImageRemixAutoRenewRequest};
@@ -80,6 +81,11 @@ pub struct EnqueueInpaintImageCommand {
   
   /// If true, force the dimensions of the source image and mask image to match.
   pub require_matching_dimensions: Option<bool>,
+
+  /// OPTIONAL.
+  /// Name of the frontend caller.
+  /// We'll use this to selectively trigger events.
+  pub frontend_caller: Option<TauriCommandCaller>,
 
   /// OPTIONAL.
   /// A frontend-defined identifier that we'll send back to the frontend
@@ -228,6 +234,7 @@ pub async fn handle_request(
   let result = success_event
       .insert_into_task_database_with_frontend_payload(
         task_database,
+        request.frontend_caller,
         request.frontend_subscriber_id.as_deref(),
         request.frontend_subscriber_payload.as_deref()
       )
