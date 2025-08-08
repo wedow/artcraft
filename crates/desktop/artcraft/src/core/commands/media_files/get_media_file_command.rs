@@ -46,7 +46,7 @@ pub async fn get_media_file_command(
   app_env_configs: State<'_, AppEnvConfigs>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
 ) -> ResponseOrErrorType<GetMediaFileResponse, GetMediaFileErrorType > {
-  info!("get_media_file_command called...");
+  info!("get_media_file_command called... token: {}", &request.token);
 
   let downloads = app_data_root.downloads_dir();
   let media_file_cache_path = downloads.media_file_json_path(&request.token);
@@ -54,7 +54,7 @@ pub async fn get_media_file_command(
   let maybe_cache = load_cache_media_file(&media_file_cache_path).await;
 
   if let Ok(Some(media_file_info)) = maybe_cache {
-    info!("Loaded media file from cache: {:?}", media_file_info);
+    info!("Loaded media file from cache: {:?}", media_file_info.token);
     return Ok(GetMediaFileResponse {
       success: true,
       media_file: media_file_info,

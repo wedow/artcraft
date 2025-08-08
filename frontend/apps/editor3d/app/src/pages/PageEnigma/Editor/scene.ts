@@ -11,7 +11,7 @@ import { ChromaKeyMaterial } from "./chromakey";
 import { TimeLine } from "./timeline";
 import { ClipGroup, ClipType } from "~/enums";
 import { ClipUI } from "../clips/clip_ui";
-import { LoadWithoutCors } from "@storyteller/tauri-api";
+import { GetMediaFile, LoadWithoutCors } from "@storyteller/tauri-api";
 import { gridVisibility } from "../signals/engine";
 import { InfiniteGridHelper } from "./InfiniteGridHelper";
 import { cameras, selectedCameraId } from "../signals/camera";
@@ -426,13 +426,20 @@ class Scene {
   }
 
   // TODO: REPLACE
-  async getMediaURL(media_id: string) {
-    console.log("getMediaID!!!!!!!!!!!!!", media_id);
-    const response = await this.mediaFilesApi.GetMediaFileByToken({
-      mediaFileToken: media_id,
-    });
-    console.log("response!!!!!!!!!!!!!!", response);
-    return response.data!.media_links.cdn_url;
+  async getMediaURL(media_token: string) {
+    //console.log("getMediaID!!!!!!!!!!!!!", media_id);
+    //const response = await this.mediaFilesApi.GetMediaFileByToken({
+    //  mediaFileToken: media_id,
+    //});
+    //console.log("response!!!!!!!!!!!!!!", response);
+
+    const response = await GetMediaFile(media_token);
+
+
+    //return response.data!.media_links.cdn_url;
+
+    console.log('possibly cached media file:', response);
+    return response.payload.media_file.media_links.cdn_url;
   }
 
   private floatToPercent(value: number) {
