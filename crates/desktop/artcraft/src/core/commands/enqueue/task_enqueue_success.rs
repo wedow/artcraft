@@ -83,6 +83,7 @@ impl TaskEnqueueSuccess{
       model_type,
       provider: self.provider,
       provider_job_id: self.provider_job_id.as_deref(),
+      frontend_caller,
       frontend_subscriber_id,
       frontend_subscriber_payload,
     }).await

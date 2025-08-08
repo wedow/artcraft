@@ -4,6 +4,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use tokens::tokens::sqlite::tasks::TaskId;
 
 pub struct CreateTaskArgs<'a> {
@@ -13,6 +14,7 @@ pub struct CreateTaskArgs<'a> {
   pub model_type: Option<TaskModelType>,
   pub provider: GenerationProvider,
   pub provider_job_id: Option<&'a str>,
+  pub frontend_caller: Option<TauriCommandCaller>,
   pub frontend_subscriber_id: Option<&'a str>,
   pub frontend_subscriber_payload: Option<&'a str>,
 }
@@ -28,6 +30,7 @@ pub async fn create_task(
   let task_type_temp = args.task_type.to_str();
   let model_type_temp = args.model_type.map(|s| s.to_str());
   let provider_temp = args.provider.to_string();
+  let frontend_caller_temp = args.frontend_caller.map(|s| s.to_str());
 
   let query = sqlx::query!(r#"
     INSERT INTO tasks (
@@ -37,10 +40,11 @@ pub async fn create_task(
       model_type,
       provider,
       provider_job_id,
+      frontend_caller,
       frontend_subscriber_id,
       frontend_subscriber_payload
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   "#,
       task_id_temp,
       status_temp,
@@ -48,6 +52,7 @@ pub async fn create_task(
       model_type_temp,
       provider_temp,
       args.provider_job_id,
+      frontend_caller_temp,
       args.frontend_subscriber_id,
       args.frontend_subscriber_payload
   );

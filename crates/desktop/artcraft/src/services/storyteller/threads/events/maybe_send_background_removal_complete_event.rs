@@ -19,12 +19,12 @@ pub async fn maybe_send_background_removal_complete_event(
     TaskType::BackgroundRemoval => {} // NB: Fall-through
     _ => return Ok(()),
   }
-  
+
   match task.frontend_caller {
     Some(TauriCommandCaller::Canvas) => {} // NB: Fall-through
     _ => return Ok(()),
   }
-  
+
   let result = match job.maybe_result {
     Some(ref res) => res,
     None => {
@@ -32,15 +32,17 @@ pub async fn maybe_send_background_removal_complete_event(
       return Ok(()); // No result, nothing to do
     },
   };
-  
+
   let event = CanvasBackgroundRemovalCompleteEvent {
     media_token: MediaFileToken::new_from_str(&result.entity_token),
     image_cdn_url: result.media_links.cdn_url.clone(),
+    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
+    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
   };
 
   if let Err(err) = event.send(&app) {
     error!("Failed to send CanvasBackgroundRemovalCompleteEvent: {:?}", err); // Fail open
   }
-  
+
   Ok(())
 }

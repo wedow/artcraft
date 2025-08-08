@@ -4,11 +4,19 @@ import { CommandResult } from "../common/CommandStatus";
 export interface EnqueueImageBgRemovalRequest {
   image_media_token?: string;
   base64_image?: string;
+
+  // TODO: Actual enum.
+  frontend_caller?: string;
+
+  // We'll use the node id here.
+  frontend_subscriber_id?: string;
 }
 
 interface RawEnqueueImageBgRemovalRequest {
   image_media_token?: string;
   base64_image?: string;
+  frontend_caller?: string;
+  frontend_subscriber_id?: string;
 }
 
 export enum EnqueueImageBgRemovalErrorType {
@@ -45,6 +53,14 @@ export const EnqueueImageBgRemoval = async (request: EnqueueImageBgRemovalReques
 
   if (!!request.base64_image) {
     mutableRequest.base64_image = request.base64_image;
+  }
+
+  if (!!request.frontend_caller) {
+    mutableRequest.frontend_caller = request.frontend_caller;
+  }
+
+  if (!!request.frontend_subscriber_id) {
+    mutableRequest.frontend_subscriber_id = request.frontend_subscriber_id;
   }
 
   const result = await invoke("enqueue_image_bg_removal_command", { 

@@ -9,6 +9,8 @@ use url::Url;
 pub struct CanvasBackgroundRemovalCompleteEvent {
   pub media_token: MediaFileToken,
   pub image_cdn_url: Url,
+  pub maybe_frontend_subscriber_id: Option<String>,
+  pub maybe_frontend_subscriber_payload: Option<String>,
 }
 
 impl BasicSendableEvent for CanvasBackgroundRemovalCompleteEvent {

@@ -18,6 +18,8 @@ import { FalBackgroundRemoval } from "@storyteller/tauri-api";
 import { EnqueueImageBgRemoval } from "@storyteller/tauri-api";
 import { getCreatorIcon, IMAGE_MODELS_BY_LABEL, ModelCreator, ModelInfo } from "@storyteller/model-list";
 import { instructiveImageEditModels, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
+import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
+
 
 export const DecodeBase64ToImage = async (
   base64String: string,
@@ -65,6 +67,65 @@ const PageDraw = () => {
   useCopyPasteHotkeys({
     onCopy: store.copySelectedItems,
     onPaste: store.pasteItems,
+  });
+
+  useCanvasBgRemovedEvent(async (event) => {
+    console.log(">>>>>>>>>>>>>>> Canvas bg removed event received:", event);
+    console.log(">>>>>>>>>>>>>>> Canvas bg removed event received:", event);
+    //store.removeNode(event.media_token);
+
+    /*
+                      async (
+                    success: boolean,
+                    image_base64: string,
+                    message: string,
+                  ) => {
+                    if (!success) {
+                      console.error(message);
+                      return { success: false };
+                    }
+                    try {
+                      // ...
+                      // Call API, on success, return a File object parsed from base64.
+                      // ...
+
+                      const response = await EnqueueImageBgRemoval({
+                        base64_image: image_base64,
+                      });
+
+
+                      const response = await FalBackgroundRemoval({
+                        base64_image: image_base64,
+                      });
+                      if (
+                        response.status !== "success" ||
+                        !("payload" in response)
+                      ) {
+                        console.error("Failed to remove background", response);
+                        return { success: false };
+                      }
+
+                      const base64String = response.payload
+                        ?.base64_bytes as string;
+                      const binaryString = atob(base64String);
+                      const bytes = Uint8Array.from(binaryString, (c) =>
+                        c.charCodeAt(0),
+                      );
+                      const blob = new Blob([bytes], { type: "image/png" });
+                      const file = new File([blob], "generated_image.png", {
+                        type: blob.type,
+                      });
+                      return { success: true, file };
+                      return {}
+                    } catch (error) {
+                      console.error("Failed to remove background", error);
+                      return { success: false };
+                    }
+                  },
+
+    */
+
+    store.finishRemoveBackground(event.maybe_frontend_subscriber_id!, event.media_token, event.image_cdn_url);
   });
 
   // Listen for gallery drag and drop events
@@ -371,57 +432,8 @@ const PageDraw = () => {
                 store.toggleLock(store.selectedNodeIds);
                 break;
               case "REMOVE_BACKGROUND":
-                await store.removeBackground(
+                await store.beginRemoveBackground(
                   store.selectedNodeIds,
-                  async (
-                    success: boolean,
-                    image_base64: string,
-                    message: string,
-                  ) => {
-                    if (!success) {
-                      console.error(message);
-                      return { success: false };
-                    }
-                    try {
-                      // ...
-                      // Call API, on success, return a File object parsed from base64.
-                      // ...
-
-                      const response = await EnqueueImageBgRemoval({
-                        base64_image: image_base64,
-                      });
-
-
-                      /*
-                      const response = await FalBackgroundRemoval({
-                        base64_image: image_base64,
-                      });
-                      if (
-                        response.status !== "success" ||
-                        !("payload" in response)
-                      ) {
-                        console.error("Failed to remove background", response);
-                        return { success: false };
-                      }
-
-                      const base64String = response.payload
-                        ?.base64_bytes as string;
-                      const binaryString = atob(base64String);
-                      const bytes = Uint8Array.from(binaryString, (c) =>
-                        c.charCodeAt(0),
-                      );
-                      const blob = new Blob([bytes], { type: "image/png" });
-                      const file = new File([blob], "generated_image.png", {
-                        type: blob.type,
-                      });
-                      return { success: true, file };
-                      */
-                      return {}
-                    } catch (error) {
-                      console.error("Failed to remove background", error);
-                      return { success: false };
-                    }
-                  },
                 );
                 break;
               case "BRING_TO_FRONT":
