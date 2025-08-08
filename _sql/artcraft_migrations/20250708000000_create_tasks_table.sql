@@ -30,11 +30,17 @@ CREATE TABLE tasks (
     provider_job_id TEXT,
 
     -- OPTIONAL.
-    -- An arbitrary payload the frontend can set.
+    -- Tell the job system which event(s) to send to the frontend
+    -- upon task completion. Comma-separated list of event names.
+    frontend_subscriber_event_names TEXT,
+
+    -- OPTIONAL.
+    -- An arbitrary opaque identifier that frontend can set.
     frontend_subscriber_id TEXT,
 
     -- OPTIONAL.
-    -- A JSON payload for the frontend subscriber.
+    -- An opaque JSON payload set by the frontend subscriber that
+    -- will be re-emitted back to the frontend.
     frontend_subscriber_payload TEXT,
 
     created_at INTEGER NOT NULL DEFAULT (unixepoch('now')),
