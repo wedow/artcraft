@@ -1,7 +1,14 @@
 -- noinspection SqlDialectInspectionForFile
+--
+-- NB: This version needs to be bumped even if just adding or changing comments!
+--  Failure to do so will cause Windows to segfault at start. (This is horrible!)
+--
+-- NB: `app_state_dir.rs` contains the file version number.
+--
 -- Migration history:
 --   tasks_v1.sqlite - initial version
 --   tasks_v2.sqlite - added model_type (nullable)
+--   tasks_v3.sqlite - added frontend_caller, comments
 
 CREATE TABLE tasks (
     -- Task auto-incrementing primary key.

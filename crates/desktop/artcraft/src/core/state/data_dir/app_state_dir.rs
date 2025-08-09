@@ -22,7 +22,9 @@ impl DataSubdir for AppStateDir{
 
 impl AppStateDir {
   pub fn get_tasks_sqlite_database_path(&self) -> PathBuf {
-    self.path.join("tasks_v2.sqlite")
+    // NB: This must be incremented on any change to the database schema (including comments).
+    // The database houses ephemeral content and will be migrated automatically.
+    self.path.join("tasks_v3.sqlite")
   }
 
   pub fn get_window_size_config_file(&self) -> PathBuf {

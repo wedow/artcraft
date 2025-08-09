@@ -12,17 +12,27 @@ pub struct TaskDbConnection {
 
 impl TaskDbConnection {
   pub async fn connect_and_migrate<P: AsRef<Path>>(database_file: P) -> AnyhowResult<Self> {
-    match run_migrations(&database_file).await {
-      Ok(pool) => return Ok(Self { pool }),
-      Err(err) => {
-        error!("Error running SQLite migrations: {:?}", err);
+    {
+      match run_migrations(&database_file).await {
+        Ok(pool) => return Ok(Self { pool }),
+        Err(err) => {
+          error!("Error running SQLite migrations: {:?}", err);
+        }
       }
-    }
 
-    info!("Deleting and recreating SQLite database at {:?}", database_file.as_ref());
+      info!("Deleting and recreating SQLite database at {:?}", database_file.as_ref());
 
-    if let Err(err) = std::fs::remove_file(&database_file) {
-      error!("Error deleting SQLite database file: {:?}", err);
+      if let Err(err) = std::fs::remove_file(&database_file) {
+        error!("Error deleting SQLite database file: {:?}", err);
+      }
+
+      // NB: Scope change here is an attempt to drop the open file connection for Windows.
+      // On Windows, we've observed that the file might still be open, preventing deletion:
+      // [2025-08-08][06:42:29][sqlite_tasks::connection][INFO] Deleting and recreating SQLite
+      //  database at "C:\Users\User\Artcraft\state\tasks_v2.sqlite"
+      // [2025-08-08][06:42:29][sqlite_tasks::connection][ERROR] Error deleting SQLite database
+      //  file: Os { code: 32, kind: Uncategorized, message: "The process cannot access the file
+      //  because it is being used by another process." }
     }
 
     let pool = run_migrations(database_file).await?;
