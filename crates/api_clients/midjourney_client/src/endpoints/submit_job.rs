@@ -1,11 +1,13 @@
-use serde::Serialize;
 use crate::error::midjourney_api_error::MidjourneyApiError;
 use crate::error::midjourney_client_error::MidjourneyClientError;
 use crate::error::midjourney_error::MidjourneyError;
+use log::error;
+use serde::{Deserialize, Serialize};
 
+use crate::client::midjourney_hostname::MidjourneyHostname;
+use cloudflare_errors::filter_cloudflare_errors::filter_cloudflare_errors;
 use wreq::Client;
 use wreq_util::Emulation;
-use crate::client::midjourney_hostname::MidjourneyHostname;
 
 pub struct SubmitJobRequest<'a> {
   pub prompt: &'a str,
@@ -14,7 +16,9 @@ pub struct SubmitJobRequest<'a> {
   pub cookie_header: String,
 }
 
+#[derive(Debug, Clone)]
 pub struct SubmitJobResponse {
+  pub job_id: String,
 }
 
 pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, MidjourneyError> {
@@ -24,7 +28,9 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
       .map_err(|err| MidjourneyClientError::WreqError(err))?;
 
   let referer = format!("https://{}", req.hostname.as_str());
-  //let url = format!("https://{}/api/app/submit-jobs", req.hostname.as_str());
+
+  // NB: Other recent clients use /api/app/submit-jobs, but this appears invalid.
+  // let url = format!("https://{}/api/app/submit-jobs", req.hostname.as_str());
   let url = format!("https://{}/api/submit-jobs", req.hostname.as_str());
 
   let mut http_request = client.post(url)
@@ -95,31 +101,73 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
 
   let status = response.status();
 
-  if status == 301 {
-    for (name, value) in response.headers().iter() {
-      println!("- {}: {}", name.as_str(), value.to_str().unwrap());
-    }
-  }
-
-  /*
-  {"success":[{"job_id":"de5283c5-008f-4c82-84e5-4ba62cbaa474","prompt":"prompt","is_queued":false,"event_type":"diffusion","flags":{"mode":"fast","visibility":"public"},"meta":{"height":1024,"width":1024,"batch_size":4,"parent_id":null,"parent_grid":null},"optimisticJobIndex":0,"personalization_codes":null}],"failure":[]}
-   */
+  // if status == 301 {
+  //   for (name, value) in response.headers().iter() {
+  //     println!("- {}: {}", name.as_str(), value.to_str().unwrap());
+  //   }
+  // }
 
   let response_body = &response.text().await
       .map_err(|e| MidjourneyApiError::NetworkError(e.to_string()))?;
 
-  println!("{}", response_body);
+  if !status.is_success() {
+    if let Err(err) = filter_cloudflare_errors(status.as_u16(), &response_body) {
+      return Err(MidjourneyApiError::CloudflareError(err).into());
+    }
+  }
 
+  /*
+  {"success":[
+    {
+      "job_id":"UUID-like-string",
+      "prompt":"prompt",
+      "is_queued":false,
+      "event_type":"diffusion",
+      "flags":{
+        "mode":"fast","visibility":"public"
+      },
+      "meta":{
+        "height":1024,"width":1024,"batch_size":4,"parent_id":null,"parent_grid":null
+      },
+      "optimisticJobIndex":0,
+      "personalization_codes":null
+    }],
+    "failure":[]}
+   */
 
-  Ok(SubmitJobResponse {})
+  #[derive(Deserialize)]
+  struct SuccessPayload {
+    job_id: String,
+  }
+
+  #[derive(Deserialize)]
+  #[allow(non_snake_case)]
+  struct RawResponse {
+    success: Vec<SuccessPayload>,
+  }
+
+  let response = serde_json::from_str::<RawResponse>(response_body)
+      .map_err(|err| MidjourneyApiError::DeserializationError(err))?;
+
+  let job_id = match response.success.get(0) {
+    None => {
+      error!("No job id found in body: {:?}", response_body);
+      return Err(MidjourneyApiError::NoJobId.into());
+    }
+    Some(item) => item.job_id.clone(),
+  };
+
+  Ok(SubmitJobResponse {
+    job_id,
+  })
 }
 
 #[cfg(test)]
 mod tests {
-  use errors::AnyhowResult;
-  use filesys::read_to_trimmed_string::read_to_trimmed_string;
   use crate::client::midjourney_hostname::MidjourneyHostname;
   use crate::endpoints::submit_job::{submit_job, SubmitJobRequest};
+  use errors::AnyhowResult;
+  use filesys::read_to_trimmed_string::read_to_trimmed_string;
 
   #[ignore]
   #[tokio::test]
@@ -127,11 +175,13 @@ mod tests {
     let cookie_header = read_to_trimmed_string("/Users/bt/secrets/midjourney/cookie.txt")?;
 
     let result = submit_job(SubmitJobRequest {
-      prompt: "a corgi playing cards on the Santa Monica beach",
+      prompt: "photorealistic, high definition, a submarine falling out of the sky and onto manhattan, busy city, sunset, cloudy and overcast, giant military submarine, upside down submarine, falling at angle, drone shot, submarine is in pieces, cracked machinery, exposed steel, giant skyscrapers below, tall buildings, city streets, cars on streets",
       channel_id: "singleplayer_f8a57ac3-e416-4dd4-9be8-2c4223691b01",
       cookie_header,
       hostname: MidjourneyHostname::Standard,
     }).await?;
+
+    println!("Response: {:?}", result);
 
     assert_eq!(1, 2);
 
@@ -139,57 +189,3 @@ mod tests {
     Ok(())
   }
 }
-
-/*
-def submit_job(
-    prompt: str, cookies: dict, channelId: str, api_base: str = "www.midjourney.com"
-):
-    headers = {
-        "cookie": "; ".join(f"{k}={v};" for k, v in cookies.items()),
-        "Referer": f"https://{api_base}/",
-        "Referrer-Policy": "origin-when-cross-origin",
-        "accept": "* / *",
-        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
-        "content-type": "application/json",
-        "priority": "u=1, i",
-        "sec-ch-ua-mobile": "?0",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-csrf-protection": "1",
-    }
-    body = {
-        "f": {"mode": "fast", "private": False},
-        "channelId": channelId,
-        "metadata": {
-            "imagePrompts": 0,
-            "imageReferences": 0,
-            "characterReferences": 0,
-            "depthReferences": 0,
-            "lightboxOpen": "",
-        },
-        "t": "imagine",
-        "prompt": prompt,
-    }
-
-    response = requests.post(
-        f"https://{api_base}/api/app/submit-jobs",
-data=json.dumps(body),
-headers=headers,
-impersonate="safari",
-)
-
-if response.status_code == 200:
-data = response.json()
-try:
-job_id: str = data["success"][0]["job_id"]
-return job_id
-except Exception as e:
-print(data)
-return None
-
-else:
-print(response.status_code)
-print(response.text)
-return None
-*/

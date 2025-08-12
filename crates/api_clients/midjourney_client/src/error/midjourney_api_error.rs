@@ -6,6 +6,9 @@ use std::io;
 
 #[derive(Debug)]
 pub enum MidjourneyApiError {
+  /// There was no job ID in the otherwise valid-looking response.
+  NoJobId,
+
   /// 400. The request was invalid.
   InvalidRequest(String),
 
@@ -54,6 +57,8 @@ impl Error for MidjourneyApiError {}
 impl Display for MidjourneyApiError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
+      // Response body errors
+      Self::NoJobId => write!(f, "No job ID found in the response body."),
       // Server response code errors
       Self::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
       Self::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
