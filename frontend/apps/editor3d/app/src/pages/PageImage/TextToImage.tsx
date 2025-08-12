@@ -13,7 +13,6 @@ interface TextToImageProps {
   imageMediaId?: string;
   imageUrl?: string;
 }
-import { IMAGE_MODELS_BY_LABEL } from "@storyteller/model-list";
 import { ModelInfo } from "@storyteller/model-list";
 
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
@@ -24,8 +23,9 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
     selectedModels[ModelCategory.TextToImage] ||
     imageGenerationModels[0]?.label;
 
-  const selectedModelInfo: ModelInfo | undefined =
-    IMAGE_MODELS_BY_LABEL[selectedModel];
+  const selectedModelInfo: ModelInfo | undefined = imageGenerationModels.find(
+    (m) => m.label === selectedModel,
+  )?.modelInfo;
 
   const jobContext: JobContextType = {
     jobTokens: [],

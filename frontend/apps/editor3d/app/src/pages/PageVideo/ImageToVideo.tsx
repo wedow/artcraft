@@ -8,7 +8,6 @@ import {
   useModelSelectorStore,
   videoGenerationModels,
 } from "@storyteller/ui-model-selector";
-import { VIDEO_MODELS_BY_LABEL } from "@storyteller/model-list";
 import { ModelInfo } from "@storyteller/model-list";
 
 interface ImageToVideoProps {
@@ -24,8 +23,9 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
     selectedModels[ModelCategory.ImageToVideo] ||
     videoGenerationModels[0]?.label;
 
-  const selectedModelInfo: ModelInfo | undefined =
-    VIDEO_MODELS_BY_LABEL[selectedModel];
+  const selectedModelInfo: ModelInfo | undefined = videoGenerationModels.find(
+    (m) => m.label === selectedModel,
+  )?.modelInfo;
 
   const jobContext: JobContextType = {
     jobTokens: [],

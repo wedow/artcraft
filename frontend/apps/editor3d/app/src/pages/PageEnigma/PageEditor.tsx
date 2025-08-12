@@ -78,7 +78,6 @@ import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
 import PageEdit from "../PageEdit/PageEdit";
-import { IMAGE_MODELS_BY_LABEL } from "@storyteller/model-list";
 import { ModelInfo } from "@storyteller/model-list";
 
 export const PageEditor = () => {
@@ -117,7 +116,9 @@ export const PageEditor = () => {
     instructiveImageEditModels[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
-    IMAGE_MODELS_BY_LABEL[selectedModel];
+    instructiveImageEditModels.find(
+      (m) => m.label === selectedModel,
+    )?.modelInfo;
 
   const height =
     dndTimelineHeight.value > -1

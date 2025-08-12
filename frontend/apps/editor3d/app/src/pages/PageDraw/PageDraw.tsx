@@ -16,10 +16,14 @@ import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
 import { FalBackgroundRemoval } from "@storyteller/tauri-api";
 import { EnqueueImageBgRemoval } from "@storyteller/tauri-api";
-import { getCreatorIcon, IMAGE_MODELS_BY_LABEL, ModelCreator, ModelInfo } from "@storyteller/model-list";
-import { instructiveImageEditModels, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
+import { ModelInfo } from "@storyteller/model-list";
+import {
+  instructiveImageEditModels,
+  ModelCategory,
+  ModelSelector,
+  useModelSelectorStore,
+} from "@storyteller/ui-model-selector";
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
-
 
 export const DecodeBase64ToImage = async (
   base64String: string,
@@ -60,7 +64,9 @@ const PageDraw = () => {
     instructiveImageEditModels[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
-    IMAGE_MODELS_BY_LABEL[selectedModel];
+    instructiveImageEditModels.find(
+      (m) => m.label === selectedModel,
+    )?.modelInfo;
 
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
   useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
@@ -86,7 +92,7 @@ const PageDraw = () => {
     store.finishRemoveBackground(
       nodeId,
       event.media_token,
-      event.image_cdn_url
+      event.image_cdn_url,
     );
   });
 

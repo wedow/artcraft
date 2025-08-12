@@ -55,6 +55,22 @@ export const getModelCreatorName = (modelType: string): string | null => {
       return "Recraft";
     case ModelCreator.Tencent:
       return "Tencent";
+    case ModelCreator.Alibaba:
+      return "Alibaba";
+    case ModelCreator.Vidu:
+      return "Vidu";
+    case ModelCreator.Fal:
+      return "Fal";
+    case ModelCreator.Replicate:
+      return "Replicate";
+    case ModelCreator.TensorArt:
+      return "TensorArt";
+    case ModelCreator.OpenArt:
+      return "OpenArt";
+    case ModelCreator.Higgsfield:
+      return "Higgsfield";
+    case ModelCreator.Krea:
+      return "Krea";
     default:
       return creator;
   }
@@ -77,6 +93,7 @@ export const getModelDisplayName = (modelType: string): string => {
     hunyuan_3d_2p0: "Hunyuan 3D 2.0",
     hunyuan_3d_2p1: "Hunyuan 3D 2.1",
     hunyuan_3d: "Hunyuan 3D",
+    flux_pro_kontext_max: "Flux Pro Kontext Max",
   };
 
   return displayNames[modelType] || modelType;

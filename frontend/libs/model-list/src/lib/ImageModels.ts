@@ -31,22 +31,5 @@ export const IMAGE_MODELS: Record<string, ModelInfo> = {
     name: "Flux Pro Kontext Max",
     tauri_id: "flux_pro_kontext_max",
     creator: ModelCreator.BlackForestLabs,
-  }
-};
-
-// TODO: This needs to be cleaned up. It's gross.
-// This is a hack to get the old model selector code to work since it's keyed off
-// of the human-readable label of the model. Long term, that should be fixed.
-export const IMAGE_MODELS_BY_LABEL: Record<string, ModelInfo> = {
-  // NB: This list is for text-to-image PromptBox:
-  "Flux Pro 1.1 Ultra": IMAGE_MODELS.flux_pro_1_1_ultra,
-  "Flux Pro 1.1": IMAGE_MODELS.flux_pro_1_1,
-  "Flux 1 Dev": IMAGE_MODELS.flux_1_dev,
-  "Flux 1 Schnell": IMAGE_MODELS.flux_1_schnell,
-  "GPT Image 1 (GPT-4o)": IMAGE_MODELS.gpt_image_1,
-  
-  // NB: This is for 2D and 3D PromptBox:
-  "FLUX.1 Pro Kontext Max": IMAGE_MODELS.flux_pro_kontext_max,
-  "GPT-4o": IMAGE_MODELS.gpt_image_1,
-
+  },
 };

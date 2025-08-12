@@ -11,7 +11,17 @@ export const CREATOR_ICON_PATHS: Partial<Record<ModelCreator, string>> = {
   [ModelCreator.Google]: "/resources/images/services/google.svg",
   [ModelCreator.Recraft]: "/resources/images/services/recraft.svg",
   [ModelCreator.Tencent]: "/resources/images/services/tencent.svg",
+  [ModelCreator.Krea]: "/resources/images/services/krea.svg",
+  [ModelCreator.Fal]: "/resources/images/services/fal.svg",
+  [ModelCreator.Replicate]: "/resources/images/services/replicate.svg",
+  [ModelCreator.TensorArt]: "/resources/images/services/tensorart.svg",
+  [ModelCreator.OpenArt]: "/resources/images/services/openart.svg",
+  [ModelCreator.Higgsfield]: "/resources/images/services/higgsfield.svg",
+  [ModelCreator.Alibaba]: "/resources/images/services/alibaba.svg",
+  [ModelCreator.Vidu]: "/resources/images/services/vidu.svg",
 };
+
+const DEFAULT_ICON_PATH = "/resources/images/services/generic.svg";
 
 export const getCreatorIconPath = (creator: ModelCreator): string | undefined =>
   CREATOR_ICON_PATHS[creator];
@@ -20,8 +30,7 @@ export const getCreatorIcon = (
   creator: ModelCreator,
   className = "h-4 w-4 invert"
 ): ReactNode | null => {
-  const path = getCreatorIconPath(creator);
-  if (!path) return null;
+  const path = getCreatorIconPath(creator) ?? DEFAULT_ICON_PATH;
   return React.createElement("img", {
     src: path,
     alt: `${creator} logo`,
