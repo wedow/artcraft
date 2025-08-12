@@ -1,0 +1,109 @@
+use cloudflare_errors::cloudflare_error::CloudflareError;
+use errors::AnyhowError;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+use std::io;
+
+#[derive(Debug)]
+pub enum MidjourneyApiError {
+  /// 400. The request was invalid.
+  InvalidRequest(String),
+
+  /// 401. The request was not authorized.
+  Unauthorized(String),
+
+  /// 403. The request was forbidden.
+  Forbidden(String),
+
+  /// 404. The requested resource was not found.
+  NotFound(String),
+
+  /// 429. Too many requests.
+  TooManyRequests(String),
+
+  /// 500. An internal server error occurred.
+  InternalServerError {
+    body: String,
+    backend_hostname: Option<String>,
+  },
+
+  /// Cloudflare errors.
+  CloudflareError(CloudflareError),
+
+  /// A deserialization error with the response.
+  DeserializationError(serde_json::Error),
+
+  /// The request timed out.
+  Timeout(String),
+
+  /// A network error occurred.
+  NetworkError(String),
+
+  /// Uncategorized reqwest error.
+  OtherReqwestError(reqwest::Error),
+
+  /// An error doing file I/O (on our side)
+  IoError(io::Error),
+
+  /// Another type of error.
+  Other(AnyhowError),
+}
+
+impl Error for MidjourneyApiError {}
+
+impl Display for MidjourneyApiError {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    match self {
+      // Server response code errors
+      Self::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
+      Self::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
+      Self::Forbidden(msg) => write!(f, "Forbidden: {}", msg),
+      Self::NotFound(msg) => write!(f, "Not found: {}", msg),
+      Self::TooManyRequests(msg) => write!(f, "Too many requests: {}", msg),
+      Self::InternalServerError {body, backend_hostname} =>
+        write!(f, "Internal Server Error; backend hostname: {:?} ; body: {}; ", backend_hostname, body),
+      // Server response handling errors
+      Self::DeserializationError(error) => write!(f, "Deserialization error: {}", error),
+      // Network errors
+      Self::Timeout(msg) => write!(f, "Timeout: {}", msg),
+      Self::NetworkError(msg) => write!(f, "Network error: {}", msg),
+      // Cloudflare errors
+      Self::CloudflareError(error) => write!(f, "Cloudflare Error: {}", error),
+      // I/O errors
+      Self::IoError(error) => write!(f, "IO error: {}", error),
+      // Other
+      Self::OtherReqwestError(error) => write!(f, "Reqwest error: {}", error),
+      Self::Other(error) => write!(f, "Other error: {}", error),
+    }
+  }
+}
+
+impl From<reqwest::Error> for MidjourneyApiError {
+  fn from(error: reqwest::Error) -> Self {
+    if error.is_timeout() {
+      Self::Timeout(error.to_string())
+    } else if error.is_connect() {
+      Self::NetworkError(error.to_string())
+    } else {
+      Self::OtherReqwestError(error)
+    }
+  }
+}
+
+impl From<serde_json::Error> for MidjourneyApiError {
+  fn from(error: serde_json::Error) -> Self {
+    Self::DeserializationError(error)
+  }
+}
+
+impl From<io::Error> for MidjourneyApiError {
+  fn from(error: io::Error) -> Self {
+    Self::IoError(error)
+  }
+}
+
+impl From<CloudflareError> for MidjourneyApiError {
+  fn from(error: CloudflareError) -> Self {
+    Self::CloudflareError(error)
+  }
+}
