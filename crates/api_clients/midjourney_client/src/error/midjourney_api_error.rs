@@ -39,8 +39,8 @@ pub enum MidjourneyApiError {
   /// A network error occurred.
   NetworkError(String),
 
-  /// Uncategorized reqwest error.
-  OtherReqwestError(reqwest::Error),
+  // /// Uncategorized reqwest error.
+  // OtherReqwestError(reqwest::Error),
 
   /// An error doing file I/O (on our side)
   IoError(io::Error),
@@ -72,13 +72,13 @@ impl Display for MidjourneyApiError {
       // I/O errors
       Self::IoError(error) => write!(f, "IO error: {}", error),
       // Other
-      Self::OtherReqwestError(error) => write!(f, "Reqwest error: {}", error),
+      // Self::OtherReqwestError(error) => write!(f, "Reqwest error: {}", error),
       Self::Other(error) => write!(f, "Other error: {}", error),
     }
   }
 }
 
-impl From<reqwest::Error> for MidjourneyApiError {
+/*impl From<reqwest::Error> for MidjourneyApiError {
   fn from(error: reqwest::Error) -> Self {
     if error.is_timeout() {
       Self::Timeout(error.to_string())
@@ -88,7 +88,7 @@ impl From<reqwest::Error> for MidjourneyApiError {
       Self::OtherReqwestError(error)
     }
   }
-}
+}*/
 
 impl From<serde_json::Error> for MidjourneyApiError {
   fn from(error: serde_json::Error) -> Self {

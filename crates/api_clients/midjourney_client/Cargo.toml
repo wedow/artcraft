@@ -23,13 +23,21 @@ errors.workspace = true
 anyhow.workspace = true
 futures.workspace = true
 log.workspace = true
-reqwest-websocket.workspace = true
-reqwest.workspace = true
+#reqwest-websocket.workspace = true
+#reqwest.workspace = true
+#reqwest-impersonate = { version = "0", features = ["websocket"] }
 serde.workspace = true
 serde_json.workspace = true
-tokio.workspace = true
+#tokio.workspace = true
 url.workspace = true
 
+# NB: wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
+# Mac: brew install --formula cmake pkg-config llvm
+wreq = { version = "5", features = ["json"] }
+wreq-util = "2"
+tokio = { version = "1", features = ["full"] }
+
 [dev-dependencies]
-testing = { path = "../../lib/testing" }
+filesys.workspace = true
 test_data.workspace = true
+testing.workspace = true

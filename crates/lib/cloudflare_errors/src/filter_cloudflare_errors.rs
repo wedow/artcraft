@@ -22,6 +22,22 @@ pub fn filter_cloudflare_errors(status_code: u16, body: &str) -> Result<(), Clou
   let is_cloudflare = body.contains("cloudflare")
       || body.contains("Cloudflare");
 
+  if status_code == 301 {
+    /*
+      <html>
+      <head><title>301 Moved Permanently</title></head>
+      <body>
+      <center><h1>301 Moved Permanently</h1></center>
+      <hr><center>cloudflare</center>
+      </body>
+      </html>
+     */
+    if is_cloudflare {
+      // TODO
+      return Err(CloudflareError::MovedPermanently301);
+    }
+  }
+
   // let is_cloudflare = body.contains("cloudflare.com")
   //     || body.contains("Cloudflare Ray ID");
 

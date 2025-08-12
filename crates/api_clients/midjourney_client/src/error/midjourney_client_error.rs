@@ -15,8 +15,9 @@ pub enum MidjourneyClientError {
   /// An error doing file I/O (on our side)
   IoError(io::Error),
 
-  /// An error setting up the client
-  ReqwestError(reqwest::Error),
+  // /// An error setting up the client
+  // ReqwestError(reqwest::Error),
+  WreqError(wreq::Error),
 
   /// A serialization error with the request.
   SerializationError(serde_json::Error),
@@ -30,7 +31,8 @@ impl Display for MidjourneyClientError {
       Self::FileTypeNotKnown(path) => write!(f, "Could not determine the filetype for the file: {:?}", path),
       Self::FileTypeNotHandled(path) => write!(f, "Could not handle the file type for the file: {:?}", path),
       Self::IoError(err) => write!(f, "IO error: {}", err),
-      Self::ReqwestError(err) => write!(f, "Reqwest client error: {}", err),
+      //Self::ReqwestError(err) => write!(f, "Reqwest client error: {}", err),
+      Self::WreqError(err) => write!(f, "Wreq client error: {}", err),
       Self::SerializationError(err) => write!(f, "Request serialization error: {}", err),
     }
   }
@@ -48,8 +50,14 @@ impl From<serde_json::Error> for MidjourneyClientError {
   }
 }
 
-impl From<reqwest::Error> for MidjourneyClientError {
+/*impl From<reqwest::Error> for MidjourneyClientError {
   fn from(error: reqwest::Error) -> Self {
     Self::ReqwestError(error)
+  }
+}*/
+
+impl From<wreq::Error> for MidjourneyClientError {
+  fn from(error: wreq::Error) -> Self {
+    Self::WreqError(error)
   }
 }
