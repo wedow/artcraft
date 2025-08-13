@@ -20,6 +20,8 @@ import { useGlobalMouseUp } from "../PageDraw/hooks/useGlobalMouseUp";
 import { useRightPanelLayoutManagement } from "../PageDraw/hooks/useRightPanelLayoutManagement";
 import { LineNode } from "../PageDraw/stores/SceneState";
 import { Node } from "../PageDraw/Node";
+import { checkerboard } from "@storyteller/common";
+import { loadImageFromUrl } from "~/Helpers/ImageHelpers";
 
 export type EditPaintSurfaceProps = {
   nodes: Node[];
@@ -58,6 +60,9 @@ export const EditPaintSurface = ({
   const [snapshotImage, setSnapshotImage] = useState<HTMLImageElement | null>(
     null,
   );
+  // TODO: Polish this by using canvas graphics instead of a bitmap
+  // Or at least manually do the pattern fill to avoid image interpolation
+  const [checkerImage, setCheckerImage] = useState<HTMLImageElement | null>(null);
   const rightContainerRef = React.useRef<HTMLDivElement>(null);
   const cursorLayerRef = React.useRef<Konva.Layer>(null);
   const cursorShapeRef = React.useRef<Konva.Circle>(null);
@@ -975,6 +980,11 @@ export const EditPaintSurface = ({
     }
   }, [selectedNodeIds, stageRef, transformerRefs]);
 
+  // Load the checkboard image for transparency background
+  useEffect(() => {
+    loadImageFromUrl(checkerboard).then(setCheckerImage);
+  }, []);
+
   return (
     <SplitPane
       singlePaneMode={singlePaneMode}
@@ -1002,6 +1012,26 @@ export const EditPaintSurface = ({
             onMouseEnter={handleStageMouseEnter}
             onMouseLeave={handleStageMouseLeave}
           >
+            <Layer
+              clipFunc={(ctx) => {
+                ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
+              }}
+              imageSmoothingEnabled={false} // Disable image smoothing for pixel art
+            >
+              <Rect
+                x={0}
+                y={0}
+                fillPatternImage={checkerImage || undefined}
+                fillPatternRepeat="repeat"
+                fillPatternScaleX={window.devicePixelRatio}
+                fillPatternScaleY={window.devicePixelRatio}
+                width={store.getAspectRatioDimensions().width}
+                height={store.getAspectRatioDimensions().height}
+                listening={false}
+                zIndex={-2}
+                imageSmoothingEnabled={false} // Disable image smoothing for pixel art
+              />
+            </Layer>
             <Layer
               clipFunc={(ctx) => {
                 ctx.rect(0, 0, store.getAspectRatioDimensions().width, store.getAspectRatioDimensions().height); // leftPanelWidth, leftPanelHeight);
