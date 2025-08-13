@@ -94,12 +94,13 @@ export const getModelDisplayName = (modelType: string): string => {
     hunyuan_3d_2p1: "Hunyuan 3D 2.1",
     hunyuan_3d: "Hunyuan 3D",
     flux_pro_kontext_max: "Flux Pro Kontext Max",
+    // TODO: add more models here - BFlat
   };
 
   return displayNames[modelType] || modelType;
 };
 
-// Convert provider string to human-readable display name
+// Convert provider string to human-readable display name (this is for the provider priority in settings)
 export const getProviderDisplayName = (provider: string): string => {
   const displayNames: Record<string, string> = {
     artcraft: "ArtCraft",

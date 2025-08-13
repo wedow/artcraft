@@ -28,7 +28,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
-import { ModelInfo } from "@storyteller/model-list";
+import { ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
 import { usePromptImageStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 
@@ -102,28 +102,7 @@ export const PromptBoxImage = ({
     },
   ]);
   const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
-    [
-      {
-        label: "1",
-        selected: generationCount === 1,
-        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
-      },
-      {
-        label: "2",
-        selected: generationCount === 2,
-        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
-      },
-      {
-        label: "3",
-        selected: generationCount === 3,
-        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
-      },
-      {
-        label: "4",
-        selected: generationCount === 4,
-        icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
-      },
-    ]
+    []
   );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -149,6 +128,37 @@ export const PromptBoxImage = ({
   }, [imageMediaId, url]);
 
   useEffect(() => {
+    // Build generation count options based on selected model
+    const caps = getCapabilitiesForModel(modelInfo);
+    const items: PopoverItem[] = Array.from(
+      { length: caps.maxGenerationCount },
+      (_, i) => i + 1
+    ).map((count) => ({
+      label: String(count),
+      selected: count === generationCount,
+      icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+    }));
+    setGenerationCountList(items);
+
+    // Clamp selection
+    if (generationCount < 1 || generationCount > caps.maxGenerationCount) {
+      setGenerationCount(
+        Math.min(Math.max(1, generationCount), caps.maxGenerationCount)
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modelInfo]);
+
+  useEffect(() => {
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === String(generationCount),
+      }))
+    );
+  }, [generationCount]);
+
+  useEffect(() => {
     setAspectRatioList((prev) =>
       prev.map((item) => ({
         ...item,
@@ -156,15 +166,6 @@ export const PromptBoxImage = ({
       }))
     );
   }, [aspectRatio]);
-
-  useEffect(() => {
-    setGenerationCountList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === generationCount.toString(),
-      }))
-    );
-  }, [generationCount]);
 
   const handleAspectRatioSelect = (selectedItem: PopoverItem) => {
     setAspectRatio(selectedItem.label as any);

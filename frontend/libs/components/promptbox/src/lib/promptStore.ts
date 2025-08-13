@@ -15,10 +15,12 @@ interface Prompt2DStore {
   aspectRatio: AspectRatio;
   useSystemPrompt: boolean;
   referenceImages: RefImage[];
+  generationCount: number;
   setPrompt: (prompt: string) => void;
   setAspectRatio: (ratio: AspectRatio) => void;
   setUseSystemPrompt: (value: boolean) => void;
   setReferenceImages: (images: RefImage[]) => void;
+  setGenerationCount: (count: number) => void;
 }
 
 export const usePrompt2DStore = create<Prompt2DStore>()((set) => ({
@@ -26,10 +28,12 @@ export const usePrompt2DStore = create<Prompt2DStore>()((set) => ({
   aspectRatio: "3:2",
   useSystemPrompt: true,
   referenceImages: [],
+  generationCount: 1,
   setPrompt: (prompt) => set({ prompt }),
   setAspectRatio: (aspectRatio) => set({ aspectRatio }),
   setUseSystemPrompt: (useSystemPrompt) => set({ useSystemPrompt }),
   setReferenceImages: (referenceImages) => set({ referenceImages }),
+  setGenerationCount: (generationCount) => set({ generationCount }),
 }));
 
 export { usePrompt2DStore as usePromptStore };

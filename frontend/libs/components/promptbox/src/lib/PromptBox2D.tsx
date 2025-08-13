@@ -22,6 +22,7 @@ import {
   faUpload,
   faImages,
   faFrame,
+  faCopy,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faRectangleVertical,
@@ -46,7 +47,7 @@ import {
 // import { invoke } from "@tauri-apps/api/core";
 import { usePrompt2DStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
-import { ModelInfo } from "@storyteller/model-list";
+import { ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";
 
@@ -92,6 +93,8 @@ export const PromptBox2D = ({
   const setUseSystemPrompt = usePrompt2DStore((s) => s.setUseSystemPrompt);
   const aspectRatio = usePrompt2DStore((s) => s.aspectRatio);
   const setAspectRatio = usePrompt2DStore((s) => s.setAspectRatio);
+  const generationCount = usePrompt2DStore((s) => s.generationCount);
+  const setGenerationCount = usePrompt2DStore((s) => s.setGenerationCount);
 
   const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
@@ -119,6 +122,41 @@ export const PromptBox2D = ({
       icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
     },
   ]);
+
+  const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
+    []
+  );
+
+  // Update generation count options from selected model capabilities
+  useEffect(() => {
+    const caps = getCapabilitiesForModel(selectedModelInfo);
+    const items: PopoverItem[] = Array.from(
+      { length: caps.maxGenerationCount },
+      (_, i) => i + 1
+    ).map((count) => ({
+      label: String(count),
+      selected: count === generationCount,
+    }));
+    setGenerationCountList(items);
+
+    // Clamp selection to allowed range
+    if (generationCount < 1 || generationCount > caps.maxGenerationCount) {
+      setGenerationCount(
+        Math.min(Math.max(1, generationCount), caps.maxGenerationCount)
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedModelInfo]);
+
+  // Keep UI selection in sync when store value changes
+  useEffect(() => {
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === String(generationCount),
+      }))
+    );
+  }, [generationCount]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -249,6 +287,17 @@ export const PromptBox2D = ({
     }
   };
 
+  const handleGenerationCountSelect = (selectedItem: PopoverItem) => {
+    const count = parseInt(selectedItem.label, 10);
+    setGenerationCount(count);
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === selectedItem.label,
+      }))
+    );
+  };
+
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -327,7 +376,7 @@ export const PromptBox2D = ({
       image_media_tokens: referenceImages.map((image) => image.mediaToken),
       disable_system_prompt: !useSystemPrompt,
       prompt: prompt,
-      image_count: 1,
+      image_count: generationCount,
       aspect_ratio: aspectRatio,
     });
 
@@ -564,8 +613,8 @@ export const PromptBox2D = ({
               onChange={handleChange}
               onPaste={handlePaste}
               onKeyDown={handleKeyDown}
-              onFocus={() => { }}
-              onBlur={() => { }}
+              onFocus={() => {}}
+              onBlur={() => {}}
             />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
@@ -626,6 +675,23 @@ export const PromptBox2D = ({
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
+              <Tooltip
+                content="Number of generations"
+                position="top"
+                className="z-50"
+                closeOnClick={true}
+              >
+                <PopoverMenu
+                  items={generationCountList}
+                  onSelect={handleGenerationCountSelect}
+                  mode="toggle"
+                  panelTitle="No. of images"
+                  triggerIcon={
+                    <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
+                  }
+                  buttonClassName="h-9"
+                />
+              </Tooltip>
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isEnqueueing ? faSparkles : undefined}
