@@ -7,8 +7,8 @@ use crate::core::commands::app_preferences::get_app_preferences_command::get_app
 use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::core::commands::enqueue::image::enqueue_text_to_image_command::enqueue_text_to_image_command;
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
-use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::enqueue_image_inpaint_command;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::enqueue_contextual_edit_image_command;
+use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::enqueue_image_inpaint_command;
 use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::enqueue_image_to_3d_object_command;
 use crate::core::commands::enqueue::video::enqueue_image_to_video_command::enqueue_image_to_video_command;
 use crate::core::commands::flip_image::flip_image;
@@ -32,6 +32,7 @@ use crate::services::fal::commands::set_fal_api_key_command::set_fal_api_key_com
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::fal::threads::fal_task_polling_thread::fal_task_polling_thread;
+use crate::services::midjourney::commands::open_midjourney_login_command::open_midjourney_login_command;
 use crate::services::sora::commands::check_sora_session_command::check_sora_session_command;
 use crate::services::sora::commands::open_sora_login_command::open_sora_login_command;
 use crate::services::sora::commands::sora_image_generation_command::sora_image_generation_command;
@@ -159,6 +160,7 @@ pub fn run() {
       get_provider_order_command,
       load_without_cors_command,
       open_sora_login_command,
+      open_midjourney_login_command,
       platform_info_command,
       set_fal_api_key_command,
       set_provider_order_command,

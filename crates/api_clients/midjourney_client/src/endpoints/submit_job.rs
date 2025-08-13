@@ -169,6 +169,8 @@ mod tests {
   use errors::AnyhowResult;
   use filesys::read_to_trimmed_string::read_to_trimmed_string;
 
+  // Get channel id via:
+  // https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAjizp68NsH3JGUS0EyLXsChW4fN0A92tM
   #[ignore]
   #[tokio::test]
   async fn test() -> AnyhowResult<()> {
