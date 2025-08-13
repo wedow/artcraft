@@ -1,6 +1,6 @@
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::services::midjourney::windows::open_midjourney_login_window::LOGIN_WINDOW_NAME;
+use crate::services::midjourney::windows::open_midjourney_login_window::MIDJOURNEY_LOGIN_WINDOW_NAME;
 use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
@@ -11,14 +11,15 @@ use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
+use crate::services::midjourney::windows::extract_midjourney_webview_cookies::extract_midjourney_webview_cookies;
 
-pub async fn midjourney_login_thread(
+pub async fn midjourney_login_window_thread(
   app: AppHandle,
   app_data_root: AppDataRoot,
   sora_creds_manager: SoraCredentialManager
 ) {
   loop {
-    let login_webview_window = match app.get_webview_window(LOGIN_WINDOW_NAME) {
+    let login_webview_window = match app.get_webview_window(MIDJOURNEY_LOGIN_WINDOW_NAME) {
       Some(webview) => webview,
       None => {
         info!("Exit midjourney login thread.");
@@ -61,11 +62,10 @@ async fn check_login_window(
 
   /* Login flow looks like this:
 
-  1. Start: https://sora.chatgpt.com/
-  2. Login Start: https://chatgpt.com/auth/login?next=%2Fsora%2F [this is where we start]
-  3. Login Continue: https://auth.openai.com/log-in
-  4. SSO / Google Login (etc): https://accounts.google.com/v3/signin/challenge/pwd?[query]
-  5. Done / Landing: https://sora.chatgpt.com/explore
+  1. Start: https://www.midjourney.com/auth/signin
+  2. Login Continue: https://auth.openai.com/log-in
+  3. SSO / Google Login (etc): https://accounts.google.com/v3/signin/challenge/pwd?[query]
+  4. Done / Landing: https://sora.chatgpt.com/explore
    */
 
   /*
@@ -97,7 +97,7 @@ async fn check_login_window(
     _ => {}, // We just don't know...
   }
 
-  let webview_cookies = extract_sora_webview_cookies(webview_window)?.trim().to_string();
+  let webview_cookies = extract_midjourney_webview_cookies(webview_window)?.trim().to_string();
 
   let session_cookie_presence = has_session_cookie(&webview_cookies)
       .unwrap_or_else(|err| {
@@ -105,7 +105,7 @@ async fn check_login_window(
         SessionCookiePresence::MaybePresent
       });
 
-  info!("Sora login webview is at hostname `{}`; cookie status: {:?}.", hostname, session_cookie_presence);
+  info!("Midjourney login webview is at hostname `{}`; cookie status: {:?}.", hostname, session_cookie_presence);
 
   match session_cookie_presence {
     SessionCookiePresence::Absent => {
@@ -113,6 +113,10 @@ async fn check_login_window(
       return Ok(false);
     }
     _ => {},
+  }
+
+  if true {
+    return Ok(false);
   }
 
   let mut new_credentials =
