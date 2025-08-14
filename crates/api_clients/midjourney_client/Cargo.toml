@@ -38,6 +38,9 @@ wreq = { version = "5", features = ["json"] }
 wreq-util = "2"
 tokio = { version = "1", features = ["full"] }
 
+# NB: We need to parse HTML to get out the websocket token
+dom_query = "0.20.2"
+
 [dev-dependencies]
 filesys.workspace = true
 test_data.workspace = true

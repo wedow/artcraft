@@ -12,6 +12,14 @@ pub enum MidjourneyApiError {
   /// There was no user ID in an otherwise valid-looking response.
   NoUserId,
 
+  /// No user props in index HTML payload.
+  /// We need this for the user ID and the websocket token.
+  NoUserProps,
+
+  /// No initialAuthUser in the index HTML payload.
+  /// We need this for the user ID and the websocket token.
+  NoInitialAuthUser,
+
   /// 400. The request was invalid.
   InvalidRequest(String),
 
@@ -63,6 +71,8 @@ impl Display for MidjourneyApiError {
       // Response body errors
       Self::NoJobId => write!(f, "No job ID found in the response body."),
       Self::NoUserId => write!(f, "No user ID found in the response body."),
+      Self::NoUserProps => write!(f, "No user properties found in the index HTML payload."),
+      Self::NoInitialAuthUser => write!(f, "No initialAuthUser in the index HTML payload."),
       // Server response code errors
       Self::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
       Self::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
