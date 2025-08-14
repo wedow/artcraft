@@ -94,6 +94,18 @@ impl MidjourneyCredentialManager {
     }
   }
   
+  pub fn clear_credentials(&self) -> anyhow::Result<()> {
+    match self.cookies.write() {
+      Err(err) => return Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut store) => *store = None,
+    }
+    match self.user_info.write() {
+      Err(err) => return Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut info) => *info = None,
+    }
+    Ok(())
+  }
+  
   pub fn persist_to_disk(&self) -> anyhow::Result<()> {
     let maybe_cookies = match self.cookies.read() {
       Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),

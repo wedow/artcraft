@@ -7,12 +7,12 @@ use log::{error, info};
 use tauri::{AppHandle, State};
 
 #[tauri::command]
-pub async fn open_midjourney_login_command(
+pub async fn midjourney_open_login_command(
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
   mj_creds_manager: State<'_, MidjourneyCredentialManager>,
 ) -> Result<String, String> {
-  info!("open_midjourney_command called");
+  info!("midjourney_open_login_command called");
 
   do_open_login(&app, &app_data_root, &mj_creds_manager)
       .await

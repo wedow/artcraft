@@ -32,7 +32,9 @@ use crate::services::fal::commands::set_fal_api_key_command::set_fal_api_key_com
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::fal::threads::fal_task_polling_thread::fal_task_polling_thread;
-use crate::services::midjourney::commands::open_midjourney_login_command::open_midjourney_login_command;
+use crate::services::midjourney::commands::midjourney_clear_credentials_command::midjourney_clear_credentials_command;
+use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
+use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::sora::commands::check_sora_session_command::check_sora_session_command;
 use crate::services::sora::commands::open_sora_login_command::open_sora_login_command;
@@ -164,7 +166,9 @@ pub fn run() {
       get_provider_order_command,
       load_without_cors_command,
       open_sora_login_command,
-      open_midjourney_login_command,
+      midjourney_clear_credentials_command,
+      midjourney_get_credential_info_command,
+      midjourney_open_login_command,
       platform_info_command,
       set_fal_api_key_command,
       set_provider_order_command,
