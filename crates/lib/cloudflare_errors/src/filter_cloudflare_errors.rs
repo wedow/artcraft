@@ -33,7 +33,7 @@ pub fn filter_cloudflare_errors(status_code: u16, body: &str) -> Result<(), Clou
       </html>
      */
     if is_cloudflare {
-      // TODO
+      // TODO: Include location header.
       return Err(CloudflareError::MovedPermanently301);
     }
   }

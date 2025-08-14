@@ -12,6 +12,7 @@ export * from "./lib/fal/FalHunyuanImageTo3d.js";
 export * from "./lib/fal/FalKlingImageToVideo.js";
 export * from "./lib/fal/GetFalApiKey.js";
 export * from "./lib/fal/SetFalApiKey.js";
+export * from "./lib/midjourney/MidjourneyGetCredentialInfo.js";
 export * from "./lib/openai/GetOpenAIApiKey.js";
 export * from "./lib/openai/SetOpenAIApiKey.js";
 export * from "./lib/providers/GetProviderOrder.js";

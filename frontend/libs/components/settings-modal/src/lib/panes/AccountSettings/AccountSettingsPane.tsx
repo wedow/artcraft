@@ -59,8 +59,8 @@ export const AccountSettingsPane = ({
         <MidjourneyAccountBlock />
         <SoraAccountBlock />
         <FalApiKeyBlock />
-        <OpenAIApiKeyBlock/>
         {/*
+        <OpenAIApiKeyBlock/>
         <hr />
 
         <h2>Coming Soon...</h2>
