@@ -10,29 +10,27 @@ pub struct GetMidjourneyUserIdRequest {
 }
 
 pub async fn get_midjourney_user_id(req: GetMidjourneyUserIdRequest) -> Result<MidjourneyUserId, MidjourneyError> {
-  
   let items = storage_list(GetStorageListRequest {
     hostname: req.hostname,
     cookie_header: req.cookie_header,
   }).await?;
-  
+
   let user_id = items
     .into_iter()
     .find_map(|item| item.bucket_pathname)
     .and_then(|path| path.split('/').next().map(|id| id.to_owned()))
     .map(|id| MidjourneyUserId(id.to_string()))
     .ok_or(MidjourneyApiError::NoUserId)?;
-  
+
   Ok(user_id)
 }
 
 #[cfg(test)]
 mod tests {
   use crate::client::midjourney_hostname::MidjourneyHostname;
+  use crate::recipes::get_midjourney_user_id::{get_midjourney_user_id, GetMidjourneyUserIdRequest};
   use errors::AnyhowResult;
   use filesys::read_to_trimmed_string::read_to_trimmed_string;
-  use crate::endpoints::storage_list::{storage_list, GetStorageListRequest};
-  use crate::recipes::get_midjourney_user_id::{get_midjourney_user_id, GetMidjourneyUserIdRequest};
 
   #[ignore]
   #[tokio::test]

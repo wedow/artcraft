@@ -30,7 +30,6 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
   let referer = format!("https://{}", req.hostname.as_str());
 
   // NB: Other recent clients use /api/app/submit-jobs, but this appears invalid.
-  // let url = format!("https://{}/api/app/submit-jobs", req.hostname.as_str());
   let url = format!("https://{}/api/submit-jobs", req.hostname.as_str());
 
   let cookie_header = req.cookie_header.trim();
@@ -177,15 +176,16 @@ mod tests {
   use filesys::read_to_trimmed_string::read_to_trimmed_string;
 
   // Get channel id via:
-  // https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAjizp68NsH3JGUS0EyLXsChW4fN0A92tM
+  // https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=[TOKEN]
   #[ignore]
   #[tokio::test]
   async fn test() -> AnyhowResult<()> {
     let cookie_header = read_to_trimmed_string("/Users/bt/secrets/midjourney/cookie.txt")?;
+    let channel_id = read_to_trimmed_string("/Users/bt/secrets/midjourney/channel_id.txt")?;
 
     let result = submit_job(SubmitJobRequest {
-      prompt: "photorealistic, high definition, a submarine falling out of the sky and onto manhattan, busy city, sunset, cloudy and overcast, giant military submarine, upside down submarine, falling at angle, drone shot, submarine is in pieces, cracked machinery, exposed steel, giant skyscrapers below, tall buildings, city streets, cars on streets",
-      channel_id: "singleplayer_f8a57ac3-e416-4dd4-9be8-2c4223691b01",
+      prompt: "a modern n64 console",
+      channel_id: &channel_id,
       cookie_header,
       hostname: MidjourneyHostname::Standard,
     }).await?;
