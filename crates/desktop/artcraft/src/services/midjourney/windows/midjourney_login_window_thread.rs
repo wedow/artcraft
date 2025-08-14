@@ -1,6 +1,7 @@
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
+use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
 use crate::services::midjourney::windows::extract_midjourney_webview_cookies::extract_midjourney_webview_cookies;
 use crate::services::midjourney::windows::open_midjourney_login_window::MIDJOURNEY_LOGIN_WINDOW_NAME;
 use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
@@ -10,7 +11,9 @@ use anyhow::anyhow;
 use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
 use log::{error, info};
+use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::credentials::cookie_store_has_auth_cookies::cookie_store_has_auth_cookies;
+use midjourney_client::recipes::get_user_info::{get_user_info, GetUserInfoRequest};
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
@@ -132,6 +135,27 @@ async fn check_login_window(
   info!("Heuristic count is ({}); we're likely done.", heuristic_count);
 
   info!("Current cookies (len {}): {:?}", cookie_store.len(), cookie_store.to_cookie_string());
+
+  let response = get_user_info(GetUserInfoRequest {
+    hostname: MidjourneyHostname::Standard,
+    cookie_header: cookie_store.to_cookie_string(),
+  }).await;
+  
+  match response {
+    Err(err) => {
+      error!("Error getting midjourney user info: {:?}", err);
+      // NB: Fall through. Allow us to update the cookies.
+    }
+    Ok(user_info) => {
+      info!("Got midjourney user info: {:?}", user_info);
+      let user_info = MidjourneyUserInfo::from_api_response(user_info);
+      
+      if let Err(err) = mj_creds_manager.replace_user_info(user_info) {
+        error!("Error saving midjourney user info: {:?}", err);
+        // NB: Fall through. Allow us to update the cookies.
+      }
+    }
+  }
 
   mj_creds_manager.replace_cookie_store(cookie_store)?;
 

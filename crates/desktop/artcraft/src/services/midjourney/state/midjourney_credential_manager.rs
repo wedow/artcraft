@@ -1,6 +1,6 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
-use crate::services::midjourney::state::serializable_midjourney_state::SerializableMidjourneyState;
+use crate::services::midjourney::state::serializable_midjourney_state::{SerializableMidjourneyState, SERIALIZABLE_MIDJOURNEY_STATE_VERSION};
 use crate::services::storyteller::state::read_storyteller_credentials_from_disk::read_storyteller_credentials_from_disk;
 use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
 use cookie_store::cookie_store::CookieStore;
@@ -83,6 +83,16 @@ impl MidjourneyCredentialManager {
       }
     }
   }
+
+  pub fn replace_user_info(&self, user_info: MidjourneyUserInfo) -> anyhow::Result<()> {
+    match self.user_info.write() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut current_info) => {
+        *current_info = Some(user_info);
+        Ok(())
+      }
+    }
+  }
   
   pub fn persist_to_disk(&self) -> anyhow::Result<()> {
     let maybe_cookies = match self.cookies.read() {
@@ -106,7 +116,9 @@ impl MidjourneyCredentialManager {
       return Ok(());
       
     }
+
     let state = SerializableMidjourneyState {
+      version: SERIALIZABLE_MIDJOURNEY_STATE_VERSION,
       user_cookies: maybe_cookies,
       user_info: maybe_user_info,
     };
