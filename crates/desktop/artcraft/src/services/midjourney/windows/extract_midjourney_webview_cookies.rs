@@ -5,7 +5,7 @@ use reqwest::Url;
 use tauri::webview::Cookie;
 use tauri::WebviewWindow;
 
-const ROOT_COOKIE_URL_STR: &str = "https://midjourney.com";
+const ROOT_COOKIE_URL_STR: &str = "https://www.midjourney.com";
 
 static ROOT_COOKIE_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse(ROOT_COOKIE_URL_STR).expect("URL should parse")
@@ -16,7 +16,7 @@ pub fn extract_midjourney_webview_cookies(webview: &WebviewWindow) -> AnyhowResu
   let cookies = get_all_midjourney_cookies(webview)?;
   for cookie in cookies.iter() {
     cookie_store.add_cookie_name_and_value(
-      cookie.name().to_string(), 
+      cookie.name().to_string(),
       cookie.value().to_string(),
     );
   }

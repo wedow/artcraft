@@ -6,6 +6,9 @@ use std::path::PathBuf;
 /// An error arising from the client, either before or after the request is sent.
 #[derive(Debug)]
 pub enum MidjourneyClientError {
+  /// The cookie was too short to be valid.
+  CookieTooShort,
+  
   /// Could not determine the filetype for the file.
   FileTypeNotKnown(PathBuf),
 
@@ -28,6 +31,7 @@ impl Error for MidjourneyClientError {}
 impl Display for MidjourneyClientError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
+      Self::CookieTooShort => write!(f, "The cookie header is too short to be valid."),
       Self::FileTypeNotKnown(path) => write!(f, "Could not determine the filetype for the file: {:?}", path),
       Self::FileTypeNotHandled(path) => write!(f, "Could not handle the file type for the file: {:?}", path),
       Self::IoError(err) => write!(f, "IO error: {}", err),

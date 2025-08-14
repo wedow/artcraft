@@ -33,8 +33,15 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
   // let url = format!("https://{}/api/app/submit-jobs", req.hostname.as_str());
   let url = format!("https://{}/api/submit-jobs", req.hostname.as_str());
 
+  let cookie_header = req.cookie_header.trim();
+
+  if cookie_header.len() < 20 {
+    error!("Cookie header is too short (len: {}): {}", cookie_header.len(), cookie_header);
+    return Err(MidjourneyClientError::CookieTooShort.into());
+  }
+
   let mut http_request = client.post(url)
-      .header("cookie", req.cookie_header)
+      .header("cookie", cookie_header)
       .header("Referer", &referer)
       .header("Referrer-Policy", "origin-when-cross-origin")
       .header("accept", "*/*")

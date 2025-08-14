@@ -18,7 +18,7 @@ impl CookieStore {
   pub fn add_cookie(&mut self, cookie: Cookie) {
     self.cookies.insert(cookie.name.clone(), cookie);
   }
-  
+
   pub fn add_cookie_name_and_value(&mut self, name: String, value: String) {
     self.add_cookie(Cookie {
       name,
@@ -32,6 +32,10 @@ impl CookieStore {
 
   pub fn remove_cookie(&mut self, name: &str) {
     self.cookies.remove(name);
+  }
+  
+  pub fn len(&self) -> usize {
+    self.cookies.len()
   }
 
   pub fn clear_all(&mut self) {

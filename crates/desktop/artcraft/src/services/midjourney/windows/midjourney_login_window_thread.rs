@@ -117,6 +117,8 @@ async fn check_login_window(
   //  _ => {},
   //}
 
+  info!("Current cookies (len {}): {:?}", cookie_store.len(), cookie_store.to_cookie_string());
+
   mj_creds_manager.replace_cookie_store(cookie_store)?;
 
   if true {
