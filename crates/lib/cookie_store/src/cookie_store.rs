@@ -29,6 +29,10 @@ impl CookieStore {
   pub fn get_cookie(&self, name: &str) -> Option<&Cookie> {
     self.cookies.get(name)
   }
+  
+  pub fn has_cookie(&self, name: &str) -> bool {
+    self.cookies.contains_key(name)
+  }
 
   pub fn remove_cookie(&mut self, name: &str) {
     self.cookies.remove(name);
@@ -40,6 +44,15 @@ impl CookieStore {
 
   pub fn clear_all(&mut self) {
     self.cookies.clear();
+  }
+
+  /// NB: Just use this as a heuristic, and do not call it in a loop.
+  pub fn calculate_approx_cookie_character_length(&self) -> usize {
+    const COOKIE_SEP_LENGTH: usize = 2; // '=' and ';'
+    self.cookies
+        .values()
+        .map(|cookie| cookie.name.len() + cookie.value.len() + COOKIE_SEP_LENGTH)
+        .sum()
   }
 
   pub fn to_cookie_string(&self) -> String {

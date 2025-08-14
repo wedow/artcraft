@@ -10,6 +10,7 @@ use anyhow::anyhow;
 use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
 use log::{error, info};
+use midjourney_client::credentials::cookie_store_has_auth_cookies::cookie_store_has_auth_cookies;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
@@ -20,6 +21,8 @@ pub async fn midjourney_login_window_thread(
   app_data_root: AppDataRoot,
   mj_creds_manager: MidjourneyCredentialManager,
 ) {
+  let mut visited_login = false;
+
   loop {
     let login_webview_window = match app.get_webview_window(MIDJOURNEY_LOGIN_WINDOW_NAME) {
       Some(webview) => webview,
@@ -34,6 +37,7 @@ pub async fn midjourney_login_window_thread(
       &login_webview_window,
       &app_data_root,
       &mj_creds_manager,
+      &mut visited_login,
     ).await;
 
     match result {
@@ -60,19 +64,14 @@ async fn check_login_window(
   webview_window: &WebviewWindow,
   app_data_root: &AppDataRoot,
   mj_creds_manager: &MidjourneyCredentialManager,
+  visited_login: &mut bool,
 ) -> AnyhowResult<bool> {
 
   /* Login flow looks like this:
 
   1. Start: https://www.midjourney.com/auth/signin
-  2. Login Continue: https://auth.openai.com/log-in
-  3. SSO / Google Login (etc): https://accounts.google.com/v3/signin/challenge/pwd?[query]
-  4. Done / Landing: https://sora.chatgpt.com/explore
-   */
-
-  /*
-  - Do not use credential manager until the end (we don't load old cookies!)
-  - Check if we're on the correct domain, if not exit? (or inverse, that we're not in login flow)
+  2. SSO / Google Login (etc): https://accounts.google.com/v3/signin/challenge/pwd?[query]
+  3. Done / Landing: https://www.midjourney.com/...
    */
 
   let hostname = get_hostname(webview_window)?;
@@ -80,8 +79,8 @@ async fn check_login_window(
   let mut maybe_at_destination = false;
 
   match hostname.as_str() {
-    "sora.com" | // Old destination
-    "sora.chatgpt.com" // New destination
+    "www.midjourney.com" |
+    "midjourney.com"
     => {
       maybe_at_destination = true;
     }
@@ -93,7 +92,8 @@ async fn check_login_window(
     "appleid.apple.com"
     => {
       // NB: We're in auth flow.
-      info!("Sora login webview is in auth flow; hostname `{}`.", hostname);
+      info!("Midjourney webview is in auth flow; hostname `{}`.", hostname);
+      *visited_login = true;
       return Ok(false)
     }
     _ => {}, // We just don't know...
@@ -101,29 +101,39 @@ async fn check_login_window(
 
   let cookie_store = extract_midjourney_webview_cookies(webview_window)?;
 
-  //let session_cookie_presence = has_session_cookie(&webview_cookies)
-  //    .unwrap_or_else(|err| {
-  //      error!("Failed to check for session cookie: {:?}", err);
-  //      SessionCookiePresence::MaybePresent
-  //    });
+  let maybe_has_auth_cookies = cookie_store_has_auth_cookies(&cookie_store);
+  let maybe_has_enough_cookies = cookie_store.len() > 6;
+  let maybe_completed_login_cycle = *visited_login && maybe_at_destination;
 
-  //info!("Midjourney login webview is at hostname `{}`; cookie status: {:?}.", hostname, session_cookie_presence);
+  // Misc cookies without login cookies are ~1055 length
+  // AUTH_I is ~1500 length
+  // AUTH_R is ~500 length
+  let maybe_has_big_enough_cookie = cookie_store.calculate_approx_cookie_character_length() > 2100;
 
-  //match session_cookie_presence {
-  //  SessionCookiePresence::Absent => {
-  //    info!("Session cookies are absent.");
-  //    return Ok(false);
-  //  }
-  //  _ => {},
-  //}
+  let mut heuristic_count = 0;
+
+  if maybe_has_auth_cookies {
+    heuristic_count += 1;
+  }
+  if maybe_has_enough_cookies {
+    heuristic_count += 1;
+  }
+  if maybe_completed_login_cycle {
+    heuristic_count += 1;
+  }
+  if maybe_has_big_enough_cookie {
+    heuristic_count += 1;
+  }
+
+  if heuristic_count < 3 {
+    return Ok(false);
+  }
+
+  info!("Heuristic count is ({}); we're likely done.", heuristic_count);
 
   info!("Current cookies (len {}): {:?}", cookie_store.len(), cookie_store.to_cookie_string());
 
   mj_creds_manager.replace_cookie_store(cookie_store)?;
-
-  if true {
-    return Ok(false);
-  }
 
   //let mut new_credentials =
   //    SoraCredentialSet::initialize_with_just_cookies_str(&webview_cookies);
