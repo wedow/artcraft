@@ -135,26 +135,12 @@ async fn check_login_window(
 
   mj_creds_manager.replace_cookie_store(cookie_store)?;
 
-  //let mut new_credentials =
-  //    SoraCredentialSet::initialize_with_just_cookies_str(&webview_cookies);
+  let result = mj_creds_manager.persist_to_disk();
 
-  //let _upgraded = maybe_upgrade_or_renew_session(&mut new_credentials).await?;
-
-  //// TODO(bt): Race conditions ahead.
-
-  //sora_credential_manager.clear_credentials()?;
-  //sora_credential_manager.try_purge_credentials_from_disk();
-
-  //sora_credential_manager.set_credentials(&new_credentials)?;
-  //sora_credential_manager.persist_all_to_disk()?;
-
-  //// NB: Event sent to the frontend for the login flow. We shouldn't rely on just this
-  //// alone as it could be brittle if the events aren't caught.
-  //let event = SoraLoginSuccessEvent {};
-
-  //if let Err(err) = event.send(app_handle) {
-  //  error!("Error sending Sora login success event: {:?}", err);
-  //}
+  if let Err(err) = result {
+    error!("Error persisting midjourney cookies to disk: {:?}", err);
+    return Ok(false);
+  }
 
   Ok(true)
 }

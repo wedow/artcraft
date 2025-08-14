@@ -5,7 +5,7 @@ use crate::services::storyteller::state::read_storyteller_credentials_from_disk:
 use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
 use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
-use log::warn;
+use log::{info, warn};
 use std::fs::read_to_string;
 use std::sync::{Arc, RwLock};
 use storyteller_client::credentials::storyteller_avt_cookie::StorytellerAvtCookie;
@@ -47,11 +47,7 @@ impl MidjourneyCredentialManager {
         let maybe_cookies = state.user_cookies
             .map(|cookies| cookies.to_cookie_store());
         let maybe_user_info = state.user_info
-            .map(|info| {
-              MidjourneyUserInfo {
-                google_email: info.google_email,
-              }
-            });
+            .map(|info| info.to_user_info());
         cookies = Arc::new(RwLock::new(maybe_cookies));
         user_info = Arc::new(RwLock::new(maybe_user_info));
       }
@@ -86,6 +82,41 @@ impl MidjourneyCredentialManager {
         Ok(())
       }
     }
+  }
+  
+  pub fn persist_to_disk(&self) -> anyhow::Result<()> {
+    let maybe_cookies = match self.cookies.read() {
+      Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(store) => store.clone(),
+    };
+
+    let maybe_user_info = match self.user_info.read() {
+      Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(info) => info.clone(),
+    };
+    
+    let maybe_cookies= maybe_cookies
+        .map(|cookies| cookies.to_serializable());
+    
+    let maybe_user_info= maybe_user_info
+        .map(|info| info.to_serializable());
+
+    if maybe_cookies.is_none() && maybe_user_info.is_none() {
+      info!("Nothing to write to disk, skipping.");
+      return Ok(());
+      
+    }
+    let state = SerializableMidjourneyState {
+      user_cookies: maybe_cookies,
+      user_info: maybe_user_info,
+    };
+
+    let path = self.app_data_root.credentials_dir().get_midjourney_state_path();
+    let serialized = serde_json::to_string(&state)?;
+    
+    std::fs::write(path, serialized)?;
+
+    Ok(())
   }
 }
 
