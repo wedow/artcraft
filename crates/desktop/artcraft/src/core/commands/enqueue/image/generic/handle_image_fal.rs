@@ -51,8 +51,11 @@ pub async fn handle_image_fal(
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    Some(ImageModel::GptImage1) => {
-      return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: fal is handling sora images")));
+    Some(
+      ImageModel::GptImage1 |
+      ImageModel::Midjourney
+    ) => {
+      return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));
     }
     Some(
       ImageModel::Flux1Dev | 

@@ -3,6 +3,7 @@ use crate::core::commands::enqueue::image::generic::handle_image_fal::handle_ima
 use crate::core::commands::enqueue::image::gpt_image_1::handle_gpt_image_1::handle_gpt_image_1;
 use crate::core::commands::enqueue::image::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
 use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
+use crate::core::commands::enqueue::image::midjourney::handle_midjourney::handle_midjourney;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -18,6 +19,7 @@ use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
+use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -93,6 +95,7 @@ pub async fn enqueue_text_to_image_command(
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   fal_creds_manager: State<'_, FalCredentialManager>,
+  mj_creds_manager: State<'_, MidjourneyCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   fal_task_queue: State<'_, FalTaskQueue>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
@@ -108,6 +111,7 @@ pub async fn enqueue_text_to_image_command(
     &provider_priority_store,
     &task_database,
     &fal_creds_manager,
+    &mj_creds_manager,
     &storyteller_creds_manager,
     &app_env_configs,
     &fal_task_queue,
@@ -173,6 +177,7 @@ pub async fn handle_request(
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   fal_creds_manager: &FalCredentialManager,
+  mj_creds_manager: &MidjourneyCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   app_env_configs: &AppEnvConfigs,
   fal_task_queue: &FalTaskQueue,
@@ -189,6 +194,7 @@ pub async fn handle_request(
     &storyteller_creds_manager,
     &app_env_configs,
     &fal_task_queue,
+    &mj_creds_manager,
     &sora_creds_manager,
     &sora_task_queue,
   ).await;
@@ -219,6 +225,7 @@ pub async fn dispatch_request(
   storyteller_creds_manager: &StorytellerCredentialManager,
   app_env_configs: &AppEnvConfigs,
   fal_task_queue: &FalTaskQueue,
+  mj_creds_manager: &MidjourneyCredentialManager,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {
@@ -237,6 +244,13 @@ pub async fn dispatch_request(
         storyteller_creds_manager,
         sora_creds_manager, 
         sora_task_queue,
+      ).await;
+    }
+    Some(ImageModel::Midjourney) => {
+      return handle_midjourney(
+        request,
+        app_env_configs,
+        mj_creds_manager,
       ).await;
     }
     _ => {

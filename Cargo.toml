@@ -234,7 +234,7 @@ images = { path = "crates/lib/files/images" }
 jwt_light = { path = "crates/lib/jwt_light" }
 memory_caching = { path = "crates/lib/caching/memory_caching" }
 memory_store = { path = "crates/lib/caching/memory_store" }
-midjourney_client = { path = "crates/lib/files/midjourney_client" }
+midjourney_client = { path = "crates/api_clients/midjourney_client" }
 mimetypes = { path = "crates/lib/files/mimetypes" }
 openai_sora_client = { path = "crates/api_clients/openai_sora_client" }
 primitives = { path = "crates/lib/data/primitives" }

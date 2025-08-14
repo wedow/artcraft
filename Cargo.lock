@@ -674,6 +674,7 @@ dependencies = [
  "indexmap 2.9.0",
  "log",
  "memory_store",
+ "midjourney_client",
  "mimetypes",
  "once_cell",
  "openai_sora_client",

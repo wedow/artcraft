@@ -57,8 +57,11 @@ pub async fn handle_image_artcraft(
     None => {
       return Err(InternalImageError::NoModelSpecified);
     }
-    Some(ImageModel::GptImage1) => {
-      return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: an earlier branch should have handled gpt-image-1 images for Artcraft")));
+    Some(
+      ImageModel::GptImage1 |
+      ImageModel::Midjourney
+    ) => {
+      return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));
     }
     Some(ImageModel::Recraft3) => {
       return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented in Artcraft")));

@@ -17,4 +17,8 @@ pub enum ImageModel {
   GptImage1,
   #[serde(rename = "recraft_3")]
   Recraft3,
+  
+  // Generic Midjourney model, version unknown.
+  #[serde(rename = "midjourney")]
+  Midjourney,
 }

@@ -31,6 +31,7 @@ impl TaskEnqueueSuccess{
     match self.provider {
       GenerationProvider::Artcraft => GenerationServiceProvider::Artcraft,
       GenerationProvider::Fal => GenerationServiceProvider::Fal,
+      GenerationProvider::Midjourney => GenerationServiceProvider::Midjourney,
       GenerationProvider::Sora => GenerationServiceProvider::Sora,
     }
   }
@@ -69,6 +70,7 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Veo2) => Some(TaskModelType::Veo2),
       Some(GenerationModel::Hunyuan3d2_0) => Some(TaskModelType::Hunyuan3d2_0),
       Some(GenerationModel::Hunyuan3d2_1) => Some(TaskModelType::Hunyuan3d2_1),
+      Some(GenerationModel::Midjourney) => Some(TaskModelType::Midjourney), // NB: This is a generic Midjourney model, version unknown.
 
       // TODO: These seem wrong -
       Some(GenerationModel::Kling1_6) => Some(TaskModelType::Kling16Pro), // NB: `VideoModel::Kling16Pro`.

@@ -5,6 +5,7 @@ use serde::Serialize;
 pub enum GenerationServiceProvider {
   Artcraft,
   Fal,
+  Midjourney,
   Sora,
 }
 
@@ -29,6 +30,10 @@ pub enum GenerationModel {
   Hunyuan3d2_0,
   #[serde(rename = "hunyuan_3d_2_1")]
   Hunyuan3d2_1,
+
+  // Generic Midjourney model, version unknown.
+  #[serde(rename = "midjourney")]
+  Midjourney,
 
   // TODO: Should be Kling16Pro
   #[serde(rename = "kling_1.6")]
