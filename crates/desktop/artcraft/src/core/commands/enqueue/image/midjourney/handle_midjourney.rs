@@ -36,10 +36,13 @@ pub async fn handle_midjourney(
   mj_creds_manager: &MidjourneyCredentialManager,
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {
 
-  let creds = match mj_creds_manager.copy_cookie_store() {
-    Ok(creds) => creds,
+  let creds = match mj_creds_manager.maybe_copy_cookie_store() {
+    Ok(Some(creds)) => creds,
+    Ok(None) => {
+      return Err(InternalImageError::NeedsMidjourneyCredentials);
+    }
     Err(err) => {
-      // TODO: Wrong error handling here.
+      error!("Error reading Midjourney credentials: {:?}", err);
       return Err(InternalImageError::NeedsMidjourneyCredentials);
     },
   };

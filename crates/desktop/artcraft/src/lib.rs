@@ -88,7 +88,7 @@ pub fn run() {
   
   let app_env_configs_2 = app_env_configs.clone();
 
-  let midjourney_creds_manager = MidjourneyCredentialManager::new();
+  let midjourney_creds_manager = MidjourneyCredentialManager::initialize_from_disk_infallible(&app_data_root);
 
   println!("Initializing backend runtime...");
 
