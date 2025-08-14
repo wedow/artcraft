@@ -1,6 +1,6 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::windows::open_midjourney_login_window::open_midjourney_login_window;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use errors::AnyhowResult;
 use log::{error, info};
@@ -10,11 +10,11 @@ use tauri::{AppHandle, State};
 pub async fn open_midjourney_login_command(
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
-  sora_creds_manager: State<'_, SoraCredentialManager>,
+  mj_creds_manager: State<'_, MidjourneyCredentialManager>,
 ) -> Result<String, String> {
   info!("open_midjourney_command called");
 
-  do_open_login(&app, &app_data_root, &sora_creds_manager)
+  do_open_login(&app, &app_data_root, &mj_creds_manager)
       .await
       .map_err(|err| {
         error!("Error opening login: {:?}", err);
@@ -27,11 +27,11 @@ pub async fn open_midjourney_login_command(
 async fn do_open_login(
   app: &AppHandle,
   app_data_root: &AppDataRoot,
-  sora_creds_manager: &SoraCredentialManager,
+  mj_creds_manager: &MidjourneyCredentialManager,
 ) -> AnyhowResult<()> {
   info!("Building login window...");
 
-  open_midjourney_login_window(app, app_data_root, sora_creds_manager).await?;
+  open_midjourney_login_window(app, app_data_root, mj_creds_manager).await?;
 
   info!("Done.");
   Ok(())

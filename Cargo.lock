@@ -659,6 +659,7 @@ dependencies = [
  "build_metadata",
  "bytes 1.10.1",
  "chrono",
+ "cookie_store 0.0.1",
  "directories",
  "dirs",
  "discord-rich-presence",

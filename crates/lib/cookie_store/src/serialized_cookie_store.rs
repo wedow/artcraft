@@ -1,9 +1,9 @@
+use crate::cookie::Cookie;
+use crate::cookie_store::CookieStore;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::path::Path;
-use crate::cookie::Cookie;
-use crate::cookie_store::CookieStore;
 
 #[derive(Serialize, Deserialize)]
 pub struct SerializableCookieStore {
@@ -54,7 +54,7 @@ impl SerializableCookieStore {
   }
   
   pub fn to_cookie_store(&self) -> CookieStore {
-    let mut store = CookieStore::new();
+    let mut store = CookieStore::empty();
     for serialized_cookie in &self.cookies {
       store.add_cookie(Cookie::new_from_str(
         &serialized_cookie.name, 

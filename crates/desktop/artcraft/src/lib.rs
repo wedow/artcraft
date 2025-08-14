@@ -33,6 +33,7 @@ use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::fal::threads::fal_task_polling_thread::fal_task_polling_thread;
 use crate::services::midjourney::commands::open_midjourney_login_command::open_midjourney_login_command;
+use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::sora::commands::check_sora_session_command::check_sora_session_command;
 use crate::services::sora::commands::open_sora_login_command::open_sora_login_command;
 use crate::services::sora::commands::sora_image_generation_command::sora_image_generation_command;
@@ -86,7 +87,9 @@ pub fn run() {
     .expect("AppEnvConfigs should be loaded from disk");
   
   let app_env_configs_2 = app_env_configs.clone();
-  
+
+  let midjourney_creds_manager = MidjourneyCredentialManager::new();
+
   println!("Initializing backend runtime...");
 
   tauri::Builder::default()
@@ -139,6 +142,7 @@ pub fn run() {
     .manage(app_preferences)
     .manage(fal_creds_manager)
     .manage(fal_task_queue)
+    .manage(midjourney_creds_manager)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)

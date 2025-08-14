@@ -9,7 +9,7 @@ pub struct CookieStore {
 }
 
 impl CookieStore {
-  pub fn new() -> Self {
+  pub fn empty() -> Self {
     Self {
       cookies: HashMap::new(),
     }
@@ -17,6 +17,13 @@ impl CookieStore {
 
   pub fn add_cookie(&mut self, cookie: Cookie) {
     self.cookies.insert(cookie.name.clone(), cookie);
+  }
+  
+  pub fn add_cookie_name_and_value(&mut self, name: String, value: String) {
+    self.add_cookie(Cookie {
+      name,
+      value,
+    });
   }
 
   pub fn get_cookie(&self, name: &str) -> Option<&Cookie> {

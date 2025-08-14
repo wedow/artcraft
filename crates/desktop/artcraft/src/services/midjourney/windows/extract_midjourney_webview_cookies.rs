@@ -1,3 +1,4 @@
+use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
 use once_cell::sync::Lazy;
 use reqwest::Url;
@@ -10,16 +11,16 @@ static ROOT_COOKIE_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse(ROOT_COOKIE_URL_STR).expect("URL should parse")
 });
 
-pub fn extract_midjourney_webview_cookies(webview: &WebviewWindow) -> AnyhowResult<String> {
-  // NB(bt): Cookies were originally on sora.com, but now they're located on 
-  // the sora.chatgpt.com / *.chatgpt.com domains.
+pub fn extract_midjourney_webview_cookies(webview: &WebviewWindow) -> AnyhowResult<CookieStore> {
+  let mut cookie_store = CookieStore::empty();
   let cookies = get_all_midjourney_cookies(webview)?;
-  let cookie_string = cookies
-    .iter()
-    .map(|cookie| format!("{}={}", cookie.name(), cookie.value()))
-    .collect::<Vec<String>>()
-    .join("; ");
-  Ok(cookie_string)
+  for cookie in cookies.iter() {
+    cookie_store.add_cookie_name_and_value(
+      cookie.name().to_string(), 
+      cookie.value().to_string(),
+    );
+  }
+  Ok(cookie_store)
 }
 
 fn get_all_midjourney_cookies(webview: &WebviewWindow) -> AnyhowResult<Vec<Cookie>> {

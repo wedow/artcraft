@@ -1,7 +1,7 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::clear_all_webview_cookies::clear_all_webview_cookies;
+use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::windows::midjourney_login_window_thread::midjourney_login_window_thread;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use once_cell::sync::Lazy;
@@ -33,7 +33,7 @@ pub (super) static MIDJOURNEY_LOGIN_URL: Lazy<Url> = Lazy::new(|| {
 pub async fn open_midjourney_login_window(
   app: &AppHandle,
   app_data_root: &AppDataRoot,
-  sora_creds_manager: &SoraCredentialManager,
+  mj_creds_manager: &MidjourneyCredentialManager,
 ) -> AnyhowResult<()> {
   if app.get_window(MIDJOURNEY_LOGIN_WINDOW_NAME).is_some() {
     return Err(anyhow!("Login window already open"));
@@ -68,10 +68,10 @@ pub async fn open_midjourney_login_window(
 
   let app_handle = app.clone();
   let app_data_root = app_data_root.clone();
-  let sora_creds_manager = sora_creds_manager.clone();
+  let mj_creds_manager= mj_creds_manager.clone();
 
   let _ = tauri::async_runtime::spawn(async move {
-    midjourney_login_window_thread(app_handle, app_data_root, sora_creds_manager).await;
+    midjourney_login_window_thread(app_handle, app_data_root, mj_creds_manager).await;
   });
 
   Ok(())
