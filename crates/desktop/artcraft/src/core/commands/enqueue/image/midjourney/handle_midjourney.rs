@@ -58,7 +58,7 @@ pub async fn handle_midjourney(
 
   let result = submit_job(SubmitJobRequest {
     prompt,
-    channel_id: "singleplayer_f8a57ac3-e416-4dd4-9be8-2c4223691b01",
+    channel_id: "singleplayer_f8a57ac3-e416-4dd4-9be8-2c4223691b01", // TODO: DO NOT COMMIT
     hostname: MidjourneyHostname::Standard,
     cookie_header,
   }).await;

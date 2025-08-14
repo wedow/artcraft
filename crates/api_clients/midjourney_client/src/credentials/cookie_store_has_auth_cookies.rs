@@ -1,4 +1,4 @@
-use crate::credentials::cookies::{AUTH_COOKIE_NAME_I, AUTH_COOKIE_NAME_R};
+use crate::credentials::cookie_names::{AUTH_COOKIE_NAME_I, AUTH_COOKIE_NAME_R};
 use cookie_store::cookie_store::CookieStore;
 
 /// Returns true if the given cookie store has the necessary authentication cookies.

@@ -9,6 +9,9 @@ pub enum MidjourneyApiError {
   /// There was no job ID in the otherwise valid-looking response.
   NoJobId,
 
+  /// There was no user ID in an otherwise valid-looking response.
+  NoUserId,
+
   /// 400. The request was invalid.
   InvalidRequest(String),
 
@@ -59,6 +62,7 @@ impl Display for MidjourneyApiError {
     match self {
       // Response body errors
       Self::NoJobId => write!(f, "No job ID found in the response body."),
+      Self::NoUserId => write!(f, "No user ID found in the response body."),
       // Server response code errors
       Self::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
       Self::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
