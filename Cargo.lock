@@ -2213,6 +2213,17 @@ dependencies = [
 
 [[package]]
 name = "cookie_store"
+version = "0.0.1"
+dependencies = [
+ "errors",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "workspace-build-acceleration",
+]
+
+[[package]]
+name = "cookie_store"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2eac901828f88a5241ee0600950ab981148a18f2f756900ffba1b125ca6a3ef9"
@@ -8545,7 +8556,7 @@ dependencies = [
  "base64 0.22.1",
  "bytes 1.10.1",
  "cookie 0.18.1",
- "cookie_store",
+ "cookie_store 0.21.1",
  "encoding_rs",
  "futures-channel",
  "futures-core",
@@ -10859,7 +10870,7 @@ name = "tauri-plugin-http"
 version = "2.4.3"
 dependencies = [
  "bytes 1.10.1",
- "cookie_store",
+ "cookie_store 0.21.1",
  "data-url",
  "http 1.1.0",
  "regex",
