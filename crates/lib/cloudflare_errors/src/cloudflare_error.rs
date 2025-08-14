@@ -9,7 +9,10 @@ pub enum CloudflareError {
   
   /// Cloudflare wants to verify the request with a CAPTCHA challenge.
   ChallengeInterstitial403,
-  
+
+  /// Cloudflare returned a 502 Bad Gateway response.
+  BadGateway502,
+
   /// Cloudflare could not form a connection to the backend server.
   GatewayTimeout504,
 
@@ -27,6 +30,9 @@ impl Display for CloudflareError {
       }
       Self::ChallengeInterstitial403 => {
         write!(f, "Cloudflare Challenge Interstitial (403); Cloudflare wants to verify the request with a CAPTCHA challenge.")
+      }
+      Self::BadGateway502 => {
+        write!(f, "Cloudflare Bad Gateway (502); This is likely a backend server issue.")
       }
       Self::GatewayTimeout504 => {
         write!(f, "Cloudflare Gateway Timeout (504); This is likely a backend server issue.")

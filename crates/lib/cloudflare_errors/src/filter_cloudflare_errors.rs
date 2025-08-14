@@ -43,6 +43,7 @@ pub fn filter_cloudflare_errors(status_code: u16, body: &str) -> Result<(), Clou
 
   if is_cloudflare {
     match status_code {
+      502 => return Err(CloudflareError::BadGateway502),
       504 => return Err(CloudflareError::GatewayTimeout504),
       524 => return Err(CloudflareError::TimeoutOccurred524),
       _ => {}, // Fall-through
