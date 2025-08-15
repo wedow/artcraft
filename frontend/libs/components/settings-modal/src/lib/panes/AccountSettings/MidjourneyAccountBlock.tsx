@@ -11,38 +11,24 @@ export const MidjourneyAccountBlock = () => {
   const [midjourneySession, setMidjourneySession] = useState<MidjourneyGetCredentialInfoSuccess| undefined>(undefined);
   const [isCheckingMidjourneySession, setIsCheckingMidjourneySession] = useState(false);
 
+  const fetchSession = async () => {
+    setIsCheckingMidjourneySession(true);
+    try {
+      const result = await MidjourneyGetCredentialInfo();
+      setMidjourneySession(result);
+    } catch (e) {
+      console.error("Error fetching Midjourney session", e);
+      setMidjourneySession(undefined);
+    } finally {
+      setIsCheckingMidjourneySession(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSession = async () => {
-      setIsCheckingMidjourneySession(true);
-      try {
-        const result = await MidjourneyGetCredentialInfo();
-        setMidjourneySession(result);
-      } catch (e) {
-        console.error("Error fetching Midjourney session", e);
-        setMidjourneySession(undefined);
-      } finally {
-        setIsCheckingMidjourneySession(false);
-      }
-    };
     fetchSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useRefreshAccountStateEvent(async (event: RefreshAccountStateEvent) => {
-    console.log("Refresh account state event received:", event);
-    const fetchSession = async () => {
-      setIsCheckingMidjourneySession(true);
-      try {
-        const result = await MidjourneyGetCredentialInfo();
-        setMidjourneySession(result);
-      } catch (e) {
-        console.error("Error fetching Midjourney session", e);
-        setMidjourneySession(undefined);
-      } finally {
-        setIsCheckingMidjourneySession(false);
-      }
-    };
     fetchSession();
   });
 
