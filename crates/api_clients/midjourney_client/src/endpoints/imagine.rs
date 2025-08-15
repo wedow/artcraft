@@ -12,10 +12,10 @@ use wreq_util::Emulation;
 const DEFAULT_PAGE_SIZE : u64 = 1000;
 
 /// This returns Midjourney's job/media list
-pub struct ImagineRequest{
+pub struct ImagineRequest<'a> {
   pub hostname: MidjourneyHostname,
   pub cookie_header: String,
-  pub user_id: MidjourneyUserId,
+  pub user_id: &'a MidjourneyUserId,
   pub page_size: Option<u64>,
 }
 
@@ -65,7 +65,7 @@ impl JobType {
   }
 }
 
-pub async fn imagine(req: ImagineRequest) -> Result<ImagineResponse, MidjourneyError> {
+pub async fn imagine(req: ImagineRequest<'_>) -> Result<ImagineResponse, MidjourneyError> {
   let cookie_header = req.cookie_header.trim();
 
   if cookie_header.len() < 20 {
@@ -230,7 +230,7 @@ mod tests {
     let result = imagine(ImagineRequest {
       cookie_header,
       hostname: MidjourneyHostname::Standard,
-      user_id,
+      user_id: &user_id,
       page_size: None,
     }).await?;
 

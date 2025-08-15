@@ -11,15 +11,19 @@ use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::endpoints::imagine::{imagine, ImagineRequest};
 use midjourney_client::utils::get_image_url::get_image_url;
-use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
+use once_cell::sync::Lazy;
 use tauri::AppHandle;
 use url::Url;
+use cookie_store::cookie_store::CookieStore;
+use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
 use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
+use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, Task, TaskList};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
@@ -27,6 +31,14 @@ use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::services::midjourney::utils::download_midjourney_image::download_midjourney_image;
+
+static PENDING_STATUSES : Lazy<HashSet<TaskStatus>> = Lazy::new(|| {
+  let mut statuses = HashSet::new();
+  statuses.insert(TaskStatus::Pending);
+  statuses.insert(TaskStatus::Started);
+  statuses.insert(TaskStatus::AttemptFailed);
+  statuses
+});
 
 /// This thread is responsible for picking up tasks that fell through the cracks of
 /// the faster websocket thread.
@@ -74,7 +86,7 @@ async fn polling_loop(
       Some(creds) => creds,
       None => {
         error!("No Storyteller credentials found. Cannot proceed with Midjourney polling.");
-        tokio::time::sleep(std::time::Duration::from_millis(10_000)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(5_000)).await;
         continue;
       }
     };
@@ -103,159 +115,159 @@ async fn polling_loop(
       }
     };
 
-    let cookie_header = cookies.to_cookie_string();
-
-    let result = imagine(ImagineRequest {
-      hostname: MidjourneyHostname::Standard,
-      cookie_header,
-      user_id,
-      page_size: None,
-    }).await?;
-
-    let midjourney_items = result.items;
-
-    let midjourney_items_by_id = {
-      let mut hash = HashMap::new();
-      for item in midjourney_items.iter() {
-        if let Some(id) = &item.id {
-          hash.insert(id.to_string(), item.clone());
-        }
-      }
-      hash
-    };
-
-    //let midjourney_item_ids = midjourney_items.iter()
-    //    .filter_map(|item| item.id.as_ref())
-    //    .map(|id| id.to_string())
-    //    .collect::<Vec<_>>();
-
-    let midjourney_item_ids = midjourney_items_by_id
-        .keys()
-        .map(|id| id.to_string())
-        .collect();
-
-    let local_tasks = list_tasks_by_provider_and_tokens(ListTasksArgs {
+    let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
       provider: GenerationProvider::Midjourney,
-      provider_job_ids: Some(midjourney_item_ids),
+      task_statuses: &PENDING_STATUSES,
     }).await?;
 
-    let local_tasks = local_tasks.tasks;
+    check_midjourney_tasks(
+      app_handle,
+      app_env_configs,
+      app_data_root,
+      task_database,
+      &cookies,
+      &user_id,
+      &storyteller_creds,
+      local_tasks,
+    ).await?;
 
-    // Map of Midjourney Job ID to Local Task.
-    let local_tasks_by_midjourney_job_id = local_tasks.iter()
-        .filter(|task| match task.status {
-          TaskStatus::Pending => true,
-          TaskStatus::Started => true,
-          TaskStatus::AttemptFailed => true,
-          _ => false,
-        })
-        .filter_map(|task| {
-          if let Some(provider_job_id) = &task.provider_job_id {
-            Some((provider_job_id.clone(), task.clone()))
-          } else {
-            None
-          }
-        })
-        .collect::<HashMap<String, Task>>();
+    tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
+  }
+}
 
-    // TODO: If we introduce another job polling mechanism, we may need to handle concurrency.
+async fn check_midjourney_tasks(
+  app_handle: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
+  app_data_root: &AppDataRoot,
+  task_database: &TaskDatabase,
+  mj_cookies: &CookieStore,
+  mj_user_id: &MidjourneyUserId,
+  storyteller_creds: &StorytellerCredentialSet,
+  local_tasks: TaskList,
+) -> AnyhowResult<()> {
+  let local_tasks = local_tasks.tasks;
 
-    let image_downloader = ImageDownloaderClient::create()?;
+  if local_tasks.is_empty() {
+    return Ok(())
+  }
 
-    for (midjourney_job_id, local_task) in local_tasks_by_midjourney_job_id.iter() {
-      let midjourney_item = match midjourney_items_by_id.get(midjourney_job_id) {
-        Some(item) => item,
-        None => continue,
-      };
+  // Map of Midjourney Job ID to Local Task.
+  let local_tasks_by_midjourney_job_id = local_tasks.iter()
+      .filter_map(|task| {
+        if let Some(provider_job_id) = &task.provider_job_id {
+          Some((provider_job_id.clone(), task.clone()))
+        } else {
+          None
+        }
+      })
+      .collect::<HashMap<String, Task>>();
 
-      for index in 0..4 {
-        info!("Downloading generated Midjourney file...");
+  let cookie_header = mj_cookies.to_cookie_string();
 
-        let download_path = download_midjourney_image(
-          &image_downloader,
-          midjourney_job_id,
-          index,
-          app_data_root
-        ).await?;
+  let result = imagine(ImagineRequest {
+    hostname: MidjourneyHostname::Standard,
+    cookie_header,
+    user_id: mj_user_id,
+    page_size: None,
+  }).await?;
 
-        let mut wait_delay = 0;
+  let midjourney_items = result.items;
 
-        loop {
-          info!("Uploading to backend...");
+  let midjourney_items_by_id = {
+    let mut hash = HashMap::new();
+    for item in midjourney_items.iter() {
+      if let Some(id) = &item.id {
+        hash.insert(id.to_string(), item.clone());
+      }
+    }
+    hash
+  };
 
-          let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-            api_host: &app_env_configs.storyteller_host,
-            maybe_creds: Some(&storyteller_creds),
-            path: &download_path,
-            is_intermediate_system_file: false,
-          }).await;
+  // TODO: If we introduce another job polling mechanism, we may need to handle concurrency.
+  //  One idea might be to add a new job state that acts as an optimistic lock
 
-          match result {
-            Ok(media_file) => {
-              info!("Successfully uploaded to backend: {:?}", media_file);
-              break;
-            },
-            Err(StorytellerError::Api(ApiError::TooManyRequests(_))) => {
-              error!("Too many requests, retrying upload after delay...");
-              // If we hit a rate limit, we can retry after a short delay.
-              wait_delay += 10;
-              if wait_delay > 60 {
-                wait_delay = 60;
-              }
-              tokio::time::sleep(std::time::Duration::from_secs(wait_delay)).await;
-              continue; // Retry the upload.
+  let image_downloader = ImageDownloaderClient::create()?;
+
+  for (midjourney_job_id, local_task) in local_tasks_by_midjourney_job_id.iter() {
+    // TODO: Copy prompt from this.
+    let midjourney_item = match midjourney_items_by_id.get(midjourney_job_id) {
+      Some(item) => item,
+      None => continue,
+    };
+
+    for index in 0..4 {
+      info!("Downloading generated Midjourney file...");
+
+      let download_path = download_midjourney_image(
+        &image_downloader,
+        midjourney_job_id,
+        index,
+        app_data_root
+      ).await?;
+
+      let mut wait_delay = 0;
+
+      loop {
+        info!("Uploading to backend...");
+
+        let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
+          api_host: &app_env_configs.storyteller_host,
+          maybe_creds: Some(&storyteller_creds),
+          path: &download_path,
+          is_intermediate_system_file: false,
+        }).await;
+
+        match result {
+          Ok(media_file) => {
+            info!("Successfully uploaded to backend: {:?}", media_file);
+            break;
+          },
+          Err(StorytellerError::Api(ApiError::TooManyRequests(_))) => {
+            error!("Too many requests, retrying upload after delay...");
+            // If we hit a rate limit, we can retry after a short delay.
+            wait_delay += 10;
+            if wait_delay > 60 {
+              wait_delay = 60;
             }
-            Err(err) => {
-              error!("Failed to upload to backend: {:?}", err);
-              return Err(err.into())
-            },
+            tokio::time::sleep(std::time::Duration::from_secs(wait_delay)).await;
+            continue; // Retry the upload.
           }
-        } // End loop
+          Err(err) => {
+            error!("Failed to upload to backend: {:?}", err);
+            return Err(err.into())
+          },
+        }
+      } // End loop
 
-        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-      }
-
-      let updated = update_task_status(UpdateTaskArgs {
-        db: task_database.get_connection(),
-        task_id: &local_task.id,
-        status: TaskStatus::CompleteSuccess,
-      }).await?;
-
-      if !updated {
-        continue; // If anything breaks with queries, don't spam events.
-      }
-
-      let event = GenerationCompleteEvent {
-        //media_file_token: result.media_file_token,
-        action: Some(GenerationAction::GenerateImage),
-        service: GenerationServiceProvider::Midjourney,
-        model: None,
-      };
-
-      if let Err(err) = event.send(&app_handle) {
-        error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
-      }
-
-      tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
+      tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
 
-    //for task in tasks {
-    //  let job_id = match task.provider_job_id {
-    //    Some(job_id) => job_id,
-    //    None => continue,
-    //  };
-    //  match task.status {
-    //    TaskStatus::Pending => {}, // Fall-through
-    //    TaskStatus::Started => {}, // Fall-through
-    //    TaskStatus::AttemptFailed => {}, // Fall-through
-    //    _ => {
-    //      tasks_by_provider_job_id.remove(&job_id);
-    //      continue
-    //    },
-    //  }
-    //}
+    let updated = update_task_status(UpdateTaskArgs {
+      db: task_database.get_connection(),
+      task_id: &local_task.id,
+      status: TaskStatus::CompleteSuccess,
+    }).await?;
 
-    tokio::time::sleep(std::time::Duration::from_millis(60_000)).await;
+    if !updated {
+      continue; // If anything breaks with queries, don't spam events.
+    }
+
+    let event = GenerationCompleteEvent {
+      //media_file_token: result.media_file_token,
+      action: Some(GenerationAction::GenerateImage),
+      service: GenerationServiceProvider::Midjourney,
+      model: None,
+    };
+
+    if let Err(err) = event.send(&app_handle) {
+      error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
+    }
+
+    tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
   }
+
+  tokio::time::sleep(std::time::Duration::from_millis(60_000)).await;
+
+  Ok(())
 }
