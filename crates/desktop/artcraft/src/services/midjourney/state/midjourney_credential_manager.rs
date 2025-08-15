@@ -8,6 +8,7 @@ use errors::AnyhowResult;
 use log::{info, warn};
 use std::fs::read_to_string;
 use std::sync::{Arc, RwLock};
+use midjourney_client::credentials::cookie_store_has_auth_cookies::cookie_store_has_auth_cookies;
 use storyteller_client::credentials::storyteller_avt_cookie::StorytellerAvtCookie;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::credentials::storyteller_session_cookie::StorytellerSessionCookie;
@@ -93,7 +94,41 @@ impl MidjourneyCredentialManager {
       }
     }
   }
-  
+
+  // NB: This is just a heuristic. We'll add better checks later.
+  pub fn session_appears_active(&self) -> anyhow::Result<bool> {
+    let maybe_cookies = match self.cookies.read() {
+      Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(store) => store.clone(),
+    };
+
+    let maybe_user_info = match self.user_info.read() {
+      Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(info) => info.clone(),
+    };
+
+    if maybe_cookies.is_none() || maybe_user_info.is_none() {
+      return Ok(false);
+    }
+
+    let cookies = maybe_cookies.unwrap();
+    let user_info = maybe_user_info.unwrap();
+
+    // NB: We consider the session active if we have auth cookies and a user id.
+    let has_user_id = user_info.user_id.is_some();
+    let maybe_has_auth_cookies = cookie_store_has_auth_cookies(&cookies);
+
+    // Misc cookies without login cookies are ~1055 length
+    // AUTH_I is ~1500 length
+    // AUTH_R is ~500 length
+    let maybe_has_big_enough_cookie = cookies.calculate_approx_cookie_character_length() > 2100;
+
+    // TODO: Heuristic should count.
+    // TODO: Consolidate with "login window thread" logic.
+    // TODO: Check timestamp of last valid request.
+    Ok(has_user_id && maybe_has_auth_cookies && maybe_has_big_enough_cookie && maybe_has_big_enough_cookie)
+  }
+
   pub fn clear_credentials(&self) -> anyhow::Result<()> {
     match self.cookies.write() {
       Err(err) => return Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),

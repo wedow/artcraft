@@ -91,6 +91,7 @@ pub fn run() {
   let app_env_configs_2 = app_env_configs.clone();
 
   let midjourney_creds_manager = MidjourneyCredentialManager::initialize_from_disk_infallible(&app_data_root);
+  let midjourney_creds_manager_2 = midjourney_creds_manager.clone();
 
   println!("Initializing backend runtime...");
 
@@ -129,6 +130,7 @@ pub fn run() {
           sora_tasks,
           fal_creds,
           fal_tasks,
+          midjourney_creds_manager_2,
         ).await;
 
         if let Err(err) = result {
