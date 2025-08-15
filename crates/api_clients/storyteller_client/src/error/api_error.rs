@@ -59,7 +59,7 @@ impl Display for ApiError {
       ApiError::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
       ApiError::Forbidden(msg) => write!(f, "Forbidden: {}", msg),
       ApiError::NotFound(msg) => write!(f, "Not found: {}", msg),
-      ApiError::TooManyRequests(msg) => write!(f, "Too many requests: {}", msg),
+      ApiError::TooManyRequests(msg) => write!(f, "Too many requests to Storyteller backend: {}", msg),
       ApiError::InternalServerError {body, backend_hostname} => 
         write!(f, "Internal Server Error; backend hostname: {:?} ; body: {}; ", backend_hostname, body),
       // Server response handling errors

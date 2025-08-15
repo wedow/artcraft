@@ -13,8 +13,8 @@ impl Error for StorytellerError {}
 impl std::fmt::Display for StorytellerError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
-      StorytellerError::Api(e) => write!(f, "API error: {:?}", e),
-      StorytellerError::Client(e) => write!(f, "Client error: {:?}", e),
+      StorytellerError::Api(e) => write!(f, "Storyteller API error: {:?}", e),
+      StorytellerError::Client(e) => write!(f, "Storyteller Client error: {:?}", e),
     }
   }
 }

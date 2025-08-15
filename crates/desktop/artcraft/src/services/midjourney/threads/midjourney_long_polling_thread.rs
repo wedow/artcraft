@@ -19,6 +19,8 @@ use std::path::PathBuf;
 use tauri::AppHandle;
 use url::Url;
 use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
+use storyteller_client::error::api_error::ApiError;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
@@ -176,16 +178,39 @@ async fn polling_loop(
           app_data_root
         ).await?;
 
-        info!("Uploading to backend...");
+        let mut wait_delay = 0;
 
-        let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-          api_host: &app_env_configs.storyteller_host,
-          maybe_creds: Some(&storyteller_creds),
-          path: download_path,
-          is_intermediate_system_file: false,
-        }).await?;
+        loop {
+          info!("Uploading to backend...");
 
-        info!("Uploaded to API backend: {:?}", result.media_file_token);
+          let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
+            api_host: &app_env_configs.storyteller_host,
+            maybe_creds: Some(&storyteller_creds),
+            path: &download_path,
+            is_intermediate_system_file: false,
+          }).await;
+
+          match result {
+            Ok(media_file) => {
+              info!("Successfully uploaded to backend: {:?}", media_file);
+              break;
+            },
+            Err(StorytellerError::Api(ApiError::TooManyRequests(_))) => {
+              error!("Too many requests, retrying upload after delay...");
+              // If we hit a rate limit, we can retry after a short delay.
+              wait_delay += 10;
+              if wait_delay > 60 {
+                wait_delay = 60;
+              }
+              tokio::time::sleep(std::time::Duration::from_secs(wait_delay)).await;
+              continue; // Retry the upload.
+            }
+            Err(err) => {
+              error!("Failed to upload to backend: {:?}", err);
+              return Err(err.into())
+            },
+          }
+        } // End loop
 
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
       }
