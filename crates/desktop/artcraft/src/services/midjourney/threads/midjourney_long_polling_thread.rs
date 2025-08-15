@@ -7,6 +7,10 @@ use log::error;
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::endpoints::imagine::{imagine, ImagineRequest};
 use tauri::AppHandle;
+use enums::common::generation_provider::GenerationProvider;
+use enums::tauri::tasks::task_status::TaskStatus;
+use midjourney_client::utils::get_image_url::get_image_url;
+use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
 
 /// This thread is responsible for picking up tasks that fell through the cracks of
 /// the faster websocket thread.
@@ -76,7 +80,40 @@ async fn polling_loop(
       page_size: None,
     }).await?;
 
-    println!("Response: {:?}\n\n", result);
+    let job_ids = result.items.iter()
+        .filter_map(|item| item.id.as_ref())
+        .map(|id| id.to_string())
+        .collect::<Vec<_>>();
+
+    let tasks = list_tasks_by_provider_and_tokens(ListTasksArgs {
+      db: task_database.get_connection(),
+      provider: GenerationProvider::Midjourney,
+      provider_job_ids: Some(job_ids),
+    }).await?;
+
+    let tasks = tasks.tasks;
+
+    for task in tasks {
+      let job_id = match task.provider_job_id {
+        Some(job_id) => job_id,
+        None => continue,
+      };
+
+      match task.status {
+        TaskStatus::Pending => {}, // Fall-through
+        TaskStatus::Started => {}, // Fall-through
+        TaskStatus::AttemptFailed => {}, // Fall-through
+        _ => continue,
+      }
+
+      for index in 0..4 {
+        let url = get_image_url(&job_id, index)?;
+
+        println!("Image URL for job {} index {}: {}", job_id, index, url);
+      }
+    }
+
+    //println!("Response: {:?}\n\n", tasks);
 
     tokio::time::sleep(std::time::Duration::from_millis(60_000)).await;
   }

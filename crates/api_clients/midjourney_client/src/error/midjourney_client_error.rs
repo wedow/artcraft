@@ -9,6 +9,9 @@ pub enum MidjourneyClientError {
   /// The cookie was too short to be valid.
   CookieTooShort,
   
+  /// Tried to look up an image out of range [0,4)
+  InvalidImageIndex,
+  
   /// Could not determine the filetype for the file.
   FileTypeNotKnown(PathBuf),
 
@@ -32,6 +35,7 @@ impl Display for MidjourneyClientError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::CookieTooShort => write!(f, "The cookie header is too short to be valid."),
+      Self::InvalidImageIndex => write!(f, "The image index is out of range. Valid range is [0, 4)."),
       Self::FileTypeNotKnown(path) => write!(f, "Could not determine the filetype for the file: {:?}", path),
       Self::FileTypeNotHandled(path) => write!(f, "Could not handle the file type for the file: {:?}", path),
       Self::IoError(err) => write!(f, "IO error: {}", err),
