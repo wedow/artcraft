@@ -19,6 +19,7 @@ use std::path::PathBuf;
 use tauri::AppHandle;
 use url::Url;
 use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
+use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
@@ -213,6 +214,16 @@ async fn polling_loop(
         } // End loop
 
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+      }
+
+      let updated = update_task_status(UpdateTaskArgs {
+        db: task_database.get_connection(),
+        task_id: &local_task.id,
+        status: TaskStatus::CompleteSuccess,
+      }).await?;
+
+      if !updated {
+        continue; // If anything breaks with queries, don't spam events.
       }
 
       let event = GenerationCompleteEvent {
