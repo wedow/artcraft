@@ -33,7 +33,15 @@ serde_json.workspace = true
 url.workspace = true
 
 # NB: wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
-# Mac: brew install --formula cmake pkg-config llvm
+#
+# Mac:
+#   brew install --formula cmake pkg-config llvm
+# Windows:
+#   choco install cmake -y
+#   choco install strawberryperl -y
+#   choco install pkgconfiglite -y
+#   choco install llvm -y
+#   choco install nasm -y
 wreq = { version = "5", features = ["json"] }
 wreq-util = "2"
 tokio = { version = "1", features = ["full"] }
