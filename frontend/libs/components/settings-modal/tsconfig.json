@@ -33,6 +33,9 @@
       "path": "../../tauri-api"
     },
     {
+      "path": "../../tauri-events"
+    },
+    {
       "path": "../../analytics/google-analytics"
     },
     {

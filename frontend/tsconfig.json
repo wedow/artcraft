@@ -149,6 +149,9 @@
     },
     {
       "path": "./libs/analytics/google-analytics"
+    },
+    {
+      "path": "./libs/tauri-events"
     }
   ]
 }
