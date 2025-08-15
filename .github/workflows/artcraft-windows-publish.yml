@@ -26,13 +26,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install wreq dependencies
+        run: |
+          choco install cmake -y
+          choco install strawberryperl -y
+          choco install pkgconfiglite -y
+          choco install llvm -y
+          choco install nasm -y
+        shell: cmd
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
 
       - name: install frontend dependencies
         run: |
@@ -83,6 +92,8 @@ jobs:
       - name: build and publish
         uses: tauri-apps/tauri-action@v0
         env:
+          # NB(bt): This is needed by wreq. Hopefully it doesn't kill Tauri
+          RUSTFLAGS: "-C target-feature=+crt-static"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Use the SQLx query cache for SQLite
           SQLX_OFFLINE: true
