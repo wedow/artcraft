@@ -16,6 +16,7 @@ export const MODEL_TYPE_TO_CREATOR: Record<string, ModelCreator> = {
   veo_2: ModelCreator.Google,
   recraft_3: ModelCreator.Recraft,
   hunyuan_3d: ModelCreator.Tencent,
+  midjourney: ModelCreator.Midjourney,
 };
 
 // Get creator icon for a model type
@@ -94,6 +95,7 @@ export const getModelDisplayName = (modelType: string): string => {
     hunyuan_3d_2p1: "Hunyuan 3D 2.1",
     hunyuan_3d: "Hunyuan 3D",
     flux_pro_kontext_max: "Flux Pro Kontext Max",
+    midjourney: "Midjourney",
     // TODO: add more models here - BFlat
   };
 
@@ -105,6 +107,7 @@ export const getProviderDisplayName = (provider: string): string => {
   const displayNames: Record<string, string> = {
     artcraft: "ArtCraft",
     fal: "FAL",
+    midjourney: "Midjourney",
     sora: "Sora",
   };
 
