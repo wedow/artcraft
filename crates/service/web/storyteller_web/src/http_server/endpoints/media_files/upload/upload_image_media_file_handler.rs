@@ -23,7 +23,7 @@ use mimetypes::mimetype_to_extension::mimetype_to_extension;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
 use tokens::tokens::media_files::MediaFileToken;
-
+use tokens::tokens::prompts::PromptToken;
 use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
@@ -54,6 +54,25 @@ pub struct UploadImageMediaFileForm {
   #[multipart(limit = "2 KiB")]
   #[schema(value_type = Option<Visibility>, format = Binary)]
   maybe_visibility: Option<Text<Visibility>>,
+
+  // TODO: These fields --
+  // /// Optional: Prompt associated with this image
+  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  // #[multipart(limit = "2 KiB")]
+  // #[schema(value_type = Option<String>, format = Binary)]
+  // maybe_prompt_token: Option<Text<PromptToken>>,
+
+  // /// Optional: Provider of image generation service
+  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  // #[multipart(limit = "2 KiB")]
+  // #[schema(value_type = Option<String>, format = Binary)]
+  // maybe_generation_provider: Option<Text<String>>,
+
+  // /// Optional: Type of model used
+  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  // #[multipart(limit = "2 KiB")]
+  // #[schema(value_type = Option<String>, format = Binary)]
+  // maybe_origin_model_type: Option<Text<String>>,
 
   /// Optional: Whether this is a system file (eg. cover files we should hide)
   #[multipart(limit = "2 KiB")]

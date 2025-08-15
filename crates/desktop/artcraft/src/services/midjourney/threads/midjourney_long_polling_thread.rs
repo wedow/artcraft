@@ -211,6 +211,26 @@ async fn check_midjourney_tasks(
       loop {
         info!("Uploading to backend...");
 
+        // TODO: Lower the rate limit
+        
+        // TODO: media_files.origin_category
+        // TODO: media_files.maybe_prompt_token
+        // TODO: media_files.maybe_generation_provider
+        // TODO: media_files.maybe_origin_model_type
+        // TODO: media_files.maybe_origin_model_token (sref?)
+        // TODO: media_files.is_batch_generated
+        // TODO: media_files.maybe_batch_token
+        // TODO: media_files.is_user_upload
+        
+        // TODO: prompts.prompt_type
+        // TODO: prompts.maybe_model_type
+        // TODO: prompts.maybe_generation_provider
+        // TODO: prompts.maybe_positive_prompt
+        
+        // TODO: batch_generations.token
+        // TODO: batch_generations.entity_type
+        // TODO: batch_generations.entity_token
+        
         let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
           api_host: &app_env_configs.storyteller_host,
           maybe_creds: Some(&storyteller_creds),
