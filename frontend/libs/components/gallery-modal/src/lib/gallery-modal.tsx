@@ -114,7 +114,10 @@ export const GalleryModal = React.memo(
     const [allItems, setAllItems] = useState<GalleryItem[]>([]);
     const [pageIndex, setPageIndex] = useState(0);
     const [hasMore, setHasMore] = useState(true);
-    const pageSize = 25;
+
+    // NB: We've got some kind of cursoring issue where subsequent pages are not requested.
+    // For now, let's set the pagination limit really high.
+    const pageSize = 1000;
 
     const imageUrl = lightboxImageSignal.value?.fullImage || "";
 
