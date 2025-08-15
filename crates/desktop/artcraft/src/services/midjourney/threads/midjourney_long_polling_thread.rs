@@ -18,6 +18,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use tauri::AppHandle;
 use url::Url;
+use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
 use storyteller_client::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
@@ -66,7 +67,14 @@ async fn polling_loop(
     }
 
     // TODO: Graceful wait, fix this long function body
-    let storyteller_creds = storyteller_creds_manager.get_credentials_required()?;
+    let storyteller_creds = match storyteller_creds_manager.get_credentials()? {
+      Some(creds) => creds,
+      None => {
+        error!("No Storyteller credentials found. Cannot proceed with Midjourney polling.");
+        tokio::time::sleep(std::time::Duration::from_millis(10_000)).await;
+        continue;
+      }
+    };
 
     let cookies = creds.maybe_copy_cookie_store()?;
 
@@ -150,6 +158,8 @@ async fn polling_loop(
 
     // TODO: If we introduce another job polling mechanism, we may need to handle concurrency.
 
+    let image_downloader = ImageDownloaderClient::create()?;
+
     for (midjourney_job_id, local_task) in local_tasks_by_midjourney_job_id.iter() {
       let midjourney_item = match midjourney_items_by_id.get(midjourney_job_id) {
         Some(item) => item,
@@ -158,7 +168,13 @@ async fn polling_loop(
 
       for index in 0..4 {
         info!("Downloading generated Midjourney file...");
-        let download_path = download_midjourney_image(midjourney_job_id, index, app_data_root).await?;
+
+        let download_path = download_midjourney_image(
+          &image_downloader,
+          midjourney_job_id,
+          index,
+          app_data_root
+        ).await?;
 
         info!("Uploading to backend...");
 

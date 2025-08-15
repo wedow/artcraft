@@ -49,7 +49,7 @@ impl StorytellerCredentialHolder {
     match self.credentials.read() {
       Err(err) => Err(anyhow!("Failed to acquire read lock: {:?}", err)),
       Ok(creds) => match &*creds {
-        None => Err(anyhow!("Credentials not set")),
+        None => Err(anyhow!("Storyteller credentials not set")),
         Some(creds) => Ok(creds.clone()),
       }
     }

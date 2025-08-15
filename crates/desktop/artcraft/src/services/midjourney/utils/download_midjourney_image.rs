@@ -6,13 +6,21 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use url::Url;
+use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
 
-pub async fn download_midjourney_image(job_id: &str, index: u8, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
+pub async fn download_midjourney_image(
+  image_downloader: &ImageDownloaderClient, 
+  job_id: &str, 
+  index: u8, 
+  app_data_root: &AppDataRoot
+) -> AnyhowResult<PathBuf> {
   let url = get_image_url(job_id, index)?;
   let parsed_url = Url::parse(&url)?;
 
-  let response = reqwest::get(&url).await?;
-  let image_bytes = response.bytes().await?;
+  //let response = reqwest::get(&url).await?;
+  //let image_bytes = response.bytes().await?;
+  
+  let image_bytes = image_downloader.download_image(job_id, index).await?;
 
   let ext = parsed_url.path().split(".").last().unwrap_or("png");
 
