@@ -31,7 +31,6 @@ export const MidjourneyAccountBlock = () => {
     if (midjourneySession?.payload?.can_clear_state) {
       await clearState();
       setMidjourneySession(undefined);
-      //fetchSession();
     } else {
       await openLogin();
     }
