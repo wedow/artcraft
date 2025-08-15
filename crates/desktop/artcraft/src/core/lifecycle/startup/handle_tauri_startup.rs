@@ -78,8 +78,10 @@ pub async fn handle_tauri_startup(
   tauri::async_runtime::spawn(midjourney_long_polling_thread(
     app.clone(),
     app_env_configs.clone(),
+    root.clone(),
     task_database.clone(),
     mj_creds_manager.clone(),
+    storyteller_creds_manager.clone(),
   ));
 
   spawn_discord_presence_thread()?;
