@@ -108,7 +108,7 @@ pub async fn upload_image_media_file_handler(
   server_state: web::Data<Arc<ServerState>>,
   MultipartForm(mut form): MultipartForm<UploadImageMediaFileForm>,
 ) -> Result<Json<UploadImageMediaFileSuccessResponse>, MediaFileUploadError> {
-  
+
   validate_form(&form)?;
 
   let mut mysql_connection = server_state.mysql_pool
@@ -148,14 +148,16 @@ pub async fn upload_image_media_file_handler(
 
   // ==================== RATE LIMIT ==================== //
 
-  let rate_limiter = match maybe_user_session {
-    None => &server_state.redis_rate_limiters.file_upload_logged_out,
-    Some(ref _session) => &server_state.redis_rate_limiters.file_upload_logged_in,
-  };
-
-  if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
-    return Err(MediaFileUploadError::RateLimited);
-  }
+  // NB: We upload batches of images now, so a rate limiter doesn't make much sense anymore.
+  //
+  // let rate_limiter = match maybe_user_session {
+  //   None => &server_state.redis_rate_limiters.file_upload_logged_out,
+  //   Some(ref _session) => &server_state.redis_rate_limiters.file_upload_logged_in,
+  // };
+  //
+  // if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+  //   return Err(MediaFileUploadError::RateLimited);
+  // }
 
   // ==================== HANDLE IDEMPOTENCY ==================== //
 
@@ -265,7 +267,7 @@ pub async fn upload_image_media_file_handler(
   let is_intermediate_system_file = form.is_intermediate_system_file
       .map(|b| b.0)
       .unwrap_or(false);
-  
+
   let maybe_prompt_token = form.maybe_prompt_token
       .as_ref()
       .map(|token| token.0.clone());
@@ -316,7 +318,7 @@ fn validate_form(form: &UploadImageMediaFileForm) -> Result<(), MediaFileUploadE
       .as_ref()
       .map(|b| b.0)
       .unwrap_or(false);
-  
+
   if is_intermediate_system_file && form.maybe_prompt_token.is_some() {
     return Err(MediaFileUploadError::BadInput(
       "Cannot set `is_intermediate_system_file` to true if `maybe_prompt_token` is provided."
