@@ -17,6 +17,12 @@ export const MODEL_TYPE_TO_CREATOR: Record<string, ModelCreator> = {
   recraft_3: ModelCreator.Recraft,
   hunyuan_3d: ModelCreator.Tencent,
   midjourney: ModelCreator.Midjourney,
+  midjourney_v6: ModelCreator.Midjourney,
+  midjourney_v6p1: ModelCreator.Midjourney,
+  midjourney_v6p1_raw: ModelCreator.Midjourney,
+  midjourney_v7: ModelCreator.Midjourney,
+  midjourney_v7_raw: ModelCreator.Midjourney,
+  midjourney_v7_draft_raw: ModelCreator.Midjourney,
 };
 
 // Get creator icon for a model type
@@ -95,7 +101,18 @@ export const getModelDisplayName = (modelType: string): string => {
     hunyuan_3d_2p1: "Hunyuan 3D 2.1",
     hunyuan_3d: "Hunyuan 3D",
     flux_pro_kontext_max: "Flux Pro Kontext Max",
+
+    // Catch-all bucket for Midjourney.
     midjourney: "Midjourney",
+
+    // Specific Midjourney models.
+    midjourney_v6: "Midjourney V6",
+    midjourney_v6p1: "Midjourney V6.1",
+    midjourney_v6p1_raw: "Midjourney V6.1 (Raw)",
+    midjourney_v7: "Midjourney V7",
+    midjourney_v7_raw: "Midjourney V7 (Raw)",
+    midjourney_v7_draft_raw: "Midjourney V7 (Draft Raw)",
+
     // TODO: add more models here - BFlat
   };
 

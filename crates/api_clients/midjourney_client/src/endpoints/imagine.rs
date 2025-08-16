@@ -39,7 +39,10 @@ pub struct ImagineItem {
 #[derive(Debug, Clone)]
 pub enum MidjourneyJobType {
   V6Diffusion,
+  V6p1Diffusion,
+  V6p1RawDiffusion,
   V7Diffusion,
+  V7DraftDiffusion,
   V7DraftRawDiffusion,
   V7RawDiffusion,
   Vid11I2vRenderAJointVideo,
@@ -53,7 +56,10 @@ impl MidjourneyJobType {
   pub fn from_str(s: &str) -> MidjourneyJobType {
     match s {
       "v6_diffusion" => MidjourneyJobType::V6Diffusion,
+      "v6-1_diffusion" => MidjourneyJobType::V6p1Diffusion,
+      "v6-1_raw_diffusion" => MidjourneyJobType::V6p1RawDiffusion,
       "v7_diffusion" => MidjourneyJobType::V7Diffusion,
+      "v7_draft_diffusion" => MidjourneyJobType::V7DraftDiffusion,
       "v7_draft_raw_diffusion" => MidjourneyJobType::V7DraftRawDiffusion,
       "v7_raw_diffusion" => MidjourneyJobType::V7RawDiffusion,
       "vid_1.1_i2v_render_a_joint_video" => MidjourneyJobType::Vid11I2vRenderAJointVideo,

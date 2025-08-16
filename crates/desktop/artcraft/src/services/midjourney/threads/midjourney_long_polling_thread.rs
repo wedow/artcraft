@@ -203,8 +203,11 @@ async fn check_midjourney_tasks(
 
     let model_type = match midjourney_item.job_type {
       Some(MidjourneyJobType::V6Diffusion) => ModelType::MidjourneyV6,
+      Some(MidjourneyJobType::V6p1Diffusion) => ModelType::MidjourneyV6p1,
+      Some(MidjourneyJobType::V6p1RawDiffusion) => ModelType::MidjourneyV6p1Raw,
       Some(MidjourneyJobType::V7Diffusion) => ModelType::MidjourneyV7,
       Some(MidjourneyJobType::V7RawDiffusion) => ModelType::MidjourneyV7Raw,
+      Some(MidjourneyJobType::V7DraftDiffusion) => ModelType::MidjourneyV7Draft,
       Some(MidjourneyJobType::V7DraftRawDiffusion) => ModelType::MidjourneyV7DraftRaw,
       Some(MidjourneyJobType::Other(ref other)) => {
         info!("Unknown Midjourney job type (for job id {}): {}", midjourney_job_id, other);
