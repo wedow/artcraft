@@ -8,10 +8,14 @@ use crate::core::state::task_database::TaskDatabase;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::utils::download_midjourney_image::download_midjourney_image;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
 use cookie_store::cookie_store::CookieStore;
+use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use errors::AnyhowResult;
+use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
@@ -29,6 +33,7 @@ use storyteller_client::credentials::storyteller_credential_set::StorytellerCred
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
+use storyteller_client::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use url::Url;
 
@@ -195,6 +200,22 @@ async fn check_midjourney_tasks(
       Some(item) => item,
       None => continue,
     };
+
+    let request = CreatePromptRequest {
+      uuid_idempotency_token: generate_random_uuid(),
+      positive_prompt: midjourney_item.full_command.clone(),
+      negative_prompt: None,
+      model_type: Some(ModelType::Midjourney),
+      generation_provider: Some(GenerationProvider::Midjourney),
+    };
+
+    let prompt_response = create_prompt(
+      &app_env_configs.storyteller_host,
+      Some(storyteller_creds),
+      request
+    ).await?;
+
+    info!("Created prompt: {:?}", prompt_response.prompt_token);
 
     for index in 0..4 {
       info!("Downloading generated Midjourney file...");

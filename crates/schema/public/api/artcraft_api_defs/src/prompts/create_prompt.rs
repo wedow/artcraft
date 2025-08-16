@@ -22,9 +22,6 @@ pub struct CreatePromptRequest {
 
   /// OPTIONAL. The service used.
   pub generation_provider: Option<GenerationProvider>,
-  
-  /// OPTIONAL. The type of prompt.
-  pub prompt_type: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

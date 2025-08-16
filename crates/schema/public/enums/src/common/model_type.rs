@@ -30,6 +30,10 @@ pub enum ModelType {
   #[serde(rename = "recraft_3")]
   Recraft3,
 
+  /// Midjourney without distinguishing a model type or version
+  #[serde(rename = "midjourney")]
+  Midjourney,
+
   //// Image Infill models
   //#[serde(rename = "flux_pro_1_infill")]
   //FluxPro1Infill,
@@ -71,6 +75,7 @@ impl ModelType {
       Self::FluxProKontextMax => "flux_pro_kontext_max",
       Self::GptImage1 => "gpt_image_1",
       Self::Recraft3 => "recraft_3",
+      Self::Midjourney => "midjourney",
 
       // Video models
       Self::Kling16Pro => "kling_1p6_pro",
@@ -96,6 +101,7 @@ impl ModelType {
       "flux_pro_kontext_max" => Ok(Self::FluxProKontextMax),
       "gpt_image_1" => Ok(Self::GptImage1),
       "recraft_3" => Ok(Self::Recraft3),
+      "midjourney" => Ok(Self::Midjourney),
 
       // Video models
       "kling_1p6_pro" => Ok(Self::Kling16Pro),
@@ -125,6 +131,7 @@ impl ModelType {
       Self::FluxProKontextMax,
       Self::GptImage1,
       Self::Recraft3,
+      Self::Midjourney,
 
       // Video models
       Self::Kling16Pro,
@@ -159,6 +166,7 @@ mod tests {
       assert_serialization(ModelType::FluxProKontextMax, "flux_pro_kontext_max");
       assert_serialization(ModelType::GptImage1, "gpt_image_1");
       assert_serialization(ModelType::Recraft3, "recraft_3");
+      assert_serialization(ModelType::Midjourney, "midjourney");
       // Video models
       assert_serialization(ModelType::Kling16Pro, "kling_1p6_pro");
       assert_serialization(ModelType::Kling21Pro, "kling_2p1_pro");
@@ -181,6 +189,7 @@ mod tests {
       assert_eq!(ModelType::FluxProKontextMax.to_str(), "flux_pro_kontext_max");
       assert_eq!(ModelType::GptImage1.to_str(), "gpt_image_1");
       assert_eq!(ModelType::Recraft3.to_str(), "recraft_3");
+      assert_eq!(ModelType::Midjourney.to_str(), "midjourney");
 
       // Video models
       assert_eq!(ModelType::Kling16Pro.to_str(), "kling_1p6_pro");
@@ -205,6 +214,7 @@ mod tests {
       assert_eq!(ModelType::from_str("flux_pro_kontext_max").unwrap(), ModelType::FluxProKontextMax);
       assert_eq!(ModelType::from_str("gpt_image_1").unwrap(), ModelType::GptImage1);
       assert_eq!(ModelType::from_str("recraft_3").unwrap(), ModelType::Recraft3);
+      assert_eq!(ModelType::from_str("midjourney").unwrap(), ModelType::Midjourney);
       // Video models
       assert_eq!(ModelType::from_str("kling_1p6_pro").unwrap(), ModelType::Kling16Pro);
       assert_eq!(ModelType::from_str("kling_2p1_pro").unwrap(), ModelType::Kling21Pro);
@@ -219,7 +229,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 15);
+      assert_eq!(variants.len(), 16);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
@@ -229,6 +239,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(ModelType::FluxProKontextMax));
       assert_eq!(variants.pop_first(), Some(ModelType::GptImage1));
       assert_eq!(variants.pop_first(), Some(ModelType::Recraft3));
+      assert_eq!(variants.pop_first(), Some(ModelType::Midjourney));
       // Video models
       assert_eq!(variants.pop_first(), Some(ModelType::Kling16Pro));
       assert_eq!(variants.pop_first(), Some(ModelType::Kling21Pro));

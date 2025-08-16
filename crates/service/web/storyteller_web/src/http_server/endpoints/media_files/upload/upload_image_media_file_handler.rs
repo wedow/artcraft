@@ -12,9 +12,13 @@ use log::{error, info, warn};
 use once_cell::sync::Lazy;
 use utoipa::ToSchema;
 
+use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
+use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
+use crate::state::server_state::ServerState;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_type::MediaFileType;
+use enums::common::generation_provider::GenerationProvider;
 use enums::common::visibility::Visibility;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
 use http_server_common::request::get_request_ip::get_request_ip;
@@ -24,9 +28,6 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
-use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
-use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
-use crate::state::server_state::ServerState;
 
 /// Form-multipart request fields.
 ///
@@ -55,24 +56,11 @@ pub struct UploadImageMediaFileForm {
   #[schema(value_type = Option<Visibility>, format = Binary)]
   maybe_visibility: Option<Text<Visibility>>,
 
-  // TODO: These fields --
-  // /// Optional: Prompt associated with this image
-  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
-  // #[multipart(limit = "2 KiB")]
-  // #[schema(value_type = Option<String>, format = Binary)]
-  // maybe_prompt_token: Option<Text<PromptToken>>,
-
-  // /// Optional: Provider of image generation service
-  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
-  // #[multipart(limit = "2 KiB")]
-  // #[schema(value_type = Option<String>, format = Binary)]
-  // maybe_generation_provider: Option<Text<String>>,
-
-  // /// Optional: Type of model used
-  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
-  // #[multipart(limit = "2 KiB")]
-  // #[schema(value_type = Option<String>, format = Binary)]
-  // maybe_origin_model_type: Option<Text<String>>,
+  /// Optional: Prompt associated with this image
+  /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  #[multipart(limit = "2 KiB")]
+  #[schema(value_type = Option<String>, format = Binary)]
+  maybe_prompt_token: Option<Text<PromptToken>>,
 
   /// Optional: Whether this is a system file (eg. cover files we should hide)
   #[multipart(limit = "2 KiB")]
@@ -120,6 +108,8 @@ pub async fn upload_image_media_file_handler(
   server_state: web::Data<Arc<ServerState>>,
   MultipartForm(mut form): MultipartForm<UploadImageMediaFileForm>,
 ) -> Result<Json<UploadImageMediaFileSuccessResponse>, MediaFileUploadError> {
+  
+  validate_form(&form)?;
 
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
@@ -275,6 +265,10 @@ pub async fn upload_image_media_file_handler(
   let is_intermediate_system_file = form.is_intermediate_system_file
       .map(|b| b.0)
       .unwrap_or(false);
+  
+  let maybe_prompt_token = form.maybe_prompt_token
+      .as_ref()
+      .map(|token| token.0.clone());
 
   let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
     maybe_media_class: Some(MediaFileClass::Image),
@@ -287,6 +281,7 @@ pub async fn upload_image_media_file_handler(
     maybe_engine_category: None,
     maybe_animation_type: None,
     maybe_mime_type: Some(&mimetype),
+    maybe_prompt_token: maybe_prompt_token.as_ref(),
     file_size_bytes: file_size_bytes as u64,
     maybe_duration_millis: None,
     sha256_checksum: &hash,
@@ -310,4 +305,23 @@ pub async fn upload_image_media_file_handler(
     success: true,
     media_file_token: token,
   }))
+}
+
+fn validate_form(form: &UploadImageMediaFileForm) -> Result<(), MediaFileUploadError> {
+  if form.uuid_idempotency_token.is_empty() {
+    return Err(MediaFileUploadError::BadInput("Idempotency token is required".to_string()));
+  }
+
+  let is_intermediate_system_file = form.is_intermediate_system_file
+      .as_ref()
+      .map(|b| b.0)
+      .unwrap_or(false);
+  
+  if is_intermediate_system_file && form.maybe_prompt_token.is_some() {
+    return Err(MediaFileUploadError::BadInput(
+      "Cannot set `is_intermediate_system_file` to true if `maybe_prompt_token` is provided."
+          .to_string()));
+  }
+
+  Ok(())
 }

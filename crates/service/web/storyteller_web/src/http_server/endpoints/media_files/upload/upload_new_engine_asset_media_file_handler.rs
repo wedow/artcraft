@@ -206,6 +206,7 @@ pub async fn upload_new_engine_asset_media_file_handler(
     creator_ip_address: &ip_address,
     creator_set_visibility: file_info.creator_set_visibility,
     upload_type: UploadType::Filesystem,
+    maybe_prompt_token: None,
     maybe_engine_category: Some(file_info.engine_category),
     maybe_animation_type: file_info.maybe_animation_type,
     maybe_mime_type: Some(file_info.mimetype),

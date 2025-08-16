@@ -230,6 +230,7 @@ pub async fn upload_new_scene_media_file_handler(
     maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility,
+    maybe_prompt_token: None,
     upload_type: UploadType::Filesystem,
     maybe_engine_category: Some(MediaFileEngineCategory::Scene),
     maybe_animation_type: None,

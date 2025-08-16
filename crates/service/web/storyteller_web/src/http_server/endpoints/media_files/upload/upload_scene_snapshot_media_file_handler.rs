@@ -224,6 +224,7 @@ pub async fn upload_scene_snapshot_media_file_handler(
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Hidden,
     upload_type: UploadType::Filesystem,
+    maybe_prompt_token: None,
     maybe_engine_category: Some(MediaFileEngineCategory::Scene),
     maybe_animation_type: None,
     maybe_mime_type: Some(MIMETYPE),

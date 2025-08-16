@@ -16,6 +16,7 @@ use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::by_table::model_weights::weights_category::WeightsCategory;
+use enums::common::generation_provider::GenerationProvider;
 use enums::common::visibility::Visibility;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
@@ -42,6 +43,14 @@ pub struct UploadImageFromFileArgs<'a, P: AsRef<Path>> {
 
   /// If true, we should hide the image from the user's gallery.
   pub is_intermediate_system_file: bool,
+
+  /// If provided, this is the prompt that this image is associated with.
+  /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  pub maybe_prompt_token: Option<PromptToken>,
+
+  // /// If provided, this is the service provider that created the image.
+  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  // pub maybe_generation_provider: Option<GenerationProvider>,
 }
 
 
@@ -49,6 +58,8 @@ pub struct UploadImageFromFileArgs<'a, P: AsRef<Path>> {
 pub async fn upload_image_media_file_from_file<P: AsRef<Path>>(
   args: UploadImageFromFileArgs<'_, P>,
 ) -> Result<UploadImageMediaFileSuccessResponse, StorytellerError> {
+  
+  validate_args(&args)?;
 
   let url = get_route(args.api_host);
 
@@ -69,6 +80,10 @@ pub async fn upload_image_media_file_from_file<P: AsRef<Path>>(
 
   if args.is_intermediate_system_file {
     form = form.text("is_intermediate_system_file", "true");
+  }
+  
+  if let Some(prompt_token) = &args.maybe_prompt_token {
+    form = form.text("maybe_prompt_token", prompt_token.to_string());
   }
 
   let mut request_builder = client.post(url)
@@ -108,4 +123,16 @@ fn get_route(api_host: &ApiHost) -> String {
 pub struct UploadImageMediaFileSuccessResponse {
   pub success: bool,
   pub media_file_token: MediaFileToken,
+}
+
+fn validate_args<P: AsRef<Path>>(
+  args: &UploadImageFromFileArgs<'_, P>,
+) -> Result<(), StorytellerError> {
+  if args.is_intermediate_system_file && args.maybe_prompt_token.is_some() {
+    return Err(StorytellerError::Client(ClientError::InvalidPreflightRequest(
+      "Cannot set `is_intermediate_system_file` to true if `maybe_prompt_token` is provided."
+          .to_string())));
+  }
+
+  Ok(())
 }

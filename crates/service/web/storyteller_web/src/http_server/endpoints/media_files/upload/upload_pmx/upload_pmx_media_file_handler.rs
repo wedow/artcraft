@@ -264,6 +264,7 @@ pub async fn upload_pmx_media_file_handler(
     upload_type: UploadType::Filesystem,
     maybe_engine_category: Some(engine_category),
     maybe_animation_type,
+    maybe_prompt_token: None,
     maybe_mime_type: Some("application/octet-stream"),
     file_size_bytes: pmx_details.file_size_bytes,
     maybe_duration_millis,

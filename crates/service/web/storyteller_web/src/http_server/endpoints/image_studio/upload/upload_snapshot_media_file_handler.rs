@@ -246,6 +246,7 @@ pub async fn upload_snapshot_media_file_handler(
     upload_type: UploadType::Filesystem, // TODO(bt,2024-05-02): This should be a parameter and a well-known enum.
     maybe_engine_category: None,
     maybe_animation_type: None,
+    maybe_prompt_token: None,
     maybe_mime_type: Some(&mimetype),
     file_size_bytes: file_size_bytes as u64,
     maybe_duration_millis: None,
