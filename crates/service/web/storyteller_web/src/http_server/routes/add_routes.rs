@@ -225,6 +225,8 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
   // ==================== Prompts ====================
 
   let mut app = RouteBuilder::from_app(app)
+      // NB: This poor RouteBuilder utility requires that POST comes first, otherwise the GET glob
+      // will capture it and force 504 Method Not Allowed for all POSTs.
       .add_post("/v1/prompts/create", create_prompt_handler)
       .add_get("/v1/prompts/{token}", get_prompt_handler)
       .into_app();
