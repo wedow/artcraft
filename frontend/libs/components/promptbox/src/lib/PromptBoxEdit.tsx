@@ -5,7 +5,7 @@ import {
   faMessageXmark,
   faMousePointer,
   faSparkles,
-  faSpinnerThird
+  faSpinnerThird,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, ToggleButton } from "@storyteller/ui-button";
@@ -24,14 +24,12 @@ export const PromptBoxEdit = ({
   onModeChange: onModeSelectionChange,
   selectedMode,
   onGenerateClick,
-  isDisabled
+  isDisabled,
 }: PromptBoxEditProps) => {
-
   const [prompt, setPrompt] = useState("");
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -43,8 +41,17 @@ export const PromptBoxEdit = ({
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const pastedText = e.clipboardData.getData("text").trim();
-    setPrompt(pastedText);
+    const pastedText = e.clipboardData.getData("text");
+    const target = e.currentTarget;
+    const { selectionStart, selectionEnd, value } = target;
+    const next =
+      value.slice(0, selectionStart) + pastedText + value.slice(selectionEnd);
+    setPrompt(next);
+    // Restore caret after React updates the value
+    requestAnimationFrame(() => {
+      const pos = selectionStart + pastedText.length;
+      textareaRef.current?.setSelectionRange(pos, pos);
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -97,8 +104,8 @@ export const PromptBoxEdit = ({
               onChange={handleChange}
               onPaste={handlePaste}
               onKeyDown={handleKeyDown}
-              onFocus={() => { }}
-              onBlur={() => { }}
+              onFocus={() => {}}
+              onBlur={() => {}}
             />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">

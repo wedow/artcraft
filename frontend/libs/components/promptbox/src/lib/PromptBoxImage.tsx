@@ -243,8 +243,16 @@ export const PromptBoxImage = ({
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData("text").trim();
-    setPrompt(pastedText);
+    const pastedText = e.clipboardData.getData("text");
+    const target = e.currentTarget;
+    const { selectionStart, selectionEnd, value } = target;
+    const next =
+      value.slice(0, selectionStart) + pastedText + value.slice(selectionEnd);
+    setPrompt(next);
+    requestAnimationFrame(() => {
+      const pos = selectionStart + pastedText.length;
+      textareaRef.current?.setSelectionRange(pos, pos);
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
