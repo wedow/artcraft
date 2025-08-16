@@ -47,6 +47,18 @@ export const ALL_MODELS: ModelConfig[] = [
   // Image models
   //////////////////////////////
   cfg({
+    id: "midjourney",
+    category: "image",
+    info: {
+      name: "Midjourney",
+      tauri_id: "midjourney",
+      creator: mc.Midjourney,
+    },
+    description: "Incredible style and quality",
+    badges: [{ label: "15 sec." }],
+    capabilities: { maxGenerationCount: 4 },
+  }),
+  cfg({
     id: "flux_pro_1_1_ultra",
     category: "image",
     info: {
@@ -119,18 +131,6 @@ export const ALL_MODELS: ModelConfig[] = [
     badges: [{ label: "20 sec." }],
     capabilities: { maxGenerationCount: 4 },
     tags: ["instructiveEdit"],
-  }),
-  cfg({
-    id: "midjourney",
-    category: "image",
-    info: {
-      name: "Midjourney",
-      tauri_id: "midjourney",
-      creator: mc.Midjourney,
-    },
-    description: "Incredible style and quality",
-    badges: [{ label: "15 sec." }],
-    capabilities: { maxGenerationCount: 4 },
   }),
 
   //////////////////////////////

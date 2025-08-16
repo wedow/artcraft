@@ -19,7 +19,7 @@ use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
-use midjourney_client::endpoints::imagine::{imagine, ImagineRequest};
+use midjourney_client::endpoints::imagine::{imagine, ImagineRequest, MidjourneyJobType};
 use midjourney_client::utils::get_image_url::get_image_url;
 use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
 use once_cell::sync::Lazy;
@@ -170,14 +170,14 @@ async fn check_midjourney_tasks(
 
   let cookie_header = mj_cookies.to_cookie_string();
 
-  let result = imagine(ImagineRequest {
+  let midjourney_result = imagine(ImagineRequest {
     hostname: MidjourneyHostname::Standard,
     cookie_header,
     user_id: mj_user_id,
     page_size: None,
   }).await?;
 
-  let midjourney_items = result.items;
+  let midjourney_items = midjourney_result.items;
 
   let midjourney_items_by_id = {
     let mut hash = HashMap::new();
@@ -201,11 +201,23 @@ async fn check_midjourney_tasks(
       None => continue,
     };
 
+    let model_type = match midjourney_item.job_type {
+      Some(MidjourneyJobType::V6Diffusion) => ModelType::MidjourneyV6,
+      Some(MidjourneyJobType::V7Diffusion) => ModelType::MidjourneyV7,
+      Some(MidjourneyJobType::V7RawDiffusion) => ModelType::MidjourneyV7Raw,
+      Some(MidjourneyJobType::V7DraftRawDiffusion) => ModelType::MidjourneyV7DraftRaw,
+      Some(MidjourneyJobType::Other(ref other)) => {
+        info!("Unknown Midjourney job type (for job id {}): {}", midjourney_job_id, other);
+        ModelType::Midjourney
+      },
+      _ => ModelType::Midjourney,
+    };
+
     let request = CreatePromptRequest {
       uuid_idempotency_token: generate_random_uuid(),
       positive_prompt: midjourney_item.full_command.clone(),
       negative_prompt: None,
-      model_type: Some(ModelType::Midjourney),
+      model_type: Some(model_type),
       generation_provider: Some(GenerationProvider::Midjourney),
     };
 
@@ -232,8 +244,6 @@ async fn check_midjourney_tasks(
       loop {
         info!("Uploading to backend...");
 
-        // TODO: Lower the rate limit
-        
         // TODO: media_files.origin_category
         // TODO: media_files.maybe_prompt_token
         // TODO: media_files.maybe_generation_provider
@@ -242,11 +252,6 @@ async fn check_midjourney_tasks(
         // TODO: media_files.is_batch_generated
         // TODO: media_files.maybe_batch_token
         // TODO: media_files.is_user_upload
-        
-        // TODO: prompts.prompt_type
-        // TODO: prompts.maybe_model_type
-        // TODO: prompts.maybe_generation_provider
-        // TODO: prompts.maybe_positive_prompt
         
         // TODO: batch_generations.token
         // TODO: batch_generations.entity_type
