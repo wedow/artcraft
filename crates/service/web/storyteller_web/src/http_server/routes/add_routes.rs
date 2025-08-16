@@ -225,8 +225,8 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
   // ==================== Prompts ====================
 
   let mut app = RouteBuilder::from_app(app)
-      .add_get("/v1/prompts/{token}", get_prompt_handler)
       .add_post("/v1/prompts/create", create_prompt_handler)
+      .add_get("/v1/prompts/{token}", get_prompt_handler)
       .into_app();
 
   // ==================== Format Conversion ====================
