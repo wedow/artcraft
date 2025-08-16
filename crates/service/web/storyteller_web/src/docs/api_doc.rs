@@ -85,6 +85,7 @@ use crate::http_server::endpoints::media_files::upsert_upload::write_error::Medi
 use crate::http_server::endpoints::media_files::upsert_upload::write_scene_file::write_scene_file_media_file_handler::*;
 use crate::http_server::endpoints::model_download::enqueue_gptsovits_model_download_handler::*;
 use crate::http_server::endpoints::moderation::user_feature_flags::edit_user_feature_flags_handler::*;
+use crate::http_server::endpoints::prompts::create_prompt_handler::*;
 use crate::http_server::endpoints::prompts::get_prompt_handler::*;
 use crate::http_server::endpoints::service::status_alert_handler::*;
 use crate::http_server::endpoints::stats::get_unified_queue_stats_handler::*;
@@ -173,6 +174,8 @@ use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateV
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
 use artcraft_api_defs::jobs::list_session_jobs::*;
+use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_api_defs::prompts::create_prompt::CreatePromptResponse;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
 use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
@@ -291,6 +294,7 @@ use tokens::tokens::zs_voice_datasets::*;
     crate::http_server::endpoints::media_files::upsert_upload::write_scene_file::write_scene_file_media_file_handler::write_scene_file_media_file_handler,
     crate::http_server::endpoints::model_download::enqueue_gptsovits_model_download_handler::enqueue_gptsovits_model_download_handler,
     crate::http_server::endpoints::moderation::user_feature_flags::edit_user_feature_flags_handler::edit_user_feature_flags_handler,
+    crate::http_server::endpoints::prompts::create_prompt_handler::create_prompt_handler,
     crate::http_server::endpoints::prompts::get_prompt_handler::get_prompt_handler,
     crate::http_server::endpoints::service::status_alert_handler::status_alert_handler,
     crate::http_server::endpoints::stats::get_unified_queue_stats_handler::get_unified_queue_stats_handler,
@@ -418,6 +422,8 @@ use tokens::tokens::zs_voice_datasets::*;
     BatchGetInferenceJobStatusSuccessResponse,
     BatchGetMediaFilesError,
     BatchGetMediaFilesModelInfo,
+    CreatePromptRequest,
+    CreatePromptResponse,
     BatchGetMediaFilesQueryParams,
     BatchGetMediaFilesSuccessResponse,
     BatchGetUserBookmarksError,

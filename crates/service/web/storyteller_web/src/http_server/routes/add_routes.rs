@@ -69,6 +69,7 @@ use crate::http_server::endpoints::misc::detect_locale_handler::detect_locale_ha
 use crate::http_server::endpoints::misc::enable_alpha_easy_handler::enable_alpha_easy_handler;
 use crate::http_server::endpoints::misc::enable_alpha_handler::enable_alpha_handler;
 use crate::http_server::endpoints::misc::root_index::get_root_index;
+use crate::http_server::endpoints::prompts::create_prompt_handler::create_prompt_handler;
 use crate::http_server::endpoints::prompts::get_prompt_handler::get_prompt_handler;
 use crate::http_server::endpoints::service::health_check_handler::get_health_check_handler;
 use crate::http_server::endpoints::service::public_info_handler::get_public_info_handler;
@@ -225,6 +226,7 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
 
   let mut app = RouteBuilder::from_app(app)
       .add_get("/v1/prompts/{token}", get_prompt_handler)
+      .add_post("/v1/prompts/create", create_prompt_handler)
       .into_app();
 
   // ==================== Format Conversion ====================
