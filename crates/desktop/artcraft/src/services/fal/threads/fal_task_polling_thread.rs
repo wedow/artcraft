@@ -125,7 +125,8 @@ async fn polling_loop(
       let result = upload_media_file_from_file(
         &app_env_configs.storyteller_host,
         Some(&storyteller_creds),
-        download_file
+        download_file,
+        None, // TODO: Should probably save prompts.
       ).await;
 
       match result {

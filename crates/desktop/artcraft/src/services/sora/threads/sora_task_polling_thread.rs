@@ -140,6 +140,7 @@ async fn polling_loop(
           maybe_creds: Some(&creds),
           path: download_path,
           is_intermediate_system_file: false,
+          maybe_prompt_token: None, // TODO: this should be added soon.
         }).await?;
 
         info!("Uploaded to API backend: {:?}", result.media_file_token);

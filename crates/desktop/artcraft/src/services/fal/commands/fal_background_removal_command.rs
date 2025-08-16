@@ -261,6 +261,7 @@ pub async fn remove_background(
     maybe_creds: Some(&creds),
     path: result_filename,
     is_intermediate_system_file: true, // NB: Probably not essential to keep this.
+    maybe_prompt_token: None, // NB: Not used for bg removal.
   }).await?;
 
   // TODO: Don't re-request to simply build MediaLinks (or CDN URL). Get those from the upload API in one turn.

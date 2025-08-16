@@ -46,7 +46,7 @@ pub struct UploadImageFromFileArgs<'a, P: AsRef<Path>> {
 
   /// If provided, this is the prompt that this image is associated with.
   /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
-  pub maybe_prompt_token: Option<PromptToken>,
+  pub maybe_prompt_token: Option<&'a PromptToken>,
 
   // /// If provided, this is the service provider that created the image.
   // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.

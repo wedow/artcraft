@@ -129,6 +129,7 @@ async fn upload_image_from_base64_bytes(
         maybe_creds: Some(&creds),
         path: temp_file,
         is_intermediate_system_file: true, // NB: Probably not essential to keep this.
+        maybe_prompt_token: None, // NB: Not used for bg removal.
       }).await
           .map_err(|err| {
             error!("Failed to upload image media file: {:?}", err);

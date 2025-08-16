@@ -10,6 +10,7 @@ use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use serde_derive::Deserialize;
 use std::path::Path;
 use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::prompts::PromptToken;
 
 #[derive(Deserialize, Debug)]
 pub struct UploadMediaFileSuccessResponse {
@@ -22,6 +23,7 @@ pub async fn upload_media_file_from_file<P: AsRef<Path>>(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,
   path: P,
+  maybe_prompt_token: Option<&PromptToken>,
 ) -> Result<UploadMediaFileSuccessResponse, StorytellerError> {
   
   let maybe_type = MimetypeInfo::get_for_path(path.as_ref())
@@ -54,6 +56,7 @@ pub async fn upload_media_file_from_file<P: AsRef<Path>>(
         maybe_creds,
         path,
         is_intermediate_system_file: false,
+        maybe_prompt_token,
       }).await;
       match result {
         Ok(result) => Ok(UploadMediaFileSuccessResponse {

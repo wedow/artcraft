@@ -215,7 +215,7 @@ async fn check_midjourney_tasks(
       request
     ).await?;
 
-    info!("Created prompt: {:?}", prompt_response.prompt_token);
+    info!("Created prompt: {:?}", &prompt_response.prompt_token);
 
     for index in 0..4 {
       info!("Downloading generated Midjourney file...");
@@ -257,6 +257,7 @@ async fn check_midjourney_tasks(
           maybe_creds: Some(&storyteller_creds),
           path: &download_path,
           is_intermediate_system_file: false,
+          maybe_prompt_token: Some(&prompt_response.prompt_token),
         }).await;
 
         match result {
