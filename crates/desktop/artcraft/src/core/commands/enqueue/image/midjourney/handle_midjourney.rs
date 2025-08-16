@@ -4,8 +4,10 @@ use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_co
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
+use crate::core::events::warning_events::flash_user_input_error_event::FlashUserInputErrorEvent;
 use crate::core::model::image_models::ImageModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -22,6 +24,9 @@ use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::endpoints::submit_job::{submit_job, SubmitJobRequest};
+use midjourney_client::error::midjourney_api_error::MidjourneyApiError;
+use midjourney_client::recipes::channel_id::ChannelId;
+use midjourney_client::recipes::text_to_image::{text_to_image, TextToImageError, TextToImageRequest};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simple_image_gen_with_session_auto_renew, SimpleImageGenAutoRenewRequest};
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
@@ -29,8 +34,10 @@ use std::time::Duration;
 use storyteller_client::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
 use storyteller_client::generate::image::generate_gpt_image_1_text_to_image::generate_gpt_image_1_text_to_image;
 use tauri::AppHandle;
+use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn handle_midjourney(
+  app: &AppHandle,
   request: EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   mj_creds_manager: &MidjourneyCredentialManager,
@@ -47,6 +54,27 @@ pub async fn handle_midjourney(
     },
   };
 
+  // TODO: We can request population of the user info if absent or expired.
+  
+  let user_info = match mj_creds_manager.maybe_copy_user_info() {
+    Ok(Some(user_info)) => user_info,
+    Ok(None) => {
+      return Err(InternalImageError::NeedsMidjourneyUserInfo);
+    }
+    Err(err) => {
+      error!("Error reading Midjourney user info: {:?}", err);
+      return Err(InternalImageError::NeedsMidjourneyUserInfo);
+    },
+  };
+
+  let channel_id = match user_info.user_id {
+    Some(user_id) => ChannelId::UserId(user_id),
+    None => {
+      error!("Midjourney user info does not contain a user ID.");
+      return Err(InternalImageError::NeedsMidjourneyUserId);
+    }
+  };
+
   info!("Calling midjourney ...");
 
   let cookie_header = creds.to_cookie_string();
@@ -55,25 +83,30 @@ pub async fn handle_midjourney(
       .as_deref()
       .unwrap_or("");
 
-
-  let result = submit_job(SubmitJobRequest {
+  let result = text_to_image(TextToImageRequest {
     prompt,
-    channel_id: "singleplayer_f8a57ac3-e416-4dd4-9be8-2c4223691b01", // TODO: DO NOT COMMIT
+    channel_id: &channel_id,
     hostname: MidjourneyHostname::Standard,
     cookie_header,
   }).await;
 
-  let job_id = match result {
-    Ok(result) => {
-      // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued MidJourney. Job token: {}",result.job_id);
-      result.job_id
-    }
+  let result = match result {
+    Ok(result) => result,
     Err(err) => {
       error!("Failed to use MidJourney: {:?}", err);
       return Err(InternalImageError::MidjourneyError(err));
     }
   };
+  
+  let job_id = match result.maybe_job_id {
+    Some(job_id) => job_id,
+    None => {
+      error!("Failed to enqueue MidJourney: No job ID returned.");
+      return handle_midjourney_errors(app, result.maybe_errors);
+    }
+  };
+
+  info!("Successfully enqueued MidJourney. Job token: {}", job_id);
 
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Midjourney,
@@ -81,4 +114,29 @@ pub async fn handle_midjourney(
     provider_job_id: Some(job_id),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn handle_midjourney_errors(
+  app: &AppHandle,
+  maybe_errors: Option<Vec<TextToImageError>>
+) -> Result<TaskEnqueueSuccess, InternalImageError> {
+  if let Some(errors) = maybe_errors {
+    if !errors.is_empty() {
+      let messages: Vec<String> = errors.iter()
+          .map(|e| format!("{:?}", e))
+          .collect();
+
+      let combined_message = messages.join("; ");
+
+      let event = FlashUserInputErrorEvent {
+        message: format!("Midjourney Error: {}", combined_message),
+      };
+
+      if let Err(err) = event.send(&app) {
+        error!("Failed to send FlashUserInputErrorEvent: {:?}", err); // Fail open
+      }
+    }
+  }
+  
+  Err(InternalImageError::MidjourneyJobEnqueueFailed)
 }

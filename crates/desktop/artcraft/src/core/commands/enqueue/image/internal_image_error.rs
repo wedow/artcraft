@@ -11,7 +11,14 @@ pub enum InternalImageError {
   NoModelSpecified,
   NoProviderAvailable,
   NeedsFalApiKey,
+
   NeedsMidjourneyCredentials,
+  NeedsMidjourneyUserInfo,
+  NeedsMidjourneyUserId,
+
+  /// Generic - possibly this came with an error message that we sent as an event.
+  MidjourneyJobEnqueueFailed,
+
   NeedsSoraCredentials,
   NeedsStorytellerCredentials,
   FalError(FalErrorPlus),

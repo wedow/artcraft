@@ -248,6 +248,7 @@ pub async fn dispatch_request(
     }
     Some(ImageModel::Midjourney) => {
       return handle_midjourney(
+        app,
         request,
         app_env_configs,
         mj_creds_manager,

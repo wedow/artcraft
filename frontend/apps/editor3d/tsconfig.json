@@ -137,6 +137,9 @@
       "path": "../../libs/tauri-utils"
     },
     {
+      "path": "../../libs/tauri-events"
+    },
+    {
       "path": "../../libs/api"
     }
   ]

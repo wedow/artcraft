@@ -5,7 +5,7 @@ import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
 import { useQueueHandler } from "./hooks/useQueueHandler";
 import { ErrorDialog } from "~/components";
 import { GenerateModals } from "~/pages/PageEnigma/comps/GenerateModals/GenerateModals";
-import { Toaster } from "@storyteller/ui-toaster";
+import { toast, Toaster } from "@storyteller/ui-toaster";
 import { EditorLoadingBar } from "./comps/EditorLoadingBar";
 import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect, useState } from "react";
@@ -34,6 +34,7 @@ import {
   actionReminderProps,
   ActionReminderModal,
 } from "@storyteller/ui-action-reminder-modal";
+import { useFlashUserInputErrorEvent } from "@storyteller/tauri-events";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -86,6 +87,11 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useGenerationEnqueueFailureEvent();
   useGenerationCompleteEvent();
   useGenerationFailedEvent();
+
+  useFlashUserInputErrorEvent(async (event) => {
+    console.log("Flash user input error event received:", event);
+    toast.error(event.message);
+  });
 
   useEffect(() => {
     console.log("installing event listeners");

@@ -6,9 +6,6 @@ use std::io;
 
 #[derive(Debug)]
 pub enum MidjourneyApiError {
-  /// There was no job ID in the otherwise valid-looking response.
-  NoJobId,
-
   /// There was no user ID in an otherwise valid-looking response.
   NoUserId,
 
@@ -59,9 +56,6 @@ pub enum MidjourneyApiError {
   /// A network error occurred.
   NetworkError(String),
 
-  // /// Uncategorized reqwest error.
-  // OtherReqwestError(reqwest::Error),
-
   /// An error doing file I/O (on our side)
   IoError(io::Error),
 
@@ -75,7 +69,6 @@ impl Display for MidjourneyApiError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       // Response body errors
-      Self::NoJobId => write!(f, "No job ID found in the response body."),
       Self::NoUserId => write!(f, "No user ID found in the response body."),
       Self::NoUserProps => write!(f, "No user properties found in the index HTML payload."),
       Self::NoInitialAuthUser => write!(f, "No initialAuthUser in the index HTML payload."),
@@ -100,23 +93,10 @@ impl Display for MidjourneyApiError {
       // I/O errors
       Self::IoError(error) => write!(f, "IO error: {}", error),
       // Other
-      // Self::OtherReqwestError(error) => write!(f, "Reqwest error: {}", error),
       Self::Other(error) => write!(f, "Other error: {}", error),
     }
   }
 }
-
-/*impl From<reqwest::Error> for MidjourneyApiError {
-  fn from(error: reqwest::Error) -> Self {
-    if error.is_timeout() {
-      Self::Timeout(error.to_string())
-    } else if error.is_connect() {
-      Self::NetworkError(error.to_string())
-    } else {
-      Self::OtherReqwestError(error)
-    }
-  }
-}*/
 
 impl From<serde_json::Error> for MidjourneyApiError {
   fn from(error: serde_json::Error) -> Self {

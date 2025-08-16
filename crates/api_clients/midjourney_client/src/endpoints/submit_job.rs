@@ -1,7 +1,7 @@
 use crate::error::midjourney_api_error::MidjourneyApiError;
 use crate::error::midjourney_client_error::MidjourneyClientError;
 use crate::error::midjourney_error::MidjourneyError;
-use log::error;
+use log::{error, warn};
 use serde::{Deserialize, Serialize};
 
 use crate::client::midjourney_hostname::MidjourneyHostname;
@@ -18,7 +18,17 @@ pub struct SubmitJobRequest<'a> {
 
 #[derive(Debug, Clone)]
 pub struct SubmitJobResponse {
-  pub job_id: String,
+  /// On success, the job ID is returned.
+  pub maybe_job_id: Option<String>,
+  
+  /// On error, we have a list of error messages.
+  pub maybe_errors: Option<Vec<SubmitJobError>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SubmitJobError {
+  pub error_type: Option<String>,
+  pub message: Option<String>,
 }
 
 pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, MidjourneyError> {
@@ -147,24 +157,44 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
   }
 
   #[derive(Deserialize)]
+  struct FailurePayload {
+    r#type: String,
+    message: String,
+  }
+
+  #[derive(Deserialize)]
   #[allow(non_snake_case)]
   struct RawResponse {
     success: Vec<SuccessPayload>,
+    failure: Option<Vec<FailurePayload>>,
   }
 
   let response = serde_json::from_str::<RawResponse>(response_body)
       .map_err(|err| MidjourneyApiError::DeserializationError(err))?;
 
-  let job_id = match response.success.get(0) {
-    None => {
-      error!("No job id found in body: {:?}", response_body);
-      return Err(MidjourneyApiError::NoJobId.into());
+  let maybe_job_id = response.success
+      .get(0)
+      .map(|s| s.job_id.clone());
+  
+  if maybe_job_id.is_none() {
+    warn!("No job id found in body: {:?}", response_body);
+  }
+
+  let mut maybe_errors = None;
+  
+  if let Some(failures) = response.failure.as_ref() {
+    if !failures.is_empty() {
+      maybe_errors = Some(failures.iter()
+          .map(|f| SubmitJobError { 
+            error_type: Some(f.r#type.clone()), 
+            message: Some(f.message.clone()), 
+          }).collect());
     }
-    Some(item) => item.job_id.clone(),
-  };
+  }
 
   Ok(SubmitJobResponse {
-    job_id,
+    maybe_job_id,
+    maybe_errors,
   })
 }
 
