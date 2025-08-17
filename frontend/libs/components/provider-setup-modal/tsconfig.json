@@ -1,0 +1,28 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../button"
+    },
+    {
+      "path": "../modal"
+    },
+    {
+      "path": "../../tauri-events"
+    },
+    {
+      "path": "../../tauri-api"
+    },
+    {
+      "path": "../../common"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
+  "extends": "../../../tsconfig.base.json"
+}

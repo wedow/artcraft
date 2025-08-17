@@ -152,6 +152,9 @@
     },
     {
       "path": "./libs/tauri-events"
+    },
+    {
+      "path": "./libs/components/provider-setup-modal"
     }
   ]
 }

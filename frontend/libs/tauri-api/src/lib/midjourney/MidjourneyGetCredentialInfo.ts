@@ -12,6 +12,5 @@ export interface MidjourneyGetCredentialInfoSuccess extends CommandResult {
 
 export const MidjourneyGetCredentialInfo = async (): Promise<MidjourneyGetCredentialInfoSuccess> => {
   const result = await invoke("midjourney_get_credential_info_command");
-  console.log(">>> mj result", result);
   return result as MidjourneyGetCredentialInfoSuccess;
 };

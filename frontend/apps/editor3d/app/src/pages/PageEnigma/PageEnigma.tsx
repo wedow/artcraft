@@ -28,6 +28,7 @@ import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { PricingModal } from "@storyteller/ui-pricing-modal";
+import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
 
 import {
   isActionReminderOpen,
@@ -35,6 +36,8 @@ import {
   ActionReminderModal,
 } from "@storyteller/ui-action-reminder-modal";
 import { useFlashUserInputErrorEvent } from "@storyteller/tauri-events";
+import { useShowProviderLoginModalEvent } from "@storyteller/tauri-events";
+
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -93,6 +96,11 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     toast.error(event.message);
   });
 
+  useShowProviderLoginModalEvent(async (event) => {
+    console.log("Show provider login modal event received:", event);
+    toast.error(event.provider);
+  });
+
   useEffect(() => {
     console.log("installing event listeners");
     InstallSounds();
@@ -120,6 +128,7 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
       />
       <GenerateModals />
       <ErrorDialog />
+      <ProviderSetupModal />
 
       <EditorLoadingBar />
       <Toaster offsetTop={70} offsetRight={12} />
