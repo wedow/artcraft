@@ -5,6 +5,7 @@ use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command
 use crate::core::commands::enqueue::text_to_image::internal_image_error::InternalImageError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
+use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::warning_events::flash_user_input_error_event::FlashUserInputErrorEvent;
@@ -46,10 +47,12 @@ pub async fn handle_midjourney(
   let creds = match mj_creds_manager.maybe_copy_cookie_store() {
     Ok(Some(creds)) => creds,
     Ok(None) => {
+      show_login_screen(&app);
       return Err(InternalImageError::NeedsMidjourneyCredentials);
     }
     Err(err) => {
       error!("Error reading Midjourney credentials: {:?}", err);
+      show_login_screen(&app);
       return Err(InternalImageError::NeedsMidjourneyCredentials);
     },
   };
@@ -139,4 +142,14 @@ fn handle_midjourney_errors(
   }
   
   Err(InternalImageError::MidjourneyJobEnqueueFailed)
+}
+
+fn show_login_screen(app: &AppHandle) {
+  let event = ShowProviderLoginModalEvent {
+    provider: GenerationProvider::Midjourney,
+  };
+
+  if let Err(err) = event.send(&app) {
+    error!("Failed to send ShowProviderLoginModalEvent: {:?}", err); // Fail open
+  }
 }
