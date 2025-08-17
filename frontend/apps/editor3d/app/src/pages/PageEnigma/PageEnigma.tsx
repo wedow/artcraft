@@ -36,8 +36,6 @@ import {
   ActionReminderModal,
 } from "@storyteller/ui-action-reminder-modal";
 import { useFlashUserInputErrorEvent } from "@storyteller/tauri-events";
-import { useShowProviderLoginModalEvent } from "@storyteller/tauri-events";
-
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -94,11 +92,6 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useFlashUserInputErrorEvent(async (event) => {
     console.log("Flash user input error event received:", event);
     toast.error(event.message);
-  });
-
-  useShowProviderLoginModalEvent(async (event) => {
-    console.log("Show provider login modal event received:", event);
-    toast.error(event.provider);
   });
 
   useEffect(() => {
