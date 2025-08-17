@@ -1,5 +1,3 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
-use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::MAX_IMAGES;
@@ -23,6 +21,8 @@ use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::Gener
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use enums::common::generation_provider::GenerationProvider;
+use enums::tauri::tasks::task_type::TaskType;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageQuality;
 use idempotency::uuid::generate_random_uuid;
@@ -33,8 +33,6 @@ use storyteller_client::generate::image::generate_flux_1_schnell_text_to_image::
 use storyteller_client::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
 use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
 use tauri::AppHandle;
-use enums::common::generation_provider::GenerationProvider;
-use enums::tauri::tasks::task_type::TaskType;
 
 pub async fn handle_gpt_image_1_edit_artcraft(
   request: &EnqueueContextualEditImageCommand,

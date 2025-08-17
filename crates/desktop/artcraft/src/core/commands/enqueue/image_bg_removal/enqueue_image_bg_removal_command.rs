@@ -1,5 +1,3 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, EnqueueTextToImageSuccessResponse};
-use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
 use crate::core::commands::enqueue::image_bg_removal::generic::handle_generic_bg_removal::handle_generic_bg_removal;
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
@@ -29,6 +27,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowError;
 use log::{error, info, warn};
 use openai_sora_client::recipes::image_remix_with_session_auto_renew::{image_remix_with_session_auto_renew, ImageRemixAutoRenewRequest};
@@ -43,7 +42,6 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize, Debug)]

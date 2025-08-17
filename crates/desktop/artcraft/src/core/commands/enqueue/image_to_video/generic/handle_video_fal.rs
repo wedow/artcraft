@@ -1,6 +1,6 @@
+use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
+use crate::core::commands::enqueue::image_to_video::internal_video_error::InternalVideoError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
-use crate::core::commands::enqueue::video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
-use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;

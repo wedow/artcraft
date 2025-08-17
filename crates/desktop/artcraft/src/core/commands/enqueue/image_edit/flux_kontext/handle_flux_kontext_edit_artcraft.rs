@@ -1,5 +1,3 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
-use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;

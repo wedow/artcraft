@@ -1,6 +1,6 @@
+use crate::core::commands::enqueue::image_to_video::generic::handle_video::handle_video;
+use crate::core::commands::enqueue::image_to_video::internal_video_error::InternalVideoError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
-use crate::core::commands::enqueue::video::generic::handle_video::handle_video;
-use crate::core::commands::enqueue::video::internal_video_error::InternalVideoError;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;

@@ -1,5 +1,3 @@
-use crate::core::commands::enqueue::image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, EnqueueTextToImageSuccessResponse};
-use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
 use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;

@@ -1,10 +1,10 @@
-use crate::core::commands::enqueue::image::generic::handle_image_artcraft::handle_image_artcraft;
-use crate::core::commands::enqueue::image::generic::handle_image_fal::handle_image_fal;
-use crate::core::commands::enqueue::image::gpt_image_1::handle_gpt_image_1::handle_gpt_image_1;
-use crate::core::commands::enqueue::image::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
-use crate::core::commands::enqueue::image::internal_image_error::InternalImageError;
-use crate::core::commands::enqueue::image::midjourney::handle_midjourney::handle_midjourney;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::core::commands::enqueue::text_to_image::generic::handle_image_artcraft::handle_image_artcraft;
+use crate::core::commands::enqueue::text_to_image::generic::handle_image_fal::handle_image_fal;
+use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1::handle_gpt_image_1;
+use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
+use crate::core::commands::enqueue::text_to_image::internal_image_error::InternalImageError;
+use crate::core::commands::enqueue::text_to_image::midjourney::handle_midjourney::handle_midjourney;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
