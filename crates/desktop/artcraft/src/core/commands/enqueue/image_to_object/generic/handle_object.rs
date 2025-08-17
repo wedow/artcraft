@@ -1,7 +1,7 @@
-use crate::core::commands::enqueue::object::enqueue_image_to_3d_object_command::EnqueueImageTo3dObjectRequest;
-use crate::core::commands::enqueue::object::generic::handle_object_artcraft::handle_object_artcraft;
-use crate::core::commands::enqueue::object::generic::handle_object_fal::handle_object_fal;
-use crate::core::commands::enqueue::object::internal_object_error::InternalObjectError;
+use crate::core::commands::enqueue::image_to_object::enqueue_image_to_3d_object_command::EnqueueImageTo3dObjectRequest;
+use crate::core::commands::enqueue::image_to_object::generic::handle_object_artcraft::handle_object_artcraft;
+use crate::core::commands::enqueue::image_to_object::generic::handle_object_fal::handle_object_fal;
+use crate::core::commands::enqueue::image_to_object::internal_object_error::InternalObjectError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
