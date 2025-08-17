@@ -4,6 +4,7 @@ use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
@@ -55,14 +56,16 @@ pub async fn handle_gpt_image_1_edit_sora(
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, InternalContextualEditImageError> {
 
-  let sora_creds = match sora_creds_manager.get_credentials() {
+  let mut creds = match sora_creds_manager.get_credentials() {
     Ok(Some(creds)) => creds,
     Ok(None) => {
       warn!("No Sora credentials found.");
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
       return Err(InternalContextualEditImageError::NeedsSoraCredentials);
     }
     Err(err) => {
       error!("Failed to get Sora credentials: {:?}", err);
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
       return Err(InternalContextualEditImageError::AnyhowError(err));
     }
   };
@@ -110,9 +113,6 @@ pub async fn handle_gpt_image_1_edit_sora(
     
     files_to_upload_to_sora.push(filename);
   }
-
-
-  let mut creds = sora_creds_manager.get_credentials_required()?;
 
   let credential_updated = maybe_upgrade_or_renew_session(&mut creds)
       .await

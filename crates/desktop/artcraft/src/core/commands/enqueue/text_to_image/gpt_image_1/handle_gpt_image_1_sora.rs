@@ -2,6 +2,7 @@ use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::commands::enqueue::text_to_image::internal_image_error::InternalImageError;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::model::image_models::ImageModel;
@@ -9,6 +10,7 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
+use errors::AnyhowResult;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use log::{error, info};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
@@ -26,12 +28,19 @@ pub async fn handle_gpt_image_1_sora(
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {
 
-  let mut creds = sora_creds_manager
-      .get_credentials_required()
-      .map_err(|err| {
-        error!("EnqueueTextToImage Sora creds required: {:?}", err);
-        InternalImageError::NeedsFalApiKey
-      })?;
+  let mut creds = match sora_creds_manager.get_credentials() {
+    Ok(Some(creds)) => creds,
+    Ok(None) => {
+      error!("Sora credentials not found.");
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
+      return Err(InternalImageError::NeedsSoraCredentials);
+    }
+    Err(err) => {
+      error!("Error reading Sora credentials: {:?}", err);
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
+      return Err(InternalImageError::NeedsSoraCredentials);
+    }
+  };
 
   let credential_updated = maybe_upgrade_or_renew_session(&mut creds)
       .await

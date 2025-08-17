@@ -47,12 +47,13 @@ pub async fn handle_midjourney(
   let creds = match mj_creds_manager.maybe_copy_cookie_store() {
     Ok(Some(creds)) => creds,
     Ok(None) => {
-      show_login_screen(&app);
+      error!("Midjourney credentials not found.");
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Midjourney, &app);
       return Err(InternalImageError::NeedsMidjourneyCredentials);
     }
     Err(err) => {
       error!("Error reading Midjourney credentials: {:?}", err);
-      show_login_screen(&app);
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Midjourney, &app);
       return Err(InternalImageError::NeedsMidjourneyCredentials);
     },
   };
@@ -142,14 +143,4 @@ fn handle_midjourney_errors(
   }
   
   Err(InternalImageError::MidjourneyJobEnqueueFailed)
-}
-
-fn show_login_screen(app: &AppHandle) {
-  let event = ShowProviderLoginModalEvent {
-    provider: GenerationProvider::Midjourney,
-  };
-
-  if let Err(err) = event.send(&app) {
-    error!("Failed to send ShowProviderLoginModalEvent: {:?}", err); // Fail open
-  }
 }
