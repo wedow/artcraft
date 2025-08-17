@@ -4,31 +4,30 @@ import { SoundRegistry } from "@storyteller/soundboard";
 import { GetAppPreferences } from "@storyteller/tauri-api";
 import { toast } from "@storyteller/ui-toaster";
 import { GenerationAction, GenerationModel, GenerationServiceProvider } from "./common";
-import { BasicEventWrapper } from "../BasicEventWrapper";
+import { BasicEventWrapper } from "../../common/BasicEventWrapper";
 
-type GenerationEnqueueFailureEvent = {
-  action: GenerationAction,
+type GenerationCompleteEvent = {
+  action?: GenerationAction,
   service: GenerationServiceProvider,
   model?: GenerationModel,
-  reason?: string,
-}; 
+};
 
-export const useGenerationEnqueueFailureEvent = () => {
+export const useGenerationCompleteEvent = () => {
   useEffect(() => {
     let isUnmounted = false;
     let unlisten: Promise<UnlistenFn>;
 
     const setup = async () => {
-      unlisten = listen<BasicEventWrapper<GenerationEnqueueFailureEvent>>('generation-enqueue-failure-event', async (event) => {
-        console.log("Generation enqueue failure event received:", event);
+      unlisten = listen<BasicEventWrapper<GenerationCompleteEvent>>('generation-complete-event', async (event) => {
+        console.log("Generation complete event received:", event);
         const prefs = await GetAppPreferences();
-        const soundName = prefs.preferences?.enqueue_failure_sound;
+        const soundName = prefs.preferences?.generation_success_sound;
         if (soundName !== undefined) {
           const registry = SoundRegistry.getInstance();
           registry.playSound(soundName);
         }
         const message = makeMessage(event.payload.data);
-        toast.error(message);
+        toast.success(message);
       });
 
       if (isUnmounted) {
@@ -46,20 +45,20 @@ export const useGenerationEnqueueFailureEvent = () => {
   }, []);
 }
 
-const makeMessage = (event: GenerationEnqueueFailureEvent) => {
-  if (!!event.reason) {
-    return event.reason;
+const makeMessage = (event: GenerationCompleteEvent) => {
+  if (!event.action) {
+    return "Generation complete!";
   }
   switch (event.action) {
     case GenerationAction.GenerateImage:
-      return "Couldn't enqueue image generation!";
+      return "Image generation complete!";
     case GenerationAction.GenerateVideo:
-      return "Couldn't enqueue video generation!";
+      return "Video generation complete!";
     case GenerationAction.RemoveBackground:
-      return "Couldn't enqueue background removal!";
+      return "Background removal complete!";
     case GenerationAction.ImageTo3d:
-      return "Couldn't enqueue image to 3D!";
+      return "Image to 3D complete!";
     default:
-      return "Couldn't enqueue generation!";
+      return "Generation complete!";
   }
 }

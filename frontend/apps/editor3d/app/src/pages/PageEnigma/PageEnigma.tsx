@@ -20,22 +20,21 @@ import {
   showPrecisionSelector,
 } from "./signals/precisionSelectorMenu";
 import { InstallSounds } from "~/pages/PageEnigma/InstallSounds";
-import { useGenerationEnqueueFailureEvent } from "./TauriEvents/generations/useGenerationEnqueueFailureEvent";
-import { useGenerationEnqueueSuccessEvent } from "./TauriEvents/generations/useGenerationEnqueueSuccessEvent";
-import { useGenerationFailedEvent } from "./TauriEvents/generations/useGenerationFailedEvent";
-import { useGenerationCompleteEvent } from "./TauriEvents/generations/useGenerationCompleteEvent";
 import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
 import { LoadingDots } from "@storyteller/ui-loading";
 import { PricingModal } from "@storyteller/ui-pricing-modal";
 import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
-
 import {
   isActionReminderOpen,
   actionReminderProps,
   ActionReminderModal,
 } from "@storyteller/ui-action-reminder-modal";
 import { useFlashUserInputErrorEvent } from "@storyteller/tauri-events";
+import { useGenerationCompleteEvent } from "@storyteller/tauri-events";
+import { useGenerationEnqueueFailureEvent } from "@storyteller/tauri-events";
+import { useGenerationEnqueueSuccessEvent } from "@storyteller/tauri-events";
+import { useGenerationFailedEvent } from "@storyteller/tauri-events";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();

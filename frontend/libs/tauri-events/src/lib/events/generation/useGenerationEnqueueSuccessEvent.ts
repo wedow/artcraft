@@ -4,31 +4,30 @@ import { SoundRegistry } from "@storyteller/soundboard";
 import { GetAppPreferences } from "@storyteller/tauri-api";
 import { toast } from "@storyteller/ui-toaster";
 import { GenerationAction, GenerationModel, GenerationServiceProvider } from "./common";
-import { BasicEventWrapper } from "../BasicEventWrapper";
+import { BasicEventWrapper } from "../../common/BasicEventWrapper";
 
-type GenerationFailedEvent = {
+type GenerationEnqueueSuccessEvent = {
   action: GenerationAction,
   service: GenerationServiceProvider,
   model?: GenerationModel,
-  reason?: string,
-};
+}; 
 
-export const useGenerationFailedEvent = () => {
+export const useGenerationEnqueueSuccessEvent = () => {
   useEffect(() => {
     let isUnmounted = false;
     let unlisten: Promise<UnlistenFn>;
 
     const setup = async () => {
-      unlisten = listen<BasicEventWrapper<GenerationFailedEvent>>('generation-failed-event', async (event) => {
-        console.log("Generation failed event received:", event);
+      unlisten = listen<BasicEventWrapper<GenerationEnqueueSuccessEvent>>('generation-enqueue-success-event', async (event) => {
+        console.log("Generation enqueue success event received:", event);
         const prefs = await GetAppPreferences();
-        const soundName = prefs.preferences?.generation_failure_sound;
+        const soundName = prefs.preferences?.enqueue_success_sound;
         if (soundName !== undefined) {
           const registry = SoundRegistry.getInstance();
           registry.playSound(soundName);
         }
         const message = makeMessage(event.payload.data);
-        toast.error(message);
+        toast.success(message);
       });
 
       if (isUnmounted) {
@@ -46,20 +45,17 @@ export const useGenerationFailedEvent = () => {
   }, []);
 }
 
-const makeMessage = (event: GenerationFailedEvent) => {
-  if (!!event.reason) {
-    return event.reason;
-  }
+const makeMessage = (event: GenerationEnqueueSuccessEvent) => {
   switch (event.action) {
     case GenerationAction.GenerateImage:
-      return "Image generation failed!";
+      return "Image generation enqueued!";
     case GenerationAction.GenerateVideo:
-      return "Video generation failed!";
+      return "Video generation enqueued!";
     case GenerationAction.RemoveBackground:
-      return "Background removal failed!";
+      return "Background removal enqueued!";
     case GenerationAction.ImageTo3d:
-      return "Image to 3D failed!";
+      return "Image to 3D enqueued!";
     default:
-      return "Generation failed!";
+      return "Generation enqueued!";
   }
 }
