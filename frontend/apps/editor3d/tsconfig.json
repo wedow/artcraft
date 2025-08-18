@@ -6,7 +6,7 @@
     "app/**/*.ts",
     "app/**/*.tsx",
     "netlify-edge-plugin.ts"
-, "../../libs/tauri-events/src/lib/events/generation/useGenerationEnqueueSuccessEvent.ts", "../../libs/tauri-events/src/lib/events/generation/common.ts", "../../libs/tauri-events/src/lib/events/generation/useGenerationCompleteEvent.ts", "../../libs/tauri-events/src/lib/events/generation/useGenerationEnqueueFailureEvent.ts", "../../libs/tauri-events/src/lib/events/generation/useGenerationFailedEvent.ts"  ],
+  ],
   "compilerOptions": {
     "lib": [
       "DOM",
