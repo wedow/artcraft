@@ -3,6 +3,18 @@
   "include": [],
   "references": [
     {
+      "path": "../components/toaster"
+    },
+    {
+      "path": "../tauri-api"
+    },
+    {
+      "path": "../soundboard"
+    },
+    {
+      "path": "../common"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

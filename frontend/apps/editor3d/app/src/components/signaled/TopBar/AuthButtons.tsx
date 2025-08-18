@@ -21,7 +21,7 @@ export const AuthButtons = ({
   } else {
     return (
       <>
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-2">
           <span className="text-white/20">|</span>
           <Button
             className="h-[38px]"

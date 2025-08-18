@@ -41,5 +41,19 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../components/toaster/tsconfig.lib.json"
+    },
+    {
+      "path": "../tauri-api/tsconfig.lib.json"
+    },
+    {
+      "path": "../soundboard/tsconfig.lib.json"
+    },
+    {
+      "path": "../common/tsconfig.lib.json"
+    }
   ]
 }

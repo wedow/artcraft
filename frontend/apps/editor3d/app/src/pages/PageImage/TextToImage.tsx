@@ -37,7 +37,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   return (
     <div
       ref={containerRef}
-      className="flex h-[calc(100vh-56px)] w-full rounded-lg bg-[#121212]"
+      className="flex h-[calc(100vh-56px)] w-full bg-[#121212]"
     >
       <div className="h-full w-full p-4">
         <div className="flex h-full w-full flex-col items-center justify-center rounded-md pb-12">

@@ -84,7 +84,7 @@ export const MenuIconSelector: React.FC<MenuIconSelectorProps> = ({
     >
       <div
         ref={containerRef}
-        className="relative flex gap-1 bg-white/10 border-white/10 border rounded-xl px-1 py-1 min-w-max"
+        className="relative flex gap-1 bg-white/10 border-white/10 border rounded-xl px-1 py-0.5 min-w-max"
         style={{ minWidth: 0 }}
         onMouseLeave={() => setHoveredIndex(-1)}
       >

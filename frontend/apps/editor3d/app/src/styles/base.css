@@ -46,6 +46,23 @@ body {
   user-select: none;
 }
 
+/* Tauri custom titlebar drag regions */
+[data-tauri-drag-region] {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.tauri-no-drag,
+[data-tauri-drag-region] .no-drag,
+[data-tauri-drag-region] button,
+[data-tauri-drag-region] a,
+[data-tauri-drag-region] input,
+[data-tauri-drag-region] textarea,
+[data-tauri-drag-region] select {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
 img {
   user-select: none;
   pointer-events: none;
