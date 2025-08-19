@@ -63,6 +63,7 @@ export const PromptBoxEdit = ({
   // Build generation count options based on selected model
   useEffect(() => {
     const caps = getCapabilitiesForModel(modelInfo);
+    console.log(">>> caps", caps)
     const items: PopoverItem[] = Array.from(
       { length: caps.maxGenerationCount },
       (_, i) => i + 1

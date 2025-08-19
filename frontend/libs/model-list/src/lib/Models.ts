@@ -1,5 +1,6 @@
 import { ModelCreator } from "./ModelCreator.js";
 import { ModelInfo } from "./ModelInfo.js";
+import { ModelTag } from "./ModelTag.js";
 
 export type ModelCategory = "image" | "video";
 
@@ -11,7 +12,7 @@ export interface ModelConfig {
   category: ModelCategory;
   info: ModelInfo;
   capabilities: ModelCapabilities;
-  tags?: string[]; // optional tags, e.g. ["instructiveEdit"] - for filtering
+  tags?: (ModelTag|string)[]; // optional tags, e.g. ["instructiveEdit"] - for filtering
 }
 
 const mc = ModelCreator;
@@ -130,7 +131,23 @@ export const ALL_MODELS: ModelConfig[] = [
     description: "Fast and high-quality model",
     badges: [{ label: "20 sec." }],
     capabilities: { maxGenerationCount: 4 },
-    tags: ["instructiveEdit"],
+    tags: [
+      ModelTag.InstructiveEdit,
+      ModelTag.NonMaskedInpainting,
+    ],
+  }),
+  cfg({
+    id: "flux_pro_inpaint",
+    category: "image",
+    info: {
+      name: "Flux Pro 1 (Inpainting)",
+      tauri_id: "flux_pro_1",
+      creator: mc.BlackForestLabs,
+    },
+    description: "Fast and high-quality model",
+    badges: [{ label: "20 sec." }],
+    capabilities: { maxGenerationCount: 4 },
+    tags: [ModelTag.MaskedInpainting],
   }),
 
   //////////////////////////////
@@ -202,6 +219,20 @@ export const getModelsByCategory = (category: ModelCategory): ModelConfig[] =>
 export const getInstructiveImageEditModels = (): ModelConfig[] =>
   ALL_MODELS.filter(
     (m) => m.category === "image" && m.tags?.includes("instructiveEdit")
+  );
+
+export const getMaskedInpaintModels = (): ModelConfig[] =>
+  ALL_MODELS.filter(
+    (m) => m.category === "image" && m.tags?.includes(ModelTag.MaskedInpainting)
+  );
+
+// Models for the editor page
+export const getEditorModels = (): ModelConfig[] =>
+  ALL_MODELS.filter(
+    (m) => m.category === "image" && (
+      m.tags?.includes(ModelTag.MaskedInpainting) 
+      || m.tags?.includes(ModelTag.NonMaskedInpainting)
+    )
   );
 
 export const lookupModelByTauriId = (

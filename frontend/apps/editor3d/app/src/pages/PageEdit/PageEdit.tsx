@@ -24,16 +24,30 @@ import { EditPaintSurface } from "./EditPaintSurface";
 import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
+import { imageEditorModels, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
+import { ModelInfo } from "@storyteller/model-list";
 
 const PageEdit = () => {
   //useStateSceneLoader();
+  const { selectedModels } = useModelSelectorStore();
+
+  const selectedModel =
+    selectedModels[ModelCategory.Canvas2D] ||
+    imageEditorModels[0]?.label;
+
+  const selectedModelInfo: ModelInfo | undefined =
+    imageEditorModels.find(
+      (m) => m.label === selectedModel,
+    )?.modelInfo;
 
   // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
+
   // Add new state to track if user is selecting
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
-  const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
+  //const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
+
   // Create refs for stage and image
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const leftPanelRef = useRef<Konva.Layer>({} as Konva.Layer);
@@ -41,6 +55,7 @@ const PageEdit = () => {
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const [isEnqueuing, setIsEnqueuing] = useState<boolean>(false);
   const [generationCount, setGenerationCount] = useState<number>(1);
+
 
   // Use the Zustand store
   const store = useEditStore();
@@ -114,27 +129,6 @@ const PageEdit = () => {
       );
     };
   }, [store]);
-
-  const modelList: PopoverItem[] = [
-    {
-      label: "GPT-4o",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
-      selected: selectedModel === "GPT-4o",
-      description: "High quality model",
-      badges: [{ label: "2 min.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-    {
-      label: "FLUX.1 Kontext",
-      icon: <FontAwesomeIcon icon={faImage} className="h-4 w-4" />,
-      selected: selectedModel === "FLUX.1 Kontext",
-      description: "Fast and high-quality model",
-      badges: [{ label: "20 sec.", icon: <FontAwesomeIcon icon={faClock} /> }],
-    },
-  ];
-
-  const handleModelSelect = (item: PopoverItem) => {
-    setSelectedModel(item.label);
-  };
 
   const onFitPressed = async () => {
     // Get the stage and its container dimensions
@@ -263,6 +257,7 @@ const PageEdit = () => {
         }`}
       >
         <PromptEditor
+          modelInfo={selectedModelInfo}
           onModeChange={(mode: string) => {
             store.setActiveTool(mode as ActiveEditTool);
           }}
@@ -328,10 +323,9 @@ const PageEdit = () => {
         </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-        <PopoverMenu
-          items={modelList}
-          onSelect={handleModelSelect}
-          mode="hoverSelect"
+        <ModelSelector
+          items={imageEditorModels}
+          category={ModelCategory.ImageEditor}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
