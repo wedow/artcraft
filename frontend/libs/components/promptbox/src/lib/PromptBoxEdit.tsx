@@ -6,18 +6,24 @@ import {
   faMousePointer,
   faSparkles,
   faSpinnerThird,
+  faCopy,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
+import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect, useRef, useState } from "react";
+import { ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
 
 export interface PromptBoxEditProps {
   onModeChange?: (mode: string) => void;
   selectedMode?: string;
   onGenerateClick: (prompt: string) => void;
   isDisabled?: boolean;
+  modelInfo?: ModelInfo;
+  generationCount?: number;
+  onGenerationCountChange?: (count: number) => void;
 }
 
 export const PromptBoxEdit = ({
@@ -25,9 +31,18 @@ export const PromptBoxEdit = ({
   selectedMode,
   onGenerateClick,
   isDisabled,
+  modelInfo,
+  generationCount: generationCountProp,
+  onGenerationCountChange,
 }: PromptBoxEditProps) => {
   const [prompt, setPrompt] = useState("");
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
+  const [generationCount, setGenerationCount] = useState<number>(
+    typeof generationCountProp === "number" ? generationCountProp : 1
+  );
+  const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
+    []
+  );
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -37,6 +52,48 @@ export const PromptBoxEdit = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   });
+
+  // Sync internal state if a controlled prop is provided
+  useEffect(() => {
+    if (typeof generationCountProp === "number") {
+      setGenerationCount(generationCountProp);
+    }
+  }, [generationCountProp]);
+
+  // Build generation count options based on selected model
+  useEffect(() => {
+    const caps = getCapabilitiesForModel(modelInfo);
+    const items: PopoverItem[] = Array.from(
+      { length: caps.maxGenerationCount },
+      (_, i) => i + 1
+    ).map((count) => ({
+      label: String(count),
+      selected: count === generationCount,
+      icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
+    }));
+    setGenerationCountList(items);
+
+    // Clamp selection
+    if (generationCount < 1 || generationCount > caps.maxGenerationCount) {
+      const clamped = Math.min(
+        Math.max(1, generationCount),
+        caps.maxGenerationCount
+      );
+      setGenerationCount(clamped);
+      onGenerationCountChange?.(clamped);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modelInfo]);
+
+  // Keep UI selection in sync when store/value changes
+  useEffect(() => {
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === String(generationCount),
+      }))
+    );
+  }, [generationCount]);
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
@@ -67,6 +124,18 @@ export const PromptBoxEdit = ({
       e.preventDefault();
       // handleEnqueue();
     }
+  };
+
+  const handleGenerationCountSelect = (selectedItem: PopoverItem) => {
+    const count = parseInt(selectedItem.label, 10);
+    setGenerationCount(count);
+    onGenerationCountChange?.(count);
+    setGenerationCountList((prev) =>
+      prev.map((item) => ({
+        ...item,
+        selected: item.label === selectedItem.label,
+      }))
+    );
   };
 
   const modes = [
@@ -134,6 +203,24 @@ export const PromptBoxEdit = ({
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
+              <Tooltip
+                content="Number of generations"
+                position="top"
+                className="z-50"
+                closeOnClick={true}
+              >
+                <PopoverMenu
+                  items={generationCountList}
+                  onSelect={handleGenerationCountSelect}
+                  mode="toggle"
+                  triggerIcon={
+                    <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
+                  }
+                  panelClassName="min-w-28"
+                  panelTitle="No. of images"
+                  buttonClassName="h-9"
+                />
+              </Tooltip>
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isDisabled ? faSparkles : undefined}

@@ -5,7 +5,8 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
   onModeChange,
   selectedMode,
   onGenerateClick,
-  isDisabled
+  isDisabled,
+  ...rest
 }) => {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col space-y-2">
@@ -14,6 +15,7 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
         selectedMode={selectedMode}
         onGenerateClick={onGenerateClick}
         isDisabled={isDisabled}
+        {...rest}
       />
     </div>
   );

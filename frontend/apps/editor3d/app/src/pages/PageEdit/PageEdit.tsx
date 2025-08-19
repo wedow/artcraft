@@ -6,22 +6,22 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
 import Konva from "konva"; // just for types
 
-import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
+// import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
 import {
   EnqueueImageInpaint,
   EnqueueImageInpaintModel,
 } from "@storyteller/tauri-api";
 import { ContextMenuContainer } from "../PageDraw/components/ui/ContextMenu";
-import SideToolbar from "../PageDraw/components/ui/SideToolbar";
+// import SideToolbar from "../PageDraw/components/ui/SideToolbar";
 import { useCopyPasteHotkeys } from "../PageDraw/hooks/useCopyPasteHotkeys";
 import { useDeleteHotkeys } from "../PageDraw/hooks/useDeleteHotkeys";
 import { useUndoRedoHotkeys } from "../PageDraw/hooks/useUndoRedoHotkeys";
-import { captureStageImageBitmap } from "../PageDraw/hooks/useUpdateSnapshot";
+// import { captureStageImageBitmap } from "../PageDraw/hooks/useUpdateSnapshot";
 import PromptEditor from "./PromptEditor/PromptEditor";
-import { AspectRatioType } from "../PageDraw/stores/SceneState";
+// import { AspectRatioType } from "../PageDraw/stores/SceneState";
 import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import { EditPaintSurface } from "./EditPaintSurface";
-import { normalizeCanvas } from "~/Helpers/CanvasHelpers";
+import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
 
@@ -40,6 +40,7 @@ const PageEdit = () => {
   const baseImageKonvaRef = useRef<Konva.Image>({} as Konva.Image);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const [isEnqueuing, setIsEnqueuing] = useState<boolean>(false);
+  const [generationCount, setGenerationCount] = useState<number>(1);
 
   // Use the Zustand store
   const store = useEditStore();
@@ -150,13 +151,17 @@ const PageEdit = () => {
     // Calculate position to center canvas in container
     stage.position({
       x: (containerWidth - canvasW) / 2,
-      y: (containerHeight - canvasH) / 2
+      y: (containerHeight - canvasH) / 2,
     });
-  }
+  };
 
   // Create a function to use the left layer ref and download the bitmap from it
   const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
-    if (!stageRef.current || !leftPanelRef.current || !baseImageKonvaRef.current) {
+    if (
+      !stageRef.current ||
+      !leftPanelRef.current ||
+      !baseImageKonvaRef.current
+    ) {
       console.error("Stage or left panel ref is not available");
       throw new Error("Stage or left panel or base image ref is not available");
     }
@@ -175,9 +180,13 @@ const PageEdit = () => {
 
     // Using the pixelRatio scaling may result in off-by-one rounding errors,
     // So we re-fit the image to a canvas of precise size.
-    const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
+    const fittedCanvas = normalizeCanvas(
+      layerCrop,
+      rect.width(),
+      rect.height(),
+    );
 
-    const blob = await fittedCanvas.convertToBlob({ type: 'image/png' });
+    const blob = await fittedCanvas.convertToBlob({ type: "image/png" });
     const arrayBuffer = await blob.arrayBuffer();
 
     return new Uint8Array(arrayBuffer);
@@ -201,12 +210,12 @@ const PageEdit = () => {
     // TODO: Call inference API here
     const arrayBuffer = await getMaskArrayBuffer();
 
-    const response = await EnqueueImageInpaint({
+    await EnqueueImageInpaint({
       model: EnqueueImageInpaintModel.FluxPro1,
       image_media_token: editedImageToken,
       mask_image_raw_bytes: arrayBuffer,
       prompt: prompt,
-      image_count: 1,
+      image_count: generationCount,
     });
 
     setIsEnqueuing(false);
@@ -216,22 +225,29 @@ const PageEdit = () => {
   // Also show loading state if info is set but image is loading
   if (!store.baseImageInfo || !store.baseImageBitmap) {
     return (
-      <div className={"h-screen w-full flex items-center justify-center bg-ui-panel"}>
+      <div
+        className={
+          "flex h-screen w-full items-center justify-center bg-ui-panel"
+        }
+      >
         <BaseImageSelector
           onImageSelect={(image: BaseSelectorImage) => {
             store.setBaseImageInfo(image);
           }}
-          showLoading={store.baseImageInfo !== null && store.baseImageInfo === null}
+          showLoading={
+            store.baseImageInfo !== null && store.baseImageInfo === null
+          }
         />
       </div>
-    )
+    );
   }
 
   return (
     <>
       <div
-        className={`preserve-aspect-ratio fixed top-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
-          }`}
+        className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
         style={{ display: store.activeTool === "edit" ? "block" : "none" }}
       >
         <DrawToolControlBar
@@ -242,14 +258,19 @@ const PageEdit = () => {
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
-          }`}
+        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
       >
         <PromptEditor
-          onModeChange={(mode: string) => { store.setActiveTool(mode as ActiveEditTool) }}
+          onModeChange={(mode: string) => {
+            store.setActiveTool(mode as ActiveEditTool);
+          }}
           selectedMode={store.activeTool}
           onGenerateClick={handleGenerate}
           isDisabled={isEnqueuing}
+          generationCount={generationCount}
+          onGenerationCountChange={setGenerationCount}
         />
       </div>
       <div className="relative z-0">
@@ -260,30 +281,30 @@ const PageEdit = () => {
               if (hasSelection) {
                 console.log("An item is selected.");
                 // You can add additional actions here based on the selection
-                return true
+                return true;
               } else {
                 console.log("No item is selected.");
-                return false
+                return false;
               }
             }
-            return false
+            return false;
           }}
           onMenuAction={async (action) => {
             switch (action) {
-              case 'DUPLICATE':
-                store.copySelectedItems()
-                store.pasteItems()
+              case "DUPLICATE":
+                store.copySelectedItems();
+                store.pasteItems();
                 break;
-              case 'DELETE':
-                store.deleteSelectedItems()
+              case "DELETE":
+                store.deleteSelectedItems();
                 break;
               default:
               // No action needed for unhandled cases
             }
           }}
-          isLocked={store.selectedNodeIds.some(id => {
-            const node = store.nodes.find(n => n.id === id);
-            const lineNode = store.lineNodes.find(n => n.id === id);
+          isLocked={store.selectedNodeIds.some((id) => {
+            const node = store.nodes.find((n) => n.id === id);
+            const lineNode = store.lineNodes.find((n) => n.id === id);
             return (node?.locked || lineNode?.locked) ?? false;
           })}
         >
@@ -318,7 +339,7 @@ const PageEdit = () => {
           triggerLabel="Model"
         />
         <button
-          className="bg-transparent p-2 text-lg text-white hover:text-white hover:bg-white/20 rounded transition"
+          className="rounded bg-transparent p-2 text-lg text-white transition hover:bg-white/20 hover:text-white"
           onClick={onFitPressed}
         >
           Fit
