@@ -3,3 +3,7 @@
 frontendDist = "../../../frontend/apps/editor3d/dist"
 beforeDevCommand = "npx nx run editor3d:dev"
 devUrl = "http://localhost:5173"
+
+[[app.windows]]
+decorations = true
+title = "ArtCraft"

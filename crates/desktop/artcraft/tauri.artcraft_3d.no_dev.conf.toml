@@ -4,3 +4,7 @@ frontendDist = "../../../frontend/apps/editor3d/dist"
 #beforeDevCommand = "nx run editor3d:dev"
 beforeDevCommand = "echo 'no dev'"
 devUrl = "http://localhost:5173"
+
+[[app.windows]]
+decorations = true
+title = "ArtCraft"

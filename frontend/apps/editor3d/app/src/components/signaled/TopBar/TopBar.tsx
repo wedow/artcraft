@@ -150,28 +150,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
           aria-label="navigation"
         >
           <div className="flex items-center gap-3">
-            {isDesktop && platform === "macos" && (
-              <div className="no-drag me-2 flex items-center gap-2">
-                <button
-                  aria-label="Close"
-                  onClick={close}
-                  className="h-[12px] w-[12px] rounded-full transition-opacity duration-200 hover:opacity-60"
-                  style={{ backgroundColor: "#ff5f57" }}
-                />
-                <button
-                  aria-label="Minimize"
-                  onClick={minimize}
-                  className="h-[12px] w-[12px] rounded-full transition-opacity duration-200 hover:opacity-60"
-                  style={{ backgroundColor: "#febc2e" }}
-                />
-                <button
-                  aria-label="Enter Fullscreen"
-                  onClick={toggleMaximize}
-                  className="h-[12px] w-[12px] rounded-full transition-opacity duration-200 hover:opacity-60"
-                  style={{ backgroundColor: "#28c840" }}
-                />
-              </div>
-            )}
+            
             <div className="mr-2">
               <span className="sr-only">ArtCraft</span>
               <img
