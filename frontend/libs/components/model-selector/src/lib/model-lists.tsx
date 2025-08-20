@@ -3,10 +3,11 @@ import { faClock, faFilm, faImage } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   getCreatorIcon,
-  getModelsByCategory,
-  getInstructiveImageEditModels,
-  IMAGE_EDITOR_PAGE_MODELS,
   TEXT_TO_IMAGE_PAGE_MODELS,
+  IMAGE_TO_VIDEO_PAGE_MODELS,
+  CANVAS_2D_PAGE_MODELS,
+  STAGE_3D_PAGE_MODELS,
+  IMAGE_EDITOR_PAGE_MODELS,
 } from "@storyteller/model-list";
 
 export type ModelList = Omit<PopoverItem, "selected">[];
@@ -33,26 +34,23 @@ const buildItems = (
     modelInfo: (m as any).info,
   }));
 
-const videoModels = getModelsByCategory("video");
-const instructiveModels = getInstructiveImageEditModels();
-
-export const allModels = {
-  video: buildItems(
-    videoModels as any,
-    <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />
-  ),
-  instructiveImageEdits: buildItems(
-    instructiveModels as any,
-    <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-  ),
-};
-
-export const videoGenerationModels: ModelList = allModels.video;
-export const instructiveImageEditModels: ModelList =
-  allModels.instructiveImageEdits;
-
 export const TEXT_TO_IMAGE_PAGE_MODEL_LIST : ModelList = buildItems(
   TEXT_TO_IMAGE_PAGE_MODELS as any,
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+);
+
+export const IMAGE_TO_VIDEO_PAGE_MODEL_LIST : ModelList = buildItems(
+  IMAGE_TO_VIDEO_PAGE_MODELS as any,
+  <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />
+);
+
+export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = buildItems(
+  CANVAS_2D_PAGE_MODELS as any,
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+);
+
+export const STAGE_3D_PAGE_MODEL_LIST : ModelList = buildItems(
+  STAGE_3D_PAGE_MODELS as any,
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
 );
 

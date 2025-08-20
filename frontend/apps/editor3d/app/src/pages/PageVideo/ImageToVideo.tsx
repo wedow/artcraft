@@ -6,7 +6,7 @@ import {
   ModelCategory,
   ModelSelector,
   useModelSelectorStore,
-  videoGenerationModels,
+  IMAGE_TO_VIDEO_PAGE_MODEL_LIST,
 } from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
 
@@ -21,9 +21,9 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
 
   const selectedModel =
     selectedModels[ModelCategory.ImageToVideo] ||
-    videoGenerationModels[0]?.label;
+    IMAGE_TO_VIDEO_PAGE_MODEL_LIST[0]?.label;
 
-  const selectedModelInfo: ModelInfo | undefined = videoGenerationModels.find(
+  const selectedModelInfo: ModelInfo | undefined = IMAGE_TO_VIDEO_PAGE_MODEL_LIST.find(
     (m) => m.label === selectedModel,
   )?.modelInfo;
 
@@ -67,7 +67,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
 
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
             <ModelSelector
-              items={videoGenerationModels}
+              items={IMAGE_TO_VIDEO_PAGE_MODEL_LIST}
               category={ModelCategory.ImageToVideo}
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"

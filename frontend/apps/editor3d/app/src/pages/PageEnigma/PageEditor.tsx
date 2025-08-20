@@ -66,13 +66,10 @@ import {
   removeImageDropListener,
 } from "@storyteller/ui-gallery-modal";
 import {
-  instructiveImageEditModels,
+  STAGE_3D_PAGE_MODEL_LIST,
   ModelCategory,
-  // ModelCategory,
   ModelSelector,
   useModelSelectorStore,
-  // videoGenerationModels,
-  // useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
 import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
@@ -113,10 +110,10 @@ export const PageEditor = () => {
 
   const selectedModel =
     selectedModels[ModelCategory.Editor3D] ||
-    instructiveImageEditModels[0]?.label;
+    STAGE_3D_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
-    instructiveImageEditModels.find(
+    STAGE_3D_PAGE_MODEL_LIST.find(
       (m) => m.label === selectedModel,
     )?.modelInfo;
 
@@ -550,7 +547,7 @@ export const PageEditor = () => {
 
                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
                   <ModelSelector
-                    items={instructiveImageEditModels}
+                    items={STAGE_3D_PAGE_MODEL_LIST}
                     category={ModelCategory.Editor3D}
                     panelTitle="Select Model"
                     panelClassName="min-w-[280px]"
