@@ -10,6 +10,8 @@ import {
 } from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
 
+const PAGE_ID : ModelPage = ModelPage.ImageToVideo;
+
 interface ImageToVideoProps {
   imageMediaId?: string;
   imageUrl?: string;
@@ -20,7 +22,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const { selectedModels } = useModelSelectorStore();
 
   const selectedModel =
-    selectedModels[ModelPage.ImageToVideo] ||
+    selectedModels[PAGE_ID] ||
     IMAGE_TO_VIDEO_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined = IMAGE_TO_VIDEO_PAGE_MODEL_LIST.find(
@@ -68,7 +70,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
             <ModelSelector
               items={IMAGE_TO_VIDEO_PAGE_MODEL_LIST}
-              page={ModelPage.ImageToVideo}
+              page={PAGE_ID}
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"
               buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"

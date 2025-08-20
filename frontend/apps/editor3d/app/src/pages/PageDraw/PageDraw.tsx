@@ -20,6 +20,8 @@ import {
 } from "@storyteller/ui-model-selector";
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
 
+const PAGE_ID : ModelPage = ModelPage.Canvas2D;
+
 export const DecodeBase64ToImage = async (
   base64String: string,
 ): Promise<ImageBitmap> => {
@@ -55,7 +57,7 @@ const PageDraw = () => {
   const store = useSceneStore();
 
   const selectedModel =
-    selectedModels[ModelPage.Canvas2D] ||
+    selectedModels[PAGE_ID] ||
     CANVAS_2D_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
@@ -446,7 +448,7 @@ const PageDraw = () => {
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <ModelSelector
           items={CANVAS_2D_PAGE_MODEL_LIST}
-          page={ModelPage.Canvas2D}
+          page={PAGE_ID}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
