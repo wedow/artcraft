@@ -1,28 +1,9 @@
 import { ModelCreator } from "./ModelCreator.js";
 import { ModelInfo } from "./ModelInfo.js";
 import { ModelTag } from "./ModelTag.js";
-
-export type ModelCategory = "image" | "video";
-
-export interface ModelConfig {
-  id: string;
-  label: string; // UI label
-  description?: string;
-  badges?: { label: string }[];
-  category: ModelCategory;
-  info: ModelInfo;
-  capabilities: ModelCapabilities;
-  tags?: (ModelTag|string)[]; // optional tags, e.g. ["instructiveEdit"] - for filtering
-}
+import { ModelConfig, ModelCapabilities, ModelCategory } from "./ModelConfig.js";
 
 const mc = ModelCreator;
-
-// Centralized model capability definition
-// For setting options for the model
-// TODO: add more capabilities here - BFlat
-export interface ModelCapabilities {
-  maxGenerationCount: number;
-}
 
 const DEFAULT_CAPABILITIES: ModelCapabilities = {
   maxGenerationCount: 1,
@@ -130,7 +111,9 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "Fast and high-quality model",
     badges: [{ label: "20 sec." }],
-    capabilities: { maxGenerationCount: 4 },
+    capabilities: { 
+      maxGenerationCount: 1 // NB: For some reason Fal only supports ONE image!
+    },
     tags: [
       ModelTag.InstructiveEdit,
       ModelTag.NonMaskedInpainting,

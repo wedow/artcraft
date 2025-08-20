@@ -1,6 +1,7 @@
-import { getModelsByCategory, ModelConfig } from "./Models.js";
 import { ALL_MODELS_BY_ID } from "./Models.js";
+import { ModelConfig } from "./ModelConfig.js";
 import { ModelTag } from "./ModelTag.js";
+import { getModelsByCategory } from "./Models.js";
 
 /**
  * We might not want to always programatically build the list of models, because

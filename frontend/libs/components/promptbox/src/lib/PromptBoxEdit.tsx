@@ -37,9 +37,11 @@ export const PromptBoxEdit = ({
 }: PromptBoxEditProps) => {
   const [prompt, setPrompt] = useState("");
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
+
   const [generationCount, setGenerationCount] = useState<number>(
     typeof generationCountProp === "number" ? generationCountProp : 1
   );
+
   const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
     []
   );
@@ -52,6 +54,8 @@ export const PromptBoxEdit = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   });
+
+  console.log(">>> Model info", modelInfo);
 
   // Sync internal state if a controlled prop is provided
   useEffect(() => {
