@@ -67,7 +67,7 @@ import {
 } from "@storyteller/ui-gallery-modal";
 import {
   STAGE_3D_PAGE_MODEL_LIST,
-  ModelCategory,
+  ModelPage,
   ModelSelector,
   useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
@@ -109,7 +109,7 @@ export const PageEditor = () => {
   }, []);
 
   const selectedModel =
-    selectedModels[ModelCategory.Editor3D] ||
+    selectedModels[ModelPage.Stage3D] ||
     STAGE_3D_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
@@ -548,7 +548,7 @@ export const PageEditor = () => {
                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
                   <ModelSelector
                     items={STAGE_3D_PAGE_MODEL_LIST}
-                    category={ModelCategory.Editor3D}
+                    page={ModelPage.Stage3D}
                     panelTitle="Select Model"
                     panelClassName="min-w-[280px]"
                     buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"

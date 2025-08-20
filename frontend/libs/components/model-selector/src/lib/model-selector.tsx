@@ -1,11 +1,11 @@
 import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
 import { useModelSelectorStore } from "./model-selector-store";
 import { useMemo } from "react";
-import { ModelCategory } from "./model-categories";
+import { ModelPage } from "./model-pages";
 
 interface ModelSelectorProps {
   items: Omit<PopoverItem, "selected">[];
-  category: ModelCategory;
+  page: ModelPage;
   mode?: "hoverSelect" | "default" | "toggle" | "button";
   panelTitle?: string;
   buttonClassName?: string;
@@ -16,14 +16,14 @@ interface ModelSelectorProps {
 
 export function ModelSelector({
   items,
-  category,
+  page,
   ...popoverProps
 }: ModelSelectorProps) {
   const { selectedModels, setSelectedModel } = useModelSelectorStore();
-  const selectedModel = selectedModels[category] || items[0]?.label;
+  const selectedModel = selectedModels[page] || items[0]?.label;
 
   const handleModelSelect = (item: PopoverItem) => {
-    setSelectedModel(category, item.label);
+    setSelectedModel(page, item.label);
   };
 
   const modelList = useMemo(

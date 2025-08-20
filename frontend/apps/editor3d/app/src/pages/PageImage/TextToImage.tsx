@@ -4,7 +4,7 @@ import { PromptBoxImage } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
 import {
   TEXT_TO_IMAGE_PAGE_MODEL_LIST,
-  ModelCategory,
+  ModelPage,
   ModelSelector,
   useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
@@ -20,7 +20,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const { selectedModels } = useModelSelectorStore();
 
   const selectedModel =
-    selectedModels[ModelCategory.TextToImage] ||
+    selectedModels[ModelPage.TextToImage] ||
     TEXT_TO_IMAGE_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined = TEXT_TO_IMAGE_PAGE_MODEL_LIST.find(
@@ -67,7 +67,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
             <ModelSelector
               items={TEXT_TO_IMAGE_PAGE_MODEL_LIST}
-              category={ModelCategory.TextToImage}
+              page={ModelPage.TextToImage}
               mode="hoverSelect"
               panelTitle="Select Model"
               panelClassName="min-w-[280px]"

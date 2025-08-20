@@ -14,7 +14,7 @@ import { ContextMenuContainer } from "./components/ui/ContextMenu";
 import { ModelInfo } from "@storyteller/model-list";
 import {
   CANVAS_2D_PAGE_MODEL_LIST,
-  ModelCategory,
+  ModelPage,
   ModelSelector,
   useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
@@ -55,7 +55,7 @@ const PageDraw = () => {
   const store = useSceneStore();
 
   const selectedModel =
-    selectedModels[ModelCategory.Canvas2D] ||
+    selectedModels[ModelPage.Canvas2D] ||
     CANVAS_2D_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
@@ -446,7 +446,7 @@ const PageDraw = () => {
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <ModelSelector
           items={CANVAS_2D_PAGE_MODEL_LIST}
-          category={ModelCategory.Canvas2D}
+          page={ModelPage.Canvas2D}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"

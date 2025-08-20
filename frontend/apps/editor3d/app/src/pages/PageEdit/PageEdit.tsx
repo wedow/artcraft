@@ -14,7 +14,7 @@ import { EditPaintSurface } from "./EditPaintSurface";
 import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
-import { IMAGE_EDITOR_PAGE_MODEL_LIST, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
+import { IMAGE_EDITOR_PAGE_MODEL_LIST, ModelPage, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
 
 const PageEdit = () => {
@@ -22,7 +22,7 @@ const PageEdit = () => {
   const { selectedModels } = useModelSelectorStore();
 
   const selectedModel =
-    selectedModels[ModelCategory.Canvas2D] ||
+    selectedModels[ModelPage.Canvas2D] ||
     IMAGE_EDITOR_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
@@ -314,7 +314,7 @@ const PageEdit = () => {
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <ModelSelector
           items={IMAGE_EDITOR_PAGE_MODEL_LIST}
-          category={ModelCategory.ImageEditor}
+          page={ModelPage.ImageEditor}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
