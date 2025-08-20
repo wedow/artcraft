@@ -15,6 +15,7 @@ use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id::FalJobDetails;
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use serde_json::{Map, Value};
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 
 const PREFIX : Option<&str> = Some("artcraft_");
@@ -33,8 +34,8 @@ pub async fn handle_images_payload(
   payload: &Map<String, Value>,
   job: &FalJobDetails,
   server_state: &ServerState,
-) -> AnyhowResult<Option<MediaFileToken>> {
-  
+) -> AnyhowResult<(Option<MediaFileToken>, Option<BatchGenerationToken>)> {
+
   let images_value = payload.get("images")
       .ok_or_else(|| anyhow!("no `images` key in payload"))?;
 
@@ -43,22 +44,31 @@ pub async fn handle_images_payload(
   let images: Vec<FalWebhookImage> = serde_json::from_value(images_value.clone())?;
   
   let mut maybe_media_token = None;
-  
+
+  // NB: We are not going to create `batch_generations` table records. We don't need them.
+  // The foreign key in `media_files` is enough to look up the rest of the batch.
+  let mut maybe_batch_token = None;
+
+  if images.len() > 1 {
+    maybe_batch_token = Some(BatchGenerationToken::generate());
+  }
+
   for image in images {
-    let media_token = upload_image(job, server_state, &image).await?;
+    let media_token = upload_image(job, server_state, &image, maybe_batch_token.as_ref()).await?;
     
     if maybe_media_token.is_none() {
       maybe_media_token = Some(media_token); // Set the first media token
     }
   }
   
-  Ok(maybe_media_token)
+  Ok((maybe_media_token, maybe_batch_token))
 }
 
 async fn upload_image(
   job: &FalJobDetails,
   server_state: &ServerState,
   image: &FalWebhookImage,
+  maybe_batch_token: Option<&BatchGenerationToken>,
 ) -> AnyhowResult<MediaFileToken> {
   let image_url = image.url
       .as_deref()
@@ -98,6 +108,7 @@ async fn upload_image(
         image,
         &file_bytes,
         mimetype_info,
+        maybe_batch_token,
       ).await
     }
     _ => {
@@ -107,6 +118,7 @@ async fn upload_image(
         image,
         &file_bytes,
         mimetype_info,
+        maybe_batch_token,
       ).await
     }
   }
@@ -118,6 +130,7 @@ async fn upload_image_bytes(
   image: &FalWebhookImage,
   file_bytes: &[u8],
   mimetype_info: MimetypeInfo,
+  maybe_batch_token: Option<&BatchGenerationToken>,
 ) -> AnyhowResult<MediaFileToken> {
 
   let mime_type = mimetype_info.mime_type();
@@ -145,7 +158,7 @@ async fn upload_image_bytes(
     &mime_type)
       .await?;
 
-  let media_token = MediaFileInsertBuilder::new()
+  let mut query_builder = MediaFileInsertBuilder::new()
       .maybe_creator_user(job.maybe_creator_user_token.as_ref())
       .maybe_creator_anonymous_visitor(job.maybe_creator_anonymous_visitor_token.as_ref())
       .creator_ip_address(&job.creator_ip_address)
@@ -159,11 +172,18 @@ async fn upload_image_bytes(
       .frame_width(image_info.width())
       .frame_height(image_info.height())
       .maybe_prompt_token(job.maybe_prompt_token.as_ref())
-      .checksum_sha2(&file_hash)
+      .checksum_sha2(&file_hash);
+
+  if let Some(batch_token) = maybe_batch_token {
+    query_builder = query_builder.maybe_batch_generation_token(Some(batch_token));
+  }
+
+  let media_token = query_builder
       .insert_pool(&server_state.mysql_pool)
       .await?;
 
-  info!("Image media file uploaded with token: {}", media_token);
+  info!("Image media file uploaded with token: {} ; possible batch token: {:?}",
+    media_token, maybe_batch_token);
 
   Ok(media_token)
 }

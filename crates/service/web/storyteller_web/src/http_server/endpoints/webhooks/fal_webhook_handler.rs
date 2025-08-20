@@ -15,7 +15,7 @@ use http_server_common::response::response_success_helpers::SimpleGenericJsonSuc
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::{info, warn};
 use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id::get_inference_job_by_fal_id;
-use mysql_queries::queries::generic_inference::fal::mark_fal_generic_inference_job_successfully_done::mark_fal_generic_inference_job_successfully_done;
+use mysql_queries::queries::generic_inference::fal::mark_fal_generic_inference_job_successfully_done::{mark_fal_generic_inference_job_successfully_done, MarkJobArgs};
 use serde_json::Value;
 use utoipa::ToSchema;
 // 1. tauri --> hit endpoint to enqueue
@@ -95,7 +95,7 @@ impl From<anyhow::Error> for FalWebhookError {
 /// Fal webhook
 #[utoipa::path(
   post,
-  tag = "Webooks",
+  tag = "Webhooks",
   path = "/v1/webhooks/fal",
   responses(
     (status = 200, description = "Success", body = SimpleGenericJsonSuccess),
@@ -143,6 +143,7 @@ pub async fn fal_webhook_handler(
   info!("Fal webhook job record: {:?}", job);
 
  let mut maybe_media_token = None;
+ let mut maybe_batch_token = None;
 
   if let Some(payload_obj) = payload.as_object() {
     if payload_obj.contains_key("image") {
@@ -150,7 +151,7 @@ pub async fn fal_webhook_handler(
       let token = handle_image_payload(payload_obj, &job, &server_state).await?;
       maybe_media_token = Some(token);
     } else if payload_obj.contains_key("images") {
-      maybe_media_token = handle_images_payload(payload_obj, &job, &server_state).await?;
+      (maybe_media_token, maybe_batch_token) = handle_images_payload(payload_obj, &job, &server_state).await?;
     } else if payload_obj.contains_key("video") {
       info!("Handling video payload for job: {:?}", job.job_token);
       let token = handle_video_payload(payload_obj, &job, &server_state).await?;
@@ -165,11 +166,13 @@ pub async fn fal_webhook_handler(
   if let Some(media_token) = maybe_media_token {
     info!("Media file token: {:?}", media_token);
     // TODO: Update job metadata.
-    mark_fal_generic_inference_job_successfully_done(
-      &server_state.mysql_pool,
-      &job.job_token,
-      media_token,
-    ).await.map_err(|err| {
+    mark_fal_generic_inference_job_successfully_done(MarkJobArgs {
+      job_token: &job.job_token,
+      media_file_token: &media_token,
+      maybe_batch_token: maybe_batch_token.as_ref(),
+      mysql_executor: &server_state.mysql_pool,
+      phantom: Default::default(),
+    }).await.map_err(|err| {
       warn!("Error marking job as successfully done: {:?}", err);
       FalWebhookError::ServerError
     })?;

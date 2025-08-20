@@ -10,6 +10,7 @@ use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use sqlx::MySqlPool;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
@@ -67,7 +68,7 @@ pub struct MediaFileInsertBuilder {
   // maybe_prompt_token: Option<&'a PromptToken>,
 
   // // If batch generated, this is the batch token.
-  // maybe_batch_token: Option<&'a BatchGenerationToken>,
+  maybe_batch_generation_token: Option<BatchGenerationToken>,
 
   // Storage details
   public_bucket_directory_hash: Option<MediaFileBucketPath>, // NB: Non-nullable field(s)
@@ -100,6 +101,7 @@ impl MediaFileInsertBuilder {
       maybe_frame_height: None,
       checksum_sha2: None,
       maybe_engine_category: None,
+      maybe_batch_generation_token: None,
       public_bucket_directory_hash: None,
       maybe_prompt_token: None,
     }
@@ -228,7 +230,12 @@ impl MediaFileInsertBuilder {
   // TODO: maybe_text_transcript
   // TODO: maybe_scene_source_media_file_token
   // TODO: maybe_prompt_token
-  // TODO: maybe_batch_token
+
+  pub fn maybe_batch_generation_token(mut self, maybe_batch_token: Option<&BatchGenerationToken>) -> Self {
+    self.maybe_batch_generation_token = maybe_batch_token
+        .map(|token| token.clone());
+    self
+  }
 
   pub fn public_bucket_directory_hash(mut self, public_bucket_directory_hash: &MediaFileBucketPath) -> Self {
     self.public_bucket_directory_hash = Some(public_bucket_directory_hash.clone());
@@ -281,7 +288,7 @@ impl MediaFileInsertBuilder {
       maybe_text_transcript: None, // TODO
       maybe_scene_source_media_file_token: None, // TODO
       maybe_prompt_token: self.maybe_prompt_token.as_ref(),
-      maybe_batch_token: None, // TODO
+      maybe_batch_token: self.maybe_batch_generation_token.as_ref(),
       public_bucket_directory_hash: bucket_path.get_object_hash(),
       maybe_public_bucket_prefix: bucket_path.get_optional_prefix(),
       maybe_public_bucket_extension: bucket_path.get_optional_extension(),
