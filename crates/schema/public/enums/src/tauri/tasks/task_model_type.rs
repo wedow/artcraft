@@ -177,6 +177,7 @@ mod tests {
       // Image models
       assert_eq!(TaskModelType::Flux1Dev.to_str(), "flux_1_dev");
       assert_eq!(TaskModelType::Flux1Schnell.to_str(), "flux_1_schnell");
+      assert_eq!(TaskModelType::FluxDevJuggernaut.to_str(), "flux_dev_juggernaut");
       assert_eq!(TaskModelType::FluxPro1.to_str(), "flux_pro_1");
       assert_eq!(TaskModelType::FluxPro11.to_str(), "flux_pro_1.1");
       assert_eq!(TaskModelType::FluxPro11Ultra.to_str(), "flux_pro_1.1_ultra");
@@ -200,6 +201,7 @@ mod tests {
       // Image models
       assert_eq!(TaskModelType::from_str("flux_1_dev").unwrap(), TaskModelType::Flux1Dev);
       assert_eq!(TaskModelType::from_str("flux_1_schnell").unwrap(), TaskModelType::Flux1Schnell);
+      assert_eq!(TaskModelType::from_str("flux_dev_juggernaut").unwrap(), TaskModelType::FluxDevJuggernaut);
       assert_eq!(TaskModelType::from_str("flux_pro_1").unwrap(), TaskModelType::FluxPro1);
       assert_eq!(TaskModelType::from_str("flux_pro_1.1").unwrap(), TaskModelType::FluxPro11);
       assert_eq!(TaskModelType::from_str("flux_pro_1.1_ultra").unwrap(), TaskModelType::FluxPro11Ultra);
@@ -225,6 +227,7 @@ mod tests {
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::FluxDevJuggernaut));
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro1));
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro11));
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro11Ultra));

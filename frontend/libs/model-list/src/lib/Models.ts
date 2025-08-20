@@ -134,6 +134,21 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     tags: [ModelTag.MaskedInpainting],
   }),
+  cfg({
+    id: "flux_dev_juggernaut_inpaint",
+    category: "image",
+    info: {
+      name: "Flux Dev Juggernaut (Inpainting)",
+      tauri_id: "flux_dev_juggernaut",
+      creator: mc.BlackForestLabs,
+    },
+    description: "Fast and high-quality model",
+    badges: [{ label: "20 sec." }],
+    capabilities: { 
+      maxGenerationCount: 4
+    },
+    tags: [ModelTag.MaskedInpainting],
+  }),
 
   //////////////////////////////
   // Video models

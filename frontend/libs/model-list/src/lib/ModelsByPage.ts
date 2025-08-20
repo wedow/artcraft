@@ -31,5 +31,6 @@ export const STAGE_3D_PAGE_MODELS : ModelConfig[] =
 export const IMAGE_EDITOR_PAGE_MODELS : ModelConfig[] = [
   // Explicit list for now.
   ALL_MODELS_BY_ID.get("flux_pro_inpaint")!,
+  ALL_MODELS_BY_ID.get("flux_dev_juggernaut_inpaint")!,
   ALL_MODELS_BY_ID.get("flux_pro_kontext_max")!,
 ];
