@@ -15,6 +15,8 @@ pub enum TaskModelType {
   Flux1Dev,
   #[serde(rename = "flux_1_schnell")]
   Flux1Schnell,
+  #[serde(rename = "flux_dev_juggernaut")]
+  FluxDevJuggernaut,
   // NB: For inpainting for now
   #[serde(rename = "flux_pro_1")]
   FluxPro1,
@@ -64,6 +66,7 @@ impl TaskModelType {
       // Image models
       Self::Flux1Dev => "flux_1_dev",
       Self::Flux1Schnell => "flux_1_schnell",
+      Self::FluxDevJuggernaut => "flux_dev_juggernaut",
       Self::FluxPro1 => "flux_pro_1",
       Self::FluxPro11 => "flux_pro_1.1",
       Self::FluxPro11Ultra => "flux_pro_1.1_ultra",
@@ -88,6 +91,7 @@ impl TaskModelType {
       // Image models
       "flux_1_dev" => Ok(Self::Flux1Dev),
       "flux_1_schnell" => Ok(Self::Flux1Schnell),
+      "flux_dev_juggernaut" => Ok(Self::FluxDevJuggernaut),
       "flux_pro_1" => Ok(Self::FluxPro1),
       "flux_pro_1.1" => Ok(Self::FluxPro11),
       "flux_pro_1.1_ultra" => Ok(Self::FluxPro11Ultra),
@@ -115,6 +119,7 @@ impl TaskModelType {
       // Image models
       Self::Flux1Dev,
       Self::Flux1Schnell,
+      Self::FluxDevJuggernaut,
       Self::FluxPro1,
       Self::FluxPro11,
       Self::FluxPro11Ultra,
@@ -148,6 +153,7 @@ mod tests {
       // Image models
       assert_serialization(TaskModelType::Flux1Dev, "flux_1_dev");
       assert_serialization(TaskModelType::Flux1Schnell, "flux_1_schnell");
+      assert_serialization(TaskModelType::FluxDevJuggernaut, "flux_dev_juggernaut");
       assert_serialization(TaskModelType::FluxPro1, "flux_pro_1");
       assert_serialization(TaskModelType::FluxPro11, "flux_pro_1.1");
       assert_serialization(TaskModelType::FluxPro11Ultra, "flux_pro_1.1_ultra");
@@ -215,7 +221,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 16);
+      assert_eq!(variants.len(), 17);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));

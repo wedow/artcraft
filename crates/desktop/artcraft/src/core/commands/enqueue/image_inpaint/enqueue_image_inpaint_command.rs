@@ -44,10 +44,13 @@ use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::commands::enqueue::image_inpaint::flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint;
 
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum ImageInpaintModel {
+  #[serde(rename = "flux_dev_juggernaut")]
+  FluxDevJuggernaut,
   #[serde(rename = "flux_pro_1")]
   FluxPro1,
 }
@@ -212,6 +215,20 @@ pub async fn handle_request(
   let success_event= match request.model {
     None => {
       return Err(InternalImageInpaintError::NoModelSpecified)
+    }
+    Some(ImageInpaintModel::FluxDevJuggernaut) => {
+      handle_flux_dev_juggernaut_inpaint(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        fal_creds_manager,
+        fal_task_queue,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await?
     }
     Some(ImageInpaintModel::FluxPro1) => {
       handle_flux_pro_1_inpaint(

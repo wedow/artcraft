@@ -4,7 +4,7 @@ use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_sora::handle_gpt_image_1_edit_sora;
 use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueInpaintImageCommand;
 use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;
-use crate::core::commands::enqueue::image_inpaint::flux_pro_1_inpaint::handle_flux_pro_1_inpaint_artcraft::handle_flux_pro_1_inpaint_artcraft;
+use crate::core::commands::enqueue::image_inpaint::flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint_artcraft::handle_flux_dev_juggernaut_inpaint_artcraft;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -17,7 +17,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use log::info;
 use tauri::AppHandle;
 
-pub async fn handle_flux_pro_1_inpaint(
+pub async fn handle_flux_dev_juggernaut_inpaint(
   request: &EnqueueInpaintImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -45,8 +45,8 @@ pub async fn handle_flux_pro_1_inpaint(
         // Fallthrough
       }
       Provider::Artcraft => {
-        info!("Dispatching flux pro 1 inpaint via Artcraft...");
-        return handle_flux_pro_1_inpaint_artcraft(
+        info!("Dispatching flux dev juggernaut inpaint via Artcraft...");
+        return handle_flux_dev_juggernaut_inpaint_artcraft(
           request, 
           app,
           app_data_root,

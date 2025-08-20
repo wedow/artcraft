@@ -57,6 +57,7 @@ impl TaskEnqueueSuccess{
     let model_type = match self.model {
       None => None,
       Some(GenerationModel::Flux1Dev) => Some(TaskModelType::Flux1Dev),
+      Some(GenerationModel::FluxDevJuggernaut) => Some(TaskModelType::FluxDevJuggernaut),
       Some(GenerationModel::Flux1Schnell) => Some(TaskModelType::Flux1Schnell),
       Some(GenerationModel::FluxPro1) => Some(TaskModelType::FluxPro1), // NB: This is for inpainting.
       Some(GenerationModel::FluxPro11) => Some(TaskModelType::FluxPro11),

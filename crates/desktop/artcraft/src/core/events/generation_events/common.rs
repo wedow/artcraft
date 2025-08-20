@@ -16,6 +16,8 @@ pub enum GenerationModel {
   Flux1Dev,
   #[serde(rename = "flux_1_schnell")]
   Flux1Schnell,
+  #[serde(rename = "flux_dev_juggernaut")]
+  FluxDevJuggernaut,
   #[serde(rename = "flux_pro_1")]
   FluxPro1,
   #[serde(rename = "flux_pro_1.1")]
