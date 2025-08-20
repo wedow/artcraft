@@ -9,6 +9,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use utoipa::{IntoParams, ToSchema};
+use tokens::tokens::batch_generations::BatchGenerationToken;
 
 pub const LIST_SESSION_JOBS_URL_PATH: &str = "/v1/jobs/session";
 
@@ -111,6 +112,9 @@ pub struct ListSessionStatusDetailsResponse {
 pub struct ListSessionResultDetailsResponse {
   pub entity_type: String,
   pub entity_token: String,
+  
+  /// If generated as part of a batch, the batch token.
+  pub maybe_batch_token: Option<BatchGenerationToken>,
 
   /// (DEPRECATED) URL path to the media file
   #[deprecated(note="This field doesn't point to the full URL. Use media_links instead to leverage the CDN.")]

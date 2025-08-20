@@ -6,6 +6,7 @@ use enums::by_table::generic_inference_jobs::inference_job_product_category::Inf
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::users::UserToken;
 
@@ -66,6 +67,8 @@ pub struct RequestDetails {
 pub struct ResultDetails {
   pub entity_type: String,
   pub entity_token: String,
+
+  pub maybe_batch_token: Option<BatchGenerationToken>,
 
   /// The bucket storage hash (for vc and media_files) or full path (for tts)
   pub public_bucket_location_or_hash: String,

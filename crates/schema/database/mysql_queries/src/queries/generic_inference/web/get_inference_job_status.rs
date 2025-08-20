@@ -11,6 +11,7 @@ use enums::common::job_status_plus::JobStatusPlus;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use errors::AnyhowResult;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::users::UserToken;
 
@@ -61,6 +62,7 @@ SELECT
 
     jobs.on_success_result_entity_type as maybe_result_entity_type,
     jobs.on_success_result_entity_token as maybe_result_entity_token,
+    jobs.on_success_result_batch_token as maybe_result_batch_token,
 
     model_weights.title as maybe_model_weights_title,
     tts_models.title as maybe_tts_model_title,
@@ -206,6 +208,9 @@ fn raw_record_to_public_result(record: RawGenericInferenceJobStatus) -> GenericI
                 ResultDetails {
                   entity_type: entity_type.to_string(),
                   entity_token: entity_token.to_string(),
+                  maybe_batch_token: record.maybe_result_batch_token
+                      .as_ref()
+                      .map(|token| BatchGenerationToken::new_from_str(token)),
                   public_bucket_location_or_hash: public_bucket_hash.to_string(),
                   maybe_media_file_public_bucket_prefix: record.maybe_media_file_public_bucket_prefix.clone(),
                   maybe_media_file_public_bucket_extension: record.maybe_media_file_public_bucket_extension.clone(),
@@ -267,6 +272,7 @@ struct RawGenericInferenceJobStatus {
 
   pub maybe_result_entity_type: Option<String>,
   pub maybe_result_entity_token: Option<String>,
+  pub maybe_result_batch_token: Option<String>,
 
   pub maybe_model_weights_title: Option<String>,
   pub maybe_tts_model_title: Option<String>,

@@ -358,6 +358,7 @@ fn db_record_to_response_payload(
       ListSessionResultDetailsResponse {
         entity_type: result_details.entity_type,
         entity_token: result_details.entity_token,
+        maybe_batch_token: result_details.maybe_batch_token,
         media_links: MediaLinksBuilder::from_rooted_path(media_domain, &public_bucket_media_path),
         maybe_public_bucket_media_path: Some(public_bucket_media_path),
         maybe_successfully_completed_at: result_details.maybe_successfully_completed_at,

@@ -11,6 +11,7 @@ use enums::common::job_status_plus::JobStatusPlus;
 use enums::traits::mysql_from_row::MySqlFromRow;
 use errors::AnyhowResult;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::users::UserToken;
 use tokens::traits::mysql_token_from_row::MySqlTokenFromRow;
@@ -102,6 +103,7 @@ SELECT
 
     jobs.on_success_result_entity_type as maybe_result_entity_type,
     jobs.on_success_result_entity_token as maybe_result_entity_token,
+    jobs.on_success_result_batch_token as maybe_result_batch_token,
 
     model_weights.title as maybe_model_weights_title,
     tts_models.title as maybe_tts_model_title,
@@ -230,6 +232,9 @@ fn raw_records_to_public_result(records: Vec<RawGenericInferenceJobStatus>) -> V
                       ResultDetails {
                         entity_type: entity_type.to_string(),
                         entity_token: entity_token.to_string(),
+                        maybe_batch_token: record.maybe_result_batch_token
+                            .as_ref()
+                            .map(|token| BatchGenerationToken::new_from_str(token)),
                         public_bucket_location_or_hash: public_bucket_hash.to_string(),
                         maybe_media_file_public_bucket_prefix: record.maybe_media_file_public_bucket_prefix.clone(),
                         maybe_media_file_public_bucket_extension: record.maybe_media_file_public_bucket_extension.clone(),
@@ -293,6 +298,7 @@ struct RawGenericInferenceJobStatus {
 
   pub maybe_result_entity_type: Option<String>,
   pub maybe_result_entity_token: Option<String>,
+  pub maybe_result_batch_token: Option<String>,
 
   pub maybe_model_weights_title: Option<String>,
   pub maybe_tts_model_title: Option<String>,
@@ -349,6 +355,7 @@ impl FromRow<'_, MySqlRow> for RawGenericInferenceJobStatus {
       maybe_inference_args: row.try_get("maybe_inference_args")?,
       maybe_result_entity_type: row.try_get("maybe_result_entity_type")?,
       maybe_result_entity_token: row.try_get("maybe_result_entity_token")?,
+      maybe_result_batch_token: row.try_get("maybe_result_batch_token")?,
       maybe_model_weights_title: row.try_get("maybe_model_weights_title")?,
       maybe_tts_model_title: row.try_get("maybe_tts_model_title")?,
       maybe_voice_conversion_model_title: row.try_get("maybe_voice_conversion_model_title")?,
