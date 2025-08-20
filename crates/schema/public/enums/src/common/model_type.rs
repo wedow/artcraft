@@ -17,6 +17,8 @@ pub enum ModelType {
   Flux1Dev,
   #[serde(rename = "flux_1_schnell")]
   Flux1Schnell,
+  #[serde(rename = "flux_dev_juggernaut")]
+  FluxDevJuggernaut,
   #[serde(rename = "flux_pro_1")]
   FluxPro1,
   #[serde(rename = "flux_pro_1p1")]
@@ -83,6 +85,7 @@ impl ModelType {
       // Image models
       Self::Flux1Dev => "flux_1_dev",
       Self::Flux1Schnell => "flux_1_schnell",
+      Self::FluxDevJuggernaut => "flux_dev_juggernaut",
       Self::FluxPro1 => "flux_pro_1",
       Self::FluxPro11 => "flux_pro_1p1",
       Self::FluxPro11Ultra => "flux_pro_1p1_ultra",
@@ -116,6 +119,7 @@ impl ModelType {
       // Image models
       "flux_1_dev" => Ok(Self::Flux1Dev),
       "flux_1_schnell" => Ok(Self::Flux1Schnell),
+      "flux_dev_juggernaut" => Ok(Self::FluxDevJuggernaut),
       "flux_pro_1" => Ok(Self::FluxPro1),
       "flux_pro_1p1" => Ok(Self::FluxPro11),
       "flux_pro_1p1_ultra" => Ok(Self::FluxPro11Ultra),
@@ -153,6 +157,7 @@ impl ModelType {
       // Image models
       Self::Flux1Dev,
       Self::Flux1Schnell,
+      Self::FluxDevJuggernaut,
       Self::FluxPro1,
       Self::FluxPro11,
       Self::FluxPro11Ultra,
@@ -195,6 +200,7 @@ mod tests {
       // Image models
       assert_serialization(ModelType::Flux1Dev, "flux_1_dev");
       assert_serialization(ModelType::Flux1Schnell, "flux_1_schnell");
+      assert_serialization(ModelType::FluxDevJuggernaut, "flux_dev_juggernaut");
       assert_serialization(ModelType::FluxPro1, "flux_pro_1");
       assert_serialization(ModelType::FluxPro11, "flux_pro_1p1");
       assert_serialization(ModelType::FluxPro11Ultra, "flux_pro_1p1_ultra");
@@ -225,6 +231,7 @@ mod tests {
       // Image models
       assert_eq!(ModelType::Flux1Dev.to_str(), "flux_1_dev");
       assert_eq!(ModelType::Flux1Schnell.to_str(), "flux_1_schnell");
+      assert_eq!(ModelType::FluxDevJuggernaut.to_str(), "flux_dev_juggernaut");
       assert_eq!(ModelType::FluxPro1.to_str(), "flux_pro_1");
       assert_eq!(ModelType::FluxPro11.to_str(), "flux_pro_1p1");
       assert_eq!(ModelType::FluxPro11Ultra.to_str(), "flux_pro_1p1_ultra");
@@ -257,6 +264,7 @@ mod tests {
       // Image models
       assert_eq!(ModelType::from_str("flux_1_dev").unwrap(), ModelType::Flux1Dev);
       assert_eq!(ModelType::from_str("flux_1_schnell").unwrap(), ModelType::Flux1Schnell);
+      assert_eq!(ModelType::from_str("flux_dev_juggernaut").unwrap(), ModelType::FluxDevJuggernaut);
       assert_eq!(ModelType::from_str("flux_pro_1").unwrap(), ModelType::FluxPro1);
       assert_eq!(ModelType::from_str("flux_pro_1p1").unwrap(), ModelType::FluxPro11);
       assert_eq!(ModelType::from_str("flux_pro_1p1_ultra").unwrap(), ModelType::FluxPro11Ultra);
@@ -285,10 +293,11 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 23);
+      assert_eq!(variants.len(), 24);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
+      assert_eq!(variants.pop_first(), Some(ModelType::FluxDevJuggernaut));
       assert_eq!(variants.pop_first(), Some(ModelType::FluxPro1));
       assert_eq!(variants.pop_first(), Some(ModelType::FluxPro11));
       assert_eq!(variants.pop_first(), Some(ModelType::FluxPro11Ultra));

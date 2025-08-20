@@ -208,7 +208,7 @@ pub async fn flux_dev_juggernaut_inpaint_image_handler(
         .map(|s| &s.user_token),
     // TODO(bt,2025-07-31): Should we have an "inpaint" specific variant?
     //  Depends on how we want to model provider / feature matrices, routing, and results going forward.
-    maybe_model_type: Some(ModelType::FluxPro1), 
+    maybe_model_type: Some(ModelType::FluxDevJuggernaut),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
     maybe_negative_prompt: None,
