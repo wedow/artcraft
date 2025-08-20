@@ -45,7 +45,7 @@ where
             
           )
           .service(web::scope("/inpaint")
-              .service(web::resource("/flux_dev_generate")
+              .service(web::resource("/flux_dev_juggernaut")
                   .route(web::post().to(flux_dev_juggernaut_inpaint_image_handler))
                   .route(web::head().to(|| HttpResponse::Ok()))
               )

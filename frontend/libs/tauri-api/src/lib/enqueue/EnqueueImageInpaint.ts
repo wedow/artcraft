@@ -43,6 +43,7 @@ export enum EnqueueImageInpaintErrorType {
 
 export enum EnqueueImageInpaintModel {
   FluxPro1 = "flux_pro_1",
+  FluxDevJuggernaut = "flux_dev_juggernaut",
 }
 
 export interface EnqueueImageInpaintError extends CommandResult {

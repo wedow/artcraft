@@ -196,7 +196,7 @@ const PageEdit = () => {
     const arrayBuffer = await getMaskArrayBuffer();
 
     await EnqueueImageInpaint({
-      model: EnqueueImageInpaintModel.FluxPro1,
+      model: selectedModelInfo,
       image_media_token: editedImageToken,
       mask_image_raw_bytes: arrayBuffer,
       prompt: prompt,
