@@ -124,6 +124,25 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
     }
   };
 
+  const getPageTitle = () : string => {
+    switch (tabStore.activeTabId) {
+      case "2D":
+        return "Canvas";
+      case "3D":
+        return "3D Editor";
+      case "IMAGE":
+        return "Text to Image";
+      case "VIDEO":
+        return "Image to Video";
+      case "EDIT":
+        return "Edit Image";
+      default:
+        return "Artcraft";
+    }
+  };
+
+  const pageTitle = getPageTitle();
+
   // const { toggleModal } = usePricingModalStore(); - Uncomment for pricing modal - BFlat
 
   return (
@@ -179,11 +198,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
               <SceneTitleInput pageName={pageName} />
             ) : (
               <h1>
-                {tabStore.activeTabId === "2D"
-                  ? "Canvas"
-                  : tabStore.activeTabId === "VIDEO"
-                    ? "Generate Video"
-                    : "Generate Image"}
+                {pageTitle}
               </h1>
             )}
           </div>

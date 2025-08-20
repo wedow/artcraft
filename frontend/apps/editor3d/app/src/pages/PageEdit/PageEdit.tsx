@@ -17,12 +17,14 @@ import DrawToolControlBar from "./DrawToolControlBar";
 import { IMAGE_EDITOR_PAGE_MODEL_LIST, ModelPage, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
 
+const PAGE_ID : ModelPage = ModelPage.ImageEditor;
+
 const PageEdit = () => {
   //useStateSceneLoader();
   const { selectedModels } = useModelSelectorStore();
 
   const selectedModel =
-    selectedModels[ModelPage.Canvas2D] ||
+    selectedModels[PAGE_ID] ||
     IMAGE_EDITOR_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
@@ -314,7 +316,7 @@ const PageEdit = () => {
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <ModelSelector
           items={IMAGE_EDITOR_PAGE_MODEL_LIST}
-          page={ModelPage.ImageEditor}
+          page={PAGE_ID}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
