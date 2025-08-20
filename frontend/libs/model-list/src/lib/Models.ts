@@ -112,7 +112,7 @@ export const ALL_MODELS: ModelConfig[] = [
     description: "Fast and high-quality model",
     badges: [{ label: "20 sec." }],
     capabilities: { 
-      maxGenerationCount: 1 // NB: For some reason Fal only supports ONE image!
+      maxGenerationCount: 4,
     },
     tags: [
       ModelTag.InstructiveEdit,
@@ -129,7 +129,9 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "Fast and high-quality model",
     badges: [{ label: "20 sec." }],
-    capabilities: { maxGenerationCount: 4 },
+    capabilities: { 
+      maxGenerationCount: 1 // NB: For some reason Fal only supports ONE image!
+    },
     tags: [ModelTag.MaskedInpainting],
   }),
 
