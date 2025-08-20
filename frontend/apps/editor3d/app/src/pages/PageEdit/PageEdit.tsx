@@ -1,30 +1,20 @@
 import { useState, useRef, useEffect } from "react";
-// https://github.com/SaladTechnologies/comfyui-api
-
-import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock, faImage } from "@fortawesome/pro-solid-svg-icons";
 import Konva from "konva"; // just for types
-
-// import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap"
 import {
   EnqueueImageInpaint,
   EnqueueImageInpaintModel,
 } from "@storyteller/tauri-api";
 import { ContextMenuContainer } from "../PageDraw/components/ui/ContextMenu";
-// import SideToolbar from "../PageDraw/components/ui/SideToolbar";
 import { useCopyPasteHotkeys } from "../PageDraw/hooks/useCopyPasteHotkeys";
 import { useDeleteHotkeys } from "../PageDraw/hooks/useDeleteHotkeys";
 import { useUndoRedoHotkeys } from "../PageDraw/hooks/useUndoRedoHotkeys";
-// import { captureStageImageBitmap } from "../PageDraw/hooks/useUpdateSnapshot";
 import PromptEditor from "./PromptEditor/PromptEditor";
-// import { AspectRatioType } from "../PageDraw/stores/SceneState";
 import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import { EditPaintSurface } from "./EditPaintSurface";
 import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
-import { imageEditorModels, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
+import { IMAGE_EDITOR_PAGE_MODEL_LIST, ModelCategory, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
 
 const PageEdit = () => {
@@ -33,10 +23,10 @@ const PageEdit = () => {
 
   const selectedModel =
     selectedModels[ModelCategory.Canvas2D] ||
-    imageEditorModels[0]?.label;
+    IMAGE_EDITOR_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
-    imageEditorModels.find(
+    IMAGE_EDITOR_PAGE_MODEL_LIST.find(
       (m) => m.label === selectedModel,
     )?.modelInfo;
 
@@ -46,7 +36,6 @@ const PageEdit = () => {
 
   // Add new state to track if user is selecting
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
-  //const [selectedModel, setSelectedModel] = useState<string>("GPT-4o");
 
   // Create refs for stage and image
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
@@ -324,7 +313,7 @@ const PageEdit = () => {
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
         <ModelSelector
-          items={imageEditorModels}
+          items={IMAGE_EDITOR_PAGE_MODEL_LIST}
           category={ModelCategory.ImageEditor}
           panelTitle="Select Model"
           panelClassName="min-w-[280px]"

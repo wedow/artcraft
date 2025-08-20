@@ -211,6 +211,9 @@ export const ALL_MODELS: ModelConfig[] = [
   }),
 ];
 
+export const ALL_MODELS_BY_ID : Map<string, ModelConfig> = 
+  new Map(ALL_MODELS.map(model => [model.id, model]));
+
 export const getAllModels = (): ModelConfig[] => ALL_MODELS;
 
 export const getModelsByCategory = (category: ModelCategory): ModelConfig[] =>
@@ -224,15 +227,6 @@ export const getInstructiveImageEditModels = (): ModelConfig[] =>
 export const getMaskedInpaintModels = (): ModelConfig[] =>
   ALL_MODELS.filter(
     (m) => m.category === "image" && m.tags?.includes(ModelTag.MaskedInpainting)
-  );
-
-// Models for the editor page
-export const getEditorModels = (): ModelConfig[] =>
-  ALL_MODELS.filter(
-    (m) => m.category === "image" && (
-      m.tags?.includes(ModelTag.MaskedInpainting) 
-      || m.tags?.includes(ModelTag.NonMaskedInpainting)
-    )
   );
 
 export const lookupModelByTauriId = (

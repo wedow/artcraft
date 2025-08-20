@@ -5,7 +5,8 @@ import {
   getCreatorIcon,
   getModelsByCategory,
   getInstructiveImageEditModels,
-  getEditorModels,
+  IMAGE_EDITOR_PAGE_MODELS,
+  TEXT_TO_IMAGE_PAGE_MODELS,
 } from "@storyteller/model-list";
 
 export type ModelList = Omit<PopoverItem, "selected">[];
@@ -32,35 +33,30 @@ const buildItems = (
     modelInfo: (m as any).info,
   }));
 
-const imageModels = getModelsByCategory("image");
 const videoModels = getModelsByCategory("video");
 const instructiveModels = getInstructiveImageEditModels();
-
-// Models for the editor page (not 2d canvas, the inpaint/outpaint editor)
-const imageEditModels = getEditorModels();
 
 export const allModels = {
   video: buildItems(
     videoModels as any,
     <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />
   ),
-  image: buildItems(
-    imageModels as any,
-    <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-  ),
   instructiveImageEdits: buildItems(
     instructiveModels as any,
-    <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-  ),
-  imageEditorModels: buildItems(
-    imageEditModels as any,
     <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
   ),
 };
 
 export const videoGenerationModels: ModelList = allModels.video;
-export const imageGenerationModels: ModelList = allModels.image;
 export const instructiveImageEditModels: ModelList =
   allModels.instructiveImageEdits;
 
-export const imageEditorModels: ModelList = allModels.imageEditorModels;
+export const TEXT_TO_IMAGE_PAGE_MODEL_LIST : ModelList = buildItems(
+  TEXT_TO_IMAGE_PAGE_MODELS as any,
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+);
+
+export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems(
+  IMAGE_EDITOR_PAGE_MODELS as any,
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+);
