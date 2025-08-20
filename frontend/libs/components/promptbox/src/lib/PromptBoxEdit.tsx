@@ -6,7 +6,7 @@ import {
   faMousePointer,
   faSparkles,
   faSpinnerThird,
-  faFrame,,
+  faFrame,
   faCopy,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -33,7 +33,7 @@ export const PromptBoxEdit = ({
   selectedMode,
   onGenerateClick,
   isDisabled,
-  onFitPressed,,
+  onFitPressed,
   modelInfo,
   generationCount: generationCountProp,
   onGenerationCountChange,
@@ -70,7 +70,7 @@ export const PromptBoxEdit = ({
   // Build generation count options based on selected model
   useEffect(() => {
     const caps = getCapabilitiesForModel(modelInfo);
-    console.log(">>> caps", caps)
+    console.log(">>> caps", caps);
     const items: PopoverItem[] = Array.from(
       { length: caps.maxGenerationCount },
       (_, i) => i + 1

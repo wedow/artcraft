@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import Konva from "konva"; // just for types
-
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import {
   EnqueueImageInpaint,
@@ -16,18 +15,22 @@ import { EditPaintSurface } from "./EditPaintSurface";
 import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
-import { IMAGE_EDITOR_PAGE_MODEL_LIST, ModelPage, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
+import {
+  IMAGE_EDITOR_PAGE_MODEL_LIST,
+  ModelPage,
+  ModelSelector,
+  useModelSelectorStore,
+} from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
 
-const PAGE_ID : ModelPage = ModelPage.ImageEditor;
+const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
 const PageEdit = () => {
   //useStateSceneLoader();
   const { selectedModels } = useModelSelectorStore();
 
   const selectedModel =
-    selectedModels[PAGE_ID] ||
-    IMAGE_EDITOR_PAGE_MODEL_LIST[0]?.label;
+    selectedModels[PAGE_ID] || IMAGE_EDITOR_PAGE_MODEL_LIST[0]?.label;
 
   const selectedModelInfo: ModelInfo | undefined =
     IMAGE_EDITOR_PAGE_MODEL_LIST.find(
@@ -48,7 +51,6 @@ const PageEdit = () => {
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const [isEnqueuing, setIsEnqueuing] = useState<boolean>(false);
   const [generationCount, setGenerationCount] = useState<number>(1);
-
 
   // Use the Zustand store
   const store = useEditStore();
@@ -167,12 +169,12 @@ const PageEdit = () => {
     // Calculate position to center canvas in container
     stage.position({
       x: (containerWidth - canvasW * boundedScale) / 2,
-      y: (containerHeight - canvasH * boundedScale) / 2,,
+      y: (containerHeight - canvasH * boundedScale) / 2,
     });
   };
 
   // Create a function to use the left layer ref and download the bitmap from it
-  const getMaskArrayBuffer = async  (): Promise<Uint8Array> => {
+  const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
     if (
       !stageRef.current ||
       !leftPanelRef.current ||
@@ -320,9 +322,7 @@ const PageEdit = () => {
         <PromptEditor
           modelInfo={selectedModelInfo}
           onModeChange={(mode: string) => {
-           
             store.setActiveTool(mode as ActiveEditTool);
-         ;
           }}
           selectedMode={store.activeTool}
           onGenerateClick={handleGenerate}
@@ -396,12 +396,6 @@ const PageEdit = () => {
           showIconsInList
           triggerLabel="Model"
         />
-        <button
-          className="rounded bg-transparent p-2 text-lg text-white transition hover:bg-white/20 hover:text-white"
-          onClick={onFitPressed}
-        >
-          Fit
-        </button>
       </div>
     </>
   );
