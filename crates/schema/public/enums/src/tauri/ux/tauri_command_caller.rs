@@ -14,6 +14,8 @@ use utoipa::ToSchema;
 pub enum TauriCommandCaller {
   /// The 2D canvas
   Canvas,
+  /// The inpainting editor
+  ImageEditor,
 }
 
 impl_enum_display_and_debug_using_to_str!(TauriCommandCaller);
@@ -26,12 +28,14 @@ impl TauriCommandCaller {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::Canvas => "canvas",
+      Self::ImageEditor => "image_editor",
     }
   }
 
   pub fn from_str(job_status: &str) -> Result<Self, String> {
     match job_status {
       "canvas" => Ok(Self::Canvas),
+      "image_editor" => Ok(Self::ImageEditor),
       _ => Err(format!("invalid tauri_command_caller: {:?}", job_status)),
     }
   }
@@ -41,6 +45,7 @@ impl TauriCommandCaller {
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
       Self::Canvas,
+      Self::ImageEditor,
     ])
   }
 }
@@ -56,23 +61,27 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(TauriCommandCaller::Canvas, "canvas");
+      assert_serialization(TauriCommandCaller::ImageEditor, "image_editor");
     }
 
     #[test]
     fn to_str() {
       assert_eq!(TauriCommandCaller::Canvas.to_str(), "canvas");
+      assert_eq!(TauriCommandCaller::ImageEditor.to_str(), "image_editor");
     }
 
     #[test]
     fn from_str() {
       assert_eq!(TauriCommandCaller::from_str("canvas").unwrap(), TauriCommandCaller::Canvas);
+      assert_eq!(TauriCommandCaller::from_str("image_editor").unwrap(), TauriCommandCaller::ImageEditor);
     }
 
     #[test]
     fn all_variants() {
       let mut variants = TauriCommandCaller::all_variants();
-      assert_eq!(variants.len(), 1);
+      assert_eq!(variants.len(), 2);
       assert_eq!(variants.pop_first(), Some(TauriCommandCaller::Canvas));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::ImageEditor));
       assert_eq!(variants.pop_first(), None);
     }
   }

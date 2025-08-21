@@ -1,8 +1,11 @@
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
+// TODO(bt,2025-08-20): Replace the storyteller-web version of this.
+//  All it needs is the impl ported into a builder.
+
 /// Cover image links can only be jpg, png, etc. No videos.
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CoverImageLinks {
   /// Primary link to the cover image via the CDN.
   pub cdn_url: Url,

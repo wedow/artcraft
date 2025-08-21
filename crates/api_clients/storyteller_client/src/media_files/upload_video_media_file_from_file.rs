@@ -1,9 +1,5 @@
 use crate::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use crate::error::api_error::ApiError;
-use crate::shared_response_types::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::shared_response_types::media_links::MediaLinks;
-use crate::shared_response_types::simple_entity_stats::SimpleEntityStats;
-use crate::shared_response_types::user_details_light::UserDetailsLight;
 use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;

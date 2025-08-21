@@ -709,6 +709,7 @@ version = "0.0.1"
 dependencies = [
  "chrono",
  "enums",
+ "enums_public",
  "serde",
  "serde_derive",
  "serde_json",

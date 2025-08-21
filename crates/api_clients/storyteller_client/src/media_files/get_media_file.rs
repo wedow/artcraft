@@ -1,12 +1,12 @@
 use crate::error::api_error::ApiError;
 use crate::error::storyteller_error::StorytellerError;
-use crate::shared_response_types::media_file_cover_image_details::MediaFileCoverImageDetails;
-use crate::shared_response_types::media_links::MediaLinks;
-use crate::shared_response_types::simple_entity_stats::SimpleEntityStats;
-use crate::shared_response_types::user_details_light::UserDetailsLight;
 use crate::utils::api_host::ApiHost;
 use crate::utils::filter_bad_response::filter_bad_response;
 use crate::utils::http_get_anonymous::http_get_anonymous;
+use artcraft_api_defs::common::responses::media_file_cover_image_details::MediaFileCoverImageDetails;
+use artcraft_api_defs::common::responses::media_links::MediaLinks;
+use artcraft_api_defs::common::responses::simple_entity_stats::SimpleEntityStats;
+use artcraft_api_defs::common::responses::user_details_light::UserDetailsLight;
 use chrono::{DateTime, Utc};
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
 use enums::by_table::media_files::media_file_class::MediaFileClass;

@@ -11,6 +11,7 @@ use utoipa::ToSchema;
 #[serde(rename_all = "snake_case")]
 pub enum TaskType {
   ImageGeneration,
+  ImageInpaintEdit,
   VideoGeneration,
   ObjectGeneration,
   BackgroundRemoval,
@@ -26,6 +27,7 @@ impl TaskType {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::ImageGeneration => "image_generation",
+      Self::ImageInpaintEdit => "image_inpaint_edit",
       Self::VideoGeneration => "video_generation",
       Self::ObjectGeneration => "object_generation",
       Self::BackgroundRemoval => "background_removal",
@@ -35,6 +37,7 @@ impl TaskType {
   pub fn from_str(job_status: &str) -> Result<Self, String> {
     match job_status {
       "image_generation" => Ok(Self::ImageGeneration),
+      "image_inpaint_edit" => Ok(Self::ImageInpaintEdit),
       "video_generation" => Ok(Self::VideoGeneration),
       "object_generation" => Ok(Self::ObjectGeneration),
       "background_removal" => Ok(Self::BackgroundRemoval),
@@ -47,6 +50,7 @@ impl TaskType {
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
       Self::ImageGeneration,
+      Self::ImageInpaintEdit,
       Self::VideoGeneration,
       Self::ObjectGeneration,
       Self::BackgroundRemoval,
@@ -65,6 +69,7 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(TaskType::ImageGeneration, "image_generation");
+      assert_serialization(TaskType::ImageInpaintEdit, "image_inpaint_edit");
       assert_serialization(TaskType::VideoGeneration, "video_generation");
       assert_serialization(TaskType::ObjectGeneration, "object_generation");
       assert_serialization(TaskType::BackgroundRemoval, "background_removal");
@@ -73,6 +78,7 @@ mod tests {
     #[test]
     fn to_str() {
       assert_eq!(TaskType::ImageGeneration.to_str(), "image_generation");
+      assert_eq!(TaskType::ImageInpaintEdit.to_str(), "image_inpaint_edit");
       assert_eq!(TaskType::VideoGeneration.to_str(), "video_generation");
       assert_eq!(TaskType::ObjectGeneration.to_str(), "object_generation");
       assert_eq!(TaskType::BackgroundRemoval.to_str(), "background_removal");
@@ -81,6 +87,7 @@ mod tests {
     #[test]
     fn from_str() {
       assert_eq!(TaskType::from_str("image_generation").unwrap(), TaskType::ImageGeneration);
+      assert_eq!(TaskType::from_str("image_inpaint_edit").unwrap(), TaskType::ImageInpaintEdit);
       assert_eq!(TaskType::from_str("video_generation").unwrap(), TaskType::VideoGeneration);
       assert_eq!(TaskType::from_str("object_generation").unwrap(), TaskType::ObjectGeneration);
       assert_eq!(TaskType::from_str("background_removal").unwrap(), TaskType::BackgroundRemoval);
@@ -89,8 +96,9 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskType::all_variants();
-      assert_eq!(variants.len(), 4);
+      assert_eq!(variants.len(), 5);
       assert_eq!(variants.pop_first(), Some(TaskType::ImageGeneration));
+      assert_eq!(variants.pop_first(), Some(TaskType::ImageInpaintEdit));
       assert_eq!(variants.pop_first(), Some(TaskType::VideoGeneration));
       assert_eq!(variants.pop_first(), Some(TaskType::ObjectGeneration));
       assert_eq!(variants.pop_first(), Some(TaskType::BackgroundRemoval));
