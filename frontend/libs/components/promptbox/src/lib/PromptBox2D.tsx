@@ -647,23 +647,6 @@ export const PromptBox2D = ({
                   }
                 />
               </Tooltip>
-              {onFitPressed && (
-                <Tooltip
-                  content={"Fit canvas to screen"}
-                  position="top"
-                  className="z-50"
-                  delay={200}
-                >
-                  <Button
-                    variant="secondary"
-                    className="h-9"
-                    onClick={onFitPressed}
-                  >
-                    <FontAwesomeIcon icon={faFrame} className="h-4 w-4" />
-                    Fit
-                  </Button>
-                </Tooltip>
-              )}
               <Tooltip
                 content={
                   useSystemPrompt
@@ -683,6 +666,23 @@ export const PromptBox2D = ({
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
+              {onFitPressed && (
+                <Tooltip
+                  content={"Fit canvas to screen"}
+                  position="top"
+                  className="z-50"
+                  delay={200}
+                >
+                  <Button
+                    variant="secondary"
+                    className="h-9 bg-[#5F5F68]/60 px-3 text-white hover:bg-[#5F5F68]/90"
+                    onClick={onFitPressed}
+                  >
+                    <FontAwesomeIcon icon={faFrame} className="h-4 w-4" />
+                    Fit
+                  </Button>
+                </Tooltip>
+              )}
               <Tooltip
                 content="Number of generations"
                 position="top"

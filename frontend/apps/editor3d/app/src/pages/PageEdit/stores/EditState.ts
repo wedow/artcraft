@@ -1,10 +1,10 @@
-import { create } from 'zustand';
-import { LineNode, generateId } from '~/pages/PageDraw/stores/SceneState';
+import { create } from "zustand";
+import { LineNode, generateId } from "~/pages/PageDraw/stores/SceneState";
 import { Node } from "~/pages/PageDraw/Node";
-import { BaseSelectorImage } from '../BaseImageSelector';
+import { BaseSelectorImage } from "../BaseImageSelector";
 
-export type ActiveEditTool = 'select' | 'edit' | 'expand';
-export type EditOperation = 'add' | 'minus';
+export type ActiveEditTool = "select" | "edit" | "expand";
+export type EditOperation = "add" | "minus";
 
 interface EditState {
   // Nodes
@@ -35,9 +35,20 @@ interface EditState {
   // Actions
   addNode: (node: Node) => void;
   removeNode: (id: string, shouldSaveState?: boolean) => void;
-  updateNode: (id: string, updates: Partial<Node>, shouldSaveState: boolean) => void;
+  updateNode: (
+    id: string,
+    updates: Partial<Node>,
+    shouldSaveState: boolean,
+  ) => void;
   selectNode: (id: string | null, isMultiSelect?: boolean) => void;
-  moveNode: (id: string, x: number, y: number, dx?: number, dy?: number, shouldSaveState?: boolean) => void;
+  moveNode: (
+    id: string,
+    x: number,
+    y: number,
+    dx?: number,
+    dy?: number,
+    shouldSaveState?: boolean,
+  ) => void;
 
   // Batch operations
   setNodes: (nodes: Node[]) => void;
@@ -52,14 +63,30 @@ interface EditState {
   // Add new actions for line nodes
   addLineNode: (lineNode: LineNode, shouldSaveState: boolean) => void;
   removeLineNode: (id: string, shouldSaveState?: boolean) => void;
-  updateLineNode: (id: string, updates: Partial<LineNode>, shouldSaveState: boolean) => void;
+  updateLineNode: (
+    id: string,
+    updates: Partial<LineNode>,
+    shouldSaveState: boolean,
+  ) => void;
   moveLineNode: (id: string, dx: number, dy: number) => void;
 
   // Add a specific method for file uploads
-  createImageFromFile: (x: number, y: number, file: File, width?: number, height?: number) => void;
+  createImageFromFile: (
+    x: number,
+    y: number,
+    file: File,
+    width?: number,
+    height?: number,
+  ) => void;
 
   // Add method for URL-based images
-  createImageFromUrl: (x: number, y: number, url: string, width?: number, height?: number) => void;
+  createImageFromUrl: (
+    x: number,
+    y: number,
+    url: string,
+    width?: number,
+    height?: number,
+  ) => void;
 
   // Action for deleting selected items
   deleteSelectedItems: () => void;
@@ -107,7 +134,7 @@ const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
     ...lineNodes.map((n, index) => {
       //console.log(`LineNode: ${JSON.stringify(n)}, Index: ${index}`);
       return n.zIndex || 0;
-    })
+    }),
   ];
 
   return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 0;
@@ -123,12 +150,12 @@ export const useEditStore = create<EditState>((set, get) => ({
   historyIndex: -1,
 
   // Toolbar initial state
-  activeTool: 'select', // Default to 'select' tool
-  editOperation: 'add', // Default to 'add' operation
-  brushColor: '#000000',
+  activeTool: "edit", // Default to 'edit' tool
+  editOperation: "add", // Default to 'add' operation
+  brushColor: "#000000",
   brushSize: 30,
   brushOpacity: 1,
-  fillColor: 'rgba(0, 0, 255, 0.5)',
+  fillColor: "rgba(0, 0, 255, 0.5)",
 
   // Cursor initial state
   cursorPosition: null,
@@ -145,12 +172,12 @@ export const useEditStore = create<EditState>((set, get) => ({
       console.log(`NextZ for node ID ${node.id}: ${nextZ}`);
       const newNode = new Node({
         ...node,
-        zIndex: nextZ
+        zIndex: nextZ,
       });
       // console.log("New Node with ID:", newNode.id);
-      const nodes = [...state.nodes, newNode]
-      console.log("Nodes after update")
-      console.log(nodes)
+      const nodes = [...state.nodes, newNode];
+      console.log("Nodes after update");
+      console.log(nodes);
       return { nodes: nodes };
     });
     get().saveState();
@@ -159,14 +186,16 @@ export const useEditStore = create<EditState>((set, get) => ({
   removeNode: (id: string, shouldSaveState: boolean = true) => {
     set((state) => {
       // Remove the node
-      const newNodes = state.nodes.filter(node => node.id !== id);
+      const newNodes = state.nodes.filter((node) => node.id !== id);
 
       // Update selection state
-      const newSelectedIds = state.selectedNodeIds.filter(nodeId => nodeId !== id);
+      const newSelectedIds = state.selectedNodeIds.filter(
+        (nodeId) => nodeId !== id,
+      );
 
       return {
         nodes: newNodes,
-        selectedNodeIds: newSelectedIds
+        selectedNodeIds: newSelectedIds,
       };
     });
     if (shouldSaveState) {
@@ -174,18 +203,21 @@ export const useEditStore = create<EditState>((set, get) => ({
     }
   },
 
-  updateNode: (id: string, updates: Partial<Node>, shouldSaveState: boolean = true) => {
+  updateNode: (
+    id: string,
+    updates: Partial<Node>,
+    shouldSaveState: boolean = true,
+  ) => {
     set((state) => {
-
-      const newNodes = state.nodes.map(node => {
-        const newZIndex = updates.zIndex !== undefined ? updates.zIndex : node.zIndex
-
+      const newNodes = state.nodes.map((node) => {
+        const newZIndex =
+          updates.zIndex !== undefined ? updates.zIndex : node.zIndex;
 
         if (node.id === id) {
           return new Node({
             ...node,
             ...updates,
-            zIndex: newZIndex
+            zIndex: newZIndex,
           });
         }
         return node;
@@ -207,12 +239,14 @@ export const useEditStore = create<EditState>((set, get) => ({
         // Toggle selection if already selected
         if (state.selectedNodeIds.includes(id)) {
           return {
-            selectedNodeIds: state.selectedNodeIds.filter(nodeId => nodeId !== id)
+            selectedNodeIds: state.selectedNodeIds.filter(
+              (nodeId) => nodeId !== id,
+            ),
           };
         }
         // Add to selection
         return {
-          selectedNodeIds: [...state.selectedNodeIds, id]
+          selectedNodeIds: [...state.selectedNodeIds, id],
         };
       }
 
@@ -221,24 +255,34 @@ export const useEditStore = create<EditState>((set, get) => ({
     });
   },
 
-  moveNode: (id: string, x: number, y: number, dx?: number, dy?: number, shouldSaveState: boolean = false) => {
+  moveNode: (
+    id: string,
+    x: number,
+    y: number,
+    dx?: number,
+    dy?: number,
+    shouldSaveState: boolean = false,
+  ) => {
     set((state) => {
       // Handle regular nodes
-      const newNodes = state.nodes.map(node => {
+      const newNodes = state.nodes.map((node) => {
         if (node.id === id) {
           node.setPosition(x, y);
           return node;
         }
-        if (state.selectedNodeIds.includes(node.id) && dx !== undefined && dy !== undefined) {
+        if (
+          state.selectedNodeIds.includes(node.id) &&
+          dx !== undefined &&
+          dy !== undefined
+        ) {
           node.setPosition(node.x + dx, node.y + dy);
           return node;
         }
         return node;
       });
 
-
       const newState = {
-        nodes: newNodes
+        nodes: newNodes,
       };
 
       // Only save state if explicitly requested
@@ -263,7 +307,7 @@ export const useEditStore = create<EditState>((set, get) => ({
     set((state) => {
       // Create a deep copy but exclude non-serializable properties
       const serializableState = {
-        nodes: state.nodes.map(node => ({
+        nodes: state.nodes.map((node) => ({
           id: node.id,
           x: node.x,
           y: node.y,
@@ -280,10 +324,10 @@ export const useEditStore = create<EditState>((set, get) => ({
           rotation: node.rotation || 0,
           scaleX: node.scaleX || 1,
           scaleY: node.scaleY || 1,
-          offsetX: node.offsetX || 0,  // Include offset in history
-          offsetY: node.offsetY || 0,  // Include offset in history
+          offsetX: node.offsetX || 0, // Include offset in history
+          offsetY: node.offsetY || 0, // Include offset in history
         })),
-        lineNodes: JSON.parse(JSON.stringify(state.lineNodes))
+        lineNodes: JSON.parse(JSON.stringify(state.lineNodes)),
       };
 
       const newHistory = state.history.slice(0, state.historyIndex + 1);
@@ -308,7 +352,7 @@ export const useEditStore = create<EditState>((set, get) => ({
           nodes: [],
           lineNodes: [],
           selectedNodeIds: [],
-          historyIndex: newIndex
+          historyIndex: newIndex,
         };
       }
 
@@ -318,11 +362,11 @@ export const useEditStore = create<EditState>((set, get) => ({
       isRestoring = true;
 
       // Recreate nodes and immediately start loading images
-      const restoredNodes = previousState.nodes.map(nodeData => {
+      const restoredNodes = previousState.nodes.map((nodeData) => {
         const node = new Node(nodeData as any);
 
         // If it's an image node, start loading the image immediately
-        if (node.type === 'image' && (node.imageUrl || node.imageFile)) {
+        if (node.type === "image" && (node.imageUrl || node.imageFile)) {
           const loadImage = async () => {
             try {
               if (node.imageUrl) {
@@ -333,7 +377,7 @@ export const useEditStore = create<EditState>((set, get) => ({
               // Update the specific node without triggering state save
               get().updateNode(node.id, node, false);
             } catch (error) {
-              console.error('Failed to restore image:', error);
+              console.error("Failed to restore image:", error);
             } finally {
               // Reset the flag after a delay to ensure all async operations complete
               setTimeout(() => {
@@ -349,7 +393,7 @@ export const useEditStore = create<EditState>((set, get) => ({
       });
 
       // Reset the flag if no images to load
-      const hasImages = restoredNodes.some(node => node.type === 'image');
+      const hasImages = restoredNodes.some((node) => node.type === "image");
       if (!hasImages) {
         isRestoring = false;
       }
@@ -358,7 +402,7 @@ export const useEditStore = create<EditState>((set, get) => ({
         nodes: restoredNodes,
         lineNodes: previousState.lineNodes,
         selectedNodeIds: [], // Clear selection on undo
-        historyIndex: newIndex
+        historyIndex: newIndex,
       };
     });
   },
@@ -374,11 +418,11 @@ export const useEditStore = create<EditState>((set, get) => ({
       isRestoring = true;
 
       // Recreate nodes and immediately start loading images
-      const restoredNodes = nextState.nodes.map(nodeData => {
+      const restoredNodes = nextState.nodes.map((nodeData) => {
         const node = new Node(nodeData as any);
 
         // If it's an image node, start loading the image immediately
-        if (node.type === 'image' && (node.imageUrl || node.imageFile)) {
+        if (node.type === "image" && (node.imageUrl || node.imageFile)) {
           const loadImage = async () => {
             try {
               if (node.imageUrl) {
@@ -389,7 +433,7 @@ export const useEditStore = create<EditState>((set, get) => ({
               // Update the specific node without triggering state save
               get().updateNode(node.id, node, false);
             } catch (error) {
-              console.error('Failed to restore image:', error);
+              console.error("Failed to restore image:", error);
             } finally {
               // Reset the flag after a delay to ensure all async operations complete
               setTimeout(() => {
@@ -405,7 +449,7 @@ export const useEditStore = create<EditState>((set, get) => ({
       });
 
       // Reset the flag if no images to load
-      const hasImages = restoredNodes.some(node => node.type === 'image');
+      const hasImages = restoredNodes.some((node) => node.type === "image");
       if (!hasImages) {
         isRestoring = false;
       }
@@ -414,7 +458,7 @@ export const useEditStore = create<EditState>((set, get) => ({
         nodes: restoredNodes,
         lineNodes: nextState.lineNodes,
         selectedNodeIds: [], // Clear selection on redo
-        historyIndex: newIndex
+        historyIndex: newIndex,
       };
     });
   },
@@ -425,7 +469,7 @@ export const useEditStore = create<EditState>((set, get) => ({
       const nextZ = getNextZIndex(state.nodes, state.lineNodes);
       const newLineNode = {
         ...lineNode,
-        zIndex: nextZ
+        zIndex: nextZ,
       };
       return { lineNodes: [...state.lineNodes, newLineNode] };
     });
@@ -437,14 +481,16 @@ export const useEditStore = create<EditState>((set, get) => ({
   removeLineNode: (id: string, shouldSaveState: boolean = true) => {
     set((state) => {
       // Remove the line node
-      const newLineNodes = state.lineNodes.filter(node => node.id !== id);
+      const newLineNodes = state.lineNodes.filter((node) => node.id !== id);
 
       // Update selection state
-      const newSelectedIds = state.selectedNodeIds.filter(nodeId => nodeId !== id);
+      const newSelectedIds = state.selectedNodeIds.filter(
+        (nodeId) => nodeId !== id,
+      );
 
       return {
         lineNodes: newLineNodes,
-        selectedNodeIds: newSelectedIds
+        selectedNodeIds: newSelectedIds,
       };
     });
     if (shouldSaveState) {
@@ -452,14 +498,18 @@ export const useEditStore = create<EditState>((set, get) => ({
     }
   },
 
-  updateLineNode: (id: string, updates: Partial<LineNode>, shouldSaveState: boolean = true) => {
+  updateLineNode: (
+    id: string,
+    updates: Partial<LineNode>,
+    shouldSaveState: boolean = true,
+  ) => {
     set((state) => {
-      const newLineNodes = state.lineNodes.map(node => {
+      const newLineNodes = state.lineNodes.map((node) => {
         if (node.id === id) {
           return {
             ...node,
             ...updates,
-            zIndex: updates.zIndex !== undefined ? updates.zIndex : node.zIndex
+            zIndex: updates.zIndex !== undefined ? updates.zIndex : node.zIndex,
           };
         }
         return node;
@@ -473,14 +523,14 @@ export const useEditStore = create<EditState>((set, get) => ({
 
   moveLineNode: (id: string, dx: number, dy: number) => {
     set((state) => {
-      const newLineNodes = state.lineNodes.map(node => {
+      const newLineNodes = state.lineNodes.map((node) => {
         if (node.id === id) {
           return {
             ...node,
             points: node.points.map((point, index) => {
               // Even indices are x coordinates, odd are y
               return index % 2 === 0 ? point + dx : point + dy;
-            })
+            }),
           };
         }
         return node;
@@ -491,7 +541,13 @@ export const useEditStore = create<EditState>((set, get) => ({
   },
 
   // Add a specific method for file uploads
-  createImageFromFile: (x: number, y: number, file: File, width?: number, height?: number) => {
+  createImageFromFile: (
+    x: number,
+    y: number,
+    file: File,
+    width?: number,
+    height?: number,
+  ) => {
     // Auto-detect dimensions from the image if not provided
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -503,11 +559,11 @@ export const useEditStore = create<EditState>((set, get) => ({
           // Increase default size to 512px width while maintaining aspect ratio
           const finalWidth = width || Math.min(img.naturalWidth, 512);
           const finalHeight = height || finalWidth / aspectRatio;
-          console.log('Image loaded with dimensions:', {
+          console.log("Image loaded with dimensions:", {
             naturalWidth: img.naturalWidth,
             naturalHeight: img.naturalHeight,
             finalWidth: finalWidth,
-            finalHeight: finalHeight
+            finalHeight: finalHeight,
           });
           get().createImage(x, y, file, finalWidth, finalHeight);
         };
@@ -518,14 +574,20 @@ export const useEditStore = create<EditState>((set, get) => ({
   },
 
   // Add method for URL-based images
-  createImageFromUrl: async (x: number, y: number, url: string, width?: number, height?: number) => {
+  createImageFromUrl: async (
+    x: number,
+    y: number,
+    url: string,
+    width?: number,
+    height?: number,
+  ) => {
     try {
       // Fetch the image and convert to blob
       const response = await fetch(url);
       const blob = await response.blob();
 
       // Create a File from the blob
-      const filename = url.split('/').pop() || 'image.png';
+      const filename = url.split("/").pop() || "image.png";
       const file = new File([blob], filename, { type: blob.type });
 
       // Use existing createImage function
@@ -548,11 +610,11 @@ export const useEditStore = create<EditState>((set, get) => ({
       set({ baseImageBitmap: imgBitmap });
     };
     imgBitmap.onerror = () => {
-      console.error('Failed to load base image, discarding');
-      imgBitmap.src = ''; // Clear the source to avoid memory leaks
+      console.error("Failed to load base image, discarding");
+      imgBitmap.src = ""; // Clear the source to avoid memory leaks
       set({ baseImageInfo: null, baseImageBitmap: null });
     };
-    imgBitmap.crossOrigin = 'anonymous';
+    imgBitmap.crossOrigin = "anonymous";
     imgBitmap.src = image.url;
   },
 
@@ -561,15 +623,15 @@ export const useEditStore = create<EditState>((set, get) => ({
     const initialSelectedIds = [...get().selectedNodeIds]; // Operate on a copy of the original selection
 
     if (initialSelectedIds.length > 0) {
-      initialSelectedIds.forEach(id => {
-        get().removeNode(id, false);       // Pass shouldSaveState = false
-        get().removeLineNode(id, false);   // Pass shouldSaveState = false
+      initialSelectedIds.forEach((id) => {
+        get().removeNode(id, false); // Pass shouldSaveState = false
+        get().removeLineNode(id, false); // Pass shouldSaveState = false
       });
 
       // After all deletions, ensure selectedNodeIds is empty in the state.
-      set(state => ({
+      set((state) => ({
         ...state, // Preserve other state properties
-        selectedNodeIds: []
+        selectedNodeIds: [],
       }));
 
       get().saveState(); // Save the final state once
@@ -579,11 +641,15 @@ export const useEditStore = create<EditState>((set, get) => ({
   // Clipboard actions
   copySelectedItems: () => {
     set((state) => {
-      const selectedNodes = state.nodes.filter(node => state.selectedNodeIds.includes(node.id));
-      const selectedLineNodes = state.lineNodes.filter(lineNode => state.selectedNodeIds.includes(lineNode.id));
+      const selectedNodes = state.nodes.filter((node) =>
+        state.selectedNodeIds.includes(node.id),
+      );
+      const selectedLineNodes = state.lineNodes.filter((lineNode) =>
+        state.selectedNodeIds.includes(lineNode.id),
+      );
 
       // Deep copy nodes. For Node instances, we create new instances.
-      const copiedNodes = selectedNodes.map(node => {
+      const copiedNodes = selectedNodes.map((node) => {
         // Create a new Node instance with the properties of the old one.
         // This ensures methods are available if needed.
         // For imageFile (File object), the reference is copied. The new Node
@@ -610,7 +676,7 @@ export const useEditStore = create<EditState>((set, get) => ({
     const nodesToAdd: Node[] = [];
     const lineNodesToAdd: LineNode[] = [];
 
-    clipboard.forEach(item => {
+    clipboard.forEach((item) => {
       const newId = generateId();
       newPastedItemIds.push(newId);
 
@@ -631,24 +697,73 @@ export const useEditStore = create<EditState>((set, get) => ({
         // we need to ensure the store is updated after the image is loaded.
         // The Node constructor itself might call setImage.
         // Similar to createImage, an updateNode call after image load is robust.
-        if (newNodeInstance.type === 'image' && (newNodeInstance.imageUrl || newNodeInstance.imageFile)) {
+        if (
+          newNodeInstance.type === "image" &&
+          (newNodeInstance.imageUrl || newNodeInstance.imageFile)
+        ) {
           const source = newNodeInstance.imageUrl || newNodeInstance.imageFile;
           if (source) {
-            newNodeInstance.setImage(source)
+            newNodeInstance
+              .setImage(source)
               .then(() => {
-                if (get().nodes.find(n => n.id === newId)) {
-                  const { id, x, y, width, height, fill, stroke, strokeWidth, draggable, imageUrl, imageFile, rotation, scaleX, scaleY, offsetX, offsetY } = newNodeInstance;
-                  get().updateNode(id, { x, y, width, height, fill, stroke, strokeWidth, draggable, imageUrl, imageFile, rotation, scaleX, scaleY, offsetX, offsetY }, false);
+                if (get().nodes.find((n) => n.id === newId)) {
+                  const {
+                    id,
+                    x,
+                    y,
+                    width,
+                    height,
+                    fill,
+                    stroke,
+                    strokeWidth,
+                    draggable,
+                    imageUrl,
+                    imageFile,
+                    rotation,
+                    scaleX,
+                    scaleY,
+                    offsetX,
+                    offsetY,
+                  } = newNodeInstance;
+                  get().updateNode(
+                    id,
+                    {
+                      x,
+                      y,
+                      width,
+                      height,
+                      fill,
+                      stroke,
+                      strokeWidth,
+                      draggable,
+                      imageUrl,
+                      imageFile,
+                      rotation,
+                      scaleX,
+                      scaleY,
+                      offsetX,
+                      offsetY,
+                    },
+                    false,
+                  );
                 }
               })
-              .catch(error => {
-                console.error(`Failed to load image for pasted node ${newId}:`, error);
+              .catch((error) => {
+                console.error(
+                  `Failed to load image for pasted node ${newId}:`,
+                  error,
+                );
               });
           }
         }
         nodesToAdd.push(newNodeInstance);
-
-      } else if (item && typeof item === 'object' && 'points' in item && 'type' in item && item.type === 'line') {
+      } else if (
+        item &&
+        typeof item === "object" &&
+        "points" in item &&
+        "type" in item &&
+        item.type === "line"
+      ) {
         // It's a LineNode (duck-typing for safety)
         const lineNode = item as LineNode;
         const pastedLineNode: LineNode = {
@@ -669,13 +784,13 @@ export const useEditStore = create<EditState>((set, get) => ({
       }
     });
 
-    set(state => {
+    set((state) => {
       const newNodes = [...state.nodes, ...nodesToAdd];
       const newLineNodes = [...state.lineNodes, ...lineNodesToAdd];
       return {
         nodes: newNodes,
         lineNodes: newLineNodes,
-        selectedNodeIds: newPastedItemIds // Select the newly pasted items
+        selectedNodeIds: newPastedItemIds, // Select the newly pasted items
       };
     });
 
@@ -691,7 +806,8 @@ export const useEditStore = create<EditState>((set, get) => ({
   setBrushOpacity: (opacity: number) => set({ brushOpacity: opacity }),
 
   // Cursor actions
-  setCursorPosition: (position: { x: number; y: number } | null) => set({ cursorPosition: position }),
+  setCursorPosition: (position: { x: number; y: number } | null) =>
+    set({ cursorPosition: position }),
   setCursorVisible: (visible: boolean) => set({ cursorVisible: visible }),
 
   // Scene save/load actions
@@ -737,12 +853,12 @@ export const useEditStore = create<EditState>((set, get) => ({
             const base64 = await fileToBase64(node.imageFile);
             return { ...nodeData, imageDataUrl: base64 };
           } catch (error) {
-            console.error('Failed to convert image file to base64:', error);
+            console.error("Failed to convert image file to base64:", error);
           }
         }
 
         return nodeData;
-      })
+      }),
     );
 
     const sceneData = {
@@ -751,7 +867,7 @@ export const useEditStore = create<EditState>((set, get) => ({
       brushColor: state.brushColor,
       brushSize: state.brushSize,
       fillColor: state.fillColor,
-      version: "1.0"
+      version: "1.0",
     };
 
     return JSON.stringify(sceneData, null, 2);
@@ -765,8 +881,8 @@ export const useEditStore = create<EditState>((set, get) => ({
 
       // Helper function to convert base64 to File
       const base64ToFile = (base64: string, filename: string): File => {
-        const arr = base64.split(',');
-        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+        const arr = base64.split(",");
+        const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
         const bstr = atob(arr[1]);
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
@@ -781,12 +897,15 @@ export const useEditStore = create<EditState>((set, get) => ({
         const node = new Node(nodeData);
 
         // Handle image restoration
-        if (node.type === 'image') {
+        if (node.type === "image") {
           const loadImage = async () => {
             try {
               if (nodeData.imageDataUrl) {
                 // Restore from base64 data URL
-                const file = base64ToFile(nodeData.imageDataUrl, `restored-image-${node.id}.png`);
+                const file = base64ToFile(
+                  nodeData.imageDataUrl,
+                  `restored-image-${node.id}.png`,
+                );
                 await node.setImageFromFile(file);
               } else if (node.imageUrl) {
                 // Restore from URL
@@ -794,7 +913,7 @@ export const useEditStore = create<EditState>((set, get) => ({
               }
               get().updateNode(node.id, node, false);
             } catch (error) {
-              console.error('Failed to restore image:', error);
+              console.error("Failed to restore image:", error);
             }
           };
           loadImage();
@@ -807,9 +926,9 @@ export const useEditStore = create<EditState>((set, get) => ({
         nodes: restoredNodes,
         lineNodes: sceneData.lineNodes || [],
         selectedNodeIds: [],
-        brushColor: sceneData.brushColor || '#000000',
+        brushColor: sceneData.brushColor || "#000000",
         brushSize: sceneData.brushSize || 5,
-        fillColor: sceneData.fillColor || 'white',
+        fillColor: sceneData.fillColor || "white",
       });
 
       isRestoring = false;
@@ -817,7 +936,7 @@ export const useEditStore = create<EditState>((set, get) => ({
 
       return true;
     } catch (error) {
-      console.error('Failed to import scene:', error);
+      console.error("Failed to import scene:", error);
       isRestoring = false;
       return false;
     }
@@ -825,10 +944,10 @@ export const useEditStore = create<EditState>((set, get) => ({
 
   saveSceneToFile: async () => {
     const jsonString = await get().exportSceneAsJson();
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = `mirai-scene-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(link);
@@ -843,7 +962,7 @@ export const useEditStore = create<EditState>((set, get) => ({
       const text = await file.text();
       return get().importSceneFromJson(text);
     } catch (error) {
-      console.error('Failed to load scene from file:', error);
+      console.error("Failed to load scene from file:", error);
       return false;
     }
   },
@@ -867,5 +986,5 @@ export const useEditStore = create<EditState>((set, get) => ({
 
     // If base image exists, use its dimensions
     return { width: baseImageInfo.width, height: baseImageInfo.height };
-  }
+  },
 }));
