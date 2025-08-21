@@ -107,28 +107,6 @@ pub async fn list_batch_generated_media_files_handler(
           result.maybe_public_bucket_prefix.as_deref(),
           result.maybe_public_bucket_extension.as_deref());
 
-        // let maybe_cover_image_public_bucket_path = match result.maybe_model_cover_image_public_bucket_hash
-        //     .as_deref()
-        // {
-        //   None => None,
-        //   Some(hash) => Some(MediaFileBucketPath::from_object_hash(
-        //     &hash,
-        //     result.maybe_model_cover_image_public_bucket_prefix.as_deref(),
-        //     result.maybe_model_cover_image_public_bucket_extension.as_deref())
-        //       .get_full_object_path_str()
-        //       .to_string()
-        //   )
-        // };
-
-        // // NB: Some engine pages will need to know the engine extension to load the file.
-        // let maybe_engine_extension = match result.media_type {
-        //   MediaFileType::Bvh => Some(".bvh".to_string()),
-        //   MediaFileType::Glb => Some(".glb".to_string()),
-        //   MediaFileType::Gltf => Some(".gltf".to_string()),
-        //   MediaFileType::SceneRon => Some(".scn.ron".to_string()),
-        //   _ => None,
-        // };
-
         BatchGeneratedMediaFileInfo {
           token: result.token.clone(),
           media_class: result.media_class,
@@ -155,48 +133,6 @@ pub async fn list_batch_generated_media_files_handler(
           maybe_duration_millis: result.maybe_duration_millis,
           created_at: result.created_at,
           updated_at: result.updated_at,
-          // maybe_text_transcript: result.maybe_text_transcript,
-          // maybe_live_portrait_details: result.extra_media_file_info
-          //     .as_ref()
-          //     .map(|info| MediaFileLivePortraitDetails::maybe_from_extra_info(&info))
-          //     .flatten(),
-          // maybe_style_name: result.maybe_prompt_args
-          //     .as_ref()
-          //     .and_then(|args| args.style_name.as_ref())
-          //     .and_then(|style| style.to_style_name()),
-          // public_bucket_path: public_bucket_path
-          //     .get_full_object_path_str()
-          //     .to_string(),
-          // public_bucket_url: bucket_url_string_from_media_path(&public_bucket_path),
-          // maybe_engine_category: result.maybe_engine_category,
-          // maybe_animation_type: result.maybe_animation_type,
-          // maybe_media_subtype: result.maybe_media_subtype,
-          // maybe_engine_extension,
-          // maybe_model_weight_info: match result.maybe_model_weights_token {
-          //   None => None,
-          //   Some(weight_token) => Some(ListBatchGeneratedMediaFilesModelInfo {
-          //     weight_token,
-          //     // TODO(bt,2023-12-28): Instead of giving bogus defaults on None, make these optional or return
-          //     //  None for *everything* on any field being absent.
-          //     weight_type: PublicWeightsType::from_enum(result.maybe_model_weights_type.unwrap_or(WeightsType::Tacotron2)),
-          //     weight_category: result.maybe_model_weights_category.unwrap_or(WeightsCategory::TextToSpeech),
-          //     title: result.maybe_model_weights_title.unwrap_or_else(|| "model".to_string()),
-          //     maybe_cover_image_public_bucket_path,
-          //     maybe_weight_creator: UserDetailsLightBuilder::from_optional_db_fields_owned(
-          //       result.maybe_model_weight_creator_user_token,
-          //       result.maybe_model_weight_creator_username,
-          //       result.maybe_model_weight_creator_display_name,
-          //       result.maybe_model_weight_creator_gravatar_hash,
-          //     ),
-          //   })
-          // },
-          // is_user_upload: result.is_user_upload,
-          // is_intermediate_system_file: result.is_intermediate_system_file,
-          // is_emulated_media_file: false,
-          // stats: SimpleEntityStats {
-          //   positive_rating_count: result.maybe_ratings_positive_count.unwrap_or(0),
-          //   bookmark_count: result.maybe_bookmark_count.unwrap_or(0),
-          // },
         }
       })
       .collect();
