@@ -65,4 +65,6 @@ pub enum GenerationAction {
   RemoveBackground,
   #[serde(rename = "image_to_3d")]
   ImageTo3d,
+  #[serde(rename = "image_inpaint_edit")]
+  ImageInpaintEdit,
 }

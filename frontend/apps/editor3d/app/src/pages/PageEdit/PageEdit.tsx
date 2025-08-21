@@ -16,6 +16,8 @@ import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
 import { IMAGE_EDITOR_PAGE_MODEL_LIST, ModelPage, ModelSelector, useModelSelectorStore } from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
+import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
+
 
 const PAGE_ID : ModelPage = ModelPage.ImageEditor;
 
@@ -47,9 +49,19 @@ const PageEdit = () => {
   const [isEnqueuing, setIsEnqueuing] = useState<boolean>(false);
   const [generationCount, setGenerationCount] = useState<number>(1);
 
-
   // Use the Zustand store
   const store = useEditStore();
+  
+  useImageEditCompleteEvent(async (event) => {
+    console.log("Image edit complete:", event);
+
+    // TODO: Logic to show edit history
+    for (const editedImage of event.edited_images) {
+      console.log("Edited image:", editedImage.media_token);
+      console.log("Edited image url:", editedImage.cdn_url);
+      console.log("Edited image thumbnail template:", editedImage.maybe_thumbnail_template);
+    }
+  });
 
   // Pass store actions directly as callbacks
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });

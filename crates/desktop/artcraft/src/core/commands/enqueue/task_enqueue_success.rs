@@ -24,6 +24,7 @@ impl TaskEnqueueSuccess{
       TaskType::VideoGeneration => GenerationAction::GenerateVideo,
       TaskType::BackgroundRemoval => GenerationAction::RemoveBackground,
       TaskType::ObjectGeneration => GenerationAction::ImageTo3d,
+      TaskType::ImageInpaintEdit => GenerationAction::ImageInpaintEdit,
     }
   }
   

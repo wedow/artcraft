@@ -22,6 +22,6 @@ pub struct EditedImage {
 }
 
 impl BasicSendableEvent for ImageEditCompleteEvent {
-  const FRONTEND_EVENT_NAME: TauriEventName = TauriEventName::CanvasBgRemovedEvent;
+  const FRONTEND_EVENT_NAME: TauriEventName = TauriEventName::ImageEditCompleteEvent;
   const EVENT_STATUS: BasicEventStatus = BasicEventStatus::Success;
 }
