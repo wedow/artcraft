@@ -119,31 +119,31 @@ pub struct MediaFileRaw {
   pub updated_at: DateTime<Utc>,
 }
 
-pub async fn list_batch_generated_media_files(
+pub async fn list_batch_generated_redux_media_files(
   batch_token: &BatchGenerationToken,
   can_see_deleted: bool,
   mysql_pool: &MySqlPool
 ) -> AnyhowResult<MediaFileBatch> {
-  list_batch_generated_media_files_with_transactor(
+  list_batch_generated_redux_media_files_with_transactor(
     batch_token,
     can_see_deleted,
     Transactor::for_pool(mysql_pool)
   ).await
 }
 
-pub async fn list_batch_generated_media_files_with_connection(
+pub async fn list_batch_generated_redux_media_files_with_connection(
   batch_token: &BatchGenerationToken,
   can_see_deleted: bool,
   mysql_connection: &mut PoolConnection<MySql>,
 ) -> AnyhowResult<MediaFileBatch> {
-  list_batch_generated_media_files_with_transactor(
+  list_batch_generated_redux_media_files_with_transactor(
     batch_token,
     can_see_deleted,
     Transactor::for_connection(mysql_connection)
   ).await
 }
 
-pub async fn list_batch_generated_media_files_with_transactor(
+pub async fn list_batch_generated_redux_media_files_with_transactor(
   batch_token: &BatchGenerationToken,
   can_see_deleted: bool,
   transactor: Transactor<'_, '_>,

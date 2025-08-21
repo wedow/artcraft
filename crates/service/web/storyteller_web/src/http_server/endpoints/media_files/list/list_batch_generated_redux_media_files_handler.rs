@@ -18,7 +18,7 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use actix_web_lab::extract::Query;
 use artcraft_api_defs::common::responses::media_links::MediaLinks;
 use artcraft_api_defs::common::responses::simple_entity_stats::SimpleEntityStats;
-use artcraft_api_defs::media_file::list_batch_generated_media_files::{BatchGeneratedMediaFileInfo, ListBatchGeneratedMediaFilesPathInfo, ListBatchGeneratedMediaFilesSuccessResponse};
+use artcraft_api_defs::media_file::list_batch_generated_media_files::{BatchGeneratedReduxMediaFileInfo, ListBatchGeneratedReduxMediaFilesPathInfo, ListBatchGeneratedReduxMediaFilesSuccessResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use chrono::{DateTime, Utc};
 use enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
@@ -33,30 +33,30 @@ use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::model_weights::public_weights_types::PublicWeightsType;
 use log::warn;
 use mysql_queries::queries::media_files::get::batch_get_media_files::batch_get_media_files;
-use mysql_queries::queries::media_files::list::list_batch_generated_media_files::list_batch_generated_media_files_with_connection;
+use mysql_queries::queries::media_files::list::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files_with_connection;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::prompts::PromptToken;
 use utoipa::{IntoParams, ToSchema};
 
-/// List media files generated as part of the same batch
+/// List media files generated as part of the same batch (redux endpoint)
 #[utoipa::path(
   get,
   tag = "Media Files",
-  path = "/v1/media_files/batch_generated/{token}",
+  path = "/v1/media_files/batch_gen_redux/{token}",
   responses(
-    (status = 200, description = "Success", body = ListBatchGeneratedMediaFilesSuccessResponse),
+    (status = 200, description = "Success", body = ListBatchGeneratedReduxMediaFilesSuccessResponse),
   ),
   params(
-    ("request" = ListBatchGeneratedMediaFilesPathInfo, description = "Payload for Request"),
+    ("request" = ListBatchGeneratedReduxMediaFilesPathInfo, description = "Payload for Request"),
   )
 )]
-pub async fn list_batch_generated_media_files_handler(
+pub async fn list_batch_generated_redux_media_files_handler(
   http_request: HttpRequest,
-  path: Path<ListBatchGeneratedMediaFilesPathInfo>,
+  path: Path<ListBatchGeneratedReduxMediaFilesPathInfo>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<ListBatchGeneratedMediaFilesSuccessResponse>, CommonWebError> {
+) -> Result<Json<ListBatchGeneratedReduxMediaFilesSuccessResponse>, CommonWebError> {
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;
@@ -84,7 +84,7 @@ pub async fn list_batch_generated_media_files_handler(
 
   // NB(bt,2024-03-24): I'm sorry, this is gross. We're not respecting sorting, input ordering,
   // de-duplication, (if we swap types), etc. Gotta go fast.
-  let result = list_batch_generated_media_files_with_connection(
+  let result = list_batch_generated_redux_media_files_with_connection(
     &path.token,
     show_deleted_results,
     &mut mysql_connection,
@@ -107,7 +107,7 @@ pub async fn list_batch_generated_media_files_handler(
           result.maybe_public_bucket_prefix.as_deref(),
           result.maybe_public_bucket_extension.as_deref());
 
-        BatchGeneratedMediaFileInfo {
+        BatchGeneratedReduxMediaFileInfo {
           token: result.token.clone(),
           media_class: result.media_class,
           media_type: result.media_type,
@@ -137,7 +137,7 @@ pub async fn list_batch_generated_media_files_handler(
       })
       .collect();
 
-  Ok(Json(ListBatchGeneratedMediaFilesSuccessResponse {
+  Ok(Json(ListBatchGeneratedReduxMediaFilesSuccessResponse {
     success: true,
     media_files,
   }))

@@ -33,6 +33,9 @@ use storyteller_client::jobs::list_session_jobs::{list_session_jobs, States};
 use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
 use tempdir::TempDir;
+use artcraft_api_defs::jobs::list_session_jobs::ListSessionJobsItem;
+use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
+use crate::services::storyteller::threads::events::maybe_handle_inpainting_complete_event::maybe_handle_inpainting_complete_event;
 
 pub async fn storyteller_task_polling_thread(
   app_handle: AppHandle,
@@ -140,15 +143,13 @@ async fn polling_loop(
         continue; // If anything breaks with queries, don't spam events.
       }
 
-      let result = maybe_send_background_removal_complete_event(
+      send_additional_events(
         &app_handle,
-        &task,
+        &app_env_configs,
+        creds.as_ref(),
         &job,
+        &task,
       ).await;
-
-      if let Err(err) = result {
-        error!("Failed to send background removal complete event: {:?}", err);
-      }
 
       let service = to_generation_service_provider(task.provider);
       let action = to_generation_action(task.task_type);
@@ -164,5 +165,35 @@ async fn polling_loop(
       }
     }
 
+  }
+}
+
+async fn send_additional_events(
+  app_handle: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
+  creds: Option<&StorytellerCredentialSet>,
+  job: &ListSessionJobsItem,
+  task: &Task
+) {
+  let result = maybe_handle_inpainting_complete_event(
+    app_handle,
+    app_env_configs,
+    creds,
+    task,
+    job,
+  ).await;
+
+  if let Err(err) = result {
+    error!("Failed to send image inpainting complete event: {:?}", err);
+  }
+
+  let result = maybe_send_background_removal_complete_event(
+    app_handle,
+    task,
+    job,
+  ).await;
+
+  if let Err(err) = result {
+    error!("Failed to send background removal complete event: {:?}", err);
   }
 }

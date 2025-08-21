@@ -1,4 +1,4 @@
-pub mod list_batch_generated_media_files;
+pub mod list_batch_generated_redux_media_files;
 pub mod list_featured_media_files;
 pub mod list_media_files;
 pub mod list_media_files_by_batch_token;

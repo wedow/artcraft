@@ -12,7 +12,7 @@ use crate::http_server::endpoints::media_files::edit::set_media_file_cover_image
 use crate::http_server::endpoints::media_files::edit::update_media_file_handler::update_media_file_handler;
 use crate::http_server::endpoints::media_files::get::batch_get_media_files_handler::batch_get_media_files_handler;
 use crate::http_server::endpoints::media_files::get::get_media_file_handler::get_media_file_handler;
-use crate::http_server::endpoints::media_files::list::list_batch_generated_media_files_handler::list_batch_generated_media_files_handler;
+use crate::http_server::endpoints::media_files::list::list_batch_generated_redux_media_files_handler::list_batch_generated_redux_media_files_handler;
 use crate::http_server::endpoints::media_files::list::list_featured_media_files_handler::list_featured_media_files_handler;
 use crate::http_server::endpoints::media_files::list::list_media_files_by_batch_token_handler::list_media_files_by_batch_token_handler;
 use crate::http_server::endpoints::media_files::list::list_media_files_for_user_handler::list_media_files_for_user_handler;
@@ -77,8 +77,8 @@ pub fn add_media_file_routes<T, B> (app: App<T>) -> App<T>
           .route(web::get().to(batch_get_media_files_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
-      .service(web::resource("/batch_generated/{token}")
-          .route(web::get().to(list_batch_generated_media_files_handler))
+      .service(web::resource("/batch_gen_redux/{token}")
+          .route(web::get().to(list_batch_generated_redux_media_files_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
       .service(web::resource("/list")

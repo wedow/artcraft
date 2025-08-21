@@ -1,3 +1,4 @@
 pub mod canvas_background_removal_complete_event;
+pub mod image_edit_complete_event;
 pub mod refresh_account_state_event;
 pub mod show_provider_login_modal_event;

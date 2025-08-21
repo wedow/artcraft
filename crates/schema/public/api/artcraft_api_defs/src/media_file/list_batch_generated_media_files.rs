@@ -11,20 +11,22 @@ use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
 use utoipa::ToSchema;
 
+pub const LIST_BATCH_GENERATED_REDUX_MEDIA_FILES_URL_PATH: &str = "/v1/media_files/batch_gen_redux";
+
 /// For the URL PathInfo
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct ListBatchGeneratedMediaFilesPathInfo {
+pub struct ListBatchGeneratedReduxMediaFilesPathInfo {
   pub token: BatchGenerationToken,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct ListBatchGeneratedMediaFilesSuccessResponse {
+pub struct ListBatchGeneratedReduxMediaFilesSuccessResponse {
   pub success: bool,
-  pub media_files: Vec<BatchGeneratedMediaFileInfo>,
+  pub media_files: Vec<BatchGeneratedReduxMediaFileInfo>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct BatchGeneratedMediaFileInfo {
+pub struct BatchGeneratedReduxMediaFileInfo {
   /// Primary key identifier
   pub token: MediaFileToken,
 
