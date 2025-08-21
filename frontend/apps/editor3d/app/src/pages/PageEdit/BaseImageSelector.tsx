@@ -18,7 +18,7 @@ export interface BaseSelectorImage {
 export type BaseImageSelectorProps = {
   onImageSelect: (imageUrl: BaseSelectorImage) => void;
   showLoading?: boolean;
-}
+};
 
 const MAX_GALLERY_SELECTIONS = 1;
 
@@ -26,11 +26,10 @@ export const BaseImageSelector = ({
   onImageSelect,
   showLoading = false,
 }: BaseImageSelectorProps) => {
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedGalleryImages, setSelectedGalleryImages] = useState<string[]>(
-    []
+    [],
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,7 +48,7 @@ export const BaseImageSelector = ({
     } else {
       setSelectedGalleryImages([id]);
     }
-  }
+  };
 
   const handleUseGalleryImages = (selectedItems: GalleryItem[]) => {
     // We only want one file
@@ -65,13 +64,13 @@ export const BaseImageSelector = ({
       mediaToken: item.id,
     };
     sendImageEvent(referenceImage);
-  }
+  };
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -79,7 +78,8 @@ export const BaseImageSelector = ({
       setIsLoading(true);
 
       Array.from(files).forEach((file) => {
-        const reader = new FileReader(); reader.onloadend = () => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
           uploadImage({
             title: `reference-image-${Math.random()
               .toString(36)
@@ -115,21 +115,26 @@ export const BaseImageSelector = ({
   const sendImageEvent = (image: BaseSelectorImage) => {
     handleGalleryClose();
     onImageSelect(image);
-  }
+  };
 
   return (
     <>
-      <div className="h-1/2 w-1/2 flex items-center justify-center bg-ui-background border-ui-panel-border border-8">
+      <div className="flex h-1/2 w-1/2 items-center justify-center rounded-xl border-8 border-ui-panel-border bg-ui-background">
         {isLoading || showLoading ? (
           <div className="flex flex-col items-center gap-4">
             <span>Uploading image...</span>
             <LoadingSpinner />
           </div>
-        ) :
+        ) : (
           <div className="flex flex-col gap-8">
-            <FontAwesomeIcon icon={faImage} className="text-6xl text-ui-controls" />
-            <span className="text-ui-controls text-lg ml-2">Click to upload or drag and drop an image here to edit</span>
-            <div className="mt-4 flex justify-center gap-2">
+            <FontAwesomeIcon
+              icon={faImage}
+              className="text-6xl text-white/50"
+            />
+            <span className="ml-2 text-xl text-white/50">
+              Click to upload or drag and drop an image here to edit
+            </span>
+            <div className="mt-4 flex justify-center gap-2.5">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -138,22 +143,15 @@ export const BaseImageSelector = ({
                 onChange={handleFileUpload}
                 multiple
               />
-              <Button
-                variant="primary"
-                onClick={handleUploadClick}
-              >
+              <Button variant="primary" onClick={handleUploadClick}>
                 Upload an image
               </Button>
-              <Button
-                variant="secondary"
-                onClick={handleGalleryClick}
-              >
+              <Button variant="secondary" onClick={handleGalleryClick}>
                 Select from library
               </Button>
-
             </div>
           </div>
-        }
+        )}
       </div>
       <GalleryModal
         isOpen={!!isGalleryModalOpen}
@@ -167,5 +165,5 @@ export const BaseImageSelector = ({
         forceFilter="image"
       />
     </>
-  )
-}
+  );
+};

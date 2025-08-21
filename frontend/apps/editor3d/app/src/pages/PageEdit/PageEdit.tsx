@@ -24,7 +24,6 @@ import {
 import { ModelInfo } from "@storyteller/model-list";
 import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
 
-
 const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
 const PageEdit = () => {
@@ -56,7 +55,7 @@ const PageEdit = () => {
 
   // Use the Zustand store
   const store = useEditStore();
-  
+
   useImageEditCompleteEvent(async (event) => {
     console.log("Image edit complete:", event);
 
@@ -64,7 +63,10 @@ const PageEdit = () => {
     for (const editedImage of event.edited_images) {
       console.log("Edited image:", editedImage.media_token);
       console.log("Edited image url:", editedImage.cdn_url);
-      console.log("Edited image thumbnail template:", editedImage.maybe_thumbnail_template);
+      console.log(
+        "Edited image thumbnail template:",
+        editedImage.maybe_thumbnail_template,
+      );
     }
   });
 
@@ -286,7 +288,7 @@ const PageEdit = () => {
       mask_image_raw_bytes: arrayBuffer,
       prompt: prompt,
       image_count: generationCount,
-      frontend_caller: "image_editor", 
+      frontend_caller: "image_editor",
     });
 
     setIsEnqueuing(false);
@@ -298,7 +300,7 @@ const PageEdit = () => {
     return (
       <div
         className={
-          "flex h-screen w-full items-center justify-center bg-ui-panel"
+          "flex h-[calc(100vh-56px)] w-full items-center justify-center bg-ui-panel"
         }
       >
         <BaseImageSelector
