@@ -10,13 +10,13 @@ use serde_derive::{Deserialize, Serialize};
 /// If a cover image is set, this is the path to the asset.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MediaFileCoverImageDetails {
-  //  /// (DEPRECATED) URL path to the media file
-  //  #[deprecated(note="This field doesn't point to the full URL. Use media_links instead to leverage the CDN.")]
-  //  pub maybe_cover_image_public_bucket_path: Option<String>,
+  // /// (DEPRECATED) URL path to the media file
+  // #[deprecated(note="This field doesn't point to the full URL. Use media_links instead to leverage the CDN.")]
+  // pub maybe_cover_image_public_bucket_path: Option<String>,
 
-  //  /// (DEPRECATED) Full URL to the media file
-  //  #[deprecated(note="This points to the bucket. Use media_links instead to leverage the CDN.")]
-  //  pub maybe_cover_image_public_bucket_url: Option<Url>,
+  // /// (DEPRECATED) Full URL to the media file
+  // #[deprecated(note="This points to the bucket. Use media_links instead to leverage the CDN.")]
+  // pub maybe_cover_image_public_bucket_url: Option<Url>,
 
   // NB(bt,2024-09-19): I accidentally rolled this field out to production.
   // I don't think this field is in use, but maybe ...
