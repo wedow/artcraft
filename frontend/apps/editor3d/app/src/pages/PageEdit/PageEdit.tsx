@@ -213,6 +213,7 @@ const PageEdit = () => {
       mask_image_raw_bytes: arrayBuffer,
       prompt: prompt,
       image_count: generationCount,
+      frontend_caller: "image_editor", 
     });
 
     setIsEnqueuing(false);

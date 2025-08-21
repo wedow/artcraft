@@ -134,7 +134,7 @@ pub async fn handle_flux_pro_1_inpaint_artcraft(
     provider: GenerationProvider::Artcraft,
     model: Some(GenerationModel::FluxProKontextMax),
     provider_job_id: Some(job_id.to_string()),
-    task_type: TaskType::ImageGeneration,
+    task_type: TaskType::ImageInpaintEdit,
   })
 }
 

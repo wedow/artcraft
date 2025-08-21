@@ -41,6 +41,7 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize, Debug)]
@@ -72,6 +73,21 @@ pub struct EnqueueContextualEditImageCommand {
 
   /// Image quality.
   pub image_quality: Option<EditImageQuality>,
+
+  /// OPTIONAL.
+  /// Name of the frontend caller.
+  /// We'll use this to selectively trigger events.
+  pub frontend_caller: Option<TauriCommandCaller>,
+
+  /// OPTIONAL.
+  /// A frontend-defined identifier that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_id: Option<String>,
+
+  /// OPTIONAL.
+  /// A frontend-defined payload that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_payload: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Copy, Clone)]
@@ -237,7 +253,12 @@ pub async fn handle_request(
   };
   
   let result = success_event
-      .insert_into_task_database(task_database)
+      .insert_into_task_database_with_frontend_payload(
+        task_database,
+        request.frontend_caller.clone(),
+        request.frontend_subscriber_id.as_deref(),
+        request.frontend_subscriber_payload.as_deref(),
+      )
       .await;
   
   if let Err(err) = result {

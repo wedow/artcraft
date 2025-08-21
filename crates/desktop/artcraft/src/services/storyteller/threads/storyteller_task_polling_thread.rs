@@ -175,6 +175,8 @@ async fn send_additional_events(
   job: &ListSessionJobsItem,
   task: &Task
 ) {
+  info!("Attempting to dispatch events for completed Storyteller : {:?}", task);
+
   let result = maybe_handle_inpainting_complete_event(
     app_handle,
     app_env_configs,

@@ -17,6 +17,12 @@ export interface EnqueueImageInpaintRequest {
 
   // Number of images to generate.
   image_count?: number;
+
+  // TODO: Actual enum.
+  frontend_caller?: string;
+
+  // Optional frontend state to return later.
+  frontend_subscriber_id?: string;
 }
 
 
@@ -28,6 +34,8 @@ interface RawEnqueueImageInpaintRequest {
   mask_image_raw_bytes?: Uint8Array;
   prompt?: string;
   image_count?: number;
+  frontend_caller?: string;
+  frontend_subscriber_id?: string;
 }
 
 export enum EnqueueImageInpaintErrorType {
@@ -86,6 +94,14 @@ export const EnqueueImageInpaint = async (request: EnqueueImageInpaintRequest) :
 
   if (!!request.image_count) {
     mutableRequest.image_count = request.image_count;
+  }
+
+  if (!!request.frontend_caller) {
+    mutableRequest.frontend_caller = request.frontend_caller;
+  }
+
+  if (!!request.frontend_subscriber_id) {
+    mutableRequest.frontend_subscriber_id = request.frontend_subscriber_id;
   }
 
   const result = await invoke("enqueue_image_inpaint_command", { 

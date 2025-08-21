@@ -135,7 +135,7 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
     provider: GenerationProvider::Artcraft,
     model: Some(GenerationModel::FluxDevJuggernaut),
     provider_job_id: Some(job_id.to_string()),
-    task_type: TaskType::ImageGeneration,
+    task_type: TaskType::ImageInpaintEdit,
   })
 }
 
