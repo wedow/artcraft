@@ -281,8 +281,6 @@ const PageEdit = () => {
     );
   }
 
-  console.log("PageEdit rerendering")
-
   return (
     <>
       <div
@@ -304,7 +302,10 @@ const PageEdit = () => {
         <HistoryStack
           onClear={() => { store.RESET(); }}
           startingBundles={[{ images: [store.baseImageInfo] } as ImageBundle]}
-          onImageSelect={(baseImage) => store.setBaseImageInfo(baseImage)}
+          onImageSelect={(baseImage) => {
+            store.clearLineNodes();
+            store.setBaseImageInfo(baseImage)
+          }}
         />
       </div>
       <div
