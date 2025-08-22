@@ -34,7 +34,7 @@ import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
-  onEnqueuePressed?: () => void | Promise<void>;
+  onEnqueuePressed?: (prompt: string, count: number) => void | Promise<void>;
   model: string;
   modelInfo?: ModelInfo;
   imageMediaId?: string;
@@ -130,22 +130,22 @@ export const PromptBoxImage = ({
   useEffect(() => {
     // Build generation count options based on selected model
     const caps = getCapabilitiesForModel(modelInfo);
+    const defaultCount = Math.min(
+      Math.max(1, caps.defaultGenerationCount ?? 1),
+      caps.maxGenerationCount
+    );
+
+    setGenerationCount(defaultCount);
+
     const items: PopoverItem[] = Array.from(
       { length: caps.maxGenerationCount },
       (_, i) => i + 1
     ).map((count) => ({
       label: String(count),
-      selected: count === generationCount,
+      selected: count === defaultCount,
       icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
     }));
     setGenerationCountList(items);
-
-    // Clamp selection
-    if (generationCount < 1 || generationCount > caps.maxGenerationCount) {
-      setGenerationCount(
-        Math.min(Math.max(1, generationCount), caps.maxGenerationCount)
-      );
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelInfo]);
 
@@ -264,6 +264,12 @@ export const PromptBoxImage = ({
 
     gtagEvent("enqueue_image");
 
+    const subscriberId = crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+
+    onEnqueuePressed?.(prompt, generationCount);
+
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
       // the backend hangs on a given request.
@@ -279,11 +285,10 @@ export const PromptBoxImage = ({
       aspect_ratio: aspectRatio,
       number_images: generationCount,
       frontend_caller: "text_to_image",
+      frontend_subscriber_id: subscriberId,
     });
 
     console.log("PromptBoxImage - generateResponse", generateResponse);
-
-    onEnqueuePressed?.();
 
     setIsEnqueueing(false);
   };

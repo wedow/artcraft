@@ -8,6 +8,7 @@ export type ModelCategory = "image" | "video";
 // TODO: add more capabilities here - BFlat
 export interface ModelCapabilities {
   maxGenerationCount: number;
+  defaultGenerationCount?: number;
 }
 
 export interface ModelConfig {
@@ -18,5 +19,5 @@ export interface ModelConfig {
   category: ModelCategory;
   info: ModelInfo;
   capabilities: ModelCapabilities;
-  tags?: (ModelTag|string)[]; // optional tags, e.g. ["instructiveEdit"] - for filtering
+  tags?: (ModelTag | string)[]; // optional tags, e.g. ["instructiveEdit"] - for filtering
 }

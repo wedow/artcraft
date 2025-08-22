@@ -1,12 +1,17 @@
 import { ModelCreator } from "./ModelCreator.js";
 import { ModelInfo } from "./ModelInfo.js";
 import { ModelTag } from "./ModelTag.js";
-import { ModelConfig, ModelCapabilities, ModelCategory } from "./ModelConfig.js";
+import {
+  ModelConfig,
+  ModelCapabilities,
+  ModelCategory,
+} from "./ModelConfig.js";
 
 const mc = ModelCreator;
 
 const DEFAULT_CAPABILITIES: ModelCapabilities = {
   maxGenerationCount: 1,
+  defaultGenerationCount: 1,
 };
 
 const cfg = (
@@ -38,7 +43,7 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "Incredible style and quality",
     badges: [{ label: "15 sec." }],
-    capabilities: { maxGenerationCount: 4 },
+    capabilities: { maxGenerationCount: 4, defaultGenerationCount: 4 },
   }),
   cfg({
     id: "flux_pro_1_1_ultra",
@@ -111,13 +116,10 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "Fast and high-quality model",
     badges: [{ label: "20 sec." }],
-    capabilities: { 
+    capabilities: {
       maxGenerationCount: 4,
     },
-    tags: [
-      ModelTag.InstructiveEdit,
-      ModelTag.NonMaskedInpainting,
-    ],
+    tags: [ModelTag.InstructiveEdit, ModelTag.NonMaskedInpainting],
   }),
   cfg({
     id: "flux_pro_inpaint",
@@ -129,8 +131,8 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "Fast and high-quality model",
     badges: [{ label: "20 sec." }],
-    capabilities: { 
-      maxGenerationCount: 1 // NB: For some reason Fal only supports ONE image!
+    capabilities: {
+      maxGenerationCount: 1, // NB: For some reason Fal only supports ONE image!
     },
     tags: [ModelTag.MaskedInpainting],
   }),
@@ -144,8 +146,8 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "Fast and high-quality model",
     badges: [{ label: "20 sec." }],
-    capabilities: { 
-      maxGenerationCount: 4
+    capabilities: {
+      maxGenerationCount: 4,
     },
     tags: [ModelTag.MaskedInpainting],
   }),
@@ -211,8 +213,9 @@ export const ALL_MODELS: ModelConfig[] = [
   }),
 ];
 
-export const ALL_MODELS_BY_ID : Map<string, ModelConfig> = 
-  new Map(ALL_MODELS.map(model => [model.id, model]));
+export const ALL_MODELS_BY_ID: Map<string, ModelConfig> = new Map(
+  ALL_MODELS.map((model) => [model.id, model])
+);
 
 export const getAllModels = (): ModelConfig[] => ALL_MODELS;
 
