@@ -10,7 +10,6 @@ import { uploadImage } from "~/components/reusable/UploadModalMedia/uploadImage"
 import { UploaderStates } from "~/enums";
 
 export interface BaseSelectorImage {
-  id: string;
   url: string;
   mediaToken: string;
 }
@@ -59,7 +58,6 @@ export const BaseImageSelector = ({
     const item = selectedItems[0];
     if (!item.fullImage) return;
     const referenceImage: BaseSelectorImage = {
-      id: Math.random().toString(36).substring(7),
       url: item.fullImage,
       mediaToken: item.id,
     };
@@ -89,7 +87,6 @@ export const BaseImageSelector = ({
               console.debug("Upload progress:", newState.data);
               if (newState.status === UploaderStates.success && newState.data) {
                 const referenceImage: BaseSelectorImage = {
-                  id: Math.random().toString(36).substring(7),
                   url: reader.result as string,
                   mediaToken: newState.data || "",
                 };

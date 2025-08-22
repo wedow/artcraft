@@ -119,6 +119,11 @@ interface EditState {
 
   // Add aspect ratio action
   getAspectRatioDimensions: () => { width: number; height: number };
+
+  // History stack operations
+  // pushHistory: () => void;
+  // clearHistory: () => void;
+  RESET: () => void;
 }
 
 // Add a flag to prevent saving state during restoration
@@ -140,7 +145,7 @@ const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
   return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 0;
 };
 
-export const useEditStore = create<EditState>((set, get) => ({
+export const useEditStore = create<EditState>((set, get, store) => ({
   // Initial state
   nodes: [],
   lineNodes: [],
@@ -609,10 +614,11 @@ export const useEditStore = create<EditState>((set, get) => ({
     imgBitmap.onload = () => {
       set({ baseImageBitmap: imgBitmap });
     };
-    imgBitmap.onerror = () => {
-      console.error("Failed to load base image, discarding");
-      imgBitmap.src = ""; // Clear the source to avoid memory leaks
+    imgBitmap.onerror = (event) => {
+      console.error("Failed to load base image, discarding", event);
       set({ baseImageInfo: null, baseImageBitmap: null });
+      imgBitmap.onload = null;
+      imgBitmap.onerror = null;
     };
     imgBitmap.crossOrigin = "anonymous";
     imgBitmap.src = image.url;
@@ -987,4 +993,8 @@ export const useEditStore = create<EditState>((set, get) => ({
     // If base image exists, use its dimensions
     return { width: baseImageInfo.width, height: baseImageInfo.height };
   },
+
+  RESET: () => {
+    set(store.getInitialState());
+  }
 }));
