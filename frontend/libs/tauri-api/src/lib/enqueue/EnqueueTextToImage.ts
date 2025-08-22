@@ -18,6 +18,12 @@ export interface EnqueueTextToImageRequest {
   model?: ModelInfo | EnqueueTextToImageModel;
   aspect_ratio?: EnqueueTextToImageSize;
   number_images?: number;
+
+  // TODO: Actual enum.
+  frontend_caller?: string;
+
+  // Optional frontend state to return later.
+  frontend_subscriber_id?: string;
 }
 
 // Shape of request sent to Tauri
@@ -27,6 +33,8 @@ interface EnqueueTextToImageRawRequest {
   model?: EnqueueTextToImageModel | string; // TODO: Shouldn't allow string
   aspect_ratio?: EnqueueTextToImageSize;
   number_images?: number;
+  frontend_caller?: string;
+  frontend_subscriber_id?: string;
 }
 
 export enum EnqueueTextToImageModel {
@@ -81,6 +89,14 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
 
   if (!!request.number_images) {
     mutableRequest.number_images = request.number_images;
+  }
+
+  if (!!request.frontend_caller) {
+    mutableRequest.frontend_caller = request.frontend_caller;
+  }
+
+  if (!!request.frontend_subscriber_id) {
+    mutableRequest.frontend_subscriber_id = request.frontend_subscriber_id;
   }
 
   const result = await invoke("enqueue_text_to_image_command", { 

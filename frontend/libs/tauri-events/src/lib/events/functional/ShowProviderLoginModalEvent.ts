@@ -1,20 +1,21 @@
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
-import { BasicEventWrapper } from '../common/BasicEventWrapper';
+import { BasicEventWrapper } from '../../common/BasicEventWrapper';
 import { useEffect } from 'react';
+import { GenerationProvider } from '@storyteller/common';
 
-const EVENT_NAME : string = 'refresh_account_state_event';
+const EVENT_NAME : string = 'show_provider_login_modal_event';
 
-export interface RefreshAccountStateEvent {
-  provider?: string,
+export interface ShowProviderLoginModalEvent {
+  provider: GenerationProvider,
 }
 
-export const useRefreshAccountStateEvent = (asyncCallback: (event: RefreshAccountStateEvent) => Promise<void>) => {
+export const useShowProviderLoginModalEvent = (asyncCallback: (event: ShowProviderLoginModalEvent) => Promise<void>) => {
   useEffect(() => {
     let isUnmounted = false;
     let unlisten: Promise<UnlistenFn>;
 
     const setup = async () => {
-      unlisten = listen<BasicEventWrapper<RefreshAccountStateEvent>>(EVENT_NAME, async (wrappedEvent) => {
+      unlisten = listen<BasicEventWrapper<ShowProviderLoginModalEvent>>(EVENT_NAME, async (wrappedEvent) => {
         await asyncCallback(wrappedEvent.payload.data);
       });
 

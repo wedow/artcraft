@@ -16,6 +16,10 @@ pub enum TauriCommandCaller {
   Canvas,
   /// The inpainting editor
   ImageEditor,
+  /// The text-to-image page
+  TextToImage,
+  /// The image-to-video page
+  ImageToVideo,
 }
 
 impl_enum_display_and_debug_using_to_str!(TauriCommandCaller);
@@ -29,6 +33,8 @@ impl TauriCommandCaller {
     match self {
       Self::Canvas => "canvas",
       Self::ImageEditor => "image_editor",
+      Self::TextToImage => "text_to_image",
+      Self::ImageToVideo => "image_to_video",
     }
   }
 
@@ -36,6 +42,8 @@ impl TauriCommandCaller {
     match job_status {
       "canvas" => Ok(Self::Canvas),
       "image_editor" => Ok(Self::ImageEditor),
+      "text_to_image" => Ok(Self::TextToImage),
+      "image_to_video" => Ok(Self::ImageToVideo),
       _ => Err(format!("invalid tauri_command_caller: {:?}", job_status)),
     }
   }
@@ -46,6 +54,8 @@ impl TauriCommandCaller {
     BTreeSet::from([
       Self::Canvas,
       Self::ImageEditor,
+      Self::TextToImage,
+      Self::ImageToVideo,
     ])
   }
 }
@@ -62,26 +72,34 @@ mod tests {
     fn test_serialization() {
       assert_serialization(TauriCommandCaller::Canvas, "canvas");
       assert_serialization(TauriCommandCaller::ImageEditor, "image_editor");
+      assert_serialization(TauriCommandCaller::TextToImage, "text_to_image");
+      assert_serialization(TauriCommandCaller::ImageToVideo, "image_to_video");
     }
 
     #[test]
     fn to_str() {
       assert_eq!(TauriCommandCaller::Canvas.to_str(), "canvas");
       assert_eq!(TauriCommandCaller::ImageEditor.to_str(), "image_editor");
+      assert_eq!(TauriCommandCaller::TextToImage.to_str(), "text_to_image");
+      assert_eq!(TauriCommandCaller::ImageToVideo.to_str(), "image_to_video");
     }
 
     #[test]
     fn from_str() {
       assert_eq!(TauriCommandCaller::from_str("canvas").unwrap(), TauriCommandCaller::Canvas);
       assert_eq!(TauriCommandCaller::from_str("image_editor").unwrap(), TauriCommandCaller::ImageEditor);
+      assert_eq!(TauriCommandCaller::from_str("text_to_image").unwrap(), TauriCommandCaller::TextToImage);
+      assert_eq!(TauriCommandCaller::from_str("image_to_video").unwrap(), TauriCommandCaller::ImageToVideo);
     }
 
     #[test]
     fn all_variants() {
       let mut variants = TauriCommandCaller::all_variants();
-      assert_eq!(variants.len(), 2);
+      assert_eq!(variants.len(), 4);
       assert_eq!(variants.pop_first(), Some(TauriCommandCaller::Canvas));
       assert_eq!(variants.pop_first(), Some(TauriCommandCaller::ImageEditor));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::TextToImage));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::ImageToVideo));
       assert_eq!(variants.pop_first(), None);
     }
   }

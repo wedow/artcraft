@@ -278,6 +278,7 @@ export const PromptBoxImage = ({
       model: modelInfo,
       aspect_ratio: aspectRatio,
       number_images: generationCount,
+      frontend_caller: "text_to_image",
     });
 
     console.log("PromptBoxImage - generateResponse", generateResponse);

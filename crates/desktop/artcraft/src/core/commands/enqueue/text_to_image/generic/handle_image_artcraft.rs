@@ -25,7 +25,7 @@ use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_imag
 use tauri::AppHandle;
 
 pub async fn handle_image_artcraft(
-  request: EnqueueTextToImageRequest,
+  request: &EnqueueTextToImageRequest,
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
@@ -71,7 +71,7 @@ pub async fn handle_image_artcraft(
       selected_model = GenerationModel::Flux1Dev;
       let request = GenerateFlux1DevTextToImageRequest {
         uuid_idempotency_token,
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         aspect_ratio: request.aspect_ratio
             .map(|aspect| match aspect {
               // TODO(bt,2025-07-14): Support other aspect ratios.
@@ -110,7 +110,7 @@ pub async fn handle_image_artcraft(
       selected_model = GenerationModel::Flux1Schnell;
       let request = GenerateFlux1SchnellTextToImageRequest {
         uuid_idempotency_token,
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         aspect_ratio: request.aspect_ratio
             .map(|aspect| match aspect {
               // TODO(bt,2025-07-14): Support other aspect ratios.
@@ -149,7 +149,7 @@ pub async fn handle_image_artcraft(
       selected_model = GenerationModel::FluxPro11;
       let request = GenerateFluxPro11TextToImageRequest {
         uuid_idempotency_token,
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         aspect_ratio: request.aspect_ratio
             .map(|aspect| match aspect {
               // TODO(bt,2025-07-14): Support other aspect ratios.
@@ -188,7 +188,7 @@ pub async fn handle_image_artcraft(
       selected_model = GenerationModel::FluxPro11Ultra;
       let request = GenerateFluxPro11UltraTextToImageRequest {
         uuid_idempotency_token,
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         aspect_ratio: request.aspect_ratio
             .map(|aspect| match aspect {
               // TODO(bt,2025-07-14): Support other aspect ratios.

@@ -1,21 +1,20 @@
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
-import { BasicEventWrapper } from '../common/BasicEventWrapper';
+import { BasicEventWrapper } from '../../common/BasicEventWrapper';
 import { useEffect } from 'react';
-import { GenerationProvider } from '@storyteller/common';
 
-const EVENT_NAME : string = 'show_provider_login_modal_event';
+const EVENT_NAME : string = 'flash_user_input_error_event';
 
-export interface ShowProviderLoginModalEvent {
-  provider: GenerationProvider,
+export interface FlashUserInputErrorEvent {
+  message: string,
 }
 
-export const useShowProviderLoginModalEvent = (asyncCallback: (event: ShowProviderLoginModalEvent) => Promise<void>) => {
+export const useFlashUserInputErrorEvent = (asyncCallback: (event: FlashUserInputErrorEvent) => Promise<void>) => {
   useEffect(() => {
     let isUnmounted = false;
     let unlisten: Promise<UnlistenFn>;
 
     const setup = async () => {
-      unlisten = listen<BasicEventWrapper<ShowProviderLoginModalEvent>>(EVENT_NAME, async (wrappedEvent) => {
+      unlisten = listen<BasicEventWrapper<FlashUserInputErrorEvent>>(EVENT_NAME, async (wrappedEvent) => {
         await asyncCallback(wrappedEvent.payload.data);
       });
 

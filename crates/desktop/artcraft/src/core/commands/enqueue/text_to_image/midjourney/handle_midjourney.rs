@@ -39,7 +39,7 @@ use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn handle_midjourney(
   app: &AppHandle,
-  request: EnqueueTextToImageRequest,
+  request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   mj_creds_manager: &MidjourneyCredentialManager,
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {

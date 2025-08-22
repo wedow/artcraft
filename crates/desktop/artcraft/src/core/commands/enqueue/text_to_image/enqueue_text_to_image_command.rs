@@ -31,6 +31,7 @@ use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
@@ -45,6 +46,21 @@ pub struct EnqueueTextToImageRequest {
 
   /// The number of images to generate.
   pub number_images: Option<u32>,
+
+  /// OPTIONAL.
+  /// Name of the frontend caller.
+  /// We'll use this to selectively trigger events.
+  pub frontend_caller: Option<TauriCommandCaller>,
+
+  /// OPTIONAL.
+  /// A frontend-defined identifier that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_id: Option<String>,
+
+  /// OPTIONAL.
+  /// A frontend-defined payload that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_payload: Option<String>,
 }
 
 // TODO(bt,2025-07-14): Support other aspect ratios / resolutions -
@@ -186,7 +202,7 @@ pub async fn handle_request(
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {
   
   let result = dispatch_request(
-    request,
+    &request,
     &app,
     &app_data_root,
     &provider_priority_store,
@@ -205,7 +221,12 @@ pub async fn handle_request(
   };
 
   let result = success_event
-      .insert_into_task_database(task_database)
+      .insert_into_task_database_with_frontend_payload(
+        task_database,
+        request.frontend_caller,
+        request.frontend_subscriber_id.as_deref(),
+        request.frontend_subscriber_payload.as_deref(),
+      )
       .await;
 
   if let Err(err) = result {
@@ -217,7 +238,7 @@ pub async fn handle_request(
 }
 
 pub async fn dispatch_request(
-  request: EnqueueTextToImageRequest,
+  request: &EnqueueTextToImageRequest,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,

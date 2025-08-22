@@ -28,7 +28,7 @@ use storyteller_client::generate::image::generate_gpt_image_1_text_to_image::gen
 use tauri::AppHandle;
 
 pub async fn handle_gpt_image_1_artcraft(
-  request: EnqueueTextToImageRequest,
+  request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {

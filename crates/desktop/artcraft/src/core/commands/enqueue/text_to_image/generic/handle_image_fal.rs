@@ -17,7 +17,7 @@ use tauri::AppHandle;
 
 pub async fn handle_image_fal(
   app: &AppHandle,
-  request: EnqueueTextToImageRequest,
+  request: &EnqueueTextToImageRequest,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
 ) -> Result<TaskEnqueueSuccess, InternalImageError> {

@@ -1,7 +1,5 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
-use crate::core::events::functional_events::image_edit_complete_event::{EditedImage, ImageEditCompleteEvent};
-use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
+use crate::core::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use anyhow::anyhow;
 use artcraft_api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
@@ -16,7 +14,7 @@ use tauri::AppHandle;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 
-pub async fn maybe_handle_inpainting_complete_event(
+pub async fn maybe_handle_text_to_image_complete_event(
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
@@ -25,12 +23,12 @@ pub async fn maybe_handle_inpainting_complete_event(
 ) -> AnyhowResult<()> {
 
   match task.task_type {
-    TaskType::ImageInpaintEdit => {} // NB: Fall-through
+    TaskType::ImageGeneration => {} // NB: Fall-through
     _ => return Ok(()),
   }
 
   match task.frontend_caller {
-    Some(TauriCommandCaller::ImageEditor) => {} // NB: Fall-through
+    Some(TauriCommandCaller::TextToImage) => {} // NB: Fall-through
     _ => return Ok(()),
   }
 
@@ -65,7 +63,7 @@ pub async fn maybe_handle_inpainting_complete_event(
   };
 
   if let Err(err) = event.send(&app) {
-    error!("Failed to send ImageEditCompleteEvent: {:?}", err); // Fail open
+    error!("Failed to send TextToImageGenerationCompleteEvent: {:?}", err); // Fail open
   }
 
   Ok(())
@@ -76,9 +74,9 @@ pub async fn handle_single(
   task: &Task,
   job: &ListSessionJobsItem,
   job_result: &ListSessionResultDetailsResponse,
-) -> AnyhowResult<ImageEditCompleteEvent> {
-  Ok(ImageEditCompleteEvent {
-    edited_images: vec![EditedImage {
+) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
+  Ok(TextToImageGenerationCompleteEvent {
+    generated_images: vec![GeneratedImage {
       media_token: MediaFileToken::new_from_str(&job_result.entity_token),
       cdn_url: job_result.media_links.cdn_url.clone(),
       maybe_thumbnail_template: job_result.media_links.maybe_thumbnail_template.clone(),
@@ -96,7 +94,7 @@ pub async fn handle_batch(
   job: &ListSessionJobsItem,
   job_result: &ListSessionResultDetailsResponse,
   batch_token: &BatchGenerationToken,
-) -> AnyhowResult<ImageEditCompleteEvent> {
+) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
 
   let result = list_batch_generated_redux_media_files(
     &app_env_configs.storyteller_host,
@@ -110,15 +108,15 @@ pub async fn handle_batch(
 
   let media_files = result.media_files
       .into_iter()
-      .map(|file| EditedImage {
+      .map(|file| GeneratedImage {
         media_token: file.token,
         cdn_url: file.media_links.cdn_url,
         maybe_thumbnail_template: file.media_links.maybe_thumbnail_template,
       })
       .collect();
 
-  Ok(ImageEditCompleteEvent {
-    edited_images: media_files,
+  Ok(TextToImageGenerationCompleteEvent {
+    generated_images: media_files,
     maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
     maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
   })

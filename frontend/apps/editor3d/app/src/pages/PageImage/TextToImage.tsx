@@ -14,6 +14,7 @@ interface TextToImageProps {
   imageUrl?: string;
 }
 import { ModelInfo } from "@storyteller/model-list";
+import { useTextToImageGenerationCompleteEvent } from "@storyteller/tauri-events";
 
 const PAGE_ID : ModelPage = ModelPage.TextToImage;
 
@@ -35,6 +36,20 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
     removeJobToken: () => {},
     clearJobTokens: () => {},
   };
+
+  useTextToImageGenerationCompleteEvent(async (event) => {
+    console.log("Text to image generation complete:", event);
+
+    // TODO: Logic to show edit history
+    for (const generatedImage of event.generated_images) {
+      console.log("Generated image:", generatedImage.media_token);
+      console.log("Generated image url:", generatedImage.cdn_url);
+      console.log(
+        "Generated image thumbnail template:",
+        generatedImage.maybe_thumbnail_template,
+      );
+    }
+  });
 
   return (
     <div

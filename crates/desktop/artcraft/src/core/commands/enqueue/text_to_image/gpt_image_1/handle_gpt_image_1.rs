@@ -27,7 +27,7 @@ use std::time::Duration;
 use tauri::AppHandle;
 
 pub async fn handle_gpt_image_1(
-  request: EnqueueTextToImageRequest,
+  request: &EnqueueTextToImageRequest,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
