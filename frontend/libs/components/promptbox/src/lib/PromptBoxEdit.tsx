@@ -58,8 +58,6 @@ export const PromptBoxEdit = ({
     }
   });
 
-  console.log(">>> Model info", modelInfo);
-
   // Sync internal state if a controlled prop is provided
   useEffect(() => {
     if (typeof generationCountProp === "number") {

@@ -40,23 +40,24 @@ export const HistoryStack = ({
 
   return (
     <div className="w-16 h-auto max-h-1/2 overflow-y-auto rounded-lg bg-white">
-      <div className="flex flex-col-reverse items-center justify-center p-2">
+      <div className="flex flex-col-reverse items-center justify-center">
+        <Button icon={faTrash} type="reset" onClick={handleClear} />
         {imageBundles.map((bundle) => (
           <>
+            <hr className="border-none bg-red w-full rounded-md h-2" />
             {bundle.images.map((image, imgIndex) => (
-              <Button key={imgIndex} className="mb-2 w-full" onClick={() => { onImageSelect(image) }}>
+              <Button key={imgIndex} className="w-full h-24" onClick={() => { onImageSelect(image) }}>
+                {/* TODO: Fix CORS issue here */}
                 <img
-                  src={image.url}
+                  src={image.url + "?historystack+" + Math.random()}
                   alt=""
                   crossOrigin="anonymous"
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-full rounded-lg"
                 />
               </Button>
             ))}
-            <hr className="border-none bg-red w-full rounded-md h-2" />
           </>
         ))}
-        <Button icon={faTrash} type="reset" onClick={handleClear} />
       </div>
     </div>
   );
