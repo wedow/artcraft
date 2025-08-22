@@ -55,7 +55,7 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "High quality model",
     badges: [{ label: "15 sec." }],
-    capabilities: { maxGenerationCount: 4 },
+    capabilities: { maxGenerationCount: 4, defaultGenerationCount: 4 },
   }),
   cfg({
     id: "flux_pro_1_1",
@@ -67,7 +67,7 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "High quality model",
     badges: [{ label: "15 sec." }],
-    capabilities: { maxGenerationCount: 4 },
+    capabilities: { maxGenerationCount: 4, defaultGenerationCount: 4 },
   }),
   cfg({
     id: "flux_1_dev",
@@ -79,7 +79,7 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "High quality model",
     badges: [{ label: "15 sec." }],
-    capabilities: { maxGenerationCount: 4 },
+    capabilities: { maxGenerationCount: 4, defaultGenerationCount: 4 },
   }),
   cfg({
     id: "flux_1_schnell",
@@ -91,7 +91,7 @@ export const ALL_MODELS: ModelConfig[] = [
     },
     description: "High quality model",
     badges: [{ label: "15 sec." }],
-    capabilities: { maxGenerationCount: 4 },
+    capabilities: { maxGenerationCount: 4, defaultGenerationCount: 4 },
   }),
   cfg({
     id: "gpt_image_1",

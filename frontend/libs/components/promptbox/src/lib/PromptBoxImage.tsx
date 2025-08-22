@@ -34,7 +34,11 @@ import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
-  onEnqueuePressed?: (prompt: string, count: number) => void | Promise<void>;
+  onEnqueuePressed?: (
+    prompt: string,
+    count: number,
+    subscriberId: string
+  ) => void | Promise<void>;
   model: string;
   modelInfo?: ModelInfo;
   imageMediaId?: string;
@@ -268,7 +272,7 @@ export const PromptBoxImage = ({
       ? crypto.randomUUID()
       : Math.random().toString(36).slice(2);
 
-    onEnqueuePressed?.(prompt, generationCount);
+    onEnqueuePressed?.(prompt, generationCount, subscriberId);
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if

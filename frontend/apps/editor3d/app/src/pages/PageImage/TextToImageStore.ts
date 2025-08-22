@@ -18,6 +18,7 @@ type TextToImageState = {
     prompt: string,
     requestedCount: number,
     modelLabel: string,
+    subscriberId?: string,
   ) => string;
   completeBatch: (
     images: GeneratedImage[],
@@ -29,10 +30,17 @@ type TextToImageState = {
 
 export const useTextToImageStore = create<TextToImageState>((set, get) => ({
   batches: [],
-  startBatch: (prompt: string, requestedCount: number, modelLabel: string) => {
-    const id = crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2);
+  startBatch: (
+    prompt: string,
+    requestedCount: number,
+    modelLabel: string,
+    subscriberId?: string,
+  ) => {
+    const id = subscriberId
+      ? subscriberId
+      : crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2);
     const batch: TextToImageBatch = {
       id,
       prompt,

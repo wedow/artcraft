@@ -103,7 +103,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
                       </div>
                       <div className="mt-2 flex justify-end">
                         <Badge
-                          label={selectedModel}
+                          label={batch.modelLabel}
                           className="px-2 py-1 text-xs opacity-70"
                         />
                       </div>
@@ -175,8 +175,8 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
               modelInfo={selectedModelInfo}
               imageMediaId={imageMediaId}
               url={imageUrl ?? undefined}
-              onEnqueuePressed={async (prompt, count) => {
-                startBatch(prompt, count, selectedModel);
+              onEnqueuePressed={async (prompt, count, subscriberId) => {
+                startBatch(prompt, count, selectedModel, subscriberId);
               }}
             />
           </animated.div>
