@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { LineNode, generateId } from "~/pages/PageDraw/stores/SceneState";
 import { Node } from "~/pages/PageDraw/Node";
 import { BaseSelectorImage } from "../BaseImageSelector";
+import { FetchProxy } from "libs/tauri-utils/src/lib/FetchProxy";
 
 export type ActiveEditTool = "select" | "edit" | "expand";
 export type EditOperation = "add" | "minus";
@@ -69,6 +70,7 @@ interface EditState {
     shouldSaveState: boolean,
   ) => void;
   moveLineNode: (id: string, dx: number, dy: number) => void;
+  clearLineNodes: () => void;
 
   // Add a specific method for file uploads
   createImageFromFile: (
@@ -526,6 +528,10 @@ export const useEditStore = create<EditState>((set, get, store) => ({
     }
   },
 
+  clearLineNodes() {
+    set({ lineNodes: [] });
+  },
+
   moveLineNode: (id: string, dx: number, dy: number) => {
     set((state) => {
       const newLineNodes = state.lineNodes.map((node) => {
@@ -621,7 +627,7 @@ export const useEditStore = create<EditState>((set, get, store) => ({
       imgBitmap.onerror = null;
     };
     imgBitmap.crossOrigin = "anonymous";
-    imgBitmap.src = image.url;
+    imgBitmap.src = image.url + "?basecanvasimg";
   },
 
   // Action for deleting selected items
