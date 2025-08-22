@@ -19,7 +19,7 @@ use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
-use midjourney_client::endpoints::imagine::{imagine, ImagineRequest, MidjourneyJobType};
+use midjourney_client::endpoints::imagine::{imagine, ImagineItem, ImagineRequest, MidjourneyJobType};
 use midjourney_client::utils::get_image_url::get_image_url;
 use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
 use once_cell::sync::Lazy;
@@ -201,118 +201,17 @@ async fn check_midjourney_tasks(
       None => continue,
     };
 
-    let model_type = match midjourney_item.job_type {
-      Some(MidjourneyJobType::V6Diffusion) => ModelType::MidjourneyV6,
-      Some(MidjourneyJobType::V6p1Diffusion) => ModelType::MidjourneyV6p1,
-      Some(MidjourneyJobType::V6p1RawDiffusion) => ModelType::MidjourneyV6p1Raw,
-      Some(MidjourneyJobType::V7Diffusion) => ModelType::MidjourneyV7,
-      Some(MidjourneyJobType::V7RawDiffusion) => ModelType::MidjourneyV7Raw,
-      Some(MidjourneyJobType::V7DraftDiffusion) => ModelType::MidjourneyV7Draft,
-      Some(MidjourneyJobType::V7DraftRawDiffusion) => ModelType::MidjourneyV7DraftRaw,
-      Some(MidjourneyJobType::Other(ref other)) => {
-        info!("Unknown Midjourney job type (for job id {}): {}", midjourney_job_id, other);
-        ModelType::Midjourney
-      },
-      _ => ModelType::Midjourney,
-    };
-
-    let request = CreatePromptRequest {
-      uuid_idempotency_token: generate_random_uuid(),
-      positive_prompt: midjourney_item.full_command.clone(),
-      negative_prompt: None,
-      model_type: Some(model_type),
-      generation_provider: Some(GenerationProvider::Midjourney),
-    };
-
-    let prompt_response = create_prompt(
-      &app_env_configs.storyteller_host,
-      Some(storyteller_creds),
-      request
+    upload_midjourney_batch(
+      &app_handle,
+      &app_env_configs,
+      app_data_root,
+      task_database,
+      &storyteller_creds,
+      &image_downloader,
+      midjourney_job_id,
+      &local_task,
+      midjourney_item
     ).await?;
-
-    info!("Created prompt: {:?}", &prompt_response.prompt_token);
-
-    for index in 0..4 {
-      info!("Downloading generated Midjourney file...");
-
-      let download_path = download_midjourney_image(
-        &image_downloader,
-        midjourney_job_id,
-        index,
-        app_data_root
-      ).await?;
-
-      let mut wait_delay = 0;
-
-      loop {
-        info!("Uploading to backend...");
-
-        // TODO: media_files.origin_category
-        // TODO: media_files.maybe_prompt_token
-        // TODO: media_files.maybe_generation_provider
-        // TODO: media_files.maybe_origin_model_type
-        // TODO: media_files.maybe_origin_model_token (sref?)
-        // TODO: media_files.is_batch_generated
-        // TODO: media_files.maybe_batch_token
-        // TODO: media_files.is_user_upload
-        
-        // TODO: batch_generations.token
-        // TODO: batch_generations.entity_type
-        // TODO: batch_generations.entity_token
-        
-        let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-          api_host: &app_env_configs.storyteller_host,
-          maybe_creds: Some(&storyteller_creds),
-          path: &download_path,
-          is_intermediate_system_file: false,
-          maybe_prompt_token: Some(&prompt_response.prompt_token),
-        }).await;
-
-        match result {
-          Ok(media_file) => {
-            info!("Successfully uploaded to backend: {:?}", media_file);
-            break;
-          },
-          Err(StorytellerError::Api(ApiError::TooManyRequests(_))) => {
-            error!("Too many requests, retrying upload after delay...");
-            // If we hit a rate limit, we can retry after a short delay.
-            wait_delay += 10;
-            if wait_delay > 60 {
-              wait_delay = 60;
-            }
-            tokio::time::sleep(std::time::Duration::from_secs(wait_delay)).await;
-            continue; // Retry the upload.
-          }
-          Err(err) => {
-            error!("Failed to upload to backend: {:?}", err);
-            return Err(err.into())
-          },
-        }
-      } // End loop
-
-      tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-    }
-
-    let updated = update_task_status(UpdateTaskArgs {
-      db: task_database.get_connection(),
-      task_id: &local_task.id,
-      status: TaskStatus::CompleteSuccess,
-    }).await?;
-
-    if !updated {
-      continue; // If anything breaks with queries, don't spam events.
-    }
-
-    let event = GenerationCompleteEvent {
-      //media_file_token: result.media_file_token,
-      action: Some(GenerationAction::GenerateImage),
-      service: GenerationServiceProvider::Midjourney,
-      model: None,
-    };
-
-    if let Err(err) = event.send(&app_handle) {
-      error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
-    }
 
     tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
   }
@@ -321,3 +220,131 @@ async fn check_midjourney_tasks(
 
   Ok(())
 }
+
+async fn upload_midjourney_batch(
+  app_handle: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
+  app_data_root: &AppDataRoot,
+  task_database: &TaskDatabase,
+  storyteller_creds: &StorytellerCredentialSet,
+  image_downloader: &ImageDownloaderClient,
+  midjourney_job_id: &String,
+  local_task: &Task,
+  midjourney_item: &ImagineItem
+) -> AnyhowResult<()> {
+  let model_type = match midjourney_item.job_type {
+    Some(MidjourneyJobType::V6Diffusion) => ModelType::MidjourneyV6,
+    Some(MidjourneyJobType::V6p1Diffusion) => ModelType::MidjourneyV6p1,
+    Some(MidjourneyJobType::V6p1RawDiffusion) => ModelType::MidjourneyV6p1Raw,
+    Some(MidjourneyJobType::V7Diffusion) => ModelType::MidjourneyV7,
+    Some(MidjourneyJobType::V7RawDiffusion) => ModelType::MidjourneyV7Raw,
+    Some(MidjourneyJobType::V7DraftDiffusion) => ModelType::MidjourneyV7Draft,
+    Some(MidjourneyJobType::V7DraftRawDiffusion) => ModelType::MidjourneyV7DraftRaw,
+    Some(MidjourneyJobType::Other(ref other)) => {
+      info!("Unknown Midjourney job type (for job id {}): {}", midjourney_job_id, other);
+      ModelType::Midjourney
+    },
+    _ => ModelType::Midjourney,
+  };
+
+  let request = CreatePromptRequest {
+    uuid_idempotency_token: generate_random_uuid(),
+    positive_prompt: midjourney_item.full_command.clone(),
+    negative_prompt: None,
+    model_type: Some(model_type),
+    generation_provider: Some(GenerationProvider::Midjourney),
+  };
+
+  let prompt_response = create_prompt(
+    &app_env_configs.storyteller_host,
+    Some(storyteller_creds),
+    request
+  ).await?;
+
+  info!("Created prompt: {:?}", &prompt_response.prompt_token);
+
+  for index in 0..4 {
+    info!("Downloading generated Midjourney file...");
+
+    let download_path = download_midjourney_image(
+      &image_downloader,
+      midjourney_job_id,
+      index,
+      app_data_root
+    ).await?;
+
+    let mut wait_delay = 0;
+
+    loop {
+      info!("Uploading to backend...");
+
+      // TODO: media_files.origin_category
+      // TODO: media_files.maybe_prompt_token
+      // TODO: media_files.maybe_generation_provider
+      // TODO: media_files.maybe_origin_model_type
+      // TODO: media_files.maybe_origin_model_token (sref?)
+      // TODO: media_files.is_batch_generated
+      // TODO: media_files.maybe_batch_token
+      // TODO: media_files.is_user_upload
+
+      // TODO: batch_generations.token
+      // TODO: batch_generations.entity_type
+      // TODO: batch_generations.entity_token
+
+      let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
+        api_host: &app_env_configs.storyteller_host,
+        maybe_creds: Some(&storyteller_creds),
+        path: &download_path,
+        is_intermediate_system_file: false,
+        maybe_prompt_token: Some(&prompt_response.prompt_token),
+      }).await;
+
+      match result {
+        Ok(media_file) => {
+          info!("Successfully uploaded to backend: {:?}", media_file);
+          break;
+        },
+        Err(StorytellerError::Api(ApiError::TooManyRequests(_))) => {
+          error!("Too many requests, retrying upload after delay...");
+          // If we hit a rate limit, we can retry after a short delay.
+          wait_delay += 10;
+          if wait_delay > 60 {
+            wait_delay = 60;
+          }
+          tokio::time::sleep(std::time::Duration::from_secs(wait_delay)).await;
+          continue; // Retry the upload.
+        }
+        Err(err) => {
+          error!("Failed to upload to backend: {:?}", err);
+          return Err(err.into())
+        },
+      }
+    } // End loop
+
+    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+  }
+
+  let updated = update_task_status(UpdateTaskArgs {
+    db: task_database.get_connection(),
+    task_id: &local_task.id,
+    status: TaskStatus::CompleteSuccess,
+  }).await?;
+
+  if !updated {
+    return Ok(()); // If anything breaks with queries, don't spam events.
+  }
+
+  let event = GenerationCompleteEvent {
+    //media_file_token: result.media_file_token,
+    action: Some(GenerationAction::GenerateImage),
+    service: GenerationServiceProvider::Midjourney,
+    model: None,
+  };
+
+  if let Err(err) = event.send(&app_handle) {
+    error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
+  }
+
+  Ok(())
+}
+
