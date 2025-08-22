@@ -31,6 +31,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const batches = useTextToImageStore((s) => s.batches);
   const startBatch = useTextToImageStore((s) => s.startBatch);
   const completeBatch = useTextToImageStore((s) => s.completeBatch);
+  const resetBatches = useTextToImageStore((s) => s.reset);
 
   const selectedModel =
     selectedModels[PAGE_ID] || TEXT_TO_IMAGE_PAGE_MODEL_LIST[0]?.label;
@@ -97,7 +98,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
                 {batches.map((batch) => (
                   <div key={batch.id} className="flex items-start gap-4">
                     <div>
-                      <div className="glass inline-block min-w-[320px] shrink-0 rounded-xl px-4 py-3 text-left text-sm text-white/90">
+                      <div className="glass inline-block w-[320px] shrink-0 rounded-xl px-4 py-3 text-left text-sm text-white/90">
                         <div>{batch.prompt}</div>
                       </div>
                       <div className="mt-2 flex justify-end">
@@ -153,9 +154,19 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
           )}
 
           <animated.div
-            className="fixed left-1/2 z-20 -translate-x-1/2"
+            className="fixed left-1/2 z-20 w-[730px] -translate-x-1/2"
             style={promptAnim}
           >
+            {showPromptAtBottom && batches.length > 0 && (
+              <div className="absolute -top-9 flex w-full justify-end">
+                <button
+                  onClick={() => resetBatches()}
+                  className="rounded-md bg-red/20 px-3 py-1 text-xs text-white/70 transition-colors hover:bg-red/30"
+                >
+                  Clear session
+                </button>
+              </div>
+            )}
             <PromptBoxImage
               useJobContext={() => {
                 return jobContext;
