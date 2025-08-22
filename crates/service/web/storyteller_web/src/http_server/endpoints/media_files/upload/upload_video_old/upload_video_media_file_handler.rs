@@ -228,6 +228,7 @@ pub async fn upload_video_media_file_handler(
     upload_type,
     maybe_engine_category: None,
     maybe_prompt_token: None,
+    maybe_batch_token: None,
     maybe_animation_type: None,
     maybe_mime_type: Some(mimetype),
     file_size_bytes: file_size_bytes as u64,

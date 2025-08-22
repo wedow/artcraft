@@ -57,6 +57,7 @@ pub async fn upload_media_file_from_file<P: AsRef<Path>>(
         path,
         is_intermediate_system_file: false,
         maybe_prompt_token,
+        maybe_batch_token: None,
       }).await;
       match result {
         Ok(result) => Ok(UploadMediaFileSuccessResponse {

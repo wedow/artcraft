@@ -6,6 +6,7 @@ use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::state::task_database::TaskDatabase;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
+use crate::services::midjourney::threads::events::maybe_handle_text_to_image_complete_event::maybe_handle_text_to_image_complete_event;
 use crate::services::midjourney::utils::download_midjourney_image::download_midjourney_image;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
@@ -35,6 +36,7 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use storyteller_client::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use url::Url;
 
 static PENDING_STATUSES : Lazy<HashSet<TaskStatus>> = Lazy::new(|| {
@@ -263,6 +265,10 @@ async fn upload_midjourney_batch(
 
   info!("Created prompt: {:?}", &prompt_response.prompt_token);
 
+  // TODO: Move this from clientside to the backend.
+  //  The first upload should produce a batch token that we can reuse.
+  let batch_token = BatchGenerationToken::generate();
+
   for index in 0..4 {
     info!("Downloading generated Midjourney file...");
 
@@ -297,6 +303,7 @@ async fn upload_midjourney_batch(
         path: &download_path,
         is_intermediate_system_file: false,
         maybe_prompt_token: Some(&prompt_response.prompt_token),
+        maybe_batch_token: Some(&batch_token),
       }).await;
 
       match result {
@@ -343,6 +350,18 @@ async fn upload_midjourney_batch(
 
   if let Err(err) = event.send(&app_handle) {
     error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
+  }
+
+  let result = maybe_handle_text_to_image_complete_event(
+    app_handle,
+    app_env_configs,
+    Some(storyteller_creds),
+    local_task,
+    &batch_token,
+  ).await;
+
+  if let Err(err) = result {
+    error!("Failed to send text-to-image complete event: {:?}", err);
   }
 
   Ok(())

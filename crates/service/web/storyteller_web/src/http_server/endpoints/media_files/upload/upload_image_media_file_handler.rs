@@ -26,6 +26,7 @@ use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
 use mimetypes::mimetype_to_extension::mimetype_to_extension;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
 
@@ -62,7 +63,13 @@ pub struct UploadImageMediaFileForm {
   #[schema(value_type = Option<String>, format = Binary)]
   maybe_prompt_token: Option<Text<PromptToken>>,
 
-  /// Optional: Whether this is a system file (eg. cover files we should hide)
+  /// Optional: Batch associated with this image
+  /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  #[multipart(limit = "2 KiB")]
+  #[schema(value_type = Option<String>, format = Binary)]
+  maybe_batch_token: Option<Text<BatchGenerationToken>>,
+
+  /// Optional: Whether this is a system file (e.g. cover files we should hide)
   #[multipart(limit = "2 KiB")]
   #[schema(value_type = Option<bool>, format = Binary)]
   is_intermediate_system_file: Option<Text<bool>>,
@@ -271,6 +278,10 @@ pub async fn upload_image_media_file_handler(
   let maybe_prompt_token = form.maybe_prompt_token
       .as_ref()
       .map(|token| token.0.clone());
+  
+  let maybe_batch_token = form.maybe_batch_token
+      .as_ref()
+      .map(|token| token.0.clone());
 
   let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
     maybe_media_class: Some(MediaFileClass::Image),
@@ -284,6 +295,7 @@ pub async fn upload_image_media_file_handler(
     maybe_animation_type: None,
     maybe_mime_type: Some(&mimetype),
     maybe_prompt_token: maybe_prompt_token.as_ref(),
+    maybe_batch_token: maybe_batch_token.as_ref(),
     file_size_bytes: file_size_bytes as u64,
     maybe_duration_millis: None,
     sha256_checksum: &hash,

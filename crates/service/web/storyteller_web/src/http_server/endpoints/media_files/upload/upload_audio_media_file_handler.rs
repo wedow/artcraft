@@ -325,6 +325,7 @@ pub async fn upload_audio_media_file_handler(
     maybe_engine_category: None,
     maybe_animation_type: None,
     maybe_prompt_token: None,
+    maybe_batch_token: None,
     maybe_mime_type: Some(&mimetype),
     file_size_bytes: file_size_bytes as u64,
     maybe_duration_millis,

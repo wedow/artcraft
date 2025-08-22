@@ -12,6 +12,7 @@ use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use errors::AnyhowResult;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
@@ -45,6 +46,7 @@ pub struct InsertMediaFileFromUploadArgs<'a> {
   pub sha256_checksum: &'a str,
 
   pub maybe_prompt_token: Option<&'a PromptToken>,
+  pub maybe_batch_token: Option<&'a BatchGenerationToken>,
 
   pub maybe_title: Option<&'a str>,
   pub maybe_duration_millis: Option<u64>,
@@ -116,6 +118,7 @@ SET
   checksum_sha2 = ?,
 
   maybe_prompt_token = ?,
+  maybe_batch_token = ?,
 
   maybe_title = ?,
   maybe_duration_millis = ?,
@@ -161,6 +164,7 @@ SET
       args.sha256_checksum,
 
       args.maybe_prompt_token.map(|t| t.as_str()),
+      args.maybe_batch_token.map(|t| t.as_str()),
 
       args.maybe_title,
       args.maybe_duration_millis,

@@ -7,7 +7,7 @@ use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::{error, warn};
-use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
+use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, Task, TaskList};
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use tauri::AppHandle;
@@ -19,7 +19,7 @@ pub async fn maybe_handle_text_to_image_complete_event(
   app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
   task: &Task,
-  job: &ListSessionJobsItem,
+  batch_token: &BatchGenerationToken,
 ) -> AnyhowResult<()> {
 
   match task.task_type {
@@ -32,35 +32,14 @@ pub async fn maybe_handle_text_to_image_complete_event(
     _ => return Ok(()),
   }
 
-  let job_result = match job.maybe_result {
-    Some(ref res) => res,
-    None => {
-      warn!("Job result is None for task: {:?}", task);
-      return Ok(()); // No result, nothing to do
-    },
-  };
+  let event = handle_batch(
+    app,
+    app_env_configs,
+    maybe_creds,
+    task,
+    batch_token,
+  ).await?;
 
-  let event = match job_result.maybe_batch_token.as_ref() {
-    Some(batch_token) => {
-      handle_batch(
-        app,
-        app_env_configs,
-        maybe_creds,
-        task,
-        job,
-        job_result,
-        batch_token
-      ).await?
-    }
-    None => {
-      handle_single(
-        app,
-        task,
-        job,
-        job_result,
-      ).await?
-    }
-  };
 
   if let Err(err) = event.send(&app) {
     error!("Failed to send TextToImageGenerationCompleteEvent: {:?}", err); // Fail open
@@ -69,30 +48,11 @@ pub async fn maybe_handle_text_to_image_complete_event(
   Ok(())
 }
 
-async fn handle_single(
-  app: &AppHandle,
-  task: &Task,
-  job: &ListSessionJobsItem,
-  job_result: &ListSessionResultDetailsResponse,
-) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
-  Ok(TextToImageGenerationCompleteEvent {
-    generated_images: vec![GeneratedImage {
-      media_token: MediaFileToken::new_from_str(&job_result.entity_token),
-      cdn_url: job_result.media_links.cdn_url.clone(),
-      maybe_thumbnail_template: job_result.media_links.maybe_thumbnail_template.clone(),
-    }],
-    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
-    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
-  })
-}
-
 async fn handle_batch(
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
   task: &Task,
-  job: &ListSessionJobsItem,
-  job_result: &ListSessionResultDetailsResponse,
   batch_token: &BatchGenerationToken,
 ) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
 

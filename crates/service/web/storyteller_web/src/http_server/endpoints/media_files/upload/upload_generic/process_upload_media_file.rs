@@ -365,6 +365,7 @@ pub async fn process_upload_media_file(
     upload_type,
     maybe_engine_category: None,
     maybe_prompt_token: None,
+    maybe_batch_token: None,
     maybe_animation_type: None,
     maybe_mime_type: Some(mime_type),
     file_size_bytes: file_size_bytes as u64,
