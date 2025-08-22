@@ -269,6 +269,8 @@ async fn upload_midjourney_batch(
   //  The first upload should produce a batch token that we can reuse.
   let batch_token = BatchGenerationToken::generate();
 
+  info!("Using synthetic batch token: {:?}", &batch_token);
+
   for index in 0..4 {
     info!("Downloading generated Midjourney file...");
 
