@@ -1,19 +1,15 @@
 import React from "react";
 import { PromptBoxEdit, PromptBoxEditProps } from "@storyteller/ui-promptbox";
-import { JobProvider } from "~/pages/PageDraw/JobContext";
 
-// Extending the props to include onFitPressed
-interface ExtendedPromptEditorProps extends PromptBoxEditProps {
-  onFitPressed?: () => void | Promise<void>;
-}
-
-const PromptEditor: React.FC<ExtendedPromptEditorProps> = ({
+const PromptEditor: React.FC<PromptBoxEditProps> = ({
   onModeChange,
   selectedMode,
   onGenerateClick,
   isDisabled,
   onFitPressed,
-  ...rest
+  modelInfo,
+  generationCount,
+  onGenerationCountChange,
 }) => {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col space-y-2">
@@ -22,19 +18,13 @@ const PromptEditor: React.FC<ExtendedPromptEditorProps> = ({
         selectedMode={selectedMode}
         onGenerateClick={onGenerateClick}
         isDisabled={isDisabled}
-        {...rest}
+        onFitPressed={onFitPressed}
+        modelInfo={modelInfo}
+        generationCount={generationCount}
+        onGenerationCountChange={onGenerationCountChange}
       />
-      <JobProvider>
-        <PromptBoxEdit
-          onModeChange={onModeChange}
-          selectedMode={selectedMode}
-          onGenerateClick={onGenerateClick}
-          isDisabled={false}
-          onFitPressed={onFitPressed}
-        />
-      </JobProvider>
     </div>
   );
 };
 
-export default PromptEditor;
+export default React.memo(PromptEditor);
