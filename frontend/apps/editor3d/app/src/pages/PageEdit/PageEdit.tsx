@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Konva from "konva"; // just for types
-import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import {
   EnqueueImageInpaint,
   EnqueueImageInpaintModel,
@@ -23,6 +22,7 @@ import {
 } from "@storyteller/ui-model-selector";
 import { ModelInfo } from "@storyteller/model-list";
 import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
+import { HistoryStack, ImageBundle } from "./HistoryStack";
 
 const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
@@ -140,20 +140,8 @@ const PageEdit = () => {
     };
   }, [store]);
 
-  // Auto-fit the canvas when base image is loaded
-  useEffect(() => {
-    // When baseImageBitmap changes from null to an actual image, call onFitPressed
-    if (store.baseImageBitmap) {
-      // Use a slight delay to ensure the image dimensions are properly loaded
-      const timer = setTimeout(() => {
-        onFitPressed();
-      }, 100);
 
-      return () => clearTimeout(timer);
-    }
-  }, [store.baseImageBitmap]);
-
-  const onFitPressed = async () => {
+  const onFitPressed = useCallback(async () => {
     // Get the stage and its container dimensions
     const stage = stageRef.current;
     if (!stage) return;
@@ -186,7 +174,22 @@ const PageEdit = () => {
       x: (containerWidth - canvasW * boundedScale) / 2,
       y: (containerHeight - canvasH * boundedScale) / 2,
     });
-  };
+    // NOTE: Store isn't used as dependency because it's a different const reference each time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-fit the canvas when base image is loaded
+  useEffect(() => {
+    if (!store.baseImageBitmap) {
+      console.log("No base image bitmap available, skipping auto-fit");
+      return;
+    }
+
+    // When baseImageBitmap changes from null to an actual image, call onFitPressed
+    // Use a slight delay to ensure the image dimensions are properly loaded
+    onFitPressed();
+
+  }, [onFitPressed, store.baseImageBitmap]);
 
   // Create a function to use the left layer ref and download the bitmap from it
   const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
@@ -218,53 +221,14 @@ const PageEdit = () => {
       rect.width(),
       rect.height(),
     );
-    // // Using the pixelRatio scaling may result in off-by-one rounding errors,
-    // // So we re-fit the image to a canvas of precise size.
-    // const fittedCanvas = normalizeCanvas(layerCrop, rect.width(), rect.height());
-    // const downloadCallback = (blob: Blob | null) => {
-    //   if (!blob) {
-    //     console.error("Failed to create blob from canvas");
-    //     return;
-    //   }
-    //   const url = URL.createObjectURL(blob);
-    //   const link = document.createElement("a");
-    //   link.href = url;
-    //   link.download = "artcraft_snapshot.png";
-    //   link.click();
-    //   console.log('downloadCallback', url);
-    // }
-    // fittedCanvas.toBlob(downloadCallback, "image/png", 1.0);
 
-    const normalizeCanvas2 = (
-      canvas: HTMLCanvasElement,
-      width: number,
-      height: number,
-    ): OffscreenCanvas => {
-      const newCanvas = new OffscreenCanvas(width, height);
-
-      const ctx = newCanvas.getContext("2d");
-      if (!ctx) {
-        throw new Error("Failed to get canvas context");
-      }
-
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(canvas, 0, 0, width, height);
-      return newCanvas;
-    };
-
-    const fittedCanvas2 = normalizeCanvas2(
-      layerCrop,
-      rect.width(),
-      rect.height(),
-    );
-
-    const blob = await fittedCanvas2.convertToBlob({ type: "image/png" });
+    const blob = await fittedCanvas.convertToBlob({ type: "image/png" });
     const arrayBuffer = await blob.arrayBuffer();
 
     return new Uint8Array(arrayBuffer);
   };
 
-  const handleGenerate = async (prompt: string) => {
+  const handleGenerate = useCallback(async (prompt: string) => {
     if (isEnqueuing) {
       console.warn("Already enqueuing an image, please wait.");
       return;
@@ -282,17 +246,19 @@ const PageEdit = () => {
     // TODO: Call inference API here
     const arrayBuffer = await getMaskArrayBuffer();
 
-    await EnqueueImageInpaint({
-      model: selectedModelInfo,
-      image_media_token: editedImageToken,
-      mask_image_raw_bytes: arrayBuffer,
-      prompt: prompt,
-      image_count: generationCount,
-      frontend_caller: "image_editor",
-    });
-
-    setIsEnqueuing(false);
-  };
+    try {
+      await EnqueueImageInpaint({
+        model: selectedModelInfo,
+        image_media_token: editedImageToken,
+        mask_image_raw_bytes: arrayBuffer,
+        prompt: prompt,
+        image_count: generationCount,
+        frontend_caller: "image_editor",
+      });
+    } finally {
+      setIsEnqueuing(false);
+    }
+  }, [generationCount, isEnqueuing, selectedModelInfo, store.baseImageInfo?.mediaToken]);
 
   // Display image selector on launch, otherwise hide it
   // Also show loading state if info is set but image is loading
@@ -315,12 +281,13 @@ const PageEdit = () => {
     );
   }
 
+  console.log("PageEdit rerendering")
+
   return (
     <>
       <div
-        className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
         style={{ display: store.activeTool === "edit" ? "block" : "none" }}
       >
         <DrawToolControlBar
@@ -331,9 +298,18 @@ const PageEdit = () => {
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
+      >
+        <HistoryStack
+          onClear={() => { store.RESET(); }}
+          startingBundles={[{ images: [store.baseImageInfo] } as ImageBundle]}
+          onImageSelect={(baseImage) => store.setBaseImageInfo(baseImage)}
+        />
+      </div>
+      <div
+        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
       >
         <PromptEditor
           modelInfo={selectedModelInfo}
