@@ -42,7 +42,7 @@ tauri = { workspace = true }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["sync", "macros"] }
 #tauri-plugin-fs = { path = "../fs", version = "2.2.1" }
-tauri-plugin-fs = { version = "2.2.1" }
+tauri-plugin-fs = { workspace = true }
 urlpattern = "0.3"
 regex = "1"
 http = "1"
