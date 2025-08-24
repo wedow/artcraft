@@ -76,7 +76,10 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <BrowserRouter>
         <GlobalSettingsManager env={ENV} />
-        <div className="topbar-spacer" />
+        <div className="topbar-spacer" 
+
+         data-tauri-drag-region={true}
+        />
         <PageEnigma />
       </BrowserRouter>
     </StrictMode>

@@ -7,13 +7,6 @@
   },
   "app": {
     "windows": [
-      {
-        "title": "ArtCraft",
-        "resizable": true,
-        "fullscreen": false,
-        "dragDropEnabled": false,
-        "decorations": true
-      }
     ]
   }
 }

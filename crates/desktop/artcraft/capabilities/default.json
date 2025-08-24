@@ -5,13 +5,16 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "log:default",
-    "core:window:allow-minimize",
-    "core:window:allow-toggle-maximize",
     "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-start-dragging",
+    "core:window:allow-toggle-maximize",
+    "core:window:default",
+    "dialog:default",
+    "http:allow-fetch",
+    "log:default",
     "upload:allow-download",
     "upload:default",
-    "http:allow-fetch",
     {
       "identifier": "http:default",
       "allow": [
@@ -22,7 +25,6 @@
           "url": "http://localhost:12345"
         }
       ]
-    },
-    "dialog:default"
+    }
   ]
 }
