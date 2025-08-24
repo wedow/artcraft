@@ -1,51 +1,39 @@
-use tauri::{AppHandle, TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
-use tauri::window::Color;
+use crate::core::windows::main_window::constants::MAIN_WINDOW_NAME;
 use errors::AnyhowResult;
+use tauri::window::Color;
+use tauri::{AppHandle, TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
 
 pub async fn setup_main_window(
   app: &AppHandle,
 ) -> AnyhowResult<()> {
 
   let win_builder =
-      WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
-          .title("Artcraft")
-          //.decorations(false) // NB: This breaks Mac!
+      WebviewWindowBuilder::new(app, MAIN_WINDOW_NAME, WebviewUrl::default())
+          .title("ArtCraft")
           .resizable(true)
           .fullscreen(false)
           .background_color(Color(0, 0, 0, 0))
           .enable_clipboard_access()
-          .inner_size(800.0, 600.0);
+          .inner_size(2400.0, 1300.0);
 
-  // set transparent title bar only when building for macOS
   #[cfg(target_os = "macos")]
   let win_builder = win_builder
-      .decorations(true) // NB: Mac requires decorations. Tons of capabilities disappear without it.
+      .decorations(true) // NB: Mac requires decorations. Tons of capabilities disappear otherwise.
       .title_bar_style(TitleBarStyle::Overlay)
       .hidden_title(true)
       .accept_first_mouse(true) // https://github.com/tauri-apps/tauri/issues/11605#issuecomment-2460112096
       .focusable(true)
       .focused(true);
 
-  let window = win_builder.build()?;
+  #[cfg(not(target_os = "macos"))]
+  let win_builder = win_builder
+      .decorations(false); // NB: This breaks Mac!
 
-  /*// set background color only when building for macOS
-  #[cfg(target_os = "macos")]
-  {
-    use cocoa::appkit::{NSColor, NSWindow};
-    use cocoa::base::{id, nil};
+  #[cfg(target_os = "windows")]
+  let win_builder = win_builder
+      .drag_and_drop(false); // TODO: Is this necessary on Windows?
 
-    let ns_window = window.ns_window().unwrap() as id;
-    unsafe {
-      let bg_color = NSColor::colorWithRed_green_blue_alpha_(
-        nil,
-        50.0 / 255.0,
-        158.0 / 255.0,
-        163.5 / 255.0,
-        0.0,
-      );
-      ns_window.setBackgroundColor_(bg_color);
-    }
-  }*/
+  let _window = win_builder.build()?;
 
   Ok(())
 }
