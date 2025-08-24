@@ -1,5 +1,0 @@
-import{j as t}from"./jsx-runtime-BnIj46N_.js";import{useMDXComponents as r}from"./index-DLsXyOuj.js";import{M as s,C as i}from"./index-s6jI7ZwD.js";import{B as m,D as p}from"./ButtonIconSelect.stories-DuPx4XGJ.js";import"./index-CsdIBAqE.js";import"./iframe-CPVGSZP9.js";import"../sb-preview/runtime.js";import"./index-5f0m1pej.js";import"./index-DYADbu9O.js";import"./index-CwJzlvYf.js";import"./index-DrFu-skq.js";import"./index-BeLTwFsi.js";import"./index-MS7LKRHD.js";import"./bundle-mjs-Du4_Do6r.js";import"./decorator-BcxtDL0x.js";import"./v4-D8aEg3BZ.js";function e(o){const n={h1:"h1",p:"p",...r(),...o.components};return t.jsxs(t.Fragment,{children:[t.jsx(s,{of:m}),`
-`,t.jsx(n.h1,{id:"buttoniconselectstories",children:"ButtonIconSelectStories"}),`
-`,t.jsx(n.p,{children:"A button denotes a possible action to be taken on behalf of the user."}),`
-`,t.jsx(n.p,{children:"This button shows only a single icon."}),`
-`,t.jsx(i,{of:p})]})}function g(o={}){const{wrapper:n}={...r(),...o.components};return n?t.jsx(n,{...o,children:t.jsx(e,{...o})}):e(o)}export{g as default};

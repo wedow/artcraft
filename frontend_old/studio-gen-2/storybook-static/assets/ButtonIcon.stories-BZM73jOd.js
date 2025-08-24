@@ -1,3 +1,0 @@
-import{j as a}from"./jsx-runtime-BnIj46N_.js";import{B as n}from"./ButtonIcon-B-9ySTN-.js";import{w as s}from"./decorator-BcxtDL0x.js";import{f as c}from"./index-BeLTwFsi.js";const i={component:n,parameters:{actions:{handles:["click"]}},decorators:[s]},o={render:()=>a.jsx(n,{icon:c,onClick:()=>{}})};var e,t,r;o.parameters={...o.parameters,docs:{...(e=o.parameters)==null?void 0:e.docs,source:{originalSource:`{
-  render: () => <ButtonIcon icon={faAngleLeft} onClick={() => {}} />
-}`,...(r=(t=o.parameters)==null?void 0:t.docs)==null?void 0:r.source}}};const m=["Default"],d=Object.freeze(Object.defineProperty({__proto__:null,Default:o,__namedExportsOrder:m,default:i},Symbol.toStringTag,{value:"Module"}));export{d as B,o as D};

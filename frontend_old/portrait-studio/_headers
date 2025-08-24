@@ -1,3 +1,0 @@
-# This is to allow Storyteller Studio to use Web Workers to call the engine
-/*
-  Cross-Origin-Embedder-Policy: require-corp

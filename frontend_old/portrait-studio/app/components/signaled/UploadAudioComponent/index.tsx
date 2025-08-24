@@ -1,1 +1,0 @@
-export { UploadAudioComponent } from "./UploadAudioComponent";

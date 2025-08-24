@@ -1,4 +1,0 @@
-import{j as t}from"./jsx-runtime-BnIj46N_.js";import{useMDXComponents as i}from"./index-DLsXyOuj.js";import{M as e,C as s}from"./index-s6jI7ZwD.js";import{P as m,D as p}from"./Pill.stories-CJ80zgWu.js";import"./index-CsdIBAqE.js";import"./iframe-CPVGSZP9.js";import"../sb-preview/runtime.js";import"./index-5f0m1pej.js";import"./index-DYADbu9O.js";import"./index-CwJzlvYf.js";import"./index-DrFu-skq.js";import"./bundle-mjs-Du4_Do6r.js";function r(o){const n={h1:"h1",p:"p",...i(),...o.components};return t.jsxs(t.Fragment,{children:[t.jsx(e,{of:m}),`
-`,t.jsx(n.h1,{id:"pill",children:"Pill"}),`
-`,t.jsx(n.p,{children:"A pill is a container around the children."}),`
-`,t.jsx(s,{of:p})]})}function P(o={}){const{wrapper:n}={...i(),...o.components};return n?t.jsx(n,{...o,children:t.jsx(r,{...o})}):r(o)}export{P as default};

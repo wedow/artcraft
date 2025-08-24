@@ -1,1 +1,0 @@
-export { default, SessionContext } from "./SessionProvider";
