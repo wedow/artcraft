@@ -23,6 +23,7 @@ import {
 import { ModelInfo } from "@storyteller/model-list";
 import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
+import LeftResetStack from "./LeftResetStack";
 
 const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
@@ -140,7 +141,6 @@ const PageEdit = () => {
     };
   }, [store]);
 
-
   const onFitPressed = useCallback(async () => {
     // Get the stage and its container dimensions
     const stage = stageRef.current;
@@ -188,7 +188,6 @@ const PageEdit = () => {
     // When baseImageBitmap changes from null to an actual image, call onFitPressed
     // Use a slight delay to ensure the image dimensions are properly loaded
     onFitPressed();
-
   }, [onFitPressed, store.baseImageBitmap]);
 
   // Create a function to use the left layer ref and download the bitmap from it
@@ -228,37 +227,45 @@ const PageEdit = () => {
     return new Uint8Array(arrayBuffer);
   };
 
-  const handleGenerate = useCallback(async (prompt: string) => {
-    if (isEnqueuing) {
-      console.warn("Already enqueuing an image, please wait.");
-      return;
-    }
+  const handleGenerate = useCallback(
+    async (prompt: string) => {
+      if (isEnqueuing) {
+        console.warn("Already enqueuing an image, please wait.");
+        return;
+      }
 
-    setIsEnqueuing(true);
+      setIsEnqueuing(true);
 
-    const editedImageToken = store.baseImageInfo?.mediaToken;
+      const editedImageToken = store.baseImageInfo?.mediaToken;
 
-    if (!editedImageToken) {
-      console.error("Base image is not available");
-      return;
-    }
+      if (!editedImageToken) {
+        console.error("Base image is not available");
+        return;
+      }
 
-    // TODO: Call inference API here
-    const arrayBuffer = await getMaskArrayBuffer();
+      // TODO: Call inference API here
+      const arrayBuffer = await getMaskArrayBuffer();
 
-    try {
-      await EnqueueImageInpaint({
-        model: selectedModelInfo,
-        image_media_token: editedImageToken,
-        mask_image_raw_bytes: arrayBuffer,
-        prompt: prompt,
-        image_count: generationCount,
-        frontend_caller: "image_editor",
-      });
-    } finally {
-      setIsEnqueuing(false);
-    }
-  }, [generationCount, isEnqueuing, selectedModelInfo, store.baseImageInfo?.mediaToken]);
+      try {
+        await EnqueueImageInpaint({
+          model: selectedModelInfo,
+          image_media_token: editedImageToken,
+          mask_image_raw_bytes: arrayBuffer,
+          prompt: prompt,
+          image_count: generationCount,
+          frontend_caller: "image_editor",
+        });
+      } finally {
+        setIsEnqueuing(false);
+      }
+    },
+    [
+      generationCount,
+      isEnqueuing,
+      selectedModelInfo,
+      store.baseImageInfo?.mediaToken,
+    ],
+  );
 
   // Display image selector on launch, otherwise hide it
   // Also show loading state if info is set but image is loading
@@ -284,8 +291,9 @@ const PageEdit = () => {
   return (
     <>
       <div
-        className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
-          }`}
+        className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
         style={{ display: store.activeTool === "edit" ? "block" : "none" }}
       >
         <DrawToolControlBar
@@ -296,21 +304,32 @@ const PageEdit = () => {
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
-          }`}
+        className={`preserve-aspect-ratio fixed left-4 top-1/2 z-10 -translate-y-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
+      >
+        <LeftResetStack onReset={() => store.RESET()} />
+      </div>
+      <div
+        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
       >
         <HistoryStack
-          onClear={() => { store.RESET(); }}
+          onClear={() => {
+            store.RESET();
+          }}
           startingBundles={[{ images: [store.baseImageInfo] } as ImageBundle]}
           onImageSelect={(baseImage) => {
             store.clearLineNodes();
-            store.setBaseImageInfo(baseImage)
+            store.setBaseImageInfo(baseImage);
           }}
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
-          }`}
+        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
       >
         <PromptEditor
           modelInfo={selectedModelInfo}
