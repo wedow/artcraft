@@ -810,7 +810,14 @@ export const useEditStore = create<EditState>((set, get, store) => ({
   },
 
   // Toolbar actions
-  setActiveTool: (tool: ActiveEditTool) => set({ activeTool: tool }),
+  setActiveTool: (tool: ActiveEditTool) => {
+    // Avoid triggering state change if the tool is same
+    if (tool === get().activeTool) {
+      return;
+    }
+
+    set({ activeTool: tool })
+  },
   setEditOperation: (mode: EditOperation) => set({ editOperation: mode }),
   setBrushColor: (color: string) => set({ brushColor: color }),
   setBrushSize: (size: number) => set({ brushSize: size }),

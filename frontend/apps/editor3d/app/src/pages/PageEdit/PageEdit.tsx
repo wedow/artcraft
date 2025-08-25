@@ -20,7 +20,7 @@ import {
   ModelSelector,
   useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
-import { getModelByLabel, lookupModelByTauriId, ModelInfo } from "@storyteller/model-list";
+import { lookupModelByTauriId, ModelInfo } from "@storyteller/model-list";
 import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
 import { ModelTag } from "libs/model-list/src/lib/ModelTag";
@@ -265,7 +265,12 @@ const PageEdit = () => {
 
   const modelConfig = lookupModelByTauriId(selectedModelInfo!.tauri_id);
   const supportsMaskedInpainting = modelConfig?.tags?.includes(ModelTag.MaskedInpainting) ?? false;
-  console.log("Model supports instructive edit:", supportsMaskedInpainting);
+
+  if (!supportsMaskedInpainting && (store.activeTool !== "select" || store.lineNodes.length > 0)) {
+    // TODO: Implement a new mode for unsupported masking and hide the nodes layer instead of clearing
+    store.setActiveTool("select");
+    store.clearLineNodes();
+  }
 
   /*
     *
