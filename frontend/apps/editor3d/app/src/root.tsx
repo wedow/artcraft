@@ -60,7 +60,9 @@ export default function App() {
         <Links />
       </head>
       <body className="overflow-hidden bg-ui-background">
-        <div className="topbar-spacer" />
+        <div className="topbar-spacer" 
+         data-tauri-drag-region={true}
+        />
         <PostHogProvider client={posthog}>
           <Outlet />
         </PostHogProvider>

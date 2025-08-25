@@ -11,15 +11,6 @@
   },
   "app": {
     "windows": [
-      {
-        "title": "ArtCraft",
-        "width": 2400,
-        "height": 1300,
-        "resizable": true,
-        "fullscreen": false,
-        "decorations": true,
-        "dragDropEnabled": false
-      }
     ],
     "security": {
       "csp": {
@@ -53,6 +44,14 @@
         ],
         "font-src": "*",
         "img-src": "* data: blob: 'unsafe-inline'",
+        "script-src": [
+          "'self'",
+          "https://*.fakeyou.com",
+          "https://*.storyteller.ai",
+          "https://www.clarity.ms",
+          "ipc://localhost",
+          "tauri://localhost"
+        ],
         "style-src": [
           "'self'",
           "'unsafe-eval'",

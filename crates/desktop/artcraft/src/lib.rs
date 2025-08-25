@@ -18,6 +18,7 @@ use crate::core::commands::platform_info_command::platform_info_command;
 use crate::core::commands::providers::get_provider_order_command::get_provider_order_command;
 use crate::core::commands::providers::set_provider_order_command::set_provider_order_command;
 use crate::core::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
+use crate::core::lifecycle::startup::setup_main_window::setup_main_window;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -121,6 +122,8 @@ pub fn run() {
       let fal_tasks = fal_task_queue_2.clone();
 
       tauri::async_runtime::block_on(async move {
+        let result = setup_main_window(&app).await;
+
         let result = handle_tauri_startup(
           handle,
           root,

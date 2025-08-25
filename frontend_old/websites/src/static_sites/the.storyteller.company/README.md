@@ -1,2 +1,0 @@
-# homepage
-The storyteller homepage

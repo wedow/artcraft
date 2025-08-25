@@ -14,7 +14,7 @@ rust_crate_path="${root_dir}/crates/desktop/artcraft"
 # it decoheres the and corrupts terminal output, and it's slow. This configuration
 # allows us to start without it. Simply launch `nx` and the dev server as a separate
 # process and leave tauri out of the loop
-config_path="${rust_crate_path}/tauri.artcraft_3d.no_dev.conf.toml"
+config_path="${rust_crate_path}/tauri.artcraft_3d.no_dev.conf.json"
 
 pushd "${frontend_path}" || exit
 

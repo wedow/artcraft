@@ -22,6 +22,7 @@ import {
   GalleryModal,
   galleryModalVisibleViewMode,
   galleryModalVisibleDuringDrag,
+  galleryModalLightboxVisible,
 } from "@storyteller/ui-gallery-modal";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -48,6 +49,8 @@ import {
   useTauriWindowControls,
   useTauriPlatform,
 } from "@storyteller/tauri-utils";
+import { useEditStore } from "../../../pages/PageEdit/stores/EditState";
+import { BaseSelectorImage } from "../../../pages/PageEdit/BaseImageSelector";
 
 interface Props {
   pageName: string;
@@ -137,6 +140,30 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
     }
   };
 
+  const handleEditFromGallery = async (url: string, mediaId?: string) => {
+    try {
+      // Reset editor state
+      useEditStore.getState().RESET();
+
+      // Switch to EDIT tab
+      useTabStore.getState().setActiveTab("EDIT");
+
+      // Select the image for editing
+      const baseImage: BaseSelectorImage = {
+        url,
+        mediaToken: mediaId || "",
+      };
+      useEditStore.getState().setBaseImageInfo(baseImage);
+
+      // Close gallery modal and lightbox if open
+      galleryModalVisibleViewMode.value = false;
+      galleryModalVisibleDuringDrag.value = false;
+      galleryModalLightboxVisible.value = false;
+    } catch (e) {
+      // no-op
+    }
+  };
+
   const getPageTitle = (): string => {
     switch (tabStore.activeTabId) {
       case "2D":
@@ -167,14 +194,18 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
         <nav
           className="mx-auto grid h-[56px] w-screen grid-cols-3 items-center justify-between ps-3"
           aria-label="navigation"
+          data-tauri-drag-region
         >
-          <div className="flex items-center gap-3">
-            <div className="mr-2">
-              <span className="sr-only">ArtCraft</span>
+          <div className="flex items-center gap-3" data-tauri-drag-region>
+            <div className="mr-2" data-tauri-drag-region>
+              <span className="sr-only" data-tauri-drag-region>
+                ArtCraft
+              </span>
               <img
                 className="h-[24px] w-auto"
                 src="/resources/images/artcraft-logo-3.png"
                 alt="Logo ArtCraft"
+                data-tauri-drag-region
               />
             </div>
             <MenuIconSelector
@@ -211,15 +242,16 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
           <div
             className={`${tabStore.activeTabId === "3D" ? "no-drag" : ""} flex items-center justify-center gap-2 font-medium`}
+            data-tauri-drag-region
           >
             {tabStore.activeTabId === "3D" ? (
               <SceneTitleInput pageName={pageName} />
             ) : (
-              <h1>{pageTitle}</h1>
+              <h1 data-tauri-drag-region>{pageTitle}</h1>
             )}
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2" data-tauri-drag-region>
             <div className="no-drag flex gap-2">
               {/* - Uncomment for pricing modal - BFlat */}
               {/* <Button
@@ -292,7 +324,11 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
         globalAccountLogoutCallback={() => setLogoutStates()}
       />
 
-      <GalleryModal mode="view" onDownloadClicked={downloadFile} />
+      <GalleryModal
+        mode="view"
+        onDownloadClicked={downloadFile}
+        onEditClicked={handleEditFromGallery}
+      />
     </>
   );
 };

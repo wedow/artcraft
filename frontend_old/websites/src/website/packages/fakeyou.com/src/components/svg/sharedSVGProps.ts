@@ -1,1 +1,0 @@
-export const circle = { cx: 18, cy: 18, r: 14, strokeWidth: 4 };

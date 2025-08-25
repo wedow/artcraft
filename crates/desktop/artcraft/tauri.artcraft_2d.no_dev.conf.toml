@@ -1,5 +1,0 @@
-# For some reason, we can't pass json files to the tauri dev command
-[build]
-frontendDist = "../../../frontend/apps/editor2d/dist"
-beforeDevCommand = "echo 'no dev'"
-devUrl = "http://localhost:5741"

@@ -18,8 +18,8 @@ import ModelBadgeGrid from "../../components/model-badge-grid";
 //const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.06.04.dmg";
 //const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.07.13.dmg";
 //const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.07.17.dmg";
-const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.07.28.dmg";
-//const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.08.22.dmg"; // NB: Broken
+//const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.07.28.dmg";
+const MAC_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/mac/ArtCraft_0.0.1_universal_2025.08.23.dmg"; // NB: The "08.22 (twenty two)" release is broken.
 
 //const WINDOWS_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/windows/ArtCraft_0.0.1_x64-setup_2025.06.04.exe";
 //const WINDOWS_LINK = "https://pub-3b58c874772a4e04b9c291815224128c.r2.dev/windows/ArtCraft_0.0.1_x64-setup_2025.07.13.exe";

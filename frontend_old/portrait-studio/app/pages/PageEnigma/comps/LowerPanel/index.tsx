@@ -1,1 +1,0 @@
-export { LowerPanel } from './LowerPanel';
