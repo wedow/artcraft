@@ -1,7 +1,7 @@
 import { Button } from "@storyteller/ui-button";
 import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
 import { faTrash } from "@fortawesome/pro-solid-svg-icons";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { BaseSelectorImage } from "./BaseImageSelector";
 
@@ -17,7 +17,7 @@ interface HistoryStackProps {
 
 export const HistoryStack = ({
   onClear,
-  onImageSelect = () => {},
+  onImageSelect = () => { },
   startingBundles = [],
 }: HistoryStackProps) => {
   const [imageBundles, setImageBundles] =
@@ -46,6 +46,10 @@ export const HistoryStack = ({
     }
   });
 
+  // This is used to force image reloads in different sessions
+  // and prevent fetching CORS-tainted images from cache
+  const sessionRandBuster = useRef(Math.random());
+
   const handleClear = () => {
     setImageBundles(startingBundles);
     setSelectedImageToken(null);
@@ -70,9 +74,9 @@ export const HistoryStack = ({
               <Button
                 key={imgIndex}
                 className={twMerge(
-                  "aspect-square h-full w-full border-2 border-white bg-transparent p-0 hover:bg-transparent hover:opacity-80",
+                  "aspect-square relative h-full w-full border-2 bg-transparent p-0 m-1 hover:bg-transparent hover:opacity-80",
                   selectedImageToken === image.mediaToken &&
-                    "border-primary hover:opacity-100",
+                  "border-primary hover:opacity-100",
                 )}
                 onClick={() => {
                   setSelectedImageToken(image.mediaToken);
@@ -81,10 +85,10 @@ export const HistoryStack = ({
               >
                 {/* TODO: Fix CORS issue here */}
                 <img
-                  src={image.url + "?historystack+" + Math.random()}
+                  src={image.url + "?historystack+" + sessionRandBuster.current}
                   alt=""
                   crossOrigin="anonymous"
-                  className="h-full w-full rounded-lg object-cover"
+                  className="absolute inset-0 h-full w-full rounded-lg object-cover"
                 />
               </Button>
             ))}
