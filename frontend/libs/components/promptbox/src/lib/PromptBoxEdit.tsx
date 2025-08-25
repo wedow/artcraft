@@ -26,6 +26,7 @@ export interface PromptBoxEditProps {
   modelInfo?: ModelInfo;
   generationCount?: number;
   onGenerationCountChange?: (count: number) => void;
+  supportsMaskedInpainting?: boolean;
 }
 
 export const PromptBoxEdit = ({
@@ -37,6 +38,7 @@ export const PromptBoxEdit = ({
   modelInfo,
   generationCount: generationCountProp,
   onGenerationCountChange,
+  supportsMaskedInpainting = false,
 }: PromptBoxEditProps) => {
   const [prompt, setPrompt] = useState("");
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
@@ -180,17 +182,19 @@ export const PromptBoxEdit = ({
               onChange={handleChange}
               onPaste={handlePaste}
               onKeyDown={handleKeyDown}
-              onFocus={() => {}}
-              onBlur={() => {}}
+              onFocus={() => { }}
+              onBlur={() => { }}
             />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ButtonIconSelect
-                options={modes}
-                onOptionChange={onModeSelectionChange}
-                selectedOption={selectedMode}
-              />
+              {supportsMaskedInpainting && (
+                <ButtonIconSelect
+                  options={modes}
+                  onOptionChange={onModeSelectionChange}
+                  selectedOption={selectedMode}
+                />
+              )}
 
               <Tooltip
                 content={

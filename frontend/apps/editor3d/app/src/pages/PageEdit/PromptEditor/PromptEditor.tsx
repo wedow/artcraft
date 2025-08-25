@@ -10,6 +10,7 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
   modelInfo,
   generationCount,
   onGenerationCountChange,
+  supportsMaskedInpainting
 }) => {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col space-y-2">
@@ -22,6 +23,7 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
         modelInfo={modelInfo}
         generationCount={generationCount}
         onGenerationCountChange={onGenerationCountChange}
+        supportsMaskedInpainting={supportsMaskedInpainting}
       />
     </div>
   );

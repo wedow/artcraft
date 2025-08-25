@@ -1,6 +1,6 @@
 import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
 import { useModelSelectorStore } from "./model-selector-store";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ModelPage } from "./model-pages";
 
 interface ModelSelectorProps {
@@ -21,6 +21,14 @@ export function ModelSelector({
 }: ModelSelectorProps) {
   const { selectedModels, setSelectedModel } = useModelSelectorStore();
   const selectedModel = selectedModels[page] || items[0]?.label;
+
+  // For the first mount, make sure the selected model is set for other components to listen
+  useEffect(() => {
+    // Initialize selected model if not set
+    if (!selectedModels[page] && items[0]) {
+      setSelectedModel(page, items[0].label);
+    }
+  }, []);
 
   const handleModelSelect = (item: PopoverItem) => {
     setSelectedModel(page, item.label);
