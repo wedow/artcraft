@@ -21,10 +21,8 @@ import {
   useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
 import { lookupModelByTauriId, ModelInfo } from "@storyteller/model-list";
-import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
 import { ModelTag } from "libs/model-list/src/lib/ModelTag";
-import LeftResetStack from "./LeftResetStack";
 
 const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
@@ -59,20 +57,6 @@ const PageEdit = () => {
 
   // Use the Zustand store
   const store = useEditStore();
-
-  useImageEditCompleteEvent(async (event) => {
-    console.log("Image edit complete:", event);
-
-    // TODO: Logic to show edit history
-    for (const editedImage of event.edited_images) {
-      console.log("Edited image:", editedImage.media_token);
-      console.log("Edited image url:", editedImage.cdn_url);
-      console.log(
-        "Edited image thumbnail template:",
-        editedImage.maybe_thumbnail_template,
-      );
-    }
-  });
 
   // Pass store actions directly as callbacks
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
@@ -312,9 +296,8 @@ const PageEdit = () => {
   return (
     <>
       <div
-        className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
         style={{ display: store.activeTool === "edit" ? "block" : "none" }}
       >
         <DrawToolControlBar
@@ -325,16 +308,8 @@ const PageEdit = () => {
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed left-4 top-1/2 z-10 -translate-y-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
-      >
-        <LeftResetStack onReset={() => store.RESET()} />
-      </div>
-      <div
-        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
       >
         <HistoryStack
           onClear={() => {
@@ -348,9 +323,8 @@ const PageEdit = () => {
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
       >
         <PromptEditor
           modelInfo={selectedModelInfo}

@@ -1,9 +1,12 @@
 import { Button } from "@storyteller/ui-button";
 import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
-import { faTrash } from "@fortawesome/pro-solid-svg-icons";
+import { faClockRotateLeft, faTrash, faTrashXmark, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { BaseSelectorImage } from "./BaseImageSelector";
+import { Tooltip } from "@storyteller/ui-tooltip";
+import { isActionReminderOpen, showActionReminder } from "@storyteller/ui-action-reminder-modal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export interface ImageBundle {
   images: BaseSelectorImage[];
@@ -57,19 +60,11 @@ export const HistoryStack = ({
   };
 
   return (
-    <div className="max-h-1/2 glass h-auto w-16 overflow-y-auto rounded-lg p-1">
-      <div className="flex flex-col-reverse items-center justify-center gap-2">
-        <Button
-          className="h-7 w-full rounded-md opacity-80"
-          iconClassName="h-3 w-3"
-          icon={faTrash}
-          type="reset"
-          onClick={handleClear}
-          variant="destructive"
-        />
-        {imageBundles.map((bundle) => (
+    <div className="max-h-1/2 h-auto w-20 overflow-y-auto rounded-lg">
+      <div className="flex glass rounded-lg flex-col-reverse items-center justify-center gap-2 p-1">
+        {imageBundles.map((bundle, index) => (
           <>
-            <hr className="h-0.5 w-3/4 rounded-md border-none bg-white/10" />
+            {index < imageBundles.length - 1 && <hr className="h-0.5 w-3/4 rounded-md border-none bg-white/10" />}
             {bundle.images.map((image, imgIndex) => (
               <Button
                 key={imgIndex}
@@ -94,6 +89,33 @@ export const HistoryStack = ({
             ))}
           </>
         ))}
+        <FontAwesomeIcon icon={faClockRotateLeft} className="p-1 text-gray-400" />
+      </div>
+      <div className="glass mt-4 rounded-full border-red/50 border-2 size-12 flex justify-center items-center mx-auto">
+        <button
+          className="flex h-full w-full aspect-square rounded-full items-center justify-center text-white transition-colors hover:bg-red/50"
+          onClick={() =>
+            showActionReminder({
+              reminderType: "default",
+              title: "Reset All",
+              primaryActionIcon: faTrashXmark,
+              primaryActionBtnClassName: "bg-red hover:bg-red/80",
+              message: (
+                <p className="text-sm text-white/70">
+                  Are you sure you want to reset all? This will clear all your
+                  work and cannot be undone.
+                </p>
+              ),
+              primaryActionText: "Reset all",
+              onPrimaryAction: () => {
+                handleClear();
+                isActionReminderOpen.value = false;
+              },
+            })
+          }
+        >
+          <FontAwesomeIcon icon={faXmark} className="h-5 w-5 text-xl" />
+        </button>
       </div>
     </div>
   );
