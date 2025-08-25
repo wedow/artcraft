@@ -1,7 +1,7 @@
 import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import dayjs from "dayjs";
-import { faDownToLine } from "@fortawesome/pro-solid-svg-icons";
+import { faDownToLine, faPencil } from "@fortawesome/pro-solid-svg-icons";
 import {
   EnqueueImageTo3dObject,
   EnqueueImageTo3dObjectModel,
@@ -40,6 +40,7 @@ interface LightboxModalProps {
   ) => Promise<void>;
   mediaClass?: string;
   onPromptCopy?: (prompt: string) => void;
+  onEditClicked?: (url: string, media_id?: string) => Promise<void> | void;
 }
 
 export function LightboxModal({
@@ -57,6 +58,7 @@ export function LightboxModal({
   onDownloadClicked,
   onAddToSceneClicked,
   mediaClass,
+  onEditClicked,
 }: LightboxModalProps) {
   // NB(bt,2025-06-14): We add ?cors=1 to the image url to prevent caching "sec-fetch-mode: no-cors" from
   // the <image> tag request from being cached. If we then drag it into the canvas after it's been cached,
@@ -401,6 +403,19 @@ export function LightboxModal({
               >
                 3D
               </Button>
+
+              {onEditClicked && downloadUrl && (
+                <Button
+                  icon={faPencil}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    gtagEvent("edit_image_clicked");
+                    await onEditClicked(downloadUrl, mediaId);
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
 
               {onAddToSceneClicked && downloadUrl && (
                 <Button

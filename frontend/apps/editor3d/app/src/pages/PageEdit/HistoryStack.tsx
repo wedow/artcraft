@@ -1,10 +1,8 @@
 import { Button } from "@storyteller/ui-button";
-import {
-  EditedImage,
-  useImageEditCompleteEvent,
-} from "@storyteller/tauri-events";
+import { useImageEditCompleteEvent } from "@storyteller/tauri-events";
 import { faTrash } from "@fortawesome/pro-solid-svg-icons";
 import { useState } from "react";
+import { twMerge } from "tailwind-merge";
 import { BaseSelectorImage } from "./BaseImageSelector";
 
 export interface ImageBundle {
@@ -24,6 +22,11 @@ export const HistoryStack = ({
 }: HistoryStackProps) => {
   const [imageBundles, setImageBundles] =
     useState<ImageBundle[]>(startingBundles);
+  const [selectedImageToken, setSelectedImageToken] = useState<string | null>(
+    startingBundles.length > 0 && startingBundles[0].images.length > 0
+      ? startingBundles[0].images[0].mediaToken
+      : null,
+  );
   useImageEditCompleteEvent(async (event) => {
     const newBundle: ImageBundle = {
       images: event.edited_images.map(
@@ -35,18 +38,23 @@ export const HistoryStack = ({
       ),
     };
 
-    imageBundles.push(newBundle);
-    setImageBundles(imageBundles);
+    setImageBundles([...imageBundles, newBundle]);
+    const newlySelected = newBundle.images[0];
+    if (newlySelected) {
+      setSelectedImageToken(newlySelected.mediaToken);
+      onImageSelect(newlySelected);
+    }
   });
 
   const handleClear = () => {
     setImageBundles(startingBundles);
+    setSelectedImageToken(null);
     onClear();
   };
 
   return (
     <div className="max-h-1/2 glass h-auto w-16 overflow-y-auto rounded-lg p-1">
-      <div className="flex flex-col-reverse items-center justify-center">
+      <div className="flex flex-col-reverse items-center justify-center gap-2">
         <Button
           className="h-7 w-full rounded-md opacity-80"
           iconClassName="h-3 w-3"
@@ -57,12 +65,17 @@ export const HistoryStack = ({
         />
         {imageBundles.map((bundle) => (
           <>
-            <hr className="my-2 h-0.5 w-3/4 rounded-md border-none bg-white/10" />
+            <hr className="h-0.5 w-3/4 rounded-md border-none bg-white/10" />
             {bundle.images.map((image, imgIndex) => (
               <Button
                 key={imgIndex}
-                className="aspect-square h-full w-full border-2 p-0"
+                className={twMerge(
+                  "aspect-square h-full w-full border-2 border-white bg-transparent p-0 hover:bg-transparent hover:opacity-80",
+                  selectedImageToken === image.mediaToken &&
+                    "border-primary hover:opacity-100",
+                )}
                 onClick={() => {
+                  setSelectedImageToken(image.mediaToken);
                   onImageSelect(image);
                 }}
               >
