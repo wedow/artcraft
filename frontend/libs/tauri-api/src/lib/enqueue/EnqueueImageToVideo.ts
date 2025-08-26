@@ -14,14 +14,23 @@ export enum EnqueueImageToVideoErrorType {
 }
 
 export interface EnqueueImageToVideoRequest {
-  image_media_token?: string;
+  // Required. The model to use.
   model?: ModelInfo;
+
+  // Required. Starting frame.
+  image_media_token?: string;
+
+  // Optional. Ending frame.
+  end_frame_image_media_token?: string;
+
+  // Optional. Text prompt to direct the video.
   prompt?: string;
 }
 
 interface RawEnqueueImageToVideoRequest {
-  image_media_token?: string;
   model?: string;
+  image_media_token?: string;
+  end_frame_image_media_token?: string;
   prompt?: string;
 }
 
@@ -31,9 +40,6 @@ export interface EnqueueImageToVideoError extends CommandResult {
 }
 
 export interface EnqueueImageToVideoPayload {
-  media_token: string;
-  cdn_url: string;
-  base64_bytes: string;
 }
 
 export interface EnqueueImageToVideoSuccess extends CommandResult {
@@ -46,12 +52,16 @@ export const EnqueueImageToVideo = async (request: EnqueueImageToVideoRequest) :
   const modelName = request.model?.tauri_id;
 
   let mutableRequest : RawEnqueueImageToVideoRequest = {
-    image_media_token: request.image_media_token,
     model: modelName,
+    image_media_token: request.image_media_token,
   };
 
   if (!!request.prompt) {
     mutableRequest.prompt = request.prompt;
+  }
+
+  if (!!request.end_frame_image_media_token) {
+    mutableRequest.end_frame_image_media_token = request.end_frame_image_media_token;
   }
 
   const result = await invoke("enqueue_image_to_video_command", { 
