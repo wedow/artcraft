@@ -74,20 +74,18 @@ mod tests {
   use crate::requests::webhook::video::enqueue_kling_21_pro_image_to_video_webhook::{enqueue_kling_21_pro_image_to_video_webhook, Kling21ProArgs, Kling21ProAspectRatio, Kling21ProDuration};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, WIDE_FALL_MOUNTAINS_IMAGE_URL};
+  use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, SUPER_WIDE_FALL_MOUNTAINS_IMAGE_URL};
 
   #[tokio::test]
   #[ignore]
-  async fn test_kling21_pro_video() -> AnyhowResult<()> {
-    let image_url = "https://cdn-2.fakeyou.com/media/3/4/h/f/s/34hfsmt8e38rvne6mwa4pwbxr6292sgy/image_34hfsmt8e38rvne6mwa4pwbxr6292sgy.png";
-
+  async fn test() -> AnyhowResult<()> {
     // XXX: Don't commit secrets!
     let secret = read_to_string("/Users/bt/Artcraft/credentials/fal_api_key.txt")?;
 
     let api_key = FalApiKey::from_str(&secret);
 
     let args = Kling21ProArgs {
-      image_url: WIDE_FALL_MOUNTAINS_IMAGE_URL,
+      image_url: SUPER_WIDE_FALL_MOUNTAINS_IMAGE_URL,
       end_frame_image_url: Some(JUNO_AT_LAKE_IMAGE_URL.to_string()),
       prompt: "a shot of the mountains, the camera pulls back to show a corgi waiting to jump into the lake",
       api_key: &api_key,

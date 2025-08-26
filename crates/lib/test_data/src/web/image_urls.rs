@@ -22,7 +22,7 @@ pub const MOUNTAIN_TREE_IMAGE_URL :&str = "https://cdn-2.fakeyou.com/media/3/4/h
 pub const WHITE_HOUSE_SUNSET_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/q/t/z/w/k/qtzwka8dd0g2nfyk94k1qh3zzfwqtfhn/asset_qtzwka8dd0g2nfyk94k1qh3zzfwqtfhn.jpg";
 
 // media token: m_z61yg5w7dnnvhb1f9sqt8jf02y61bv
-pub const WIDE_FALL_MOUNTAINS_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/w/6/m/j/p/w6mjpcqkky7f2f3xkyvkcv3qeedkmejs/asset_w6mjpcqkky7f2f3xkyvkcv3qeedkmejs.jpg";
+pub const SUPER_WIDE_FALL_MOUNTAINS_IMAGE_URL: &str = "https://cdn-2.fakeyou.com/media/w/6/m/j/p/w6mjpcqkky7f2f3xkyvkcv3qeedkmejs/asset_w6mjpcqkky7f2f3xkyvkcv3qeedkmejs.jpg";
 
 // media token: m_m1bz02z1kkzanxy6rb4vk1kvq9de9g
 pub const JUNO_AT_LAKE_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/s/v/c/p/p/svcpp441gyb6mjtt8413kf5zxw1ehy4t/upload_svcpp441gyb6mjtt8413kf5zxw1ehy4t.jpg";

@@ -156,6 +156,7 @@ pub async fn handle_video_artcraft(
       let request = GenerateSeedance10LiteImageToVideoRequest {
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
+        end_frame_image_media_token: request.end_frame_image_media_token,
         prompt: request.prompt,
         resolution: None,
         duration: None,

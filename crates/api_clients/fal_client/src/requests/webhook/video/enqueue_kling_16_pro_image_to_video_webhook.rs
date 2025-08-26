@@ -68,35 +68,34 @@ pub async fn enqueue_kling_16_pro_image_to_video_webhook<U: IntoUrl, T: IntoUrl,
   result.map_err(|err| classify_fal_error(err))
 }
 
-/*
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::video::enqueue_kling_16_image_to_video_webhook::{enqueue_kling_16_image_to_video_webhook, Kling16Args, Kling16Duration};
+  use crate::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::{enqueue_kling_16_pro_image_to_video_webhook, Kling16Duration, Kling16ProArgs, Kling16ProAspectRatio};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use testing::test_file_path::test_file_path;
+  use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, TALL_MOCHI_WITH_GLASSES_IMAGE_URL};
 
   #[tokio::test]
   #[ignore]
-  async fn test_kling16_video() -> AnyhowResult<()> {
-    let image = test_file_path("test_data/image/juno.jpg")?;
-
+  async fn test() -> AnyhowResult<()> {
     // XXX: Don't commit secrets!
     let secret = read_to_string("/Users/bt/Artcraft/credentials/fal_api_key.txt")?;
 
     let api_key = FalApiKey::from_str(&secret);
 
-    let args = Kling16Args {
-      image_path: image,
-      prompt: "a corgi looks out over the water",
+    let args = Kling16ProArgs {
+      image_url: TALL_MOCHI_WITH_GLASSES_IMAGE_URL,
+      end_frame_image_url: Some(JUNO_AT_LAKE_IMAGE_URL.to_string()),
+      prompt: "shiba in glasses runs to the lake and stands by the shore",
       api_key: &api_key,
       duration: Kling16Duration::Default,
+      aspect_ratio: Kling16ProAspectRatio::WideSixteenNine,
+      webhook_url: "https://example.com/webhook",
     };
 
-    let result = enqueue_kling_16_image_to_video_webhook(args).await?;
+    let result = enqueue_kling_16_pro_image_to_video_webhook(args).await?;
 
     Ok(())
   }
 }
-*/

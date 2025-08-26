@@ -6,6 +6,29 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
+pub struct ImageToVideoRequest {
+  pub image_url: String,
+
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub end_image_url: Option<String>,
+
+  /// The resolution of the generated video frame
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub resolution: Option<String>,
+
+  /// The duration of the generated video in seconds
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub duration: Option<String>,
+
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub camera_fixed: Option<bool>,
+
+  pub prompt: String,
+
+  pub seed: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct File {
   /// The mime type of the file.
   /// "image/png"
@@ -37,21 +60,6 @@ pub struct I2VOutput {
   /// The generated video
   /// {"url":"https://v2.fal.media/files/36087878b0c1435bb75c19b64b7db178_output.mp4"}
   pub video: File,
-}
-
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct ImageToVideoRequest {
-  /// The resolution of the generated video frame
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub resolution: Option<String>,
-  /// The duration of the generated video in seconds
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub duration: Option<String>,
-  pub image_url: String,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub camera_fixed: Option<bool>,
-  pub prompt: String,
-  pub seed: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
