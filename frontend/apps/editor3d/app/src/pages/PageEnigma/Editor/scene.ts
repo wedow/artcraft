@@ -199,7 +199,12 @@ class Scene {
         obj.userData["media_id"] = name;
       } else {
         const loader = new THREE.TextureLoader();
-        texture = loader.load(image_token);
+        // NB(bt,2025-08-26): Images loaded throughout the rest of ArtCraft with the <img> tag set 
+        // the "sec-fetch-mode: no-cors" header. On Safari (Mac), this is cached and makes the image 
+        // permanently impossible to use in Three.js. We bypass this by appending a query parameter 
+        // to the URL.
+        const modifiedUrl = image_token + "?threejs=true";
+        texture = loader.load(modifiedUrl);
         texture.colorSpace = THREE.SRGBColorSpace;
         const image_material = new THREE.MeshBasicMaterial({
           color: 0xffffff,
