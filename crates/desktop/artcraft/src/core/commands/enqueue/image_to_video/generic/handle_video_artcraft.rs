@@ -129,6 +129,7 @@ pub async fn handle_video_artcraft(
       let request = GenerateKling21ProImageToVideoRequest {
         uuid_idempotency_token,
         media_file_token: request.image_media_token,
+        end_frame_image_media_token: request.end_frame_image_media_token,
         aspect_ratio: Some(GenerateKling21ProAspectRatio::WideSixteenNine),
         prompt: request.prompt,
         duration: None,
