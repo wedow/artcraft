@@ -23,14 +23,22 @@ use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize)]
 pub struct EnqueueImageToVideoRequest {
-  /// Image media file; the image to remove the background from.
-  /// TODO: In the future we may support base64 images, URLs, or file paths here.
-  pub image_media_token: Option<MediaFileToken>,
-  
+  /// REQUIRED.
   /// The model to use.
   pub model: Option<VideoModel>,
-  
-  /// Optional text prompt.
+
+  /// Currently REQUIRED.
+  /// Image media file; the starting frame of the video.
+  /// TODO: In the future we may support base64 images, URLs, or file paths here.
+  pub image_media_token: Option<MediaFileToken>,
+
+  /// Optional.
+  /// Image media file; the image to remove the background from.
+  /// TODO: In the future we may support base64 images, URLs, or file paths here.
+  pub end_frame_image_media_token: Option<MediaFileToken>,
+
+  /// Optional.
+  /// Text prompt used to direct the video.
   pub prompt: Option<String>,
 }
 
