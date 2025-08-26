@@ -5,8 +5,9 @@ use fal::endpoints::fal_ai::kling_video::v2_1::pro::image_to_video::{image_to_vi
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
-pub struct Kling21ProArgs<'a, U: IntoUrl, V: IntoUrl> {
+pub struct Kling21ProArgs<'a, U: IntoUrl, T: IntoUrl, V: IntoUrl> {
   pub image_url: U,
+  pub end_frame_image_url: Option<T>,
   pub webhook_url: V,
   pub prompt: &'a str,
   pub api_key: &'a FalApiKey,
@@ -28,8 +29,8 @@ pub enum Kling21ProAspectRatio {
   TallNineSixteen, // 9:16
 }
 
-pub async fn enqueue_kling_21_pro_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
-  args: Kling21ProArgs<'_, U, V>
+pub async fn enqueue_kling_21_pro_image_to_video_webhook<U: IntoUrl, T: IntoUrl, V: IntoUrl>(
+  args: Kling21ProArgs<'_, U, T, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
     Kling21ProDuration::Default => None,
@@ -45,15 +46,18 @@ pub async fn enqueue_kling_21_pro_image_to_video_webhook<U: IntoUrl, V: IntoUrl>
 
   let image_url = args.image_url.as_str().to_string();
 
+  let tail_image_url = args.end_frame_image_url
+      .map(|url| url.as_str().to_string());
+
   let request = ProImageToVideoRequest {
     image_url,
     prompt: args.prompt.to_string(),
+    tail_image_url,
     aspect_ratio,
     duration,
     // Maybe expose these later
     cfg_scale: None,
     negative_prompt: None,
-    tail_image_url: None,
   };
 
   let result = image_to_video(request)
@@ -64,13 +68,13 @@ pub async fn enqueue_kling_21_pro_image_to_video_webhook<U: IntoUrl, V: IntoUrl>
   result.map_err(|err| classify_fal_error(err))
 }
 
-
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
   use crate::requests::webhook::video::enqueue_kling_21_pro_image_to_video_webhook::{enqueue_kling_21_pro_image_to_video_webhook, Kling21ProArgs, Kling21ProAspectRatio, Kling21ProDuration};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
+  use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, WIDE_FALL_MOUNTAINS_IMAGE_URL};
 
   #[tokio::test]
   #[ignore]
@@ -83,8 +87,9 @@ mod tests {
     let api_key = FalApiKey::from_str(&secret);
 
     let args = Kling21ProArgs {
-      image_url: image_url,
-      prompt: "a shot of the mountains, the camera rotates around to show the mountain range",
+      image_url: WIDE_FALL_MOUNTAINS_IMAGE_URL,
+      end_frame_image_url: Some(JUNO_AT_LAKE_IMAGE_URL.to_string()),
+      prompt: "a shot of the mountains, the camera pulls back to show a corgi waiting to jump into the lake",
       api_key: &api_key,
       duration: Kling21ProDuration::Default,
       aspect_ratio: Kling21ProAspectRatio::WideSixteenNine,

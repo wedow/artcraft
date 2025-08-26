@@ -28,6 +28,8 @@ use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, g
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
 use sqlx::Acquire;
 use utoipa::ToSchema;
+use crate::util::lookup::fetch_all_required_media_files::fetch_all_required_media_files;
+use crate::util::traits::into_media_links_trait::IntoMediaLinks;
 
 /// Kling 2.1 Pro Image to Video
 #[utoipa::path(
@@ -73,14 +75,35 @@ pub async fn generate_kling_2_1_pro_video_handler(
   //  }
   //};
 
-  let media_file_token = match &request.media_file_token {
+  let start_frame_media_file_token = match &request.media_file_token {
     Some(token) => token,
     None => {
       warn!("No media file token provided");
       return Err(CommonWebError::BadInputWithSimpleMessage("No media file token provided".to_string()));
     }
   };
-  
+
+  let mut tokens = vec![
+    start_frame_media_file_token.clone(),
+  ];
+
+  let maybe_end_frame_image_media_token = request.end_frame_image_media_token.as_ref();
+
+  if let Some(end_frame_token) = maybe_end_frame_image_media_token {
+    tokens.push(end_frame_token.clone());
+  }
+
+  let media_files = fetch_all_required_media_files(
+    &mut mysql_connection,
+    &tokens,
+  ).await?;
+
+  for media_file in media_files.iter() {
+    if !media_file.media_type.is_jpg_or_png_or_legacy_image() {
+      return Err(CommonWebError::BadInputWithSimpleMessage("Media file must be a JPG or PNG image".to_string()));
+    }
+  }
+
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
@@ -91,42 +114,30 @@ pub async fn generate_kling_2_1_pro_video_handler(
         error!("Error inserting idempotency token: {:?}", err);
         CommonWebError::BadInputWithSimpleMessage("invalid idempotency token".to_string())
       })?;
-  const IS_MOD : bool = false;
-  
-  let media_file_lookup_result = get_media_file_with_connection(
-    media_file_token,
-    IS_MOD,
-    &mut mysql_connection,
-  ).await;
 
-  let media_file = match media_file_lookup_result {
-    Ok(Some(media_file)) => media_file,
-    Ok(None) => {
-      warn!("MediaFile not found: {:?}", media_file_token);
-      return Err(CommonWebError::NotFound);
-    },
-    Err(err) => {
-      warn!("Error looking up media_file: {:?}", err);
-      return Err(CommonWebError::ServerError);
-    }
+  let media_domain = get_media_domain(&http_request);
+
+  let start_frame_url = media_files.iter()
+      .find(|file| &file.token == start_frame_media_file_token)
+      .map(|file| file.to_media_links(media_domain, server_state.server_environment))
+      .map(|file| file.cdn_url)
+      .ok_or_else(|| {
+        warn!("Start frame media file not found after fetch");
+        CommonWebError::NotFound
+      })?;
+
+  let maybe_end_frame_url = match maybe_end_frame_image_media_token {
+    None => None,
+    Some(end_frame_token) => Some(media_files.iter()
+        .find(|file| &file.token == end_frame_token)
+        .map(|file| file.to_media_links(media_domain, server_state.server_environment))
+        .map(|file| file.cdn_url)
+        .ok_or_else(|| {
+          warn!("End frame media file not found after fetch");
+          CommonWebError::NotFound
+        })?),
   };
 
-  if !media_file.media_type.is_jpg_or_png_or_legacy_image() {
-    return Err(CommonWebError::BadInputWithSimpleMessage("Media file must be a JPG or PNG image".to_string()));
-  }
-  
-  let media_domain = get_media_domain(&http_request);
-  
-  let bucket_path = MediaFileBucketPath::from_object_hash(
-    &media_file.public_bucket_directory_hash,
-    media_file.maybe_public_bucket_prefix.as_deref(),
-    media_file.maybe_public_bucket_extension.as_deref());
-  
-  let media_links = MediaLinksBuilder::from_media_path_and_env(
-    media_domain, 
-    server_state.server_environment, 
-    &bucket_path);
-  
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
   let prompt = request.prompt
@@ -148,7 +159,8 @@ pub async fn generate_kling_2_1_pro_video_handler(
   };
   
   let args = Kling21ProArgs {
-    image_url: media_links.cdn_url,
+    image_url: start_frame_url,
+    end_frame_image_url: maybe_end_frame_url,
     webhook_url: &server_state.fal.webhook_url,
     duration,
     prompt,
