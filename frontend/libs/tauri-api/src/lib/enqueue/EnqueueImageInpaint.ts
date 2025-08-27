@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
-import { ModelInfo } from "@storyteller/model-list";
+import { ImageModel, ModelInfo } from "@storyteller/model-list";
 
 export interface EnqueueImageInpaintRequest {
   // The model to use.
-  model?: ModelInfo | EnqueueImageInpaintModel;
+  model?: ImageModel | ModelInfo | EnqueueImageInpaintModel;
 
   // The image we're editing.
   image_media_token?: string;
@@ -74,6 +74,8 @@ export const EnqueueImageInpaint = async (request: EnqueueImageInpaintRequest) :
   if (!!request.model) {
     if (typeof request.model === "string") {
       modelName = request.model;
+    } else if (request.model instanceof ImageModel) {
+      modelName = request.model.tauriId;
     } else {
       modelName = request.model.tauri_id;
     }

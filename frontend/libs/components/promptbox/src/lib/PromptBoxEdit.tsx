@@ -15,7 +15,7 @@ import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect, useRef, useState } from "react";
-import { ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
+import { ImageModel, getCapabilitiesForModel } from "@storyteller/model-list";
 
 export interface PromptBoxEditProps {
   onModeChange?: (mode: string) => void;
@@ -23,7 +23,7 @@ export interface PromptBoxEditProps {
   onGenerateClick: (prompt: string) => void;
   isDisabled?: boolean;
   onFitPressed?: () => void | Promise<void>;
-  modelInfo?: ModelInfo;
+  selectedImageModel?: ImageModel;
   generationCount?: number;
   onGenerationCountChange?: (count: number) => void;
   supportsMaskedInpainting?: boolean;
@@ -35,7 +35,7 @@ export const PromptBoxEdit = ({
   onGenerateClick,
   isDisabled,
   onFitPressed,
-  modelInfo,
+  selectedImageModel,
   generationCount: generationCountProp,
   onGenerationCountChange,
   supportsMaskedInpainting = false,
@@ -69,7 +69,7 @@ export const PromptBoxEdit = ({
 
   // Build generation count options based on selected model
   useEffect(() => {
-    const caps = getCapabilitiesForModel(modelInfo);
+    const caps = getCapabilitiesForModel(selectedImageModel);
     console.log(">>> caps", caps);
     const items: PopoverItem[] = Array.from(
       { length: caps.maxGenerationCount },
@@ -91,7 +91,7 @@ export const PromptBoxEdit = ({
       onGenerationCountChange?.(clamped);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modelInfo]);
+  }, [selectedImageModel]);
 
   // Keep UI selection in sync when store/value changes
   useEffect(() => {

@@ -7,7 +7,7 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
   onGenerateClick,
   isDisabled,
   onFitPressed,
-  modelInfo,
+  selectedImageModel,
   generationCount,
   onGenerationCountChange,
   supportsMaskedInpainting
@@ -20,7 +20,7 @@ const PromptEditor: React.FC<PromptBoxEditProps> = ({
         onGenerateClick={onGenerateClick}
         isDisabled={isDisabled}
         onFitPressed={onFitPressed}
-        modelInfo={modelInfo}
+        selectedImageModel={selectedImageModel}
         generationCount={generationCount}
         onGenerationCountChange={onGenerationCountChange}
         supportsMaskedInpainting={supportsMaskedInpainting}

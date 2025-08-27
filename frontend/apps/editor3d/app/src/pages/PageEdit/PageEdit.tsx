@@ -15,12 +15,12 @@ import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
 import {
+  getSelectedImageModel,
   IMAGE_EDITOR_PAGE_MODEL_LIST,
   ModelPage,
   ModelSelector,
-  useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
-import { lookupModelByTauriId, ModelInfo } from "@storyteller/model-list";
+import { lookupModelByTauriId, ImageModel } from "@storyteller/model-list";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
 import { ModelTag } from "libs/model-list/src/lib/ModelTag";
 
@@ -28,17 +28,8 @@ const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
 const PageEdit = () => {
   //useStateSceneLoader();
-  const { selectedModels } = useModelSelectorStore();
 
-  const selectedModelLabel =
-    selectedModels[PAGE_ID] || IMAGE_EDITOR_PAGE_MODEL_LIST[0]?.label;
-
-  const selectedModel = IMAGE_EDITOR_PAGE_MODEL_LIST.find(
-    (m) => m.label === selectedModelLabel,
-  );
-
-  const selectedModelInfo: ModelInfo | undefined =
-    selectedModel?.modelInfo;
+  const selectedImageModel : ImageModel | undefined = getSelectedImageModel(PAGE_ID);
 
   // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
@@ -235,7 +226,7 @@ const PageEdit = () => {
 
       try {
         await EnqueueImageInpaint({
-          model: selectedModelInfo,
+          model: selectedImageModel,
           image_media_token: editedImageToken,
           mask_image_raw_bytes: arrayBuffer,
           prompt: prompt,
@@ -249,13 +240,14 @@ const PageEdit = () => {
     [
       generationCount,
       isEnqueuing,
-      selectedModelInfo,
+      selectedImageModel,
       store.baseImageInfo?.mediaToken,
     ],
   );
 
-  const modelConfig = lookupModelByTauriId(selectedModelInfo!.tauri_id);
-  const supportsMaskedInpainting = modelConfig?.tags?.includes(ModelTag.MaskedInpainting) ?? false;
+  //const modelConfig = lookupModelByTauriId(selectedImageModel!.tauriId);
+  //const supportsMaskedInpainting = modelConfig?.tags?.includes(ModelTag.MaskedInpainting) ?? false;
+  const supportsMaskedInpainting = selectedImageModel?.usesInpaintingMask ?? false;
 
   if (!supportsMaskedInpainting && (store.activeTool !== "select" || store.lineNodes.length > 0)) {
     // TODO: Implement a new mode for unsupported masking and hide the nodes layer instead of clearing
@@ -327,7 +319,7 @@ const PageEdit = () => {
           }`}
       >
         <PromptEditor
-          modelInfo={selectedModelInfo}
+          selectedImageModel={selectedImageModel}
           onModeChange={(mode: string) => {
             store.setActiveTool(mode as ActiveEditTool);
           }}

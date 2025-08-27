@@ -54,11 +54,6 @@ const buildItems2 = (
  * OLD MODEL LISTS
  */ 
 
-export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems(
-  IMAGE_EDITOR_PAGE_MODELS,
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
-
 /**
  * IN-PROGRESS MIGRATION (messy for now)
  * We're gradually going to phase out ModelList, ModelConfig, etc.
@@ -73,6 +68,11 @@ export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = buildItems2(
 
 export const STAGE_3D_PAGE_MODEL_LIST : ModelList = buildItems2(
   IMAGE_MODELS.filter((m) => m.tags?.includes(ModelTag.InstructiveEdit)),
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+);
+
+export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems2(
+  IMAGE_MODELS,
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
 );
 
