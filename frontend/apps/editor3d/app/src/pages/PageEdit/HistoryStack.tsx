@@ -6,7 +6,7 @@ import {
   faTrashXmark,
   faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { BaseSelectorImage } from "./BaseImageSelector";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -23,21 +23,18 @@ export interface ImageBundle {
 interface HistoryStackProps {
   onClear: () => void;
   onImageSelect?: (image: BaseSelectorImage) => void;
-  startingBundles: ImageBundle[];
+  imageBundles: ImageBundle[];
+  onNewImageBundle?: (newBundle: ImageBundle) => void;
+  selectedImageToken?: string;
 }
 
 export const HistoryStack = ({
   onClear,
-  onImageSelect = () => {},
-  startingBundles = [],
+  onImageSelect = () => { },
+  imageBundles,
+  onNewImageBundle = () => { },
+  selectedImageToken
 }: HistoryStackProps) => {
-  const [imageBundles, setImageBundles] =
-    useState<ImageBundle[]>(startingBundles);
-  const [selectedImageToken, setSelectedImageToken] = useState<string | null>(
-    startingBundles.length > 0 && startingBundles[0].images.length > 0
-      ? startingBundles[0].images[0].mediaToken
-      : null,
-  );
   useImageEditCompleteEvent(async (event) => {
     const newBundle: ImageBundle = {
       images: event.edited_images.map(
@@ -49,12 +46,7 @@ export const HistoryStack = ({
       ),
     };
 
-    setImageBundles([...imageBundles, newBundle]);
-    const newlySelected = newBundle.images[0];
-    if (newlySelected) {
-      setSelectedImageToken(newlySelected.mediaToken);
-      onImageSelect(newlySelected);
-    }
+    onNewImageBundle(newBundle);
   });
 
   // This is used to force image reloads in different sessions
@@ -62,26 +54,23 @@ export const HistoryStack = ({
   const sessionRandBuster = useRef(Math.random());
 
   const handleClear = () => {
-    setImageBundles(startingBundles);
-    setSelectedImageToken(null);
     onClear();
   };
 
   return (
     <div className="h-auto w-20 rounded-lg">
-      <div className="glass max-h-1/2 flex flex-col-reverse items-center justify-center gap-2 overflow-y-auto rounded-lg p-1.5">
+      <div className={"glass max-h-[50vh] flex flex-col-reverse items-center justify-center gap-2 overflow-y-auto rounded-lg p-1.5"}>
         {imageBundles.map((bundle, index) => (
-          <>
-            {bundle.images.map((image, imgIndex) => (
+          <Fragment key={index}>
+            {bundle.images.map((image) => (
               <Button
-                key={imgIndex}
+                key={image.mediaToken}
                 className={twMerge(
                   "relative aspect-square h-full w-full border-2 bg-transparent p-0 hover:bg-transparent hover:opacity-80",
                   selectedImageToken === image.mediaToken &&
-                    "border-primary hover:opacity-100",
+                  "border-primary hover:opacity-100",
                 )}
                 onClick={() => {
-                  setSelectedImageToken(image.mediaToken);
                   onImageSelect(image);
                 }}
               >
@@ -95,9 +84,9 @@ export const HistoryStack = ({
               </Button>
             ))}
             {index < imageBundles.length - 1 && (
-              <hr className="h-0.5 w-3/4 rounded-md border-none bg-white/10" />
+              <hr className="min-h-0.5 h-0.5 w-3/4 rounded-md border-none bg-white/10" key={"hr" + index} />
             )}
-          </>
+          </Fragment>
         ))}
         <FontAwesomeIcon
           icon={faClockRotateLeft}

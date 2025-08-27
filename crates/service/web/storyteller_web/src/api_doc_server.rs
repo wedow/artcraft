@@ -30,6 +30,7 @@ use crate::configs::static_api_tokens::StaticApiTokenSet;
 
 pub mod billing;
 pub mod configs;
+pub mod error;
 pub mod http_server;
 pub mod state;
 pub mod threads;

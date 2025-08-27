@@ -3,6 +3,7 @@ import { LineNode, generateId } from "~/pages/PageDraw/stores/SceneState";
 import { Node } from "~/pages/PageDraw/Node";
 import { BaseSelectorImage } from "../BaseImageSelector";
 import { FetchProxy } from "libs/tauri-utils/src/lib/FetchProxy";
+import { ImageBundle } from "../HistoryStack";
 
 export type ActiveEditTool = "select" | "edit" | "expand";
 export type EditOperation = "add" | "minus";
@@ -126,6 +127,11 @@ interface EditState {
   // pushHistory: () => void;
   // clearHistory: () => void;
   RESET: () => void;
+
+  // For the history stack
+  historyImageBundles: ImageBundle[];
+  clearHistoryImages: () => void;
+  addHistoryImageBundle: (bundle: ImageBundle) => void;
 }
 
 // Add a flag to prevent saving state during restoration
@@ -171,6 +177,9 @@ export const useEditStore = create<EditState>((set, get, store) => ({
   // Base image initial state
   baseImageInfo: null,
   baseImageBitmap: null,
+
+  // History stack state
+  historyImageBundles: [],
 
   // Actions
   addNode: (node: Node) => {
@@ -1009,5 +1018,13 @@ export const useEditStore = create<EditState>((set, get, store) => ({
 
   RESET: () => {
     set(store.getInitialState());
-  }
+  },
+
+  clearHistoryImages: () => {
+    set({ historyImageBundles: [] });
+  },
+
+  addHistoryImageBundle(bundle) {
+    set((state) => ({ historyImageBundles: [...state.historyImageBundles, bundle] }));
+  },
 }));

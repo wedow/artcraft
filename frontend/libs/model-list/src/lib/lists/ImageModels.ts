@@ -87,11 +87,12 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorBadges: ["20 sec."],
     maxGenerationCount: 4,
     defaultGenerationCount: 4,
+    canEditImages: true,
     tags: [ModelTag.InstructiveEdit],
   }),
   new ImageModel({
     id: "flux_pro_inpaint",
-    tauriId: "flux_pro_inpaint",
+    tauriId: "flux_pro_1",
     fullName: "Flux Pro Inpaint",
     category: "image",
     creator: ModelCreator.BlackForestLabs,
@@ -100,11 +101,12 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorBadges: ["30 sec."],
     maxGenerationCount: 1, // NB: Fal only allows one image for some reason!
     defaultGenerationCount: 1, // NB: Fal only allows one image for some reason!
+    canEditImages: true,
     usesInpaintingMask: true,
   }),
   new ImageModel({
     id: "flux_dev_juggernaut_inpaint",
-    tauriId: "flux_dev_juggernaut_inpaint",
+    tauriId: "flux_dev_juggernaut",
     fullName: "Flux Dev Juggernaut Inpaint",
     category: "image",
     creator: ModelCreator.BlackForestLabs,
@@ -113,6 +115,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorBadges: ["15 sec."],
     maxGenerationCount: 4,
     defaultGenerationCount: 4,
+    canEditImages: true,
     usesInpaintingMask: true,
   }),
 ];

@@ -27,6 +27,7 @@ use errors::AnyhowResult;
 
 pub mod billing;
 pub mod configs;
+pub mod error;
 pub mod http_server;
 pub mod state;
 pub mod threads;
