@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Konva from "konva"; // just for types
 import {
   EnqueueImageInpaint,
-  EnqueueImageInpaintModel,
 } from "@storyteller/tauri-api";
 import { ContextMenuContainer } from "../PageDraw/components/ui/ContextMenu";
 import { useCopyPasteHotkeys } from "../PageDraw/hooks/useCopyPasteHotkeys";
@@ -15,14 +14,13 @@ import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
 import {
+  ClassyModelSelector,
   getSelectedImageModel,
   IMAGE_EDITOR_PAGE_MODEL_LIST,
   ModelPage,
-  ModelSelector,
 } from "@storyteller/ui-model-selector";
-import { lookupModelByTauriId, ImageModel } from "@storyteller/model-list";
+import { ImageModel } from "@storyteller/model-list";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
-import { ModelTag } from "libs/model-list/src/lib/ModelTag";
 
 const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
@@ -374,7 +372,7 @@ const PageEdit = () => {
               canvasWidth.current = width;
               canvasHeight.current = height;
             }}
-            fillColor={store.fillColor}
+            //fillColor={store.fillColor}
             activeTool={store.activeTool}
             brushColor={store.brushColor}
             brushSize={store.brushSize}
@@ -387,7 +385,7 @@ const PageEdit = () => {
         </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-        <ModelSelector
+        <ClassyModelSelector
           items={IMAGE_EDITOR_PAGE_MODEL_LIST}
           page={PAGE_ID}
           panelTitle="Select Model"

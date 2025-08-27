@@ -3,9 +3,9 @@ import { JobContextType } from "@storyteller/common";
 import { PromptBoxVideo } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
 import {
+  ClassyModelSelector,
   IMAGE_TO_VIDEO_PAGE_MODEL_LIST,
   ModelPage,
-  VideoModelSelector,
 } from "@storyteller/ui-model-selector";
 import { VideoModel } from "@storyteller/model-list";
 import { getSelectedVideoModel } from "@storyteller/ui-model-selector";
@@ -60,7 +60,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
           <BackgroundGallery />
 
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-            <VideoModelSelector
+            <ClassyModelSelector
               items={IMAGE_TO_VIDEO_PAGE_MODEL_LIST}
               page={PAGE_ID}
               panelTitle="Select Model"
