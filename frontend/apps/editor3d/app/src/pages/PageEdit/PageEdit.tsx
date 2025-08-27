@@ -249,11 +249,14 @@ const PageEdit = () => {
   //const supportsMaskedInpainting = modelConfig?.tags?.includes(ModelTag.MaskedInpainting) ?? false;
   const supportsMaskedInpainting = selectedImageModel?.usesInpaintingMask ?? false;
 
-  if (!supportsMaskedInpainting && (store.activeTool !== "select" || store.lineNodes.length > 0)) {
-    // TODO: Implement a new mode for unsupported masking and hide the nodes layer instead of clearing
-    store.setActiveTool("select");
-    store.clearLineNodes();
-  }
+  useEffect(() => {
+    if (!supportsMaskedInpainting && (store.activeTool !== "select" || store.lineNodes.length > 0)) {
+      // TODO: Implement a new mode for unsupported masking and hide the nodes layer instead of clearing
+      store.setActiveTool("select");
+      store.clearLineNodes();
+    }
+  }, [store, supportsMaskedInpainting]);
+
 
   /*
     *
