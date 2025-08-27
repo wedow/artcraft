@@ -68,21 +68,20 @@ import {
 import {
   STAGE_3D_PAGE_MODEL_LIST,
   ModelPage,
-  ModelSelector,
-  useModelSelectorStore,
+  getSelectedImageModel,
+  ClassyModelSelector,
 } from "@storyteller/ui-model-selector";
 import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
 import { useTabStore } from "../Stores/TabState";
 import PageEdit from "../PageEdit/PageEdit";
-import { ModelInfo } from "@storyteller/model-list";
+import { ImageModel } from "@storyteller/model-list";
 
 const PAGE_ID : ModelPage = ModelPage.Stage3D;
 
 export const PageEditor = () => {
   useSignals();
   const { triggerRecheck } = useLoginModalStore();
-  const { selectedModels } = useModelSelectorStore();
   const { status } = authentication;
 
   useEffect(() => {
@@ -96,12 +95,6 @@ export const PageEditor = () => {
     event.stopPropagation();
   };
 
-  // TODO: For 3d Promptbox to accept this later on
-  // const { selectedModels } = useModelSelectorStore();
-  // const selectedModel =
-  // selectedModels[ModelCategory.Editor3D] ||
-  // videoGenerationModels[0]?.label;
-
   useEffect(() => {
     timelineHeight.value = 0; //timelineHeight.value = 208;
     sidePanelWidth.value = 340;
@@ -110,14 +103,7 @@ export const PageEditor = () => {
     };
   }, []);
 
-  const selectedModel =
-    selectedModels[PAGE_ID] ||
-    STAGE_3D_PAGE_MODEL_LIST[0]?.label;
-
-  const selectedModelInfo: ModelInfo | undefined =
-    STAGE_3D_PAGE_MODEL_LIST.find(
-      (m) => m.label === selectedModel,
-    )?.modelInfo;
+  const selectedImageModel : ImageModel | undefined = getSelectedImageModel(PAGE_ID);
 
   const height =
     dndTimelineHeight.value > -1
@@ -526,7 +512,7 @@ export const PageEditor = () => {
                   handleCameraNameChange={handleCameraNameChange}
                   handleCameraFocalLengthChange={handleCameraFocalLengthChange}
                   onAspectRatioSelect={onAspectRatioSelect}
-                  selectedModelInfo={selectedModelInfo}
+                  selectedImageModel={selectedImageModel}
                   setEnginePrompt={(prompt) => {
                     console.log("setEnginePrompt", prompt);
                     if (!editorEngine) {
@@ -548,7 +534,7 @@ export const PageEditor = () => {
                 />
 
                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-                  <ModelSelector
+                  <ClassyModelSelector
                     items={STAGE_3D_PAGE_MODEL_LIST}
                     page={PAGE_ID}
                     panelTitle="Select Model"

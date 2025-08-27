@@ -35,19 +35,12 @@ import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { PromptsApi } from "@storyteller/api";
 import {
-  // SoraImageRemix,
-  // SoraImageRemixAspectRatio,
-  // CheckSoraSession,
-  // SoraSessionState,
-  // waitForSoraLogin,
   EnqueueContextualEditImage,
   EnqueueContextualEditImageSize,
 } from "@storyteller/tauri-api";
-// import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
-// import { invoke } from "@tauri-apps/api/core";
 import { usePrompt2DStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
-import { ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
+import { getCapabilitiesForModel } from "@storyteller/model-list";
 import { ImageModel } from "@storyteller/model-list";
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";
@@ -62,7 +55,6 @@ interface PromptBox2DProps {
     assetFile: File;
     progressCallback: (newState: UploaderState) => void;
   }) => Promise<void>;
-  //selectedModelInfo?: ModelInfo;
   selectedImageModel?: ImageModel;
   getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
@@ -79,7 +71,6 @@ export const PromptBox2D = ({
   useJobContext,
   onEnqueuePressed,
   onAspectRatioChange,
-  //selectedModelInfo,
   selectedImageModel,
   onFitPressed,
 }: PromptBox2DProps) => {
@@ -321,31 +312,7 @@ export const PromptBox2D = ({
     setPrompt(e.target.value);
   };
 
-  // Helper to show Sora login reminder and wait for login
-  // const handleSoraLoginReminder = async () => {
-  //   return new Promise<void>((resolve) => {
-  //     showActionReminder({
-  //       reminderType: "soraLogin",
-  //       onPrimaryAction: async () => {
-  //         await invoke("open_sora_login_command");
-  //         await waitForSoraLogin();
-  //         toast.success("Logged in to Sora!");
-  //         resolve();
-  //       },
-  //     });
-  //   });
-  // };
-
   const handleTauriEnqueue = async () => {
-    // NB(bt): This needs to move to an error handler.
-    // // Check if the Sora session is valid
-    // const soraSession = await CheckSoraSession();
-    // if (soraSession.state !== SoraSessionState.Valid) {
-    //   setIsEnqueueing(false);
-    //   await handleSoraLoginReminder();
-    //   return;
-    // }
-
     const api = new PromptsApi();
     let image = getCanvasRenderBitmap();
     if (image === undefined) {

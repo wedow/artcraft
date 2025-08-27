@@ -54,11 +54,6 @@ const buildItems2 = (
  * OLD MODEL LISTS
  */ 
 
-export const STAGE_3D_PAGE_MODEL_LIST : ModelList = buildItems(
-  STAGE_3D_PAGE_MODELS,
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
-
 export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems(
   IMAGE_EDITOR_PAGE_MODELS,
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
@@ -72,10 +67,14 @@ export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems(
  */ 
 
 export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = buildItems2(
-  IMAGE_MODELS.filter((m) => m.tags?.includes(ModelTag.InstructiveEdit)),
+  IMAGE_MODELS.filter((m) => m.tags?.includes(ModelTag.InstructiveEdit)), // TODO: Just attach which page we want to see it on.
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
 );
 
+export const STAGE_3D_PAGE_MODEL_LIST : ModelList = buildItems2(
+  IMAGE_MODELS.filter((m) => m.tags?.includes(ModelTag.InstructiveEdit)),
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+);
 
 export const IMAGE_TO_VIDEO_PAGE_MODEL_LIST : ModelList = buildItems2(
   VIDEO_MODELS,

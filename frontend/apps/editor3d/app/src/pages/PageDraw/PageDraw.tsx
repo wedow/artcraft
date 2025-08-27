@@ -11,13 +11,11 @@ import Konva from "konva";
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
-import { ImageModel, ModelInfo } from "@storyteller/model-list";
+import { ImageModel } from "@storyteller/model-list";
 import {
   CANVAS_2D_PAGE_MODEL_LIST,
   ClassyModelSelector,
   ModelPage,
-  ModelSelector,
-  useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
 import { getSelectedImageModel } from "@storyteller/ui-model-selector";
@@ -52,20 +50,10 @@ export const DecodeBase64ToImage = async (
 const PageDraw = () => {
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
-  //const { selectedModels } = useModelSelectorStore();
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const store = useSceneStore();
-
-  //const selectedModel =
-  //  selectedModels[PAGE_ID] ||
-  //  CANVAS_2D_PAGE_MODEL_LIST[0]?.label;
-
-  //const selectedModelInfo: ModelInfo | undefined =
-  //  CANVAS_2D_PAGE_MODEL_LIST.find(
-  //    (m) => m.label === selectedModel,
-  //  )?.modelInfo;
 
   const selectedImageModel : ImageModel | undefined = getSelectedImageModel(PAGE_ID);
 
