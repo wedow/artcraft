@@ -227,7 +227,11 @@ pub async fn search_featured_media_files_handler(
           media_type: result.media_type,
           maybe_engine_category: result.maybe_engine_category,
           maybe_animation_type: result.maybe_animation_type,
-          media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
+          media_links: MediaLinksBuilder::from_media_path_and_env(
+            media_domain, 
+            server_state.server_environment,
+            &public_bucket_path
+          ),
           public_bucket_path: public_bucket_path
               .get_full_object_path_str()
               .to_string(),

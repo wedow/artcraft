@@ -333,7 +333,11 @@ pub async fn batch_get_media_files_handler(
           maybe_media_subtype: result.maybe_media_subtype,
           maybe_engine_extension,
           maybe_batch_token: result.maybe_batch_token,
-          media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
+          media_links: MediaLinksBuilder::from_media_path_and_env(
+            media_domain, 
+            server_state.server_environment,
+            &public_bucket_path
+          ),
           public_bucket_path: public_bucket_path
               .get_full_object_path_str()
               .to_string(),

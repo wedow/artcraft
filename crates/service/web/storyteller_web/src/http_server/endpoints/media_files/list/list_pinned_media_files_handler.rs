@@ -215,7 +215,11 @@ pub async fn list_pinned_media_files_handler(
             media_type: m.media_type,
             maybe_engine_category: m.maybe_engine_category,
             maybe_animation_type: m.maybe_animation_type,
-            media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
+            media_links: MediaLinksBuilder::from_media_path_and_env(
+              media_domain, 
+              server_state.server_environment,
+              &public_bucket_path
+            ),
             public_bucket_path: public_bucket_path
                 .get_full_object_path_str()
                 .to_string(),

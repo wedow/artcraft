@@ -230,7 +230,10 @@ pub async fn list_user_bookmarks_for_user_handler(
               });
 
           let maybe_media_file_media_links = maybe_media_file_bucket_path.as_ref()
-              .map(|bucket_path| MediaLinksBuilder::from_media_path(media_domain, bucket_path));
+              .map(|bucket_path| MediaLinksBuilder::from_media_path_and_env(
+                media_domain, 
+                server_state.server_environment,
+                bucket_path));
 
           let mut maybe_media_file_cover = None;
           let mut maybe_model_weight_cover = None;
