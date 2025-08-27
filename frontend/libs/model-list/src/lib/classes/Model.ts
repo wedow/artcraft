@@ -1,4 +1,4 @@
-import { ModelCreator } from "../ModelCreator.js";
+import { ModelCreator } from "../creator/ModelCreator.js";
 import { ModelCategory, ModelConfig } from "../ModelConfig.js";
 import { ModelTag } from "../ModelTag.js";
 

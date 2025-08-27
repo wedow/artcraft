@@ -1,5 +1,5 @@
 import { ImageModel } from "../classes/ImageModel.js";
-import { ModelCreator } from "../ModelCreator.js";
+import { ModelCreator } from "../creator/ModelCreator.js";
 import { ModelTag } from "../ModelTag.js";
 
 export const IMAGE_MODELS: ImageModel[] = [
