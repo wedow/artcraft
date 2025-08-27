@@ -48,11 +48,12 @@ export const STAGE_3D_PAGE_MODEL_LIST : ModelList = buildItems2(
 );
 
 export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems2(
-  [
-    ALL_MODELS_BY_ID.get("flux_pro_inpaint")!,
-    ALL_MODELS_BY_ID.get("flux_dev_juggernaut_inpaint")!,
-    ALL_MODELS_BY_ID.get("flux_pro_kontext_max")!,
-  ],
+  //[
+  //  ALL_MODELS_BY_ID.get("flux_pro_inpaint")!,
+  //  ALL_MODELS_BY_ID.get("flux_dev_juggernaut_inpaint")!,
+  //  ALL_MODELS_BY_ID.get("flux_pro_kontext_max")!,
+  //],
+  IMAGE_MODELS.filter((m) => m.canEditImages),
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
 );
 

@@ -4,8 +4,14 @@ import { ModelCategory } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
 
 export class ImageModel extends Model {
+  // Maximum number of images that can be generated at once
   readonly maxGenerationCount: number;
+
+  // Default number of images that can be generated at once
   readonly defaultGenerationCount: number;
+
+  // Signals image editing models that focus on editing a single image.
+  readonly canEditImages: boolean;
 
   // For inpainting models, does it require sending a mask?
   readonly usesInpaintingMask: boolean;
@@ -21,6 +27,7 @@ export class ImageModel extends Model {
     selectorBadges: string[];
     maxGenerationCount: number;
     defaultGenerationCount: number;
+    canEditImages?: boolean;
     usesInpaintingMask?: boolean;
     tags?: ModelTag[];
   }) {
@@ -36,6 +43,7 @@ export class ImageModel extends Model {
     super(args);
     this.maxGenerationCount = args.maxGenerationCount;
     this.defaultGenerationCount = args.defaultGenerationCount;
+    this.canEditImages = args.canEditImages ?? false;
     this.usesInpaintingMask = args.usesInpaintingMask ?? false; 
   } 
 }
