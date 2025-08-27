@@ -27,7 +27,7 @@ const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 const PageEdit = () => {
   //useStateSceneLoader();
 
-  const selectedImageModel : ImageModel | undefined = getSelectedImageModel(PAGE_ID);
+  const selectedImageModel: ImageModel | undefined = getSelectedImageModel(PAGE_ID);
 
   // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
@@ -46,6 +46,8 @@ const PageEdit = () => {
 
   // Use the Zustand store
   const store = useEditStore();
+  const addHistoryImageBundle = useEditStore((state) => state.addHistoryImageBundle);
+  const historyImageBundles = useEditStore((state) => state.historyImageBundles)
 
   // Pass store actions directly as callbacks
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
@@ -273,6 +275,7 @@ const PageEdit = () => {
       >
         <BaseImageSelector
           onImageSelect={(image: BaseSelectorImage) => {
+            addHistoryImageBundle({ images: [image] });
             store.setBaseImageInfo(image);
           }}
           showLoading={
@@ -305,11 +308,13 @@ const PageEdit = () => {
           onClear={() => {
             store.RESET();
           }}
-          startingBundles={[{ images: [store.baseImageInfo] } as ImageBundle]}
+          imageBundles={historyImageBundles}
           onImageSelect={(baseImage) => {
             store.clearLineNodes();
             store.setBaseImageInfo(baseImage);
           }}
+          onNewImageBundle={addHistoryImageBundle}
+          selectedImageToken={store.baseImageInfo?.mediaToken}
         />
       </div>
       <div
