@@ -1,4 +1,4 @@
-import { ModelCreator } from "../metadata/ModelCreator.js";
+import { ModelCreator } from "../classes/metadata/ModelCreator.js";
 
 export interface ModelInfo {
   // Human-readible name

@@ -1,6 +1,6 @@
-import { ModelCreator } from "../metadata/ModelCreator.js";
+import { ModelCreator } from "../classes/metadata/ModelCreator.js";
 import { ModelInfo } from "./ModelInfo.js";
-import { ModelTag } from "../metadata/ModelTag.js";
+import { ModelTag } from "../classes/metadata/ModelTag.js";
 import {
   ModelConfig,
   ModelCapabilities,

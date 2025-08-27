@@ -1,6 +1,6 @@
-import { ModelCreator } from "../metadata/ModelCreator.js";
+import { ModelCreator } from "./metadata/ModelCreator.js";
 import { ModelCategory, ModelConfig } from "../legacy/ModelConfig.js";
-import { ModelTag } from "../metadata/ModelTag.js";
+import { ModelTag } from "./metadata/ModelTag.js";
 
 // NB: Do not create instances of this class directly, use subclasses.
 export class Model {
