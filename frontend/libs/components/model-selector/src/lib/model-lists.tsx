@@ -5,7 +5,6 @@ import {
   getCreatorIcon,
   Model,
   ModelConfig,
-  TEXT_TO_IMAGE_PAGE_MODELS,
   CANVAS_2D_PAGE_MODELS,
   STAGE_3D_PAGE_MODELS,
   IMAGE_EDITOR_PAGE_MODELS,

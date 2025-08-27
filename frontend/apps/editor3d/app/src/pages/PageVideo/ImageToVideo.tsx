@@ -3,11 +3,12 @@ import { JobContextType } from "@storyteller/common";
 import { PromptBoxVideo } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
 import {
-  ModelPage,
   IMAGE_TO_VIDEO_PAGE_MODEL_LIST,
+  ModelPage,
   VideoModelSelector,
 } from "@storyteller/ui-model-selector";
-import { useVideoModelSelectorStore } from "@storyteller/ui-model-selector";
+import { VideoModel } from "@storyteller/model-list";
+import { getSelectedVideoModel } from "@storyteller/ui-model-selector";
 
 const PAGE_ID : ModelPage = ModelPage.ImageToVideo;
 
@@ -18,7 +19,8 @@ interface ImageToVideoProps {
 
 const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { selectedModel } = useVideoModelSelectorStore();
+
+  const selectedVideoModel : VideoModel | undefined = getSelectedVideoModel(PAGE_ID);
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -47,7 +49,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
               console.log("Using job context");
               return jobContext;
             }}
-            selectedModel={selectedModel}
+            selectedModel={selectedVideoModel}
             imageMediaId={imageMediaId}
             url={imageUrl ?? undefined}
             onEnqueuePressed={async () => {

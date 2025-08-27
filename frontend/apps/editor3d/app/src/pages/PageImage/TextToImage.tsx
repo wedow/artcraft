@@ -6,14 +6,13 @@ import {
   TEXT_TO_IMAGE_PAGE_MODEL_LIST,
   ModelPage,
   ClassyModelSelector,
-  useClassyModelSelectorStore,
+  getSelectedImageModel,
 } from "@storyteller/ui-model-selector";
 import { ImageModel } from "@storyteller/model-list";
 interface TextToImageProps {
   imageMediaId?: string;
   imageUrl?: string;
 }
-import { Model, ModelInfo } from "@storyteller/model-list";
 import { useTextToImageGenerationCompleteEvent } from "@storyteller/tauri-events";
 import { useTextToImageStore } from "./TextToImageStore";
 import { animated, useSpring } from "@react-spring/web";
@@ -27,21 +26,12 @@ const PAGE_ID: ModelPage = ModelPage.TextToImage;
 
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  //const { selectedModels } = useModelSelectorStore();
   const batches = useTextToImageStore((s) => s.batches);
   const startBatch = useTextToImageStore((s) => s.startBatch);
   const completeBatch = useTextToImageStore((s) => s.completeBatch);
   const resetBatches = useTextToImageStore((s) => s.reset);
 
-  const { selectedModels } = useClassyModelSelectorStore();
-
-  const selectedModel : Model | undefined =
-    selectedModels[PAGE_ID] || TEXT_TO_IMAGE_PAGE_MODEL_LIST[0]?.model;
-
-  const selectedImageModel = (selectedModel instanceof ImageModel) ? selectedModel : undefined;
-
-  const selectedModelInfo: ModelInfo | undefined =
-    selectedModel?.toLegacyModelConfig().info;
+  const selectedImageModel : ImageModel | undefined = getSelectedImageModel(PAGE_ID);
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -177,7 +167,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
               imageMediaId={imageMediaId}
               url={imageUrl ?? undefined}
               onEnqueuePressed={async (prompt, count, subscriberId) => {
-                const modelLabel = selectedModelInfo?.name ?? "";
+                const modelLabel = selectedImageModel?.fullName ?? "";
                 startBatch(prompt, count, modelLabel, subscriberId);
               }}
             />

@@ -21,14 +21,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
-import { Model } from "@storyteller/model-list";
+import { VideoModel } from "@storyteller/model-list";
 import { usePromptVideoStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxVideoProps {
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
-  selectedModel?: Model;
+  selectedModel?: VideoModel;
   imageMediaId?: string;
   url?: string;
 }
