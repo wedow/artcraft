@@ -28,7 +28,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
-import { ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
+import { ImageModel, ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
 import { usePromptImageStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 
@@ -39,8 +39,7 @@ interface PromptBoxImageProps {
     count: number,
     subscriberId: string
   ) => void | Promise<void>;
-  model: string;
-  modelInfo?: ModelInfo;
+  selectedModel?: ImageModel;
   imageMediaId?: string;
   url?: string;
 }
@@ -48,8 +47,7 @@ interface PromptBoxImageProps {
 export const PromptBoxImage = ({
   useJobContext,
   onEnqueuePressed,
-  model,
-  modelInfo,
+  selectedModel,
   imageMediaId,
   url,
 }: PromptBoxImageProps) => {
@@ -133,7 +131,7 @@ export const PromptBoxImage = ({
 
   useEffect(() => {
     // Build generation count options based on selected model
-    const caps = getCapabilitiesForModel(modelInfo);
+    const caps = getCapabilitiesForModel(selectedModel);
     const defaultCount = Math.min(
       Math.max(1, caps.defaultGenerationCount ?? 1),
       caps.maxGenerationCount
@@ -151,7 +149,7 @@ export const PromptBoxImage = ({
     }));
     setGenerationCountList(items);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modelInfo]);
+  }, [selectedModel]);
 
   useEffect(() => {
     setGenerationCountList((prev) =>
@@ -285,7 +283,7 @@ export const PromptBoxImage = ({
 
     const generateResponse = await EnqueueTextToImage({
       prompt: prompt,
-      model: modelInfo,
+      model: selectedModel,
       aspect_ratio: aspectRatio,
       number_images: generationCount,
       frontend_caller: "text_to_image",

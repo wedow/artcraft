@@ -1,5 +1,5 @@
-import { VideoModel } from "./classes/VideoModel.js";
-import { ModelCreator } from "./ModelCreator.js";
+import { VideoModel } from "../classes/VideoModel.js";
+import { ModelCreator } from "../ModelCreator.js";
 
 export const VIDEO_MODELS: VideoModel[] = [
   new VideoModel({

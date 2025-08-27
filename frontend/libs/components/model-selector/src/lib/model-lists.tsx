@@ -10,6 +10,7 @@ import {
   STAGE_3D_PAGE_MODELS,
   IMAGE_EDITOR_PAGE_MODELS,
   VIDEO_MODELS,
+  IMAGE_MODELS,
 } from "@storyteller/model-list";
 
 export type ModelList = Omit<PopoverItem, "selected">[];
@@ -53,11 +54,6 @@ const buildItems2 = (
  * OLD MODEL LISTS
  */ 
 
-export const TEXT_TO_IMAGE_PAGE_MODEL_LIST : ModelList = buildItems(
-  TEXT_TO_IMAGE_PAGE_MODELS,
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
-
 export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = buildItems(
   CANVAS_2D_PAGE_MODELS,
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
@@ -83,4 +79,9 @@ export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems(
 export const IMAGE_TO_VIDEO_PAGE_MODEL_LIST : ModelList = buildItems2(
   VIDEO_MODELS,
   <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />
+);
+
+export const TEXT_TO_IMAGE_PAGE_MODEL_LIST : ModelList = buildItems2(
+  IMAGE_MODELS,
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
 );

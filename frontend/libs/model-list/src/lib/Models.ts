@@ -6,6 +6,7 @@ import {
   ModelCapabilities,
   ModelCategory,
 } from "./ModelConfig.js";
+import { Model } from "./classes/Model.js";
 
 const mc = ModelCreator;
 
@@ -239,9 +240,10 @@ export const lookupModelByTauriId = (
 
 // Single exported capability resolver so callers never need to touch anything else
 export const getCapabilitiesForModel = (
-  model?: ModelInfo
+  model?: Model | ModelInfo
 ): ModelCapabilities => {
   if (!model) return DEFAULT_CAPABILITIES;
-  const cfg = lookupModelByTauriId(model.tauri_id);
+  const tauriId = model instanceof Model ? model.tauriId : model.tauri_id;
+  const cfg = lookupModelByTauriId(tauriId);
   return cfg?.capabilities ?? DEFAULT_CAPABILITIES;
 };

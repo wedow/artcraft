@@ -5,15 +5,15 @@ import BackgroundGallery from "./BackgroundGallery";
 import {
   TEXT_TO_IMAGE_PAGE_MODEL_LIST,
   ModelPage,
-  ModelSelector,
-  useModelSelectorStore,
+  ClassyModelSelector,
+  useClassyModelSelectorStore,
 } from "@storyteller/ui-model-selector";
-
+import { ImageModel } from "@storyteller/model-list";
 interface TextToImageProps {
   imageMediaId?: string;
   imageUrl?: string;
 }
-import { ModelInfo } from "@storyteller/model-list";
+import { Model, ModelInfo } from "@storyteller/model-list";
 import { useTextToImageGenerationCompleteEvent } from "@storyteller/tauri-events";
 import { useTextToImageStore } from "./TextToImageStore";
 import { animated, useSpring } from "@react-spring/web";
@@ -27,19 +27,21 @@ const PAGE_ID: ModelPage = ModelPage.TextToImage;
 
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { selectedModels } = useModelSelectorStore();
+  //const { selectedModels } = useModelSelectorStore();
   const batches = useTextToImageStore((s) => s.batches);
   const startBatch = useTextToImageStore((s) => s.startBatch);
   const completeBatch = useTextToImageStore((s) => s.completeBatch);
   const resetBatches = useTextToImageStore((s) => s.reset);
 
-  const selectedModel =
-    selectedModels[PAGE_ID] || TEXT_TO_IMAGE_PAGE_MODEL_LIST[0]?.label;
+  const { selectedModels } = useClassyModelSelectorStore();
+
+  const selectedModel : Model | undefined =
+    selectedModels[PAGE_ID] || TEXT_TO_IMAGE_PAGE_MODEL_LIST[0]?.model;
+
+  const selectedImageModel = (selectedModel instanceof ImageModel) ? selectedModel : undefined;
 
   const selectedModelInfo: ModelInfo | undefined =
-    TEXT_TO_IMAGE_PAGE_MODEL_LIST.find(
-      (m) => m.label === selectedModel,
-    )?.modelInfo;
+    selectedModel?.toLegacyModelConfig().info;
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -171,12 +173,12 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
               useJobContext={() => {
                 return jobContext;
               }}
-              model={selectedModel}
-              modelInfo={selectedModelInfo}
+              selectedModel={selectedImageModel}
               imageMediaId={imageMediaId}
               url={imageUrl ?? undefined}
               onEnqueuePressed={async (prompt, count, subscriberId) => {
-                startBatch(prompt, count, selectedModel, subscriberId);
+                const modelLabel = selectedModelInfo?.name ?? "";
+                startBatch(prompt, count, modelLabel, subscriberId);
               }}
             />
           </animated.div>
@@ -184,7 +186,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
           {!showPromptAtBottom && <BackgroundGallery />}
 
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-            <ModelSelector
+            <ClassyModelSelector
               items={TEXT_TO_IMAGE_PAGE_MODEL_LIST}
               page={PAGE_ID}
               mode="hoverSelect"
