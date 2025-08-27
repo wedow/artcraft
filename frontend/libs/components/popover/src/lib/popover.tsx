@@ -13,7 +13,7 @@ import {
   faChevronUp,
   faCircleCheck,
 } from "@fortawesome/pro-solid-svg-icons";
-import { ModelInfo } from "@storyteller/model-list";
+import { Model, ModelInfo } from "@storyteller/model-list";
 
 export interface PopoverItem {
   label: string;
@@ -28,6 +28,7 @@ export interface PopoverItem {
     icon?: ReactNode;
   }>;
   modelInfo?: ModelInfo;
+  model?: Model; // NB: Let's migrate to using this.
 }
 
 interface PopoverMenuProps {

@@ -1,5 +1,5 @@
 import { ModelCreator } from "../ModelCreator.js";
-import { ModelCategory } from "../ModelConfig.js";
+import { ModelCategory, ModelConfig } from "../ModelConfig.js";
 
 // NB: Do not create instances of this class directly, use subclasses.
 export class Model {
@@ -47,5 +47,30 @@ export class Model {
     this.selectorName = args.selectorName;
     this.selectorDescription = args.selectorDescription;
     this.selectorBadges = args.selectorBadges;
+  }
+
+  toLegacyBadges() : { label: string }[] {
+    return this.selectorBadges.map((b) => ({ label: b }));
+  }
+
+  // TODO: This is a method to support migration. Kill it after we no longer need it.
+  toLegacyModelConfig(): ModelConfig {
+    return {
+      id: this.id,
+      label: this.selectorName,
+      description: this.selectorDescription,
+      badges: this.toLegacyBadges(),
+      category: this.category,
+      info: {
+        name: this.fullName,
+        tauri_id: this.tauriId,
+        creator: this.creator,
+      },
+      capabilities: {
+        maxGenerationCount: 9, // NB: Sentinel value to detect continued use
+        defaultGenerationCount: 9, // NB: Sentinel value to detect continued use
+      },
+      tags: [],
+    };
   }
 }

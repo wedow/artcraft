@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
-import { ModelInfo } from "@storyteller/model-list";
+import { Model } from "@storyteller/model-list";
 
 export enum EnqueueImageToVideoErrorType {
   /// Caller didn't specify a model
@@ -15,7 +15,7 @@ export enum EnqueueImageToVideoErrorType {
 
 export interface EnqueueImageToVideoRequest {
   // Required. The model to use.
-  model?: ModelInfo;
+  model?: Model;
 
   // Required. Starting frame.
   image_media_token?: string;
@@ -49,10 +49,9 @@ export interface EnqueueImageToVideoSuccess extends CommandResult {
 export type EnqueueImageToVideoResult = EnqueueImageToVideoSuccess | EnqueueImageToVideoError;
 
 export const EnqueueImageToVideo = async (request: EnqueueImageToVideoRequest) : Promise<EnqueueImageToVideoResult> => {
-  const modelName = request.model?.tauri_id;
-
+  
   let mutableRequest : RawEnqueueImageToVideoRequest = {
-    model: modelName,
+    model: request.model?.tauriId,
     image_media_token: request.image_media_token,
   };
 

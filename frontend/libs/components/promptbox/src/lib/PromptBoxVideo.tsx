@@ -21,15 +21,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
-import { ModelInfo } from "@storyteller/model-list";
+import { Model } from "@storyteller/model-list";
 import { usePromptVideoStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 
 interface PromptBoxVideoProps {
   useJobContext: () => JobContextType;
   onEnqueuePressed?: () => void | Promise<void>;
-  model: string;
-  modelInfo?: ModelInfo;
+  selectedModel?: Model;
   imageMediaId?: string;
   url?: string;
 }
@@ -37,8 +36,7 @@ interface PromptBoxVideoProps {
 export const PromptBoxVideo = ({
   useJobContext,
   onEnqueuePressed,
-  model,
-  modelInfo,
+  selectedModel,
   imageMediaId,
   url,
 }: PromptBoxVideoProps) => {
@@ -194,7 +192,7 @@ export const PromptBoxVideo = ({
   const handleEnqueue = async () => {
     setIsEnqueueing(true);
 
-    console.log("PromptBoxVideo - Prompting with model", modelInfo);
+    console.log("PromptBoxVideo - Prompting with model", selectedModel);
 
     gtagEvent("enqueue_video");
 
@@ -206,7 +204,7 @@ export const PromptBoxVideo = ({
     }, 10000);
 
     const generateResponse = await EnqueueImageToVideo({
-      model: modelInfo,
+      model: selectedModel,
       image_media_token: referenceImages[0].mediaToken,
       prompt: prompt,
     });

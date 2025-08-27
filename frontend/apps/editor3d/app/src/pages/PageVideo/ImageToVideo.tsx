@@ -4,11 +4,10 @@ import { PromptBoxVideo } from "@storyteller/ui-promptbox";
 import BackgroundGallery from "./BackgroundGallery";
 import {
   ModelPage,
-  ModelSelector,
-  useModelSelectorStore,
   IMAGE_TO_VIDEO_PAGE_MODEL_LIST,
+  VideoModelSelector,
 } from "@storyteller/ui-model-selector";
-import { ModelInfo } from "@storyteller/model-list";
+import { useVideoModelSelectorStore } from "@storyteller/ui-model-selector";
 
 const PAGE_ID : ModelPage = ModelPage.ImageToVideo;
 
@@ -19,15 +18,7 @@ interface ImageToVideoProps {
 
 const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { selectedModels } = useModelSelectorStore();
-
-  const selectedModel =
-    selectedModels[PAGE_ID] ||
-    IMAGE_TO_VIDEO_PAGE_MODEL_LIST[0]?.label;
-
-  const selectedModelInfo: ModelInfo | undefined = IMAGE_TO_VIDEO_PAGE_MODEL_LIST.find(
-    (m) => m.label === selectedModel,
-  )?.modelInfo;
+  const { selectedModel } = useVideoModelSelectorStore();
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -56,8 +47,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
               console.log("Using job context");
               return jobContext;
             }}
-            model={selectedModel}
-            modelInfo={selectedModelInfo}
+            selectedModel={selectedModel}
             imageMediaId={imageMediaId}
             url={imageUrl ?? undefined}
             onEnqueuePressed={async () => {
@@ -68,7 +58,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
           <BackgroundGallery />
 
           <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-            <ModelSelector
+            <VideoModelSelector
               items={IMAGE_TO_VIDEO_PAGE_MODEL_LIST}
               page={PAGE_ID}
               panelTitle="Select Model"

@@ -5,6 +5,7 @@ export * from "./lib/ModelInfo.js";
 export * from "./lib/ModelMapping.js";
 export * from "./lib/Models.js";
 export * from "./lib/ModelsByPage.js";
-export * from "./lib/classes/Model.js";
+export * from "./lib/VideoModels.js";
 export * from "./lib/classes/ImageModel.js";
+export * from "./lib/classes/Model.js";
 export * from "./lib/classes/VideoModel.js";
