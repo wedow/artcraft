@@ -31,6 +31,7 @@ use mysql_queries::queries::generic_inference::web::batch_get_inference_job_stat
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use r2d2_redis::redis::Commands;
 use redis_common::redis_keys::RedisKeys;
+use server_environment::ServerEnvironment;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use utoipa::{IntoParams, ToSchema};
 
@@ -203,7 +204,11 @@ pub async fn batch_get_inference_job_status_handler(
 
   if tokens.is_empty() {
     // NB: MediaDomain doesn't matter since it's an empty list.
-    return Ok(records_to_response(Vec::new(), MediaDomain::Storyteller));
+    return Ok(records_to_response(
+      Vec::new(), 
+      server_state.server_environment, 
+      MediaDomain::Storyteller
+    ));
   }
 
   // NB: Since this is publicly exposed, we don't query sensitive data.
@@ -249,18 +254,19 @@ pub async fn batch_get_inference_job_status_handler(
 
   let media_domain = get_media_domain(&http_request);
 
-  Ok(records_to_response(records, media_domain))
+  Ok(records_to_response(records, server_state.server_environment, media_domain))
 }
 
 fn records_to_response(
   records: Vec<GenericInferenceJobStatus>,
+  server_environment: ServerEnvironment,
   media_domain: MediaDomain,
 ) -> Json<BatchGetInferenceJobStatusSuccessResponse> {
   Json(BatchGetInferenceJobStatusSuccessResponse {
     success: true,
     job_states: records.into_iter()
         .map(|record| {
-          db_record_to_response_payload(record, None, media_domain)
+          db_record_to_response_payload(record, None, server_environment, media_domain)
         })
         .collect::<Vec<_>>(),
   })
@@ -269,6 +275,7 @@ fn records_to_response(
 fn db_record_to_response_payload(
   record: GenericInferenceJobStatus,
   maybe_extra_status_description: Option<String>,
+  server_environment: ServerEnvironment,
   media_domain: MediaDomain,
 ) -> BatchInferenceJobStatusResponsePayload {
   let inference_category = record.request_details.inference_category;
@@ -374,7 +381,11 @@ fn db_record_to_response_payload(
       BatchResultDetailsResponse {
         entity_type: result_details.entity_type,
         entity_token: result_details.entity_token,
-        media_links: MediaLinksBuilder::from_rooted_path(media_domain, &public_bucket_media_path),
+        media_links: MediaLinksBuilder::from_rooted_path_and_env(
+          media_domain, 
+          server_environment,
+          &public_bucket_media_path
+        ),
         maybe_public_bucket_media_path: Some(public_bucket_media_path),
         maybe_successfully_completed_at: result_details.maybe_successfully_completed_at,
       }

@@ -41,6 +41,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   };
 
   useTextToImageGenerationCompleteEvent(async (event) => {
+    console.log(">>> Event", event);
     completeBatch(
       event.generated_images || [],
       event.maybe_frontend_subscriber_id,

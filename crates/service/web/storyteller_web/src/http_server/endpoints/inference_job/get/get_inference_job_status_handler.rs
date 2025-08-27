@@ -29,6 +29,7 @@ use mysql_queries::queries::generic_inference::web::get_inference_job_status::ge
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use r2d2_redis::redis::{Commands, RedisResult};
 use redis_common::redis_keys::RedisKeys;
+use server_environment::ServerEnvironment;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use utoipa::ToSchema;
 
@@ -264,6 +265,7 @@ fn record_to_payload(
   record: GenericInferenceJobStatus,
   maybe_extra_status_description: Option<String>,
   media_domain: MediaDomain,
+  server_environment: ServerEnvironment,
 ) -> InferenceJobStatusResponsePayload {
   let inference_category = record.request_details.inference_category;
 
@@ -368,7 +370,11 @@ fn record_to_payload(
       ResultDetailsResponse {
         entity_type: result_details.entity_type,
         entity_token: result_details.entity_token,
-        media_links: MediaLinksBuilder::from_rooted_path(media_domain, &public_bucket_media_path),
+        media_links: MediaLinksBuilder::from_rooted_path_and_env(
+          media_domain, 
+          server_environment,
+          &public_bucket_media_path
+        ),
         maybe_public_bucket_media_path: Some(public_bucket_media_path),
         maybe_successfully_completed_at: result_details.maybe_successfully_completed_at,
       }
@@ -385,6 +391,7 @@ mod tests {
   use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
   use mysql_queries::queries::generic_inference::web::job_status::{GenericInferenceJobStatus, RequestDetails, ResultDetails};
   use url::Url;
+  use server_environment::ServerEnvironment;
 
   #[test]
   fn text_to_speech_as_media_file() {
@@ -407,7 +414,7 @@ mod tests {
     };
 
     let payload =
-        record_to_payload(status, None, MediaDomain::Storyteller);
+        record_to_payload(status, None, ServerEnvironment::Production, MediaDomain::Storyteller);
 
     assert!(payload.maybe_result.is_some());
 

@@ -112,7 +112,11 @@ pub async fn list_batch_generated_redux_media_files_handler(
           media_class: result.media_class,
           media_type: result.media_type,
           maybe_batch_token: result.maybe_batch_token,
-          media_links: MediaLinksBuilder::from_media_path(media_domain, &public_bucket_path),
+          media_links: MediaLinksBuilder::from_media_path_and_env(
+            media_domain,
+            server_state.server_environment,
+            &public_bucket_path
+          ),
           cover_image: MediaFileCoverImageDetailsBuilder::from_optional_db_fields(
             &result.token,
             media_domain,

@@ -40,7 +40,6 @@ pub async fn maybe_handle_text_to_image_complete_event(
     batch_token,
   ).await?;
 
-
   if let Err(err) = event.send(&app) {
     error!("Failed to send TextToImageGenerationCompleteEvent: {:?}", err); // Fail open
   }
