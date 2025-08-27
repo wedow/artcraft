@@ -1,6 +1,6 @@
 import React from "react";
-import { ModelCreator } from "./creator/ModelCreator.js";
-import { getCreatorIcon } from "./creator/ModelCreatorIcons.js";
+import { ModelCreator } from "./ModelCreator.js";
+import { getCreatorIcon } from "./ModelCreatorIcons.js";
 
 // Map from model type strings to ModelCreator enum values
 export const MODEL_TYPE_TO_CREATOR: Record<string, ModelCreator> = {

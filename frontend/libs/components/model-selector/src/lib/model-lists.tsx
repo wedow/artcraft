@@ -7,7 +7,7 @@ import {
   VIDEO_MODELS,
   IMAGE_MODELS,
 } from "@storyteller/model-list";
-import { ModelTag } from "libs/model-list/src/lib/ModelTag";
+import { ModelTag } from "@storyteller/model-list";
 
 export type ModelList = Omit<PopoverItem, "selected">[];
 

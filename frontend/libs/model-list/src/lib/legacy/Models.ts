@@ -1,12 +1,12 @@
-import { ModelCreator } from "./creator/ModelCreator.js";
+import { ModelCreator } from "../metadata/ModelCreator.js";
 import { ModelInfo } from "./ModelInfo.js";
-import { ModelTag } from "./ModelTag.js";
+import { ModelTag } from "../metadata/ModelTag.js";
 import {
   ModelConfig,
   ModelCapabilities,
   ModelCategory,
 } from "./ModelConfig.js";
-import { Model } from "./classes/Model.js";
+import { Model } from "../classes/Model.js";
 
 const mc = ModelCreator;
 

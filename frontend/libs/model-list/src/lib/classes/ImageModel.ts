@@ -1,7 +1,7 @@
 import { ModelCreator } from "src/index.js";
 import { Model } from "./Model.js";
-import { ModelCategory } from "../ModelConfig.js";
-import { ModelTag } from "../ModelTag.js";
+import { ModelCategory } from "../legacy/ModelConfig.js";
+import { ModelTag } from "../metadata/ModelTag.js";
 
 export class ImageModel extends Model {
   readonly maxGenerationCount: number;

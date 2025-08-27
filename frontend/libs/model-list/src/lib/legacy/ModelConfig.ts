@@ -1,5 +1,5 @@
 import { ModelInfo } from "./ModelInfo.js";
-import { ModelTag } from "./ModelTag.js";
+import { ModelTag } from "../metadata/ModelTag.js";
 
 export type ModelCategory = "image" | "video";
 
