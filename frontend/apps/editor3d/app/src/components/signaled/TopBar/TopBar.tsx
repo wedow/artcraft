@@ -154,6 +154,9 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
         url,
         mediaToken: mediaId || "",
       };
+
+      // Add it to state history
+      useEditStore.getState().addHistoryImageBundle({ images: [baseImage] });
       useEditStore.getState().setBaseImageInfo(baseImage);
 
       // Close gallery modal and lightbox if open
