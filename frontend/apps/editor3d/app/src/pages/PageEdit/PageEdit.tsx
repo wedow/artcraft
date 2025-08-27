@@ -188,7 +188,8 @@ const PageEdit = () => {
     );
 
     // Convert colored canvas to alpha mask
-    drawAlphaMask(fittedCanvas, rect.width(), rect.height());
+    // NOTE: This isn't needed because the tauri backend uses the alpha channel anyway
+    // drawAlphaMask(fittedCanvas, rect.width(), rect.height());
 
     const blob = await fittedCanvas.convertToBlob({ type: "image/png" });
     const arrayBuffer = await blob.arrayBuffer();
