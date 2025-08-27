@@ -4,10 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   getCreatorIcon,
   Model,
-  ModelConfig,
-  CANVAS_2D_PAGE_MODELS,
-  STAGE_3D_PAGE_MODELS,
-  IMAGE_EDITOR_PAGE_MODELS,
   VIDEO_MODELS,
   IMAGE_MODELS,
 } from "@storyteller/model-list";
@@ -16,22 +12,6 @@ import { ModelTag } from "libs/model-list/src/lib/ModelTag";
 export type ModelList = Omit<PopoverItem, "selected">[];
 
 const withIcon = (creatorIcon: any, fallback: any) => creatorIcon || fallback;
-
-const buildItems = (
-  models: ModelConfig[],
-  fallbackIcon: any
-) =>
-  models.map((m) => ({
-    label: m.label,
-    icon: withIcon(getCreatorIcon(m.info.creator), fallbackIcon),
-    description: m.description,
-    badges: m.badges?.map((b) => ({
-      label: b.label,
-      icon: <FontAwesomeIcon icon={faClock} />,
-    })),
-    modelConfig: m, // Access to full object.
-    modelInfo: m.info,
-  }));
 
 const buildItems2 = (
   models: Model[],
@@ -46,7 +26,6 @@ const buildItems2 = (
       icon: <FontAwesomeIcon icon={faClock} />,
     })),
     modelConfig: model.toLegacyModelConfig(), // Access to full object.
-    modelInfo: undefined, // NB: Dead.
     model: model,
   }));
 

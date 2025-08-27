@@ -30,7 +30,7 @@ const cfg = (
   ...m,
 });
 
-export const ALL_MODELS: ModelConfig[] = [
+const ALL_MODELS: ModelConfig[] = [
   //////////////////////////////
   // Image models
   //////////////////////////////
