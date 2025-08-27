@@ -6,7 +6,7 @@ import {
   faTrashXmark,
   faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { BaseSelectorImage } from "./BaseImageSelector";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -61,17 +61,16 @@ export const HistoryStack = ({
     <div className="h-auto w-20 rounded-lg">
       <div className="glass max-h-1/2 flex flex-col-reverse items-center justify-center gap-2 overflow-y-auto rounded-lg p-1.5">
         {imageBundles.map((bundle, index) => (
-          <>
-            {bundle.images.map((image, imgIndex) => (
+          <Fragment key={index}>
+            {bundle.images.map((image) => (
               <Button
-                key={imgIndex}
+                key={image.mediaToken}
                 className={twMerge(
                   "relative aspect-square h-full w-full border-2 bg-transparent p-0 hover:bg-transparent hover:opacity-80",
                   selectedImageToken === image.mediaToken &&
                   "border-primary hover:opacity-100",
                 )}
                 onClick={() => {
-                  setSelectedImageToken(image.mediaToken);
                   onImageSelect(image);
                 }}
               >
@@ -85,9 +84,9 @@ export const HistoryStack = ({
               </Button>
             ))}
             {index < imageBundles.length - 1 && (
-              <hr className="h-0.5 w-3/4 rounded-md border-none bg-white/10" />
+              <hr className="h-0.5 w-3/4 rounded-md border-none bg-white/10" key={"hr" + index} />
             )}
-          </>
+          </Fragment>
         ))}
         <FontAwesomeIcon
           icon={faClockRotateLeft}
