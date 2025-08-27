@@ -156,18 +156,6 @@ const PageEdit = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-fit the canvas when base image is loaded
-  useEffect(() => {
-    if (!store.baseImageBitmap) {
-      console.log("No base image bitmap available, skipping auto-fit");
-      return;
-    }
-
-    // When baseImageBitmap changes from null to an actual image, call onFitPressed
-    // Use a slight delay to ensure the image dimensions are properly loaded
-    onFitPressed();
-  }, [onFitPressed, store.baseImageBitmap]);
-
   // Create a function to use the left layer ref and download the bitmap from it
   const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
     if (
