@@ -10,7 +10,7 @@ import { useUndoRedoHotkeys } from "../PageDraw/hooks/useUndoRedoHotkeys";
 import PromptEditor from "./PromptEditor/PromptEditor";
 import { ActiveEditTool, useEditStore } from "./stores/EditState";
 import { EditPaintSurface } from "./EditPaintSurface";
-import { normalizeCanvas } from "../../Helpers/CanvasHelpers";
+import { drawAlphaMask, normalizeCanvas } from "../../Helpers/CanvasHelpers";
 import { BaseImageSelector, BaseSelectorImage } from "./BaseImageSelector";
 import DrawToolControlBar from "./DrawToolControlBar";
 import {
@@ -27,7 +27,7 @@ const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 const PageEdit = () => {
   //useStateSceneLoader();
 
-  const selectedImageModel : ImageModel | undefined = getSelectedImageModel(PAGE_ID);
+  const selectedImageModel: ImageModel | undefined = getSelectedImageModel(PAGE_ID);
 
   // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
@@ -196,6 +196,9 @@ const PageEdit = () => {
       rect.width(),
       rect.height(),
     );
+
+    // Convert colored canvas to alpha mask
+    drawAlphaMask(fittedCanvas, rect.width(), rect.height());
 
     const blob = await fittedCanvas.convertToBlob({ type: "image/png" });
     const arrayBuffer = await blob.arrayBuffer();
@@ -374,7 +377,7 @@ const PageEdit = () => {
             }}
             //fillColor={store.fillColor}
             activeTool={store.activeTool}
-            brushColor={store.brushColor}
+            brushColor={"rgba(39, 187, 245, 0.54)"}
             brushSize={store.brushSize}
             onSelectionChange={setIsSelecting}
             stageRef={stageRef}
