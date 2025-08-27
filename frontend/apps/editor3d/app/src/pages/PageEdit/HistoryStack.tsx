@@ -59,7 +59,7 @@ export const HistoryStack = ({
 
   return (
     <div className="h-auto w-20 rounded-lg">
-      <div className="glass max-h-1/2 flex flex-col-reverse items-center justify-center gap-2 overflow-y-auto rounded-lg p-1.5">
+      <div className={"glass max-h-[50vh] flex flex-col-reverse items-center justify-center gap-2 overflow-y-auto rounded-lg p-1.5"}>
         {imageBundles.map((bundle, index) => (
           <Fragment key={index}>
             {bundle.images.map((image) => (
@@ -84,7 +84,7 @@ export const HistoryStack = ({
               </Button>
             ))}
             {index < imageBundles.length - 1 && (
-              <hr className="h-0.5 w-3/4 rounded-md border-none bg-white/10" key={"hr" + index} />
+              <hr className="min-h-0.5 h-0.5 w-3/4 rounded-md border-none bg-white/10" key={"hr" + index} />
             )}
           </Fragment>
         ))}
