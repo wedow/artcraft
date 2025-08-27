@@ -63,6 +63,8 @@ export const IMAGE_TO_VIDEO_PAGE_MODEL_LIST : ModelList = buildItems2(
 
 export const TEXT_TO_IMAGE_PAGE_MODEL_LIST : ModelList = buildItems2(
   IMAGE_MODELS
-    .filter((model) => !model.usesInpaintingMask), // We can't use masked inpainting models here
+    .filter((model) => !model.usesInpaintingMask) // We can't use masked inpainting models here
+    .filter((model) => model.id !== "flux_pro_kontext_max") // NB: Flux Pro Kontext Max requires an input image
+    ,
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
 );

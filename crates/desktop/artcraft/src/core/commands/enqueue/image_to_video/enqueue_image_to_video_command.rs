@@ -6,7 +6,6 @@ use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
-use crate::core::model::video_models::VideoModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
@@ -20,6 +19,27 @@ use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+
+/// This is used in the Tauri command bridge. 
+/// Don't change the serializations without coordinating with the frontend.
+#[derive(Deserialize, Debug, Copy, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum VideoModel {
+  #[serde(rename = "kling_1.6_pro")]
+  Kling16Pro,
+
+  #[serde(rename = "kling_2.1_pro")]
+  Kling21Pro,
+
+  #[serde(rename = "kling_2.1_master")]
+  Kling21Master,
+
+  #[serde(rename = "seedance_1.0_lite")]
+  Seedance10Lite,
+
+  #[serde(rename = "veo_2")]
+  Veo2,
+}
 
 #[derive(Deserialize)]
 pub struct EnqueueImageToVideoRequest {

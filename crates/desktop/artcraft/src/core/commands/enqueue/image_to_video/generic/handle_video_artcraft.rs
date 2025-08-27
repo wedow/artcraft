@@ -1,11 +1,10 @@
-use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
+use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, VideoModel};
 use crate::core::commands::enqueue::image_to_video::internal_video_error::InternalVideoError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
-use crate::core::model::video_models::VideoModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
