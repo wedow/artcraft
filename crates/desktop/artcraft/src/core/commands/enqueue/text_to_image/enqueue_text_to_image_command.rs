@@ -12,7 +12,6 @@ use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
-use crate::core::model::image_models::ImageModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
@@ -26,12 +25,35 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+
+/// This is used in the Tauri command bridge. 
+/// Don't change the serializations without coordinating with the frontend.
+#[derive(Deserialize, Debug, Copy, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum ImageModel {
+  #[serde(rename = "flux_1_dev")]
+  Flux1Dev,
+  #[serde(rename = "flux_1_schnell")]
+  Flux1Schnell,
+  #[serde(rename = "flux_pro_11")]
+  FluxPro11,
+  #[serde(rename = "flux_pro_11_ultra")]
+  FluxPro11Ultra,
+  #[serde(rename = "gpt_image_1")]
+  GptImage1,
+  #[serde(rename = "recraft_3")]
+  Recraft3,
+
+  // Generic Midjourney model, version unknown.
+  #[serde(rename = "midjourney")]
+  Midjourney,
+}
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
