@@ -1,5 +1,6 @@
 import { ImageModel } from "../classes/ImageModel.js";
 import { ModelCreator } from "../ModelCreator.js";
+import { ModelTag } from "../ModelTag.js";
 
 export const IMAGE_MODELS: ImageModel[] = [
   new ImageModel({
@@ -73,6 +74,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorBadges: ["45 sec."],
     maxGenerationCount: 1,
     defaultGenerationCount: 1,
+    tags: [ModelTag.InstructiveEdit],
   }),
   new ImageModel({
     id: "flux_pro_kontext_max",
@@ -85,6 +87,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorBadges: ["20 sec."],
     maxGenerationCount: 4,
     defaultGenerationCount: 4,
+    tags: [ModelTag.InstructiveEdit],
   }),
   new ImageModel({
     id: "flux_pro_inpaint",

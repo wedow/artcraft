@@ -1,5 +1,6 @@
 import { ModelCreator } from "../ModelCreator.js";
 import { ModelCategory, ModelConfig } from "../ModelConfig.js";
+import { ModelTag } from "../ModelTag.js";
 
 // NB: Do not create instances of this class directly, use subclasses.
 export class Model {
@@ -29,6 +30,9 @@ export class Model {
   // Labels for the selector
   readonly selectorBadges: string[];
 
+  // A list of filterable "capabilities" that can be used to filter models.
+  readonly tags: ModelTag[];
+
   protected constructor(args: {
     id: string;
     tauriId: string;
@@ -38,6 +42,7 @@ export class Model {
     selectorName: string;
     selectorDescription: string;
     selectorBadges: string[];
+    tags?: ModelTag[];
   }) {
     this.id = args.id;
     this.tauriId = args.tauriId;
@@ -47,6 +52,7 @@ export class Model {
     this.selectorName = args.selectorName;
     this.selectorDescription = args.selectorDescription;
     this.selectorBadges = args.selectorBadges;
+    this.tags = args.tags ?? [];
   }
 
   toLegacyBadges() : { label: string }[] {

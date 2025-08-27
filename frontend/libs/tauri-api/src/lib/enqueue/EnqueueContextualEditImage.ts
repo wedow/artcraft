@@ -1,11 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
-import { ModelInfo } from "@storyteller/model-list";
+import { ImageModel, ModelInfo } from "@storyteller/model-list";
 
 export interface EnqueueContextualEditImageRequest {
 
   /// The model to use.
-  model?: ModelInfo | EnqueueContextualEditImageModel;
+  model?: ImageModel | ModelInfo | EnqueueContextualEditImageModel;
 
   /// If set, this is the first image in the contextual image set.
   /// This gets submitted along with `image_media_tokens` and will 
@@ -95,6 +95,8 @@ export const EnqueueContextualEditImage = async (request: EnqueueContextualEditI
   if (!!request.model) {
     if (typeof request.model === "string") {
       modelName = request.model;
+    } else if (request.model instanceof ImageModel) {
+      modelName = request.model.tauriId;
     } else {
       modelName = request.model.tauri_id;
     }

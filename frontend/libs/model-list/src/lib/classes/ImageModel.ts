@@ -1,6 +1,7 @@
 import { ModelCreator } from "src/index.js";
 import { Model } from "./Model.js";
 import { ModelCategory } from "../ModelConfig.js";
+import { ModelTag } from "../ModelTag.js";
 
 export class ImageModel extends Model {
   readonly maxGenerationCount: number;
@@ -21,6 +22,7 @@ export class ImageModel extends Model {
     maxGenerationCount: number;
     defaultGenerationCount: number;
     usesInpaintingMask?: boolean;
+    tags?: ModelTag[];
   }) {
     if (args.maxGenerationCount < 1) {
       throw new Error("maxGenerationCount must be at least 1");

@@ -1,3 +1,4 @@
+import { ImageModel } from "libs/model-list/src/lib/classes/ImageModel";
 import { ModelInfo } from "libs/model-list/src/lib/ModelInfo";
 
 export interface PromptEditorProps {
@@ -11,6 +12,7 @@ export interface PromptEditorProps {
   onEnqueuePressed?: () => void;
   onFitPressed?: () => void;
   selectedModelInfo?: ModelInfo;
+  selectedImageModel?: ImageModel;
 }
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";

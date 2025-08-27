@@ -48,6 +48,7 @@ import {
 import { usePrompt2DStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { ModelInfo, getCapabilitiesForModel } from "@storyteller/model-list";
+import { ImageModel } from "@storyteller/model-list";
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";
 
@@ -61,7 +62,8 @@ interface PromptBox2DProps {
     assetFile: File;
     progressCallback: (newState: UploaderState) => void;
   }) => Promise<void>;
-  selectedModelInfo?: ModelInfo;
+  //selectedModelInfo?: ModelInfo;
+  selectedImageModel?: ImageModel;
   getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
   useJobContext: () => JobContextType;
@@ -77,7 +79,8 @@ export const PromptBox2D = ({
   useJobContext,
   onEnqueuePressed,
   onAspectRatioChange,
-  selectedModelInfo,
+  //selectedModelInfo,
+  selectedImageModel,
   onFitPressed,
 }: PromptBox2DProps) => {
   useSignals();
@@ -129,7 +132,7 @@ export const PromptBox2D = ({
 
   // Update generation count options from selected model capabilities
   useEffect(() => {
-    const caps = getCapabilitiesForModel(selectedModelInfo);
+    const caps = getCapabilitiesForModel(selectedImageModel);
     const items: PopoverItem[] = Array.from(
       { length: caps.maxGenerationCount },
       (_, i) => i + 1
@@ -146,7 +149,7 @@ export const PromptBox2D = ({
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModelInfo]);
+  }, [selectedImageModel]);
 
   // Keep UI selection in sync when store value changes
   useEffect(() => {
@@ -379,7 +382,7 @@ export const PromptBox2D = ({
     const aspectRatio = getCurrentAspectRatio();
 
     const generateResponse = await EnqueueContextualEditImage({
-      model: selectedModelInfo,
+      model: selectedImageModel,
       scene_image_media_token: snapshotMediaToken.data!,
       image_media_tokens: referenceImages.map((image) => image.mediaToken),
       disable_system_prompt: !useSystemPrompt,

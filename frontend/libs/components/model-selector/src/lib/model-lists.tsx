@@ -11,6 +11,7 @@ import {
   VIDEO_MODELS,
   IMAGE_MODELS,
 } from "@storyteller/model-list";
+import { ModelTag } from "libs/model-list/src/lib/ModelTag";
 
 export type ModelList = Omit<PopoverItem, "selected">[];
 
@@ -53,11 +54,6 @@ const buildItems2 = (
  * OLD MODEL LISTS
  */ 
 
-export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = buildItems(
-  CANVAS_2D_PAGE_MODELS,
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
-
 export const STAGE_3D_PAGE_MODEL_LIST : ModelList = buildItems(
   STAGE_3D_PAGE_MODELS,
   <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
@@ -74,6 +70,12 @@ export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems(
  * We won't index by name, but rather id, or simply will always have full 
  * access to the object directly.
  */ 
+
+export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = buildItems2(
+  IMAGE_MODELS.filter((m) => m.tags?.includes(ModelTag.InstructiveEdit)),
+  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+);
+
 
 export const IMAGE_TO_VIDEO_PAGE_MODEL_LIST : ModelList = buildItems2(
   VIDEO_MODELS,

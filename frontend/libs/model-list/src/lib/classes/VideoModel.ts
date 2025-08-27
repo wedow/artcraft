@@ -1,6 +1,7 @@
 import { ModelCreator } from "src/index.js";
 import { Model } from "./Model.js";
 import { ModelCategory } from "../ModelConfig.js";
+import { ModelTag } from "../ModelTag.js";
 
 export class VideoModel extends Model {
   // Whether the model supports image starting frames
@@ -20,6 +21,7 @@ export class VideoModel extends Model {
     selectorBadges: string[];
     startFrame: boolean;
     endFrame: boolean;
+    tags?: ModelTag[];
   }) {
     super(args);
     this.startFrame = args.startFrame;

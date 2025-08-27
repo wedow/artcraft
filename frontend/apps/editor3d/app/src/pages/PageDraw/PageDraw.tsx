@@ -11,14 +11,16 @@ import Konva from "konva";
 import { setCanvasRenderBitmap } from "../../signals/canvasRenderBitmap";
 import { captureStageImageBitmap } from "./hooks/useUpdateSnapshot";
 import { ContextMenuContainer } from "./components/ui/ContextMenu";
-import { ModelInfo } from "@storyteller/model-list";
+import { ImageModel, ModelInfo } from "@storyteller/model-list";
 import {
   CANVAS_2D_PAGE_MODEL_LIST,
+  ClassyModelSelector,
   ModelPage,
   ModelSelector,
   useModelSelectorStore,
 } from "@storyteller/ui-model-selector";
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
+import { getSelectedImageModel } from "@storyteller/ui-model-selector";
 
 const PAGE_ID : ModelPage = ModelPage.Canvas2D;
 
@@ -50,20 +52,22 @@ export const DecodeBase64ToImage = async (
 const PageDraw = () => {
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
-  const { selectedModels } = useModelSelectorStore();
+  //const { selectedModels } = useModelSelectorStore();
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const store = useSceneStore();
 
-  const selectedModel =
-    selectedModels[PAGE_ID] ||
-    CANVAS_2D_PAGE_MODEL_LIST[0]?.label;
+  //const selectedModel =
+  //  selectedModels[PAGE_ID] ||
+  //  CANVAS_2D_PAGE_MODEL_LIST[0]?.label;
 
-  const selectedModelInfo: ModelInfo | undefined =
-    CANVAS_2D_PAGE_MODEL_LIST.find(
-      (m) => m.label === selectedModel,
-    )?.modelInfo;
+  //const selectedModelInfo: ModelInfo | undefined =
+  //  CANVAS_2D_PAGE_MODEL_LIST.find(
+  //    (m) => m.label === selectedModel,
+  //  )?.modelInfo;
+
+  const selectedImageModel : ImageModel | undefined = getSelectedImageModel(PAGE_ID);
 
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
   useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
@@ -305,7 +309,8 @@ const PageDraw = () => {
           }}
           onEnqueuePressed={onEnqueuedPressed}
           onFitPressed={onFitPressed}
-          selectedModelInfo={selectedModelInfo}
+          //selectedModelInfo={selectedModelInfo}
+          selectedImageModel={selectedImageModel}
         />
       </div>
       <SideToolbar
@@ -446,7 +451,7 @@ const PageDraw = () => {
         </ContextMenuContainer>
       </div>
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
-        <ModelSelector
+        <ClassyModelSelector
           items={CANVAS_2D_PAGE_MODEL_LIST}
           page={PAGE_ID}
           panelTitle="Select Model"

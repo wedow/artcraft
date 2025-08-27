@@ -9,12 +9,14 @@ import { JobProvider, useJobContext } from "../JobContext";
 
 // Set this value on when enqueue is pressed nasty global variable.
 import { getCanvasRenderBitmap } from "../../../signals/canvasRenderBitmap";
+
 const PromptEditor: React.FC<PromptEditorProps> = ({
   onImageStyleChange,
   onEnqueuePressed,
   onAspectRatioChange,
   onFitPressed,
-  selectedModelInfo,
+  //selectedModelInfo,
+  selectedImageModel,
 }) => {
   const [images, setImages] = useState<ImageStyle[]>([]);
 
@@ -44,7 +46,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
           onEnqueuePressed={onEnqueuePressed}
           onAspectRatioChange={onAspectRatioChange}
           onFitPressed={onFitPressed}
-          selectedModelInfo={selectedModelInfo}
+          //selectedModelInfo={selectedModelInfo}
+          selectedImageModel={selectedImageModel}
         />
       </JobProvider>
 
