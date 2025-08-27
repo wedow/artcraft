@@ -214,9 +214,9 @@ const ALL_MODELS: ModelConfig[] = [
   }),
 ];
 
-export const ALL_MODELS_BY_ID: Map<string, ModelConfig> = new Map(
-  ALL_MODELS.map((model) => [model.id, model])
-);
+// export const ALL_MODELS_BY_ID: Map<string, ModelConfig> = new Map(
+//   ALL_MODELS.map((model) => [model.id, model])
+// );
 
 export const getAllModels = (): ModelConfig[] => ALL_MODELS;
 

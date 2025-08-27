@@ -1,5 +1,5 @@
-import { ImageModel } from "libs/model-list/src/lib/classes/ImageModel";
-import { ModelInfo } from "libs/model-list/src/lib/ModelInfo";
+import { ImageModel } from "@storyteller/model-list";
+import { ModelInfo } from "@storyteller/model-list";
 
 export interface PromptEditorProps {
   initialPrompt?: string;
