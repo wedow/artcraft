@@ -152,7 +152,7 @@ export const Tooltip = ({
               <img
                 src={imageSrc}
                 alt="tooltip"
-                className="mb-1 max-h-40 w-auto rounded-md"
+                className="mb-1 aspect-square w-56 rounded-md"
               />
             )}
             {description && (
