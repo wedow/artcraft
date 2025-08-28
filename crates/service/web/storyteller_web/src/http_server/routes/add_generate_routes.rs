@@ -18,6 +18,7 @@ use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error, HttpResponse};
+use crate::http_server::endpoints::generate::image::edit::gemini_25_flash_edit_image_handler::gemini_25_flash_edit_image_handler;
 use crate::http_server::endpoints::generate::image::inpaint::flux_dev_juggernaut_inpaint_handler::flux_dev_juggernaut_inpaint_image_handler;
 
 pub fn add_generate_routes<T, B> (app: App<T>) -> App<T>
@@ -36,6 +37,10 @@ where
           .service(web::scope("/edit")
               .service(web::resource("/flux_pro_kontext_max")
                   .route(web::post().to(flux_pro_kontext_max_edit_image_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+              .service(web::resource("/gemini_25_flash")
+                  .route(web::post().to(gemini_25_flash_edit_image_handler))
                   .route(web::head().to(|| HttpResponse::Ok()))
               )
               .service(web::resource("/gpt_image_1")
