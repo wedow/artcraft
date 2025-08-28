@@ -16,6 +16,7 @@ use crate::http_server::endpoints::generate::video::generate_kling_2_1_master_vi
 use crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler;
 use crate::http_server::endpoints::generate::video::generate_seedance_1_0_lite_image_to_video_handler::generate_seedance_1_0_lite_image_to_video_handler;
 use crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler;
+use crate::http_server::endpoints::generate::video::generate_veo_3_fast_image_to_video_handler::generate_veo_3_fast_image_to_video_handler;
 use crate::http_server::endpoints::generate::video::generate_veo_3_image_to_video_handler::generate_veo_3_image_to_video_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
@@ -108,6 +109,10 @@ where
           )
           .service(web::resource("/veo_3_image_to_video")
               .route(web::post().to(generate_veo_3_image_to_video_handler))
+              .route(web::head().to(|| HttpResponse::Ok()))
+          )
+          .service(web::resource("/veo_3_fast_image_to_video")
+              .route(web::post().to(generate_veo_3_fast_image_to_video_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
           )
       )
