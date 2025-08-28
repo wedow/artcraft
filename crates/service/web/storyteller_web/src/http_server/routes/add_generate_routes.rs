@@ -1,10 +1,12 @@
 use crate::http_server::endpoints::generate::image::edit::flux_pro_kontext_max_edit_image_handler::flux_pro_kontext_max_edit_image_handler;
+use crate::http_server::endpoints::generate::image::edit::gemini_25_flash_edit_image_handler::gemini_25_flash_edit_image_handler;
 use crate::http_server::endpoints::generate::image::edit::gpt_image_1_edit_image_handler::gpt_image_1_edit_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_1_schnell_text_to_image_handler::generate_flux_1_schnell_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image_handler::generate_flux_pro_11_ultra_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_gpt_image_1_text_to_image_handler::generate_gpt_image_1_text_to_image_handler;
+use crate::http_server::endpoints::generate::image::inpaint::flux_dev_juggernaut_inpaint_handler::flux_dev_juggernaut_inpaint_image_handler;
 use crate::http_server::endpoints::generate::image::inpaint::flux_pro_1_inpaint_handler::flux_pro_1_inpaint_image_handler;
 use crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler;
 use crate::http_server::endpoints::generate::object::generate_hunyuan_2_0_image_to_3d_handler::generate_hunyuan_2_0_image_to_3d_handler;
@@ -14,12 +16,11 @@ use crate::http_server::endpoints::generate::video::generate_kling_2_1_master_vi
 use crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler;
 use crate::http_server::endpoints::generate::video::generate_seedance_1_0_lite_image_to_video_handler::generate_seedance_1_0_lite_image_to_video_handler;
 use crate::http_server::endpoints::generate::video::generate_veo_2_image_to_video_handler::generate_veo_2_image_to_video_handler;
+use crate::http_server::endpoints::generate::video::generate_veo_3_image_to_video_handler::generate_veo_3_image_to_video_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error, HttpResponse};
-use crate::http_server::endpoints::generate::image::edit::gemini_25_flash_edit_image_handler::gemini_25_flash_edit_image_handler;
-use crate::http_server::endpoints::generate::image::inpaint::flux_dev_juggernaut_inpaint_handler::flux_dev_juggernaut_inpaint_image_handler;
 
 pub fn add_generate_routes<T, B> (app: App<T>) -> App<T>
 where
@@ -47,7 +48,7 @@ where
                   .route(web::post().to(gpt_image_1_edit_image_handler))
                   .route(web::head().to(|| HttpResponse::Ok()))
               )
-            
+
           )
           .service(web::scope("/inpaint")
               .service(web::resource("/flux_dev_juggernaut")
@@ -103,6 +104,10 @@ where
           )
           .service(web::resource("/veo_2_image_to_video")
               .route(web::post().to(generate_veo_2_image_to_video_handler))
+              .route(web::head().to(|| HttpResponse::Ok()))
+          )
+          .service(web::resource("/veo_3_image_to_video")
+              .route(web::post().to(generate_veo_3_image_to_video_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
           )
       )

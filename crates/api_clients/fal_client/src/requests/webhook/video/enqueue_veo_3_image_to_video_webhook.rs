@@ -6,12 +6,13 @@ use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
 pub struct Veo3Args<'a, U: IntoUrl, V: IntoUrl> {
-  pub prompt: &'a str,
   pub image_url: U,
+  pub prompt: &'a str,
   pub duration: Veo3Duration,
-  pub api_key: &'a FalApiKey,
+  pub aspect_ratio: Veo3AspectRatio,
   pub resolution: Veo3Resolution,
   pub generate_audio: bool,
+  pub api_key: &'a FalApiKey,
   pub webhook_url: V,
 }
 
@@ -19,6 +20,14 @@ pub struct Veo3Args<'a, U: IntoUrl, V: IntoUrl> {
 pub enum Veo3Duration {
   Default,
   EightSeconds,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum Veo3AspectRatio {
+  Default,
+  WideSixteenNine,
+  TallNineSixteen,
+  Square,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -35,6 +44,13 @@ pub async fn enqueue_veo_3_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
     Veo3Duration::Default => None,
     Veo3Duration::EightSeconds => Some("8s".to_string()),
   };
+
+  let aspect_ratio = match args.aspect_ratio {
+    Veo3AspectRatio::Default => None,
+    Veo3AspectRatio::WideSixteenNine => Some("16:9".to_string()),
+    Veo3AspectRatio::TallNineSixteen => Some("9:16".to_string()),
+    Veo3AspectRatio::Square => Some("1:1".to_string()),
+  };
   
   let resolution= match args.resolution {
     Veo3Resolution::Default => None,
@@ -47,6 +63,7 @@ pub async fn enqueue_veo_3_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
   let request = ImageToVideoInput {
     image_url,
     prompt: args.prompt.to_string(),
+    aspect_ratio,
     resolution,
     duration,
     generate_audio: Some(args.generate_audio),
@@ -64,28 +81,27 @@ pub async fn enqueue_veo_3_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::video::enqueue_veo_3_image_to_video_webhook::{enqueue_veo_3_image_to_video_webhook, Veo3Args, Veo3Duration, Veo3Resolution};
+  use crate::requests::webhook::video::enqueue_veo_3_image_to_video_webhook::{enqueue_veo_3_image_to_video_webhook, Veo3Args, Veo3AspectRatio, Veo3Duration, Veo3Resolution};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use test_data::web::image_urls::JUNO_AT_LAKE_IMAGE_URL;
+  use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, TREX_SKELETON_IMAGE_URL};
 
   #[tokio::test]
   #[ignore]
   async fn test() -> AnyhowResult<()> {
-    let image_url = JUNO_AT_LAKE_IMAGE_URL;
-
     // XXX: Don't commit secrets!
     let secret = read_to_string("/Users/bt/Artcraft/credentials/fal_api_key.txt")?;
 
     let api_key = FalApiKey::from_str(&secret);
 
     let args = Veo3Args {
-      image_url: image_url,
-      prompt: "corgi at the lake. the corgi barks. camera pulls back to show a wider shot of the lake as the corgi jumps into the water. there are sounds of barking and splashing. cinematic, 8k, ultra wide shot",
+      image_url: TREX_SKELETON_IMAGE_URL,
+      prompt: "the t-rex skeleton starts walking towards the camera and roars",
       api_key: &api_key,
       duration: Veo3Duration::EightSeconds,
-      generate_audio: true,
+      aspect_ratio: Veo3AspectRatio::WideSixteenNine,
       resolution: Veo3Resolution::TenEightyP,
+      generate_audio: true,
       webhook_url: "https://example.com/webhook",
     };
 

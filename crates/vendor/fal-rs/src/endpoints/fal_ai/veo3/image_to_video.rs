@@ -28,26 +28,29 @@ pub struct File {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ImageToVideoInput {
-  /// The text prompt describing how the image should be animated
-  /// "A lego chef cooking eggs"
-  pub prompt: String,
-
   /// URL of the input image to animate. Should be 720p or higher resolution.
   /// "https://fal.media/files/elephant/6fq8JDSjb1osE_c3J_F2H.png"
   pub image_url: String,
+
+  /// The text prompt describing how the image should be animated
+  /// "A lego chef cooking eggs"
+  pub prompt: String,
 
   /// The duration of the generated video in seconds
   /// eg "8s".
   #[serde(skip_serializing_if = "Option::is_none")]
   pub duration: Option<String>,
 
-  /// Generate audio
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub generate_audio: Option<bool>,
+  pub aspect_ratio: Option<String>,
 
   /// Resolution, eg. "720p"
   #[serde(skip_serializing_if = "Option::is_none")]
   pub resolution: Option<String>,
+
+  /// Generate audio
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub generate_audio: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
