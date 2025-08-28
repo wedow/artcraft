@@ -1,5 +1,6 @@
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit::handle_flux_kontext_edit;
+use crate::core::commands::enqueue::image_edit::gemini_25_flash::handle_gemini_25_flash_edit::handle_gemini_25_flash_edit;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
@@ -47,11 +48,20 @@ use tokens::tokens::media_files::MediaFileToken;
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum ContextualImageEditModel {
-  #[serde(rename = "gpt_image_1")]
-  GptImage1,
-
   #[serde(rename = "flux_pro_kontext_max")]
   FluxProKontextMax,
+
+  #[serde(rename = "gemini_25_flash")]
+  Gemini25Flash,
+
+  #[serde(rename = "gpt_image_1")]
+  GptImage1,
+  
+//  #[serde(rename = "qwen")]
+//  Qwen,
+//  
+//  #[serde(rename = "seededit_3")]
+//  SeedEdit3,
 }
 
 #[derive(Deserialize, Debug)]
@@ -234,6 +244,20 @@ pub async fn handle_request(
     }
     Some(ContextualImageEditModel::FluxProKontextMax) => {
       handle_flux_kontext_edit(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        fal_creds_manager,
+        fal_task_queue,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await?
+    }
+    Some(ContextualImageEditModel::Gemini25Flash) => {
+      handle_gemini_25_flash_edit(
         request,
         app,
         app_data_root,

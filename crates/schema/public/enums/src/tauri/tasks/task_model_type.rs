@@ -26,6 +26,8 @@ pub enum TaskModelType {
   FluxPro11Ultra,
   #[serde(rename = "flux_pro_kontext_max")]
   FluxProKontextMax,
+  #[serde(rename = "gemini_25_flash")]
+  Gemini25Flash,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
   #[serde(rename = "recraft_3")]
@@ -71,6 +73,7 @@ impl TaskModelType {
       Self::FluxPro11 => "flux_pro_1.1",
       Self::FluxPro11Ultra => "flux_pro_1.1_ultra",
       Self::FluxProKontextMax => "flux_pro_kontext_max",
+      Self::Gemini25Flash => "gemini_25_flash",
       Self::GptImage1 => "gpt_image_1",
       Self::Recraft3 => "recraft_3",
       Self::Midjourney => "midjourney",
@@ -96,6 +99,7 @@ impl TaskModelType {
       "flux_pro_1.1" => Ok(Self::FluxPro11),
       "flux_pro_1.1_ultra" => Ok(Self::FluxPro11Ultra),
       "flux_pro_kontext_max" => Ok(Self::FluxProKontextMax),
+      "gemini_25_flash" => Ok(Self::Gemini25Flash),
       "gpt_image_1" => Ok(Self::GptImage1),
       "recraft_3" => Ok(Self::Recraft3),
       "midjourney" => Ok(Self::Midjourney),
@@ -124,6 +128,7 @@ impl TaskModelType {
       Self::FluxPro11,
       Self::FluxPro11Ultra,
       Self::FluxProKontextMax,
+      Self::Gemini25Flash,
       Self::GptImage1,
       Self::Recraft3,
       Self::Midjourney,
@@ -158,6 +163,7 @@ mod tests {
       assert_serialization(TaskModelType::FluxPro11, "flux_pro_1.1");
       assert_serialization(TaskModelType::FluxPro11Ultra, "flux_pro_1.1_ultra");
       assert_serialization(TaskModelType::FluxProKontextMax, "flux_pro_kontext_max");
+      assert_serialization(TaskModelType::Gemini25Flash, "gemini_25_flash");
       assert_serialization(TaskModelType::GptImage1, "gpt_image_1");
       assert_serialization(TaskModelType::Recraft3, "recraft_3");
       assert_serialization(TaskModelType::Midjourney, "midjourney");
@@ -182,6 +188,7 @@ mod tests {
       assert_eq!(TaskModelType::FluxPro11.to_str(), "flux_pro_1.1");
       assert_eq!(TaskModelType::FluxPro11Ultra.to_str(), "flux_pro_1.1_ultra");
       assert_eq!(TaskModelType::FluxProKontextMax.to_str(), "flux_pro_kontext_max");
+      assert_eq!(TaskModelType::Gemini25Flash.to_str(), "gemini_25_flash");
       assert_eq!(TaskModelType::GptImage1.to_str(), "gpt_image_1");
       assert_eq!(TaskModelType::Recraft3.to_str(), "recraft_3");
       assert_eq!(TaskModelType::Midjourney.to_str(), "midjourney");
@@ -206,6 +213,7 @@ mod tests {
       assert_eq!(TaskModelType::from_str("flux_pro_1.1").unwrap(), TaskModelType::FluxPro11);
       assert_eq!(TaskModelType::from_str("flux_pro_1.1_ultra").unwrap(), TaskModelType::FluxPro11Ultra);
       assert_eq!(TaskModelType::from_str("flux_pro_kontext_max").unwrap(), TaskModelType::FluxProKontextMax);
+      assert_eq!(TaskModelType::from_str("gemini_25_flash").unwrap(), TaskModelType::Gemini25Flash);
       assert_eq!(TaskModelType::from_str("gpt_image_1").unwrap(), TaskModelType::GptImage1);
       assert_eq!(TaskModelType::from_str("recraft_3").unwrap(), TaskModelType::Recraft3);
       assert_eq!(TaskModelType::from_str("midjourney").unwrap(), TaskModelType::Midjourney);
@@ -223,7 +231,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 17);
+      assert_eq!(variants.len(), 18);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -232,6 +240,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro11));
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxPro11Ultra));
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxProKontextMax));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Gemini25Flash));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GptImage1));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Recraft3));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Midjourney));

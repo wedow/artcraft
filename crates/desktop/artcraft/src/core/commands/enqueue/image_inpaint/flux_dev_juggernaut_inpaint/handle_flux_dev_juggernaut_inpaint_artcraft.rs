@@ -26,7 +26,6 @@ use artcraft_api_defs::generate::image::inpaint::flux_dev_juggernaut_inpaint_ima
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
-use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageQuality;
 use idempotency::uuid::generate_random_uuid;
 use images::encoding::image_bytes_to_png_bytes::image_bytes_to_png_bytes;
 use images::encoding::image_bytes_to_png_bytes_with_dimensions::image_bytes_to_png_bytes_with_dimensions;

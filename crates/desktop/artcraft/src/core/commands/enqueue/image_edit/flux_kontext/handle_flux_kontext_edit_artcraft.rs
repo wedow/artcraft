@@ -23,7 +23,6 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use fal_client::requests::webhook::image::edit::enqueue_flux_pro_kontext_max_edit_webhook::FluxProKontextMaxNumImages;
-use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageQuality;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use storyteller_client::generate::image::edit::flux_pro_kontext_max_edit_image::flux_pro_kontext_max_edit_image;

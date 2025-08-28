@@ -25,7 +25,6 @@ use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBack
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
-use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::GptEditImageQuality;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;

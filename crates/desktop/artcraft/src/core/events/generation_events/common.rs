@@ -24,10 +24,14 @@ pub enum GenerationModel {
   FluxPro11,
   #[serde(rename = "flux_pro_1.1_ultra")]
   FluxPro11Ultra,
+  
   #[serde(rename = "flux_pro_kontext_max")]
   FluxProKontextMax,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  #[serde(rename = "gemini_25_flash")]
+  Gemini25Flash,
+  
   #[serde(rename = "hunyuan_3d_2_0")]
   Hunyuan3d2_0,
   #[serde(rename = "hunyuan_3d_2_1")]

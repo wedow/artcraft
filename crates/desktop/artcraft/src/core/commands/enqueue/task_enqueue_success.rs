@@ -64,6 +64,7 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::FluxPro11) => Some(TaskModelType::FluxPro11),
       Some(GenerationModel::FluxPro11Ultra) => Some(TaskModelType::FluxPro11Ultra),
       Some(GenerationModel::FluxProKontextMax) => Some(TaskModelType::FluxProKontextMax),
+      Some(GenerationModel::Gemini25Flash) => Some(TaskModelType::Gemini25Flash),
       Some(GenerationModel::GptImage1) => Some(TaskModelType::GptImage1),
       Some(GenerationModel::Recraft3) => Some(TaskModelType::Recraft3),
       Some(GenerationModel::Kling21Pro) => Some(TaskModelType::Kling21Pro),

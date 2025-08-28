@@ -17,23 +17,11 @@ pub struct Gemini25FlashEditImageRequest {
   /// Image media tokens to include in the editing context.
   pub image_media_tokens: Option<Vec<MediaFileToken>>,
 
-  /// Size of the image to generate. Default is Square.
-  pub image_size: Option<Gemini25FlashEditImageImageSize>,
-
   /// Number of images to generate. Default is one.
   pub num_images: Option<Gemini25FlashEditImageNumImages>,
 
   /// Quality of the image to generate. Default is High.
   pub image_quality: Option<Gemini25FlashEditImageImageQuality>,
-}
-
-
-#[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum Gemini25FlashEditImageImageSize {
-  Square, // 1:1, Default
-  Horizontal,
-  Vertical,
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]

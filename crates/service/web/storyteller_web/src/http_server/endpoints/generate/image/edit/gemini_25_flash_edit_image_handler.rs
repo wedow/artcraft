@@ -7,7 +7,7 @@ use crate::http_server::validations::validate_idempotency_token_format::validate
 use crate::state::server_state::ServerState;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::{GptImage1EditImageImageQuality, GptImage1EditImageImageSize, GptImage1EditImageNumImages, GptImage1EditImageRequest, GptImage1EditImageResponse};
+use artcraft_api_defs::generate::image::edit::gemini_25_flash_edit_image::{Gemini25FlashEditImageNumImages, Gemini25FlashEditImageRequest, Gemini25FlashEditImageResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 use enums::by_table::prompts::prompt_type::PromptType;
@@ -37,17 +37,17 @@ use utoipa::ToSchema;
   tag = "Generate Images (Edit)",
   path = "/v1/generate/image/edit/gemini_25_flash",
   responses(
-    (status = 200, description = "Success", body = GptImage1EditImageResponse),
+    (status = 200, description = "Success", body = Gemini25FlashEditImageResponse),
   ),
   params(
-    ("request" = GptImage1EditImageRequest, description = "Payload for Request"),
+    ("request" = Gemini25FlashEditImageRequest, description = "Payload for Request"),
   )
 )]
 pub async fn gemini_25_flash_edit_image_handler(
   http_request: HttpRequest,
-  request: Json<GptImage1EditImageRequest>,
+  request: Json<Gemini25FlashEditImageRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<GptImage1EditImageResponse>, CommonWebError> {
+) -> Result<Json<Gemini25FlashEditImageResponse>, CommonWebError> {
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;
@@ -138,10 +138,10 @@ pub async fn gemini_25_flash_edit_image_handler(
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
 
   let num_images = match request.num_images {
-    Some(GptImage1EditImageNumImages::One) => Gemini25FlashEditNumImages::One,
-    Some(GptImage1EditImageNumImages::Two) => Gemini25FlashEditNumImages::Two,
-    Some(GptImage1EditImageNumImages::Three) => Gemini25FlashEditNumImages::Three,
-    Some(GptImage1EditImageNumImages::Four) => Gemini25FlashEditNumImages::Four,
+    Some(Gemini25FlashEditImageNumImages::One) => Gemini25FlashEditNumImages::One,
+    Some(Gemini25FlashEditImageNumImages::Two) => Gemini25FlashEditNumImages::Two,
+    Some(Gemini25FlashEditImageNumImages::Three) => Gemini25FlashEditNumImages::Three,
+    Some(Gemini25FlashEditImageNumImages::Four) => Gemini25FlashEditNumImages::Four,
     None => Gemini25FlashEditNumImages::One, // Default to One
   };
   
@@ -251,7 +251,7 @@ pub async fn gemini_25_flash_edit_image_handler(
         CommonWebError::ServerError
       })?;
 
-  Ok(Json(GptImage1EditImageResponse {
+  Ok(Json(Gemini25FlashEditImageResponse {
     success: true,
     inference_job_token: job_token,
   }))
