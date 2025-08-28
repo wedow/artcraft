@@ -26,6 +26,9 @@ pub struct ImageToVideoRequest {
   pub prompt: String,
 
   pub seed: i32,
+  
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub enable_safety_checker: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]

@@ -893,6 +893,20 @@ pub mod fooocus;
         feature = "endpoints_fal-ai_gemini-flash-edit"
     )))
 )]
+pub mod gemini_25_flash_image;
+#[cfg(any(
+    feature = "endpoints",
+    feature = "endpoints_fal-ai",
+    feature = "endpoints_fal-ai_gemini-flash-edit"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "endpoints",
+        feature = "endpoints_fal-ai",
+        feature = "endpoints_fal-ai_gemini-flash-edit"
+    )))
+)]
 pub mod gemini_flash_edit;
 #[cfg(any(
     feature = "endpoints",
