@@ -1,3 +1,5 @@
 pub mod enqueue_flux_pro_kontext_max_edit_webhook;
+pub mod enqueue_gemini_25_flash_edit_webhook;
+pub mod enqueue_gpt_image_1_edit_image_webhook;
 pub mod enqueue_qwen_image_edit_webhook;
 pub mod enqueue_seededit_v3_edit_webhook;

@@ -32,3 +32,6 @@ pub const TALL_MOCHI_WITH_GLASSES_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/
 
 // media token: m_7x18h6qnyay4a42kyyyw2xctasx5k9
 pub const TALL_MOCHI_WITH_GLASSES_GLASSES_MASK_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/r/e/j/b/p/rejbp61m56hqx4a498xh7j47vkjd7jnh/upload_rejbp61m56hqx4a498xh7j47vkjd7jnh.png";
+
+// media token: m_77cpdyaby60z0qv9g6tv67gw2a1337
+pub const TREX_SKELETON_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/f/4/j/5/3/f4j53296sc35wqs3csgw4j4vvjf5yyxe/image_f4j53296sc35wqs3csgw4j4vvjf5yyxe.png";

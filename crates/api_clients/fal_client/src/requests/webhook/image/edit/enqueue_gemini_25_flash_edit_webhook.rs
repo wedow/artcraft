@@ -1,0 +1,87 @@
+use crate::creds::fal_api_key::FalApiKey;
+use crate::error::classify_fal_error::classify_fal_error;
+use crate::error::fal_error_plus::FalErrorPlus;
+use fal::endpoints::fal_ai::gemini_25_flash_image::edit::gemini_25_flash_image_edit;
+use fal::prelude::fal_ai::gemini_25_flash_image::edit::Gemini25FlashImageEditInput;
+use fal::webhook::WebhookResponse;
+use reqwest::IntoUrl;
+
+pub struct Gemini25FlashEditArgs<'a, R: IntoUrl> {
+  // Request required
+  pub prompt: &'a str,
+  pub image_urls: Vec<String>,
+  pub num_images: Gemini25FlashEditNumImages,
+
+  // Fulfillment
+  pub webhook_url: R,
+  pub api_key: &'a FalApiKey,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum Gemini25FlashEditNumImages {
+  One,
+  Two,
+  Three,
+  Four,
+}
+
+
+pub async fn enqueue_gemini_25_flash_edit_webhook<R: IntoUrl>(
+  args: Gemini25FlashEditArgs<'_, R>
+) -> Result<WebhookResponse, FalErrorPlus> {
+
+  let num_images = match args.num_images {
+    Gemini25FlashEditNumImages::One => 1,
+    Gemini25FlashEditNumImages::Two => 2,
+    Gemini25FlashEditNumImages::Three => 3,
+    Gemini25FlashEditNumImages::Four => 4,
+  };
+
+  let request = Gemini25FlashImageEditInput {
+    prompt: args.prompt.to_string(),
+    image_urls: args.image_urls,
+    // Constants
+    num_images: Some(num_images),
+    output_format: Some("png".to_string()),
+  };
+
+  let result = gemini_25_flash_image_edit(request)
+      .with_api_key(&args.api_key.0)
+      .queue_webhook(args.webhook_url)
+      .await;
+
+  result.map_err(|err| classify_fal_error(err))
+}
+
+#[cfg(test)]
+mod tests {
+  use crate::creds::fal_api_key::FalApiKey;
+  use crate::requests::webhook::image::edit::enqueue_gemini_25_flash_edit_webhook::{enqueue_gemini_25_flash_edit_webhook, Gemini25FlashEditArgs, Gemini25FlashEditNumImages};
+  use errors::AnyhowResult;
+  use std::fs::read_to_string;
+  use test_data::web::image_urls::{GHOST_IMAGE_URL, TREX_SKELETON_IMAGE_URL};
+
+  #[tokio::test]
+  #[ignore]
+  async fn test() -> AnyhowResult<()> {
+    // XXX: Don't commit secrets!
+    let secret = read_to_string("/Users/bt/Artcraft/credentials/fal_api_key.txt")?;
+
+    let api_key = FalApiKey::from_str(&secret);
+
+    let args = Gemini25FlashEditArgs {
+      image_urls: vec![
+        GHOST_IMAGE_URL.to_string(),
+        TREX_SKELETON_IMAGE_URL.to_string(),
+      ],
+      num_images: Gemini25FlashEditNumImages::Two,
+      prompt: "add the ghost to the image of the t-rex skeleton, make it look spooky but friendly",
+      api_key: &api_key,
+      webhook_url: "https://example.com/webhook",
+    };
+
+    let result = enqueue_gemini_25_flash_edit_webhook(args).await?;
+
+    Ok(())
+  }
+}

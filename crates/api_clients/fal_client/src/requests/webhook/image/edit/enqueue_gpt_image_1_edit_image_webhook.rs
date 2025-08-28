@@ -21,7 +21,7 @@ pub struct GptEditImageByokArgs<'a, V: IntoUrl> {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum GptEditImageSize{
+pub enum GptEditImageSize {
   Auto,
   Square,
   Horizontal,
@@ -92,7 +92,7 @@ pub async fn enqueue_gpt_image_1_edit_image_webhook<V: IntoUrl>(
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
   use crate::creds::open_ai_api_key::OpenAiApiKey;
-  use crate::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::{enqueue_gpt_image_1_edit_image_webhook, GptEditImageByokArgs, GptEditImageNumImages, GptEditImageQuality, GptEditImageSize};
+  use crate::requests::webhook::image::edit::enqueue_gpt_image_1_edit_image_webhook::{enqueue_gpt_image_1_edit_image_webhook, GptEditImageByokArgs, GptEditImageNumImages, GptEditImageQuality, GptEditImageSize};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use test_data::web::image_urls::{ERNEST_SCARED_STUPID_IMAGE_URL, GHOST_IMAGE_URL, GRASSY_HILL_TRANSPARENT_IMAGE_URL};

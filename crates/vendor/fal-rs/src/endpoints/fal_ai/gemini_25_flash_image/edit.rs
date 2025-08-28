@@ -14,9 +14,9 @@ pub struct Gemini25FlashImageEditInput {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub output_format: Option<String>,
 
-  /// Resolution, eg. "720p"
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub resolution: Option<String>,
+  // /// Resolution, eg. "720p"
+  // #[serde(skip_serializing_if = "Option::is_none")]
+  // pub resolution: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
