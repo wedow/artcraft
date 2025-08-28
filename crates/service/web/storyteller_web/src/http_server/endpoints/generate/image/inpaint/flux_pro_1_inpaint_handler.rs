@@ -15,7 +15,6 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
-use fal_client::requests::webhook::image::enqueue_gpt_image_1_edit_image_webhook::enqueue_gpt_image_1_edit_image_webhook;
 use fal_client::requests::webhook::image::infill::enqueue_flux_pro_1_infill_webhook::{enqueue_flux_pro_1_infill_webhook, FluxPro1InfillArgs, FluxPro1InfillNumImages};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
