@@ -65,6 +65,8 @@ pub enum ModelType {
   Kling21Master,
   #[serde(rename = "seedance_1p0_lite")]
   Seedance10Lite,
+  #[serde(rename = "seedance_1p0_pro")]
+  Seedance10Pro,
   #[serde(rename = "veo_2")]
   Veo2,
   #[serde(rename = "veo_3")]
@@ -113,6 +115,7 @@ impl ModelType {
       Self::Kling21Pro => "kling_2p1_pro",
       Self::Kling21Master => "kling_2p1_master",
       Self::Seedance10Lite => "seedance_1p0_lite",
+      Self::Seedance10Pro => "seedance_1p0_pro",
       Self::Veo2 => "veo_2",
       Self::Veo3 => "veo_3",
       Self::Veo3Fast => "veo_3_fast",
@@ -150,6 +153,7 @@ impl ModelType {
       "kling_2p1_pro" => Ok(Self::Kling21Pro),
       "kling_2p1_master" => Ok(Self::Kling21Master),
       "seedance_1p0_lite" => Ok(Self::Seedance10Lite),
+      "seedance_1p0_pro" => Ok(Self::Seedance10Pro),
       "veo_2" => Ok(Self::Veo2),
       "veo_3" => Ok(Self::Veo3),
       "veo_3_fast" => Ok(Self::Veo3Fast),
@@ -191,6 +195,7 @@ impl ModelType {
       Self::Kling21Pro,
       Self::Kling21Master,
       Self::Seedance10Lite,
+      Self::Seedance10Pro,
       Self::Veo2,
       Self::Veo3,
       Self::Veo3Fast,
@@ -236,6 +241,7 @@ mod tests {
       assert_serialization(ModelType::Kling21Pro, "kling_2p1_pro");
       assert_serialization(ModelType::Kling21Master, "kling_2p1_master");
       assert_serialization(ModelType::Seedance10Lite, "seedance_1p0_lite");
+      assert_serialization(ModelType::Seedance10Pro, "seedance_1p0_pro");
       assert_serialization(ModelType::Veo2, "veo_2");
       assert_serialization(ModelType::Veo3, "veo_3");
       assert_serialization(ModelType::Veo3Fast, "veo_3_fast");
@@ -271,6 +277,7 @@ mod tests {
       assert_eq!(ModelType::Kling21Pro.to_str(), "kling_2p1_pro");
       assert_eq!(ModelType::Kling21Master.to_str(), "kling_2p1_master");
       assert_eq!(ModelType::Seedance10Lite.to_str(), "seedance_1p0_lite");
+      assert_eq!(ModelType::Seedance10Pro.to_str(), "seedance_1p0_pro");
       assert_eq!(ModelType::Veo2.to_str(), "veo_2");
       assert_eq!(ModelType::Veo3.to_str(), "veo_3");
       assert_eq!(ModelType::Veo3Fast.to_str(), "veo_3_fast");
@@ -306,6 +313,7 @@ mod tests {
       assert_eq!(ModelType::from_str("kling_2p1_pro").unwrap(), ModelType::Kling21Pro);
       assert_eq!(ModelType::from_str("kling_2p1_master").unwrap(), ModelType::Kling21Master);
       assert_eq!(ModelType::from_str("seedance_1p0_lite").unwrap(), ModelType::Seedance10Lite);
+      assert_eq!(ModelType::from_str("seedance_1p0_pro").unwrap(), ModelType::Seedance10Pro);
       assert_eq!(ModelType::from_str("veo_2").unwrap(), ModelType::Veo2);
       assert_eq!(ModelType::from_str("veo_3").unwrap(), ModelType::Veo3);
       assert_eq!(ModelType::from_str("veo_3_fast").unwrap(), ModelType::Veo3Fast);
@@ -317,7 +325,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 27);
+      assert_eq!(variants.len(), 28);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
@@ -342,6 +350,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(ModelType::Kling21Pro));
       assert_eq!(variants.pop_first(), Some(ModelType::Kling21Master));
       assert_eq!(variants.pop_first(), Some(ModelType::Seedance10Lite));
+      assert_eq!(variants.pop_first(), Some(ModelType::Seedance10Pro));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo2));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo3));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo3Fast));

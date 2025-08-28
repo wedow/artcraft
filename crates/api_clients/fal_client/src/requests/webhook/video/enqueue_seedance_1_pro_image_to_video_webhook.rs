@@ -18,8 +18,15 @@ pub struct Seedance1ProArgs<'a, U: IntoUrl, V: IntoUrl> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Seedance1ProDuration {
+  ThreeSeconds,
+  FourSeconds,
   FiveSeconds,
+  SixSeconds,
+  SevenSeconds,
+  EightSeconds,
+  NineSeconds,
   TenSeconds,
+  ElevenSeconds,
   TwelveSeconds,
 }
 
@@ -34,8 +41,15 @@ pub async fn enqueue_seedance_1_pro_image_to_video_webhook<U: IntoUrl, V: IntoUr
   args: Seedance1ProArgs<'_, U, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
+    Seedance1ProDuration::ThreeSeconds => Some("3".to_string()),
+    Seedance1ProDuration::FourSeconds => Some("4".to_string()),
     Seedance1ProDuration::FiveSeconds => Some("5".to_string()),
+    Seedance1ProDuration::SixSeconds => Some("6".to_string()),
+    Seedance1ProDuration::SevenSeconds => Some("7".to_string()),
+    Seedance1ProDuration::EightSeconds => Some("8".to_string()),
+    Seedance1ProDuration::NineSeconds => Some("9".to_string()), 
     Seedance1ProDuration::TenSeconds => Some("10".to_string()),
+    Seedance1ProDuration::ElevenSeconds => Some("11".to_string()),
     Seedance1ProDuration::TwelveSeconds => Some("12".to_string()),
   };
   

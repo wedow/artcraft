@@ -2,49 +2,53 @@ use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
-use crate::http_server::endpoints::analytics::log_browser_session_handler::LogBrowserSessionError;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
+use crate::util::lookup::fetch_all_required_media_files::fetch_all_required_media_files;
+use crate::util::traits::into_media_links_trait::IntoMediaLinks;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use anyhow::anyhow;
-use artcraft_api_defs::generate::video::generate_veo_3_fast_image_to_video::{GenerateVeo3FastDuration, GenerateVeo3FastImageToVideoRequest, GenerateVeo3FastImageToVideoResponse, GenerateVeo3FastResolution};
+use artcraft_api_defs::generate::video::generate_seedance_1_0_pro_image_to_video::GenerateSeedance10ProDuration;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_pro_image_to_video::GenerateSeedance10ProImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_pro_image_to_video::GenerateSeedance10ProImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_pro_image_to_video::GenerateSeedance10ProResolution;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::video::enqueue_veo_3_fast_image_to_video_webhook::{enqueue_veo_3_fast_image_to_video_webhook, Veo3FastArgs, Veo3FastDuration, Veo3FastResolution};
+use fal_client::requests::webhook::video::enqueue_seedance_1_pro_image_to_video_webhook::enqueue_seedance_1_pro_image_to_video_webhook;
+use fal_client::requests::webhook::video::enqueue_seedance_1_pro_image_to_video_webhook::Seedance1ProDuration;
+use fal_client::requests::webhook::video::enqueue_seedance_1_pro_image_to_video_webhook::{Seedance1ProArgs, Seedance1ProResolution};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use mysql_queries::queries::media_files::get::get_media_file::get_media_file_with_connection;
+use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, get_media_file_with_connection};
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
 use sqlx::Acquire;
-use tokens::tokens::prompts::PromptToken;
 use utoipa::ToSchema;
 
-/// Veo 3 Fast Image to Video
+/// Seedance 1.0 Pro Image to Video
 #[utoipa::path(
   post,
   tag = "Generate Videos",
-  path = "/v1/generate/video/veo_3_fast_image_to_video",
+  path = "/v1/generate/video/seedance_1.0_pro_image_to_video",
   responses(
-    (status = 200, description = "Success", body = GenerateVeo3FastImageToVideoResponse),
+    (status = 200, description = "Success", body = GenerateSeedance10ProImageToVideoResponse),
   ),
   params(
-    ("request" = GenerateVeo3FastImageToVideoRequest, description = "Payload for Request"),
+    ("request" = GenerateSeedance10ProImageToVideoRequest, description = "Payload for Request"),
   )
 )]
-pub async fn generate_veo_3_fast_image_to_video_handler(
+pub async fn generate_seedance_1_0_pro_image_to_video_handler(
   http_request: HttpRequest,
-  request: Json<GenerateVeo3FastImageToVideoRequest>,
+  request: Json<GenerateSeedance10ProImageToVideoRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<GenerateVeo3FastImageToVideoResponse>, CommonWebError> {
+) -> Result<Json<GenerateSeedance10ProImageToVideoResponse>, CommonWebError> {
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;
@@ -72,14 +76,29 @@ pub async fn generate_veo_3_fast_image_to_video_handler(
   //  }
   //};
 
-  let media_file_token = match &request.media_file_token {
+  let start_frame_media_file_token = match &request.media_file_token {
     Some(token) => token,
     None => {
       warn!("No media file token provided");
       return Err(CommonWebError::BadInputWithSimpleMessage("No media file token provided".to_string()));
     }
   };
-  
+
+  let mut tokens = vec![
+    start_frame_media_file_token.clone(),
+  ];
+
+  let media_files = fetch_all_required_media_files(
+    &mut mysql_connection,
+    &tokens,
+  ).await?;
+
+  for media_file in media_files.iter() {
+    if !media_file.media_type.is_jpg_or_png_or_legacy_image() {
+      return Err(CommonWebError::BadInputWithSimpleMessage("Media file must be a JPG or PNG image".to_string()));
+    }
+  }
+
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
@@ -90,77 +109,61 @@ pub async fn generate_veo_3_fast_image_to_video_handler(
         error!("Error inserting idempotency token: {:?}", err);
         CommonWebError::BadInputWithSimpleMessage("invalid idempotency token".to_string())
       })?;
-  const IS_MOD : bool = false;
-  
-  let media_file_lookup_result = get_media_file_with_connection(
-    media_file_token,
-    IS_MOD,
-    &mut mysql_connection,
-  ).await;
 
-  let media_file = match media_file_lookup_result {
-    Ok(Some(media_file)) => media_file,
-    Ok(None) => {
-      warn!("MediaFile not found: {:?}", media_file_token);
-      return Err(CommonWebError::NotFound);
-    },
-    Err(err) => {
-      warn!("Error looking up media_file: {:?}", err);
-      return Err(CommonWebError::ServerError);
-    }
-  };
-
-  if !media_file.media_type.is_jpg_or_png_or_legacy_image() {
-    return Err(CommonWebError::BadInputWithSimpleMessage("Media file must be a JPG or PNG image".to_string()));
-  }
-  
   let media_domain = get_media_domain(&http_request);
-  
-  let bucket_path = MediaFileBucketPath::from_object_hash(
-    &media_file.public_bucket_directory_hash,
-    media_file.maybe_public_bucket_prefix.as_deref(),
-    media_file.maybe_public_bucket_extension.as_deref());
-  
-  let media_links = MediaLinksBuilder::from_media_path_and_env(
-    media_domain, 
-    server_state.server_environment, 
-    &bucket_path);
-  
+
+  let start_frame_url = media_files.iter()
+      .find(|file| &file.token == start_frame_media_file_token)
+      .map(|file| file.to_media_links(media_domain, server_state.server_environment))
+      .map(|file| file.cdn_url)
+      .ok_or_else(|| {
+        warn!("Start frame media file not found after fetch");
+        CommonWebError::NotFound
+      })?;
+
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
   let prompt = request.prompt
       .as_deref()
       .map(|prompt| prompt.trim())
       .unwrap_or_else(|| "");
-
+  
   let resolution = match &request.resolution {
-    Some(GenerateVeo3FastResolution::SevenTwentyP) => Veo3FastResolution::SevenTwentyP,
-    Some(GenerateVeo3FastResolution::TenEightyP) => Veo3FastResolution::TenEightyP,
-    None => Veo3FastResolution::Default,
+    Some(GenerateSeedance10ProResolution::FourEightyP) => Seedance1ProResolution::FourEightyP,
+    Some(GenerateSeedance10ProResolution::SevenTwentyP) => Seedance1ProResolution::SevenTwentyP,
+    Some(GenerateSeedance10ProResolution::TenEightyP) => Seedance1ProResolution::TenEightyP,
+    None => Seedance1ProResolution::SevenTwentyP,
   };
-
+  
   let duration = match &request.duration {
-    Some(GenerateVeo3FastDuration::EightSeconds) => Veo3FastDuration::EightSeconds,
-    None => Veo3FastDuration::EightSeconds,
+    Some(GenerateSeedance10ProDuration::ThreeSeconds) => Seedance1ProDuration::ThreeSeconds,
+    Some(GenerateSeedance10ProDuration::FourSeconds) => Seedance1ProDuration::FourSeconds,
+    Some(GenerateSeedance10ProDuration::FiveSeconds) => Seedance1ProDuration::FiveSeconds,
+    Some(GenerateSeedance10ProDuration::SixSeconds) => Seedance1ProDuration::SixSeconds,
+    Some(GenerateSeedance10ProDuration::SevenSeconds) => Seedance1ProDuration::SevenSeconds,
+    Some(GenerateSeedance10ProDuration::EightSeconds) => Seedance1ProDuration::EightSeconds,
+    Some(GenerateSeedance10ProDuration::NineSeconds) => Seedance1ProDuration::NineSeconds,
+    Some(GenerateSeedance10ProDuration::TenSeconds) => Seedance1ProDuration::TenSeconds,
+    Some(GenerateSeedance10ProDuration::ElevenSeconds) => Seedance1ProDuration::ElevenSeconds,
+    Some(GenerateSeedance10ProDuration::TwelveSeconds) => Seedance1ProDuration::TwelveSeconds,
+    None => Seedance1ProDuration::FiveSeconds,
   };
-
-  let generate_audio = request.generate_audio
-      .unwrap_or(false);
-
-  let args = Veo3FastArgs {
-    image_url: media_links.cdn_url,
-    prompt,
-    duration,
-    resolution,
-    generate_audio,
+  
+  let args = Seedance1ProArgs {
+    image_url: start_frame_url,
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
+    duration,
+    resolution,
+    prompt,
+    camera_fixed: false, // TODO: Parameterize
+    seed: None, // TODO: Parameterize
   };
 
-  let fal_result = enqueue_veo_3_fast_image_to_video_webhook(args)
+  let fal_result = enqueue_seedance_1_pro_image_to_video_webhook(args)
       .await
       .map_err(|err| {
-        warn!("Error calling enqueue_veo_3_fast_image_to_video_webhook: {:?}", err);
+        warn!("Error calling enqueue_seedance_1_pro_image_to_video_webhook: {:?}", err);
         CommonWebError::ServerError
       })?;
 
@@ -189,7 +192,7 @@ pub async fn generate_veo_3_fast_image_to_video_handler(
     maybe_creator_user_token: maybe_user_session
         .as_ref()
         .map(|s| &s.user_token),
-    maybe_model_type: Some(ModelType::Veo3Fast),
+    maybe_model_type: Some(ModelType::Seedance10Pro),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: Some(prompt),
     maybe_negative_prompt: None,
@@ -213,9 +216,7 @@ pub async fn generate_veo_3_fast_image_to_video_handler(
     fal_category: FalCategory::VideoGeneration,
     maybe_inference_args: None,
     maybe_prompt_token: prompt_token.as_ref(),
-    maybe_creator_user_token: maybe_user_session
-        .as_ref()
-        .map(|s| &s.user_token),
+    maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
@@ -230,7 +231,7 @@ pub async fn generate_veo_3_fast_image_to_video_handler(
       return Err(CommonWebError::ServerError);
     }
   };
-
+  
   let _r = transaction
       .commit()
       .await
@@ -239,7 +240,7 @@ pub async fn generate_veo_3_fast_image_to_video_handler(
         CommonWebError::ServerError
       })?;
 
-  Ok(Json(GenerateVeo3FastImageToVideoResponse {
+  Ok(Json(GenerateSeedance10ProImageToVideoResponse {
     success: true,
     inference_job_token: job_token,
   }))
