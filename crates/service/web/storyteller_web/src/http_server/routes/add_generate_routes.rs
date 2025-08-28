@@ -2,6 +2,7 @@ use crate::http_server::endpoints::generate::image::edit::flux_pro_kontext_max_e
 use crate::http_server::endpoints::generate::image::edit::gemini_25_flash_edit_image_handler::gemini_25_flash_edit_image_handler;
 use crate::http_server::endpoints::generate::image::edit::gpt_image_1_edit_image_handler::gpt_image_1_edit_image_handler;
 use crate::http_server::endpoints::generate::image::edit::qwen_edit_image_handler::qwen_edit_image_handler;
+use crate::http_server::endpoints::generate::image::edit::seededit_3_edit_image_handler::seededit_3_edit_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_1_dev_text_to_image_handler::generate_flux_1_dev_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_1_schnell_text_to_image_handler::generate_flux_1_schnell_text_to_image_handler;
 use crate::http_server::endpoints::generate::image::generate_flux_pro_11_text_to_image_handler::generate_flux_pro_11_text_to_image_handler;
@@ -53,6 +54,10 @@ where
               )
               .service(web::resource("/qwen")
                   .route(web::post().to(qwen_edit_image_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+              .service(web::resource("/seededit_3")
+                  .route(web::post().to(seededit_3_edit_image_handler))
                   .route(web::head().to(|| HttpResponse::Ok()))
               )
           )
