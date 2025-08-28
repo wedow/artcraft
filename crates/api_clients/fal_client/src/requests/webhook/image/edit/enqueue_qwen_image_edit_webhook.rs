@@ -14,6 +14,13 @@ pub struct QwenImageEditArgs<'a, U: IntoUrl, R: IntoUrl> {
   pub num_images: Option<QwenImageEditNumImages>,
   pub image_size: Option<QwenImageEditSize>,
 
+  pub negative_prompt: Option<String>,
+
+  /// Acceleration level for image generation.
+  /// Options: 'none', 'regular'. Higher acceleration increases speed.
+  /// 'regular' balances speed and quality. Default value: "none"
+  pub acceleration: Option<String>,
+
   // Fulfillment
   pub webhook_url: R,
   pub api_key: &'a FalApiKey,
@@ -109,6 +116,8 @@ mod tests {
       prompt: "put christmas lights on the tree, add snow to the mountains",
       num_images: Some(QwenImageEditNumImages::One),
       image_size: None,
+      negative_prompt: None,
+      acceleration: None,
       api_key: &api_key,
       webhook_url: "https://example.com/webhook",
     };

@@ -31,6 +31,8 @@ pub enum ModelType {
   GptImage1,
   #[serde(rename = "recraft_3")]
   Recraft3,
+  #[serde(rename = "qwen")]
+  Qwen,
   #[serde(rename = "gemini_25_flash")]
   Gemini25Flash,
 
@@ -100,6 +102,7 @@ impl ModelType {
       Self::FluxProKontextMax => "flux_pro_kontext_max",
       Self::GptImage1 => "gpt_image_1",
       Self::Recraft3 => "recraft_3",
+      Self::Qwen => "qwen",
       Self::Gemini25Flash => "gemini_25_flash",
       Self::Midjourney => "midjourney",
       Self::MidjourneyV6 => "midjourney_v6",
@@ -138,6 +141,7 @@ impl ModelType {
       "flux_pro_kontext_max" => Ok(Self::FluxProKontextMax),
       "gpt_image_1" => Ok(Self::GptImage1),
       "recraft_3" => Ok(Self::Recraft3),
+      "qwen" => Ok(Self::Qwen),
       "gemini_25_flash" => Ok(Self::Gemini25Flash),
       "midjourney" => Ok(Self::Midjourney),
       "midjourney_v6" => Ok(Self::MidjourneyV6),
@@ -180,6 +184,7 @@ impl ModelType {
       Self::FluxProKontextMax,
       Self::GptImage1,
       Self::Recraft3,
+      Self::Qwen,
       Self::Gemini25Flash,
       Self::Midjourney,
       Self::MidjourneyV6,
@@ -227,6 +232,7 @@ mod tests {
       assert_serialization(ModelType::FluxProKontextMax, "flux_pro_kontext_max");
       assert_serialization(ModelType::GptImage1, "gpt_image_1");
       assert_serialization(ModelType::Recraft3, "recraft_3");
+      assert_serialization(ModelType::Qwen, "qwen");
       assert_serialization(ModelType::Gemini25Flash, "gemini_25_flash");
       assert_serialization(ModelType::Midjourney, "midjourney");
       assert_serialization(ModelType::MidjourneyV6, "midjourney_v6");
@@ -262,6 +268,7 @@ mod tests {
       assert_eq!(ModelType::FluxProKontextMax.to_str(), "flux_pro_kontext_max");
       assert_eq!(ModelType::GptImage1.to_str(), "gpt_image_1");
       assert_eq!(ModelType::Recraft3.to_str(), "recraft_3");
+      assert_eq!(ModelType::Qwen.to_str(), "qwen");
       assert_eq!(ModelType::Gemini25Flash.to_str(), "gemini_25_flash");
       assert_eq!(ModelType::Midjourney.to_str(), "midjourney");
       assert_eq!(ModelType::MidjourneyV6.to_str(), "midjourney_v6");
@@ -299,6 +306,7 @@ mod tests {
       assert_eq!(ModelType::from_str("flux_pro_kontext_max").unwrap(), ModelType::FluxProKontextMax);
       assert_eq!(ModelType::from_str("gpt_image_1").unwrap(), ModelType::GptImage1);
       assert_eq!(ModelType::from_str("recraft_3").unwrap(), ModelType::Recraft3);
+      assert_eq!(ModelType::from_str("qwen").unwrap(), ModelType::Qwen);
       assert_eq!(ModelType::from_str("gemini_25_flash").unwrap(), ModelType::Gemini25Flash);
       assert_eq!(ModelType::from_str("midjourney").unwrap(), ModelType::Midjourney);
       assert_eq!(ModelType::from_str("midjourney_v6").unwrap(), ModelType::MidjourneyV6);
@@ -325,7 +333,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 28);
+      assert_eq!(variants.len(), 29);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
@@ -336,6 +344,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(ModelType::FluxProKontextMax));
       assert_eq!(variants.pop_first(), Some(ModelType::GptImage1));
       assert_eq!(variants.pop_first(), Some(ModelType::Recraft3));
+      assert_eq!(variants.pop_first(), Some(ModelType::Qwen));
       assert_eq!(variants.pop_first(), Some(ModelType::Gemini25Flash));
       assert_eq!(variants.pop_first(), Some(ModelType::Midjourney));
       assert_eq!(variants.pop_first(), Some(ModelType::MidjourneyV6));
