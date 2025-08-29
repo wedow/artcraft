@@ -1,4 +1,5 @@
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::core::commands::enqueue::text_to_image::gemini_25_flash::handle_gemini_25_flash::handle_gemini_25_flash;
 use crate::core::commands::enqueue::text_to_image::generic::handle_image_artcraft::handle_image_artcraft;
 use crate::core::commands::enqueue::text_to_image::generic::handle_image_fal::handle_image_fal;
 use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1::handle_gpt_image_1;
@@ -32,7 +33,7 @@ use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 
-/// This is used in the Tauri command bridge. 
+/// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -49,6 +50,9 @@ pub enum ImageModel {
   GptImage1,
   #[serde(rename = "recraft_3")]
   Recraft3,
+
+  #[serde(rename = "gemini_25_flash")]
+  Gemini25Flash,
 
   // Generic Midjourney model, version unknown.
   #[serde(rename = "midjourney")]
@@ -276,6 +280,18 @@ pub async fn dispatch_request(
   match request.model {
     None => {
       return Err(InternalImageError::NoModelSpecified);
+    }
+    Some(ImageModel::Gemini25Flash) => {
+      return handle_gemini_25_flash(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await;
     }
     Some(ImageModel::GptImage1) => {
       return handle_gpt_image_1(

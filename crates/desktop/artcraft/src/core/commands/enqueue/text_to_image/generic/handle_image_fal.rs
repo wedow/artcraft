@@ -57,7 +57,8 @@ pub async fn handle_image_fal(
       return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));
     }
     Some(
-      ImageModel::Flux1Dev | 
+      ImageModel::Gemini25Flash |
+      ImageModel::Flux1Dev |
       ImageModel::Flux1Schnell | 
       ImageModel::FluxPro11
     ) => {

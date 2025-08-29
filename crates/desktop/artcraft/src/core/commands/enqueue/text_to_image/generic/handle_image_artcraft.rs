@@ -57,6 +57,7 @@ pub async fn handle_image_artcraft(
       return Err(InternalImageError::NoModelSpecified);
     }
     Some(
+      ImageModel::Gemini25Flash |
       ImageModel::GptImage1 |
       ImageModel::Midjourney
     ) => {
