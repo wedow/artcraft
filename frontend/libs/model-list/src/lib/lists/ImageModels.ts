@@ -74,6 +74,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorBadges: ["35 sec."],
     maxGenerationCount: 4,
     defaultGenerationCount: 1,
+    canEditImages: true,
     tags: [ModelTag.InstructiveEdit],
   }),
   new ImageModel({

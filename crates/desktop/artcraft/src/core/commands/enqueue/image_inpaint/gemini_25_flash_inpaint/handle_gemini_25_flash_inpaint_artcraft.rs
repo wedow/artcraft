@@ -1,0 +1,167 @@
+use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
+use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
+use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
+use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
+use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueInpaintImageCommand;
+use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;
+use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::core::state::provider_priority::ProviderPriorityStore;
+use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
+use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
+use crate::services::fal::state::fal_task_queue::FalTaskQueue;
+use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
+use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use anyhow::anyhow;
+use artcraft_api_defs::generate::image::edit::flux_pro_kontext_max_edit_image::{FluxProKontextMaxEditImageNumImages, FluxProKontextMaxEditImageRequest};
+use artcraft_api_defs::generate::image::edit::gemini_25_flash_edit_image::{Gemini25FlashEditImageNumImages, Gemini25FlashEditImageRequest};
+use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::{GptImage1EditImageImageQuality, GptImage1EditImageImageSize, GptImage1EditImageNumImages, GptImage1EditImageRequest};
+use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
+use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::inpaint::flux_pro_1_inpaint_image::{FluxPro1InpaintImageNumImages, FluxPro1InpaintImageRequest};
+use enums::common::generation_provider::GenerationProvider;
+use enums::tauri::tasks::task_type::TaskType;
+use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
+use idempotency::uuid::generate_random_uuid;
+use images::encoding::image_bytes_to_png_bytes::image_bytes_to_png_bytes;
+use images::encoding::image_bytes_to_png_bytes_with_dimensions::image_bytes_to_png_bytes_with_dimensions;
+use images::mask_images::normalize_image_bytes_to_flux_mask::normalize_image_bytes_to_flux_mask;
+use log::{error, info};
+use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
+use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
+use storyteller_client::generate::image::edit::flux_pro_kontext_max_edit_image::flux_pro_kontext_max_edit_image;
+use storyteller_client::generate::image::edit::gemini_25_flash_edit_image::gemini_25_flash_edit_image;
+use storyteller_client::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
+use storyteller_client::generate::image::generate_flux_1_dev_text_to_image::generate_flux_1_dev_text_to_image;
+use storyteller_client::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
+use storyteller_client::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
+use storyteller_client::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
+use storyteller_client::generate::image::inpaint::flux_pro_1_inpaint_image::flux_pro_1_inpaint_image;
+use storyteller_client::media_files::get_media_file::get_media_file;
+use storyteller_client::media_files::upload_image_media_file_from_bytes::{upload_image_media_file_from_bytes, ImageType, UploadImageBytesArgs};
+use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use tauri::AppHandle;
+use tokens::tokens::media_files::MediaFileToken;
+
+pub async fn handle_gemini_25_flash_inpaint_artcraft(
+  request: &EnqueueInpaintImageCommand,
+  app: &AppHandle,
+  app_data_root: &AppDataRoot,
+  app_env_configs: &AppEnvConfigs,
+  storyteller_creds_manager: &StorytellerCredentialManager,
+) -> Result<TaskEnqueueSuccess, InternalImageInpaintError> {
+
+  let creds = match storyteller_creds_manager.get_credentials()? {
+    Some(creds) => creds,
+    None => {
+      return Err(InternalImageInpaintError::NeedsStorytellerCredentials);
+    },
+  };
+
+  let image_media_token = match &request.image_media_token {
+    Some(token) => token.clone(),
+    None => {
+      return Err(InternalImageInpaintError::NoSourceImageSpecified);
+    },
+  };
+
+  info!("Calling Artcraft gemini 2.5 flash inpaint ...");
+
+  let uuid_idempotency_token = generate_random_uuid();
+
+  let num_images = match request.image_count {
+    None => None,
+    Some(1) => Some(Gemini25FlashEditImageNumImages::One),
+    Some(2) => Some(Gemini25FlashEditImageNumImages::Two),
+    Some(3) => Some(Gemini25FlashEditImageNumImages::Three),
+    Some(4) => Some(Gemini25FlashEditImageNumImages::Four),
+    Some(other) => {
+      return Err(InternalImageInpaintError::InvalidNumberOfRequestedImages {
+        min: 1,
+        max: 4,
+        requested: other,
+      });
+    },
+  };
+
+  let request = Gemini25FlashEditImageRequest {
+    uuid_idempotency_token,
+    prompt: Some(request.prompt.clone()),
+    image_media_tokens: Some(vec![image_media_token]),
+    num_images,
+    image_quality: None,
+  };
+
+  let result = gemini_25_flash_edit_image(
+    &app_env_configs.storyteller_host,
+    Some(&creds),
+    request,
+  ).await;
+
+  let job_id = match result {
+    Ok(enqueued) => {
+      // TODO(bt,2025-07-05): Enqueue job token?
+      info!("Successfully enqueued Artcraft gemini 2.5 flash inpaint. Job token: {}",
+        enqueued.inference_job_token);
+      enqueued.inference_job_token
+    }
+    Err(err) => {
+      error!("Failed to use Artcraft gemini 2.5 flash inpaint: {:?}", err);
+      return Err(InternalImageInpaintError::StorytellerError(err));
+    }
+  };
+  
+  Ok(TaskEnqueueSuccess {
+    provider: GenerationProvider::Artcraft,
+    model: Some(GenerationModel::Gemini25Flash),
+    provider_job_id: Some(job_id.to_string()),
+    task_type: TaskType::ImageInpaintEdit,
+  })
+}
+
+// async fn get_mask(
+//   request: &EnqueueInpaintImageCommand,
+//   app_env_configs: &AppEnvConfigs,
+//   storyteller_creds: &StorytellerCredentialSet,
+// ) -> Result<MediaFileToken, InternalImageInpaintError> {
+// 
+//   if request.mask_image_media_token.is_some() && request.mask_image_raw_bytes.is_some() {
+//     return Err(InternalImageInpaintError::MaskMediaTokenAndBytesSupplied);
+//   }
+// 
+//   if let Some(token) = request.mask_image_media_token.as_ref() {
+//     return Ok(token.clone());
+//   };
+// 
+//   let image_bytes = request.mask_image_raw_bytes.as_ref()
+//     .ok_or(InternalImageInpaintError::NoMaskImageSpecified)?;
+// 
+//   let image_bytes = normalize_image_bytes_to_flux_mask(image_bytes)
+//       .map_err(|err| {
+//         error!("Failed to convert image bytes to png: {:?}", err);
+//         InternalImageInpaintError::CouldNotEncodeMask
+//       })?;
+// 
+//   info!("Uploading image media file from bytes...");
+// 
+//   let result = upload_image_media_file_from_bytes(UploadImageBytesArgs {
+//     api_host: &app_env_configs.storyteller_host,
+//     maybe_creds: Some(&storyteller_creds),
+//     image_bytes: image_bytes.0,
+//     image_type: ImageType::Png,
+//     is_intermediate_system_file: true,
+//   }).await
+//       .map_err(|err| {
+//         error!("Failed to upload image media file: {:?}", err);
+//         InternalImageInpaintError::StorytellerError(err)
+//       })?;
+// 
+//   Ok(result.media_file_token)
+// }

@@ -4,6 +4,7 @@ use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintE
 use crate::core::commands::enqueue::image_inpaint::flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint;
 use crate::core::commands::enqueue::image_inpaint::flux_pro_1_inpaint::handle_flux_pro_1_inpaint::handle_flux_pro_1_inpaint;
 use crate::core::commands::enqueue::image_inpaint::flux_pro_kontext_inpaint::handle_flux_pro_kontext_inpaint::handle_flux_pro_kontext_inpaint;
+use crate::core::commands::enqueue::image_inpaint::gemini_25_flash_inpaint::handle_gemini_25_flash_inpaint::handle_gemini_25_flash_inpaint;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
@@ -48,16 +49,26 @@ use tokens::tokens::media_files::MediaFileToken;
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum ImageInpaintModel {
-  // Mask-based inpainting models
+  /*
+   * Mask-based inpainting models
+   */
+  
   #[serde(rename = "flux_dev_juggernaut")]
   FluxDevJuggernaut,
+  
   #[serde(rename = "flux_pro_1")]
   FluxPro1,
 
-  // Non-inpainting, instructive editing models
-  // NB: We're supporting these to keep the app simple and not over-complicate the javascript
+  /* 
+   * Non-inpainting, instructive editing models
+   * NB: We're supporting these to keep the app simple and not over-complicate the javascript
+   */
+  
   #[serde(rename = "flux_pro_kontext_max")]
   FluxProKontextMax,
+
+  #[serde(rename = "gemini_25_flash")]
+  Gemini25Flash,
 }
 
 #[derive(Deserialize, Debug)]
@@ -250,8 +261,23 @@ pub async fn handle_request(
       ).await?
     }
     Some(ImageInpaintModel::FluxProKontextMax) => {
-      // Redirect to contextual image edit handler.
+      // TODO: Redirect to contextual image edit handler.
       handle_flux_pro_kontext_inpaint(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        fal_creds_manager,
+        fal_task_queue,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await?
+    }
+    Some(ImageInpaintModel::Gemini25Flash) => {
+      // TODO: Redirect to contextual image edit handler.
+      handle_gemini_25_flash_inpaint(
         request,
         app,
         app_data_root,
