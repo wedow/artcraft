@@ -31,7 +31,7 @@ pub enum GenerateError {
 pub enum BadInputReason {
   NoModelSpecified,
   /// An image was required but not provided.
-  ImageMissing,
+  NoImageSpecified,
   Base64DecodeError,
 }
 
@@ -73,6 +73,10 @@ impl GenerateError {
   //
   // Bad input
   // 
+  
+  pub fn no_image_specified() -> Self {
+    Self::BadInput(BadInputReason::NoImageSpecified)
+  }
   
   pub fn no_model_specified() -> Self {
     Self::BadInput(BadInputReason::NoModelSpecified)

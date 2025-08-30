@@ -1,7 +1,6 @@
 use crate::core::commands::enqueue::image_to_object::enqueue_image_to_3d_object_command::EnqueueImageTo3dObjectRequest;
 use crate::core::commands::enqueue::image_to_object::generic::handle_object_artcraft::handle_object_artcraft;
 use crate::core::commands::enqueue::image_to_object::generic::handle_object_fal::handle_object_fal;
-use crate::core::commands::enqueue::image_to_object::internal_object_error::InternalObjectError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -10,6 +9,7 @@ use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use tauri::AppHandle;
+use crate::core::commands::enqueue::generate_error::GenerateError;
 
 pub async fn handle_object(
   request: EnqueueImageTo3dObjectRequest,
@@ -20,7 +20,7 @@ pub async fn handle_object(
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalObjectError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let priority = provider_priority_store.get_priority()?;
 
@@ -51,5 +51,5 @@ pub async fn handle_object(
     }
   }
 
-  Err(InternalObjectError::NoProviderAvailable)
+  Err(GenerateError::NoProviderAvailable)
 }

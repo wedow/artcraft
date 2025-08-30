@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
 use crate::core::commands::enqueue::image_to_object::generic::handle_object::handle_object;
-use crate::core::commands::enqueue::image_to_object::internal_object_error::InternalObjectError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -102,22 +102,22 @@ pub async fn enqueue_image_to_3d_object_command(
       let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
 
       match err {
-        InternalObjectError::NoModelSpecified => {
+        GenerateError::BadInput(BadInputReason::NoModelSpecified) => {
           status = CommandErrorStatus::BadRequest;
           error_type = EnqueueImageTo3dObjectErrorType::ModelNotSpecified;
           error_message = "No model specified for object generation";
         }
-        InternalObjectError::NoProviderAvailable => {
+        GenerateError::NoProviderAvailable => {
           status = CommandErrorStatus::ServerError;
           error_type = EnqueueImageTo3dObjectErrorType::NoProviderAvailable;
           error_message = "No configured provider available for object generation";
         }
-        InternalObjectError::NeedsFalApiKey => {
+        GenerateError::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = EnqueueImageTo3dObjectErrorType::NeedsFalApiKey;
           error_message = "You need to set a FAL api key";
         },
-        InternalObjectError::NeedsStorytellerCredentials => {
+        GenerateError::MissingCredentials(MissingCredentialsReason::NeedsStorytellerCredentials) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = EnqueueImageTo3dObjectErrorType::NeedsStorytellerCredentials;
           error_message = "You need to be logged into Artcraft.";
@@ -159,7 +159,7 @@ pub async fn handle_request(
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalObjectError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let result = handle_object(
     request,

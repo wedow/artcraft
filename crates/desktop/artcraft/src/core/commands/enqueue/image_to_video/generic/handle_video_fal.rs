@@ -57,7 +57,7 @@ pub async fn handle_video_fal(
       &media_token
     ).await?;
   } else {
-    return Err(GenerateError::BadInput(BadInputReason::ImageMissing));
+    return Err(GenerateError::BadInput(BadInputReason::NoImageSpecified));
   }
 
   let filename = temp_download.path().to_path_buf();

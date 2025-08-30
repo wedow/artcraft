@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_to_object::enqueue_image_to_3d_object_command::{EnqueueImageTo3dObjectModel, EnqueueImageTo3dObjectRequest};
-use crate::core::commands::enqueue::image_to_object::internal_object_error::InternalObjectError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -25,7 +25,7 @@ pub async fn handle_object_artcraft(
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalObjectError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
@@ -38,7 +38,7 @@ pub async fn handle_object_artcraft(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
       
-      return Err(InternalObjectError::NeedsStorytellerCredentials);
+      return Err(GenerateError::needs_storyteller_credentials());
     },
   };
   
@@ -50,7 +50,7 @@ pub async fn handle_object_artcraft(
   
   let job_token = match request.model {
     None => {
-      return Err(InternalObjectError::NoModelSpecified);
+      return Err(GenerateError::no_model_specified());
     }
     Some(
       EnqueueImageTo3dObjectModel::Hunyuan3d2 |
@@ -74,7 +74,7 @@ pub async fn handle_object_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Hunyuan 3D 2.0: {:?}", err);
-          return Err(InternalObjectError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -97,7 +97,7 @@ pub async fn handle_object_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Hunyuan 3D 2.1: {:?}", err);
-          return Err(InternalObjectError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }

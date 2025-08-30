@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_to_object::enqueue_image_to_3d_object_command::{EnqueueImageTo3dObjectModel, EnqueueImageTo3dObjectRequest};
-use crate::core::commands::enqueue::image_to_object::internal_object_error::InternalObjectError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -25,7 +25,7 @@ pub async fn handle_object_fal(
   request: EnqueueImageTo3dObjectRequest,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalObjectError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let api_key = match fal_creds_manager.get_key()? {
     Some(key) => key,
@@ -38,7 +38,7 @@ pub async fn handle_object_fal(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
       
-      return Err(InternalObjectError::NeedsFalApiKey);
+      return Err(GenerateError::needs_fal_api_key());
     },
   };
   
@@ -57,7 +57,7 @@ pub async fn handle_object_fal(
       &media_token
     ).await?;
   } else {
-    return Err(InternalObjectError::AnyhowError(anyhow!("No image media token provided")));
+    return Err(GenerateError::no_image_specified());
   }
 
   info!("Calling FAL image to 3d ...");
@@ -68,7 +68,7 @@ pub async fn handle_object_fal(
 
   let result = match request.model {
     None => {
-      return Err(InternalObjectError::NoModelSpecified);
+      return Err(GenerateError::no_model_specified());
     }
     Some(
       EnqueueImageTo3dObjectModel::Hunyuan3d2_0 |
@@ -82,7 +82,7 @@ pub async fn handle_object_fal(
       }).await
     }
     _ => {
-      return Err(InternalObjectError::AnyhowError(anyhow!("Wrong model specified: {:?}", request.model)));
+      return Err(GenerateError::AnyhowError(anyhow!("Wrong model specified: {:?}", request.model)));
     }
   };
 
@@ -106,7 +106,7 @@ pub async fn handle_object_fal(
 
       if let Err(err) = fal_task_queue.insert(&enqueued) {
         error!("Failed to enqueue task: {:?}", err);
-        return Err(InternalObjectError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
+        return Err(GenerateError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
       }
     }
     Err(err) => {
@@ -123,7 +123,7 @@ pub async fn handle_object_fal(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
-      return Err(InternalObjectError::FalError(err));
+      return Err(GenerateError::from(err));
     }
   }
 
