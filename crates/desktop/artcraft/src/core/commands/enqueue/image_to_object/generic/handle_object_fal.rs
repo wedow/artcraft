@@ -57,7 +57,7 @@ pub async fn handle_object_fal(
       &media_token
     ).await?;
   } else {
-    return Err(GenerateError::no_image_specified());
+    return Err(GenerateError::required_source_image_not_provided());
   }
 
   info!("Calling FAL image to 3d ...");

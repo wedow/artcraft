@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueInpaintImageCommand;
@@ -51,29 +52,21 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalImageInpaintError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
-      return Err(InternalImageInpaintError::NeedsStorytellerCredentials);
+      return Err(GenerateError::needs_storyteller_credentials());
     },
   };
 
   let image_media_token = match &request.image_media_token {
     Some(token) => token.clone(),
     None => {
-      return Err(InternalImageInpaintError::NoSourceImageSpecified);
+      return Err(GenerateError::required_source_image_not_provided());
     },
   };
-
-  //let image_media_file = get_media_file(
-  //  &app_env_configs.storyteller_host,
-  //  &image_media_token,
-  //).await.map_err(|err| {
-  //  error!("Failed to get media file for image: {:?}", err);
-  //  InternalImageInpaintError::StorytellerError(err)
-  //})?;
 
   let mask_media_token = get_mask(
     request,
@@ -92,11 +85,11 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
     Some(3) => Some(FluxDevJuggernautInpaintImageNumImages::Three),
     Some(4) => Some(FluxDevJuggernautInpaintImageNumImages::Four),
     Some(other) => {
-      return Err(InternalImageInpaintError::InvalidNumberOfRequestedImages {
+      return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages {
         min: 1,
         max: 4,
         requested: other,
-      });
+      }));
     },
   };
 
@@ -123,7 +116,7 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
     }
     Err(err) => {
       error!("Failed to use Artcraft flux dev juggernaut inpaint: {:?}", err);
-      return Err(InternalImageInpaintError::StorytellerError(err));
+      return Err(GenerateError::from(err));
     }
   };
   
@@ -139,10 +132,10 @@ async fn get_mask(
   request: &EnqueueInpaintImageCommand,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
-) -> Result<MediaFileToken, InternalImageInpaintError> {
+) -> Result<MediaFileToken, GenerateError> {
 
   if request.mask_image_media_token.is_some() && request.mask_image_raw_bytes.is_some() {
-    return Err(InternalImageInpaintError::MaskMediaTokenAndBytesSupplied);
+    return Err(GenerateError::both_image_mask_media_token_and_bytes_supplied());
   }
 
   if let Some(token) = request.mask_image_media_token.as_ref() {
@@ -150,12 +143,12 @@ async fn get_mask(
   };
 
   let image_bytes = request.mask_image_raw_bytes.as_ref()
-    .ok_or(InternalImageInpaintError::NoMaskImageSpecified)?;
+    .ok_or(GenerateError::required_source_image_mask_not_provided())?;
 
   let image_bytes = normalize_image_bytes_to_flux_mask(image_bytes)
       .map_err(|err| {
         error!("Failed to convert image bytes to png: {:?}", err);
-        InternalImageInpaintError::CouldNotEncodeMask
+        GenerateError::AnyhowError(anyhow!("Failed to convert image bytes to png mask"))
       })?;
 
   info!("Uploading image media file from bytes...");
@@ -169,7 +162,7 @@ async fn get_mask(
   }).await
       .map_err(|err| {
         error!("Failed to upload image media file: {:?}", err);
-        InternalImageInpaintError::StorytellerError(err)
+        GenerateError::from(err)
       })?;
 
   Ok(result.media_file_token)

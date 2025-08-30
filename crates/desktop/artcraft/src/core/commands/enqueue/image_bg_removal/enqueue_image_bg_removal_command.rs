@@ -208,7 +208,7 @@ fn error_to_tauri_response(error: GenerateError) -> CommandErrorResponseWrapper<
       error_type = EnqueueImageBgRemovalErrorType::NoProviderAvailable;
       error_message = "No configured provider available for background removal".to_string();
     }
-    GenerateError::BadInput(BadInputReason::NoImageSpecified) => {
+    GenerateError::BadInput(BadInputReason::RequiredSourceImageNotProvided) => {
       status = CommandErrorStatus::BadRequest;
       error_type = EnqueueImageBgRemovalErrorType::MissingImage;
       error_message = "No image provided for background removal".to_string();

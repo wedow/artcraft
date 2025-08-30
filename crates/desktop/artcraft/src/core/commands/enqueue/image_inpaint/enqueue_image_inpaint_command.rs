@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
 use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;
@@ -197,7 +198,7 @@ pub async fn enqueue_image_inpaint_command(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
-      Err(err.to_tauri_response())
+      Err(error_to_tauri_response(err))
     }
     Ok(event) => {
       let event = GenerationEnqueueSuccessEvent {
@@ -227,10 +228,10 @@ pub async fn handle_request(
   fal_task_queue: &FalTaskQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalImageInpaintError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
   let success_event= match request.model {
     None => {
-      return Err(InternalImageInpaintError::NoModelSpecified)
+      return Err(GenerateError::no_model_specified())
     }
     Some(ImageInpaintModel::FluxDevJuggernaut) => {
       handle_flux_dev_juggernaut_inpaint(
@@ -307,4 +308,61 @@ pub async fn handle_request(
   }
 
   Ok(success_event)
+}
+
+pub fn error_to_tauri_response(error: GenerateError) -> CommandErrorResponseWrapper<EnqueueInpaintImageErrorType, ()> {
+  let mut status = CommandErrorStatus::ServerError;
+  let mut error_type = EnqueueInpaintImageErrorType::ServerError;
+  let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.".to_string();
+
+  match error {
+    GenerateError::BadInput(BadInputReason::NoModelSpecified) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueInpaintImageErrorType::ModelNotSpecified;
+      error_message = "No model specified for image generation".to_string();
+    }
+    GenerateError::NoProviderAvailable => {
+      status = CommandErrorStatus::ServerError;
+      error_type = EnqueueInpaintImageErrorType::NoProviderAvailable;
+      error_message = "No configured provider available for image generation".to_string();
+    }
+    GenerateError::BadInput(BadInputReason::RequiredSourceImageNotProvided) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueInpaintImageErrorType::NoSourceImageSpecified;
+      error_message = "No source image was provided".to_string();
+    }
+    GenerateError::BadInput(BadInputReason::RequiredSourceImageMaskNotProvided) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueInpaintImageErrorType::NoMaskImageSpecified;
+      error_message = "No mask image was provided".to_string();
+    }
+    GenerateError::BadInput(BadInputReason::BothImageMaskMediaTokenAndBytesSupplied) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueInpaintImageErrorType::MultipleMaskImagesSpecified;
+      error_message = "multiple mask images provided".to_string();
+    }
+    GenerateError::BadInput(BadInputReason::CannotDetermineImageMimeType) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueInpaintImageErrorType::BadMaskImage;
+      error_message = "bad mask image (mime)".to_string();
+    }
+    GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages { min, max, requested }) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueInpaintImageErrorType::BadRequest;
+      error_message = format!("Invalid number of images requested ({}). Must be between {} and {}", requested, min, max);
+    }
+    GenerateError::BadInput(BadInputReason::InvalidNumberOfInputImages{  min, max, provided }) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueInpaintImageErrorType::BadRequest;
+      error_message = format!("Invalid number of input images ({}). Must be between {} and {}", provided, min, max);
+    }
+    _ => {}, // Other cases fall through.
+  }
+
+  CommandErrorResponseWrapper {
+    status,
+    error_message: Some(error_message.to_string()),
+    error_type: Some(error_type),
+    error_details: None,
+  }
 }

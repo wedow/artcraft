@@ -113,7 +113,7 @@ async fn upload_image_from_base64_bytes(
           GenerateError::BadInput(BadInputReason::Base64DecodeError)
         })?;
   } else {
-    return Err(GenerateError::BadInput(BadInputReason::NoImageSpecified));
+    return Err(GenerateError::BadInput(BadInputReason::RequiredSourceImageNotProvided));
   };
 
   info!("Uploading image media file from temp file: {:?}", temp_file.path());

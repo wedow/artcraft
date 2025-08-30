@@ -29,10 +29,22 @@ pub enum GenerateError {
 
 #[derive(Debug)]
 pub enum BadInputReason {
-  NoModelSpecified,
-  /// An image was required but not provided.
-  NoImageSpecified,
   Base64DecodeError,
+  BothImageMaskMediaTokenAndBytesSupplied,
+  CannotDetermineImageMimeType,
+  InvalidNumberOfInputImages {
+    provided: u32,
+    min: u32,
+    max: u32,
+  },
+  InvalidNumberOfRequestedImages {
+    requested: u32,
+    min: u32,
+    max: u32,
+  },
+  NoModelSpecified,
+  RequiredSourceImageMaskNotProvided,
+  RequiredSourceImageNotProvided,
 }
 
 #[derive(Debug)]
@@ -69,23 +81,31 @@ pub enum ProviderFailureReason {
 }
 
 impl GenerateError {
-  
+
   //
   // Bad input
-  // 
-  
-  pub fn no_image_specified() -> Self {
-    Self::BadInput(BadInputReason::NoImageSpecified)
+  //
+
+  pub fn both_image_mask_media_token_and_bytes_supplied() -> Self {
+    Self::BadInput(BadInputReason::BothImageMaskMediaTokenAndBytesSupplied)
   }
-  
+
   pub fn no_model_specified() -> Self {
     Self::BadInput(BadInputReason::NoModelSpecified)
   }
-  
+
+  pub fn required_source_image_mask_not_provided() -> Self {
+    Self::BadInput(BadInputReason::RequiredSourceImageMaskNotProvided)
+  }
+
+  pub fn required_source_image_not_provided() -> Self {
+    Self::BadInput(BadInputReason::RequiredSourceImageNotProvided)
+  }
+
   //
   // Missing credentials
   //
-  
+
   pub fn needs_fal_api_key() -> Self {
     Self::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey)
   }
