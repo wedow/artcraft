@@ -1,7 +1,6 @@
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
-use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;
 use crate::core::commands::enqueue::image_inpaint::flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint;
 use crate::core::commands::enqueue::image_inpaint::flux_pro_1_inpaint::handle_flux_pro_1_inpaint::handle_flux_pro_1_inpaint;
 use crate::core::commands::enqueue::image_inpaint::flux_pro_kontext_inpaint::handle_flux_pro_kontext_inpaint::handle_flux_pro_kontext_inpaint;
