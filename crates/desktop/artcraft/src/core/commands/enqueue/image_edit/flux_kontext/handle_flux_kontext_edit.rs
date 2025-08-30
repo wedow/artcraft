@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::EnqueueContextualEditImageCommand;
-use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit_artcraft::handle_flux_kontext_edit_artcraft;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_artcraft::handle_gpt_image_1_edit_artcraft;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_sora::handle_gpt_image_1_edit_sora;
@@ -26,7 +26,7 @@ pub async fn handle_flux_kontext_edit(
   fal_task_queue: &FalTaskQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalContextualEditImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let priority = provider_priority_store.get_priority()?;
   
@@ -55,5 +55,5 @@ pub async fn handle_flux_kontext_edit(
     }
   }
   
-  Err(InternalContextualEditImageError::NoProviderAvailable)
+  Err(GenerateError::NoProviderAvailable)
 }

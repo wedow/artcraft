@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
-use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -39,12 +39,12 @@ pub async fn handle_flux_kontext_edit_artcraft(
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalContextualEditImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
-      return Err(InternalContextualEditImageError::NeedsStorytellerCredentials);
+      return Err(GenerateError::needs_storyteller_credentials());
     },
   };
 
@@ -59,11 +59,11 @@ pub async fn handle_flux_kontext_edit_artcraft(
     Some(3) => Some(FluxProKontextMaxEditImageNumImages::Three),
     Some(4) => Some(FluxProKontextMaxEditImageNumImages::Four),
     Some(other) => {
-      return Err(InternalContextualEditImageError::InvalidNumberOfRequestedImages {
+      return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages {
         min: 1,
         max: 4,
         requested: other,
-      });
+      }));
     },
   };
   
@@ -75,15 +75,13 @@ pub async fn handle_flux_kontext_edit_artcraft(
       .unwrap_or(0);
 
   if request.scene_image_media_token.is_some() && list_count > 0 {
-    return Err(InternalContextualEditImageError::InvalidNumberOfInputImagesForFluxKontext {
-      message: "Cannot specify both scene_image_media_token and image_media_tokens for Flux Kontext Max".to_string()
-    });
+    return Err(GenerateError::BadInput(BadInputReason::WrongImageArguments(
+      "Cannot specify both scene_image_media_token and image_media_tokens for Flux Kontext Max".to_string())));
   }
 
   if list_count > 1 {
-    return Err(InternalContextualEditImageError::InvalidNumberOfInputImagesForFluxKontext {
-      message: "Cannot specify more than one image in image_media_tokens for Flux Kontext Max".to_string()
-    });
+    return Err(GenerateError::BadInput(BadInputReason::WrongImageArguments(
+      "Cannot specify more than one image in image_media_tokens for Flux Kontext Max".to_string())));
   }
 
   if let Some(media_token) = &request.scene_image_media_token {
@@ -102,9 +100,8 @@ pub async fn handle_flux_kontext_edit_artcraft(
   let media_token = match maybe_media_token {
     Some(token) => token,
     None => {
-      return Err(InternalContextualEditImageError::InvalidNumberOfInputImagesForFluxKontext {
-        message: "No input image specified for Flux Kontext Max edit".to_string(),
-      });
+      return Err(GenerateError::BadInput(BadInputReason::WrongImageArguments(
+        "No input image specified for Flux Kontext Max edit".to_string())));
     },
   };
 
@@ -130,7 +127,7 @@ pub async fn handle_flux_kontext_edit_artcraft(
     }
     Err(err) => {
       error!("Failed to use Artcraft gpt-image-1: {:?}", err);
-      return Err(InternalContextualEditImageError::StorytellerError(err));
+      return Err(GenerateError::from(err));
     }
   };
   

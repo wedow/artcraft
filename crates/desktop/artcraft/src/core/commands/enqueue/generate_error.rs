@@ -45,6 +45,7 @@ pub enum BadInputReason {
   NoModelSpecified,
   RequiredSourceImageMaskNotProvided,
   RequiredSourceImageNotProvided,
+  WrongImageArguments(String),
 }
 
 #[derive(Debug)]

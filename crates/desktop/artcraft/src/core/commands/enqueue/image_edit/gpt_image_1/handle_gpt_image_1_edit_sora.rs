@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageSize, EnqueueContextualEditImageCommand, EnqueueContextualEditImageErrorType};
-use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::MAX_IMAGES;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
@@ -52,19 +52,19 @@ pub async fn handle_gpt_image_1_edit_sora(
   app_env_configs: &AppEnvConfigs,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalContextualEditImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let mut creds = match sora_creds_manager.get_credentials() {
     Ok(Some(creds)) => creds,
     Ok(None) => {
       warn!("No Sora credentials found.");
       ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
-      return Err(InternalContextualEditImageError::NeedsSoraCredentials);
+      return Err(GenerateError::needs_sora_credentials());
     }
     Err(err) => {
       error!("Failed to get Sora credentials: {:?}", err);
       ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
-      return Err(InternalContextualEditImageError::AnyhowError(err));
+      return Err(GenerateError::needs_sora_credentials());
     }
   };
 
@@ -79,11 +79,11 @@ pub async fn handle_gpt_image_1_edit_sora(
   }
 
   if media_tokens.len() > MAX_IMAGES {
-    return Err(InternalContextualEditImageError::InvalidNumberOfInputImages {
+    return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfInputImages {
       min: 1,
       max: MAX_IMAGES as u32,
-      requested: media_tokens.len() as u32,
-    });
+      provided: media_tokens.len() as u32,
+    }));
   }
 
   info!("Calling get media file API: {:?}", app_env_configs.storyteller_host);
