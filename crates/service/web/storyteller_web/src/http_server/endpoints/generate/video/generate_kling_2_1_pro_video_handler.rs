@@ -2,9 +2,12 @@ use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
+use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
+use crate::util::lookup::fetch_all_required_media_files::fetch_all_required_media_files;
+use crate::util::traits::into_media_links_trait::IntoMediaLinks;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
@@ -28,8 +31,6 @@ use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, g
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
 use sqlx::Acquire;
 use utoipa::ToSchema;
-use crate::util::lookup::fetch_all_required_media_files::fetch_all_required_media_files;
-use crate::util::traits::into_media_links_trait::IntoMediaLinks;
 
 /// Kling 2.1 Pro Image to Video
 #[utoipa::path(
@@ -48,6 +49,9 @@ pub async fn generate_kling_2_1_pro_video_handler(
   request: Json<GenerateKling21ProImageToVideoRequest>,
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<GenerateKling21ProImageToVideoResponse>, CommonWebError> {
+
+  payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
+
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;

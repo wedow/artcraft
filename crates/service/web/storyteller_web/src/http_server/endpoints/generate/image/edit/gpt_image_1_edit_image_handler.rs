@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
+use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
@@ -47,6 +48,9 @@ pub async fn gpt_image_1_edit_image_handler(
   request: Json<GptImage1EditImageRequest>,
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<GptImage1EditImageResponse>, CommonWebError> {
+
+  payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
+  
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;

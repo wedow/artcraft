@@ -15,6 +15,8 @@ pub enum CommonWebError {
   NotAuthorized,
   /// Server error with no reason.
   ServerError,
+  /// Payment required with no extra info
+  PaymentRequired,
 }
 
 impl Error for CommonWebError {}
@@ -48,6 +50,7 @@ impl ResponseError for CommonWebError {
       CommonWebError::NotFound => StatusCode::NOT_FOUND,
       CommonWebError::NotAuthorized => StatusCode::UNAUTHORIZED,
       CommonWebError::ServerError => StatusCode::INTERNAL_SERVER_ERROR,
+      CommonWebError::PaymentRequired => StatusCode::PAYMENT_REQUIRED,
     }
   }
 

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
+use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
@@ -46,6 +47,9 @@ pub async fn generate_kling_2_1_master_video_handler(
   request: Json<GenerateKling21MasterImageToVideoRequest>,
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<GenerateKling21MasterImageToVideoResponse>, CommonWebError> {
+
+  payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
+  
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;

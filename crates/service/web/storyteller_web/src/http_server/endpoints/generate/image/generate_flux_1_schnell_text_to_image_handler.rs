@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
+use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
 use actix_web::web::Json;
@@ -39,6 +40,9 @@ pub async fn generate_flux_1_schnell_text_to_image_handler(
   request: Json<GenerateFlux1SchnellTextToImageRequest>,
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<GenerateFlux1SchnellTextToImageResponse>, CommonWebError> {
+
+  payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
+
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;
