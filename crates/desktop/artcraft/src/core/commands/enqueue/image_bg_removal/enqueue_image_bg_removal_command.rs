@@ -1,4 +1,4 @@
-use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_bg_removal::generic::handle_generic_bg_removal::handle_generic_bg_removal;
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
@@ -137,7 +137,7 @@ pub async fn enqueue_image_bg_removal_command(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
-      Err(err.to_tauri_response())
+      Err(error_to_tauri_response(err))
     }
     Ok(event) => {
       let event = GenerationEnqueueSuccessEvent {
@@ -165,7 +165,7 @@ pub async fn handle_request(
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalBgRemovalError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
   
   // TODO(bt,2025-07-07): Other model/provider routing...
   
@@ -195,4 +195,36 @@ pub async fn handle_request(
   }
 
   Ok(success_event)
+}
+
+fn error_to_tauri_response(error: GenerateError) -> CommandErrorResponseWrapper<EnqueueImageBgRemovalErrorType, ()> {
+  let mut status = CommandErrorStatus::ServerError;
+  let mut error_type = EnqueueImageBgRemovalErrorType::ServerError;
+  let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.".to_string();
+
+  match error {
+    GenerateError::NoProviderAvailable => {
+      status = CommandErrorStatus::ServerError;
+      error_type = EnqueueImageBgRemovalErrorType::NoProviderAvailable;
+      error_message = "No configured provider available for background removal".to_string();
+    }
+    GenerateError::BadInput(BadInputReason::ImageMissing) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueImageBgRemovalErrorType::MissingImage;
+      error_message = "No image provided for background removal".to_string();
+    }
+    GenerateError::BadInput(BadInputReason::Base64DecodeError) => {
+      status = CommandErrorStatus::BadRequest;
+      error_type = EnqueueImageBgRemovalErrorType::Base64DecodeError;
+      error_message = "Failed to decode base64 image data".to_string();
+    }
+    _ => {}, // Other cases fall through.
+  }
+
+  CommandErrorResponseWrapper {
+    status,
+    error_message: Some(error_message.to_string()),
+    error_type: Some(error_type),
+    error_details: None,
+  }
 }

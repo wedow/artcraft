@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailure};
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
-use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -44,12 +44,12 @@ pub async fn handle_generic_bg_removal_artcraft(
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalBgRemovalError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
-      return Err(InternalBgRemovalError::NeedsStorytellerCredentials);
+      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsStorytellerCredentials));
     },
   };
 
@@ -84,7 +84,7 @@ pub async fn handle_generic_bg_removal_artcraft(
     }
     Err(err) => {
       error!("Failed to use Artcraft background removal: {:?}", err);
-      return Err(InternalBgRemovalError::StorytellerError(err));
+      return Err(GenerateError::ProviderFailure(ProviderFailure::StorytellerError(err)));
     }
   };
 
@@ -101,7 +101,7 @@ async fn upload_image_from_base64_bytes(
   app_data_root: &AppDataRoot, 
   app_env_configs: &AppEnvConfigs, 
   creds: &StorytellerCredentialSet
-) -> Result<MediaFileToken, InternalBgRemovalError> {
+) -> Result<MediaFileToken, GenerateError> {
   let temp_file;
   
   if let Some(base64_bytes) = &request.base64_image {
@@ -110,10 +110,10 @@ async fn upload_image_from_base64_bytes(
         .await
         .map_err(|err| {
           error!("Failed to save base64 image to temp dir: {:?}", err);
-          InternalBgRemovalError::Base64DecodeError
+          GenerateError::BadInput(BadInputReason::Base64DecodeError)
         })?;
   } else {
-    return Err(InternalBgRemovalError::MissingImage);
+    return Err(GenerateError::BadInput(BadInputReason::ImageMissing));
   };
 
   info!("Uploading image media file from temp file: {:?}", temp_file.path());
@@ -129,7 +129,7 @@ async fn upload_image_from_base64_bytes(
       }).await
           .map_err(|err| {
             error!("Failed to upload image media file: {:?}", err);
-            InternalBgRemovalError::StorytellerError(err)
+            GenerateError::ProviderFailure(ProviderFailure::StorytellerError(err))
           })?;
   
   Ok(result.media_file_token)

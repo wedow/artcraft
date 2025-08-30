@@ -1,3 +1,5 @@
+pub mod common;
+pub mod generate_error;
 pub mod image_bg_removal;
 pub mod image_edit;
 pub mod image_inpaint;

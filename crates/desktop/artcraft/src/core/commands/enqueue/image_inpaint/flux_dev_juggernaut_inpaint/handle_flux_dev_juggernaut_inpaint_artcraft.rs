@@ -1,5 +1,4 @@
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
-use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueInpaintImageCommand;
 use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;

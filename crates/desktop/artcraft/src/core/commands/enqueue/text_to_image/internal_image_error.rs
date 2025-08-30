@@ -15,20 +15,21 @@ pub enum InternalImageError {
   NeedsMidjourneyCredentials,
   NeedsMidjourneyUserInfo,
   NeedsMidjourneyUserId,
+  NeedsSoraCredentials,
+  NeedsStorytellerCredentials,
 
   /// Generic - possibly this came with an error message that we sent as an event.
   MidjourneyJobEnqueueFailed,
-
-  NeedsSoraCredentials,
-  NeedsStorytellerCredentials,
+  
   FalError(FalErrorPlus),
   MidjourneyError(MidjourneyError),
   SoraError(SoraError),
-  AnyhowError(AnyhowError),
   StorytellerError(StorytellerError),
+  ArtcraftError(ArtcraftError),
+  
   DecodeError(DecodeError),
   IoError(std::io::Error),
-  ArtcraftError(ArtcraftError),
+  AnyhowError(AnyhowError),
 }
 
 impl From<AnyhowError> for InternalImageError {

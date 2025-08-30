@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
-use crate::core::commands::enqueue::image_bg_removal::errors::InternalBgRemovalError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -14,6 +14,6 @@ pub async fn handle_generic_bg_removal_fal(
   app_env_configs: &AppEnvConfigs,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalBgRemovalError> {
-  unimplemented!("TODO: Implement fal background removal handling");
+) -> Result<TaskEnqueueSuccess, GenerateError> {
+  Err(GenerateError::NotYetImplemented("TODO: Implement fal background removal handling".to_string()))
 }
