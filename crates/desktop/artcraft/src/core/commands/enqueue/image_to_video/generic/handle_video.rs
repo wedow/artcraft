@@ -1,7 +1,7 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
 use crate::core::commands::enqueue::image_to_video::generic::handle_video_artcraft::handle_video_artcraft;
 use crate::core::commands::enqueue::image_to_video::generic::handle_video_fal::handle_video_fal;
-use crate::core::commands::enqueue::image_to_video::internal_video_error::InternalVideoError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -20,7 +20,7 @@ pub async fn handle_video(
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalVideoError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let priority = provider_priority_store.get_priority()?;
 
@@ -51,5 +51,5 @@ pub async fn handle_video(
     }
   }
 
-  Err(InternalVideoError::NoProviderAvailable)
+  Err(GenerateError::NoProviderAvailable)
 }

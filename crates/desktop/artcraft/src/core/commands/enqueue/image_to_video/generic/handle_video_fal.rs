@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, VideoModel};
-use crate::core::commands::enqueue::image_to_video::internal_video_error::InternalVideoError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -25,7 +25,7 @@ pub async fn handle_video_fal(
   request: EnqueueImageToVideoRequest,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalVideoError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let api_key = match fal_creds_manager.get_key()? {
     Some(key) => key,
@@ -38,7 +38,7 @@ pub async fn handle_video_fal(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
       
-      return Err(InternalVideoError::NeedsFalApiKey);
+      return Err(GenerateError::needs_fal_api_key());
     },
   };
   
@@ -57,7 +57,7 @@ pub async fn handle_video_fal(
       &media_token
     ).await?;
   } else {
-    return Err(InternalVideoError::AnyhowError(anyhow!("No image media token provided")));
+    return Err(GenerateError::BadInput(BadInputReason::ImageMissing));
   }
 
   let filename = temp_download.path().to_path_buf();
@@ -66,7 +66,7 @@ pub async fn handle_video_fal(
 
   let result = match request.model {
     None => {
-      return Err(InternalVideoError::NoModelSpecified);
+      return Err(GenerateError::no_model_specified());
     }
     Some(VideoModel::Kling16Pro) => {
       info!("enqueue Kling 1.6 image to video with Kling API");
@@ -80,7 +80,7 @@ pub async fn handle_video_fal(
       }).await
     }
     _ => {
-      return Err(InternalVideoError::AnyhowError(anyhow!("Unsupported model: {:?}", request.model)));
+      return Err(GenerateError::AnyhowError(anyhow!("Unsupported model: {:?}", request.model)));
     }
   };
   
@@ -94,7 +94,7 @@ pub async fn handle_video_fal(
       
       if let Err(err) = fal_task_queue.insert(&enqueued) {
         error!("Failed to enqueue task: {:?}", err);
-        return Err(InternalVideoError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
+        return Err(GenerateError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
       }
     }
     Err(err) => {
@@ -111,7 +111,7 @@ pub async fn handle_video_fal(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
-      return Err(InternalVideoError::FalError(err));
+      return Err(GenerateError::from(err));
     }
   }
 

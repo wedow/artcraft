@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_to_video::generic::handle_video::handle_video;
-use crate::core::commands::enqueue::image_to_video::internal_video_error::InternalVideoError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -122,22 +122,22 @@ pub async fn enqueue_image_to_video_command(
       let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
 
       match err {
-        InternalVideoError::NoModelSpecified => {
+        GenerateError::BadInput(BadInputReason::NoModelSpecified)=> {
           status = CommandErrorStatus::BadRequest;
           error_type = EnqueueImageToVideoErrorType::ModelNotSpecified;
           error_message = "No model specified for video generation";
         }
-        InternalVideoError::NoProviderAvailable => {
+        GenerateError::NoProviderAvailable => {
           status = CommandErrorStatus::ServerError;
           error_type = EnqueueImageToVideoErrorType::NoProviderAvailable;
           error_message = "No configured provider available for video generation";
         }
-        InternalVideoError::NeedsFalApiKey => {
+        GenerateError::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = EnqueueImageToVideoErrorType::NeedsFalApiKey;
           error_message = "You need to set a FAL api key";
         },
-        InternalVideoError::NeedsStorytellerCredentials => {
+        GenerateError::MissingCredentials(MissingCredentialsReason::NeedsStorytellerCredentials) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = EnqueueImageToVideoErrorType::NeedsStorytellerCredentials;
           error_message = "You need to be logged into Artcraft.";
@@ -179,7 +179,7 @@ pub async fn handle_request(
   fal_creds_manager: &FalCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalVideoError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let result = handle_video(
     request,

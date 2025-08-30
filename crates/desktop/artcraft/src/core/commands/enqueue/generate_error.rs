@@ -22,7 +22,6 @@ pub enum GenerateError {
   NotYetImplemented(String),
 
   // Misc error buckets
-  ArtcraftError(ArtcraftError),
   AnyhowError(AnyhowError),
   DecodeError(DecodeError),
   IoError(std::io::Error),
@@ -70,6 +69,19 @@ pub enum ProviderFailureReason {
 }
 
 impl GenerateError {
+  
+  //
+  // Bad input
+  // 
+  
+  pub fn no_model_specified() -> Self {
+    Self::BadInput(BadInputReason::NoModelSpecified)
+  }
+  
+  //
+  // Missing credentials
+  //
+  
   pub fn needs_fal_api_key() -> Self {
     Self::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey)
   }
@@ -90,6 +102,17 @@ impl GenerateError {
 impl From<AnyhowError> for GenerateError {
   fn from(value: AnyhowError) -> Self {
     Self::AnyhowError(value)
+  }
+}
+
+impl From<ArtcraftError> for GenerateError {
+  fn from(value: ArtcraftError) -> Self {
+    match value {
+      ArtcraftError::AnyhowError(e) => Self::AnyhowError(e),
+      ArtcraftError::DecodeError(e) => Self::DecodeError(e),
+      ArtcraftError::IoError(e) => Self::IoError(e),
+      ArtcraftError::StorytellerError(e) => Self::ProviderFailure(ProviderFailureReason::StorytellerError(e)),
+    }
   }
 }
 

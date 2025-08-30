@@ -1,5 +1,5 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, VideoModel};
-use crate::core::commands::enqueue::image_to_video::internal_video_error::InternalVideoError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -34,7 +34,7 @@ pub async fn handle_video_artcraft(
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalVideoError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
@@ -47,7 +47,7 @@ pub async fn handle_video_artcraft(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
       
-      return Err(InternalVideoError::NeedsStorytellerCredentials);
+      return Err(GenerateError::needs_storyteller_credentials());
     },
   };
   
@@ -67,7 +67,7 @@ pub async fn handle_video_artcraft(
   
   let job_token = match request.model {
     None => {
-      return Err(InternalVideoError::NoModelSpecified);
+      return Err(GenerateError::no_model_specified());
     }
     Some(VideoModel::Kling16Pro) => {
       info!("enqueue Kling 1.6 Pro with Artcraft API");
@@ -92,7 +92,7 @@ pub async fn handle_video_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Kling 1.6 video generation: {:?}", err);
-          return Err(InternalVideoError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -118,7 +118,7 @@ pub async fn handle_video_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Kling 2.1 Master video generation: {:?}", err);
-          return Err(InternalVideoError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -145,7 +145,7 @@ pub async fn handle_video_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Kling 2.1 Pro video generation: {:?}", err);
-          return Err(InternalVideoError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -172,7 +172,7 @@ pub async fn handle_video_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Seedance 1.0 Lite video generation: {:?}", err);
-          return Err(InternalVideoError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -198,7 +198,7 @@ pub async fn handle_video_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Veo 2 video generation: {:?}", err);
-          return Err(InternalVideoError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
