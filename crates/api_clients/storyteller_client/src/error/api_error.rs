@@ -11,6 +11,9 @@ pub enum ApiError {
 
   /// 401. The request was not authorized.
   Unauthorized(String),
+  
+  // 402. Payment required.
+  PaymentRequired(String),
 
   /// 403. The request was forbidden.
   Forbidden(String),
@@ -56,6 +59,7 @@ impl Display for ApiError {
     match self {
       // Server response code errors
       ApiError::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
+      ApiError::PaymentRequired(msg) => write!(f, "Payment required: {}", msg),
       ApiError::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
       ApiError::Forbidden(msg) => write!(f, "Forbidden: {}", msg),
       ApiError::NotFound(msg) => write!(f, "Not found: {}", msg),
@@ -80,6 +84,13 @@ impl Display for ApiError {
 
 impl From<reqwest::Error> for ApiError {
   fn from(error: reqwest::Error) -> Self {
+    if let Some(status) = error.status() {
+      let status = status.as_u16();
+      match status {
+        402 => return ApiError::PaymentRequired(error.to_string()),
+        _ => {} // NB: Fallthrough.
+      }
+    }
     if error.is_timeout() {
       ApiError::Timeout(error.to_string())
     } else if error.is_connect() {

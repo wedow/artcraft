@@ -38,6 +38,7 @@ pub async fn filter_bad_response(response: reqwest::Response) -> Result<reqwest:
 
   match status_code {
     STATUS_401_UNAUTHORIZED => Err(ApiError::Unauthorized(response_body)),
+    STATUS_402_PAYMENT_REQUIRED => Err(ApiError::PaymentRequired(response_body)),
     STATUS_403_FORBIDDEN => Err(ApiError::Forbidden(response_body)),
     STATUS_404_NOT_FOUND => Err(ApiError::NotFound(response_body)),
     STATUS_429_TOO_MANY_REQUESTS => Err(ApiError::TooManyRequests(response_body)),
