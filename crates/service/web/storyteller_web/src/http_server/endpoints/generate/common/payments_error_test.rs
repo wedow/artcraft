@@ -3,7 +3,12 @@ use crate::http_server::common_responses::common_web_error::CommonWebError;
 
 pub fn payments_error_test(prompt: &str) -> Result<(), CommonWebError> {
   let prompt = prompt.trim().to_ascii_lowercase();
-  
+
+  if prompt == "trigger_payments_failure" {
+    return Err(CommonWebError::PaymentRequired);
+  }
+
+  // TODO(bt,2025-08-30): Remove these later.
   if prompt.contains("test") {
     if prompt.contains("payment") {
       return Err(CommonWebError::PaymentRequired)
@@ -15,10 +20,11 @@ pub fn payments_error_test(prompt: &str) -> Result<(), CommonWebError> {
       return Err(CommonWebError::PaymentRequired)
     }
   }
-  
+
+  // TODO(bt,2025-08-30): Remove these later.
   if prompt.contains("payment") && prompt.contains("error") {
     return Err(CommonWebError::PaymentRequired)
   }
-  
+
   Ok(())
 }
