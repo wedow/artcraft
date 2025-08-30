@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
 use crate::core::commands::enqueue::image_to_object::generic::handle_object::handle_object;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -96,6 +97,8 @@ pub async fn enqueue_image_to_3d_object_command(
   match result {
     Err(err) => {
       error!("error: {:?}", err);
+      
+      notify_frontend_of_errors(&app, &err).await;
 
       let mut status = CommandErrorStatus::ServerError;
       let mut error_type = EnqueueImageTo3dObjectErrorType::ServerError;

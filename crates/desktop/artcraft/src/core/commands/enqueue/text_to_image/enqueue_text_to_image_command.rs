@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::gemini_25_flash::handle_gemini_25_flash::handle_gemini_25_flash;
@@ -172,6 +173,8 @@ pub async fn enqueue_text_to_image_command(
   match result {
     Err(err) => {
       error!("error: {:?}", err);
+
+      notify_frontend_of_errors(&app, &err).await;
 
       let mut status = CommandErrorStatus::ServerError;
       let mut error_type = EnqueueTextToImageErrorType::ServerError;

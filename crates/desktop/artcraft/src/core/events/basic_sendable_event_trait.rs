@@ -1,6 +1,6 @@
 use crate::core::events::sendable_event_error::SendableEventError;
 use enums::tauri::ux::tauri_event_name::TauriEventName;
-use log::info;
+use log::{error, info};
 use serde::Serialize;
 use std::fmt::Debug;
 use tauri::{AppHandle, Emitter};
@@ -48,5 +48,12 @@ pub trait BasicSendableEvent : Clone + Debug + Serialize {
       return Err(SendableEventError::from(err));
     }
     Ok(())
+  }
+  
+  fn send_infallible(&self, app: &AppHandle) {
+    if let Err(err) = self.send(app) {
+      // Fail open
+      error!("Failed to send event `{}`: {:?}", Self::FRONTEND_EVENT_NAME.to_str(), err);
+    }
   }
 }

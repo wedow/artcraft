@@ -59,6 +59,11 @@ pub enum TauriEventName {
   RefreshAccountStateEvent,
 
   /// Special event:
+  /// Show a billing modal (a suggestion to pay, etc. for a specific provider)
+  #[serde(rename = "show_provider_billing_modal_event")]
+  ShowProviderBillingModalEvent,
+  
+  /// Special event:
   /// Show a login modal (or a suggestion to login)
   #[serde(rename = "show_provider_login_modal_event")]
   ShowProviderLoginModalEvent,
@@ -86,6 +91,7 @@ impl TauriEventName {
       Self::TextToImageGenerationCompleteEvent => "text_to_image_generation_complete_event",
       Self::ImageEditCompleteEvent => "image_edit_complete_event",
       Self::RefreshAccountStateEvent => "refresh_account_state_event",
+      Self::ShowProviderBillingModalEvent => "show_provider_billing_modal_event",
       Self::ShowProviderLoginModalEvent => "show_provider_login_modal_event",
       Self::FlashUserInputErrorEvent => "flash_user_input_error_event",
     }
@@ -101,6 +107,7 @@ impl TauriEventName {
       "text_to_image_generation_complete_event" => Ok(Self::TextToImageGenerationCompleteEvent),
       "image_edit_complete_event" => Ok(Self::ImageEditCompleteEvent),
       "refresh_account_state_event" => Ok(Self::RefreshAccountStateEvent),
+      "show_provider_billing_modal_event" => Ok(Self::ShowProviderBillingModalEvent),
       "show_provider_login_modal_event" => Ok(Self::ShowProviderLoginModalEvent),
       "flash_user_input_error_event" => Ok(Self::FlashUserInputErrorEvent),
       _ => Err(format!("invalid tauri_event_name: {:?}", job_status)),
@@ -119,6 +126,7 @@ impl TauriEventName {
       Self::TextToImageGenerationCompleteEvent,
       Self::ImageEditCompleteEvent,
       Self::RefreshAccountStateEvent,
+      Self::ShowProviderBillingModalEvent,
       Self::ShowProviderLoginModalEvent,
       Self::FlashUserInputErrorEvent,
     ])
@@ -143,6 +151,7 @@ mod tests {
       assert_serialization(TauriEventName::TextToImageGenerationCompleteEvent, "text_to_image_generation_complete_event");
       assert_serialization(TauriEventName::ImageEditCompleteEvent, "image_edit_complete_event");
       assert_serialization(TauriEventName::RefreshAccountStateEvent, "refresh_account_state_event");
+      assert_serialization(TauriEventName::ShowProviderBillingModalEvent, "show_provider_billing_modal_event"); 
       assert_serialization(TauriEventName::ShowProviderLoginModalEvent, "show_provider_login_modal_event");
       assert_serialization(TauriEventName::FlashUserInputErrorEvent, "flash_user_input_error_event");
     }
@@ -157,6 +166,7 @@ mod tests {
       assert_eq!(TauriEventName::TextToImageGenerationCompleteEvent.to_str(), "text_to_image_generation_complete_event");
       assert_eq!(TauriEventName::ImageEditCompleteEvent.to_str(), "image_edit_complete_event");
       assert_eq!(TauriEventName::RefreshAccountStateEvent.to_str(), "refresh_account_state_event");
+      assert_eq!(TauriEventName::ShowProviderBillingModalEvent.to_str(), "show_provider_billing_modal_event");
       assert_eq!(TauriEventName::ShowProviderLoginModalEvent.to_str(), "show_provider_login_modal_event");
       assert_eq!(TauriEventName::FlashUserInputErrorEvent.to_str(), "flash_user_input_error_event");
     }
@@ -171,6 +181,7 @@ mod tests {
       assert_eq!(TauriEventName::from_str("text_to_image_generation_complete_event").unwrap(), TauriEventName::TextToImageGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("image_edit_complete_event").unwrap(), TauriEventName::ImageEditCompleteEvent);
       assert_eq!(TauriEventName::from_str("refresh_account_state_event").unwrap(), TauriEventName::RefreshAccountStateEvent);
+      assert_eq!(TauriEventName::from_str("show_provider_billing_modal_event").unwrap(), TauriEventName::ShowProviderBillingModalEvent);
       assert_eq!(TauriEventName::from_str("show_provider_login_modal_event").unwrap(), TauriEventName::ShowProviderLoginModalEvent);
       assert_eq!(TauriEventName::from_str("flash_user_input_error_event").unwrap(), TauriEventName::FlashUserInputErrorEvent);
     }
@@ -178,7 +189,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 10);
+      assert_eq!(variants.len(), 11);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
@@ -187,6 +198,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TauriEventName::TextToImageGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ImageEditCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::RefreshAccountStateEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderBillingModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderLoginModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::FlashUserInputErrorEvent));
       assert_eq!(variants.pop_first(), None);

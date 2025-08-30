@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_bg_removal::generic::handle_generic_bg_removal::handle_generic_bg_removal;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
@@ -123,6 +124,8 @@ pub async fn enqueue_image_bg_removal_command(
   match result {
     Err(err) => {
       error!("Error removing background: {:?}", err);
+      
+      notify_frontend_of_errors(&app, &err).await;
 
       // TODO: Derive from err. Make service provider optional.
       let event = GenerationEnqueueFailureEvent {

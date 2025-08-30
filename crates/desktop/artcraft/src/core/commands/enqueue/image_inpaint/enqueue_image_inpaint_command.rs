@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
 use crate::core::commands::enqueue::image_inpaint::flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint;
@@ -183,6 +184,8 @@ pub async fn enqueue_image_inpaint_command(
   match result {
     Err(err) => {
       error!("Error enqueuing inpaint image: {:?}", err);
+      
+      notify_frontend_of_errors(&app, &err).await;
 
       // TODO: Derive from err. Make service provider optional.
       let event = GenerationEnqueueFailureEvent {

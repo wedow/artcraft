@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_to_video::generic::handle_video::handle_video;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -20,7 +21,7 @@ use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
 
-/// This is used in the Tauri command bridge. 
+/// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -116,6 +117,8 @@ pub async fn enqueue_image_to_video_command(
   match result {
     Err(err) => {
       error!("error: {:?}", err);
+      
+      notify_frontend_of_errors(&app, &err).await;
 
       let mut status = CommandErrorStatus::ServerError;
       let mut error_type = EnqueueImageToVideoErrorType::ServerError;

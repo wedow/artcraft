@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit::handle_flux_kontext_edit;
 use crate::core::commands::enqueue::image_edit::gemini_25_flash::handle_gemini_25_flash_edit::handle_gemini_25_flash_edit;
@@ -194,6 +195,8 @@ pub async fn enqueue_contextual_edit_image_command(
   match result {
     Err(err) => {
       error!("Error enqueuing contextual edit image: {:?}", err);
+      
+      notify_frontend_of_errors(&app, &err).await;
 
       // TODO: Derive from err. Make service provider optional.
       let event = GenerationEnqueueFailureEvent {
