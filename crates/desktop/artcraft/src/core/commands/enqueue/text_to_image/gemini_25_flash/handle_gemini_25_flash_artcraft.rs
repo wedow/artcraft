@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::{GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::image_inpaint::errors::InternalImageInpaintError;
@@ -33,12 +34,12 @@ pub async fn handle_gemini_25_flash_artcraft(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
-      return Err(InternalImageError::NeedsStorytellerCredentials);
+      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsStorytellerCredentials));
     },
   };
 
@@ -78,7 +79,7 @@ pub async fn handle_gemini_25_flash_artcraft(
     }
     Err(err) => {
       error!("Failed to use Artcraft gemini 2.5 flash: {:?}", err);
-      return Err(InternalImageError::StorytellerError(err));
+      return Err(GenerateError::ProviderFailure(ProviderFailureReason::StorytellerError(err)));
     }
   };
 

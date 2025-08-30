@@ -5,19 +5,18 @@ use fal_client::error::fal_error_plus::FalErrorPlus;
 use midjourney_client::error::midjourney_error::MidjourneyError;
 use openai_sora_client::sora_error::SoraError;
 use storyteller_client::error::storyteller_error::StorytellerError;
-use crate::core::commands::enqueue::text_to_image::internal_image_error::InternalImageError;
 
 #[derive(Debug)]
 pub enum GenerateError {
   BadInput(BadInputReason),
   MissingCredentials(MissingCredentialsReason),
-  ProviderFailure(ProviderFailure),
+  ProviderFailure(ProviderFailureReason),
 
   /// We couldn't find a provider to dispatch the request to.
   NoProviderAvailable,
 
   /// There was a billing, credits, or payments issue.
-  BillingIssue,
+  BillingIssue(BillingIssueReason),
 
   /// The feature is not yet implemented.
   NotYetImplemented(String),
@@ -48,7 +47,20 @@ pub enum MissingCredentialsReason {
 }
 
 #[derive(Debug)]
-pub enum ProviderFailure {
+pub struct BillingIssueReason {
+  pub provider: BillingProvider,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum BillingProvider {
+  Fal,
+  Midjourney,
+  Sora,
+  Storyteller,
+}
+
+#[derive(Debug)]
+pub enum ProviderFailureReason {
   Fal(FalErrorPlus),
   MidjourneyError(MidjourneyError),
   /// NB: The midjourney client doesn't categorize all errors, so we have to do so on our end.
@@ -57,8 +69,50 @@ pub enum ProviderFailure {
   StorytellerError(StorytellerError),
 }
 
+impl GenerateError {
+  pub fn needs_fal_api_key() -> Self {
+    Self::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey)
+  }
+
+  pub fn needs_midjourney_credentials() -> Self {
+    Self::MissingCredentials(MissingCredentialsReason::NeedsMidjourneyCredentials)
+  }
+
+  pub fn needs_sora_credentials() -> Self {
+    Self::MissingCredentials(MissingCredentialsReason::NeedsSoraCredentials)
+  }
+
+  pub fn needs_storyteller_credentials() -> Self {
+    Self::MissingCredentials(MissingCredentialsReason::NeedsStorytellerCredentials)
+  }
+}
+
 impl From<AnyhowError> for GenerateError {
   fn from(value: AnyhowError) -> Self {
     Self::AnyhowError(value)
+  }
+}
+
+impl From<FalErrorPlus> for GenerateError {
+  fn from(value: FalErrorPlus) -> Self {
+    Self::ProviderFailure(ProviderFailureReason::Fal(value))
+  }
+}
+
+impl From<MidjourneyError> for GenerateError {
+  fn from(value: MidjourneyError) -> Self {
+    Self::ProviderFailure(ProviderFailureReason::MidjourneyError(value))
+  }
+}
+
+impl From<SoraError> for GenerateError {
+  fn from(value: SoraError) -> Self {
+    Self::ProviderFailure(ProviderFailureReason::SoraError(value))
+  }
+}
+
+impl From<StorytellerError> for GenerateError {
+  fn from(value: StorytellerError) -> Self {
+    Self::ProviderFailure(ProviderFailureReason::StorytellerError(value))
   }
 }

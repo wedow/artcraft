@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -30,12 +31,12 @@ pub async fn handle_gpt_image_1_artcraft(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
-      return Err(InternalImageError::NeedsStorytellerCredentials);
+      return Err(GenerateError::needs_storyteller_credentials());
     },
   };
 
@@ -101,7 +102,7 @@ pub async fn handle_gpt_image_1_artcraft(
     }
     Err(err) => {
       error!("Failed to use Artcraft gpt-image-1: {:?}", err);
-      return Err(InternalImageError::StorytellerError(err));
+      return Err(GenerateError::from(err));
     }
   };
 

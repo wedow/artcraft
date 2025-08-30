@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, ImageModel, TextToImageSize};
 use crate::core::commands::enqueue::text_to_image::internal_image_error::InternalImageError;
@@ -29,7 +30,7 @@ pub async fn handle_image_artcraft(
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match storyteller_creds_manager.get_credentials()? {
     Some(creds) => creds,
@@ -42,7 +43,7 @@ pub async fn handle_image_artcraft(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
       
-      return Err(InternalImageError::NeedsStorytellerCredentials);
+      return Err(GenerateError::needs_storyteller_credentials());
     },
   };
   
@@ -54,17 +55,17 @@ pub async fn handle_image_artcraft(
   
   let job_token = match request.model {
     None => {
-      return Err(InternalImageError::NoModelSpecified);
+      return Err(GenerateError::BadInput(BadInputReason::NoModelSpecified));
     }
     Some(
       ImageModel::Gemini25Flash |
       ImageModel::GptImage1 |
       ImageModel::Midjourney
     ) => {
-      return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));
+      return Err(GenerateError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));
     }
     Some(ImageModel::Recraft3) => {
-      return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented in Artcraft")));
+      return Err(GenerateError::NotYetImplemented(format!("not yet implemented in Artcraft")));
     }
     Some(ImageModel::Flux1Dev) => {
       info!("enqueue Flux 1 Dev");
@@ -101,7 +102,7 @@ pub async fn handle_image_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Flux 1 Dev text to image generation: {:?}", err);
-          return Err(InternalImageError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -140,7 +141,7 @@ pub async fn handle_image_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Flux 1 Schnell text to image generation: {:?}", err);
-          return Err(InternalImageError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -179,7 +180,7 @@ pub async fn handle_image_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Flux Pro 1.1 text to image generation: {:?}", err);
-          return Err(InternalImageError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }
@@ -218,7 +219,7 @@ pub async fn handle_image_artcraft(
         }
         Err(err) => {
           error!("Failed to use Artcraft Flux Pro 1.1 Ultra text to image generation: {:?}", err);
-          return Err(InternalImageError::StorytellerError(err));
+          return Err(GenerateError::from(err));
         }
       }
     }

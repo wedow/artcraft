@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, ImageModel};
 use crate::core::commands::enqueue::text_to_image::internal_image_error::InternalImageError;
@@ -19,7 +20,7 @@ pub async fn handle_image_fal(
   request: &EnqueueTextToImageRequest,
   fal_creds_manager: &FalCredentialManager,
   fal_task_queue: &FalTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let api_key = match fal_creds_manager.get_key()? {
     Some(key) => key,
@@ -32,14 +33,14 @@ pub async fn handle_image_fal(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
       
-      return Err(InternalImageError::NeedsFalApiKey);
+      return Err(GenerateError::needs_fal_api_key());
     },
   };
   
   let api_key = fal_creds_manager.get_key_required()
       .map_err(|err| {
         error!("EnqueueTextToImage FAL api key required: {:?}", err);
-        InternalImageError::NeedsFalApiKey
+        GenerateError::needs_fal_api_key()
       })?;
 
   let prompt = request.prompt.as_deref().unwrap_or("");
@@ -48,13 +49,13 @@ pub async fn handle_image_fal(
   
   let result = match request.model {
     None => {
-      return Err(InternalImageError::NoModelSpecified);
+      return Err(GenerateError::BadInput(BadInputReason::NoModelSpecified));
     }
     Some(
       ImageModel::GptImage1 |
       ImageModel::Midjourney
     ) => {
-      return Err(InternalImageError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));
+      return Err(GenerateError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));
     }
     Some(
       ImageModel::Gemini25Flash |
@@ -62,7 +63,7 @@ pub async fn handle_image_fal(
       ImageModel::Flux1Schnell | 
       ImageModel::FluxPro11
     ) => {
-      return Err(InternalImageError::AnyhowError(anyhow!("not yet implemented: {:?}", request.model)));
+      return Err(GenerateError::NotYetImplemented(format!("not yet implemented: {:?}", request.model)));
     }
     Some(ImageModel::FluxPro11Ultra) => {
       model = GenerationModel::FluxPro11Ultra;
@@ -98,7 +99,7 @@ pub async fn handle_image_fal(
 
       if let Err(err) = fal_task_queue.insert(&enqueued) {
         error!("Failed to enqueue task: {:?}", err);
-        return Err(InternalImageError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
+        return Err(GenerateError::AnyhowError(anyhow!("Failed to enqueue task: {:?}", err)));
       }
       
       enqueued
@@ -117,7 +118,7 @@ pub async fn handle_image_fal(
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
 
-      return Err(InternalImageError::FalError(err));
+      return Err(GenerateError::from(err));
     }
   };
 

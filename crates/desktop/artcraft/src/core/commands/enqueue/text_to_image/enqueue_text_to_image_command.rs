@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::gemini_25_flash::handle_gemini_25_flash::handle_gemini_25_flash;
 use crate::core::commands::enqueue::text_to_image::generic::handle_image_artcraft::handle_image_artcraft;
@@ -178,17 +179,17 @@ pub async fn enqueue_text_to_image_command(
       let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.";
 
       match err {
-        InternalImageError::NoModelSpecified => {
+        GenerateError::BadInput(BadInputReason::NoModelSpecified) => {
           status = CommandErrorStatus::BadRequest;
           error_type = EnqueueTextToImageErrorType::ModelNotSpecified;
           error_message = "No model specified for image generation";
         }
-        InternalImageError::NoProviderAvailable => {
+        GenerateError::NoProviderAvailable => {
           status = CommandErrorStatus::ServerError;
           error_type = EnqueueTextToImageErrorType::NoProviderAvailable;
           error_message = "No configured provider available for image generation";
         }
-        InternalImageError::NeedsFalApiKey => {
+        GenerateError::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = EnqueueTextToImageErrorType::NeedsFalApiKey;
           error_message = "You need to set a FAL api key";
@@ -233,7 +234,7 @@ pub async fn handle_request(
   fal_task_queue: &FalTaskQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
   
   let result = dispatch_request(
     &request,
@@ -283,11 +284,11 @@ pub async fn dispatch_request(
   mj_creds_manager: &MidjourneyCredentialManager,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   match request.model {
     None => {
-      return Err(InternalImageError::NoModelSpecified);
+      return Err(GenerateError::BadInput(BadInputReason::NoModelSpecified));
     }
     Some(ImageModel::Gemini25Flash) => {
       return handle_gemini_25_flash(
@@ -343,5 +344,5 @@ pub async fn dispatch_request(
     }
   }
   
-  Err(InternalImageError::NoProviderAvailable)
+  Err(GenerateError::NoProviderAvailable)
 }

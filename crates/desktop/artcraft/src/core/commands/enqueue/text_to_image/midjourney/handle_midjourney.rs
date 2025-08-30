@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::{GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -41,19 +42,19 @@ pub async fn handle_midjourney(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   mj_creds_manager: &MidjourneyCredentialManager,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let creds = match mj_creds_manager.maybe_copy_cookie_store() {
     Ok(Some(creds)) => creds,
     Ok(None) => {
       error!("Midjourney credentials not found.");
       ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Midjourney, &app);
-      return Err(InternalImageError::NeedsMidjourneyCredentials);
+      return Err(GenerateError::needs_midjourney_credentials());
     }
     Err(err) => {
       error!("Error reading Midjourney credentials: {:?}", err);
       ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Midjourney, &app);
-      return Err(InternalImageError::NeedsMidjourneyCredentials);
+      return Err(GenerateError::needs_midjourney_credentials());
     },
   };
 
@@ -62,11 +63,11 @@ pub async fn handle_midjourney(
   let user_info = match mj_creds_manager.maybe_copy_user_info() {
     Ok(Some(user_info)) => user_info,
     Ok(None) => {
-      return Err(InternalImageError::NeedsMidjourneyUserInfo);
+      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsMidjourneyUserInfo));
     }
     Err(err) => {
       error!("Error reading Midjourney user info: {:?}", err);
-      return Err(InternalImageError::NeedsMidjourneyUserInfo);
+      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsMidjourneyUserInfo));
     },
   };
 
@@ -74,7 +75,7 @@ pub async fn handle_midjourney(
     Some(user_id) => ChannelId::UserId(user_id),
     None => {
       error!("Midjourney user info does not contain a user ID.");
-      return Err(InternalImageError::NeedsMidjourneyUserId);
+      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsMidjourneyUserId));
     }
   };
 
@@ -97,7 +98,7 @@ pub async fn handle_midjourney(
     Ok(result) => result,
     Err(err) => {
       error!("Failed to use MidJourney: {:?}", err);
-      return Err(InternalImageError::MidjourneyError(err));
+      return Err(GenerateError::from(err));
     }
   };
   
@@ -122,7 +123,7 @@ pub async fn handle_midjourney(
 fn handle_midjourney_errors(
   app: &AppHandle,
   maybe_errors: Option<Vec<TextToImageError>>
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
   if let Some(errors) = maybe_errors {
     if !errors.is_empty() {
       let messages: Vec<String> = errors.iter()
@@ -141,5 +142,5 @@ fn handle_midjourney_errors(
     }
   }
   
-  Err(InternalImageError::MidjourneyJobEnqueueFailed)
+  Err(GenerateError::ProviderFailure(ProviderFailureReason::MidjourneyJobEnqueueFailed))
 }

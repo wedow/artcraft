@@ -1,3 +1,4 @@
+use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::commands::enqueue::text_to_image::internal_image_error::InternalImageError;
@@ -25,19 +26,19 @@ pub async fn handle_gpt_image_1_sora(
   app: &AppHandle,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
-) -> Result<TaskEnqueueSuccess, InternalImageError> {
+) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let mut creds = match sora_creds_manager.get_credentials() {
     Ok(Some(creds)) => creds,
     Ok(None) => {
       error!("Sora credentials not found.");
       ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
-      return Err(InternalImageError::NeedsSoraCredentials);
+      return Err(GenerateError::needs_sora_credentials());
     }
     Err(err) => {
       error!("Error reading Sora credentials: {:?}", err);
       ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
-      return Err(InternalImageError::NeedsSoraCredentials);
+      return Err(GenerateError::needs_sora_credentials());
     }
   };
 
@@ -96,7 +97,7 @@ pub async fn handle_gpt_image_1_sora(
             error!("Failed to emit event: {:?}", err); // Fail open.
           }
 
-          return Err(InternalImageError::SoraError(err));
+          return Err(GenerateError::from(err));
         }
       };
 

@@ -1,4 +1,4 @@
-use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailure};
+use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageQuality, EditImageSize, EnqueueContextualEditImageCommand};
 use crate::core::commands::enqueue::image_edit::errors::InternalContextualEditImageError;
@@ -84,7 +84,7 @@ pub async fn handle_generic_bg_removal_artcraft(
     }
     Err(err) => {
       error!("Failed to use Artcraft background removal: {:?}", err);
-      return Err(GenerateError::ProviderFailure(ProviderFailure::StorytellerError(err)));
+      return Err(GenerateError::ProviderFailure(ProviderFailureReason::StorytellerError(err)));
     }
   };
 
@@ -129,7 +129,7 @@ async fn upload_image_from_base64_bytes(
       }).await
           .map_err(|err| {
             error!("Failed to upload image media file: {:?}", err);
-            GenerateError::ProviderFailure(ProviderFailure::StorytellerError(err))
+            GenerateError::ProviderFailure(ProviderFailureReason::StorytellerError(err))
           })?;
   
   Ok(result.media_file_token)
