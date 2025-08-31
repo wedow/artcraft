@@ -4,7 +4,7 @@ import {
   faImages,
   faCube,
   faFilm,
-  faPaintbrush,
+  faPalette,
   faImage,
   faPenNib,
   faGem,
@@ -86,7 +86,7 @@ const appMenuTabs: MenuIconItem<TabId>[] = [
   {
     id: "2D",
     label: "2D Canvas",
-    icon: <FontAwesomeIcon icon={faPaintbrush} />,
+    icon: <FontAwesomeIcon icon={faPalette} />,
     imageSrc: "/resources/gifs/2D_CANVAS_DEMO.gif",
     description: "Easy edits. Great for graphic design.",
     large: true,

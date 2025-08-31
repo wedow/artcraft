@@ -101,6 +101,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     maxGenerationCount: 1,
     defaultGenerationCount: 1,
     tags: [ModelTag.InstructiveEdit],
+    canEditImages: true,
     canUseImagePrompt: true,
     maxImagePromptCount: 6,
   }),
