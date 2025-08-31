@@ -7,6 +7,7 @@ import {
   faPaintbrush,
   faImage,
   faPenNib,
+  faGem,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faWindowRestore,
@@ -51,6 +52,8 @@ import {
 } from "@storyteller/tauri-utils";
 import { useEditStore } from "../../../pages/PageEdit/stores/EditState";
 import { BaseSelectorImage } from "../../../pages/PageEdit/BaseImageSelector";
+import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
+import { usePricingModalStore } from "@storyteller/ui-pricing-modal";
 
 interface Props {
   pageName: string;
@@ -190,7 +193,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
   const pageTitle = getPageTitle();
 
-  // const { toggleModal } = usePricingModalStore(); - Uncomment for pricing modal - BFlat
+  const { toggleModal } = usePricingModalStore();
 
   return (
     <>
@@ -261,14 +264,14 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
           <div className="flex justify-end gap-2" data-tauri-drag-region>
             <div className="no-drag flex gap-2">
               {/* - Uncomment for pricing modal - BFlat */}
-              {/* <Button
+              <Button
                 variant="primary"
                 icon={faGem}
                 onClick={toggleModal}
                 className="shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
               >
                 Upgrade Now
-              </Button> */}
+              </Button>
               <Tooltip content="Settings" position="bottom" delay={300}>
                 <Button
                   variant="secondary"
@@ -336,6 +339,8 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
         onDownloadClicked={downloadFile}
         onEditClicked={handleEditFromGallery}
       />
+
+      <ProviderSetupModal />
     </>
   );
 };
