@@ -53,6 +53,7 @@ import {
 import { useEditStore } from "../../../pages/PageEdit/stores/EditState";
 import { BaseSelectorImage } from "../../../pages/PageEdit/BaseImageSelector";
 import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
+import { ProviderBillingModal } from "@storyteller/provider-billing-modal";
 import { usePricingModalStore } from "@storyteller/ui-pricing-modal";
 
 interface Props {
@@ -341,6 +342,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
       />
 
       <ProviderSetupModal />
+      <ProviderBillingModal />  
     </>
   );
 };
