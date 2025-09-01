@@ -6,7 +6,8 @@ use crate::services::midjourney::windows::open_midjourney_login_window::open_mid
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::storyteller::windows::open_storyteller_billing_window::open_storyteller_billing_window;
-use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, PlanName};
+use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::PlanBillingCadence;
+use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::{error, info};
@@ -16,7 +17,7 @@ use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize, Debug)]
 pub struct StorytellerOpenBillingCommand {
-  pub plan: Option<PlanName>,
+  pub plan: Option<ArtcraftSubscriptionSlug>,
   pub cadence: Option<PlanBillingCadence>,
 }
 
@@ -52,7 +53,7 @@ async fn do_open_billing(
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  plan: Option<PlanName>,
+  plan: Option<ArtcraftSubscriptionSlug>,
   cadence: Option<PlanBillingCadence>,
 ) -> AnyhowResult<()> {
   info!("Building billing window...");

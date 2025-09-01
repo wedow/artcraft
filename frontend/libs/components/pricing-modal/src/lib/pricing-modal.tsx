@@ -63,7 +63,7 @@ export function PricingModal({
     console.log("Managing subscription");
   };
 
-  const tierHierarchy = { free: 0, basic: 1, pro: 2, max: 3 };
+  const tierHierarchy = { free: 0, artcraft_basic: 1, artcraft_pro: 2, artcraft_max: 3 };
 
   const isCurrentPlan = (tierId: string) => {
     return tierId === activePlanId;

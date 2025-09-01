@@ -2,7 +2,8 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, PlanName, StripeArtcraftCreateCheckoutSessionRequest};
+use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateCheckoutSessionRequest};
+use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use errors::AnyhowResult;
 use log::info;
 use reqwest::Url;
@@ -16,7 +17,7 @@ pub async fn open_storyteller_billing_window(
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  plan: Option<PlanName>,
+  plan: Option<ArtcraftSubscriptionSlug>,
   cadence: Option<PlanBillingCadence>,
 ) -> AnyhowResult<()> {
 
@@ -43,7 +44,7 @@ async fn do_get_url(
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  plan: Option<PlanName>,
+  plan: Option<ArtcraftSubscriptionSlug>,
   cadence: Option<PlanBillingCadence>,
 ) -> AnyhowResult<Url> {
 

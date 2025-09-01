@@ -40,7 +40,7 @@ export const pricingConfig = {
     {
       //id: "plus",
       //name: "Plus",
-      id: "basic",
+      id: "artcraft_basic",
       name: "Basic",
       monthlyPrice: 8,
       yearlyPrice: 96,
@@ -58,7 +58,7 @@ export const pricingConfig = {
       colorScheme: "green" as const,
     },
     {
-      id: "pro",
+      id: "artcraft_pro",
       name: "Pro",
       monthlyPrice: 28,
       yearlyPrice: 336,
@@ -76,7 +76,7 @@ export const pricingConfig = {
       colorScheme: "purple" as const,
     },
     {
-      id: "max",
+      id: "artcraft_max",
       name: "Max",
       monthlyPrice: 48,
       yearlyPrice: 576,

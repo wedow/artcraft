@@ -1,3 +1,4 @@
+use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use serde_derive::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -7,19 +8,9 @@ pub const CREATE_SUBSCRIPTION_CHECKOUT_URL_PATH: &str = "/v1/stripe_artcraft/che
 pub struct StripeArtcraftCreateCheckoutSessionRequest {
   /// The (non-Stripe) internal identifier for the product or subscription.
   /// This will be translated into a Stripe identifier.
-  pub plan: Option<PlanName>,
+  pub plan: Option<ArtcraftSubscriptionSlug>,
 
   pub cadence: Option<PlanBillingCadence>,
-}
-
-#[derive(Serialize, Deserialize, ToSchema, Debug, Copy, Clone)]
-pub enum PlanName {
-  #[serde(rename = "basic")]
-  Basic,
-  #[serde(rename = "pro")]
-  Pro,
-  #[serde(rename = "max")]
-  Max,
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Debug, Copy, Clone)]

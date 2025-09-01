@@ -1,11 +1,14 @@
+use crate::configs::artcraft_products::get_artcraft_product_by_slug::get_artcraft_product_by_slug;
+use crate::configs::artcraft_products::stripe_artcraft_product_info_list::{ARTCRAFT_BASIC_SANDBOX, ARTCRAFT_MAX_SANDBOX, ARTCRAFT_PRO_SANDBOX};
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
-use crate::configs::stripe_artcraft_product_info_list::{ARTCRAFT_BASIC_SANDBOX, ARTCRAFT_MAX_SANDBOX, ARTCRAFT_PRO_SANDBOX};
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::state::server_state::ServerState;
 use actix_web::web::{Data, Json};
 use actix_web::{web, HttpRequest};
+use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateCheckoutSessionRequest, StripeArtcraftCreateCheckoutSessionResponse};
 use async_stripe_artcraft::{CheckoutSession, CheckoutSessionMode, CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSubscriptionData, CustomerId};
 use billing_component::stripe::traits::internal_user_lookup::InternalUserLookup;
+use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use log::{error, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use std::collections::HashMap;
@@ -14,7 +17,6 @@ use std::sync::Arc;
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 use utoipa::ToSchema;
-use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, PlanName, StripeArtcraftCreateCheckoutSessionRequest, StripeArtcraftCreateCheckoutSessionResponse};
 
 /// Create a Stripe Checkout session and return the redirect URL in Json.
 #[utoipa::path(
@@ -37,17 +39,21 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
   internal_session_cache_purge: Data<dyn InternalSessionCachePurge>,
 ) -> Result<Json<StripeArtcraftCreateCheckoutSessionResponse>, CommonWebError>
 {
-  let plan = match request.plan {
+  let slug = match request.plan {
     None => return Err(CommonWebError::BadInputWithSimpleMessage("no plan supplied".to_string())),
-    Some(PlanName::Basic) => ARTCRAFT_BASIC_SANDBOX,
-    Some(PlanName::Pro) => ARTCRAFT_PRO_SANDBOX,
-    Some(PlanName::Max) => ARTCRAFT_MAX_SANDBOX,
+    Some(slug) => slug,
   };
 
-  let price_id = match request.cadence {
+  let cadence = match request.cadence {
     None => return Err(CommonWebError::BadInputWithSimpleMessage("no cadence supplied".to_string())),
-    Some(PlanBillingCadence::Monthly) => plan.monthly_price_id.clone(),
-    Some(PlanBillingCadence::Yearly) => plan.yearly_price_id.clone(),
+    Some(cadence) => cadence,
+  };
+
+  let plan = get_artcraft_product_by_slug(slug, **server_environment);
+
+  let price_id = match cadence {
+    PlanBillingCadence::Monthly => plan.monthly_price_id.clone(),
+    PlanBillingCadence::Yearly => plan.yearly_price_id.clone(),
   };
 
   let maybe_user_metadata = internal_user_lookup
