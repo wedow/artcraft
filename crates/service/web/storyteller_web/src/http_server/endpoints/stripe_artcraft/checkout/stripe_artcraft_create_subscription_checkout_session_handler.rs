@@ -180,15 +180,19 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
       }
     }
 
-    CheckoutSession::create(&server_state.stripe_artcraft.client, params)
-        .await
-        .map_err(|e| {
-          error!("Stripe Error: {:?}", e);
-          CommonWebError::ServerError
-        })?
+    // TODO: THis is now broken
+    //CheckoutSession::create(&server_state.stripe_artcraft.client, params)
+    //    .await
+    //    .map_err(|e| {
+    //      error!("Stripe Error: {:?}", e);
+    //      CommonWebError::ServerError
+    //    })?
+    ()
   };
 
-  let url = checkout_session.url.ok_or(CommonWebError::ServerError)?;
+  //let url = checkout_session.url.ok_or(CommonWebError::ServerError)?;
+
+  let url = "todo".to_string();
 
   // Best effort to delete Redis session cache
   internal_session_cache_purge.best_effort_purge_session_cache(&http_request);

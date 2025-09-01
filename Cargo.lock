@@ -1029,6 +1029,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-stripe-webhook"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75f8382af92463fa8e0b86e825d7d08eecbcd8715c197f1a66173fcc18e35774"
+dependencies = [
+ "async-stripe-shared",
+ "async-stripe-types",
+ "chrono",
+ "hex",
+ "hmac 0.12.1",
+ "miniserde",
+ "serde",
+ "sha2 0.10.8",
+ "thiserror 1.0.63",
+]
+
+[[package]]
 name = "async-task"
 version = "4.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1307,14 +1324,18 @@ dependencies = [
  "anyhow",
  "async-stripe 1.0.0-alpha.2",
  "async-stripe-core",
+ "async-stripe-webhook",
  "chrono",
  "errors",
+ "http_server_common",
  "log",
  "mockall",
+ "mysql_queries",
  "once_cell",
  "serde",
  "serde_derive",
  "serde_json",
+ "sqlx",
  "tokio",
  "workspace-build-acceleration",
 ]

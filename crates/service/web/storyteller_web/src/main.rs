@@ -45,6 +45,7 @@ use actix_helpers::middleware::disabled_endpoint_filter::disabled_endpoint_filte
 use actix_helpers::middleware::disabled_endpoint_filter::disabled_endpoints::disabled_endpoints::DisabledEndpoints;
 use actix_helpers::middleware::disabled_endpoint_filter::disabled_endpoints::exact_match_disabled_endpoints::ExactMatchDisabledEndpoints;
 use actix_helpers::middleware::disabled_endpoint_filter::disabled_endpoints::prefix_disabled_endpoints::PrefixDisabledEndpoints;
+use billing_artcraft_component::utils::artcraft_stripe_config::ArtcraftStripeConfig;
 use billing_component::stripe::stripe_config::{FullUrlOrPath, StripeCheckoutConfigs, StripeConfig, StripeCustomerPortalConfigs, StripeSecrets};
 use billing_component::stripe::traits::internal_product_to_stripe_lookup::InternalProductToStripeLookup;
 use billing_component::stripe::traits::internal_subscription_product_lookup::InternalSubscriptionProductLookup;
@@ -413,17 +414,12 @@ async fn main() -> AnyhowResult<()> {
       client: stripe_client,
     },
     stripe_artcraft: {
-      let secret_key = easyenv::get_env_string_required("STRIPE_ARTCRAFT_SECRET_KEY")?;
-      StripeArtcraftSettings {
-        secret_key: secret_key.clone(),
+      ArtcraftStripeConfig {
+        secret_key: easyenv::get_env_string_required("STRIPE_ARTCRAFT_SECRET_KEY")?,
         secret_webhook_signing_key: easyenv::get_env_string_required("STRIPE_ARTCRAFT_SECRET_WEBHOOK_KEY")?,
         checkout_success_url: easyenv::get_env_string_required("STRIPE_ARTCRAFT_CHECKOUT_SUCCESS_URL")?,
         checkout_cancel_url: easyenv::get_env_string_required("STRIPE_ARTCRAFT_CHECKOUT_CANCEL_URL")?,
-        client: {
-          let api_secret = secret_key.clone();
-          async_stripe_artcraft::Client::new(api_secret)
-        },
-      }
+      }.to_config_with_client()
     },
     hostname: server_hostname,
     startup_time,
@@ -623,6 +619,7 @@ pub async fn serve(server_state: ServerState) -> AnyhowResult<()>
 
     // NB: app_data being clone()'d below should all be safe (dependencies included)
     let app = App::new()
+      .app_data(web::Data::new(server_state_arc.stripe_artcraft.clone()))
       .app_data(web::Data::new(server_state_arc.firehose_publisher.clone()))
       .app_data(web::Data::new(server_state_arc.mysql_pool.clone()))
       .app_data(web::Data::new(server_state_arc.redis_pool.clone()))
