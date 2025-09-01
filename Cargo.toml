@@ -119,6 +119,7 @@ members = [
 
   # Service Plugins: complete subsystems that can be plugged into services (users, billing, etc.)
   "crates/service/plugins/billing",
+  "crates/service/plugins/billing_artcraft",
   "crates/service/plugins/inference_workloads",
   "crates/service/plugins/user_traits_component",
 

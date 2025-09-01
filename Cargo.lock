@@ -926,7 +926,7 @@ dependencies = [
  "serde_qs 0.10.1",
  "sha2 0.10.8",
  "smart-default 0.6.0",
- "smol_str",
+ "smol_str 0.1.24",
  "thiserror 1.0.63",
  "tokio",
 ]
@@ -950,9 +950,82 @@ dependencies = [
  "serde_qs 0.10.1",
  "sha2 0.10.8",
  "smart-default 0.6.0",
- "smol_str",
+ "smol_str 0.1.24",
  "thiserror 1.0.63",
  "tokio",
+]
+
+[[package]]
+name = "async-stripe"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a92140fa7152f9dcde7554cb1da37c7ae93b0c724db5214c754c55a9765afbe8"
+dependencies = [
+ "async-stripe-client-core",
+ "async-stripe-shared",
+ "bytes 1.10.1",
+ "http-body-util",
+ "hyper 1.6.0",
+ "hyper-tls 0.6.0",
+ "hyper-util",
+ "miniserde",
+ "thiserror 2.0.12",
+ "tokio",
+]
+
+[[package]]
+name = "async-stripe-client-core"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb1f6b6693946e650a9361feb319389a1408534ec1b618cd9239f1e2e20b8668"
+dependencies = [
+ "async-stripe-shared",
+ "async-stripe-types",
+ "bytes 1.10.1",
+ "futures-util",
+ "miniserde",
+ "serde",
+ "serde_json",
+ "serde_qs 0.13.0",
+ "thiserror 2.0.12",
+ "tracing",
+]
+
+[[package]]
+name = "async-stripe-core"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81d0445a38170bcc3e4adf52fd80c94b70b02dc73a102afcd0bc9d6051eada18"
+dependencies = [
+ "async-stripe-client-core",
+ "async-stripe-shared",
+ "async-stripe-types",
+ "miniserde",
+ "serde",
+ "smol_str 0.3.2",
+]
+
+[[package]]
+name = "async-stripe-shared"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b4328e5c0deeacd7cd5a95286d4f5dce045791b30be87583dd706c2342236c3"
+dependencies = [
+ "async-stripe-types",
+ "miniserde",
+ "serde",
+ "smol_str 0.3.2",
+]
+
+[[package]]
+name = "async-stripe-types"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "985b4f00fd57ce9cbd015c6410d05dfbe5d2bf90513e20b417e70b6f022e3f88"
+dependencies = [
+ "miniserde",
+ "serde",
+ "smol_str 0.3.2",
 ]
 
 [[package]]
@@ -1223,6 +1296,27 @@ dependencies = [
  "num-bigint",
  "num-integer",
  "num-traits",
+]
+
+[[package]]
+name = "billing_artcraft_component"
+version = "0.0.1"
+dependencies = [
+ "actix-http",
+ "actix-web",
+ "anyhow",
+ "async-stripe 1.0.0-alpha.2",
+ "async-stripe-core",
+ "chrono",
+ "errors",
+ "log",
+ "mockall",
+ "once_cell",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tokio",
+ "workspace-build-acceleration",
 ]
 
 [[package]]
@@ -6423,6 +6517,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "mini-internal"
+version = "0.1.42"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6c74ab4f1a0c0ab045260ee4727b23c00cc17e5eff5095262d08eef8c3c8d49"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.87",
+]
+
+[[package]]
 name = "minidom"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6436,6 +6541,17 @@ name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
+
+[[package]]
+name = "miniserde"
+version = "0.1.42"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08ec68bf2ad170a53a6efa92c3df7187968d6e475fe7a935725868154074ca0f"
+dependencies = [
+ "itoa 1.0.11",
+ "mini-internal",
+ "ryu",
+]
 
 [[package]]
 name = "miniz_oxide"
@@ -9553,6 +9669,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_qs"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd34f36fe4c5ba9654417139a9b3a20d2e1de6012ee678ad14d240c22c78d8d6"
+dependencies = [
+ "percent-encoding",
+ "serde",
+ "thiserror 1.0.63",
+]
+
+[[package]]
 name = "serde_repr"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9925,6 +10052,16 @@ version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fad6c857cbab2627dcf01ec85a623ca4e7dcb5691cbaa3d7fb7653671f0d09c9"
 dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "smol_str"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9676b89cd56310a87b93dec47b11af744f34d5fc9f367b829474eec0a891350d"
+dependencies = [
+ "borsh",
  "serde",
 ]
 
@@ -10320,6 +10457,7 @@ dependencies = [
  "async-stripe 0.41.0",
  "async-trait",
  "base64 0.22.1",
+ "billing_artcraft_component",
  "billing_component",
  "bootstrap",
  "bucket_paths",

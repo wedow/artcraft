@@ -82,6 +82,7 @@ videos = { path = "../../../lib/files/videos" }
 
 # Internal Components
 billing_component = { path = "../../plugins/billing" }
+billing_artcraft_component = { path = "../../plugins/billing_artcraft" }
 user_traits_component = { path = "../../plugins/user_traits_component" }
 
 # External

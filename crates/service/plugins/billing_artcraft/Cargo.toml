@@ -1,6 +1,6 @@
 [package]
 publish = false
-name = "billing_component"
+name = "billing_artcraft_component"
 edition = "2018"
 version = "0.0.1"
 authors = [
@@ -10,7 +10,7 @@ authors = [
 
 [lib]
 # NB: This might be necessitated because of stripe API versions vs. async-stripe crate versions
-name = "billing_artcraft"
+name = "billing_artcraft_component"
 path = "src/lib.rs"
 
 [package.metadata.cargo-udeps.ignore]
@@ -22,7 +22,7 @@ workspace-build-acceleration.workspace = true
 
 # Internal
 errors.workspace = true
-mysql_queries.workspace = true
+#mysql_queries.workspace = true
 #http_server_common = { path = "../../../lib/deprecated/http_server_common" }
 #mysql_queries = { path = "../../../schema/database/mysql_queries" }
 #reusable_types = { path = "../../../schema/public/reusable_types" }
@@ -41,7 +41,8 @@ serde_derive.workspace = true
 serde_json.workspace = true
 
 # Money
-async-stripe = { version = "1.0.0-alpha.2", features = ["runtime-tokio-hyper"] }
+#async-stripe = { version = "1.0.0-alpha.2", features = ["runtime-tokio-hyper"] }
+async-stripe = { version = "1.0.0-alpha.2", features = [] }
 async-stripe-core = { version = "1.0.0-alpha.2", features = ["customer"] }
 
 #sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
