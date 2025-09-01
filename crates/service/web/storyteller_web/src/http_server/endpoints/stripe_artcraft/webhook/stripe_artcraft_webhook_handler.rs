@@ -13,8 +13,6 @@ use mysql_queries::queries::billing::stripe::insert_stripe_webhook_event_log::In
 use sqlx::pool::PoolConnection;
 use sqlx::{MySql, MySqlConnection, MySqlPool};
 use std::sync::Arc;
-// TODO: Webhook signing key
-// Mysql connector
 
 #[derive(Serialize)]
 pub struct StripeArtcraftWebhookSuccessResponse {
@@ -62,6 +60,7 @@ pub async fn stripe_artcraft_webhook_handler(
       .map_err(|e| {
         let reason = format!("Could not construct Stripe webhook event: {:?}", e);
         error!("{}", &reason);
+        println!("{:?}", webhook_payload);
         CommonWebError::BadInputWithSimpleMessage(reason)
       })?;
 

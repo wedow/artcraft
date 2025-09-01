@@ -101,6 +101,11 @@ url.workspace = true
 
 # Stripe for ArtCraft
 async_stripe_artcraft = { package = "async-stripe", version = "0.41.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
+#async_stripe_artcraft = { git = "https://github.com/arlyon/async-stripe", branch = "openapi-1720743905", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
+#async_stripe_artcraft = { git = "https://github.com/arlyon/async-stripe", branch = "next", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
+
+# Money
+async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
 
 # Language tag parsing
 # TODO: Move to language support crate
@@ -144,9 +149,6 @@ actix-service.workspace = true
 actix-web.workspace = true
 actix-web-actors.workspace = true
 actix-web-lab.workspace = true
-
-# Money
-async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
 
 # Crypto
 magic-crypt = "3.1.13" # encrypting sort IDs for the frontend so we don't leak info
