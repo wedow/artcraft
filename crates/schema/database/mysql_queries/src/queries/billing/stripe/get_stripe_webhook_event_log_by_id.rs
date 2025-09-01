@@ -1,7 +1,7 @@
 use anyhow::anyhow;
-use sqlx::MySqlPool;
-
 use errors::AnyhowResult;
+use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 
 use crate::helpers::boolean_converters::i8_to_bool;
 
@@ -17,6 +17,14 @@ pub async fn get_stripe_webhook_event_log_by_id(
   stripe_event_id: &str,
   mysql_pool: &MySqlPool
 ) -> AnyhowResult<Option<StripeWebhookEventLog>> {
+  let mut connection = mysql_pool.acquire().await?;
+  get_stripe_webhook_event_log_by_id_with_connection(stripe_event_id, &mut connection).await
+}
+
+pub async fn get_stripe_webhook_event_log_by_id_with_connection(
+  stripe_event_id: &str,
+  mysql_connection: &mut PoolConnection<MySql>
+) -> AnyhowResult<Option<StripeWebhookEventLog>> {
 
   let maybe_record = sqlx::query_as!(
       RawStripeWebhookEventLogFromDb,
@@ -30,7 +38,7 @@ WHERE
         "#,
         stripe_event_id,
     )
-      .fetch_one(mysql_pool)
+      .fetch_one(&mut **mysql_connection)
       .await;
 
   match maybe_record {

@@ -13,3 +13,4 @@ mod user_routes;
 mod weights_routes;
 mod workflow_routes;
 pub mod add_routes;
+mod add_stripe_artcraft_routes;

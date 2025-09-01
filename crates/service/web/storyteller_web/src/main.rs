@@ -81,7 +81,7 @@ use crate::http_server::web_utils::handle_multipart_error::handle_multipart_erro
 use crate::http_server::web_utils::scoped_temp_dir_creator::ScopedTempDirCreator;
 use crate::state::certs::google_sign_in_cert::GoogleSignInCert;
 use crate::state::memory_cache::model_token_to_info_cache::ModelTokenToInfoCache;
-use crate::state::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, FalData, InMemoryCaches, OpenAiData, ServerInfo, ServerState, StaticFeatureFlags, StripeSettings, TrollBans};
+use crate::state::server_state::{DurableInMemoryCaches, EnvConfig, EphemeralInMemoryCaches, FalData, InMemoryCaches, OpenAiData, ServerInfo, ServerState, StaticFeatureFlags, StripeArtcraftSettings, StripeSettings, TrollBans};
 use crate::threads::db_health_checker_thread::db_health_check_status::HealthCheckStatus;
 use crate::threads::db_health_checker_thread::db_health_checker_thread::db_health_checker_thread;
 use crate::threads::poll_ip_banlist_thread::poll_ip_bans;
@@ -411,6 +411,9 @@ async fn main() -> AnyhowResult<()> {
     stripe: StripeSettings {
       config: stripe_configs,
       client: stripe_client,
+    },
+    stripe_artcraft: StripeArtcraftSettings {
+      secret_webhook_signing_key: easyenv::get_env_string_required("STRIPE_ARTCRAFT_SECRET_WEBHOOK_KEY")?,
     },
     hostname: server_hostname,
     startup_time,

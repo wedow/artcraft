@@ -127,6 +127,7 @@ use crate::http_server::endpoints::voice_designer::voices::update_voice::update_
 use crate::http_server::routes::add_control_plane_routes::add_control_plane_routes;
 use crate::http_server::routes::add_generate_routes::add_generate_routes;
 use crate::http_server::routes::add_image_studio_routes::add_image_studio_routes;
+use crate::http_server::routes::add_stripe_artcraft_routes::add_stripe_artcraft_routes;
 use crate::http_server::routes::add_studio_gen2_routes::add_studio_gen2_routes;
 use crate::http_server::routes::add_webhook_routes::add_webhook_routes;
 use crate::http_server::routes::beta_key_routes::add_beta_key_routes;
@@ -182,6 +183,7 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
   app = add_control_plane_routes(app); /* /v1/control_plane/... */
   app = add_generate_routes(app); /* /v1/generate/... */
   app = add_webhook_routes(app); /* /v1/webhooks/... */
+  app = add_stripe_artcraft_routes(app); /* /v1/stripe_artcraft/... */
 
   // app = add_image_gen_routes(app);
 

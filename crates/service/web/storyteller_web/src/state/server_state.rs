@@ -49,6 +49,7 @@ pub struct ServerState {
   pub server_info: ServerInfo,
 
   pub stripe: StripeSettings,
+  pub stripe_artcraft: StripeArtcraftSettings,
 
   pub hostname: String,
 
@@ -223,6 +224,11 @@ pub struct EphemeralInMemoryCaches {
 pub struct StripeSettings {
   pub config: StripeConfig,
   pub client: stripe::Client,
+}
+
+#[derive(Clone)]
+pub struct StripeArtcraftSettings {
+  pub secret_webhook_signing_key: String,
 }
 
 /// Flags set at service startup

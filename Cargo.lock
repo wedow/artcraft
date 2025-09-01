@@ -932,6 +932,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-stripe"
+version = "0.41.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cecbddf002ad7a13d2041eadf1b234cb3f57653ffdd901a01bc3f1c65aa77440"
+dependencies = [
+ "chrono",
+ "futures-util",
+ "hex",
+ "hmac 0.12.1",
+ "http-types",
+ "hyper 0.14.28",
+ "hyper-tls 0.5.0",
+ "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "serde_qs 0.10.1",
+ "sha2 0.10.8",
+ "smart-default 0.6.0",
+ "smol_str",
+ "thiserror 1.0.63",
+ "tokio",
+]
+
+[[package]]
 name = "async-task"
 version = "4.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1208,7 +1232,7 @@ dependencies = [
  "actix-http",
  "actix-web",
  "anyhow",
- "async-stripe",
+ "async-stripe 0.26.0",
  "async-trait",
  "chrono",
  "errors",
@@ -10292,7 +10316,8 @@ dependencies = [
  "actix_helpers",
  "anyhow",
  "artcraft_api_defs",
- "async-stripe",
+ "async-stripe 0.26.0",
+ "async-stripe 0.41.0",
  "async-trait",
  "base64 0.22.1",
  "billing_component",

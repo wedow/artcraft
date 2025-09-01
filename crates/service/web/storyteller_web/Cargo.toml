@@ -99,6 +99,9 @@ strum_macros = "0.26.4"
 time = "0.3.30"
 url.workspace = true
 
+# Stripe for ArtCraft
+async_stripe_artcraft = { package = "async-stripe", version = "0.41.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
+
 # Language tag parsing
 # TODO: Move to language support crate
 language-tags = "0.3.2" # Parsing single tags richly
