@@ -21,7 +21,7 @@ where
           .route(web::post().to(stripe_artcraft_webhook_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
-      .service(web::resource("/checkout/create")
+      .service(web::resource("/checkout/create_subscription")
           .route(web::post().to(stripe_artcraft_create_checkout_session_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )

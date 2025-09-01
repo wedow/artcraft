@@ -1,5 +1,5 @@
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_TOLT_REFERRAL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
-use crate::configs::stripe_artcraft_product_info_list::ARTCRAFT_BASIC_SANDBOX;
+use crate::configs::stripe_artcraft_product_info_list::{ARTCRAFT_BASIC_SANDBOX, ARTCRAFT_MAX_SANDBOX, ARTCRAFT_PRO_SANDBOX};
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::state::server_state::ServerState;
 use actix_web::web::{Data, Json};
@@ -19,11 +19,32 @@ use utoipa::ToSchema;
 pub struct StripeArtcraftCreateCheckoutSessionRequest {
   /// The (non-Stripe) internal identifier for the product or subscription.
   /// This will be translated into a Stripe identifier.
-  internal_plan_key: Option<String>,
+  plan: Option<PlanName>,
+
+  cadence: Option<PlanBillingCadence>,
 
   /// Optional Tolt referral code
   /// See: https://help.tolt.io/en/articles/6843411-how-to-set-up-stripe-with-tolt
   maybe_tolt_referral: Option<String>,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub enum PlanName {
+  #[serde(rename = "basic")]
+  Basic,
+  #[serde(rename = "pro")]
+  Pro,
+  #[serde(rename = "max")]
+  Max,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub enum PlanBillingCadence {
+  #[serde(rename = "monthly")]
+  Monthly,
+
+  #[serde(rename = "yearly")]
+  Yearly,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -36,7 +57,7 @@ pub struct StripeArtcraftCreateCheckoutSessionResponse {
 #[utoipa::path(
   get,
   tag = "Stripe (Artcraft)",
-  path = "/v1/stripe_artcraft/checkout/create",
+  path = "/v1/stripe_artcraft/checkout/create_subscription",
   params(
     ("request" = CreateCheckoutSessionRequest, description = "Payload for Request"),
   ),
@@ -49,26 +70,22 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
   request: Json<StripeArtcraftCreateCheckoutSessionRequest>,
   server_state: Data<Arc<ServerState>>,
   server_environment: Data<ServerEnvironment>,
-  //internal_product_to_stripe_lookup: Data<dyn InternalProductToStripeLookup>,
   internal_user_lookup: Data<dyn InternalUserLookup>,
   internal_session_cache_purge: Data<dyn InternalSessionCachePurge>,
 ) -> Result<Json<StripeArtcraftCreateCheckoutSessionResponse>, CommonWebError>
 {
-  let maybe_internal_product_key = request.internal_plan_key.as_deref();
-
-  let internal_product_key = match maybe_internal_product_key {
-    None => return Err(CommonWebError::BadInputWithSimpleMessage("no product key supplied".to_string())),
-    Some(internal_product_key) => internal_product_key,
+  let plan = match request.plan {
+    None => return Err(CommonWebError::BadInputWithSimpleMessage("no plan supplied".to_string())),
+    Some(PlanName::Basic) => ARTCRAFT_BASIC_SANDBOX,
+    Some(PlanName::Pro) => ARTCRAFT_PRO_SANDBOX,
+    Some(PlanName::Max) => ARTCRAFT_MAX_SANDBOX,
   };
 
-  //// TODO:
-  //let stripe_product = args.internal_product_to_stripe_lookup
-  //    .lookup_stripe_product_from_internal_product_key(server_environment, internal_product_key)
-  //    .map_err(|err| {
-  //      error!("Error looking up product: {:?}", err);
-  //      CommonWebError::ServerError // NB: This was probably *our* fault.
-  //    })?
-  //    .ok_or(CommonWebError::BadInputWithSimpleMessage("plan not found"))?; // Non-existing product
+  let price_id = match request.cadence {
+    None => return Err(CommonWebError::BadInputWithSimpleMessage("no cadence supplied".to_string())),
+    Some(PlanBillingCadence::Monthly) => plan.monthly_price_id.clone(),
+    Some(PlanBillingCadence::Yearly) => plan.yearly_price_id.clone(),
+  };
 
   let maybe_user_metadata = internal_user_lookup
       .lookup_user_from_http_request(&http_request)
@@ -177,7 +194,7 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
 
     params.line_items = Some(vec![
       CreateCheckoutSessionLineItems {
-        price: Some(ARTCRAFT_BASIC_SANDBOX.monthly_price_id.to_string()),
+        price: Some(price_id.to_string()),
         quantity: Some(1),
         ..Default::default()
       }
