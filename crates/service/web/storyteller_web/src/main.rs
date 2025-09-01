@@ -412,8 +412,18 @@ async fn main() -> AnyhowResult<()> {
       config: stripe_configs,
       client: stripe_client,
     },
-    stripe_artcraft: StripeArtcraftSettings {
-      secret_webhook_signing_key: easyenv::get_env_string_required("STRIPE_ARTCRAFT_SECRET_WEBHOOK_KEY")?,
+    stripe_artcraft: {
+      let secret_key = easyenv::get_env_string_required("STRIPE_ARTCRAFT_SECRET_KEY")?;
+      StripeArtcraftSettings {
+        secret_key: secret_key.clone(),
+        secret_webhook_signing_key: easyenv::get_env_string_required("STRIPE_ARTCRAFT_SECRET_WEBHOOK_KEY")?,
+        checkout_success_url: easyenv::get_env_string_required("STRIPE_ARTCRAFT_CHECKOUT_SUCCESS_URL")?,
+        checkout_cancel_url: easyenv::get_env_string_required("STRIPE_ARTCRAFT_CHECKOUT_CANCEL_URL")?,
+        client: {
+          let api_secret = secret_key.clone();
+          async_stripe_artcraft::Client::new(api_secret)
+        },
+      }
     },
     hostname: server_hostname,
     startup_time,
