@@ -974,6 +974,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-stripe-checkout"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b115740c799730d4caac099d48be4908d2d99611d56a874d2d3555b5d4306a97"
+dependencies = [
+ "async-stripe-client-core",
+ "async-stripe-shared",
+ "async-stripe-types",
+ "miniserde",
+ "serde",
+ "smol_str 0.3.2",
+]
+
+[[package]]
 name = "async-stripe-client-core"
 version = "1.0.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1322,21 +1336,26 @@ dependencies = [
  "actix-http",
  "actix-web",
  "anyhow",
+ "artcraft_api_defs",
  "async-stripe 1.0.0-alpha.2",
+ "async-stripe-checkout",
  "async-stripe-core",
  "async-stripe-webhook",
  "chrono",
+ "enums",
  "errors",
  "http_server_common",
  "log",
  "mockall",
  "mysql_queries",
  "once_cell",
+ "reusable_types",
  "serde",
  "serde_derive",
  "serde_json",
  "sqlx",
  "tokio",
+ "user_traits_component",
  "workspace-build-acceleration",
 ]
 

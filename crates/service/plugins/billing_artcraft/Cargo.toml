@@ -21,12 +21,14 @@ normal = ["workspace-build-acceleration"]
 workspace-build-acceleration.workspace = true
 
 # Internal
+artcraft_api_defs.workspace = true
+enums.workspace = true
 errors.workspace = true
 http_server_common = { path = "../../../lib/deprecated/http_server_common" }
 mysql_queries = { path = "../../../schema/database/mysql_queries" }
-#reusable_types = { path = "../../../schema/public/reusable_types" }
+reusable_types = { path = "../../../schema/public/reusable_types" }
+user_traits_component = { path = "../user_traits_component" }
 #url_config = { path = "../../../lib/url_config" }
-#user_traits_component = { path = "../user_traits_component" }
 
 # External
 actix-http.workspace = true
@@ -45,6 +47,7 @@ sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls",
 async-stripe = { version = "1.0.0-alpha.2", features = [] }
 async-stripe-core = { version = "1.0.0-alpha.2", features = ["customer"] }
 async-stripe-webhook = { version = "1.0.0-alpha.2", features = [] }
+async-stripe-checkout = { version = "1.0.0-alpha.2", features = ["checkout_session"] }
 
 #sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
 #utoipa = { version = "4", features = ["chrono","actix_extras"] }
