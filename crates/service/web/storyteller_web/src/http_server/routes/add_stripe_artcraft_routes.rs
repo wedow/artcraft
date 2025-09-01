@@ -1,4 +1,4 @@
-use crate::http_server::endpoints::stripe_artcraft::checkout::stripe_artcraft_create_checkout_session_handler::stripe_artcraft_create_checkout_session_handler;
+use crate::http_server::endpoints::stripe_artcraft::checkout::stripe_artcraft_create_subscription_checkout_session_handler::stripe_artcraft_create_checkout_session_handler;
 use crate::http_server::endpoints::stripe_artcraft::webhook::stripe_artcraft_webhook_handler::stripe_artcraft_webhook_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;

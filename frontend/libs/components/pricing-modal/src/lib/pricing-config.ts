@@ -38,8 +38,10 @@ export const pricingConfig = {
       colorScheme: "dark" as const,
     },
     {
-      id: "plus",
-      name: "Plus",
+      //id: "plus",
+      //name: "Plus",
+      id: "basic",
+      name: "Basic",
       monthlyPrice: 8,
       yearlyPrice: 96,
       originalMonthlyPrice: 10,

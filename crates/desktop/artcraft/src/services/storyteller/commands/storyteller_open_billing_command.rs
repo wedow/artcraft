@@ -1,0 +1,71 @@
+use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{ContextualImageEditModel, EditImageQuality, EditImageSize};
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
+use crate::services::midjourney::windows::open_midjourney_login_window::open_midjourney_login_window;
+use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::windows::open_storyteller_billing_window::open_storyteller_billing_window;
+use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, PlanName};
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use errors::AnyhowResult;
+use log::{error, info};
+use serde_derive::Deserialize;
+use tauri::{AppHandle, State};
+use tokens::tokens::media_files::MediaFileToken;
+
+#[derive(Deserialize, Debug)]
+pub struct StorytellerOpenBillingCommand {
+  pub plan: Option<PlanName>,
+  pub cadence: Option<PlanBillingCadence>,
+}
+
+#[tauri::command]
+pub async fn storyteller_open_billing_command(
+  app: AppHandle,
+  request: StorytellerOpenBillingCommand,
+  app_data_root: State<'_, AppDataRoot>,
+  app_env_configs: State<'_, AppEnvConfigs>,
+  storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
+) -> Result<String, String> {
+  info!("storyteller_open_billing_command called");
+
+  do_open_billing(
+    &app, 
+    &app_data_root, 
+    &app_env_configs, 
+    &storyteller_creds_manager,
+    request.plan,
+    request.cadence,
+  )
+      .await
+      .map_err(|err| {
+        error!("Error opening login: {:?}", err);
+        format!("Error opening login: {:?}", err)
+      })?;
+
+  Ok("result".to_string())
+}
+
+async fn do_open_billing(
+  app: &AppHandle,
+  app_data_root: &AppDataRoot,
+  app_env_configs: &AppEnvConfigs,
+  storyteller_creds_manager: &StorytellerCredentialManager,
+  plan: Option<PlanName>,
+  cadence: Option<PlanBillingCadence>,
+) -> AnyhowResult<()> {
+  info!("Building billing window...");
+
+  open_storyteller_billing_window(
+    app, 
+    app_env_configs, 
+    app_data_root, 
+    storyteller_creds_manager,
+    plan,
+    cadence,
+  ).await?;
+
+  info!("Done.");
+  Ok(())
+}

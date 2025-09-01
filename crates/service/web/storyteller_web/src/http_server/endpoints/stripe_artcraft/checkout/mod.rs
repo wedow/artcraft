@@ -1,1 +1,1 @@
-pub mod stripe_artcraft_create_checkout_session_handler;
+pub mod stripe_artcraft_create_subscription_checkout_session_handler;

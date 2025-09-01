@@ -1,4 +1,4 @@
-use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_TOLT_REFERRAL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
+use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
 use crate::configs::stripe_artcraft_product_info_list::{ARTCRAFT_BASIC_SANDBOX, ARTCRAFT_MAX_SANDBOX, ARTCRAFT_PRO_SANDBOX};
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::state::server_state::ServerState;
@@ -14,44 +14,7 @@ use std::sync::Arc;
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 use utoipa::ToSchema;
-
-#[derive(Deserialize, ToSchema)]
-pub struct StripeArtcraftCreateCheckoutSessionRequest {
-  /// The (non-Stripe) internal identifier for the product or subscription.
-  /// This will be translated into a Stripe identifier.
-  plan: Option<PlanName>,
-
-  cadence: Option<PlanBillingCadence>,
-
-  /// Optional Tolt referral code
-  /// See: https://help.tolt.io/en/articles/6843411-how-to-set-up-stripe-with-tolt
-  maybe_tolt_referral: Option<String>,
-}
-
-#[derive(Deserialize, ToSchema)]
-pub enum PlanName {
-  #[serde(rename = "basic")]
-  Basic,
-  #[serde(rename = "pro")]
-  Pro,
-  #[serde(rename = "max")]
-  Max,
-}
-
-#[derive(Deserialize, ToSchema)]
-pub enum PlanBillingCadence {
-  #[serde(rename = "monthly")]
-  Monthly,
-
-  #[serde(rename = "yearly")]
-  Yearly,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct StripeArtcraftCreateCheckoutSessionResponse {
-  pub success: bool,
-  pub stripe_checkout_redirect_url: String,
-}
+use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, PlanName, StripeArtcraftCreateCheckoutSessionRequest, StripeArtcraftCreateCheckoutSessionResponse};
 
 /// Create a Stripe Checkout session and return the redirect URL in Json.
 #[utoipa::path(
@@ -154,10 +117,6 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
 
     if let Some(user_email) = user_metadata.user_email.as_deref() {
       metadata.insert(STRIPE_ARTCRAFT_METADATA_EMAIL.to_string(), user_email.to_string());
-    }
-
-    if let Some(tolt_referral) = request.maybe_tolt_referral.as_deref() {
-      metadata.insert(STRIPE_ARTCRAFT_METADATA_TOLT_REFERRAL.to_string(), tolt_referral.to_string());
     }
 
     // NB: This metadata attaches to Stripe's Checkout Session object.

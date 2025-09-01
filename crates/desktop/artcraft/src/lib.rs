@@ -45,6 +45,7 @@ use crate::services::sora::commands::sora_logout_command::sora_logout_command;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_thread;
+use crate::services::storyteller::commands::storyteller_open_billing_command::storyteller_open_billing_command;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use log::error;
 
@@ -170,16 +171,17 @@ pub fn run() {
       get_fal_api_key_command,
       get_provider_order_command,
       load_without_cors_command,
-      open_sora_login_command,
       midjourney_clear_credentials_command,
       midjourney_get_credential_info_command,
       midjourney_open_login_command,
+      open_sora_login_command,
       platform_info_command,
       set_fal_api_key_command,
       set_provider_order_command,
       sora_image_generation_command,
       sora_image_remix_command,
       sora_logout_command,
+      storyteller_open_billing_command,
       update_app_preferences_command,
     ])
     .run(tauri::generate_context!("tauri.conf.json"))

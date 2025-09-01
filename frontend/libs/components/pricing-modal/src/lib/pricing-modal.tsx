@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import { pricingConfig, PricingTier } from "./pricing-config";
 import { usePricingModalStore } from "./pricing-modal-store";
 import { TabSelector } from "@storyteller/ui-tab-selector";
+import { invoke } from "@tauri-apps/api/core";
 
 const billingTabs = [
   { id: "yearly", label: "Yearly" },
@@ -32,14 +33,21 @@ export function PricingModal({
   const handleUpgrade = async (tierId: string) => {
     // TODO: Implement Stripe checkout
     const tier = pricingConfig.tiers.find((t) => t.id === tierId);
-    const priceId = isYearly ? tier?.yearlyPriceId : tier?.monthlyPriceId;
+    //const priceId = isYearly ? tier?.yearlyPriceId : tier?.monthlyPriceId;
 
-    console.log(
-      `Upgrading to ${tierId} plan with ${
-        isYearly ? "yearly" : "monthly"
-      } billing`,
-      { priceId, tierId }
-    );
+    const planName = tier?.id;
+    const cadence = isYearly? "yearly" : "monthly";
+
+    if (planName === "free") {
+      return;
+    }
+
+    await invoke("storyteller_open_billing_command", {
+      request: {
+        plan:planName,
+        cadence: cadence,
+      }
+    });
 
     // Example Stripe checkout implementation:
     // await stripe.redirectToCheckout({
