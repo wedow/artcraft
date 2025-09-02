@@ -1342,6 +1342,7 @@ dependencies = [
  "async-stripe-core",
  "async-stripe-webhook",
  "chrono",
+ "component_traits",
  "enums",
  "errors",
  "http_server_common",
@@ -1369,6 +1370,7 @@ dependencies = [
  "async-stripe 0.26.0",
  "async-trait",
  "chrono",
+ "component_traits",
  "errors",
  "http_server_common",
  "log",
@@ -2244,6 +2246,33 @@ dependencies = [
 name = "component_subsystem_inference_workloads"
 version = "0.0.1"
 dependencies = [
+ "workspace-build-acceleration",
+]
+
+[[package]]
+name = "component_traits"
+version = "0.0.1"
+dependencies = [
+ "actix-http",
+ "actix-web",
+ "anyhow",
+ "artcraft_api_defs",
+ "async-trait",
+ "chrono",
+ "enums",
+ "errors",
+ "http_server_common",
+ "log",
+ "mockall",
+ "mysql_queries",
+ "once_cell",
+ "reusable_types",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "user_traits_component",
  "workspace-build-acceleration",
 ]
 

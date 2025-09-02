@@ -1,15 +1,14 @@
 use std::str::FromStr;
 
-use actix_web::{HttpRequest, web};
+use actix_web::{web, HttpRequest};
+use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use log::error;
 use stripe::{BillingPortalSession, CreateBillingPortalSession, CustomerId};
-
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 
 use crate::stripe::http_endpoints::customer_portal::stripe_create_customer_portal_session_error::CreateCustomerPortalSessionError;
 use crate::stripe::stripe_config::{FullUrlOrPath, StripeConfig};
 use crate::stripe::traits::internal_product_to_stripe_lookup::InternalProductToStripeLookup;
-use crate::stripe::traits::internal_user_lookup::InternalUserLookup;
 
 pub async fn stripe_create_customer_portal_session_shared(
   http_request: HttpRequest,

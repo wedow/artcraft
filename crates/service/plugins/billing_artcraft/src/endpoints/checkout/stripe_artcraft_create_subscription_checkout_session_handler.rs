@@ -86,9 +86,6 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
   let checkout_session = {
     let mut params = CreateCheckoutSession::new();
 
-    let mut params = params.success_url(&success_url);
-    let mut params = params.cancel_url(&cancel_url);
-
     // `client_reference_id`
     // Stripe Docs:
     //   A unique string to reference the Checkout Session.
@@ -143,30 +140,6 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
       ..Default::default()
     });
 
-    // TODO: Buy extra credits.
-    //  // Payment mode: Accept one-time payments for cards, iDEAL, and more.
-    //  params.mode = Some(CheckoutSessionMode::Payment);
-    //  // NB: This metadata attaches to the payment_intent entity itself.
-    //  // This cannot be used for subscriptions.
-    //  // https://support.stripe.com/questions/using-metadata-with-checkout-sessions
-    //  params.payment_intent_data = Some(CreateCheckoutSessionPaymentIntentData {
-    //    metadata: Some(metadata.clone()),
-    //    ..Default::default()
-    //  });
-
-    let mut params = params.automatic_tax(CreateCheckoutSessionAutomaticTax {
-      enabled: true,
-      liability: None,
-    });
-
-    let mut params = params.line_items(vec![
-      CreateCheckoutSessionLineItems {
-        price: Some(price_id.to_string()),
-        quantity: Some(1),
-        ..Default::default()
-      }
-    ]);
-
     // If we already have a Stripe customer associated with the user account, we'll reuse it.
     //if let Some(existing_stripe_customer_id) = user_metadata.maybe_existing_stripe_customer_id.as_deref() {
     //  match CustomerId::from_str(existing_stripe_customer_id) {
@@ -190,10 +163,9 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
     //      CommonWebError::ServerError
     //    })?
 
-    let checkout_session = CreateCheckoutSession::new()
+    let checkout_builder = CreateCheckoutSession::new()
         .success_url(&success_url)
         .cancel_url(&cancel_url)
-        //.customer(customer.id.as_str())
         .mode(CheckoutSessionMode::Subscription)
         .line_items(vec![
           CreateCheckoutSessionLineItems {
@@ -202,7 +174,15 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
             ..Default::default()
           }
         ])
+        .automatic_tax(CreateCheckoutSessionAutomaticTax {
+          enabled: true,
+          liability: None,
+        })
+        //.customer(customer.id.as_str())
         //.expand([String::from("line_items"), String::from("line_items.data.price.product")])
+        ;
+
+    let checkout_session = checkout_builder
         .send(&stripe_config.client)
         .await
         .map_err(|err| {

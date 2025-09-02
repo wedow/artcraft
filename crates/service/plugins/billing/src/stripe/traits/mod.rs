@@ -1,3 +1,2 @@
 pub mod internal_product_to_stripe_lookup;
 pub mod internal_subscription_product_lookup;
-pub mod internal_user_lookup;

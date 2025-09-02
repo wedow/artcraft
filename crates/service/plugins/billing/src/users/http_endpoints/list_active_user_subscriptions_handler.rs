@@ -1,11 +1,10 @@
 use actix_http::StatusCode;
-use actix_web::{HttpRequest, HttpResponse, ResponseError, web};
+use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
+use component_traits::traits::internal_user_lookup::InternalUserLookup;
+use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::error;
 use utoipa::ToSchema;
 
-use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
-
-use crate::stripe::traits::internal_user_lookup::InternalUserLookup;
 
 // =============== Success Response ===============
 

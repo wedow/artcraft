@@ -2,17 +2,16 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use actix_web::HttpRequest;
+use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use log::{error, warn};
-use stripe::{CheckoutSession, CheckoutSessionMode, CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSubscriptionData, CustomerId};
-
 use reusable_types::server_environment::ServerEnvironment;
+use stripe::{CheckoutSession, CheckoutSessionMode, CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSubscriptionData, CustomerId};
 use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 
-use crate::stripe::helpers::common_metadata_keys::{METADATA_EMAIL, METADATA_TOLT_REFERRAL, METADATA_USER_TOKEN, METADATA_USERNAME};
+use crate::stripe::helpers::common_metadata_keys::{METADATA_EMAIL, METADATA_TOLT_REFERRAL, METADATA_USERNAME, METADATA_USER_TOKEN};
 use crate::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
 use crate::stripe::stripe_config::{FullUrlOrPath, StripeConfig};
 use crate::stripe::traits::internal_product_to_stripe_lookup::InternalProductToStripeLookup;
-use crate::stripe::traits::internal_user_lookup::InternalUserLookup;
 
 pub struct CreateStripeCheckoutSessionArgs<'a> {
   pub maybe_internal_product_key: Option<&'a str>,
@@ -198,15 +197,14 @@ pub async fn stripe_create_checkout_session_shared(
 mod tests {
   use mockall::predicate::*;
   use tokio;
-
+  use component_traits::traits::internal_user_lookup::{MockInternalUserLookup, UserMetadata};
   use reusable_types::server_environment::ServerEnvironment;
   use url_config::third_party_url_redirector::ThirdPartyUrlRedirector;
 
   use crate::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
-  use crate::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_shared::{CreateStripeCheckoutSessionArgs, stripe_create_checkout_session_shared};
+  use crate::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_shared::{stripe_create_checkout_session_shared, CreateStripeCheckoutSessionArgs};
   use crate::stripe::stripe_config::{FullUrlOrPath, StripeCheckoutConfigs, StripeConfig, StripeCustomerPortalConfigs, StripeSecrets};
   use crate::stripe::traits::internal_product_to_stripe_lookup::{MockInternalProductToStripeLookup, StripeProduct};
-  use crate::stripe::traits::internal_user_lookup::{MockInternalUserLookup, UserMetadata};
 
   #[tokio::test]
   async fn test_success_case() {
