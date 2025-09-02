@@ -14,7 +14,6 @@ pub mod moderation;
 pub mod prompts;
 pub mod service;
 pub mod stats;
-pub mod stripe_artcraft;
 pub mod studio_gen2;
 pub mod subscriptions;
 pub mod tags;
