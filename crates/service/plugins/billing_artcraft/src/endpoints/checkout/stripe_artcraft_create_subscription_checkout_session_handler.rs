@@ -7,6 +7,7 @@ use actix_web::{web, HttpRequest};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateCheckoutSessionRequest, StripeArtcraftCreateCheckoutSessionResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
+use enums::common::subscription_namespace::SubscriptionNamespace;
 use log::{error, info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use std::collections::HashMap;
@@ -73,9 +74,15 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
 
   info!("Subscriptions: {:?}", &user_metadata.existing_subscription_keys);
 
+  let artcraft_subscriptions = user_metadata
+      .existing_subscription_keys
+      .iter()
+      .filter(|it| it.internal_subscription_namespace == SubscriptionNamespace::Artcraft)
+      .collect::<Vec<_>>();
+
   // TODO: This will not handle a future where we have multiple "namespaces" or can offer users more than one subscription.
   //  It will actively block users from subscribing to two or more websites.
-  if !user_metadata.existing_subscription_keys.is_empty() {
+  if !artcraft_subscriptions.is_empty() {
     return Err(CommonWebError::BadInputWithSimpleMessage("user already has plan".to_string()))
   }
 
@@ -132,6 +139,7 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
             ..Default::default()
           }
         ])
+        .allow_promotion_codes(true)
         .automatic_tax(CreateCheckoutSessionAutomaticTax {
           enabled: true,
           liability: None,
