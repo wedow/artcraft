@@ -1,6 +1,8 @@
 use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
-use crate::utils::expand_customer_id::expand_customer_id;
-use crate::utils::expand_product_id::expand_product_id;
+use crate::utils::enum_conversion::recurring_interval_to_reusable_type::recurring_interval_to_reusable_type;
+use crate::utils::enum_conversion::subscription_status_to_reusable_type::subscription_status_to_reusable_type;
+use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
+use crate::utils::expand_ids::expand_product_id::expand_product_id;
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
 use errors::AnyhowResult;
@@ -8,6 +10,7 @@ use log::error;
 use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use stripe_shared::{Subscription, SubscriptionStatus};
+use stripe_types::Expandable;
 
 #[derive(Clone, Debug)]
 pub struct SubscriptionSummary {
@@ -66,24 +69,18 @@ pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResu
     Some(line_item) => line_item,
   };
 
-  let price = match &item.price {
-    None => return Err(anyhow!("Could not get item price in subscription {}", subscription_id)),
-    Some(price) => price,
-  };
-
-  let product = match &price.product {
-    None => return Err(anyhow!("Could not get product in subscription {}", subscription_id)),
-    Some(product) => product,
-  };
+  let price = item.price.clone();
+  let product_id = expand_product_id(&price.product);
 
   let recurring = match &price.recurring {
     None => return Err(anyhow!("Could not get interval in subscription {}", subscription_id)),
     Some(recurring) => recurring,
   };
 
+  // NB: period start and end dates were moved out of the root object and into the line items
   let start_date = NaiveDateTime::from_timestamp(subscription.start_date, 0);
-  let period_start = NaiveDateTime::from_timestamp(subscription.current_period_start, 0);
-  let period_end = NaiveDateTime::from_timestamp(subscription.current_period_end, 0);
+  let period_start = NaiveDateTime::from_timestamp(item.current_period_start, 0);
+  let period_end = NaiveDateTime::from_timestamp(item.current_period_end, 0);
 
   let maybe_cancel_at = subscription.cancel_at.map(|t| NaiveDateTime::from_timestamp(t, 0));
   let maybe_canceled_at = subscription.canceled_at.map(|t| NaiveDateTime::from_timestamp(t, 0));
@@ -95,7 +92,7 @@ pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResu
     stripe_customer_id: expand_customer_id(&subscription.customer),
     stripe_subscription_status: subscription_status_to_reusable_type(subscription.status),
     cancel_at_period_end: subscription.cancel_at_period_end,
-    stripe_product_id: expand_product_id(product),
+    stripe_product_id: product_id,
     stripe_price_id: price.id.to_string(),
     subscription_is_active: subscription.status == SubscriptionStatus::Active,
     subscription_interval: recurring_interval_to_reusable_type(recurring.interval),
@@ -109,12 +106,10 @@ pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResu
 
 #[cfg(test)]
 mod tests {
-  use stripe::Subscription;
-
+  use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
   use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
   use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
-
-  use crate::stripe::http_endpoints::webhook::webhook_event_handlers::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
+  use stripe_shared::Subscription;
 
   #[test]
   fn test_subscription_summary_extractor_on_create_event() {

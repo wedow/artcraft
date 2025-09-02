@@ -1,7 +1,8 @@
 use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
-use crate::utils::expand_customer_id::expand_customer_id;
+use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
+use stripe_shared::Invoice;
 
 // Handle event type: 'invoice.updated'
 // Sent when a payment succeeds or fails.
@@ -9,10 +10,12 @@ use crate::utils::expand_customer_id::expand_customer_id;
 // If payment fails, `paid` is set to false and the `status` remains `open`.
 // Payment failures also trigger a invoice.payment_failed event.
 pub fn invoice_updated_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
-  let invoice_id = invoice.id.to_string();
+  let maybe_invoice_id = invoice.id.as_ref().map(|id| id.to_string());
 
-  let is_paid = invoice.paid;
-  let invoice_status = invoice.status;
+  // NB: (1) stripe changed their API and these no longer work.
+  // NB: (2) The original code appeared to be a no-op anyway.
+  //let is_paid = invoice.status
+  //let invoice_status = invoice.status;
 
   // NB: We'll need this to send them to the "customer portal", which is how they can modify
   // or cancel their subscriptions.
@@ -27,7 +30,7 @@ pub fn invoice_updated_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhoo
 
   Ok(StripeArtcraftWebhookSummary {
     maybe_user_token,
-    maybe_event_entity_id: Some(invoice_id),
+    maybe_event_entity_id: maybe_invoice_id,
     maybe_stripe_customer_id,
     action_was_taken: false,
     should_ignore_retry: false,

@@ -1,7 +1,7 @@
 use log::error;
 use sqlx::MySqlPool;
 use stripe::Subscription;
-
+use enums::common::subscription_namespace::SubscriptionNamespace;
 use mysql_queries::queries::users::user::update::update_user_record_with_new_stripe_customer_id::update_user_record_with_new_stripe_customer_id;
 use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::get_user_subscription_by_stripe_subscription_id;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
@@ -61,11 +61,11 @@ pub async fn customer_subscription_created_handler(
             StripeWebhookError::ServerError(reason) // NB: This was probably *our* fault.
           })?;
 
-  let mut subscription_namespace = UNKNOWN_SUBSCRIPTION_NAMESPACE;
+  let mut subscription_namespace = SubscriptionNamespace::FakeYou;
   let mut subscription_product_slug = UNKNOWN_SUBSCRIPTION_PRODUCT_SLUG;
 
   if let Some(ref internal_product) = maybe_internal_subscription_product {
-    subscription_namespace = &internal_product.subscription_category;
+    subscription_namespace = internal_product.subscription_category;
     subscription_product_slug = &internal_product.subscription_product_key;
   }
 

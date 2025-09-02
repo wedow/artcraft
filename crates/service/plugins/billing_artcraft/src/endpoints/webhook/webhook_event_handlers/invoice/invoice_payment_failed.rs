@@ -1,12 +1,12 @@
 use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
-use crate::utils::expand_customer_id::expand_customer_id;
+use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use stripe_shared::Invoice;
 
 // Handle event type: 'invoice.payment_failed'
 pub fn invoice_payment_failed_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
-  let invoice_id = invoice.id.to_string();
+  let maybe_invoice_id = invoice.id.as_ref().map(|id| id.to_string());
 
   let paid_status = invoice.status;
 
@@ -23,7 +23,7 @@ pub fn invoice_payment_failed_handler(invoice: &Invoice) -> Result<StripeArtcraf
 
   Ok(StripeArtcraftWebhookSummary {
     maybe_user_token,
-    maybe_event_entity_id: Some(invoice_id),
+    maybe_event_entity_id: maybe_invoice_id,
     maybe_stripe_customer_id,
     action_was_taken: false,
     should_ignore_retry: false,

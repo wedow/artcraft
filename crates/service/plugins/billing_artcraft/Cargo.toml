@@ -29,7 +29,6 @@ http_server_common = { path = "../../../lib/deprecated/http_server_common" }
 mysql_queries = { path = "../../../schema/database/mysql_queries" }
 reusable_types = { path = "../../../schema/public/reusable_types" }
 user_traits_component = { path = "../user_traits_component" }
-#url_config = { path = "../../../lib/url_config" }
 
 # External
 actix-http.workspace = true
@@ -44,7 +43,6 @@ serde_json.workspace = true
 sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
 
 # Money
-#async-stripe = { version = "1.0.0-alpha.2", features = ["runtime-tokio-hyper"] }
 async-stripe = { version = "1.0.0-alpha.2", features = [] }
 async-stripe-checkout = { version = "1.0.0-alpha.2", features = ["checkout_session"] }
 async-stripe-core = { version = "1.0.0-alpha.2", features = ["customer"] }
@@ -56,6 +54,8 @@ async-stripe-webhook = { version = "1.0.0-alpha.2", features = [] }
 #utoipa = { version = "4", features = ["chrono","actix_extras"] }
 
 [dev-dependencies]
+# deserialize for tests
+async-stripe-shared= { version = "1.0.0-alpha.2", features = ["deserialize"] }
 mockall = "0.12.1"
 
 # NB: Tokio version matches `async-stripe` transitive dep; features are for testing

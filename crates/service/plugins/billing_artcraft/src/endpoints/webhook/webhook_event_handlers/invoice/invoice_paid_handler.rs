@@ -1,56 +1,6 @@
-use std::any::Any;
-use chrono::{DateTime, Utc};
-use log::error;
-use stripe_shared::{Invoice, InvoiceStatus};
-use errors::AnyhowResult;
-use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
-use crate::utils::expand_customer_id::expand_customer_id;
-use crate::utils::expand_product_id::expand_product_id;
-use crate::utils::expand_subscription_id::expand_subscription_id;
-
-/// If we determine a subscription needs update, this is the struct we produce.
-/// This should be easily unit testable.
-pub struct SubscriptionDetails {
-  // Internal user token (not Stripe)
-  pub user_token: Option<String>,
-
-  pub stripe_is_production: bool,
-
-  pub stripe_invoice_id: String,
-
-  pub stripe_customer_id: Option<String>,
-  pub stripe_subscription_id: Option<String>,
-  pub stripe_product_id: Option<String>,
-  pub stripe_price_id: Option<String>,
-
-  pub subscription_is_active: bool,
-
-  pub billed_at: DateTime<Utc>,
-
-  /// Tell the update handler how many days in the future to set the plan.
-  pub subscription_interval: SubscriptionInterval,
-
-  /// Calculated from interval
-  pub subscription_expires_at: DateTime<Utc>,
-}
-
-/// If we determine a product was paid for, this is the struct we produce.
-/// This should be easily unit testable.
-pub struct ProductDetails {
-  pub user_token: Option<String>,
-
-  pub stripe_customer_id: Option<String>,
-  pub stripe_product_id: Option<String>,
-}
-
-/// For now we only handle one singular item at a time.
-/// (Technically this can handle many products and subscriptions at once.)
-pub enum InvoicePaidDetails {
-  Subscription(SubscriptionDetails),
-  Product(ProductDetails),
-}
+use stripe_shared::Invoice;
 
 // Handle event type: 'invoice.paid'
 // // https://stripe.com/docs/billing/subscriptions/webhooks :
@@ -68,14 +18,17 @@ pub enum InvoicePaidDetails {
 //    appropriate date in the future (plus a day or two for leeway).
 //
 pub fn invoice_paid_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
-  let maybe_invoice_details = invoice_paid_extractor(invoice)
-      .map_err(|err| {
-        let reason = format!("Error extracting invoice details from 'invoice.paid' payload: {:?}", err);
-        error!("{}", reason);
-        StripeArtcraftWebhookError::ServerError(reason)
-      })?;
+  
+  // NB: The original FakeYou code had a lot of logic, but apepars to have been a no-op
+  
+  // let maybe_invoice_details = invoice_paid_extractor(invoice)
+  //     .map_err(|err| {
+  //       let reason = format!("Error extracting invoice details from 'invoice.paid' payload: {:?}", err);
+  //       error!("{}", reason);
+  //       StripeArtcraftWebhookError::ServerError(reason)
+  //     })?;
 
-  // TODO
+  // // TODO
   Ok(StripeArtcraftWebhookSummary {
     maybe_user_token: None,
     maybe_event_entity_id: None,
@@ -85,103 +38,145 @@ pub fn invoice_paid_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhookSu
   })
 }
 
-fn invoice_paid_extractor(invoice: &Invoice) -> AnyhowResult<Option<InvoicePaidDetails>> {
-  match invoice.status {
-    Some(InvoiceStatus::Paid) => {}
-    _ => {
-      return Ok(None);
-    },
-  }
+// /// If we determine a subscription needs update, this is the struct we produce.
+// /// This should be easily unit testable.
+// pub struct SubscriptionDetails {
+//   // Internal user token (not Stripe)
+//   pub user_token: Option<String>,
+// 
+//   pub stripe_is_production: bool,
+// 
+//   pub stripe_invoice_id: String,
+// 
+//   pub stripe_customer_id: Option<String>,
+//   pub stripe_subscription_id: Option<String>,
+//   pub stripe_product_id: Option<String>,
+//   pub stripe_price_id: Option<String>,
+// 
+//   pub subscription_is_active: bool,
+// 
+//   pub billed_at: DateTime<Utc>,
+// 
+//   /// Tell the update handler how many days in the future to set the plan.
+//   pub subscription_interval: SubscriptionInterval,
+// 
+//   /// Calculated from interval
+//   pub subscription_expires_at: DateTime<Utc>,
+// }
+// 
+// /// If we determine a product was paid for, this is the struct we produce.
+// /// This should be easily unit testable.
+// pub struct ProductDetails {
+//   pub user_token: Option<String>,
+// 
+//   pub stripe_customer_id: Option<String>,
+//   pub stripe_product_id: Option<String>,
+// }
+// 
+// /// For now we only handle one singular item at a time.
+// /// (Technically this can handle many products and subscriptions at once.)
+// pub enum InvoicePaidDetails {
+//   Subscription(SubscriptionDetails),
+//   Product(ProductDetails),
+// }
 
-  let invoice_id = invoice.id.to_string();
-  let is_production= invoice.livemode;
-
-  let paid_status = invoice.status;
-
-  let maybe_stripe_customer_id  = invoice.customer
-      .as_ref()
-      .map(|c| expand_customer_id(c));
-
-  let maybe_stripe_subscription_id = invoice.subscription
-      .as_ref()
-      .map(|s| expand_subscription_id(s));
-
-  // TODO: We only handle a single line item for now.
-  let line_item = match invoice.lines.data.first() {
-    None => return Ok(None),
-    Some(line_item) => line_item,
-  };
-
-  //let paid_details = match line_item.type_ {
-  //  InvoiceLineItemType::InvoiceItem => {
-  //    return Ok(None); // TODO: Handle one-time payments.
-  //  }
-  //  InvoiceLineItemType::Subscription => {
-  //    let maybe_subscription_id = line_item.subscription
-  //        .as_ref().map(|s| expand_subscription_id(s));
-  //    let maybe_product_id = line_item.price
-  //        .as_ref()
-  //        .and_then(|price| price.product.as_ref())
-  //        .map(|product| expand_product_id(product));
-  //    let maybe_price_id = line_item.price
-  //        .as_ref()
-  //        .map(|price| price.id.to_string());
-  //    // NB: Internal user token (non-stripe)
-  //    let maybe_user_token = line_item.metadata.get(STRIPE_ARTCRAFT_METADATA_USER_TOKEN)
-  //        .map(|d| d.to_string());
-  //    InvoicePaidDetails::Subscription(SubscriptionDetails {
-  //      user_token: maybe_user_token,
-  //      stripe_is_production: is_production,
-  //      stripe_invoice_id: invoice_id,
-  //      stripe_customer_id: maybe_stripe_customer_id,
-  //      stripe_subscription_id: maybe_subscription_id,
-  //      stripe_product_id: maybe_product_id,
-  //      stripe_price_id: maybe_price_id,
-  //      subscription_is_active: false,
-  //      billed_at: Utc::now(),
-  //      subscription_interval: Default::default(),
-  //      subscription_expires_at: Utc::now(),
-  //    })
-  //  }
-  //};
-
-
-  /*
-  let maybe_subscription_id = line_item.subscription
-      .as_ref().map(|s| expand_subscription_id(s));
-
-  let maybe_product_id = line_item.price
-      .as_ref()
-      .and_then(|price| price.product.as_ref())
-      .map(|product| expand_product_id(product));
-
-  let maybe_price_id = line_item.price
-      .as_ref()
-      .map(|price| price.id.to_string());
-
-  // NB: Internal user token (non-stripe)
-  let maybe_user_token = line_item.metadata.get(STRIPE_ARTCRAFT_METADATA_USER_TOKEN)
-      .map(|d| d.to_string());
-
-  let paid_details = InvoicePaidDetails::Subscription(SubscriptionDetails {
-    user_token: maybe_user_token,
-    stripe_is_production: is_production,
-    stripe_invoice_id: invoice_id,
-    stripe_customer_id: maybe_stripe_customer_id,
-    stripe_subscription_id: maybe_subscription_id,
-    stripe_product_id: maybe_product_id,
-    stripe_price_id: maybe_price_id,
-    subscription_is_active: false,
-    billed_at: Utc::now(),
-    subscription_interval: Default::default(),
-    subscription_expires_at: Utc::now(),
-  });
-
-  Ok(Some(paid_details))
-   */
-
-  Ok(None) // TODO
-}
+// fn invoice_paid_extractor(invoice: &Invoice) -> AnyhowResult<Option<InvoicePaidDetails>> {
+//   match invoice.status {
+//     Some(InvoiceStatus::Paid) => {}
+//     _ => {
+//       return Ok(None);
+//     },
+//   }
+// 
+//   let invoice_id = invoice.id.to_string();
+//   let is_production= invoice.livemode;
+// 
+//   let paid_status = invoice.status;
+// 
+//   let maybe_stripe_customer_id  = invoice.customer
+//       .as_ref()
+//       .map(|c| expand_customer_id(c));
+// 
+//   let maybe_stripe_subscription_id = invoice.subscription
+//       .as_ref()
+//       .map(|s| expand_subscription_id(s));
+// 
+//   // TODO: We only handle a single line item for now.
+//   let line_item = match invoice.lines.data.first() {
+//     None => return Ok(None),
+//     Some(line_item) => line_item,
+//   };
+// 
+//   //let paid_details = match line_item.type_ {
+//   //  InvoiceLineItemType::InvoiceItem => {
+//   //    return Ok(None); // TODO: Handle one-time payments.
+//   //  }
+//   //  InvoiceLineItemType::Subscription => {
+//   //    let maybe_subscription_id = line_item.subscription
+//   //        .as_ref().map(|s| expand_subscription_id(s));
+//   //    let maybe_product_id = line_item.price
+//   //        .as_ref()
+//   //        .and_then(|price| price.product.as_ref())
+//   //        .map(|product| expand_product_id(product));
+//   //    let maybe_price_id = line_item.price
+//   //        .as_ref()
+//   //        .map(|price| price.id.to_string());
+//   //    // NB: Internal user token (non-stripe)
+//   //    let maybe_user_token = line_item.metadata.get(STRIPE_ARTCRAFT_METADATA_USER_TOKEN)
+//   //        .map(|d| d.to_string());
+//   //    InvoicePaidDetails::Subscription(SubscriptionDetails {
+//   //      user_token: maybe_user_token,
+//   //      stripe_is_production: is_production,
+//   //      stripe_invoice_id: invoice_id,
+//   //      stripe_customer_id: maybe_stripe_customer_id,
+//   //      stripe_subscription_id: maybe_subscription_id,
+//   //      stripe_product_id: maybe_product_id,
+//   //      stripe_price_id: maybe_price_id,
+//   //      subscription_is_active: false,
+//   //      billed_at: Utc::now(),
+//   //      subscription_interval: Default::default(),
+//   //      subscription_expires_at: Utc::now(),
+//   //    })
+//   //  }
+//   //};
+// 
+// 
+//   /*
+//   let maybe_subscription_id = line_item.subscription
+//       .as_ref().map(|s| expand_subscription_id(s));
+// 
+//   let maybe_product_id = line_item.price
+//       .as_ref()
+//       .and_then(|price| price.product.as_ref())
+//       .map(|product| expand_product_id(product));
+// 
+//   let maybe_price_id = line_item.price
+//       .as_ref()
+//       .map(|price| price.id.to_string());
+// 
+//   // NB: Internal user token (non-stripe)
+//   let maybe_user_token = line_item.metadata.get(STRIPE_ARTCRAFT_METADATA_USER_TOKEN)
+//       .map(|d| d.to_string());
+// 
+//   let paid_details = InvoicePaidDetails::Subscription(SubscriptionDetails {
+//     user_token: maybe_user_token,
+//     stripe_is_production: is_production,
+//     stripe_invoice_id: invoice_id,
+//     stripe_customer_id: maybe_stripe_customer_id,
+//     stripe_subscription_id: maybe_subscription_id,
+//     stripe_product_id: maybe_product_id,
+//     stripe_price_id: maybe_price_id,
+//     subscription_is_active: false,
+//     billed_at: Utc::now(),
+//     subscription_interval: Default::default(),
+//     subscription_expires_at: Utc::now(),
+//   });
+// 
+//   Ok(Some(paid_details))
+//    */
+// 
+//   Ok(None) // TODO
+// }
 
 
 /*#[cfg(test)]

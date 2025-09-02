@@ -1,3 +1,4 @@
+use stripe_shared::Product;
 use stripe_types::Expandable;
 
 pub fn expand_product_id(expandable_product: &Expandable<Product>) -> String {

@@ -1,3 +1,4 @@
+use stripe_shared::Subscription;
 use stripe_types::Expandable;
 
 pub fn expand_subscription_id(expandable_subscription: &Expandable<Subscription>) -> String {

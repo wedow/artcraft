@@ -1,14 +1,15 @@
 use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
-use crate::utils::expand_customer_id::expand_customer_id;
+use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use stripe_shared::Invoice;
 
 // Handle event type: 'invoice.payment_succeeded'
 pub fn invoice_payment_succeeded_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
-  let invoice_id = invoice.id.to_string();
+  let maybe_invoice_id = invoice.id.as_ref().map(|id| id.to_string());
 
-  let paid_status = invoice.status;
+  // NB: Not read in previous FakeYou code.
+  // let paid_status = invoice.status;
 
   // NB: We'll need this to send them to the "customer portal", which is how they can modify
   // or cancel their subscriptions.
@@ -23,7 +24,7 @@ pub fn invoice_payment_succeeded_handler(invoice: &Invoice) -> Result<StripeArtc
 
   Ok(StripeArtcraftWebhookSummary {
     maybe_user_token,
-    maybe_event_entity_id: Some(invoice_id),
+    maybe_event_entity_id: maybe_invoice_id,
     maybe_stripe_customer_id,
     action_was_taken: false,
     should_ignore_retry: false,

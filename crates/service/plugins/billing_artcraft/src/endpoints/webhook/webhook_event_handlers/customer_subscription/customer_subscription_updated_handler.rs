@@ -1,11 +1,14 @@
+use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use enums::common::subscription_namespace::SubscriptionNamespace;
 use log::{error, info};
 use mysql_queries::queries::users::user::update::update_user_record_with_new_stripe_customer_id::update_user_record_with_new_stripe_customer_id;
 use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::get_user_subscription_by_stripe_subscription_id;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
+use reusable_types::server_environment::ServerEnvironment;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use sqlx::MySqlPool;
 use stripe_shared::Subscription;
@@ -13,7 +16,8 @@ use stripe_shared::Subscription;
 /// Handle event type: 'customer.subscription.updated'
 pub async fn customer_subscription_updated_handler(
   subscription: &Subscription,
-  internal_subscription_product_lookup: &dyn InternalSubscriptionProductLookup,
+  //internal_subscription_product_lookup: &dyn InternalSubscriptionProductLookup,
+  server_environment: ServerEnvironment,
   mysql_pool: &MySqlPool,
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
 
@@ -24,26 +28,41 @@ pub async fn customer_subscription_updated_handler(
         StripeArtcraftWebhookError::ServerError(reason) // NB: This was probably *our* fault.
       })?;
 
+  let mut result = StripeArtcraftWebhookSummary {
+    maybe_user_token: summary.user_token.clone(),
+    maybe_event_entity_id: Some(summary.stripe_subscription_id.clone()),
+    maybe_stripe_customer_id: Some(summary.stripe_customer_id.clone()),
+    action_was_taken: false,
+    should_ignore_retry: false,
+  };
+
   let mut should_process_update = true;
 
-  let mut action_was_taken = false;
-  let mut should_ignore_retry = false;
+  //let maybe_internal_subscription_product =
+  //    internal_subscription_product_lookup.lookup_internal_product_from_stripe_product_id(&summary.stripe_product_id)
+  //        .map_err(|err| {
+  //          let reason = format!("Error mapping to internal product: {:?}", err);
+  //          error!("{}", reason);
+  //          StripeArtcraftWebhookError::ServerError(reason) // NB: This was probably *our* fault.
+  //        })?;
+  //let mut subscription_namespace = UNKNOWN_SUBSCRIPTION_NAMESPACE;
+  //let mut subscription_product_slug = UNKNOWN_SUBSCRIPTION_PRODUCT_SLUG;
+  //if let Some(ref internal_product) = maybe_internal_subscription_product {
+  //  subscription_namespace = &internal_product.subscription_category;
+  //  subscription_product_slug = &internal_product.subscription_product_key;
+  //}
 
-  let maybe_internal_subscription_product =
-      internal_subscription_product_lookup.lookup_internal_product_from_stripe_product_id(&summary.stripe_product_id)
-          .map_err(|err| {
-            let reason = format!("Error mapping to internal product: {:?}", err);
-            error!("{}", reason);
-            StripeArtcraftWebhookError::ServerError(reason) // NB: This was probably *our* fault.
-          })?;
+  let maybe_product = get_artcraft_product_by_stripe_id_and_env(
+    &summary.stripe_product_id, server_environment);
 
-  let mut subscription_namespace = UNKNOWN_SUBSCRIPTION_NAMESPACE;
-  let mut subscription_product_slug = UNKNOWN_SUBSCRIPTION_PRODUCT_SLUG;
-
-  if let Some(ref internal_product) = maybe_internal_subscription_product {
-    subscription_namespace = &internal_product.subscription_category;
-    subscription_product_slug = &internal_product.subscription_product_key;
-  }
+  let product = match maybe_product {
+    None => {
+      error!("No matching product for stripe product ID: {}", &summary.stripe_product_id);
+      result.should_ignore_retry = true;
+      return Ok(result);
+    }
+    Some(product) => product,
+  };
 
   // NB: It's possible to receive events out of order.
   let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id(&summary.stripe_subscription_id, &mysql_pool)
@@ -59,7 +78,7 @@ pub async fn customer_subscription_updated_handler(
       Some(StripeSubscriptionStatus::Canceled) => {
         // NB: The stored subscription already had a terminal status and the subscription cannot be updated any further.
         should_process_update = false;
-        should_ignore_retry = true;
+        result.should_ignore_retry = true;
       }
       _ => {}
     }
@@ -72,8 +91,8 @@ pub async fn customer_subscription_updated_handler(
       let upsert = UpsertUserSubscription {
         stripe_subscription_id: &summary.stripe_subscription_id,
         user_token: &user_token,
-        subscription_namespace,
-        subscription_product_slug,
+        subscription_namespace: SubscriptionNamespace::Artcraft,
+        subscription_product_slug: &product.slug.to_str(),
         maybe_stripe_customer_id: Some(&summary.stripe_customer_id),
         maybe_stripe_product_id: Some(&summary.stripe_product_id),
         maybe_stripe_price_id: Some(&summary.stripe_price_id),
@@ -111,17 +130,11 @@ pub async fn customer_subscription_updated_handler(
             StripeArtcraftWebhookError::ServerError(reason)
           })?;
 
-      action_was_taken = true;
+      result.action_was_taken = true;
     }
   }
 
-  should_ignore_retry = true;
+  result.should_ignore_retry = true;
 
-  Ok(StripeArtcraftWebhookSummary {
-    maybe_user_token: summary.user_token,
-    maybe_event_entity_id: Some(summary.stripe_subscription_id),
-    maybe_stripe_customer_id: Some(summary.stripe_customer_id),
-    action_was_taken,
-    should_ignore_retry,
-  })
+  Ok(result)
 }
