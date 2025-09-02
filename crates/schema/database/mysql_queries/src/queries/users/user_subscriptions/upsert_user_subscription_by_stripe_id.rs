@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
 use sqlx::MySqlPool;
-
+use enums::common::subscription_namespace::SubscriptionNamespace;
 use errors::AnyhowResult;
 use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
@@ -17,8 +17,8 @@ pub struct UpsertUserSubscription<'a> {
   /// Internal user token
   pub user_token: &'a str,
 
-  /// The platform key, eg. "fakeyou", "storyteller_stream", "symphonia", etc.
-  pub subscription_namespace: &'a str,
+  /// The platform key, eg. "artcraft", "fakeyou", "storyteller_stream", "symphonia", etc.
+  pub subscription_namespace: SubscriptionNamespace,
 
   /// The name of the product the user is subscribing to within the category.
   pub subscription_product_slug: &'a str,
@@ -112,7 +112,7 @@ ON DUPLICATE KEY UPDATE
       // Insert
       token,
       self.user_token,
-      self.subscription_namespace,
+      self.subscription_namespace.to_str(),
       self.subscription_product_slug,
 
       self.stripe_subscription_id,

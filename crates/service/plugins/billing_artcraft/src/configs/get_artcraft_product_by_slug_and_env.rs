@@ -3,7 +3,7 @@ use crate::configs::stripe_artcraft_product_info_list::{ARTCRAFT_BASIC_PRODUCTIO
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use reusable_types::server_environment::ServerEnvironment;
 
-pub fn get_artcraft_product_by_slug(slug: ArtcraftSubscriptionSlug, env: ServerEnvironment) -> StripeArtcraftProductInfo {
+pub fn get_artcraft_product_by_slug_and_env(slug: ArtcraftSubscriptionSlug, env: ServerEnvironment) -> StripeArtcraftProductInfo {
   match (env, slug) {
     // Development sandbox
     (ServerEnvironment::Development, ArtcraftSubscriptionSlug::ArtcraftBasic) => ARTCRAFT_BASIC_SANDBOX,

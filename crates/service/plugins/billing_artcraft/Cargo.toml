@@ -46,9 +46,11 @@ sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls",
 # Money
 #async-stripe = { version = "1.0.0-alpha.2", features = ["runtime-tokio-hyper"] }
 async-stripe = { version = "1.0.0-alpha.2", features = [] }
-async-stripe-core = { version = "1.0.0-alpha.2", features = ["customer"] }
-async-stripe-webhook = { version = "1.0.0-alpha.2", features = [] }
 async-stripe-checkout = { version = "1.0.0-alpha.2", features = ["checkout_session"] }
+async-stripe-core = { version = "1.0.0-alpha.2", features = ["customer"] }
+async-stripe-shared= { version = "1.0.0-alpha.2", features = [] }
+async-stripe-types = { version = "1.0.0-alpha.2", features = [] }
+async-stripe-webhook = { version = "1.0.0-alpha.2", features = [] }
 
 #sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
 #utoipa = { version = "4", features = ["chrono","actix_extras"] }

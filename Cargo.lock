@@ -1340,6 +1340,8 @@ dependencies = [
  "async-stripe 1.0.0-alpha.2",
  "async-stripe-checkout",
  "async-stripe-core",
+ "async-stripe-shared",
+ "async-stripe-types",
  "async-stripe-webhook",
  "chrono",
  "component_traits",

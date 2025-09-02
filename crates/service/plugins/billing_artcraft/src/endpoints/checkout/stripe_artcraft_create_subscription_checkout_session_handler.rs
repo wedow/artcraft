@@ -1,4 +1,4 @@
-use crate::configs::get_artcraft_product_by_slug::get_artcraft_product_by_slug;
+use crate::configs::get_artcraft_product_by_slug_and_env::get_artcraft_product_by_slug_and_env;
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
@@ -51,7 +51,7 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
     Some(cadence) => cadence,
   };
 
-  let plan = get_artcraft_product_by_slug(slug, **server_environment);
+  let plan = get_artcraft_product_by_slug_and_env(slug, **server_environment);
 
   let price_id = match cadence {
     PlanBillingCadence::Monthly => plan.monthly_price_id.clone(),
