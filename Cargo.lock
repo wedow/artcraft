@@ -1371,6 +1371,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "component_traits",
+ "enums",
  "errors",
  "http_server_common",
  "log",

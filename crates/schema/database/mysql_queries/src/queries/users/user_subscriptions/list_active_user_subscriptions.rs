@@ -1,17 +1,18 @@
 use chrono::{DateTime, Utc};
-use sqlx::MySql;
-use sqlx::pool::PoolConnection;
-
+use enums::common::subscription_namespace::SubscriptionNamespace;
 use errors::AnyhowResult;
+use sqlx::pool::PoolConnection;
+use sqlx::MySql;
 
 pub struct ActiveUserSubscription {
     pub user_token: String,
 
-    /// The category or namespace for the product, eg "fakeyou" or "powerstream".
-    pub subscription_namespace: String,
+    /// The category or namespace for the product, eg "artcraft" or "fakeyou".
+    pub subscription_namespace: SubscriptionNamespace,
 
     /// The key for the product in our internal system (not a stripe id),
-    /// eg. "fakeyou_en_pro" or "stream_package_plus".
+    /// eg. "artcraft_basic", "fakeyou_en_pro", or "stream_package_plus".
+    /// These depend on the namespace, so they're stringly-encoded.
     pub subscription_product_slug: String,
 
     /// This is the authoritative timestamp for when the subscription expires.
@@ -31,7 +32,7 @@ pub async fn list_active_user_subscriptions(
         r#"
 SELECT
   user_token,
-  subscription_namespace,
+  subscription_namespace as `subscription_namespace: enums::common::subscription_namespace::SubscriptionNamespace`,
   subscription_product_slug,
   subscription_expires_at
 
@@ -63,7 +64,7 @@ WHERE
 
 struct RawActiveUserSubscription {
     user_token: String,
-    subscription_namespace: String,
+    subscription_namespace: SubscriptionNamespace,
     subscription_product_slug: String,
     subscription_expires_at: DateTime<Utc>,
 }
