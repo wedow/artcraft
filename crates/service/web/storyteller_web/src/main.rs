@@ -49,9 +49,9 @@ use billing_artcraft_component::utils::artcraft_stripe_config::ArtcraftStripeCon
 use billing_component::stripe::stripe_config::{FullUrlOrPath, StripeCheckoutConfigs, StripeConfig, StripeCustomerPortalConfigs, StripeSecrets};
 use billing_component::stripe::traits::internal_product_to_stripe_lookup::InternalProductToStripeLookup;
 use billing_component::stripe::traits::internal_subscription_product_lookup::InternalSubscriptionProductLookup;
-use billing_component::stripe::traits::internal_user_lookup::InternalUserLookup;
 use bootstrap::bootstrap::{bootstrap, BootstrapArgs};
 use cloud_storage::bucket_client::BucketClient;
+use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use config::common_env::CommonEnv;
 use config::shared_constants::DEFAULT_RUST_LOG;
 use email_sender::smtp_email_sender::SmtpEmailSender;

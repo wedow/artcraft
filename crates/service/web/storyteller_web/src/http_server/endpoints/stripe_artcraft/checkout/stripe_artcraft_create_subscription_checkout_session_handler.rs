@@ -7,7 +7,7 @@ use actix_web::web::{Data, Json};
 use actix_web::{web, HttpRequest};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateCheckoutSessionRequest, StripeArtcraftCreateCheckoutSessionResponse};
 use async_stripe_artcraft::{CheckoutSession, CheckoutSessionMode, CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSubscriptionData, CustomerId};
-use billing_component::stripe::traits::internal_user_lookup::InternalUserLookup;
+use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use log::{error, warn};
 use reusable_types::server_environment::ServerEnvironment;

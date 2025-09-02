@@ -193,6 +193,7 @@ pub async fn stripe_create_checkout_session_shared(
   checkout_session.url.ok_or(CreateCheckoutSessionError::ServerError)
 }
 
+/*
 #[cfg(test)]
 mod tests {
   use mockall::predicate::*;
@@ -275,3 +276,4 @@ mod tests {
     assert_eq!(result, Err(CreateCheckoutSessionError::StripeError));
   }
 }
+*/

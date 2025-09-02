@@ -10534,6 +10534,7 @@ dependencies = [
  "chrono",
  "cloud_storage",
  "collections",
+ "component_traits",
  "composite_identifiers",
  "config",
  "cookies",

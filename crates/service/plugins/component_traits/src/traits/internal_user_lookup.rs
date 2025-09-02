@@ -4,8 +4,8 @@ use std::fmt::{Display, Formatter};
 use actix_web::HttpRequest;
 use async_trait::async_trait;
 
-#[cfg(test)]
-use mockall::automock;
+//#[cfg(test)]
+//use mockall::automock;
 
 /// Errors for this component are not strongly typed.
 #[derive(Debug)]

@@ -39,6 +39,7 @@ bootstrap = { path = "../../../lib/bootstrap" }
 bucket_paths = { path = "../../../lib/bucket_paths" }
 cloud_storage.workspace = true
 collections = { path = "../../../lib/data/collections" }
+component_traits.workspace = true
 composite_identifiers = { path = "../../../schema/public/composite_identifiers" }
 config = { path = "../../../lib/deprecated/config" }
 cookies = { path = "../../../lib/cookies" }
