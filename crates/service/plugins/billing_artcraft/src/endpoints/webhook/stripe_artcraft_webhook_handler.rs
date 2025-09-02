@@ -27,6 +27,7 @@ use sqlx::pool::PoolConnection;
 use sqlx::{MySql, MySqlConnection, MySqlPool};
 use std::sync::Arc;
 use stripe_webhook::{Event, EventObject, Webhook};
+use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
 
 #[derive(Serialize)]
 pub struct StripeArtcraftWebhookSuccessResponse {
@@ -227,7 +228,7 @@ async fn handle_webhook_payload(
     EventObject::CustomerSubscriptionDeleted(subscription) => {
       webhook_summary = customer_subscription_deleted_handler(
         &subscription,
-        internal_subscription_product_lookup.get_ref(),
+        server_environment,
         &mysql_pool).await?;
     }
 

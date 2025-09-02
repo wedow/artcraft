@@ -37,20 +37,6 @@ pub async fn customer_subscription_deleted_handler(
     should_ignore_retry: false,
   };
 
-  //let maybe_internal_subscription_product =
-  //  internal_subscription_product_lookup.lookup_internal_product_from_stripe_product_id(&summary.stripe_product_id)
-  //      .map_err(|err| {
-  //        let reason = format!("Error mapping to internal product: {:?}", err);
-  //        error!("{}", reason);
-  //        StripeWebhookError::ServerError(reason) // NB: This was probably *our* fault.
-  //      })?;
-  //let mut subscription_namespace = UNKNOWN_SUBSCRIPTION_NAMESPACE;
-  //let mut subscription_product_slug = UNKNOWN_SUBSCRIPTION_PRODUCT_SLUG;
-  //if let Some(ref internal_product) = maybe_internal_subscription_product {
-  //  subscription_namespace = &internal_product.subscription_category;
-  //  subscription_product_slug = &internal_product.subscription_product_key;
-  //}
-
   let maybe_product = get_artcraft_product_by_stripe_id_and_env(
     &summary.stripe_product_id, server_environment);
 

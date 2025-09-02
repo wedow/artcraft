@@ -20,7 +20,6 @@ use stripe_shared::Subscription;
 pub async fn customer_subscription_created_handler(
   subscription: &Subscription,
   server_environment: ServerEnvironment,
-  //internal_subscription_product_lookup: &dyn InternalSubscriptionProductLookup,
   mysql_pool: &MySqlPool,
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
 
