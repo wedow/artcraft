@@ -1,5 +1,6 @@
 //! Returned by the webhook endpoint, but also dispatched event handler functions.
 
+use std::error::Error;
 use std::fmt;
 
 use actix_web::http::StatusCode;
@@ -12,6 +13,8 @@ pub enum StripeArtcraftWebhookError {
   BadRequest(String),
   ServerError(String),
 }
+
+impl Error for StripeArtcraftWebhookError {}
 
 impl ResponseError for StripeArtcraftWebhookError {
   fn status_code(&self) -> StatusCode {

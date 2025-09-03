@@ -28,6 +28,7 @@ use sqlx::{MySql, MySqlConnection, MySqlPool};
 use std::sync::Arc;
 use stripe_webhook::{Event, EventObject, Webhook};
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
+use crate::endpoints::webhook::webhook_event_handlers::handle_webhook_payload::handle_webhook_payload;
 
 #[derive(Serialize)]
 pub struct StripeArtcraftWebhookSuccessResponse {
@@ -87,14 +88,6 @@ pub async fn stripe_artcraft_webhook_handler(
 
   let stripe_event_type = webhook_payload.type_.as_str().to_string();
 
-  //let stripe_event_type = serde_json::to_string(&webhook_payload.type_)
-  //    .map(|s| s.replace("\"", ""))
-  //    .map_err(|err| {
-  //      let reason = format!("Could not serialize webhook type: {:?}", err);
-  //      error!("{}", &reason);
-  //      StripeArtcraftWebhookError::BadInputWithSimpleMessage(reason)
-  //    })?;
-
   // NB: Whether this was test data or live data
   let stripe_is_production = webhook_payload.livemode;
 
@@ -110,15 +103,14 @@ pub async fn stripe_artcraft_webhook_handler(
       .await
       .map_err(|err| {
         error!("Could not acquire mysql connection: {:?}", err);
-        StripeArtcraftWebhookError::ServerError
+        StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
 
   let maybe_previously_played_event = get_stripe_webhook_event_log_by_id_with_connection(&stripe_event_id, &mut mysql_connection)
       .await
       .map_err(|err| {
-        let reason = format!("Could not query previous event by ID ({}): {:?}", &stripe_event_id, err);
-        error!("{}", &reason);
-        Err(StripeArtcraftWebhookError::ServerError)
+        error!("Could not query previous event by ID ({}): {:?}", &stripe_event_id, err);
+        StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
 
   if let Some(event) = maybe_previously_played_event {
@@ -137,7 +129,7 @@ pub async fn stripe_artcraft_webhook_handler(
   let webhook_summary = handle_webhook_payload(
     &mut mysql_connection,
     **server_environment,
-    webhook_payload, 
+    webhook_payload,
     &stripe_event_type
   ).await?;
 
@@ -158,202 +150,10 @@ pub async fn stripe_artcraft_webhook_handler(
       .map_err(|err| {
         let reason = format!("Could not insert Stripe webhook event log: {:?}", err);
         error!("{}", &reason);
-        StripeArtcraftWebhookError::ServerError
+        StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
 
   Ok(Json(StripeArtcraftWebhookSuccessResponse {
     success: true,
   }))
-}
-
-async fn handle_webhook_payload(
-  mysql_connection: &mut PoolConnection<MySql>,
-  server_environment: ServerEnvironment,
-  webhook_payload: Event,
-  stripe_event_type: &String
-) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
-  let mut unhandled_event_type = false;
-
-  let mut webhook_summary = StripeArtcraftWebhookSummary {
-    maybe_user_token: None,
-    maybe_event_entity_id: None,
-    maybe_stripe_customer_id: None,
-    action_was_taken: false,
-    should_ignore_retry: false,
-  };
-
-
-  match webhook_payload.data.object {
-
-    // =============== CHECKOUT SESSIONS ===============
-
-    EventObject::CheckoutSessionCompleted(checkout_session) => {
-      webhook_summary = checkout_session_completed_handler(checkout_session)?;
-    }
-
-    // EventObject::CheckoutSessionAsyncPaymentFailed(_) => {}
-    // EventObject::CheckoutSessionAsyncPaymentSucceeded(_) => {}
-    // EventObject::CheckoutSessionExpired(_) => {}
-
-    // =============== CUSTOMERS ===============
-
-    EventObject::CustomerCreated(customer) => {
-      webhook_summary = customer_created_handler(&customer)?;
-    }
-    
-    EventObject::CustomerUpdated(customer) => {
-      webhook_summary = customer_updated_handler(&customer)?;
-    }
-    
-    EventObject::CustomerDeleted(customer) => {
-      webhook_summary = customer_deleted_handler(&customer)?;
-    }
-
-    // =============== CUSTOMER SUBSCRIPTIONS ===============
-
-    EventObject::CustomerSubscriptionCreated(subscription) => {
-      webhook_summary = customer_subscription_created_handler(
-        &subscription,
-        server_environment,
-        &mysql_pool).await?;
-    }
-    
-    EventObject::CustomerSubscriptionUpdated(subscription) => {
-      webhook_summary = customer_subscription_updated_handler(
-        &subscription,
-        server_environment,
-        &mysql_pool).await?;
-    }
-    
-    EventObject::CustomerSubscriptionDeleted(subscription) => {
-      webhook_summary = customer_subscription_deleted_handler(
-        &subscription,
-        server_environment,
-        &mysql_pool).await?;
-    }
-
-    // EventObject::CustomerSubscriptionPendingUpdateApplied(_) => {}
-    // EventObject::CustomerSubscriptionPendingUpdateExpired(_) => {}
-    // EventObject::CustomerSubscriptionTrialWillEnd(_) => {}
-
-    // =============== INVOICES ===============
-
-    EventObject::InvoiceCreated(_invoice) => {
-      // TODO: We need to respond to this so we don't hold payments up by 72 hours!
-      //  See: https://stripe.com/docs/billing/subscriptions/webhooks
-    }
-    EventObject::InvoiceUpdated(invoice) => {
-      webhook_summary = invoice_updated_handler(&invoice)?;
-    }
-    EventObject::InvoicePaid(invoice) => {
-      webhook_summary = invoice_paid_handler(&invoice)?;
-    }
-    EventObject::InvoicePaymentSucceeded(invoice) => {
-      webhook_summary = invoice_payment_succeeded_handler(&invoice)?;
-    }
-    EventObject::InvoicePaymentFailed(invoice) => {
-      webhook_summary = invoice_payment_failed_handler(&invoice)?;
-    }
-
-    // EventObject::InvoiceDeleted(_) => {}
-    // EventObject::InvoiceFinalizationFailed(_) => {}
-    // EventObject::InvoiceFinalized(_) => {}
-    // EventObject::InvoiceItemCreated(_) => {}
-    // EventObject::InvoiceItemDeleted(_) => {}
-    // EventObject::InvoiceItemUpdated(_) => {}
-    // EventObject::InvoiceMarkedUncollectible(_) => {}
-    // EventObject::InvoicePaymentActionRequired(_) => {}
-    // EventObject::InvoiceSent(_) => {}
-    // EventObject::InvoiceUpcoming(_) => {}
-    // EventObject::InvoiceUpdated(_) => {}
-    // EventObject::InvoiceVoided(_) => {}
-
-    // =============== PAYMENT INTENTS ===============
-
-    EventObject::PaymentIntentSucceeded(payment_intent) => {
-      webhook_summary = payment_intent_succeeded_handler(&payment_intent)?;
-    }
-
-    // EventType::PaymentIntentAmountCapturableUpdated => {}
-    // EventType::PaymentIntentCanceled => {}
-    // EventType::PaymentIntentCreated => {}
-    // EventType::PaymentIntentPartiallyFunded => {}
-    // EventType::PaymentIntentPaymentFailed => {}
-    // EventType::PaymentIntentProcessing => {}
-    // EventType::PaymentIntentRequiresAction => {}
-    // EventType::PaymentIntentRequiresCapture => {}
-
-    // =============== CHARGES ===============
-
-    EventObject::ChargeSucceeded(charge) => {
-      webhook_summary = charge_succeeded_handler(&charge)?;
-    }
-
-    // =============== Ignored ===============
-
-    // Ignoring these types (NOTE: This is from the old async-stripe version):
-    //   Account* (6),
-    //   ApplicationFee* (2),
-    //   BalanceAvailable (1),
-    //   BillingPortal* (2),
-    //   CapabilityCreated (1),
-    //   Charge* (13),
-    //   [CheckoutSession* handled above],
-    //   Coupon* (3),
-    //   CreditNote* (3),
-    //   CustomerDiscount* (3),
-    //   CustomerSource* (4),
-    //   [CustomerSubscription* handled above],
-    //   CreditTax* (3),
-    //   FileCreated (1),
-    //   IdentityVerification* (6),
-    //   [Invoice* handled above],
-    //   IssuingAuthorization* (3),
-    //   IssuingCard* (2),
-    //   IssuingCardholder* (2),
-    //   IssuingDispute* (2),
-    //   IssuingTransaction* (2),
-    //   MandateUpdated (1),
-    //   Order* (6),
-    //   [PaymentIntent* handled above],
-    //   PaymentLink* (2),
-    //   PaymentMethod* (4),
-    //   Payout* (5),
-    //   Person* (3),
-    //   Plan* (3),
-    //   Price* (3),
-    //   Product* (3),
-    //   PromotionCode* (2),
-    //   Quote* (4),
-    //   RadarEarlyFraudWarning* (2),
-    //   Recipient* (3),
-    //   ReportingReport* (3),
-    //   Review* (2),
-    //   SetupIntent* (5), -- N/A; collecting payments in the future we don't yet have information for (eg. crowdfunding, rental car, utility bill)
-    //   SubscriptionSchedule* (7), -- N/A; backdate subscriptions or schedule one to start later (eg. for physical goods, like a newspaper)
-    //   SigmaScheduledQueryRunCreated (1),
-    //   Sku (3),
-    //   Source* (7),
-    //   TaxRate* (2),
-    //   TerminalReader* (2),
-    //   TestHelpersTestClock* (5),
-    //   Topup* (5),
-    //   Transfer* (5),
-    
-    _ => {
-      unhandled_event_type = true;
-    },
-  }
-
-  // To play with the payload contents as JSON:
-  // let json = serde_json::ser::to_string(&event_payload).unwrap();
-  // info!("event payload as json: {}", json);
-
-  if unhandled_event_type {
-    warn!("Unhandled Stripe webhook event type: {} ({:?})",
-      &stripe_event_type,
-      &webhook_payload.type_);
-  }
-
-  Ok(webhook_summary)
 }

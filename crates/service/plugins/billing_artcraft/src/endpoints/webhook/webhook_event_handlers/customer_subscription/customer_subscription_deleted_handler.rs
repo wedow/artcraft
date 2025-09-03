@@ -5,20 +5,20 @@ use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_e
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use enums::common::subscription_namespace::SubscriptionNamespace;
 use log::error;
-use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::get_user_subscription_by_stripe_subscription_id;
+use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::{get_user_subscription_by_stripe_subscription_id, get_user_subscription_by_stripe_subscription_id_with_connection};
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
 use reusable_types::server_environment::ServerEnvironment;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
-use sqlx::MySqlPool;
+use sqlx::{MySql, MySqlPool};
+use sqlx::pool::PoolConnection;
 use stripe_shared::Subscription;
 
 /// Handle event type: 'customer.subscription.deleted'
 /// Sent when a customer’s subscription ends.
 pub async fn customer_subscription_deleted_handler(
   subscription: &Subscription,
-  //internal_subscription_product_lookup: &dyn InternalSubscriptionProductLookup,
   server_environment: ServerEnvironment,
-  mysql_pool: &MySqlPool,
+  mysql_connection: &mut PoolConnection<MySql>,
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
   let summary = subscription_summary_extractor(subscription)
       .map_err(|err| {
@@ -50,7 +50,8 @@ pub async fn customer_subscription_deleted_handler(
   };
 
   // NB: It's possible to receive events out of order.
-  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id(&summary.stripe_subscription_id, &mysql_pool)
+  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id_with_connection(
+    &summary.stripe_subscription_id, mysql_connection)
       .await
       .map_err(|err| {
         let reason = format!("Mysql error: {:?}", err);
@@ -93,7 +94,7 @@ pub async fn customer_subscription_deleted_handler(
         maybe_canceled_at: summary.maybe_canceled_at,
       };
 
-      let _r = upsert.upsert(mysql_pool)
+      let _r = upsert.upsert_with_connection(mysql_connection)
           .await
           .map_err(|err| {
             let reason = format!("Mysql error: {:?}", err);

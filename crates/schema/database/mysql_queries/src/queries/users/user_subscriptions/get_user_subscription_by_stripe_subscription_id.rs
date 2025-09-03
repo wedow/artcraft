@@ -1,9 +1,9 @@
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
-use sqlx::MySqlPool;
-
 use errors::AnyhowResult;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
+use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 
 use crate::helpers::boolean_converters::nullable_i8_to_optional_bool;
 
@@ -31,6 +31,17 @@ pub async fn get_user_subscription_by_stripe_subscription_id(
   stripe_subscription_id: &str,
   mysql_pool: &MySqlPool
 ) -> AnyhowResult<Option<UserSubscription>> {
+  let mut mysql_connection = mysql_pool.acquire().await?;
+  get_user_subscription_by_stripe_subscription_id_with_connection(
+    stripe_subscription_id,
+    &mut mysql_connection
+  ).await
+}
+
+pub async fn get_user_subscription_by_stripe_subscription_id_with_connection(
+  stripe_subscription_id: &str,
+  mysql_connection: &mut PoolConnection<MySql>
+) -> AnyhowResult<Option<UserSubscription>> {
 
   let maybe_user_record = sqlx::query_as!(
       RawUserSubscriptionFromDb,
@@ -55,7 +66,7 @@ WHERE
         "#,
         stripe_subscription_id,
     )
-      .fetch_one(mysql_pool)
+      .fetch_one(&mut **mysql_connection)
       .await;
 
   match maybe_user_record {

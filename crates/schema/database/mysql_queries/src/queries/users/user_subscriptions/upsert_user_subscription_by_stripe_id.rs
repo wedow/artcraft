@@ -1,10 +1,11 @@
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
-use sqlx::MySqlPool;
 use enums::common::subscription_namespace::SubscriptionNamespace;
 use errors::AnyhowResult;
 use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
+use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 use tokens::tokens::user_subscriptions::UserSubscriptionToken;
 
 // TODO: Make a trait with default impls to handle common query concerns.
@@ -53,6 +54,11 @@ pub struct UpsertUserSubscription<'a> {
 impl <'a> UpsertUserSubscription<'a> {
 
   pub async fn upsert(&'a self, mysql_pool: &MySqlPool) -> AnyhowResult<()> {
+    let mut conn = mysql_pool.acquire().await?;
+    self.upsert_with_connection(&mut conn).await
+  }
+  
+  pub async fn upsert_with_connection(&'a self, mysql_connection: &mut PoolConnection<MySql>) -> AnyhowResult<()> {
     let token = UserSubscriptionToken::generate().to_string();
 
     // NB: The following behaviors are intentional
@@ -149,7 +155,7 @@ ON DUPLICATE KEY UPDATE
       self.maybe_canceled_at,
     );
 
-    let query_result = query.execute(mysql_pool).await;
+    let query_result = query.execute(&mut **mysql_connection).await;
 
     let _record_id = match query_result {
       Ok(res) => res.last_insert_id(),

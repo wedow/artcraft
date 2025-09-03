@@ -6,11 +6,12 @@ use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_e
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use enums::common::subscription_namespace::SubscriptionNamespace;
 use log::error;
-use mysql_queries::queries::users::user::update::update_user_record_with_new_stripe_customer_id::update_user_record_with_new_stripe_customer_id;
-use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::get_user_subscription_by_stripe_subscription_id;
+use mysql_queries::queries::users::user::update::update_user_record_with_new_stripe_customer_id::{update_user_record_with_new_stripe_customer_id, update_user_record_with_new_stripe_customer_id_with_connection};
+use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::{get_user_subscription_by_stripe_subscription_id, get_user_subscription_by_stripe_subscription_id_with_connection};
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
 use reusable_types::server_environment::ServerEnvironment;
-use sqlx::MySqlPool;
+use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlConnection, MySqlPool};
 use stripe_shared::Subscription;
 
 /// Handle event type: 'customer.subscription.created'
@@ -20,7 +21,7 @@ use stripe_shared::Subscription;
 pub async fn customer_subscription_created_handler(
   subscription: &Subscription,
   server_environment: ServerEnvironment,
-  mysql_pool: &MySqlPool,
+  mysql_connection: &mut PoolConnection<MySql>,
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
 
   let summary = subscription_summary_extractor(subscription)
@@ -38,9 +39,8 @@ pub async fn customer_subscription_created_handler(
     should_ignore_retry: false,
   };
 
-  // NB: It's possible to receive events out of order.
-  // We won't want to play a `create` event on top.
-  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id(&summary.stripe_subscription_id, &mysql_pool)
+  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id_with_connection(
+    &summary.stripe_subscription_id, mysql_connection)
       .await
       .map_err(|err| {
         let reason = format!("Mysql error: {:?}", err);
@@ -48,6 +48,8 @@ pub async fn customer_subscription_created_handler(
         StripeArtcraftWebhookError::ServerError(reason)
       })?;
 
+  // NB: It's possible to receive events out of order.
+  // We won't want to play a `create` event on top.
   if maybe_existing_subscription.is_some() {
     result.should_ignore_retry = true;
     return Ok(result);
@@ -58,9 +60,9 @@ pub async fn customer_subscription_created_handler(
   
   let product = match maybe_product {
     None => {
-      error!("No matching product for stripe product ID: {}", &summary.stripe_product_id);
-      result.should_ignore_retry = true;
-      return Ok(result);
+      return Err(StripeArtcraftWebhookError::BadRequest(
+        format!("No matching product for stripe product ID: {}", &summary.stripe_product_id)
+      ));
     }
     Some(product) => product,
   };
@@ -87,7 +89,7 @@ pub async fn customer_subscription_created_handler(
         maybe_canceled_at: summary.maybe_canceled_at,
     };
 
-    let _r = upsert.upsert(mysql_pool)
+    let _r = upsert.upsert_with_connection(mysql_connection)
         .await
         .map_err(|err| {
             let reason = format!("Mysql error: {:?}", err);
@@ -95,11 +97,10 @@ pub async fn customer_subscription_created_handler(
             StripeArtcraftWebhookError::ServerError(reason)
         })?;
 
-
     // TODO: Should we care if a user accidentally gets two stripe customer IDs and this
     //  overwrites one of them?
-    update_user_record_with_new_stripe_customer_id(
-      mysql_pool,
+    update_user_record_with_new_stripe_customer_id_with_connection(
+      mysql_connection,
       user_token,
       Some(&summary.stripe_customer_id))
         .await
