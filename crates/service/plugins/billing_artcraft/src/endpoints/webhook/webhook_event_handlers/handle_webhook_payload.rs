@@ -4,7 +4,9 @@ use crate::endpoints::webhook::webhook_event_handlers::customer::customer_create
 use crate::endpoints::webhook::webhook_event_handlers::customer::customer_deleted_handler::customer_deleted_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer::customer_updated_handler::customer_updated_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_created_handler::customer_subscription_created_handler;
+use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_deleted_handler::customer_subscription_deleted_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
+use crate::endpoints::webhook::webhook_event_handlers::ignore_known_unwanted_events::ignore_known_unwanted_events;
 use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_paid_handler::invoice_paid_handler;
 use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_payment_failed::invoice_payment_failed_handler;
 use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_payment_succeeded_handler::invoice_payment_succeeded_handler;
@@ -12,12 +14,11 @@ use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_updated_
 use crate::endpoints::webhook::webhook_event_handlers::payment_intent::payment_intent_succeeded_handler::payment_intent_succeeded_handler;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
-use log::warn;
+use log::{info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;
 use sqlx::MySql;
 use stripe_webhook::{Event, EventObject};
-use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_deleted_handler::customer_subscription_deleted_handler;
 
 pub async fn handle_webhook_payload(
   mysql_connection: &mut PoolConnection<MySql>,
@@ -25,6 +26,11 @@ pub async fn handle_webhook_payload(
   webhook_payload: Event,
   stripe_event_type: &String
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
+
+  if let Some(summary) = ignore_known_unwanted_events(&webhook_payload) {
+    return Ok(summary);
+  }
+
   let mut unhandled_event_type = false;
 
   let mut webhook_summary = StripeArtcraftWebhookSummary {
@@ -54,17 +60,40 @@ pub async fn handle_webhook_payload(
 
     // TODO: Provision the subscription here.
     EventObject::CheckoutSessionCompleted(checkout_session) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, checkout_session);
       // Checkout session completion is ideal for provisioning the service after checkout.
+      //
+      // - `subscription` will contain the ID of the subscription in subscription mode.
+      // - `payment_status = {paid, unpaid, no_payment_required}` will let us know
+      //    if the funds are in our account
+      // - `metadata` - user token, etc.
+      //
+      // After the subscription signup succeeds, the customer returns to your website at the success_url,
+      // which initiates a checkout.session.completed webhooks. When you receive a checkout.session.completed
+      // event, you can provision the subscription. Continue to provision each month (if billing monthly) as
+      // you receive invoice.paid events. If you receive an invoice.payment_failed event, notify your customer
+      // and send them to the customer portal to update their payment method.
+      //
+      // Still need to ask about this. - does stripe say we can provision service here?
+      // Do we know if this happens for upgrades/downgrades/renewals?
+      // What about one-off payments?
       webhook_summary = checkout_session_completed_handler(checkout_session)?;
     }
-
-    // EventObject::CheckoutSessionAsyncPaymentFailed(_) => {}
-    // EventObject::CheckoutSessionAsyncPaymentSucceeded(_) => {}
-    // EventObject::CheckoutSessionExpired(_) => {}
 
     // =============== CUSTOMER SUBSCRIPTIONS ===============
 
     EventObject::CustomerSubscriptionCreated(subscription) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      // It looks like we can use this to start the service.
+      //
+      //  - `id` of the subscription object
+      //  - `product` id of the product object
+      //  - `status` has a rich list of states
+      //  - `metadata` - user token, etc.
+      //
+      // Sent when the subscription is created. The subscription status may be incomplete if customer
+      // authentication is required to complete the payment or if you set payment_behavior to
+      // default_incomplete. For more details, read about subscription payment behavior.
       webhook_summary = customer_subscription_created_handler(
         &subscription,
         server_environment,
@@ -73,6 +102,7 @@ pub async fn handle_webhook_payload(
     }
 
     EventObject::CustomerSubscriptionUpdated(subscription) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
       webhook_summary = customer_subscription_updated_handler(
         &subscription,
         server_environment,
@@ -81,6 +111,7 @@ pub async fn handle_webhook_payload(
     }
 
     EventObject::CustomerSubscriptionDeleted(subscription) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
       webhook_summary = customer_subscription_deleted_handler(
         &subscription,
         server_environment,
@@ -88,56 +119,36 @@ pub async fn handle_webhook_payload(
       ).await?;
     }
 
-    // EventObject::CustomerSubscriptionPendingUpdateApplied(_) => {}
-    // EventObject::CustomerSubscriptionPendingUpdateExpired(_) => {}
-    // EventObject::CustomerSubscriptionTrialWillEnd(_) => {}
-
     // =============== INVOICES ===============
 
-    EventObject::InvoicePaid(invoice) => {
-      webhook_summary = invoice_paid_handler(&invoice)?;
-    }
     EventObject::InvoiceCreated(_invoice) => {
       // TODO: We need to respond to this so we don't hold payments up by 72 hours!
       //  See: https://stripe.com/docs/billing/subscriptions/webhooks
     }
-    EventObject::InvoiceUpdated(invoice) => {
-      webhook_summary = invoice_updated_handler(&invoice)?;
+
+    EventObject::InvoicePaid(invoice) => {
+      // 'invoice.paid'
+      // - 'customer' - the customer id
+      // - 'status = paid'
+      // - (optional) 'subscription_details.subscription' - the stripe subscription id  (if subscription)
+      // - (optional) 'subscription_details.metadata' - Artcraft user token, etc.
+      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
+      webhook_summary = invoice_paid_handler(&invoice)?;
     }
-    EventObject::InvoicePaymentSucceeded(invoice) => {
-      webhook_summary = invoice_payment_succeeded_handler(&invoice)?;
-    }
+    
     EventObject::InvoicePaymentFailed(invoice) => {
+      // When we detect invoice payment failures, we need to disable 
+      // subscription services.
+      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
       webhook_summary = invoice_payment_failed_handler(&invoice)?;
     }
-
-    // EventObject::InvoiceDeleted(_) => {}
-    // EventObject::InvoiceFinalizationFailed(_) => {}
-    // EventObject::InvoiceFinalized(_) => {}
-    // EventObject::InvoiceItemCreated(_) => {}
-    // EventObject::InvoiceItemDeleted(_) => {}
-    // EventObject::InvoiceItemUpdated(_) => {}
-    // EventObject::InvoiceMarkedUncollectible(_) => {}
-    // EventObject::InvoicePaymentActionRequired(_) => {}
-    // EventObject::InvoiceSent(_) => {}
-    // EventObject::InvoiceUpcoming(_) => {}
-    // EventObject::InvoiceUpdated(_) => {}
-    // EventObject::InvoiceVoided(_) => {}
 
     // =============== PAYMENT INTENTS ===============
 
     EventObject::PaymentIntentSucceeded(payment_intent) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
       webhook_summary = payment_intent_succeeded_handler(&payment_intent)?;
     }
-
-    // EventType::PaymentIntentAmountCapturableUpdated => {}
-    // EventType::PaymentIntentCanceled => {}
-    // EventType::PaymentIntentCreated => {}
-    // EventType::PaymentIntentPartiallyFunded => {}
-    // EventType::PaymentIntentPaymentFailed => {}
-    // EventType::PaymentIntentProcessing => {}
-    // EventType::PaymentIntentRequiresAction => {}
-    // EventType::PaymentIntentRequiresCapture => {}
 
     // =============== CHARGES ===============
 
@@ -146,55 +157,6 @@ pub async fn handle_webhook_payload(
     }
 
     // =============== Ignored ===============
-
-    // Ignoring these types (NOTE: This is from the old async-stripe version):
-    //   Account* (6),
-    //   ApplicationFee* (2),
-    //   BalanceAvailable (1),
-    //   BillingPortal* (2),
-    //   CapabilityCreated (1),
-    //   Charge* (13),
-    //   [CheckoutSession* handled above],
-    //   Coupon* (3),
-    //   CreditNote* (3),
-    //   CustomerDiscount* (3),
-    //   CustomerSource* (4),
-    //   [CustomerSubscription* handled above],
-    //   CreditTax* (3),
-    //   FileCreated (1),
-    //   IdentityVerification* (6),
-    //   [Invoice* handled above],
-    //   IssuingAuthorization* (3),
-    //   IssuingCard* (2),
-    //   IssuingCardholder* (2),
-    //   IssuingDispute* (2),
-    //   IssuingTransaction* (2),
-    //   MandateUpdated (1),
-    //   Order* (6),
-    //   [PaymentIntent* handled above],
-    //   PaymentLink* (2),
-    //   PaymentMethod* (4),
-    //   Payout* (5),
-    //   Person* (3),
-    //   Plan* (3),
-    //   Price* (3),
-    //   Product* (3),
-    //   PromotionCode* (2),
-    //   Quote* (4),
-    //   RadarEarlyFraudWarning* (2),
-    //   Recipient* (3),
-    //   ReportingReport* (3),
-    //   Review* (2),
-    //   SetupIntent* (5), -- N/A; collecting payments in the future we don't yet have information for (eg. crowdfunding, rental car, utility bill)
-    //   SubscriptionSchedule* (7), -- N/A; backdate subscriptions or schedule one to start later (eg. for physical goods, like a newspaper)
-    //   SigmaScheduledQueryRunCreated (1),
-    //   Sku (3),
-    //   Source* (7),
-    //   TaxRate* (2),
-    //   TerminalReader* (2),
-    //   TestHelpersTestClock* (5),
-    //   Topup* (5),
-    //   Transfer* (5),
 
     _ => {
       unhandled_event_type = true;
