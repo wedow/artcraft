@@ -1,8 +1,8 @@
 use billing_component::stripe::traits::internal_subscription_product_lookup::{InternalProductLookupError, InternalSubscriptionProduct, InternalSubscriptionProductLookup};
-
+use enums::common::subscription_namespace::SubscriptionNamespace;
 use crate::configs::plans::plan_list::{PLANS_BY_STRIPE_PRICE_ID, PLANS_BY_STRIPE_PRODUCT_ID};
 
-const SUBSCRIPTION_CATEGORY : &str = "fakeyou";
+const SUBSCRIPTION_CATEGORY : SubscriptionNamespace = SubscriptionNamespace::FakeYou;
 
 /// A simple Actix injectable action
 #[derive(Clone, Copy)]
@@ -13,7 +13,7 @@ impl InternalSubscriptionProductLookup for StripeInternalSubscriptionProductLook
         Ok(PLANS_BY_STRIPE_PRODUCT_ID.get(stripe_product_id)
             .map(|plan| {
                 InternalSubscriptionProduct {
-                    subscription_category: SUBSCRIPTION_CATEGORY.to_string(),
+                    subscription_category: SUBSCRIPTION_CATEGORY,
                     subscription_product_key: plan.plan_slug().to_string(),
                 }
             }))
@@ -23,7 +23,7 @@ impl InternalSubscriptionProductLookup for StripeInternalSubscriptionProductLook
         Ok(PLANS_BY_STRIPE_PRICE_ID.get(stripe_price_id)
             .map(|plan| {
                 InternalSubscriptionProduct {
-                    subscription_category: SUBSCRIPTION_CATEGORY.to_string(),
+                    subscription_category: SUBSCRIPTION_CATEGORY,
                     subscription_product_key: plan.plan_slug().to_string(),
                 }
             }))

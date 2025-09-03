@@ -52,27 +52,15 @@ pub async fn handle_webhook_payload(
 
     // =============== CHECKOUT SESSIONS ===============
 
+    // TODO: Provision the subscription here.
     EventObject::CheckoutSessionCompleted(checkout_session) => {
+      // Checkout session completion is ideal for provisioning the service after checkout.
       webhook_summary = checkout_session_completed_handler(checkout_session)?;
     }
 
     // EventObject::CheckoutSessionAsyncPaymentFailed(_) => {}
     // EventObject::CheckoutSessionAsyncPaymentSucceeded(_) => {}
     // EventObject::CheckoutSessionExpired(_) => {}
-
-    // =============== CUSTOMERS ===============
-
-    EventObject::CustomerCreated(customer) => {
-      webhook_summary = customer_created_handler(&customer)?;
-    }
-
-    EventObject::CustomerUpdated(customer) => {
-      webhook_summary = customer_updated_handler(&customer)?;
-    }
-
-    EventObject::CustomerDeleted(customer) => {
-      webhook_summary = customer_deleted_handler(&customer)?;
-    }
 
     // =============== CUSTOMER SUBSCRIPTIONS ===============
 
