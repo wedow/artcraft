@@ -15,7 +15,7 @@ use reusable_types::server_environment::ServerEnvironment;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSubscriptionData};
+use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsAdjustableQuantity, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
@@ -113,7 +113,14 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
         .line_items(vec![
           CreateCheckoutSessionLineItems {
             price: Some(credits_pack.price_id.to_string()),
-            quantity: None,
+            quantity: Some(1),
+            adjustable_quantity: Some(
+              CreateCheckoutSessionLineItemsAdjustableQuantity {
+                enabled: true,
+                minimum: Some(1),
+                maximum: Some(100),
+              }
+            ),
             ..Default::default()
           }
         ])
