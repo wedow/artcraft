@@ -93,7 +93,7 @@ pub async fn stripe_artcraft_webhook_handler(
 
   info!("Stripe webhook event type: {} ({:?}); is production: {}, created at: {}, pending events to be handled: {}",
     &stripe_event_type,
-    &webhook_payload.type_,
+    &webhook_payload.id,
     stripe_is_production,
     &stripe_event_created_at,
     webhook_payload.pending_webhooks);

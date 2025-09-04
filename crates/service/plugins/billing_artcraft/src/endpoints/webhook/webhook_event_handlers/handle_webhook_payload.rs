@@ -61,11 +61,20 @@ pub async fn handle_webhook_payload(
     // TODO: Provision the subscription here.
     EventObject::CheckoutSessionCompleted(checkout_session) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, checkout_session);
-      // Checkout session completion is ideal for provisioning the service after checkout.
+      // TODO: DO NOT USE TO PROVISION SERVICE - USE `invoice.paid`.
+      //
+      // Checkout session completion is ideal for provisioning the service after checkout,
+      // but will not be used for monthly subscription renewals, which are handled by
+      // invoice.paid events.
+      //
+      // - `payment_status = {paid, unpaid, no_payment_required}` will let us know
+      //    if the funds are in our account. NOTE (2): this will not be `paid` for free
+      //    trials, but `invoice.paid` events will fire for free trials. (2): Async
+      //    methods like ACH will have the status `unpaid` until the payment
+      //    clears.
       //
       // - `subscription` will contain the ID of the subscription in subscription mode.
-      // - `payment_status = {paid, unpaid, no_payment_required}` will let us know
-      //    if the funds are in our account
+      //
       // - `metadata` - user token, etc.
       //
       // After the subscription signup succeeds, the customer returns to your website at the success_url,
@@ -84,16 +93,25 @@ pub async fn handle_webhook_payload(
 
     EventObject::CustomerSubscriptionCreated(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
-      // It looks like we can use this to start the service.
+      // DO NOT USE TO PROVISION SERVICE.
+      //
+      // This can be used to upsert the subscription record, but may be `incomplete` and unpaid.
+      // This is good for subscription state, renewal dates, etc.
       //
       //  - `id` of the subscription object
-      //  - `product` id of the product object
-      //  - `status` has a rich list of states
-      //  - `metadata` - user token, etc.
+      //  - `customer` id of the stripe customer object
+      //  - `status` has a rich list of subscription states (active, etc.)
+      //  - `items.data[0].price`
+      //  - `items.data[0].plan`
+      //  - billing_cycle_anchor
+      //  - `metadata` - user token, etc. that were attached to the subscription
       //
       // Sent when the subscription is created. The subscription status may be incomplete if customer
       // authentication is required to complete the payment or if you set payment_behavior to
       // default_incomplete. For more details, read about subscription payment behavior.
+      //
+      // TODO: add `maybe_billing_cycle_anchor`
+      //
       webhook_summary = customer_subscription_created_handler(
         &subscription,
         server_environment,
@@ -127,6 +145,8 @@ pub async fn handle_webhook_payload(
     }
 
     EventObject::InvoicePaid(invoice) => {
+      // TODO: How do we handle multiple subscriptions?
+      // TODO: How do we handle inactive subscriptions vs. payment failed ones?
       // 'invoice.paid'
       // - 'customer' - the customer id
       // - 'status = paid'
@@ -135,9 +155,11 @@ pub async fn handle_webhook_payload(
       info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
       webhook_summary = invoice_paid_handler(&invoice)?;
     }
-    
+
     EventObject::InvoicePaymentFailed(invoice) => {
-      // When we detect invoice payment failures, we need to disable 
+      // TODO: Halt service.
+      // TODO: in wallet schema, hold a 'lifetime_total_credits_used' - no, that wastes space. `credits_used` then SUM() for reports
+      // When we detect invoice payment failures, we need to disable
       // subscription services.
       info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
       webhook_summary = invoice_payment_failed_handler(&invoice)?;
@@ -146,14 +168,9 @@ pub async fn handle_webhook_payload(
     // =============== PAYMENT INTENTS ===============
 
     EventObject::PaymentIntentSucceeded(payment_intent) => {
+      // TODO: Look into this for one-off, non-subscription purchases
       info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
       webhook_summary = payment_intent_succeeded_handler(&payment_intent)?;
-    }
-
-    // =============== CHARGES ===============
-
-    EventObject::ChargeSucceeded(charge) => {
-      webhook_summary = charge_succeeded_handler(&charge)?;
     }
 
     // =============== Ignored ===============

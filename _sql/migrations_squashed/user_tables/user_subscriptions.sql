@@ -53,6 +53,10 @@ CREATE TABLE user_subscriptions (
   -- Subscription object status enum as string
   maybe_stripe_subscription_status VARCHAR(32) DEFAULT NULL,
 
+  -- Primarily managed by the `invoice.paid` and `invoice.payment_failed` webhooks.
+  -- Not applicable to FakeYou subscriptions.
+  maybe_invoice_is_paid BOOLEAN DEFAULT NULL,
+
   maybe_stripe_is_production BOOLEAN DEFAULT NULL,
 
   -- ========== VECTOR CLOCK ==========
