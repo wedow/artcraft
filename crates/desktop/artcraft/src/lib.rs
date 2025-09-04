@@ -45,7 +45,7 @@ use crate::services::sora::commands::sora_logout_command::sora_logout_command;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_thread;
-use crate::services::storyteller::commands::storyteller_open_billing_command::storyteller_open_billing_command;
+use crate::services::storyteller::commands::storyteller_open_subscription_purchase_command::storyteller_open_subscription_purchase_command;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use log::error;
 
@@ -181,7 +181,7 @@ pub fn run() {
       sora_image_generation_command,
       sora_image_remix_command,
       sora_logout_command,
-      storyteller_open_billing_command,
+      storyteller_open_subscription_purchase_command,
       update_app_preferences_command,
     ])
     .run(tauri::generate_context!("tauri.conf.json"))
