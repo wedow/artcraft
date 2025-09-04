@@ -10,14 +10,18 @@ pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<StripeArt
   match webhook_payload.data.object {
     EventObject::ChargeSucceeded(_) => {
       // charge.succeeded - building block event and also used for older legacy integrations.
-      // Use `invoice.paid` as billing success signal for subscriptions instead.
-      // Suggested also to use `payment_intent.succeeded` for add-on purchase
+      // Use `invoice.paid` as billing success signal for subscriptions.
+      // Use `payment_intent.succeeded` for one-off and add-on purchases.
+    }
+    EventObject::ChargeUpdated(_) => {
+      // This doesn't track the payment status, and we don't care about fraud, risk,
+      // receipt, etc. updates.
     }
     EventObject::CustomerCreated(_) |
     EventObject::CustomerDeleted(_) |
     EventObject::CustomerUpdated(_) => {
-      // Only necessary if we want to know about customer object metadata changes,
-      // e.g. their stripe email.
+      // We don't need to know about Stripe customer object metadata changes,
+      // eg. stripe email change.
     }
     EventObject::PaymentIntentCreated(_) => {
       // Not very actionable for us. We only care about successful payments.

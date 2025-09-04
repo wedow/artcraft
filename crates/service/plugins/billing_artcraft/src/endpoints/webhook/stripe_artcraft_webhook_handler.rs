@@ -40,7 +40,7 @@ For one-off payments (eg. credits packs), we see this typical sequence of events
   - checkout.session.completed (EventId("evt_1S3guvEobp4xy4TlxY7TVlUs")) -- Can use, but `payment_intent.succeeded` is better
   - charge.updated (EventId("evt_3S3gutEobp4xy4Tl1RgfG4NL"))             -- IGNORE
 
- */
+*/
 
 
 #[derive(Serialize)]
