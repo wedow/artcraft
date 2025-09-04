@@ -30,6 +30,19 @@ use stripe_webhook::{Event, EventObject, Webhook};
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
 use crate::endpoints::webhook::webhook_event_handlers::handle_webhook_payload::handle_webhook_payload;
 
+/*
+
+For one-off payments (eg. credits packs), we see this typical sequence of events:
+
+  - charge.succeeded (EventId("evt_3S3gutEobp4xy4Tl15tGHk88"))           -- IGNORE
+  - payment_intent.succeeded (EventId("evt_3S3gutEobp4xy4Tl1t19fp3Y"))   -- Billing success signal
+  - payment_intent.created (EventId("evt_3S3gutEobp4xy4Tl1mg80Zgu"))     -- IGNORE
+  - checkout.session.completed (EventId("evt_1S3guvEobp4xy4TlxY7TVlUs")) -- Can use, but `payment_intent.succeeded` is better
+  - charge.updated (EventId("evt_3S3gutEobp4xy4Tl1RgfG4NL"))             -- IGNORE
+
+ */
+
+
 #[derive(Serialize)]
 pub struct StripeArtcraftWebhookSuccessResponse {
   pub success: bool,
