@@ -1,4 +1,5 @@
 use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
+use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
@@ -9,8 +10,8 @@ use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
 use reusable_types::server_environment::ServerEnvironment;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
-use sqlx::{MySql, MySqlPool};
 use sqlx::pool::PoolConnection;
+use sqlx::{MySql, MySqlPool};
 use stripe_shared::Subscription;
 
 /// Handle event type: 'customer.subscription.deleted'
@@ -20,6 +21,7 @@ pub async fn customer_subscription_deleted_handler(
   server_environment: ServerEnvironment,
   mysql_connection: &mut PoolConnection<MySql>,
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
+
   let summary = subscription_summary_extractor(subscription)
       .map_err(|err| {
         let reason = format!("Error extracting subscription from 'customer.subscription.deleted' payload: {:?}", err);
@@ -41,12 +43,17 @@ pub async fn customer_subscription_deleted_handler(
     &summary.stripe_product_id, server_environment);
 
   let product = match maybe_product {
+    Some(StripeArtcraftGenericProductInfo::Subscription(subscription)) => subscription,
+    Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => {
+      error!("Received 'customer.subscription.updated' for a credits pack product ({}). This should not happen.", &credits_pack.slug.to_str());
+      result.should_ignore_retry = true;
+      return Ok(result);
+    }
     None => {
       error!("No matching product for stripe product ID: {}", &summary.stripe_product_id);
       result.should_ignore_retry = true;
       return Ok(result);
     }
-    Some(product) => product,
   };
 
   // NB: It's possible to receive events out of order.

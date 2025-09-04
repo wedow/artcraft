@@ -1,5 +1,5 @@
-use crate::configs::get_artcraft_product_by_slug_and_env::get_artcraft_product_by_slug_and_env;
 use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
+use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
@@ -59,12 +59,17 @@ pub async fn customer_subscription_created_handler(
     &summary.stripe_product_id, server_environment);
   
   let product = match maybe_product {
-    None => {
-      return Err(StripeArtcraftWebhookError::BadRequest(
-        format!("No matching product for stripe product ID: {}", &summary.stripe_product_id)
-      ));
+    Some(StripeArtcraftGenericProductInfo::Subscription(subscription)) => subscription,
+    Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => {
+      error!("Received 'customer.subscription.updated' for a credits pack product ({}). This should not happen.", &credits_pack.slug.to_str());
+      result.should_ignore_retry = true;
+      return Ok(result);
     }
-    Some(product) => product,
+    None => {
+      error!("No matching product for stripe product ID: {}", &summary.stripe_product_id);
+      result.should_ignore_retry = true;
+      return Ok(result);
+    }
   };
 
   if let Some(user_token) = summary.user_token.as_deref() {

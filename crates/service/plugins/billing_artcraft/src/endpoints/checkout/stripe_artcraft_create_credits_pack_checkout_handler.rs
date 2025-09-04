@@ -1,10 +1,12 @@
-use crate::configs::get_artcraft_product_by_slug_and_env::get_artcraft_product_by_slug_and_env;
+use crate::configs::credits_packs::get_artcraft_credits_pack_by_slug_and_env::get_artcraft_credits_pack_by_slug_and_env;
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
+use crate::configs::subscriptions::get_artcraft_subscription_by_slug_and_env::get_artcraft_subscription_by_slug_and_env;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::{Data, Json};
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateCheckoutSessionRequest, StripeArtcraftCreateCheckoutSessionResponse};
+use artcraft_api_defs::stripe_artcraft::create_credits_pack_checkout::{StripeArtcraftCreateCreditsPackCheckoutRequest, StripeArtcraftCreateCreditsPackCheckoutResponse};
+use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest, StripeArtcraftCreateSubscriptionCheckoutResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::subscription_namespace::SubscriptionNamespace;
@@ -13,7 +15,7 @@ use reusable_types::server_environment::ServerEnvironment;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSubscriptionData};
+use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
@@ -24,7 +26,7 @@ use user_traits_component::traits::internal_session_cache_purge::InternalSession
 // #[utoipa::path(
 //   get,
 //   tag = "Stripe (Artcraft)",
-//   path = "/v1/stripe_artcraft/checkout/create_subscription",
+//   path = "/v1/stripe_artcraft/checkout/credits_pack",
 //   params(
 //     ("request" = CreateCheckoutSessionRequest, description = "Payload for Request"),
 //   ),
@@ -32,31 +34,21 @@ use user_traits_component::traits::internal_session_cache_purge::InternalSession
 //     (status = 200, description = "Success Delete", body = CreateCheckoutSessionSuccessResponse),
 //   ),
 // )]
-pub async fn stripe_artcraft_create_checkout_session_handler(
+pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
   http_request: HttpRequest,
-  request: Json<StripeArtcraftCreateCheckoutSessionRequest>,
+  request: Json<StripeArtcraftCreateCreditsPackCheckoutRequest>,
   stripe_config: Data<ArtcraftStripeConfigWithClient>,
   server_environment: Data<ServerEnvironment>,
   internal_user_lookup: Data<dyn InternalUserLookup>,
   internal_session_cache_purge: Data<dyn InternalSessionCachePurge>,
-) -> Result<Json<StripeArtcraftCreateCheckoutSessionResponse>, CommonWebError>
+) -> Result<Json<StripeArtcraftCreateCreditsPackCheckoutResponse>, CommonWebError>
 {
-  let slug = match request.plan {
-    None => return Err(CommonWebError::BadInputWithSimpleMessage("no plan supplied".to_string())),
+  let slug = match request.credits_pack {
+    None => return Err(CommonWebError::BadInputWithSimpleMessage("no credits pack supplied".to_string())),
     Some(slug) => slug,
   };
 
-  let cadence = match request.cadence {
-    None => return Err(CommonWebError::BadInputWithSimpleMessage("no cadence supplied".to_string())),
-    Some(cadence) => cadence,
-  };
-
-  let plan = get_artcraft_product_by_slug_and_env(slug, **server_environment);
-
-  let price_id = match cadence {
-    PlanBillingCadence::Monthly => plan.monthly_price_id.clone(),
-    PlanBillingCadence::Yearly => plan.yearly_price_id.clone(),
-  };
+  let credits_pack = get_artcraft_credits_pack_by_slug_and_env(slug, **server_environment);
 
   let maybe_user_metadata = internal_user_lookup
       .lookup_user_from_http_request(&http_request)
@@ -71,20 +63,6 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
     None => return Err(CommonWebError::NotAuthorized),
     Some(user_metadata) => user_metadata,
   };
-
-  info!("Subscriptions: {:?}", &user_metadata.existing_subscription_keys);
-
-  let artcraft_subscriptions = user_metadata
-      .existing_subscription_keys
-      .iter()
-      .filter(|it| it.internal_subscription_namespace == SubscriptionNamespace::Artcraft)
-      .collect::<Vec<_>>();
-
-  // TODO: This will not handle a future where we have multiple "namespaces" or can offer users more than one subscription.
-  //  It will actively block users from subscribing to two or more websites.
-  if !artcraft_subscriptions.is_empty() {
-    return Err(CommonWebError::BadInputWithSimpleMessage("user already has plan".to_string()))
-  }
 
   let success_url = stripe_config.checkout_success_url.clone();
   let cancel_url = stripe_config.checkout_cancel_url.clone();
@@ -131,11 +109,11 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
     let mut checkout_builder = CreateCheckoutSession::new()
         .success_url(&success_url)
         .cancel_url(&cancel_url)
-        .mode(CheckoutSessionMode::Subscription)
+        .mode(CheckoutSessionMode::Payment)
         .line_items(vec![
           CreateCheckoutSessionLineItems {
-            price: Some(price_id.to_string()),
-            quantity: Some(1),
+            price: Some(credits_pack.price_id.to_string()),
+            quantity: None,
             ..Default::default()
           }
         ])
@@ -145,7 +123,7 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
           liability: None,
         })
         .metadata(metadata.clone())
-        .subscription_data(CreateCheckoutSessionSubscriptionData {
+        .payment_intent_data(CreateCheckoutSessionPaymentIntentData {
           metadata: Some(metadata),
           ..Default::default()
         });
@@ -178,9 +156,9 @@ pub async fn stripe_artcraft_create_checkout_session_handler(
   let url = checkout_session.url.ok_or(CommonWebError::ServerError)?;
 
   // Best effort to delete Redis session cache
-  internal_session_cache_purge.best_effort_purge_session_cache(&http_request);
+  // internal_session_cache_purge.best_effort_purge_session_cache(&http_request);
 
-  Ok(Json(StripeArtcraftCreateCheckoutSessionResponse {
+  Ok(Json(StripeArtcraftCreateCreditsPackCheckoutResponse{
     success: true,
     stripe_checkout_redirect_url: url,
   }))

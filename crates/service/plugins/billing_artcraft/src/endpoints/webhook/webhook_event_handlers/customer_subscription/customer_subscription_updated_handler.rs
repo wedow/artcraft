@@ -13,6 +13,8 @@ use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus
 use sqlx::pool::PoolConnection;
 use sqlx::{MySql, MySqlPool};
 use stripe_shared::Subscription;
+use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
+use crate::configs::subscriptions::get_artcraft_subscription_by_slug_and_env::get_artcraft_subscription_by_slug_and_env;
 
 /// Handle event type: 'customer.subscription.updated'
 pub async fn customer_subscription_updated_handler(
@@ -42,12 +44,17 @@ pub async fn customer_subscription_updated_handler(
     &summary.stripe_product_id, server_environment);
 
   let product = match maybe_product {
+    Some(StripeArtcraftGenericProductInfo::Subscription(subscription)) => subscription,
+    Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => {
+      error!("Received 'customer.subscription.updated' for a credits pack product ({}). This should not happen.", &credits_pack.slug.to_str());
+      result.should_ignore_retry = true;
+      return Ok(result);
+    }
     None => {
       error!("No matching product for stripe product ID: {}", &summary.stripe_product_id);
       result.should_ignore_retry = true;
       return Ok(result);
     }
-    Some(product) => product,
   };
 
   // NB: It's possible to receive events out of order.

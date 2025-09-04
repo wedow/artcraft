@@ -1,0 +1,70 @@
+use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{ContextualImageEditModel, EditImageQuality, EditImageSize};
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
+use crate::services::midjourney::windows::open_midjourney_login_window::open_midjourney_login_window;
+use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
+use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::windows::open_storyteller_billing_window::open_storyteller_billing_window;
+use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::PlanBillingCadence;
+use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use errors::AnyhowResult;
+use log::{error, info};
+use serde_derive::Deserialize;
+use tauri::{AppHandle, State};
+use enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
+use tokens::tokens::media_files::MediaFileToken;
+
+#[derive(Deserialize, Debug)]
+pub struct StorytellerOpenCreditsPurchaseCommand {
+  pub credits_pack: Option<ArtcraftCreditsPackSlug>,
+}
+
+#[tauri::command]
+pub async fn storyteller_credits_purchase_command(
+  app: AppHandle,
+  request: StorytellerOpenCreditsPurchaseCommand,
+  app_data_root: State<'_, AppDataRoot>,
+  app_env_configs: State<'_, AppEnvConfigs>,
+  storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
+) -> Result<String, String> {
+  info!("storyteller_open_billing_command called");
+
+  do_open_billing(
+    &app, 
+    &app_data_root, 
+    &app_env_configs, 
+    &storyteller_creds_manager,
+    request.credits_pack,
+  )
+      .await
+      .map_err(|err| {
+        error!("Error opening login: {:?}", err);
+        format!("Error opening login: {:?}", err)
+      })?;
+
+  Ok("result".to_string())
+}
+
+async fn do_open_billing(
+  app: &AppHandle,
+  app_data_root: &AppDataRoot,
+  app_env_configs: &AppEnvConfigs,
+  storyteller_creds_manager: &StorytellerCredentialManager,
+  credits_pack: Option<ArtcraftCreditsPackSlug>,
+) -> AnyhowResult<()> {
+  info!("Building billing window...");
+
+  open_storyteller_billing_window(
+    app, 
+    app_env_configs, 
+    app_data_root, 
+    storyteller_creds_manager,
+    plan,
+    cadence,
+  ).await?;
+
+  info!("Done.");
+  Ok(())
+}

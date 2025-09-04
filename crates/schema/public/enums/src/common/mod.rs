@@ -1,3 +1,4 @@
+pub mod artcraft_credits_pack_slug;
 pub mod artcraft_subscription_slug;
 pub mod generation_provider;
 pub mod job_status;
