@@ -22,6 +22,12 @@ import { LineNode } from "../PageDraw/stores/SceneState";
 import { Node } from "../PageDraw/Node";
 import { checkerboard } from "@storyteller/common";
 import { loadImageFromUrl } from "~/Helpers/ImageHelpers";
+import { Vector2d } from "konva/lib/types";
+
+export interface DragState extends Vector2d {
+  anchorX: number;
+  anchorY: number;
+}
 
 export type EditPaintSurfaceProps = {
   nodes: Node[];
@@ -87,7 +93,7 @@ export const EditPaintSurface = ({
     endY: number;
   } | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState<DragState | undefined>(undefined);
   // Add a ref to track if we're currently selecting
   const isSelectingRef = React.useRef(false);
 
@@ -188,7 +194,7 @@ export const EditPaintSurface = ({
       e.target.name()?.includes("rotater");
 
     if (!isWithinLeftPanel(stagePoint) && !isTransformerTarget) {
-      setIsDragging(true);
+      setIsDragging({ ...point, anchorX: stage.x(), anchorY: stage.y() });
       return;
     }
 
@@ -199,14 +205,14 @@ export const EditPaintSurface = ({
       if (mouseEvent.button === 1) {
         // Middle mouse button
         setIsMiddleMousePressed(true);
-        setIsDragging(true);
+        setIsDragging({ ...point, anchorX: stage.x(), anchorY: stage.y() });
         return;
       }
 
       if (mouseEvent.button === 2) {
         // Right mouse button
         if (!isTransformerTarget) {
-          setIsDragging(true);
+          setIsDragging({ ...point, anchorX: stage.x(), anchorY: stage.y() });
         }
         return;
       }
@@ -301,28 +307,28 @@ export const EditPaintSurface = ({
         }
         store.setCursorVisible(false);
       }
-    }
 
-    // Handle panning with improved dragging
-    if (isDragging) {
-      const currentStage = e.target.getStage();
-      if (!currentStage) return;
 
-      currentStage.container().style.cursor = "grabbing";
+      // Handle panning with improved dragging
+      if (isDragging) {
+        const currentStage = e.target.getStage();
+        if (!currentStage) return;
 
-      const dragSensitivity = 3.0;
-      let newPos = { x: currentStage.x(), y: currentStage.y() };
+        currentStage.container().style.cursor = "grabbing";
 
-      if ("movementX" in e.evt && "movementY" in e.evt) {
-        const mouseEvent = e.evt as MouseEvent;
-        newPos = {
-          x: currentStage.x() + mouseEvent.movementX * dragSensitivity,
-          y: currentStage.y() + mouseEvent.movementY * dragSensitivity,
+        const displacement = {
+          x: pointer.x - isDragging.x,
+          y: pointer.y - isDragging.y
+        }
+        const newPos = {
+          x: isDragging.anchorX + displacement.x,
+          y: isDragging.anchorY + displacement.y
         };
-      }
+        console.log(isDragging, displacement, newPos);
+        currentStage.position(newPos);
 
-      currentStage.position(newPos);
-      return;
+        return;
+      }
     }
 
     // Handle drawing - only add points if within bounds
@@ -376,11 +382,11 @@ export const EditPaintSurface = ({
       setSelectionRect((prev) =>
         prev
           ? {
-              // Ensure prev is not null
-              ...prev,
-              endX: clampedPoint.x,
-              endY: clampedPoint.y,
-            }
+            // Ensure prev is not null
+            ...prev,
+            endX: clampedPoint.x,
+            endY: clampedPoint.y,
+          }
           : null,
       );
     }
@@ -441,7 +447,7 @@ export const EditPaintSurface = ({
     }
 
     // Always reset all states
-    setIsDragging(false);
+    setIsDragging(undefined);
     setIsDrawing(false);
     setCurrentLineId(null); // Clear the current line ID
     setIsSelecting(false);
@@ -575,7 +581,7 @@ export const EditPaintSurface = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2),
+      Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   };
 
@@ -1337,11 +1343,11 @@ export const EditPaintSurface = ({
             scaleY={previewScale}
             x={0}
             y={0}
-            // style={{
-            //   background: '#f5f5f5',
-            //   border: '1px solid #ddd',
-            //   borderRadius: '8px',
-            // }}
+          // style={{
+          //   background: '#f5f5f5',
+          //   border: '1px solid #ddd',
+          //   borderRadius: '8px',
+          // }}
           >
             <Layer>
               <Image
