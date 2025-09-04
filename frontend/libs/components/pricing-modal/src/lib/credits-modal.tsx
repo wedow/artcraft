@@ -3,6 +3,7 @@ import { Button } from "@storyteller/ui-button";
 import { faCoinFront as faCoinFrontLine } from "@fortawesome/pro-regular-svg-icons";
 import { faCoinFront } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { invoke } from "@tauri-apps/api/core";
 
 interface CreditPack {
   id: string;
@@ -15,8 +16,8 @@ interface CreditPack {
 }
 
 const creditPacks: CreditPack[] = [
-  { id: "c_005", total: 330, base: 330, bonus: 0, priceUsd: 5 },
-  { id: "c_010", total: 660, base: 660, bonus: 0, priceUsd: 10 },
+  { id: "artcraft_1000", total: 1000, base: 1000, bonus: 0, priceUsd: 5 },
+  { id: "artcraft_2500", total: 2500, base: 2500, bonus: 0, priceUsd: 10 },
   { id: "c_020", total: 1320, base: 1320, bonus: 0, priceUsd: 20 },
   {
     id: "c_050",
@@ -80,6 +81,14 @@ export function CreditsModal({
       onPurchase(pack);
       return;
     }
+
+
+    await invoke("storyteller_open_credits_purchase_command", {
+      request: {
+        credits_pack: pack.id,
+      }
+    });
+
 
     // Hook up Stripe/checkout here
     // Example: redirect to checkout with pack.priceId

@@ -42,7 +42,7 @@ export function PricingModal({
       return;
     }
 
-    await invoke("storyteller_open_billing_command", {
+    await invoke("storyteller_open_subscription_purchase_command", {
       request: {
         plan:planName,
         cadence: cadence,
