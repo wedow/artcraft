@@ -10,6 +10,9 @@ pub struct PurchaseSummary {
   pub price_id: String,
   pub product_id: String,
   pub quantity: u64,
+
+  /// Subscriptions have invoices, including the first payment. One-off purchases do not.
+  pub has_invoice: bool,
 }
 
 // This assumes the payment came from a checkout session.
@@ -27,11 +30,18 @@ pub async fn lookup_purchase_from_payment_intent_success(
         error!("Stripe Error looking up checkout session for payment intent {}: {:?}", &payment_intent_id, err);
         err
       })?;
-  
+
   if result.data.len() != 1 {
     error!("Expected exactly one checkout session for payment intent {}, found {}", payment_intent_id, result.data.len());
     return Err(anyhow::anyhow!("Expected exactly one checkout session for payment intent {}, found {}", payment_intent_id, result.data.len()));
   }
+
+  let checkout_session = result
+      .data
+      .get(0)
+      .ok_or_else(|| anyhow::anyhow!("No items in ListCheckoutSession request."))?;
+
+  let has_invoice = checkout_session.invoice.is_some();
 
   let checkout_session_id = result
       .data
@@ -74,5 +84,6 @@ pub async fn lookup_purchase_from_payment_intent_success(
     price_id,
     product_id,
     quantity,
+    has_invoice,
   })
 }
