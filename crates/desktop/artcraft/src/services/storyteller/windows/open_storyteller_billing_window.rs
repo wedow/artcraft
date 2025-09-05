@@ -1,6 +1,8 @@
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::sora::windows::sora_login_window::sora_login_thread::sora_login_thread;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::windows::storyteller_billing_window_thread::storyteller_billing_window_thread;
 use anyhow::anyhow;
 use artcraft_api_defs::stripe_artcraft::create_credits_pack_checkout::StripeArtcraftCreateCreditsPackCheckoutRequest;
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest};
@@ -14,7 +16,7 @@ use storyteller_client::stripe_artcraft::create_credits_pack_checkout::create_cr
 use storyteller_client::stripe_artcraft::create_subscription_checkout::create_subscription_checkout;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
-const BILLING_WINDOW_NAME: &str = "artcraft_billing_window";
+pub const BILLING_WINDOW_NAME: &str = "artcraft_billing_window";
 
 pub struct OpenStorytellerBillingWindowArgs<'a> {
   pub app: &'a AppHandle,
@@ -143,22 +145,15 @@ async fn do_open_window(
       .devtools(true)
       .build()?;
 
-  let webview = window.get_webview(BILLING_WINDOW_NAME)
-      .ok_or_else(|| anyhow!("no webview found"))?;
-
-  //webview.navigate(MIDJOURNEY_HOMEPAGE_URL.clone())?;
-
-  // NB: We're starting to get Cloudflare protection screens. Let's try to avoid.
-  //tokio::time::sleep(Duration::from_millis(100)).await;
-
-  //webview.navigate(MIDJOURNEY_LOGIN_URL.clone())?;
+  //let _webview = window.get_webview(BILLING_WINDOW_NAME)
+  //    .ok_or_else(|| anyhow!("no webview found"))?;
 
   let app_handle = app.clone();
   let app_data_root = app_data_root.clone();
 
-  //let _ = tauri::async_runtime::spawn(async move {
-  //  midjourney_login_window_thread(app_handle, app_data_root).await;
-  //});
+  let _ = tauri::async_runtime::spawn(async move {
+    storyteller_billing_window_thread(app_handle, app_data_root).await;
+  });
 
   Ok(())
 }
