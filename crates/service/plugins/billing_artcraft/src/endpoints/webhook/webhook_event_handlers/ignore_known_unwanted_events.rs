@@ -1,7 +1,6 @@
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use log::info;
 use stripe_webhook::{Event, EventObject};
-use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_payment_succeeded_handler::invoice_payment_succeeded_handler;
 
 // Returns a response if we know we want to ignore this event type.
 // This serves primarily as documentation for why we're ignoring certain events.

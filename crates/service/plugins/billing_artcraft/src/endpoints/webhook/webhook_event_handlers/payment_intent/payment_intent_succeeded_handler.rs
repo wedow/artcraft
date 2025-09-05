@@ -54,6 +54,12 @@ pub async fn payment_intent_succeeded_handler(
     } else {
       // TODO: Add credits.
 
+      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
+      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
+      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
+      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
+      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
+
       should_ignore_retry = true;
       action_was_taken = true;
     }
