@@ -1,0 +1,42 @@
+-- noinspection SqlDialectInspectionForFile
+-- noinspection SqlNoDataSourceInspectionForFile
+-- noinspection SqlResolveForFile
+-- noinspection SqlDialectInspectionForFile
+-- noinspection SqlNoDataSourceInspectionForFile
+-- noinspection SqlResolveForFile
+
+CREATE TABLE wallet_ledger_entries (
+  -- Not used for anything except replication.
+  id BIGINT(20) NOT NULL AUTO_INCREMENT,
+
+  -- Effective "primary key" (PUBLIC)
+  token VARCHAR(32) NOT NULL,
+
+  -- Which wallet this entry corresponds to.
+  wallet_token VARCHAR(32) NOT NULL,
+
+  -- The type of ledger entry this is.
+  entry_type VARCHAR(32) NOT NULL,
+
+  -- Balance of banked credits before the event.
+  banked_credits_before INTEGER UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Balance of banked credits after the event.
+  banked_credits_after INTEGER UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Balance of monthly credits before the event.
+  monthly_credits_before INTEGER UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Balance of monthly credits after the event.
+  monthly_credits_after INTEGER UNSIGNED NOT NULL DEFAULT 0,
+
+  -- ========== RECORD TIMESTAMPS ==========
+
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  -- ========== INDICES ==========
+  PRIMARY KEY (id),
+  UNIQUE KEY (token),
+  KEY index_wallet_token (wallet_token)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

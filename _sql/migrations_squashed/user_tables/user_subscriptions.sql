@@ -55,7 +55,7 @@ CREATE TABLE user_subscriptions (
 
   -- Primarily managed by the `invoice.paid` and `invoice.payment_failed` webhooks.
   -- Not applicable to FakeYou subscriptions.
-  maybe_invoice_is_paid BOOLEAN DEFAULT NULL,
+  maybe_stripe_invoice_is_paid BOOLEAN DEFAULT NULL,
 
   maybe_stripe_is_production BOOLEAN DEFAULT NULL,
 
