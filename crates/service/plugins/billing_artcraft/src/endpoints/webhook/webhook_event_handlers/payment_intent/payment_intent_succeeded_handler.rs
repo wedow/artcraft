@@ -1,14 +1,48 @@
 use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use crate::requests::lookup_purchase_from_payment_intent_success::lookup_purchase_from_payment_intent_success;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
+use log::{error, info};
+use stripe::Client;
+use stripe_checkout::checkout_session::ListCheckoutSession;
 use stripe_shared::PaymentIntent;
 
 // Handle event type: 'payment_intent.succeeded'
-pub fn payment_intent_succeeded_handler(payment_intent: &PaymentIntent) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
+pub async fn payment_intent_succeeded_handler(
+  payment_intent: &PaymentIntent,
+  stripe_client: &Client
+) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
   let payment_intent_id = payment_intent.id.to_string();
 
-  let payment_intent_status = payment_intent.status;
+  let mut should_ignore_retry = false;
+  let mut action_was_taken = false;
+
+  // Payment intent events are bare. They have absolutely no context about what they were for.
+  // No products, no checkout sessions, etc. We'll have to look them up on success.
+
+  info!("Look up payment...");
+
+  match payment_intent.status {
+    stripe_shared::PaymentIntentStatus::Succeeded => {
+
+      let purchase = lookup_purchase_from_payment_intent_success(&payment_intent_id, stripe_client)
+          .await
+          .map_err(|err| {
+            error!("Error looking up purchase from payment intent {}: {:?}", &payment_intent_id, err);
+            StripeArtcraftWebhookError::ServerError("error looking up purchase".to_string())
+          })?;
+
+      info!("Found purchase: {:?}", purchase);
+      info!("Found purchase: {:?}", purchase);
+      info!("Found purchase: {:?}", purchase);
+      info!("Found purchase: {:?}", purchase);
+      info!("Found purchase: {:?}", purchase);
+
+      //should_ignore_retry = true;
+    },
+    _ => {} // Fall-through
+  }
 
   // NB: We'll need this to send them to the "customer portal", which is how they can modify
   // or cancel their subscriptions.
@@ -24,7 +58,7 @@ pub fn payment_intent_succeeded_handler(payment_intent: &PaymentIntent) -> Resul
     maybe_user_token,
     maybe_event_entity_id: Some(payment_intent_id),
     maybe_stripe_customer_id,
-    action_was_taken: false,
-    should_ignore_retry: false,
+    action_was_taken,
+    should_ignore_retry,
   })
 }

@@ -18,10 +18,12 @@ use log::{info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;
 use sqlx::MySql;
+use stripe::Client;
 use stripe_webhook::{Event, EventObject};
 
 pub async fn handle_webhook_payload(
   mysql_connection: &mut PoolConnection<MySql>,
+  stripe_client: &Client,
   server_environment: ServerEnvironment,
   webhook_payload: Event,
   stripe_event_type: &String
@@ -168,9 +170,8 @@ pub async fn handle_webhook_payload(
     // =============== PAYMENT INTENTS ===============
 
     EventObject::PaymentIntentSucceeded(payment_intent) => {
-      // TODO: Look into this for one-off, non-subscription purchases
       info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
-      webhook_summary = payment_intent_succeeded_handler(&payment_intent)?;
+      webhook_summary = payment_intent_succeeded_handler(&payment_intent, stripe_client).await?;
     }
 
     // =============== Ignored ===============

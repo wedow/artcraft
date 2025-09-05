@@ -141,9 +141,10 @@ pub async fn stripe_artcraft_webhook_handler(
 
   let webhook_summary = handle_webhook_payload(
     &mut mysql_connection,
+    &stripe_config.client,
     **server_environment,
     webhook_payload,
-    &stripe_event_type
+    &stripe_event_type,
   ).await?;
 
   let query = InsertStripeWebhookEventLog {
