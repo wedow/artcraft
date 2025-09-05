@@ -67,7 +67,7 @@ pub async fn open_storyteller_billing_window(
       ).await?
     },
   };
-  
+
   do_open_window(args.app, args.app_data_root, checkout_url).await?;
 
   Ok(())
@@ -133,7 +133,7 @@ async fn do_open_window(
   info!("Opening checkout window...");
 
   // TODO(bt,2025-09-01): We probably need to open this in a real browser to get autocomplete.
-  let window = WebviewWindowBuilder::new(app, BILLING_WINDOW_NAME, url)
+  let _window = WebviewWindowBuilder::new(app, BILLING_WINDOW_NAME, url)
       .always_on_top(false)
       .title("ArtCraft Billing")
       .center()
