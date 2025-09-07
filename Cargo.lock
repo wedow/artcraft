@@ -1359,6 +1359,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sqlx",
+ "tokens",
  "tokio",
  "user_traits_component",
  "workspace-build-acceleration",

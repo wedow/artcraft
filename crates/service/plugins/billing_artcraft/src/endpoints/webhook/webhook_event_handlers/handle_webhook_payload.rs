@@ -168,7 +168,8 @@ pub async fn handle_webhook_payload(
       webhook_summary = payment_intent_succeeded_handler(
         &payment_intent,
         server_environment,
-        stripe_client
+        stripe_client,
+        transaction,
       ).await?;
     }
 

@@ -42,9 +42,13 @@ CREATE TABLE wallets (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-  -- ========== SUBSCRIPTION TIMESTAMPS ==========
+  -- ========== PAYMENTS AND SUBSCRIPTIONS TIMESTAMPS ==========
+
+  -- When the user last purchased banked (durable) credits.
+  -- banked_credits_last_purchased_at TIMESTAMP DEFAULT NULL,
 
   -- When we last refilled the monthly bucket.
+  -- This has to do with subscription logic.
   monthly_wallet_refilled_at TIMESTAMP DEFAULT NULL,
 
   -- ========== INDICES ==========
