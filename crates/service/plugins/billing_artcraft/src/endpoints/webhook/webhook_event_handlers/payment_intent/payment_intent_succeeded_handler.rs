@@ -1,16 +1,22 @@
+use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
 use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use crate::requests::lookup_purchase_from_payment_intent_success::lookup_purchase_from_payment_intent_success;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
-use log::{error, info};
+use log::{error, info, warn};
+use reusable_types::server_environment::ServerEnvironment;
 use stripe::Client;
 use stripe_checkout::checkout_session::ListCheckoutSession;
 use stripe_shared::PaymentIntent;
+use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
+use crate::configs::subscriptions::stripe_artcraft_subscription_info::StripeArtcraftSubscriptionInfo;
+use crate::fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
 
 // Handle event type: 'payment_intent.succeeded'
 pub async fn payment_intent_succeeded_handler(
   payment_intent: &PaymentIntent,
+  server_environment: ServerEnvironment,
   stripe_client: &Client
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
 
@@ -52,13 +58,22 @@ pub async fn payment_intent_succeeded_handler(
       should_ignore_retry = true;
       action_was_taken = false;
     } else {
-      // TODO: Add credits.
-
-      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
-      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
-      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
-      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
-      info!(">>> ONE OFF PURCHASE : {:?}", &purchase);
+      match get_artcraft_product_by_stripe_id_and_env(&purchase.product_id, server_environment) {
+        None => {
+          error!("Could not find product for ID: {}", &purchase.product_id);
+          return Err(StripeArtcraftWebhookError::ServerError("unknown product".to_string()));
+        }
+        Some(StripeArtcraftGenericProductInfo::Subscription(subscription)) => {
+          info!("Do not handle subscriptions as one-off payments: {}", purchase.product_id);
+          should_ignore_retry = true;
+          action_was_taken = false;
+        }
+        Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => {
+          info!("Fulfilling one-time payment...");
+          complete_credits_pack_purchase(credits_pack, purchase.quantity)
+              .await?;
+        }
+      }
 
       should_ignore_retry = true;
       action_was_taken = true;

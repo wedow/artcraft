@@ -41,3 +41,9 @@ impl From<sqlx::Error> for StripeArtcraftWebhookError {
     StripeArtcraftWebhookError::ServerError(format!("SQLX Error: {:?}", err))
   }
 }
+
+impl From<anyhow::Error> for StripeArtcraftWebhookError {
+  fn from(err: anyhow::Error) -> Self {
+    StripeArtcraftWebhookError::ServerError(format!("Anyhow Error: {:?}", err))
+  }
+}

@@ -165,7 +165,11 @@ pub async fn handle_webhook_payload(
 
     EventObject::PaymentIntentSucceeded(payment_intent) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
-      webhook_summary = payment_intent_succeeded_handler(&payment_intent, stripe_client).await?;
+      webhook_summary = payment_intent_succeeded_handler(
+        &payment_intent,
+        server_environment,
+        stripe_client
+      ).await?;
     }
 
     // =============== Ignored ===============
