@@ -145,7 +145,7 @@ pub async fn stripe_artcraft_webhook_handler(
     stripe_event_type.clone(), 
     stripe_is_production, 
     &mut transaction
-  ).await?;
+  ).await;
   
   match result {
     Ok(()) => {
@@ -172,18 +172,18 @@ async fn do_with_transaction(
   stripe_event_created_at: NaiveDateTime, 
   stripe_event_type: String, 
   stripe_is_production: bool, 
-  mut transaction: 
-  &mut Transaction<MySql>
+  transaction: &mut Transaction<'_, MySql>
 ) -> Result<(), StripeArtcraftWebhookError> {
   
   let webhook_summary = handle_webhook_payload(
-    &mut transaction,
+    transaction,
     &stripe_config.client,
-    **server_environment,
+    server_environment,
     webhook_payload,
     &stripe_event_type,
   ).await?;
 
+  // NB: These records are uniquely keyed by ID, so this only happens once.
   let query = InsertStripeWebhookEventLog {
     stripe_event_id,
     stripe_event_type,
@@ -196,7 +196,7 @@ async fn do_with_transaction(
     should_ignore_retry: webhook_summary.should_ignore_retry,
   };
 
-  query.insert(transaction)
+  query.insert_transactional(transaction)
       .await
       .map_err(|err| {
         let reason = format!("Could not insert Stripe webhook event log: {:?}", err);

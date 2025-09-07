@@ -1,8 +1,9 @@
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
-use sqlx::{MySql, MySqlPool, Transaction};
-
 use errors::AnyhowResult;
+use sqlx::mysql::MySqlArguments;
+use sqlx::query::Query;
+use sqlx::{MySql, MySqlPool, Transaction};
 
 // TODO: Make a trait with default impls to handle common query concerns.
 
@@ -20,9 +21,32 @@ pub struct InsertStripeWebhookEventLog {
 
 impl InsertStripeWebhookEventLog {
 
-  pub async fn insert(&self, transaction: &mut Transaction<'_, MySql>) -> AnyhowResult<()> {
+  pub async fn insert(&self, mysql_pool: &MySqlPool) -> AnyhowResult<()> {
+    let query_result = self.query()
+        .execute(mysql_pool).await;
 
-    let query = sqlx::query!(
+    let _record_id = match query_result {
+      Ok(res) => res.last_insert_id(),
+      Err(err) => return Err(anyhow!("Error creating stripe webhook event log: {:?}", err)),
+    };
+
+    Ok(())
+  }
+  
+  pub async fn insert_transactional(&self, transaction: &mut Transaction<'_, MySql>) -> AnyhowResult<()> {
+    let query_result = self.query()
+        .execute(&mut **transaction).await;
+
+    let _record_id = match query_result {
+      Ok(res) => res.last_insert_id(),
+      Err(err) => return Err(anyhow!("Error creating stripe webhook event log: {:?}", err)),
+    };
+
+    Ok(())
+  }
+
+  fn query(&self) -> Query<MySql, MySqlArguments> {
+    sqlx::query!(
         r#"
 INSERT INTO stripe_webhook_event_logs
 SET
@@ -45,15 +69,6 @@ SET
       &self.maybe_user_token,
       self.action_was_taken,
       self.should_ignore_retry,
-    );
-
-    let query_result = query.execute(transaction).await;
-
-    let _record_id = match query_result {
-      Ok(res) => res.last_insert_id(),
-      Err(err) => return Err(anyhow!("Error creating stripe webhook event log: {:?}", err)),
-    };
-
-    Ok(())
+    )
   }
 }

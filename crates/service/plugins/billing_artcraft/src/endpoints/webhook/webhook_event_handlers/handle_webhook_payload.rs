@@ -87,6 +87,7 @@ pub async fn handle_webhook_payload(
 
     // =============== CUSTOMER SUBSCRIPTIONS ===============
 
+    /* TODO - temporary disable
     EventObject::CustomerSubscriptionCreated(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
       // DO NOT USE TO PROVISION SERVICE.
@@ -131,7 +132,7 @@ pub async fn handle_webhook_payload(
         server_environment,
         transaction,
       ).await?;
-    }
+    }*/
 
     // =============== INVOICES ===============
 
