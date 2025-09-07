@@ -5,7 +5,9 @@ use errors::AnyhowResult;
 use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use sqlx::pool::PoolConnection;
-use sqlx::{MySql, MySqlPool};
+use sqlx::{MySql, MySqlPool, Transaction};
+use sqlx::mysql::MySqlArguments;
+use sqlx::query::Query;
 use tokens::tokens::user_subscriptions::UserSubscriptionToken;
 
 // TODO: Make a trait with default impls to handle common query concerns.
@@ -59,6 +61,33 @@ impl <'a> UpsertUserSubscription<'a> {
   }
   
   pub async fn upsert_with_connection(&'a self, mysql_connection: &mut PoolConnection<MySql>) -> AnyhowResult<()> {
+    let query = self.query();
+
+    let query_result = query.execute(&mut **mysql_connection).await;
+
+    let _record_id = match query_result {
+      Ok(res) => res.last_insert_id(),
+      Err(err) => return Err(anyhow!("Error upserting subscription record: {:?}", err)),
+    };
+
+    Ok(())
+  }
+
+  pub async fn upsert_with_transaction(&'a self, transaction: &mut Transaction<'_, MySql>) -> AnyhowResult<()> {
+    let query = self.query();
+
+    let query_result = query.execute(&mut **transaction).await;
+
+    let _record_id = match query_result {
+      Ok(res) => res.last_insert_id(),
+      Err(err) => return Err(anyhow!("Error upserting subscription record: {:?}", err)),
+    };
+
+    Ok(())
+  }
+  
+  
+  fn query(&self) -> Query<MySql, MySqlArguments> {
     let token = UserSubscriptionToken::generate().to_string();
 
     // NB: The following behaviors are intentional
@@ -69,7 +98,7 @@ impl <'a> UpsertUserSubscription<'a> {
     //  - The various subscription dates, expiry, and statuses can change.
     //  - The product and price can change (eg. upgrades, downgrades).
     //  - Other "static" fields do not need to change on update, either.
-    let query = sqlx::query!(
+    sqlx::query!(
         r#"
 INSERT INTO user_subscriptions
 SET
@@ -153,15 +182,6 @@ ON DUPLICATE KEY UPDATE
       self.subscription_expires_at,
       self.maybe_cancel_at,
       self.maybe_canceled_at,
-    );
-
-    let query_result = query.execute(&mut **mysql_connection).await;
-
-    let _record_id = match query_result {
-      Ok(res) => res.last_insert_id(),
-      Err(err) => return Err(anyhow!("Error upserting subscription record: {:?}", err)),
-    };
-
-    Ok(())
+    )
   }
 }

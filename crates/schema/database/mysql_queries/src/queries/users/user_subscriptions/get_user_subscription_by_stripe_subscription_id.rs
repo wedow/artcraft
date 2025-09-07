@@ -1,11 +1,10 @@
+use crate::helpers::boolean_converters::nullable_i8_to_optional_bool;
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use errors::AnyhowResult;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use sqlx::pool::PoolConnection;
 use sqlx::{MySql, MySqlPool};
-
-use crate::helpers::boolean_converters::nullable_i8_to_optional_bool;
 
 pub struct UserSubscription {
   pub token: String,
@@ -94,7 +93,7 @@ WHERE
   }
 }
 
-struct RawUserSubscriptionFromDb {
+pub(super) struct RawUserSubscriptionFromDb {
   pub token: String,
   pub user_token: String,
   pub subscription_namespace: String,

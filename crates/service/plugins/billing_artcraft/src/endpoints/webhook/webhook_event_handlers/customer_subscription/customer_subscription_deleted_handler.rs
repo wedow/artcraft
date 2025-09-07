@@ -7,11 +7,12 @@ use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_s
 use enums::common::subscription_namespace::SubscriptionNamespace;
 use log::error;
 use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::{get_user_subscription_by_stripe_subscription_id, get_user_subscription_by_stripe_subscription_id_with_connection};
+use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id_transactional::get_user_subscription_by_stripe_subscription_id_transactional;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
 use reusable_types::server_environment::ServerEnvironment;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use sqlx::pool::PoolConnection;
-use sqlx::{MySql, MySqlPool};
+use sqlx::{MySql, MySqlPool, Transaction};
 use stripe_shared::Subscription;
 
 /// Handle event type: 'customer.subscription.deleted'
@@ -19,7 +20,7 @@ use stripe_shared::Subscription;
 pub async fn customer_subscription_deleted_handler(
   subscription: &Subscription,
   server_environment: ServerEnvironment,
-  mysql_connection: &mut PoolConnection<MySql>,
+  transaction: &mut Transaction<'_, MySql>,
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
 
   let summary = subscription_summary_extractor(subscription)
@@ -57,8 +58,8 @@ pub async fn customer_subscription_deleted_handler(
   };
 
   // NB: It's possible to receive events out of order.
-  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id_with_connection(
-    &summary.stripe_subscription_id, mysql_connection)
+  let maybe_existing_subscription = get_user_subscription_by_stripe_subscription_id_transactional(
+    &summary.stripe_subscription_id, transaction)
       .await
       .map_err(|err| {
         let reason = format!("Mysql error: {:?}", err);
@@ -101,7 +102,7 @@ pub async fn customer_subscription_deleted_handler(
         maybe_canceled_at: summary.maybe_canceled_at,
       };
 
-      let _r = upsert.upsert_with_connection(mysql_connection)
+      let _r = upsert.upsert_with_transaction(transaction)
           .await
           .map_err(|err| {
             let reason = format!("Mysql error: {:?}", err);
