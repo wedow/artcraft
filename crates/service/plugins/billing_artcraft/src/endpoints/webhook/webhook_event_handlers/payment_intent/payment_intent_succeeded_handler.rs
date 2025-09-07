@@ -72,11 +72,11 @@ pub async fn payment_intent_succeeded_handler(
           info!("Fulfilling one-time payment...");
           complete_credits_pack_purchase(credits_pack, purchase.quantity)
               .await?;
+
+          should_ignore_retry = true;
+          action_was_taken = true;
         }
       }
-
-      should_ignore_retry = true;
-      action_was_taken = true;
     }
   }
 

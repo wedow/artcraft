@@ -38,6 +38,7 @@ pub mod w2l_inference_jobs;
 pub mod w2l_results;
 pub mod w2l_template_upload_jobs;
 pub mod w2l_templates;
+pub mod wallets;
 pub mod zs_voice_dataset_samples;
 pub mod zs_voice_datasets;
 pub mod zs_voices;
