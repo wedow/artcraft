@@ -9,6 +9,9 @@ pub async fn find_wallet_token_for_owner_user_using_connection(
   connection: &mut PoolConnection<MySql>,
 ) -> anyhow::Result<Option<WalletToken>> {
 
+  // NB: We want to eventually support multiple wallets per user (eg. company use case),
+  // so we do not have a unique key on user token. In the meantime, to ensure we use the
+  // same wallet each time, we order by id and take the first one.
   // TODO(bt,2025-08-07): DO NOT COPY THIS. For some reason the query macro can't
   //  decide which impl to use to deserialize typed tokens.
   let result = sqlx::query_as!(
@@ -18,6 +21,7 @@ pub async fn find_wallet_token_for_owner_user_using_connection(
         token as `token: tokens::tokens::wallets::WalletToken`
       FROM wallets
       WHERE owner_user_token = ?
+      ORDER BY id ASC
       LIMIT 1
     "#,
     user_token.as_str()
@@ -38,6 +42,9 @@ pub async fn find_wallet_token_for_owner_user_using_transaction(
   transaction: &mut sqlx::Transaction<'_, MySql>,
 ) -> anyhow::Result<Option<WalletToken>> {
 
+  // NB: We want to eventually support multiple wallets per user (eg. company use case),
+  // so we do not have a unique key on user token. In the meantime, to ensure we use the
+  // same wallet each time, we order by id and take the first one.
   // TODO(bt,2025-08-07): DO NOT COPY THIS. For some reason the query macro can't
   //  decide which impl to use to deserialize typed tokens.
   let result = sqlx::query_as!(
@@ -47,6 +54,7 @@ pub async fn find_wallet_token_for_owner_user_using_transaction(
         token as `token: tokens::tokens::wallets::WalletToken`
       FROM wallets
       WHERE owner_user_token = ?
+      ORDER BY id ASC
       LIMIT 1
     "#,
     user_token.as_str()
