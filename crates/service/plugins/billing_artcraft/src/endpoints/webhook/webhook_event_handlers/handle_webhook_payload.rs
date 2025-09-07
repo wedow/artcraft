@@ -11,16 +11,16 @@ use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_s
 use log::{info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;
-use sqlx::MySql;
+use sqlx::{MySql, Transaction};
 use stripe::Client;
 use stripe_webhook::{Event, EventObject};
 
 pub async fn handle_webhook_payload(
-  mysql_connection: &mut PoolConnection<MySql>,
+  transaction: &mut Transaction<'_, MySql>,
   stripe_client: &Client,
   server_environment: ServerEnvironment,
   webhook_payload: Event,
-  stripe_event_type: &String
+  stripe_event_type: &str,
 ) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
 
   if let Some(summary) = ignore_known_unwanted_events(&webhook_payload) {
@@ -111,7 +111,7 @@ pub async fn handle_webhook_payload(
       webhook_summary = customer_subscription_created_handler(
         &subscription,
         server_environment,
-        mysql_connection,
+        transaction,
       ).await?;
     }
 
@@ -120,7 +120,7 @@ pub async fn handle_webhook_payload(
       webhook_summary = customer_subscription_updated_handler(
         &subscription,
         server_environment,
-        mysql_connection,
+        transaction,
       ).await?;
     }
 
@@ -129,7 +129,7 @@ pub async fn handle_webhook_payload(
       webhook_summary = customer_subscription_deleted_handler(
         &subscription,
         server_environment,
-        mysql_connection,
+        transaction,
       ).await?;
     }
 

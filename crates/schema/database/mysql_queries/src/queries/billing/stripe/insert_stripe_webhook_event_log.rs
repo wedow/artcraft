@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
-use sqlx::MySqlPool;
+use sqlx::{MySql, MySqlPool, Transaction};
 
 use errors::AnyhowResult;
 
@@ -20,7 +20,7 @@ pub struct InsertStripeWebhookEventLog {
 
 impl InsertStripeWebhookEventLog {
 
-  pub async fn insert(&self, mysql_pool: &MySqlPool) -> AnyhowResult<()> {
+  pub async fn insert(&self, transaction: &mut Transaction<'_, MySql>) -> AnyhowResult<()> {
 
     let query = sqlx::query!(
         r#"
@@ -47,7 +47,7 @@ SET
       self.should_ignore_retry,
     );
 
-    let query_result = query.execute(mysql_pool).await;
+    let query_result = query.execute(transaction).await;
 
     let _record_id = match query_result {
       Ok(res) => res.last_insert_id(),

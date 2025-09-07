@@ -3,6 +3,8 @@ use actix_web::{web, HttpRequest, HttpResponse};
 
 use crate::endpoints::webhook::webhook_event_handlers::checkout_session::checkout_session_completed_handler::checkout_session_completed_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_created_handler::customer_subscription_created_handler;
+use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
+use crate::endpoints::webhook::webhook_event_handlers::handle_webhook_payload::handle_webhook_payload;
 use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_paid_handler::invoice_paid_handler;
 use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_payment_failed::invoice_payment_failed_handler;
 use crate::endpoints::webhook::webhook_event_handlers::payment_intent::payment_intent_succeeded_handler::payment_intent_succeeded_handler;
@@ -18,11 +20,9 @@ use mysql_queries::queries::billing::stripe::insert_stripe_webhook_event_log::In
 use reusable_types::server_environment::ServerEnvironment;
 use serde_derive::Serialize;
 use sqlx::pool::PoolConnection;
-use sqlx::{MySql, MySqlConnection, MySqlPool};
+use sqlx::{Acquire, MySql, MySqlConnection, MySqlPool, Transaction};
 use std::sync::Arc;
 use stripe_webhook::{Event, EventObject, Webhook};
-use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
-use crate::endpoints::webhook::webhook_event_handlers::handle_webhook_payload::handle_webhook_payload;
 
 /*
 
@@ -120,6 +120,7 @@ pub async fn stripe_artcraft_webhook_handler(
         StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
 
+  // TODO: Not sure this retry / idempotency logic is correct
   if let Some(event) = maybe_previously_played_event {
     // The event is being replayed by Stripe, and we've already handled it.
     // We'll ignore it so that we remain idempotent.
@@ -133,8 +134,50 @@ pub async fn stripe_artcraft_webhook_handler(
     }
   }
 
+  let mut transaction = mysql_connection.begin().await?;
+
+  let result = do_with_transaction(
+    **server_environment, 
+    &stripe_config, 
+    webhook_payload, 
+    stripe_event_id.clone(), 
+    stripe_event_created_at, 
+    stripe_event_type.clone(), 
+    stripe_is_production, 
+    &mut transaction
+  ).await?;
+  
+  match result {
+    Ok(()) => {
+      transaction.commit().await?;
+    },
+    Err(err) => {
+      error!("Error handling Stripe webhook event `{}` ({}): {:?}", 
+        stripe_event_type,stripe_event_id, err);
+      transaction.rollback().await?;
+      return Err(err);
+    }
+  }
+
+  Ok(Json(StripeArtcraftWebhookSuccessResponse {
+    success: true,
+  }))
+}
+
+async fn do_with_transaction(
+  server_environment: ServerEnvironment, 
+  stripe_config: &ArtcraftStripeConfigWithClient, 
+  webhook_payload: Event, 
+  stripe_event_id: String, 
+  stripe_event_created_at: NaiveDateTime, 
+  stripe_event_type: String, 
+  stripe_is_production: bool, 
+  mut transaction: 
+  &mut Transaction<MySql>
+) -> Result<(), StripeArtcraftWebhookError> {
+  
   let webhook_summary = handle_webhook_payload(
-    &mut mysql_connection,
+    &mut transaction,
     &stripe_config.client,
     **server_environment,
     webhook_payload,
@@ -153,7 +196,7 @@ pub async fn stripe_artcraft_webhook_handler(
     should_ignore_retry: webhook_summary.should_ignore_retry,
   };
 
-  query.insert(&mysql_pool)
+  query.insert(transaction)
       .await
       .map_err(|err| {
         let reason = format!("Could not insert Stripe webhook event log: {:?}", err);
@@ -161,7 +204,5 @@ pub async fn stripe_artcraft_webhook_handler(
         StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
 
-  Ok(Json(StripeArtcraftWebhookSuccessResponse {
-    success: true,
-  }))
+  Ok(())
 }

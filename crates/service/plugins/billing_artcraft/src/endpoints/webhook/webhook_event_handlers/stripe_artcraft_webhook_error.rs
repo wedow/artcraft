@@ -35,3 +35,9 @@ impl fmt::Display for StripeArtcraftWebhookError {
     write!(f, "{:?}", self)
   }
 }
+
+impl From<sqlx::Error> for StripeArtcraftWebhookError {
+  fn from(err: sqlx::Error) -> Self {
+    StripeArtcraftWebhookError::ServerError(format!("SQLX Error: {:?}", err))
+  }
+}
