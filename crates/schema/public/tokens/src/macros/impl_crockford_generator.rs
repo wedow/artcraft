@@ -16,12 +16,23 @@ macro_rules! impl_crockford_generator {
         let charset = Self::token_character_set();
         let entropy_length = Self::entropic_character_len();
 
-        let entropy_part: String = (0..entropy_length)
+        let mut entropy_part: String = (0..entropy_length)
           .map(|_| {
             let idx = rng.gen_range(0..charset.len());
             charset[idx] as char
           })
           .collect();
+
+        let mut i = 0;
+        while !crate::safe_entropy::entropy_is_safe(&entropy_part) && i < 10 {
+          i += 1;
+          entropy_part = (0..entropy_length)
+            .map(|_| {
+              let idx = rng.gen_range(0..charset.len());
+              charset[idx] as char
+            })
+            .collect();
+        }
 
         let token_prefix = Self::token_prefix();
 
@@ -51,12 +62,23 @@ macro_rules! impl_crockford_generator {
         let charset = Self::token_character_set();
         let entropy_length = Self::entropic_character_len();
 
-        let entropy_part: String = (0..entropy_length)
+        let mut entropy_part: String = (0..entropy_length)
           .map(|_| {
             let idx = rng.gen_range(0..charset.len());
             charset[idx] as char
           })
           .collect();
+
+        let mut i = 0;
+        while !crate::safe_entropy::entropy_is_safe(&entropy_part) && i < 10 {
+          i += 1;
+          entropy_part = (0..entropy_length)
+            .map(|_| {
+              let idx = rng.gen_range(0..charset.len());
+              charset[idx] as char
+            })
+            .collect();
+        }
 
         let token_prefix = Self::token_prefix();
 
