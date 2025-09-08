@@ -117,7 +117,12 @@ pub async fn handle_webhook_event_enrichment(
       // This is the *required* event that enables the subscription!
       // These are fired on an interval - whatever the billing cadence is.
       info!("Event: {}, data: {:?}", stripe_event_descriptor, invoice);
-      return invoice_paid_handler(&invoice, server_environment, stripe_client).await;
+      return invoice_paid_handler(
+        &stripe_event_descriptor,
+        &invoice,
+        server_environment,
+        stripe_client
+      ).await;
     }
 
     /*EventObject::InvoicePaymentFailed(invoice) => {

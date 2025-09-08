@@ -12,6 +12,7 @@ use log::{error, info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use stripe::Client;
 use stripe_shared::{Invoice, InvoiceStatus};
+use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
 
 // Handle event type: 'invoice.paid'
 //
@@ -32,6 +33,7 @@ use stripe_shared::{Invoice, InvoiceStatus};
 //    appropriate date in the future (plus a day or two for leeway).
 //
 pub async fn invoice_paid_handler(
+  stripe_event_descriptor: &StripeEventDescriptor,
   invoice: &Invoice,
   server_environment: ServerEnvironment,
   stripe_client: &Client,
@@ -46,9 +48,19 @@ pub async fn invoice_paid_handler(
       .as_ref()
       .map(|c| expand_customer_id(c));
 
-  let maybe_stripe_subscription_id = invoice.subscription
+  // NB: We probably don't have a root-level subscription since this is a webhook.
+  let mut maybe_stripe_subscription_id = invoice.subscription
       .as_ref()
       .map(|s| expand_subscription_id(s));
+
+  // NB: But we probably do have a parent object.
+  if maybe_stripe_subscription_id.is_none() {
+    maybe_stripe_subscription_id = invoice.parent
+        .as_ref()
+        .map(|parent| parent.subscription_details.as_ref())
+        .flatten()
+        .map(|parent_sub| parent_sub.subscription.id().to_string());
+  }
 
   let mut event_log_summary = WebhookEventLogSummary {
     maybe_stripe_customer_id,
@@ -64,14 +76,14 @@ pub async fn invoice_paid_handler(
   };
 
   if !is_paid {
-    info!("Invoice is not paid...");
+    info!("{} : invoice is not paid...", stripe_event_descriptor);
     return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
   }
 
   let subscription_id = match maybe_stripe_subscription_id {
     Some(subscription_id) => subscription_id,
     None => {
-      info!("Invoice is not for a subscription; skipping ...");
+      info!("{} : invoice is not for a subscription; skipping ...", stripe_event_descriptor);
       return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
     }
   };
@@ -105,7 +117,7 @@ pub async fn invoice_paid_handler(
     }
   };
 
-  info!("Invoice paid is for subscription.");
+  info!("{} : invoice paid is for subscription.", stripe_event_descriptor);
 
   Ok(EnrichedWebhookEvent {
     maybe_billing_action: Some(ArtcraftBillingAction::SubscriptionPaid(SubscriptionPaidEvent {
