@@ -1,13 +1,17 @@
-use crate::endpoints::webhook::webhook_event_handlers::checkout_session::checkout_session_completed_handler::checkout_session_completed_handler;
-use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_created_handler::customer_subscription_created_handler;
-use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_deleted_handler::customer_subscription_deleted_handler;
-use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
-use crate::endpoints::webhook::webhook_event_handlers::ignore_known_unwanted_events::ignore_known_unwanted_events;
-use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_paid_handler::invoice_paid_handler;
-use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_payment_failed::invoice_payment_failed_handler;
-use crate::endpoints::webhook::webhook_event_handlers::payment_intent::payment_intent_succeeded_handler::payment_intent_succeeded_handler;
-use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
-use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use crate::endpoints::webhook::common::artcraft_billing_action::BillingAction::IgnorableEvent;
+use crate::endpoints::webhook::common::artcraft_billing_action::{BillingAction, IgnoreableEventType};
+use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
+use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
+use crate::endpoints::webhook::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
+use crate::endpoints::webhook::webhook_event_enrichment::checkout_session::checkout_session_completed_handler::checkout_session_completed_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_created_handler::customer_subscription_created_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_deleted_handler::customer_subscription_deleted_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::ignore_known_unwanted_events::ignore_known_unwanted_events;
+use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_paid_handler::invoice_paid_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_payment_failed::invoice_payment_failed_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::payment_intent::payment_intent_succeeded_extractor::payment_intent_succeeded_extractor;
+use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use log::{info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;
@@ -15,21 +19,30 @@ use sqlx::{MySql, Transaction};
 use stripe::Client;
 use stripe_webhook::{Event, EventObject};
 
-pub async fn handle_webhook_payload(
-  transaction: &mut Transaction<'_, MySql>,
+pub async fn handle_webhook_event_enrichment(
   stripe_client: &Client,
   server_environment: ServerEnvironment,
   webhook_payload: Event,
   stripe_event_type: &str,
-) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
+) -> Result<EnrichedWebhookEvent, StripeArtcraftWebhookError> {
 
-  if let Some(summary) = ignore_known_unwanted_events(&webhook_payload) {
-    return Ok(summary);
+  // TODO: Cleanup -
+  if let Some(_summary) = ignore_known_unwanted_events(&webhook_payload) {
+    return Ok(EnrichedWebhookEvent {
+      maybe_billing_action: None,
+      webhook_event_log_summary: WebhookEventLogSummary {
+        maybe_user_token: None,
+        maybe_event_entity_id: None,
+        maybe_stripe_customer_id: None,
+        action_was_taken: false,
+        should_ignore_retry: true,
+      },
+    });
   }
 
   let mut unhandled_event_type = false;
 
-  let mut webhook_summary = StripeArtcraftWebhookSummary {
+  let mut webhook_summary = WebhookEventLogSummary {
     maybe_user_token: None,
     maybe_event_entity_id: None,
     maybe_stripe_customer_id: None,
@@ -82,11 +95,14 @@ pub async fn handle_webhook_payload(
       // Still need to ask about this. - does stripe say we can provision service here?
       // Do we know if this happens for upgrades/downgrades/renewals?
       // What about one-off payments?
+      /* TODO: Commented out for now
       webhook_summary = checkout_session_completed_handler(checkout_session)?;
+       */
     }
 
     // =============== CUSTOMER SUBSCRIPTIONS ===============
 
+    /* TODO TEMP -
     EventObject::CustomerSubscriptionCreated(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
       // DO NOT USE TO PROVISION SERVICE.
@@ -132,6 +148,7 @@ pub async fn handle_webhook_payload(
         transaction,
       ).await?;
     }
+     */
 
     // =============== INVOICES ===============
 
@@ -139,6 +156,8 @@ pub async fn handle_webhook_payload(
       // TODO: We need to respond to this so we don't hold payments up by 72 hours!
       //  See: https://stripe.com/docs/billing/subscriptions/webhooks
     }
+
+    /* TODO: Commented out for now.
 
     EventObject::InvoicePaid(invoice) => {
       // TODO: How do we handle multiple subscriptions?
@@ -161,16 +180,19 @@ pub async fn handle_webhook_payload(
       webhook_summary = invoice_payment_failed_handler(&invoice)?;
     }
 
+     */
+
     // =============== PAYMENT INTENTS ===============
 
     EventObject::PaymentIntentSucceeded(payment_intent) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
-      webhook_summary = payment_intent_succeeded_handler(
+
+      // NB: This is responsible for enabling one-off payments (eg. credits packs).
+      return payment_intent_succeeded_extractor(
         &payment_intent,
         server_environment,
         stripe_client,
-        transaction,
-      ).await?;
+      ).await;
     }
 
     // =============== Ignored ===============
@@ -190,5 +212,8 @@ pub async fn handle_webhook_payload(
       &webhook_payload.type_);
   }
 
-  Ok(webhook_summary)
+  Ok(EnrichedWebhookEvent {
+    maybe_billing_action: None,
+    webhook_event_log_summary: webhook_summary,
+  })
 }

@@ -1,4 +1,4 @@
-use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use log::info;
 use stripe_webhook::{Event, EventObject};
 

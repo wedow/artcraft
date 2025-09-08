@@ -1,13 +1,11 @@
 use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
 use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
-use crate::configs::subscriptions::get_artcraft_subscription_by_slug_and_env::get_artcraft_subscription_by_slug_and_env;
-use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
-use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
-use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
-use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use crate::endpoints::webhook::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
+use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use enums::common::subscription_namespace::SubscriptionNamespace;
-use log::{error, info};
-use mysql_queries::queries::users::user::update::update_user_record_with_new_stripe_customer_id::{update_user_record_with_new_stripe_customer_id, update_user_record_with_new_stripe_customer_id_with_connection};
+use log::error;
 use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::{get_user_subscription_by_stripe_subscription_id, get_user_subscription_by_stripe_subscription_id_with_connection};
 use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id_transactional::get_user_subscription_by_stripe_subscription_id_transactional;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
@@ -17,8 +15,9 @@ use sqlx::pool::PoolConnection;
 use sqlx::{MySql, MySqlPool, Transaction};
 use stripe_shared::Subscription;
 
-/// Handle event type: 'customer.subscription.updated'
-pub async fn customer_subscription_updated_handler(
+/// Handle event type: 'customer.subscription.deleted'
+/// Sent when a customer’s subscription ends.
+pub async fn customer_subscription_deleted_handler(
   subscription: &Subscription,
   server_environment: ServerEnvironment,
   transaction: &mut Transaction<'_, MySql>,
@@ -26,10 +25,12 @@ pub async fn customer_subscription_updated_handler(
 
   let summary = subscription_summary_extractor(subscription)
       .map_err(|err| {
-        let reason = format!("Error extracting subscription from 'customer.subscription.updated' payload: {:?}", err);
+        let reason = format!("Error extracting subscription from 'customer.subscription.deleted' payload: {:?}", err);
         error!("{}", reason);
         StripeArtcraftWebhookError::ServerError(reason) // NB: This was probably *our* fault.
       })?;
+
+  let mut should_process_update = true;
 
   let mut result = StripeArtcraftWebhookSummary {
     maybe_user_token: summary.user_token.clone(),
@@ -38,8 +39,6 @@ pub async fn customer_subscription_updated_handler(
     action_was_taken: false,
     should_ignore_retry: false,
   };
-
-  let mut should_process_update = true;
 
   let maybe_product = get_artcraft_product_by_stripe_id_and_env(
     &summary.stripe_product_id, server_environment);
@@ -79,13 +78,14 @@ pub async fn customer_subscription_updated_handler(
     }
   }
 
+  // NB: Even if we haven't received a record before, we should still be able to "tombstone" it
+  // once we detect the deletion.
   if should_process_update {
     if let Some(user_token) = summary.user_token.as_deref() {
-      info!("Upserting subscription");
 
       let upsert = UpsertUserSubscription {
         stripe_subscription_id: &summary.stripe_subscription_id,
-        user_token: &user_token,
+        user_token,
         subscription_namespace: SubscriptionNamespace::Artcraft,
         subscription_product_slug: &product.slug.to_str(),
         maybe_stripe_customer_id: Some(&summary.stripe_customer_id),
@@ -110,26 +110,11 @@ pub async fn customer_subscription_updated_handler(
             StripeArtcraftWebhookError::ServerError(reason)
           })?;
 
-      info!("Updating user record with stripe customer ID");
-
-      // // TODO: Should we care if a user accidentally gets two stripe customer IDs and this
-      // //  overwrites one of them?
-      // update_user_record_with_new_stripe_customer_id_with_connection(
-      //   transaction,
-      //   user_token,
-      //   Some(&summary.stripe_customer_id))
-      //     .await
-      //     .map_err(|err| {
-      //       let reason = format!("Mysql error: {:?}", err);
-      //       error!("{}", reason);
-      //       StripeArtcraftWebhookError::ServerError(reason)
-      //     })?;
-
       result.action_was_taken = true;
     }
-  }
 
-  result.should_ignore_retry = true;
+    result.should_ignore_retry = true;
+  }
 
   Ok(result)
 }
