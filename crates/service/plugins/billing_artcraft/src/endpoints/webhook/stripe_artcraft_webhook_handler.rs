@@ -6,6 +6,7 @@ use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEv
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_enrichment::handle_webhook_event_enrichment::handle_webhook_event_enrichment;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
+use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
 use crate::utils::verify_stripe_webhook_ip_address::verify_stripe_webhook_ip_address;
 use chrono::NaiveDateTime;
 use http_server_common::request::get_request_header_optional::get_request_header_optional;
@@ -18,6 +19,7 @@ use sqlx::pool::PoolConnection;
 use sqlx::{Acquire, MySql, MySqlConnection, MySqlPool, Transaction};
 use std::sync::Arc;
 use stripe_webhook::{Event, EventObject, Webhook};
+
 /*
 For one-off payments (eg. credits packs), we see this typical sequence of events:
 
@@ -86,9 +88,13 @@ pub async fn stripe_artcraft_webhook_handler(
   let stripe_event_created_at = NaiveDateTime::from_timestamp(webhook_payload.created, 0);
   let stripe_is_production = webhook_payload.livemode; // NB: Whether this was 'test' data or live data
 
-  info!("Stripe webhook event type: {} ({:?}); is production: {}, created at: {}, pending events to be handled: {}",
-    &stripe_event_type,
-    &webhook_payload.id,
+  let stripe_event_descriptor = StripeEventDescriptor {
+    stripe_event_id: stripe_event_id.clone(),
+    stripe_event_type: stripe_event_type.clone(),
+  };
+
+  info!("Stripe webhook event type: {} ; is production: {}, created at: {}, pending events to be handled: {}",
+    &stripe_event_descriptor,
     stripe_is_production,
     &stripe_event_created_at,
     webhook_payload.pending_webhooks);
@@ -104,7 +110,7 @@ pub async fn stripe_artcraft_webhook_handler(
   let maybe_previously_played_event = get_stripe_webhook_event_log_by_id_with_connection(&stripe_event_id, &mut mysql_connection)
       .await
       .map_err(|err| {
-        error!("Could not query previous event by ID ({}): {:?}", &stripe_event_id, err);
+        error!("Could not query previous event by ID ({}): {:?}", &stripe_event_descriptor, err);
         StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
 
@@ -114,7 +120,7 @@ pub async fn stripe_artcraft_webhook_handler(
     // We'll ignore it so that we remain idempotent.
     if event.should_ignore_retry {
       warn!("Stripe is replaying event ID={} ; ignoring it since we have already previously handled it.",
-        &stripe_event_id);
+        &stripe_event_descriptor);
 
       return Ok(Json(StripeArtcraftWebhookSuccessResponse {
         success: true,
@@ -123,10 +129,10 @@ pub async fn stripe_artcraft_webhook_handler(
   }
 
   let enriched_event = handle_webhook_event_enrichment(
+    &stripe_event_descriptor,
     &stripe_config.client,
     **server_environment,
     webhook_payload,
-    &stripe_event_type,
   ).await?;
 
   let mut transaction = mysql_connection.begin().await?;
@@ -135,6 +141,7 @@ pub async fn stripe_artcraft_webhook_handler(
     **server_environment, 
     &stripe_config,
     enriched_event,
+    stripe_event_descriptor.clone(),
     stripe_event_id.clone(), 
     stripe_event_created_at, 
     stripe_event_type.clone(), 
@@ -147,9 +154,8 @@ pub async fn stripe_artcraft_webhook_handler(
       transaction.commit().await?;
     },
     Err(err) => {
-      error!("Error handling Stripe webhook event `{}` ({}): {:?}", 
-        stripe_event_type, 
-        stripe_event_id, 
+      error!("Error handling Stripe webhook event {} : {:?}", 
+        stripe_event_descriptor, 
         err);
 
       transaction.rollback().await?;
@@ -167,6 +173,7 @@ async fn process_enriched_event(
   server_environment: ServerEnvironment, 
   stripe_config: &ArtcraftStripeConfigWithClient, 
   artcraft_event: EnrichedWebhookEvent,
+  stripe_event_descriptor: StripeEventDescriptor,
   stripe_event_id: String, 
   stripe_event_created_at: NaiveDateTime, 
   stripe_event_type: String, 
@@ -175,7 +182,7 @@ async fn process_enriched_event(
 ) -> Result<(), StripeArtcraftWebhookError> {
 
   if let Some(billing_action) = &artcraft_event.maybe_billing_action {
-    info!("Billing action being taken for event type: {}", &stripe_event_type);
+    info!("Billing action being taken for event : {}", &stripe_event_descriptor);
     // This is where we fulfill the purchase, subscription, non-payment, etc.!
     // TODO: Maybe grab the primary key of the impacted entity?
     transactionally_fulfill_artcraft_billing_action(
@@ -183,7 +190,7 @@ async fn process_enriched_event(
       transaction,
     ).await?;
   } else {
-    info!("No billing action to take for event type: {}", &stripe_event_type);
+    info!("No billing action to take for event : {}", &stripe_event_descriptor);
   }
 
   // NB: These records are uniquely keyed by ID, so this only happens once.

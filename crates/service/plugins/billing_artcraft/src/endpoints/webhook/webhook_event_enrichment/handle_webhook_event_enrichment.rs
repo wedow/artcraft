@@ -9,6 +9,7 @@ use crate::endpoints::webhook::webhook_event_enrichment::ignore_known_unwanted_e
 use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_paid_handler::invoice_paid_handler;
 use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_payment_failed::invoice_payment_failed_handler;
 use crate::endpoints::webhook::webhook_event_enrichment::payment_intent::payment_intent_succeeded_extractor::payment_intent_succeeded_extractor;
+use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
 use log::{info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;
@@ -30,10 +31,10 @@ use stripe_webhook::{Event, EventObject};
 */
 
 pub async fn handle_webhook_event_enrichment(
+  stripe_event_descriptor: &StripeEventDescriptor,
   stripe_client: &Client,
   server_environment: ServerEnvironment,
   webhook_payload: Event,
-  stripe_event_type: &str,
 ) -> Result<EnrichedWebhookEvent, StripeArtcraftWebhookError> {
 
   if let Some(summary) = ignore_known_unwanted_events(&webhook_payload) {
@@ -61,7 +62,7 @@ pub async fn handle_webhook_event_enrichment(
       // `payment_intent.succeeded` is responsible for enabling one-off payments (eg. credits packs).
       // We'll ignore any payment intents from subscription invoices and let other event handlers
       // fulfill subscription states.
-      info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
+      info!("Event {}, data: {:?}", stripe_event_descriptor, payment_intent);
       return payment_intent_succeeded_extractor(
         &payment_intent,
         server_environment,
@@ -81,7 +82,7 @@ pub async fn handle_webhook_event_enrichment(
       // This can be used to upsert the subscription record, but may be `incomplete` and unpaid.
       // This is good for the overall subscription state, renewal dates, etc.
       //
-      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      info!("Event: {}, data: {:?}", stripe_event_descriptor, subscription);
       return customer_subscription_created_handler(
         &subscription,
         server_environment,
@@ -89,7 +90,7 @@ pub async fn handle_webhook_event_enrichment(
     }
 
     EventObject::CustomerSubscriptionUpdated(subscription) => {
-      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      info!("Event: {}, data: {:?}", stripe_event_descriptor, subscription);
       return customer_subscription_updated_handler(
         &subscription,
         server_environment,
@@ -97,7 +98,7 @@ pub async fn handle_webhook_event_enrichment(
     }
 
     EventObject::CustomerSubscriptionDeleted(subscription) => {
-      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      info!("Event: {}, data: {:?}", stripe_event_descriptor, subscription);
       return customer_subscription_deleted_handler(
         &subscription,
         server_environment,
@@ -115,7 +116,7 @@ pub async fn handle_webhook_event_enrichment(
       // Invoices are for subscriptions, not one-off charges and purchases.
       // This is the *required* event that enables the subscription!
       // These are fired on an interval - whatever the billing cadence is.
-      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
+      info!("Event: {}, data: {:?}", stripe_event_descriptor, invoice);
       return invoice_paid_handler(&invoice, server_environment, stripe_client).await;
     }
 
@@ -124,7 +125,7 @@ pub async fn handle_webhook_event_enrichment(
       // TODO: in wallet schema, hold a 'lifetime_total_credits_used' - no, that wastes space. `credits_used` then SUM() for reports
       // When we detect invoice payment failures, we need to disable
       // subscription services.
-      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
+      info!("Event: {:?}, data: {:?}", stripe_event_descriptor, invoice);
       webhook_summary = invoice_payment_failed_handler(&invoice)?;
     }
     */
@@ -178,9 +179,7 @@ pub async fn handle_webhook_event_enrichment(
   // info!("event payload as json: {}", json);
 
   if unhandled_event_type {
-    warn!("Unhandled Stripe webhook event type: {} ({:?})",
-      &stripe_event_type,
-      &webhook_payload.type_);
+    warn!("Unhandled Stripe webhook event : {}", &stripe_event_descriptor);
   }
 
   Ok(EnrichedWebhookEvent {
