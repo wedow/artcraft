@@ -11,18 +11,22 @@ use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus
 use stripe_shared::{Subscription, SubscriptionStatus};
 use tokens::tokens::users::UserToken;
 
+// TODO: Code reuse with `lookup_subscription_from_subscription_id`.
+
 #[derive(Clone, Debug)]
 pub struct SubscriptionSummary {
-  /// Our own internal user token.
+  /// Our own internal user token, if it was attached to the subscription.
   pub user_token: Option<UserToken>,
 
-  /// Stripe production flag.
-  pub stripe_is_production: bool,
+  // Stripe foreign keys
 
   pub stripe_subscription_id: String,
   pub stripe_customer_id: String,
   pub stripe_product_id: String,
   pub stripe_price_id: String,
+  
+  /// Stripe production flag.
+  pub stripe_is_production: bool,
 
   /// The state of the subscription: active, cancelled, and other states.
   pub stripe_subscription_status: StripeSubscriptionStatus,

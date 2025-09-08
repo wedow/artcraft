@@ -1,10 +1,11 @@
-use log::{info, warn};
-use enums::common::subscription_namespace::SubscriptionNamespace;
-use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id_transactional::get_user_subscription_by_stripe_subscription_id_transactional;
-use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
-use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use crate::billing_action_fulfillment::artcraft_billing_action::SubscriptionPaidEvent;
 use crate::billing_action_fulfillment::subscriptions::upsert_subscription_details::CrudType;
+use enums::common::subscription_namespace::SubscriptionNamespace;
+use log::{info, warn};
+use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id_transactional::get_user_subscription_by_stripe_subscription_id_transactional;
+use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
+use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_with_invoice_paid_status_by_stripe_id::UpsertUserSubscriptionWithInvoicePaidStatus;
+use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 
 pub async fn mark_subscription_as_paid(
   details: &SubscriptionPaidEvent,
@@ -23,17 +24,22 @@ pub async fn mark_subscription_as_paid(
       Some(StripeSubscriptionStatus::Canceled) => {
         // TODO: We have to mark paid, but this is tricky...
         warn!("Existing subscription record already in terminal state...");
+
+
+        // TODO...
+
         return Ok(()); // Turn this into a no-op. This is stale info.
       }
       _ => {} // Fall-through
     }
   }
 
-  /*
-
-  let upsert = UpsertUserSubscription {
+  let upsert = UpsertUserSubscriptionWithInvoicePaidStatus {
     // This is the primary key
     stripe_subscription_id: &details.stripe_subscription_id,
+
+    // Invoice is paid
+    invoice_is_paid: true,
 
     // Artcraft product foreign keys
     user_token: details.owner_user_token.as_str(),
@@ -61,8 +67,6 @@ pub async fn mark_subscription_as_paid(
   };
 
   upsert.upsert_with_transaction(transaction).await?;
-  
-  */
 
   Ok(())
 }

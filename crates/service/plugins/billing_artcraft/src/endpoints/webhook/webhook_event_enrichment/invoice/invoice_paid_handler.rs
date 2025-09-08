@@ -93,10 +93,21 @@ pub async fn invoice_paid_handler(
   Ok(EnrichedWebhookEvent {
     maybe_billing_action: Some(ArtcraftBillingAction::SubscriptionPaid(SubscriptionPaidEvent {
       stripe_subscription_id: subscription_id,
-      stripe_customer_id: subscription.customer_id,
-      stripe_product_id: subscription.product_id,
-      stripe_price_id: subscription.price_id,
+      subscription: 0,
+      stripe_customer_id: subscription.stripe_customer_id,
+      stripe_product_id: subscription.stripe_product_id,
+      stripe_price_id: subscription.stripe_price_id,
       owner_user_token: user_token,
+      stripe_subscription_status: subscription.stripe_subscription_status,
+      stripe_recurring_interval: subscription.subscription_interval,
+      stripe_billing_cycle_anchor: subscription.stripe_billing_cycle_anchor,
+      stripe_is_production: subscription.stripe_is_production,
+      subscription_start_at: subscription.subscription_start_date,
+      current_billing_period_start_at: subscription.current_billing_period_start,
+      current_billing_period_end_at: subscription.current_billing_period_end,
+      calculated_subscription_expires_at: subscription.current_billing_period_end, // TODO: This is incorrect. Use `calculate_subscription_end_date`.
+      maybe_cancel_at: subscription.maybe_cancel_at,
+      maybe_canceled_at: subscription.maybe_canceled_at,
     })),
     webhook_event_log_summary: event_log_summary,
   })
