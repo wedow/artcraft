@@ -1,4 +1,3 @@
-use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::utils::enum_conversion::recurring_interval_to_reusable_type::recurring_interval_to_reusable_type;
 use crate::utils::enum_conversion::subscription_status_to_reusable_type::subscription_status_to_reusable_type;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
@@ -7,11 +6,9 @@ use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
 use errors::AnyhowResult;
-use log::error;
 use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use stripe_shared::{Subscription, SubscriptionStatus};
-use stripe_types::Expandable;
 use tokens::tokens::users::UserToken;
 
 #[derive(Clone, Debug)]
@@ -39,6 +36,10 @@ pub struct SubscriptionSummary {
   pub subscription_is_active: bool,
   pub subscription_interval: StripeRecurringInterval,
 
+  // Which day of the month / month of the year to anchor the subscription against.
+  // See the Stripe docs.
+  pub stripe_billing_cycle_anchor: NaiveDateTime,
+
   /// When the subscription was "created" in Stripe (including any backdating)
   pub subscription_start_date: NaiveDateTime,
 
@@ -55,10 +56,9 @@ pub struct SubscriptionSummary {
 /// This should be unit testable against raw webhook JSON.
 pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResult<SubscriptionSummary> {
   let subscription_id = subscription.id.to_string();
+
   // NB: Our internal user token.
   let maybe_user_token = get_metadata_user_token(&subscription.metadata);
-
-  error!("SUBSCRIPTION EVENT USER TOKEN: {:?}", maybe_user_token);
 
   if subscription.items.data.len() != 1 {
     return Err(anyhow!("Too many items in subscription {} : {}",
@@ -83,6 +83,8 @@ pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResu
   let period_start = NaiveDateTime::from_timestamp(item.current_period_start, 0);
   let period_end = NaiveDateTime::from_timestamp(item.current_period_end, 0);
 
+  let stripe_billing_cycle_anchor = NaiveDateTime::from_timestamp(subscription.billing_cycle_anchor, 0);
+
   let maybe_cancel_at = subscription.cancel_at.map(|t| NaiveDateTime::from_timestamp(t, 0));
   let maybe_canceled_at = subscription.canceled_at.map(|t| NaiveDateTime::from_timestamp(t, 0));
 
@@ -100,6 +102,7 @@ pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResu
     subscription_start_date: start_date,
     current_billing_period_start: period_start,
     current_billing_period_end: period_end,
+    stripe_billing_cycle_anchor,
     maybe_cancel_at,
     maybe_canceled_at,
   })

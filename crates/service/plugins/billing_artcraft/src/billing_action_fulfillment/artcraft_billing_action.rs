@@ -59,6 +59,10 @@ pub struct UpsertableSubscriptionDetails {
 
   pub stripe_recurring_interval : StripeRecurringInterval,
 
+  // Which day of the month / month of the year to anchor the subscription against.
+  // See the Stripe docs.
+  pub stripe_billing_cycle_anchor: NaiveDateTime,
+
   pub stripe_is_production: bool,
 
   /// When the subscription was "created" in Stripe (including any backdating)

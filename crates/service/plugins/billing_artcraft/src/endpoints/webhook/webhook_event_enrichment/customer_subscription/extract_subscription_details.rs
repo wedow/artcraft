@@ -60,6 +60,7 @@ pub fn extract_subscription_details(
 
   let calculated_end_date = calculate_subscription_end_date(&summary);
 
+
   let subscription_details = UpsertableSubscriptionDetails {
     // Unique Stripe foreign key
     stripe_customer_id: summary.stripe_customer_id,
@@ -77,6 +78,7 @@ pub fn extract_subscription_details(
     stripe_subscription_status: summary.stripe_subscription_status,
 
     // Timing data
+    stripe_billing_cycle_anchor: summary.stripe_billing_cycle_anchor,
     stripe_recurring_interval: summary.subscription_interval,
     calculated_subscription_expires_at: calculated_end_date,
     subscription_start_at: summary.subscription_start_date,

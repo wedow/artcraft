@@ -59,6 +59,10 @@ CREATE TABLE user_subscriptions (
 
   -- Which day of the month, or month of the year, etc. to anchor the subscription to.
   -- See docs on the subscription object.
+  -- Stripe: 
+  --   "The reference point that aligns future billing cycle dates. It sets the day 
+  --    of week for week intervals, the day of month for month and year intervals, and 
+  --    the month of year for year intervals. The timestamp is in UTC format."
   maybe_stripe_billing_cycle_anchor TIMESTAMP DEFAULT NULL,
 
   maybe_stripe_is_production BOOLEAN DEFAULT NULL,

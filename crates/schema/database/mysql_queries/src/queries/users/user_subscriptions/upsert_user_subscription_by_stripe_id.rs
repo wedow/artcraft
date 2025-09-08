@@ -39,6 +39,10 @@ pub struct UpsertUserSubscription<'a> {
   /// This may predate Stripe's subscription object `created` field due to backdating.
   pub subscription_start_at: NaiveDateTime,
 
+  // Which day of the month, month of the year, etc. to anchor the subscription against.
+  // See the Stripe docs for more.
+  pub maybe_stripe_billing_cycle_anchor: Option<NaiveDateTime>,
+
   // Billing periods for the subscription...
 
   pub current_billing_period_start_at: NaiveDateTime,
@@ -116,6 +120,8 @@ SET
   maybe_stripe_recurring_interval = ?,
   maybe_stripe_subscription_status = ?,
   maybe_stripe_is_production = ?,
+  
+  maybe_stripe_billing_cycle_anchor = ?,
 
   subscription_start_at = ?,
   current_billing_period_start_at = ?,
@@ -135,6 +141,8 @@ ON DUPLICATE KEY UPDATE
 
   maybe_stripe_recurring_interval = ?,
   maybe_stripe_subscription_status = ?,
+    
+  maybe_stripe_billing_cycle_anchor = ?,
 
   current_billing_period_start_at = ?,
   current_billing_period_end_at = ?,
@@ -159,6 +167,8 @@ ON DUPLICATE KEY UPDATE
       self.maybe_stripe_recurring_interval.as_deref(),
       self.maybe_stripe_subscription_status.as_deref(),
       self.maybe_stripe_is_production,
+      
+      self.maybe_stripe_billing_cycle_anchor,
 
       self.subscription_start_at,
       self.current_billing_period_start_at,
@@ -176,6 +186,8 @@ ON DUPLICATE KEY UPDATE
 
       self.maybe_stripe_recurring_interval.as_deref(),
       self.maybe_stripe_subscription_status.as_deref(),
+      
+      self.maybe_stripe_billing_cycle_anchor,
 
       self.current_billing_period_start_at,
       self.current_billing_period_end_at,

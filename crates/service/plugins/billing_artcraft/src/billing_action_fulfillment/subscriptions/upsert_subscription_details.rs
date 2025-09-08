@@ -66,6 +66,7 @@ pub async fn upsert_subscription_details(
     maybe_stripe_is_production: Some(details.stripe_is_production),
 
     // Timing data
+    maybe_stripe_billing_cycle_anchor: Some(details.stripe_billing_cycle_anchor),
     subscription_start_at: details.subscription_start_at,
     current_billing_period_start_at: details.current_billing_period_start_at,
     current_billing_period_end_at: details.current_billing_period_end_at,
