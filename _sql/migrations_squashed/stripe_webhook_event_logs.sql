@@ -43,9 +43,8 @@ CREATE TABLE stripe_webhook_event_logs (
   -- Some event types may attach a user token
   maybe_user_token VARCHAR(32) DEFAULT NULL,
 
-  -- TODO: Add an internal optional entity token this resolves to.
+  -- An internal optional entity token this resolves to.
   --  eg. `wallets.token` or `user_subscriptions.token`.
-  --  NB: This field does not exist yet !
   maybe_internal_entity_token VARCHAR(32) DEFAULT NULL,
 
   -- ========== TIMESTAMPS ==========

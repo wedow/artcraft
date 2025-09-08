@@ -76,6 +76,7 @@ pub async fn handle_webhook_event_enrichment(
     // TODO: Provision the subscription here.
     EventObject::CheckoutSessionCompleted(checkout_session) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, checkout_session);
+
       // TODO: DO NOT USE TO PROVISION SERVICE - USE `invoice.paid`.
       //
       // Checkout session completion is ideal for provisioning the service after checkout,
@@ -111,6 +112,7 @@ pub async fn handle_webhook_event_enrichment(
 
     EventObject::CustomerSubscriptionCreated(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+
       // DO NOT USE TO PROVISION SERVICE.
       //
       // This can be used to upsert the subscription record, but may be `incomplete` and unpaid.
@@ -138,6 +140,7 @@ pub async fn handle_webhook_event_enrichment(
 
     EventObject::CustomerSubscriptionUpdated(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+
       return customer_subscription_updated_handler(
         &subscription,
         server_environment,
@@ -146,6 +149,7 @@ pub async fn handle_webhook_event_enrichment(
 
     EventObject::CustomerSubscriptionDeleted(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      
       return customer_subscription_deleted_handler(
         &subscription,
         server_environment,
