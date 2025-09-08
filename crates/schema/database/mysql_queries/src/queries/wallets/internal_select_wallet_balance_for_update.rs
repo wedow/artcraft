@@ -11,9 +11,6 @@ pub (super) struct WalletForUpdate {
   
   pub banked_credits: u64,
   pub monthly_credits: u64,
-  
-  pub subscription_is_active: bool,
-  pub subscription_is_paid: bool,
 }
 
 // NB: BE VERY CAREFUL WITH THIS FUNCTION! 
@@ -30,9 +27,7 @@ SELECT
   token as `token: tokens::tokens::wallets::WalletToken`,
   owner_user_token as `owner_user_token: tokens::tokens::users::UserToken`,
   banked_credits,
-  monthly_credits,
-  subscription_is_active,
-  subscription_is_paid
+  monthly_credits
 FROM wallets
 WHERE token = ?
 LIMIT 1
@@ -49,9 +44,6 @@ FOR UPDATE
     
     banked_credits: record.banked_credits,
     monthly_credits: record.monthly_credits,
-    
-    subscription_is_active: i8_to_bool(record.subscription_is_paid),
-    subscription_is_paid: i8_to_bool(record.subscription_is_paid),
   })
 }
 
@@ -61,7 +53,4 @@ struct RawWalletForUpdate {
 
   banked_credits: u64,
   monthly_credits: u64,
-
-  subscription_is_active: i8,
-  subscription_is_paid: i8,
 }

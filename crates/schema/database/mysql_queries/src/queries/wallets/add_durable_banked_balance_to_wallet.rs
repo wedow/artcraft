@@ -41,7 +41,5 @@ pub async fn add_durable_banked_balance_to_wallet(
     monthly_credits_now: wallet.monthly_credits,
     banked_credits_before: wallet.banked_credits,
     monthly_credits_before: wallet.monthly_credits,
-    subscription_is_active: wallet.subscription_is_active,
-    subscription_is_paid: wallet.subscription_is_paid,
   })
 }

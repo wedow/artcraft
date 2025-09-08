@@ -10,7 +10,4 @@ pub struct WalletUpdateSummary {
   
   pub banked_credits_before: u64,
   pub monthly_credits_before: u64,
-
-  pub subscription_is_active: bool,
-  pub subscription_is_paid: bool,
 }

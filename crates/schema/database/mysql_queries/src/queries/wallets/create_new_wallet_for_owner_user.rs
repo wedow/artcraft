@@ -18,10 +18,7 @@ SET
   owner_user_token = ?,
   
   banked_credits = 0,
-  monthly_credits = 0,
-
-  subscription_is_active = false,
-  subscription_is_paid = false
+  monthly_credits = 0
         "#,
         token.as_str(),
         user_token.as_str()

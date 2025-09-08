@@ -45,9 +45,5 @@ pub async fn refill_monthly_credits_balance_on_wallet(
     // Banked credits not touched
     banked_credits_now: wallet.banked_credits,
     banked_credits_before: wallet.banked_credits,
-
-    // Not touched
-    subscription_is_active: wallet.subscription_is_active,
-    subscription_is_paid: wallet.subscription_is_paid,
   })
 }

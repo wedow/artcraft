@@ -43,6 +43,7 @@ pub(crate) enum TokenPrefix {
   User,
   UserBookmark,
   UserSession,
+  UserSubscription,
   VoiceConversionModel,
   VoiceConversionResult,
   Wallet,
@@ -76,7 +77,6 @@ pub(crate) enum LegacyTokenPrefix {
   TwitchEventRule,
   TwitchOauthGrouping,
   TwitchOauthInternal,
-  UserSubscription,
   VocoderModel,
   VoiceCloneRequest,
   W2lInferenceJob,
@@ -93,6 +93,7 @@ enum RetiredTokenPrefix {
   _DownloadJobDeprecatedNotNotUse,
   _UserDeprecatedDoNotUse, // NB: Users prior to 2023-10-24. Kept to prevent collision.
   _UserSessionDeprecatedDoNotUse, // NB: Sessions prior to 2023-10-24. Kept to prevent collision.
+  _UserSubscriptionDeprecatedDoNotUse, // NB: Subscriptions prior to ~2025-09-08. Kept to prevent collision.
 }
 
 pub trait PrefixGenerator {
@@ -123,6 +124,7 @@ impl PrefixGenerator for TokenPrefix {
       Self::User => "user_", // NB: Previously "U:"
       Self::UserBookmark => "ub_",
       Self::UserSession => "session_",
+      Self::UserSubscription => "subscription_", // NB: Previously "SUB:"
       Self::VoiceConversionModel => "vcm_",
       Self::VoiceConversionResult => "vcr_",
       Self::Wallet => "wallet_",
@@ -156,7 +158,6 @@ impl PrefixGenerator for LegacyTokenPrefix {
       Self::TwitchEventRule => "TER:",
       Self::TwitchOauthGrouping => "OG:",
       Self::TwitchOauthInternal => "TOI:",
-      Self::UserSubscription => "SUB:",
       Self::VocoderModel => "VM:",
       Self::VoiceCloneRequest => "VCR:",
       Self::W2lInferenceJob => "JWINF:",
@@ -173,6 +174,7 @@ impl PrefixGenerator for RetiredTokenPrefix {
       Self::_DownloadJobDeprecatedNotNotUse => "JGUP:", // NB: Download jobs changed roughly around 2022-12-16
       Self::_UserDeprecatedDoNotUse => "U:", // NB: Users prior to 2023-10-24 used this prefix.
       Self::_UserSessionDeprecatedDoNotUse => "SESSION:", // NB: Users prior to 2023-10-24 used this prefix.
+      Self::_UserSubscriptionDeprecatedDoNotUse => "SUB:", // NB: Subscriptions prior to ~2025-09-08 used this prefix.
     }
   }
 }
@@ -261,7 +263,7 @@ mod tests {
 
     #[test]
     pub fn do_not_add_new_legacy_token_prefixes() {
-      const DO_NOT_INCREASE_THIS_COUNT : usize = 18;
+      const DO_NOT_INCREASE_THIS_COUNT : usize = 17;
       assert_eq!(LegacyTokenPrefix::COUNT, DO_NOT_INCREASE_THIS_COUNT);
     }
   }
