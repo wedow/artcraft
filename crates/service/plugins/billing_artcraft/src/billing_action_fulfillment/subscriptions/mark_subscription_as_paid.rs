@@ -22,11 +22,9 @@ pub async fn mark_subscription_as_paid(
   if let Some(existing_sub) = maybe_existing_subscription {
     match existing_sub.maybe_stripe_subscription_status {
       Some(StripeSubscriptionStatus::Canceled) => {
-        // TODO: We have to mark paid, but this is tricky...
         warn!("Existing subscription record already in terminal state...");
 
-
-        // TODO...
+        // TODO: We have to mark paid, but this is tricky...
 
         return Ok(()); // Turn this into a no-op. This is stale info.
       }
@@ -44,7 +42,7 @@ pub async fn mark_subscription_as_paid(
     // Artcraft product foreign keys
     user_token: details.owner_user_token.as_str(),
     subscription_namespace: SubscriptionNamespace::Artcraft,
-    subscription_product_slug: details.subscription.slug.to_str(),
+    subscription_product_slug: details.artcraft_subscription.slug.to_str(),
 
     // Stripe object foreign keys
     maybe_stripe_customer_id: Some(&details.stripe_customer_id),
@@ -67,6 +65,11 @@ pub async fn mark_subscription_as_paid(
   };
 
   upsert.upsert_with_transaction(transaction).await?;
+
+
+  // TODO: Fill wallet with credits.
+
+  // TODO: Insert wallet ledger entry.
 
   Ok(())
 }

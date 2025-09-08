@@ -1,4 +1,6 @@
 use crate::billing_action_fulfillment::artcraft_billing_action::{ArtcraftBillingAction, SubscriptionPaidEvent, WalletCreditsPurchaseEvent};
+use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
+use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
 use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
@@ -6,7 +8,8 @@ use crate::requests::lookup_subscription_from_subscription_id::lookup_subscripti
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use crate::utils::expand_ids::expand_subscription_id::expand_subscription_id;
 use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
-use log::{info, warn};
+use log::{error, info, warn};
+use reusable_types::server_environment::ServerEnvironment;
 use stripe::Client;
 use stripe_shared::{Invoice, InvoiceStatus};
 
@@ -30,6 +33,7 @@ use stripe_shared::{Invoice, InvoiceStatus};
 //
 pub async fn invoice_paid_handler(
   invoice: &Invoice,
+  server_environment: ServerEnvironment,
   stripe_client: &Client,
 ) -> Result<EnrichedWebhookEvent, StripeArtcraftWebhookError> {
 
@@ -37,8 +41,6 @@ pub async fn invoice_paid_handler(
       .as_ref()
       .map(|metadata| get_metadata_user_token(metadata))
       .flatten();
-
-  let is_production= invoice.livemode;
 
   let maybe_stripe_customer_id  = invoice.customer
       .as_ref()
@@ -88,12 +90,27 @@ pub async fn invoice_paid_handler(
     }
   };
 
+  let maybe_product = get_artcraft_product_by_stripe_id_and_env(
+    &subscription.stripe_product_id, server_environment);
+
+  let product = match maybe_product {
+    Some(StripeArtcraftGenericProductInfo::Subscription(subscription)) => subscription,
+    Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => {
+      error!("Received a non-subscription credits pack product ({}). This should not happen.", &credits_pack.slug.to_str());
+      return Err(StripeArtcraftWebhookError::BadRequest("wrong product type".to_string()));
+    }
+    None => {
+      error!("No matching product for stripe product ID: {}", &subscription.stripe_product_id);
+      return Err(StripeArtcraftWebhookError::BadRequest("no matching product".to_string()));
+    }
+  };
+
   info!("Invoice paid is for subscription.");
 
   Ok(EnrichedWebhookEvent {
     maybe_billing_action: Some(ArtcraftBillingAction::SubscriptionPaid(SubscriptionPaidEvent {
       stripe_subscription_id: subscription_id,
-      subscription: 0,
+      artcraft_subscription: product.clone(),
       stripe_customer_id: subscription.stripe_customer_id,
       stripe_product_id: subscription.stripe_product_id,
       stripe_price_id: subscription.stripe_price_id,

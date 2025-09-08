@@ -58,18 +58,76 @@ pub async fn handle_webhook_event_enrichment(
     // =============== PAYMENT INTENTS ===============
 
     EventObject::PaymentIntentSucceeded(payment_intent) => {
-      info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
-
-      // NB: This is responsible for enabling one-off payments (eg. credits packs).
+      // `payment_intent.succeeded` is responsible for enabling one-off payments (eg. credits packs).
       // We'll ignore any payment intents from subscription invoices and let other event handlers
       // fulfill subscription states.
-
+      info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
       return payment_intent_succeeded_extractor(
         &payment_intent,
         server_environment,
         stripe_client,
       ).await;
     }
+
+    // =============== CUSTOMER SUBSCRIPTIONS ===============
+
+    EventObject::CustomerSubscriptionCreated(subscription) => {
+      // DO NOT USE TO PROVISION SERVICE.
+      //
+      // Sent when the subscription is created. The subscription status may be incomplete if customer
+      // authentication is required to complete the payment or if you set payment_behavior to
+      // default_incomplete. For more details, read about subscription payment behavior.
+      ///
+      // This can be used to upsert the subscription record, but may be `incomplete` and unpaid.
+      // This is good for the overall subscription state, renewal dates, etc.
+      //
+      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      return customer_subscription_created_handler(
+        &subscription,
+        server_environment,
+      ).await;
+    }
+
+    EventObject::CustomerSubscriptionUpdated(subscription) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      return customer_subscription_updated_handler(
+        &subscription,
+        server_environment,
+      ).await;
+    }
+
+    EventObject::CustomerSubscriptionDeleted(subscription) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
+      return customer_subscription_deleted_handler(
+        &subscription,
+        server_environment,
+      ).await;
+    }
+
+    // =============== INVOICES ===============
+
+    EventObject::InvoiceCreated(_invoice) => {
+      // TODO: We need to respond to this so we don't hold payments up by 72 hours!
+      //  See: https://stripe.com/docs/billing/subscriptions/webhooks
+    }
+
+    EventObject::InvoicePaid(invoice) => {
+      // Invoices are for subscriptions, not one-off charges and purchases.
+      // This is the *required* event that enables the subscription!
+      // These are fired on an interval - whatever the billing cadence is.
+      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
+      return invoice_paid_handler(&invoice, server_environment, stripe_client).await;
+    }
+
+    /*EventObject::InvoicePaymentFailed(invoice) => {
+      // TODO: Halt service.
+      // TODO: in wallet schema, hold a 'lifetime_total_credits_used' - no, that wastes space. `credits_used` then SUM() for reports
+      // When we detect invoice payment failures, we need to disable
+      // subscription services.
+      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
+      webhook_summary = invoice_payment_failed_handler(&invoice)?;
+    }
+    */
 
     // =============== CHECKOUT SESSIONS ===============
 
@@ -107,85 +165,6 @@ pub async fn handle_webhook_event_enrichment(
       webhook_summary = checkout_session_completed_handler(checkout_session)?;
        */
     }
-
-    // =============== CUSTOMER SUBSCRIPTIONS ===============
-
-    EventObject::CustomerSubscriptionCreated(subscription) => {
-      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
-
-      // DO NOT USE TO PROVISION SERVICE.
-      //
-      // This can be used to upsert the subscription record, but may be `incomplete` and unpaid.
-      // This is good for subscription state, renewal dates, etc.
-      //
-      //  - `id` of the subscription object
-      //  - `customer` id of the stripe customer object
-      //  - `status` has a rich list of subscription states (active, etc.)
-      //  - `items.data[0].price`
-      //  - `items.data[0].plan`
-      //  - billing_cycle_anchor
-      //  - `metadata` - user token, etc. that were attached to the subscription
-      //
-      // Sent when the subscription is created. The subscription status may be incomplete if customer
-      // authentication is required to complete the payment or if you set payment_behavior to
-      // default_incomplete. For more details, read about subscription payment behavior.
-      //
-      // TODO: add `maybe_billing_cycle_anchor`
-      //
-      return customer_subscription_created_handler(
-        &subscription,
-        server_environment,
-      ).await;
-    }
-
-    EventObject::CustomerSubscriptionUpdated(subscription) => {
-      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
-
-      return customer_subscription_updated_handler(
-        &subscription,
-        server_environment,
-      ).await;
-    }
-
-    EventObject::CustomerSubscriptionDeleted(subscription) => {
-      info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
-      
-      return customer_subscription_deleted_handler(
-        &subscription,
-        server_environment,
-      ).await;
-    }
-
-    // =============== INVOICES ===============
-
-    EventObject::InvoiceCreated(_invoice) => {
-      // TODO: We need to respond to this so we don't hold payments up by 72 hours!
-      //  See: https://stripe.com/docs/billing/subscriptions/webhooks
-    }
-
-    /* TODO: Commented out for now.
-
-    EventObject::InvoicePaid(invoice) => {
-      // TODO: How do we handle multiple subscriptions?
-      // TODO: How do we handle inactive subscriptions vs. payment failed ones?
-      // 'invoice.paid'
-      // - 'customer' - the customer id
-      // - 'status = paid'
-      // - (optional) 'subscription_details.subscription' - the stripe subscription id  (if subscription)
-      // - (optional) 'subscription_details.metadata' - Artcraft user token, etc.
-      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
-      webhook_summary = invoice_paid_handler(&invoice)?;
-    }
-
-    EventObject::InvoicePaymentFailed(invoice) => {
-      // TODO: Halt service.
-      // TODO: in wallet schema, hold a 'lifetime_total_credits_used' - no, that wastes space. `credits_used` then SUM() for reports
-      // When we detect invoice payment failures, we need to disable
-      // subscription services.
-      info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
-      webhook_summary = invoice_payment_failed_handler(&invoice)?;
-    }
-    */
 
     // =============== Ignored ===============
 

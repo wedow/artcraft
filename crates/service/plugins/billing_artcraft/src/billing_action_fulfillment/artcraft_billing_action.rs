@@ -94,7 +94,7 @@ pub struct SubscriptionPaidEvent {
   pub stripe_price_id: String,
 
   /// Artcraft subscription product
-  pub subscription: StripeArtcraftSubscriptionInfo,
+  pub artcraft_subscription: StripeArtcraftSubscriptionInfo,
 
   /// Artcraft user
   pub owner_user_token: UserToken,

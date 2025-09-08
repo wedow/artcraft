@@ -19,7 +19,7 @@ pub struct UpsertUserSubscriptionWithInvoicePaidStatus<'a> {
 
   /// Internal user token
   pub user_token: &'a str,
-  
+
   /// True if the `invoice.paid` signal was received from Stripe.
   /// False if the `invoice.payment_failed` signal was received.
   pub invoice_is_paid: bool,
@@ -111,9 +111,9 @@ impl <'a> UpsertUserSubscriptionWithInvoicePaidStatus<'a> {
 INSERT INTO user_subscriptions
 SET
   token = ?,
-  
-  invoice_is_paid = ?,
-  
+
+  maybe_stripe_invoice_is_paid = ?,
+
   user_token = ?,
   subscription_namespace = ?,
   subscription_product_slug = ?,
@@ -140,8 +140,8 @@ SET
   version = version + 1
 
 ON DUPLICATE KEY UPDATE
-  invoice_is_paid = ?,
-  
+  maybe_stripe_invoice_is_paid = ?,
+
   subscription_namespace = ?,
   subscription_product_slug= ?,
 
@@ -163,9 +163,9 @@ ON DUPLICATE KEY UPDATE
         "#,
       // Insert
       token,
-      
+
       self.invoice_is_paid,
-      
+
       self.user_token,
       self.subscription_namespace.to_str(),
       self.subscription_product_slug,
@@ -191,7 +191,7 @@ ON DUPLICATE KEY UPDATE
 
       // Upsert
       self.invoice_is_paid,
-      
+
       self.subscription_namespace,
       self.subscription_product_slug,
 
