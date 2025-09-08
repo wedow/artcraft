@@ -5,6 +5,9 @@ pub struct StripeArtcraftCreditsPackInfo {
   pub slug: ArtcraftCreditsPackSlug,
   pub product_id: &'static str,
   pub price_id: &'static str,
+
+  /// When a new credits pack purchase is made, this is how many credits
+  /// are added for "quantity=1"
   pub purchase_credits_amount: u64,
 }
 

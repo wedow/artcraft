@@ -1,2 +1,3 @@
+pub mod common;
 pub mod stripe_artcraft_webhook_handler;
 pub mod webhook_event_handlers;
