@@ -1,4 +1,4 @@
-use crate::endpoints::webhook::common::billing_action::BillingAction;
+use crate::endpoints::webhook::common::artcraft_billing_action::BillingAction;
 use crate::fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
 use anyhow::anyhow;
 use errors::AnyhowResult;
@@ -11,7 +11,7 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
 ) -> AnyhowResult<()> {
 
   match event {
-    BillingAction::IgnorableEvent { .. } => {
+    BillingAction::IgnorableEvent => {
       warn!("Received ignorable billing action; nothing to fulfill.");
       return Ok(())
     }

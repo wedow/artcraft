@@ -4,10 +4,7 @@ use tokens::tokens::wallets::WalletToken;
 
 pub enum BillingAction {
   /// An ignorable event.
-  IgnorableEvent{ 
-    event_type: IgnoreableEventType,
-    description: String 
-  },
+  IgnorableEvent,
   
   /// A user purchased wallet credits.
   WalletCreditsPurchase(WalletCreditsPurchaseEvent),

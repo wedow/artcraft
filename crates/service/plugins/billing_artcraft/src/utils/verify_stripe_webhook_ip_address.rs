@@ -6,6 +6,7 @@ use errors::AnyhowResult;
 use once_cell::sync::Lazy;
 
 use http_server_common::request::get_request_ip::get_request_ip;
+use reusable_types::server_environment::ServerEnvironment;
 
 /// List of IP addresses that send webhook requests
 /// From: https://stripe.com/docs/ips
@@ -32,15 +33,17 @@ static STRIPE_WEBHOOK_IP_ADDRESSES : Lazy<HashSet<String>> = Lazy::new(|| {
 
 /// Verify that the request comes from a Stripe webhook client IP
 /// Recommendation from: https://stripe.com/docs/webhooks/best-practices
-pub fn verify_stripe_webhook_ip_address(http_request: &HttpRequest) -> AnyhowResult<()> {
+pub fn verify_stripe_webhook_ip_address(http_request: &HttpRequest, server_environment: ServerEnvironment) -> AnyhowResult<()> {
   let ip_address = get_request_ip(http_request);
 
   if STRIPE_WEBHOOK_IP_ADDRESSES.contains(&ip_address) {
     return Ok(());
   }
 
-  // TODO: Only allow this in development
-  if ip_address == "127.0.0.1" {
+  let is_development = server_environment == ServerEnvironment::Development;
+  let is_localhost = ip_address == "127.0.0.1";
+
+  if is_development && is_localhost {
     return Ok(());
   }
 

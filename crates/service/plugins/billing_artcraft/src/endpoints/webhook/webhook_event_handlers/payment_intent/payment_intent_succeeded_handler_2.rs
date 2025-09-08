@@ -1,9 +1,9 @@
 use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
 use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
 use crate::configs::subscriptions::stripe_artcraft_subscription_info::StripeArtcraftSubscriptionInfo;
-use crate::endpoints::webhook::common::artcraft_billing_event::ArtcraftBillingEvent;
-use crate::endpoints::webhook::common::billing_action::{BillingAction, IgnoreableEventType, WalletCreditsPurchaseEvent};
-use crate::endpoints::webhook::common::event_log_summary::WebhookEventLogSummary;
+use crate::endpoints::webhook::common::artcraft_billing_action::{BillingAction, IgnoreableEventType, WalletCreditsPurchaseEvent};
+use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
+use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use crate::fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
@@ -25,7 +25,7 @@ pub async fn payment_intent_succeeded_handler_2(
   payment_intent: &PaymentIntent,
   server_environment: ServerEnvironment,
   stripe_client: &Client,
-) -> Result<ArtcraftBillingEvent, StripeArtcraftWebhookError> {
+) -> Result<EnrichedWebhookEvent, StripeArtcraftWebhookError> {
 
   let payment_intent_id = payment_intent.id.to_string();
 
@@ -47,7 +47,7 @@ pub async fn payment_intent_succeeded_handler_2(
       return Err(StripeArtcraftWebhookError::BadRequest("no user token in payment intent".to_string()));
     }
   };
-  
+
   let mut event_log_summary = WebhookEventLogSummary {
     maybe_stripe_customer_id,
     maybe_user_token,
@@ -63,15 +63,12 @@ pub async fn payment_intent_succeeded_handler_2(
     stripe_shared::PaymentIntentStatus::Succeeded => true,
     _ => false,
   };
-  
+
   if !payment_succeeded {
     event_log_summary.should_ignore_retry = true;
-    
-    return Ok(ArtcraftBillingEvent {
-      action: BillingAction::IgnorableEvent { 
-        description: "payment_intent not succeeded".to_string(),
-        event_type: IgnoreableEventType::PaymentIntentFailed,
-      },
+    //        description: "payment_intent not succeeded".to_string(),
+    return Ok(EnrichedWebhookEvent {
+      maybe_billing_action: None,
       webhook_event_log_summary: event_log_summary,
     });
   }
@@ -84,16 +81,15 @@ pub async fn payment_intent_succeeded_handler_2(
         error!("Error looking up purchase from payment intent {}: {:?}", &payment_intent_id, err);
         StripeArtcraftWebhookError::ServerError("error looking up purchase".to_string())
       })?;
-  
+
   if !purchase.has_invoice {
     // Subscription purchase. Let `invoice.paid` event handle this instead.
     event_log_summary.should_ignore_retry = true;
-    
-    return Ok(ArtcraftBillingEvent {
-      action: BillingAction::IgnorableEvent {
-        event_type: IgnoreableEventType::PaymentIntentForSubscription,
-        description: "payment_intent for subscription; will handle via invoice.paid".to_string(),
-      },
+
+    // description: "payment_intent for subscription; will handle via invoice.paid".to_string(),
+
+    return Ok(EnrichedWebhookEvent {
+      maybe_billing_action: None,
       webhook_event_log_summary: event_log_summary,
     });
   }
@@ -107,24 +103,22 @@ pub async fn payment_intent_succeeded_handler_2(
       info!("Do not handle subscriptions as one-off payments: {}", purchase.product_id);
       event_log_summary.should_ignore_retry = true;
 
-      return Ok(ArtcraftBillingEvent {
-        action: BillingAction::IgnorableEvent {
-          event_type: IgnoreableEventType::PaymentIntentForSubscription,
-          description: "payment_intent for subscription; will handle via invoice.paid".to_string(),
-        },
+      //description: "payment_intent for subscription; will handle via invoice.paid".to_string(),
+      return Ok(EnrichedWebhookEvent {
+        maybe_billing_action: None,
         webhook_event_log_summary: event_log_summary,
       });
     }
     Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => credits_pack,
   };
 
-  Ok(ArtcraftBillingEvent {
-    action: BillingAction::WalletCreditsPurchase(WalletCreditsPurchaseEvent {
+  Ok(EnrichedWebhookEvent {
+    maybe_billing_action: Some(BillingAction::WalletCreditsPurchase(WalletCreditsPurchaseEvent {
       owner_user_token: user_token,
       maybe_wallet_token: None, // TODO: Use the checkout session to set this !
       pack: credits_pack.clone(),
       quantity: purchase.quantity,
-    }),
+    })),
     webhook_event_log_summary: event_log_summary,
   })
 }

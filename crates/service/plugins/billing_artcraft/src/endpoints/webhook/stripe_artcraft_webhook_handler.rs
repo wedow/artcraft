@@ -1,17 +1,17 @@
 use actix_web::web::{Bytes, Data, Json};
 use actix_web::{web, HttpRequest, HttpResponse};
 
-use crate::endpoints::webhook::common::artcraft_billing_event::ArtcraftBillingEvent;
+use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::webhook_event_handlers::checkout_session::checkout_session_completed_handler::checkout_session_completed_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_created_handler::customer_subscription_created_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
+use crate::endpoints::webhook::webhook_event_handlers::handle_webhook_event_enrichment::handle_webhook_event_enrichment;
 use crate::endpoints::webhook::webhook_event_handlers::handle_webhook_payload::handle_webhook_payload;
 use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_paid_handler::invoice_paid_handler;
 use crate::endpoints::webhook::webhook_event_handlers::invoice::invoice_payment_failed::invoice_payment_failed_handler;
 use crate::endpoints::webhook::webhook_event_handlers::payment_intent::payment_intent_succeeded_handler::payment_intent_succeeded_handler;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_handlers::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
-use crate::endpoints::webhook::webhook_event_handlers::webhook_event_to_artcraft_event::webhook_event_to_artcraft_event;
 use crate::fulfillment::transactionally_fulfill_artcraft_billing_event::transactionally_fulfill_artcraft_billing_action;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::verify_stripe_webhook_ip_address::verify_stripe_webhook_ip_address;
@@ -61,11 +61,11 @@ pub async fn stripe_artcraft_webhook_handler(
   mysql_pool: Data<MySqlPool>,
 ) -> Result<Json<StripeArtcraftWebhookSuccessResponse>, StripeArtcraftWebhookError>
 {
-  verify_stripe_webhook_ip_address(&http_request)
+  verify_stripe_webhook_ip_address(&http_request, **server_environment)
       .map_err(|e| {
         let reason = format!("Improper client IP address. Error: {:?}", e);
         error!("{}", &reason);
-        StripeArtcraftWebhookError::BadRequest("bad request".to_string())
+        StripeArtcraftWebhookError::BadRequest(reason)
       })?;
 
   let secret_signing_key = &stripe_config.secret_webhook_signing_key;
@@ -91,13 +91,9 @@ pub async fn stripe_artcraft_webhook_handler(
 
   // Events can be re-sent, so we need to make handling them idempotent.
   let stripe_event_id = webhook_payload.id.to_string();
-
-  let stripe_event_created_at = NaiveDateTime::from_timestamp(webhook_payload.created, 0);
-
   let stripe_event_type = webhook_payload.type_.as_str().to_string();
-
-  // NB: Whether this was test data or live data
-  let stripe_is_production = webhook_payload.livemode;
+  let stripe_event_created_at = NaiveDateTime::from_timestamp(webhook_payload.created, 0);
+  let stripe_is_production = webhook_payload.livemode; // NB: Whether this was 'test' data or live data
 
   info!("Stripe webhook event type: {} ({:?}); is production: {}, created at: {}, pending events to be handled: {}",
     &stripe_event_type,
@@ -121,12 +117,12 @@ pub async fn stripe_artcraft_webhook_handler(
         StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
 
-  // TODO: Not sure this retry / idempotency logic is correct
+  // TODO: This might be extraneous. Inserting logs is transactionally unique and can only happen once.
   if let Some(event) = maybe_previously_played_event {
     // The event is being replayed by Stripe, and we've already handled it.
     // We'll ignore it so that we remain idempotent.
     if event.should_ignore_retry {
-      warn!("Stripe is replying event with ID={}. Ignoring it since we have previously handled it.",
+      warn!("Stripe is replaying event ID={} ; ignoring it since we have already previously handled it.",
         &stripe_event_id);
 
       return Ok(Json(StripeArtcraftWebhookSuccessResponse {
@@ -135,7 +131,7 @@ pub async fn stripe_artcraft_webhook_handler(
     }
   }
 
-  let artcraft_event = webhook_event_to_artcraft_event(
+  let enriched_event = handle_webhook_event_enrichment(
     &stripe_config.client,
     **server_environment,
     webhook_payload,
@@ -144,10 +140,10 @@ pub async fn stripe_artcraft_webhook_handler(
 
   let mut transaction = mysql_connection.begin().await?;
 
-  let result = process_event(
+  let result = process_enriched_event(
     **server_environment, 
-    &stripe_config, 
-    artcraft_event,
+    &stripe_config,
+    enriched_event,
     stripe_event_id.clone(), 
     stripe_event_created_at, 
     stripe_event_type.clone(), 
@@ -161,7 +157,9 @@ pub async fn stripe_artcraft_webhook_handler(
     },
     Err(err) => {
       error!("Error handling Stripe webhook event `{}` ({}): {:?}", 
-        stripe_event_type,stripe_event_id, err);
+        stripe_event_type, 
+        stripe_event_id, 
+        err);
 
       transaction.rollback().await?;
 
@@ -174,10 +172,10 @@ pub async fn stripe_artcraft_webhook_handler(
   }))
 }
 
-async fn process_event(
+async fn process_enriched_event(
   server_environment: ServerEnvironment, 
   stripe_config: &ArtcraftStripeConfigWithClient, 
-  artcraft_event: ArtcraftBillingEvent,
+  artcraft_event: EnrichedWebhookEvent,
   stripe_event_id: String, 
   stripe_event_created_at: NaiveDateTime, 
   stripe_event_type: String, 
@@ -185,11 +183,14 @@ async fn process_event(
   transaction: &mut Transaction<'_, MySql>
 ) -> Result<(), StripeArtcraftWebhookError> {
 
-  // TODO: Maybe grab the primary key of the impacted entity?
-  transactionally_fulfill_artcraft_billing_action(
-    &artcraft_event.action,
-    transaction,
-  ).await?;
+  if let Some(billing_action) = &artcraft_event.maybe_billing_action {
+    // This is where we fulfill the purchase, subscription, non-payment, etc.!
+    // TODO: Maybe grab the primary key of the impacted entity?
+    transactionally_fulfill_artcraft_billing_action(
+      billing_action,
+      transaction,
+    ).await?;
+  }
 
   // NB: These records are uniquely keyed by ID, so this only happens once.
   let query = InsertStripeWebhookEventLog {

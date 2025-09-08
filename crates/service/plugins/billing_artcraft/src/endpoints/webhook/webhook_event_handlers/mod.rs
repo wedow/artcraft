@@ -1,6 +1,6 @@
 
 mod ignore_known_unwanted_events;
-pub (crate) mod webhook_event_to_artcraft_event;
+pub (crate) mod handle_webhook_event_enrichment;
 pub mod handle_webhook_payload;
 pub mod stripe_artcraft_webhook_error;
 pub(crate) mod checkout_session;

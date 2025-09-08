@@ -1,7 +1,7 @@
-use crate::endpoints::webhook::common::artcraft_billing_event::ArtcraftBillingEvent;
-use crate::endpoints::webhook::common::billing_action::BillingAction::IgnorableEvent;
-use crate::endpoints::webhook::common::billing_action::{BillingAction, IgnoreableEventType};
-use crate::endpoints::webhook::common::event_log_summary::WebhookEventLogSummary;
+use crate::endpoints::webhook::common::artcraft_billing_action::BillingAction::IgnorableEvent;
+use crate::endpoints::webhook::common::artcraft_billing_action::{BillingAction, IgnoreableEventType};
+use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
+use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
 use crate::endpoints::webhook::webhook_event_handlers::checkout_session::checkout_session_completed_handler::checkout_session_completed_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_created_handler::customer_subscription_created_handler;
 use crate::endpoints::webhook::webhook_event_handlers::customer_subscription::customer_subscription_deleted_handler::customer_subscription_deleted_handler;
@@ -20,21 +20,17 @@ use sqlx::{MySql, Transaction};
 use stripe::Client;
 use stripe_webhook::{Event, EventObject};
 
-pub async fn webhook_event_to_artcraft_event(
+pub async fn handle_webhook_event_enrichment(
   stripe_client: &Client,
   server_environment: ServerEnvironment,
   webhook_payload: Event,
   stripe_event_type: &str,
-) -> Result<ArtcraftBillingEvent, StripeArtcraftWebhookError> {
+) -> Result<EnrichedWebhookEvent, StripeArtcraftWebhookError> {
 
   // TODO: Cleanup -
   if let Some(_summary) = ignore_known_unwanted_events(&webhook_payload) {
-    return Ok(ArtcraftBillingEvent {
-      action: BillingAction::IgnorableEvent {
-        event_type: IgnoreableEventType::Other,
-        description: "TODO".to_string(),
-
-      },
+    return Ok(EnrichedWebhookEvent {
+      maybe_billing_action: None,
       webhook_event_log_summary: WebhookEventLogSummary {
         maybe_user_token: None,
         maybe_event_entity_id: None,
@@ -217,11 +213,8 @@ pub async fn webhook_event_to_artcraft_event(
       &webhook_payload.type_);
   }
 
-  Ok(ArtcraftBillingEvent {
-    action: IgnorableEvent {
-      event_type: IgnoreableEventType::Other,
-      description: "todo".to_string(),
-    },
+  Ok(EnrichedWebhookEvent {
+    maybe_billing_action: None,
     webhook_event_log_summary: webhook_summary,
   })
 }
