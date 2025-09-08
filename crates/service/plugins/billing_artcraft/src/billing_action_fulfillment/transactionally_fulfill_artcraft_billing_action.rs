@@ -1,21 +1,21 @@
-use crate::endpoints::webhook::common::artcraft_billing_action::BillingAction;
-use crate::fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
+use crate::billing_action_fulfillment::artcraft_billing_action::ArtcraftBillingAction;
+use crate::billing_action_fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{info, warn};
 use sqlx::Transaction;
 
 pub async fn transactionally_fulfill_artcraft_billing_action(
-  event: &BillingAction,
+  event: &ArtcraftBillingAction,
   transaction: &mut Transaction<'_, sqlx::MySql>,
 ) -> AnyhowResult<()> {
 
   match event {
-    BillingAction::IgnorableEvent => {
+    ArtcraftBillingAction::IgnorableEvent => {
       warn!("Received ignorable billing action; nothing to fulfill.");
       return Ok(())
     }
-    BillingAction::WalletCreditsPurchase(purchase) => {
+    ArtcraftBillingAction::WalletCreditsPurchase(purchase) => {
       info!("Completing credits pack purchase for user: {} ... ", purchase.owner_user_token.as_str());
       complete_credits_pack_purchase(
         &purchase.owner_user_token,

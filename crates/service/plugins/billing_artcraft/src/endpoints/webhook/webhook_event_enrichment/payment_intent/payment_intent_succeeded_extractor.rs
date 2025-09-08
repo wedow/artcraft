@@ -1,12 +1,11 @@
+use crate::billing_action_fulfillment::artcraft_billing_action::{ArtcraftBillingAction, WalletCreditsPurchaseEvent};
 use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
 use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
 use crate::configs::subscriptions::stripe_artcraft_subscription_info::StripeArtcraftSubscriptionInfo;
-use crate::endpoints::webhook::common::artcraft_billing_action::{BillingAction, IgnoreableEventType, WalletCreditsPurchaseEvent};
 use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
 use crate::endpoints::webhook::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
-use crate::fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
 use crate::requests::lookup_purchase_from_payment_intent_success::lookup_purchase_from_payment_intent_success;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
@@ -113,7 +112,7 @@ pub async fn payment_intent_succeeded_extractor(
   };
 
   Ok(EnrichedWebhookEvent {
-    maybe_billing_action: Some(BillingAction::WalletCreditsPurchase(WalletCreditsPurchaseEvent {
+    maybe_billing_action: Some(ArtcraftBillingAction::WalletCreditsPurchase(WalletCreditsPurchaseEvent {
       owner_user_token: user_token,
       maybe_wallet_token: None, // TODO: Use the checkout session to set this !
       pack: credits_pack.clone(),

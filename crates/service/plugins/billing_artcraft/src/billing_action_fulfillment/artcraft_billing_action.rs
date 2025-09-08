@@ -2,7 +2,7 @@ use crate::configs::credits_packs::stripe_artcraft_credits_pack_info::StripeArtc
 use tokens::tokens::users::UserToken;
 use tokens::tokens::wallets::WalletToken;
 
-pub enum BillingAction {
+pub enum ArtcraftBillingAction {
   /// An ignorable event.
   IgnorableEvent,
   
@@ -29,9 +29,3 @@ pub struct WalletCreditsPurchaseEvent {
   pub quantity: u64,
 }
 
-#[derive(Copy,Clone,Debug)]
-pub enum IgnoreableEventType {
-  Other,
-  PaymentIntentFailed,
-  PaymentIntentForSubscription,
-}
