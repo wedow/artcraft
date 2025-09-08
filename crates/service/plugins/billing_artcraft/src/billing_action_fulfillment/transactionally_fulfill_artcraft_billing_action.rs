@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{info, warn};
 use sqlx::Transaction;
-use crate::billing_action_fulfillment::subscriptions::upsert_subscription_details::upsert_subscription_details;
+use crate::billing_action_fulfillment::subscriptions::upsert_subscription_details::{upsert_subscription_details, CrudType};
 
 pub async fn transactionally_fulfill_artcraft_billing_action(
   event: &ArtcraftBillingAction,
@@ -26,8 +26,13 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
       ).await?;
     }
     ArtcraftBillingAction::SubscriptionCreated(subscription_details) => {
-      upsert_subscription_details(subscription_details, transaction).await?;
-      
+      upsert_subscription_details(subscription_details, CrudType::Create, transaction).await?;
+    }
+    ArtcraftBillingAction::SubscriptionUpdated(subscription_details) => {
+      upsert_subscription_details(subscription_details, CrudType::Update, transaction).await?;
+    }
+    ArtcraftBillingAction::SubscriptionDeleted(subscription_details) => {
+      upsert_subscription_details(subscription_details, CrudType::Delete, transaction).await?;
     }
     _ => {
       return Err(anyhow!("Unhandled billing action in fulfillment"));

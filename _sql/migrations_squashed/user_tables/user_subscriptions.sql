@@ -59,6 +59,8 @@ CREATE TABLE user_subscriptions (
 
   maybe_stripe_is_production BOOLEAN DEFAULT NULL,
 
+  -- TODO: add `maybe_billing_cycle_anchor`
+
   -- ========== VECTOR CLOCK ==========
 
   -- Incremented with every update.

@@ -9,15 +9,13 @@ use tokens::tokens::wallets::WalletToken;
 pub enum ArtcraftBillingAction {
   /// An ignorable event.
   IgnorableEvent,
-  
+
   /// A user purchased wallet credits.
   WalletCreditsPurchase(WalletCreditsPurchaseEvent),
-  
+
   SubscriptionCreated(UpsertableSubscriptionDetails),
   SubscriptionUpdated(UpsertableSubscriptionDetails),
-  
-  // TODO
-  SubscriptionDeleted,
+  SubscriptionDeleted(UpsertableSubscriptionDetails),
 
   // TODO:
   SubscriptionRenewalBillingFailed,
@@ -27,32 +25,32 @@ pub enum ArtcraftBillingAction {
 
 pub struct WalletCreditsPurchaseEvent {
   pub owner_user_token: UserToken,
-  
-  // We might have sent the wallet to stripe. 
+
+  // We might have sent the wallet to stripe.
   // If not, we'll need to look it up or create one.
   pub maybe_wallet_token: Option<WalletToken>,
-  
+
   pub pack: StripeArtcraftCreditsPackInfo,
-  
+
   // NB: This is a multiplier on the pack's base value.
   pub quantity: u64,
 }
 
 
 pub struct UpsertableSubscriptionDetails {
-  /// Stripe's subscription_id is a unique foreign key  in the 
+  /// Stripe's subscription_id is a unique foreign key  in the
   /// `users_subscriptions` table!
   pub stripe_subscription_id: String,
 
-  // Other stripe foreign keys ... 
-  
+  // Other stripe foreign keys ...
+
   pub stripe_customer_id: String,
   pub stripe_product_id: String,
   pub stripe_price_id: String,
 
   /// Artcraft subscription product
   pub subscription: StripeArtcraftSubscriptionInfo,
-  
+
   /// Artcraft user
   pub owner_user_token: UserToken,
 
@@ -60,7 +58,7 @@ pub struct UpsertableSubscriptionDetails {
   pub stripe_subscription_status: StripeSubscriptionStatus,
 
   pub stripe_recurring_interval : StripeRecurringInterval,
-  
+
   pub stripe_is_production: bool,
 
   /// When the subscription was "created" in Stripe (including any backdating)

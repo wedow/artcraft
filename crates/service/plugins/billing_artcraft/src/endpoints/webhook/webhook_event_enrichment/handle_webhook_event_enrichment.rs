@@ -109,7 +109,6 @@ pub async fn handle_webhook_event_enrichment(
 
     // =============== CUSTOMER SUBSCRIPTIONS ===============
 
-    /* TODO TEMP -
     EventObject::CustomerSubscriptionCreated(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
       // DO NOT USE TO PROVISION SERVICE.
@@ -131,31 +130,27 @@ pub async fn handle_webhook_event_enrichment(
       //
       // TODO: add `maybe_billing_cycle_anchor`
       //
-      webhook_summary = customer_subscription_created_handler(
+      return customer_subscription_created_handler(
         &subscription,
         server_environment,
-        transaction,
-      ).await?;
+      ).await;
     }
 
     EventObject::CustomerSubscriptionUpdated(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
-      webhook_summary = customer_subscription_updated_handler(
+      return customer_subscription_updated_handler(
         &subscription,
         server_environment,
-        transaction,
-      ).await?;
+      ).await;
     }
 
     EventObject::CustomerSubscriptionDeleted(subscription) => {
       info!("Event: {}, data: {:?}", webhook_payload.type_, subscription);
-      webhook_summary = customer_subscription_deleted_handler(
+      return customer_subscription_deleted_handler(
         &subscription,
         server_environment,
-        transaction,
-      ).await?;
+      ).await;
     }
-     */
 
     // =============== INVOICES ===============
 
