@@ -9,7 +9,6 @@ use crate::endpoints::webhook::webhook_event_enrichment::ignore_known_unwanted_e
 use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_paid_handler::invoice_paid_handler;
 use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_payment_failed::invoice_payment_failed_handler;
 use crate::endpoints::webhook::webhook_event_enrichment::payment_intent::payment_intent_succeeded_extractor::payment_intent_succeeded_extractor;
-use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use log::{info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;

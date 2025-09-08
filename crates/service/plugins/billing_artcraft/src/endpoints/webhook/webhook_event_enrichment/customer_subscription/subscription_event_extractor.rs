@@ -3,6 +3,7 @@ use crate::utils::enum_conversion::recurring_interval_to_reusable_type::recurrin
 use crate::utils::enum_conversion::subscription_status_to_reusable_type::subscription_status_to_reusable_type;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use crate::utils::expand_ids::expand_product_id::expand_product_id;
+use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
 use errors::AnyhowResult;
@@ -11,11 +12,12 @@ use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 use stripe_shared::{Subscription, SubscriptionStatus};
 use stripe_types::Expandable;
+use tokens::tokens::users::UserToken;
 
 #[derive(Clone, Debug)]
 pub struct SubscriptionSummary {
   /// Our own internal user token.
-  pub user_token: Option<String>,
+  pub user_token: Option<UserToken>,
 
   /// Stripe production flag.
   pub stripe_is_production: bool,
@@ -54,8 +56,7 @@ pub struct SubscriptionSummary {
 pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResult<SubscriptionSummary> {
   let subscription_id = subscription.id.to_string();
   // NB: Our internal user token.
-  let maybe_user_token = subscription.metadata.get(STRIPE_ARTCRAFT_METADATA_USER_TOKEN)
-      .map(|t| t.to_string());
+  let maybe_user_token = get_metadata_user_token(&subscription.metadata);
 
   error!("SUBSCRIPTION EVENT USER TOKEN: {:?}", maybe_user_token);
 
@@ -110,6 +111,7 @@ mod tests {
   use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
   use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
   use stripe_shared::Subscription;
+  use tokens::tokens::users::UserToken;
 
   #[test]
   fn test_subscription_summary_extractor_on_create_event() {
@@ -137,7 +139,7 @@ mod tests {
 
     let summary= subscription_summary_extractor(&subscription).unwrap();
 
-    assert_eq!(summary.user_token, Some("U:TOKEN".to_string()));
+    assert_eq!(summary.user_token, Some(UserToken::new_from_str("U:TOKEN")));
     assert_eq!(summary.stripe_subscription_id, "sub_1LhA3MEU5se17MekeWvmTNyk".to_string());
     assert_eq!(summary.stripe_subscription_status, StripeSubscriptionStatus::Incomplete);
     assert_eq!(summary.cancel_at_period_end, false);
@@ -182,7 +184,7 @@ mod tests {
 
     let summary= subscription_summary_extractor(&subscription).unwrap();
 
-    assert_eq!(summary.user_token, Some("U:token".to_string()));
+    assert_eq!(summary.user_token, Some(UserToken::new_from_str("U:token")));
     assert_eq!(summary.stripe_subscription_id, "sub_1Lh1wvEU5se17Mekx72OzAzs".to_string());
     assert_eq!(summary.stripe_subscription_status, StripeSubscriptionStatus::Active);
     assert_eq!(summary.cancel_at_period_end, false);
@@ -227,7 +229,7 @@ mod tests {
 
     let summary= subscription_summary_extractor(&subscription).unwrap();
 
-    assert_eq!(summary.user_token, Some("U:TOKEN".to_string()));
+    assert_eq!(summary.user_token, Some(UserToken::new_from_str("U:TOKEN")));
     assert_eq!(summary.stripe_subscription_id, "sub_1LhA3MEU5se17MekeWvmTNyk".to_string());
     assert_eq!(summary.stripe_subscription_status, StripeSubscriptionStatus::Canceled);
     assert_eq!(summary.cancel_at_period_end, false);
@@ -401,7 +403,7 @@ mod tests {
 
     // NB: It was scheduled to cancel at the end of the billing period and remains active for now
     //  These are the fields we don't expect to be impacted as the subscription remains active.
-    assert_eq!(summary.user_token, Some("U:USER_TOKEN_VALUE".to_string()));
+    assert_eq!(summary.user_token, Some(UserToken::new_from_str("U:USER_TOKEN_VALUE")));
     assert_eq!(summary.stripe_subscription_id, "sub_1Lj3PKEU5se17MekHrr1isFH".to_string());
     assert_eq!(summary.stripe_customer_id, "cus_MRxJT3KvFcAN6Z".to_string());
     assert_eq!(summary.stripe_product_id, "prod_MMxi2J5y69VPbO".to_string());

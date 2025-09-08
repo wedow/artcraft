@@ -1,5 +1,5 @@
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
-use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use crate::utils::expand_ids::expand_subscription_id::expand_subscription_id;
 use stripe_shared::{Invoice, InvoiceStatus};
@@ -22,7 +22,7 @@ use stripe_shared::{Invoice, InvoiceStatus};
 // 4. Your webhook endpoint updates the customer’s access expiration date in your database to the
 //    appropriate date in the future (plus a day or two for leeway).
 //
-pub fn invoice_paid_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
+pub fn invoice_paid_handler(invoice: &Invoice) -> Result<WebhookEventLogSummary, StripeArtcraftWebhookError> {
 
   let is_paid = match invoice.status {
     Some(InvoiceStatus::Paid) => true,
@@ -41,7 +41,7 @@ pub fn invoice_paid_handler(invoice: &Invoice) -> Result<StripeArtcraftWebhookSu
       .as_ref()
       .map(|s| expand_subscription_id(s));
 
-  Ok(StripeArtcraftWebhookSummary {
+  Ok(WebhookEventLogSummary {
     maybe_user_token: None,
     maybe_event_entity_id: None,
     maybe_stripe_customer_id: None,

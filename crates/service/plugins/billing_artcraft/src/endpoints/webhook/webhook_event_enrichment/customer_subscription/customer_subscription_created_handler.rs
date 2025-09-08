@@ -1,9 +1,9 @@
 use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
 use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
+use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
 use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
 use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
-use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use enums::common::subscription_namespace::SubscriptionNamespace;
 use log::error;
 use mysql_queries::queries::users::user::update::update_user_record_with_new_stripe_customer_id::{update_user_record_with_new_stripe_customer_id, update_user_record_with_new_stripe_customer_id_with_connection};
@@ -23,7 +23,7 @@ pub async fn customer_subscription_created_handler(
   subscription: &Subscription,
   server_environment: ServerEnvironment,
   transaction: &mut Transaction<'_, MySql>,
-) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
+) -> Result<WebhookEventLogSummary, StripeArtcraftWebhookError> {
 
   let summary = subscription_summary_extractor(subscription)
       .map_err(|err| {
@@ -32,7 +32,7 @@ pub async fn customer_subscription_created_handler(
         StripeArtcraftWebhookError::ServerError(reason) // NB: This was probably *our* fault.
       })?;
 
-  let mut result = StripeArtcraftWebhookSummary {
+  let mut result = WebhookEventLogSummary {
     maybe_user_token: summary.user_token.clone(),
     maybe_event_entity_id: Some(summary.stripe_subscription_id.clone()),
     maybe_stripe_customer_id: Some(summary.stripe_customer_id.clone()),
@@ -73,12 +73,12 @@ pub async fn customer_subscription_created_handler(
     }
   };
 
-  if let Some(user_token) = summary.user_token.as_deref() {
+  if let Some(user_token) = summary.user_token.as_ref() {
     // TODO: record cancel_at (future_cancel_at), canceled_at, ended_at (if subscription ended, when it ended), start_date
 
     let upsert = UpsertUserSubscription {
         stripe_subscription_id: &summary.stripe_subscription_id,
-        user_token,
+        user_token: user_token.as_str(),
         subscription_namespace: SubscriptionNamespace::Artcraft,
         subscription_product_slug: &product.slug.to_str(),
         maybe_stripe_customer_id: Some(&summary.stripe_customer_id),

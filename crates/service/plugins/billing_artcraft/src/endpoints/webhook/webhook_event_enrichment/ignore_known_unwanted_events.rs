@@ -1,10 +1,10 @@
-use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
 use log::info;
 use stripe_webhook::{Event, EventObject};
 
 // Returns a response if we know we want to ignore this event type.
 // This serves primarily as documentation for why we're ignoring certain events.
-pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<StripeArtcraftWebhookSummary> {
+pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<WebhookEventLogSummary> {
 
   match webhook_payload.data.object {
     EventObject::ChargeSucceeded(_) => {
@@ -129,7 +129,7 @@ pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<StripeArt
 
   info!("Ignoring irrelevant event type: {}", webhook_payload.type_);
 
-  Some(StripeArtcraftWebhookSummary {
+  Some(WebhookEventLogSummary {
     maybe_user_token: None,
     maybe_event_entity_id: None,
     maybe_stripe_customer_id: None,

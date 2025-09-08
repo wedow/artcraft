@@ -1,7 +1,7 @@
-use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
-use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
+use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
+use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
 use stripe_checkout::CheckoutSession;
 
 // After the subscription signup succeeds, the customer returns to your website at the success_url,
@@ -9,7 +9,7 @@ use stripe_checkout::CheckoutSession;
 // event, you can provision the subscription. Continue to provision each month (if billing monthly) as
 // you receive invoice.paid events. If you receive an invoice.payment_failed event, notify your customer
 // and send them to the customer portal to update their payment method.
-pub fn checkout_session_completed_handler(checkout_session: CheckoutSession) -> Result<StripeArtcraftWebhookSummary, StripeArtcraftWebhookError> {
+pub fn checkout_session_completed_handler(checkout_session: CheckoutSession) -> Result<WebhookEventLogSummary, StripeArtcraftWebhookError> {
   let stripe_checkout_id = checkout_session.id.to_string();
 
   // NB: We'll need this to send them to the "customer portal", which is how they can modify or cancel
@@ -20,9 +20,11 @@ pub fn checkout_session_completed_handler(checkout_session: CheckoutSession) -> 
 
   // NB: Our internal user token.
   let maybe_user_token = checkout_session.metadata
-      .and_then(|m| m.get(STRIPE_ARTCRAFT_METADATA_USER_TOKEN).map(|t| t.to_string()));
+      .as_ref()
+      .map(|metadata| get_metadata_user_token(metadata))
+      .flatten();
 
-  Ok(StripeArtcraftWebhookSummary {
+  Ok(WebhookEventLogSummary {
     maybe_user_token,
     maybe_event_entity_id: Some(stripe_checkout_id),
     maybe_stripe_customer_id,
