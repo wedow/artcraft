@@ -1,5 +1,4 @@
 pub mod get_user_subscription_by_stripe_subscription_id;
 pub mod get_user_subscription_by_stripe_subscription_id_transactional;
-pub mod insert_unsubscribe_reason;
 pub mod list_active_user_subscriptions;
 pub mod upsert_user_subscription_by_stripe_id;

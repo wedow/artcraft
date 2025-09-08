@@ -18,7 +18,7 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
       return Ok(())
     }
     ArtcraftBillingAction::WalletCreditsPurchase(purchase) => {
-      info!("Completing credits pack purchase for user: {} ... ", purchase.owner_user_token.as_str());
+      info!("Completing credits pack purchase for user: {:?} ... ", purchase.owner_user_token);
       complete_credits_pack_purchase(
         &purchase.owner_user_token,
         &purchase.pack,
@@ -27,15 +27,19 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
       ).await?;
     }
     ArtcraftBillingAction::SubscriptionCreated(subscription_details) => {
+      info!("Upserting subscription details (sub created) for user {:?}", subscription_details.owner_user_token);
       upsert_subscription_details(subscription_details, CrudType::Create, transaction).await?;
     }
     ArtcraftBillingAction::SubscriptionUpdated(subscription_details) => {
+      info!("Upserting subscription details (sub updated) for user {:?}", subscription_details.owner_user_token);
       upsert_subscription_details(subscription_details, CrudType::Update, transaction).await?;
     }
     ArtcraftBillingAction::SubscriptionDeleted(subscription_details) => {
+      info!("Upserting subscription details (sub deleted) for user {:?}", subscription_details.owner_user_token);
       upsert_subscription_details(subscription_details, CrudType::Delete, transaction).await?;
     }
     ArtcraftBillingAction::SubscriptionPaid(paid_details) => {
+      info!("Completing subscription paid event for user: {:?}", paid_details.owner_user_token);
       mark_subscription_as_paid(paid_details, transaction).await?;
     }
     _ => {

@@ -75,7 +75,7 @@ pub async fn invoice_paid_handler(
   };
 
   info!("Calling Stripe to look up subscription info...");
-  
+
   let subscription = lookup_subscription_from_subscription_id(
     &subscription_id, stripe_client).await?;
 

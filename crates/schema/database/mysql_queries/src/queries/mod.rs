@@ -29,6 +29,7 @@ pub mod tags;
 pub mod trending_model_analytics;
 pub mod tts;
 pub mod twitch;
+pub mod unsubscribe_reason;
 pub mod users;
 pub mod vocoder;
 pub mod voice_clone_requests;
