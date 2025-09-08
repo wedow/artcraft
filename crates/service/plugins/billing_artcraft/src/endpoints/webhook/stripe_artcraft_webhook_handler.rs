@@ -175,12 +175,15 @@ async fn process_enriched_event(
 ) -> Result<(), StripeArtcraftWebhookError> {
 
   if let Some(billing_action) = &artcraft_event.maybe_billing_action {
+    info!("Billing action being taken for event type: {}", &stripe_event_type);
     // This is where we fulfill the purchase, subscription, non-payment, etc.!
     // TODO: Maybe grab the primary key of the impacted entity?
     transactionally_fulfill_artcraft_billing_action(
       billing_action,
       transaction,
     ).await?;
+  } else {
+    info!("No billing action to take for event type: {}", &stripe_event_type);
   }
 
   // NB: These records are uniquely keyed by ID, so this only happens once.

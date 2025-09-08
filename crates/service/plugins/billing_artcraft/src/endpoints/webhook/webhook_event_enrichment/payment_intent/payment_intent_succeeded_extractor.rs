@@ -82,7 +82,7 @@ pub async fn payment_intent_succeeded_extractor(
         StripeArtcraftWebhookError::ServerError("error looking up purchase".to_string())
       })?;
 
-  if !purchase.has_invoice {
+  if purchase.has_invoice {
     // Subscription purchase. Let `invoice.paid` event handle this instead.
     info!("payment_intent.success - has an invoice (eg. subscription) - letting another webhook handler take this.");
 
@@ -95,10 +95,7 @@ pub async fn payment_intent_succeeded_extractor(
   }
 
   let credits_pack = match get_artcraft_product_by_stripe_id_and_env(&purchase.product_id, server_environment) {
-    None => {
-      error!("Could not find product for ID: {}", &purchase.product_id);
-      return Err(StripeArtcraftWebhookError::ServerError("unknown product".to_string()));
-    }
+    Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => credits_pack,
     Some(StripeArtcraftGenericProductInfo::Subscription(_subscription)) => {
       info!("Do not handle subscriptions as one-off payments: {}", purchase.product_id);
       event_log_summary.should_ignore_retry = true;
@@ -108,8 +105,13 @@ pub async fn payment_intent_succeeded_extractor(
         webhook_event_log_summary: event_log_summary,
       });
     }
-    Some(StripeArtcraftGenericProductInfo::CreditsPack(credits_pack)) => credits_pack,
+    None => {
+      error!("Could not find product for ID: {}", &purchase.product_id);
+      return Err(StripeArtcraftWebhookError::ServerError("unknown product".to_string()));
+    }
   };
+
+  info!("Payment intent is a wallet credits purchase.");
 
   Ok(EnrichedWebhookEvent {
     maybe_billing_action: Some(ArtcraftBillingAction::WalletCreditsPurchase(WalletCreditsPurchaseEvent {
