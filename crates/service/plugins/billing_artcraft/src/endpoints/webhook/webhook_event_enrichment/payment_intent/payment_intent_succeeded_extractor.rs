@@ -66,11 +66,8 @@ pub async fn payment_intent_succeeded_extractor(
     info!("payment_intent.success - is not successful !?");
 
     event_log_summary.should_ignore_retry = true;
-
-    return Ok(EnrichedWebhookEvent {
-      maybe_billing_action: None,
-      webhook_event_log_summary: event_log_summary,
-    });
+    
+    return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
   }
 
   info!("Payment intent succeeded. Looking up payment...");
@@ -88,10 +85,7 @@ pub async fn payment_intent_succeeded_extractor(
 
     event_log_summary.should_ignore_retry = true;
 
-    return Ok(EnrichedWebhookEvent {
-      maybe_billing_action: None,
-      webhook_event_log_summary: event_log_summary,
-    });
+    return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
   }
 
   let credits_pack = match get_artcraft_product_by_stripe_id_and_env(&purchase.product_id, server_environment) {
@@ -100,10 +94,7 @@ pub async fn payment_intent_succeeded_extractor(
       info!("Do not handle subscriptions as one-off payments: {}", purchase.product_id);
       event_log_summary.should_ignore_retry = true;
 
-      return Ok(EnrichedWebhookEvent {
-        maybe_billing_action: None,
-        webhook_event_log_summary: event_log_summary,
-      });
+      return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
     }
     None => {
       error!("Could not find product for ID: {}", &purchase.product_id);

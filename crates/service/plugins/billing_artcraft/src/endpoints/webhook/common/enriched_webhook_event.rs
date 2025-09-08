@@ -11,3 +11,13 @@ pub struct EnrichedWebhookEvent {
   /// various irrelevant events, errors, etc.
   pub webhook_event_log_summary: WebhookEventLogSummary,
 }
+
+impl EnrichedWebhookEvent {
+  
+  pub fn from_actionless_log(summary: WebhookEventLogSummary) -> Self {
+    EnrichedWebhookEvent {
+      maybe_billing_action: None,
+      webhook_event_log_summary: summary,
+    }
+  }
+}
