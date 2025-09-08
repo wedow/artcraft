@@ -1,6 +1,7 @@
+use crate::configs::stripe_client_retry_strategy::STRIPE_CLIENT_RETRY_STRATEGY;
 use crate::utils::expand_ids::expand_product_id::expand_product_id;
 use log::{error, warn};
-use stripe::{Client, RequestStrategy, StripeRequest};
+use stripe::{Client, StripeRequest};
 use stripe_checkout::checkout_session::{ListCheckoutSession, ListLineItemsCheckoutSession};
 use stripe_shared::{CheckoutSession, CheckoutSessionItem, PriceType};
 use stripe_types::List;
@@ -26,7 +27,7 @@ pub async fn lookup_purchase_from_payment_intent_success(
       .limit(1)
       .build()
       .customize::<List<CheckoutSession>>()
-      .request_strategy(RequestStrategy::ExponentialBackoff(3))
+      .request_strategy(STRIPE_CLIENT_RETRY_STRATEGY)
       .send(stripe_client)
       .await
       .map_err(|err| {
@@ -55,7 +56,7 @@ pub async fn lookup_purchase_from_payment_intent_success(
   let line_items = ListLineItemsCheckoutSession::new(checkout_session_id)
       .build()
       .customize::<List<CheckoutSessionItem>>()
-      .request_strategy(RequestStrategy::ExponentialBackoff(3))
+      .request_strategy(STRIPE_CLIENT_RETRY_STRATEGY)
       .send(stripe_client)
       .await
       .map_err(|err| {

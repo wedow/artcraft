@@ -1,7 +1,13 @@
+use crate::billing_action_fulfillment::artcraft_billing_action::{ArtcraftBillingAction, SubscriptionPaidEvent, WalletCreditsPurchaseEvent};
+use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
+use crate::requests::lookup_subscription_from_subscription_id::lookup_subscription_from_subscription_id;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use crate::utils::expand_ids::expand_subscription_id::expand_subscription_id;
+use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
+use log::{info, warn};
+use stripe::Client;
 use stripe_shared::{Invoice, InvoiceStatus};
 
 // Handle event type: 'invoice.paid'
@@ -22,16 +28,17 @@ use stripe_shared::{Invoice, InvoiceStatus};
 // 4. Your webhook endpoint updates the customer’s access expiration date in your database to the
 //    appropriate date in the future (plus a day or two for leeway).
 //
-pub fn invoice_paid_handler(invoice: &Invoice) -> Result<WebhookEventLogSummary, StripeArtcraftWebhookError> {
+pub async fn invoice_paid_handler(
+  invoice: &Invoice,
+  stripe_client: &Client,
+) -> Result<EnrichedWebhookEvent, StripeArtcraftWebhookError> {
 
-  let is_paid = match invoice.status {
-    Some(InvoiceStatus::Paid) => true,
-    _ => false,
-  };
+  let maybe_user_token = invoice.metadata
+      .as_ref()
+      .map(|metadata| get_metadata_user_token(metadata))
+      .flatten();
 
   let is_production= invoice.livemode;
-
-  let paid_status = invoice.status;
 
   let maybe_stripe_customer_id  = invoice.customer
       .as_ref()
@@ -41,11 +48,56 @@ pub fn invoice_paid_handler(invoice: &Invoice) -> Result<WebhookEventLogSummary,
       .as_ref()
       .map(|s| expand_subscription_id(s));
 
-  Ok(WebhookEventLogSummary {
-    maybe_user_token: None,
+  let mut event_log_summary = WebhookEventLogSummary {
+    maybe_stripe_customer_id,
+    maybe_user_token,
     maybe_event_entity_id: None,
-    maybe_stripe_customer_id: None,
     action_was_taken: false,
-    should_ignore_retry: false,
+    should_ignore_retry: true,
+  };
+
+  let is_paid = match invoice.status {
+    Some(InvoiceStatus::Paid) => true,
+    _ => false,
+  };
+
+  if !is_paid {
+    info!("Invoice is not paid...");
+    return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
+  }
+
+  let subscription_id = match maybe_stripe_subscription_id {
+    Some(subscription_id) => subscription_id,
+    None => {
+      info!("Invoice is not for a subscription; skipping ...");
+      return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
+    }
+  };
+
+  info!("Calling Stripe to look up subscription info...");
+  
+  let subscription = lookup_subscription_from_subscription_id(
+    &subscription_id, stripe_client).await?;
+
+  // TODO: Multiple ways to get this; better ways to get this
+  let user_token = match &subscription.maybe_user_token {
+    Some(token) => token.clone(),
+    None => {
+      warn!("No user token found in subscription metadata. Cannot proceed.");
+      return Err(StripeArtcraftWebhookError::BadRequest("no user token in subscription metadata".to_string()));
+    }
+  };
+
+  info!("Invoice paid is for subscription.");
+
+  Ok(EnrichedWebhookEvent {
+    maybe_billing_action: Some(ArtcraftBillingAction::SubscriptionPaid(SubscriptionPaidEvent {
+      stripe_subscription_id: subscription_id,
+      stripe_customer_id: subscription.customer_id,
+      stripe_product_id: subscription.product_id,
+      stripe_price_id: subscription.price_id,
+      owner_user_token: user_token,
+    })),
+    webhook_event_log_summary: event_log_summary,
   })
 }

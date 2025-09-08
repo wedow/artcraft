@@ -974,6 +974,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-stripe-billing"
+version = "1.0.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33c4cd0ac61e0dcb39da4f3c04b049c0d8a3a98868ca976e18ff56ecac1b6e08"
+dependencies = [
+ "async-stripe-client-core",
+ "async-stripe-shared",
+ "async-stripe-types",
+ "miniserde",
+ "serde",
+ "smol_str 0.3.2",
+]
+
+[[package]]
 name = "async-stripe-checkout"
 version = "1.0.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1340,6 +1354,7 @@ dependencies = [
  "anyhow",
  "artcraft_api_defs",
  "async-stripe 1.0.0-alpha.2",
+ "async-stripe-billing",
  "async-stripe-checkout",
  "async-stripe-core",
  "async-stripe-shared",

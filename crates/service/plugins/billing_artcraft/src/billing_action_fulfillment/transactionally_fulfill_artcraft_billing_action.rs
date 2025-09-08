@@ -1,10 +1,11 @@
 use crate::billing_action_fulfillment::artcraft_billing_action::ArtcraftBillingAction;
 use crate::billing_action_fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
+use crate::billing_action_fulfillment::subscriptions::mark_subscription_as_paid::mark_subscription_as_paid;
+use crate::billing_action_fulfillment::subscriptions::upsert_subscription_details::{upsert_subscription_details, CrudType};
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{info, warn};
 use sqlx::Transaction;
-use crate::billing_action_fulfillment::subscriptions::upsert_subscription_details::{upsert_subscription_details, CrudType};
 
 pub async fn transactionally_fulfill_artcraft_billing_action(
   event: &ArtcraftBillingAction,
@@ -33,6 +34,9 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
     }
     ArtcraftBillingAction::SubscriptionDeleted(subscription_details) => {
       upsert_subscription_details(subscription_details, CrudType::Delete, transaction).await?;
+    }
+    ArtcraftBillingAction::SubscriptionPaid(paid_details) => {
+      mark_subscription_as_paid(paid_details, transaction).await?;
     }
     _ => {
       return Err(anyhow!("Unhandled billing action in fulfillment"));

@@ -16,6 +16,8 @@ pub enum ArtcraftBillingAction {
   SubscriptionCreated(UpsertableSubscriptionDetails),
   SubscriptionUpdated(UpsertableSubscriptionDetails),
   SubscriptionDeleted(UpsertableSubscriptionDetails),
+  
+  SubscriptionPaid(SubscriptionPaidEvent),
 
   // TODO:
   SubscriptionRenewalBillingFailed,
@@ -38,8 +40,7 @@ pub struct WalletCreditsPurchaseEvent {
 
 
 pub struct UpsertableSubscriptionDetails {
-  /// Stripe's subscription_id is a unique foreign key  in the
-  /// `users_subscriptions` table!
+  /// Stripe's subscription_id is a unique foreign key  in the `users_subscriptions` table!
   pub stripe_subscription_id: String,
 
   // Other stripe foreign keys ...
@@ -80,4 +81,16 @@ pub struct UpsertableSubscriptionDetails {
   /// TODO: - maybe not - This controls whether it is active or not.
   pub maybe_cancel_at: Option<NaiveDateTime>,
   pub maybe_canceled_at: Option<NaiveDateTime>,
+}
+
+pub struct SubscriptionPaidEvent {
+  /// Stripe's subscription_id is a unique foreign key  in the `users_subscriptions` table!
+  pub stripe_subscription_id: String,
+
+  pub stripe_customer_id: String,
+  pub stripe_product_id: String,
+  pub stripe_price_id: String,
+
+  /// Artcraft user
+  pub owner_user_token: UserToken,
 }
