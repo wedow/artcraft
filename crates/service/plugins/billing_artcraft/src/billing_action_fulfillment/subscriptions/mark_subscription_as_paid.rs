@@ -85,7 +85,6 @@ pub async fn mark_subscription_as_paid(
 
   info!("Adding {} monthly credits to wallet: {}", monthly_credits , wallet_token.as_str());
 
-  // TODO: Fill wallet with credits.
   let _result = refill_monthly_credits_balance_on_wallet(&wallet_token, monthly_credits, transaction).await?;
 
   // TODO: Insert wallet ledger entry.

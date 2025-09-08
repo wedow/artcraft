@@ -26,11 +26,11 @@ CREATE TABLE wallets (
   monthly_credits INTEGER UNSIGNED NOT NULL DEFAULT 0,
 
   -- Whether the stripe subscription is active.
-  subscription_is_active BOOLEAN NOT NULL DEFAULT FALSE,
+  -- subscription_is_active BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- Whether the stripe subscription is paid.
   -- If the subscription is not paid, we should not allow usage of monthly credits.
-  subscription_is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+  -- subscription_is_paid BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- ========== VECTOR CLOCK ==========
 
@@ -49,7 +49,7 @@ CREATE TABLE wallets (
 
   -- When we last refilled the monthly bucket.
   -- This has to do with subscription logic.
-  monthly_wallet_refilled_at TIMESTAMP DEFAULT NULL,
+  -- monthly_wallet_refilled_at TIMESTAMP DEFAULT NULL,
 
   -- ========== INDICES ==========
   PRIMARY KEY (id),
