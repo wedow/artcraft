@@ -16,6 +16,19 @@ use sqlx::{MySql, Transaction};
 use stripe::Client;
 use stripe_webhook::{Event, EventObject};
 
+/*
+  You usually need these:
+    1. Subscription events: to track contract state (active, canceled, past_due, trialing, etc.).
+    2. Invoice events: to track actual money flow and handle edge cases like failed payments, dunning, or refunds.
+
+  Minimal Set to Cover Payment Lifecycle
+    -	invoice.paid → confirm credits or entitlements
+    -	invoice.payment_failed → trigger dunning or downgrade access
+    -	customer.subscription.deleted → stop service when canceled
+    -	customer.subscription.updated → react to upgrades, downgrades, trial end
+    -	(Optionally) checkout.session.completed → provision on signup
+*/
+
 pub async fn handle_webhook_event_enrichment(
   stripe_client: &Client,
   server_environment: ServerEnvironment,
@@ -23,17 +36,10 @@ pub async fn handle_webhook_event_enrichment(
   stripe_event_type: &str,
 ) -> Result<EnrichedWebhookEvent, StripeArtcraftWebhookError> {
 
-  // TODO: Cleanup -
-  if let Some(_summary) = ignore_known_unwanted_events(&webhook_payload) {
+  if let Some(summary) = ignore_known_unwanted_events(&webhook_payload) {
     return Ok(EnrichedWebhookEvent {
       maybe_billing_action: None,
-      webhook_event_log_summary: WebhookEventLogSummary {
-        maybe_user_token: None,
-        maybe_event_entity_id: None,
-        maybe_stripe_customer_id: None,
-        action_was_taken: false,
-        should_ignore_retry: true,
-      },
+      webhook_event_log_summary: summary,
     });
   }
 
@@ -47,20 +53,23 @@ pub async fn handle_webhook_event_enrichment(
     should_ignore_retry: false,
   };
 
-  /*
-  You usually need these:
-	1. Subscription events: to track contract state (active, canceled, past_due, trialing, etc.).
-	2. Invoice events: to track actual money flow and handle edge cases like failed payments, dunning, or refunds.
-
-  Minimal Set to Cover Payment Lifecycle
-	-	invoice.paid → confirm credits or entitlements
-	-	invoice.payment_failed → trigger dunning or downgrade access
-	-	customer.subscription.deleted → stop service when canceled
-	-	customer.subscription.updated → react to upgrades, downgrades, trial end
-	-	(Optionally) checkout.session.completed → provision on signup
-   */
-
   match webhook_payload.data.object {
+
+    // =============== PAYMENT INTENTS ===============
+
+    EventObject::PaymentIntentSucceeded(payment_intent) => {
+      info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
+
+      // NB: This is responsible for enabling one-off payments (eg. credits packs).
+      // We'll ignore any payment intents from subscription invoices and let other event handlers
+      // fulfill subscription states.
+
+      return payment_intent_succeeded_extractor(
+        &payment_intent,
+        server_environment,
+        stripe_client,
+      ).await;
+    }
 
     // =============== CHECKOUT SESSIONS ===============
 
@@ -92,6 +101,7 @@ pub async fn handle_webhook_event_enrichment(
       // Still need to ask about this. - does stripe say we can provision service here?
       // Do we know if this happens for upgrades/downgrades/renewals?
       // What about one-off payments?
+
       /* TODO: Commented out for now
       webhook_summary = checkout_session_completed_handler(checkout_session)?;
        */
@@ -176,21 +186,7 @@ pub async fn handle_webhook_event_enrichment(
       info!("Event: {}, data: {:?}", webhook_payload.type_, invoice);
       webhook_summary = invoice_payment_failed_handler(&invoice)?;
     }
-
-     */
-
-    // =============== PAYMENT INTENTS ===============
-
-    EventObject::PaymentIntentSucceeded(payment_intent) => {
-      info!("Event: {}, data: {:?}", webhook_payload.type_, payment_intent);
-
-      // NB: This is responsible for enabling one-off payments (eg. credits packs).
-      return payment_intent_succeeded_extractor(
-        &payment_intent,
-        server_environment,
-        stripe_client,
-      ).await;
-    }
+    */
 
     // =============== Ignored ===============
 

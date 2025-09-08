@@ -134,6 +134,6 @@ pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<WebhookEv
     maybe_event_entity_id: None,
     maybe_stripe_customer_id: None,
     action_was_taken: false,
-    should_ignore_retry: false,
+    should_ignore_retry: true,
   })
 }

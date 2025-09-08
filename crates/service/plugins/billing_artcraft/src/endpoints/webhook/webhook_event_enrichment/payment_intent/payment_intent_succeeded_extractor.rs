@@ -41,8 +41,8 @@ pub async fn payment_intent_succeeded_extractor(
   let user_token = match &maybe_user_token {
     Some(token) => token.clone(),
     None => {
-      warn!("No user token found in payment intent metadata. Cannot proceed.");
-      return Err(StripeArtcraftWebhookError::BadRequest("no user token in payment intent".to_string()));
+      warn!("No user token found in `payment_intent.success` metadata. Cannot proceed.");
+      return Err(StripeArtcraftWebhookError::BadRequest("no user token in payment_intent.success".to_string()));
     }
   };
 
@@ -63,8 +63,10 @@ pub async fn payment_intent_succeeded_extractor(
   };
 
   if !payment_succeeded {
+    info!("payment_intent.success - is not successful !?");
+
     event_log_summary.should_ignore_retry = true;
-    //        description: "payment_intent not succeeded".to_string(),
+
     return Ok(EnrichedWebhookEvent {
       maybe_billing_action: None,
       webhook_event_log_summary: event_log_summary,
@@ -82,9 +84,9 @@ pub async fn payment_intent_succeeded_extractor(
 
   if !purchase.has_invoice {
     // Subscription purchase. Let `invoice.paid` event handle this instead.
-    event_log_summary.should_ignore_retry = true;
+    info!("payment_intent.success - has an invoice (eg. subscription) - letting another webhook handler take this.");
 
-    // description: "payment_intent for subscription; will handle via invoice.paid".to_string(),
+    event_log_summary.should_ignore_retry = true;
 
     return Ok(EnrichedWebhookEvent {
       maybe_billing_action: None,
@@ -101,7 +103,6 @@ pub async fn payment_intent_succeeded_extractor(
       info!("Do not handle subscriptions as one-off payments: {}", purchase.product_id);
       event_log_summary.should_ignore_retry = true;
 
-      //description: "payment_intent for subscription; will handle via invoice.paid".to_string(),
       return Ok(EnrichedWebhookEvent {
         maybe_billing_action: None,
         webhook_event_log_summary: event_log_summary,
@@ -113,7 +114,7 @@ pub async fn payment_intent_succeeded_extractor(
   Ok(EnrichedWebhookEvent {
     maybe_billing_action: Some(ArtcraftBillingAction::WalletCreditsPurchase(WalletCreditsPurchaseEvent {
       owner_user_token: user_token,
-      maybe_wallet_token: None, // TODO: Use the checkout session to set this !
+      maybe_wallet_token,
       pack: credits_pack.clone(),
       quantity: purchase.quantity,
     })),
