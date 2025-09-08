@@ -37,3 +37,4 @@ pub mod voice_conversion;
 pub mod voice_designer;
 pub mod w2l;
 pub mod wallets;
+mod wallet_ledger_entries;
