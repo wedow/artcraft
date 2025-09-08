@@ -13,12 +13,13 @@ CREATE TABLE wallet_ledger_entries (
   wallet_token VARCHAR(32) NOT NULL,
 
   -- The type of ledger entry this is.
-  entry_type VARCHAR(32) NOT NULL,
+  entry_type VARCHAR(16) NOT NULL,
 
   -- A record we can look up to attribute the credit or deduction against
   -- This could be an internal entity token (prompt_token, job token) or an
   -- external token (stripe event_id, stripe invoice.id, etc.)
-  maybe_entity_ref VARCHAR(32) DEFAULT NULL,
+  -- Length is VARCHAR(255) to accommodate Stripe IDs.
+  maybe_entity_ref VARCHAR(255) DEFAULT NULL,
 
   -- Balance of banked credits before the event.
   -- Max value unsigned: 4,294,967,295 (U32)

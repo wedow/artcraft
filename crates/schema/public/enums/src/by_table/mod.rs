@@ -24,6 +24,7 @@ pub mod user_ratings;
 pub mod users;
 pub mod voice_conversion_models;
 pub mod voice_conversion_results;
+pub mod wallet_ledger_entries;
 pub mod zs_voices;
 
 // ===== Sqlite =====
