@@ -1,6 +1,6 @@
 use crate::configs::get_artcraft_product_by_stripe_id_and_env::get_artcraft_product_by_stripe_id_and_env;
 use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericProductInfo;
-use crate::endpoints::webhook::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
+use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
 use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
 use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;

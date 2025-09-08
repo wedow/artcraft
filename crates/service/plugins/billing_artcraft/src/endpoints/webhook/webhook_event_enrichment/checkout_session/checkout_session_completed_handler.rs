@@ -1,5 +1,5 @@
 use crate::configs::stripe_artcraft_metadata_keys::STRIPE_ARTCRAFT_METADATA_USER_TOKEN;
-use crate::endpoints::webhook::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
+use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::webhook_event_enrichment::stripe_artcraft_webhook_summary::StripeArtcraftWebhookSummary;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use stripe_checkout::CheckoutSession;
