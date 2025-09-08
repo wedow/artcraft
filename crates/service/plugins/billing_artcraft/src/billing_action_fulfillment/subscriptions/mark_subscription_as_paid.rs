@@ -5,6 +5,10 @@ use log::{info, warn};
 use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id_transactional::get_user_subscription_by_stripe_subscription_id_transactional;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_with_invoice_paid_status_by_stripe_id::UpsertUserSubscriptionWithInvoicePaidStatus;
+use mysql_queries::queries::wallets::add_durable_banked_balance_to_wallet::add_durable_banked_balance_to_wallet;
+use mysql_queries::queries::wallets::create_new_wallet_for_owner_user::create_new_wallet_for_owner_user;
+use mysql_queries::queries::wallets::find_wallet_token_for_owner_user::find_wallet_token_for_owner_user_using_transaction;
+use mysql_queries::queries::wallets::refill_monthly_credits_balance_on_wallet::refill_monthly_credits_balance_on_wallet;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 
 pub async fn mark_subscription_as_paid(
@@ -66,8 +70,23 @@ pub async fn mark_subscription_as_paid(
 
   upsert.upsert_with_transaction(transaction).await?;
 
+  let maybe_wallet_token = find_wallet_token_for_owner_user_using_transaction(
+    &details.owner_user_token, transaction).await?;
+
+  let wallet_token = match maybe_wallet_token {
+    Some(token) => token,
+    None => {
+      info!("No wallet found for user: {} ; creating a new one...", &details.owner_user_token.as_str());
+      create_new_wallet_for_owner_user(&details.owner_user_token, transaction).await?
+    }
+  };
+
+  let monthly_credits = details.artcraft_subscription.monthly_credits_amount;
+
+  info!("Adding {} monthly credits to wallet: {}", monthly_credits , wallet_token.as_str());
 
   // TODO: Fill wallet with credits.
+  let _result = refill_monthly_credits_balance_on_wallet(&wallet_token, monthly_credits, transaction).await?;
 
   // TODO: Insert wallet ledger entry.
 

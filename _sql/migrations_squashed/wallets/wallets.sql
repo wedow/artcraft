@@ -25,9 +25,11 @@ CREATE TABLE wallets (
   -- Max value unsigned: 4,294,967,295 (U32)
   monthly_credits INTEGER UNSIGNED NOT NULL DEFAULT 0,
 
+  -- TODO: Remove.
   -- Whether the stripe subscription is active.
   subscription_is_active BOOLEAN NOT NULL DEFAULT FALSE,
 
+  -- TODO: Remove.
   -- Whether the stripe subscription is paid.
   -- If the subscription is not paid, we should not allow usage of monthly credits.
   subscription_is_paid BOOLEAN NOT NULL DEFAULT FALSE,
@@ -47,6 +49,7 @@ CREATE TABLE wallets (
   -- When the user last purchased banked (durable) credits.
   -- banked_credits_last_purchased_at TIMESTAMP DEFAULT NULL,
 
+  -- TODO: Remove.
   -- When we last refilled the monthly bucket.
   -- This has to do with subscription logic.
   monthly_wallet_refilled_at TIMESTAMP DEFAULT NULL,

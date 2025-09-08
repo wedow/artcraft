@@ -10,6 +10,7 @@ pub const ARTCRAFT_BASIC_SANDBOX : StripeArtcraftSubscriptionInfo = StripeArtcra
   product_id: "prod_SyJURfbu2ixP7M",
   monthly_price_id: "price_1S2MrSEobp4xy4Tlwit8aeNE",
   yearly_price_id: "price_1S2MrsEobp4xy4TlDG2skTkc",
+  monthly_credits_amount: 1000,
 };
 
 pub const ARTCRAFT_PRO_SANDBOX : StripeArtcraftSubscriptionInfo = StripeArtcraftSubscriptionInfo {
@@ -17,6 +18,7 @@ pub const ARTCRAFT_PRO_SANDBOX : StripeArtcraftSubscriptionInfo = StripeArtcraft
   product_id: "prod_SyJTy5arqKmaxT",
   monthly_price_id: "price_1S2MqZEobp4xy4TlR9KLyitD",
   yearly_price_id: "price_1S2MqyEobp4xy4Tl0ZXOK8Z0",
+  monthly_credits_amount: 2000,
 };
 
 pub const ARTCRAFT_MAX_SANDBOX : StripeArtcraftSubscriptionInfo = StripeArtcraftSubscriptionInfo {
@@ -24,6 +26,7 @@ pub const ARTCRAFT_MAX_SANDBOX : StripeArtcraftSubscriptionInfo = StripeArtcraft
   product_id: "prod_SyJSoHNUU81BjU",
   monthly_price_id: "price_1S2MpGEobp4xy4TldyO9lAwd",
   yearly_price_id: "price_1S2MppEobp4xy4Tln6xjTKKD",
+  monthly_credits_amount: 3000,
 };
 
 //
@@ -35,6 +38,7 @@ pub const ARTCRAFT_BASIC_PRODUCTION : StripeArtcraftSubscriptionInfo = StripeArt
   product_id: "prod_SyIXACAGqPbsoG",
   monthly_price_id: "price_1S2LwbIaZEzwFveeYqYxgrV7",
   yearly_price_id: "price_1S2Lz8IaZEzwFvee40D7PFoa",
+  monthly_credits_amount: 1000,
 };
 
 pub const ARTCRAFT_PRO_PRODUCTION : StripeArtcraftSubscriptionInfo = StripeArtcraftSubscriptionInfo {
@@ -42,6 +46,7 @@ pub const ARTCRAFT_PRO_PRODUCTION : StripeArtcraftSubscriptionInfo = StripeArtcr
   product_id: "prod_SyIfqs9Rmv3Fdu",
   monthly_price_id: "price_1S2M4FIaZEzwFveeRoqYDbDw",
   yearly_price_id: "price_1S2M5VIaZEzwFveeLAXk3hL8",
+  monthly_credits_amount: 2000,
 };
 
 pub const ARTCRAFT_MAX_PRODUCTION : StripeArtcraftSubscriptionInfo = StripeArtcraftSubscriptionInfo {
@@ -49,5 +54,6 @@ pub const ARTCRAFT_MAX_PRODUCTION : StripeArtcraftSubscriptionInfo = StripeArtcr
   product_id: "prod_SyJ6VIFnc3riPp",
   monthly_price_id: "price_1S2MUSIaZEzwFveesCPf2XjP",
   yearly_price_id: "price_1S2MVlIaZEzwFveeEtPV27kH",
+  monthly_credits_amount: 3000,
 };
 

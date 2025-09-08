@@ -6,5 +6,8 @@ pub struct StripeArtcraftSubscriptionInfo {
   pub product_id: &'static str,
   pub monthly_price_id: &'static str,
   pub yearly_price_id: &'static str,
+
+  /// How many monthly credits this plan grants
+  pub monthly_credits_amount: u64,
 }
 
