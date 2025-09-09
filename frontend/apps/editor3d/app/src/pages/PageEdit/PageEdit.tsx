@@ -259,6 +259,9 @@ const PageEdit = () => {
       // TODO: Implement a new mode for unsupported masking and hide the nodes layer instead of clearing
       store.setActiveTool("select");
       store.clearLineNodes();
+    } else if (supportsMaskedInpainting && store.activeTool === "select") {
+      // Switch to edit mode if supported and currently in select mode
+      store.setActiveTool("edit");
     }
   }, [store, supportsMaskedInpainting]);
 
