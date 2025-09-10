@@ -10,7 +10,7 @@ use tokens::tokens::wallets::WalletToken;
 
 // TODO: Make a trait (eg. `InsertableRecord`, `UpsertableRecord`) with default impls to handle common query concerns.
 
-pub struct InsertWalletLedgerEntry<'a> {
+pub (crate) struct InsertWalletLedgerEntry<'a> {
   /// The wallet
   pub wallet_token: &'a WalletToken,
 

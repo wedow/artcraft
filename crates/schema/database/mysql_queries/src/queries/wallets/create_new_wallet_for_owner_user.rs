@@ -1,3 +1,4 @@
+use crate::queries::wallet_ledger_entries::internal_insert_wallet_created_ledger_entry::internal_insert_wallet_created_ledger_entry;
 use errors::AnyhowResult;
 use sqlx::MySql;
 use tokens::tokens::users::UserToken;
@@ -26,8 +27,11 @@ SET
       .execute(&mut **transaction)
       .await;
   
-  match result {
-    Ok(_) => Ok(token),
-    Err(e) => Err(anyhow::anyhow!("Database query error when creating wallet: {}", e)),
+  if let Err(err) = result {
+    return Err(anyhow::anyhow!("Database query error when creating wallet: {}", err));
   }
+  
+  internal_insert_wallet_created_ledger_entry(&token, transaction).await?;
+  
+  Ok(token)
 }

@@ -17,9 +17,9 @@ pub enum WalletLedgerEntryType {
   #[serde(rename = "create")]
   Create,
 
-  /// Credit durable balance
-  #[serde(rename = "credit_durable")]
-  CreditDurable,
+  /// Credit durable banked balance
+  #[serde(rename = "credit_banked")]
+  CreditBanked,
 
   /// Credit monthly refill
   #[serde(rename = "credit_monthly")]
@@ -29,9 +29,9 @@ pub enum WalletLedgerEntryType {
   #[serde(rename = "deduct_mixed")]
   DeductMixed,
   
-  /// Deduct durable credits
-  #[serde(rename = "deduct_durable")]
-  DeductDurable,
+  /// Deduct durable banked credits
+  #[serde(rename = "deduct_banked")]
+  DeductBanked,
 
   /// Deduct monthly credits
   #[serde(rename = "deduct_monthly")]
@@ -48,10 +48,10 @@ impl WalletLedgerEntryType {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::Create => "create",
-      Self::CreditDurable => "credit_durable",
+      Self::CreditBanked => "credit_banked",
       Self::CreditMonthly => "credit_monthly",
       Self::DeductMixed => "deduct_mixed",
-      Self::DeductDurable => "deduct_durable",
+      Self::DeductBanked => "deduct_banked",
       Self::DeductMonthly => "deduct_monthly",
     }
   }
@@ -59,10 +59,10 @@ impl WalletLedgerEntryType {
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
       "create" => Ok(Self::Create),
-      "credit_durable" => Ok(Self::CreditDurable),
+      "credit_banked" => Ok(Self::CreditBanked),
       "credit_monthly" => Ok(Self::CreditMonthly),
       "deduct_mixed" => Ok(Self::DeductMixed),
-      "deduct_durable" => Ok(Self::DeductDurable),
+      "deduct_banked" => Ok(Self::DeductBanked),
       "deduct_monthly" => Ok(Self::DeductMonthly),
       _ => Err(format!("invalid value: {:?}", value)),
     }
@@ -73,10 +73,10 @@ impl WalletLedgerEntryType {
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
       Self::Create,
-      Self::CreditDurable,
+      Self::CreditBanked,
       Self::CreditMonthly,
       Self::DeductMixed,
-      Self::DeductDurable,
+      Self::DeductBanked,
       Self::DeductMonthly,
     ])
   }
@@ -93,10 +93,10 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(WalletLedgerEntryType::Create, "create");
-      assert_serialization(WalletLedgerEntryType::CreditDurable, "credit_durable");
+      assert_serialization(WalletLedgerEntryType::CreditBanked, "credit_banked");
       assert_serialization(WalletLedgerEntryType::CreditMonthly, "credit_monthly");
       assert_serialization(WalletLedgerEntryType::DeductMixed, "deduct_mixed");
-      assert_serialization(WalletLedgerEntryType::DeductDurable, "deduct_durable");
+      assert_serialization(WalletLedgerEntryType::DeductBanked, "deduct_banked");
       assert_serialization(WalletLedgerEntryType::DeductMonthly, "deduct_monthly");
     }
   }
@@ -107,20 +107,20 @@ mod tests {
     #[test]
     fn to_str() {
       assert_eq!(WalletLedgerEntryType::Create.to_str(), "create");
-      assert_eq!(WalletLedgerEntryType::CreditDurable.to_str(), "credit_durable");
+      assert_eq!(WalletLedgerEntryType::CreditBanked.to_str(), "credit_banked");
       assert_eq!(WalletLedgerEntryType::CreditMonthly.to_str(), "credit_monthly");
       assert_eq!(WalletLedgerEntryType::DeductMixed.to_str(), "deduct_mixed");
-      assert_eq!(WalletLedgerEntryType::DeductDurable.to_str(), "deduct_durable");
+      assert_eq!(WalletLedgerEntryType::DeductBanked.to_str(), "deduct_banked");
       assert_eq!(WalletLedgerEntryType::DeductMonthly.to_str(), "deduct_monthly");
     }
 
     #[test]
     fn from_str() {
       assert_eq!(WalletLedgerEntryType::from_str("create").unwrap(), WalletLedgerEntryType::Create);
-      assert_eq!(WalletLedgerEntryType::from_str("credit_durable").unwrap(), WalletLedgerEntryType::CreditDurable);
+      assert_eq!(WalletLedgerEntryType::from_str("credit_banked").unwrap(), WalletLedgerEntryType::CreditBanked);
       assert_eq!(WalletLedgerEntryType::from_str("credit_monthly").unwrap(), WalletLedgerEntryType::CreditMonthly);
       assert_eq!(WalletLedgerEntryType::from_str("deduct_mixed").unwrap(), WalletLedgerEntryType::DeductMixed);
-      assert_eq!(WalletLedgerEntryType::from_str("deduct_durable").unwrap(), WalletLedgerEntryType::DeductDurable);
+      assert_eq!(WalletLedgerEntryType::from_str("deduct_banked").unwrap(), WalletLedgerEntryType::DeductBanked);
       assert_eq!(WalletLedgerEntryType::from_str("deduct_monthly").unwrap(), WalletLedgerEntryType::DeductMonthly);
       assert!(WalletLedgerEntryType::from_str("foo").is_err());
     }
@@ -134,10 +134,10 @@ mod tests {
       let mut variants = WalletLedgerEntryType::all_variants();
       assert_eq!(variants.len(), 6);
       assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::Create));
-      assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::CreditDurable));
+      assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::CreditBanked));
       assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::CreditMonthly));
       assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::DeductMixed));
-      assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::DeductDurable));
+      assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::DeductBanked));
       assert_eq!(variants.pop_first(), Some(WalletLedgerEntryType::DeductMonthly));
       assert_eq!(variants.pop_first(), None);
     }

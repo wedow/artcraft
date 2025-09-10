@@ -1,1 +1,2 @@
 pub (crate) mod internal_insert_wallet_ledger_entry;
+pub mod internal_insert_wallet_created_ledger_entry;

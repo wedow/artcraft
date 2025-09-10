@@ -7,7 +7,7 @@ pub struct WalletUpdateSummary {
 
   pub banked_credits_now: u64,
   pub monthly_credits_now: u64,
-  
+
   pub banked_credits_before: u64,
   pub monthly_credits_before: u64,
 }
