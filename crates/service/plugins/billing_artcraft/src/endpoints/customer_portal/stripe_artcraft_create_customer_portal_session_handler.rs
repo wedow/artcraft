@@ -5,7 +5,7 @@ use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::{Data, Json};
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::stripe_artcraft::create_customer_portal_session::{StripeArtcraftCreateCustomerPortalSessionRequest, StripeArtcraftCreateCustomerPortalSessionResponse};
+use artcraft_api_defs::stripe_artcraft::create_customer_portal_session::{StripeArtcraftCreateCustomerPortalFlowState, StripeArtcraftCreateCustomerPortalSessionRequest, StripeArtcraftCreateCustomerPortalSessionResponse};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest, StripeArtcraftCreateSubscriptionCheckoutResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
@@ -17,7 +17,7 @@ use sqlx::MySqlPool;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use stripe_billing::billing_portal_session::CreateBillingPortalSession;
+use stripe_billing::billing_portal_session::{CreateBillingPortalSession, CreateBillingPortalSessionFlowData, CreateBillingPortalSessionFlowDataAfterCompletion, CreateBillingPortalSessionFlowDataAfterCompletionRedirect, CreateBillingPortalSessionFlowDataAfterCompletionType, CreateBillingPortalSessionFlowDataSubscriptionCancel, CreateBillingPortalSessionFlowDataSubscriptionCancelRetention, CreateBillingPortalSessionFlowDataSubscriptionCancelRetentionCouponOffer, CreateBillingPortalSessionFlowDataSubscriptionCancelRetentionType, CreateBillingPortalSessionFlowDataSubscriptionUpdate, CreateBillingPortalSessionFlowDataType};
 use stripe_billing::BillingPortalSession;
 use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
@@ -88,10 +88,53 @@ pub async fn stripe_artcraft_create_customer_portal_session_handler(
     Ok(Some(subscription)) => subscription,
   };
 
-  // TODO: Set the configuration id. 
-  
-  let portal_builder = CreateBillingPortalSession::new(subscription.stripe_customer_id)
+  // TODO: Set the configuration id.
+
+  let mut portal_builder = CreateBillingPortalSession::new(subscription.stripe_customer_id)
       .return_url(stripe_config.portal_return_url.clone());
+
+  match request.flow {
+    None => {}
+    Some(StripeArtcraftCreateCustomerPortalFlowState::SubscriptionCancel) => {
+      portal_builder = portal_builder.flow_data(CreateBillingPortalSessionFlowData {
+        type_: CreateBillingPortalSessionFlowDataType::SubscriptionCancel,
+        subscription_cancel: Some(
+          CreateBillingPortalSessionFlowDataSubscriptionCancel {
+            retention: None,
+            subscription: subscription.stripe_subscription_id.clone(),
+          }
+        ),
+        after_completion: Some(CreateBillingPortalSessionFlowDataAfterCompletion {
+          type_: CreateBillingPortalSessionFlowDataAfterCompletionType::Redirect,
+          redirect: Some(CreateBillingPortalSessionFlowDataAfterCompletionRedirect {
+            return_url: stripe_config.portal_return_url.clone(), // TODO: This can be a different URL.
+          }),
+          hosted_confirmation: None,
+        }),
+        subscription_update: None,
+        subscription_update_confirm: None,
+      });
+    }
+    Some(StripeArtcraftCreateCustomerPortalFlowState::SubscriptionUpdate) => {
+      portal_builder = portal_builder.flow_data(CreateBillingPortalSessionFlowData {
+        type_: CreateBillingPortalSessionFlowDataType::SubscriptionUpdate,
+        subscription_update: Some(
+          CreateBillingPortalSessionFlowDataSubscriptionUpdate {
+            subscription: subscription.stripe_subscription_id.clone(),
+          }
+        ),
+        after_completion: Some(CreateBillingPortalSessionFlowDataAfterCompletion {
+          type_: CreateBillingPortalSessionFlowDataAfterCompletionType::Redirect,
+          redirect: Some(CreateBillingPortalSessionFlowDataAfterCompletionRedirect {
+            return_url: stripe_config.portal_return_url.clone(), // TODO: This can be a different URL.
+          }),
+          hosted_confirmation: None,
+        }),
+        subscription_cancel: None,
+        subscription_update_confirm: None,
+      });
+    }
+  }
 
   let portal_session = portal_builder
       .send(&stripe_config.client)
