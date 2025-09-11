@@ -54,8 +54,8 @@ impl ArtcraftSubscriptionSlug {
 
 #[cfg(test)]
 mod tests {
-  use crate::test_helpers::assert_serialization;
   use crate::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
+  use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;

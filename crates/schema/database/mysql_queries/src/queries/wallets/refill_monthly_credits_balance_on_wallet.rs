@@ -53,6 +53,7 @@ pub async fn refill_monthly_credits_balance_on_wallet(
 
   Ok(WalletUpdateSummary {
     token: wallet.token,
+    namespace: wallet.namespace,
     owner_user_token: wallet.owner_user_token,
 
     // We updated monthly credits

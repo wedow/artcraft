@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use enums::common::subscription_namespace::SubscriptionNamespace;
+use enums::common::payments_namespace::PaymentsNamespace;
 use enums::common::visibility::Visibility;
 use tokens::tokens::users::UserToken;
 
@@ -35,7 +35,7 @@ pub struct UserSessionPremiumPlanInfo {
 #[derive(Clone)]
 pub struct UserSessionSubscriptionPlan {
     /// The category or namespace for the product, eg "artcraft" or "fakeyou"
-    pub subscription_namespace: SubscriptionNamespace,
+    pub subscription_namespace: PaymentsNamespace,
 
     /// The key for the product in our internal system (not a stripe id),
     /// eg. "artcraft_basic", "fakeyou_en_pro", or "stream_package_plus".

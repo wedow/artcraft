@@ -9,7 +9,7 @@ use artcraft_api_defs::stripe_artcraft::create_customer_portal_session::{StripeA
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest, StripeArtcraftCreateSubscriptionCheckoutResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
-use enums::common::subscription_namespace::SubscriptionNamespace;
+use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, info, warn};
 use mysql_queries::queries::users::user_subscriptions::find_artcraft_subscription_for_owner_user::find_artcraft_subscription_for_owner_user_using_connection;
 use reusable_types::server_environment::ServerEnvironment;

@@ -9,6 +9,11 @@ CREATE TABLE wallets (
   -- Effective "primary key" (PUBLIC)
   token VARCHAR(32) NOT NULL,
 
+  -- If we host multiple sites with distinct categories, this will enable us to
+  -- segregate wallets. This is effectively a wallet namespace.
+  -- NB: Uses the `PaymentsNamespace` enum, which is also shared with subscriptions.
+  wallet_namespace VARCHAR(32) NOT NULL,
+
   -- Who owns the wallet
   -- In the future, we might allow other users to use the same wallet,
   -- but the wallet would still have an owner.
@@ -54,6 +59,8 @@ CREATE TABLE wallets (
   -- ========== INDICES ==========
   PRIMARY KEY (id),
   UNIQUE KEY (token),
-  UNIQUE KEY (owner_user_token)
+  UNIQUE KEY (wallet_namespace, owner_user_token), -- For now
+  INDEX idx_wallet_namespace (wallet_namespace),
+  INDEX idx_owner_user_token (owner_user_token)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

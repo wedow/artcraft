@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 
 use actix_web::HttpRequest;
 use async_trait::async_trait;
-use enums::common::subscription_namespace::SubscriptionNamespace;
+use enums::common::payments_namespace::PaymentsNamespace;
 //#[cfg(test)]
 //use mockall::automock;
 
@@ -63,7 +63,7 @@ pub struct UserMetadata {
 #[derive(Clone, Debug)]
 pub struct SubscriptionKey {
   /// The category or namespace for the product, eg "artcraft" or "fakeyou".
-  pub internal_subscription_namespace: SubscriptionNamespace,
+  pub internal_subscription_namespace: PaymentsNamespace,
 
   /// The key for the product in our internal system (not a stripe id),
   /// eg. "artcraft_basic", "fakeyou_en_pro", or "stream_package_plus".

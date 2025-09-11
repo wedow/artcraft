@@ -1,5 +1,5 @@
 use crate::billing_action_fulfillment::artcraft_billing_action::UpsertableSubscriptionDetails;
-use enums::common::subscription_namespace::SubscriptionNamespace;
+use enums::common::payments_namespace::PaymentsNamespace;
 use log::info;
 use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id_transactional::get_user_subscription_by_stripe_subscription_id_transactional;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
@@ -52,7 +52,7 @@ pub async fn upsert_subscription_details(
 
     // Artcraft product foreign keys
     user_token: details.owner_user_token.as_str(),
-    subscription_namespace: SubscriptionNamespace::Artcraft,
+    subscription_namespace: PaymentsNamespace::Artcraft,
     subscription_product_slug: details.subscription.slug.to_str(),
 
     // Stripe object foreign keys

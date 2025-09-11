@@ -1,4 +1,4 @@
-use enums::common::subscription_namespace::SubscriptionNamespace;
+use enums::common::payments_namespace::PaymentsNamespace;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -23,7 +23,7 @@ impl Error for InternalProductLookupError {}
 pub struct InternalSubscriptionProduct {
     /// If a backend services multiple "websites" or namespaced subscriptions, this is how we
     /// firewall them off from one another.
-    pub subscription_category: SubscriptionNamespace,
+    pub subscription_category: PaymentsNamespace,
 
     /// The internal system lookup key for the subscription product. Typically a simple string,
     /// such as "tts_pro".

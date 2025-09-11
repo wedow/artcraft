@@ -7,7 +7,7 @@ use actix_web::{web, HttpRequest};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest, StripeArtcraftCreateSubscriptionCheckoutResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
-use enums::common::subscription_namespace::SubscriptionNamespace;
+use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use std::collections::HashMap;
@@ -77,7 +77,7 @@ pub async fn stripe_artcraft_create_subscription_session_handler(
   let artcraft_subscriptions = user_metadata
       .existing_subscription_keys
       .iter()
-      .filter(|it| it.internal_subscription_namespace == SubscriptionNamespace::Artcraft)
+      .filter(|it| it.internal_subscription_namespace == PaymentsNamespace::Artcraft)
       .collect::<Vec<_>>();
 
   // TODO: This will not handle a future where we have multiple "namespaces" or can offer users more than one subscription.

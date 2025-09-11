@@ -54,6 +54,7 @@ pub async fn add_durable_banked_balance_to_wallet(
 
   Ok(WalletUpdateSummary {
     token: wallet.token,
+    namespace: wallet.namespace,
     owner_user_token: wallet.owner_user_token,
 
     // Updated banked credits

@@ -12,4 +12,5 @@ pub mod helpers;
 pub mod mediators;
 pub mod payloads;
 pub mod queries;
+pub mod types;
 pub mod utils;

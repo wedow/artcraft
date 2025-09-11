@@ -9,7 +9,7 @@ use artcraft_api_defs::stripe_artcraft::create_credits_pack_checkout::{StripeArt
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest, StripeArtcraftCreateSubscriptionCheckoutResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
-use enums::common::subscription_namespace::SubscriptionNamespace;
+use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use std::collections::HashMap;
