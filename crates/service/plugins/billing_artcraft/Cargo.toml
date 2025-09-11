@@ -50,7 +50,7 @@ async-stripe-core = { version = "1.0.0-alpha.2", features = ["customer"] }
 async-stripe-shared= { version = "1.0.0-alpha.2", features = [] }
 async-stripe-types = { version = "1.0.0-alpha.2", features = [] }
 async-stripe-webhook = { version = "1.0.0-alpha.2", features = [] }
-async-stripe-billing =  { version = "1.0.0-alpha.2", features = ["subscription"] }
+async-stripe-billing =  { version = "1.0.0-alpha.2", features = ["subscription", "billing_portal_session", "billing_portal_configuration"] }
 
 #sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
 #utoipa = { version = "4", features = ["chrono","actix_extras"] }
