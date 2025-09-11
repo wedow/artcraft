@@ -1,4 +1,5 @@
 use crate::errors::select_optional_record_error::SelectOptionalRecordError;
+use crate::helpers::boolean_converters::nullable_i8_to_bool_default_false;
 use chrono::{DateTime, Utc};
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::subscription_namespace::SubscriptionNamespace;
@@ -7,7 +8,6 @@ use sqlx::mysql::{MySqlArguments, MySqlRow};
 use sqlx::pool::PoolConnection;
 use sqlx::MySql;
 use tokens::tokens::users::UserToken;
-
 
 pub struct ArtcraftSubscription {
   pub user_token: UserToken,
@@ -18,6 +18,12 @@ pub struct ArtcraftSubscription {
   pub stripe_customer_id: String,
   pub stripe_subscription_id: String,
   pub stripe_subscription_status: String,
+  pub stripe_invoice_is_paid: bool,
+
+  /// When the subscription was created (Stripe's POV, not our db record),
+  /// though even Stripe might have backdated it. It defaults to our DB record
+  /// created timestamp until Stripe updates it.
+  pub subscription_start_at: DateTime<Utc>,
 
   /// This is the authoritative timestamp for when the subscription expires.
   pub subscription_expires_at: DateTime<Utc>,
@@ -44,7 +50,7 @@ pub async fn find_artcraft_subscription_for_owner_user_using_transaction(
 ) -> Result<Option<ArtcraftSubscription>, SelectOptionalRecordError> {
 
   let query = query(user_token);
-  
+
   let result = query
       .fetch_optional(&mut **transaction)
       .await;
@@ -64,6 +70,8 @@ fn map_result(result: Result<Option<RawArtcraftSubscription>, sqlx::Error>) -> R
           .ok_or_else(|| SelectOptionalRecordError::RequiredFieldWasNull("maybe_stripe_subscription_id"))?,
       stripe_subscription_status: record.maybe_stripe_subscription_status
           .ok_or_else(|| SelectOptionalRecordError::RequiredFieldWasNull("maybe_stripe_subscription_status"))?,
+      stripe_invoice_is_paid: nullable_i8_to_bool_default_false(record.maybe_stripe_invoice_is_paid),
+      subscription_start_at: record.subscription_start_at,
       subscription_expires_at: record.subscription_expires_at,
     })),
     Ok(None) => Ok(None),
@@ -87,6 +95,8 @@ SELECT
   maybe_stripe_customer_id,
   maybe_stripe_subscription_id,
   maybe_stripe_subscription_status,
+  maybe_stripe_invoice_is_paid,
+  subscription_start_at,
   subscription_expires_at
 
 FROM user_subscriptions
@@ -117,6 +127,8 @@ struct RawArtcraftSubscription {
   maybe_stripe_customer_id: Option<String>,
   maybe_stripe_subscription_id: Option<String>,
   maybe_stripe_subscription_status: Option<String>,
+  maybe_stripe_invoice_is_paid: Option<i8>,
 
+  subscription_start_at: DateTime<Utc>,
   subscription_expires_at: DateTime<Utc>,
 }
