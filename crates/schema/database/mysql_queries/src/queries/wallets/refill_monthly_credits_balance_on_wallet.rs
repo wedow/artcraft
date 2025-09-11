@@ -8,6 +8,7 @@ use tokens::tokens::wallets::WalletToken;
 pub async fn refill_monthly_credits_balance_on_wallet(
   wallet_token: &WalletToken,
   monthly_amount: u64,
+  maybe_ledger_ref: Option<&str>,
   transaction: &mut sqlx::Transaction<'_, MySql>,
 ) -> anyhow::Result<WalletUpdateSummary> {
 
@@ -37,7 +38,7 @@ pub async fn refill_monthly_credits_balance_on_wallet(
   let record = InsertWalletLedgerEntry {
     wallet_token,
     entry_type: WalletLedgerEntryType::CreditMonthly,
-    maybe_entity_ref: None, // TODO
+    maybe_entity_ref: maybe_ledger_ref.map(|s| s.to_string()),
 
     monthly_credits_before: existing_monthly_balance,
     monthly_credits_after: new_monthly_balance,

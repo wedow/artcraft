@@ -36,6 +36,9 @@ pub struct WalletCreditsPurchaseEvent {
 
   // NB: This is a multiplier on the pack's base value.
   pub quantity: u64,
+  
+  /// Token to track in the wallet_ledger_events
+  pub ledger_event_ref: Option<String>,
 }
 
 
@@ -125,4 +128,7 @@ pub struct SubscriptionPaidEvent {
   /// TODO: - maybe not - This controls whether it is active or not.
   pub maybe_cancel_at: Option<NaiveDateTime>,
   pub maybe_canceled_at: Option<NaiveDateTime>,
+
+  /// Token to track in the wallet_ledger_events
+  pub ledger_event_ref: Option<String>,
 }

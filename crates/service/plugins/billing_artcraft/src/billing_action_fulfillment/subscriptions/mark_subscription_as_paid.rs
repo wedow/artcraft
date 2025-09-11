@@ -82,10 +82,17 @@ pub async fn mark_subscription_as_paid(
   };
 
   let monthly_credits = details.artcraft_subscription.monthly_credits_amount;
+  
+  let maybe_ledger_ref = details.ledger_event_ref.as_deref();
 
   info!("Adding {} monthly credits to wallet: {}", monthly_credits , wallet_token.as_str());
 
-  let _result = refill_monthly_credits_balance_on_wallet(&wallet_token, monthly_credits, transaction).await?;
+  let _result = refill_monthly_credits_balance_on_wallet(
+    &wallet_token, 
+    monthly_credits, 
+    maybe_ledger_ref,
+    transaction
+  ).await?;
 
   // TODO: Insert wallet ledger entry.
 

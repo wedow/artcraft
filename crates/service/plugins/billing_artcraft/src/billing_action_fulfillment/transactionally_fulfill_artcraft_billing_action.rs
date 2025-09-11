@@ -23,6 +23,7 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
         &purchase.owner_user_token,
         &purchase.pack,
         purchase.quantity,
+        purchase.ledger_event_ref.as_deref(),
         transaction,
       ).await?;
     }

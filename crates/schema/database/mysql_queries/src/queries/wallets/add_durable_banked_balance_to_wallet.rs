@@ -8,6 +8,7 @@ use tokens::tokens::wallets::WalletToken;
 pub async fn add_durable_banked_balance_to_wallet(
   wallet_token: &WalletToken,
   amount_to_add: u64,
+  maybe_ledger_ref: Option<&str>,
   transaction: &mut sqlx::Transaction<'_, MySql>,
 ) -> anyhow::Result<WalletUpdateSummary> {
 
@@ -19,8 +20,6 @@ pub async fn add_durable_banked_balance_to_wallet(
 
   let existing_banked_balance = wallet.banked_credits;
   let new_banked_balance = existing_banked_balance.saturating_add(amount_to_add);
-
-  // TODO: Insert ledger event.
 
   let result = sqlx::query!(
         r#"
@@ -39,7 +38,7 @@ pub async fn add_durable_banked_balance_to_wallet(
   let record = InsertWalletLedgerEntry {
     wallet_token,
     entry_type: WalletLedgerEntryType::CreditBanked,
-    maybe_entity_ref: None, // TODO
+    maybe_entity_ref: maybe_ledger_ref.map(|t| t.to_string()),
 
     // Updated banked credits
     banked_credits_before: existing_banked_balance,

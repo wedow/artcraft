@@ -10,6 +10,7 @@ pub async fn complete_credits_pack_purchase(
   owner_user_token: &UserToken,
   pack: &StripeArtcraftCreditsPackInfo,
   quantity: u64,
+  maybe_ledger_ref: Option<&str>,
   transaction: &mut sqlx::Transaction<'_, sqlx::MySql>,
 ) -> anyhow::Result<()> {
 
@@ -28,7 +29,12 @@ pub async fn complete_credits_pack_purchase(
   
   info!("Adding {} credits to wallet: {}", credits_purchased, wallet_token.as_str());
   
-  let _result = add_durable_banked_balance_to_wallet(&wallet_token, credits_purchased, transaction).await?;
+  let _result = add_durable_banked_balance_to_wallet(
+    &wallet_token, 
+    credits_purchased, 
+    maybe_ledger_ref,
+    transaction,
+  ).await?;
 
   Ok(())
 }

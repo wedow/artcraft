@@ -110,6 +110,7 @@ pub async fn payment_intent_succeeded_extractor(
       maybe_wallet_token,
       pack: credits_pack.clone(),
       quantity: purchase.quantity,
+      ledger_event_ref: Some(payment_intent_id),
     })),
     webhook_event_log_summary: event_log_summary,
   })

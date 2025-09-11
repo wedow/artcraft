@@ -117,7 +117,13 @@ pub async fn invoice_paid_handler(
     }
   };
 
+  let ledger_event_ref = invoice.id
+      .as_ref()
+      .map(|id| id.to_string())
+      .unwrap_or_else(|| stripe_event_descriptor.stripe_event_id.clone());
+
   info!("{} : invoice paid is for subscription.", stripe_event_descriptor);
+  
 
   Ok(EnrichedWebhookEvent {
     maybe_billing_action: Some(ArtcraftBillingAction::SubscriptionPaid(SubscriptionPaidEvent {
@@ -137,6 +143,7 @@ pub async fn invoice_paid_handler(
       calculated_subscription_expires_at: subscription.current_billing_period_end, // TODO: This is incorrect. Use `calculate_subscription_end_date`.
       maybe_cancel_at: subscription.maybe_cancel_at,
       maybe_canceled_at: subscription.maybe_canceled_at,
+      ledger_event_ref: Some(ledger_event_ref),
     })),
     webhook_event_log_summary: event_log_summary,
   })
