@@ -65,7 +65,7 @@ pub mod tests {
   use std::ops::{Add, Sub};
 
   use chrono::{Duration, Utc};
-
+  use enums::common::payments_namespace::PaymentsNamespace;
   use reusable_types::server_environment::ServerEnvironment;
 
   use crate::configs::plans::get_correct_plan_for_session::get_correct_plan_for_session;
@@ -131,7 +131,7 @@ pub mod tests {
 
     user_session.premium.subscription_plans = vec![
       UserSessionSubscriptionPlan {
-        subscription_namespace: "fakeyou".to_string(),
+        subscription_namespace: PaymentsNamespace::FakeYou,
         subscription_product_slug: "fakeyou_plus".to_string(),
         subscription_expires_at: future_expiry,
       }
@@ -162,7 +162,7 @@ pub mod tests {
 
     user_session.premium.subscription_plans = vec![
       UserSessionSubscriptionPlan {
-        subscription_namespace: "fakeyou".to_string(),
+        subscription_namespace: PaymentsNamespace::FakeYou,
         subscription_product_slug: "development_fakeyou_plus".to_string(),
         subscription_expires_at: future_expiry,
       }
@@ -193,7 +193,7 @@ pub mod tests {
 
     user_session.premium.subscription_plans = vec![
       UserSessionSubscriptionPlan {
-        subscription_namespace: "fakeyou".to_string(),
+        subscription_namespace: PaymentsNamespace::FakeYou,
         subscription_product_slug: "fakeyou_plus".to_string(),
         subscription_expires_at: already_expired,
       }
@@ -235,7 +235,7 @@ pub mod tests {
 
     user_session.premium.subscription_plans = vec![
       UserSessionSubscriptionPlan {
-        subscription_namespace: "fakeyou".to_string(),
+        subscription_namespace: PaymentsNamespace::FakeYou,
         subscription_product_slug: "fakeyou_plus".to_string(),
         subscription_expires_at: future_expiry,
       }

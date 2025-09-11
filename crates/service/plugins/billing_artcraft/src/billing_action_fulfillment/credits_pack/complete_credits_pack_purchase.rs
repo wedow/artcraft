@@ -1,8 +1,9 @@
 use crate::configs::credits_packs::stripe_artcraft_credits_pack_info::StripeArtcraftCreditsPackInfo;
+use enums::common::payments_namespace::PaymentsNamespace;
 use log::info;
 use mysql_queries::queries::wallets::add_durable_banked_balance_to_wallet::add_durable_banked_balance_to_wallet;
 use mysql_queries::queries::wallets::create_new_artcraft_wallet_for_owner_user::create_new_artcraft_wallet_for_owner_user;
-use mysql_queries::queries::wallets::find_artcraft_wallet_token_for_owner_user::find_artcraft_wallet_token_for_owner_user_using_transaction;
+use mysql_queries::queries::wallets::find_primary_wallet_token_for_owner::find_primary_wallet_token_for_owner_using_transaction;
 use tokens::tokens::users::UserToken;
 
 /// Record the credits pack purchase
@@ -14,8 +15,11 @@ pub async fn complete_credits_pack_purchase(
   transaction: &mut sqlx::Transaction<'_, sqlx::MySql>,
 ) -> anyhow::Result<()> {
 
-  let maybe_wallet_token = find_artcraft_wallet_token_for_owner_user_using_transaction(
-    owner_user_token, transaction).await?;
+  let maybe_wallet_token = find_primary_wallet_token_for_owner_using_transaction(
+    owner_user_token, 
+    PaymentsNamespace::Artcraft,
+    transaction
+  ).await?;
   
   let wallet_token = match maybe_wallet_token {
     Some(token) => token,

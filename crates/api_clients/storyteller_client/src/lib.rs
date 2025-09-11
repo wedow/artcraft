@@ -9,3 +9,4 @@ pub mod prompts;
 pub mod recipes;
 pub mod stripe_artcraft;
 pub mod utils;
+pub mod wallets;
