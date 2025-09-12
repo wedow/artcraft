@@ -391,9 +391,10 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
               <Activity />
             </div>
+
             <div className="no-drag">
-              <AuthButtons loginSignUpPressed={loginSignUpPressed} />
             </div>
+
             {isDesktop && platform !== "macos" && (
               <div className="no-drag flex items-center">
                 <Button
