@@ -1,2 +1,3 @@
-pub mod storyteller_open_subscription_purchase_command;
+pub mod storyteller_get_credits_command;
 pub mod storyteller_open_credits_purchase_command;
+pub mod storyteller_open_subscription_purchase_command;

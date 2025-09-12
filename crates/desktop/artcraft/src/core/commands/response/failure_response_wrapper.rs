@@ -40,3 +40,14 @@ impl From<&str> for CommandErrorResponseWrapper<(), ()> {
     }
   }
 }
+
+impl From<String> for CommandErrorResponseWrapper<(), ()> {
+  fn from(value: String) -> Self {
+    CommandErrorResponseWrapper {
+      status: CommandErrorStatus::BadRequest, // NB: Default to 500 error.
+      error_message: Some(value),
+      error_type: None,
+      error_details: None,
+    }
+  }
+}

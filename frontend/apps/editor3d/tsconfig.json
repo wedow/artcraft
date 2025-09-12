@@ -92,6 +92,9 @@
       "path": "../../libs/common"
     },
     {
+      "path": "../../libs/billing"
+    },
+    {
       "path": "../../libs/analytics/google-analytics"
     },
     {

@@ -161,6 +161,9 @@
     },
     {
       "path": "./libs/components/provider-billing-modal"
+    },
+    {
+      "path": "./libs/billing"
     }
   ]
 }

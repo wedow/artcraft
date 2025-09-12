@@ -18,7 +18,6 @@ import {
 } from "@fortawesome/pro-regular-svg-icons";
 import { Button } from "@storyteller/ui-button";
 import { PopoverMenu } from "@storyteller/ui-popover";
-import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
 import {
@@ -393,6 +392,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
             </div>
 
             <div className="no-drag">
+              {/* TODO(bt,2025-09-12): This was the old auth buttons that didn't work. We need to remove this and clean up the DOM. */}
             </div>
 
             {isDesktop && platform !== "macos" && (
