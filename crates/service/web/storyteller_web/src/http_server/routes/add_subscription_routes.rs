@@ -22,7 +22,7 @@ where
       .route(web::head().to(|| HttpResponse::Ok()))
     )
     .service(web::resource("/namespace/{namespace}")
-      .route(web::post().to(get_session_subscription_handler))
+      .route(web::get().to(get_session_subscription_handler))
       .route(web::head().to(|| HttpResponse::Ok()))
     )
   )

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   faGear,
   faImages,
@@ -57,6 +57,7 @@ import {
   usePricingModalStore,
   useCreditsModalStore,
 } from "@storyteller/ui-pricing-modal";
+import { useCreditsState } from "@storyteller/billing"
 
 interface Props {
   pageName: string;
@@ -144,10 +145,17 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
   const tabStore = useTabStore();
 
+  const creditsStore = useCreditsState();
+  const sumTotalCredits = creditsStore.totalCredits;
+
   const is3DSceneReady = is3DSceneLoaded.value;
   const is3DEditorReady = is3DEditorInitialized.value;
   const [disableSwitcher, setDisableSwitcher] = useState(false);
   const switcherThrottle = useRef(false);
+
+  useEffect(() => {
+    creditsStore.fetchFromServer();
+  }, []);
 
   const disableTabSwitcher = () => {
     return (
@@ -299,7 +307,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 }
                 triggerLabel={
                   <span className="whitespace-nowrap text-sm font-medium">
-                    180 Credits
+                    {sumTotalCredits} Credits
                   </span>
                 }
                 buttonClassName="h-[30px] px-2 ps-1.5 bg-transparent hover:bg-white/10"
@@ -326,7 +334,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                         icon={faCoinFront}
                         className="text-2xl text-primary"
                       />
-                      180
+                      {sumTotalCredits}
                     </div>
                     <div className="mt-3 flex gap-2">
                       <Button

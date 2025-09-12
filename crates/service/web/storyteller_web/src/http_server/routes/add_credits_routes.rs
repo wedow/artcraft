@@ -17,7 +17,7 @@ where
 {
   app.service(web::scope("/v1/credits")
       .service(web::resource("/namespace/{namespace}")
-          .route(web::post().to(get_session_credits_handler))
+          .route(web::get().to(get_session_credits_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )

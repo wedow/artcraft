@@ -47,6 +47,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_thread;
 use crate::services::storyteller::commands::storyteller_open_credits_purchase_command::storyteller_open_credits_purchase_command;
 use crate::services::storyteller::commands::storyteller_open_subscription_purchase_command::storyteller_open_subscription_purchase_command;
+use crate::services::storyteller::commands::storyteller_get_credits_command::storyteller_get_credits_command;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use log::error;
 
@@ -169,6 +170,7 @@ pub fn run() {
     fal_background_removal_command,
     fal_hunyuan_image_to_3d_command,
     fal_kling_image_to_video_command,
+    storyteller_get_credits_command,
     flip_image,
     get_app_info_command,
     get_app_preferences_command,
