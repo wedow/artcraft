@@ -2,19 +2,21 @@ use crate::errors::select_optional_record_error::SelectOptionalRecordError;
 use crate::helpers::boolean_converters::nullable_i8_to_bool_default_false;
 use crate::types::query_map::QueryMap;
 use chrono::{DateTime, Utc};
-use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
 use sqlx;
 use sqlx::mysql::MySqlRow;
 use sqlx::pool::PoolConnection;
 use sqlx::MySql;
+use tokens::tokens::user_subscriptions::UserSubscriptionToken;
 use tokens::tokens::users::UserToken;
 
-pub struct ArtcraftSubscription {
+pub struct UserSubscription {
+  pub token: UserSubscriptionToken,
+  
   pub user_token: UserToken,
 
   pub subscription_namespace: PaymentsNamespace,
-  pub subscription_product_slug: ArtcraftSubscriptionSlug,
+  pub subscription_product_slug: String,
 
   pub stripe_customer_id: String,
   pub stripe_subscription_id: String,
@@ -33,12 +35,13 @@ pub struct ArtcraftSubscription {
 /// Technically, there may be more than one subscription record.
 /// We sort the results and only return the first active artcraft subscription
 /// by numeric ID so we should have a consistent view.
-pub async fn find_artcraft_subscription_for_owner_user_using_connection(
+pub async fn find_subscription_for_owner_user_using_connection(
   user_token: &UserToken,
+  namespace: PaymentsNamespace,
   connection: &mut PoolConnection<MySql>,
-) -> Result<Option<ArtcraftSubscription>, SelectOptionalRecordError> {
+) -> Result<Option<UserSubscription>, SelectOptionalRecordError> {
 
-  let query = query(user_token);
+  let query = query(user_token, namespace);
 
   let result = query
       .fetch_optional(&mut **connection)
@@ -48,12 +51,13 @@ pub async fn find_artcraft_subscription_for_owner_user_using_connection(
 }
 
 
-pub async fn find_artcraft_subscription_for_owner_user_using_transaction(
+pub async fn find_subscription_for_owner_user_using_transaction(
   user_token: &UserToken,
+  namespace: PaymentsNamespace,
   transaction: &mut sqlx::Transaction<'_, MySql>,
-) -> Result<Option<ArtcraftSubscription>, SelectOptionalRecordError> {
+) -> Result<Option<UserSubscription>, SelectOptionalRecordError> {
 
-  let query = query(user_token);
+  let query = query(user_token, namespace);
 
   let result = query
       .fetch_optional(&mut **transaction)
@@ -62,9 +66,10 @@ pub async fn find_artcraft_subscription_for_owner_user_using_transaction(
   map_result(result)
 }
 
-fn map_result(result: Result<Option<RawArtcraftSubscription>, sqlx::Error>) -> Result<Option<ArtcraftSubscription>, SelectOptionalRecordError> {
+fn map_result(result: Result<Option<RawUserSubscription>, sqlx::Error>) -> Result<Option<UserSubscription>, SelectOptionalRecordError> {
   match result {
-    Ok(Some(record)) => Ok(Some(ArtcraftSubscription {
+    Ok(Some(record)) => Ok(Some(UserSubscription {
+      token: record.token,
       user_token: record.user_token,
       subscription_namespace: record.subscription_namespace,
       subscription_product_slug: record.subscription_product_slug,
@@ -84,22 +89,21 @@ fn map_result(result: Result<Option<RawArtcraftSubscription>, sqlx::Error>) -> R
 }
 
 // QueryAs<'q, Postgres, O, PgArguments>
-fn query(user_token: &UserToken)
-  -> QueryMap<impl Send + FnMut(MySqlRow) -> Result<RawArtcraftSubscription, sqlx::Error>>
+fn query(user_token: &UserToken, namespace: PaymentsNamespace)
+  -> QueryMap<impl Send + FnMut(MySqlRow) -> Result<RawUserSubscription, sqlx::Error>>
 {
-  const ARTCRAFT_NAMESPACE: &str = PaymentsNamespace::Artcraft.to_str();
-
   // NB: We want to eventually support multiple subscriptions per user (eg. company use case),
   // so we do not have a unique key on user token (but we do on stripe subscription id).
   // In the meantime, to ensure we use the same subscription each time, we order by id and
   // take the first one.
   sqlx::query_as!(
-    RawArtcraftSubscription,
+    RawUserSubscription,
     r#"
 SELECT
+  token as `token: tokens::tokens::user_subscriptions::UserSubscriptionToken`,
   user_token as `user_token: tokens::tokens::users::UserToken`,
   subscription_namespace as `subscription_namespace: enums::common::payments_namespace::PaymentsNamespace`,
-  subscription_product_slug as `subscription_product_slug: enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug`,
+  subscription_product_slug,
   maybe_stripe_customer_id,
   maybe_stripe_subscription_id,
   maybe_stripe_subscription_status,
@@ -121,17 +125,19 @@ WHERE
   LIMIT 1
     "#,
     user_token.as_str(),
-    ARTCRAFT_NAMESPACE,
+    namespace.to_str(),
   )
 }
 
 
 #[derive(sqlx::FromRow)]
-struct RawArtcraftSubscription {
+struct RawUserSubscription {
+  token: UserSubscriptionToken,
+  
   user_token: UserToken,
 
   subscription_namespace: PaymentsNamespace,
-  subscription_product_slug: ArtcraftSubscriptionSlug,
+  subscription_product_slug: String,
 
   maybe_stripe_customer_id: Option<String>,
   maybe_stripe_subscription_id: Option<String>,

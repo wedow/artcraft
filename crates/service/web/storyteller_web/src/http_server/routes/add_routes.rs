@@ -130,6 +130,7 @@ use crate::http_server::routes::add_generate_routes::add_generate_routes;
 use crate::http_server::routes::add_image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::add_stripe_artcraft_routes::add_stripe_artcraft_routes;
 use crate::http_server::routes::add_studio_gen2_routes::add_studio_gen2_routes;
+use crate::http_server::routes::add_subscription_routes::add_subscription_routes;
 use crate::http_server::routes::add_webhook_routes::add_webhook_routes;
 use crate::http_server::routes::beta_key_routes::add_beta_key_routes;
 use crate::http_server::routes::job_routes::add_job_routes;
@@ -891,26 +892,6 @@ fn add_featured_item_routes<T, B> (app: App<T>) -> App<T>
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )
-}
-
-// ============= SUBSCRIPTION ROUTES ===================
-fn add_subscription_routes<T, B> (app: App<T>) -> App<T>
-  where
-      B: MessageBody,
-      T: ServiceFactory<
-        ServiceRequest,
-        Config = (),
-        Response = ServiceResponse<B>,
-        Error = Error,
-        InitError = (),
-      >,
-{
-    app.service(web::scope("/v1/subscriptions")
-        .service(web::resource("/unsubscribe_reason")
-            .route(web::post().to(set_unsubscribe_reason_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
-        )
-    )
 }
 
 fn add_voice_designer_routes<T,B> (app:App<T>)-> App<T>

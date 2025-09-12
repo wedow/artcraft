@@ -11,7 +11,7 @@ use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, info, warn};
-use mysql_queries::queries::users::user_subscriptions::find_artcraft_subscription_for_owner_user::find_artcraft_subscription_for_owner_user_using_connection;
+use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::MySqlPool;
 use std::collections::HashMap;
@@ -72,8 +72,9 @@ pub async fn stripe_artcraft_create_customer_portal_session_handler(
 
   let user_token = UserToken::new_from_str(&user_metadata.user_token);
 
-  let result = find_artcraft_subscription_for_owner_user_using_connection(
+  let result = find_subscription_for_owner_user_using_connection(
     &user_token,
+    PaymentsNamespace::Artcraft,
     &mut mysql_connection
   ).await;
 
