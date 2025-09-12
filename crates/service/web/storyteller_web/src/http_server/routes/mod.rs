@@ -1,6 +1,8 @@
 mod add_control_plane_routes;
+mod add_credits_routes;
 mod add_generate_routes;
 mod add_image_studio_routes;
+mod add_stripe_artcraft_routes;
 mod add_studio_gen2_routes;
 mod add_webhook_routes;
 mod beta_key_routes;
@@ -13,4 +15,3 @@ mod user_routes;
 mod weights_routes;
 mod workflow_routes;
 pub mod add_routes;
-mod add_stripe_artcraft_routes;

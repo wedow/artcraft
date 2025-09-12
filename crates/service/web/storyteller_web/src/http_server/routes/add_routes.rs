@@ -125,6 +125,7 @@ use crate::http_server::endpoints::voice_designer::voices::list_voices_by_user::
 use crate::http_server::endpoints::voice_designer::voices::search_voices::search_voices;
 use crate::http_server::endpoints::voice_designer::voices::update_voice::update_voice_handler;
 use crate::http_server::routes::add_control_plane_routes::add_control_plane_routes;
+use crate::http_server::routes::add_credits_routes::add_credits_routes;
 use crate::http_server::routes::add_generate_routes::add_generate_routes;
 use crate::http_server::routes::add_image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::add_stripe_artcraft_routes::add_stripe_artcraft_routes;
@@ -151,39 +152,40 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
         InitError = (),
       >,
 {
-  let mut app = add_moderator_routes(app); /* /moderation */
+  let mut app = add_moderator_routes(app); // /moderation
   app = add_user_routes(app); // /create_account, /session, /login, /logout, etc.
-  app = add_tts_routes(app); /* /tts */
-  app = add_w2l_routes(app); /* /w2l */
-  app = add_web_vc_routes(app); /* /v1/voice_conversion */
-  app = add_vocoder_routes(app); /* /vocoder */
-  app = add_remote_download_routes(app); /* /v1/remote_downloads (prev. /retrieval, aka. "generic_download_jobs") */
-  app = add_category_routes(app); /* /category */
-  app = add_api_token_routes(app); /* /api_tokens */
-  app = add_voice_clone_request_routes(app); /* /voice_clone_requests */
-  app = add_investor_demo_routes(app); /* /demo_mode */ // TODO: DEFINITELY TEMPORARY
-  app = add_flag_routes(app); /* /flag */
-  app = add_desktop_app_routes(app); /* /v1/vc/... */
-  app = add_media_file_routes(app); /* /v1/media_files/... */
-  app = add_media_upload_routes(app); /* /v1/media_upload/... */
-  app = add_trending_routes(app); /* /v1/trending/... */
-  app = add_user_rating_routes(app); /* /v1/user_rating/... */
-  app = add_featured_item_routes(app); /* /v1/featured_item/... */
-  app = add_subscription_routes(app); /* /v1/subscriptions/... */
-  app = add_voice_designer_routes(app); /* /v1/voice_designer */
-  app = add_beta_key_routes(app); /* /v1/beta_keys */
+  app = add_tts_routes(app); // /tts
+  app = add_w2l_routes(app); // /w2l
+  app = add_web_vc_routes(app); // /v1/voice_conversion
+  app = add_vocoder_routes(app); // /vocoder
+  app = add_remote_download_routes(app); // /v1/remote_downloads (prev. /retrieval, aka. "generic_download_jobs")
+  app = add_category_routes(app); // /category
+  app = add_api_token_routes(app); // /api_tokens
+  app = add_voice_clone_request_routes(app); // /voice_clone_requests
+  app = add_investor_demo_routes(app); // /demo_mode // TODO: DEFINITELY TEMPORARY
+  app = add_flag_routes(app); // /flag
+  app = add_desktop_app_routes(app); // /v1/vc/...
+  app = add_media_file_routes(app); // /v1/media_files/...
+  app = add_media_upload_routes(app); // /v1/media_upload/...
+  app = add_trending_routes(app); // /v1/trending/...
+  app = add_user_rating_routes(app); // /v1/user_rating/...
+  app = add_featured_item_routes(app); // /v1/featured_item/...
+  app = add_subscription_routes(app); // /v1/subscriptions/...
+  app = add_voice_designer_routes(app); // /v1/voice_designer
+  app = add_beta_key_routes(app); // /v1/beta_keys
   app = add_weights_routes(app);
-  app = add_tag_routes(app); /* /v1/tags */
+  app = add_tag_routes(app); // /v1/tags
   app = add_model_download_routes(app);
   app = add_workflow_routes(app);
   app = add_studio_gen2_routes(app);
   app = add_image_studio_routes(app);
   app = add_job_routes(app);
-  app = add_engine_routes(app); /* /v1/engine/... */
-  app = add_control_plane_routes(app); /* /v1/control_plane/... */
-  app = add_generate_routes(app); /* /v1/generate/... */
-  app = add_webhook_routes(app); /* /v1/webhooks/... */
-  app = add_stripe_artcraft_routes(app); /* /v1/stripe_artcraft/... */
+  app = add_engine_routes(app); // /v1/engine/...
+  app = add_control_plane_routes(app); // /v1/control_plane/...
+  app = add_generate_routes(app); // /v1/generate/...
+  app = add_webhook_routes(app); // /v1/webhooks/...
+  app = add_stripe_artcraft_routes(app); // /v1/stripe_artcraft/...
+  app = add_credits_routes(app); // /v1/credits/...
 
   // app = add_image_gen_routes(app);
 
