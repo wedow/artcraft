@@ -93,12 +93,6 @@ pub async fn qwen_edit_image_handler(
     CAN_SEE_DELETED,
   ).await;
 
-  let result = batch_get_media_files_by_tokens_with_connection(
-    &mut mysql_connection,
-    &media_tokens,
-    CAN_SEE_DELETED,
-  ).await;
-
   let media_files = match result {
     Ok(files) => files,
     Err(err) => {
