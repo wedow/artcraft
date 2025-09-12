@@ -22,6 +22,8 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
 use sqlx::Acquire;
 use utoipa::ToSchema;
+use artcraft_api_defs::generate::image::edit::flux_pro_kontext_max_edit_image::FluxProKontextMaxEditImageNumImages;
+use crate::billing::wallets::temporary_test_wallet_deduction::temporary_test_wallet_deduction;
 
 /// Flux 1 Dev text to image
 #[utoipa::path(
@@ -59,6 +61,13 @@ pub async fn generate_flux_1_dev_text_to_image_handler(
   let maybe_avt_token = server_state
       .avt_cookie_manager
       .get_avt_token_from_request(&http_request);
+  
+  let user_token = match maybe_user_session.as_ref() {
+    Some(session) => &session.user_token,
+    None => {
+      return Err(CommonWebError::NotAuthorized);
+    }
+  };
 
   // TODO: Limit usage for new accounts. Billing, free credits metering, etc.
 
@@ -80,6 +89,30 @@ pub async fn generate_flux_1_dev_text_to_image_handler(
         error!("Error inserting idempotency token: {:?}", err);
         CommonWebError::BadInputWithSimpleMessage("repeated idempotency token".to_string())
       })?;
+
+
+  // TODO: This is test code
+  let credits = match request.num_images {
+    Some(GenerateFlux1DevTextToImageNumImages::One) => 100,
+    Some(GenerateFlux1DevTextToImageNumImages::Two) => 200,
+    Some(GenerateFlux1DevTextToImageNumImages::Three) => 300,
+    Some(GenerateFlux1DevTextToImageNumImages::Four) => 400,
+    None => 100,
+  };
+
+  // TODO: This is test code
+  let result = temporary_test_wallet_deduction(
+    user_token,
+    Some("todo-reference-token"),
+    credits,
+    &mut mysql_connection,
+  ).await;
+
+  // TODO: This is test code
+  if let Err(err) = result {
+    warn!("Temporary wallet deduction failed: {:?}", err); // Infallible for now.
+  }
+  
   
   const IS_MOD : bool = false;
 

@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use log::error;
 use enums::by_table::wallet_ledger_entries::wallet_ledger_entry_type::WalletLedgerEntryType;
 use errors::AnyhowResult;
 use sqlx::mysql::MySqlArguments;
@@ -53,13 +54,16 @@ impl <'a> InsertWalletLedgerEntry<'a> {
     Ok(())
   }
 
-  pub async fn upsert_with_transaction(&'a self, transaction: &mut Transaction<'_, MySql>) -> AnyhowResult<()> {
+  pub async fn upsert_with_transaction(&'a self, transaction: &mut Transaction<'_, MySql>) -> Result<(), sqlx::Error> {
     let query = self.query();
     let query_result = query.execute(&mut **transaction).await;
 
     let _record_id = match query_result {
       Ok(res) => res.last_insert_id(),
-      Err(err) => return Err(anyhow!("Error upserting wallet ledger entry record: {:?}", err)),
+      Err(err) => {
+        error!("Error upserting wallet ledger entry record: {:?}", err);
+        return Err(err);
+      },
     };
 
     Ok(())
