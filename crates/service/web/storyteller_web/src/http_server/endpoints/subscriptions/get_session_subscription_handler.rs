@@ -34,7 +34,7 @@ pub struct GetSessionSubscriptionPathInfo {
   tag = "Subscriptions",
   path = "/v1/subscriptions/namespace/{namespace}",
   responses(
-    (status = 200, description = "Success", body = GetSessionCreditsResponse),
+    (status = 200, description = "Success", body = GetSessionSubscriptionResponse),
   ),
   params(
     ("path" = GetSessionSubscriptionPathInfo, description = "Path for Request")

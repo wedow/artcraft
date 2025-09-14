@@ -57,7 +57,7 @@ import {
   usePricingModalStore,
   useCreditsModalStore,
 } from "@storyteller/ui-pricing-modal";
-import { useCreditsState } from "@storyteller/billing"
+import { useCreditsState } from "@storyteller/credits"
 import { useCreditsBalanceChangedEvent } from "@storyteller/tauri-events"
 
 interface Props {
