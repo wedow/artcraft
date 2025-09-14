@@ -6,6 +6,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -145,6 +146,8 @@ pub async fn enqueue_image_to_3d_object_command(
       if let Err(err) = event.send(&app) {
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
+      
+      CreditsBalanceChangedEvent{}.send_infallible(&app);
       
       Ok(EnqueueImageTo3dObjectSuccessResponse {}.into())
     }

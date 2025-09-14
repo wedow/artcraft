@@ -58,6 +58,7 @@ import {
   useCreditsModalStore,
 } from "@storyteller/ui-pricing-modal";
 import { useCreditsState } from "@storyteller/billing"
+import { useCreditsBalanceChangedEvent } from "@storyteller/tauri-events"
 
 interface Props {
   pageName: string;
@@ -156,6 +157,10 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
   useEffect(() => {
     creditsStore.fetchFromServer();
   }, []);
+
+  useCreditsBalanceChangedEvent(async () => {
+    creditsStore.fetchFromServer();
+  });
 
   const disableTabSwitcher = () => {
     return (

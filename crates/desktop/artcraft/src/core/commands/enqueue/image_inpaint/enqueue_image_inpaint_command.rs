@@ -10,6 +10,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
@@ -211,6 +212,8 @@ pub async fn enqueue_image_inpaint_command(
       if let Err(err) = event.send(&app) {
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
+
+      CreditsBalanceChangedEvent{}.send_infallible(&app);
 
       Ok(EnqueueImageInpaintSuccessResponse {}.into())
     }

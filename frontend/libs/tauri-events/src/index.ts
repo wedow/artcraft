@@ -1,5 +1,7 @@
 export * from "./lib/common/BasicEventWrapper";
+export * from "./lib/events/functional/CreditsBalanceChangedEvent";
 export * from "./lib/events/functional/ImageEditCompleteEvent";
+export * from "./lib/events/functional/ImageToVideoGenerationCompleteEvent";
 export * from "./lib/events/functional/RefreshAccountStateEvent";
 export * from "./lib/events/functional/ShowProviderBillingModalEvent";
 export * from "./lib/events/functional/ShowProviderLoginModalEvent";

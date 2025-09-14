@@ -41,6 +41,7 @@ use storyteller_client::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 
 #[derive(Deserialize, Debug)]
 pub struct EnqueueImageBgRemovalCommand {
@@ -151,6 +152,8 @@ pub async fn enqueue_image_bg_removal_command(
       if let Err(err) = event.send(&app) {
         error!("Failed to emit event: {:?}", err); // Fail open.
       }
+
+      CreditsBalanceChangedEvent{}.send_infallible(&app);
 
       Ok(EnqueueImageBgRemovalSuccessResponse {}.into())
     }
