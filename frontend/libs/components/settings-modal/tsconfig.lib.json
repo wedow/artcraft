@@ -81,6 +81,12 @@
     },
     {
       "path": "../../tauri-api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../state/credits/tsconfig.lib.json"
+    },
+    {
+      "path": "../../state/subscription/tsconfig.lib.json"
     }
   ]
 }

@@ -11,21 +11,20 @@ pub async fn get_session_subscription(
   maybe_creds: Option<&StorytellerCredentialSet>,
   payments_namespace: PaymentsNamespace
 ) -> Result<GetSessionSubscriptionResponse, StorytellerError> {
-  let url = get_url(api_host, payments_namespace);
+  let url_path = get_url_path(api_host, payments_namespace);
 
-  debug!("Requesting {:?}", &url);
+  debug!("Requesting {:?}", &url_path);
 
   Ok(basic_json_get_request(
     api_host,
-    &url,
+    &url_path,
     maybe_creds,
   ).await?)
 }
 
 
-fn get_url(api_host: &ApiHost, payments_namespace: PaymentsNamespace) -> String {
-  let api_hostname_and_scheme = api_host.to_api_hostname_and_scheme();
+fn get_url_path(api_host: &ApiHost, payments_namespace: PaymentsNamespace) -> String {
   let payments_namespace = payments_namespace.to_str();
-  format!("{}/v1/subscriptions/namespace/{}", api_hostname_and_scheme, payments_namespace)
+  format!("/v1/subscriptions/namespace/{}", payments_namespace)
 }
 

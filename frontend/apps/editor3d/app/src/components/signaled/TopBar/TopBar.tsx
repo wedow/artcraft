@@ -57,8 +57,9 @@ import {
   usePricingModalStore,
   useCreditsModalStore,
 } from "@storyteller/ui-pricing-modal";
-import { useCreditsState } from "@storyteller/credits"
 import { useCreditsBalanceChangedEvent } from "@storyteller/tauri-events"
+import { useCreditsState } from "@storyteller/credits"
+import { useSubscriptionState } from "@storyteller/subscription"
 
 interface Props {
   pageName: string;
@@ -146,16 +147,19 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
   const tabStore = useTabStore();
 
-  const creditsStore = useCreditsState();
-  const sumTotalCredits = creditsStore.totalCredits;
-
   const is3DSceneReady = is3DSceneLoaded.value;
   const is3DEditorReady = is3DEditorInitialized.value;
   const [disableSwitcher, setDisableSwitcher] = useState(false);
   const switcherThrottle = useRef(false);
 
+  const creditsStore = useCreditsState();
+  const sumTotalCredits = creditsStore.totalCredits;
+
+  const subscriptionStore = useSubscriptionState();
+
   useEffect(() => {
     creditsStore.fetchFromServer();
+    subscriptionStore.fetchFromServer();
   }, []);
 
   useCreditsBalanceChangedEvent(async () => {

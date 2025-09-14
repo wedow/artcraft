@@ -11,10 +11,10 @@ use artcraft_api_defs::subscriptions::get_session_subscription::{GetSessionSubsc
 use chrono::{DateTime, Utc};
 use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, warn};
+use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
 use utoipa::ToSchema;
-use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 
 /// For the URL PathInfo
 #[derive(Deserialize, ToSchema)]

@@ -3,6 +3,8 @@ use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::user_subscriptions::UserSubscriptionToken;
 use utoipa::ToSchema;
 
+// TODO: Maybe make "artcraft_subscription" or "fakeyou_subscription" with strongly typed slugs?
+
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct GetSessionSubscriptionResponse {
   pub success: bool,

@@ -9,6 +9,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePricingModalStore } from "@storyteller/ui-pricing-modal";
 import { useCreditsModalStore } from "@storyteller/ui-pricing-modal";
+import { useCreditsState } from "@storyteller/credits";
+import { useSubscriptionState } from "@storyteller/subscription";
 
 interface BillingSettingsPaneProps {}
 
@@ -37,13 +39,18 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
     },
   });
 
+  const creditsStore = useCreditsState();
+  const sumTotalCredits = creditsStore.totalCredits;
+
+  const subscriptionStore = useSubscriptionState();
+
+  // TODO: Clean this up
+  const maybePlanName = subscriptionStore.subscriptionInfo?.productSlug;
+  const planName = maybePlanName || "Free Plan";
+
   useEffect(() => {
-    const fetchBillingData = async () => {
-      // TODO: Replace with actual API call - BFlat
-      // const data = await GetBillingInfo();
-      // setBillingInfo(data.payload);
-    };
-    fetchBillingData();
+    creditsStore.fetchFromServer();
+    subscriptionStore.fetchFromServer();
   }, []);
 
   const { toggleModal } = usePricingModalStore();
@@ -60,7 +67,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
                 icon={faStar}
                 className="text-[#C03FFF] text-lg"
               />
-              {billingInfo.plan}
+              {planName}
             </div>
             <div className="flex gap-2">
               <Button variant="secondary" className="h-[30px]">
@@ -79,11 +86,13 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
           </div>
         </div>
 
+        {/* TODO(bt): expose this information via API
         <div className="flex items-center gap-2 text-white/50">
           <FontAwesomeIcon icon={faInfoCircle} />
           Next {billingInfo.nextPayment.amount} payment due{" "}
           {billingInfo.nextPayment.date}
         </div>
+        */}
 
         <hr className="border-white/10" />
 
@@ -98,7 +107,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
                 className="text-primary text-lg"
               />
               <span className="text-2xl font-bold">
-                {billingInfo.credits.remaining}
+                {sumTotalCredits}
               </span>
             </div>
             <div className="flex gap-2">
