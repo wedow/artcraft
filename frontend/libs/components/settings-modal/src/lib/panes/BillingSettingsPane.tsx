@@ -24,11 +24,11 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
 
   const maybePlanSlug = subscriptionStore.subscriptionInfo?.productSlug;
 
-  const currentPlan : SubscriptionPlanDetails = maybePlanSlug ? 
+  const currentPlanDetails : SubscriptionPlanDetails = maybePlanSlug ? 
     SUBSCRIPTION_PLANS_BY_SLUG.get(maybePlanSlug) || FREE_PLAN : 
     FREE_PLAN;
-  
-  const isPaidPlan = currentPlan.isPaidPlan;
+
+  const hasPaidPlan = subscriptionStore.hasPaidPlan();
 
   useEffect(() => {
     creditsStore.fetchFromServer();
@@ -49,12 +49,14 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
                 icon={faStar}
                 className="text-[#C03FFF] text-lg"
               />
-              {currentPlan.name}
+              {currentPlanDetails.name}
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary" className="h-[30px]">
-                Cancel plan
-              </Button>
+              {hasPaidPlan && (
+                <Button variant="secondary" className="h-[30px]">
+                  Cancel plan
+                </Button>
+              )}
               <Button
                 variant="primary"
                 className="h-[30px]"
