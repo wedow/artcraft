@@ -24,6 +24,7 @@ use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
+use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 
 pub async fn storyteller_billing_window_thread(
   app: AppHandle,
@@ -53,6 +54,14 @@ pub async fn storyteller_billing_window_thread(
         if let Err(err) = billing_webview_window.close() {
           error!("Error closing billing window: {:?}", err);
         }
+
+        // Refresh the credits view
+        CreditsBalanceChangedEvent{}.send_infallible(&app);
+
+        // And in case there's a race condition (likely), do it again after a delay.
+        tokio::time::sleep(std::time::Duration::from_millis(5_000)).await;
+        CreditsBalanceChangedEvent{}.send_infallible(&app);
+
         return;
       }
     }
