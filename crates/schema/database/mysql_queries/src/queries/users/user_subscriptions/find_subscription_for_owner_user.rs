@@ -88,7 +88,6 @@ fn map_result(result: Result<Option<RawUserSubscription>, sqlx::Error>) -> Resul
   }
 }
 
-// QueryAs<'q, Postgres, O, PgArguments>
 fn query(user_token: &UserToken, namespace: PaymentsNamespace)
   -> QueryMap<impl Send + FnMut(MySqlRow) -> Result<RawUserSubscription, sqlx::Error>>
 {

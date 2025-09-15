@@ -1,10 +1,12 @@
 use crate::helpers::boolean_converters::nullable_i8_to_optional_bool;
+use crate::types::query_map::QueryMap;
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use errors::AnyhowResult;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
+use sqlx::mysql::MySqlRow;
 use sqlx::pool::PoolConnection;
-use sqlx::{MySql, MySqlPool};
+use sqlx::{MySql, MySqlPool, Transaction};
 
 pub struct UserSubscription {
   pub token: String,
@@ -41,8 +43,24 @@ pub async fn get_user_subscription_by_stripe_subscription_id_with_connection(
   stripe_subscription_id: &str,
   mysql_connection: &mut PoolConnection<MySql>
 ) -> AnyhowResult<Option<UserSubscription>> {
+  let query = query(stripe_subscription_id);
+  let result = query.fetch_one(&mut **mysql_connection).await;
+  map_result(result)
+}
 
-  let maybe_user_record = sqlx::query_as!(
+pub async fn get_user_subscription_by_stripe_subscription_id_transactional(
+  stripe_subscription_id: &str,
+  transaction: &mut Transaction<'_, MySql>
+) -> AnyhowResult<Option<UserSubscription>> {
+  let query = query(stripe_subscription_id);
+  let result = query.fetch_one(&mut **transaction).await;
+  map_result(result)
+}
+
+fn query(stripe_subscription_id: &str)
+  -> QueryMap<impl Send + FnMut(MySqlRow) -> Result<RawUserSubscriptionFromDb, sqlx::Error>>
+{
+  sqlx::query_as!(
       RawUserSubscriptionFromDb,
         r#"
 SELECT
@@ -65,9 +83,11 @@ WHERE
         "#,
         stripe_subscription_id,
     )
-      .fetch_one(&mut **mysql_connection)
-      .await;
+}
 
+fn map_result(
+  maybe_user_record: Result<RawUserSubscriptionFromDb, sqlx::Error>
+) -> AnyhowResult<Option<UserSubscription>> {
   match maybe_user_record {
     Err(sqlx::error::Error::RowNotFound) => Ok(None),
     Err(e) => {

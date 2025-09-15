@@ -2,7 +2,7 @@ use crate::billing_action_fulfillment::artcraft_billing_action::SubscriptionPaid
 use crate::billing_action_fulfillment::subscriptions::upsert_subscription_details::CrudType;
 use enums::common::payments_namespace::PaymentsNamespace;
 use log::{info, warn};
-use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id_transactional::get_user_subscription_by_stripe_subscription_id_transactional;
+use mysql_queries::queries::users::user_subscriptions::get_user_subscription_by_stripe_subscription_id::get_user_subscription_by_stripe_subscription_id_transactional;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_by_stripe_id::UpsertUserSubscription;
 use mysql_queries::queries::users::user_subscriptions::upsert_user_subscription_with_invoice_paid_status_by_stripe_id::UpsertUserSubscriptionWithInvoicePaidStatus;
 use mysql_queries::queries::wallets::add_durable_banked_balance_to_wallet::add_durable_banked_balance_to_wallet;
