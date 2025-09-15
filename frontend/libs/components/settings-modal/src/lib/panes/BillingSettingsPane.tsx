@@ -10,43 +10,25 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePricingModalStore } from "@storyteller/ui-pricing-modal";
 import { useCreditsModalStore } from "@storyteller/ui-pricing-modal";
 import { useCreditsState } from "@storyteller/credits";
-import { useSubscriptionState } from "@storyteller/subscription";
+import { FREE_PLAN, SubscriptionPlanDetails, useSubscriptionState } from "@storyteller/subscription";
+import { SUBSCRIPTION_PLANS_BY_SLUG } from "@storyteller/subscription";
 
 interface BillingSettingsPaneProps {}
 
-interface BillingInfo {
-  credits: {
-    remaining: number;
-    total: number;
-  };
-  plan: string;
-  nextPayment: {
-    amount: string;
-    date: string;
-  };
-}
-
 export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
-  const [billingInfo] = useState<BillingInfo>({
-    credits: {
-      remaining: 180,
-      total: 1000,
-    },
-    plan: "Pro Plan",
-    nextPayment: {
-      amount: "$99",
-      date: "Oct 18",
-    },
-  });
 
   const creditsStore = useCreditsState();
   const sumTotalCredits = creditsStore.totalCredits;
 
   const subscriptionStore = useSubscriptionState();
 
-  // TODO: Clean this up
-  const maybePlanName = subscriptionStore.subscriptionInfo?.productSlug;
-  const planName = maybePlanName || "Free Plan";
+  const maybePlanSlug = subscriptionStore.subscriptionInfo?.productSlug;
+
+  const currentPlan : SubscriptionPlanDetails = maybePlanSlug ? 
+    SUBSCRIPTION_PLANS_BY_SLUG.get(maybePlanSlug) || FREE_PLAN : 
+    FREE_PLAN;
+  
+  const isPaidPlan = currentPlan.slug !== "free";
 
   useEffect(() => {
     creditsStore.fetchFromServer();
@@ -67,7 +49,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
                 icon={faStar}
                 className="text-[#C03FFF] text-lg"
               />
-              {planName}
+              {currentPlan.name}
             </div>
             <div className="flex gap-2">
               <Button variant="secondary" className="h-[30px]">
