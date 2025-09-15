@@ -8,6 +8,7 @@ export interface SubscriptionPlanDetails {
   slug: string;
   name: string;
 
+  isPaidPlan: boolean;
   monthlyPrice: number;
   yearlyPrice: number;
 

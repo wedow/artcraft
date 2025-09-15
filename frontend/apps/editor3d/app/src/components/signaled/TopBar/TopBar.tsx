@@ -156,6 +156,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
   const sumTotalCredits = creditsStore.totalCredits;
 
   const subscriptionStore = useSubscriptionState();
+  const hasPaidPlan = subscriptionStore.hasPaidPlan();
 
   useEffect(() => {
     creditsStore.fetchFromServer();
@@ -372,14 +373,16 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 )}
               </PopoverMenu>
 
-              <Button
-                variant="primary"
-                icon={faGem}
-                onClick={toggleModal}
-                className="h-[38px] shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
-              >
-                Upgrade
-              </Button>
+              {!hasPaidPlan && (
+                <Button
+                  variant="primary"
+                  icon={faGem}
+                  onClick={toggleModal}
+                  className="h-[38px] shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
+                >
+                  Upgrade
+                </Button>
+              )}
 
               <Tooltip content="Settings" position="bottom" delay={300}>
                 <Button

@@ -5,6 +5,10 @@ interface SubscriptionState {
   /// If the user doesn't have a subscription, this will be undefined.
   subscriptionInfo?: SubscriptionInfo,
 
+  // Returns true if the user has a paid plan.
+  // (We do not store "free" as a plan.)
+  hasPaidPlan: () => boolean;
+
   // Call to fetch credits from the server
   fetchFromServer: () => Promise<void>
 }
@@ -21,8 +25,12 @@ interface SubscriptionInfo {
   namespace: string,
 }
 
-export const useSubscriptionState = create<SubscriptionState>()((set) => ({
+export const useSubscriptionState = create<SubscriptionState>()((set, get) => ({
   subscriptionInfo: undefined,
+
+  // Returns true if the user has a paid plan.
+  // (We do not store "free" as a plan.)
+  hasPaidPlan: () => get().subscriptionInfo?.subscriptionToken !== undefined,
 
   // Call to fetch credits from the server
   fetchFromServer: async () => {

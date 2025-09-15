@@ -28,7 +28,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
     SUBSCRIPTION_PLANS_BY_SLUG.get(maybePlanSlug) || FREE_PLAN : 
     FREE_PLAN;
   
-  const isPaidPlan = currentPlan.slug !== "free";
+  const isPaidPlan = currentPlan.isPaidPlan;
 
   useEffect(() => {
     creditsStore.fetchFromServer();

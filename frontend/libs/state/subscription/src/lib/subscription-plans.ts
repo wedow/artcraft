@@ -3,6 +3,7 @@ import { SubscriptionPlanDetails } from "./subscription-plan-details.js";
 export const FREE_PLAN : SubscriptionPlanDetails = {
   slug: "free",
   name: "Free",
+  isPaidPlan: false,
   monthlyPrice: 0,
   yearlyPrice: 0,
   features: [
@@ -17,6 +18,7 @@ export const SUBSCRIPTION_PLANS : SubscriptionPlanDetails[] = [
   {
     slug: "artcraft_basic",
     name: "Basic",
+    isPaidPlan: true,
     monthlyPrice: 8,
     yearlyPrice: 96,
     originalMonthlyPrice: 10,
@@ -33,6 +35,7 @@ export const SUBSCRIPTION_PLANS : SubscriptionPlanDetails[] = [
   {
     slug: "artcraft_pro",
     name: "Pro",
+    isPaidPlan: true,
     monthlyPrice: 28,
     yearlyPrice: 336,
     originalMonthlyPrice: 35,
@@ -49,6 +52,7 @@ export const SUBSCRIPTION_PLANS : SubscriptionPlanDetails[] = [
   {
     slug: "artcraft_max",
     name: "Max",
+    isPaidPlan: true,
     monthlyPrice: 48,
     yearlyPrice: 576,
     originalMonthlyPrice: 60,
