@@ -48,6 +48,7 @@ use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_
 use crate::services::storyteller::commands::storyteller_get_credits_command::storyteller_get_credits_command;
 use crate::services::storyteller::commands::storyteller_get_subscription_command::storyteller_get_subscription_command;
 use crate::services::storyteller::commands::storyteller_open_credits_purchase_command::storyteller_open_credits_purchase_command;
+use crate::services::storyteller::commands::storyteller_open_customer_portal_command::storyteller_open_customer_portal_command;
 use crate::services::storyteller::commands::storyteller_open_subscription_purchase_command::storyteller_open_subscription_purchase_command;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use log::error;
@@ -190,6 +191,7 @@ pub fn run() {
     storyteller_get_credits_command,
     storyteller_get_subscription_command,
     storyteller_open_credits_purchase_command,
+    storyteller_open_customer_portal_command,
     storyteller_open_subscription_purchase_command,
     update_app_preferences_command,
   ]);

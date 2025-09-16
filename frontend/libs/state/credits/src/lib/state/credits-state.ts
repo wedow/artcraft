@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { ArtcraftGetCredits } from "@storyteller/tauri-api";
 
-interface CreditsState {
+export interface CreditsState {
   // Daily free credits (if/when we offer them)
   freeCredits: number,
 

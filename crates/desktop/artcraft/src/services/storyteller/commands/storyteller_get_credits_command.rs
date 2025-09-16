@@ -7,7 +7,7 @@ use crate::services::midjourney::state::midjourney_credential_manager::Midjourne
 use crate::services::midjourney::windows::open_midjourney_login_window::open_midjourney_login_window;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::services::storyteller::windows::open_storyteller_billing_window::{open_storyteller_billing_window, OpenStorytellerBillingWindowArgs, ProductInfo};
+use crate::services::storyteller::windows::open_storyteller_billing_window::{open_storyteller_billing_window, OpenStorytellerBillingWindowArgs, BillingWindowCase};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::PlanBillingCadence;
 use enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;

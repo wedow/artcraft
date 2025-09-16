@@ -4,7 +4,7 @@ use utoipa::ToSchema;
 pub const CREATE_CUSTOMER_PORTAL_URL_PATH: &str = "/v1/stripe_artcraft/portal/create_session";
 
 /// See https://docs.stripe.com/customer-management/portal-deep-links
-#[derive(Serialize, Deserialize, ToSchema, Copy, Clone)]
+#[derive(Serialize, Deserialize, ToSchema, Copy, Clone, Debug)]
 pub enum StripeArtcraftCreateCustomerPortalFlowState {
   // subscription_update
   SubscriptionUpdate,

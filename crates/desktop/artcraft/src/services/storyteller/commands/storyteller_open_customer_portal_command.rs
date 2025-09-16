@@ -5,7 +5,7 @@ use crate::services::midjourney::state::midjourney_credential_manager::Midjourne
 use crate::services::midjourney::windows::open_midjourney_login_window::open_midjourney_login_window;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::services::storyteller::windows::open_storyteller_billing_window::{open_storyteller_billing_window, OpenStorytellerBillingWindowArgs, BillingWindowCase};
+use crate::services::storyteller::windows::open_storyteller_billing_window::{open_storyteller_billing_window, BillingWindowCase, OpenStorytellerBillingWindowArgs};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::PlanBillingCadence;
 use enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
@@ -17,55 +17,65 @@ use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize, Debug)]
-pub struct StorytellerOpenCreditsPurchaseCommand {
-  pub credits_pack: Option<ArtcraftCreditsPackSlug>,
+pub struct StorytellerOpenCustomerPortalCommand {
+  pub reason: Option<PortalReason>,
+}
+
+#[derive(Deserialize, Debug, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+pub enum PortalReason {
+  UpdateSubscription,
+  CancelSubscription,
 }
 
 #[tauri::command]
-pub async fn storyteller_open_credits_purchase_command(
+pub async fn storyteller_open_customer_portal_command(
   app: AppHandle,
-  request: StorytellerOpenCreditsPurchaseCommand,
+  request: StorytellerOpenCustomerPortalCommand,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
 ) -> Result<String, String> {
-  info!("storyteller_open_credits_purchase_command called");
+  info!("storyteller_open_customer_portal_command called");
 
-  let credits_pack = request.credits_pack.ok_or("Credits pack is required")?;
-  
-  do_open_billing(
-    &app, 
-    &app_data_root, 
-    &app_env_configs, 
+  let reason = request.reason.ok_or("Reason is required")?;
+
+  do_open_portal(
+    &app,
+    &app_data_root,
+    &app_env_configs,
     &storyteller_creds_manager,
-    credits_pack,
+    reason,
   )
       .await
       .map_err(|err| {
-        error!("Error opening credits purchase window: {:?}", err);
-        format!("Error opening credits purchase window: {:?}", err)
+        error!("Error opening customer portal window: {:?}", err);
+        format!("Error opening customer portal window: {:?}", err)
       })?;
 
   Ok("result".to_string())
 }
 
-async fn do_open_billing(
+async fn do_open_portal(
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  credits_pack: ArtcraftCreditsPackSlug,
+  reason: PortalReason,
 ) -> AnyhowResult<()> {
   info!("Building billing window...");
+  
+  let billing_window_case = match reason {
+    PortalReason::UpdateSubscription => BillingWindowCase::CustomerPortalUpdate,
+    PortalReason::CancelSubscription => BillingWindowCase::CustomerPortalCancel,
+  };
 
   open_storyteller_billing_window(OpenStorytellerBillingWindowArgs {
     app,
     app_data_root,
     app_env_configs,
     storyteller_creds_manager,
-    billing_window_case: BillingWindowCase::CreditsPack {
-      credits_pack,
-    }
+    billing_window_case,
   }).await?;
 
   info!("Done.");

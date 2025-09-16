@@ -9,9 +9,10 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePricingModalStore } from "@storyteller/ui-pricing-modal";
 import { useCreditsModalStore } from "@storyteller/ui-pricing-modal";
-import { useCreditsState } from "@storyteller/credits";
+import { useCreditsState, CreditsState } from "@storyteller/credits";
 import { FREE_PLAN, SubscriptionPlanDetails, useSubscriptionState } from "@storyteller/subscription";
 import { SUBSCRIPTION_PLANS_BY_SLUG } from "@storyteller/subscription";
+import { invoke } from "@tauri-apps/api/core";
 
 interface BillingSettingsPaneProps {}
 
@@ -35,9 +36,6 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
     subscriptionStore.fetchFromServer();
   }, []);
 
-  const { toggleModal } = usePricingModalStore();
-  const { toggleModal: toggleCreditsModal } = useCreditsModalStore();
-
   return (
     <>
       <div className="space-y-4">
@@ -53,19 +51,14 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
             </div>
             <div className="flex gap-2">
               {hasPaidPlan && (
-                <Button variant="secondary" className="h-[30px]">
-                  Cancel plan
-                </Button>
+                <>
+                  <CancelPlanButton />
+                  <ChangePlanButton />
+                </>
               )}
-              <Button
-                variant="primary"
-                className="h-[30px]"
-                onClick={() => {
-                  toggleModal();
-                }}
-              >
-                Upgrade plan
-              </Button>
+              {!hasPaidPlan && (
+                <UpgradePlanButton />
+              )}
             </div>
           </div>
         </div>
@@ -95,17 +88,95 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
               </span>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="primary"
-                className="h-[30px]"
-                onClick={() => toggleCreditsModal()}
-              >
-                Buy credits
-              </Button>
+              <BuyCreditsButton />
             </div>
           </div>
+
+          <CreditsTally creditsStore={creditsStore} />
+
         </div>
       </div>
     </>
   );
 };
+
+const CancelPlanButton = () => {
+  const handleClick = async () => {
+    await invoke("storyteller_open_customer_portal_command", {
+      request: {
+        reason: "cancel_subscription",
+      }
+    });
+  }
+
+  return (
+    <Button 
+      variant="secondary" 
+      className="h-[30px]"
+      onClick={handleClick}
+    >
+      Cancel plan
+    </Button>
+  )
+}
+
+const ChangePlanButton = () => {
+  const handleClick = async () => {
+    await invoke("storyteller_open_customer_portal_command", {
+      request: {
+        reason: "update_subscription",
+      }
+    });
+  }
+
+  return (
+    <Button
+      variant="primary"
+      className="h-[30px]"
+      onClick={handleClick}
+    >
+      Change plan
+    </Button>
+  )
+}
+
+const UpgradePlanButton = () => {
+  const { toggleModal } = usePricingModalStore();
+
+  return (
+    <Button
+      variant="primary"
+      className="h-[30px]"
+      onClick={() => {
+        toggleModal();
+      }}
+    >
+      Upgrade plan
+    </Button>
+  )
+}
+
+const BuyCreditsButton = () => {
+  const { toggleModal: toggleCreditsModal } = useCreditsModalStore();
+
+  return (
+    <Button
+      variant="primary"
+      className="h-[30px]"
+      onClick={() => toggleCreditsModal()}
+    >
+      Buy credits
+    </Button>
+  )
+}
+
+const CreditsTally = ({creditsStore}: {creditsStore: CreditsState}) => {
+  return (
+    <div className="flex pl-5 pt-3">
+      <ul className="list-disc">
+        <li> {creditsStore.monthlyCredits} monthly credits (refilled monthly) </li>
+        <li> {creditsStore.bankedCredits} purchased credits </li>
+      </ul>
+    </div>
+  )
+}

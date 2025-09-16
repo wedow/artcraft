@@ -5,7 +5,7 @@ use crate::services::midjourney::state::midjourney_credential_manager::Midjourne
 use crate::services::midjourney::windows::open_midjourney_login_window::open_midjourney_login_window;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::open_sora_login_window;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::services::storyteller::windows::open_storyteller_billing_window::{open_storyteller_billing_window, OpenStorytellerBillingWindowArgs, ProductInfo};
+use crate::services::storyteller::windows::open_storyteller_billing_window::{open_storyteller_billing_window, OpenStorytellerBillingWindowArgs, BillingWindowCase};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::PlanBillingCadence;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
@@ -29,7 +29,7 @@ pub async fn storyteller_open_subscription_purchase_command(
   app_env_configs: State<'_, AppEnvConfigs>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
 ) -> Result<String, String> {
-  info!("storyteller_open_billing_command called");
+  info!("storyteller_open_subscription_purchase_command called");
 
   let plan = request.plan.ok_or("Plan is required")?;
   let cadence = request.cadence.ok_or("Cadence is required")?;
@@ -66,7 +66,7 @@ async fn do_open_billing(
     app_env_configs,
     app_data_root,
     storyteller_creds_manager,
-    product_info: ProductInfo::Subscription {
+    billing_window_case: BillingWindowCase::Subscription {
       plan,
       cadence,
     }

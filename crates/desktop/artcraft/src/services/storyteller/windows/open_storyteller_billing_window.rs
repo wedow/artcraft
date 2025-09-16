@@ -5,6 +5,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use crate::services::storyteller::windows::storyteller_billing_window_thread::storyteller_billing_window_thread;
 use anyhow::anyhow;
 use artcraft_api_defs::stripe_artcraft::create_credits_pack_checkout::StripeArtcraftCreateCreditsPackCheckoutRequest;
+use artcraft_api_defs::stripe_artcraft::create_customer_portal_session::{StripeArtcraftCreateCustomerPortalFlowState, StripeArtcraftCreateCustomerPortalSessionRequest};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest};
 use enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
@@ -13,6 +14,7 @@ use log::info;
 use reqwest::Url;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::stripe_artcraft::create_credits_pack_checkout::create_credits_pack_checkout;
+use storyteller_client::stripe_artcraft::create_customer_portal_session::create_customer_portal_session;
 use storyteller_client::stripe_artcraft::create_subscription_checkout::create_subscription_checkout;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
@@ -23,10 +25,10 @@ pub struct OpenStorytellerBillingWindowArgs<'a> {
   pub app_env_configs: &'a AppEnvConfigs,
   pub app_data_root: &'a AppDataRoot,
   pub storyteller_creds_manager: &'a StorytellerCredentialManager,
-  pub product_info: ProductInfo,
+  pub billing_window_case: BillingWindowCase,
 }
 
-pub enum ProductInfo {
+pub enum BillingWindowCase {
   Subscription {
     plan: ArtcraftSubscriptionSlug,
     cadence: PlanBillingCadence,
@@ -34,6 +36,8 @@ pub enum ProductInfo {
   CreditsPack {
     credits_pack: ArtcraftCreditsPackSlug,
   },
+  CustomerPortalCancel,
+  CustomerPortalUpdate,
 }
 
 pub async fn open_storyteller_billing_window(
@@ -48,22 +52,34 @@ pub async fn open_storyteller_billing_window(
 
   let creds = args.storyteller_creds_manager.get_credentials_required()?;
 
-  let checkout_url = match args.product_info {
-    ProductInfo::Subscription { plan, cadence } => {
+  let checkout_url = match args.billing_window_case {
+    BillingWindowCase::Subscription { plan, cadence } => {
       get_subscription_url(
-        args.app,
         args.app_env_configs,
-        args.app_data_root,
         &creds,
         plan,
         cadence,
       ).await?
     },
-    ProductInfo::CreditsPack { credits_pack } => {
+    BillingWindowCase::CreditsPack { credits_pack } => {
       get_credits_pack_url(
         args.app_env_configs,
         &creds,
         credits_pack,
+      ).await?
+    },
+    BillingWindowCase::CustomerPortalCancel => {
+      get_customer_portal_url(
+        args.app_env_configs,
+        &creds,
+        StripeArtcraftCreateCustomerPortalFlowState::SubscriptionCancel,
+      ).await?
+    },
+    BillingWindowCase::CustomerPortalUpdate => {
+      get_customer_portal_url(
+        args.app_env_configs,
+        &creds,
+        StripeArtcraftCreateCustomerPortalFlowState::SubscriptionUpdate,
       ).await?
     },
   };
@@ -74,9 +90,7 @@ pub async fn open_storyteller_billing_window(
 }
 
 async fn get_subscription_url(
-  app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
-  app_data_root: &AppDataRoot,
   storyteller_creds: &StorytellerCredentialSet,
   plan: ArtcraftSubscriptionSlug,
   cadence: PlanBillingCadence,
@@ -121,6 +135,30 @@ async fn get_credits_pack_url(
 
   info!("Credits pack checkout session created...");
   Ok(Url::parse(&result.stripe_checkout_redirect_url)?)
+}
+
+
+async fn get_customer_portal_url(
+  app_env_configs: &AppEnvConfigs,
+  storyteller_creds: &StorytellerCredentialSet,
+  flow_state: StripeArtcraftCreateCustomerPortalFlowState,
+) -> AnyhowResult<Url> {
+
+  info!("Getting customer portal session for flow {:?} ...", flow_state);
+
+  let request = StripeArtcraftCreateCustomerPortalSessionRequest {
+    portal_config_id: None,
+    flow: Some(flow_state),
+  };
+
+  let result = create_customer_portal_session(
+    &app_env_configs.storyteller_host,
+    Some(&storyteller_creds),
+    request,
+  ).await?;
+
+  info!("Customer portal session created...");
+  Ok(Url::parse(&result.stripe_portal_url)?)
 }
 
 async fn do_open_window(
