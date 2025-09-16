@@ -1,3 +1,4 @@
+pub mod find_possibly_inactive_first_subscription_for_owner_user;
 pub mod find_subscription_for_owner_user;
 pub mod get_user_subscription_by_stripe_subscription_id;
 pub mod list_active_user_subscriptions;
