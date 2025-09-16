@@ -1,5 +1,7 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::core::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
+use crate::core::events::functional_events::subscription_plan_changed_event::SubscriptionPlanChangedEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
@@ -24,7 +26,6 @@ use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
-use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 
 pub async fn storyteller_billing_window_thread(
   app: AppHandle,
@@ -55,12 +56,17 @@ pub async fn storyteller_billing_window_thread(
           error!("Error closing billing window: {:?}", err);
         }
 
+        // TODO: We can distinguish between subscription and credits impacts if we send a parameter
+        //  from the webview. For now, just refresh everything.
+
         // Refresh the credits view
         CreditsBalanceChangedEvent{}.send_infallible(&app);
+        SubscriptionPlanChangedEvent{}.send_infallible(&app);
 
         // And in case there's a race condition (likely), do it again after a delay.
         tokio::time::sleep(std::time::Duration::from_millis(5_000)).await;
         CreditsBalanceChangedEvent{}.send_infallible(&app);
+        SubscriptionPlanChangedEvent{}.send_infallible(&app);
 
         return;
       }
