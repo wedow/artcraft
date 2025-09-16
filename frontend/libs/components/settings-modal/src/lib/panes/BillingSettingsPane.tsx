@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@storyteller/ui-button";
 import { Label } from "@storyteller/ui-label";
 import {
@@ -17,6 +17,7 @@ import { invoke } from "@tauri-apps/api/core";
 interface BillingSettingsPaneProps {}
 
 export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
+  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
 
   const creditsStore = useCreditsState();
   const sumTotalCredits = creditsStore.totalCredits;
@@ -29,10 +30,12 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
     SUBSCRIPTION_PLANS_BY_SLUG.get(maybePlanSlug) || FREE_PLAN : 
     FREE_PLAN;
 
-  const hasPaidPlan = subscriptionStore.hasPaidPlan();
+  const canCancelPlan = subscriptionStore.canCancelPlan();
 
   const nextBillAt = subscriptionStore.subscriptionInfo?.nextBillAt?.toLocaleDateString();
   const subscriptionEndAt = subscriptionStore.subscriptionInfo?.subscriptionEndAt?.toLocaleDateString();
+
+  const changeOrUpgradePlanButtonLabel = canCancelPlan ? "Change plan" : "Upgrade plan";
 
   useEffect(() => {
     creditsStore.fetchFromServer();
@@ -53,15 +56,18 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
               {currentPlanDetails.name}
             </div>
             <div className="flex gap-2">
-              {hasPaidPlan && (
-                <>
-                  <CancelPlanButton />
-                  <ChangePlanButton />
-                </>
+              {canCancelPlan && (
+                <CancelPlanButton />
               )}
-              {!hasPaidPlan && (
-                <UpgradePlanButton />
-              )}
+
+              <Button
+                variant="primary"
+                className="h-[30px]"
+                onClick={() => toggleSubscriptionModal()}
+              >
+                {changeOrUpgradePlanButtonLabel}
+              </Button>
+
             </div>
           </div>
         </div>
@@ -81,7 +87,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
             {subscriptionEndAt}
           </div>
         )}
-        
+
         {nextBillAt && (
           <div className="flex items-center gap-2 text-white/50">
             <FontAwesomeIcon icon={faInfoCircle} />
@@ -131,34 +137,6 @@ const CancelPlanButton = () => {
       onClick={handleClick}
     >
       Cancel plan
-    </Button>
-  )
-}
-
-const ChangePlanButton = () => {
-  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
-
-  return (
-    <Button
-      variant="primary"
-      className="h-[30px]"
-      onClick={() => toggleSubscriptionModal()}
-    >
-      Change plan
-    </Button>
-  )
-}
-
-const UpgradePlanButton = () => {
-  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
-
-  return (
-    <Button
-      variant="primary"
-      className="h-[30px]"
-      onClick={() => toggleSubscriptionModal()}
-    >
-      Upgrade plan
     </Button>
   )
 }

@@ -1,13 +1,17 @@
 import { create } from 'zustand'
 import { ArtcraftGetSubscription } from "@storyteller/tauri-api";
 
-interface SubscriptionState {
+export interface SubscriptionState {
   /// If the user doesn't have a subscription, this will be undefined.
   subscriptionInfo?: SubscriptionInfo,
 
   // Returns true if the user has a paid plan.
   // (We do not store "free" as a plan.)
   hasPaidPlan: () => boolean;
+
+  // Returns true if the user can cancel their plan.
+  // (The user can't cancel an already set to cancel/expire plan again)
+  canCancelPlan: () => boolean;
 
   // Call to fetch credits from the server
   fetchFromServer: () => Promise<void>
@@ -37,6 +41,14 @@ export const useSubscriptionState = create<SubscriptionState>()((set, get) => ({
   // Returns true if the user has a paid plan.
   // (We do not store "free" as a plan.)
   hasPaidPlan: () => get().subscriptionInfo?.subscriptionToken !== undefined,
+
+  // Returns true if the user can cancel their plan.
+  // (The user can't cancel an already set to cancel/expire plan again)
+  canCancelPlan: () => {
+    const info = get().subscriptionInfo;
+    return info?.subscriptionToken !== undefined 
+        && info?.subscriptionEndAt === undefined;
+  },
 
   // Call to fetch credits from the server
   fetchFromServer: async () => {
