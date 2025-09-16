@@ -102,18 +102,20 @@ pub async fn stripe_artcraft_create_subscription_session_handler(
           .to_string()))
   }
 
-  let maybe_inactive_subscription = find_possibly_inactive_first_subscription_for_owner_user_using_connection(
-    &user_metadata.user_token_typed,
-    PaymentsNamespace::Artcraft,
-    &mut mysql_connection
-  ).await.map_err(|err| {
-    error!("Error looking up user's ({}) possibly existing inactive subscription: {:?}",
-      &user_metadata.user_token_typed, err);
-    CommonWebError::ServerError // NB: This was probably *our* fault.
-  })?;
-
-  let maybe_existing_inactive_stripe_customer_id = maybe_inactive_subscription.as_ref()
-      .map(|sub| sub.stripe_customer_id.as_str());
+  // NB: This works, but it feels really weird to have the customer's old email shown in a
+  //     completely immutable state in the stripe checkout form.
+  //
+  // let maybe_inactive_subscription = find_possibly_inactive_first_subscription_for_owner_user_using_connection(
+  //   &user_metadata.user_token_typed,
+  //   PaymentsNamespace::Artcraft,
+  //   &mut mysql_connection
+  // ).await.map_err(|err| {
+  //   error!("Error looking up user's ({}) possibly existing inactive subscription: {:?}",
+  //     &user_metadata.user_token_typed, err);
+  //   CommonWebError::ServerError // NB: This was probably *our* fault.
+  // })?;
+  // let maybe_existing_inactive_stripe_customer_id = maybe_inactive_subscription.as_ref()
+  //     .map(|sub| sub.stripe_customer_id.as_str());
 
   let success_url = stripe_config.checkout_success_url.clone();
   let cancel_url = stripe_config.checkout_cancel_url.clone();
@@ -179,20 +181,23 @@ pub async fn stripe_artcraft_create_subscription_session_handler(
           ..Default::default()
         });
 
-    if let Some(existing_inactive_stripe_customer_id) = maybe_existing_inactive_stripe_customer_id{
-      info!("Adding existing stripe customer id to checkout session: {}", existing_inactive_stripe_customer_id);
-      match CustomerId::from_str(existing_inactive_stripe_customer_id) {
-        Ok(customer_id) => {
-          checkout_builder = checkout_builder.customer(customer_id);
-        }
-        Err(err) => {
-          // NB: Don't block checkout.
-          warn!("Error parsing user's ({}) supposed existing stripe customer id: {:?}",
-            &user_metadata.user_token,
-            err);
-        }
-      }
-    }
+    // NB: This works, but it feels really weird to have the customer's old email shown in a
+    //     completely immutable state in the stripe checkout form.
+    //
+    // if let Some(existing_inactive_stripe_customer_id) = maybe_existing_inactive_stripe_customer_id{
+    //   info!("Adding existing stripe customer id to checkout session: {}", existing_inactive_stripe_customer_id);
+    //   match CustomerId::from_str(existing_inactive_stripe_customer_id) {
+    //     Ok(customer_id) => {
+    //       checkout_builder = checkout_builder.customer(customer_id);
+    //     }
+    //     Err(err) => {
+    //       // NB: Don't block checkout.
+    //       warn!("Error parsing user's ({}) supposed existing stripe customer id: {:?}",
+    //         &user_metadata.user_token,
+    //         err);
+    //     }
+    //   }
+    // }
 
     let checkout_session = checkout_builder
         .send(&stripe_config.client)

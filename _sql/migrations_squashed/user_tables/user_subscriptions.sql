@@ -76,6 +76,8 @@ CREATE TABLE user_subscriptions (
 
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+ -- NB(bt, 2025-09-16): I don't think we write to the soft deleted_at field for user_subscriptions.
   deleted_at TIMESTAMP DEFAULT NULL,
 
   -- ========== SUBSCRIPTION TIMESTAMPS ==========
