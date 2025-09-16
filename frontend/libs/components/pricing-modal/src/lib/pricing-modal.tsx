@@ -23,15 +23,9 @@ const pricingConfig = {
 }
 
 interface PricingModalProps {
-  //currentPlanId?: string;
-  //hasActiveSubscription?: boolean;
 }
 
-export function PricingModal({
-  //currentPlanId,
-  //hasActiveSubscription,
-}: PricingModalProps = {}) {
-  //const { isOpen, closeModal, subscription } = usePricingModalStore();
+export function PricingModal({}: PricingModalProps = {}) {
   const { isOpen, closeModal } = usePricingModalStore();
 
   const subscriptionStore = useSubscriptionState();
@@ -40,22 +34,16 @@ export function PricingModal({
 
   const activePlanId = subscriptionStore.subscriptionInfo?.productSlug;
 
-  //// Use props if provided or fall back to store
-  //const activePlanId = currentPlanId ?? subscription.currentPlanId;
-
-  //const hasActiveSub =
-  //  hasActiveSubscription ?? subscription.hasActiveSubscription;
-
   const [billingType, setBillingType] = useState("yearly");
   const isYearly = billingType === "yearly";
 
   const handleUnsubscribe = async () => {
-    await invoke("storyteller_open_customer_portal_command", {
-      request: {
-        reason: "cancel_subscription",
-      }
-    });
+    await invoke("storyteller_open_customer_portal_cancel_plan_command");
   }
+
+  const handleManageSubscription = async () => {
+    await invoke("storyteller_open_customer_portal_manage_plan_command");
+  };
 
   const handleSetPlan = async (tierSlug: string) => {
     const tier = SUBSCRIPTION_PLANS.find((t) => t.slug === tierSlug);
@@ -65,25 +53,27 @@ export function PricingModal({
     if (planSlug === "free") {
       if (hasActiveSub) {
         await handleUnsubscribe();
+        return;
+      } else {
+        return;
       }
-      return;
     }
 
-    await invoke("storyteller_open_subscription_purchase_command", {
-      request: {
-        plan: planSlug,
-        cadence: cadence,
-      }
-    });
-  };
-
-  const handleManageSubscription = async () => {
-    console.log("Managing subscription");
-    await invoke("storyteller_open_customer_portal_command", {
-      request: {
-        reason: "update_subscription",
-      }
-    });
+    if (hasActiveSub) {
+      await invoke("storyteller_open_customer_portal_switch_plan_command", {
+        request: {
+          plan: planSlug,
+          cadence: cadence,
+        }
+      });
+    } else {
+      await invoke("storyteller_open_subscription_purchase_command", {
+        request: {
+          plan: planSlug,
+          cadence: cadence,
+        }
+      });
+    }
   };
 
   const tierHierarchy = { free: 0, artcraft_basic: 1, artcraft_pro: 2, artcraft_max: 3 };

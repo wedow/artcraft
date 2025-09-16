@@ -5,8 +5,10 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use crate::services::storyteller::windows::storyteller_billing_window_thread::storyteller_billing_window_thread;
 use anyhow::anyhow;
 use artcraft_api_defs::stripe_artcraft::create_credits_pack_checkout::StripeArtcraftCreateCreditsPackCheckoutRequest;
-use artcraft_api_defs::stripe_artcraft::create_customer_portal_session::{StripeArtcraftCreateCustomerPortalFlowState, StripeArtcraftCreateCustomerPortalSessionRequest};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest};
+use artcraft_api_defs::stripe_artcraft::customer_portal_cancel_plan::StripeArtcraftCustomerPortalCancelPlanRequest;
+use artcraft_api_defs::stripe_artcraft::customer_portal_manage_plan::StripeArtcraftCustomerPortalManagePlanRequest;
+use artcraft_api_defs::stripe_artcraft::customer_portal_switch_plan::{PlanBillingCadenceConfirmation, StripeArtcraftCustomerPortalSwitchPlanRequest};
 use enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use errors::AnyhowResult;
@@ -14,8 +16,10 @@ use log::info;
 use reqwest::Url;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::stripe_artcraft::create_credits_pack_checkout::create_credits_pack_checkout;
-use storyteller_client::stripe_artcraft::create_customer_portal_session::create_customer_portal_session;
 use storyteller_client::stripe_artcraft::create_subscription_checkout::create_subscription_checkout;
+use storyteller_client::stripe_artcraft::customer_portal_cancel_plan::customer_portal_cancel_plan;
+use storyteller_client::stripe_artcraft::customer_portal_manage_plan::customer_portal_manage_plan;
+use storyteller_client::stripe_artcraft::customer_portal_switch_plan::customer_portal_switch_plan;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub const BILLING_WINDOW_NAME: &str = "artcraft_billing_window";
@@ -29,15 +33,31 @@ pub struct OpenStorytellerBillingWindowArgs<'a> {
 }
 
 pub enum BillingWindowCase {
+  /// Purchase a subscription plan with the billing cadence supplied.
   Subscription {
     plan: ArtcraftSubscriptionSlug,
     cadence: PlanBillingCadence,
   },
+  
+  /// Purchase a credits pack.
   CreditsPack {
     credits_pack: ArtcraftCreditsPackSlug,
   },
-  CustomerPortalCancel,
-  CustomerPortalUpdate,
+  
+  /// Cancel the user's subscription.
+  /// Stripe shows a confirmation and then cancels the subscription.
+  CustomerPortalCancelPlan,
+  
+  /// Manage the user's subscription.
+  /// Stripe shows complete controls for updating the plan, payment method, etc.
+  CustomerPortalManagePlan,
+
+  /// Switch the user's subscription plan.
+  /// Stripe pre-fills to the selected plan and cadence.
+  CustomerPortalSwitchPlan {
+    plan: ArtcraftSubscriptionSlug,
+    cadence: PlanBillingCadenceConfirmation,
+  },
 }
 
 pub async fn open_storyteller_billing_window(
@@ -68,18 +88,24 @@ pub async fn open_storyteller_billing_window(
         credits_pack,
       ).await?
     },
-    BillingWindowCase::CustomerPortalCancel => {
-      get_customer_portal_url(
+    BillingWindowCase::CustomerPortalCancelPlan => {
+      get_customer_portal_cancel_plan_url(
         args.app_env_configs,
         &creds,
-        StripeArtcraftCreateCustomerPortalFlowState::SubscriptionCancel,
       ).await?
     },
-    BillingWindowCase::CustomerPortalUpdate => {
-      get_customer_portal_url(
+    BillingWindowCase::CustomerPortalManagePlan => {
+      get_customer_portal_manage_plan_url(
         args.app_env_configs,
         &creds,
-        StripeArtcraftCreateCustomerPortalFlowState::SubscriptionUpdate,
+      ).await?
+    },
+    BillingWindowCase::CustomerPortalSwitchPlan { plan, cadence } => {
+      get_customer_portal_switch_plan_url(
+        args.app_env_configs,
+        &creds,
+        plan,
+        cadence,
       ).await?
     },
   };
@@ -137,27 +163,71 @@ async fn get_credits_pack_url(
   Ok(Url::parse(&result.stripe_checkout_redirect_url)?)
 }
 
-
-async fn get_customer_portal_url(
+async fn get_customer_portal_cancel_plan_url(
   app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
-  flow_state: StripeArtcraftCreateCustomerPortalFlowState,
 ) -> AnyhowResult<Url> {
 
-  info!("Getting customer portal session for flow {:?} ...", flow_state);
+  info!("Getting customer portal cancel plan session...");
 
-  let request = StripeArtcraftCreateCustomerPortalSessionRequest {
+  let request = StripeArtcraftCustomerPortalCancelPlanRequest {
     portal_config_id: None,
-    flow: Some(flow_state),
   };
 
-  let result = create_customer_portal_session(
+  let result = customer_portal_cancel_plan(
     &app_env_configs.storyteller_host,
     Some(&storyteller_creds),
     request,
   ).await?;
 
-  info!("Customer portal session created...");
+  info!("Customer portal cancel plan session created...");
+  Ok(Url::parse(&result.stripe_portal_url)?)
+}
+
+async fn get_customer_portal_manage_plan_url(
+  app_env_configs: &AppEnvConfigs,
+  storyteller_creds: &StorytellerCredentialSet,
+) -> AnyhowResult<Url> {
+
+  info!("Getting customer portal manage plan session...");
+
+  let request = StripeArtcraftCustomerPortalManagePlanRequest {
+    portal_config_id: None,
+  };
+
+  let result = customer_portal_manage_plan(
+    &app_env_configs.storyteller_host,
+    Some(&storyteller_creds),
+    request,
+  ).await?;
+
+  info!("Customer portal manage plan session created...");
+  Ok(Url::parse(&result.stripe_portal_url)?)
+}
+
+
+async fn get_customer_portal_switch_plan_url(
+  app_env_configs: &AppEnvConfigs,
+  storyteller_creds: &StorytellerCredentialSet,
+  plan: ArtcraftSubscriptionSlug,
+  cadence: PlanBillingCadenceConfirmation,
+) -> AnyhowResult<Url> {
+
+  info!("Getting customer portal switch plan session...");
+
+  let request = StripeArtcraftCustomerPortalSwitchPlanRequest {
+    portal_config_id: None,
+    plan: Some(plan),
+    cadence: Some(cadence),
+  };
+
+  let result = customer_portal_switch_plan(
+    &app_env_configs.storyteller_host,
+    Some(&storyteller_creds),
+    request,
+  ).await?;
+
+  info!("Customer portal switch plan session created...");
   Ok(Url::parse(&result.stripe_portal_url)?)
 }
 

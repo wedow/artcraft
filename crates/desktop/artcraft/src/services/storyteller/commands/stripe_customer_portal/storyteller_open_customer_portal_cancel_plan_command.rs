@@ -16,36 +16,20 @@ use serde_derive::Deserialize;
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
 
-#[derive(Deserialize, Debug)]
-pub struct StorytellerOpenCustomerPortalCommand {
-  pub reason: Option<PortalReason>,
-}
-
-#[derive(Deserialize, Debug, Clone, Copy)]
-#[serde(rename_all = "snake_case")]
-pub enum PortalReason {
-  UpdateSubscription,
-  CancelSubscription,
-}
-
 #[tauri::command]
-pub async fn storyteller_open_customer_portal_command(
+pub async fn storyteller_open_customer_portal_cancel_plan_command(
   app: AppHandle,
-  request: StorytellerOpenCustomerPortalCommand,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
 ) -> Result<String, String> {
-  info!("storyteller_open_customer_portal_command called");
-
-  let reason = request.reason.ok_or("Reason is required")?;
+  info!("storyteller_open_customer_portal_cancel_plan_command called");
 
   do_open_portal(
     &app,
     &app_data_root,
     &app_env_configs,
     &storyteller_creds_manager,
-    reason,
   )
       .await
       .map_err(|err| {
@@ -61,21 +45,15 @@ async fn do_open_portal(
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  reason: PortalReason,
 ) -> AnyhowResult<()> {
   info!("Building billing window...");
-  
-  let billing_window_case = match reason {
-    PortalReason::UpdateSubscription => BillingWindowCase::CustomerPortalUpdate,
-    PortalReason::CancelSubscription => BillingWindowCase::CustomerPortalCancel,
-  };
 
   open_storyteller_billing_window(OpenStorytellerBillingWindowArgs {
     app,
     app_data_root,
     app_env_configs,
     storyteller_creds_manager,
-    billing_window_case,
+    billing_window_case: BillingWindowCase::CustomerPortalCancelPlan,
   }).await?;
 
   info!("Done.");

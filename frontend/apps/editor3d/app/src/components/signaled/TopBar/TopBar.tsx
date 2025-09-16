@@ -240,7 +240,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
   const pageTitle = getPageTitle();
 
-  const { toggleModal } = usePricingModalStore();
+  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
   const { toggleModal: toggleCreditsModal } = useCreditsModalStore();
 
   return (
@@ -367,7 +367,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                         className="h-9 grow"
                         onClick={() => {
                           close();
-                          toggleModal();
+                          toggleSubscriptionModal();
                         }}
                         icon={faGem}
                       >
@@ -382,7 +382,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 <Button
                   variant="primary"
                   icon={faGem}
-                  onClick={toggleModal}
+                  onClick={toggleSubscriptionModal}
                   className="h-[38px] shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
                 >
                   Upgrade

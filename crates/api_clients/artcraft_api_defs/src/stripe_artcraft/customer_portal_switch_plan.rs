@@ -1,4 +1,3 @@
-use crate::stripe_artcraft::create_subscription_checkout::PlanBillingCadence;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use serde_derive::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -16,7 +15,7 @@ pub struct StripeArtcraftCustomerPortalSwitchPlanRequest {
   
   /// REQUIRED
   /// The cadence for the plan billing.
-  pub cadence: Option<PlanBillingCadence>,
+  pub cadence: Option<PlanBillingCadenceConfirmation>,
 }
 
 

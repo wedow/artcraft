@@ -102,11 +102,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
 
 const CancelPlanButton = () => {
   const handleClick = async () => {
-    await invoke("storyteller_open_customer_portal_command", {
-      request: {
-        reason: "cancel_subscription",
-      }
-    });
+    await invoke("storyteller_open_customer_portal_cancel_plan_command");
   }
 
   return (
@@ -121,21 +117,13 @@ const CancelPlanButton = () => {
 }
 
 const ChangePlanButton = () => {
-  const handleClick = async () => {
-    await invoke("storyteller_open_customer_portal_command", {
-      request: {
-        reason: "update_subscription",
-      }
-    });
-  }
-  const { toggleModal } = usePricingModalStore();
+  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
 
   return (
     <Button
       variant="primary"
       className="h-[30px]"
-      //onClick={handleClick}
-      onClick={() => toggleModal()}
+      onClick={() => toggleSubscriptionModal()}
     >
       Change plan
     </Button>
@@ -143,15 +131,13 @@ const ChangePlanButton = () => {
 }
 
 const UpgradePlanButton = () => {
-  const { toggleModal } = usePricingModalStore();
+  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
 
   return (
     <Button
       variant="primary"
       className="h-[30px]"
-      onClick={() => {
-        toggleModal();
-      }}
+      onClick={() => toggleSubscriptionModal()}
     >
       Upgrade plan
     </Button>
