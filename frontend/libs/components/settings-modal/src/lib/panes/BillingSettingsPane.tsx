@@ -128,12 +128,14 @@ const ChangePlanButton = () => {
       }
     });
   }
+  const { toggleModal } = usePricingModalStore();
 
   return (
     <Button
       variant="primary"
       className="h-[30px]"
-      onClick={handleClick}
+      //onClick={handleClick}
+      onClick={() => toggleModal()}
     >
       Change plan
     </Button>

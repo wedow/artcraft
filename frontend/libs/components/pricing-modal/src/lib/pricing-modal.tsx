@@ -6,6 +6,7 @@ import { usePricingModalStore } from "./pricing-modal-store";
 import { TabSelector } from "@storyteller/ui-tab-selector";
 import { invoke } from "@tauri-apps/api/core";
 import { SUBSCRIPTION_PLANS, SubscriptionPlanDetails } from "@storyteller/subscription";
+import { useSubscriptionState } from "@storyteller/subscription";
 
 const billingTabs = [
   { id: "yearly", label: "Yearly" },
@@ -22,20 +23,29 @@ const pricingConfig = {
 }
 
 interface PricingModalProps {
-  currentPlanId?: string;
-  hasActiveSubscription?: boolean;
+  //currentPlanId?: string;
+  //hasActiveSubscription?: boolean;
 }
 
 export function PricingModal({
-  currentPlanId,
-  hasActiveSubscription,
+  //currentPlanId,
+  //hasActiveSubscription,
 }: PricingModalProps = {}) {
-  const { isOpen, closeModal, subscription } = usePricingModalStore();
+  //const { isOpen, closeModal, subscription } = usePricingModalStore();
+  const { isOpen, closeModal } = usePricingModalStore();
 
-  // Use props if provided or fall back to store
-  const activePlanId = currentPlanId ?? subscription.currentPlanId;
-  const hasActiveSub =
-    hasActiveSubscription ?? subscription.hasActiveSubscription;
+  const subscriptionStore = useSubscriptionState();
+
+  const hasActiveSub = subscriptionStore.hasPaidPlan();
+
+  const activePlanId = subscriptionStore.subscriptionInfo?.productSlug;
+
+  //// Use props if provided or fall back to store
+  //const activePlanId = currentPlanId ?? subscription.currentPlanId;
+
+  //const hasActiveSub =
+  //  hasActiveSubscription ?? subscription.hasActiveSubscription;
+
   const [billingType, setBillingType] = useState("yearly");
   const isYearly = billingType === "yearly";
 
