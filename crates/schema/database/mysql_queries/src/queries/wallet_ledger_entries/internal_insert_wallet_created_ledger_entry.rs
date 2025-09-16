@@ -13,6 +13,7 @@ pub (crate) async fn internal_insert_wallet_created_ledger_entry(
     wallet_token,
     entry_type: WalletLedgerEntryType::Create,
     maybe_entity_ref: None,
+    credits_delta: 0,
     banked_credits_before: 0,
     banked_credits_after: 0,
     monthly_credits_before: 0,

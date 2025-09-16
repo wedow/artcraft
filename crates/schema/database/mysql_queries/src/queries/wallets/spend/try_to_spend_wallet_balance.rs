@@ -3,7 +3,9 @@ use crate::queries::wallets::internal_select_wallet_balance_for_update::internal
 use crate::queries::wallets::spend::wallet_spend_error::WalletSpendError;
 use crate::queries::wallets::wallet_update_summary::WalletUpdateSummary;
 use enums::by_table::wallet_ledger_entries::wallet_ledger_entry_type::WalletLedgerEntryType;
+use num_traits::ToPrimitive;
 use sqlx::MySql;
+use std::ops::Neg;
 use tokens::tokens::wallets::WalletToken;
 
 // TODO(bt, 2025-09-12): This needs tests and a better interface.
@@ -95,12 +97,14 @@ pub async fn try_to_spend_wallet_balance(
     wallet_token.as_str(),
   ).execute(&mut **transaction).await?;
   
-  // TODO: Insert the spend delta (as i64) into a new field ! 
+  let spent = amount_to_spend_request.to_i64().unwrap_or(0).neg();
 
   let record = InsertWalletLedgerEntry {
     wallet_token,
     entry_type: ledger_entry_type,
     maybe_entity_ref: maybe_ledger_ref.map(|t| t.to_string()),
+
+    credits_delta: spent,
 
     // Original amounts
     monthly_credits_before: existing_monthly_balance,

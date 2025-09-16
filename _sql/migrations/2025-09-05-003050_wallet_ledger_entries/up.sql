@@ -21,6 +21,11 @@ CREATE TABLE wallet_ledger_entries (
   -- Length is VARCHAR(255) to accommodate Stripe IDs.
   maybe_entity_ref VARCHAR(255) DEFAULT NULL,
 
+  -- Signed integer that shows the delta of credits for this event.
+  -- This combines impacts to both banked_credits and monthly_credits.
+  -- This is less authoritative than the before/after fields, but is useful
+  credits_delta INTEGER NOT NULL DEFAULT 0,
+
   -- Balance of banked credits before the event.
   -- Max value unsigned: 4,294,967,295 (U32)
   banked_credits_before INTEGER UNSIGNED NOT NULL DEFAULT 0,

@@ -21,6 +21,9 @@ pub (crate) struct InsertWalletLedgerEntry<'a> {
   /// An optional reference for this entry. Could be an internal ID (eg. job) or an
   /// external ID (eg. Stripe payment intent, invoice, etc.)
   pub maybe_entity_ref: Option<String>,
+  
+  /// Change in credits (positive or negative) across banked and/or monthly credits.
+  pub credits_delta: i64,
 
   /// Banked credits before change.
   pub banked_credits_before: u64,
@@ -80,6 +83,7 @@ SET
   wallet_token = ?,
   entry_type = ?,
   maybe_entity_ref = ?,
+  credits_delta = ?,
   banked_credits_before = ?,
   banked_credits_after = ?,
   monthly_credits_before = ?,
@@ -89,6 +93,7 @@ SET
       self.wallet_token.as_str(),
       self.entry_type.to_str(),
       self.maybe_entity_ref,
+      self.credits_delta,
       self.banked_credits_before,
       self.banked_credits_after,
       self.monthly_credits_before,
