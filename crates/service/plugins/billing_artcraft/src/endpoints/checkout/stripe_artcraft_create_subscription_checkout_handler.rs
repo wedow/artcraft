@@ -16,7 +16,7 @@ use sqlx::MySqlPool;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSubscriptionData};
+use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
@@ -170,16 +170,26 @@ pub async fn stripe_artcraft_create_subscription_session_handler(
             ..Default::default()
           }
         ])
-        .allow_promotion_codes(true)
+        .saved_payment_method_options(CreateCheckoutSessionSavedPaymentMethodOptions {
+          allow_redisplay_filters: Some(vec![
+            CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Always,
+            CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Limited,
+            CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Unspecified,
+          ]),
+          // The user can choose to tick a checkbox that saves their card for redisplay later.
+          payment_method_save: Some(CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave::Enabled),
+        })
+        .allow_promotion_codes(true) // Allow promo codes / coupons
         .automatic_tax(CreateCheckoutSessionAutomaticTax {
-          enabled: true,
+          enabled: true, // This will ask for the customer's location
           liability: None,
         })
         .metadata(metadata.clone())
         .subscription_data(CreateCheckoutSessionSubscriptionData {
           metadata: Some(metadata),
           ..Default::default()
-        });
+        })
+        ;
 
     // NB: This works, but it feels really weird to have the customer's old email shown in a
     //     completely immutable state in the stripe checkout form.
