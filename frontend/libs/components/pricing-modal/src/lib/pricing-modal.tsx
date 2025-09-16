@@ -49,12 +49,23 @@ export function PricingModal({
   const [billingType, setBillingType] = useState("yearly");
   const isYearly = billingType === "yearly";
 
-  const handleUpgrade = async (tierSlug: string) => {
+  const handleUnsubscribe = async () => {
+    await invoke("storyteller_open_customer_portal_command", {
+      request: {
+        reason: "cancel_subscription",
+      }
+    });
+  }
+
+  const handleSetPlan = async (tierSlug: string) => {
     const tier = SUBSCRIPTION_PLANS.find((t) => t.slug === tierSlug);
     const planSlug = tier?.slug;
     const cadence = isYearly? "yearly" : "monthly";
 
     if (planSlug === "free") {
+      if (hasActiveSub) {
+        await handleUnsubscribe();
+      }
       return;
     }
 
@@ -66,9 +77,13 @@ export function PricingModal({
     });
   };
 
-  const handleManageSubscription = () => {
-    // TODO: Redirect to Stripe customer portal
+  const handleManageSubscription = async () => {
     console.log("Managing subscription");
+    await invoke("storyteller_open_customer_portal_command", {
+      request: {
+        reason: "update_subscription",
+      }
+    });
   };
 
   const tierHierarchy = { free: 0, artcraft_basic: 1, artcraft_pro: 2, artcraft_max: 3 };
@@ -89,6 +104,9 @@ export function PricingModal({
         tierHierarchy[tier.slug as keyof typeof tierHierarchy];
 
       if (thisTierLevel < currentTierLevel) {
+        if (tier.slug === "free") {
+          return "Cancel Plan";
+        }
         return "Switch Plan";
       }
     }
@@ -292,7 +310,7 @@ export function PricingModal({
 
                 {/* CTA Button */}
                 <Button
-                  onClick={() => handleUpgrade(plan.slug)}
+                  onClick={() => handleSetPlan(plan.slug)}
                   disabled={isCurrentPlan(plan.slug)}
                   className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
                 >
