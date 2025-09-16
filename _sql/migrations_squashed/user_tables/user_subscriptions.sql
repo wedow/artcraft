@@ -84,7 +84,10 @@ CREATE TABLE user_subscriptions (
   -- This may predate the Stripe object `created` timestamp due to backdating.
   subscription_start_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  -- We'll use this to determine if the subscription is active.
+  -- Our synthetic "expire" date. Moved forward for active subscriptions,
+  -- backdated for canceled subscriptions.
+  --
+  -- TODO: We'll (maybe?) use this to determine if the subscription is active.
   --
   -- Always compare against MySQL's clock rather than the app's clock so that we
   -- don't get weird clock skew behaviors across multiple requests.
@@ -94,8 +97,12 @@ CREATE TABLE user_subscriptions (
   subscription_expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Billing periods.
-  -- Maybe useful for debugging.
+  -- Stripe API: subscription.items[0].data.current_period_start
   current_billing_period_start_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  -- Stripe API: subscription.items[0].data.current_period_end
+  -- current_period_end is when the subscription renews (or cancels, if the
+  -- subscription is set to cancel).
   current_billing_period_end_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Subscription cancellation (future and past)

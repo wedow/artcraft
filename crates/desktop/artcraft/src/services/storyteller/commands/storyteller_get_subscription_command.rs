@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{ContextualImageEditModel, EditImageQuality, EditImageSize};
 use crate::core::commands::providers::get_provider_order_command::GetProviderOrderResponse;
 use crate::core::commands::response::shorthand::ResponseOrErrorMessage;
@@ -35,6 +36,7 @@ pub struct ActiveSubscriptionInfo {
   pub subscription_token: UserSubscriptionToken,
   pub product_slug: ArtcraftSubscriptionSlug,
   pub namespace: PaymentsNamespace,
+  pub next_bill_at: Option<DateTime<Utc>>,
 }
 
 impl SerializeMarker for GetSubscriptionResponse {}
@@ -86,6 +88,7 @@ async fn get(
             subscription_token: sub.subscription_token,
             product_slug,
             namespace: sub.namespace,
+            next_bill_at: sub.next_bill_at,
           })
         })
         .flatten(),

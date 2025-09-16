@@ -31,6 +31,9 @@ pub struct UserSubscription {
 
   /// This is the authoritative timestamp for when the subscription expires.
   pub subscription_expires_at: DateTime<Utc>,
+
+  /// When the current billing period ends (either auto-renew/rebill date or auto-cancel/cancellation date).
+  pub current_billing_period_end_at: DateTime<Utc>,
 }
 
 /// Technically, there may be more than one subscription record.
@@ -85,6 +88,7 @@ fn map_result(result: Result<Option<RawUserSubscription>, sqlx::Error>) -> Resul
       stripe_invoice_is_paid: nullable_i8_to_bool_default_false(record.maybe_stripe_invoice_is_paid),
       subscription_start_at: record.subscription_start_at,
       subscription_expires_at: record.subscription_expires_at,
+      current_billing_period_end_at: record.current_billing_period_end_at,
     })),
     Ok(None) => Ok(None),
     Err(e) => Err(e.into()),
@@ -112,7 +116,8 @@ SELECT
   maybe_stripe_subscription_status,
   maybe_stripe_invoice_is_paid,
   subscription_start_at,
-  subscription_expires_at
+  subscription_expires_at,
+  current_billing_period_end_at
 
 FROM user_subscriptions
 
@@ -150,4 +155,6 @@ struct RawUserSubscription {
 
   subscription_start_at: DateTime<Utc>,
   subscription_expires_at: DateTime<Utc>,
+
+  current_billing_period_end_at: DateTime<Utc>,
 }

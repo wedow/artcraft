@@ -79,10 +79,19 @@ pub async fn get_session_subscription_handler(
 
   Ok(Json(GetSessionSubscriptionResponse {
     success: true,
-    active_subscription: maybe_subscription.map(|sub| SubscriptionInfo {
-      namespace: sub.subscription_namespace,
-      product_slug: sub.subscription_product_slug,
-      subscription_token: sub.token,
+    active_subscription: maybe_subscription.map(|sub| {
+      let mut next_bill_date = None;
+      
+      // TODO: Suppress if canceled.
+      next_bill_date = Some(sub.current_billing_period_end_at);
+      
+      SubscriptionInfo {
+        namespace: sub.subscription_namespace,
+        product_slug: sub.subscription_product_slug,
+        subscription_token: sub.token,
+        next_bill_at: next_bill_date,
+        subscription_end_at: None,
+      }
     }),
   }))
 }

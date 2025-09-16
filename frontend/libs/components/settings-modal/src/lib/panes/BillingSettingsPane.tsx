@@ -70,6 +70,11 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
           {billingInfo.nextPayment.date}
         </div>
         */}
+        <div className="flex items-center gap-2 text-white/50">
+          <FontAwesomeIcon icon={faInfoCircle} />
+          Next payment on{" "}
+          {subscriptionStore.subscriptionInfo?.nextBillAt?.toLocaleDateString()}
+        </div>
 
         <hr className="border-white/10" />
 

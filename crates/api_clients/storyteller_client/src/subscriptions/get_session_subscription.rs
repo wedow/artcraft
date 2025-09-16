@@ -22,9 +22,7 @@ pub async fn get_session_subscription(
   ).await?)
 }
 
-
 fn get_url_path(api_host: &ApiHost, payments_namespace: PaymentsNamespace) -> String {
   let payments_namespace = payments_namespace.to_str();
   format!("/v1/subscriptions/namespace/{}", payments_namespace)
 }
-

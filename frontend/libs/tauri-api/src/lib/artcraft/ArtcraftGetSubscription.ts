@@ -13,6 +13,7 @@ export interface ActiveSubscriptionInfo {
   subscription_token: string,
   product_slug: string,
   namespace: string,
+  next_bill_at?: string,
 }
 
 export const ArtcraftGetSubscription = async () : Promise<ArtcraftGetSubscriptionSuccess> => {
