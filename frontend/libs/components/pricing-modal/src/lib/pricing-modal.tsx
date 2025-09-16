@@ -2,15 +2,24 @@ import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { pricingConfig, PricingTier } from "./pricing-config";
 import { usePricingModalStore } from "./pricing-modal-store";
 import { TabSelector } from "@storyteller/ui-tab-selector";
 import { invoke } from "@tauri-apps/api/core";
+import { SUBSCRIPTION_PLANS, SubscriptionPlanDetails } from "@storyteller/subscription";
 
 const billingTabs = [
   { id: "yearly", label: "Yearly" },
   { id: "monthly", label: "Monthly" },
 ];
+
+const pricingConfig = {
+  header: {
+    title: "Purchase a subscription",
+    subtitle:
+      "Upgrade to gain access to Pro features and generate more, faster.",
+  },
+  yearlyDiscount: 20,
+}
 
 interface PricingModalProps {
   currentPlanId?: string;
@@ -30,32 +39,21 @@ export function PricingModal({
   const [billingType, setBillingType] = useState("yearly");
   const isYearly = billingType === "yearly";
 
-  const handleUpgrade = async (tierId: string) => {
-    // TODO: Implement Stripe checkout
-    const tier = pricingConfig.tiers.find((t) => t.id === tierId);
-    //const priceId = isYearly ? tier?.yearlyPriceId : tier?.monthlyPriceId;
-
-    const planName = tier?.id;
+  const handleUpgrade = async (tierSlug: string) => {
+    const tier = SUBSCRIPTION_PLANS.find((t) => t.slug === tierSlug);
+    const planSlug = tier?.slug;
     const cadence = isYearly? "yearly" : "monthly";
 
-    if (planName === "free") {
+    if (planSlug === "free") {
       return;
     }
 
     await invoke("storyteller_open_subscription_purchase_command", {
       request: {
-        plan:planName,
+        plan: planSlug,
         cadence: cadence,
       }
     });
-
-    // Example Stripe checkout implementation:
-    // await stripe.redirectToCheckout({
-    //   lineItems: [{ price: priceId, quantity: 1 }],
-    //   mode: 'subscription',
-    //   successUrl: `${window.location.origin}/success`,
-    //   cancelUrl: `${window.location.origin}/cancel`,
-    // });
   };
 
   const handleManageSubscription = () => {
@@ -69,8 +67,8 @@ export function PricingModal({
     return tierId === activePlanId;
   };
 
-  const getButtonText = (tier: PricingTier) => {
-    if (isCurrentPlan(tier.id)) {
+  const getButtonText = (tier: SubscriptionPlanDetails) => {
+    if (isCurrentPlan(tier.slug)) {
       return "Current Plan";
     }
 
@@ -89,7 +87,7 @@ export function PricingModal({
   };
 
   const getColorSchemeClasses = (
-    colorScheme: PricingTier["colorScheme"],
+    colorScheme: SubscriptionPlanDetails["colorScheme"],
     isCurrent: boolean
   ) => {
     const baseClasses =
@@ -136,8 +134,8 @@ export function PricingModal({
     }
   };
 
-  const formatPrice = (tier: PricingTier) => {
-    if (tier.monthlyPrice === 0) {
+  const formatPrice = (plan: SubscriptionPlanDetails) => {
+    if (plan.monthlyPrice === 0) {
       return {
         current: "$0",
         original: null,
@@ -145,9 +143,9 @@ export function PricingModal({
     }
 
     if (isYearly) {
-      const discountedMonthlyPrice = Math.round(tier.yearlyPrice / 12);
-      const originalMonthlyPrice = tier.originalYearlyPrice
-        ? Math.round(tier.originalYearlyPrice / 12)
+      const discountedMonthlyPrice = Math.round(plan.yearlyPrice / 12);
+      const originalMonthlyPrice = plan.originalYearlyPrice
+        ? Math.round(plan.originalYearlyPrice / 12)
         : null;
 
       return {
@@ -155,7 +153,7 @@ export function PricingModal({
         original: originalMonthlyPrice ? `$${originalMonthlyPrice}` : null,
       };
     } else {
-      const monthlyPrice = tier.originalMonthlyPrice || tier.monthlyPrice;
+      const monthlyPrice = plan.originalMonthlyPrice || plan.monthlyPrice;
 
       return {
         current: `$${monthlyPrice}`,
@@ -204,19 +202,19 @@ export function PricingModal({
 
         {/* Pricing Tiers */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {pricingConfig.tiers.map((tier) => {
-            const pricing = formatPrice(tier);
+          {SUBSCRIPTION_PLANS.map((plan) => {
+            const pricing = formatPrice(plan);
 
             return (
               <div
-                key={tier.id}
+                key={plan.slug}
                 className={getColorSchemeClasses(
-                  tier.colorScheme,
-                  isCurrentPlan(tier.id)
+                  plan.colorScheme,
+                  isCurrentPlan(plan.slug)
                 )}
               >
                 {/* Current Plan Badge */}
-                {isCurrentPlan(tier.id) && (
+                {isCurrentPlan(plan.slug) && (
                   <div className="absolute -top-4 right-5 bg-white text-black px-3 py-1 rounded-full text-md font-semibold shadow-xl">
                     Active
                   </div>
@@ -225,7 +223,7 @@ export function PricingModal({
                 {/* Tier Header */}
                 <div className="text-center mb-8">
                   <h3 className="text-4xl font-bold text-white mb-4">
-                    {tier.name}
+                    {plan.name}
                   </h3>
                   <div className="flex items-baseline justify-center gap-2">
                     {pricing.original && (
@@ -246,7 +244,7 @@ export function PricingModal({
 
                 {/* Features */}
                 <div className="flex-1 space-y-3 mb-6">
-                  {tier.features.map((feature, index) => (
+                  {plan.features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <div
                         className={twMerge(
@@ -284,11 +282,11 @@ export function PricingModal({
 
                 {/* CTA Button */}
                 <Button
-                  onClick={() => handleUpgrade(tier.id)}
-                  disabled={isCurrentPlan(tier.id)}
+                  onClick={() => handleUpgrade(plan.slug)}
+                  disabled={isCurrentPlan(plan.slug)}
                   className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
                 >
-                  {getButtonText(tier)}
+                  {getButtonText(plan)}
                 </Button>
               </div>
             );
