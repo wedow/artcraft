@@ -4,6 +4,9 @@ use std::fmt::{Display, Formatter};
 use actix_web::HttpRequest;
 use async_trait::async_trait;
 use enums::common::payments_namespace::PaymentsNamespace;
+use sqlx::pool::PoolConnection;
+use sqlx::MySql;
+use tokens::tokens::users::UserToken;
 //#[cfg(test)]
 //use mockall::automock;
 
@@ -35,8 +38,11 @@ impl Error for InternalUserLookupError {}
 
 #[derive(Clone, Default)]
 pub struct UserMetadata {
-  /// Internal system primary key identifier of the user.
+  /// Internal system primary key identifier of the user, stringly typed.
   pub user_token: String,
+
+  /// Internal system primary key identifier of the user, strongly typed.
+  pub user_token_typed: UserToken,
 
   /// Internal system username for the user.
   /// We will associate this to Stripe objects if available.
@@ -80,4 +86,6 @@ pub trait InternalUserLookup {
   /// Lookup a user's session details from an HTTP request, then return the
   /// relevant pieces for the Stripe integration.
   async fn lookup_user_from_http_request(&self, http_request: &HttpRequest) -> Result<Option<UserMetadata>, InternalUserLookupError>;
+
+  async fn lookup_user_from_http_request_and_mysql_connection(&self, http_request: &HttpRequest, mysql_connection: &mut PoolConnection<MySql>) -> Result<Option<UserMetadata>, InternalUserLookupError>;
 }

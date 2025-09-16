@@ -20,14 +20,15 @@ normal = ["workspace-build-acceleration"]
 workspace-build-acceleration.workspace = true
 
 # Internal
+#url_config = { path = "../../../lib/url_config" }
 artcraft_api_defs.workspace = true
 enums.workspace = true
 errors.workspace = true
 http_server_common = { path = "../../../lib/deprecated/http_server_common" }
 mysql_queries = { path = "../../../schema/database/mysql_queries" }
 reusable_types = { path = "../../../schema/public/reusable_types" }
+tokens.workspace = true
 user_traits_component = { path = "../user_traits_component" }
-#url_config = { path = "../../../lib/url_config" }
 
 # External
 actix-http.workspace = true

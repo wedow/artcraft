@@ -4,7 +4,8 @@ use async_trait::async_trait;
 use chrono::Utc;
 use component_traits::traits::internal_user_lookup::{InternalUserLookup, InternalUserLookupError, SubscriptionKey, UserMetadata};
 use log::warn;
-use sqlx::MySqlPool;
+use sqlx::{MySql, MySqlPool};
+use sqlx::pool::PoolConnection;
 
 /// A simple Actix injectable action
 #[derive(Clone)]
@@ -33,8 +34,12 @@ impl InternalUserLookup for StripeInternalUserLookupImpl {
                 InternalUserLookupError::ServerError
             })?;
 
+        self.lookup_user_from_http_request_and_mysql_connection(http_request, &mut mysql_connection).await
+    }
+
+    async fn lookup_user_from_http_request_and_mysql_connection(&self, http_request: &HttpRequest, mysql_connection: &mut PoolConnection<MySql>) -> Result<Option<UserMetadata>, InternalUserLookupError> {
         let maybe_user_session = self.session_checker
-            .maybe_get_user_session_extended_from_connection(&http_request, &mut mysql_connection)
+            .maybe_get_user_session_extended_from_connection(&http_request, mysql_connection)
             .await
             .map_err(|e| {
                 warn!("Session checker error: {:?}", e);
@@ -47,6 +52,7 @@ impl InternalUserLookup for StripeInternalUserLookupImpl {
             None => Ok(None),
             Some(user_session) => Ok(Some(UserMetadata {
                 user_token: user_session.user_token,
+                user_token_typed: user_session.user_token_typed,
                 username: Some(user_session.user.username),
                 user_email: Some(user_session.user.email_address),
                 maybe_existing_stripe_customer_id: user_session.premium.maybe_stripe_customer_id,

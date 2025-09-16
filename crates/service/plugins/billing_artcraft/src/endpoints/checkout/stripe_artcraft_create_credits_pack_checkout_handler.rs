@@ -1,6 +1,7 @@
 use crate::configs::credits_packs::get_artcraft_credits_pack_by_slug_and_env::get_artcraft_credits_pack_by_slug_and_env;
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
 use crate::configs::subscriptions::get_artcraft_subscription_by_slug_and_env::get_artcraft_subscription_by_slug_and_env;
+use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::{Data, Json};
@@ -11,7 +12,9 @@ use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, info, warn};
+use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 use reusable_types::server_environment::ServerEnvironment;
+use sqlx::MySqlPool;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -19,7 +22,6 @@ use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSes
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
-
 //use utoipa::ToSchema;
 
 // /// Create a Stripe Checkout session and return the redirect URL in Json.
@@ -41,6 +43,7 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
   server_environment: Data<ServerEnvironment>,
   internal_user_lookup: Data<dyn InternalUserLookup>,
   internal_session_cache_purge: Data<dyn InternalSessionCachePurge>,
+  mysql_pool: Data<MySqlPool>,
 ) -> Result<Json<StripeArtcraftCreateCreditsPackCheckoutResponse>, CommonWebError>
 {
   let slug = match request.credits_pack {
@@ -50,8 +53,16 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
 
   let credits_pack = get_artcraft_credits_pack_by_slug_and_env(slug, **server_environment);
 
+  let mut mysql_connection = mysql_pool
+      .acquire()
+      .await
+      .map_err(|err| {
+        error!("Could not acquire mysql connection: {:?}", err);
+        CommonWebError::ServerError
+      })?;
+
   let maybe_user_metadata = internal_user_lookup
-      .lookup_user_from_http_request(&http_request)
+      .lookup_user_from_http_request_and_mysql_connection(&http_request, &mut mysql_connection)
       .await
       .map_err(|err| {
         error!("Error looking up user: {:?}", err);
@@ -63,6 +74,21 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
     None => return Err(CommonWebError::NotAuthorized),
     Some(user_metadata) => user_metadata,
   };
+
+  // NB: Currently the stripe customer id field in the `users` table is only for FakeYou subscriptions,
+  // so we need to look up any existing Artcraft subscription separately. This is needed to pre-fill
+  // the Stripe billing form.
+  let maybe_subscription = find_subscription_for_owner_user_using_connection(
+    &user_metadata.user_token_typed,
+    PaymentsNamespace::Artcraft,
+    &mut mysql_connection
+  ).await.map_err(|err| {
+    error!("Error looking up user's ({}) existing subscription: {:?}", &user_metadata.user_token_typed, err);
+    CommonWebError::ServerError // NB: This was probably *our* fault.
+  })?;
+  
+  let maybe_existing_stripe_customer_id = maybe_subscription.as_ref()
+      .map(|sub| sub.stripe_customer_id.as_str());
 
   let success_url = stripe_config.checkout_success_url.clone();
   let cancel_url = stripe_config.checkout_cancel_url.clone();
@@ -135,7 +161,8 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
           ..Default::default()
         });
 
-    if let Some(existing_stripe_customer_id) = user_metadata.maybe_existing_stripe_customer_id.as_deref() {
+    if let Some(existing_stripe_customer_id) = maybe_existing_stripe_customer_id{
+      info!("Adding existing stripe customer id to checkout session: {}", existing_stripe_customer_id);
       match CustomerId::from_str(existing_stripe_customer_id) {
         Ok(customer_id) => {
           checkout_builder = checkout_builder.customer(customer_id);
