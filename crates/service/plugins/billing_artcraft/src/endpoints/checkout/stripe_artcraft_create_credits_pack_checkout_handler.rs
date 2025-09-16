@@ -18,9 +18,10 @@ use sqlx::MySqlPool;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsAdjustableQuantity, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
+use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionCustomerCreation, CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsAdjustableQuantity, CreateCheckoutSessionPaymentIntentData, CreateCheckoutSessionPaymentIntentDataSetupFutureUsage, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
+use stripe_shared::CheckoutSessionCustomerCreation;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 //use utoipa::ToSchema;
 
@@ -88,7 +89,9 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
   })?;
 
   let maybe_existing_stripe_customer_id = maybe_subscription.as_ref()
-      .map(|sub| sub.stripe_customer_id.as_str());
+      .map(|sub| sub.stripe_customer_id.as_str())
+      .map(|customer_id|  CustomerId::from_str(customer_id).ok()) // NB: Infallible parse
+      .flatten();
 
   let success_url = stripe_config.checkout_success_url.clone();
   let cancel_url = stripe_config.checkout_cancel_url.clone();
@@ -158,40 +161,38 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
         .metadata(metadata.clone())
         .payment_intent_data(CreateCheckoutSessionPaymentIntentData {
           metadata: Some(metadata),
+          // Without an existing customer id or a customer_creation flag, this will wind up associated
+          // with a "Guest" and be difficult to reuse.
+          setup_future_usage: Some(CreateCheckoutSessionPaymentIntentDataSetupFutureUsage::OnSession),
           ..Default::default()
         });
 
-    if let Some(existing_stripe_customer_id) = maybe_existing_stripe_customer_id{
-      info!("Adding existing stripe customer id to checkout session: {}", existing_stripe_customer_id);
-      match CustomerId::from_str(existing_stripe_customer_id) {
-        Ok(customer_id) => {
-          checkout_builder = checkout_builder.customer(customer_id);
+    if let Some(customer_id) = maybe_existing_stripe_customer_id{
+      info!("Adding existing stripe customer id to checkout session: {}", customer_id.as_str());
+      checkout_builder = checkout_builder.customer(customer_id);
 
-          // Stripe won't let us use `saved_payment_method_options` without an existing customer,
-          // at least for one-off payments. Subscriptions allow this to be set.
-          // If we try to set this without a customer, the checkout session will blow up.
-          checkout_builder = checkout_builder
-              .saved_payment_method_options(CreateCheckoutSessionSavedPaymentMethodOptions {
-                // The user can choose to tick a checkbox that saves their card for redisplay later.
-                payment_method_save: Some(CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave::Enabled),
-                // Without any items, we do not get card redisplay.
-                // All three values seems to enable redisplay.
-                // I haven't tested individual enum values.
-                // The user can choose to tick a checkbox that saves their card for redisplay later.
-                allow_redisplay_filters: Some(vec![
-                  CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Always,
-                  CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Limited,
-                  CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Unspecified,
-                ])
-              });
-        }
-        Err(err) => {
-          // NB: Don't block checkout.
-          warn!("Error parsing user's ({}) supposed existing stripe customer id: {:?}",
-            &user_metadata.user_token,
-            err);
-        }
-      }
+      // If we try to set this without a customer, the checkout session will blow up.
+      // Stripe won't let us use `saved_payment_method_options` without an existing customer,
+      // at least for one-off payments. Subscriptions allow this to be set in either case.
+      checkout_builder = checkout_builder
+          .saved_payment_method_options(CreateCheckoutSessionSavedPaymentMethodOptions {
+            // The user can choose to tick a checkbox that saves their card for redisplay later.
+            payment_method_save: Some(CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave::Enabled),
+            // Without any items, we do not get card redisplay.
+            // All three values seems to enable redisplay.
+            // I haven't tested individual enum values.
+            // The user can choose to tick a checkbox that saves their card for redisplay later.
+            allow_redisplay_filters: Some(vec![
+              CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Always,
+              CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Limited,
+              CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Unspecified,
+            ])
+          });
+    } else {
+      // If we don't have an existing customer_id, we want to create a new customer.
+      // If we don't do that, the "customer" winds up as a "Guest" customer.
+      checkout_builder = checkout_builder
+          .customer_creation(CreateCheckoutSessionCustomerCreation::Always);
     }
 
     let checkout_session = checkout_builder
