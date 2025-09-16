@@ -31,6 +31,9 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
 
   const hasPaidPlan = subscriptionStore.hasPaidPlan();
 
+  const nextBillAt = subscriptionStore.subscriptionInfo?.nextBillAt?.toLocaleDateString();
+  const subscriptionEndAt = subscriptionStore.subscriptionInfo?.subscriptionEndAt?.toLocaleDateString();
+
   useEffect(() => {
     creditsStore.fetchFromServer();
     subscriptionStore.fetchFromServer();
@@ -70,11 +73,22 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
           {billingInfo.nextPayment.date}
         </div>
         */}
-        <div className="flex items-center gap-2 text-white/50">
-          <FontAwesomeIcon icon={faInfoCircle} />
-          Next payment on{" "}
-          {subscriptionStore.subscriptionInfo?.nextBillAt?.toLocaleDateString()}
-        </div>
+
+        {subscriptionEndAt && (
+          <div className="flex items-center gap-2 text-white/50">
+            <FontAwesomeIcon icon={faInfoCircle} />
+            Subscription ends on{" "}
+            {subscriptionEndAt}
+          </div>
+        )}
+        
+        {nextBillAt && (
+          <div className="flex items-center gap-2 text-white/50">
+            <FontAwesomeIcon icon={faInfoCircle} />
+            Next payment on{" "}
+            {nextBillAt}
+          </div>
+        )}
 
         <hr className="border-white/10" />
 

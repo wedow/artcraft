@@ -34,6 +34,16 @@ pub struct UserSubscription {
 
   /// When the current billing period ends (either auto-renew/rebill date or auto-cancel/cancellation date).
   pub current_billing_period_end_at: DateTime<Utc>,
+
+  /// If the subscription is set to expire (perhaps in the future), this is the date it will expire.
+  /// TODO: Determine if this is set on expired, payment invalid, or canceled subscriptions where the date
+  ///  is backdated ahead of `maybe_canceled_at`.
+  pub maybe_cancel_at: Option<DateTime<Utc>>,
+
+  /// This might be *before* the subscription is canceled, depending on stripe setup and
+  /// the cancellation algorithm used. Eg. a year-long subscription that ends next year
+  /// might be maybe_canceled_at a few days ago, but set to `maybe_cancel_at` next year.
+  pub maybe_canceled_at: Option<DateTime<Utc>>,
 }
 
 /// Technically, there may be more than one subscription record.
@@ -89,6 +99,8 @@ fn map_result(result: Result<Option<RawUserSubscription>, sqlx::Error>) -> Resul
       subscription_start_at: record.subscription_start_at,
       subscription_expires_at: record.subscription_expires_at,
       current_billing_period_end_at: record.current_billing_period_end_at,
+      maybe_cancel_at: record.maybe_cancel_at,
+      maybe_canceled_at: record.maybe_canceled_at,
     })),
     Ok(None) => Ok(None),
     Err(e) => Err(e.into()),
@@ -117,7 +129,9 @@ SELECT
   maybe_stripe_invoice_is_paid,
   subscription_start_at,
   subscription_expires_at,
-  current_billing_period_end_at
+  current_billing_period_end_at,
+  maybe_cancel_at,
+  maybe_canceled_at
 
 FROM user_subscriptions
 
@@ -157,4 +171,7 @@ struct RawUserSubscription {
   subscription_expires_at: DateTime<Utc>,
 
   current_billing_period_end_at: DateTime<Utc>,
+
+  maybe_cancel_at: Option<DateTime<Utc>>,
+  maybe_canceled_at: Option<DateTime<Utc>>,
 }

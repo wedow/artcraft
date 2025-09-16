@@ -81,16 +81,41 @@ pub async fn get_session_subscription_handler(
     success: true,
     active_subscription: maybe_subscription.map(|sub| {
       let mut next_bill_date = None;
-      
-      // TODO: Suppress if canceled.
-      next_bill_date = Some(sub.current_billing_period_end_at);
-      
+      let mut subscription_end_date = None;
+
+      // cancel_at > canceled_at - [normal] subscription was terminated and expires (after the canceled_at date, perhaps in the future)
+      // cancel_at < canceled_at - [???] - ???
+
+      match (sub.maybe_cancel_at, sub.maybe_canceled_at) {
+        (Some(cancel_at), Some(canceled_at)) => {
+          // NB: `canceled_at` is when the user canceled the subscription, not necessarily when it expires.
+          // TODO: Not sure this is the correct logic.
+          subscription_end_date = Some(cancel_at);
+        },
+        (Some(cancel_at), None) => {
+          // Canceling at end of period.
+          subscription_end_date = Some(cancel_at);
+        },
+        (None, Some(canceled_at)) => {
+          // Canceled already.
+          subscription_end_date = Some(canceled_at);
+        },
+        (None, None) => {
+          // Active subscription.
+          next_bill_date = Some(sub.current_billing_period_end_at);
+        },
+      }
+
+      //if sub.maybe_cancel_at.is_none() && sub.maybe_canceled_at.is_none() {
+      //  next_bill_date = Some(sub.current_billing_period_end_at);
+      //}
+
       SubscriptionInfo {
         namespace: sub.subscription_namespace,
         product_slug: sub.subscription_product_slug,
         subscription_token: sub.token,
         next_bill_at: next_bill_date,
-        subscription_end_at: None,
+        subscription_end_at: subscription_end_date,
       }
     }),
   }))

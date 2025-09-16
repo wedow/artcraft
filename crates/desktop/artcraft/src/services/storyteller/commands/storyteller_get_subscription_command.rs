@@ -36,7 +36,12 @@ pub struct ActiveSubscriptionInfo {
   pub subscription_token: UserSubscriptionToken,
   pub product_slug: ArtcraftSubscriptionSlug,
   pub namespace: PaymentsNamespace,
+
+  /// If the subscription is active, this is the next bill date
   pub next_bill_at: Option<DateTime<Utc>>,
+
+  /// If the subscription is expired or is set to expire, this is the end date of the subscription.
+  pub subscription_end_at: Option<DateTime<Utc>>,
 }
 
 impl SerializeMarker for GetSubscriptionResponse {}
@@ -89,6 +94,7 @@ async fn get(
             product_slug,
             namespace: sub.namespace,
             next_bill_at: sub.next_bill_at,
+            subscription_end_at: sub.subscription_end_at,
           })
         })
         .flatten(),

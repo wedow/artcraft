@@ -14,6 +14,7 @@ export interface ActiveSubscriptionInfo {
   product_slug: string,
   namespace: string,
   next_bill_at?: string,
+  subscription_end_at?: string,
 }
 
 export const ArtcraftGetSubscription = async () : Promise<ArtcraftGetSubscriptionSuccess> => {
