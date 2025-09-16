@@ -7,6 +7,7 @@ use billing_artcraft_component::endpoints::checkout::stripe_artcraft_create_subs
 use billing_artcraft_component::endpoints::customer_portal::stripe_artcraft_customer_portal_cancel_plan_handler::stripe_artcraft_customer_portal_cancel_plan_handler;
 use billing_artcraft_component::endpoints::customer_portal::stripe_artcraft_customer_portal_manage_plan_handler::stripe_artcraft_customer_portal_manage_plan_handler;
 use billing_artcraft_component::endpoints::customer_portal::stripe_artcraft_customer_portal_switch_plan_handler::stripe_artcraft_customer_portal_switch_plan_handler;
+use billing_artcraft_component::endpoints::customer_portal::stripe_artcraft_customer_portal_update_payment_method_handler::stripe_artcraft_customer_portal_update_payment_method_handler;
 use billing_artcraft_component::endpoints::webhook::stripe_artcraft_webhook_handler::stripe_artcraft_webhook_handler;
 
 pub fn add_stripe_artcraft_routes<T, B> (app: App<T>) -> App<T>
@@ -43,6 +44,10 @@ where
       )
       .service(web::resource("/portal/switch_plan")
           .route(web::post().to(stripe_artcraft_customer_portal_switch_plan_handler))
+          .route(web::head().to(|| HttpResponse::Ok()))
+      )
+      .service(web::resource("/portal/update_payment_method")
+          .route(web::post().to(stripe_artcraft_customer_portal_update_payment_method_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )

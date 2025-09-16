@@ -17,32 +17,20 @@ use serde_derive::Deserialize;
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
 
-#[derive(Deserialize, Debug)]
-pub struct StorytellerOpenCustomerPortalSwitchPlanCommand {
-  pub plan: Option<ArtcraftSubscriptionSlug>,
-  pub cadence: Option<PlanBillingCadenceConfirmation>,
-}
-
 #[tauri::command]
-pub async fn storyteller_open_customer_portal_switch_plan_command(
+pub async fn storyteller_open_customer_portal_update_payment_method_command(
   app: AppHandle,
-  request: StorytellerOpenCustomerPortalSwitchPlanCommand,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
 ) -> Result<String, String> {
-  info!("storyteller_open_customer_portal_switch_plan_command called");
-
-  let plan = request.plan.ok_or("Plan is required")?;
-  let cadence = request.cadence.ok_or("Cadence is required")?;
+  info!("storyteller_open_customer_portal_update_payment_method_command called");
 
   do_open_portal(
     &app,
     &app_data_root,
     &app_env_configs,
     &storyteller_creds_manager,
-    plan,
-    cadence,
   )
       .await
       .map_err(|err| {
@@ -58,8 +46,6 @@ async fn do_open_portal(
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  plan: ArtcraftSubscriptionSlug,
-  cadence: PlanBillingCadenceConfirmation,
 ) -> AnyhowResult<()> {
   info!("Building billing window...");
   
@@ -68,10 +54,7 @@ async fn do_open_portal(
     app_data_root,
     app_env_configs,
     storyteller_creds_manager,
-    billing_window_case: BillingWindowCase::CustomerPortalSwitchPlan {
-      plan,
-      cadence,
-    }
+    billing_window_case: BillingWindowCase::CustomerPortalUpdatePaymentMethod,
   }).await?;
 
   info!("Done.");

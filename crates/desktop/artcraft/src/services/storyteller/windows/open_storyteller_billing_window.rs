@@ -9,6 +9,7 @@ use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBilli
 use artcraft_api_defs::stripe_artcraft::customer_portal_cancel_plan::StripeArtcraftCustomerPortalCancelPlanRequest;
 use artcraft_api_defs::stripe_artcraft::customer_portal_manage_plan::StripeArtcraftCustomerPortalManagePlanRequest;
 use artcraft_api_defs::stripe_artcraft::customer_portal_switch_plan::{PlanBillingCadenceConfirmation, StripeArtcraftCustomerPortalSwitchPlanRequest};
+use artcraft_api_defs::stripe_artcraft::customer_portal_update_payment_method::StripeArtcraftCustomerPortalUpdatePaymentMethodRequest;
 use enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use errors::AnyhowResult;
@@ -20,6 +21,7 @@ use storyteller_client::stripe_artcraft::create_subscription_checkout::create_su
 use storyteller_client::stripe_artcraft::customer_portal_cancel_plan::customer_portal_cancel_plan;
 use storyteller_client::stripe_artcraft::customer_portal_manage_plan::customer_portal_manage_plan;
 use storyteller_client::stripe_artcraft::customer_portal_switch_plan::customer_portal_switch_plan;
+use storyteller_client::stripe_artcraft::customer_portal_update_payment_method::customer_portal_update_payment_method;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub const BILLING_WINDOW_NAME: &str = "artcraft_billing_window";
@@ -58,6 +60,9 @@ pub enum BillingWindowCase {
     plan: ArtcraftSubscriptionSlug,
     cadence: PlanBillingCadenceConfirmation,
   },
+  
+  /// Change the payment method attached to the customer / subscription.
+  CustomerPortalUpdatePaymentMethod,
 }
 
 pub async fn open_storyteller_billing_window(
@@ -108,6 +113,12 @@ pub async fn open_storyteller_billing_window(
         cadence,
       ).await?
     },
+    BillingWindowCase::CustomerPortalUpdatePaymentMethod => {
+      get_customer_portal_update_payment_method_url(
+        args.app_env_configs,
+        &creds,
+      ).await?
+    }
   };
 
   do_open_window(args.app, args.app_data_root, checkout_url).await?;
@@ -205,7 +216,6 @@ async fn get_customer_portal_manage_plan_url(
   Ok(Url::parse(&result.stripe_portal_url)?)
 }
 
-
 async fn get_customer_portal_switch_plan_url(
   app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
@@ -228,6 +238,27 @@ async fn get_customer_portal_switch_plan_url(
   ).await?;
 
   info!("Customer portal switch plan session created...");
+  Ok(Url::parse(&result.stripe_portal_url)?)
+}
+
+async fn get_customer_portal_update_payment_method_url(
+  app_env_configs: &AppEnvConfigs,
+  storyteller_creds: &StorytellerCredentialSet,
+) -> AnyhowResult<Url> {
+
+  info!("Getting customer portal update payment method session...");
+
+  let request = StripeArtcraftCustomerPortalUpdatePaymentMethodRequest {
+    portal_config_id: None,
+  };
+
+  let result = customer_portal_update_payment_method(
+    &app_env_configs.storyteller_host,
+    Some(&storyteller_creds),
+    request,
+  ).await?;
+
+  info!("Customer portal update payment method created...");
   Ok(Url::parse(&result.stripe_portal_url)?)
 }
 
