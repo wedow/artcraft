@@ -29,6 +29,9 @@ pub struct SubscriptionAndProduct {
   pub stripe_customer_id: String,
   pub stripe_price_id: String,
 
+  /// The line item within the subscription (our subscriptions only have one line item)
+  pub stripe_subscription_item_id: String,
+
   /// Stripe production flag.
   pub stripe_is_production: bool,
 
@@ -86,6 +89,8 @@ pub async fn lookup_subscription_from_subscription_id(
       .get(0)
       .ok_or_else(|| anyhow::anyhow!("No line items found in subscription."))?;
 
+  let subscription_item_id = line_item.id.to_string();
+  
   let price = &line_item.price;
 
   match price.type_ {
@@ -118,6 +123,7 @@ pub async fn lookup_subscription_from_subscription_id(
 
   Ok(SubscriptionAndProduct {
     stripe_subscription_id: subscription_id.to_string(),
+    stripe_subscription_item_id: subscription_item_id,
     stripe_product_id: product_id,
     stripe_customer_id: customer_id,
     stripe_price_id: price_id,

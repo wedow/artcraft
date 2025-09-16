@@ -24,6 +24,7 @@ use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use tokens::tokens::users::UserToken;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
+use crate::requests::lookup_subscription_from_subscription_id::lookup_subscription_from_subscription_id;
 
 pub async fn stripe_artcraft_customer_portal_switch_plan_handler(
   http_request: HttpRequest,
@@ -82,7 +83,7 @@ pub async fn stripe_artcraft_customer_portal_switch_plan_handler(
     &subscription,
     &stripe_config,
     **server_environment,
-  )?;
+  ).await?;
 
   let mut portal_builder = CreateBillingPortalSession::new(subscription.stripe_customer_id.clone())
       .return_url(stripe_config.portal_return_url.clone()) // TODO: This can be a different URL.
@@ -102,7 +103,7 @@ pub async fn stripe_artcraft_customer_portal_switch_plan_handler(
   }))
 }
 
-fn update_confirm(
+async fn update_confirm(
   request: &StripeArtcraftCustomerPortalSwitchPlanRequest,
   user_subscription: &UserSubscription,
   stripe_config: &ArtcraftStripeConfigWithClient,
@@ -129,6 +130,18 @@ fn update_confirm(
   let existing_subscription_id = user_subscription.stripe_subscription_id.clone();
   let existing_product_id = user_subscription.stripe_product_id.clone();
 
+  let existing_subscription = lookup_subscription_from_subscription_id(
+    &existing_subscription_id,
+    &stripe_config.client
+  ).await.map_err(|err| {
+    error!("Error looking up existing subscription {} for user {}: {:?}",
+      &existing_subscription_id,
+      &user_subscription.user_token,
+      err
+    );
+    CommonWebError::ServerError
+  })?;
+
   info!("Switching user {} (stripe customer {}) with existing subscription {} and product {} to new plan {} with price ID {}",
     &user_subscription.user_token,
     &user_subscription.stripe_customer_id,
@@ -144,7 +157,7 @@ fn update_confirm(
       CreateBillingPortalSessionFlowDataSubscriptionUpdateConfirm {
         subscription: existing_subscription_id,
         items: vec![CreateBillingPortalSessionFlowDataSubscriptionUpdateConfirmItems {
-          id: existing_product_id,
+          id: existing_subscription.stripe_subscription_item_id.clone(),
           price: Some(new_price_id.to_string()),
           quantity: Some(1),
         }],
