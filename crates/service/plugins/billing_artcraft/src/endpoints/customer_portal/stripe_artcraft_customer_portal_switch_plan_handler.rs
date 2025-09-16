@@ -6,7 +6,7 @@ use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::{Data, Json};
 use actix_web::{web, HttpRequest};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest, StripeArtcraftCreateSubscriptionCheckoutResponse};
-use artcraft_api_defs::stripe_artcraft::customer_portal_switch_plan::{StripeArtcraftCustomerPortalSwitchPlanRequest, StripeArtcraftCustomerPortalSwitchPlanResponse};
+use artcraft_api_defs::stripe_artcraft::customer_portal_switch_plan::{PlanBillingCadenceConfirmation, StripeArtcraftCustomerPortalSwitchPlanRequest, StripeArtcraftCustomerPortalSwitchPlanResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
@@ -87,7 +87,7 @@ pub async fn stripe_artcraft_customer_portal_switch_plan_handler(
   let mut portal_builder = CreateBillingPortalSession::new(subscription.stripe_customer_id.clone())
       .return_url(stripe_config.portal_return_url.clone()) // TODO: This can be a different URL.
       .flow_data(flow_data);
-  
+
   let portal_session = portal_builder
       .send(&stripe_config.client)
       .await
@@ -104,7 +104,7 @@ pub async fn stripe_artcraft_customer_portal_switch_plan_handler(
 
 fn update_confirm(
   request: &StripeArtcraftCustomerPortalSwitchPlanRequest,
-  subscription: &UserSubscription,
+  user_subscription: &UserSubscription,
   stripe_config: &ArtcraftStripeConfigWithClient,
   server_environment: ServerEnvironment,
 ) -> Result<CreateBillingPortalSessionFlowData, CommonWebError>
@@ -119,24 +119,36 @@ fn update_confirm(
     Some(cadence) => cadence,
   };
 
-  let plan = get_artcraft_subscription_by_slug_and_env(slug, server_environment);
+  let new_plan = get_artcraft_subscription_by_slug_and_env(slug, server_environment);
 
-  let price_id = match cadence {
-    PlanBillingCadence::Monthly => plan.monthly_price_id.clone(),
-    PlanBillingCadence::Yearly => plan.yearly_price_id.clone(),
+  let new_price_id = match cadence {
+    PlanBillingCadenceConfirmation::Monthly => new_plan.monthly_price_id.clone(),
+    PlanBillingCadenceConfirmation::Yearly => new_plan.yearly_price_id.clone(),
   };
+
+  let existing_subscription_id = user_subscription.stripe_subscription_id.clone();
+  let existing_product_id = user_subscription.stripe_product_id.clone();
+
+  info!("Switching user {} (stripe customer {}) with existing subscription {} and product {} to new plan {} with price ID {}",
+    &user_subscription.user_token,
+    &user_subscription.stripe_customer_id,
+    &existing_subscription_id,
+    &existing_product_id,
+    &slug,
+    &new_price_id,
+  );
 
   Ok(CreateBillingPortalSessionFlowData {
     type_: CreateBillingPortalSessionFlowDataType::SubscriptionUpdateConfirm,
     subscription_update_confirm: Some(
       CreateBillingPortalSessionFlowDataSubscriptionUpdateConfirm {
-        discounts: None,
+        subscription: existing_subscription_id,
         items: vec![CreateBillingPortalSessionFlowDataSubscriptionUpdateConfirmItems {
-          id: plan.product_id.to_string(),
-          price: Some(price_id.to_string()),
+          id: existing_product_id,
+          price: Some(new_price_id.to_string()),
           quantity: Some(1),
         }],
-        subscription: subscription.stripe_subscription_id.clone(),
+        discounts: None,
       }
     ),
     after_completion: Some(CreateBillingPortalSessionFlowDataAfterCompletion {

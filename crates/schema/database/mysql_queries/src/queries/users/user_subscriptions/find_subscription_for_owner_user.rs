@@ -19,6 +19,7 @@ pub struct UserSubscription {
   pub subscription_product_slug: String,
 
   pub stripe_customer_id: String,
+  pub stripe_product_id: String,
   pub stripe_subscription_id: String,
   pub stripe_subscription_status: String,
   pub stripe_invoice_is_paid: bool,
@@ -75,6 +76,8 @@ fn map_result(result: Result<Option<RawUserSubscription>, sqlx::Error>) -> Resul
       subscription_product_slug: record.subscription_product_slug,
       stripe_customer_id: record.maybe_stripe_customer_id
           .ok_or_else(|| SelectOptionalRecordError::RequiredFieldWasNull("maybe_stripe_customer_id"))?,
+      stripe_product_id: record.maybe_stripe_product_id
+          .ok_or_else(|| SelectOptionalRecordError::RequiredFieldWasNull("maybe_stripe_product_id"))?,
       stripe_subscription_id: record.maybe_stripe_subscription_id
           .ok_or_else(|| SelectOptionalRecordError::RequiredFieldWasNull("maybe_stripe_subscription_id"))?,
       stripe_subscription_status: record.maybe_stripe_subscription_status
@@ -104,6 +107,7 @@ SELECT
   subscription_namespace as `subscription_namespace: enums::common::payments_namespace::PaymentsNamespace`,
   subscription_product_slug,
   maybe_stripe_customer_id,
+  maybe_stripe_product_id,
   maybe_stripe_subscription_id,
   maybe_stripe_subscription_status,
   maybe_stripe_invoice_is_paid,
@@ -139,6 +143,7 @@ struct RawUserSubscription {
   subscription_product_slug: String,
 
   maybe_stripe_customer_id: Option<String>,
+  maybe_stripe_product_id: Option<String>,
   maybe_stripe_subscription_id: Option<String>,
   maybe_stripe_subscription_status: Option<String>,
   maybe_stripe_invoice_is_paid: Option<i8>,
