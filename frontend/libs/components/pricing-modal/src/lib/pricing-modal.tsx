@@ -45,6 +45,10 @@ export function PricingModal({}: PricingModalProps = {}) {
     await invoke("storyteller_open_customer_portal_manage_plan_command");
   };
 
+  const handleUpdatePaymentMethod = async () => {
+    await invoke("storyteller_open_customer_portal_update_payment_method_command");
+  };
+
   const handleSetPlan = async (tierSlug: string) => {
     const tier = SUBSCRIPTION_PLANS.find((t) => t.slug === tierSlug);
     const planSlug = tier?.slug;
@@ -315,8 +319,14 @@ export function PricingModal({}: PricingModalProps = {}) {
         {hasActiveSub && activePlanId !== "free" && (
           <div className="flex justify-center mt-8">
             <Button
+              onClick={handleUpdatePaymentMethod}
+              className="bg-transparent border border-white/25 text-white hover:bg-white/10 px-8 py-3 mx-3 rounded-xl"
+            >
+              Update your payment method
+            </Button>
+            <Button
               onClick={handleManageSubscription}
-              className="bg-transparent border border-white/25 text-white hover:bg-white/10 px-8 py-3 rounded-xl"
+              className="bg-transparent border border-white/25 text-white hover:bg-white/10 px-8 py-3 mx-3 rounded-xl"
             >
               Manage your subscription
             </Button>

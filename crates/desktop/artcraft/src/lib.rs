@@ -52,6 +52,7 @@ use crate::services::storyteller::commands::stripe_checkout::storyteller_open_su
 use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_cancel_plan_command::storyteller_open_customer_portal_cancel_plan_command;
 use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_manage_plan_command::storyteller_open_customer_portal_manage_plan_command;
 use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_switch_plan_command::storyteller_open_customer_portal_switch_plan_command;
+use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_update_payment_method_command::storyteller_open_customer_portal_update_payment_method_command;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use log::error;
 
@@ -196,6 +197,7 @@ pub fn run() {
     storyteller_open_customer_portal_cancel_plan_command,
     storyteller_open_customer_portal_manage_plan_command,
     storyteller_open_customer_portal_switch_plan_command,
+    storyteller_open_customer_portal_update_payment_method_command,
     storyteller_open_subscription_purchase_command,
     update_app_preferences_command,
   ]);
