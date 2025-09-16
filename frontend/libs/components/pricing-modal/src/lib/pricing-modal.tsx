@@ -76,7 +76,7 @@ export function PricingModal({
       const currentTierLevel =
         tierHierarchy[activePlanId as keyof typeof tierHierarchy];
       const thisTierLevel =
-        tierHierarchy[tier.id as keyof typeof tierHierarchy];
+        tierHierarchy[tier.slug as keyof typeof tierHierarchy];
 
       if (thisTierLevel < currentTierLevel) {
         return "Switch Plan";
