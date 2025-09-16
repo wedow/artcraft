@@ -5,19 +5,19 @@ use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::{Data, Json};
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::stripe_artcraft::create_customer_portal_session::{StripeArtcraftCreateCustomerPortalFlowState, StripeArtcraftCreateCustomerPortalSessionRequest, StripeArtcraftCreateCustomerPortalSessionResponse};
 use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest, StripeArtcraftCreateSubscriptionCheckoutResponse};
+use artcraft_api_defs::stripe_artcraft::customer_portal_manage_plan::{StripeArtcraftCustomerPortalManagePlanRequest, StripeArtcraftCustomerPortalManagePlanResponse};
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, info, warn};
-use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
+use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::{find_subscription_for_owner_user_using_connection, UserSubscription};
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::MySqlPool;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use stripe_billing::billing_portal_session::{CreateBillingPortalSession, CreateBillingPortalSessionFlowData, CreateBillingPortalSessionFlowDataAfterCompletion, CreateBillingPortalSessionFlowDataAfterCompletionRedirect, CreateBillingPortalSessionFlowDataAfterCompletionType, CreateBillingPortalSessionFlowDataSubscriptionCancel, CreateBillingPortalSessionFlowDataSubscriptionCancelRetention, CreateBillingPortalSessionFlowDataSubscriptionCancelRetentionCouponOffer, CreateBillingPortalSessionFlowDataSubscriptionCancelRetentionType, CreateBillingPortalSessionFlowDataSubscriptionUpdate, CreateBillingPortalSessionFlowDataType};
+use stripe_billing::billing_portal_session::{CreateBillingPortalSession, CreateBillingPortalSessionFlowData, CreateBillingPortalSessionFlowDataAfterCompletion, CreateBillingPortalSessionFlowDataAfterCompletionRedirect, CreateBillingPortalSessionFlowDataAfterCompletionType, CreateBillingPortalSessionFlowDataSubscriptionCancel, CreateBillingPortalSessionFlowDataSubscriptionCancelRetention, CreateBillingPortalSessionFlowDataSubscriptionCancelRetentionCouponOffer, CreateBillingPortalSessionFlowDataSubscriptionCancelRetentionType, CreateBillingPortalSessionFlowDataSubscriptionUpdate, CreateBillingPortalSessionFlowDataSubscriptionUpdateConfirm, CreateBillingPortalSessionFlowDataSubscriptionUpdateConfirmItems, CreateBillingPortalSessionFlowDataType};
 use stripe_billing::BillingPortalSession;
 use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
@@ -25,28 +25,14 @@ use stripe_core::CustomerId;
 use tokens::tokens::users::UserToken;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 
-//use utoipa::ToSchema;
-
-// /// Create a Stripe Checkout session and return the redirect URL in Json.
-// #[utoipa::path(
-//   get,
-//   tag = "Stripe (Artcraft)",
-//   path = "/v1/stripe_artcraft/portal/create_session",
-//   params(
-//     ("request" = CreatePortalSessionRequest, description = "Payload for Request"),
-//   ),
-//   responses(
-//     (status = 200, description = "Success", body = CreatePortalSessionSuccessResponse),
-//   ),
-// )]
-pub async fn stripe_artcraft_create_customer_portal_session_handler(
+pub async fn stripe_artcraft_customer_portal_manage_plan_handler(
   http_request: HttpRequest,
-  request: Json<StripeArtcraftCreateCustomerPortalSessionRequest>,
+  request: Json<StripeArtcraftCustomerPortalManagePlanRequest>,
   stripe_config: Data<ArtcraftStripeConfigWithClient>,
   server_environment: Data<ServerEnvironment>,
   internal_user_lookup: Data<dyn InternalUserLookup>,
   mysql_pool: Data<MySqlPool>,
-) -> Result<Json<StripeArtcraftCreateCustomerPortalSessionResponse>, CommonWebError>
+) -> Result<Json<StripeArtcraftCustomerPortalManagePlanResponse>, CommonWebError>
 {
   let mut mysql_connection = mysql_pool
       .acquire()
@@ -91,33 +77,9 @@ pub async fn stripe_artcraft_create_customer_portal_session_handler(
 
   // TODO: Set the configuration id.
 
-  let mut portal_builder = CreateBillingPortalSession::new(subscription.stripe_customer_id)
-      .return_url(stripe_config.portal_return_url.clone());
-
-  match request.flow {
-    None => {}
-    Some(StripeArtcraftCreateCustomerPortalFlowState::SubscriptionCancel) => {
-      portal_builder = portal_builder.flow_data(CreateBillingPortalSessionFlowData {
-        type_: CreateBillingPortalSessionFlowDataType::SubscriptionCancel,
-        subscription_cancel: Some(
-          CreateBillingPortalSessionFlowDataSubscriptionCancel {
-            retention: None,
-            subscription: subscription.stripe_subscription_id.clone(),
-          }
-        ),
-        after_completion: Some(CreateBillingPortalSessionFlowDataAfterCompletion {
-          type_: CreateBillingPortalSessionFlowDataAfterCompletionType::Redirect,
-          redirect: Some(CreateBillingPortalSessionFlowDataAfterCompletionRedirect {
-            return_url: stripe_config.portal_return_url.clone(), // TODO: This can be a different URL.
-          }),
-          hosted_confirmation: None,
-        }),
-        subscription_update: None,
-        subscription_update_confirm: None,
-      });
-    }
-    Some(StripeArtcraftCreateCustomerPortalFlowState::SubscriptionUpdate) => {
-      portal_builder = portal_builder.flow_data(CreateBillingPortalSessionFlowData {
+  let mut portal_builder = CreateBillingPortalSession::new(subscription.stripe_customer_id.clone())
+      .return_url(stripe_config.portal_return_url.clone()) // TODO: This can be a different URL.
+      .flow_data(CreateBillingPortalSessionFlowData {
         type_: CreateBillingPortalSessionFlowDataType::SubscriptionUpdate,
         subscription_update: Some(
           CreateBillingPortalSessionFlowDataSubscriptionUpdate {
@@ -134,8 +96,6 @@ pub async fn stripe_artcraft_create_customer_portal_session_handler(
         subscription_cancel: None,
         subscription_update_confirm: None,
       });
-    }
-  }
 
   let portal_session = portal_builder
       .send(&stripe_config.client)
@@ -145,7 +105,7 @@ pub async fn stripe_artcraft_create_customer_portal_session_handler(
         CommonWebError::ServerError
       })?;
 
-  Ok(Json(StripeArtcraftCreateCustomerPortalSessionResponse {
+  Ok(Json(StripeArtcraftCustomerPortalManagePlanResponse {
     success: true,
     stripe_portal_url: portal_session.url,
   }))
