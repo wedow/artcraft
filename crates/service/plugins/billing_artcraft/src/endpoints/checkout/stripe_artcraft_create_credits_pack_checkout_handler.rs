@@ -22,6 +22,7 @@ use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSes
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use stripe_shared::CheckoutSessionCustomerCreation;
+use mysql_queries::queries::users::user_stripe_customer_links::find_user_stripe_customer_link::find_user_stripe_customer_link_using_connection;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 //use utoipa::ToSchema;
 
@@ -88,10 +89,26 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
     CommonWebError::ServerError // NB: This was probably *our* fault.
   })?;
 
-  let maybe_existing_stripe_customer_id = maybe_subscription.as_ref()
+  // NB: Prefer the user<->customer link on the subscription object.
+  let mut maybe_existing_stripe_customer_id = maybe_subscription.as_ref()
       .map(|sub| sub.stripe_customer_id.as_str())
       .map(|customer_id|  CustomerId::from_str(customer_id).ok()) // NB: Infallible parse
       .flatten();
+  
+  if maybe_existing_stripe_customer_id.is_none() {
+    let result = find_user_stripe_customer_link_using_connection(
+      &user_metadata.user_token_typed,
+      PaymentsNamespace::Artcraft,
+      &mut mysql_connection
+    ).await;
+
+    // NB: Fail silently.
+    if let Ok(Some(link)) = result {
+      maybe_existing_stripe_customer_id = CustomerId::from_str(&link.stripe_customer_id).ok();
+    } else if let Err(err) = result {
+      warn!("Error looking up user's ({}) existing stripe customer link: {:?}", &user_metadata.user_token_typed, err);
+    }
+  }
 
   let success_url = stripe_config.checkout_success_url.clone();
   let cancel_url = stripe_config.checkout_cancel_url.clone();
