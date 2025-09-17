@@ -12,6 +12,7 @@ use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, info, warn};
+use mysql_queries::queries::users::user_stripe_customer_links::find_user_stripe_customer_link::find_user_stripe_customer_link_using_connection;
 use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 use reusable_types::server_environment::ServerEnvironment;
 use sqlx::MySqlPool;
@@ -22,7 +23,6 @@ use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSes
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use stripe_shared::CheckoutSessionCustomerCreation;
-use mysql_queries::queries::users::user_stripe_customer_links::find_user_stripe_customer_link::find_user_stripe_customer_link_using_connection;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 //use utoipa::ToSchema;
 

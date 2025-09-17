@@ -19,6 +19,7 @@ use std::sync::Arc;
 use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
+use mysql_queries::queries::users::user_stripe_customer_links::find_user_stripe_customer_link::find_user_stripe_customer_link_using_connection;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 
 //use utoipa::ToSchema;
@@ -117,6 +118,21 @@ pub async fn stripe_artcraft_create_subscription_session_handler(
   // let maybe_existing_inactive_stripe_customer_id = maybe_inactive_subscription.as_ref()
   //     .map(|sub| sub.stripe_customer_id.as_str());
 
+  let mut maybe_existing_stripe_customer_id = None;
+
+  let result = find_user_stripe_customer_link_using_connection(
+    &user_metadata.user_token_typed,
+    PaymentsNamespace::Artcraft,
+    &mut mysql_connection
+  ).await;
+
+  // NB: Fail silently.
+  if let Ok(Some(link)) = result {
+    maybe_existing_stripe_customer_id = CustomerId::from_str(&link.stripe_customer_id).ok();
+  } else if let Err(err) = result {
+    warn!("Error looking up user's ({}) existing stripe customer link: {:?}", &user_metadata.user_token_typed, err);
+  }
+
   let success_url = stripe_config.checkout_success_url.clone();
   let cancel_url = stripe_config.checkout_cancel_url.clone();
 
@@ -191,23 +207,10 @@ pub async fn stripe_artcraft_create_subscription_session_handler(
         })
         ;
 
-    // NB: This works, but it feels really weird to have the customer's old email shown in a
-    //     completely immutable state in the stripe checkout form.
-    //
-    // if let Some(existing_inactive_stripe_customer_id) = maybe_existing_inactive_stripe_customer_id{
-    //   info!("Adding existing stripe customer id to checkout session: {}", existing_inactive_stripe_customer_id);
-    //   match CustomerId::from_str(existing_inactive_stripe_customer_id) {
-    //     Ok(customer_id) => {
-    //       checkout_builder = checkout_builder.customer(customer_id);
-    //     }
-    //     Err(err) => {
-    //       // NB: Don't block checkout.
-    //       warn!("Error parsing user's ({}) supposed existing stripe customer id: {:?}",
-    //         &user_metadata.user_token,
-    //         err);
-    //     }
-    //   }
-    // }
+    if let Some(customer_id) = maybe_existing_stripe_customer_id {
+      info!("Adding existing stripe customer id to checkout session: {}", customer_id.as_str());
+      checkout_builder = checkout_builder.customer(customer_id);
+    }
 
     let checkout_session = checkout_builder
         .send(&stripe_config.client)
