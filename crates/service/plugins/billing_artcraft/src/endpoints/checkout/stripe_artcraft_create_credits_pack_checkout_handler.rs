@@ -167,7 +167,7 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
           ..Default::default()
         });
 
-    if let Some(customer_id) = maybe_existing_stripe_customer_id{
+    if let Some(customer_id) = maybe_existing_stripe_customer_id {
       info!("Adding existing stripe customer id to checkout session: {}", customer_id.as_str());
       checkout_builder = checkout_builder.customer(customer_id);
 
