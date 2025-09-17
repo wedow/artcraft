@@ -78,24 +78,28 @@ pub async fn stripe_artcraft_customer_portal_manage_plan_handler(
   // TODO: Set the configuration id.
 
   let mut portal_builder = CreateBillingPortalSession::new(subscription.stripe_customer_id.clone())
-      .return_url(stripe_config.portal_return_url.clone()) // TODO: This can be a different URL.
-      .flow_data(CreateBillingPortalSessionFlowData {
-        type_: CreateBillingPortalSessionFlowDataType::SubscriptionUpdate,
-        subscription_update: Some(
-          CreateBillingPortalSessionFlowDataSubscriptionUpdate {
-            subscription: subscription.stripe_subscription_id.clone(),
-          }
-        ),
-        after_completion: Some(CreateBillingPortalSessionFlowDataAfterCompletion {
-          type_: CreateBillingPortalSessionFlowDataAfterCompletionType::Redirect,
-          redirect: Some(CreateBillingPortalSessionFlowDataAfterCompletionRedirect {
-            return_url: stripe_config.portal_return_url.clone(), // TODO: This can be a different URL.
-          }),
-          hosted_confirmation: None,
-        }),
-        subscription_cancel: None,
-        subscription_update_confirm: None,
-      });
+      .return_url(stripe_config.portal_return_url.clone()); // TODO: This can be a different URL.
+      // NB: If we set the flow data to "subscription update", we actually have far fewer capabilities.
+      // By not setting this, we can change billing info, add payment cards, update email, and much more.
+      // Honestly, "switch plan" via (SubscriptionUpdateConfirm) is better UX than SubscriptionUpdate,
+      // and you get SubscriptiobUpdate by omitting all of the below config:.
+      //.flow_data(CreateBillingPortalSessionFlowData {
+      //  type_: CreateBillingPortalSessionFlowDataType::SubscriptionUpdate,
+      //  subscription_update: Some(
+      //    CreateBillingPortalSessionFlowDataSubscriptionUpdate {
+      //      subscription: subscription.stripe_subscription_id.clone(),
+      //    }
+      //  ),
+      //  after_completion: Some(CreateBillingPortalSessionFlowDataAfterCompletion {
+      //    type_: CreateBillingPortalSessionFlowDataAfterCompletionType::Redirect,
+      //    redirect: Some(CreateBillingPortalSessionFlowDataAfterCompletionRedirect {
+      //      return_url: stripe_config.portal_return_url.clone(), // TODO: This can be a different URL.
+      //    }),
+      //    hosted_confirmation: None,
+      //  }),
+      //  subscription_cancel: None,
+      //  subscription_update_confirm: None,
+      //});
 
   let portal_session = portal_builder
       .send(&stripe_config.client)
