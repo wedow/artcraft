@@ -11,7 +11,7 @@ use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
 use log::{error, info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use stripe::Client;
-use stripe_shared::{Invoice, InvoiceStatus};
+use stripe_shared::{Invoice, InvoiceBillingReason, InvoiceStatus};
 use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
 
 // Handle event type: 'invoice.paid'
@@ -78,6 +78,17 @@ pub async fn invoice_paid_extractor(
   if !is_paid {
     info!("{} : invoice is not paid...", stripe_event_descriptor);
     return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
+  }
+
+  match invoice.billing_reason {
+    Some(InvoiceBillingReason::SubscriptionCycle) => {}, // Typical renewal invoice
+    Some(InvoiceBillingReason::SubscriptionUpdate) => {
+      // NB: The logic for handling prorations will be a little bit involved. We can do this later.
+      // For now, let's stick to "at end of billing cycle" updates.
+      warn!("Skipping likely invoice proration.");
+      return Ok(EnrichedWebhookEvent::from_actionless_log(event_log_summary));
+    },
+    _ => {},
   }
 
   let subscription_id = match maybe_stripe_subscription_id {
