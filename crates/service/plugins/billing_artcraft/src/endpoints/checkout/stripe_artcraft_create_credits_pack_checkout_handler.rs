@@ -94,7 +94,7 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
       .map(|sub| sub.stripe_customer_id.as_str())
       .map(|customer_id|  CustomerId::from_str(customer_id).ok()) // NB: Infallible parse
       .flatten();
-  
+
   if maybe_existing_stripe_customer_id.is_none() {
     let result = find_user_stripe_customer_link_using_connection(
       &user_metadata.user_token_typed,
@@ -114,32 +114,6 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
   let cancel_url = stripe_config.checkout_cancel_url.clone();
 
   let checkout_session = {
-    // `client_reference_id`
-    // Stripe Docs:
-    //   A unique string to reference the Checkout Session.
-    //   This can be a customer ID, a cart ID, or similar, and can be used to reconcile the session
-    //   with your internal systems.
-    //
-    // Our Notes:
-    //   This gets reported back in the Checkout Session (and related webhooks) as
-    //   `client_reference_id`. Passing the same ID on multiple checkouts does not unify or
-    //   cross-correlate customers and only seems to be metadata for the checkout session itself.
-    //   This is probably only useful for tracking checkout session engagement.
-    //params.client_reference_id = Some("SOME_INTERNAL_ID");
-
-    // `customer_email`
-    // Stripe Docs:
-    //   If provided, this value will be used when the Customer object is created. If not provided,
-    //   customers will be asked to enter their email address. Use this parameter to prefill
-    //   customer data if you already have an email on file. To access information about the
-    //   customer once a session is complete, use the customer field.
-    //
-    // Our Notes:
-    //   This does not look up previous customers with the same email and will not unify or
-    //   cross-correlate customers. By default the field will be un-editable in the checkout flow
-    //   if this is specified.
-    //params.customer_email = Some("email@example.com");
-
     let mut metadata = HashMap::new();
 
     metadata.insert(STRIPE_ARTCRAFT_METADATA_USER_TOKEN.to_string(), user_metadata.user_token.to_string());
@@ -208,6 +182,9 @@ pub async fn stripe_artcraft_create_credits_pack_checkout_handler(
     } else {
       // If we don't have an existing customer_id, we want to create a new customer.
       // If we don't do that, the "customer" winds up as a "Guest" customer.
+      // The only danger in forcefully creating a new customer is that we might create
+      // duplicates (which Stripe won't merge) if we can't catch and consolidate across
+      // all events.
       checkout_builder = checkout_builder
           .customer_creation(CreateCheckoutSessionCustomerCreation::Always);
     }

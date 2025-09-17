@@ -7,6 +7,18 @@ use stripe_webhook::{Event, EventObject};
 pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<WebhookEventLogSummary> {
 
   match webhook_payload.data.object {
+    EventObject::CheckoutSessionCompleted(_) => {
+      // We don't use this to provision service - we use `invoice.paid` instead.
+      // 
+      // Checkout Session Completed `payment_status = {paid, unpaid, no_payment_required}` 
+      // will let us know if the funds are in our account under SOME circumstances. 
+      //
+      // NOTE however that:
+      //   (1) this will not be `paid` for free trials, whereas `invoice.paid` events will fire for free trials.
+      //   (2) async methods like ACH will have the status `unpaid` until the payment clears.
+      //
+      // Thus, we really don't want to use this event to provision service.
+    }
     EventObject::ChargeSucceeded(_) => {
       // charge.succeeded - building block event and also used for older legacy integrations.
       // Use `invoice.paid` as billing success signal for subscriptions.
@@ -20,8 +32,8 @@ pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<WebhookEv
     EventObject::CustomerDeleted(_) |
     EventObject::CustomerUpdated(_) => {
       // We don't need to know about Stripe customer object metadata changes,
-      // eg. stripe email change. Unfortunately, we also can't directly associate 
-      // metadata with customers in a simple API call to create a checkout or portal 
+      // eg. stripe email change. Unfortunately, we also can't directly associate
+      // metadata with customers in a simple API call to create a checkout or portal
       // session, so these objects are kind of useless.
     }
     EventObject::PaymentIntentCreated(_) => {
