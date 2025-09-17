@@ -4,8 +4,8 @@ use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericP
 use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
-use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::calculate_subscription_end_date::calculate_subscription_end_date;
-use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::common::calculate_subscription_end_date::calculate_subscription_end_date;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::common::subscription_summary_extractor::subscription_summary_extractor;
 use log::{error, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use stripe_shared::Subscription;
@@ -15,7 +15,7 @@ pub struct EventLogAndSubscriptionDetails {
   pub subscription_details: UpsertableSubscriptionDetails,
 }
 
-pub fn extract_subscription_details(
+pub fn extract_common_subscription_details(
   subscription: &Subscription,
   server_environment: ServerEnvironment,
 ) -> Result<EventLogAndSubscriptionDetails, StripeArtcraftWebhookError> {

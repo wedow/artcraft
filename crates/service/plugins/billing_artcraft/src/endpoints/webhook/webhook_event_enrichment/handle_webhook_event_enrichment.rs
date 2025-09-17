@@ -1,14 +1,12 @@
 use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
-use crate::endpoints::webhook::webhook_event_enrichment::customer::customer_created_handler::customer_created_handler;
-use crate::endpoints::webhook::webhook_event_enrichment::customer::customer_updated_handler::customer_updated_handler;
-use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_created_handler::customer_subscription_created_handler;
-use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_deleted_handler::customer_subscription_deleted_handler;
-use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_updated_handler::customer_subscription_updated_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_created_extractor::customer_subscription_created_extractor;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_deleted_extractor::customer_subscription_deleted_extractor;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::customer_subscription_updated_extractor::customer_subscription_updated_extractor;
 use crate::endpoints::webhook::webhook_event_enrichment::ignore_known_unwanted_events::ignore_known_unwanted_events;
-use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_paid_handler::invoice_paid_handler;
-use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_payment_failed::invoice_payment_failed_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_paid_extractor::invoice_paid_extractor;
+use crate::endpoints::webhook::webhook_event_enrichment::invoice::invoice_payment_failed_extractor::invoice_payment_failed_extractor;
 use crate::endpoints::webhook::webhook_event_enrichment::payment_intent::payment_intent_succeeded_extractor::payment_intent_succeeded_extractor;
 use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
 use log::{info, warn};
@@ -67,7 +65,7 @@ pub async fn handle_webhook_event_enrichment(
       // These are fired on an interval - whatever the billing cadence is.
       info!("Event: {}, data: {:?}", stripe_event_descriptor, invoice);
 
-      return invoice_paid_handler(
+      return invoice_paid_extractor(
         &stripe_event_descriptor,
         &invoice,
         server_environment,
@@ -99,7 +97,7 @@ pub async fn handle_webhook_event_enrichment(
       // This is good for the overall subscription state, renewal dates, etc.
       //
       info!("Event: {}, data: {:?}", stripe_event_descriptor, subscription);
-      return customer_subscription_created_handler(
+      return customer_subscription_created_extractor(
         &subscription,
         server_environment,
       ).await;
@@ -107,7 +105,7 @@ pub async fn handle_webhook_event_enrichment(
 
     EventObject::CustomerSubscriptionUpdated(subscription) => {
       info!("Event: {}, data: {:?}", stripe_event_descriptor, subscription);
-      return customer_subscription_updated_handler(
+      return customer_subscription_updated_extractor(
         &subscription,
         server_environment,
       ).await;
@@ -115,7 +113,7 @@ pub async fn handle_webhook_event_enrichment(
 
     EventObject::CustomerSubscriptionDeleted(subscription) => {
       info!("Event: {}, data: {:?}", stripe_event_descriptor, subscription);
-      return customer_subscription_deleted_handler(
+      return customer_subscription_deleted_extractor(
         &subscription,
         server_environment,
       ).await;

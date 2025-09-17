@@ -114,7 +114,7 @@ pub fn subscription_summary_extractor(subscription: &Subscription) -> AnyhowResu
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::subscription_event_extractor::subscription_summary_extractor;
+  use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::common::subscription_summary_extractor::subscription_summary_extractor;
   use reusable_types::stripe::stripe_recurring_interval::StripeRecurringInterval;
   use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
   use stripe_shared::Subscription;

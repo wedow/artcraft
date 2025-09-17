@@ -32,7 +32,7 @@ use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
 // 4. Your webhook endpoint updates the customer’s access expiration date in your database to the
 //    appropriate date in the future (plus a day or two for leeway).
 //
-pub async fn invoice_paid_handler(
+pub async fn invoice_paid_extractor(
   stripe_event_descriptor: &StripeEventDescriptor,
   invoice: &Invoice,
   server_environment: ServerEnvironment,

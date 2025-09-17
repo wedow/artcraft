@@ -3,7 +3,7 @@ use std::ops::{Add, Sub};
 use chrono::{Duration, NaiveDateTime};
 use once_cell::sync::Lazy;
 
-use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::subscription_event_extractor::SubscriptionSummary;
+use crate::endpoints::webhook::webhook_event_enrichment::customer_subscription::common::subscription_summary_extractor::SubscriptionSummary;
 use reusable_types::stripe::stripe_subscription_status::StripeSubscriptionStatus;
 
 // Push back the expiration date.

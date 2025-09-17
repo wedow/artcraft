@@ -5,7 +5,7 @@ use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
 use stripe_shared::Invoice;
 
 // Handle event type: 'invoice.payment_failed'
-pub fn invoice_payment_failed_handler(invoice: &Invoice) -> Result<WebhookEventLogSummary, StripeArtcraftWebhookError> {
+pub fn invoice_payment_failed_extractor(invoice: &Invoice) -> Result<WebhookEventLogSummary, StripeArtcraftWebhookError> {
   let maybe_invoice_id = invoice.id.as_ref().map(|id| id.to_string());
 
   let paid_status = invoice.status;
