@@ -4,6 +4,7 @@
 
 -- 1:1 links between a user and a stripe customer (per payments namespace)
 -- We can hard delete records if we have to.
+-- If users need a new stripe customer ID, we need to hard delete the existing record.
 CREATE TABLE user_stripe_customer_links (
   -- Not used for anything except replication.
   id BIGINT(20) NOT NULL AUTO_INCREMENT,
@@ -19,11 +20,12 @@ CREATE TABLE user_stripe_customer_links (
 
   -- Unique key. (We can loosen to `stripe_customer_id, wallet_namespace` later if
   -- we want to share billing.)
-  stripe_customer_id VARCHAR(255) DEFAULT NULL,
+  stripe_customer_id VARCHAR(255) NOT NULL,
 
   -- ========== RECORD TIMESTAMPS ==========
 
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
   -- ========== INDICES ==========
   PRIMARY KEY (id),

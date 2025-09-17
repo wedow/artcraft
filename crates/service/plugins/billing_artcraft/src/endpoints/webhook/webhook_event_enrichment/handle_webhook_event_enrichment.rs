@@ -16,7 +16,8 @@ use sqlx::pool::PoolConnection;
 use sqlx::{MySql, Transaction};
 use stripe::Client;
 use stripe_webhook::{Event, EventObject};
-
+use crate::endpoints::webhook::webhook_event_enrichment::customer::customer_created_handler::customer_created_handler;
+use crate::endpoints::webhook::webhook_event_enrichment::customer::customer_updated_handler::customer_updated_handler;
 /*
   You usually need these:
     1. Subscription events: to track contract state (active, canceled, past_due, trialing, etc.).
@@ -134,6 +135,24 @@ pub async fn handle_webhook_event_enrichment(
       webhook_summary = invoice_payment_failed_handler(&invoice)?;
     }
     */
+
+    // =============== CUSTOMERS ===============
+
+    // EventObject::CustomerCreated(customer) => {
+    //   // We use this simply to create a (totally optional) User <-> Customer link.
+    //   // We already get that link from subscriptions, but this will help us associate
+    //   // one-off payments and payment cards with a user.
+    //   info!("Event: {}, data: {:?}", stripe_event_descriptor, customer);
+    //   return customer_created_handler(customer);
+    // }
+
+    // EventObject::CustomerUpdated(customer) => {
+    //   // We use this simply to create a (totally optional) User <-> Customer link.
+    //   // We already get that link from subscriptions, but this will help us associate
+    //   // one-off payments and payment cards with a user.
+    //   info!("Event: {}, data: {:?}", stripe_event_descriptor, customer);
+    //   return customer_updated_handler(customer);
+    // }
 
     // =============== CHECKOUT SESSIONS ===============
 

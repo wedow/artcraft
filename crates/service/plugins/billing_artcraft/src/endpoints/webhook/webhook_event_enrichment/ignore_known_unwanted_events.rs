@@ -20,7 +20,9 @@ pub fn ignore_known_unwanted_events(webhook_payload: &Event) -> Option<WebhookEv
     EventObject::CustomerDeleted(_) |
     EventObject::CustomerUpdated(_) => {
       // We don't need to know about Stripe customer object metadata changes,
-      // eg. stripe email change.
+      // eg. stripe email change. Unfortunately, we also can't directly associate 
+      // metadata with customers in a simple API call to create a checkout or portal 
+      // session, so these objects are kind of useless.
     }
     EventObject::PaymentIntentCreated(_) => {
       // Not very actionable for us. We only care about successful payments.

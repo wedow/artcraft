@@ -19,10 +19,18 @@ pub enum ArtcraftBillingAction {
   
   SubscriptionPaid(SubscriptionPaidEvent),
 
+  CustomerCreated(UserCustomerLink),
+  CustomerUpdated(UserCustomerLink),
+
   // TODO:
   SubscriptionRenewalBillingFailed,
   SubscriptionRenewalBillingSucceeded,
   SubscriptionCanceled,
+}
+
+pub struct UserCustomerLink {
+  pub user_token: UserToken,
+  pub stripe_customer_id: String,
 }
 
 pub struct WalletCreditsPurchaseEvent {
@@ -39,6 +47,9 @@ pub struct WalletCreditsPurchaseEvent {
   
   /// Token to track in the wallet_ledger_events
   pub ledger_event_ref: Option<String>,
+
+  /// Also potentially save to `user_stripe_customer_links` table.
+  pub maybe_stripe_customer_id: Option<String>,
 }
 
 

@@ -47,7 +47,7 @@ pub async fn payment_intent_succeeded_extractor(
   };
 
   let mut event_log_summary = WebhookEventLogSummary {
-    maybe_stripe_customer_id,
+    maybe_stripe_customer_id: maybe_stripe_customer_id.clone(),
     maybe_user_token,
     maybe_event_entity_id: Some(payment_intent_id.clone()),
     action_was_taken: false,
@@ -111,6 +111,7 @@ pub async fn payment_intent_succeeded_extractor(
       pack: credits_pack.clone(),
       quantity: purchase.quantity,
       ledger_event_ref: Some(payment_intent_id),
+      maybe_stripe_customer_id,
     })),
     webhook_event_log_summary: event_log_summary,
   })

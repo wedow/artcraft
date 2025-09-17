@@ -1,5 +1,6 @@
 use crate::billing_action_fulfillment::artcraft_billing_action::ArtcraftBillingAction;
 use crate::billing_action_fulfillment::credits_pack::complete_credits_pack_purchase::complete_credits_pack_purchase;
+use crate::billing_action_fulfillment::misc::link_user_to_customer::link_user_to_customer;
 use crate::billing_action_fulfillment::subscriptions::mark_subscription_as_paid::mark_subscription_as_paid;
 use crate::billing_action_fulfillment::subscriptions::upsert_subscription_details::{upsert_subscription_details, CrudType};
 use anyhow::anyhow;
@@ -24,6 +25,7 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
         &purchase.pack,
         purchase.quantity,
         purchase.ledger_event_ref.as_deref(),
+        purchase.maybe_stripe_customer_id.as_deref(),
         transaction,
       ).await?;
     }
@@ -43,6 +45,14 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
       info!("Completing subscription paid event for user: {:?}", paid_details.owner_user_token);
       mark_subscription_as_paid(paid_details, transaction).await?;
     }
+    // ArtcraftBillingAction::CustomerCreated(customer_link) => {
+    //   info!("Linking user to newly created stripe customer: {:?}", customer_link.user_token);
+    //   link_user_to_customer(customer_link, transaction).await?;
+    // }
+    // ArtcraftBillingAction::CustomerUpdated(customer_link) => {
+    //   info!("Linking user to updated stripe customer: {:?}", customer_link.user_token);
+    //   link_user_to_customer(customer_link, transaction).await?;
+    // }
     _ => {
       return Err(anyhow!("Unhandled billing action in fulfillment"));
     }
