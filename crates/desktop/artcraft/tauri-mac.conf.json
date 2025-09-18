@@ -46,10 +46,10 @@
         "img-src": "* data: blob: 'unsafe-inline'",
         "script-src": [
           "'self'",
+          "https://*.clarity.ms",
           "https://*.fakeyou.com",
           "https://*.storyteller.ai",
-          "https://www.clarity.ms",
-          "https://scripts.clarity.ms",
+          "https://clarity.ms",
           "ipc://localhost",
           "tauri://localhost"
         ],
