@@ -2,67 +2,92 @@ import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { pricingConfig, PricingTier } from "./pricing-config";
 import { usePricingModalStore } from "./pricing-modal-store";
 import { TabSelector } from "@storyteller/ui-tab-selector";
+import { invoke } from "@tauri-apps/api/core";
+import { SUBSCRIPTION_PLANS, SubscriptionPlanDetails } from "@storyteller/subscription";
+import { useSubscriptionState } from "@storyteller/subscription";
 
 const billingTabs = [
   { id: "yearly", label: "Yearly" },
   { id: "monthly", label: "Monthly" },
 ];
 
-interface PricingModalProps {
-  currentPlanId?: string;
-  hasActiveSubscription?: boolean;
+const pricingConfig = {
+  header: {
+    title: "Purchase a subscription",
+    subtitle:
+      "Upgrade to gain access to Pro features and generate more, faster.",
+  },
+  yearlyDiscount: 20,
 }
 
-export function PricingModal({
-  currentPlanId,
-  hasActiveSubscription,
-}: PricingModalProps = {}) {
-  const { isOpen, closeModal, subscription } = usePricingModalStore();
+interface PricingModalProps {
+}
 
-  // Use props if provided or fall back to store
-  const activePlanId = currentPlanId ?? subscription.currentPlanId;
-  const hasActiveSub =
-    hasActiveSubscription ?? subscription.hasActiveSubscription;
+export function PricingModal({}: PricingModalProps = {}) {
+  const { isOpen, closeModal } = usePricingModalStore();
+
+  const subscriptionStore = useSubscriptionState();
+
+  const hasActiveSub = subscriptionStore.hasPaidPlan();
+
+  const activePlanId = subscriptionStore.subscriptionInfo?.productSlug;
+
   const [billingType, setBillingType] = useState("yearly");
   const isYearly = billingType === "yearly";
 
-  const handleUpgrade = async (tierId: string) => {
-    // TODO: Implement Stripe checkout
-    const tier = pricingConfig.tiers.find((t) => t.id === tierId);
-    const priceId = isYearly ? tier?.yearlyPriceId : tier?.monthlyPriceId;
+  const handleUnsubscribe = async () => {
+    await invoke("storyteller_open_customer_portal_cancel_plan_command");
+  }
 
-    console.log(
-      `Upgrading to ${tierId} plan with ${
-        isYearly ? "yearly" : "monthly"
-      } billing`,
-      { priceId, tierId }
-    );
-
-    // Example Stripe checkout implementation:
-    // await stripe.redirectToCheckout({
-    //   lineItems: [{ price: priceId, quantity: 1 }],
-    //   mode: 'subscription',
-    //   successUrl: `${window.location.origin}/success`,
-    //   cancelUrl: `${window.location.origin}/cancel`,
-    // });
+  const handleManageSubscription = async () => {
+    await invoke("storyteller_open_customer_portal_manage_plan_command");
   };
 
-  const handleManageSubscription = () => {
-    // TODO: Redirect to Stripe customer portal
-    console.log("Managing subscription");
+  const handleUpdatePaymentMethod = async () => {
+    await invoke("storyteller_open_customer_portal_update_payment_method_command");
   };
 
-  const tierHierarchy = { free: 0, basic: 1, pro: 2, max: 3 };
+  const handleSetPlan = async (tierSlug: string) => {
+    const tier = SUBSCRIPTION_PLANS.find((t) => t.slug === tierSlug);
+    const planSlug = tier?.slug;
+    const cadence = isYearly? "yearly" : "monthly";
+
+    if (planSlug === "free") {
+      if (hasActiveSub) {
+        await handleUnsubscribe();
+        return;
+      } else {
+        return;
+      }
+    }
+
+    if (hasActiveSub) {
+      await invoke("storyteller_open_customer_portal_switch_plan_command", {
+        request: {
+          plan: planSlug,
+          cadence: cadence,
+        }
+      });
+    } else {
+      await invoke("storyteller_open_subscription_purchase_command", {
+        request: {
+          plan: planSlug,
+          cadence: cadence,
+        }
+      });
+    }
+  };
+
+  const tierHierarchy = { free: 0, artcraft_basic: 1, artcraft_pro: 2, artcraft_max: 3 };
 
   const isCurrentPlan = (tierId: string) => {
     return tierId === activePlanId;
   };
 
-  const getButtonText = (tier: PricingTier) => {
-    if (isCurrentPlan(tier.id)) {
+  const getButtonText = (tier: SubscriptionPlanDetails) => {
+    if (isCurrentPlan(tier.slug)) {
       return "Current Plan";
     }
 
@@ -70,9 +95,12 @@ export function PricingModal({
       const currentTierLevel =
         tierHierarchy[activePlanId as keyof typeof tierHierarchy];
       const thisTierLevel =
-        tierHierarchy[tier.id as keyof typeof tierHierarchy];
+        tierHierarchy[tier.slug as keyof typeof tierHierarchy];
 
       if (thisTierLevel < currentTierLevel) {
+        if (tier.slug === "free") {
+          return "Cancel Plan";
+        }
         return "Switch Plan";
       }
     }
@@ -81,7 +109,7 @@ export function PricingModal({
   };
 
   const getColorSchemeClasses = (
-    colorScheme: PricingTier["colorScheme"],
+    colorScheme: SubscriptionPlanDetails["colorScheme"],
     isCurrent: boolean
   ) => {
     const baseClasses =
@@ -128,8 +156,8 @@ export function PricingModal({
     }
   };
 
-  const formatPrice = (tier: PricingTier) => {
-    if (tier.monthlyPrice === 0) {
+  const formatPrice = (plan: SubscriptionPlanDetails) => {
+    if (plan.monthlyPrice === 0) {
       return {
         current: "$0",
         original: null,
@@ -137,9 +165,9 @@ export function PricingModal({
     }
 
     if (isYearly) {
-      const discountedMonthlyPrice = Math.round(tier.yearlyPrice / 12);
-      const originalMonthlyPrice = tier.originalYearlyPrice
-        ? Math.round(tier.originalYearlyPrice / 12)
+      const discountedMonthlyPrice = Math.round(plan.yearlyPrice / 12);
+      const originalMonthlyPrice = plan.originalYearlyPrice
+        ? Math.round(plan.originalYearlyPrice / 12)
         : null;
 
       return {
@@ -147,7 +175,7 @@ export function PricingModal({
         original: originalMonthlyPrice ? `$${originalMonthlyPrice}` : null,
       };
     } else {
-      const monthlyPrice = tier.originalMonthlyPrice || tier.monthlyPrice;
+      const monthlyPrice = plan.originalMonthlyPrice || plan.monthlyPrice;
 
       return {
         current: `$${monthlyPrice}`,
@@ -196,19 +224,19 @@ export function PricingModal({
 
         {/* Pricing Tiers */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {pricingConfig.tiers.map((tier) => {
-            const pricing = formatPrice(tier);
+          {SUBSCRIPTION_PLANS.map((plan) => {
+            const pricing = formatPrice(plan);
 
             return (
               <div
-                key={tier.id}
+                key={plan.slug}
                 className={getColorSchemeClasses(
-                  tier.colorScheme,
-                  isCurrentPlan(tier.id)
+                  plan.colorScheme,
+                  isCurrentPlan(plan.slug)
                 )}
               >
                 {/* Current Plan Badge */}
-                {isCurrentPlan(tier.id) && (
+                {isCurrentPlan(plan.slug) && (
                   <div className="absolute -top-4 right-5 bg-white text-black px-3 py-1 rounded-full text-md font-semibold shadow-xl">
                     Active
                   </div>
@@ -217,7 +245,7 @@ export function PricingModal({
                 {/* Tier Header */}
                 <div className="text-center mb-8">
                   <h3 className="text-4xl font-bold text-white mb-4">
-                    {tier.name}
+                    {plan.name}
                   </h3>
                   <div className="flex items-baseline justify-center gap-2">
                     {pricing.original && (
@@ -238,7 +266,7 @@ export function PricingModal({
 
                 {/* Features */}
                 <div className="flex-1 space-y-3 mb-6">
-                  {tier.features.map((feature, index) => (
+                  {plan.features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <div
                         className={twMerge(
@@ -276,11 +304,11 @@ export function PricingModal({
 
                 {/* CTA Button */}
                 <Button
-                  onClick={() => handleUpgrade(tier.id)}
-                  disabled={isCurrentPlan(tier.id)}
+                  onClick={() => handleSetPlan(plan.slug)}
+                  disabled={isCurrentPlan(plan.slug)}
                   className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
                 >
-                  {getButtonText(tier)}
+                  {getButtonText(plan)}
                 </Button>
               </div>
             );
@@ -291,8 +319,14 @@ export function PricingModal({
         {hasActiveSub && activePlanId !== "free" && (
           <div className="flex justify-center mt-8">
             <Button
+              onClick={handleUpdatePaymentMethod}
+              className="bg-transparent border border-white/25 text-white hover:bg-white/10 px-8 py-3 mx-3 rounded-xl"
+            >
+              Update your payment method
+            </Button>
+            <Button
               onClick={handleManageSubscription}
-              className="bg-transparent border border-white/25 text-white hover:bg-white/10 px-8 py-3 rounded-xl"
+              className="bg-transparent border border-white/25 text-white hover:bg-white/10 px-8 py-3 mx-3 rounded-xl"
             >
               Manage your subscription
             </Button>
