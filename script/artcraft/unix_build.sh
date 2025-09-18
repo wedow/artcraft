@@ -24,8 +24,12 @@ popd || exit
 
 export TAURI_FRONTEND_PATH="${frontend_path}"
 export TAURI_APP_PATH="${rust_crate_path}"
+
+# NB: The "frontend dev" script sets "production" too, so this must only control the
+# hostnames we use, not minification, etc.
 export VITE_ENVIRONMENT_TYPE="production"
 
+# This appears to trigger "nx build" instead of "nx dev".
 cargo tauri build --config "${config_path}"
 
 echo "Done!"
