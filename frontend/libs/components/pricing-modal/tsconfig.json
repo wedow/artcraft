@@ -3,9 +3,6 @@
   "include": [],
   "references": [
     {
-      "path": "../../tauri-api"
-    },
-    {
       "path": "../tab-selector"
     },
     {

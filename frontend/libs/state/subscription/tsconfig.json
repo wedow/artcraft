@@ -7,12 +7,6 @@
       "path": "../../tauri-api"
     },
     {
-      "path": "../../tauri-utils"
-    },
-    {
-      "path": "../../tauri-events"
-    },
-    {
       "path": "./tsconfig.lib.json"
     },
     {

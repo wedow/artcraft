@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@storyteller/ui-button";
 import { Label } from "@storyteller/ui-label";
 import {
@@ -9,38 +9,45 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePricingModalStore } from "@storyteller/ui-pricing-modal";
 import { useCreditsModalStore } from "@storyteller/ui-pricing-modal";
-import { useCreditsState, CreditsState } from "@storyteller/credits";
-import { FREE_PLAN, SubscriptionPlanDetails, useSubscriptionState } from "@storyteller/subscription";
-import { SUBSCRIPTION_PLANS_BY_SLUG } from "@storyteller/subscription";
-import { invoke } from "@tauri-apps/api/core";
 
 interface BillingSettingsPaneProps {}
 
+interface BillingInfo {
+  credits: {
+    remaining: number;
+    total: number;
+  };
+  plan: string;
+  nextPayment: {
+    amount: string;
+    date: string;
+  };
+}
+
 export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
-  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
-
-  const creditsStore = useCreditsState();
-  const sumTotalCredits = creditsStore.totalCredits;
-
-  const subscriptionStore = useSubscriptionState();
-
-  const maybePlanSlug = subscriptionStore.subscriptionInfo?.productSlug;
-
-  const currentPlanDetails : SubscriptionPlanDetails = maybePlanSlug ? 
-    SUBSCRIPTION_PLANS_BY_SLUG.get(maybePlanSlug) || FREE_PLAN : 
-    FREE_PLAN;
-
-  const canCancelPlan = subscriptionStore.canCancelPlan();
-
-  const nextBillAt = subscriptionStore.subscriptionInfo?.nextBillAt?.toLocaleDateString();
-  const subscriptionEndAt = subscriptionStore.subscriptionInfo?.subscriptionEndAt?.toLocaleDateString();
-
-  const changeOrUpgradePlanButtonLabel = canCancelPlan ? "Change plan" : "Upgrade plan";
+  const [billingInfo] = useState<BillingInfo>({
+    credits: {
+      remaining: 180,
+      total: 1000,
+    },
+    plan: "Pro Plan",
+    nextPayment: {
+      amount: "$99",
+      date: "Oct 18",
+    },
+  });
 
   useEffect(() => {
-    creditsStore.fetchFromServer();
-    subscriptionStore.fetchFromServer();
+    const fetchBillingData = async () => {
+      // TODO: Replace with actual API call - BFlat
+      // const data = await GetBillingInfo();
+      // setBillingInfo(data.payload);
+    };
+    fetchBillingData();
   }, []);
+
+  const { toggleModal } = usePricingModalStore();
+  const { toggleModal: toggleCreditsModal } = useCreditsModalStore();
 
   return (
     <>
@@ -53,48 +60,30 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
                 icon={faStar}
                 className="text-[#C03FFF] text-lg"
               />
-              {currentPlanDetails.name}
+              {billingInfo.plan}
             </div>
             <div className="flex gap-2">
-              {canCancelPlan && (
-                <CancelPlanButton />
-              )}
-
+              <Button variant="secondary" className="h-[30px]">
+                Cancel plan
+              </Button>
               <Button
                 variant="primary"
                 className="h-[30px]"
-                onClick={() => toggleSubscriptionModal()}
+                onClick={() => {
+                  toggleModal();
+                }}
               >
-                {changeOrUpgradePlanButtonLabel}
+                Upgrade plan
               </Button>
-
             </div>
           </div>
         </div>
 
-        {/* TODO(bt): expose this information via API
         <div className="flex items-center gap-2 text-white/50">
           <FontAwesomeIcon icon={faInfoCircle} />
           Next {billingInfo.nextPayment.amount} payment due{" "}
           {billingInfo.nextPayment.date}
         </div>
-        */}
-
-        {subscriptionEndAt && (
-          <div className="flex items-center gap-2 text-white/50">
-            <FontAwesomeIcon icon={faInfoCircle} />
-            Subscription ends on{" "}
-            {subscriptionEndAt}
-          </div>
-        )}
-
-        {nextBillAt && (
-          <div className="flex items-center gap-2 text-white/50">
-            <FontAwesomeIcon icon={faInfoCircle} />
-            Next payment on{" "}
-            {nextBillAt}
-          </div>
-        )}
 
         <hr className="border-white/10" />
 
@@ -109,59 +98,21 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
                 className="text-primary text-lg"
               />
               <span className="text-2xl font-bold">
-                {sumTotalCredits}
+                {billingInfo.credits.remaining}
               </span>
             </div>
             <div className="flex gap-2">
-              <BuyCreditsButton />
+              <Button
+                variant="primary"
+                className="h-[30px]"
+                onClick={() => toggleCreditsModal()}
+              >
+                Buy credits
+              </Button>
             </div>
           </div>
-
-          <CreditsTally creditsStore={creditsStore} />
-
         </div>
       </div>
     </>
   );
 };
-
-const CancelPlanButton = () => {
-  const handleClick = async () => {
-    await invoke("storyteller_open_customer_portal_cancel_plan_command");
-  }
-
-  return (
-    <Button 
-      variant="secondary" 
-      className="h-[30px]"
-      onClick={handleClick}
-    >
-      Cancel plan
-    </Button>
-  )
-}
-
-const BuyCreditsButton = () => {
-  const { toggleModal: toggleCreditsModal } = useCreditsModalStore();
-
-  return (
-    <Button
-      variant="primary"
-      className="h-[30px]"
-      onClick={() => toggleCreditsModal()}
-    >
-      Buy credits
-    </Button>
-  )
-}
-
-const CreditsTally = ({creditsStore}: {creditsStore: CreditsState}) => {
-  return (
-    <div className="flex pl-5 pt-3">
-      <ul className="list-disc">
-        <li> {creditsStore.monthlyCredits} monthly credits (refilled monthly) </li>
-        <li> {creditsStore.bankedCredits} purchased credits </li>
-      </ul>
-    </div>
-  )
-}

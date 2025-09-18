@@ -44,9 +44,6 @@
   ],
   "references": [
     {
-      "path": "../../tauri-api/tsconfig.lib.json"
-    },
-    {
       "path": "../tab-selector/tsconfig.lib.json"
     },
     {

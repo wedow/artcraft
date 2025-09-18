@@ -13,8 +13,5 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
-  },
-  "dependencies": {
-    "@tauri-apps/api": "^2.4.0"
   }
 }

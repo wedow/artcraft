@@ -163,10 +163,10 @@
       "path": "./libs/components/provider-billing-modal"
     },
     {
-      "path": "./libs/state/credits"
+      "path": "./libs/state/subscription"
     },
     {
-      "path": "./libs/state/subscription"
+      "path": "./libs/state/credits"
     }
   ]
 }

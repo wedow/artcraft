@@ -9,6 +9,9 @@
       "path": "../modal"
     },
     {
+      "path": "../../model-list"
+    },
+    {
       "path": "../pricing-modal"
     },
     {
@@ -40,12 +43,6 @@
     },
     {
       "path": "../../tauri-api"
-    },
-    {
-      "path": "../../state/credits"
-    },
-    {
-      "path": "../../state/subscription"
     },
     {
       "path": "./tsconfig.lib.json"

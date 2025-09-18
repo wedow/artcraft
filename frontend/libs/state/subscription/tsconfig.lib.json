@@ -34,12 +34,6 @@
   "references": [
     {
       "path": "../../tauri-api/tsconfig.lib.json"
-    },
-    {
-      "path": "../../tauri-utils/tsconfig.lib.json"
-    },
-    {
-      "path": "../../tauri-events/tsconfig.lib.json"
     }
   ]
 }
