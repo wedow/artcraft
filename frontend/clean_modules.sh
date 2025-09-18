@@ -53,6 +53,12 @@ rm -rf ./libs/model-list/dist/
 rm -rf ./libs/soundboard/dist/
 rm -rf ./libs/tauri-api/dist/
 rm -rf ./libs/tauri-utils/dist/
+rm -rf ./libs/analytics/google-analytics/dist/
+rm -rf ./libs/components/provider-billing-modal/dist/
+rm -rf ./libs/components/provider-setup-modal/dist/
+rm -rf ./libs/state/credits/dist/
+rm -rf ./libs/state/subscription/dist/
+rm -rf ./libs/tauri-events/dist/
 
 echo "Resetting NX..."
 npx nx reset
