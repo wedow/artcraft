@@ -52,10 +52,15 @@ export const useSubscriptionState = create<SubscriptionState>()((set, get) => ({
 
   // Call to fetch credits from the server
   fetchFromServer: async () => {
-    const data = await ArtcraftGetSubscription(); 
+    let data;
+    try {
+      data = await ArtcraftGetSubscription(); 
+    } catch (error) {
+      console.error("Error fetching subscription", error);
+      return;
+    }
     if (!!data.payload) {
       let activeSubscription = undefined;
-      console.log(">>> subscription data.payload", data.payload);
       if (!!data.payload.active_subscription) {
         activeSubscription = {
           subscriptionToken: data.payload.active_subscription.subscription_token,
@@ -65,7 +70,6 @@ export const useSubscriptionState = create<SubscriptionState>()((set, get) => ({
           subscriptionEndAt: data.payload.active_subscription.subscription_end_at ? new Date(data.payload.active_subscription.subscription_end_at) : undefined,
         };
       }
-      console.log(">>> activeSubscription", activeSubscription);
       set((state) => ({
         subscriptionInfo: activeSubscription,
       }));
