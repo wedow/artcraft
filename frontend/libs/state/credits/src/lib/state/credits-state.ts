@@ -26,7 +26,13 @@ export const useCreditsState = create<CreditsState>()((set) => ({
 
   // Call to fetch credits from the server
   fetchFromServer: async () => {
-    const data = await ArtcraftGetCredits(); 
+    let data;
+    try {
+      data = await ArtcraftGetCredits(); 
+    } catch (error) {
+      console.error("Error fetching credits", error);
+      return;
+    }
     if (!!data.payload) {
       set((state) => ({
         freeCredits: data.payload.free_credits,
