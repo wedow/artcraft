@@ -44,9 +44,6 @@
   ],
   "references": [
     {
-      "path": "../../state/subscription/tsconfig.lib.json"
-    },
-    {
       "path": "../tab-selector/tsconfig.lib.json"
     },
     {
