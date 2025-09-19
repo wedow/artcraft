@@ -13,12 +13,14 @@ export interface CreditsState {
 
   // Total credits available
   totalCredits: number,
+}
 
+export type CreditsActions = {
   // Call to fetch credits from the server
   fetchFromServer: () => Promise<void>
 }
 
-export const useCreditsState = create<CreditsState>((set) => ({
+export const useCreditsState = create<CreditsState & CreditsActions>((set) => ({
   freeCredits: 0,
   monthlyCredits: 0,
   bankedCredits: 0,
