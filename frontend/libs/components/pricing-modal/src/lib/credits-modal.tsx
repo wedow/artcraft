@@ -82,13 +82,11 @@ export function CreditsModal({
       return;
     }
 
-
     await invoke("storyteller_open_credits_purchase_command", {
       request: {
         credits_pack: pack.id,
       }
     });
-
 
     // Hook up Stripe/checkout here
     // Example: redirect to checkout with pack.priceId

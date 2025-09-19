@@ -27,24 +27,18 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
 
   const sumTotalCredits = creditsStore.totalCredits;
 
-  //const subscriptionStore = useSubscriptionState();
+  const subscriptionStore = useSubscriptionState();
 
-  //const maybePlanSlug = subscriptionStore.subscriptionInfo?.productSlug;
-  const maybePlanSlug = "free";
+  const maybePlanSlug = subscriptionStore.subscriptionInfo?.productSlug;
 
   const currentPlanDetails: SubscriptionPlanDetails = maybePlanSlug
     ? SUBSCRIPTION_PLANS_BY_SLUG.get(maybePlanSlug) || FREE_PLAN
     : FREE_PLAN;
 
-  //const canCancelPlan = subscriptionStore.canCancelPlan();
-  const canCancelPlan = false;
+  const canCancelPlan = subscriptionStore.canCancelPlan();
 
-  //const nextBillAt =
-  //  subscriptionStore.subscriptionInfo?.nextBillAt?.toLocaleDateString();
-  const nextBillAt = "";
-  //const subscriptionEndAt =
-  //  subscriptionStore.subscriptionInfo?.subscriptionEndAt?.toLocaleDateString();
-  const subscriptionEndAt = "";
+  const nextBillAt = subscriptionStore.subscriptionInfo?.nextBillAt?.toLocaleDateString();
+  const subscriptionEndAt = subscriptionStore.subscriptionInfo?.subscriptionEndAt?.toLocaleDateString();
 
   const changeOrUpgradePlanButtonLabel = canCancelPlan
     ? "Change plan"
@@ -52,7 +46,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
 
   useEffect(() => {
     creditsStore.fetchFromServer();
-    //subscriptionStore.fetchFromServer();
+    subscriptionStore.fetchFromServer();
   }, []);
 
   return (
