@@ -53,6 +53,12 @@
       "path": "../../model-list/tsconfig.lib.json"
     },
     {
+      "path": "../../state/subscription/tsconfig.lib.json"
+    },
+    {
+      "path": "../../state/credits/tsconfig.lib.json"
+    },
+    {
       "path": "../pricing-modal/tsconfig.lib.json"
     },
     {
