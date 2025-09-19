@@ -5,11 +5,22 @@ import { twMerge } from "tailwind-merge";
 import { pricingConfig, PricingTier } from "./pricing-config";
 import { usePricingModalStore } from "./pricing-modal-store";
 import { TabSelector } from "@storyteller/ui-tab-selector";
+import { useSubscriptionState } from "@storyteller/subscription";
+import { invoke } from "@tauri-apps/api/core";
 
 const billingTabs = [
   { id: "yearly", label: "Yearly" },
   { id: "monthly", label: "Monthly" },
 ];
+
+const pricingConfig2 = {
+  header: {
+    title: "Purchase a subscription",
+    subtitle:
+      "Upgrade to gain access to Pro features and generate more, faster.",
+  },
+  yearlyDiscount: 20,
+}
 
 interface PricingModalProps {
   currentPlanId?: string;
@@ -20,14 +31,37 @@ export function PricingModal({
   currentPlanId,
   hasActiveSubscription,
 }: PricingModalProps = {}) {
-  const { isOpen, closeModal, subscription } = usePricingModalStore();
+
+  const { isOpen, closeModal } = usePricingModalStore();
+
+  //const subscriptionStore = useSubscriptionState();
+  //const hasActiveSub = subscriptionStore.hasPaidPlan();
+  //const activePlanId = subscriptionStore.subscriptionInfo?.productSlug;
+
+  const hasActiveSub = false;
+  const activePlanId = "free";
+
+  //const { isOpen, closeModal, subscription } = usePricingModalStore();
 
   // Use props if provided or fall back to store
-  const activePlanId = currentPlanId ?? subscription.currentPlanId;
-  const hasActiveSub =
-    hasActiveSubscription ?? subscription.hasActiveSubscription;
+  //const activePlanId = currentPlanId ?? subscription.currentPlanId;
+  //const hasActiveSub =
+  //  hasActiveSubscription ?? subscription.hasActiveSubscription;
+
   const [billingType, setBillingType] = useState("yearly");
   const isYearly = billingType === "yearly";
+
+  const handleUnsubscribe = async () => {
+   await invoke("storyteller_open_customer_portal_cancel_plan_command");
+  }
+
+  const handleManageSubscription = async () => {
+    await invoke("storyteller_open_customer_portal_manage_plan_command");
+  }
+
+  const handleUpdatePaymentMethod = async () => {
+    await invoke("storyteller_open_customer_portal_update_payment_method_command");
+  }
 
   const handleUpgrade = async (tierId: string) => {
     // TODO: Implement Stripe checkout
@@ -50,10 +84,10 @@ export function PricingModal({
     // });
   };
 
-  const handleManageSubscription = () => {
-    // TODO: Redirect to Stripe customer portal
-    console.log("Managing subscription");
-  };
+  //const handleManageSubscription = () => {
+  //  // TODO: Redirect to Stripe customer portal
+  //  console.log("Managing subscription");
+  //};
 
   const tierHierarchy = { free: 0, basic: 1, pro: 2, max: 3 };
 
