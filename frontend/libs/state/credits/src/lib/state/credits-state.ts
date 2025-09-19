@@ -33,6 +33,7 @@ export const useCreditsState = create<CreditsState>()((set) => ({
       console.error("Error fetching credits", error);
       return;
     }
+    console.log("Fetched credits from server: ", data);
     if (!!data.payload) {
       set((state) => ({
         freeCredits: data.payload.free_credits,

@@ -59,6 +59,7 @@ export const useSubscriptionState = create<SubscriptionState>()((set, get) => ({
       console.error("Error fetching subscription", error);
       return;
     }
+    console.log("Fetched subscription from server: ", data);
     if (!!data.payload) {
       let activeSubscription = undefined;
       if (!!data.payload.active_subscription) {
