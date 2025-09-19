@@ -23,9 +23,10 @@ interface BillingSettingsPaneProps {}
 export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
   const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
 
-  //const creditsStore = useCreditsState();
-  //const sumTotalCredits = creditsStore.totalCredits;
-  const sumTotalCredits = 100;
+  const creditsStore = useCreditsState();
+
+  const sumTotalCredits = creditsStore.totalCredits;
+  //const sumTotalCredits = 100;
 
   //const subscriptionStore = useSubscriptionState();
 
@@ -51,7 +52,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
     : "Upgrade plan";
 
   useEffect(() => {
-    //creditsStore.fetchFromServer();
+    creditsStore.fetchFromServer();
     //subscriptionStore.fetchFromServer();
   }, []);
 
@@ -123,7 +124,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
             </div>
           </div>
 
-          {/*<CreditsTally creditsStore={creditsStore} />*/}
+          <CreditsTally creditsStore={creditsStore} />
         </div>
       </div>
     </>
