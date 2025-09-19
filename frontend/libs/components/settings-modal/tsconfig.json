@@ -12,12 +12,6 @@
       "path": "../../model-list"
     },
     {
-      "path": "../../state/subscription"
-    },
-    {
-      "path": "../../state/credits"
-    },
-    {
       "path": "../pricing-modal"
     },
     {

@@ -3,9 +3,6 @@
   "include": [],
   "references": [
     {
-      "path": "../../state/subscription"
-    },
-    {
       "path": "../tab-selector"
     },
     {

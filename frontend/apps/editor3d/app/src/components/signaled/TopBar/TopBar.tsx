@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   faGear,
   faImages,
@@ -18,6 +18,7 @@ import {
 } from "@fortawesome/pro-regular-svg-icons";
 import { Button } from "@storyteller/ui-button";
 import { PopoverMenu } from "@storyteller/ui-popover";
+import { AuthButtons } from "./AuthButtons";
 import { SceneTitleInput } from "./SceneTitleInput";
 import { Activity } from "~/pages/PageEnigma/comps/GenerateModals/Activity";
 import {
@@ -57,10 +58,6 @@ import {
   usePricingModalStore,
   useCreditsModalStore,
 } from "@storyteller/ui-pricing-modal";
-import { useCreditsBalanceChangedEvent } from "@storyteller/tauri-events";
-import { useSubscriptionPlanChangedEvent } from "@storyteller/tauri-events";
-import { useCreditsState } from "@storyteller/credits";
-import { useSubscriptionState } from "@storyteller/subscription";
 
 interface Props {
   pageName: string;
@@ -79,7 +76,7 @@ type SettingsSection =
 const SWITCHER_THROTTLE_TIME = 500; // milliseconds
 
 // NB: See `TabState` for the default tab.
-const appMenuTabs: MenuIconItem[] = [
+const appMenuTabs: MenuIconItem<TabId>[] = [
   {
     id: "IMAGE",
     label: "Text to Image",
@@ -153,25 +150,6 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
   const [disableSwitcher, setDisableSwitcher] = useState(false);
   const switcherThrottle = useRef(false);
 
-  const creditsStore = useCreditsState();
-  const sumTotalCredits = creditsStore.totalCredits;
-
-  const subscriptionStore = useSubscriptionState();
-  const hasPaidPlan = subscriptionStore.hasPaidPlan();
-
-  useEffect(() => {
-    creditsStore.fetchFromServer();
-    subscriptionStore.fetchFromServer();
-  }, []);
-
-  useCreditsBalanceChangedEvent(async () => {
-    creditsStore.fetchFromServer();
-  });
-
-  useSubscriptionPlanChangedEvent(async () => {
-    subscriptionStore.fetchFromServer();
-  });
-
   const disableTabSwitcher = () => {
     return (
       disableSwitcher ||
@@ -240,43 +218,13 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
 
   const pageTitle = getPageTitle();
 
-  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
+  const { toggleModal } = usePricingModalStore();
   const { toggleModal: toggleCreditsModal } = useCreditsModalStore();
-
-  // Pick logo based on current theme (light uses black logo; others use white)
-  const [logoSrc, setLogoSrc] = useState<string>(
-    "/resources/logo/artcraft-logo-color-white.svg",
-  );
-  useEffect(() => {
-    const computeLogo = () => {
-      const root = document.documentElement;
-      const isLight = root.classList.contains("theme-light");
-      setLogoSrc(
-        isLight
-          ? "/resources/logo/artcraft-logo-color-black.svg"
-          : "/resources/logo/artcraft-logo-color-white.svg",
-      );
-    };
-    computeLogo();
-    const mo = new MutationObserver((muts) => {
-      for (const m of muts) {
-        if (m.type === "attributes" && m.attributeName === "class") {
-          computeLogo();
-          break;
-        }
-      }
-    });
-    mo.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    return () => mo.disconnect();
-  }, []);
 
   return (
     <>
       <header
-        className="fixed left-0 top-0 z-[60] w-full border-b border-ui-panel-border bg-ui-background"
+        className="fixed left-0 top-0 z-[60] w-full border-b border-white/5 bg-ui-background"
         data-tauri-drag-region
       >
         <nav
@@ -291,8 +239,8 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
               </span>
               <img
                 className="h-[24px] w-auto"
-                src={logoSrc}
-                alt="ArtCraft Logo"
+                src="/resources/images/artcraft-logo-3.png"
+                alt="Logo ArtCraft"
                 data-tauri-drag-region
               />
             </div>
@@ -316,7 +264,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 } else {
                   set3DPageMounted(false);
                 }
-                useTabStore.getState().setActiveTab(tabId as TabId);
+                useTabStore.getState().setActiveTab(tabId);
                 setTimeout(() => {
                   // Clear the throttle
                   switcherThrottle.current = false;
@@ -335,9 +283,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
             {tabStore.activeTabId === "3D" ? (
               <SceneTitleInput pageName={pageName} />
             ) : (
-              <h1 className="text-base-fg" data-tauri-drag-region>
-                {pageTitle}
-              </h1>
+              <h1 data-tauri-drag-region>{pageTitle}</h1>
             )}
           </div>
 
@@ -354,20 +300,20 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 }
                 triggerLabel={
                   <span className="whitespace-nowrap text-sm font-medium">
-                    {sumTotalCredits} Credits
+                    180 Credits
                   </span>
                 }
-                buttonClassName="h-[30px] px-2 ps-1.5 bg-transparent hover:bg-ui-controls/30 border-0 shadow-none"
-                panelClassName="mt-3 bg-ui-panel border border-ui-panel-border text-base-fg"
+                buttonClassName="h-[30px] px-2 ps-1.5 bg-transparent hover:bg-white/10"
+                panelClassName="mt-3"
               >
                 {(close) => (
-                  <div className="text-base-fg w-72 p-2.5">
+                  <div className="w-72 p-2.5 text-white">
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-base-fg/80 flex items-center gap-1.5 text-sm font-medium">
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-white/80">
                         Your credit balance
                       </span>
                       <button
-                        className="text-sm font-medium text-primary-400 transition-all hover:text-primary-300"
+                        className="text-sm font-medium text-primary-300 transition-all hover:text-primary-200"
                         onClick={() => {
                           close();
                           toggleCreditsModal();
@@ -376,17 +322,17 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                         Buy credits
                       </button>
                     </div>
-                    <div className="text-base-fg flex items-center gap-2 text-4xl font-bold">
+                    <div className="flex items-center gap-2 text-4xl font-bold">
                       <FontAwesomeIcon
                         icon={faCoinFront}
                         className="text-2xl text-primary"
                       />
-                      {sumTotalCredits}
+                      180
                     </div>
                     <div className="mt-3 flex gap-2">
                       <Button
                         variant="action"
-                        className="h-9 grow"
+                        className="h-9 grow bg-white/15 hover:bg-white/20"
                         onClick={() => {
                           close();
                           handleOpenBillingSettings();
@@ -399,7 +345,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                         className="h-9 grow"
                         onClick={() => {
                           close();
-                          toggleSubscriptionModal();
+                          toggleModal();
                         }}
                         icon={faGem}
                       >
@@ -410,16 +356,14 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 )}
               </PopoverMenu>
 
-              {!hasPaidPlan && (
-                <Button
-                  variant="primary"
-                  icon={faGem}
-                  onClick={toggleSubscriptionModal}
-                  className="h-[38px] shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
-                >
-                  Upgrade
-                </Button>
-              )}
+              <Button
+                variant="primary"
+                icon={faGem}
+                onClick={toggleModal}
+                className="h-[38px] shadow-md shadow-primary-500/50 transition-all duration-300 hover:shadow-md hover:shadow-primary-500/75"
+              >
+                Upgrade
+              </Button>
 
               <Tooltip content="Settings" position="bottom" delay={300}>
                 <Button
@@ -440,30 +384,28 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 icon={faImages}
                 onClick={handleOpenGalleryModal}
               >
-                <span className="text-base-fg hidden whitespace-nowrap xl:block">
+                <span className="hidden whitespace-nowrap xl:block">
                   My Library
                 </span>
               </Button>
 
               <Activity />
             </div>
-
             <div className="no-drag">
-              {/* TODO(bt,2025-09-12): This was the old auth buttons that didn't work. We need to remove this and clean up the DOM. */}
+              <AuthButtons loginSignUpPressed={loginSignUpPressed} />
             </div>
-
             {isDesktop && platform !== "macos" && (
               <div className="no-drag flex items-center">
                 <Button
                   variant="secondary"
-                  className="text-base-fg h-[32px] w-[44px] rounded-none border-0 bg-transparent opacity-70 shadow-none hover:bg-ui-controls/20 hover:opacity-100"
+                  className="h-[32px] w-[44px] rounded-none bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
                   onClick={minimize}
                 >
                   <FontAwesomeIcon icon={faDash} className="text-xs" />
                 </Button>
                 <Button
                   variant="secondary"
-                  className="text-base-fg h-[32px] w-[44px] rounded-none border-0 bg-transparent opacity-70 shadow-none hover:bg-ui-controls/20 hover:opacity-100"
+                  className="h-[32px] w-[44px] rounded-none bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
                   onClick={toggleMaximize}
                 >
                   <FontAwesomeIcon
@@ -473,7 +415,7 @@ export const TopBar = ({ pageName, loginSignUpPressed }: Props) => {
                 </Button>
                 <Button
                   variant="secondary"
-                  className="text-base-fg h-[32px] w-[44px] rounded-none border-0 bg-transparent opacity-70 shadow-none hover:bg-red/10 hover:text-red"
+                  className="h-[32px] w-[44px] rounded-none bg-transparent text-white/70 hover:bg-red/40 hover:text-white"
                   onClick={close}
                 >
                   <FontAwesomeIcon icon={faXmark} className="text-lg" />

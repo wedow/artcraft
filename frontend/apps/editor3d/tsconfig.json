@@ -53,9 +53,6 @@
       "path": "../../libs/components/button-dropdown"
     },
     {
-      "path": "../../libs/components/pricing-modal"
-    },
-    {
       "path": "../../libs/components/toaster"
     },
     {
@@ -63,6 +60,9 @@
     },
     {
       "path": "../../libs/soundboard"
+    },
+    {
+      "path": "../../libs/tauri-events"
     },
     {
       "path": "../../libs/components/slider-v2"
@@ -86,16 +86,16 @@
       "path": "../../libs/model-list"
     },
     {
-      "path": "../../libs/components/popover"
-    },
-    {
       "path": "../../libs/common"
     },
     {
-      "path": "../../libs/state/credits"
+      "path": "../../libs/components/pricing-modal"
     },
     {
-      "path": "../../libs/state/subscription"
+      "path": "../../libs/components/provider-billing-modal"
+    },
+    {
+      "path": "../../libs/components/provider-setup-modal"
     },
     {
       "path": "../../libs/analytics/google-analytics"
@@ -110,6 +110,9 @@
       "path": "../../libs/components/settings-modal"
     },
     {
+      "path": "../../libs/components/popover"
+    },
+    {
       "path": "../../libs/components/gravatar"
     },
     {
@@ -120,12 +123,6 @@
     },
     {
       "path": "../../libs/components/upload-modal"
-    },
-    {
-      "path": "../../libs/components/provider-setup-modal"
-    },
-    {
-      "path": "../../libs/components/provider-billing-modal"
     },
     {
       "path": "../../libs/components/modal"
@@ -147,9 +144,6 @@
     },
     {
       "path": "../../libs/tauri-utils"
-    },
-    {
-      "path": "../../libs/tauri-events"
     },
     {
       "path": "../../libs/api"
