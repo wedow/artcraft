@@ -26,7 +26,6 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
   const creditsStore = useCreditsState();
 
   const sumTotalCredits = creditsStore.totalCredits;
-  //const sumTotalCredits = 100;
 
   //const subscriptionStore = useSubscriptionState();
 

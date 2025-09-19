@@ -18,7 +18,7 @@ export interface CreditsState {
   fetchFromServer: () => Promise<void>
 }
 
-export const useCreditsState = create<CreditsState>()((set) => ({
+export const useCreditsState = create<CreditsState>((set) => ({
   freeCredits: 0,
   monthlyCredits: 0,
   bankedCredits: 0,
