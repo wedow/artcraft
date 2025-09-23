@@ -64,6 +64,8 @@ export const PromptBoxImage = ({
 }: PromptBoxImageProps) => {
   useSignals();
 
+  console.log("Selected model:", selectedModel);
+
   useEffect(() => {
     if (imageMediaId && url) {
       const referenceImage: RefImage = {
@@ -232,6 +234,9 @@ export const PromptBoxImage = ({
       console.warn("Cannot generate image: no model selected");
       return;
     }
+
+    console.log("Selected model:", selectedModel)
+    console.log("Prompt:", prompt)
 
     setIsEnqueueing(true);
 

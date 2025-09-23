@@ -31,6 +31,7 @@ export function ClassyModelSelector({
   }, []);
 
   const handleModelSelect = (item: PopoverItem) => {
+    console.log(`Model selector changed on page "${page}": `, item.model);
     setSelectedModel(page, item.model!);
   };
 
