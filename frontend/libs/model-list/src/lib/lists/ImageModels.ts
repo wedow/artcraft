@@ -148,3 +148,11 @@ export const IMAGE_MODELS: ImageModel[] = [
     usesInpaintingMask: true,
   }),
 ];
+
+export const IMAGE_MODELS_BY_ID : Map<string, ImageModel> = new Map(
+  IMAGE_MODELS.map((model) => [model.id, model])
+);
+
+if (IMAGE_MODELS_BY_ID.size !== IMAGE_MODELS.length) {
+  throw new Error("All image models must have unique IDs");
+}

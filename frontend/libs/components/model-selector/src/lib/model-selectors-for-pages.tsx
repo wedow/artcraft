@@ -6,7 +6,7 @@ import {
   Model,
   VIDEO_MODELS,
   IMAGE_MODELS,
-  ALL_MODELS_BY_ID,
+  IMAGE_MODELS_BY_ID,
 } from "@storyteller/model-list";
 import { ModelTag } from "@storyteller/model-list";
 
@@ -14,7 +14,7 @@ export type ModelList = Omit<PopoverItem, "selected">[];
 
 const withIcon = (creatorIcon: any, fallback: any) => creatorIcon || fallback;
 
-const buildItems2 = (
+const buildItems = (
   models: Model[],
   fallbackIcon: any
 ) =>
@@ -37,35 +37,66 @@ const buildItems2 = (
  * access to the object directly.
  */ 
 
-export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = buildItems2(
-  IMAGE_MODELS.filter((m) => m.tags?.includes(ModelTag.InstructiveEdit)),
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
+export const TEXT_TO_IMAGE_PAGE_MODEL_LIST : ModelList = 
+  buildItems(
+    (function() : Model[] {
+      const set : Set<Model> = new Set();
+      set.add(IMAGE_MODELS_BY_ID.get("flux_pro_1_1")!); // Don't put Midjourney first!
+      IMAGE_MODELS
+        .filter((model) => !model.usesInpaintingMask) // We can't use masked inpainting models here
+        .filter((model) => model.id !== "flux_pro_kontext_max") // NB: Flux Pro Kontext Max requires an input image
+        .forEach((m) => set.add(m));
+      return Array.from(set);
+    })(),
+    <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+  );
 
-export const STAGE_3D_PAGE_MODEL_LIST : ModelList = buildItems2(
-  IMAGE_MODELS.filter((m) => m.tags?.includes(ModelTag.InstructiveEdit)),
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
+export const CANVAS_2D_PAGE_MODEL_LIST : ModelList = 
+  buildItems(
+    (function() : Model[] {
+      const set : Set<Model> = new Set();
+      set.add(IMAGE_MODELS_BY_ID.get("gpt_image_1")!); // Place gpt_image_1 first.
+      IMAGE_MODELS
+        .filter((m) => m.tags?.includes(ModelTag.InstructiveEdit))
+        .forEach((m) => set.add(m));
+      return Array.from(set);
+    })(),
+    <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+  );
 
-export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = buildItems2(
-  //[
-  //  ALL_MODELS_BY_ID.get("flux_pro_inpaint")!,
-  //  ALL_MODELS_BY_ID.get("flux_dev_juggernaut_inpaint")!,
-  //  ALL_MODELS_BY_ID.get("flux_pro_kontext_max")!,
-  //],
-  IMAGE_MODELS.filter((m) => m.canEditImages),
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
+export const STAGE_3D_PAGE_MODEL_LIST : ModelList = 
+  buildItems(
+    (function() : Model[] {
+      const set : Set<Model> = new Set();
+      set.add(IMAGE_MODELS_BY_ID.get("gpt_image_1")!); // Place gpt_image_1 first.
+      IMAGE_MODELS
+        .filter((m) => m.tags?.includes(ModelTag.InstructiveEdit))
+        .forEach((m) => set.add(m));
+      return Array.from(set);
+    })(),
+    <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+  );
 
-export const IMAGE_TO_VIDEO_PAGE_MODEL_LIST : ModelList = buildItems2(
-  VIDEO_MODELS,
-  <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />
-);
+export const IMAGE_EDITOR_PAGE_MODEL_LIST : ModelList = 
+  buildItems(
+    //[
+    //  ALL_MODELS_BY_ID.get("flux_pro_inpaint")!,
+    //  ALL_MODELS_BY_ID.get("flux_dev_juggernaut_inpaint")!,
+    //  ALL_MODELS_BY_ID.get("flux_pro_kontext_max")!,
+    //],
+    (function() : Model[] {
+      const set : Set<Model> = new Set();
+      //set.add(IMAGE_MODELS_BY_ID.get("gpt_image_1")!); // Place gpt_image_1 first.
+      IMAGE_MODELS
+        .filter((m) => m.canEditImages)
+        .forEach((m) => set.add(m));
+      return Array.from(set);
+    })(),
+    <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
+  );
 
-export const TEXT_TO_IMAGE_PAGE_MODEL_LIST : ModelList = buildItems2(
-  IMAGE_MODELS
-    .filter((model) => !model.usesInpaintingMask) // We can't use masked inpainting models here
-    .filter((model) => model.id !== "flux_pro_kontext_max") // NB: Flux Pro Kontext Max requires an input image
-    ,
-  <FontAwesomeIcon icon={faImage} className="h-4 w-4" />
-);
+export const IMAGE_TO_VIDEO_PAGE_MODEL_LIST : ModelList = 
+  buildItems(
+    VIDEO_MODELS,
+    <FontAwesomeIcon icon={faFilm} className="h-4 w-4" />
+  );
