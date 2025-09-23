@@ -240,10 +240,9 @@ export const lookupModelByTauriId = (
 
 // Single exported capability resolver so callers never need to touch anything else
 export const getCapabilitiesForModel = (
-  model?: Model | ModelInfo
+  model?: Model
 ): ModelCapabilities => {
   if (!model) return DEFAULT_CAPABILITIES;
-  const tauriId = model instanceof Model ? model.tauriId : model.tauri_id;
-  const cfg = lookupModelByTauriId(tauriId);
+  const cfg = lookupModelByTauriId(model.tauriId);
   return cfg?.capabilities ?? DEFAULT_CAPABILITIES;
 };

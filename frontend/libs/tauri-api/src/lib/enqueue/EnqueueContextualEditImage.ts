@@ -1,11 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
-import { ImageModel, ModelInfo } from "@storyteller/model-list";
+import { ImageModel } from "@storyteller/model-list";
 
 export interface EnqueueContextualEditImageRequest {
 
   /// The model to use.
-  model?: ImageModel | ModelInfo | EnqueueContextualEditImageModel;
+  model?: ImageModel | EnqueueContextualEditImageModel;
 
   /// If set, this is the first image in the contextual image set.
   /// This gets submitted along with `image_media_tokens` and will 
@@ -93,13 +93,16 @@ export const EnqueueContextualEditImage = async (request: EnqueueContextualEditI
   let modelName = undefined;
 
   if (!!request.model) {
+    // NB: We can't use "instanceof" checks with Vite minification and class name mangling.
     if (typeof request.model === "string") {
       modelName = request.model;
-    } else if (request.model instanceof ImageModel) {
+    } else if (typeof request.model.tauriId === "string") {
       modelName = request.model.tauriId;
-    } else {
-      modelName = request.model.tauri_id;
     }
+  }
+
+  if (!modelName) {
+    throw new Error("No model specified in request: " + JSON.stringify(request));
   }
 
   let mutableRequest : RawEnqueueContextualEditImageRequest = {

@@ -21,17 +21,27 @@ export const useClassyModelSelectorStore = create<ClassyModelSelectorState>((set
 export const getSelectedImageModel = (page: ModelPage) : ImageModel | undefined => {
   const { selectedModels } = useClassyModelSelectorStore();
   const maybeModel = selectedModels[page];
-  if (!maybeModel || !(maybeModel instanceof ImageModel)) {
+  if (!maybeModel) {
     return undefined;
   }
-  return maybeModel;
+  // NB: We can't use "instanceof" checks with Vite minification and class name mangling.
+  // We have to do type tagging a different way.
+  if (maybeModel.kind === "image_model") {
+    return maybeModel as ImageModel;
+  }
+  return undefined;
 };
 
 export const getSelectedVideoModel = (page: ModelPage) : VideoModel | undefined => {
   const { selectedModels } = useClassyModelSelectorStore();
   const maybeModel = selectedModels[page];
-  if (!maybeModel || !(maybeModel instanceof VideoModel)) {
+  if (!maybeModel) {
     return undefined;
   }
-  return maybeModel;
+  // NB: We can't use "instanceof" checks with Vite minification and class name mangling.
+  // We have to do type tagging a different way.
+  if (maybeModel.kind !== "video_model") {
+    return undefined;
+  }
+  return maybeModel as VideoModel;
 };

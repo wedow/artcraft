@@ -2,8 +2,15 @@ import { ModelCreator } from "./metadata/ModelCreator.js";
 import { ModelCategory, ModelConfig } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
 
+export type ModelKind = "model" | "image_model" | "video_model";
+
 // NB: Do not create instances of this class directly, use subclasses.
 export class Model {
+  // Typescript type discriminator property
+  // Since Vite minification and class name mangling can break instanceof checks,
+  // we have a type discriminator property to check against.
+  readonly kind: ModelKind = "model";
+
   // A unique frontend-only string for the model
   readonly id: string;
 

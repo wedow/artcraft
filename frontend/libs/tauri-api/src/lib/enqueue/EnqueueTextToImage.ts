@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
-import { Model, ModelInfo } from "@storyteller/model-list";
+import { Model } from "@storyteller/model-list";
 
 export enum EnqueueTextToImageErrorType {
   /// Caller didn't specify a model
@@ -15,7 +15,7 @@ export enum EnqueueTextToImageErrorType {
 
 export interface EnqueueTextToImageRequest {
   // The model to use.
-  model?: Model | ModelInfo | EnqueueTextToImageModel;
+  model?: Model | EnqueueTextToImageModel;
 
   // The text prompt.
   prompt?: string;
@@ -86,21 +86,11 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
   let modelName = undefined;
 
   if (!!request.model) {
-    if (typeof request.model === "string" && !!request.model) {
+    // NB: We can't use "instanceof" checks with Vite minification and class name mangling.
+    if (typeof request.model === "string") {
       modelName = request.model;
-    } else if (request.model instanceof Model) {
+    } else if (typeof request.model.tauriId === "string") {
       modelName = request.model.tauriId;
-    } else if (typeof request.model === "object" && !!request.model.tauri_id) {
-      modelName = request.model.tauri_id;
-    }
-
-    if (!modelName && typeof request.model !== "string") {
-      // TODO(bt): The production builds are broken because the model name branch isn't working.
-      if ("tauriId" in request.model && typeof request.model.tauriId === "string") {
-        modelName = request.model.tauriId;
-      } else if ("tauri_id" in request.model && typeof request.model.tauri_id === "string") {
-        modelName = request.model.tauri_id;
-      }
     }
   }
 

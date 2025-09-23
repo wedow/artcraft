@@ -1,9 +1,14 @@
 import { ModelCreator } from "src/index.js";
-import { Model } from "./Model.js";
+import { Model, ModelKind } from "./Model.js";
 import { ModelCategory } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
 
 export class ImageModel extends Model {
+  // Typescript type discriminator property
+  // Since Vite minification and class name mangling can break instanceof checks,
+  // we have a type discriminator property to check against.
+  override readonly kind: ModelKind = "image_model";
+
   // Maximum number of images that can be generated at once
   readonly maxGenerationCount: number;
 

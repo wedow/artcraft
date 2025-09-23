@@ -74,11 +74,15 @@ export const EnqueueImageInpaint = async (request: EnqueueImageInpaintRequest) :
   if (!!request.model) {
     if (typeof request.model === "string") {
       modelName = request.model;
-    } else if (request.model instanceof ImageModel) {
+    } else if ("tauriId" in request.model && typeof request.model.tauriId === "string") {
       modelName = request.model.tauriId;
-    } else {
+    } else if ("tauri_id" in request.model && typeof request.model.tauri_id === "string") {
       modelName = request.model.tauri_id;
     }
+  }
+
+  if (!modelName) {
+    throw new Error("No model specified in request: " + JSON.stringify(request));
   }
 
   let mutableRequest : RawEnqueueImageInpaintRequest = {
