@@ -86,25 +86,19 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
   let modelName = undefined;
 
   if (!!request.model) {
-    console.log("CASE 0");
     if (typeof request.model === "string" && !!request.model) {
-      console.log("CASE 1");
       modelName = request.model;
     } else if (request.model instanceof Model) {
-      console.log("CASE 2");
       modelName = request.model.tauriId;
     } else if (typeof request.model === "object" && !!request.model.tauri_id) {
-      console.log("CASE 3");
       modelName = request.model.tauri_id;
     }
 
     if (!modelName && typeof request.model !== "string") {
       // TODO(bt): The production builds are broken because the model name branch isn't working.
       if ("tauriId" in request.model && typeof request.model.tauriId === "string") {
-        console.log("CASE 4");
         modelName = request.model.tauriId;
       } else if ("tauri_id" in request.model && typeof request.model.tauri_id === "string") {
-        console.log("CASE 5");
         modelName = request.model.tauri_id;
       }
     }
