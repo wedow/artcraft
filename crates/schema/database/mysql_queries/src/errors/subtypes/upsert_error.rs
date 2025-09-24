@@ -1,4 +1,4 @@
-use crate::errors::mysql_error::{CrateError, MysqlError};
+use crate::errors::mysql_error::{MysqlCrateErrorSubtype, MysqlError};
 use log::error;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -14,7 +14,7 @@ pub enum UpsertError {
 
 impl Error for UpsertError {}
 
-impl CrateError for UpsertError {}
+impl MysqlCrateErrorSubtype for UpsertError {}
 
 impl Display for UpsertError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

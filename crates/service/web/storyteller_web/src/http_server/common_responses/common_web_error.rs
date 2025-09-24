@@ -1,9 +1,9 @@
 use actix_http::StatusCode;
 use actix_web::{HttpResponse, HttpResponseBuilder, ResponseError};
+use log::error;
+use mysql_queries::errors::mysql_error::{MysqlCrateErrorSubtype, MysqlError};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use log::error;
-use mysql_queries::errors::mysql_error::{CrateError, MysqlError};
 
 #[derive(Debug)]
 pub enum CommonWebError {
@@ -92,7 +92,7 @@ impl From<anyhow::Error> for CommonWebError {
   }
 }
 
-impl <T: CrateError> From<MysqlError<T>> for CommonWebError {
+impl <T: MysqlCrateErrorSubtype> From<MysqlError<T>> for CommonWebError {
   fn from(value: MysqlError<T>) -> Self {
     error!("MysqlError being coerced to CommonWebError : {:?}", value);
     CommonWebError::ServerError
