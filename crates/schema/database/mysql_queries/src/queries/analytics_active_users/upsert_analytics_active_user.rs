@@ -1,4 +1,4 @@
-use crate::errors::upsert_error::UpsertError;
+use crate::errors::mysql_upsert_error::MysqlUpsertError;
 use enums::common::payments_namespace::PaymentsNamespace;
 use sqlx::mysql::MySqlArguments;
 use sqlx::pool::PoolConnection;
@@ -37,7 +37,7 @@ ON DUPLICATE KEY UPDATE
     )
   }
 
-  pub async fn upsert_with_connection(&self, mysql_connection: &mut PoolConnection<MySql>) -> Result<(), UpsertError> {
+  pub async fn upsert_with_connection(&self, mysql_connection: &mut PoolConnection<MySql>) -> Result<(), MysqlUpsertError> {
     let _query_result = self.query()
         .execute(&mut **mysql_connection)
         .await?;

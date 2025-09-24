@@ -3,26 +3,26 @@ use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
-pub enum UpsertError {
+pub enum MysqlUpsertError {
   /// A duplicate key error occurred.
-  DuplicateKeyError,
+  DuplicateKeyError(String),
 
   /// An uncategorized error occurred.
   SqlxError(sqlx::Error),
 }
 
-impl Error for UpsertError {}
+impl Error for MysqlUpsertError {}
 
-impl Display for UpsertError {
+impl Display for MysqlUpsertError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      UpsertError::DuplicateKeyError => write!(f, "DuplicateKeyError"),
-      UpsertError::SqlxError(e) => write!(f, "SQLx error: {:?}", e),
+      MysqlUpsertError::DuplicateKeyError(reason) => write!(f, "DuplicateKeyError: {}", reason),
+      MysqlUpsertError::SqlxError(e) => write!(f, "SQLx error: {:?}", e),
     }
   }
 }
 
-impl From<sqlx::Error> for UpsertError {
+impl From<sqlx::Error> for MysqlUpsertError {
   fn from(err: sqlx::Error) -> Self {
     if let Some(db_err) = err.as_database_error() {
       // NB: SQLSTATE[23000]: Integrity constraint violation
@@ -32,7 +32,7 @@ impl From<sqlx::Error> for UpsertError {
 
       if is_integrity_violation && is_duplicate_key {
         error!("Detected duplicate key error: {:?}", db_err);
-        return Self::DuplicateKeyError;
+        return Self::DuplicateKeyError(db_err.message().to_string());
       }
     }
 
