@@ -39,30 +39,12 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
         InitError = (),
       >,
 {
-  let mut app = add_legacy_routes(app); // various legacy routes, mostly deprecated
+  let mut app = app;
+  
+  app = add_legacy_routes(app); // various legacy routes, mostly deprecated
   app = add_application_routes(app); // Primary product service area routes
   app = add_service_routes(app); // Essential service routes (status, health, info, etc.)
 
-  // app = add_image_gen_routes(app);
-
-  // ==================== Comments ====================
-
-  let mut app = RouteBuilder::from_app(app)
-      .add_get("/v1/comments/list/{entity_type}/{entity_token}", list_comments_handler)
-      .add_post("/v1/comments/new", create_comment_handler)
-      .add_post("/v1/comments/delete/{comment_token}", delete_comment_handler)
-      .into_app();
-
-  // ==================== User Bookmarks ====================
-
-  let mut app = RouteBuilder::from_app(app)
-      .add_get("/v1/user_bookmarks/batch", batch_get_user_bookmarks_handler)
-      .add_post("/v1/user_bookmarks/create", create_user_bookmark_handler)
-      .add_post("/v1/user_bookmarks/delete/{user_bookmark_token}", delete_user_bookmark_handler)
-      //.add_get("/v1/user_bookmarks/list/session", list_user_bookmarks_for_session_handler)
-      .add_get("/v1/user_bookmarks/list/user/{username}", list_user_bookmarks_for_user_handler)
-      .add_get("/v1/user_bookmarks/list/entity/{entity_type}/{entity_token}", list_user_bookmarks_for_entity_handler)
-      .into_app();
 
   // ==================== Application State ====================
 

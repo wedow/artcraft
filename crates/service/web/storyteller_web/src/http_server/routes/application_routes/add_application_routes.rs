@@ -1,3 +1,4 @@
+use crate::http_server::routes::application_routes::comments_routes::add_comments_routes;
 use crate::http_server::routes::application_routes::credits_routes::add_credits_routes;
 use crate::http_server::routes::application_routes::featured_item_routes::add_featured_item_routes;
 use crate::http_server::routes::application_routes::generate_routes::add_generate_routes;
@@ -17,6 +18,7 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{App, Error};
 use billing_component::default_routes::add_suggested_stripe_billing_routes;
+use crate::http_server::routes::application_routes::user_bookmarks_routes::add_user_bookmarks_routes;
 
 /// Add the core application routes.
 pub fn add_application_routes<T, B> (app: App<T>) -> App<T>
@@ -33,24 +35,35 @@ where
 
   let mut app = add_moderator_routes(app); // /moderation
 
-  app = add_user_routes(app); // /create_account, /session, /login, /logout, etc.
-  app = add_tts_routes(app); // /tts
-  app = add_media_file_routes(app); // /v1/media_files/...
-  app = add_featured_item_routes(app); // /v1/featured_item/...
-  app = add_subscription_routes(app); // /v1/subscriptions/...
-  app = add_weights_routes(app);
-  app = add_user_rating_routes(app); // /v1/user_rating/...
-  app = add_tag_routes(app); // /v1/tags
-  app = add_job_routes(app);
+  // Artcraft surface area
   app = add_generate_routes(app); // /v1/generate/...
   app = add_webhook_routes(app); // /v1/webhooks/... (fal)
-  app = add_credits_routes(app); // /v1/credits/...
 
-  // Artcraft Billing component
+  // Remaining FakeYou surface area
+  app = add_tag_routes(app); // /v1/tags
+  app = add_tts_routes(app); // /tts
+  app = add_weights_routes(app);
+
+  // Media files routes
+  app = add_media_file_routes(app); // /v1/media_files/...
+  app = add_featured_item_routes(app); // /v1/featured_item/...
+
+  // Job system
+  app = add_job_routes(app);
+
+  // User and user-adjacent routes
+  app = add_comments_routes(app); // /v1/comments/...
+  app = add_user_bookmarks_routes(app); // /v1/user_bookmarks/...
+  app = add_user_rating_routes(app); // /v1/user_rating/...
+  app = add_user_routes(app); // /create_account, /session, /login, /logout, etc.
+
+  // Artcraft Billing pieces
+  app = add_credits_routes(app); // /v1/credits/...
   app = add_stripe_artcraft_routes(app); // /v1/stripe_artcraft/...
-  
+  app = add_subscription_routes(app); // /v1/subscriptions/...
+
   // FakeYou Billing component - still necessary for FakeYou monetization
   app = add_suggested_stripe_billing_routes(app); // /stripe, billing, webhooks, etc.
-  
+
   app
 }

@@ -13,3 +13,5 @@ mod user_routes;
 mod webhook_routes;
 mod weights_routes;
 pub (super) mod add_application_routes;
+mod comments_routes;
+mod user_bookmarks_routes;
