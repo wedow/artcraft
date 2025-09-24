@@ -9,8 +9,10 @@ use crate::http_server::routes::application_routes::stripe_artcraft_routes::add_
 use crate::http_server::routes::application_routes::subscription_routes::add_subscription_routes;
 use crate::http_server::routes::application_routes::tag_routes::add_tag_routes;
 use crate::http_server::routes::application_routes::tts_routes::add_tts_routes;
+use crate::http_server::routes::application_routes::user_bookmarks_routes::add_user_bookmarks_routes;
 use crate::http_server::routes::application_routes::user_rating_routes::add_user_rating_routes;
 use crate::http_server::routes::application_routes::user_routes::add_user_routes;
+use crate::http_server::routes::application_routes::voice_conversion_routes::add_voice_conversion_routes;
 use crate::http_server::routes::application_routes::webhook_routes::add_webhook_routes;
 use crate::http_server::routes::application_routes::weights_routes::add_weights_routes;
 use actix_http::body::MessageBody;
@@ -18,7 +20,7 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{App, Error};
 use billing_component::default_routes::add_suggested_stripe_billing_routes;
-use crate::http_server::routes::application_routes::user_bookmarks_routes::add_user_bookmarks_routes;
+use crate::http_server::routes::application_routes::prompts_routes::add_prompts_routes;
 
 /// Add the core application routes.
 pub fn add_application_routes<T, B> (app: App<T>) -> App<T>
@@ -42,11 +44,13 @@ where
   // Remaining FakeYou surface area
   app = add_tag_routes(app); // /v1/tags
   app = add_tts_routes(app); // /tts
-  app = add_weights_routes(app);
+  app = add_weights_routes(app); // v1/weights
+  app = add_voice_conversion_routes(app); // /v1/voice_conversion
 
   // Media files routes
   app = add_media_file_routes(app); // /v1/media_files/...
   app = add_featured_item_routes(app); // /v1/featured_item/...
+  app = add_prompts_routes(app); // /v1/prompts/...
 
   // Job system
   app = add_job_routes(app);

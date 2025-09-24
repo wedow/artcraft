@@ -26,10 +26,6 @@ use crate::http_server::deprecated_endpoints::media_uploads::upload_audio::uploa
 use crate::http_server::deprecated_endpoints::media_uploads::upload_image::upload_image_handler;
 use crate::http_server::deprecated_endpoints::media_uploads::upload_media::upload_media_handler;
 use crate::http_server::deprecated_endpoints::mocap::enqueue_mocapnet::enqueue_mocapnet_handler;
-use crate::http_server::deprecated_endpoints::stubs::app_model_downloads::get_app_model_downloads_handler;
-use crate::http_server::deprecated_endpoints::stubs::app_news::get_app_news_handler;
-use crate::http_server::deprecated_endpoints::stubs::app_plans::get_app_plans_handler;
-use crate::http_server::deprecated_endpoints::stubs::post_app_analytics::post_app_analytics_handler;
 use crate::http_server::deprecated_endpoints::vocoders::get_vocoder::get_vocoder_handler;
 use crate::http_server::deprecated_endpoints::vocoders::list_vocoders::list_vocoders_handler;
 use crate::http_server::deprecated_endpoints::w2l::delete_w2l_result::delete_w2l_inference_result_handler;
@@ -73,10 +69,10 @@ use crate::http_server::endpoints::voice_designer::voices::search_voices::search
 use crate::http_server::endpoints::voice_designer::voices::update_voice::update_voice_handler;
 use crate::http_server::routes::legacy_routes::beta_key_routes::add_beta_key_routes;
 use crate::http_server::routes::legacy_routes::control_plane_sora_routes::add_control_plane_sora_routes;
+use crate::http_server::routes::legacy_routes::desktop_vc_app_routes::add_desktop_vc_app_routes;
 use crate::http_server::routes::legacy_routes::image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::legacy_routes::model_download_routes::add_model_download_routes;
 use crate::http_server::routes::legacy_routes::studio_gen2_routes::add_studio_gen2_routes;
-use crate::http_server::routes::legacy_routes::web_vc_routes::add_web_vc_routes;
 use crate::http_server::routes::legacy_routes::workflow_routes::add_workflow_routes;
 use actix_helpers::route_builder::RouteBuilder;
 use actix_http::body::MessageBody;
@@ -84,6 +80,9 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::Error;
 use actix_web::{web, App, HttpResponse};
+use crate::http_server::endpoints::app_state::get_app_state_handler::get_app_state_handler;
+use crate::http_server::endpoints::service::status_alert_handler::status_alert_handler;
+use crate::http_server::endpoints::stats::get_unified_queue_stats_handler::get_unified_queue_stats_handler;
 
 pub fn add_legacy_routes<T, B> (app: App<T>) -> App<T>
 where
@@ -108,13 +107,12 @@ where
   app = add_voice_designer_routes(app); // /v1/voice_designer
   app = add_beta_key_routes(app); // /v1/beta_keys
   app = add_model_download_routes(app);
-  app = add_web_vc_routes(app); // /v1/voice_conversion
   app = add_studio_gen2_routes(app);
   app = add_image_studio_routes(app);
   app = add_control_plane_sora_routes(app); // /v1/control_plane/...
   app = add_workflow_routes(app);
   app = add_engine_routes(app); // /v1/engine/...
-  app = add_desktop_app_routes(app); // /v1/vc/...
+  app = add_desktop_vc_app_routes(app); // /v1/vc/...
   app = add_media_upload_routes(app); // /v1/media_upload/...
   app = add_trending_routes(app); // /v1/trending/...
 
@@ -148,6 +146,18 @@ where
       .route(web::get().to(leaderboard_handler))
       .route(web::head().to(|| HttpResponse::Ok()))
   );
+
+  // ==================== FakeYou Frontend Application State ====================
+
+  let mut app = RouteBuilder::from_app(app)
+      .add_get("/v1/app_state", get_app_state_handler)
+      .into_app();
+
+  // ==================== Stats ====================
+
+  let mut app = RouteBuilder::from_app(app)
+      .add_get("/v1/stats/queues", get_unified_queue_stats_handler)
+      .into_app();
 
   let app = app.service(
     web::resource("/events")
@@ -476,39 +486,6 @@ where
               .route(web::get().to(disable_design_refresh_flag_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
           )
-      )
-  )
-}
-
-// ==================== DESKTOP APP ROUTES ====================
-
-fn add_desktop_app_routes<T, B> (app: App<T>) -> App<T>
-where
-    B: MessageBody,
-    T: ServiceFactory<
-      ServiceRequest,
-      Config = (),
-      Response = ServiceResponse<B>,
-      Error = Error,
-      InitError = (),
-    >,
-{
-  app.service(web::scope("/v1/vc")
-      .service(web::resource("/report_analytics")
-          .route(web::post().to(post_app_analytics_handler))
-          .route(web::head().to(|| HttpResponse::Ok()))
-      )
-      .service(web::resource("/news")
-          .route(web::get().to(get_app_news_handler))
-          .route(web::head().to(|| HttpResponse::Ok()))
-      )
-      .service(web::resource("/features")
-          .route(web::get().to(get_app_plans_handler))
-          .route(web::head().to(|| HttpResponse::Ok()))
-      )
-      .service(web::resource("/downloads")
-          .route(web::get().to(get_app_model_downloads_handler))
-          .route(web::head().to(|| HttpResponse::Ok()))
       )
   )
 }

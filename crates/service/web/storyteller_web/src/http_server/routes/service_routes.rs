@@ -3,6 +3,7 @@ use crate::http_server::endpoints::misc::detect_locale_handler::detect_locale_ha
 use crate::http_server::endpoints::misc::root_index::get_root_index;
 use crate::http_server::endpoints::service::health_check_handler::get_health_check_handler;
 use crate::http_server::endpoints::service::public_info_handler::get_public_info_handler;
+use crate::http_server::endpoints::service::status_alert_handler::status_alert_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
@@ -27,13 +28,19 @@ where
             .route(web::head().to(|| HttpResponse::Ok()))
       )
       .service(
-        web::resource("/server_info") // NB/TODO(bt,2023-01-21): Couldn't scope to /v1/, actix routing table might not like collision
+        // TODO(bt,2023-01-21): Couldn't scope to /v1/, actix routing table might not like collision
+        web::resource("/server_info")
             .route(web::get().to(get_public_info_handler))
             .route(web::head().to(|| HttpResponse::Ok()))
       )
       .service(
         web::resource("/detect_locale")
             .route(web::get().to(detect_locale_handler))
+            .route(web::head().to(|| HttpResponse::Ok()))
+      )
+      .service(
+        web::resource("/v1/status_alert_check")
+            .route(web::get().to(status_alert_handler))
             .route(web::head().to(|| HttpResponse::Ok()))
       )
       .service(web::resource("/")

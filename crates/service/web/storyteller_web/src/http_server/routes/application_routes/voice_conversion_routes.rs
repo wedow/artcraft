@@ -8,7 +8,7 @@ use crate::http_server::endpoints::voice_conversion::enqueue_seed_vc_inference_h
 use crate::http_server::endpoints::voice_conversion::enqueue_voice_conversion_inference_handler::enqueue_voice_conversion_inference_handler;
 use crate::http_server::endpoints::voice_conversion::list_voice_conversion_models_handler::list_voice_conversion_models_handler;
 
-pub fn add_web_vc_routes<T, B> (app: App<T>) -> App<T>
+pub fn add_voice_conversion_routes<T, B> (app: App<T>) -> App<T>
 where
     B: MessageBody,
     T: ServiceFactory<
