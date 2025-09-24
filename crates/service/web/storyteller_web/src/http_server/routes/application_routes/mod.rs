@@ -1,0 +1,16 @@
+pub (super) mod add_control_plane_routes;
+pub (super) mod add_credits_routes;
+pub (super) mod add_generate_routes;
+pub (super) mod add_stripe_artcraft_routes;
+pub (super) mod add_subscription_routes;
+pub (super) mod add_tts_routes;
+pub (super) mod add_webhook_routes;
+pub (super) mod featured_item_routes;
+pub (super) mod job_routes;
+pub (super) mod media_files_routes;
+pub (super) mod moderation_routes;
+pub (super) mod tag_routes;
+pub (super) mod user_routes;
+pub (super) mod weights_routes;
+pub mod add_application_routes;
+pub (super) mod user_rating_routes;

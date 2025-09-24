@@ -1,0 +1,52 @@
+use crate::http_server::routes::application_routes::add_control_plane_routes::add_control_plane_routes;
+use crate::http_server::routes::application_routes::add_credits_routes::add_credits_routes;
+use crate::http_server::routes::application_routes::add_generate_routes::add_generate_routes;
+use crate::http_server::routes::application_routes::add_stripe_artcraft_routes::add_stripe_artcraft_routes;
+use crate::http_server::routes::application_routes::add_subscription_routes::add_subscription_routes;
+use crate::http_server::routes::application_routes::add_tts_routes::add_tts_routes;
+use crate::http_server::routes::application_routes::add_webhook_routes::add_webhook_routes;
+use crate::http_server::routes::application_routes::featured_item_routes::add_featured_item_routes;
+use crate::http_server::routes::application_routes::job_routes::add_job_routes;
+use crate::http_server::routes::application_routes::media_files_routes::add_media_file_routes;
+use crate::http_server::routes::application_routes::moderation_routes::add_moderator_routes;
+use crate::http_server::routes::application_routes::tag_routes::add_tag_routes;
+use crate::http_server::routes::application_routes::user_rating_routes::add_user_rating_routes;
+use crate::http_server::routes::application_routes::user_routes::add_user_routes;
+use crate::http_server::routes::application_routes::weights_routes::add_weights_routes;
+use actix_http::body::MessageBody;
+use actix_service::ServiceFactory;
+use actix_web::dev::{ServiceRequest, ServiceResponse};
+use actix_web::{App, Error};
+
+/// Add the core application routes.
+pub fn add_application_routes<T, B> (app: App<T>) -> App<T>
+where
+    B: MessageBody,
+    T: ServiceFactory<
+      ServiceRequest,
+      Config = (),
+      Response = ServiceResponse<B>,
+      Error = Error,
+      InitError = (),
+    >,
+{
+
+  let mut app = add_moderator_routes(app); // /moderation
+
+  app = add_user_routes(app); // /create_account, /session, /login, /logout, etc.
+  app = add_tts_routes(app); // /tts
+  app = add_media_file_routes(app); // /v1/media_files/...
+  app = add_featured_item_routes(app); // /v1/featured_item/...
+  app = add_subscription_routes(app); // /v1/subscriptions/...
+  app = add_weights_routes(app);
+  app = add_user_rating_routes(app); // /v1/user_rating/...
+  app = add_tag_routes(app); // /v1/tags
+  app = add_job_routes(app);
+  app = add_control_plane_routes(app); // /v1/control_plane/...
+  app = add_generate_routes(app); // /v1/generate/...
+  app = add_webhook_routes(app); // /v1/webhooks/...
+  app = add_stripe_artcraft_routes(app); // /v1/stripe_artcraft/...
+  app = add_credits_routes(app); // /v1/credits/...
+  
+  app
+}

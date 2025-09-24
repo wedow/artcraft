@@ -81,6 +81,7 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::Error;
 use actix_web::{web, App, HttpResponse};
+use crate::http_server::deprecated_endpoints::events::list_events::list_events_handler;
 
 pub fn add_legacy_routes<T, B> (app: App<T>) -> App<T>
 where
@@ -105,6 +106,7 @@ where
   app = add_voice_designer_routes(app); // /v1/voice_designer
   app = add_beta_key_routes(app); // /v1/beta_keys
   app = add_model_download_routes(app);
+  app = add_web_vc_routes(app); // /v1/voice_conversion
   app = add_studio_gen2_routes(app);
   app = add_image_studio_routes(app);
   app = add_workflow_routes(app);
@@ -141,6 +143,12 @@ where
 
   let app = app.service(web::resource("/leaderboard")
       .route(web::get().to(leaderboard_handler))
+      .route(web::head().to(|| HttpResponse::Ok()))
+  );
+
+  let app = app.service(
+    web::resource("/events")
+      .route(web::get().to(list_events_handler))
       .route(web::head().to(|| HttpResponse::Ok()))
   );
   
