@@ -11,6 +11,9 @@ import {
 import { ArtCraftSignUp } from "./artcraft-signup";
 import { UsersApi } from "@storyteller/api";
 import { useLoginModalStore } from "./useLoginModalStore";
+
+const SIGNUP_SOURCE_ARTCRAFT = "artcraft";
+
 interface LoginModalProps {
   onClose?: () => void;
   videoSrc2D?: string;
@@ -249,6 +252,7 @@ export function LoginModal({
                     email,
                     password,
                     passwordConfirmation,
+                    signupSource: SIGNUP_SOURCE_ARTCRAFT,
                   });
                   console.log(signupResponse);
 

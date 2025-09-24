@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-#!/usr/bin/env bash
-
 set -euxo pipefail
 
 # Kill any process running on port 5741, which will block startup
