@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { netlifyPlugin } from "@netlify/remix-edge-adapter/plugin";
 import path from 'path'
 import { resolve } from 'node:path'
 
@@ -15,13 +14,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(__dirname, 'app/index.html'),
-        login: resolve(__dirname, 'app/login.html'),
-        signup: resolve(__dirname, 'app/signup.html'),
       },
     },
   },
   plugins: [
-    netlifyPlugin(),
     tsconfigPaths(),
   ],
   server: {
