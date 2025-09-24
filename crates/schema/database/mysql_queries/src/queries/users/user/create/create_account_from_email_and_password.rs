@@ -3,11 +3,12 @@
 #![forbid(unused_mut)]
 #![forbid(unused_variables)]
 
-use sqlx::MySqlPool;
-use enums::by_table::users::user_signup_method::UserSignupMethod;
 use crate::queries::users::user::create::create_account_error::CreateAccountError;
 use crate::queries::users::user::create::create_account_generic::{create_account_generic, GenericCreateAccountArgs};
 use crate::utils::transactor::Transactor;
+use enums::by_table::users::user_signup_method::UserSignupMethod;
+use enums::by_table::users::user_signup_source::UserSignupSource;
+use sqlx::MySqlPool;
 use tokens::tokens::users::UserToken;
 
 pub struct CreateAccountFromEmailPasswordArgs<'a> {
@@ -17,7 +18,7 @@ pub struct CreateAccountFromEmailPasswordArgs<'a> {
   pub email_gravatar_hash: &'a str,
   pub password_hash: &'a str,
   pub ip_address: &'a str,
-  pub maybe_source: Option<&'a str>,
+  pub maybe_source: Option<UserSignupSource>,
 
   /// In production code, send this as `None`.
   /// Only provide an external user token for db integration tests and db seeding tools.

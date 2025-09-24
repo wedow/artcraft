@@ -186,8 +186,8 @@ CREATE TABLE users (
   -- ========== TRACKING ==========
 
   -- Where the user signed up from (NOT NECESSARILY AN ENUM!)
-  -- For now this will be "fakeyou" and "storyteller", but we may extend
-  -- or overload this to handle other cases or metadata.
+  -- For now this will be "artcraft", "fakeyou", or "storyteller", 
+  -- though we may extend or overload this to handle other cases or metadata.
   maybe_source VARCHAR(255) DEFAULT NULL,
 
   -- How users created their account

@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 
-use crate::http_server::requests::get_request_signup_source::get_request_signup_source;
+use crate::http_server::requests::get_request_signup_source::get_request_signup_source_enum;
 use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
 use crate::http_server::validations::is_reserved_username::is_reserved_username;
 use crate::http_server::validations::validate_passwords::validate_passwords;
@@ -17,6 +17,7 @@ use crate::util::enroll_in_studio::enroll_in_studio;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse};
+use enums::by_table::users::user_signup_source::UserSignupSource;
 use http_server_common::request::get_request_ip::get_request_ip;
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use log::{info, warn};
@@ -36,6 +37,10 @@ pub struct CreateAccountRequest {
   pub password: String,
   pub password_confirmation: String,
   pub email_address: String,
+  
+  /// Optional: Source of the signup, e.g. "artcraft", "fakeyou", "storyteller", etc.
+  /// If not provided, we try to infer it from the Origin header instead.
+  pub signup_source: Option<UserSignupSource>,
 }
 
 #[derive(ToSchema, Serialize)]
@@ -184,7 +189,11 @@ pub async fn create_account_handler(
 
   let ip_address = get_request_ip(&http_request);
 
-  let maybe_source = get_request_signup_source(&http_request);
+  let mut maybe_source = request.signup_source;
+  
+  if maybe_source.is_none() {
+    maybe_source = get_request_signup_source_enum(&http_request);
+  }
 
   let create_account_result = create_account_from_email_and_password(
     &mysql_pool,

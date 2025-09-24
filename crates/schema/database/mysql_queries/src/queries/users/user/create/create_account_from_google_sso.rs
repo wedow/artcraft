@@ -7,6 +7,7 @@ use crate::queries::users::user::create::create_account_error::CreateAccountErro
 use crate::queries::users::user::create::create_account_generic::{create_account_generic, GenericCreateAccountArgs};
 use crate::utils::transactor::Transactor;
 use enums::by_table::users::user_signup_method::UserSignupMethod;
+use enums::by_table::users::user_signup_source::UserSignupSource;
 use tokens::tokens::users::UserToken;
 
 /// SSO accounts do not have passwords at account creation
@@ -22,7 +23,7 @@ pub struct CreateAccountFromGoogleSsoArgs<'a> {
   pub email_confirmed_by_google: bool,
 
   pub ip_address: &'a str,
-  pub maybe_source: Option<&'a str>,
+  pub maybe_source: Option<UserSignupSource>,
 
   /// Comma separated string of feature flags.
   pub maybe_feature_flags: Option<&'a str>,

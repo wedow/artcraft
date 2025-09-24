@@ -1,6 +1,6 @@
 use crate::http_server::endpoints::users::google_sso::google_sso_handler::GoogleCreateAccountErrorResponse;
 use crate::http_server::endpoints::users::google_sso::handle_new_sso_account::NewSsoAccountInfo;
-use crate::http_server::requests::get_request_signup_source::get_request_signup_source;
+use crate::http_server::requests::get_request_signup_source::{get_request_signup_source, get_request_signup_source_enum};
 use crate::http_server::session::lookup::user_session_feature_flags::UserSessionFeatureFlags;
 use crate::util::email_to_gravatar::email_to_gravatar;
 use crate::util::generate_random_username::generate_random_username;
@@ -42,7 +42,7 @@ pub async fn handle_new_sso_account_for_new_user(
   let ip_address = get_request_ip(&args.http_request);
   let user_email_gravatar_hash = email_to_gravatar(&args.user_email_address);
 
-  let mut maybe_source = get_request_signup_source(&args.http_request);
+  let mut maybe_source = get_request_signup_source_enum(&args.http_request);
 
   let mut maybe_user_token = None;
   let mut maybe_user_display_name = None;

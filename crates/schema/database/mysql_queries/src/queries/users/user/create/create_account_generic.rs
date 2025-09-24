@@ -5,9 +5,10 @@
 
 use crate::queries::users::user::create::create_account_error::CreateAccountError;
 use crate::utils::transactor::Transactor;
+use enums::by_table::users::user_signup_method::UserSignupMethod;
+use enums::by_table::users::user_signup_source::UserSignupSource;
 use log::warn;
 use sqlx::error::Error::Database;
-use enums::by_table::users::user_signup_method::UserSignupMethod;
 use tokens::tokens::users::UserToken;
 
 pub struct GenericCreateAccountArgs<'a> {
@@ -28,7 +29,7 @@ pub struct GenericCreateAccountArgs<'a> {
   pub is_without_password: bool,
 
   pub ip_address: &'a str,
-  pub maybe_source: Option<&'a str>,
+  pub maybe_source: Option<UserSignupSource>,
   pub maybe_signup_method: Option<UserSignupMethod>,
 
   /// Comma separated string of feature flags.
@@ -119,7 +120,7 @@ SET
       args.ip_address,
       args.ip_address,
 
-      args.maybe_source,
+      args.maybe_source.map(|s| s.to_str()),
       args.maybe_signup_method.map(|m| m.to_str()),
     );
 
