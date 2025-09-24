@@ -19,7 +19,7 @@ CREATE TABLE analytics_active_users (
   -- Incrementing count of events.
   -- NB: This is kind of an "hours spent" measure, but will lose information if we ever
   -- change the ping cadence (eg. 1 minute pings --> 5 minute pings).
-  ping_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  measurement_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
 
   -- ========== RECORD TIMESTAMPS ==========
 
