@@ -366,6 +366,7 @@ dependencies = [
  "cidr-utils",
  "errors",
  "futures-util",
+ "log",
  "num-traits",
  "serde",
  "serde_json",

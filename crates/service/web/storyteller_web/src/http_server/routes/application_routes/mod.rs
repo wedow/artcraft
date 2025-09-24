@@ -17,3 +17,4 @@ mod webhook_routes;
 mod weights_routes;
 pub (super) mod add_application_routes;
 mod prompts_routes;
+mod analytics_routes;

@@ -1,3 +1,4 @@
+use crate::http_server::routes::application_routes::analytics_routes::add_analytics_routes;
 use crate::http_server::routes::application_routes::comments_routes::add_comments_routes;
 use crate::http_server::routes::application_routes::credits_routes::add_credits_routes;
 use crate::http_server::routes::application_routes::featured_item_routes::add_featured_item_routes;
@@ -5,6 +6,7 @@ use crate::http_server::routes::application_routes::generate_routes::add_generat
 use crate::http_server::routes::application_routes::job_routes::add_job_routes;
 use crate::http_server::routes::application_routes::media_files_routes::add_media_file_routes;
 use crate::http_server::routes::application_routes::moderation_routes::add_moderator_routes;
+use crate::http_server::routes::application_routes::prompts_routes::add_prompts_routes;
 use crate::http_server::routes::application_routes::stripe_artcraft_routes::add_stripe_artcraft_routes;
 use crate::http_server::routes::application_routes::subscription_routes::add_subscription_routes;
 use crate::http_server::routes::application_routes::tag_routes::add_tag_routes;
@@ -20,7 +22,6 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{App, Error};
 use billing_component::default_routes::add_suggested_stripe_billing_routes;
-use crate::http_server::routes::application_routes::prompts_routes::add_prompts_routes;
 
 /// Add the core application routes.
 pub fn add_application_routes<T, B> (app: App<T>) -> App<T>
@@ -54,6 +55,9 @@ where
 
   // Job system
   app = add_job_routes(app);
+
+  // Other useful tools
+  app = add_analytics_routes(app); // /v1/analytics/...
 
   // User and user-adjacent routes
   app = add_comments_routes(app); // /v1/comments/...

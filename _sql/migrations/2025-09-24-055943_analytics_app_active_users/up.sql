@@ -14,7 +14,7 @@ CREATE TABLE analytics_app_active_users (
   user_token VARCHAR(32) NOT NULL,
 
   -- App version is updated on every write.
-  app_version VARCHAR(32) NOT NULL,
+  app_version VARCHAR(255) NOT NULL,
 
   -- IP address is updated on every write.
   ip_address VARCHAR(40) NOT NULL,

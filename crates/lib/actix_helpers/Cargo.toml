@@ -18,15 +18,18 @@ normal = ["workspace-build-acceleration"]
 
 [dependencies]
 # Workspace hack (faster compile times)
-workspace-build-acceleration = { workspace = true }
+workspace-build-acceleration.workspace = true
 
 # Internal
-errors = { workspace = true }
+errors.workspace = true
+
+# External
+log.workspace = true
 
 # Actix
-actix-http = { workspace = true }
-actix-service = { workspace = true }
-actix-web = { workspace = true }
+actix-http.workspace = true
+actix-service.workspace = true
+actix-web.workspace = true
 
 # IPv4 and v6 CIDRs (crate has few dependencies)
 cidr-utils = "0.5.11"
@@ -36,8 +39,8 @@ num-traits = "0.2.17" # for cidr-utils
 futures-util = "0.3.29"
 
 # Serialization
-serde = { workspace = true }
-serde_json = { workspace = true }
+serde.workspace = true
+serde_json.workspace = true
 
 [dev-dependencies]
 # None yet
