@@ -1,9 +1,10 @@
+use crate::errors::mysql_error::{CrateError, MysqlError};
 use log::error;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
-pub enum MysqlUpsertError {
+pub enum UpsertError {
   /// A duplicate key error occurred.
   DuplicateKeyError(String),
 
@@ -11,18 +12,20 @@ pub enum MysqlUpsertError {
   SqlxError(sqlx::Error),
 }
 
-impl Error for MysqlUpsertError {}
+impl Error for UpsertError {}
 
-impl Display for MysqlUpsertError {
+impl CrateError for UpsertError {}
+
+impl Display for UpsertError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      MysqlUpsertError::DuplicateKeyError(reason) => write!(f, "DuplicateKeyError: {}", reason),
-      MysqlUpsertError::SqlxError(e) => write!(f, "SQLx error: {:?}", e),
+      UpsertError::DuplicateKeyError(reason) => write!(f, "DuplicateKeyError: {}", reason),
+      UpsertError::SqlxError(e) => write!(f, "SQLx error: {:?}", e),
     }
   }
 }
 
-impl From<sqlx::Error> for MysqlUpsertError {
+impl From<sqlx::Error> for UpsertError {
   fn from(err: sqlx::Error) -> Self {
     if let Some(db_err) = err.as_database_error() {
       // NB: SQLSTATE[23000]: Integrity constraint violation
@@ -37,5 +40,12 @@ impl From<sqlx::Error> for MysqlUpsertError {
     }
 
     Self::SqlxError(err)
+  }
+}
+
+impl From<sqlx::Error> for MysqlError<UpsertError> {
+  fn from(err: sqlx::Error) -> Self {
+    let inner = UpsertError::from(err);
+    MysqlError { inner }
   }
 }
