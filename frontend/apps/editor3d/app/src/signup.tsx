@@ -30,6 +30,8 @@ const ENV = {
   DEPLOY_PRIME_URL: "https://studio.storyteller.ai",
 };
 
+const SIGNUP_SOURCE = "artcraft";
+
 export default function SignUpScreen() {
   useSignals();
   const navigate = useNavigate();
@@ -81,6 +83,7 @@ export default function SignUpScreen() {
           email: email!,
           password: password!,
           passwordConfirmation: passwordConfirmation!,
+          signupSource: SIGNUP_SOURCE,
         }).then((error) => {
           console.log("Error occured", error);
           if (error) {

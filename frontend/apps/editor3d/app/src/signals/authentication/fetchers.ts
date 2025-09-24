@@ -57,13 +57,17 @@ export const signUp = async ({
   email,
   password,
   passwordConfirmation,
+  signupSource,
 }: {
   username: string;
   email: string;
   password: string;
   passwordConfirmation: string;
+  signupSource?: string;
 }) => {
   updateAuthStatus(AUTH_STATUS.LOGGING);
+
+  console.log(">>> Signup with source: ", signupSource);
 
   const usersApi = new UsersApi();
   const response = await usersApi.Signup({
@@ -71,6 +75,7 @@ export const signUp = async ({
     password,
     passwordConfirmation,
     username,
+    signupSource,
   });
   console.log(response);
   if (!response.success || !response.data) {

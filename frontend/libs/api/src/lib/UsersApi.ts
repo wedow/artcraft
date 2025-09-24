@@ -2,6 +2,14 @@ import { ApiManager, ApiResponse } from "./ApiManager.js";
 import { UserInfo } from "./models/Users.js";
 import { FetchProxy as fetch } from "@storyteller/tauri-utils";
 
+interface SignupRequest {
+  username: string;
+  email_address: string;
+  password: string;
+  password_confirmation: string;
+  signup_source?: string;
+};
+
 export class UsersApi extends ApiManager {
   private async authFetch<B, T>(
     endpoint: string,
@@ -149,28 +157,28 @@ export class UsersApi extends ApiManager {
     email,
     password,
     passwordConfirmation,
+    signupSource,
   }: {
     username: string;
     email: string;
     password: string;
     passwordConfirmation: string;
+    signupSource?: string;
   }): Promise<ApiResponse<{ signedSession?: string }>> {
     const endpoint = `${this.getApiSchemeAndHost()}/v1/create_account`;
-    const body = {
+    const body : SignupRequest = {
       email_address: email,
       password,
       password_confirmation: passwordConfirmation,
       username,
     };
+    if (!!signupSource) {
+      body.signup_source = signupSource;
+    }
 
     try {
       const response = await this.authFetch<
-        {
-          username: string;
-          email_address: string;
-          password: string;
-          password_confirmation: string;
-        },
+        SignupRequest,
         {
           success: boolean;
           signed_session?: string;
