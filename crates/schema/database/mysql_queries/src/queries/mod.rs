@@ -1,3 +1,5 @@
+
+pub mod analytics_totals;
 pub mod api_tokens;
 pub mod audit_logs;
 pub mod batch_generations;
@@ -36,5 +38,5 @@ pub mod voice_clone_requests;
 pub mod voice_conversion;
 pub mod voice_designer;
 pub mod w2l;
+pub mod wallet_ledger_entries;
 pub mod wallets;
-mod wallet_ledger_entries;
