@@ -1,1 +1,1 @@
-mod upsert_analytics_active_user;
+mod upsert_analytics_app_active_user;

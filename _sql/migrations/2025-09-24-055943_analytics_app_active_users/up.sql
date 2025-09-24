@@ -2,7 +2,7 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 -- noinspection SqlResolveForFile
 
-CREATE TABLE analytics_active_users (
+CREATE TABLE analytics_app_active_users (
   -- Not used for anything except replication.
   id BIGINT(20) NOT NULL AUTO_INCREMENT,
 
@@ -12,6 +12,9 @@ CREATE TABLE analytics_active_users (
 
   -- Who sent the event.
   user_token VARCHAR(32) NOT NULL,
+
+  -- App version is updated on every write.
+  app_version VARCHAR(32) NOT NULL,
 
   -- IP address is updated on every write.
   ip_address VARCHAR(40) NOT NULL,

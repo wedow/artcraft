@@ -6,33 +6,40 @@ use sqlx::query::Query;
 use sqlx::MySql;
 use tokens::tokens::users::UserToken;
 
-pub struct UpsertAnalyticsActiveUser {
+pub struct UpsertAnalyticsAppActiveUser<'a> {
   // TODO: Swap PaymentsNamespace (artcraft,fakeyou) for an AnalyticsNamespace enum.
   pub namespace: PaymentsNamespace,
-  pub user_token: UserToken,
-  pub ip_address: String,
+  pub user_token: &'a UserToken,
+  pub ip_address: &'a str,
+  pub app_version: &'a str,
 }
 
-impl UpsertAnalyticsActiveUser {
+impl <'a> UpsertAnalyticsAppActiveUser<'a> {
   fn query(&self) -> Query<MySql, MySqlArguments> {
     sqlx::query!(
         r#"
-INSERT INTO analytics_active_users
+INSERT INTO analytics_app_active_users
 SET
   app_namespace = ?,
   user_token = ?,
+  app_version = ?,
   ip_address = ?,
   measurement_count = measurement_count + 1,
   first_active_at = NOW(),
   last_active_at = NOW()
 ON DUPLICATE KEY UPDATE
+  app_version = ?,
   ip_address = ?,
   measurement_count = measurement_count + 1,
   last_active_at = NOW()
         "#,
-      &self.namespace.to_str(),
-      &self.user_token.as_str(),
-      &self.ip_address,
+      // Insert case
+      self.namespace.to_str(),
+      self.user_token.as_str(),
+      self.app_version,
+      self.ip_address,
+      // Update case
+      self.app_version,
       self.ip_address,
     )
   }

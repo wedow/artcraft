@@ -2,4 +2,4 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 -- noinspection SqlResolveForFile
 
-drop table analytics_active_users;
+drop table analytics_app_active_users;
