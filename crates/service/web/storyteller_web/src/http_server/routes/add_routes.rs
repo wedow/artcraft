@@ -93,43 +93,9 @@ pub fn add_routes<T, B> (app: App<T>, server_environment: ServerEnvironment) -> 
 
   // ==================== COMPONENTS ====================
 
-  app = add_suggested_stripe_billing_routes(app); // /stripe, billing, webhooks, etc.
  
   app
 }
 
 
-
-// ==================== WEB VOICE CONVERSION ROUTES ====================
-
-fn add_web_vc_routes<T, B> (app: App<T>) -> App<T>
-  where
-      B: MessageBody,
-      T: ServiceFactory<
-        ServiceRequest,
-        Config = (),
-        Response = ServiceResponse<B>,
-        Error = Error,
-        InitError = (),
-      >,
-{
-  app.service(
-    web::scope("/v1/voice_conversion")
-        .service(
-          web::resource("/inference")
-              .route(web::post().to(enqueue_voice_conversion_inference_handler))
-              .route(web::head().to(|| HttpResponse::Ok()))
-        )
-        .service(
-          web::resource("/seed_vc_inference")
-            .route(web::post().to(enqueue_infer_seed_vc_handler))
-            .route(web::head().to(|| HttpResponse::Ok()))
-        )
-        .service(
-          web::resource("/model_list")
-              .route(web::get().to(list_voice_conversion_models_handler))
-              .route(web::head().to(|| HttpResponse::Ok()))
-        )
-  )
-}
 

@@ -4,7 +4,7 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error, HttpResponse};
 
-pub fn add_control_plane_routes<T, B> (app: App<T>) -> App<T>
+pub fn add_control_plane_sora_routes<T, B> (app: App<T>) -> App<T>
 where
     B: MessageBody,
     T: ServiceFactory<

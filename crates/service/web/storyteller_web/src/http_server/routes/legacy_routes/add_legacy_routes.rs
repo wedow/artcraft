@@ -15,6 +15,7 @@ use crate::http_server::deprecated_endpoints::conversion::enqueue_render_engine_
 use crate::http_server::deprecated_endpoints::engine::create_scene_handler::create_scene_handler;
 use crate::http_server::deprecated_endpoints::engine::get_scene_handler::get_scene_handler;
 use crate::http_server::deprecated_endpoints::engine::update_scene_handler::update_scene_handler;
+use crate::http_server::deprecated_endpoints::events::list_events::list_events_handler;
 use crate::http_server::deprecated_endpoints::flags::design_refresh_flag::disable_design_refresh_flag_handler::disable_design_refresh_flag_handler;
 use crate::http_server::deprecated_endpoints::flags::design_refresh_flag::enable_design_refresh_flag_handler::enable_design_refresh_flag_handler;
 use crate::http_server::deprecated_endpoints::investor_demo::disable_demo_mode_handler::disable_demo_mode_handler;
@@ -70,10 +71,12 @@ use crate::http_server::endpoints::voice_designer::voices::list_voices_by_sessio
 use crate::http_server::endpoints::voice_designer::voices::list_voices_by_user::list_voices_by_user_handler;
 use crate::http_server::endpoints::voice_designer::voices::search_voices::search_voices;
 use crate::http_server::endpoints::voice_designer::voices::update_voice::update_voice_handler;
-use crate::http_server::routes::legacy_routes::add_image_studio_routes::add_image_studio_routes;
-use crate::http_server::routes::legacy_routes::add_studio_gen2_routes::add_studio_gen2_routes;
 use crate::http_server::routes::legacy_routes::beta_key_routes::add_beta_key_routes;
+use crate::http_server::routes::legacy_routes::control_plane_sora_routes::add_control_plane_sora_routes;
+use crate::http_server::routes::legacy_routes::image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::legacy_routes::model_download_routes::add_model_download_routes;
+use crate::http_server::routes::legacy_routes::studio_gen2_routes::add_studio_gen2_routes;
+use crate::http_server::routes::legacy_routes::web_vc_routes::add_web_vc_routes;
 use crate::http_server::routes::legacy_routes::workflow_routes::add_workflow_routes;
 use actix_helpers::route_builder::RouteBuilder;
 use actix_http::body::MessageBody;
@@ -81,7 +84,6 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::Error;
 use actix_web::{web, App, HttpResponse};
-use crate::http_server::deprecated_endpoints::events::list_events::list_events_handler;
 
 pub fn add_legacy_routes<T, B> (app: App<T>) -> App<T>
 where
@@ -109,6 +111,7 @@ where
   app = add_web_vc_routes(app); // /v1/voice_conversion
   app = add_studio_gen2_routes(app);
   app = add_image_studio_routes(app);
+  app = add_control_plane_sora_routes(app); // /v1/control_plane/...
   app = add_workflow_routes(app);
   app = add_engine_routes(app); // /v1/engine/...
   app = add_desktop_app_routes(app); // /v1/vc/...
