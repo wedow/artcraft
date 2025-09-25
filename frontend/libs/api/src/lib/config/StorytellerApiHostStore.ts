@@ -39,7 +39,7 @@ export class StorytellerApiHostStore {
 
   /** Get the API scheme and host. */
   public getApiSchemeAndHost(): string {
-    console.warn("StorytellerApiHostStore.getApiSchemeAndHost()", this.apiSchemeAndHost, this.constructor.name);
+    console.debug("StorytellerApiHostStore.getApiSchemeAndHost()", this.apiSchemeAndHost, this.constructor.name);
     return this.apiSchemeAndHost;
   }
 
@@ -48,7 +48,7 @@ export class StorytellerApiHostStore {
    * This is used to sync with Tauri for enabling easier development.
    */
   public setApiSchemeAndHost(apiSchemeAndHost: string) {
-    console.warn("StorytellerApiHostStore.setApiSchemeAndHost()", apiSchemeAndHost, this.constructor.name);
+    console.debug("StorytellerApiHostStore.setApiSchemeAndHost()", apiSchemeAndHost, this.constructor.name);
 
     // TODO(bt,2025-07-06): Actually parse URL.
     if (!apiSchemeAndHost.startsWith("http://") && !apiSchemeAndHost.startsWith("https://")) {
@@ -60,7 +60,6 @@ export class StorytellerApiHostStore {
       throw new Error(`Path components should not be included in URL: ${apiSchemeAndHost}`);
     }
 
-    console.warn("StorytellerApiHostStore.setApiSchemeAndHost()", apiSchemeAndHost, this.constructor.name, "SET");
     this.apiSchemeAndHost = apiSchemeAndHost;
   }
 
