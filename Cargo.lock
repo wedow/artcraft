@@ -679,6 +679,7 @@ dependencies = [
  "mimetypes",
  "once_cell",
  "openai_sora_client",
+ "os_info",
  "primitives",
  "rand 0.9.1",
  "reqwest 0.12.22",
@@ -7608,6 +7609,17 @@ checksum = "9aa2b01e1d916879f73a53d01d1d6cee68adbb31d6d9177a8cfce093cced1d50"
 dependencies = [
  "futures-core",
  "pin-project-lite",
+]
+
+[[package]]
+name = "os_info"
+version = "3.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0e1ac5fde8d43c34139135df8ea9ee9465394b2d8d20f032d38998f64afffc3"
+dependencies = [
+ "log",
+ "plist",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]

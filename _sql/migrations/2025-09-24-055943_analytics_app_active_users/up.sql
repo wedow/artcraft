@@ -18,6 +18,14 @@ CREATE TABLE analytics_app_active_users (
   app_version VARCHAR(255) DEFAULT NULL,
 
   -- Updated on every write.
+  -- The OS platform for the client.
+  os_platform VARCHAR(16) DEFAULT NULL,
+
+  -- Updated on every write.
+  -- The OS platform version for the client.
+  os_version VARCHAR(64) DEFAULT NULL,
+
+  -- Updated on every write.
   -- How long the current user's session has been open
   session_duration_seconds INT(10) UNSIGNED DEFAULT NULL,
 
@@ -41,6 +49,9 @@ CREATE TABLE analytics_app_active_users (
   -- ========== INDICES ==========
   PRIMARY KEY (id),
   UNIQUE KEY (app_namespace, user_token), -- For now
+  INDEX idx_os_platform (os_platform),
+  INDEX idx_os_version (os_version),
+  INDEX idx_app_version (app_version),
   INDEX idx_last_active_at (last_active_at)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

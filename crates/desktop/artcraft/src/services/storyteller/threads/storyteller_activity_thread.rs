@@ -2,6 +2,7 @@ use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::core::state::os_platform::OsPlatform;
 use crate::core::state::task_database::TaskDatabase;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
@@ -17,6 +18,7 @@ use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::time::Instant;
+use os_info::Info;
 use storyteller_client::analytics::log_active_user::log_active_user;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::error::api_error::ApiError;
@@ -36,11 +38,13 @@ pub async fn storyteller_activity_thread(
   storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
   let startup = Instant::now();
+  let os_info = os_info::get();
   loop {
     let res = polling_loop(
       &app_env_configs,
       &storyteller_creds_manager,
       startup,
+      &os_info,
     ).await;
     if let Err(err) = res {
       error!("An error occurred: {:?}", err);
@@ -54,6 +58,7 @@ async fn polling_loop(
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
   startup: Instant,
+  os_info: &Info,
 ) -> AnyhowResult<()> {
   loop {
     let creds = storyteller_creds_manager.get_credentials()?;
@@ -74,9 +79,18 @@ async fn polling_loop(
 
     let time_since_startup = Instant::now().duration_since(startup);
 
+    let maybe_os_platform = OsPlatform::maybe_get_str()
+        .map(|s| s.to_string());
+
+    let maybe_os_version = Some(os_info.version().to_string())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+
     let request = LogAppActiveUserRequest {
       maybe_app_name: Some(CLIENT_NAME.to_string()),
       maybe_app_version: Some(CLIENT_VERSION.to_string()),
+      maybe_os_platform,
+      maybe_os_version,
       maybe_session_duration_seconds: Some(time_since_startup.as_secs()),
     };
 

@@ -15,6 +15,14 @@ pub async fn log_active_user(
   
   let mut query = HashMap::new();
 
+  if let Some(os_platform) = request.maybe_os_platform {
+    query.insert("maybe_os_platform".to_string(), os_platform);
+  }
+  
+  if let Some(os_version) = request.maybe_os_version {
+    query.insert("maybe_os_version".to_string(), os_version);
+  }
+  
   if let Some(app_name) = request.maybe_app_name {
     query.insert("maybe_app_name".to_string(), app_name);
   }

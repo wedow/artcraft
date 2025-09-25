@@ -94,6 +94,8 @@ pub async fn log_app_active_user_handler(
     user_token: &user_token,
     ip_address: &ip_address,
     app_version: app_version.as_deref(),
+    os_platform: request.maybe_os_platform.as_deref(),
+    os_version: request.maybe_os_version.as_deref(),
     session_duration_seconds: request.maybe_session_duration_seconds,
   };
 

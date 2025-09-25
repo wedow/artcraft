@@ -17,6 +17,15 @@ impl OsPlatform {
       _ => None,
     }
   }
+  
+  pub fn maybe_get_str() -> Option<&'static str> {
+    match Self::maybe_get() {
+      Some(Self::Linux) => Some("linux"),
+      Some(Self::Windows) => Some("windows"),
+      Some(Self::MacOs) => Some("macos"), // NB: "apple" can become "macos".
+      None => None,
+    }
+  }
 
   pub fn get() -> Self {
     Self::maybe_get().unwrap_or(Self::Linux)

@@ -83,11 +83,21 @@ fn get_route(api_host: &ApiHost, route_path: &str, query_params: &HashMap<String
 
   // NB: This is not safe. It doesn't handle URL encoding, "?", "&", etc.
   for (key, value) in query_params {
-    builder.add_param(key, value);
+    let value = filter_string(value);
+    builder.add_param(key, &value);
   }
 
   // NB: This isn't very safe.
   builder.build()
+}
+
+// TODO: Please stop using this URL Builder library. It's not very safe or intuitive.
+fn filter_string(string: &str) -> String {
+  string.trim()
+      .replace(" ", "")
+      .replace("&", "")
+      .replace("=", "")
+      .replace("?", "")
 }
 
 #[cfg(test)]

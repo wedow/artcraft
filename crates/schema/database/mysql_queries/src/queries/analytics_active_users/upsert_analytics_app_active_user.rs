@@ -13,6 +13,8 @@ pub struct UpsertAnalyticsAppActiveUser<'a> {
   pub user_token: &'a UserToken,
   pub ip_address: &'a str,
   pub app_version: Option<&'a str>,
+  pub os_platform: Option<&'a str>,
+  pub os_version: Option<&'a str>,
   pub session_duration_seconds: Option<u64>,
 }
 
@@ -25,6 +27,8 @@ SET
   app_namespace = ?,
   user_token = ?,
   app_version = ?,
+  os_platform = ?,
+  os_version = ?,
   session_duration_seconds = ?,
   ip_address = ?,
   measurement_count = measurement_count + 1,
@@ -32,6 +36,8 @@ SET
   last_active_at = NOW()
 ON DUPLICATE KEY UPDATE
   app_version = ?,
+  os_platform = ?,
+  os_version = ?,
   session_duration_seconds = ?,
   ip_address = ?,
   measurement_count = measurement_count + 1,
@@ -41,10 +47,14 @@ ON DUPLICATE KEY UPDATE
       self.namespace.to_str(),
       self.user_token.as_str(),
       self.app_version,
+      self.os_platform,
+      self.os_version,
       self.session_duration_seconds,
       self.ip_address,
       // Update case
       self.app_version,
+      self.os_platform,
+      self.os_version,
       self.session_duration_seconds,
       self.ip_address,
     )

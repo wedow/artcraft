@@ -57,15 +57,16 @@ image = "0.25.5"
 indexmap.workspace = true
 log.workspace = true
 once_cell.workspace = true
+os_info = { version = "3.12.0", default-features = false }
 rand.workspace = true
 reqwest = { workspace = true, features = ["multipart", "stream"], default-features = false } # NB(bt,2025-03-10): default-features = false on Windows while I debug openssl / rustls
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
-tauri.workspace = true
 tauri-plugin-dialog.workspace = true
 tauri-plugin-log.workspace = true
 tauri-plugin-upload.workspace = true
+tauri.workspace = true
 tempdir.workspace = true
 tempfile.workspace = true
 tokio = { version = "1.42", features = ["rt", "rt-multi-thread", "fs"] }
