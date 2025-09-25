@@ -64,7 +64,7 @@ export const PromptBoxImage = ({
 }: PromptBoxImageProps) => {
   useSignals();
 
-  console.log("Selected model:", selectedModel);
+  console.debug("Selected model:", selectedModel);
 
   useEffect(() => {
     if (imageMediaId && url) {
