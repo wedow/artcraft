@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\nINSERT INTO analytics_app_active_users\nSET\n  app_namespace = ?,\n  user_token = ?,\n  app_version = ?,\n  ip_address = ?,\n  measurement_count = measurement_count + 1,\n  first_active_at = NOW(),\n  last_active_at = NOW()\nON DUPLICATE KEY UPDATE\n  app_version = ?,\n  ip_address = ?,\n  measurement_count = measurement_count + 1,\n  last_active_at = NOW()\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "ddbe1b1079e1fb9a5f400a2fe4247002a267832c16cbca1eca887a2b3e9bc2ad"
+}

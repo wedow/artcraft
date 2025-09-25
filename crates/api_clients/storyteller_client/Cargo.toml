@@ -49,7 +49,7 @@ serde_json.workspace = true
 backoff = { version = "0.4.0", features = ["futures"] }  # Exponential backoff retry
 uuid = { version = "1.8.0", features = ["v4"] }
 
-# NB: This is not a very mature URL builder library.
+# TODO: This is not a very mature, safe, or intuitive URL builder library. Please replace it!
 url-builder = "0.1.1"
 
 [dev-dependencies]

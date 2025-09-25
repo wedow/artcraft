@@ -22,6 +22,7 @@ pub async fn basic_query_string_post_request<Res: DeserializeOwned>(
   query_params: &HashMap<String, String>,
 ) -> Result<Res, StorytellerError> {
 
+  // TODO: Please stop using this URL Builder library. It's not very safe or intuitive.
   let url = get_route(api_host, route_path, query_params);
 
   info!("Requesting {:?}", &url);
@@ -62,7 +63,7 @@ pub async fn basic_query_string_post_request<Res: DeserializeOwned>(
   Ok(response)
 }
 
-// TODO: Please stop doing this.
+// TODO: Please stop using this URL Builder library. It's not very safe or intuitive.
 fn get_route(api_host: &ApiHost, route_path: &str, query_params: &HashMap<String, String>) -> String {
   let mut builder = URLBuilder::new();
 
