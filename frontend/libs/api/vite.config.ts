@@ -33,6 +33,17 @@ export default defineConfig(() => ({
       // External packages that should not be bundled into your library.
       external: []
     },
+    // NB(bt,2025-09-25): This mangling config doesn't seem like it works: 
+    //terserOptions: {
+    //  compress: {
+    //    keep_classnames: true,
+    //    keep_fnames: true,
+    //  },
+    //  mangle: {
+    //    keep_classnames: true,
+    //    keep_fnames: true,
+    //  }
+    //},
   },
   test: {
     watch: false,
