@@ -10662,6 +10662,7 @@ dependencies = [
  "tokens",
  "tokio",
  "url",
+ "url-builder",
  "uuid 1.8.0",
  "workspace-build-acceleration",
 ]
@@ -12434,6 +12435,12 @@ dependencies = [
  "percent-encoding",
  "serde",
 ]
+
+[[package]]
+name = "url-builder"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c560d19163937c53680c515b82a9311c5a796691c67890b8ad579423123e194"
 
 [[package]]
 name = "url_config"

@@ -3,7 +3,7 @@ use utoipa::ToSchema;
 
 pub const LOG_ACTIVE_USER_PATH: &str = "/v1/analytics/active_user";
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug)]
 pub struct LogAppActiveUserRequest {
   /// An override for the application name.
   /// If set together with `maybe_app_version`, the two will be 

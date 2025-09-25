@@ -46,8 +46,11 @@ serde_derive.workspace = true
 serde_json.workspace = true
 
 # HTTP
-backoff = { version = "0.4.0", features = ["futures"] }
-uuid = { version = "1.8.0", features = ["v4"] } # Exponential backoff retry
+backoff = { version = "0.4.0", features = ["futures"] }  # Exponential backoff retry
+uuid = { version = "1.8.0", features = ["v4"] }
+
+# NB: This is not a very mature URL builder library.
+url-builder = "0.1.1"
 
 [dev-dependencies]
 tokio.workspace = true

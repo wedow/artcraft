@@ -5,6 +5,7 @@ use crate::state::server_state::ServerState;
 use actix_helpers::extractors::get_request_user_agent::get_request_user_agent;
 use actix_web::web::{Json, Query};
 use actix_web::{web, HttpRequest};
+use log::info;
 use artcraft_api_defs::analytics::log_active_user::{LogAppActiveUserRequest, LogAppActiveUserResponse};
 use enums::common::payments_namespace::PaymentsNamespace;
 use http_server_common::request::get_request_ip::get_request_ip;
@@ -45,6 +46,8 @@ pub async fn log_app_active_user_handler(
       .user_token;
 
   let ip_address = get_request_ip(&http_request);
+  
+  info!("Logging active user: {:?}", request);
 
   let app_version = {
     let user_agent = get_request_user_agent(&http_request);

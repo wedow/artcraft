@@ -1,18 +1,30 @@
 use crate::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use crate::error::storyteller_error::StorytellerError;
 use crate::utils::api_host::ApiHost;
-use crate::utils::basic_json_post_request::basic_json_post_request;
+use crate::utils::basic_query_string_post_request::basic_query_string_post_request;
 use artcraft_api_defs::analytics::log_active_user::{LogAppActiveUserRequest, LogAppActiveUserResponse, LOG_ACTIVE_USER_PATH};
+use std::collections::HashMap;
 
 pub async fn log_active_user(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,
   request: LogAppActiveUserRequest,
 ) -> Result<LogAppActiveUserResponse, StorytellerError> {
-  Ok(basic_json_post_request(
+
+  let mut query = HashMap::new();
+
+  if let Some(app_name) = request.maybe_app_name {
+    query.insert("maybe_app_name".to_string(), app_name);
+  }
+  
+  if let Some(app_version) = request.maybe_app_version {
+    query.insert("maybe_app_version".to_string(), app_version);
+  }
+
+  Ok(basic_query_string_post_request(
     api_host,
     LOG_ACTIVE_USER_PATH,
     maybe_creds,
-    request,
+    &query,
   ).await?)
 }
