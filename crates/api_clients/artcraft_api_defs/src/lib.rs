@@ -1,3 +1,4 @@
+pub mod analytics;
 pub mod common;
 pub mod credits;
 pub mod generate;

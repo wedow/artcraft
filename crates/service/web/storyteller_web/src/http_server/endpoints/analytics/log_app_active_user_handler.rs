@@ -2,24 +2,16 @@ use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::state::server_state::ServerState;
+use actix_helpers::extractors::get_request_user_agent::get_request_user_agent;
 use actix_web::web::{Json, Query};
 use actix_web::{web, HttpRequest};
+use artcraft_api_defs::analytics::log_active_user::{LogAppActiveUserRequest, LogAppActiveUserResponse};
 use enums::common::payments_namespace::PaymentsNamespace;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::queries::analytics_active_users::upsert_analytics_app_active_user::UpsertAnalyticsAppActiveUser;
 use utoipa::ToSchema;
-use actix_helpers::extractors::get_request_user_agent::get_request_user_agent;
 
-#[derive(Deserialize, ToSchema)]
-pub struct LogAppActiveUserRequest {
-  /// An override for the application version.
-  maybe_app_version: Option<String>,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct LogAppActiveUserResponse {
-  pub success: bool,
-}
+const CLIENT_WAIT_FOR_RETRY_MILLIS: u64 = 1_000 * 60 * 1; // Every minute
 
 /// Log an active app user - user must be logged in.
 #[utoipa::path(
@@ -51,26 +43,47 @@ pub async fn log_app_active_user_handler(
   let user_token = maybe_user_session
       .ok_or(CommonWebError::NotAuthorized)?
       .user_token;
-  
+
   let ip_address = get_request_ip(&http_request);
-  
+
   let app_version = {
     let user_agent = get_request_user_agent(&http_request);
 
-    let mut maybe_version = None;
+    let mut maybe_recorded_version = None;
 
     if let Some(user_agent) = user_agent {
-      maybe_version = Some(user_agent.to_string());
+      maybe_recorded_version = Some(user_agent.to_string());
     };
 
-    if let Some(version) = request.maybe_app_version.as_deref() {
-      let version = version.trim().to_string();
-      if !version.is_empty() {
-        maybe_version = Some(version);
-      }
+    let pair = (
+      request.maybe_app_name.as_deref(),
+      request.maybe_app_version.as_deref(),
+    );
+
+    match pair {
+      (Some(name), Some(version)) => {
+        let version = version.trim().to_string();
+        let name = name.trim().to_string();
+        if !version.is_empty() && !name.is_empty() {
+          maybe_recorded_version = Some(format!("{}/{}", name, version));
+        }
+      },
+      (Some(name), None) => {
+        let name = name.trim().to_string();
+        if !name.is_empty() {
+          maybe_recorded_version = Some(name);
+        }
+      },
+      (None, Some(version)) => {
+        let version = version.trim().to_string();
+        if !version.is_empty() {
+          maybe_recorded_version = Some(version);
+        }
+      },
+      _ => {}
     }
-    
-    maybe_version.unwrap_or_else(|| "unknown".to_string())
+
+    maybe_recorded_version.unwrap_or_else(|| "unknown".to_string())
   };
 
   let upsert = UpsertAnalyticsAppActiveUser {
@@ -79,11 +92,12 @@ pub async fn log_app_active_user_handler(
     ip_address: &ip_address,
     app_version: &app_version,
   };
-  
+
   upsert.upsert_with_connection(&mut mysql_connection).await?;
 
   Ok(Json(LogAppActiveUserResponse {
     success: true,
+    wait_for_retry_millis: CLIENT_WAIT_FOR_RETRY_MILLIS,
   }))
 }
 

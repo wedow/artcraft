@@ -1,2 +1,3 @@
 pub mod events;
+pub mod storyteller_activity_thread;
 pub mod storyteller_task_polling_thread;

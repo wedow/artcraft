@@ -1,5 +1,6 @@
-//! An API client for Storyteller / FakeYou
+//! An API client for Artcraft / Storyteller / FakeYou
 
+pub mod analytics;
 pub mod credentials;
 pub mod credits;
 pub mod error;

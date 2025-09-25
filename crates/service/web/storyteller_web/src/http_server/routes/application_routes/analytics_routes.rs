@@ -5,7 +5,6 @@ use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::Error;
 use actix_web::{web, App, HttpResponse};
 
-
 pub fn add_analytics_routes<T, B> (app: App<T>) -> App<T>
 where
     B: MessageBody,
@@ -19,7 +18,7 @@ where
 {
   app.service(web::scope("/v1/analytics")
       .service(web::resource("/active_user")
-          .route(web::get().to(log_app_active_user_handler))
+          .route(web::post().to(log_app_active_user_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )

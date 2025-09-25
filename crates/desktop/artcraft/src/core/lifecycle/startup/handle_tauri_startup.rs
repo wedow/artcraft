@@ -6,7 +6,7 @@ use crate::core::lifecycle::startup::tasks::spawn_discord_presence_thread::spawn
 use crate::core::lifecycle::startup::tasks::spawn_fal_task_polling_thread::spawn_fal_task_polling_thread;
 use crate::core::lifecycle::startup::tasks::spawn_main_window_thread::spawn_main_window_thread;
 use crate::core::lifecycle::startup::tasks::spawn_sora_task_polling_thread::spawn_sora_task_polling_thread;
-use crate::core::lifecycle::startup::tasks::spawn_storytoller_task_polling_thread::spawn_storyteller_task_polling_thread;
+use crate::core::lifecycle::startup::tasks::spawn_storyteller_threads::spawn_storyteller_threads;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
@@ -50,7 +50,7 @@ pub async fn handle_tauri_startup(
     &storyteller_creds_manager,
   )?;
 
-  spawn_storyteller_task_polling_thread(
+  spawn_storyteller_threads(
     &app,
     &app_env_configs,
     &task_database,
