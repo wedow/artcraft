@@ -2,7 +2,7 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 -- noinspection SqlResolveForFile
 
-CREATE TABLE analytics_totals (
+CREATE TABLE analytics_app_active_users (
   -- Not used for anything except replication.
   id BIGINT(20) NOT NULL AUTO_INCREMENT,
 
@@ -13,17 +13,34 @@ CREATE TABLE analytics_totals (
   -- Who sent the event.
   user_token VARCHAR(32) NOT NULL,
 
+  -- Updated on every write.
+  -- The "user agent" or app version string of the client.
+  app_version VARCHAR(255) DEFAULT NULL,
+
+  -- Updated on every write.
+  -- How long the current user's session has been open
+  session_duration_seconds INT(10) UNSIGNED DEFAULT NULL,
+
+  -- Updated on every write.
+  -- The user's last known IP address.
+  ip_address VARCHAR(40) NOT NULL,
+
   -- Incrementing count of events.
-  event_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  -- NB: This is kind of an "hours spent" measure, but will lose information if we ever
+  -- change the ping cadence (eg. 1 minute pings --> 5 minute pings).
+  measurement_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
 
   -- ========== RECORD TIMESTAMPS ==========
 
-  first_event_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_event_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  -- Written at create only.
+  first_active_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  -- Updated on every ping.
+  last_active_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- ========== INDICES ==========
   PRIMARY KEY (id),
   UNIQUE KEY (app_namespace, user_token), -- For now
-  INDEX idx_last_event_at (last_event_at)
+  INDEX idx_last_active_at (last_active_at)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

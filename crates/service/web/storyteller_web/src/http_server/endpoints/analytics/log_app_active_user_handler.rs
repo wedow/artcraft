@@ -86,14 +86,15 @@ pub async fn log_app_active_user_handler(
       _ => {}
     }
 
-    maybe_recorded_version.unwrap_or_else(|| "unknown".to_string())
+    maybe_recorded_version
   };
 
   let upsert = UpsertAnalyticsAppActiveUser {
     namespace: PaymentsNamespace::Artcraft,
     user_token: &user_token,
     ip_address: &ip_address,
-    app_version: &app_version,
+    app_version: app_version.as_deref(),
+    session_duration_seconds: request.maybe_session_duration_seconds,
   };
 
   upsert.upsert_with_connection(&mut mysql_connection).await?;

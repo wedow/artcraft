@@ -14,6 +14,9 @@ pub struct LogAppActiveUserRequest {
   /// If set together with `maybe_app_name`, the two will be 
   /// concatenated as `{maybe_app_name}/{maybe_app_version}`.
   pub maybe_app_version: Option<String>,
+  
+  /// How long the user has been active in the app, in seconds.
+  pub maybe_session_duration_seconds: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

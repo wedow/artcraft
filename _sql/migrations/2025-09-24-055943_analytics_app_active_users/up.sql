@@ -13,10 +13,16 @@ CREATE TABLE analytics_app_active_users (
   -- Who sent the event.
   user_token VARCHAR(32) NOT NULL,
 
-  -- App version is updated on every write.
-  app_version VARCHAR(255) NOT NULL,
+  -- Updated on every write.
+  -- The "user agent" or app version string of the client.
+  app_version VARCHAR(255) DEFAULT NULL,
 
-  -- IP address is updated on every write.
+  -- Updated on every write.
+  -- How long the current user's session has been open
+  session_duration_seconds INT(10) UNSIGNED DEFAULT NULL,
+
+  -- Updated on every write.
+  -- The user's last known IP address.
   ip_address VARCHAR(40) NOT NULL,
 
   -- Incrementing count of events.

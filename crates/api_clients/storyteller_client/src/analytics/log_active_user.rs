@@ -11,6 +11,8 @@ pub async fn log_active_user(
   request: LogAppActiveUserRequest,
 ) -> Result<LogAppActiveUserResponse, StorytellerError> {
 
+  // TODO(bt): This is gross and doesn't automatically handle field changes.
+  
   let mut query = HashMap::new();
 
   if let Some(app_name) = request.maybe_app_name {
@@ -19,6 +21,10 @@ pub async fn log_active_user(
   
   if let Some(app_version) = request.maybe_app_version {
     query.insert("maybe_app_version".to_string(), app_version);
+  }
+  
+  if let Some(maybe_session_duration_seconds) = request.maybe_session_duration_seconds {
+    query.insert("maybe_session_duration_seconds".to_string(), maybe_session_duration_seconds.to_string());
   }
 
   Ok(basic_query_string_post_request(

@@ -16,6 +16,7 @@ use log::{error, info};
 use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use std::time::Instant;
 use storyteller_client::analytics::log_active_user::log_active_user;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::error::api_error::ApiError;
@@ -34,10 +35,12 @@ pub async fn storyteller_activity_thread(
   app_env_configs: AppEnvConfigs,
   storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
+  let startup = Instant::now();
   loop {
     let res = polling_loop(
       &app_env_configs,
       &storyteller_creds_manager,
+      startup,
     ).await;
     if let Err(err) = res {
       error!("An error occurred: {:?}", err);
@@ -50,6 +53,7 @@ pub async fn storyteller_activity_thread(
 async fn polling_loop(
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
+  startup: Instant,
 ) -> AnyhowResult<()> {
   loop {
     let creds = storyteller_creds_manager.get_credentials()?;
@@ -68,13 +72,16 @@ async fn polling_loop(
       },
     };
 
+    let time_since_startup = Instant::now().duration_since(startup);
+
     let request = LogAppActiveUserRequest {
       maybe_app_name: Some(CLIENT_NAME.to_string()),
       maybe_app_version: Some(CLIENT_VERSION.to_string()),
+      maybe_session_duration_seconds: Some(time_since_startup.as_secs()),
     };
 
     info!("Logging active user with storyteller.");
-    
+
     let result = log_active_user(
       &app_env_configs.storyteller_host,
       Some(&creds),

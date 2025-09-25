@@ -8,11 +8,12 @@ use sqlx::MySql;
 use tokens::tokens::users::UserToken;
 
 pub struct UpsertAnalyticsAppActiveUser<'a> {
-  // TODO: Swap PaymentsNamespace (artcraft,fakeyou) for an AnalyticsNamespace enum.
+  // TODO: Swap PaymentsNamespace (artcraft,fakeyou,etc.) for an AnalyticsNamespace enum.
   pub namespace: PaymentsNamespace,
   pub user_token: &'a UserToken,
   pub ip_address: &'a str,
-  pub app_version: &'a str,
+  pub app_version: Option<&'a str>,
+  pub session_duration_seconds: Option<u64>,
 }
 
 impl <'a> UpsertAnalyticsAppActiveUser<'a> {
@@ -24,12 +25,14 @@ SET
   app_namespace = ?,
   user_token = ?,
   app_version = ?,
+  session_duration_seconds = ?,
   ip_address = ?,
   measurement_count = measurement_count + 1,
   first_active_at = NOW(),
   last_active_at = NOW()
 ON DUPLICATE KEY UPDATE
   app_version = ?,
+  session_duration_seconds = ?,
   ip_address = ?,
   measurement_count = measurement_count + 1,
   last_active_at = NOW()
@@ -38,15 +41,17 @@ ON DUPLICATE KEY UPDATE
       self.namespace.to_str(),
       self.user_token.as_str(),
       self.app_version,
+      self.session_duration_seconds,
       self.ip_address,
       // Update case
       self.app_version,
+      self.session_duration_seconds,
       self.ip_address,
     )
   }
 
   pub async fn upsert_with_connection(
-    &self, 
+    &self,
     mysql_connection: &mut PoolConnection<MySql>
   ) -> Result<(), MysqlError<UpsertError>> {
     let _query_result = self.query()
