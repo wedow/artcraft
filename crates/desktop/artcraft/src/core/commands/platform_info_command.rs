@@ -59,4 +59,3 @@ pub fn platform_info_command() -> InfallibleResponse<PlatformInfoResponse> {
     webview_runtime,
   }.into()
 }
-

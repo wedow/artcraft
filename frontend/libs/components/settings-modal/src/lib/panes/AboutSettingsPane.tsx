@@ -24,32 +24,42 @@ export const AboutSettingsPane = (args: AboutSettingsPaneProps) => {
   return (
     <>
       <div className="space-y-4">
-        <div className="flex flex-col">
-          <Label htmlFor="play-sounds">
+        <div className="space-y-1">
+          <Label>
+            Artcraft Version
+          </Label>
+          <div>{appInfo?.artcraft_version}</div>
+        </div>
+
+        <div className="space-y-1">
+          <Label>Artcraft Host</Label>
+          <div>{appInfo?.storyteller_host}</div>
+        </div>
+
+        <div className="space-y-1">
+          <Label>Git Commit ID</Label>
+          <div>{appInfo?.git_commit_short_id} &middot; {appInfo?.git_commit_id}</div>
+        </div>
+
+        <div className="space-y-1">
+          <Label>Git Commit Timestamp</Label>
+          <div>{appInfo?.git_commit_timestamp}</div>
+        </div>
+
+        <div className="space-y-1">
+          <Label>
             Build Timestamp
           </Label>
           <div>{appInfo?.build_timestamp}</div>
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="success-sound">Git Commit ID</Label>
-          <div>{appInfo?.git_commit_id}</div>
+          <Label>
+            Operating System
+          </Label>
+          <div>{appInfo?.os_platform} ({appInfo?.os_version})</div>
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="success-sound">Git Commit Short ID</Label>
-          <div>{appInfo?.git_commit_short_id}</div>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="success-sound">Git Commit Timestamp</Label>
-          <div>{appInfo?.git_commit_timestamp}</div>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="success-sound">Artcraft Host</Label>
-          <div>{appInfo?.storyteller_host}</div>
-        </div>
       </div>
     </>
   );

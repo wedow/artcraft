@@ -21,6 +21,7 @@ use crate::core::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::core::lifecycle::startup::setup_main_window::setup_main_window;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
+use crate::core::state::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::threads::discord_presence_thread::discord_presence_thread;
@@ -68,6 +69,11 @@ pub fn run() {
   println!("Loading config...");
   let app_data_root = AppDataRoot::create_default().expect("data directory should be created");
   let app_data_root_2 = app_data_root.clone();
+
+  println!("Getting platform info...");
+  let artcraft_platform_info = ArtcraftPlatformInfo::get();
+
+  println!("Platform info: {:?}", artcraft_platform_info);
 
   println!("Loading app preferences...");
   let app_preferences = load_app_preferences_or_default(&app_data_root);
@@ -155,6 +161,7 @@ pub fn run() {
     .manage(app_data_root)
     .manage(app_env_configs)
     .manage(app_preferences)
+    .manage(artcraft_platform_info)
     .manage(fal_creds_manager)
     .manage(fal_task_queue)
     .manage(midjourney_creds_manager)
