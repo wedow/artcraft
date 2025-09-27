@@ -14,7 +14,7 @@ use enums::common::job_status_plus::JobStatusPlus;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
-use log::{error, info};
+use log::{debug, error, info};
 use os_info::Info;
 use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
@@ -27,6 +27,7 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::endpoints::jobs::list_session_jobs::{list_session_jobs, States};
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
+use tokens::tokens::app_session::AppSessionToken;
 
 // TODO: Configure this with the build and increment.
 const CLIENT_NAME : &str = "artcraft";
@@ -40,12 +41,17 @@ pub async fn storyteller_activity_thread(
   storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
   let startup = Instant::now();
+  let app_session_token = AppSessionToken::generate();
+
+  info!("Session started at {:?} with token: {:?}", startup, app_session_token);
+
   loop {
     let res = polling_loop(
       &app_env_configs,
       &storyteller_creds_manager,
       startup,
       &artcraft_platform_info,
+      &app_session_token,
     ).await;
     if let Err(err) = res {
       error!("An error occurred: {:?}", err);
@@ -60,6 +66,7 @@ async fn polling_loop(
   storyteller_creds_manager: &StorytellerCredentialManager,
   startup: Instant,
   artcraft_platform_info: &ArtcraftPlatformInfo,
+  app_session_token: &AppSessionToken,
 ) -> AnyhowResult<()> {
   loop {
     let creds = storyteller_creds_manager.get_credentials()?;
@@ -81,6 +88,7 @@ async fn polling_loop(
     let time_since_startup = Instant::now().duration_since(startup);
 
     let request = LogAppActiveUserRequest {
+      maybe_app_session_token: Some(app_session_token.clone()),
       maybe_app_name: Some(CLIENT_NAME.to_string()),
       maybe_app_version: Some(artcraft_platform_info.artcraft_version.clone()),
       maybe_os_platform: Some(artcraft_platform_info.os_platform.as_str().to_owned()),
@@ -88,7 +96,7 @@ async fn polling_loop(
       maybe_session_duration_seconds: Some(time_since_startup.as_secs()),
     };
 
-    info!("Logging active user with storyteller.");
+    debug!("Logging active user with storyteller.");
 
     let result = log_active_user(
       &app_env_configs.storyteller_host,

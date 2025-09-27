@@ -23,6 +23,7 @@ use strum::EnumIter;
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 pub(crate) enum TokenPrefix {
   AnonymousVisitorTracking, // AVTs are not stored as primary keys in any table, but an index in many tables.
+  AppSession, // NB: These are generated client-side (!)
   AuditLog,
   BatchGeneration,
   BetaKey,
@@ -105,6 +106,7 @@ impl PrefixGenerator for TokenPrefix {
   fn prefix(self) -> &'static str {
     match self {
       Self::AnonymousVisitorTracking => "avt_",
+      Self::AppSession => "app_session_",
       Self::AuditLog => "audit_",
       Self::BatchGeneration => "batch_g_",
       Self::BetaKey => "beta_key_",

@@ -1,6 +1,7 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::GenerationServiceProvider;
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
+use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
@@ -15,7 +16,6 @@ use storyteller_client::recipes::upload_media_file_from_file::upload_media_file_
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 
 pub async fn fal_task_polling_thread(
   app_handle: AppHandle,

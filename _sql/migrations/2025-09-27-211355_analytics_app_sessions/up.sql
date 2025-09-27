@@ -2,11 +2,15 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 -- noinspection SqlResolveForFile
 
--- Track user activity over time
+-- Track user session durations
 -- User clients ping the endpoint that writes this data.
-CREATE TABLE analytics_app_active_users (
+CREATE TABLE analytics_app_sessions (
   -- Not used for anything except replication.
   id BIGINT(20) NOT NULL AUTO_INCREMENT,
+
+  -- Generated client-side
+  -- Wide enough for a UUID, but typically one of our internal tokens.
+  session_token VARCHAR(36) NOT NULL,
 
   -- If we host multiple sites with distinct categories, this will enable us to
   -- segregate analytics.
@@ -50,7 +54,9 @@ CREATE TABLE analytics_app_active_users (
 
   -- ========== INDICES ==========
   PRIMARY KEY (id),
-  UNIQUE KEY (app_namespace, user_token), -- For now
+  UNIQUE KEY (session_token),
+  INDEX idx_app_namespace (app_namespace),
+  INDEX idx_user_token (user_token),
   INDEX idx_os_platform (os_platform),
   INDEX idx_os_version (os_version),
   INDEX idx_app_version (app_version),

@@ -1,10 +1,15 @@
 use serde_derive::{Deserialize, Serialize};
+use tokens::tokens::app_session::AppSessionToken;
 use utoipa::ToSchema;
 
 pub const LOG_ACTIVE_USER_PATH: &str = "/v1/analytics/active_user";
 
 #[derive(Serialize, Deserialize, ToSchema, Debug)]
 pub struct LogAppActiveUserRequest {
+  /// Clientside-generated session token.
+  /// If present, it'll be validated against an expected format.
+  pub maybe_app_session_token: Option<AppSessionToken>,
+  
   /// An override for the application platform/OS (windows, mac, linux).
   pub maybe_os_platform: Option<String>,
 

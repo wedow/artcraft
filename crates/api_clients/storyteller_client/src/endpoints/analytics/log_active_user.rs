@@ -15,6 +15,10 @@ pub async fn log_active_user(
   
   let mut query = HashMap::new();
 
+  if let Some(token) = request.maybe_app_session_token {
+    query.insert("maybe_app_session_token".to_string(), token.to_string());
+  }
+
   if let Some(os_platform) = request.maybe_os_platform {
     query.insert("maybe_os_platform".to_string(), os_platform);
   }
