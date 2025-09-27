@@ -19,8 +19,8 @@ use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use storyteller_client::credits::get_session_credits::get_session_credits;
-use storyteller_client::subscriptions::get_session_subscription::get_session_subscription;
+use storyteller_client::endpoints::credits::get_session_credits::get_session_credits;
+use storyteller_client::endpoints::subscriptions::get_session_subscription::get_session_subscription;
 use tauri::{AppHandle, State};
 use tokens::tokens::user_subscriptions::UserSubscriptionToken;
 // TODO(bt,2025-09-12): Cache credits and clear cache on generate calls.

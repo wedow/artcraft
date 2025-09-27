@@ -16,12 +16,12 @@ use errors::AnyhowResult;
 use log::info;
 use reqwest::Url;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use storyteller_client::stripe_artcraft::create_credits_pack_checkout::create_credits_pack_checkout;
-use storyteller_client::stripe_artcraft::create_subscription_checkout::create_subscription_checkout;
-use storyteller_client::stripe_artcraft::customer_portal_cancel_plan::customer_portal_cancel_plan;
-use storyteller_client::stripe_artcraft::customer_portal_manage_plan::customer_portal_manage_plan;
-use storyteller_client::stripe_artcraft::customer_portal_switch_plan::customer_portal_switch_plan;
-use storyteller_client::stripe_artcraft::customer_portal_update_payment_method::customer_portal_update_payment_method;
+use storyteller_client::endpoints::stripe_artcraft::create_credits_pack_checkout::create_credits_pack_checkout;
+use storyteller_client::endpoints::stripe_artcraft::create_subscription_checkout::create_subscription_checkout;
+use storyteller_client::endpoints::stripe_artcraft::customer_portal_cancel_plan::customer_portal_cancel_plan;
+use storyteller_client::endpoints::stripe_artcraft::customer_portal_manage_plan::customer_portal_manage_plan;
+use storyteller_client::endpoints::stripe_artcraft::customer_portal_switch_plan::customer_portal_switch_plan;
+use storyteller_client::endpoints::stripe_artcraft::customer_portal_update_payment_method::customer_portal_update_payment_method;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub const BILLING_WINDOW_NAME: &str = "artcraft_billing_window";

@@ -16,7 +16,7 @@ use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use storyteller_client::credits::get_session_credits::get_session_credits;
+use storyteller_client::endpoints::credits::get_session_credits::get_session_credits;
 use tauri::{AppHandle, State};
 use crate::core::commands::providers::get_provider_order_command::GetProviderOrderResponse;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;

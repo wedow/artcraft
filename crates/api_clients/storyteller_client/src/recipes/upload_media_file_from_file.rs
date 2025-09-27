@@ -1,9 +1,9 @@
 use crate::credentials::storyteller_credential_set::StorytellerCredentialSet;
+use crate::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
+use crate::endpoints::media_files::upload_new_engine_asset_from_file::upload_new_engine_asset_from_file;
+use crate::endpoints::media_files::upload_video_media_file_from_file::upload_video_media_file_from_file;
 use crate::error::client_error::ClientError;
 use crate::error::storyteller_error::StorytellerError;
-use crate::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
-use crate::media_files::upload_new_engine_asset_from_file::upload_new_engine_asset_from_file;
-use crate::media_files::upload_video_media_file_from_file::upload_video_media_file_from_file;
 use crate::utils::api_host::ApiHost;
 use mimetypes::mimetype_info::file_extension::FileExtension;
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;

@@ -22,7 +22,7 @@ use openai_sora_client::sora_error::SoraError;
 use serde_derive::{Deserialize, Serialize};
 use std::time::Duration;
 use storyteller_client::error::storyteller_error::StorytellerError;
-use storyteller_client::media_files::get_media_file::get_media_file;
+use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
 

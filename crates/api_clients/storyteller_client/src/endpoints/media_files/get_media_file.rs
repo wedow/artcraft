@@ -208,7 +208,7 @@ pub struct GetMediaFileModelInfo {
 
 #[cfg(test)]
 mod tests {
-  use crate::media_files::get_media_file::get_media_file;
+  use crate::endpoints::media_files::get_media_file::get_media_file;
   use crate::utils::api_host::ApiHost;
   use tokens::tokens::media_files::MediaFileToken;
 

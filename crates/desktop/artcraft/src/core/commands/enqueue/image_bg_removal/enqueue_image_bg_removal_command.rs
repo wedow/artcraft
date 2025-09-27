@@ -37,7 +37,7 @@ use serde_derive::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use std::time::Duration;
 use storyteller_client::error::storyteller_error::StorytellerError;
-use storyteller_client::media_files::get_media_file::get_media_file;
+use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;

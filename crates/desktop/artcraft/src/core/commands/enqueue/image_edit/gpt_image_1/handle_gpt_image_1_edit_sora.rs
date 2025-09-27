@@ -36,7 +36,7 @@ use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_o
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::sora_error::SoraError;
 use std::time::Duration;
-use storyteller_client::media_files::get_media_file::get_media_file;
+use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use tauri::AppHandle;
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds

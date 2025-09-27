@@ -20,11 +20,11 @@ use fal_client::requests::queue::video_gen::enqueue_kling_16_pro_image_to_video:
 use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2AspectRatio;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
-use storyteller_client::generate::video::generate_kling_16_pro_image_to_video::generate_kling_16_pro_image_to_video;
-use storyteller_client::generate::video::generate_kling_21_master_image_to_video::generate_kling_21_master_image_to_video;
-use storyteller_client::generate::video::generate_kling_21_pro_image_to_video::generate_kling_21_pro_image_to_video;
-use storyteller_client::generate::video::generate_seedance_1_0_lite_image_to_video::generate_seedance_1_0_lite_image_to_video;
-use storyteller_client::generate::video::generate_veo_2_image_to_video::generate_veo_2_image_to_video;
+use storyteller_client::endpoints::generate::video::generate_kling_16_pro_image_to_video::generate_kling_16_pro_image_to_video;
+use storyteller_client::endpoints::generate::video::generate_kling_21_master_image_to_video::generate_kling_21_master_image_to_video;
+use storyteller_client::endpoints::generate::video::generate_kling_21_pro_image_to_video::generate_kling_21_pro_image_to_video;
+use storyteller_client::endpoints::generate::video::generate_seedance_1_0_lite_image_to_video::generate_seedance_1_0_lite_image_to_video;
+use storyteller_client::endpoints::generate::video::generate_veo_2_image_to_video::generate_veo_2_image_to_video;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::AppHandle;
 

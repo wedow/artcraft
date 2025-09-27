@@ -20,12 +20,12 @@ use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::time::Instant;
-use storyteller_client::analytics::log_active_user::log_active_user;
+use storyteller_client::endpoints::analytics::log_active_user::log_active_user;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
-use storyteller_client::jobs::list_session_jobs::{list_session_jobs, States};
-use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use storyteller_client::endpoints::jobs::list_session_jobs::{list_session_jobs, States};
+use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
 
 // TODO: Configure this with the build and increment.

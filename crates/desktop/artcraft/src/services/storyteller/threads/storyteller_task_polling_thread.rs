@@ -33,8 +33,8 @@ use std::path::PathBuf;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
-use storyteller_client::jobs::list_session_jobs::{list_session_jobs, States};
-use storyteller_client::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use storyteller_client::endpoints::jobs::list_session_jobs::{list_session_jobs, States};
+use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use tauri::AppHandle;
 use tempdir::TempDir;
 

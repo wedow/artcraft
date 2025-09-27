@@ -3,7 +3,7 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
 use crate::core::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
-use storyteller_client::media_files::get_media_file::get_media_file;
+use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use tempfile::NamedTempFile;
 use tokens::tokens::media_files::MediaFileToken;
 // TODO: Better more concrete error handling
