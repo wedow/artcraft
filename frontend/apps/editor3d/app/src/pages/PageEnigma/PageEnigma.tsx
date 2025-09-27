@@ -11,7 +11,6 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect, useState } from "react";
 import * as gpu from "detect-gpu";
 import { UsersApi } from "~/Classes/ApiManager";
-import { TurnOnGpu } from "~/pages/PageEnigma/TurnOnGpu";
 import { PrecisionSelector } from "./comps/PrecisionSelector/PrecisionSelector";
 import {
   precisionSelectedValue,
@@ -22,7 +21,6 @@ import {
 import { InstallSounds } from "~/pages/PageEnigma/InstallSounds";
 import { PageEditor } from "~/pages/PageEnigma/PageEditor";
 import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
-import { LoadingDots } from "@storyteller/ui-loading";
 import {
   PricingModal,
   CreditsModal,
@@ -104,13 +102,6 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     console.log("installing event listeners");
     InstallSounds();
   });
-
-  if (validGpu === "unknown") {
-    return <LoadingDots />;
-  }
-  if (validGpu === "error") {
-    return <TurnOnGpu />;
-  }
 
   const currentReminderModalProps = actionReminderProps.value;
 
