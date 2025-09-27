@@ -13,8 +13,6 @@ use tauri::{AppHandle, Manager};
 use tauri_plugin_http::reqwest_cookie_store::CookieStore;
 use tauri_plugin_http::Http;
 
-const MAIN_WEBVIEW_NAME: &str = "main";
-
 const STORYTELLER_ROOT_COOKIE_URL_STR: &str = "https://api.storyteller.ai/";
 
 static STORYTELLER_ROOT_COOKIE_URL: Lazy<Url> = Lazy::new(|| {

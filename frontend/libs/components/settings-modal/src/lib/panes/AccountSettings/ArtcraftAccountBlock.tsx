@@ -6,6 +6,7 @@ import { Button } from "@storyteller/ui-button";
 import { UsersApi } from "@storyteller/api";
 import { UserInfo } from "@storyteller/api";
 import { useLoginModalStore } from "@storyteller/ui-login-modal";
+import { invoke } from "@tauri-apps/api/core";
 
 const usersApi = new UsersApi();
 
@@ -52,7 +53,12 @@ export const ArtcraftAccountBlock = ({
       setIsLoggedIn(false);
       setIsCheckingArtcraftSession(false);
       globalAccountLogoutCallback(); // TODO: This resets the old global application state
+
+
       triggerRecheck(); // Trigger modal to recheck session and potentially open
+
+      await invoke("storyteller_purge_credentials_command");
+
     } else {
       triggerRecheck(); // Open login modal instead of redirecting
     }

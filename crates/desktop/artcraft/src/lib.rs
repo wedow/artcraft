@@ -48,6 +48,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling_thread::sora_task_polling_thread;
 use crate::services::storyteller::commands::storyteller_get_credits_command::storyteller_get_credits_command;
 use crate::services::storyteller::commands::storyteller_get_subscription_command::storyteller_get_subscription_command;
+use crate::services::storyteller::commands::storyteller_purge_credentials_command::storyteller_purge_credentials_command;
 use crate::services::storyteller::commands::stripe_checkout::storyteller_open_credits_purchase_command::storyteller_open_credits_purchase_command;
 use crate::services::storyteller::commands::stripe_checkout::storyteller_open_subscription_purchase_command::storyteller_open_subscription_purchase_command;
 use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_cancel_plan_command::storyteller_open_customer_portal_cancel_plan_command;
@@ -208,6 +209,7 @@ pub fn run() {
     storyteller_open_customer_portal_switch_plan_command,
     storyteller_open_customer_portal_update_payment_method_command,
     storyteller_open_subscription_purchase_command,
+    storyteller_purge_credentials_command,
     update_app_preferences_command,
   ]);
 

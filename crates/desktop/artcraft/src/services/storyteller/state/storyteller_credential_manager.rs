@@ -78,6 +78,22 @@ impl StorytellerCredentialManager {
 
     Ok(())
   }
+
+  pub fn delete_persisted_copies_on_disk(&self) -> AnyhowResult<()> {
+    let creds_dir = self.app_data_root.credentials_dir();
+
+    let session_file = creds_dir.get_storyteller_session_cookie_file_path();
+    if session_file.exists() {
+      std::fs::remove_file(session_file)?;
+    }
+
+    let avt_file = creds_dir.get_storyteller_avt_cookie_file_path();
+    if avt_file.exists() {
+      std::fs::remove_file(avt_file)?;
+    }
+
+    Ok(())
+  }
 }
 
 fn persist_session_to_disk(session: &StorytellerSessionCookie, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
