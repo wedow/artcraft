@@ -14,6 +14,7 @@ use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command
 use crate::core::commands::flip_image::flip_image;
 use crate::core::commands::get_app_info_command::get_app_info_command;
 use crate::core::commands::load_without_cors_command::load_without_cors_command;
+use crate::core::commands::media_files::media_file_delete_command::media_file_delete_command;
 use crate::core::commands::platform_info_command::platform_info_command;
 use crate::core::commands::providers::get_provider_order_command::get_provider_order_command;
 use crate::core::commands::providers::set_provider_order_command::set_provider_order_command;
@@ -190,6 +191,7 @@ pub fn run() {
     get_app_preferences_command,
     get_fal_api_key_command,
     get_provider_order_command,
+    media_file_delete_command,
     load_without_cors_command,
     midjourney_clear_credentials_command,
     midjourney_get_credential_info_command,

@@ -1,10 +1,5 @@
 use actix_web::HttpResponse;
-use utoipa::ToSchema;
-
-#[derive(Serialize,ToSchema)]
-pub struct SimpleGenericJsonSuccess {
-  pub success: bool,
-}
+use artcraft_api_defs::common::responses::simple_generic_json_success::SimpleGenericJsonSuccess;
 
 pub fn simple_json_success() -> HttpResponse {
   let response = SimpleGenericJsonSuccess {

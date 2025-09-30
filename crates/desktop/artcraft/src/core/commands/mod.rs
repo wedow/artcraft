@@ -4,6 +4,7 @@ pub mod enqueue;
 pub mod flip_image;
 pub mod get_app_info_command;
 pub mod load_without_cors_command;
+pub mod media_files;
 pub mod platform_info_command;
 pub mod providers;
 pub mod response;

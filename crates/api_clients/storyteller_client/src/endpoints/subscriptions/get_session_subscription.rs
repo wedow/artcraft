@@ -11,7 +11,7 @@ pub async fn get_session_subscription(
   maybe_creds: Option<&StorytellerCredentialSet>,
   payments_namespace: PaymentsNamespace
 ) -> Result<GetSessionSubscriptionResponse, StorytellerError> {
-  let url_path = get_url_path(api_host, payments_namespace);
+  let url_path = get_url_path(payments_namespace);
 
   debug!("Requesting {:?}", &url_path);
 
@@ -22,7 +22,7 @@ pub async fn get_session_subscription(
   ).await?)
 }
 
-fn get_url_path(api_host: &ApiHost, payments_namespace: PaymentsNamespace) -> String {
+fn get_url_path(payments_namespace: PaymentsNamespace) -> String {
   let payments_namespace = payments_namespace.to_str();
   format!("/v1/subscriptions/namespace/{}", payments_namespace)
 }
