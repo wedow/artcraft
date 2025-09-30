@@ -16,6 +16,7 @@ import {
   isActionReminderOpen,
 } from "@storyteller/ui-action-reminder-modal";
 import { MediaFilesApi } from "@storyteller/api";
+import { MediaFileDelete } from "@storyteller/tauri-api";
 
 type ModalMode = "select" | "view";
 
@@ -62,13 +63,16 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
       secondaryActionText: "Cancel",
       primaryActionBtnClassName: "bg-red text-white hover:bg-red/90",
       onPrimaryAction: async () => {
+        console.log(">>> Delete media file via Tauri: ", item.id);
         try {
-          const res = await mediaFilesApi.DeleteMediaFileByToken({
-            mediaFileToken: item.id,
-          });
-          if (res.success) {
-            onDeleted?.(item.id);
-          }
+          await MediaFileDelete(item.id);
+          onDeleted?.(item.id);
+          //const res = await mediaFilesApi.DeleteMediaFileByToken({
+          //  mediaFileToken: item.id,
+          //});
+          //if (res.success) {
+          //  onDeleted?.(item.id);
+          //}
         } finally {
           isActionReminderOpen.value = false;
         }

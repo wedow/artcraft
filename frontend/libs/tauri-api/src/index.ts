@@ -1,5 +1,6 @@
 export * from "./lib/artcraft/ArtcraftGetCredits.js";
 export * from "./lib/artcraft/ArtcraftGetSubscription.js";
+export * from "./lib/artcraft/media_files/MediaFileDelete.js";
 export * from "./lib/common/CommandStatus.js";
 export * from "./lib/enqueue/EnqueueContextualEditImage.js";
 export * from "./lib/enqueue/EnqueueImageBgRemovalCommand.js";

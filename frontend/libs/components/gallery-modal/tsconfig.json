@@ -24,6 +24,9 @@
       "path": "../../api"
     },
     {
+      "path": "../../tauri-api"
+    },
+    {
       "path": "../action-reminder-modal"
     },
     {

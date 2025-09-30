@@ -65,6 +65,9 @@
       "path": "../../api/tsconfig.lib.json"
     },
     {
+      "path": "../../tauri-api/tsconfig.lib.json"
+    },
+    {
       "path": "../action-reminder-modal/tsconfig.lib.json"
     },
     {
