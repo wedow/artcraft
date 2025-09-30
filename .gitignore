@@ -45,6 +45,9 @@ crates/lib/sqlite_queries/target/
 # Javascript build directories
 node_modules/
 
+# Frontend build outputs
+frontend/apps/editor3d/bundle-report.html
+
 # Vim noise
 *.swo
 *.swp
