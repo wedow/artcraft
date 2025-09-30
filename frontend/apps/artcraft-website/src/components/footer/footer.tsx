@@ -3,6 +3,8 @@ import {
   faTiktok,
   faDiscord,
   faYoutube,
+  faGithub,
+  faGithubAlt,
 } from "@fortawesome/free-brands-svg-icons";
 import { SOCIAL_LINKS } from "../../config/links";
 
@@ -26,6 +28,11 @@ const navigation = {
       name: "TikTok",
       href: SOCIAL_LINKS.TIKTOK,
       icon: (props: any) => <FontAwesomeIcon icon={faTiktok} {...props} />,
+    },
+    {
+      name: "GitHub",
+      href: SOCIAL_LINKS.GITHUB,
+      icon: (props: any) => <FontAwesomeIcon icon={faGithubAlt} {...props} />,
     },
   ],
 };
