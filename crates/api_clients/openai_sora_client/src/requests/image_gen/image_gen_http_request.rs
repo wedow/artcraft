@@ -1,4 +1,4 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
+use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::requests::image_gen::image_gen_status::TaskId;
 use log::warn;
 use serde_derive::{Deserialize, Serialize};
@@ -156,36 +156,22 @@ impl std::fmt::Display for RawSoraErrorInner {
 /// Don't expose the internal request implementation as there are only a few "correct" ways to call the API.
 pub (crate) async fn image_gen_http_request(
   sora_request: RawSoraImageGenRequest, 
-  credentials: CredentialMigrationRef<'_>, 
+  credentials: &SoraCredentialSet, 
   request_timeout: Option<Duration>,
 ) -> Result<RawSoraResponse, SoraImageGenError> {
   let client = Client::new();
 
-  let mut cookie;
-  let mut authorization_header;
-  let mut sentinel;
-
-  match credentials {
-    CredentialMigrationRef::Legacy(creds) => {
-      cookie = creds.cookie.clone();
-      authorization_header = creds.authorization_header_value();
-      // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
-      sentinel = creds.sentinel.as_ref()
-          .map(|sentinel| sentinel.to_string())
-          .ok_or(SoraImageGenError::SentinelBlock("Sentinel is required for image generation.".to_string()))?;
-    }
-    CredentialMigrationRef::New(creds) => {
-      cookie = creds.cookies.to_string();
-      // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
-      authorization_header = creds.jwt_bearer_token.as_ref()
-          .ok_or(SoraImageGenError::InvalidJwt("JWT bearer is required for image generation".to_string()))?
-          .to_authorization_header_value();
-      // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
-      sentinel = creds.sora_sentinel.as_ref()
-          .map(|sentinel| sentinel.get_sentinel().to_string())
-          .ok_or(SoraImageGenError::SentinelBlock("Sentinel is required for image generation.".to_string()))?;
-    }
-  }
+  let cookie = credentials.cookies.to_string();
+  
+  // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
+  let authorization_header = credentials.jwt_bearer_token.as_ref()
+      .ok_or(SoraImageGenError::InvalidJwt("JWT bearer is required for image generation".to_string()))?
+      .to_authorization_header_value();
+  
+  // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
+  let sentinel = credentials.sora_sentinel.as_ref()
+      .map(|sentinel| sentinel.get_sentinel().to_string())
+      .ok_or(SoraImageGenError::SentinelBlock("Sentinel is required for image generation.".to_string()))?;
 
   let mut http_request = client.post(SORA_IMAGE_GEN_URL)
       .header("User-Agent", USER_AGENT)

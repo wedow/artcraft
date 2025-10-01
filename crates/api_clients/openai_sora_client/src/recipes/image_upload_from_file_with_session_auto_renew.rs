@@ -1,4 +1,3 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::recipes::maybe_refresh_credentials_on_sora_error::maybe_refresh_credentials_on_sora_error;
 use crate::requests::upload::upload_media_from_file::sora_media_upload_from_file;
@@ -24,7 +23,7 @@ pub async fn image_upload_from_file_with_session_auto_renew<P: AsRef<Path>>(
 
   let result = sora_media_upload_from_file(
     request.file_path.as_ref().clone(), // FIXME(bt): This is horrible, but the client needs to take ownership. :(
-    CredentialMigrationRef::New(request.credentials),
+    request.credentials,
     /// This function can try to upload several times. This is the timeout for *individual* requests.
     request.request_timeout,
   ).await;
@@ -45,7 +44,7 @@ pub async fn image_upload_from_file_with_session_auto_renew<P: AsRef<Path>>(
 
   let result = sora_media_upload_from_file(
     request.file_path,
-    CredentialMigrationRef::New(&new_creds),
+    &new_creds,
     request.request_timeout,
   ).await?;
 

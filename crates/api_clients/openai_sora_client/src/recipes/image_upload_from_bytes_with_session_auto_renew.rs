@@ -1,4 +1,3 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::creds::sora_sentinel::SoraSentinel;
@@ -35,7 +34,7 @@ pub async fn image_upload_from_bytes_with_session_auto_renew(
   let result = sora_media_upload_from_bytes(
     request.file_bytes.clone(), // FIXME(bt): This is horrible, but the client needs to take ownership. :(
     request.filename.clone(), // FIXME: Same
-    CredentialMigrationRef::New(request.credentials),
+    request.credentials,
     request.request_timeout,
   ).await;
 
@@ -55,7 +54,7 @@ pub async fn image_upload_from_bytes_with_session_auto_renew(
   let result = sora_media_upload_from_bytes(
     request.file_bytes,
     request.filename,
-    CredentialMigrationRef::New(&new_creds),
+    &new_creds,
     request.request_timeout,
   ).await?;
 

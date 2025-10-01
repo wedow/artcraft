@@ -20,6 +20,10 @@ impl SoraJwtBearerToken {
   pub fn token_str(&self) -> &str {
     &self.token
   }
+  
+  pub fn as_str(&self) -> &str {
+    &self.token
+  }
 
   pub fn as_bytes(&self) -> &[u8] {
     self.token.as_bytes()

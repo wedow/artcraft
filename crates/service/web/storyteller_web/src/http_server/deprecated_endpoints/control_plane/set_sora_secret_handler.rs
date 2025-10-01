@@ -124,8 +124,14 @@ pub async fn set_sora_secret_handler(
   // TODO(bt,2025-04-03): Probably not smart to return, but useful for debugging.
   Ok(Json(SetSoraSecretSuccessResponse {
     success: true,
-    bearer: credentials.bearer_token,
-    cookie: credentials.cookie,
-    sentinel: credentials.sentinel.unwrap_or_else(|| "".to_string()),
+    cookie: credentials.cookies.as_str().to_string(),
+    bearer: credentials.jwt_bearer_token
+        .as_ref()
+        .map(|b| b.as_str().to_string())
+        .unwrap_or_else(|| "".to_string()),
+    sentinel: credentials.sora_sentinel
+        .as_ref()
+        .map(|s| s.as_str().to_string())
+        .unwrap_or_else(|| "".to_string()),
   }))
 }

@@ -1,17 +1,16 @@
-use std::time::Duration;
-use anyhow::anyhow;
-use log::{info, warn};
-use errors::AnyhowResult;
-use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::creds::sora_sentinel::SoraSentinel;
 use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_cookie;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
-use crate::requests::image_gen::{image_gen_http_request, SoraImageGenError};
 use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
+use crate::requests::image_gen::{image_gen_http_request, SoraImageGenError};
 use crate::requests::sentinel_refresh::generate::token::generate_token;
 use crate::sora_error::SoraError;
+use anyhow::anyhow;
+use errors::AnyhowResult;
+use log::{info, warn};
+use std::time::Duration;
 
 pub struct ImageRemixAutoRenewRequest<'a> {
   pub prompt: String,
@@ -31,7 +30,7 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
     num_images: request.num_images,
     image_size: request.image_size,
     sora_media_tokens: request.sora_media_tokens.clone(), // NB: Clone because used again
-    credentials: CredentialMigrationRef::New(request.credentials),
+    credentials: request.credentials,
     request_timeout: request.request_timeout,
   }).await;
 
@@ -129,7 +128,7 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
     num_images: request.num_images,
     image_size: request.image_size,
     sora_media_tokens: request.sora_media_tokens,
-    credentials: CredentialMigrationRef::New(&new_creds),
+    credentials: &new_creds,
     request_timeout: request.request_timeout,
   }).await;
 

@@ -1,4 +1,4 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
+use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::image_gen_http_request::{image_gen_http_request, InpaintItem, InpaintItemType, OperationType, RawSoraImageGenRequest, SoraImageGenError, VideoGenType};
 use log::info;
@@ -9,7 +9,7 @@ pub struct SoraImageGenRemixRequest<'a> {
   pub num_images: NumImages,
   pub image_size: ImageSize,
   pub sora_media_tokens: Vec<String>,
-  pub credentials: CredentialMigrationRef<'a>,
+  pub credentials: &'a SoraCredentialSet,
   pub request_timeout: Option<Duration>,
 }
 
@@ -50,8 +50,7 @@ pub async fn sora_image_gen_remix(request: SoraImageGenRemixRequest<'_>) -> Resu
 
 #[cfg(test)]
 mod tests {
-  use crate::credentials::SoraCredentials;
-  use crate::creds::credential_migration::CredentialMigrationRef;
+  use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::requests::image_gen::common::{ImageSize, NumImages};
   use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
   use errors::AnyhowResult;
@@ -70,18 +69,18 @@ mod tests {
     let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
     let bearer = bearer.trim().to_string();
 
-    let creds = SoraCredentials {
-      bearer_token: bearer,
-      cookie,
-      sentinel: Some(sentinel),
-    };
+    let creds = SoraCredentialBuilder::new()
+        .cookies(&cookie)
+        .jwt_bearer_token(&bearer)
+        .sora_sentinel(&sentinel)
+        .build()?;
 
     let response = sora_image_gen_remix(SoraImageGenRemixRequest {
       prompt: "Match the pose and scene layout from the uploaded image exactly. A smart dog getting kisses from another dog. Brick building. Anime style".to_string(),
       num_images: NumImages::One,
       image_size: ImageSize::Square,
       sora_media_tokens: vec!["media_01jqyhrz4detyvtzwp2p4j63ad".to_string()],
-      credentials: CredentialMigrationRef::Legacy(&creds),
+      credentials: &creds,
       request_timeout: None,
     }).await?;
 

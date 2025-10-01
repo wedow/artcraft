@@ -1,4 +1,3 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::recipes::image_upload_from_file_with_session_auto_renew::ImageUploadFromFileAutoRenewRequest;
 use crate::recipes::maybe_refresh_credentials_on_sora_error::maybe_refresh_credentials_on_sora_error;

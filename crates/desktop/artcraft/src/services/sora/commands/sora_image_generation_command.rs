@@ -5,7 +5,6 @@ use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use errors::AnyhowResult;
 use log::{error, info};
-use openai_sora_client::creds::credential_migration::CredentialMigrationRef;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
@@ -60,7 +59,7 @@ pub async fn generate_image(
     let response = sora_media_upload_from_bytes(
       image_bytes, 
       filename, 
-      CredentialMigrationRef::New(&creds), 
+      &creds,
       Some(SORA_IMAGE_UPLOAD_TIMEOUT))
         .await
         .map_err(|err| {
@@ -76,7 +75,7 @@ pub async fn generate_image(
     num_images: NumImages::One,
     image_size: ImageSize::Square,
     sora_media_tokens: sora_media_tokens.clone(),
-    credentials: CredentialMigrationRef::New(&creds),
+    credentials: &creds,
     request_timeout: Some(SORA_IMAGE_REMIX_TIMEOUT),
   }).await
       .map_err(|err| {

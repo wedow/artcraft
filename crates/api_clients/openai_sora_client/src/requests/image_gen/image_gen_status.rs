@@ -1,4 +1,3 @@
-use crate::credentials::SoraCredentials;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::sora_error::SoraError;
@@ -15,7 +14,7 @@ use wreq::Client;
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
 
 /// This user agent is tied to the sentinel generation. If we need to change it, we may need to change sentinel generation too.
-const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
+pub (crate) const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
 /// A strongly typed task ID for Sora tasks.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
@@ -289,8 +288,7 @@ pub async fn save_generations_to_dir(generations: &[Generation], dir: &str) -> A
 
 #[cfg(test)]
 mod tests {
-  use crate::credentials::SoraCredentials;
-  use crate::creds::sora_credential_set::SoraCredentialSet;
+  use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::recipes::wait_for_image_gen_status::wait_for_image_gen_status;
   use crate::requests::image_gen::image_gen_status::{get_image_gen_status, save_generations_to_dir, StatusRequest, VideoGenStatusResponse};
   use errors::AnyhowResult;
@@ -317,13 +315,16 @@ mod tests {
     let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
     let bearer = bearer.trim().to_string();
 
-    let creds = SoraCredentials { bearer_token: bearer, cookie, sentinel: Some(sentinel) };
-    let new_creds = SoraCredentialSet::from_legacy_credentials(&creds)?;
+    let creds = SoraCredentialBuilder::new()
+        .cookies(&cookie)
+        .jwt_bearer_token(&bearer)
+        .sora_sentinel(&sentinel)
+        .build()?;
 
     // Get the task status for a specific task
     // let response = get_image_gen_status(&StatusRequest::new(None, Some("task_01jr9yvpfyetx9r7qvvx38scna".to_string())), &creds).await?;
 
-    let response = get_image_gen_status(&StatusRequest::new(Some(50), None), &new_creds).await?;
+    let response = get_image_gen_status(&StatusRequest::new(Some(50), None), &creds).await?;
     println!("task_id: {}", response.task_responses[0].id);
 
     let task_id = response.task_responses[0].id.clone();

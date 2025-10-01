@@ -17,6 +17,10 @@ impl SoraSentinel {
     &self.sentinel
   }
 
+  pub fn as_str(&self) -> &str {
+    &self.sentinel
+  }
+
   pub fn as_bytes(&self) -> &[u8] {
     self.sentinel.as_bytes()
   }

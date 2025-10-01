@@ -1,5 +1,5 @@
-use crate::credentials::{SoraCredentials, USER_AGENT};
-use crate::creds::credential_migration::CredentialMigrationRef;
+use crate::creds::sora_credential_set::SoraCredentialSet;
+use crate::requests::image_gen::image_gen_status::USER_AGENT;
 use crate::sora_error::SoraError;
 use crate::utils::classify_general_http_error::classify_general_http_error;
 use log::info;
@@ -62,14 +62,14 @@ pub struct SoraMediaUploadResponse {
 
 pub (crate) struct SoraMediaUploadRequest<'a> {
   pub file_path: String,
-  pub credentials: &'a SoraCredentials,
+  pub credentials: &'a SoraCredentialSet,
 }
 
 pub (crate) async fn upload_media_http_request(
   file_bytes: Vec<u8>,
   filename: String,
   mime_type: &str,
-  credentials: CredentialMigrationRef<'_>,
+  credentials: &SoraCredentialSet,
   maybe_timeout: Option<Duration>,
 ) -> Result<SoraMediaUploadResponse, SoraError> {
 
@@ -80,22 +80,11 @@ pub (crate) async fn upload_media_http_request(
 
   let form = Form::new().part("file", part);
 
-  let cookie;
-  let auth_header;
-
-  match credentials {
-    CredentialMigrationRef::Legacy(creds) => {
-      cookie = creds.cookie.clone();
-      auth_header = creds.authorization_header_value();
-    }
-    CredentialMigrationRef::New(creds) => {
-      cookie = creds.cookies.to_string();
-      auth_header = creds.jwt_bearer_token
-          .as_ref()
-          .ok_or(SoraError::NoBearerTokenAvailable)?
-          .to_authorization_header_value();
-    }
-  }
+  let cookie = credentials.cookies.to_string();
+  let auth_header = credentials.jwt_bearer_token
+      .as_ref()
+      .ok_or(SoraError::NoBearerTokenAvailable)?
+      .to_authorization_header_value();
 
   // Make API request
   let client = Client::new();

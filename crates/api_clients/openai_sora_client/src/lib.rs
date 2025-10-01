@@ -1,4 +1,3 @@
-pub mod credentials;
 pub mod creds;
 pub mod recipes;
 pub mod requests;

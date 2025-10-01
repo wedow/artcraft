@@ -1,4 +1,4 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
+use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::requests::upload::upload_media_http_request::{upload_media_http_request, SoraMediaUploadResponse};
 use crate::sora_error::SoraError;
 use std::path::Path;
@@ -12,7 +12,7 @@ const INITIAL_BUFFER_SIZE : usize = 1024*1024;
 
 pub async fn sora_media_upload_from_file<P: AsRef<Path>>(
   file_path: P, 
-  creds: CredentialMigrationRef<'_>,
+  creds: &SoraCredentialSet,
   maybe_timeout: Option<Duration>,
 ) -> Result<SoraMediaUploadResponse, SoraError> {
   let mut file = File::open(&file_path).await?;
@@ -41,8 +41,7 @@ pub async fn sora_media_upload_from_file<P: AsRef<Path>>(
 
 #[cfg(test)]
 mod tests {
-  use crate::credentials::SoraCredentials;
-  use crate::creds::credential_migration::CredentialMigrationRef;
+  use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::requests::upload::upload_media_from_file::sora_media_upload_from_file;
   use errors::AnyhowResult;
   use std::fs::read_to_string;
@@ -59,15 +58,14 @@ mod tests {
 
     let image_path = test_file_path("test_data/image/juno.jpg")?; // media_01jqyqgqpwf40tkcapq5bmaz5d
 
-    let creds = SoraCredentials {
-      bearer_token: bearer,
-      cookie,
-      sentinel: None,
-    };
+    let creds = SoraCredentialBuilder::new()
+        .cookies(&cookie)
+        .jwt_bearer_token(&bearer)
+        .build()?;
 
     let response = sora_media_upload_from_file(
       image_path,
-      CredentialMigrationRef::Legacy(&creds),
+      &creds,
       None,
     ).await?;
 

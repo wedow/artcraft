@@ -58,6 +58,9 @@ pub enum SoraError {
 
   /// anyhow::Error arises from our end
   AnyhowError(anyhow::Error),
+  
+  /// Issue with setting credentials
+  SoraCredentialBuilderError(String),
 
   /// serde_json::Error, likely from JSON deserialization schema mismatch.
   JsonError(serde_json::Error),
@@ -118,6 +121,9 @@ impl Display for SoraError {
       }
       Self::AnyhowError(err) => {
         write!(f, "Anyhow error: {}", err)
+      }
+      Self::SoraCredentialBuilderError(message) => {
+        write!(f, "Sora credential builder error: {}", message)
       }
       Self::JsonError(err) => {
         write!(f, "serde_json error: {}", err)

@@ -1,4 +1,4 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
+use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::sora_error::SoraError;
 use wreq::Client;
 
@@ -8,26 +8,17 @@ const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
 
 pub async fn sora_job_status(
   task_id: &str,
-  credentials: CredentialMigrationRef<'_>,
+  credentials: &SoraCredentialSet,
 ) -> Result<(), SoraError> {
   let url = format!("https://sora.com/backend/notif?limit=100&before={}", task_id);
 
-  let mut cookie;
-  let mut authorization_header;
 
-  match credentials {
-    CredentialMigrationRef::Legacy(creds) => {
-      cookie = creds.cookie.clone();
-      authorization_header = creds.authorization_header_value();
-    }
-    CredentialMigrationRef::New(creds) => {
-      cookie = creds.cookies.to_string();
-      // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
-      authorization_header = creds.jwt_bearer_token.as_ref()
-          .ok_or(SoraError::NoBearerTokenAvailable)?
-          .to_authorization_header_value();
-    }
-  }
+  let cookie = credentials.cookies.to_string();
+  
+  // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
+  let authorization_header = credentials.jwt_bearer_token.as_ref()
+      .ok_or(SoraError::NoBearerTokenAvailable)?
+      .to_authorization_header_value();
 
   let client = Client::new();
 
@@ -48,8 +39,7 @@ pub async fn sora_job_status(
 
 #[cfg(test)]
 mod tests {
-  use crate::credentials::SoraCredentials;
-  use crate::creds::credential_migration::CredentialMigrationRef;
+  use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::requests::job::sora_job_status::sora_job_status;
   use errors::AnyhowResult;
   use std::fs::read_to_string;
@@ -67,15 +57,15 @@ mod tests {
     let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
     let bearer = bearer.trim().to_string();
 
-    let creds = SoraCredentials {
-      bearer_token: bearer,
-      cookie,
-      sentinel: Some(sentinel),
-    };
+    let creds = SoraCredentialBuilder::new()
+        .cookies(&cookie)
+        .jwt_bearer_token(&bearer)
+        .sora_sentinel(&sentinel)
+        .build()?;
 
     let task_id = "task_01jqwwrkvgeqp8jsf5mqk1jceh";
 
-    let result = sora_job_status(task_id, CredentialMigrationRef::Legacy(&creds)).await?;
+    let result = sora_job_status(task_id, &creds).await?;
 
     Ok(())
   }

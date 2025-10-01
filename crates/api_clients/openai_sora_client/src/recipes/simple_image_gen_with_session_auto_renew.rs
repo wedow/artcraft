@@ -1,4 +1,3 @@
-use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::creds::sora_sentinel::SoraSentinel;
@@ -30,7 +29,7 @@ pub async fn simple_image_gen_with_session_auto_renew(request: SimpleImageGenAut
     prompt: request.prompt.clone(), // NB: Clone because used again
     num_images: request.num_images,
     image_size: request.image_size,
-    credentials: CredentialMigrationRef::New(request.credentials),
+    credentials: request.credentials,
     request_timeout: request.request_timeout,
   }).await;
 
@@ -127,7 +126,7 @@ pub async fn simple_image_gen_with_session_auto_renew(request: SimpleImageGenAut
     prompt: request.prompt,
     num_images: request.num_images,
     image_size: request.image_size,
-    credentials: CredentialMigrationRef::New(&new_creds),
+    credentials: &new_creds,
     request_timeout: request.request_timeout,
   }).await;
 
