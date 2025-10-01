@@ -1,8 +1,7 @@
-use std::collections::HashSet;
-use std::iter::Map;
 use cookie::Cookie;
-use once_cell::sync::Lazy;
 use errors::AnyhowResult;
+use once_cell::sync::Lazy;
+use std::collections::HashSet;
 
 pub const SESSION_COOKIE_NAME_OLD : &str = "__Secure-authjs.session-token";
 pub const SESSION_COOKIE_NAME_NEW : &str = "__Secure-next-auth.session-token";

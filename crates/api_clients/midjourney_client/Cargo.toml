@@ -24,27 +24,12 @@ errors.workspace = true
 anyhow.workspace = true
 futures.workspace = true
 log.workspace = true
-#reqwest-websocket.workspace = true
-#reqwest.workspace = true
-#reqwest-impersonate = { version = "0", features = ["websocket"] }
 serde.workspace = true
 serde_json.workspace = true
-#tokio.workspace = true
-url.workspace = true
-
-# NB: wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
-#
-# Mac:
-#   brew install --formula cmake pkg-config llvm
-# Windows:
-#   choco install cmake -y
-#   choco install strawberryperl -y
-#   choco install pkgconfiglite -y
-#   choco install llvm -y
-#   choco install nasm -y
-wreq = { version = "5", features = ["json"] }
-wreq-util = "2"
 tokio = { version = "1", features = ["full"] }
+url.workspace = true
+wreq-util.workspace = true
+wreq.workspace = true
 
 # NB: We need to parse HTML to get out the websocket token
 dom_query = "0.20.2"

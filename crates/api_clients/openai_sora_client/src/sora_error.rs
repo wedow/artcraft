@@ -51,7 +51,7 @@ pub enum SoraError {
   OtherBadStatus(anyhow::Error),
 
   /// Reqwest Error, eg. connection failures.
-  ReqwestError(reqwest::Error),
+  WreqError(wreq::Error),
 
   /// std::io Error that arises from our end, eg. reading from the filesystem.
   IoError(io::Error),
@@ -110,8 +110,8 @@ impl Display for SoraError {
       Self::OtherBadStatus(err) => {
         write!(f, "Other error: {}", err)
       }
-      Self::ReqwestError(err) => {
-        write!(f, "Reqwest error: {}", err)
+      Self::WreqError(err) => {
+        write!(f, "Wreq error: {}", err)
       }
       Self::IoError(err) => {
         write!(f, "IO error: {}", err)
@@ -129,9 +129,9 @@ impl Display for SoraError {
   }
 }
 
-impl From<reqwest::Error> for SoraError {
-  fn from(err: reqwest::Error) -> SoraError {
-    Self::ReqwestError(err)
+impl From<wreq::Error> for SoraError {
+  fn from(err: wreq::Error) -> SoraError {
+    Self::WreqError(err)
   }
 }
 

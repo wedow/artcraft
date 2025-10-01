@@ -1,15 +1,16 @@
 use crate::credentials::SoraCredentials;
+use crate::creds::sora_credential_set::SoraCredentialSet;
+use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::sora_error::SoraError;
+use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use anyhow::anyhow;
 use errors::AnyhowResult;
-use reqwest::Url;
+use log::{debug, error, warn};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Debug, Display};
 use std::{fs::File, io::Write, path::Path};
-use log::{debug, error, warn};
-use crate::creds::sora_credential_set::SoraCredentialSet;
-use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
-use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
+use url::Url;
+use wreq::Client;
 
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
 
@@ -212,9 +213,9 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
     },
   };
 
-  let client = reqwest::Client::new();
+  let client = Client::new();
 
-  let mut url = reqwest::Url::parse(SORA_STATUS_URL)
+  let mut url = Url::parse(SORA_STATUS_URL)
       .map_err(|err| anyhow!("error parsing URL: {:?}", err))?;
 
   // Add query parameters
@@ -226,7 +227,7 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
     url.query_pairs_mut().append_pair("before", &before);
   }
 
-  let http_request = client.get(url)
+  let http_request = client.get(url.as_str())
       .header("User-Agent", USER_AGENT)
       .header("Cookie", credentials.cookies.as_str())
       .header("Authorization", bearer_header)
@@ -265,7 +266,7 @@ pub async fn save_generations_to_dir(generations: &[Generation], dir: &str) -> A
     std::fs::create_dir_all(dir)?;
   }
   for generation in generations {
-    let response = reqwest::get(generation.url.clone()).await?;
+    let response = wreq::get(generation.url.clone()).send().await?;
     let image_bytes = response.bytes().await?;
 
     let url = Url::parse(&generation.url)?;
@@ -276,7 +277,7 @@ pub async fn save_generations_to_dir(generations: &[Generation], dir: &str) -> A
     file.write_all(&image_bytes)?;
 
     let thumbnail_url = generation.encodings.thumbnail.path.clone();
-    let thumbnail_response = reqwest::get(thumbnail_url).await?;
+    let thumbnail_response = wreq::get(thumbnail_url).send().await?;
     let thumbnail_bytes = thumbnail_response.bytes().await?;
     let thumbnail_path = Path::new(dir).join(format!("{}_thumbnail.{}", generation.id, ext));
     let mut thumbnail_file = File::create(thumbnail_path)?;
@@ -289,12 +290,12 @@ pub async fn save_generations_to_dir(generations: &[Generation], dir: &str) -> A
 #[cfg(test)]
 mod tests {
   use crate::credentials::SoraCredentials;
+  use crate::creds::sora_credential_set::SoraCredentialSet;
   use crate::recipes::wait_for_image_gen_status::wait_for_image_gen_status;
   use crate::requests::image_gen::image_gen_status::{get_image_gen_status, save_generations_to_dir, StatusRequest, VideoGenStatusResponse};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
-  use crate::creds::sora_credential_set::SoraCredentialSet;
 
   #[ignore]
   #[tokio::test]

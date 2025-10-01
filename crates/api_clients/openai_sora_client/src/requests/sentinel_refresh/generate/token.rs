@@ -6,6 +6,7 @@ use idempotency::uuid::generate_random_uuid;
 use log::error;
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
+use wreq::Client;
 
 const SORA_IMAGE_GEN_URL: &str = "https://chatgpt.com/backend-api/sentinel/req";
 
@@ -46,7 +47,7 @@ pub struct SentinelResponse {
 pub async fn generate_token() -> Result<String, SoraError> {
   let (_request, base64_request) = GenerateSentinelRefreshRequest::new().with_fourth_and_tenth();
   let request = SentinelRequest::new(base64_request);
-  let client = reqwest::Client::new();
+  let client = Client::new();
   let response = client.post(SORA_IMAGE_GEN_URL)
     .header("User-Agent", USER_AGENT)
     .header("Content-Type", "application/json")

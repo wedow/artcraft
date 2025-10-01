@@ -4,8 +4,8 @@ use crate::utils::classify_general_http_error::classify_general_http_error;
 use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use errors::AnyhowResult;
 use log::{debug, error, info};
-use reqwest::Client;
 use serde_derive::Deserialize;
+use wreq::Client;
 
 const SORA_BEARER_GENERATE_URL: &str = "https://sora.chatgpt.com/api/auth/session";
 
@@ -52,7 +52,7 @@ pub async fn generate_bearer_with_cookie(cookie: &str) -> Result<String, SoraErr
   let response_body = &response.text().await
       .map_err(|err| {
         error!("Error reading body while attempting to generate bearer token: {:?}", err);
-        SoraError::ReqwestError(err)
+        SoraError::WreqError(err)
       })?;
   
   if !status.is_success() {

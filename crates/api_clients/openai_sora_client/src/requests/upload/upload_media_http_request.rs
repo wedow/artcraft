@@ -1,12 +1,12 @@
-use std::time::Duration;
 use crate::credentials::{SoraCredentials, USER_AGENT};
 use crate::creds::credential_migration::CredentialMigrationRef;
 use crate::sora_error::SoraError;
 use crate::utils::classify_general_http_error::classify_general_http_error;
 use log::info;
-use reqwest::multipart::{Form, Part};
-use reqwest::Client;
 use serde::Deserialize;
+use std::time::Duration;
+use wreq::multipart::{Form, Part};
+use wreq::Client;
 
 const SORA_UPLOAD_MEDIA_URL: &str = "https://sora.com/backend/uploads";
 

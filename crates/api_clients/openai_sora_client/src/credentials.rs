@@ -1,7 +1,7 @@
-use std::path::Path;
-use reqwest::RequestBuilder;
-use serde_derive::Deserialize;
 use errors::AnyhowResult;
+use serde_derive::Deserialize;
+use std::path::Path;
+use wreq::RequestBuilder;
 
 // NB: It appears that the sentinel may require a matching user agent.
 pub const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";

@@ -1,6 +1,6 @@
 use crate::sora_error::SoraError;
 use cloudflare_errors::filter_cloudflare_errors::filter_cloudflare_errors;
-use reqwest::StatusCode;
+use wreq::StatusCode;
 /*
 
 Old cookie - 

@@ -4,8 +4,8 @@ use crate::sora_error::SoraError;
 use crate::utils::classify_general_http_error::classify_general_http_error;
 use log::{error, info};
 use once_cell::sync::Lazy;
-use reqwest::{Client, Url};
 use serde_derive::Deserialize;
+use wreq::Client;
 
 const SORA_MEDIA_LIST_URL: &str = "https://sora.chatgpt.com/backend/video_gen?limit=50";
 

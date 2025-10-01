@@ -4,6 +4,7 @@ use log::warn;
 use serde_derive::{Deserialize, Serialize};
 use std::time::Duration;
 use thiserror::Error;
+use wreq::{Client, StatusCode};
 
 const SORA_IMAGE_GEN_URL: &str = "https://sora.com/backend/video_gen";
 
@@ -158,7 +159,7 @@ pub (crate) async fn image_gen_http_request(
   credentials: CredentialMigrationRef<'_>, 
   request_timeout: Option<Duration>,
 ) -> Result<RawSoraResponse, SoraImageGenError> {
-  let client = reqwest::Client::new();
+  let client = Client::new();
 
   let mut cookie;
   let mut authorization_header;
@@ -210,7 +211,7 @@ pub (crate) async fn image_gen_http_request(
   let response_body = &response.text().await
       .map_err(|e| SoraImageGenError::NetworkError(e.to_string()))?;
 
-  if status != reqwest::StatusCode::OK {
+  if status != StatusCode::OK {
     warn!("Sora image generation failure. Raw response: {:?}", response_body);
     
     let error_response: RawSoraErrorResponse = serde_json::from_str(response_body)
