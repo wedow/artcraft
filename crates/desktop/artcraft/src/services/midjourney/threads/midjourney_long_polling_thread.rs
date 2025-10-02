@@ -5,6 +5,7 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::state::task_database::TaskDatabase;
+use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::threads::events::maybe_handle_text_to_image_complete_event::maybe_handle_text_to_image_complete_event;
 use crate::services::midjourney::utils::download_midjourney_image::download_midjourney_image;
@@ -31,21 +32,13 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use storyteller_client::error::api_error::ApiError;
-use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
+use storyteller_client::error::api_error::ApiError;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use url::Url;
-
-static PENDING_STATUSES : Lazy<HashSet<TaskStatus>> = Lazy::new(|| {
-  let mut statuses = HashSet::new();
-  statuses.insert(TaskStatus::Pending);
-  statuses.insert(TaskStatus::Started);
-  statuses.insert(TaskStatus::AttemptFailed);
-  statuses
-});
 
 /// This thread is responsible for picking up tasks that fell through the cracks of
 /// the faster websocket thread.
@@ -125,10 +118,10 @@ async fn polling_loop(
     let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
       provider: GenerationProvider::Midjourney,
-      task_statuses: &PENDING_STATUSES,
+      task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
 
-    check_midjourney_tasks(
+    poll_midjourney_tasks(
       app_handle,
       app_env_configs,
       app_data_root,
@@ -143,7 +136,7 @@ async fn polling_loop(
   }
 }
 
-async fn check_midjourney_tasks(
+async fn poll_midjourney_tasks(
   app_handle: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,

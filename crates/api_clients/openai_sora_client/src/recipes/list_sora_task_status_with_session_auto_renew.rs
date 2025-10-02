@@ -11,16 +11,16 @@ use anyhow::Error;
 use log::{info, warn};
 use std::path::Path;
 
-pub struct StatusRequestArgs {
+pub struct StatusRequestArgs<'a> {
   pub limit: Option<u32>,
   pub before: Option<TaskId>,
-  pub credentials: SoraCredentialSet,
+  pub credentials: &'a SoraCredentialSet,
 }
 
 /// Check Sora task statuses with session auto-renewal.
 /// If a new sora credential is returned, replace the old one with the new one.
 pub async fn list_sora_task_status_with_session_auto_renew(
-  args: StatusRequestArgs,
+  args: StatusRequestArgs<'_>,
 ) -> Result<(VideoGenStatusResponse, Option<SoraCredentialSet>), SoraError> {
 
   let request = StatusRequest {

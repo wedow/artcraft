@@ -5,6 +5,20 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct TaskId(pub String);
 
+impl TaskId {
+  pub fn new(id: String) -> Self {
+    Self(id)
+  }
+
+  pub fn as_str(&self) -> &str {
+    &self.0
+  }
+  
+  pub fn to_string(&self) -> String {
+    self.0.to_string()
+  }
+}
+
 impl Display for TaskId {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(&self.0, f)
