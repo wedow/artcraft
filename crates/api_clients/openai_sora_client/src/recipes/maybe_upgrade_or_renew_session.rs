@@ -1,13 +1,13 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::creds::sora_sentinel::SoraSentinel;
+use crate::error::sora_error::SoraError;
 use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_cookie;
 use crate::requests::sentinel_refresh::generate::token::generate_token;
 use chrono::{DateTime, TimeDelta, Utc};
 use errors::AnyhowResult;
 use log::info;
 use std::ops::Sub;
-use crate::error::sora_error::SoraError;
 
 const EXPIRATION_DEADLINE : TimeDelta = TimeDelta::hours(12);
 

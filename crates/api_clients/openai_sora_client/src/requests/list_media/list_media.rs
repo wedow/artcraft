@@ -4,7 +4,7 @@ use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::requests::image_gen::image_gen_status::VideoGenStatusResponse;
 use crate::requests::upload::upload_media_http_request::SoraMediaUploadResponse;
-use crate::utils::classify_general_http_error::classify_general_http_error;
+use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use log::{error, info};
 use once_cell::sync::Lazy;
 use serde_derive::Deserialize;

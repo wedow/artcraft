@@ -4,7 +4,7 @@ use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
-use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
+use crate::utils_internal::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{debug, error, warn};

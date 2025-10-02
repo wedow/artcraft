@@ -1,5 +1,5 @@
 use crate::error::sora_error::SoraError;
-use crate::utils::lightweight_sora_jwt_parse::{lightweight_sora_jwt_parse, SoraJwtClaims};
+use crate::utils_internal::lightweight_sora_jwt_parse::{lightweight_sora_jwt_parse, SoraJwtClaims};
 
 /// Sora bearer tokens are JWT tokens that can be minted with a valid cookie/session.
 #[derive(Clone)]

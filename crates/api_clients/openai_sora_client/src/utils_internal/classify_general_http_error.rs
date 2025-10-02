@@ -1,6 +1,6 @@
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
-use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
+use crate::utils_internal::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 
 /// This assumes the request failed and returned a non-200.
 /// The caller should check.

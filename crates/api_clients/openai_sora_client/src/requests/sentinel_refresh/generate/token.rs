@@ -1,15 +1,15 @@
 use super::request::GenerateSentinelRefreshRequest;
+use crate::constants::user_agent::USER_AGENT;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::requests::list_media::list_media::ListMediaResponse;
-use crate::utils::classify_general_http_error::classify_general_http_error;
+use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use errors::AnyhowResult;
 use idempotency::uuid::generate_random_uuid;
 use log::error;
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
 use wreq::Client;
-use crate::constants::user_agent::USER_AGENT;
 
 const SORA_IMAGE_GEN_URL: &str = "https://chatgpt.com/backend-api/sentinel/req";
 

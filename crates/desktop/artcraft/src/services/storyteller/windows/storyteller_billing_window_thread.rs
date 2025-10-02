@@ -24,7 +24,6 @@ use midjourney_client::credentials::cookie_store_has_auth_cookies::cookie_store_
 use midjourney_client::recipes::get_user_info::{get_user_info, GetUserInfoRequest};
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
-use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 pub async fn storyteller_billing_window_thread(

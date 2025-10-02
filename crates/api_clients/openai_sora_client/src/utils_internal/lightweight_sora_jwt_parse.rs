@@ -118,7 +118,7 @@ fn as_jwt_error(reason: String) -> SoraError {
 
 #[cfg(test)]
 mod tests {
-  use crate::utils::lightweight_sora_jwt_parse::lightweight_sora_jwt_parse;
+  use crate::utils_internal::lightweight_sora_jwt_parse::lightweight_sora_jwt_parse;
 
   #[test]
   fn test_sora_jwt_bearer_token() {
