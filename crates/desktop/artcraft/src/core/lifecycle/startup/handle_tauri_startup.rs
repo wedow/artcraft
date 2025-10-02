@@ -64,6 +64,7 @@ pub async fn handle_tauri_startup(
     &app,
     &root,
     &app_env_configs,
+    &task_database,
     &sora_credential_manager,
     &storyteller_creds_manager,
     &sora_task_queue,

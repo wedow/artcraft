@@ -10,6 +10,8 @@ use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::threads::sora_task_polling::handle_failed_generations::handle_failed_generations;
+use crate::services::sora::threads::sora_task_polling::handle_successful_generations::handle_successful_generations;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
 use enums::common::generation_provider::GenerationProvider;
@@ -45,7 +47,7 @@ pub async fn sora_task_polling_thread(
   sora_task_queue: SoraTaskQueue,
 ) -> ! {
   loop {
-    let res = polling_loop(
+    let res = local_task_polling_loop(
       &app_handle,
       &app_env_configs,
       &task_database,
@@ -61,7 +63,7 @@ pub async fn sora_task_polling_thread(
   }
 }
 
-async fn polling_loop(
+async fn local_task_polling_loop(
   app_handle: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   task_database: &TaskDatabase,
@@ -71,21 +73,19 @@ async fn polling_loop(
   app_data_root: &AppDataRoot,
 ) -> AnyhowResult<()> {
   loop {
-    if sora_task_queue.is_empty()? {
-      // No need to poll if we don't have pending tasks.
-      tokio::time::sleep(std::time::Duration::from_millis(1_000)).await;
-      continue;
-    }
-
-    info!("Task queue has {} pending tasks.", sora_task_queue.len()?);
-
-    let creds = sora_creds_manager.get_credentials_required()?;
-
-    let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
+    let local_sqlite_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
       provider: GenerationProvider::Sora,
       task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
+    
+    if local_sqlite_tasks.tasks.is_empty() {
+      // No need to poll if we don't have pending tasks.
+      tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
+      continue;
+    }
+
+    let creds = sora_creds_manager.get_credentials_required()?;
 
     poll_sora_tasks(
       &app_handle,
@@ -96,11 +96,12 @@ async fn polling_loop(
       &storyteller_creds_manager,
       &sora_task_queue,
       &app_data_root,
-      local_tasks,
+      local_sqlite_tasks,
     ).await?;
 
     tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
   }
+}
 
 async fn poll_sora_tasks(
   app_handle: &AppHandle,
@@ -111,17 +112,13 @@ async fn poll_sora_tasks(
   storyteller_creds_manager: &StorytellerCredentialManager,
   sora_task_queue: &SoraTaskQueue,
   app_data_root: &AppDataRoot,
-  local_tasks: TaskList,
+  local_sqlite_tasks: TaskList,
 ) -> AnyhowResult<()> {
 
-  let local_tasks = local_tasks.tasks;
-
-  if local_tasks.is_empty() {
-    return Ok(())
-  }
+  let local_tasks = local_sqlite_tasks.tasks;
 
   // Map of Sora Task ID to Local Task.
-  let local_tasks_by_sora_task_id = local_tasks.iter()
+  let local_sqlite_tasks_by_sora_task_id = local_tasks.iter()
       .filter_map(|task| {
         if let Some(provider_job_id) = &task.provider_job_id {
           Some((provider_job_id.clone(), task.clone()))
@@ -145,8 +142,8 @@ async fn poll_sora_tasks(
 
   let sora_items = sora_response.task_responses;
 
-  let mut succeeded_tasks_by_id= HashMap::new();
-  let mut failed_tasks_by_id = HashMap::new();
+  let mut sora_succeeded_tasks_by_id = HashMap::new();
+  let mut sora_failed_tasks_by_id = HashMap::new();
 
   let storyteller_creds = storyteller_creds_manager.get_credentials_required()?;
 
@@ -155,10 +152,10 @@ async fn poll_sora_tasks(
 
     match status {
       TaskStatus::Succeeded => {
-        succeeded_tasks_by_id.insert(task.id.clone(), task.clone());
+        sora_succeeded_tasks_by_id.insert(task.id.clone(), task.clone());
       }
       TaskStatus::Failed => {
-        failed_tasks_by_id.insert(task.id.clone(), task.clone());
+        sora_failed_tasks_by_id.insert(task.id.clone(), task.clone());
       }
       TaskStatus::Queued => {}
       TaskStatus::Running => {}
@@ -167,128 +164,26 @@ async fn poll_sora_tasks(
   }
 
   // Clear dead tasks.
-
-  for (task_id, task) in failed_tasks_by_id.iter() {
-    // Emit events for failed tasks.
-    if sora_task_queue.contains_key(task_id)? {
-      let event = GenerationFailedEvent {
-        action: GenerationAction::GenerateImage,
-        service: GenerationServiceProvider::Sora,
-        model: None,
-        reason: None,
-      };
-
-      event.send_infallible(&app_handle);
-    }
-
-    // Clear from SQLite task database.
-    if let Some(local_task) = local_tasks_by_sora_task_id.get(task_id.as_str()) {
-      info!("Marking local task as failed: {:?}", local_task.id);
-
-      let _updated = update_task_status(UpdateTaskArgs {
-        db: task_database.get_connection(),
-        task_id: &local_task.id,
-        status: task_status::TaskStatus::CompleteFailure,
-      }).await?;
-    }
-  }
-
-  // Clear from in memory DB
-  // TODO: Remove the in-memory queue in favor of SQLite only.
-  let failed_task_ids: Vec<&TaskId> = failed_tasks_by_id.keys().collect();
-  sora_task_queue.remove_list(&failed_task_ids)?;
+  handle_failed_generations(
+    &app_handle,
+    &task_database,
+    &local_sqlite_tasks_by_sora_task_id,
+    &sora_failed_tasks_by_id,
+    &sora_task_queue,
+  ).await?;
 
 
   // Process succeeded tasks.
-
-  for (task_id, task) in succeeded_tasks_by_id.iter() {
-    if !sora_task_queue.contains_key(task_id)? {
-      // TODO: Remove once the in-memory queue is gone.
-      continue;
-    }
-
-    info!("Task succeeded: {:?}", task.id);
-
-    let request = CreatePromptRequest {
-      uuid_idempotency_token: generate_random_uuid(),
-      positive_prompt: task.prompt.clone(),
-      negative_prompt: None,
-      model_type: Some(ModelType::GptImage1),
-      generation_provider: Some(GenerationProvider::Sora),
-    };
-
-    let prompt_response = create_prompt(
-      &app_env_configs.storyteller_host,
-      Some(&storyteller_creds),
-      request
-    ).await?;
-
-    info!("Created prompt: {:?}", &prompt_response.prompt_token);
-
-    for (i, generation) in task.generations.iter().enumerate() {
-      info!("Downloading generated file...");
-      let download_path = download_generation(generation, &app_data_root).await?;
-
-      info!("Uploading to backend...");
-
-      let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-        api_host: &app_env_configs.storyteller_host,
-        maybe_creds: Some(&storyteller_creds),
-        path: download_path,
-        is_intermediate_system_file: false,
-        maybe_prompt_token: Some(&prompt_response.prompt_token),
-        maybe_batch_token: None, // TODO: This should be added soon.
-      }).await?;
-
-      info!("Uploaded to API backend: {:?}", result.media_file_token);
-
-
-      // Clear from SQLite task database.
-      if let Some(local_task) = local_tasks_by_sora_task_id.get(task_id.as_str()) {
-        info!("Marking local task as failed: {:?}", local_task.id);
-
-        let updated = update_task_status(UpdateTaskArgs {
-          db: task_database.get_connection(),
-          task_id: &local_task.id,
-          status: task_status::TaskStatus::CompleteSuccess,
-        }).await?;
-
-        // if !updated {
-        //   return Ok(()); // If anything breaks with queries, don't spam events.
-        // }
-      }
-
-      let event = GenerationCompleteEvent {
-        //media_file_token: result.media_file_token,
-        action: Some(GenerationAction::GenerateImage),
-        service: GenerationServiceProvider::Sora,
-        model: None,
-      };
-
-      event.send_infallible(&app_handle);
-    }
-
-  }
-
-  tokio::time::sleep(std::time::Duration::from_millis(3_000)).await;
+  handle_successful_generations(
+    &app_handle,
+    &app_data_root,
+    &app_env_configs,
+    &task_database,
+    &storyteller_creds,
+    &sora_succeeded_tasks_by_id,
+    &local_sqlite_tasks_by_sora_task_id,
+  ).await?;
 
   Ok(())
 }
 
-async fn download_generation(generation: &Generation, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
-  let url = Url::parse(&generation.url)?;
-
-  let response = reqwest::get(&generation.url).await?;
-  let image_bytes = response.bytes().await?;
-
-  let ext = url.path().split(".").last().unwrap_or("png");
-  
-  let tempdir = app_data_root.temp_dir().path();
-  let download_filename = format!("{}.{}", generation.id, ext);
-  let download_path = tempdir.join(download_filename);
-
-  let mut file = File::create(&download_path)?;
-  file.write_all(&image_bytes)?;
-
-  Ok(download_path)
-}
