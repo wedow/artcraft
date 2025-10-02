@@ -1,7 +1,7 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_error::SoraError;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
-use crate::requests::image_gen::image_gen_http_request::{image_gen_http_request, InpaintItem, InpaintItemType, OperationType, RawSoraImageGenRequest, SoraImageGenError, VideoGenType};
+use crate::requests::image_gen::image_gen_http_request::{image_gen_http_request, InpaintItem, InpaintItemType, OperationType, RawSoraImageGenRequest, VideoGenType};
 use log::info;
 use std::time::Duration;
 

@@ -13,30 +13,6 @@ use wreq::{Client, StatusCode};
 
 const SORA_IMAGE_GEN_URL: &str = "https://sora.com/backend/video_gen";
 
-#[derive(Error, Debug)]
-pub enum SoraImageGenError {
-  #[error("Sora token expired: {0}")]
-  TokenExpired(String),
-
-  #[error("Sora sentinel block: {0}")]
-  SentinelBlock(String),
-
-  #[error("Sora too many concurrent tasks: {0}")]
-  TooManyConcurrentTasks(String),
-
-  #[error("Sora invalid JWT: {0}")]
-  InvalidJwt(String),
-
-  #[error("Sora API error: {0}")]
-  GenericError(String),
-
-  #[error("Network error: {0}")]
-  NetworkError(String),
-
-  #[error("Sora username required: {0}")]
-  UsernameRequired(String),
-}
-
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub (crate) enum VideoGenType {
@@ -158,17 +134,17 @@ impl std::fmt::Display for RawSoraErrorInner {
 /// Don't expose the internal request implementation as there are only a few "correct" ways to call the API.
 pub (crate) async fn image_gen_http_request(
   sora_request: RawSoraImageGenRequest, 
-  credentials: &SoraCredentialSet, 
+  credentials: &SoraCredentialSet,
   request_timeout: Option<Duration>,
 ) -> Result<RawSoraResponse, SoraError> {
   let client = Client::new();
 
   let cookie = credentials.cookies.to_string();
-  
+
   let authorization_header = credentials.jwt_bearer_token.as_ref()
       .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
-  
+
   let sentinel = credentials.sora_sentinel.as_ref()
       .map(|sentinel| sentinel.get_sentinel().to_string())
       .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
