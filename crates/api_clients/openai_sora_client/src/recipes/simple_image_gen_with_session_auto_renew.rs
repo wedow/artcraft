@@ -4,11 +4,11 @@ use crate::creds::sora_sentinel::SoraSentinel;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::error::sora_specific_api_error::SoraSpecificApiError;
-use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_cookie;
+use crate::requests::auth_bearer::generate_bearer_jwt_with_cookie::generate_bearer_jwt_with_cookie;
+use crate::requests::auth_sentinel::generate_sentinel_token::generate_sentinel_token;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use crate::requests::image_gen::sora_image_gen_simple::{sora_image_gen_simple, SoraImageGenSimpleRequest};
-use crate::requests::sentinel_refresh::generate_sentinel_token::generate_sentinel_token;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
@@ -87,7 +87,7 @@ pub async fn simple_image_gen_with_session_auto_renew(request: SimpleImageGenAut
   if refresh_jwt {
     info!("Generating new JWT bearer token...");
     let cookies = request.credentials.cookies.as_str();
-    let response = generate_bearer_with_cookie(cookies).await;
+    let response = generate_bearer_jwt_with_cookie(cookies).await;
     match response {
       Err(err) => {
         error!("Error asking to generate JWT: {:?}", err);

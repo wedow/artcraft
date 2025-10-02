@@ -9,7 +9,7 @@ use openai_sora_client::creds::sora_cookies::SoraCookies;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use openai_sora_client::creds::sora_sentinel::SoraSentinel;
-use openai_sora_client::requests::sentinel_refresh::generate_sentinel_token::generate_sentinel_token;
+use openai_sora_client::requests::auth_sentinel::generate_sentinel_token::generate_sentinel_token;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;

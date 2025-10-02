@@ -14,7 +14,7 @@ use cloud_storage::bucket_client::BucketClient;
 use log::warn;
 use log::{debug, error};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use openai_sora_client::requests::sentinel_refresh::generate_sentinel_token::generate_sentinel_token;
+use openai_sora_client::requests::auth_sentinel::generate_sentinel_token::generate_sentinel_token;
 use serde::Deserialize;
 use serde::Serialize;
 use shared_service_components::sora_redis_credentials::keys::RedisSoraCredentialSubkey;

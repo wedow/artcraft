@@ -3,7 +3,6 @@ use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
-use crate::requests::bearer::generate_bearer_with_cookie::SoraAuthResponse;
 use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use log::{error, info};
 use serde::Deserialize;

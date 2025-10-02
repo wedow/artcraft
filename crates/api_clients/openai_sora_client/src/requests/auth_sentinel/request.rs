@@ -1,4 +1,4 @@
-use crate::requests::sentinel_refresh::config::{get_random_core_count, get_random_document_key, get_random_navigator_key, get_random_window_key};
+use crate::requests::auth_sentinel::config::{get_random_core_count, get_random_document_key, get_random_navigator_key, get_random_window_key};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use chrono::FixedOffset;

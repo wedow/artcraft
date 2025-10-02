@@ -3,7 +3,7 @@ use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_specific_api_error::SoraSpecificApiError;
-use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_cookie;
+use crate::requests::auth_bearer::generate_bearer_jwt_with_cookie::generate_bearer_jwt_with_cookie;
 use anyhow::anyhow;
 use log::{error, info, warn};
 
@@ -27,7 +27,7 @@ pub async fn maybe_refresh_credentials_on_sora_error(creds: &SoraCredentialSet, 
   info!("Generating new JWT bearer token...");
 
   let cookies = creds.cookies.as_str();
-  let response = generate_bearer_with_cookie(cookies).await;
+  let response = generate_bearer_jwt_with_cookie(cookies).await;
 
   let new_bearer = match response {
     Err(err) => {
