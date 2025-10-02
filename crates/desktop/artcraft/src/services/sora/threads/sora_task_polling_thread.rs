@@ -9,7 +9,11 @@ use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use errors::AnyhowResult;
+use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use openai_sora_client::recipes::list_sora_task_status_with_session_auto_renew::{list_sora_task_status_with_session_auto_renew, StatusRequestArgs};
 use openai_sora_client::requests::common::task_id::TaskId;
@@ -19,6 +23,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
+use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
 
@@ -128,7 +133,24 @@ async fn polling_loop(
       if !sora_task_queue.contains_key(&task.id)? {
         continue;
       }
+      
       info!("Task succeeded: {:?}", task.id);
+
+      let request = CreatePromptRequest {
+        uuid_idempotency_token: generate_random_uuid(),
+        positive_prompt: task.prompt.clone(),
+        negative_prompt: None,
+        model_type: Some(ModelType::GptImage1),
+        generation_provider: Some(GenerationProvider::Sora),
+      };
+
+      let prompt_response = create_prompt(
+        &app_env_configs.storyteller_host,
+        Some(&creds),
+        request
+      ).await?;
+
+      info!("Created prompt: {:?}", &prompt_response.prompt_token);
     
       for (i, generation) in task.generations.iter().enumerate() {
         info!("Downloading generated file...");
@@ -141,7 +163,7 @@ async fn polling_loop(
           maybe_creds: Some(&creds),
           path: download_path,
           is_intermediate_system_file: false,
-          maybe_prompt_token: None, // TODO: this should be added soon.
+          maybe_prompt_token: Some(&prompt_response.prompt_token),
           maybe_batch_token: None, // TODO: This should be added soon.
         }).await?;
 

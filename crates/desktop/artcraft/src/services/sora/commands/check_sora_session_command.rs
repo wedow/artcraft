@@ -28,7 +28,8 @@ pub enum SoraSessionState{
   Valid,
 }
 
-
+// TODO: Deprecate this
+#[deprecated(note="Not 100% deprecated yet - it may still have uses. But use sora_get_credential_info_command instead.")]
 #[tauri::command]
 pub async fn check_sora_session_command(
   app: AppHandle,

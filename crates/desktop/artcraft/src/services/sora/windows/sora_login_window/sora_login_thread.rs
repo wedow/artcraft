@@ -1,3 +1,5 @@
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::window::get_webview_window_hostname::get_webview_window_hostname;
@@ -6,6 +8,7 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::LOGIN_WINDOW_NAME;
 use anyhow::anyhow;
+use enums::common::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::{error, info};
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
@@ -129,13 +132,24 @@ async fn check_login_window(
   sora_credential_manager.set_credentials(&new_credentials)?;
   sora_credential_manager.persist_all_to_disk()?;
 
-  // NB: Event sent to the frontend for the login flow. We shouldn't rely on just this 
+  send_frontend_login_events(app_handle);
+
+  Ok(true)
+}
+
+fn send_frontend_login_events(app_handle: &AppHandle) {
+  let event = RefreshAccountStateEvent {
+    provider: Some(GenerationProvider::Sora),
+  };
+
+  event.send_infallible(app_handle);
+
+  // TODO: Remove this legacy event when we're done with it.
+  // NB: Event sent to the frontend for the login flow. We shouldn't rely on just this
   // alone as it could be brittle if the events aren't caught.
   let event = SoraLoginSuccessEvent {};
-  
+
   if let Err(err) = event.send(app_handle) {
     error!("Error sending Sora login success event: {:?}", err);
   }
-  
-  Ok(true)
 }
