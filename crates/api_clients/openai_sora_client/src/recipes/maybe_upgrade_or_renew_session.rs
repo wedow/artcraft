@@ -3,7 +3,7 @@ use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::creds::sora_sentinel::SoraSentinel;
 use crate::error::sora_error::SoraError;
 use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_cookie;
-use crate::requests::sentinel_refresh::generate::token::generate_token;
+use crate::requests::sentinel_refresh::generate_sentinel_token::generate_sentinel_token;
 use chrono::{DateTime, TimeDelta, Utc};
 use errors::AnyhowResult;
 use log::info;
@@ -44,7 +44,7 @@ pub async fn maybe_upgrade_or_renew_session(sora_credentials: &mut SoraCredentia
 
   if refresh_sentinel {
     info!("Generating new sentinel...");
-    let token = generate_token().await?;
+    let token = generate_sentinel_token().await?;
     let token = SoraSentinel::new(token);
     sora_credentials.sora_sentinel = Some(token);
     credential_updated = true;

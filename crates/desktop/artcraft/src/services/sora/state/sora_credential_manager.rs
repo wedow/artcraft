@@ -9,7 +9,7 @@ use openai_sora_client::creds::sora_cookies::SoraCookies;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use openai_sora_client::creds::sora_sentinel::SoraSentinel;
-use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
+use openai_sora_client::requests::sentinel_refresh::generate_sentinel_token::generate_sentinel_token;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
@@ -149,7 +149,7 @@ impl SoraCredentialManager {
 
     info!("Generating token...");
 
-    let sentinel = generate_token()
+    let sentinel = generate_sentinel_token()
         .await
         .map_err(|err| {
           error!("Failed to refresh: {:?}", err);

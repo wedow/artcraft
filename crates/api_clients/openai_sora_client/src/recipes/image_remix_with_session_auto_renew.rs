@@ -7,7 +7,7 @@ use crate::error::sora_specific_api_error::SoraSpecificApiError;
 use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_cookie;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
-use crate::requests::sentinel_refresh::generate::token::generate_token;
+use crate::requests::sentinel_refresh::generate_sentinel_token::generate_sentinel_token;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
@@ -108,7 +108,7 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
 
   if refresh_sentinel {
     info!("Generating new sentinel...");
-    let response = generate_token().await;
+    let response = generate_sentinel_token().await;
     match response {
       Err(err) => {
         return Err(SoraGenericApiError::UncategorizedBadResponse(format!("failed to generate new sentinel: {:?}", err)).into())

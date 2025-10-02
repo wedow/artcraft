@@ -13,7 +13,6 @@ use wreq::Client;
 
 const SORA_IMAGE_GEN_URL: &str = "https://chatgpt.com/backend-api/sentinel/req";
 
-
 const SENTINEL_FLOW: &str = "sora_create_task";
 
 
@@ -45,7 +44,7 @@ pub struct SentinelResponse {
 }
 
 
-pub async fn generate_token() -> Result<String, SoraError> {
+pub async fn generate_sentinel_token() -> Result<String, SoraError> {
   let (_request, base64_request) = GenerateSentinelRefreshRequest::new().with_fourth_and_tenth();
   let request = SentinelRequest::new(base64_request);
   let client = Client::new();
@@ -88,7 +87,7 @@ mod tests {
 
   #[tokio::test]
   async fn test_generate_token() {
-    let token = generate_token().await.unwrap();
+    let token = generate_sentinel_token().await.unwrap();
     println!("{}", token);
   }
 }

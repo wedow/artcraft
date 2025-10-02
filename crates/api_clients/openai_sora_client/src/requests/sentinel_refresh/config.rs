@@ -1,3 +1,5 @@
+use rand::Rng;
+
 // cores = [8, 16, 24, 32]
 // cached_scripts = ["https://cdn.oaistatic.com/_next/static/cXh69klOLzS0Gy2joLDRS/_ssgManifest.js?dpl=453ebaec0d44c2decab71692e1bfe39be35a24b3"]
 
@@ -356,7 +358,6 @@
 //     "__intercomReloadLocation"
 // ]
 
-use rand::Rng;
 
 const CORES: &[usize] = &[8, 16, 24, 32];
 
@@ -654,18 +655,17 @@ const WINDOW_KEY: &[&str] = &[
 ];
 
 pub fn get_random_core_count() -> usize {
-  return CORES[rand::rng().random_range(0..CORES.len())];
+  CORES[rand::rng().random_range(0..CORES.len())]
 }
 
-
 pub fn get_random_navigator_key() -> String {
-  return NAVIGATOR_KEY[rand::rng().random_range(0..NAVIGATOR_KEY.len())].to_string();
+  NAVIGATOR_KEY[rand::rng().random_range(0..NAVIGATOR_KEY.len())].to_string()
 }
 
 pub fn get_random_document_key() -> String {
-  return DOCUMENT_KEY[rand::rng().random_range(0..DOCUMENT_KEY.len())].to_string();
+  DOCUMENT_KEY[rand::rng().random_range(0..DOCUMENT_KEY.len())].to_string()
 }
 
 pub fn get_random_window_key() -> String {
-  return WINDOW_KEY[rand::rng().random_range(0..WINDOW_KEY.len())].to_string();
+  WINDOW_KEY[rand::rng().random_range(0..WINDOW_KEY.len())].to_string()
 }

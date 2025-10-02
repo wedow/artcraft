@@ -14,7 +14,7 @@ use cloud_storage::bucket_client::BucketClient;
 use log::warn;
 use log::{debug, error};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
+use openai_sora_client::requests::sentinel_refresh::generate::generate_sentinel_token::generate_sentinel_token;
 use serde::Deserialize;
 use serde::Serialize;
 use shared_service_components::sora_redis_credentials::keys::RedisSoraCredentialSubkey;
@@ -326,7 +326,7 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
   if let Err(SoraError::ApiSpecific(SoraSpecificApiError::SentinelBlockError)) = &response {
     error!("Sora sentinel block, attempting refresh");
 
-    match generate_token().await {
+    match generate_sentinel_token().await {
       Ok(sentinel_token) => {
         set_sora_credential_field_in_redis(
           &mut redis,
