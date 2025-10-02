@@ -1,4 +1,6 @@
-use crate::sora_error::SoraError;
+use crate::error::sora_error::SoraError;
+use crate::error::sora_generic_api_error::SoraGenericApiError;
+use crate::error::sora_specific_api_error::SoraSpecificApiError;
 use cloudflare_errors::filter_cloudflare_errors::filter_cloudflare_errors;
 use wreq::StatusCode;
 /*
@@ -38,7 +40,7 @@ pub async fn classify_general_http_status_code_and_body(status: StatusCode, resp
           || message.contains("token_expired");
 
   if cookie_expired {
-    return SoraError::UnauthorizedCookieOrBearerExpired;
+    return SoraSpecificApiError::UnauthorizedCookieOrBearerExpired.into();
   }
   
   let needs_onboarding = 
@@ -46,21 +48,24 @@ pub async fn classify_general_http_status_code_and_body(status: StatusCode, resp
           || message.contains("onboarding_required");
 
   if needs_onboarding {
-    return SoraError::SoraUsernameNotYetCreated;
+    return SoraSpecificApiError::SoraUsernameNotYetCreated.into();
   }
 
   let status_code = status.as_u16();
 
   if let Err(err) = filter_cloudflare_errors(status_code, &response_body) {
-    return SoraError::CloudflareError(err);
+    return SoraGenericApiError::CloudflareError(err).into();
   }
 
   match status_code {
     502 => {
-      return SoraError::BadGateway(message);
+      return SoraGenericApiError::Http502ErrorBadGateway(message.to_string()).into();
     }
     _ => {}, // Fall-through
   }
 
-  SoraError::OtherBadStatus(anyhow::anyhow!("Upload failed with status {}: {}", status, message))
+  SoraGenericApiError::UncategorizedBadResponseWithStatusAndBody {
+    status_code: status,
+    body: response_body.to_string(),
+  }.into()
 }

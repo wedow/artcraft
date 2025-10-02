@@ -3,7 +3,7 @@ use base64::DecodeError;
 use errors::AnyhowError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
 use midjourney_client::error::midjourney_error::MidjourneyError;
-use openai_sora_client::sora_error::SoraError;
+use openai_sora_client::error::sora_error::SoraError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 
 #[derive(Debug)]

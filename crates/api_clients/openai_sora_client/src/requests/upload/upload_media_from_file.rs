@@ -1,6 +1,8 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
 use crate::requests::upload::upload_media_http_request::{upload_media_http_request, SoraMediaUploadResponse};
-use crate::sora_error::SoraError;
+use log::error;
 use std::path::Path;
 use std::time::Duration;
 use tokio::fs::File;
@@ -15,17 +17,29 @@ pub async fn sora_media_upload_from_file<P: AsRef<Path>>(
   creds: &SoraCredentialSet,
   maybe_timeout: Option<Duration>,
 ) -> Result<SoraMediaUploadResponse, SoraError> {
-  let mut file = File::open(&file_path).await?;
+  let mut file = File::open(&file_path).await
+      .map_err(|err| {
+        error!("Failed to open file for upload: {}", err);
+        SoraClientError::FileForUploadReadError(err)
+      })?;
+  
   let mut buffer = Vec::with_capacity(INITIAL_BUFFER_SIZE);
-  file.read_to_end(&mut buffer).await?;
+
+  file.read_to_end(&mut buffer).await
+      .map_err(|err| {
+        error!("Failed to read file for upload: {}", err);
+        SoraClientError::FileForUploadReadError(err)
+      })?;
 
   let filename = file_path.as_ref().file_name()
-    .ok_or_else(|| anyhow::anyhow!("Invalid file path"))?
+    .ok_or_else(|| SoraClientError::FileForUploadHasInvalidPath)?
     .to_string_lossy()
     .to_string();
+  
+  let maybe_ext = file_path.as_ref().extension().and_then(|e| e.to_str());
 
   // TODO: Read file magic bytes first, then fall back to this.
-  let mime_type = match file_path.as_ref().extension().and_then(|e| e.to_str()) {
+  let mime_type = match maybe_ext {
     Some("jpg") | Some("jpeg") => "image/jpeg",
     Some("png") => "image/png",
     // Some("webp") => "image/webp",
@@ -59,8 +73,8 @@ mod tests {
     let image_path = test_file_path("test_data/image/juno.jpg")?; // media_01jqyqgqpwf40tkcapq5bmaz5d
 
     let creds = SoraCredentialBuilder::new()
-        .cookies(&cookie)
-        .jwt_bearer_token(&bearer)
+        .with_cookies(&cookie)
+        .with_jwt_bearer_token(&bearer)
         .build()?;
 
     let response = sora_media_upload_from_file(

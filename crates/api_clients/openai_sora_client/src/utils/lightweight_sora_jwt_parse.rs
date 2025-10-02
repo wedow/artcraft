@@ -1,7 +1,7 @@
 //! Adapted from 'jwt' crate
 
-use crate::sora_error::SoraError;
-use anyhow::anyhow;
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use base64::Engine;
 use chrono::{DateTime, Utc};
@@ -24,11 +24,10 @@ pub fn lightweight_sora_jwt_parse(token: &str) -> Result<SoraJwtClaims, SoraErro
   let [_header_str, claims_str, _signature_str] = split_components(token)?;
 
   let claims = decode_base64(claims_str)
-      .map_err(|err| SoraError::LocalJwtClaimsParseError(
-        format!("failure to parse claims base64: {:?}", err)))?;
+      .map_err(|err| as_jwt_error(format!("failure to parse claims base64: {:?}", err)))?;
   
   let claims : serde_json::Map<String, Value> = serde_json::from_str(&claims)
-      .map_err(|err| SoraError::LocalJwtClaimsParseError(
+      .map_err(|err| as_jwt_error(
         format!("failure to parse claims json: {:?}", err)))?;
 
   let iat = claims.get("iat")
@@ -110,7 +109,11 @@ fn decode_base64(raw: &str) -> AnyhowResult<String> {
 }
 
 fn jwt_error(reason: &str) -> SoraError {
-  SoraError::LocalJwtClaimsParseError(reason.to_string())
+  SoraError::Client(SoraClientError::LocalJwtClaimsParseError(reason.to_string()))
+}
+
+fn as_jwt_error(reason: String) -> SoraError {
+  SoraError::Client(SoraClientError::LocalJwtClaimsParseError(reason))
 }
 
 #[cfg(test)]

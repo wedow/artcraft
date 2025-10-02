@@ -14,15 +14,16 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use errors::AnyhowError;
 use log::{error, info, warn};
+use openai_sora_client::error::sora_error::SoraError;
+use openai_sora_client::error::sora_specific_api_error::SoraSpecificApiError;
 use openai_sora_client::recipes::image_remix_with_session_auto_renew::{image_remix_with_session_auto_renew, ImageRemixAutoRenewRequest};
 use openai_sora_client::recipes::image_upload_from_file_with_session_auto_renew::{image_upload_from_file_with_session_auto_renew, ImageUploadFromFileAutoRenewRequest};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
-use openai_sora_client::sora_error::SoraError;
 use serde_derive::{Deserialize, Serialize};
 use std::time::Duration;
-use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
 
@@ -135,12 +136,12 @@ pub async fn sora_image_remix_command(
       let mut error_message = "An error occurred. Please try again. If it continues, please tell our staff about the problem.";
 
       match (err) {
-        InnerError::SoraError(SoraError::TooManyConcurrentTasks) => {
+        InnerError::SoraError(SoraError::ApiSpecific(SoraSpecificApiError::TooManyConcurrentTasks)) => {
           error_type = SoraImageRemixErrorType::TooManyConcurrentTasks;
           status = CommandErrorStatus::ServerError;
           error_message = "You have too many Sora image generation tasks running. Please wait a moment.";
         },
-        InnerError::SoraError(SoraError::SoraUsernameNotYetCreated) => {
+        InnerError::SoraError(SoraError::ApiSpecific(SoraSpecificApiError::SoraUsernameNotYetCreated)) => {
           error_type = SoraImageRemixErrorType::SoraUsernameNotYetCreated;
           status = CommandErrorStatus::BadRequest;
           error_message = "Your Sora username is not yet created. Please visit the Sora.com website to create it first.";

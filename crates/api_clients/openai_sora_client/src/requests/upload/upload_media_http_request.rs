@@ -1,9 +1,13 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
+use crate::error::sora_generic_api_error::SoraGenericApiError;
+use crate::requests::bearer::generate_bearer_with_cookie::SoraAuthResponse;
 use crate::requests::image_gen::image_gen_status::USER_AGENT;
-use crate::sora_error::SoraError;
 use crate::utils::classify_general_http_error::classify_general_http_error;
-use log::info;
+use log::{error, info};
 use serde::Deserialize;
+use std::io::empty;
 use std::time::Duration;
 use wreq::multipart::{Form, Part};
 use wreq::Client;
@@ -74,16 +78,17 @@ pub (crate) async fn upload_media_http_request(
 ) -> Result<SoraMediaUploadResponse, SoraError> {
 
   // Create multipart form
-  let part = Part::bytes(file_bytes) // NB: Reqwest needs to own the bytes.
-    .file_name(filename) // NB: Reqwest needs to own the bytes
-    .mime_str(mime_type)?;
+  let part = Part::bytes(file_bytes) // NB: Reqwest needs to own the bytes. 
+      .file_name(filename) // NB: Reqwest needs to own the bytes
+      .mime_str(mime_type)
+      .map_err(|e| SoraClientError::MultipartFormError(e))?;
 
   let form = Form::new().part("file", part);
 
   let cookie = credentials.cookies.to_string();
   let auth_header = credentials.jwt_bearer_token
       .as_ref()
-      .ok_or(SoraError::NoBearerTokenAvailable)?
+      .ok_or(SoraClientError::NoBearerTokenAvailable)?
       .to_authorization_header_value();
 
   // Make API request
@@ -98,7 +103,11 @@ pub (crate) async fn upload_media_http_request(
     request_builder = request_builder.timeout(timeout);
   }
 
-  let response = request_builder.send().await?;
+  let response = request_builder.send()
+      .await
+      .map_err(|err| {
+        SoraGenericApiError::WreqError(err)
+      })?;
 
   // Check response status
   if !response.status().is_success() {
@@ -107,7 +116,17 @@ pub (crate) async fn upload_media_http_request(
     return Err(error);
   }
 
-  // Parse response
-  let upload_response = response.json::<SoraMediaUploadResponse>().await?;
+  let response_body = &response.text().await
+      .map_err(|err| {
+        error!("Error reading response body while attempting file upload: {:?}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
+
+  let upload_response : SoraMediaUploadResponse = serde_json::from_str(&response_body)
+      .map_err(|err| {
+        error!("Error parsing response body while attempting file upload: {:?}", err);
+        SoraGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string())
+      })?;
+
   Ok(upload_response)
 }

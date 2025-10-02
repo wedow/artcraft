@@ -34,7 +34,6 @@ use openai_sora_client::recipes::image_remix_with_session_auto_renew::{image_rem
 use openai_sora_client::recipes::image_upload_from_file_with_session_auto_renew::{image_upload_from_file_with_session_auto_renew, ImageUploadFromFileAutoRenewRequest};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
-use openai_sora_client::sora_error::SoraError;
 use std::time::Duration;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use tauri::AppHandle;

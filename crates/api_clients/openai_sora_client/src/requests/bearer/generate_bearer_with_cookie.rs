@@ -1,5 +1,8 @@
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
+use crate::error::sora_generic_api_error::SoraGenericApiError;
+use crate::error::sora_specific_api_error::SoraSpecificApiError;
 use crate::requests::image_gen::SoraImageGenError;
-use crate::sora_error::SoraError;
 use crate::utils::classify_general_http_error::classify_general_http_error;
 use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use errors::AnyhowResult;
@@ -34,7 +37,11 @@ pub struct SoraUser {
 pub async fn generate_bearer_with_cookie(cookie: &str) -> Result<String, SoraError> {
   let client = Client::builder()
       .gzip(true)
-      .build()?;
+      .build()
+      .map_err(|err| {
+        error!("Error building the client: {:?}", err);
+        SoraClientError::WreqClientError(err)
+      })?;
 
   info!("Generating new JWT bearer token from session cookies... (cookie payload length: {})", cookie.len());
 
@@ -45,14 +52,18 @@ pub async fn generate_bearer_with_cookie(cookie: &str) -> Result<String, SoraErr
       .header("Accept-Language", "en-US,en;q=0.5")
       .header("Cookie", cookie)
       .send()
-      .await?;
+      .await
+      .map_err(|err| {
+        error!("Error sending request: {:?}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
 
   let status = response.status();
 
   let response_body = &response.text().await
       .map_err(|err| {
         error!("Error reading body while attempting to generate bearer token: {:?}", err);
-        SoraError::WreqError(err)
+        SoraGenericApiError::WreqError(err)
       })?;
   
   if !status.is_success() {
@@ -66,10 +77,14 @@ pub async fn generate_bearer_with_cookie(cookie: &str) -> Result<String, SoraErr
   
   if response_body == "null" {
     error!("Failed to generate bearer token. Response was the string `null`.");  
-    return Err(SoraError::FailedToGenerateBearer)  
+    return Err(SoraSpecificApiError::FailedToGenerateBearerToken.into()) 
   }
   
-  let auth_response: SoraAuthResponse = serde_json::from_str(&response_body)?;
+  let auth_response: SoraAuthResponse = serde_json::from_str(&response_body)
+      .map_err(|err| {
+        error!("Error parsing body while attempting to generate bearer token: {:?}", err);
+        SoraGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string())
+      })?;
 
   Ok(auth_response.access_token)
 }

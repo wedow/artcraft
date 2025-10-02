@@ -1,5 +1,8 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
-use crate::sora_error::SoraError;
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
+use crate::error::sora_generic_api_error::SoraGenericApiError;
+use log::error;
 use wreq::Client;
 
 const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
@@ -12,12 +15,10 @@ pub async fn sora_job_status(
 ) -> Result<(), SoraError> {
   let url = format!("https://sora.com/backend/notif?limit=100&before={}", task_id);
 
-
   let cookie = credentials.cookies.to_string();
   
-  // TODO(bt,2025-04-23): We're using a Sora payload error in place of application state error. Surface this differently.
   let authorization_header = credentials.jwt_bearer_token.as_ref()
-      .ok_or(SoraError::NoBearerTokenAvailable)?
+      .ok_or(SoraClientError::NoBearerTokenAvailable)?
       .to_authorization_header_value();
 
   let client = Client::new();
@@ -28,9 +29,18 @@ pub async fn sora_job_status(
     .header("User-Agent", USER_AGENT)
     .header("Cookie", &cookie);
 
-  let response = request.send().await?;
+  let response = request.send()
+      .await
+      .map_err(|err| {
+        error!("sora fetch job status error: {}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
 
-  let json_response = &response.text().await?;
+  let json_response = &response.text().await
+      .map_err(|err| {
+        error!("sora read job status error: {}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
 
   //let response = serde_json::from_str(json_response)?;
 
@@ -58,9 +68,9 @@ mod tests {
     let bearer = bearer.trim().to_string();
 
     let creds = SoraCredentialBuilder::new()
-        .cookies(&cookie)
-        .jwt_bearer_token(&bearer)
-        .sora_sentinel(&sentinel)
+        .with_cookies(&cookie)
+        .with_jwt_bearer_token(&bearer)
+        .with_sora_sentinel(&sentinel)
         .build()?;
 
     let task_id = "task_01jqwwrkvgeqp8jsf5mqk1jceh";

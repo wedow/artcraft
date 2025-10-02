@@ -39,12 +39,12 @@ impl SoraCredentialSet {
   
   pub fn to_builder(&self) -> SoraCredentialBuilder {
     let mut builder = SoraCredentialBuilder::new()
-        .cookies(self.cookies.as_str());
+        .with_cookies(self.cookies.as_str());
     if let Some(bearer) = &self.jwt_bearer_token {
-      builder = builder.jwt_bearer_token(bearer.as_str());
+      builder = builder.with_jwt_bearer_token(bearer.as_str());
     }
     if let Some(sentinel) = &self.sora_sentinel {
-      builder = builder.sora_sentinel(sentinel.as_str());
+      builder = builder.with_sora_sentinel(sentinel.as_str());
     }
     builder
   }

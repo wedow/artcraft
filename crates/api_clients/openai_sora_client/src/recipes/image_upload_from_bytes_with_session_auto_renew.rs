@@ -9,11 +9,11 @@ use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, Sor
 use crate::requests::sentinel_refresh::generate::token::generate_token;
 use crate::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
 use crate::requests::upload::upload_media_http_request::{upload_media_http_request, SoraMediaUploadResponse};
-use crate::sora_error::SoraError;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};
 use std::time::Duration;
+use crate::error::sora_error::SoraError;
 
 pub struct ImageUploadFromBytesAutoRenewRequest<'a> {
   pub file_bytes: Vec<u8>,

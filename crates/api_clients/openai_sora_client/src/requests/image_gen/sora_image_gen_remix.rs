@@ -70,9 +70,9 @@ mod tests {
     let bearer = bearer.trim().to_string();
 
     let creds = SoraCredentialBuilder::new()
-        .cookies(&cookie)
-        .jwt_bearer_token(&bearer)
-        .sora_sentinel(&sentinel)
+        .with_cookies(&cookie)
+        .with_jwt_bearer_token(&bearer)
+        .with_sora_sentinel(&sentinel)
         .build()?;
 
     let response = sora_image_gen_remix(SoraImageGenRemixRequest {

@@ -1,12 +1,14 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::creds::sora_sentinel::SoraSentinel;
+use crate::error::sora_error::SoraError;
+use crate::error::sora_generic_api_error::SoraGenericApiError;
+use crate::error::sora_specific_api_error::SoraSpecificApiError;
 use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_cookie;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use crate::requests::image_gen::{image_gen_http_request, SoraImageGenError};
 use crate::requests::sentinel_refresh::generate::token::generate_token;
-use crate::sora_error::SoraError;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{info, warn};
@@ -47,17 +49,17 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
   match err {
     // We'll fail these requests...
     SoraImageGenError::TooManyConcurrentTasks(_) => {
-      return Err(SoraError::TooManyConcurrentTasks);
+      return Err(SoraSpecificApiError::TooManyConcurrentTasks.into());
+    }
+    SoraImageGenError::UsernameRequired(_err) => {
+      return Err(SoraSpecificApiError::SoraUsernameNotYetCreated.into())
     }
     SoraImageGenError::GenericError(err) => {
-      return Err(SoraError::OtherBadStatus(anyhow!("image remix failed with GenericError: {:?}", err)))
+      return Err(SoraGenericApiError::UncategorizedBadResponse(format!("image remix failed with GenericError: {:?}", err)).into())
     }
     SoraImageGenError::NetworkError(err) => {
       // TODO: The underlying type should be a reqwest::Error.
-      return Err(SoraError::OtherBadStatus(anyhow!("network error: {:?}", err)))
-    }
-    SoraImageGenError::UsernameRequired(_err) => {
-      return Err(SoraError::SoraUsernameNotYetCreated)
+      return Err(SoraGenericApiError::UncategorizedBadResponse(format!("network error: {:?}", err)).into())
     }
 
     // We'll retry these requests...
@@ -85,12 +87,12 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
     let response = generate_bearer_with_cookie(cookies).await;
     match response {
       Err(err) => {
-        return Err(SoraError::OtherBadStatus(anyhow!("failed to generate new JWT bearer token: {:?}", err)))
+        return Err(SoraGenericApiError::UncategorizedBadResponse(format!("failed to generate new JWT bearer token: {:?}", err)).into())
       }
       Ok(bearer) => {
         match SoraJwtBearerToken::new(bearer) {
           Err(err) => {
-            return Err(SoraError::OtherBadStatus(anyhow!("Failed to parse new JWT bearer token: {:?}", err)));
+            return Err(SoraGenericApiError::UncategorizedBadResponse(format!("Failed to parse new JWT bearer token: {:?}", err)).into());
           }
           Ok(bearer) => new_bearer = Some(bearer),
         }
@@ -105,7 +107,7 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
     let response = generate_token().await;
     match response {
       Err(err) => {
-        return Err(SoraError::OtherBadStatus(anyhow!("failed to generate new sentinel: {:?}", err)))
+        return Err(SoraGenericApiError::UncategorizedBadResponse(format!("failed to generate new sentinel: {:?}", err)).into())
       }
       Ok(sentinel) => new_sentinel = Some(SoraSentinel::new(sentinel)),
     }
@@ -135,12 +137,12 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
   match result {
     Ok(response) => Ok((response, Some(new_creds))),
     Err(err) => match err {
-      image_gen_http_request::SoraImageGenError::TooManyConcurrentTasks(err) => {
-        Err(SoraError::TooManyConcurrentTasks)
+      SoraImageGenError::TooManyConcurrentTasks(err) => {
+        Err(SoraSpecificApiError::TooManyConcurrentTasks.into())
       }
       _ => {
         warn!("Image remix failed again: {:?}", err);
-        Err(SoraError::OtherBadStatus(anyhow!("image remix failed again: {:?}", err)))
+        Err(SoraGenericApiError::UncategorizedBadResponse(format!("image remix failed again: {:?}", err)).into())
       }
     }
   }

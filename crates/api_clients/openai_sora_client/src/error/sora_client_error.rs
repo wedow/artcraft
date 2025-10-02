@@ -1,0 +1,49 @@
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+
+#[derive(Debug)]
+pub enum SoraClientError {
+  /// An error reading the file for upload.
+  FileForUploadReadError(std::io::Error),
+  
+  /// The file path provided for upload is invalid.
+  FileForUploadHasInvalidPath,
+
+  /// Something is wrong with the JWT bearer token.
+  /// This error originates on our end as we try to parse the JWT.
+  LocalJwtClaimsParseError(String),
+  
+  /// There was an error constructing the form-multipart request.
+  MultipartFormError(wreq::Error),
+
+  /// We haven't received a bearer token yet
+  /// This is our own internal application state error, not something Sora returns.
+  /// We know our client can't make the request, so we preemptively fail it.
+  NoBearerTokenAvailable,
+
+  /// Issue with using the SoraCredentialBuilder.
+  SoraCredentialBuilderError(&'static str),
+  
+  /// Error parsing a request URL.
+  UrlParseError(url::ParseError),
+
+  /// An error was encountered in building the Wreq client
+  WreqClientError(wreq::Error),
+}
+
+impl Error for SoraClientError {}
+
+impl Display for SoraClientError {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
+      Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),
+      Self::LocalJwtClaimsParseError(msg) => write!(f, "Local JWT claims parse error: {}", msg),
+      Self::MultipartFormError(err) => write!(f, "Multipart form error: {}", err),
+      Self::NoBearerTokenAvailable => write!(f, "No bearer token available. The client needs a bearer token to make the request."),
+      Self::SoraCredentialBuilderError(msg) => write!(f, "Sora Credential Builder error: {}", msg),
+      Self::UrlParseError(err) => write!(f, "URL parse error: {}", err),
+      Self::WreqClientError(err) => write!(f, "Wreq client error (during client creation): {}", err),
+    }
+  }
+}

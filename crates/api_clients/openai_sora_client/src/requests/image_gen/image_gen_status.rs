@@ -1,6 +1,8 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
-use crate::sora_error::SoraError;
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
+use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::utils::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use anyhow::anyhow;
 use errors::AnyhowResult;
@@ -207,15 +209,17 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
   let bearer_header = match credentials.jwt_bearer_token.as_ref()  {
     Some(bearer) => bearer.to_authorization_header_value(),
     None => {
-      warn!("No JWT bearer for getting image gen status!");
-      return Err(SoraError::NoBearerTokenAvailable)
+      warn!("No JWT bearer token in client - cannot fetch image gen status!");
+      return Err(SoraClientError::NoBearerTokenAvailable.into());
     },
   };
 
   let client = Client::new();
 
   let mut url = Url::parse(SORA_STATUS_URL)
-      .map_err(|err| anyhow!("error parsing URL: {:?}", err))?;
+      .map_err(|err| {
+        SoraClientError::UrlParseError(err)
+      })?;
 
   // Add query parameters
   if let Some(limit) = status_request.limit {
@@ -232,13 +236,26 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
       .header("Authorization", bearer_header)
       .header("Content-Type", "application/json");
 
-  let http_request = http_request.build()?;
+  let http_request = http_request.build()
+      .map_err(|err| {
+        SoraClientError::WreqClientError(err)
+      })?;
 
-  let response = client.execute(http_request).await?;
+  let response = client.execute(http_request)
+      .await
+      .map_err(|err| {
+        error!("Client failed to fetch sora image gen status: {:?}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
 
   let status = response.status();
 
-  let response_body = &response.text().await?;
+  let response_body = &response.text()
+      .await
+      .map_err(|err| {
+        error!("Client failed to read sora image gen status: {:?}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
 
   debug!("response_body: {}", response_body);
 
@@ -254,7 +271,8 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
     Ok(response) => Ok(response),
     Err(err) => {
       warn!("Failed to parse status response: {:?}", err);
-      Err(SoraError::JsonErrorWithBody(err, response_body.to_string()))
+      Err(SoraGenericApiError::SerdeResponseParseErrorWithBody(
+        err, response_body.to_string()).into())
     }
   }
 }
@@ -316,9 +334,9 @@ mod tests {
     let bearer = bearer.trim().to_string();
 
     let creds = SoraCredentialBuilder::new()
-        .cookies(&cookie)
-        .jwt_bearer_token(&bearer)
-        .sora_sentinel(&sentinel)
+        .with_cookies(&cookie)
+        .with_jwt_bearer_token(&bearer)
+        .with_sora_sentinel(&sentinel)
         .build()?;
 
     // Get the task status for a specific task

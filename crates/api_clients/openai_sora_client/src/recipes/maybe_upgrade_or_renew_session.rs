@@ -7,7 +7,7 @@ use chrono::{DateTime, TimeDelta, Utc};
 use errors::AnyhowResult;
 use log::info;
 use std::ops::Sub;
-use crate::sora_error::SoraError;
+use crate::error::sora_error::SoraError;
 
 const EXPIRATION_DEADLINE : TimeDelta = TimeDelta::hours(12);
 

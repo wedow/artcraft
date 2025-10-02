@@ -1,5 +1,9 @@
+use crate::creds::sora_cookies::SoraCookies;
 use crate::creds::sora_credential_set::SoraCredentialSet;
-use crate::sora_error::SoraError;
+use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
+use crate::creds::sora_sentinel::SoraSentinel;
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
 
 pub struct SoraCredentialBuilder {
   cookies: Option<String>,
@@ -16,29 +20,41 @@ impl SoraCredentialBuilder {
     }
   }
   
-  pub fn cookies(mut self, cookies: &str) -> Self {
+  // Consuming methods
+  
+  pub fn with_cookies(mut self, cookies: &str) -> Self {
     self.cookies = Some(cookies.to_string());
     self
   }
   
-  pub fn jwt_bearer_token(mut self, token: &str) -> Self {
+  pub fn with_jwt_bearer_token(mut self, token: &str) -> Self {
     self.jwt_bearer_token = Some(token.to_string());
     self
   }
   
-  pub fn sora_sentinel(mut self, sentinel: &str) -> Self {
+  pub fn with_sora_sentinel(mut self, sentinel: &str) -> Self {
     self.sora_sentinel = Some(sentinel.to_string());
     self
   }
+
+  // Mutable methods
+
+  pub fn set_cookies(&mut self, cookies: &str) {
+    self.cookies = Some(cookies.to_string());
+  }
+
+  pub fn set_jwt_bearer_token(&mut self, token: &str) {
+    self.jwt_bearer_token = Some(token.to_string());
+  }
+
+  pub fn set_sora_sentinel(&mut self, sentinel: &str) {
+    self.sora_sentinel = Some(sentinel.to_string());
+  }
   
   pub fn build(self) -> Result<SoraCredentialSet, SoraError> {
-    use crate::creds::sora_cookies::SoraCookies;
-    use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
-    use crate::creds::sora_sentinel::SoraSentinel;
-
     let cookies = match self.cookies {
       Some(c) => SoraCookies::new(c),
-      None => return Err(SoraError::SoraCredentialBuilderError("no cookies provided".to_string())),
+      None => return Err(SoraClientError::SoraCredentialBuilderError("no cookies provided").into()),
     };
 
     let jwt_bearer_token = match self.jwt_bearer_token {

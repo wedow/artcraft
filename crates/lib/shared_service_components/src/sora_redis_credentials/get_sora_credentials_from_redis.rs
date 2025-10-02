@@ -22,9 +22,9 @@ pub fn get_sora_credentials_from_redis(
   match (bearer, cookie, sentinel) {
     (Some(b), Some(c), Some(s)) => {
       let creds = SoraCredentialBuilder::new()
-          .jwt_bearer_token(&b)
-          .cookies(&c)
-          .sora_sentinel(&s)
+          .with_jwt_bearer_token(&b)
+          .with_cookies(&c)
+          .with_sora_sentinel(&s)
           .build()?;
       Ok(creds)
     }

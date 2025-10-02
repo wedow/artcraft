@@ -27,9 +27,9 @@ pub fn get_sora_credentials_from_request(
       info!("Sora credentials were present in HTTP request headers!");
 
       let mut creds = SoraCredentialBuilder::new()
-          .cookies(cookie)
-          .jwt_bearer_token(bearer)
-          .sora_sentinel(sentinel)
+          .with_cookies(cookie)
+          .with_jwt_bearer_token(bearer)
+          .with_sora_sentinel(sentinel)
           .build()?;
 
       return Ok(creds);
@@ -44,15 +44,15 @@ pub fn get_sora_credentials_from_request(
       let mut builder = credentials.to_builder();
       if let Some(bearer) = sora_bearer {
         info!("override bearer value");
-        builder = builder.jwt_bearer_token(&bearer);
+        builder = builder.with_jwt_bearer_token(&bearer);
       }
       if let Some(cookie) = sora_cookie {
         info!("override cookie value");
-        builder = builder.cookies(&cookie)
+        builder = builder.with_cookies(&cookie)
       }
       if let Some(sentinel) = sora_sentinel {
         info!("override sentinel value");
-        builder = builder.sora_sentinel(&sentinel);
+        builder = builder.with_sora_sentinel(&sentinel);
       }
       return Ok(builder.build()?);
     },

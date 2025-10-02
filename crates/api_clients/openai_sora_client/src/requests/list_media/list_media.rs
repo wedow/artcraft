@@ -1,6 +1,9 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
+use crate::error::sora_client_error::SoraClientError;
+use crate::error::sora_error::SoraError;
+use crate::error::sora_generic_api_error::SoraGenericApiError;
+use crate::requests::image_gen::image_gen_status::VideoGenStatusResponse;
 use crate::requests::upload::upload_media_http_request::SoraMediaUploadResponse;
-use crate::sora_error::SoraError;
 use crate::utils::classify_general_http_error::classify_general_http_error;
 use log::{error, info};
 use once_cell::sync::Lazy;
@@ -39,13 +42,17 @@ pub async fn list_media(credentials: &SoraCredentialSet) -> Result<ListMediaResp
   let auth_header = credentials.jwt_bearer_token
       .as_ref()
       .map(|bearer| bearer.to_authorization_header_value())
-      .ok_or_else(|| SoraError::NoBearerTokenAvailable)?;
+      .ok_or_else(|| SoraClientError::NoBearerTokenAvailable)?;
   
   let cookie = credentials.cookies.to_string();
 
   let client = Client::builder()
       .gzip(true)
-      .build()?;
+      .build()
+      .map_err(|err| {
+        error!("Failed to build HTTP client: {}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
 
   let response = client.get(SORA_MEDIA_LIST_URL)
       .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0")
@@ -55,7 +62,11 @@ pub async fn list_media(credentials: &SoraCredentialSet) -> Result<ListMediaResp
       .header("Cookie", &cookie)
       .header("Authorization", &auth_header)
       .send()
-      .await?;
+      .await
+      .map_err(|err| {
+        error!("Failed to fetch media list: {}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
 
   if !response.status().is_success() {
     error!("Failed to fetch media list: {}", response.status());
@@ -65,9 +76,19 @@ pub async fn list_media(credentials: &SoraCredentialSet) -> Result<ListMediaResp
 
   info!("Successfully generated bearer token.");
 
-  // Parse response
-  let typed_response = response.json::<ListMediaResponse>().await?;
-  Ok(typed_response)
+  let text_body = &response.text().await
+      .map_err(|err| {
+        error!("sora error reading media list text body: {}", err);
+        SoraGenericApiError::WreqError(err)
+      })?;
+
+  let response = serde_json::from_str::<ListMediaResponse>(text_body)
+      .map_err(|err| {
+        error!("Failed to parse media list response: {}", err);
+        SoraGenericApiError::SerdeResponseParseErrorWithBody(err, text_body.to_string())
+      })?;
+  
+  Ok(response)
 }
 
 
