@@ -8,7 +8,6 @@ use crate::requests::bearer::generate_bearer_with_cookie::generate_bearer_with_c
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use crate::requests::image_gen::sora_image_gen_simple::{sora_image_gen_simple, SoraImageGenSimpleRequest};
-use crate::requests::image_gen::{image_gen_http_request, SoraImageGenError};
 use crate::requests::sentinel_refresh::generate::token::generate_token;
 use anyhow::anyhow;
 use errors::AnyhowResult;

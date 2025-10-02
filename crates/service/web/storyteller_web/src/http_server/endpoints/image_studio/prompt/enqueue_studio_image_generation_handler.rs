@@ -14,7 +14,6 @@ use cloud_storage::bucket_client::BucketClient;
 use log::warn;
 use log::{debug, error};
 use mysql_queries::queries::media_files::get::get_media_file::get_media_file;
-use openai_sora_client::requests::image_gen::SoraImageGenError;
 use openai_sora_client::requests::sentinel_refresh::generate::token::generate_token;
 use serde::Deserialize;
 use serde::Serialize;
@@ -36,6 +35,8 @@ use mysql_queries::payloads::generic_inference_args::generic_inference_args::{Ge
 use mysql_queries::payloads::generic_inference_args::inner_payloads::sora_image_gen_args::SoraImageGenArgs;
 use mysql_queries::queries::generic_inference::web::insert_generic_inference_job::{insert_generic_inference_job, InsertGenericInferenceArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
+use openai_sora_client::error::sora_error::SoraError;
+use openai_sora_client::error::sora_specific_api_error::SoraSpecificApiError;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use openai_sora_client::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use openai_sora_client::requests::upload::upload_media_from_file::sora_media_upload_from_file;
@@ -322,8 +323,8 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
 
   debug!("Sora image gen response: {:?}", response);
 
-  if let Err(SoraImageGenError::SentinelBlock(msg)) = &response {
-    error!("Sora sentinel block, attempting refresh: {}", msg);
+  if let Err(SoraError::ApiSpecific(SoraSpecificApiError::SentinelBlockError)) = &response {
+    error!("Sora sentinel block, attempting refresh");
 
     match generate_token().await {
       Ok(sentinel_token) => {
@@ -380,19 +381,19 @@ pub async fn enqueue_studio_image_generation_handler(http_request: HttpRequest, 
 
   let response = response.map_err(|err| {
     match err {
-      SoraImageGenError::TokenExpired(msg) => {
-        error!("Sora token expired, needs refresh: {}", msg);
+      SoraError::ApiSpecific(SoraSpecificApiError::TokenExpiredError) => {
+        error!("Sora token expired, needs refresh");
         // TODO: Implement token refresh logic here
         EnqueueImageGenRequestError::ServerError
       },
-      SoraImageGenError::SentinelBlock(msg) => {
-        error!("Sora sentinel block still occurring after refresh: {}", msg);
+      SoraError::ApiSpecific(SoraSpecificApiError::SentinelBlockError) => {
+        error!("Sora sentinel block still occurring after refresh");
         EnqueueImageGenRequestError::ServerError
       },
-      SoraImageGenError::TooManyConcurrentTasks(msg) => {
-        error!("Sora too many concurrent tasks: {}", msg);
+      SoraError::ApiSpecific(SoraSpecificApiError::TooManyConcurrentTasks) => {
+        error!("Sora too many concurrent tasks");
         EnqueueImageGenRequestError::TooManyConcurrentTasks
-      },
+      }
       _ => {
         error!("Failed to call Sora image generation: {:?}", err);
         EnqueueImageGenRequestError::ServerError
