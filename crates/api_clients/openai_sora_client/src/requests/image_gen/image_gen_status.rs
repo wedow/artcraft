@@ -208,7 +208,7 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
     Some(bearer) => bearer.to_authorization_header_value(),
     None => {
       warn!("No JWT bearer token in client - cannot fetch image gen status!");
-      return Err(SoraClientError::NoBearerTokenAvailable.into());
+      return Err(SoraClientError::NoBearerTokenForRequest.into());
     },
   };
 

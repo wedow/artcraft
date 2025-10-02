@@ -11,7 +11,7 @@ use crate::requests::image_gen::{image_gen_http_request, SoraImageGenError};
 use crate::requests::sentinel_refresh::generate::token::generate_token;
 use anyhow::anyhow;
 use errors::AnyhowResult;
-use log::{info, warn};
+use log::{error, info, warn};
 use std::time::Duration;
 
 pub struct ImageRemixAutoRenewRequest<'a> {
@@ -47,35 +47,40 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
   let mut refresh_sentinel = false;
 
   match err {
-    // We'll fail these requests...
-    SoraImageGenError::TooManyConcurrentTasks(_) => {
-      return Err(SoraSpecificApiError::TooManyConcurrentTasks.into());
-    }
-    SoraImageGenError::UsernameRequired(_err) => {
-      return Err(SoraSpecificApiError::SoraUsernameNotYetCreated.into())
-    }
-    SoraImageGenError::GenericError(err) => {
-      return Err(SoraGenericApiError::UncategorizedBadResponse(format!("image remix failed with GenericError: {:?}", err)).into())
-    }
-    SoraImageGenError::NetworkError(err) => {
-      // TODO: The underlying type should be a reqwest::Error.
-      return Err(SoraGenericApiError::UncategorizedBadResponse(format!("network error: {:?}", err)).into())
+    // We'll specifically fail these non-retryable requests...
+
+    SoraError::ApiSpecific(SoraSpecificApiError::TooManyConcurrentTasks) |
+    SoraError::ApiSpecific(SoraSpecificApiError::SoraUsernameNotYetCreated) => {
+      error!("Non-retryable image generation error: {:?}", err);
+      return Err(err);
     }
 
     // We'll retry these requests...
 
-    SoraImageGenError::SentinelBlock(err) => {
+    SoraError::ApiSpecific(SoraSpecificApiError::SentinelBlockError) => {
       warn!("Image generation failed due to sentinel block error: {:?}", err);
       refresh_sentinel = true;
     }
-    SoraImageGenError::TokenExpired(err) => {
+    SoraError::ApiSpecific(SoraSpecificApiError::TokenExpiredError) => {
       warn!("Image generation failed due to token expired error: {:?}", err);
       refresh_sentinel = true; // TODO: Not sure what this error is, actually.
       refresh_jwt = true;
     }
-    SoraImageGenError::InvalidJwt(err) => {
+    SoraError::ApiSpecific(SoraSpecificApiError::InvalidJwt) => {
       warn!("Image generation failed due to invalid jwt error: {:?}", err);
       refresh_jwt = true;
+    }
+    SoraError::ApiSpecific(SoraSpecificApiError::UnauthorizedCookieOrBearerExpired) => {
+      warn!("Image generation failed due to auth error (nb: this is a legacy error): {:?}", err);
+      refresh_jwt = true;
+      refresh_sentinel = true;
+    }
+
+    // We'll fail everything else eagerly...
+
+    _ => {
+      error!("Image generation error: {:?}", err);
+      return Err(err);
     }
   }
 
@@ -132,18 +137,7 @@ pub async fn image_remix_with_session_auto_renew(request: ImageRemixAutoRenewReq
     sora_media_tokens: request.sora_media_tokens,
     credentials: &new_creds,
     request_timeout: request.request_timeout,
-  }).await;
-
-  match result {
-    Ok(response) => Ok((response, Some(new_creds))),
-    Err(err) => match err {
-      SoraImageGenError::TooManyConcurrentTasks(err) => {
-        Err(SoraSpecificApiError::TooManyConcurrentTasks.into())
-      }
-      _ => {
-        warn!("Image remix failed again: {:?}", err);
-        Err(SoraGenericApiError::UncategorizedBadResponse(format!("image remix failed again: {:?}", err)).into())
-      }
-    }
-  }
+  }).await?;
+  
+  Ok((result, Some(new_creds)))
 }

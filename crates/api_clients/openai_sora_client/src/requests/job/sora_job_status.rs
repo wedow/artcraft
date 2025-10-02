@@ -17,7 +17,7 @@ pub async fn sora_job_status(
   let cookie = credentials.cookies.to_string();
   
   let authorization_header = credentials.jwt_bearer_token.as_ref()
-      .ok_or(SoraClientError::NoBearerTokenAvailable)?
+      .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
 
   let client = Client::new();

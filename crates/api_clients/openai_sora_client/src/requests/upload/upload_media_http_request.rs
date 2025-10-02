@@ -88,7 +88,7 @@ pub (crate) async fn upload_media_http_request(
   let cookie = credentials.cookies.to_string();
   let auth_header = credentials.jwt_bearer_token
       .as_ref()
-      .ok_or(SoraClientError::NoBearerTokenAvailable)?
+      .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
 
   // Make API request

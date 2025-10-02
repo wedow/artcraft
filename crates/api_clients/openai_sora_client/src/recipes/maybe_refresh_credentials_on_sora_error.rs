@@ -12,7 +12,7 @@ use log::{error, info, warn};
 pub async fn maybe_refresh_credentials_on_sora_error(creds: &SoraCredentialSet, error: SoraError) -> Result<SoraCredentialSet, SoraError> {
 
   match error {
-    SoraError::Client(SoraClientError::NoBearerTokenAvailable) => {
+    SoraError::Client(SoraClientError::NoBearerTokenForRequest) => {
       error!("Previous request failed due to missing bearer token.");
     }
     SoraError::ApiSpecific(SoraSpecificApiError::UnauthorizedCookieOrBearerExpired) => {

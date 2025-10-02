@@ -42,7 +42,7 @@ pub async fn list_media(credentials: &SoraCredentialSet) -> Result<ListMediaResp
   let auth_header = credentials.jwt_bearer_token
       .as_ref()
       .map(|bearer| bearer.to_authorization_header_value())
-      .ok_or_else(|| SoraClientError::NoBearerTokenAvailable)?;
+      .ok_or_else(|| SoraClientError::NoBearerTokenForRequest)?;
   
   let cookie = credentials.cookies.to_string();
 

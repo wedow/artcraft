@@ -1,7 +1,7 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
+use crate::error::sora_error::SoraError;
 use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenResponse};
 use crate::requests::image_gen::image_gen_http_request::{image_gen_http_request, OperationType, RawSoraImageGenRequest, VideoGenType};
-use crate::requests::image_gen::SoraImageGenError;
 use std::time::Duration;
 
 pub struct SoraImageGenSimpleRequest<'a> {
@@ -12,7 +12,7 @@ pub struct SoraImageGenSimpleRequest<'a> {
   pub request_timeout: Option<Duration>,
 }
 
-pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> Result<SoraImageGenResponse, SoraImageGenError> {
+pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> Result<SoraImageGenResponse, SoraError> {
   let sora_request = RawSoraImageGenRequest {
     r#type: VideoGenType::ImageGen,
     operation: OperationType::SimpleCompose,
@@ -24,8 +24,11 @@ pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> Resul
     inpaint_items: vec![],
   };
 
-  // TODO: Error handling.
-  let result = image_gen_http_request(sora_request, args.credentials, args.request_timeout).await?;
+  let result = image_gen_http_request(
+    sora_request, 
+    args.credentials, 
+    args.request_timeout
+  ).await?;
 
   Ok(SoraImageGenResponse {
     task_id: result.id,

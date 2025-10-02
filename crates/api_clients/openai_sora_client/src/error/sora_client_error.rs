@@ -19,7 +19,10 @@ pub enum SoraClientError {
   /// We haven't received a bearer token yet
   /// This is our own internal application state error, not something Sora returns.
   /// We know our client can't make the request, so we preemptively fail it.
-  NoBearerTokenAvailable,
+  NoBearerTokenForRequest,
+  
+  /// A sentinel token is not present in the client, which is required for some requests.
+  NoSentinelTokenForRequest,
 
   /// Issue with using the SoraCredentialBuilder.
   SoraCredentialBuilderError(&'static str),
@@ -40,7 +43,8 @@ impl Display for SoraClientError {
       Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),
       Self::LocalJwtClaimsParseError(msg) => write!(f, "Local JWT claims parse error: {}", msg),
       Self::MultipartFormError(err) => write!(f, "Multipart form error: {}", err),
-      Self::NoBearerTokenAvailable => write!(f, "No bearer token available. The client needs a bearer token to make the request."),
+      Self::NoBearerTokenForRequest => write!(f, "No bearer token available. The client needs a bearer token to make the request."),
+      Self::NoSentinelTokenForRequest => write!(f, "No sentinel token available. The client needs a sentinel token to make the request."),
       Self::SoraCredentialBuilderError(msg) => write!(f, "Sora Credential Builder error: {}", msg),
       Self::UrlParseError(err) => write!(f, "URL parse error: {}", err),
       Self::WreqClientError(err) => write!(f, "Wreq client error (during client creation): {}", err),
