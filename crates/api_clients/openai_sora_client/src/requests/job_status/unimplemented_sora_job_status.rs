@@ -8,7 +8,7 @@ use wreq::Client;
 
 // https://sora.com/backend/notif?limit=100&before=task_01jqwwrkvgeqp8jsf5mqk1jceh
 
-pub async fn sora_job_status(
+pub async fn unimplemented_sora_job_status(
   task_id: &str,
   credentials: &SoraCredentialSet,
 ) -> Result<(), SoraError> {
@@ -41,15 +41,13 @@ pub async fn sora_job_status(
         SoraGenericApiError::WreqError(err)
       })?;
 
-  //let response = serde_json::from_str(json_response)?;
-
-  Ok(())
+  unimplemented!("job status is not parsed")
 }
 
 #[cfg(test)]
 mod tests {
   use crate::creds::sora_credential_builder::SoraCredentialBuilder;
-  use crate::requests::job_status::sora_job_status::sora_job_status;
+  use crate::requests::job_status::unimplemented_sora_job_status::unimplemented_sora_job_status;
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
@@ -74,7 +72,7 @@ mod tests {
 
     let task_id = "task_01jqwwrkvgeqp8jsf5mqk1jceh";
 
-    let result = sora_job_status(task_id, &creds).await?;
+    let result = unimplemented_sora_job_status(task_id, &creds).await?;
 
     Ok(())
   }
