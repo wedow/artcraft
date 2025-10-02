@@ -32,15 +32,6 @@ export const MidjourneyAccountBlock = () => {
     fetchSession();
   });
 
-  const handleMidjourneyButton = async () => {
-    if (midjourneySession?.payload?.can_clear_state) {
-      await clearState();
-      setMidjourneySession(undefined);
-    } else {
-      await openLogin();
-    }
-  };
-
   const clearState = async() => {
     try {
       await invoke("midjourney_clear_credentials_command");
@@ -56,6 +47,15 @@ export const MidjourneyAccountBlock = () => {
       console.error("Error opening Midjourney login", e);
     }
   }
+
+  const handleMidjourneyButton = async () => {
+    if (midjourneySession?.payload?.can_clear_state) {
+      await clearState();
+      setMidjourneySession(undefined);
+    } else {
+      await openLogin();
+    }
+  };
 
   return(
     <div className="flex justify-between items-center">

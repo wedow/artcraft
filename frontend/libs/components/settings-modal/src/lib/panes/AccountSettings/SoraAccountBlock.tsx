@@ -3,99 +3,75 @@ import { Button } from "@storyteller/ui-button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import {
-  CheckSoraSession,
+  SoraGetCredentialInfo,
   SoraSessionState,
   LogoutSoraSession,
   useSoraLoginListener,
-  CheckSoraSessionResult,
+  SoraGetCredentialInfoSuccess,
 } from "@storyteller/tauri-api";
 import { invoke } from "@tauri-apps/api/core";
+import { RefreshAccountStateEvent, useRefreshAccountStateEvent } from "libs/tauri-events/src/lib/events/functional/RefreshAccountStateEvent";
 
-const DEFAULT_CACHE_TTL_MS = 1 * 60 * 1000; // 1 minute
-
-interface SoraAccountBlockProps {
-  cacheKey?: string;
-  cacheTtlMs?: number;
-}
-
-export const SoraAccountBlock = ({
-  cacheKey = "soraSettingsSessionCache",
-  cacheTtlMs = DEFAULT_CACHE_TTL_MS,
-}: SoraAccountBlockProps) => {
-  const [soraSession, setSoraSession] = useState<CheckSoraSessionResult| undefined>(undefined);
+export const SoraAccountBlock = () => {
+  const [soraSession, setSoraSession] = useState<SoraGetCredentialInfoSuccess| undefined>(undefined);
   const [isCheckingSoraSession, setIsCheckingSoraSession] = useState(false);
 
-  useSoraLoginListener(() => {
+  const fetchSession = async () => {
     setIsCheckingSoraSession(true);
-    CheckSoraSession()
-      .then((result) => {
-        setSoraSession(result);
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({ session: result, timestamp: Date.now() })
-        );
-      })
-      .finally(() => setIsCheckingSoraSession(false));
-  });
+    try {
+      const result = await SoraGetCredentialInfo();
+      setSoraSession(result);
+    } catch (e) {
+      console.error("Error fetching Sora session", e);
+      setSoraSession(undefined);
+    } finally {
+      setIsCheckingSoraSession(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSession = async () => {
-      setIsCheckingSoraSession(true);
-      try {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { session, timestamp } = JSON.parse(cached);
-          if (Date.now() - timestamp < cacheTtlMs) {
-            setSoraSession(session);
-            setIsCheckingSoraSession(false);
-            return;
-          }
-        }
-        const result = await CheckSoraSession();
-        setSoraSession(result);
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({ session: result, timestamp: Date.now() })
-        );
-      } catch (e) {
-        console.error("Error fetching Sora session", e);
-        setSoraSession(undefined);
-      } finally {
-        setIsCheckingSoraSession(false);
-      }
-    };
     fetchSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey, cacheTtlMs]);
+  }, []);
+
+  useRefreshAccountStateEvent(async (event: RefreshAccountStateEvent) => {
+    fetchSession();
+  });
+
+  const clearState = async() => {
+    try {
+      await LogoutSoraSession();
+      //await invoke("sora_clear_credentials_command"); // TODO: Wrong command name
+    } catch (e) {
+      console.error("Error clearing Sora credentials", e);
+    }
+  }
+
+  const openLogin = async() => {
+    try {
+      await invoke("open_sora_login_command");
+    } catch (e) {
+      console.error("Error opening Sora login", e);
+    }
+  }
 
   const handleSoraButton = async () => {
-    if (isCheckingSoraSession) return;
-    if (soraSession?.state === SoraSessionState.Valid) {
-      setIsCheckingSoraSession(true);
-      await LogoutSoraSession();
-      setSoraSession({state: SoraSessionState.NotSetUp});
-      localStorage.removeItem(cacheKey);
-      setIsCheckingSoraSession(false);
+    if (soraSession?.payload?.can_clear_state) {
+      await clearState();
+      setSoraSession(undefined);
     } else {
-      setIsCheckingSoraSession(true);
-      try {
-        await invoke("open_sora_login_command");
-      } catch (e) {
-      } finally {
-        setIsCheckingSoraSession(false);
-      }
+      await openLogin();
     }
   };
 
   return(
     <div className="flex justify-between items-center">
       <span>OpenAI / Sora Account:</span>
-      <pre>{soraSession?.maybe_account_email || ""}</pre>
+      <pre>{soraSession?.payload?.maybe_email || "Not logged in"}</pre>
       <Button
         variant={
-          soraSession?.state === SoraSessionState.Valid && !isCheckingSoraSession
+          soraSession?.payload?.can_clear_state && !isCheckingSoraSession
             ? "destructive"
-            : soraSession?.state === SoraSessionState.NotSetUp
+            : soraSession?.payload?.can_clear_state
             ? "primary"
             : "secondary"
         }
@@ -108,7 +84,7 @@ export const SoraAccountBlock = ({
             icon={faSpinnerThird}
             className="animate-spin text-sm"
           />
-        ) : soraSession?.state === SoraSessionState.Valid ? (
+        ) : soraSession?.payload?.can_clear_state ? (
           "Disconnect"
         ) : (
           "Connect"
