@@ -15,7 +15,7 @@ pub async fn sora_job_status(
   let url = format!("https://sora.com/backend/notif?limit=100&before={}", task_id);
 
   let cookie = credentials.cookies.to_string();
-  
+
   let authorization_header = credentials.jwt_bearer_token.as_ref()
       .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
@@ -23,10 +23,10 @@ pub async fn sora_job_status(
   let client = Client::new();
 
   let request = client
-    .get(url)
-    .header("Authorization", &authorization_header)
-    .header("User-Agent", USER_AGENT)
-    .header("Cookie", &cookie);
+      .get(url)
+      .header("Authorization", &authorization_header)
+      .header("User-Agent", USER_AGENT)
+      .header("Cookie", &cookie);
 
   let response = request.send()
       .await
@@ -49,7 +49,7 @@ pub async fn sora_job_status(
 #[cfg(test)]
 mod tests {
   use crate::creds::sora_credential_builder::SoraCredentialBuilder;
-  use crate::requests::job::sora_job_status::sora_job_status;
+  use crate::requests::job_status::sora_job_status::sora_job_status;
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
