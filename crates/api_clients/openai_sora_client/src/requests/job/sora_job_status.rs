@@ -1,11 +1,10 @@
+use crate::constants::user_agent::USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use log::error;
 use wreq::Client;
-
-const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
 // https://sora.com/backend/notif?limit=100&before=task_01jqwwrkvgeqp8jsf5mqk1jceh
 

@@ -1,3 +1,4 @@
+use crate::constants::user_agent::USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::requests::image_gen::image_gen_status::TaskId;
 use log::warn;
@@ -7,9 +8,6 @@ use thiserror::Error;
 use wreq::{Client, StatusCode};
 
 const SORA_IMAGE_GEN_URL: &str = "https://sora.com/backend/video_gen";
-
-/// This user agent is tied to the sentinel generation. If we need to change it, we may need to change sentinel generation too.
-const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
 #[derive(Error, Debug)]
 pub enum SoraImageGenError {

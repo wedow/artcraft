@@ -9,11 +9,10 @@ use log::error;
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
 use wreq::Client;
+use crate::constants::user_agent::USER_AGENT;
 
 const SORA_IMAGE_GEN_URL: &str = "https://chatgpt.com/backend-api/sentinel/req";
 
-/// This user agent is tied to the sentinel generation. If we need to change it, we may need to change sentinel generation too.
-const USER_AGENT : &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
 const SENTINEL_FLOW: &str = "sora_create_task";
 

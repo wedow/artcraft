@@ -1,3 +1,4 @@
+use crate::constants::user_agent::USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::error::sora_client_error::SoraClientError;
@@ -14,9 +15,6 @@ use url::Url;
 use wreq::Client;
 
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
-
-/// This user agent is tied to the sentinel generation. If we need to change it, we may need to change sentinel generation too.
-pub (crate) const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
 /// A strongly typed task ID for Sora tasks.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
