@@ -4,6 +4,7 @@ use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
+use crate::requests::common::task_id::TaskId;
 use crate::utils_internal::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use anyhow::anyhow;
 use errors::AnyhowResult;
@@ -16,15 +17,6 @@ use wreq::Client;
 
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
 
-/// A strongly typed task ID for Sora tasks.
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-pub struct TaskId(pub String);
-
-impl Display for TaskId {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    std::fmt::Display::fmt(&self.0, f)
-  }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub enum TaskStatus {
@@ -306,7 +298,7 @@ pub async fn save_generations_to_dir(generations: &[Generation], dir: &str) -> A
 mod tests {
   use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::recipes::wait_for_image_gen_status::wait_for_image_gen_status;
-  use crate::requests::image_gen::image_gen_status::{get_image_gen_status, save_generations_to_dir, StatusRequest, VideoGenStatusResponse};
+  use crate::requests::job_status::sora_job_status::{get_image_gen_status, save_generations_to_dir, StatusRequest, VideoGenStatusResponse};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;

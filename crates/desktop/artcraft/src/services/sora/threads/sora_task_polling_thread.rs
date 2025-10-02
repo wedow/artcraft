@@ -12,7 +12,8 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use errors::AnyhowResult;
 use log::{error, info};
 use openai_sora_client::recipes::list_sora_task_status_with_session_auto_renew::{list_sora_task_status_with_session_auto_renew, StatusRequestArgs};
-use openai_sora_client::requests::image_gen::image_gen_status::{Generation, TaskId, TaskStatus};
+use openai_sora_client::requests::common::task_id::TaskId;
+use openai_sora_client::requests::job_status::sora_job_status::{Generation, TaskStatus};
 use reqwest::Url;
 use std::fs::File;
 use std::io::Write;

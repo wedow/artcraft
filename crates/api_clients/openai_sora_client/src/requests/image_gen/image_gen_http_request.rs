@@ -4,7 +4,7 @@ use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::error::sora_specific_api_error::SoraSpecificApiError;
-use crate::requests::image_gen::image_gen_status::TaskId;
+use crate::requests::common::task_id::TaskId;
 use log::{error, warn};
 use serde_derive::{Deserialize, Serialize};
 use std::time::Duration;

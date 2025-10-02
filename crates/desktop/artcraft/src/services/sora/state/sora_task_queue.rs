@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use errors::AnyhowResult;
 use indexmap::IndexMap;
-use openai_sora_client::requests::image_gen::image_gen_status::TaskId;
+use openai_sora_client::requests::common::task_id::TaskId;
 use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
@@ -154,7 +154,7 @@ impl SoraTaskQueue {
 mod tests {
   use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
   use errors::AnyhowResult;
-  use openai_sora_client::requests::image_gen::image_gen_status::TaskId;
+  use openai_sora_client::requests::common::task_id::TaskId;
 
   #[test]
   fn remove_list() -> AnyhowResult<()> {

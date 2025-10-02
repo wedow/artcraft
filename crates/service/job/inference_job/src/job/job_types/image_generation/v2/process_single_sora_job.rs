@@ -29,7 +29,7 @@ use mysql_queries::queries::batch_generations::insert_batch_generation_records::
 use mysql_queries::queries::generic_inference::job::list_available_generic_inference_jobs::AvailableInferenceJob;
 use openai_sora_client::credentials::SoraCredentials;
 use openai_sora_client::recipes::wait_for_image_gen_status::wait_for_image_gen_status;
-use openai_sora_client::requests::image_gen::image_gen_status::{Generation, TaskStatus};
+use openai_sora_client::requests::image_gen::sora_job_status::{Generation, TaskStatus};
 use r2d2_redis::r2d2::PooledConnection;
 use r2d2_redis::redis::Commands;
 use r2d2_redis::RedisConnectionManager;

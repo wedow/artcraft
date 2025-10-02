@@ -1,4 +1,4 @@
-use crate::requests::image_gen::image_gen_status::TaskId;
+use crate::requests::common::task_id::TaskId;
 
 #[derive(Debug, Clone)]
 pub struct SoraImageGenResponse {
