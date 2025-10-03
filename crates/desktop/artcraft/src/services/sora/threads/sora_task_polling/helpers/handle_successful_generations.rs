@@ -31,6 +31,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
+use storyteller_client::endpoints::media_files::upload_video_media_file_from_file::upload_video_media_file_from_file;
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
@@ -43,6 +44,13 @@ pub struct SuccessfulGeneration {
 pub struct GenerationItem {
   pub item_id: String,
   pub url: String,
+  pub generation_type: GenerationType,
+}
+
+#[derive(Copy, Clone)]
+pub enum GenerationType {
+  Image,
+  Video,
 }
 
 pub async fn handle_classic_successful_generations(
@@ -84,16 +92,29 @@ pub async fn handle_classic_successful_generations(
 
       info!("Uploading to backend...");
 
-      let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-        api_host: &app_env_configs.storyteller_host,
-        maybe_creds: Some(&storyteller_creds),
-        path: download_path,
-        is_intermediate_system_file: false,
-        maybe_prompt_token: Some(&prompt_response.prompt_token),
-        maybe_batch_token: None, // TODO: This should be added soon.
-      }).await?;
+      match generation.generation_type {
+        GenerationType::Image => {
+          let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
+            api_host: &app_env_configs.storyteller_host,
+            maybe_creds: Some(&storyteller_creds),
+            path: download_path,
+            is_intermediate_system_file: false,
+            maybe_prompt_token: Some(&prompt_response.prompt_token),
+            maybe_batch_token: None, // TODO: This should be added soon.
+          }).await?;
 
-      info!("Uploaded to API backend: {:?}", result.media_file_token);
+          info!("Uploaded image to API backend: {:?}", result.media_file_token);
+        }
+        GenerationType::Video => {
+          let result = upload_video_media_file_from_file(
+            &app_env_configs.storyteller_host,
+            Some(&storyteller_creds),
+            download_path,
+          ).await?;
+
+          info!("Uploaded video to API backend: {:?}", result.media_file_token);
+        }
+      }
     }
 
     // Clear from SQLite task database.

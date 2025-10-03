@@ -11,7 +11,7 @@ use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_ST
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::handle_failed_generations::{handle_classic_failed_generations, FailedGeneration};
-use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::{handle_classic_successful_generations, GenerationItem, SuccessfulGeneration};
+use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::{handle_classic_successful_generations, GenerationItem, GenerationType, SuccessfulGeneration};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
 use enums::common::generation_provider::GenerationProvider;
@@ -76,6 +76,7 @@ pub async fn poll_sora_2_tasks(
             items: vec![GenerationItem {
               item_id: success_draft.id,
               url: success_draft.url,
+              generation_type: GenerationType::Video,
             }]
           });
       }
