@@ -6,6 +6,14 @@ use serde_derive::{Deserialize, Serialize};
 pub struct TaskId(pub String);
 
 impl TaskId {
+  pub fn from_string(id: String) -> Self {
+    Self(id)
+  }
+
+  pub fn from_str(id: &str) -> Self {
+    Self(id.to_string())
+  }
+
   pub fn new(id: String) -> Self {
     Self(id)
   }

@@ -22,9 +22,9 @@ use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use once_cell::sync::Lazy;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
-use openai_sora_client::recipes::list_sora_tasks_with_session_auto_renew::list_sora_tasks_with_session_auto_renew;
+use openai_sora_client::recipes::list_classic_sora_tasks_with_session_auto_renew::list_classic_sora_tasks_with_session_auto_renew;
 use openai_sora_client::requests::common::task_id::TaskId;
-use openai_sora_client::requests::list_tasks::list_tasks::TaskStatus;
+use openai_sora_client::requests::list_tasks::list_classic_tasks::TaskStatus;
 use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, Task, TaskList};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
@@ -129,7 +129,7 @@ async fn poll_sora_tasks(
       .collect::<HashMap<String, Task>>();
 
   let (sora_response, maybe_new_creds) = 
-      list_sora_tasks_with_session_auto_renew(&sora_creds).await?;
+      list_classic_sora_tasks_with_session_auto_renew(&sora_creds).await?;
 
   if let Some(new_creds) = maybe_new_creds {
     info!("Saving new credentials.");

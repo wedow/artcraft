@@ -5,7 +5,7 @@ use crate::recipes::maybe_refresh_credentials_on_sora_error::maybe_refresh_crede
 use crate::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use crate::requests::common::task_id::TaskId;
 use crate::requests::deprecated::job_status::sora_job_status::{get_image_gen_status, StatusRequest, TaskResponse, VideoGenStatusResponse};
-use crate::requests::list_tasks::list_tasks::{list_tasks, ListTasksResponse};
+use crate::requests::list_classic_tasks::list_classic_tasks::{list_classic_tasks, ListTasksResponse};
 use crate::requests::upload::upload_media_from_file::sora_media_upload_from_file;
 use crate::requests::upload::upload_media_http_request::SoraMediaUploadResponse;
 use anyhow::Error;
@@ -14,7 +14,7 @@ use std::path::Path;
 
 /// Check Sora task statuses with session auto-renewal.
 /// If a new sora credential is returned, replace the old one with the new one.
-pub async fn list_sora_tasks_with_session_auto_renew(
+pub async fn list_classic_sora_tasks_with_session_auto_renew(
   credentials: &SoraCredentialSet,
 ) -> Result<(ListTasksResponse, Option<SoraCredentialSet>), SoraError> {
 
@@ -23,7 +23,7 @@ pub async fn list_sora_tasks_with_session_auto_renew(
   let upgraded_creds = maybe_new_creds.as_ref()
       .unwrap_or_else(|| &credentials);
 
-  let result = list_tasks(&upgraded_creds).await;
+  let result = list_classic_tasks(&upgraded_creds).await;
 
   let err = match result {
     Ok(response) => return Ok((response, maybe_new_creds)),
@@ -38,7 +38,7 @@ pub async fn list_sora_tasks_with_session_auto_renew(
   // TODO(bt,2025-05-28): This should only be done if the credentials were actually refreshed.
   info!("Retrying task polling with new credentials...");
 
-  let result = list_tasks(&new_creds).await?;
+  let result = list_classic_tasks(&new_creds).await?;
 
   Ok((result, Some(new_creds)))
 }

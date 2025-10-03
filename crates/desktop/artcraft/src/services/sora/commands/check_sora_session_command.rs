@@ -3,7 +3,7 @@ use chrono::{TimeDelta, Utc};
 use errors::AnyhowResult;
 use log::{error, info};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
-use openai_sora_client::requests::list_tasks::list_tasks::list_tasks;
+use openai_sora_client::requests::list_tasks::list_classic_tasks::list_tasks;
 use serde_derive::Serialize;
 use std::ops::Add;
 use tauri::{AppHandle, State};

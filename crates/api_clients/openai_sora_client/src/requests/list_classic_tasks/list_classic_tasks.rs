@@ -11,7 +11,7 @@ use serde_derive::Deserialize;
 use url::Url;
 use wreq::Client;
 
-const SORA_LIST_TASKS_URL : &str = "https://sora.chatgpt.com/backend/v2/list_tasks?limit=20";
+const SORA_LIST_CLASSIC_TASKS_URL: &str = "https://sora.chatgpt.com/backend/v2/list_tasks?limit=20";
 
 
 /// NB: We omit fields we're not using to prevent breakage.
@@ -74,7 +74,7 @@ pub struct PartialGeneration {
   // ... lots of other fields ...
 }
 
-pub async fn list_tasks(credentials: &SoraCredentialSet) -> Result<ListTasksResponse, SoraError> {
+pub async fn list_classic_tasks(credentials: &SoraCredentialSet) -> Result<ListTasksResponse, SoraError> {
 
   let bearer_header = match credentials.jwt_bearer_token.as_ref()  {
     Some(bearer) => bearer.to_authorization_header_value(),
@@ -86,7 +86,7 @@ pub async fn list_tasks(credentials: &SoraCredentialSet) -> Result<ListTasksResp
 
   let client = Client::new();
 
-  let mut url = Url::parse(SORA_LIST_TASKS_URL)
+  let mut url = Url::parse(SORA_LIST_CLASSIC_TASKS_URL)
       .map_err(|err| {
         SoraClientError::UrlParseError(err)
       })?;
@@ -147,7 +147,7 @@ pub async fn list_tasks(credentials: &SoraCredentialSet) -> Result<ListTasksResp
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::list_tasks::list_tasks::list_tasks;
+  use crate::requests::list_classic_tasks::list_classic_tasks::list_classic_tasks;
   use crate::test_utils::get_test_credentials::get_test_credentials;
   use errors::AnyhowResult;
 
@@ -155,7 +155,7 @@ mod tests {
   #[tokio::test]
   pub async fn manual_test() -> AnyhowResult<()> {
     let creds = get_test_credentials()?;
-    let result = list_tasks(&creds).await?;
+    let result = list_classic_tasks(&creds).await?;
     println!("result: {:#?}", result);
     assert_eq!(1, 2);
     Ok(())

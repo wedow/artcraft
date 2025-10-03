@@ -1,3 +1,6 @@
+We might not need this request - it's only for in-progres items.
+It could be useful to show the progress bar, but the items disappear once done.
+
 curl 'https://sora.chatgpt.com/backend/nf/pending' \
   -H 'accept: */*' \
   -H 'accept-language: en-US,en;q=0.9' \
@@ -13,3 +16,4 @@ curl 'https://sora.chatgpt.com/backend/nf/pending' \
   -H 'sec-fetch-mode: cors' \
   -H 'sec-fetch-site: same-origin' \
   -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
+  
