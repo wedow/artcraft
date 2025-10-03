@@ -161,19 +161,29 @@ export const PromptBoxVideo = ({
       return;
     }
 
-    if (referenceImages.length === 0) {
-      console.warn("Cannot generate video: no reference image provided");
+    if (!selectedModel) {
+      console.warn("Cannot generate video: no model selected");
       return;
     }
 
-    if (!selectedModel) {
-      console.warn("Cannot generate video: no model selected");
+    if (selectedModel?.requiresImage && referenceImages.length === 0) {
+      console.warn("Cannot generate video: no reference image provided");
       return;
     }
 
     setIsEnqueueing(true);
 
     gtagEvent("enqueue_video");
+
+    const subscriberId = crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+
+    let imageMediaToken = undefined;
+
+    if (referenceImages.length > 0) {
+      imageMediaToken = referenceImages[0].mediaToken;
+    }
 
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
@@ -182,13 +192,9 @@ export const PromptBoxVideo = ({
       setIsEnqueueing(false);
     }, 10000);
 
-    const subscriberId = crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2);
-
     await EnqueueImageToVideo({
       model: selectedModel,
-      image_media_token: referenceImages[0].mediaToken,
+      image_media_token: imageMediaToken,
       prompt: prompt,
       end_frame_image_media_token: endFrameImage?.mediaToken,
       frontend_caller: "image_to_video",
@@ -221,6 +227,10 @@ export const PromptBoxVideo = ({
   };
 
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+
+  const modelNeedsAnImageButNoneAreSelected = 
+    selectedModel?.requiresImage && 
+    referenceImages.length === 0;
 
   // Hide/clear ending frame if model doesn't support it
   useEffect(() => {
@@ -368,7 +378,7 @@ export const PromptBoxVideo = ({
                 disabled={
                   isEnqueueing ||
                   !prompt.trim() ||
-                  referenceImages.length === 0 ||
+                  modelNeedsAnImageButNoneAreSelected ||
                   !selectedModel
                 }
               >

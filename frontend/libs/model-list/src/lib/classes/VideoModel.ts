@@ -15,6 +15,9 @@ export class VideoModel extends Model {
   // Whether the model supports image ending frames
   readonly endFrame: boolean;
 
+  // Whether the model requires an image
+  readonly requiresImage: boolean;
+
   constructor(args: {
     id: string;
     tauriId: string;
@@ -26,10 +29,12 @@ export class VideoModel extends Model {
     selectorBadges: string[];
     startFrame: boolean;
     endFrame: boolean;
+    requiresImage: boolean;
     tags?: ModelTag[];
   }) {
     super(args);
     this.startFrame = args.startFrame;
     this.endFrame = args.endFrame;
+    this.requiresImage = args.requiresImage;
   } 
 }

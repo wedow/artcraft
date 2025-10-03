@@ -13,6 +13,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     selectorBadges: ["2 min."],
     startFrame: true,
     endFrame: true,
+    requiresImage: true,
   }),
   new VideoModel({
     id: "kling_2_1_pro",
@@ -25,6 +26,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     selectorBadges: ["2 min."],
     startFrame: true,
     endFrame: true,
+    requiresImage: true,
   }),
   new VideoModel({
     id: "kling_2_1_master",
@@ -37,6 +39,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     selectorBadges: ["2 min."],
     startFrame: true,
     endFrame: false,
+    requiresImage: true,
   }),
   new VideoModel({
     id: "seedance_1_0_lite",
@@ -49,6 +52,20 @@ export const VIDEO_MODELS: VideoModel[] = [
     selectorBadges: ["2 min."],
     startFrame: true,
     endFrame: false,
+    requiresImage: true,
+  }),
+  new VideoModel({
+    id: "sora_2",
+    tauriId: "sora_2",
+    fullName: "Sora 2",
+    category: "video",
+    creator: ModelCreator.OpenAi,
+    selectorName: "Sora 2",
+    selectorDescription: "Smart video model",
+    selectorBadges: ["2 min."],
+    startFrame: false,
+    endFrame: false,
+    requiresImage: false,
   }),
   new VideoModel({
     id: "veo_2",
@@ -61,6 +78,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     selectorBadges: ["2 min."],
     startFrame: true,
     endFrame: false,
+    requiresImage: true,
   }),
   new VideoModel({
     id: "veo_3",
@@ -73,6 +91,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     selectorBadges: ["2 min."],
     startFrame: true,
     endFrame: false,
+    requiresImage: true,
   }),
   new VideoModel({
     id: "veo_3_fast",
@@ -85,5 +104,6 @@ export const VIDEO_MODELS: VideoModel[] = [
     selectorBadges: ["2 min."],
     startFrame: true,
     endFrame: false,
+    requiresImage: true,
   }),
 ];
