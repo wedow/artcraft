@@ -47,6 +47,10 @@ pub async fn handle_successful_generations(
 ) -> AnyhowResult<()> {
 
   for (task_id, task) in succeeded_tasks_by_id.iter() {
+    if !sqlite_tasks_by_sora_task_id.contains_key(task_id.as_str()) {
+      continue; // Task is irrelevant - previously completed, generated elsewhere, etc.
+    }
+
     info!("Task succeeded: {:?}", task.id);
 
     let request = CreatePromptRequest {

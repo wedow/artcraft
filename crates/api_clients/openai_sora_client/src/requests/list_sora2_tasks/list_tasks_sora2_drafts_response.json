@@ -1,0 +1,233 @@
+{
+  "items": [
+    {
+      "id": "gen_01k6nkg3z3ebxrqd1313hj9a87",
+      "kind": "sora_draft",
+      "url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6nkbsdvervv5dsfnnpr27jw%2Ftask_01k6nkbsdvervv5dsfnnpr27jw_genid_517dfb8c-cdaa-42e4-9fd4-98743399b160_25_10_03_17_56_604392%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=f8BZNAqfO%2B8C6RzIpm66I5rQMH7cSgUfpkVP5ku0Q0U%3D&az=oaivgprodscus",
+      "downloadable_url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6nkbsdvervv5dsfnnpr27jw%2Ftask_01k6nkbsdvervv5dsfnnpr27jw_genid_517dfb8c-cdaa-42e4-9fd4-98743399b160_25_10_03_17_56_604392%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=f8BZNAqfO%2B8C6RzIpm66I5rQMH7cSgUfpkVP5ku0Q0U%3D&az=oaivgprodscus",
+      "width": 352,
+      "height": 640,
+      "created_at": 1759514220.244053,
+      "prompt": "SpongeBob buys Ozemspic for Patrick. Patrick is offended.  ",
+      "title": null,
+      "encodings": {
+        "source": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6nkbsdvervv5dsfnnpr27jw%2Ftask_01k6nkbsdvervv5dsfnnpr27jw_genid_517dfb8c-cdaa-42e4-9fd4-98743399b160_25_10_03_17_56_604392%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=f8BZNAqfO%2B8C6RzIpm66I5rQMH7cSgUfpkVP5ku0Q0U%3D&az=oaivgprodscus"
+        },
+        "source_wm": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6nkbsdvervv5dsfnnpr27jw%2Ftask_01k6nkbsdvervv5dsfnnpr27jw_genid_517dfb8c-cdaa-42e4-9fd4-98743399b160_25_10_03_17_56_604392%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=f8BZNAqfO%2B8C6RzIpm66I5rQMH7cSgUfpkVP5ku0Q0U%3D&az=oaivgprodscus"
+        },
+        "thumbnail": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6nkbsdvervv5dsfnnpr27jw%2Ftask_01k6nkbsdvervv5dsfnnpr27jw_genid_517dfb8c-cdaa-42e4-9fd4-98743399b160_25_10_03_17_56_604392%2Fvideos%2F00000_wm%2Fthumbnail.webp?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=FmCDGzqvDYBOOEHrVP6P8S6Te%2FNXhySDf%2Bbp8aBf5Tw%3D&az=oaivgprodscus"
+        },
+        "unfurl": null,
+        "md": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6nkbsdvervv5dsfnnpr27jw%2Ftask_01k6nkbsdvervv5dsfnnpr27jw_genid_517dfb8c-cdaa-42e4-9fd4-98743399b160_25_10_03_17_56_604392%2Fvideos%2F00000_wm%2Fmd.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=05P%2B9ui5Zf9jazG3FeiBBn%2Bi25ZzdrFzha8%2BXmRo3B4%3D&az=oaivgprodscus"
+        },
+        "gif": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6nkbsdvervv5dsfnnpr27jw%2Ftask_01k6nkbsdvervv5dsfnnpr27jw_genid_517dfb8c-cdaa-42e4-9fd4-98743399b160_25_10_03_17_56_604392%2Fvideos%2F00000_wm%2Fpreview.gif?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=GlTYf3fahHlfAuscTYPPI9i%2BsLfSQensqAox8tebN3E%3D&az=oaivgprodscus"
+        }
+      },
+      "draft_reviewed": false,
+      "task_id": "task_01k6nkbsdvervv5dsfnnpr27jw",
+      "creation_config": {
+        "remix_target_post": null,
+        "style_id": null,
+        "inpaint_image": null,
+        "prompt": "SpongeBob buys Ozemspic for Patrick. Patrick is offended.  ",
+        "task_id": null,
+        "cameo_profiles": null,
+        "orientation": null,
+        "n_frames": null
+      },
+      "tags": [],
+      "generation_id": "gen_01k6nkg3z3ebxrqd1313hj9a87",
+      "generation_type": ""
+    },
+    {
+      "id": "gen_01k6njzfhxfafv8kgc4n5bmv38",
+      "kind": "sora_draft",
+      "url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6njvepzfk68mv77xxz9meca%2Ftask_01k6njvepzfk68mv77xxz9meca_genid_2765ab1f-e4fa-40cb-a33f-6d33f2ba2c04_25_10_03_17_47_588936%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aL0EUJ3H7dP6DIxzYarXIQEFyD0Xtnn0w4TNt0hssPM%3D&az=oaivgprodscus",
+      "downloadable_url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6njvepzfk68mv77xxz9meca%2Ftask_01k6njvepzfk68mv77xxz9meca_genid_2765ab1f-e4fa-40cb-a33f-6d33f2ba2c04_25_10_03_17_47_588936%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aL0EUJ3H7dP6DIxzYarXIQEFyD0Xtnn0w4TNt0hssPM%3D&az=oaivgprodscus",
+      "width": 352,
+      "height": 640,
+      "created_at": 1759513681.966017,
+      "prompt": "A t-rex walking through manhattan in the morning fog, the pavement is slightly damp, sunlight gleams around the corners of buildings",
+      "title": null,
+      "encodings": {
+        "source": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6njvepzfk68mv77xxz9meca%2Ftask_01k6njvepzfk68mv77xxz9meca_genid_2765ab1f-e4fa-40cb-a33f-6d33f2ba2c04_25_10_03_17_47_588936%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aL0EUJ3H7dP6DIxzYarXIQEFyD0Xtnn0w4TNt0hssPM%3D&az=oaivgprodscus"
+        },
+        "source_wm": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6njvepzfk68mv77xxz9meca%2Ftask_01k6njvepzfk68mv77xxz9meca_genid_2765ab1f-e4fa-40cb-a33f-6d33f2ba2c04_25_10_03_17_47_588936%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aL0EUJ3H7dP6DIxzYarXIQEFyD0Xtnn0w4TNt0hssPM%3D&az=oaivgprodscus"
+        },
+        "thumbnail": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6njvepzfk68mv77xxz9meca%2Ftask_01k6njvepzfk68mv77xxz9meca_genid_2765ab1f-e4fa-40cb-a33f-6d33f2ba2c04_25_10_03_17_47_588936%2Fvideos%2F00000_wm%2Fthumbnail.webp?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=Cj6XzDLw2sgRG9UtJlNWncmcemu%2B7QEhEjKRZUf1MF8%3D&az=oaivgprodscus"
+        },
+        "unfurl": null,
+        "md": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6njvepzfk68mv77xxz9meca%2Ftask_01k6njvepzfk68mv77xxz9meca_genid_2765ab1f-e4fa-40cb-a33f-6d33f2ba2c04_25_10_03_17_47_588936%2Fvideos%2F00000_wm%2Fmd.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=Zg%2FbIN48W5p0uqiIC%2FS5GLJQeM5YIpFHpkW7cgi24m8%3D&az=oaivgprodscus"
+        },
+        "gif": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6njvepzfk68mv77xxz9meca%2Ftask_01k6njvepzfk68mv77xxz9meca_genid_2765ab1f-e4fa-40cb-a33f-6d33f2ba2c04_25_10_03_17_47_588936%2Fvideos%2F00000_wm%2Fpreview.gif?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=zp1iZmWDCPeqy4TNBZfiehyOWw0tncussbtjiMODfpU%3D&az=oaivgprodscus"
+        }
+      },
+      "draft_reviewed": true,
+      "task_id": "task_01k6njvepzfk68mv77xxz9meca",
+      "creation_config": {
+        "remix_target_post": null,
+        "style_id": null,
+        "inpaint_image": null,
+        "prompt": "A t-rex walking through manhattan in the morning fog, the pavement is slightly damp, sunlight gleams around the corners of buildings",
+        "task_id": null,
+        "cameo_profiles": null,
+        "orientation": null,
+        "n_frames": null
+      },
+      "tags": [],
+      "generation_id": "gen_01k6njzfhxfafv8kgc4n5bmv38",
+      "generation_type": ""
+    },
+    {
+      "id": "gen_01k6kaqq83egat15t75wc1zg3t",
+      "kind": "sora_draft",
+      "url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6kakyc4fk19y7bgfskxjt73%2Ftask_01k6kakyc4fk19y7bgfskxjt73_genid_e30103d1-f44c-4bf3-a2b7-82d0f8105909_25_10_02_20_44_495868%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aVqB7xZo%2FGN9ZIsFaDMfoBoacqwJc355Q%2FVbcWWBi%2B0%3D&az=oaivgprodscus",
+      "downloadable_url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6kakyc4fk19y7bgfskxjt73%2Ftask_01k6kakyc4fk19y7bgfskxjt73_genid_e30103d1-f44c-4bf3-a2b7-82d0f8105909_25_10_02_20_44_495868%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aVqB7xZo%2FGN9ZIsFaDMfoBoacqwJc355Q%2FVbcWWBi%2B0%3D&az=oaivgprodscus",
+      "width": 352,
+      "height": 640,
+      "created_at": 1759437920.420881,
+      "prompt": "A hipster girl stands in front of a t-rex in a room made of glass. She makes a peace sign with her hands as the t-rex roars. ",
+      "title": null,
+      "encodings": {
+        "source": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6kakyc4fk19y7bgfskxjt73%2Ftask_01k6kakyc4fk19y7bgfskxjt73_genid_e30103d1-f44c-4bf3-a2b7-82d0f8105909_25_10_02_20_44_495868%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aVqB7xZo%2FGN9ZIsFaDMfoBoacqwJc355Q%2FVbcWWBi%2B0%3D&az=oaivgprodscus"
+        },
+        "source_wm": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6kakyc4fk19y7bgfskxjt73%2Ftask_01k6kakyc4fk19y7bgfskxjt73_genid_e30103d1-f44c-4bf3-a2b7-82d0f8105909_25_10_02_20_44_495868%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=aVqB7xZo%2FGN9ZIsFaDMfoBoacqwJc355Q%2FVbcWWBi%2B0%3D&az=oaivgprodscus"
+        },
+        "thumbnail": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6kakyc4fk19y7bgfskxjt73%2Ftask_01k6kakyc4fk19y7bgfskxjt73_genid_e30103d1-f44c-4bf3-a2b7-82d0f8105909_25_10_02_20_44_495868%2Fvideos%2F00000_wm%2Fthumbnail.webp?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=cJtvfHJmUUovVomC1MRlc2B4TP1FBN1h%2FcWfVxJGT2A%3D&az=oaivgprodscus"
+        },
+        "unfurl": null,
+        "md": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6kakyc4fk19y7bgfskxjt73%2Ftask_01k6kakyc4fk19y7bgfskxjt73_genid_e30103d1-f44c-4bf3-a2b7-82d0f8105909_25_10_02_20_44_495868%2Fvideos%2F00000_wm%2Fmd.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=1ysL0RhapKRjenKQdaH7xmVHSIWFXTPFWCw5CRh20ew%3D&az=oaivgprodscus"
+        },
+        "gif": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6kakyc4fk19y7bgfskxjt73%2Ftask_01k6kakyc4fk19y7bgfskxjt73_genid_e30103d1-f44c-4bf3-a2b7-82d0f8105909_25_10_02_20_44_495868%2Fvideos%2F00000_wm%2Fpreview.gif?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=IdYqiCUJFkjlD2KOB5SyrCmlCU5KMPcm%2B2Ew6Adbtoo%3D&az=oaivgprodscus"
+        }
+      },
+      "draft_reviewed": true,
+      "task_id": "task_01k6kakyc4fk19y7bgfskxjt73",
+      "creation_config": {
+        "remix_target_post": null,
+        "style_id": null,
+        "inpaint_image": null,
+        "prompt": "A hipster girl stands in front of a t-rex in a room made of glass. She makes a peace sign with her hands as the t-rex roars. ",
+        "task_id": null,
+        "cameo_profiles": null,
+        "orientation": null,
+        "n_frames": null
+      },
+      "tags": [],
+      "generation_id": "gen_01k6kaqq83egat15t75wc1zg3t",
+      "generation_type": ""
+    },
+    {
+      "id": "68dee38aaf3c81918ed72fd2845abebe",
+      "kind": "sora_content_violation",
+      "width": 352,
+      "height": 640,
+      "created_at": null,
+      "prompt": "A man with glasses stretches in front of a t-rex. Butterflies fly by as sun gleams over the horizon. The camera pans, and there are solar punk structures dotting the landscape. A field of pink flowers and an infinite blue sky with clouds. The T-rex roars as the man continues to stretch",
+      "title": null,
+      "reason": null,
+      "reason_str": "This content may violate our guardrails concerning third-party likeness.",
+      "task_id": "task_01k6kahg89fwzb1e40j47kfrfv",
+      "draft_reviewed": false,
+      "creation_config": {
+        "remix_target_post": null,
+        "style_id": null,
+        "inpaint_image": null,
+        "prompt": "A man with glasses stretches in front of a t-rex. Butterflies fly by as sun gleams over the horizon. The camera pans, and there are solar punk structures dotting the landscape. A field of pink flowers and an infinite blue sky with clouds. The T-rex roars as the man continues to stretch",
+        "task_id": null,
+        "cameo_profiles": null,
+        "orientation": null,
+        "n_frames": null
+      },
+      "tags": [],
+      "generation_id": "68dee38aaf3c81918ed72fd2845abebe",
+      "generation_type": ""
+    },
+    {
+      "id": "68dee35e6c0c8191b6c2a65cdccf5812",
+      "kind": "sora_content_violation",
+      "width": 352,
+      "height": 640,
+      "created_at": null,
+      "prompt": "A man with glasses stretches in front of a t-rex. Butterflies fly by as sun gleams over the horizon. The camera pans, and there are solar punk structures dotting the landscape. A field of pink flowers and an infinite blue sky with clouds. The T-rex roars as the man continues to stretch",
+      "title": null,
+      "reason": null,
+      "reason_str": "We currently do not support uploads of images containing photorealistic people.",
+      "task_id": "task_01k6kag470fwrrkf2k14tkv9pt",
+      "draft_reviewed": false,
+      "creation_config": {
+        "remix_target_post": null,
+        "style_id": null,
+        "inpaint_image": null,
+        "prompt": "A man with glasses stretches in front of a t-rex. Butterflies fly by as sun gleams over the horizon. The camera pans, and there are solar punk structures dotting the landscape. A field of pink flowers and an infinite blue sky with clouds. The T-rex roars as the man continues to stretch",
+        "task_id": null,
+        "cameo_profiles": null,
+        "orientation": null,
+        "n_frames": null
+      },
+      "tags": [],
+      "generation_id": "68dee35e6c0c8191b6c2a65cdccf5812",
+      "generation_type": ""
+    },
+    {
+      "id": "gen_01k6ka1aqdfccbwrbre9jzyf68",
+      "kind": "sora_draft",
+      "url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6k9xez9eyz8aks3hk4fe01m%2Ftask_01k6k9xez9eyz8aks3hk4fe01m_genid_30b0d7ba-79b5-4877-bc4b-97b78eaa3747_25_10_02_20_32_430033%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=oIsyZwXazMFaRRP%2FdjPTJOYQVYPzZnB4%2BVp9RAZmjCE%3D&az=oaivgprodscus",
+      "downloadable_url": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6k9xez9eyz8aks3hk4fe01m%2Ftask_01k6k9xez9eyz8aks3hk4fe01m_genid_30b0d7ba-79b5-4877-bc4b-97b78eaa3747_25_10_02_20_32_430033%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=oIsyZwXazMFaRRP%2FdjPTJOYQVYPzZnB4%2BVp9RAZmjCE%3D&az=oaivgprodscus",
+      "width": 352,
+      "height": 640,
+      "created_at": 1759437191.395544,
+      "prompt": "The Green Power Ranger fighting the planter peanuts guy, Mr. Peanut. They're fighting in Neo Tokyo at night, and the scene is lit with bright neon lights and holograms in the background. Blue and purple hues. ",
+      "title": null,
+      "encodings": {
+        "source": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6k9xez9eyz8aks3hk4fe01m%2Ftask_01k6k9xez9eyz8aks3hk4fe01m_genid_30b0d7ba-79b5-4877-bc4b-97b78eaa3747_25_10_02_20_32_430033%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=oIsyZwXazMFaRRP%2FdjPTJOYQVYPzZnB4%2BVp9RAZmjCE%3D&az=oaivgprodscus"
+        },
+        "source_wm": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6k9xez9eyz8aks3hk4fe01m%2Ftask_01k6k9xez9eyz8aks3hk4fe01m_genid_30b0d7ba-79b5-4877-bc4b-97b78eaa3747_25_10_02_20_32_430033%2Fvideos%2F00000_wm%2Fsrc.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=oIsyZwXazMFaRRP%2FdjPTJOYQVYPzZnB4%2BVp9RAZmjCE%3D&az=oaivgprodscus"
+        },
+        "thumbnail": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6k9xez9eyz8aks3hk4fe01m%2Ftask_01k6k9xez9eyz8aks3hk4fe01m_genid_30b0d7ba-79b5-4877-bc4b-97b78eaa3747_25_10_02_20_32_430033%2Fvideos%2F00000_wm%2Fthumbnail.webp?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=S1wEgK7fg5bPXZwSv7Wjbn2msJOBcUpw354WckMhfzc%3D&az=oaivgprodscus"
+        },
+        "unfurl": null,
+        "md": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6k9xez9eyz8aks3hk4fe01m%2Ftask_01k6k9xez9eyz8aks3hk4fe01m_genid_30b0d7ba-79b5-4877-bc4b-97b78eaa3747_25_10_02_20_32_430033%2Fvideos%2F00000_wm%2Fmd.mp4?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=V35PKIIZnbiDd4HOkqssfjGQM%2FzF3Ot%2FP0CqovZSsws%3D&az=oaivgprodscus"
+        },
+        "gif": {
+          "path": "https://videos.openai.com/vg-assets/assets%2Ftask_01k6k9xez9eyz8aks3hk4fe01m%2Ftask_01k6k9xez9eyz8aks3hk4fe01m_genid_30b0d7ba-79b5-4877-bc4b-97b78eaa3747_25_10_02_20_32_430033%2Fvideos%2F00000_wm%2Fpreview.gif?st=2025-10-03T16%3A53%3A19Z&se=2025-10-09T17%3A53%3A19Z&sks=b&skt=2025-10-03T16%3A53%3A19Z&ske=2025-10-09T17%3A53%3A19Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=O0mQlm%2Bt9baV283VQZfnD%2BRrjxkRuE1Kw5Nmh1Awe3Q%3D&az=oaivgprodscus"
+        }
+      },
+      "draft_reviewed": true,
+      "task_id": "task_01k6k9xez9eyz8aks3hk4fe01m",
+      "creation_config": {
+        "remix_target_post": null,
+        "style_id": null,
+        "inpaint_image": null,
+        "prompt": "The Green Power Ranger fighting the planter peanuts guy, Mr. Peanut. They're fighting in Neo Tokyo at night, and the scene is lit with bright neon lights and holograms in the background. Blue and purple hues. ",
+        "task_id": null,
+        "cameo_profiles": null,
+        "orientation": null,
+        "n_frames": null
+      },
+      "tags": [],
+      "generation_id": "gen_01k6ka1aqdfccbwrbre9jzyf68",
+      "generation_type": ""
+    }
+  ],
+  "cursor": null
+}
