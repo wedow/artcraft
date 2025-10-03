@@ -14,6 +14,7 @@ use wreq::Client;
 
 const GENERATE_SORA_2_VIDEO_URL: &str = "https://sora.chatgpt.com/backend/nf/create";
 
+#[derive(Clone)]
 pub struct GenerateSora2VideoArgs<'a> {
   pub prompt: &'a str,
   pub credentials: &'a SoraCredentialSet,

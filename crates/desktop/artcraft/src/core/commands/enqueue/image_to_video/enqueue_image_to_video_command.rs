@@ -1,6 +1,7 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_to_video::generic::handle_video::handle_video;
+use crate::core::commands::enqueue::image_to_video::sora2::handle_sora2_video::handle_sora2_video;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -14,6 +15,7 @@ use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
 use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::fal::state::fal_task_queue::FalTaskQueue;
+use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
@@ -39,6 +41,9 @@ pub enum VideoModel {
   #[serde(rename = "seedance_1.0_lite")]
   Seedance10Lite,
 
+  #[serde(rename = "sora_2")]
+  Sora2,
+
   #[serde(rename = "veo_2")]
   Veo2,
 
@@ -55,7 +60,7 @@ pub struct EnqueueImageToVideoRequest {
   /// The model to use.
   pub model: Option<VideoModel>,
 
-  /// Currently REQUIRED.
+  /// Currently REQUIRED by some downstream models.
   /// Image media file; the starting frame of the video.
   /// TODO: In the future we may support base64 images, URLs, or file paths here.
   pub image_media_token: Option<MediaFileToken>,
@@ -105,6 +110,7 @@ pub async fn enqueue_image_to_video_command(
   fal_task_queue: State<'_, FalTaskQueue>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
+  sora_creds_manager: State<'_, SoraCredentialManager>,
 ) -> Response<EnqueueImageToVideoSuccessResponse, EnqueueImageToVideoErrorType, ()> {
 
   info!("enqueue_image_to_video_command called");
@@ -117,6 +123,7 @@ pub async fn enqueue_image_to_video_command(
     &provider_priority_store,
     &task_database,
     &fal_creds_manager,
+    &sora_creds_manager,
     &storyteller_creds_manager,
     &fal_task_queue,
   ).await;
@@ -189,20 +196,32 @@ pub async fn handle_request(
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   fal_creds_manager: &FalCredentialManager,
+  sora_creds_manager: &SoraCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_task_queue: &FalTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
-  let result = handle_video(
-    request,
-    &app,
-    &app_env_configs,
-    &app_data_root,
-    &provider_priority_store,
-    &fal_creds_manager,
-    &storyteller_creds_manager,
-    &fal_task_queue,
-  ).await;
+  let result = match request.model {
+    Some(VideoModel::Sora2) => {
+      handle_sora2_video(
+        &request,
+        provider_priority_store,
+        sora_creds_manager,
+      ).await
+    }
+    _ => {
+      handle_video(
+        request,
+        &app,
+        &app_env_configs,
+        &app_data_root,
+        &provider_priority_store,
+        &fal_creds_manager,
+        &storyteller_creds_manager,
+        &fal_task_queue,
+      ).await
+    }
+  };
 
   let success_event = match result {
     Err(err) => return Err(err),

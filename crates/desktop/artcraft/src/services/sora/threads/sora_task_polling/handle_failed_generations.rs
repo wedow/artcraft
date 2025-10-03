@@ -9,7 +9,7 @@ use enums::tauri::tasks::task_status;
 use errors::AnyhowResult;
 use log::info;
 use openai_sora_client::requests::common::task_id::TaskId;
-use openai_sora_client::requests::list_tasks::list_classic_tasks::PartialTaskResponse;
+use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::PartialTaskResponse;
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::Task;
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::HashMap;

@@ -70,6 +70,7 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Kling21Pro) => Some(TaskModelType::Kling21Pro),
       Some(GenerationModel::Kling21Master) => Some(TaskModelType::Kling21Master),
       Some(GenerationModel::Seedance10Lite) => Some(TaskModelType::Seedance10Lite),
+      Some(GenerationModel::Sora2) => Some(TaskModelType::Sora2),
       Some(GenerationModel::Veo2) => Some(TaskModelType::Veo2),
       Some(GenerationModel::Veo3) => Some(TaskModelType::Veo3),
       Some(GenerationModel::Veo3Fast) => Some(TaskModelType::Veo3Fast),

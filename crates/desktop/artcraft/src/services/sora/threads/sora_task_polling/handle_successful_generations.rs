@@ -22,7 +22,7 @@ use once_cell::sync::Lazy;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::list_classic_sora_tasks_with_session_auto_renew::list_classic_sora_tasks_with_session_auto_renew;
 use openai_sora_client::requests::common::task_id::TaskId;
-use openai_sora_client::requests::list_tasks::list_classic_tasks::{PartialGeneration, PartialTaskResponse};
+use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::{PartialGeneration, PartialTaskResponse};
 use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, Task, TaskList};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};

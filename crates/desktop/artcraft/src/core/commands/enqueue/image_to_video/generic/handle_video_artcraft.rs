@@ -8,6 +8,7 @@ use crate::core::events::generation_events::generation_enqueue_success_event::Ge
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use anyhow::anyhow;
 use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::{GenerateKling16ProAspectRatio, GenerateKling16ProImageToVideoRequest};
 use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::{GenerateKling21MasterAspectRatio, GenerateKling21MasterImageToVideoRequest};
 use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::{GenerateKling21ProAspectRatio, GenerateKling21ProImageToVideoRequest};
@@ -72,6 +73,11 @@ pub async fn handle_video_artcraft(
   let job_token = match request.model {
     None => {
       return Err(GenerateError::no_model_specified());
+    }
+    Some(VideoModel::Sora2) => {
+      return Err(GenerateError::AnyhowError(
+        anyhow!("wrong logic: another branch should handle this: {:?}", 
+          request.model)));
     }
     Some(VideoModel::Kling16Pro) => {
       info!("enqueue Kling 1.6 Pro with Artcraft API");

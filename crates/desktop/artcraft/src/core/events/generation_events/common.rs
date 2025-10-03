@@ -55,6 +55,8 @@ pub enum GenerationModel {
   Recraft3,
   #[serde(rename = "sora")]
   Sora,
+  #[serde(rename = "sora_2")]
+  Sora2,
   #[serde(rename = "seedance_1.0_lite")]
   Seedance10Lite,
   #[serde(rename = "veo_2")]

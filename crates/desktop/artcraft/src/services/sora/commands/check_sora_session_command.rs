@@ -3,7 +3,7 @@ use chrono::{TimeDelta, Utc};
 use errors::AnyhowResult;
 use log::{error, info};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
-use openai_sora_client::requests::list_tasks::list_classic_tasks::list_tasks;
+use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::list_classic_tasks;
 use serde_derive::Serialize;
 use std::ops::Add;
 use tauri::{AppHandle, State};
@@ -88,7 +88,7 @@ async fn do_check(
     info!("Attempting to upgrade session...");
     upgraded = maybe_upgrade_or_renew_session(&mut creds).await?;
     info!("Attempting to check session...");
-    list_tasks(&creds).await?; // Intent here is to make sure the upgrade request worked.
+    list_classic_tasks(&creds).await?; // Intent here is to make sure the upgrade request worked.
     sora_creds_manager.record_credential_success()?;
   }
 

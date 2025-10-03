@@ -46,6 +46,8 @@ pub enum TaskModelType {
   Kling21Master,
   #[serde(rename = "seedance_1.0_lite")]
   Seedance10Lite,
+  #[serde(rename = "sora_2")]
+  Sora2,
   #[serde(rename = "veo_2")]
   Veo2,
   #[serde(rename = "veo_3")]
@@ -86,6 +88,7 @@ impl TaskModelType {
       Self::Kling21Pro => "kling_2.1_pro",
       Self::Kling21Master => "kling_2.1_master",
       Self::Seedance10Lite => "seedance_1.0_lite",
+      Self::Sora2 => "sora_2",
       Self::Veo2 => "veo_2",
       Self::Veo3 => "veo_3",
       Self::Veo3Fast => "veo_3_fast",
@@ -114,6 +117,7 @@ impl TaskModelType {
       "kling_2.1_pro" => Ok(Self::Kling21Pro),
       "kling_2.1_master" => Ok(Self::Kling21Master),
       "seedance_1.0_lite" => Ok(Self::Seedance10Lite),
+      "sora_2" => Ok(Self::Sora2),
       "veo_2" => Ok(Self::Veo2),
       "veo_3" => Ok(Self::Veo3),
       "veo_3_fast" => Ok(Self::Veo3Fast),
@@ -145,6 +149,7 @@ impl TaskModelType {
       Self::Kling21Pro,
       Self::Kling21Master,
       Self::Seedance10Lite,
+      Self::Sora2,
       Self::Veo2,
       Self::Veo3,
       Self::Veo3Fast,
@@ -182,6 +187,7 @@ mod tests {
       assert_serialization(TaskModelType::Kling21Pro, "kling_2.1_pro");
       assert_serialization(TaskModelType::Kling21Master, "kling_2.1_master");
       assert_serialization(TaskModelType::Seedance10Lite, "seedance_1.0_lite");
+      assert_serialization(TaskModelType::Sora2, "sora_2");
       assert_serialization(TaskModelType::Veo2, "veo_2");
       assert_serialization(TaskModelType::Veo3, "veo_3");
       assert_serialization(TaskModelType::Veo3Fast, "veo_3_fast");
@@ -209,6 +215,7 @@ mod tests {
       assert_eq!(TaskModelType::Kling21Pro.to_str(), "kling_2.1_pro");
       assert_eq!(TaskModelType::Kling21Master.to_str(), "kling_2.1_master");
       assert_eq!(TaskModelType::Seedance10Lite.to_str(), "seedance_1.0_lite");
+      assert_eq!(TaskModelType::Sora2.to_str(), "sora_2");
       assert_eq!(TaskModelType::Veo2.to_str(), "veo_2");
       assert_eq!(TaskModelType::Veo3.to_str(), "veo_3");
       assert_eq!(TaskModelType::Veo3Fast.to_str(), "veo_3_fast");
@@ -236,6 +243,7 @@ mod tests {
       assert_eq!(TaskModelType::from_str("kling_2.1_pro").unwrap(), TaskModelType::Kling21Pro);
       assert_eq!(TaskModelType::from_str("kling_2.1_master").unwrap(), TaskModelType::Kling21Master);
       assert_eq!(TaskModelType::from_str("seedance_1.0_lite").unwrap(), TaskModelType::Seedance10Lite);
+      assert_eq!(TaskModelType::from_str("sora_2").unwrap(), TaskModelType::Sora2);
       assert_eq!(TaskModelType::from_str("veo_2").unwrap(), TaskModelType::Veo2);
       assert_eq!(TaskModelType::from_str("veo_3").unwrap(), TaskModelType::Veo3);
       assert_eq!(TaskModelType::from_str("veo_3_fast").unwrap(), TaskModelType::Veo3Fast);
@@ -247,7 +255,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 20);
+      assert_eq!(variants.len(), 21);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -265,6 +273,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::Kling21Pro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Kling21Master));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance10Lite));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Sora2));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo2));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3Fast));

@@ -5,7 +5,7 @@ use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::requests::common::task_id::TaskId;
 use crate::requests::deprecated::job_status::sora_job_status::{Generation, StatusRequest, VideoGenStatusResponse};
-use crate::requests::list_sora2_drafts::http_response::HttpDraftsResponse;
+use crate::requests::list_sora2_drafts::http_response::{DraftKind, HttpDraftsResponse};
 use crate::utils_internal::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use log::{debug, error, info, warn};
 use serde_derive::Deserialize;
@@ -23,13 +23,24 @@ pub struct ListSora2DraftsResponse {
 }
 
 #[derive(Clone, Debug)]
-pub struct Draft {
+pub enum Draft {
+  Success(DraftSuccess),
+  Failure(DraftFailure),
+}
+
+#[derive(Clone, Debug)]
+pub struct DraftSuccess {
   pub id: String,
   pub task_id: TaskId,
   pub url: String,
   pub prompt: String,
 }
 
+#[derive(Clone, Debug)]
+pub struct DraftFailure {
+  pub task_id: TaskId,
+  pub reason_message: String,
+}
 
 pub async fn list_sora2_drafts(credentials: &SoraCredentialSet) -> Result<ListSora2DraftsResponse, SoraError> {
 
@@ -85,9 +96,6 @@ pub async fn list_sora2_drafts(credentials: &SoraCredentialSet) -> Result<ListSo
         SoraClientError::WreqClientError(err)
       })?;
 
-  println!("Sora 2 list drafts response : {:?}", response_body);
-  println!("response : {}", response_body);
-
   if !status.is_success() {
     error!("Sora list drafts request returned an error (code {}) : {:?}", status.as_u16(), response_body);
 
@@ -108,29 +116,57 @@ pub async fn list_sora2_drafts(credentials: &SoraCredentialSet) -> Result<ListSo
   Ok(ListSora2DraftsResponse {
     drafts: response.items
         .into_iter()
-        .map(|draft| Draft {
-          id: draft.id,
-          task_id: TaskId::from_string(draft.task_id),
-          url: draft.url,
-          prompt: draft.prompt,
-    }).collect(),
+        .map(|draft| {
+          let task_id = TaskId::from_string(draft.task_id);
+          match draft.kind {
+            DraftKind::SoraDraft => {
+              match draft.url {
+                Some(url) => {
+                  // Success case
+                  Draft::Success(DraftSuccess {
+                    id: draft.id,
+                    task_id,
+                    url,
+                    prompt: draft.prompt,
+                  })
+                }
+                None => {
+                  return Draft::Failure(DraftFailure {
+                    task_id,
+                    reason_message: "Generation failed. URL missing from the draft.".to_string(),
+                  });
+                }
+              }
+            }
+            DraftKind::SoraContentViolation => {
+              Draft::Failure(DraftFailure {
+                task_id,
+                reason_message: format!(
+                  "Generation failed due to content violation: {}",
+                  draft.reason_str
+                    .unwrap_or_else(|| "no additional reason".to_string())),
+              })
+            }
+            DraftKind::Unknown(value) => {
+              Draft::Failure(DraftFailure {
+                task_id,
+                reason_message: format!(
+                  "Generation failed with unknown failure code: {}. Possible message: {}",
+                  value,
+                  draft.reason_str
+                      .unwrap_or_else(|| "no additional message".to_string())),
+              })
+            }
+          }
+        }).collect(),
   })
 }
 
-/*
-Error: SoraGenericApiError: UncategorizedBadResponseWithStatusAndBody { status_code: 400,
-body: "{\n  \"error\": {\n    \"message\": \"
-[{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None}]\",\n
-\"type\": \"invalid_request_error\",\n    \"param\": null,\n    \"code\": null\n  }\n}" }
-
- */
-
 #[cfg(test)]
 mod tests {
-  use crate::requests::list_classic_tasks::list_classic_tasks::list_classic_tasks;
+  use crate::requests::list_sora2_drafts::list_sora2_drafts::list_sora2_drafts;
   use crate::test_utils::get_test_credentials::get_test_credentials;
   use errors::AnyhowResult;
-  use crate::requests::list_sora2_drafts::list_sora2_drafts::list_sora2_drafts;
 
   #[ignore] // You can manually run "ignore" tests in the IDE, but they won't run in CI.
   #[tokio::test]

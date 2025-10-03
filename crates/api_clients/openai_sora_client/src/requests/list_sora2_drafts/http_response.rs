@@ -11,22 +11,28 @@ pub (super) struct HttpDraftsResponse {
 
 #[derive(Deserialize)]
 pub (super) struct PartialItem {
-  // eg. "gen_01abc..."
+  /// The generation id, eg. "gen_01abc..."
   pub id: String,
 
+  /// The parent task id, eg "task_01abc..."
   pub task_id: String,
 
   //pub generation_id: String, // it looks like this matches "id" for now
 
+  /// The kind of draft
+  pub kind: DraftKind,
+
   // The text prompt
   pub prompt: String,
 
-  // URL to the generation
-  pub url: String,
+  /// URL to the generation
+  /// This will not be present if the request failed, eg. for content reasons.
+  pub url: Option<String>,
 
-  // "downloadable" URL to the generation
-  // it looks like this matches "url" for now
-  pub downloadable_url: String,
+  /// "downloadable" URL to the generation
+  /// it looks like this matches "url" for now
+  /// This will not be present if the request failed, eg. for content reasons.
+  pub downloadable_url: Option<String>,
 
   /// If there was a content violation, this will describe why.
   pub reason_str: Option<String>,
@@ -38,7 +44,7 @@ pub (super) struct PartialItem {
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum DraftKind {
-  /// Video
+  /// Generated video
   SoraDraft,
 
   /// Video was blocked due to content
