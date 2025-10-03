@@ -2,7 +2,6 @@ use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::events::generation_events::generation_failed_event::GenerationFailedEvent;
-use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
@@ -36,13 +35,23 @@ use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
 
-pub async fn handle_successful_generations(
+pub struct SuccessfulGeneration {
+  pub prompt: Option<String>,
+  pub items: Vec<GenerationItem>,
+}
+
+pub struct GenerationItem {
+  pub item_id: String,
+  pub url: String,
+}
+
+pub async fn handle_classic_successful_generations(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   task_database: &TaskDatabase,
   storyteller_creds: &StorytellerCredentialSet,
-  succeeded_tasks_by_id: &HashMap<TaskId, PartialTaskResponse>,
+  succeeded_tasks_by_id: &HashMap<TaskId, SuccessfulGeneration>,
   sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
 ) -> AnyhowResult<()> {
 
@@ -51,7 +60,7 @@ pub async fn handle_successful_generations(
       continue; // Task is irrelevant - previously completed, generated elsewhere, etc.
     }
 
-    info!("Task succeeded: {:?}", task.id);
+    info!("Task succeeded: {:?}", task_id);
 
     let request = CreatePromptRequest {
       uuid_idempotency_token: generate_random_uuid(),
@@ -69,7 +78,7 @@ pub async fn handle_successful_generations(
 
     info!("Created prompt: {:?}", &prompt_response.prompt_token);
 
-    for (i, generation) in task.generations.iter().enumerate() {
+    for (_i, generation) in task.items.iter().enumerate() {
       info!("Downloading generated file...");
       let download_path = download_generation(generation, &app_data_root).await?;
 
@@ -115,7 +124,7 @@ pub async fn handle_successful_generations(
 }
 
 
-async fn download_generation(generation: &PartialGeneration, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
+async fn download_generation(generation: &GenerationItem, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
   let url = Url::parse(&generation.url)?;
 
   let response = reqwest::get(&generation.url).await?;
@@ -124,7 +133,7 @@ async fn download_generation(generation: &PartialGeneration, app_data_root: &App
   let ext = url.path().split(".").last().unwrap_or("png");
 
   let tempdir = app_data_root.temp_dir().path();
-  let download_filename = format!("{}.{}", generation.id, ext);
+  let download_filename = format!("{}.{}", generation.item_id, ext);
   let download_path = tempdir.join(download_filename);
 
   let mut file = File::create(&download_path)?;

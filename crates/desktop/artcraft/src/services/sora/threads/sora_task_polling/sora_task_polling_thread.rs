@@ -10,8 +10,8 @@ use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::services::sora::threads::sora_task_polling::handle_failed_generations::handle_failed_generations;
-use crate::services::sora::threads::sora_task_polling::handle_successful_generations::handle_successful_generations;
+use crate::services::sora::threads::sora_task_polling::helpers::handle_failed_generations::handle_classic_failed_generations;
+use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::handle_classic_successful_generations;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
 use enums::common::generation_provider::GenerationProvider;
@@ -36,6 +36,8 @@ use storyteller_client::endpoints::media_files::upload_image_media_file_from_fil
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
+use crate::services::sora::threads::sora_task_polling::helpers::poll_classic_sora_tasks::poll_classic_sora_tasks;
+use crate::services::sora::threads::sora_task_polling::helpers::poll_sora_2_tasks::poll_sora_2_tasks;
 
 pub async fn sora_task_polling_thread(
   app_handle: AppHandle,
@@ -87,7 +89,20 @@ async fn local_task_polling_loop(
 
     let creds = sora_creds_manager.get_credentials_required()?;
 
-    poll_sora_tasks(
+    // Map of Sora Task ID to Local Task.
+    let local_sqlite_tasks_by_sora_task_id = local_sqlite_tasks.tasks.iter()
+        .filter_map(|task| {
+          if let Some(provider_job_id) = &task.provider_job_id {
+            Some((provider_job_id.clone(), task.clone()))
+          } else {
+            None
+          }
+        })
+        .collect::<HashMap<String, Task>>();
+
+    // TODO: Only poll if we have classic items
+    
+    poll_classic_sora_tasks(
       &app_handle,
       &app_env_configs,
       &task_database,
@@ -96,91 +111,24 @@ async fn local_task_polling_loop(
       &storyteller_creds_manager,
       &sora_task_queue,
       &app_data_root,
-      local_sqlite_tasks,
+      &local_sqlite_tasks_by_sora_task_id,
+    ).await?;
+
+    // TODO: Only poll if we have new items
+    
+    poll_sora_2_tasks(
+      &app_handle,
+      &app_env_configs,
+      &task_database,
+      &sora_creds_manager,
+      &creds,
+      &storyteller_creds_manager,
+      &sora_task_queue,
+      &app_data_root,
+      &local_sqlite_tasks_by_sora_task_id,
     ).await?;
 
     tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
   }
-}
-
-async fn poll_sora_tasks(
-  app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
-  task_database: &TaskDatabase,
-  sora_creds_manager: &SoraCredentialManager,
-  sora_creds: &SoraCredentialSet,
-  storyteller_creds_manager: &StorytellerCredentialManager,
-  sora_task_queue: &SoraTaskQueue,
-  app_data_root: &AppDataRoot,
-  local_sqlite_tasks: TaskList,
-) -> AnyhowResult<()> {
-
-  let local_tasks = local_sqlite_tasks.tasks;
-
-  // Map of Sora Task ID to Local Task.
-  let local_sqlite_tasks_by_sora_task_id = local_tasks.iter()
-      .filter_map(|task| {
-        if let Some(provider_job_id) = &task.provider_job_id {
-          Some((provider_job_id.clone(), task.clone()))
-        } else {
-          None
-        }
-      })
-      .collect::<HashMap<String, Task>>();
-
-  let (sora_response, maybe_new_creds) =
-      list_classic_sora_tasks_with_session_auto_renew(&sora_creds).await?;
-
-  if let Some(new_creds) = maybe_new_creds {
-    info!("Saving new credentials.");
-    sora_creds_manager.set_credentials(&new_creds)?;
-  }
-
-  let sora_items = sora_response.task_responses;
-
-  let mut sora_succeeded_tasks_by_id = HashMap::new();
-  let mut sora_failed_tasks_by_id = HashMap::new();
-
-  let storyteller_creds = storyteller_creds_manager.get_credentials_required()?;
-
-  for task in sora_items.iter() {
-
-    match &task.status {
-      TaskStatus::Succeeded => {
-        sora_succeeded_tasks_by_id.insert(task.id.clone(), task.clone());
-      }
-      TaskStatus::Failed => {
-        sora_failed_tasks_by_id.insert(task.id.clone(), task.clone());
-      }
-      TaskStatus::Queued => {}
-      TaskStatus::Running => {}
-      TaskStatus::Unknown(unknown_status) => {
-        warn!("Unknown task status: {:?}", unknown_status);
-      }
-    }
-  }
-
-  // Clear dead tasks.
-  handle_failed_generations(
-    &app_handle,
-    &task_database,
-    &local_sqlite_tasks_by_sora_task_id,
-    &sora_failed_tasks_by_id,
-    &sora_task_queue,
-  ).await?;
-
-
-  // Process succeeded tasks.
-  handle_successful_generations(
-    &app_handle,
-    &app_data_root,
-    &app_env_configs,
-    &task_database,
-    &storyteller_creds,
-    &sora_succeeded_tasks_by_id,
-    &local_sqlite_tasks_by_sora_task_id,
-  ).await?;
-
-  Ok(())
 }
 

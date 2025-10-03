@@ -5,6 +5,7 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::task_database::TaskDatabase;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::GenerationItem;
 use enums::tauri::tasks::task_status;
 use errors::AnyhowResult;
 use log::info;
@@ -16,11 +17,15 @@ use std::collections::HashMap;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use tauri::AppHandle;
 
-pub async fn handle_failed_generations(
+pub struct FailedGeneration {
+  pub reason: Option<String>,
+}
+
+pub async fn handle_classic_failed_generations(
   app_handle: &AppHandle,
   task_database: &TaskDatabase,
   local_sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
-  sora_failed_tasks_by_id: &HashMap<TaskId, PartialTaskResponse>,
+  sora_failed_tasks_by_id: &HashMap<TaskId, FailedGeneration>,
   sora_task_queue: &SoraTaskQueue,
 ) -> AnyhowResult<()> {
 
@@ -31,7 +36,7 @@ pub async fn handle_failed_generations(
         action: GenerationAction::GenerateImage,
         service: GenerationServiceProvider::Sora,
         model: None,
-        reason: None,
+        reason: task.reason.clone(),
       };
 
       event.send_infallible(&app_handle);
