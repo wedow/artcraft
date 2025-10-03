@@ -15,6 +15,8 @@ use std::{fs::File, io::Write, path::Path};
 use url::Url;
 use wreq::Client;
 
+// NB(2025-10-02): The new URL is:
+// https://sora.chatgpt.com/backend/v2/list_tasks?limit=20
 const SORA_STATUS_URL: &str = "https://sora.com/backend/video_gen";
 
 
@@ -298,7 +300,7 @@ pub async fn save_generations_to_dir(generations: &[Generation], dir: &str) -> A
 mod tests {
   use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::recipes::wait_for_image_gen_status::wait_for_image_gen_status;
-  use crate::requests::job_status::sora_job_status::{get_image_gen_status, save_generations_to_dir, StatusRequest, VideoGenStatusResponse};
+  use crate::requests::deprecated::job_status::sora_job_status::{get_image_gen_status, save_generations_to_dir, StatusRequest, VideoGenStatusResponse};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;

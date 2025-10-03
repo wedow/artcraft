@@ -20,9 +20,9 @@ use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use once_cell::sync::Lazy;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
-use openai_sora_client::recipes::list_sora_task_status_with_session_auto_renew::{list_sora_task_status_with_session_auto_renew, StatusRequestArgs};
+use openai_sora_client::recipes::list_sora_tasks_with_session_auto_renew::list_sora_tasks_with_session_auto_renew;
 use openai_sora_client::requests::common::task_id::TaskId;
-use openai_sora_client::requests::job_status::sora_job_status::{Generation, TaskResponse, TaskStatus};
+use openai_sora_client::requests::list_tasks::list_tasks::{PartialGeneration, PartialTaskResponse};
 use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, Task, TaskList};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
@@ -42,7 +42,7 @@ pub async fn handle_successful_generations(
   app_env_configs: &AppEnvConfigs,
   task_database: &TaskDatabase,
   storyteller_creds: &StorytellerCredentialSet,
-  succeeded_tasks_by_id: &HashMap<TaskId, TaskResponse>,
+  succeeded_tasks_by_id: &HashMap<TaskId, PartialTaskResponse>,
   sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
 ) -> AnyhowResult<()> {
 
@@ -111,7 +111,7 @@ pub async fn handle_successful_generations(
 }
 
 
-async fn download_generation(generation: &Generation, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
+async fn download_generation(generation: &PartialGeneration, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
   let url = Url::parse(&generation.url)?;
 
   let response = reqwest::get(&generation.url).await?;

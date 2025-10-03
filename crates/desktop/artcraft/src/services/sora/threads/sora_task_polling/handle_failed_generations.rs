@@ -9,7 +9,7 @@ use enums::tauri::tasks::task_status;
 use errors::AnyhowResult;
 use log::info;
 use openai_sora_client::requests::common::task_id::TaskId;
-use openai_sora_client::requests::job_status::sora_job_status::TaskResponse;
+use openai_sora_client::requests::list_tasks::list_tasks::PartialTaskResponse;
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::Task;
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::HashMap;
@@ -20,7 +20,7 @@ pub async fn handle_failed_generations(
   app_handle: &AppHandle,
   task_database: &TaskDatabase,
   local_sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
-  sora_failed_tasks_by_id: &HashMap<TaskId, TaskResponse>,
+  sora_failed_tasks_by_id: &HashMap<TaskId, PartialTaskResponse>,
   sora_task_queue: &SoraTaskQueue,
 ) -> AnyhowResult<()> {
 

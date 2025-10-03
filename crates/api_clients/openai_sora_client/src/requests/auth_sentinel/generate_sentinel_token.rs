@@ -2,7 +2,6 @@ use super::request::GenerateSentinelRefreshRequest;
 use crate::constants::user_agent::USER_AGENT;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
-use crate::requests::list_media::list_media::ListMediaResponse;
 use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use errors::AnyhowResult;
 use idempotency::uuid::generate_random_uuid;

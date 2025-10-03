@@ -1,5 +1,5 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
-use crate::requests::job_status::sora_job_status::{get_image_gen_status, StatusRequest, TaskResponse, TaskStatus, VideoGenStatusResponse};
+use crate::requests::deprecated::job_status::sora_job_status::{get_image_gen_status, StatusRequest, TaskResponse, TaskStatus, VideoGenStatusResponse};
 use errors::AnyhowResult;
 
 pub async fn wait_for_image_gen_status(task_id: &String, creds: &SoraCredentialSet, retry_limit: Option<u32>) -> AnyhowResult<TaskResponse> {

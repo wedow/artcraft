@@ -9,7 +9,8 @@ use once_cell::sync::Lazy;
 use serde_derive::Deserialize;
 use wreq::Client;
 
-const SORA_MEDIA_LIST_URL: &str = "https://sora.chatgpt.com/backend/video_gen?limit=50";
+//const SORA_MEDIA_LIST_URL: &str = "https://sora.chatgpt.com/backend/video_gen?limit=50";
+const SORA_MEDIA_LIST_URL : &str = "https://sora.chatgpt.com/backend/v2/list_tasks?limit=20";
 
 #[derive(Debug, Deserialize)]
 pub struct ListMediaResponse {
