@@ -2439,7 +2439,7 @@ checksum = "2eac901828f88a5241ee0600950ab981148a18f2f756900ffba1b125ca6a3ef9"
 dependencies = [
  "cookie 0.18.1",
  "document-features",
- "idna 1.1.0",
+ "idna 1.0.3",
  "log",
  "publicsuffix",
  "serde",
@@ -4109,9 +4109,9 @@ checksum = "aa9a19cbb55df58761df49b23516a86d432839add4af60fc256da840f66ed35b"
 
 [[package]]
 name = "form_urlencoded"
-version = "1.2.2"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf"
+checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding",
 ]
@@ -5404,9 +5404,9 @@ dependencies = [
 
 [[package]]
 name = "idna"
-version = "1.1.0"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b0875f23caa03898994f6ddc501886a45c7d3d62d04d2d90788d47be1b1e4de"
+checksum = "686f825264d630750a544639377bae737628043f20d38bbc029e8f29ea968a7e"
 dependencies = [
  "idna_adapter",
  "smallvec 1.15.1",
@@ -8301,7 +8301,7 @@ version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f42ea446cab60335f76979ec15e12619a2165b5ae2c12166bef27d283a9fadf"
 dependencies = [
- "idna 1.1.0",
+ "idna 1.0.3",
  "psl-types",
 ]
 
@@ -10599,7 +10599,6 @@ dependencies = [
  "mimetypes",
  "mysql_queries",
  "once_cell",
- "openai_sora_client",
  "password",
  "primitives",
  "prompt_engineering",
@@ -10616,7 +10615,6 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "server_environment",
- "shared_service_components",
  "speculoos",
  "sqlx",
  "strum",
@@ -12435,12 +12433,12 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "url"
-version = "2.5.7"
+version = "2.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08bc136a29a3d1758e07a9cca267be308aeebf5cfd5a10f3f67ab2097683ef5b"
+checksum = "32f8b686cadd1473f4bd0117a5d28d36b1ade384ea9b5069a1c40aefed7fda60"
 dependencies = [
  "form_urlencoded",
- "idna 1.1.0",
+ "idna 1.0.3",
  "percent-encoding",
  "serde",
 ]
@@ -13731,7 +13729,7 @@ dependencies = [
  "hyper-rustls",
  "hyper-tls 0.6.0",
  "hyper-util",
- "idna 1.1.0",
+ "idna 1.0.3",
  "indexmap 1.9.3",
  "indexmap 2.9.0",
  "lazy_static",

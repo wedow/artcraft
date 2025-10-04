@@ -1,1 +1,0 @@
-pub mod enqueue_studio_image_generation_handler;

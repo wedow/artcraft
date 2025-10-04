@@ -1,7 +1,6 @@
 pub mod animation;
 pub mod api_tokens;
 pub mod categories;
-pub mod control_plane;
 pub mod conversion;
 pub mod engine;
 pub mod events;

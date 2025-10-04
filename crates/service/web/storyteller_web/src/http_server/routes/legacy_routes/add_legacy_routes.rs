@@ -68,7 +68,6 @@ use crate::http_server::endpoints::voice_designer::voices::list_voices_by_user::
 use crate::http_server::endpoints::voice_designer::voices::search_voices::search_voices;
 use crate::http_server::endpoints::voice_designer::voices::update_voice::update_voice_handler;
 use crate::http_server::routes::legacy_routes::beta_key_routes::add_beta_key_routes;
-use crate::http_server::routes::legacy_routes::control_plane_sora_routes::add_control_plane_sora_routes;
 use crate::http_server::routes::legacy_routes::desktop_vc_app_routes::add_desktop_vc_app_routes;
 use crate::http_server::routes::legacy_routes::image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::legacy_routes::model_download_routes::add_model_download_routes;
@@ -109,7 +108,6 @@ where
   app = add_model_download_routes(app);
   app = add_studio_gen2_routes(app);
   app = add_image_studio_routes(app);
-  app = add_control_plane_sora_routes(app); // /v1/control_plane/...
   app = add_workflow_routes(app);
   app = add_engine_routes(app); // /v1/engine/...
   app = add_desktop_vc_app_routes(app); // /v1/vc/...
