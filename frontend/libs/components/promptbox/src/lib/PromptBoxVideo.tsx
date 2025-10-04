@@ -158,6 +158,7 @@ export const PromptBoxVideo = ({
   const handleEnqueue = async () => {
     if (!prompt.trim()) {
       console.warn("Cannot generate video: prompt is empty");
+      toast.error("Please enter a prompt to generate video");
       return;
     }
 
@@ -168,6 +169,7 @@ export const PromptBoxVideo = ({
 
     if (selectedModel?.requiresImage && referenceImages.length === 0) {
       console.warn("Cannot generate video: no reference image provided");
+      toast.error("Please choose a starting frame image to generate video");
       return;
     }
 
@@ -217,8 +219,11 @@ export const PromptBoxVideo = ({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
 
-      if (prompt.trim() && referenceImages.length === 0) {
-        toast.error("Please choose a starting frame image to generate video");
+      if (selectedModel?.requiresImage && referenceImages.length === 0) {
+        return;
+      }
+
+      if (!prompt.trim()) {
         return;
       }
 

@@ -27,6 +27,7 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
 use thumbnail_generator::task_client::thumbnail_task::{ThumbnailTaskBuilder, ThumbnailTaskInputMimeType};
 use tokens::tokens::media_files::MediaFileToken;
+use tokens::tokens::prompts::PromptToken;
 use videos::ffprobe_get_info::ffprobe_get_info;
 
 use crate::http_server::endpoints::media_files::upload::upload_error::MediaFileUploadError;
@@ -65,6 +66,12 @@ pub struct UploadNewVideoMediaFileForm {
   #[multipart(limit = "2 KiB")]
   #[schema(value_type = Option<Visibility>, format = Binary)]
   maybe_visibility: Option<Text<Visibility>>,
+
+  /// Optional: Prompt associated with this image
+  /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  #[multipart(limit = "2 KiB")]
+  #[schema(value_type = Option<String>, format = Binary)]
+  maybe_prompt_token: Option<Text<PromptToken>>,
 
   /// Optional: If an engine scene was used to generate this video, provide it here to create a link.
   #[multipart(limit = "2 KiB")]
@@ -355,6 +362,10 @@ pub async fn upload_new_video_media_file_handler(
       .as_ref()
       .map(|token| &token.0);
 
+  let maybe_prompt_token = form.maybe_prompt_token
+      .as_ref()
+      .map(|token| token.0.clone());
+
   // NB: If we're uploading a video file that references an engine scene, then this is an engine
   // render video, and we should mark it as a system (hidden) file.
   let is_intermediate_system_file =
@@ -371,7 +382,7 @@ pub async fn upload_new_video_media_file_handler(
     upload_type: UploadType::Filesystem, // TODO(bt,2024-05-02): This should be a parameter and a well-known enum.
     maybe_engine_category: None,
     maybe_animation_type: None,
-    maybe_prompt_token: None,
+    maybe_prompt_token: maybe_prompt_token.as_ref(),
     maybe_batch_token: None,
     maybe_mime_type: Some(&mimetype),
     file_size_bytes: file_size_bytes as u64,
@@ -433,6 +444,17 @@ fn fast_form_validations(form: &UploadNewVideoMediaFileForm) -> Result<(), Media
         Ok(())
       })
       .transpose()?;
+
+  let is_intermediate_system_file = form.is_intermediate_system_file
+      .as_ref()
+      .map(|b| b.0)
+      .unwrap_or(false);
+
+  if is_intermediate_system_file && form.maybe_prompt_token.is_some() {
+    return Err(MediaFileUploadError::BadInput(
+      "Cannot set `is_intermediate_system_file` to true if `maybe_prompt_token` is provided."
+          .to_string()));
+  }
 
   Ok(())
 }

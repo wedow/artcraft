@@ -27,6 +27,32 @@ use tokens::tokens::model_weights::ModelWeightToken;
 use tokens::tokens::prompts::PromptToken;
 use uuid::uuid;
 
+pub struct UploadVideoFromFileArgs<'a, P: AsRef<Path>> {
+  pub api_host: &'a ApiHost,
+  pub maybe_creds: Option<&'a StorytellerCredentialSet>,
+
+  // NB: Path needs to be owned for the request.
+  pub path: P,
+
+  // /// If true, we should hide the image from the user's gallery.
+  // pub is_intermediate_system_file: bool,
+
+  /// If provided, this is the prompt that this image is associated with.
+  /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  pub maybe_prompt_token: Option<&'a PromptToken>,
+
+  // /// If provided, this is the service provider that created the image.
+  // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
+  // pub maybe_generation_provider: Option<GenerationProvider>,
+
+  // /// If provided, this groups the file into a batch
+  // /// TODO: This shouldn't be set clientside without the backend generating the token 
+  // ///  and cryptographically securing it. But we need to go fast here.
+  // pub maybe_batch_token: Option<&'a BatchGenerationToken>,
+}
+
+
+
 // TODO(bt,2025-04-22): Share API definitions between client and server in common crate.
 
 #[derive(Deserialize, Debug)]
@@ -37,12 +63,10 @@ pub struct UploadVideoMediaFileSuccessResponse {
 
 /// Upload a video media file from a file.
 pub async fn upload_video_media_file_from_file<P: AsRef<Path>>(
-  api_host: &ApiHost,
-  maybe_creds: Option<&StorytellerCredentialSet>,
-  path: P,
+  args: UploadVideoFromFileArgs<'_, P>,
 ) -> Result<UploadVideoMediaFileSuccessResponse, ApiError> {
 
-  let url = get_route(api_host);
+  let url = get_route(args.api_host);
 
   debug!("Requesting {:?}", &url);
 
@@ -50,16 +74,20 @@ pub async fn upload_video_media_file_from_file<P: AsRef<Path>>(
       .gzip(true)
       .build()?;
 
-  let form = Form::new()
+  let mut form = Form::new()
       .text("uuid_idempotency_token", generate_random_uuid())
-      .file("file", path)
+      .file("file", args.path)
       .await?;
+
+  if let Some(prompt_token) = &args.maybe_prompt_token {
+    form = form.text("maybe_prompt_token", prompt_token.to_string());
+  }
 
   let mut request_builder = client.post(url)
       .header("User-Agent", USER_AGENT)
       .header("Accept", APPLICATION_JSON);
   
-  if let Some(creds) = maybe_creds {
+  if let Some(creds) = args.maybe_creds {
     if let Some(header) = &creds.maybe_as_cookie_header() {
       request_builder = request_builder.header("Cookie", header);
     }

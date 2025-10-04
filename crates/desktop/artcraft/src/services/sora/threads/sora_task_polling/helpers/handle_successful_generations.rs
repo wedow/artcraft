@@ -31,7 +31,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
-use storyteller_client::endpoints::media_files::upload_video_media_file_from_file::upload_video_media_file_from_file;
+use storyteller_client::endpoints::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoFromFileArgs};
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
@@ -116,11 +116,12 @@ pub async fn handle_classic_successful_generations(
           info!("Uploaded image to API backend: {:?}", result.media_file_token);
         }
         GenerationType::Video => {
-          let result = upload_video_media_file_from_file(
-            &app_env_configs.storyteller_host,
-            Some(&storyteller_creds),
-            download_path,
-          ).await?;
+          let result = upload_video_media_file_from_file(UploadVideoFromFileArgs {
+            api_host: &app_env_configs.storyteller_host,
+            maybe_creds: Some(&storyteller_creds),
+            path: download_path,
+            maybe_prompt_token: Some(&prompt_response.prompt_token),
+          }).await?;
 
           info!("Uploaded video to API backend: {:?}", result.media_file_token);
         }
