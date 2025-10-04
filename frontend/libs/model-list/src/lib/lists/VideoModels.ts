@@ -69,13 +69,13 @@ export const VIDEO_MODELS: VideoModel[] = [
     requiresImage: false,
     sizeOptions: [
       {
-        label: "Landscape",
         tauriValue: "landscape",
+        textLabel: "Landscape",
         icon: SizeIconOption.Landscape,
       },
       {
-        label: "Portrait",
         tauriValue: "portrait",
+        textLabel: "Portrait",
         icon: SizeIconOption.Portrait,
       },
     ],

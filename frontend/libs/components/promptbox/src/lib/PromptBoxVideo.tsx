@@ -12,19 +12,33 @@ import {
   faMessageCheck,
   faSparkles,
   faSpinnerThird,
+  faSquare,
+  faPortrait,
 } from "@fortawesome/pro-solid-svg-icons";
 import { faRectangle } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
-import { VideoModel } from "@storyteller/model-list";
+import { SizeIconOption, SizeOption, VideoModel } from "@storyteller/model-list";
 import { usePromptVideoStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { ImagePromptRow } from "./ImagePromptRow";
 import type { UploadImageFn } from "./ImagePromptRow";
 import { twMerge } from "tailwind-merge";
 import { toast } from "@storyteller/ui-toaster";
+
+const DEFAULT_RESOLUTIONS : SizeOption[] =  [
+  {
+    tauriValue: "720p",
+    textLabel: "720p",
+    icon: SizeIconOption.Landscape,
+  },
+  {
+    tauriValue: "480p",
+    textLabel: "480p",
+    icon: SizeIconOption.Landscape,
+  },
+];
 
 interface PromptBoxVideoProps {
   useJobContext: () => JobContextType;
@@ -63,7 +77,6 @@ export const PromptBoxVideo = ({
     }
   }, [imageMediaId, url]);
 
-  console.log("Is this a desktop app?", IsDesktopApp());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState<React.ReactNode>(null);
   const prompt = usePromptVideoStore((s) => s.prompt);
@@ -90,18 +103,62 @@ export const PromptBoxVideo = ({
     referenceImages.length > 0 ||
     uploadingImages.length > 0;
 
-  const [resolutionList, setResolutionList] = useState<PopoverItem[]>([
-    {
-      label: "720p",
-      selected: resolution === "720p",
-      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
-    },
-    {
-      label: "480p",
-      selected: resolution === "480p",
-      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
-    },
-  ]);
+  // TODO: Get rid of default resolutions. Just disable it if not present.
+  let resolutionOptions: PopoverItem[];
+
+  if (!!selectedModel?.sizeOptions && selectedModel.sizeOptions.length > 0) {
+    // When switching to a new model, the existing resolution might not be correct.
+    // This is a gross and nasty hack to handle the case where the resolution is not found.
+    const resolutionExists = selectedModel.sizeOptions.some((option) => option.textLabel === resolution);
+    const useFirstOption = !resolutionExists;
+
+    resolutionOptions = selectedModel.sizeOptions.map((option, index) => {
+      let faIcon = faRectangle;
+      switch (option.icon) {
+        case SizeIconOption.Landscape:
+          faIcon = faRectangle;
+          break;
+        case SizeIconOption.Portrait:
+          faIcon = faPortrait;
+          break;
+        case SizeIconOption.Square:
+          faIcon = faSquare;
+          break;
+      }
+      const icon = <FontAwesomeIcon icon={faIcon} className="h-4 w-4" />;
+      return {
+        label: option.textLabel,
+        selected: option.textLabel === resolution || (useFirstOption && index === 0),
+        icon: icon,
+      };
+    });
+  } else {
+    const resolutionExists = DEFAULT_RESOLUTIONS.some((option) => option.textLabel === resolution);
+    const useFirstOption = !resolutionExists;
+
+    resolutionOptions = DEFAULT_RESOLUTIONS.map((option, index) => {
+      let faIcon = faRectangle;
+      switch (option.icon) {
+        case SizeIconOption.Landscape:
+          faIcon = faRectangle;
+          break;
+        case SizeIconOption.Portrait:
+          faIcon = faPortrait;
+          break;
+        case SizeIconOption.Square:
+          faIcon = faSquare;
+          break;
+      }
+      const icon = <FontAwesomeIcon icon={faIcon} className="h-4 w-4" />;
+      return {
+        label: option.textLabel,
+        selected: option.textLabel === resolution || (useFirstOption && index === 0),
+        icon: icon,
+      };
+    });
+  }
+
+  const [resolutionList, setResolutionList] = useState<PopoverItem[]>(resolutionOptions);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -131,7 +188,7 @@ export const PromptBoxVideo = ({
   const handleResolutionSelect = (selectedItem: PopoverItem) => {
     setResolution(selectedItem.label as any);
     setResolutionList((prev) =>
-      prev.map((item) => ({
+      resolutionOptions.map((item) => ({
         ...item,
         selected: item.label === selectedItem.label,
       }))
@@ -351,7 +408,7 @@ export const PromptBoxVideo = ({
                 closeOnClick={true}
               >
                 <PopoverMenu
-                  items={resolutionList}
+                  items={resolutionOptions}
                   onSelect={handleResolutionSelect}
                   mode="toggle"
                   panelTitle="Resolution"

@@ -85,16 +85,16 @@ export const usePromptImageStore = create<PromptImageStore>()((set) => ({
 }));
 
 // ----- Video Prompt Box Store -----
-type Resolution = "720p" | "480p";
+type Resolution = "720p" | "480p"; // TODO: This needs to be relaxed.
 
 interface PromptVideoStore {
   prompt: string;
-  resolution: Resolution;
+  resolution: Resolution | string;
   useSystemPrompt: boolean;
   referenceImages: RefImage[];
   endFrameImage?: RefImage;
   setPrompt: (prompt: string) => void;
-  setResolution: (resolution: Resolution) => void;
+  setResolution: (resolution: Resolution | string) => void;
   setUseSystemPrompt: (value: boolean) => void;
   setReferenceImages: (images: RefImage[]) => void;
   setEndFrameImage: (image?: RefImage) => void;

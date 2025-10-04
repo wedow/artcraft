@@ -6,7 +6,7 @@ export enum SizeIconOption {
 }
 
 export interface SizeOption {
-  label: string;
+  textLabel: string;
   tauriValue: string;
   icon: SizeIconOption;
 }
