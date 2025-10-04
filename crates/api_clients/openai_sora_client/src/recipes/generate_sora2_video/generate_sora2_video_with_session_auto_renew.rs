@@ -27,7 +27,7 @@ pub async fn generate_sora2_video_with_session_auto_renew(
 #[cfg(test)]
 mod tests {
   use crate::recipes::generate_sora2_video::generate_sora2_video_with_session_auto_renew::generate_sora2_video_with_session_auto_renew;
-  use crate::requests::generate_sora2_video::generate_sora2_video::GenerateSora2VideoArgs;
+  use crate::requests::generate_sora2_video::generate_sora2_video::{GenerateSora2VideoArgs, Orientation};
   use crate::test_utils::get_test_credentials::get_test_credentials;
   use errors::AnyhowResult;
 
@@ -40,6 +40,8 @@ mod tests {
       prompt: "a dog playing tennis",
       credentials: &creds,
       request_timeout: None,
+      orientation: Orientation::Landscape,
+      image_reference_media_ids: None,
     };
 
     let (result , creds) =

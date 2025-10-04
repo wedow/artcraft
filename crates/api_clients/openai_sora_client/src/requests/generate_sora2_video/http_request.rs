@@ -22,7 +22,7 @@ pub (super) struct HttpCreateRequest {
   pub n_frames: u16,
   
   // NB: sent as empty array
-  pub inpaint_items: Vec<String>,
+  pub inpaint_items: Vec<InpaintItem>,
 
   // NB: Sent as null
   pub cameo_ids: Option<String>,
@@ -47,4 +47,14 @@ pub (super) struct HttpCreateRequest {
 
   // NB: Sent as null
   pub storyboard_id: Option<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+pub (super) struct InpaintItem {
+  // eg. "upload"
+  pub kind: String,
+  
+  // eg. "media_01abc..."
+  pub upload_id: String,
 }

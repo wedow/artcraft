@@ -212,6 +212,22 @@ export const GalleryModal = React.memo(
       }
     };
 
+    const getLabel = (item: any) => {
+      if (!!item.maybe_title) {
+        return item.maybe_title;
+      }
+      switch (item.media_class) {
+        case "image":
+          return "Image Generation";
+        case "video":
+          return "Video Generation";
+        case "dimensional":
+          return "3D Object Generation";
+        default:
+          return "Generation";
+      }
+    };
+
     const loadItems = async (reset = false) => {
       if (!username) return;
       setLoading(true);
@@ -240,7 +256,7 @@ export const GalleryModal = React.memo(
             )
             .map((item: any) => ({
               id: item.token,
-              label: item.maybe_title || "Image Generation",
+              label: getLabel(item),
               thumbnail:
                 item.media_class === "video"
                   ? item.media_links.maybe_video_previews.animated

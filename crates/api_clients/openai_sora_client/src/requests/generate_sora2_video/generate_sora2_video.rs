@@ -4,7 +4,7 @@ use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::requests::common::task_id::TaskId;
-use crate::requests::generate_sora2_video::http_request::HttpCreateRequest;
+use crate::requests::generate_sora2_video::http_request::{HttpCreateRequest, InpaintItem};
 use crate::requests::generate_sora2_video::http_response::HttpCreateResponse;
 use crate::requests::image_gen::image_gen_http_request::{RawSoraImageGenRequest, RawSoraResponse};
 use log::error;
@@ -19,6 +19,14 @@ pub struct GenerateSora2VideoArgs<'a> {
   pub prompt: &'a str,
   pub credentials: &'a SoraCredentialSet,
   pub request_timeout: Option<Duration>,
+  pub orientation: Orientation,
+  pub image_reference_media_ids: Option<&'a Vec<String>>,
+}
+
+#[derive(Clone, Copy)]
+pub enum Orientation {
+  Portrait,
+  Landscape,
 }
 
 #[derive(Debug)]
@@ -68,14 +76,32 @@ pub (crate) async fn generate_sora2_video(
     http_request = http_request.timeout(timeout);
   }
 
+  let orientation = match args.orientation {
+    Orientation::Portrait => "portrait",
+    Orientation::Landscape => "landscape",
+  };
+
+  let inpaint_items;
+
+  if let Some(media_ids) = args.image_reference_media_ids {
+    inpaint_items = media_ids.iter()
+        .map(|item_id| InpaintItem {
+          kind: "upload".to_string(),
+          upload_id: item_id.to_string(),
+        })
+        .collect();
+  } else {
+    inpaint_items = Vec::new();
+  }
+
   let request_body = HttpCreateRequest {
     kind: "video".to_string(),
     prompt: args.prompt.to_string(),
     title: None,
-    orientation: "portrait".to_string(),
+    orientation: orientation.to_string(),
     size: "small".to_string(),
     n_frames: 300,
-    inpaint_items: vec![],
+    inpaint_items,
     cameo_ids: None,
     cameo_replacements: None,
     model: "sy_8".to_string(),
@@ -126,7 +152,7 @@ pub (crate) async fn generate_sora2_video(
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::generate_sora2_video::generate_sora2_video::{generate_sora2_video, GenerateSora2VideoArgs};
+  use crate::requests::generate_sora2_video::generate_sora2_video::{generate_sora2_video, GenerateSora2VideoArgs, Orientation};
   use crate::test_utils::get_test_credentials::get_test_credentials;
   use errors::AnyhowResult;
 
@@ -135,9 +161,11 @@ mod tests {
   pub async fn manual_test() -> AnyhowResult<()> {
     let creds = get_test_credentials()?;
     let request = GenerateSora2VideoArgs {
-      prompt: "A cute baby sea otter wearing a beret and glasses, sitting on a rock and reading a book, digital art",
+      prompt: "A cute corgi wearing glasses, sitting on a picnic blanket and reading a book, digital art",
       credentials: &creds,
       request_timeout: None,
+      orientation: Orientation::Landscape,
+      image_reference_media_ids: None,
     };
     let result = generate_sora2_video(request).await?;
     println!("result: {:#?}", result);
