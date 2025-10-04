@@ -2,6 +2,7 @@ import { ModelCreator } from "src/index.js";
 import { Model, ModelKind } from "./Model.js";
 import { ModelCategory } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
+import { SizeOption } from "./metadata/SizeOption.js";
 
 export class VideoModel extends Model {
   // Typescript type discriminator property
@@ -18,6 +19,9 @@ export class VideoModel extends Model {
   // Whether the model requires an image
   readonly requiresImage: boolean;
 
+  // The size options for the model
+  readonly sizeOptions: SizeOption[];
+
   constructor(args: {
     id: string;
     tauriId: string;
@@ -31,10 +35,12 @@ export class VideoModel extends Model {
     endFrame: boolean;
     requiresImage: boolean;
     tags?: ModelTag[];
+    sizeOptions?: SizeOption[];
   }) {
     super(args);
     this.startFrame = args.startFrame;
     this.endFrame = args.endFrame;
     this.requiresImage = args.requiresImage;
+    this.sizeOptions = args.sizeOptions ?? [];
   } 
 }

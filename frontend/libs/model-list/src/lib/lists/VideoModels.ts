@@ -1,5 +1,6 @@
 import { VideoModel } from "../classes/VideoModel.js";
 import { ModelCreator } from "../classes/metadata/ModelCreator.js";
+import { SizeIconOption } from "../classes/metadata/SizeOption.js";
 
 export const VIDEO_MODELS: VideoModel[] = [
   new VideoModel({
@@ -66,6 +67,18 @@ export const VIDEO_MODELS: VideoModel[] = [
     startFrame: false,
     endFrame: false,
     requiresImage: false,
+    sizeOptions: [
+      {
+        label: "Landscape",
+        tauriValue: "landscape",
+        icon: SizeIconOption.Landscape,
+      },
+      {
+        label: "Portrait",
+        tauriValue: "portrait",
+        icon: SizeIconOption.Portrait,
+      },
+    ],
   }),
   new VideoModel({
     id: "veo_2",

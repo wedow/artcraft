@@ -35,7 +35,7 @@ mod tests {
   #[tokio::test]
   pub async fn manual_test() -> AnyhowResult<()> {
     let creds = get_test_credentials()?;
-    
+
     let args = GenerateSora2VideoArgs {
       prompt: "a dog playing tennis",
       credentials: &creds,

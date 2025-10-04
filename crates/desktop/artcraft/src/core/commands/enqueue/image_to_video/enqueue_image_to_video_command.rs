@@ -54,7 +54,7 @@ pub enum VideoModel {
   Veo3Fast,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct EnqueueImageToVideoRequest {
   /// REQUIRED.
   /// The model to use.
@@ -80,7 +80,7 @@ pub struct EnqueueImageToVideoRequest {
 }
 
 // TODO: Not sure how to handle so many different types of video (model) x (services).
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum SoraOrientation {
   Portrait,
@@ -112,8 +112,8 @@ pub enum EnqueueImageToVideoErrorType {
 
 #[tauri::command]
 pub async fn enqueue_image_to_video_command(
-  app: AppHandle,
   request: EnqueueImageToVideoRequest,
+  app: AppHandle,
   app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
@@ -125,7 +125,7 @@ pub async fn enqueue_image_to_video_command(
   sora_creds_manager: State<'_, SoraCredentialManager>,
 ) -> Response<EnqueueImageToVideoSuccessResponse, EnqueueImageToVideoErrorType, ()> {
 
-  info!("enqueue_image_to_video_command called");
+  info!("enqueue_image_to_video_command called, request: {:?}", request);
 
   let result = handle_request(
     request,

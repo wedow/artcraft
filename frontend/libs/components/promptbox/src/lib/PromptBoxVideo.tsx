@@ -89,6 +89,7 @@ export const PromptBoxVideo = ({
     showImagePrompts ||
     referenceImages.length > 0 ||
     uploadingImages.length > 0;
+
   const [resolutionList, setResolutionList] = useState<PopoverItem[]>([
     {
       label: "720p",
