@@ -8,7 +8,8 @@ use crate::requests::image_gen::common::{ImageSize, NumImages, SoraImageGenRespo
 use crate::requests::image_gen::image_gen_http_request;
 use crate::requests::image_gen::sora_image_gen_remix::{sora_image_gen_remix, SoraImageGenRemixRequest};
 use crate::requests::upload::upload_media_from_bytes::sora_media_upload_from_bytes;
-use crate::requests::upload::upload_media_http_request::{upload_media_http_request, SoraMediaUploadResponse};
+use crate::requests::upload::upload_media_http_request::upload_media_http_request;
+use crate::requests::upload::upload_media_http_response::SoraMediaUploadResponse;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info, warn};

@@ -3,41 +3,46 @@ use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
-use crate::requests::upload::upload_media_http_response::SoraMediaUploadResponse;
 use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use log::{error, info};
 use serde::Deserialize;
 use std::io::empty;
 use std::time::Duration;
-use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, COOKIE, ORIGIN, REFERER};
 use wreq::multipart::{Form, Part};
 use wreq::Client;
+use crate::requests::list_sora2_drafts::list_sora2_drafts::Draft;
 
-const SORA_UPLOAD_MEDIA_URL: &str = "https://sora.com/backend/uploads";
+const SORA_UPLOAD_MEDIA_URL: &str = "https://sora.chatgpt.com/backend/uploads";
 
-pub (crate) struct SoraMediaUploadRequest<'a> {
-  pub file_path: String,
+
+
+pub (crate) struct SoraMediaUploadArgs<'a> {
   pub credentials: &'a SoraCredentialSet,
+  pub file_bytes: Vec<u8>, // NB: Reqwest needs to own the bytes, so we can't pass as a reference.
+  pub filename: String, // NB: Reqwest needs to own the bytes, so we can't pass as a reference.
+  pub mime_type: &'a str,
+  pub maybe_timeout: Option<Duration>,
 }
 
-pub (crate) async fn upload_media_http_request(
-  file_bytes: Vec<u8>,
-  filename: String,
-  mime_type: &str,
-  credentials: &SoraCredentialSet,
-  maybe_timeout: Option<Duration>,
-) -> Result<SoraMediaUploadResponse, SoraError> {
+#[derive(Clone, Debug)]
+pub struct SoraMediaUploadResult {
+  pub drafts: Vec<Draft>,
+}
+
+pub (crate) async fn upload_media_sora2_http_request(
+  args: SoraMediaUploadArgs<'_>
+) -> Result<SoraMediaUploadResult, SoraError> {
 
   // Create multipart form
-  let part = Part::bytes(file_bytes) // NB: Reqwest needs to own the bytes. 
-      .file_name(filename) // NB: Reqwest needs to own the bytes
-      .mime_str(mime_type)
+  let part = Part::bytes(args.file_bytes) // NB: Reqwest needs to own the bytes. 
+      .file_name(args.filename) // NB: Reqwest needs to own the bytes
+      .mime_str(args.mime_type)
       .map_err(|e| SoraClientError::MultipartFormError(e))?;
 
   let form = Form::new().part("file", part);
 
-  let cookie = credentials.cookies.to_string();
-  let auth_header = credentials.jwt_bearer_token
+  let cookie = args.credentials.cookies.to_string();
+  let auth_header = args.credentials.jwt_bearer_token
       .as_ref()
       .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
@@ -46,22 +51,11 @@ pub (crate) async fn upload_media_http_request(
   let client = Client::new();
   let mut request_builder = client.post(SORA_UPLOAD_MEDIA_URL)
       .multipart(form)
-      .header(ACCEPT, "*/*")
-      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
-      .header(AUTHORIZATION, &auth_header)
-      .header(COOKIE, &cookie)
-      .header(ORIGIN, "https://sora.chatgpt.com")
-      .header("user-agent", USER_AGENT)
-      .header(REFERER, "https://sora.chatgpt.com/explore")
-      .header("priority", "u=1, i")
-      .header("sec-ch-ua", "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"")
-      .header("sec-ch-ua-mobile", "?0")
-      .header("sec-ch-ua-platform", "macOS")
-      .header("sec-fetch-dest", "empty")
-      .header("sec-fetch-mode", "cors")
-      .header("sec-fetch-site", "same-origin");
-
-  if let Some(timeout) = maybe_timeout {
+      .header("User-Agent", USER_AGENT)
+      .header("Cookie", &cookie)
+      .header("Authorization", &auth_header);
+  
+  if let Some(timeout) = args.maybe_timeout {
     request_builder = request_builder.timeout(timeout);
   }
 

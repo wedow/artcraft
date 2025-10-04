@@ -7,7 +7,6 @@ use crate::requests::common::task_id::TaskId;
 use crate::requests::deprecated::job_status::sora_job_status::{get_image_gen_status, StatusRequest, TaskResponse, VideoGenStatusResponse};
 use crate::requests::list_classic_tasks::list_classic_tasks::{list_classic_tasks, ListTasksResponse};
 use crate::requests::upload::upload_media_from_file::sora_media_upload_from_file;
-use crate::requests::upload::upload_media_http_request::SoraMediaUploadResponse;
 use anyhow::Error;
 use log::{info, warn};
 use std::path::Path;

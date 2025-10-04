@@ -1,8 +1,7 @@
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
-use crate::requests::upload::upload_media_http_request::upload_media_http_request;
-use crate::requests::upload::upload_media_http_response::SoraMediaUploadResponse;
+use crate::requests::upload::upload_media_http_request::{upload_media_http_request, SoraMediaUploadResponse};
 use log::error;
 use std::path::Path;
 use std::time::Duration;
@@ -56,17 +55,27 @@ pub async fn sora_media_upload_from_file<P: AsRef<Path>>(
 
 #[cfg(test)]
 mod tests {
+  use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::requests::upload::upload_media_from_file::sora_media_upload_from_file;
-  use crate::test_utils::get_test_credentials::get_test_credentials;
   use errors::AnyhowResult;
+  use std::fs::read_to_string;
   use testing::test_file_path::test_file_path;
 
   #[ignore] // You can manually run "ignore" tests in the IDE, but they won't run in CI.
   #[tokio::test]
   pub async fn manual_test() -> AnyhowResult<()> {
-    let creds = get_test_credentials()?;
+    let cookie = read_to_string(test_file_path("test_data/temp/cookie.txt")?)?;
+    let cookie = cookie.trim().to_string();
+
+    let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
+    let bearer = bearer.trim().to_string();
 
     let image_path = test_file_path("test_data/image/juno.jpg")?; // media_01jqyqgqpwf40tkcapq5bmaz5d
+
+    let creds = SoraCredentialBuilder::new()
+        .with_cookies(&cookie)
+        .with_jwt_bearer_token(&bearer)
+        .build()?;
 
     let response = sora_media_upload_from_file(
       image_path,

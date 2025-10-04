@@ -1,48 +1,74 @@
 use crate::core::commands::enqueue::generate_error::GenerateError;
-use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::EnqueueImageToVideoRequest;
+use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, VideoOrientation};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::utils::upload_images_to_sora::{upload_images_to_sora, UploadImagesToSoraArgs, UploadImagesToSoraResult};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use log::{error, info};
 use openai_sora_client::recipes::generate_sora2_video::generate_sora2_video_with_session_auto_renew::generate_sora2_video_with_session_auto_renew;
 use openai_sora_client::recipes::list_sora2_drafts::list_sora2_drafts_with_session_auto_renew::list_sora2_drafts_with_session_auto_renew;
-use openai_sora_client::requests::generate_sora2_video::generate_sora2_video::GenerateSora2VideoArgs;
+use openai_sora_client::requests::generate_sora2_video::generate_sora2_video::{GenerateSora2VideoArgs, Orientation};
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
 
 pub (super) async fn handle_sora2_video_sora(
   request: &EnqueueImageToVideoRequest,
+  app_data_root: &AppDataRoot,
+  app_env_configs: &AppEnvConfigs,
   sora_creds_manager: &SoraCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
-  let creds = match sora_creds_manager.get_credentials()? {
+  let mut sora_creds = match sora_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
       return Err(GenerateError::needs_sora_credentials());
     },
   };
 
-  // TODO: Handle input images.
-  // let image_media_token = match &request.image_media_token {
-  //   Some(token) => token.clone(),
-  //   None => {
-  //     return Err(GenerateError::required_source_image_not_provided());
-  //   },
-  // };
-
-  info!("Calling Sora 2 generate...");
+  // TODO: Handle multiple input images.
+  let image_media_tokens = match &request.image_media_token {
+    Some(token) => vec![token.clone()],
+    None => vec![],
+  };
   
+  let mut image_reference_media_ids = None;
+  
+  if !image_media_tokens.is_empty() {
+    let result = upload_images_to_sora(UploadImagesToSoraArgs {
+      storyteller_host: &app_env_configs.storyteller_host,
+      image_media_tokens: &image_media_tokens,
+      app_data_root,
+      sora_creds_manager,
+    }).await?;
+    
+    if let Some(creds) = result.maybe_new_sora_credentials {
+      sora_creds = creds;
+    }
+    
+    image_reference_media_ids = Some(result.sora_media_tokens);
+  }
+
+  let orientation = match request.orientation {
+    Some(VideoOrientation::Landscape) => Orientation::Landscape,
+    Some(VideoOrientation::Portrait) => Orientation::Portrait,
+    None => Orientation::Landscape,
+  };
+  
+  info!("Calling Sora 2 generate...");
+
   let result = generate_sora2_video_with_session_auto_renew(
     GenerateSora2VideoArgs {
       prompt: request.prompt.as_deref().unwrap_or(""),
-      credentials: &creds,
+      credentials: &sora_creds,
       request_timeout: None,
+      orientation,
+      image_reference_media_ids: image_reference_media_ids.as_ref(),
     }
   ).await;
 

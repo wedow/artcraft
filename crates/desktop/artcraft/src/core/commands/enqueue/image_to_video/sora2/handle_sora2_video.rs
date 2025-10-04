@@ -17,6 +17,8 @@ use tauri::AppHandle;
 
 pub async fn handle_sora2_video(
   request: &EnqueueImageToVideoRequest,
+  app_data_root: &AppDataRoot,
+  app_env_configs: &AppEnvConfigs,
   provider_priority_store: &ProviderPriorityStore,
   sora_creds_manager: &SoraCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
@@ -39,6 +41,8 @@ pub async fn handle_sora2_video(
         info!("Dispatching Sora2 via OpenAI Sora...");
         return handle_sora2_video_sora(
           request,
+          app_data_root,
+          app_env_configs,
           sora_creds_manager,
         ).await;
       }

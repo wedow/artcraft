@@ -73,6 +73,19 @@ pub struct EnqueueImageToVideoRequest {
   /// Optional.
   /// Text prompt used to direct the video.
   pub prompt: Option<String>,
+
+  /// Optional.
+  pub orientation: Option<VideoOrientation>,
+}
+
+// TODO: Not sure how to handle so many different types of video (model) x (services).
+#[derive(Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum VideoOrientation {
+  Portrait,
+  Landscape,
+  //Square,
+  // TODO: others...
 }
 
 #[derive(Serialize)]
@@ -205,6 +218,8 @@ pub async fn handle_request(
     Some(VideoModel::Sora2) => {
       handle_sora2_video(
         &request,
+        app_data_root,
+        app_env_configs,
         provider_priority_store,
         sora_creds_manager,
       ).await
