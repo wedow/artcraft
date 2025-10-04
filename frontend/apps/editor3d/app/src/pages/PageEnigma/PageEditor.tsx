@@ -71,8 +71,8 @@ import {
   ModelPage,
   useSelectedImageModel,
   ClassyModelSelector,
-  ProviderSelector,
-  PROVIDER_LOOKUP_BY_PAGE,
+  //ProviderSelector,
+  //PROVIDER_LOOKUP_BY_PAGE,
 } from "@storyteller/ui-model-selector";
 import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import PageDraw from "../PageDraw/PageDraw";
@@ -553,7 +553,7 @@ export const PageEditor = () => {
                     showIconsInList
                     triggerLabel="Model"
                   />
-                  <ProviderSelector
+                  {/*<ProviderSelector
                     page={PAGE_ID}
                     model={selectedImageModel}
                     providersByModel={PROVIDER_LOOKUP_BY_PAGE[PAGE_ID]}
@@ -561,7 +561,7 @@ export const PageEditor = () => {
                     panelClassName="min-w-[220px]"
                     buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
                     triggerLabel="Provider"
-                  />
+                  />*/}
                 </div>
                 <div className="absolute bottom-6 right-6 z-20 flex items-center gap-2">
                   <TutorialModalButton />

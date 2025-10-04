@@ -7,8 +7,8 @@ import {
   IMAGE_TO_VIDEO_PAGE_MODEL_LIST,
   ModelPage,
   useSelectedVideoModel,
-  ProviderSelector,
-  PROVIDER_LOOKUP_BY_PAGE,
+  //ProviderSelector,
+  //PROVIDER_LOOKUP_BY_PAGE,
 } from "@storyteller/ui-model-selector";
 import { VideoModel } from "@storyteller/model-list";
 import { animated, useSpring } from "@react-spring/web";
@@ -213,7 +213,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
               showIconsInList
               triggerLabel="Model"
             />
-            <ProviderSelector
+            {/*<ProviderSelector
               page={PAGE_ID}
               model={selectedVideoModel}
               providersByModel={PROVIDER_LOOKUP_BY_PAGE[PAGE_ID]}
@@ -221,7 +221,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
               panelClassName="min-w-[220px]"
               buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
               triggerLabel="Provider"
-            />
+            />*/}
           </div>
           <div className="absolute bottom-6 right-6 z-20 flex items-center gap-2">
             <TutorialModalButton />

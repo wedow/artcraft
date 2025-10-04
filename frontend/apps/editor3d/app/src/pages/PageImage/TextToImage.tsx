@@ -8,8 +8,8 @@ import {
   ModelPage,
   ClassyModelSelector,
   useSelectedImageModel,
-  ProviderSelector,
-  PROVIDER_LOOKUP_BY_PAGE,
+  //ProviderSelector,
+  //PROVIDER_LOOKUP_BY_PAGE,
 } from "@storyteller/ui-model-selector";
 import { ImageModel } from "@storyteller/model-list";
 interface TextToImageProps {
@@ -226,7 +226,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
               showIconsInList
               triggerLabel="Model"
             />
-            <ProviderSelector
+            {/*<ProviderSelector
               page={PAGE_ID}
               model={selectedImageModel}
               providersByModel={PROVIDER_LOOKUP_BY_PAGE[PAGE_ID]}
@@ -234,7 +234,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
               panelClassName="min-w-[220px]"
               buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
               triggerLabel="Provider"
-            />
+            />*/}
           </div>
           <div className="absolute bottom-6 right-6 z-20 flex items-center gap-2">
             <TutorialModalButton />

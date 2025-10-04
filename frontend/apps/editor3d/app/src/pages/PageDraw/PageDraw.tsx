@@ -16,8 +16,8 @@ import {
   CANVAS_2D_PAGE_MODEL_LIST,
   ClassyModelSelector,
   ModelPage,
-  ProviderSelector,
-  PROVIDER_LOOKUP_BY_PAGE,
+  //ProviderSelector,
+  //PROVIDER_LOOKUP_BY_PAGE,
   useSelectedImageModel,
 } from "@storyteller/ui-model-selector";
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
@@ -453,7 +453,7 @@ const PageDraw = () => {
           showIconsInList
           triggerLabel="Model"
         />
-        <ProviderSelector
+        {/*<ProviderSelector
           page={PAGE_ID}
           model={selectedImageModel}
           providersByModel={PROVIDER_LOOKUP_BY_PAGE[PAGE_ID]}
@@ -461,7 +461,7 @@ const PageDraw = () => {
           panelClassName="min-w-[220px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-white/80 hover:text-white"
           triggerLabel="Provider"
-        />
+        />*/}
       </div>
       <div className="absolute bottom-6 right-6 z-20 flex items-center gap-2">
         <TutorialModalButton />

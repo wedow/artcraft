@@ -16,8 +16,8 @@ import {
   useSelectedImageModel,
   IMAGE_EDITOR_PAGE_MODEL_LIST,
   ModelPage,
-  ProviderSelector,
-  PROVIDER_LOOKUP_BY_PAGE,
+  //ProviderSelector,
+  //PROVIDER_LOOKUP_BY_PAGE,
 } from "@storyteller/ui-model-selector";
 import { ImageModel } from "@storyteller/model-list";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
@@ -475,7 +475,7 @@ const PageEdit = () => {
           showIconsInList
           triggerLabel="Model"
         />
-        <ProviderSelector
+        {/*<ProviderSelector
           page={PAGE_ID}
           model={selectedImageModel}
           providersByModel={PROVIDER_LOOKUP_BY_PAGE[PAGE_ID]}
@@ -483,7 +483,7 @@ const PageEdit = () => {
           panelClassName="min-w-[220px]"
           buttonClassName="bg-transparent p-0 text-lg hover:bg-transparent text-base-fg opacity-80 hover:opacity-100"
           triggerLabel="Provider"
-        />
+        />*/}
       </div>
       <div className="absolute bottom-6 right-6 z-20 flex items-center gap-2">
         <TutorialModalButton />
