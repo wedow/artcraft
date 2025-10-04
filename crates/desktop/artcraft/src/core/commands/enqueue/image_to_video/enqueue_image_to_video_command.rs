@@ -217,6 +217,7 @@ pub async fn handle_request(
     Some(VideoModel::Sora2) => {
       handle_sora2_video(
         &request,
+        app,
         app_data_root,
         app_env_configs,
         provider_priority_store,
@@ -226,13 +227,13 @@ pub async fn handle_request(
     _ => {
       handle_video(
         request,
-        &app,
-        &app_env_configs,
-        &app_data_root,
-        &provider_priority_store,
-        &fal_creds_manager,
-        &storyteller_creds_manager,
-        &fal_task_queue,
+        app,
+        app_env_configs,
+        app_data_root,
+        provider_priority_store,
+        fal_creds_manager,
+        storyteller_creds_manager,
+        fal_task_queue,
       ).await
     }
   };

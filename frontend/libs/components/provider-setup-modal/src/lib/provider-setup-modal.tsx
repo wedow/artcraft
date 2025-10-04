@@ -29,7 +29,15 @@ export function ProviderSetupModal({
   const modalTitle = `Set up ${serviceProviderName}`;
   const modalSubTitle = `Add your ${serviceProviderName} account to ArtCraft!`;
 
-  const modalDescription = `You can add your ${serviceProviderName} account to ArtCraft by simply logging in. Use your credits and account directly within Artcraft. You can add all of your AI accounts to Artcraft to use them all in one place and build the ultimate AI art tool.`;
+  let modalDescription;
+  switch (provider) {
+    case GenerationProvider.Sora:
+      modalDescription = `You can add your ${serviceProviderName} account to ArtCraft by simply logging in. Use can then use it directly within Artcraft. You can add all of your AI accounts to Artcraft to use them all in one place and build the ultimate AI art tool.`;
+      break;
+    default:
+      modalDescription = `You can add your ${serviceProviderName} account to ArtCraft by simply logging in. Use your credits and account directly within Artcraft. You can add all of your AI accounts to Artcraft to use them all in one place and build the ultimate AI art tool.`;
+      break;
+  }
 
   const modalButtonText = `Set up ${serviceProviderName}`;
 

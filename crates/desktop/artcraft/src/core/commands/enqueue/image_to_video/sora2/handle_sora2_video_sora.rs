@@ -16,9 +16,11 @@ use openai_sora_client::recipes::list_sora2_drafts::list_sora2_drafts_with_sessi
 use openai_sora_client::requests::generate_sora2_video::generate_sora2_video::{GenerateSora2VideoArgs, Orientation};
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 
 pub (super) async fn handle_sora2_video_sora(
   request: &EnqueueImageToVideoRequest,
+  app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
   sora_creds_manager: &SoraCredentialManager,
@@ -27,6 +29,7 @@ pub (super) async fn handle_sora2_video_sora(
   let mut sora_creds = match sora_creds_manager.get_credentials()? {
     Some(creds) => creds,
     None => {
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Sora, &app);
       return Err(GenerateError::needs_sora_credentials());
     },
   };
