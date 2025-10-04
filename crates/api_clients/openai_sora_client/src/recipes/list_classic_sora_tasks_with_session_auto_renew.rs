@@ -43,11 +43,11 @@ pub async fn list_classic_sora_tasks_with_session_auto_renew(
 }
 
 async fn maybe_renew_session(creds: &SoraCredentialSet) -> Result<Option<SoraCredentialSet>, SoraError> {
-  if creds.jwt_bearer_token.is_none() {
+  if !creds.jwt_bearer_token.is_none() {
+    // TODO: Handle JWT expired case as well.
     return Ok(None);
   }
   
-  // TODO: Handle JWT expired case as well.
   info!("JWT not set. Upgrading credentials...");
   let mut updated_creds = creds.clone();
   
