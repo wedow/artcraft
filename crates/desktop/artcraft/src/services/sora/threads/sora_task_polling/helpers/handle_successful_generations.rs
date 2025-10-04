@@ -16,7 +16,7 @@ use enums::common::model_type::ModelType;
 use enums::tauri::tasks::task_status;
 use errors::AnyhowResult;
 use idempotency::uuid::generate_random_uuid;
-use log::{error, info};
+use log::{error, info, warn};
 use once_cell::sync::Lazy;
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::list_classic_sora_tasks_with_session_auto_renew::list_classic_sora_tasks_with_session_auto_renew;
@@ -39,16 +39,16 @@ use tempdir::TempDir;
 pub struct SuccessfulGeneration {
   pub prompt: Option<String>,
   pub items: Vec<GenerationItem>,
+  pub model_type: ModelType,
 }
 
 pub struct GenerationItem {
   pub item_id: String,
   pub url: String,
-  pub generation_type: GenerationType,
 }
 
-#[derive(Copy, Clone)]
-pub enum GenerationType {
+#[derive(Copy, Clone, Eq, PartialEq)]
+enum GenerationType {
   Image,
   Video,
 }
@@ -63,36 +63,46 @@ pub async fn handle_classic_successful_generations(
   sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
 ) -> AnyhowResult<()> {
 
-  for (task_id, task) in succeeded_tasks_by_id.iter() {
+  for (task_id, generation) in succeeded_tasks_by_id.iter() {
     if !sqlite_tasks_by_sora_task_id.contains_key(task_id.as_str()) {
       continue; // Task is irrelevant - previously completed, generated elsewhere, etc.
     }
 
     info!("Task succeeded: {:?}", task_id);
 
-    let request = CreatePromptRequest {
+    let generation_type = match generation.model_type {
+      ModelType::GptImage1 => GenerationType::Image,
+      ModelType::Sora2 => GenerationType::Video,
+      _ => {
+        // Fallback
+        warn!("Unexpected model type: {:?}", generation.model_type);
+        GenerationType::Image
+      },
+    };
+
+    let prompt_request = CreatePromptRequest {
       uuid_idempotency_token: generate_random_uuid(),
-      positive_prompt: task.prompt.clone(),
+      positive_prompt: generation.prompt.clone(),
       negative_prompt: None,
-      model_type: Some(ModelType::GptImage1),
+      model_type: Some(generation.model_type),
       generation_provider: Some(GenerationProvider::Sora),
     };
 
     let prompt_response = create_prompt(
       &app_env_configs.storyteller_host,
       Some(&storyteller_creds),
-      request
+      prompt_request
     ).await?;
 
     info!("Created prompt: {:?}", &prompt_response.prompt_token);
 
-    for (_i, generation) in task.items.iter().enumerate() {
+    for (_i, item) in generation.items.iter().enumerate() {
       info!("Downloading generated file...");
-      let download_path = download_generation(generation, &app_data_root).await?;
+      let download_path = download_generation_item(item, &app_data_root).await?;
 
       info!("Uploading to backend...");
 
-      match generation.generation_type {
+      match generation_type {
         GenerationType::Image => {
           let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
             api_host: &app_env_configs.storyteller_host,
@@ -130,8 +140,10 @@ pub async fn handle_classic_successful_generations(
       if updated {
         // If anything breaks with queries, don't spam events.
         let event = GenerationCompleteEvent {
-          //media_file_token: result.media_file_token,
-          action: Some(GenerationAction::GenerateImage),
+          action: Some(match generation_type {
+            GenerationType::Image => GenerationAction::GenerateImage,
+            GenerationType::Video => GenerationAction::GenerateVideo,
+          }),
           service: GenerationServiceProvider::Sora,
           model: None,
         };
@@ -145,7 +157,7 @@ pub async fn handle_classic_successful_generations(
 }
 
 
-async fn download_generation(generation: &GenerationItem, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
+async fn download_generation_item(generation: &GenerationItem, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
   let url = Url::parse(&generation.url)?;
 
   let response = reqwest::get(&generation.url).await?;

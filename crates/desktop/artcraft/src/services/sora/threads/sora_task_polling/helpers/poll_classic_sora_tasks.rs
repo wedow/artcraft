@@ -11,7 +11,7 @@ use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_ST
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::handle_failed_generations::{handle_classic_failed_generations, FailedGeneration};
-use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::{handle_classic_successful_generations, GenerationItem, GenerationType, SuccessfulGeneration};
+use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::{handle_classic_successful_generations, GenerationItem, SuccessfulGeneration};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
 use enums::common::generation_provider::GenerationProvider;
@@ -72,15 +72,15 @@ pub async fn poll_classic_sora_tasks(
           task.id.clone(), 
           SuccessfulGeneration {
             prompt: task.prompt.clone(),
+            model_type: ModelType::GptImage1,
             items: task.generations.iter()
                 .map(|gen| {
                   GenerationItem {
                     item_id: gen.id.clone(),
                     url: gen.url.clone(),
-                    generation_type: GenerationType::Image, // TODO: Support video
                   }
                 })
-                .collect()
+                .collect(),
           });
       }
       TaskStatus::Failed => {
