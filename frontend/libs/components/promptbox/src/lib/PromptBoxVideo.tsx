@@ -6,7 +6,7 @@ import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button, ToggleButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
-import { EnqueueImageToVideo } from "@storyteller/tauri-api";
+import { EnqueueImageToVideo, EnqueueImageToVideoRequest } from "@storyteller/tauri-api";
 import {
   faMessageXmark,
   faMessageCheck,
@@ -194,14 +194,20 @@ export const PromptBoxVideo = ({
       setIsEnqueueing(false);
     }, 10000);
 
-    await EnqueueImageToVideo({
+    let request : EnqueueImageToVideoRequest = {
       model: selectedModel,
       image_media_token: imageMediaToken,
       prompt: prompt,
       end_frame_image_media_token: endFrameImage?.mediaToken,
       frontend_caller: "image_to_video",
       frontend_subscriber_id: subscriberId,
-    });
+    };
+
+    if (selectedModel?.tauriId === "sora_2") {
+      request.sora_orientation = resolution === "720p" ? "landscape" : "portrait";
+    }
+
+    await EnqueueImageToVideo(request);
 
     onEnqueuePressed?.(prompt, subscriberId);
 

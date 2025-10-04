@@ -31,6 +31,9 @@ export interface EnqueueImageToVideoRequest {
 
   // Optional frontend state to return later.
   frontend_subscriber_id?: string;
+
+  // Optional. Orientation of the video for Sora 2.
+  sora_orientation?: "portrait" | "landscape";
 }
 
 interface RawEnqueueImageToVideoRequest {
@@ -40,6 +43,7 @@ interface RawEnqueueImageToVideoRequest {
   prompt?: string;
   frontend_caller?: string;
   frontend_subscriber_id?: string;
+  sora_orientation?: "portrait" | "landscape";
 }
 
 export interface EnqueueImageToVideoError extends CommandResult {
@@ -80,6 +84,10 @@ export const EnqueueImageToVideo = async (
 
   if (!!request.frontend_subscriber_id) {
     mutableRequest.frontend_subscriber_id = request.frontend_subscriber_id;
+  }
+
+  if (!!request.sora_orientation) {
+    mutableRequest.sora_orientation = request.sora_orientation;
   }
 
   const result = await invoke("enqueue_image_to_video_command", {

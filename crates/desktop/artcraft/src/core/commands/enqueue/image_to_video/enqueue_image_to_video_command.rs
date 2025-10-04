@@ -74,18 +74,17 @@ pub struct EnqueueImageToVideoRequest {
   /// Text prompt used to direct the video.
   pub prompt: Option<String>,
 
-  /// Optional.
-  pub orientation: Option<VideoOrientation>,
+  /// OPTIONAL.
+  /// Only for Sora2 model currently.
+  pub sora_orientation: Option<SoraOrientation>,
 }
 
 // TODO: Not sure how to handle so many different types of video (model) x (services).
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum VideoOrientation {
+pub enum SoraOrientation {
   Portrait,
   Landscape,
-  //Square,
-  // TODO: others...
 }
 
 #[derive(Serialize)]

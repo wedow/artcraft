@@ -1,5 +1,5 @@
 use crate::core::commands::enqueue::generate_error::GenerateError;
-use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, VideoOrientation};
+use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, SoraOrientation};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
@@ -54,9 +54,9 @@ pub (super) async fn handle_sora2_video_sora(
     image_reference_media_ids = Some(result.sora_media_tokens);
   }
 
-  let orientation = match request.orientation {
-    Some(VideoOrientation::Landscape) => Orientation::Landscape,
-    Some(VideoOrientation::Portrait) => Orientation::Portrait,
+  let orientation = match request.sora_orientation {
+    Some(SoraOrientation::Landscape) => Orientation::Landscape,
+    Some(SoraOrientation::Portrait) => Orientation::Portrait,
     None => Orientation::Landscape,
   };
   
