@@ -9,6 +9,7 @@
 --   tasks_v1.sqlite - initial version
 --   tasks_v2.sqlite - added model_type (nullable)
 --   tasks_v3.sqlite - added frontend_caller, comments
+--   tasks_v4.sqlite - added is_dismissed_by_user
 
 CREATE TABLE tasks (
     -- Task auto-incrementing primary key.
@@ -49,6 +50,9 @@ CREATE TABLE tasks (
     -- An opaque JSON payload set by the frontend subscriber that
     -- will be re-emitted back to the frontend.
     frontend_subscriber_payload TEXT,
+
+    -- Whether the user has dismissed the task from view.
+    is_dismissed_by_user INTEGER NOT NULL DEFAULT 0,
 
     created_at INTEGER NOT NULL DEFAULT (unixepoch('now')),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch('now')),

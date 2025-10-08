@@ -22,6 +22,9 @@ impl_enum_display_and_debug_using_to_str!(GenerationProvider);
 impl_mysql_enum_coders!(GenerationProvider);
 impl_mysql_from_row!(GenerationProvider);
 
+// For Tauri
+impl_sqlite_enum_coders!(GenerationProvider);
+
 // NB: We can derive `sqlx::Type` instead of using `impl_mysql_enum_coders`
 
 impl GenerationProvider {

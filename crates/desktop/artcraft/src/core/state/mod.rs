@@ -7,4 +7,5 @@ pub mod expanduser;
 pub mod os_platform;
 pub mod provider_priority;
 pub mod task_database;
+pub mod task_database_version;
 pub mod window;
