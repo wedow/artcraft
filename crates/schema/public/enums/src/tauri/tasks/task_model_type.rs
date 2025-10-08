@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use crate::error::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -98,8 +99,8 @@ impl TaskModelType {
     }
   }
 
-  pub fn from_str(job_status: &str) -> Result<Self, String> {
-    match job_status {
+  pub fn from_str(value: &str) -> Result<Self, EnumError> {
+    match value {
       // Image models
       "flux_1_dev" => Ok(Self::Flux1Dev),
       "flux_1_schnell" => Ok(Self::Flux1Schnell),
@@ -124,7 +125,7 @@ impl TaskModelType {
       // 3D Object generation models
       "hunyuan_3d_2.0" => Ok(Self::Hunyuan3d2_0),
       "hunyuan_3d_2.1" => Ok(Self::Hunyuan3d2_1),
-      _ => Err(format!("invalid task_model_type: {:?}", job_status)),
+      _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
 
@@ -164,6 +165,7 @@ impl TaskModelType {
 mod tests {
   use crate::tauri::tasks::task_model_type::TaskModelType;
   use crate::test_helpers::assert_serialization;
+  use crate::error::enum_error::EnumError;
 
   mod explicit_checks {
     use super::*;
@@ -250,6 +252,17 @@ mod tests {
       // 3D Object generation models
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.0").unwrap(), TaskModelType::Hunyuan3d2_0);
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.1").unwrap(), TaskModelType::Hunyuan3d2_1);
+    }
+
+    #[test]
+    fn from_str_err() {
+      let result = TaskModelType::from_str("asdf");
+      assert!(result.is_err());
+      if let Err(EnumError::CouldNotConvertFromString(value)) = result {
+        assert_eq!(value, "asdf");
+      } else {
+        panic!("Expected EnumError::CouldNotConvertFromString");
+      }
     }
 
     #[test]

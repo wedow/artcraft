@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use crate::error::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -48,8 +49,8 @@ impl TaskStatus {
     }
   }
 
-  pub fn from_str(job_status: &str) -> Result<Self, String> {
-    match job_status {
+  pub fn from_str(value: &str) -> Result<Self, EnumError> {
+    match value {
       "pending" => Ok(Self::Pending),
       "started" => Ok(Self::Started),
       "complete_success" => Ok(Self::CompleteSuccess),
@@ -59,7 +60,7 @@ impl TaskStatus {
       "cancelled_by_user" => Ok(Self::CancelledByUser),
       "cancelled_by_provider" => Ok(Self::CancelledByProvider),
       "cancelled_by_us" => Ok(Self::CancelledByUs),
-      _ => Err(format!("invalid task_status: {:?}", job_status)),
+      _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
 
@@ -82,11 +83,12 @@ impl TaskStatus {
 
 #[cfg(test)]
 mod tests {
-  use crate::test_helpers::assert_serialization;
   use crate::tauri::tasks::task_status::TaskStatus;
+  use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;
+    use crate::error::enum_error::EnumError;
 
     #[test]
     fn test_default() {
@@ -130,6 +132,17 @@ mod tests {
       assert_eq!(TaskStatus::from_str("cancelled_by_user").unwrap(), TaskStatus::CancelledByUser);
       assert_eq!(TaskStatus::from_str("cancelled_by_provider").unwrap(), TaskStatus::CancelledByProvider);
       assert_eq!(TaskStatus::from_str("cancelled_by_us").unwrap(), TaskStatus::CancelledByUs);
+    }
+
+    #[test]
+    fn from_str_err() {
+      let result = TaskStatus::from_str("asdf");
+      assert!(result.is_err());
+      if let Err(EnumError::CouldNotConvertFromString(value)) = result {
+        assert_eq!(value, "asdf");
+      } else {
+        panic!("Expected EnumError::CouldNotConvertFromString");
+      }
     }
 
     #[test]

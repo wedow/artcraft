@@ -1,0 +1,86 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload,\n      created_at as \"created_at: DateTime<Utc>\",\n      updated_at as \"updated_at: DateTime<Utc>\",\n      completed_at as \"completed_at: DateTime<Utc>\"\n    FROM tasks\n    WHERE is_dismissed_by_user != 0\n  ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "task_status",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "task_type",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "model_type",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "provider",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "provider_job_id",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "frontend_caller",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "frontend_subscriber_id",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "frontend_subscriber_payload",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 9,
+        "type_info": "Int64"
+      },
+      {
+        "name": "updated_at: DateTime<Utc>",
+        "ordinal": 10,
+        "type_info": "Int64"
+      },
+      {
+        "name": "completed_at: DateTime<Utc>",
+        "ordinal": 11,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "c43d7cf8ccc65ea193ff927265a185df46342cdeba2670d6cb0afedf342881d0"
+}

@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use crate::error::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -34,14 +35,14 @@ impl TaskType {
     }
   }
 
-  pub fn from_str(job_status: &str) -> Result<Self, String> {
-    match job_status {
+  pub fn from_str(value: &str) -> Result<Self, EnumError> {
+    match value {
       "image_generation" => Ok(Self::ImageGeneration),
       "image_inpaint_edit" => Ok(Self::ImageInpaintEdit),
       "video_generation" => Ok(Self::VideoGeneration),
       "object_generation" => Ok(Self::ObjectGeneration),
       "background_removal" => Ok(Self::BackgroundRemoval),
-      _ => Err(format!("invalid task_type: {:?}", job_status)),
+      _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
 
@@ -60,11 +61,12 @@ impl TaskType {
 
 #[cfg(test)]
 mod tests {
-  use crate::test_helpers::assert_serialization;
   use crate::tauri::tasks::task_type::TaskType;
+  use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;
+    use crate::error::enum_error::EnumError;
 
     #[test]
     fn test_serialization() {
@@ -91,6 +93,17 @@ mod tests {
       assert_eq!(TaskType::from_str("video_generation").unwrap(), TaskType::VideoGeneration);
       assert_eq!(TaskType::from_str("object_generation").unwrap(), TaskType::ObjectGeneration);
       assert_eq!(TaskType::from_str("background_removal").unwrap(), TaskType::BackgroundRemoval);
+    }
+    
+    #[test]
+    fn from_str_err() {
+      let result = TaskType::from_str("asdf");
+      assert!(result.is_err());
+      if let Err(EnumError::CouldNotConvertFromString(value)) = result {
+        assert_eq!(value, "asdf");
+      } else {
+        panic!("Expected EnumError::CouldNotConvertFromString");
+      }
     }
 
     #[test]

@@ -1,5 +1,6 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
+use chrono::{DateTime, Utc};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
@@ -7,38 +8,28 @@ use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use tokens::tokens::sqlite::tasks::TaskId;
 
-pub struct CreateTaskArgs<'a> {
-  pub status: TaskStatus,
-  pub task_type: TaskType,
-  pub model_type: Option<TaskModelType>,
-  pub provider: GenerationProvider,
-  pub provider_job_id: Option<&'a str>,
-  pub frontend_caller: Option<TauriCommandCaller>,
-  pub frontend_subscriber_id: Option<&'a str>,
-  pub frontend_subscriber_payload: Option<&'a str>,
-}
 pub struct TaskList {
   pub tasks: Vec<TaskItem>,
 }
 
 pub struct TaskItem {
+  pub id: TaskId,
   pub status: TaskStatus,
   pub task_type: TaskType,
   pub model_type: Option<TaskModelType>,
-  pub provider: GenerationProvider,
+  pub provider: Option<GenerationProvider>,
   pub provider_job_id: Option<String>,
   pub frontend_caller: Option<TauriCommandCaller>,
   pub frontend_subscriber_id: Option<String>,
   pub frontend_subscriber_payload: Option<String>,
+  pub created_at: DateTime<Utc>,
+  pub updated_at: DateTime<Utc>,
+  pub completed_at: Option<DateTime<Utc>>,
 }
 
 pub async fn list_tasks_for_frontend(
   db: & TaskDbConnection
 ) -> Result<TaskList, SqliteTasksError> {
-  let task_id = TaskId::generate();
-
-  //model_type,
-  //frontend_caller,
   let query = sqlx::query_as!(
     TaskItemRaw,
     r#"
@@ -46,36 +37,63 @@ pub async fn list_tasks_for_frontend(
       id,
       task_status,
       task_type,
+      model_type,
       provider,
       provider_job_id,
+      frontend_caller,
       frontend_subscriber_id,
-      frontend_subscriber_payload
+      frontend_subscriber_payload,
+      created_at as "created_at: DateTime<Utc>",
+      updated_at as "updated_at: DateTime<Utc>",
+      completed_at as "completed_at: DateTime<Utc>"
     FROM tasks
+    WHERE is_dismissed_by_user != 0
   "#);
 
-  let _r = query.fetch(db.get_pool()).await?;
+  let result = query.fetch_all(db.get_pool())
+      .await?;
 
-  Ok(())
+  let mut tasks = Vec::with_capacity(result.len());
+
+  for raw in result.into_iter() {
+    tasks.push(TaskItem {
+      id: TaskId::new(raw.id),
+      status: TaskStatus::from_str(&raw.task_status)?,
+      task_type: TaskType::from_str(&raw.task_type)?,
+      model_type: raw.model_type
+          .map(|model| TaskModelType::from_str(&model))
+          .transpose()?,
+      provider: raw.provider
+          .map(|provider| GenerationProvider::from_str(&provider))
+          .transpose()?,
+      provider_job_id: raw.provider_job_id,
+      frontend_caller: raw.frontend_caller
+          .map(|caller| TauriCommandCaller::from_str(&caller))
+          .transpose()?,
+      frontend_subscriber_id: raw.frontend_subscriber_id,
+      frontend_subscriber_payload: raw.frontend_subscriber_payload,
+      created_at: raw.created_at,
+      updated_at: raw.updated_at,
+      completed_at: raw.completed_at,
+    })
+  }
+
+  Ok(TaskList {
+    tasks,
+  })
 }
-
-//fn query(&self) -> Query<MySql, MySqlArguments> {
-//}
-
-
 
 struct TaskItemRaw {
   id: String,
   task_status: String,
   task_type: String,
-  //model_type: Option<String>,
-  //id: TaskId,
-  //task_status: TaskStatus,
-  //task_type: TaskType,
-  //model_type: Option<TaskModelType>,
+  model_type: Option<String>,
   provider: Option<String>,
   provider_job_id: Option<String>,
-  //frontend_caller: Option<TauriCommandCaller>,
+  frontend_caller: Option<String>,
   frontend_subscriber_id: Option<String>,
   frontend_subscriber_payload: Option<String>,
+  created_at: DateTime<Utc>,
+  updated_at: DateTime<Utc>,
+  completed_at: Option<DateTime<Utc>>,
 }
-

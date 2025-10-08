@@ -17,6 +17,7 @@ use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
 use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
+use sqlite_tasks::queries::list_tasks_for_frontend::list_tasks_for_frontend;
 use storyteller_client::endpoints::media_files::delete_media_file::delete_media_file;
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
@@ -24,11 +25,11 @@ use tokens::tokens::sqlite::tasks::TaskId;
 
 #[derive(Serialize)]
 pub struct GetTaskQueueCommandResponse {
-  tasks: Vec<TaskQueueTask>,
+  tasks: Vec<TaskQueueItem>,
 }
 
 #[derive(Serialize)]
-pub struct TaskQueueTask {
+pub struct TaskQueueItem {
   pub id: TaskId,
   pub task_status: TaskStatus,
   pub task_type: TaskType,
@@ -52,34 +53,40 @@ pub async fn get_task_queue_command(
   info!("get_task_queue_command called");
 
   let result = handle_request(
-    &app,
-    &app_env_configs,
     &task_database,
   ).await;
 
-  if let Err(err) = result {
-    error!("get_task_queue_command failed: {:?}", err);
-    return Err("get_task_queue_command failed".into())
-  }
+  let tasks = match result {
+    Ok(items) => items,
+    Err(err) => {
+      error!("get_task_queue_command failed: {:?}", err);
+      return Err("get_task_queue_command failed".into())
+    }
+  };
 
-  Ok(GetTaskQueueCommandResponse{}.into())
+  Ok(GetTaskQueueCommandResponse{
+    tasks,
+  }.into())
 }
 
 pub async fn handle_request(
-  app: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
-  task_database: State<'_, TaskDatabase>,
-) -> AnyhowResult<()> {
+  task_database: &TaskDatabase,
+) -> AnyhowResult<Vec<TaskQueueItem>> {
 
-  let creds = storyteller_creds_manager.get_credentials()?;
-
-  let _result = delete_media_file(
-    &app_env_configs.storyteller_host,
-    creds.as_ref(),
-    &request.media_file_token
-  ).await?;
-
-  // TODO: Send event to frontend that the file was deleted.
-
-  Ok(())
+  let tasks = list_tasks_for_frontend(task_database.get_connection())
+      .await?;
+  
+  Ok(tasks.tasks.into_iter()
+      .map(|task| TaskQueueItem {
+        id: task.id,
+        task_status: task.status,
+        task_type: task.task_type,
+        model_type: task.model_type,
+        provider: task.provider,
+        provider_job_id: task.provider_job_id,
+        created_at: Utc::now(), // TODO: Replace with actual created_at from DB
+        updated_at: Utc::now(), // TODO: Replace with actual updated_at from DB
+        completed_at: None, // TODO: Replace with actual completed_at from DB
+      })
+      .collect())
 }

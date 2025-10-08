@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use crate::error::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -38,13 +39,13 @@ impl TauriCommandCaller {
     }
   }
 
-  pub fn from_str(job_status: &str) -> Result<Self, String> {
-    match job_status {
+  pub fn from_str(value: &str) -> Result<Self, EnumError> {
+    match value {
       "canvas" => Ok(Self::Canvas),
       "image_editor" => Ok(Self::ImageEditor),
       "text_to_image" => Ok(Self::TextToImage),
       "image_to_video" => Ok(Self::ImageToVideo),
-      _ => Err(format!("invalid tauri_command_caller: {:?}", job_status)),
+      _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
 
@@ -62,8 +63,9 @@ impl TauriCommandCaller {
 
 #[cfg(test)]
 mod tests {
-  use crate::test_helpers::assert_serialization;
+  use crate::error::enum_error::EnumError;
   use crate::tauri::ux::tauri_command_caller::TauriCommandCaller;
+  use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;
@@ -90,6 +92,17 @@ mod tests {
       assert_eq!(TauriCommandCaller::from_str("image_editor").unwrap(), TauriCommandCaller::ImageEditor);
       assert_eq!(TauriCommandCaller::from_str("text_to_image").unwrap(), TauriCommandCaller::TextToImage);
       assert_eq!(TauriCommandCaller::from_str("image_to_video").unwrap(), TauriCommandCaller::ImageToVideo);
+    }
+
+    #[test]
+    fn from_str_err() {
+      let result = TauriCommandCaller::from_str("asdf");
+      assert!(result.is_err());
+      if let Err(EnumError::CouldNotConvertFromString(value)) = result {
+        assert_eq!(value, "asdf");
+      } else {
+        panic!("Expected EnumError::CouldNotConvertFromString");
+      }
     }
 
     #[test]

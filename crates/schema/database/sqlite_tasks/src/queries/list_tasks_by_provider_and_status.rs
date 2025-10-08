@@ -92,20 +92,15 @@ pub async fn list_tasks_by_provider_and_status(
   for task in results {
     tasks.push(Task {
       id: TaskId::new_from_str(&task.id),
-      status: TaskStatus::from_str(&task.task_status)
-          .map_err(|err| SqliteTasksError::TaskParseError(err))?,
-      task_type: TaskType::from_str(&task.task_type)
-          .map_err(|err| SqliteTasksError::TaskParseError(err))?,
+      status: TaskStatus::from_str(&task.task_status)?,
+      task_type: TaskType::from_str(&task.task_type)?,
       model_type: task.model_type
-          .map(|model| TaskModelType::from_str(&model)
-              .map_err(|err| SqliteTasksError::TaskParseError(err)))
+          .map(|model| TaskModelType::from_str(&model))
           .transpose()?,
-      provider: GenerationProvider::from_str(&task.provider)
-          .map_err(|err| SqliteTasksError::TaskParseError(err))?,
+      provider: GenerationProvider::from_str(&task.provider)?,
       provider_job_id: task.provider_job_id,
       frontend_caller: task.frontend_caller
-          .map(|caller| TauriCommandCaller::from_str(&caller)
-              .map_err(|err| SqliteTasksError::TaskParseError(err)))
+          .map(|caller| TauriCommandCaller::from_str(&caller))
           .transpose()?,
       frontend_subscriber_id: task.frontend_subscriber_id,
       frontend_subscriber_payload: task.frontend_subscriber_payload,
