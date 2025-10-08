@@ -18,6 +18,8 @@ use crate::core::commands::media_files::media_file_delete_command::media_file_de
 use crate::core::commands::platform_info_command::platform_info_command;
 use crate::core::commands::providers::get_provider_order_command::get_provider_order_command;
 use crate::core::commands::providers::set_provider_order_command::set_provider_order_command;
+use crate::core::commands::task_queue::get_task_queue_command::get_task_queue_command;
+use crate::core::commands::task_queue::mark_task_as_dismissed_command::mark_task_as_dismissed_command;
 use crate::core::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::core::lifecycle::startup::setup_main_window::setup_main_window;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
@@ -190,8 +192,10 @@ pub fn run() {
     get_app_preferences_command,
     get_fal_api_key_command,
     get_provider_order_command,
-    media_file_delete_command,
+    get_task_queue_command,
     load_without_cors_command,
+    mark_task_as_dismissed_command,
+    media_file_delete_command,
     midjourney_clear_credentials_command,
     midjourney_get_credential_info_command,
     midjourney_open_login_command,
