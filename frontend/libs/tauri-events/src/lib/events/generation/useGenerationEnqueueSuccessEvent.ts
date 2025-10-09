@@ -12,12 +12,19 @@ type GenerationEnqueueSuccessEvent = {
   model?: GenerationModel,
 }; 
 
+console.log(">>> test - useGenerationEnqueueSuccessEvent defined")
+
 export const useGenerationEnqueueSuccessEvent = () => {
+  console.log(">>> test - useGenerationEnqueueSuccessEvent called")
+
   useEffect(() => {
+    console.log(">>> test - useGenerationEnqueueSuccessEvent useEffect")
+
     let isUnmounted = false;
     let unlisten: Promise<UnlistenFn>;
 
     const setup = async () => {
+      console.log(">>> test - useGenerationEnqueueSuccessEvent setup")
       unlisten = listen<BasicEventWrapper<GenerationEnqueueSuccessEvent>>('generation-enqueue-success-event', async (event) => {
         console.log("Generation enqueue success event received:", event);
         const prefs = await GetAppPreferences();
@@ -38,6 +45,7 @@ export const useGenerationEnqueueSuccessEvent = () => {
     setup();
     
     return () => {
+      console.log(">>> test - useGenerationEnqueueSuccessEvent unmount")
       isUnmounted = true;
       unlisten.then(f => f());
     };

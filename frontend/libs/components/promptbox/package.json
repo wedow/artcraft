@@ -2,6 +2,16 @@
   "name": "@storyteller/ui-promptbox",
   "version": "0.0.1",
   "type": "module",
+  "nx": {
+    "name": "@storyteller/ui-promptbox",
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

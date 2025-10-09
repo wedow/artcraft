@@ -2,6 +2,16 @@
   "name": "@storyteller/ui-model-selector",
   "version": "0.0.1",
   "type": "module",
+  "nx": {
+    "name": "@storyteller/ui-model-selector",
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

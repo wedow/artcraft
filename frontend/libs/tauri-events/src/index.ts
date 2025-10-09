@@ -12,3 +12,5 @@ export * from "./lib/events/generation/useGenerationEnqueueFailureEvent";
 export * from "./lib/events/generation/useGenerationEnqueueSuccessEvent";
 export * from "./lib/events/generation/useGenerationFailedEvent";
 export * from "./lib/events/warning/FlashUserInputErrorEvent";
+
+console.log(">>> test - tauri-events index.ts");

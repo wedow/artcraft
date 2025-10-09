@@ -39,11 +39,8 @@ import { Signal } from "@preact/signals-react";
 import {
   CommandSuccessStatus,
   EnqueueContextualEditImage,
-  EnqueueContextualEditImageModel,
   EnqueueContextualEditImageSize,
-  // waitForSoraLogin,
 } from "@storyteller/tauri-api";
-// import { showActionReminder } from "@storyteller/ui-action-reminder-modal";
 import { usePrompt3DStore } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { ImageModel } from "@storyteller/model-list";
@@ -98,7 +95,7 @@ export const PromptBox3D = ({
   snapshotCurrentFrame,
 }: PromptBox3DProps) => {
   useSignals();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  //const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [content, setContent] = useState<React.ReactNode>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -5,7 +5,6 @@ import {
   JobContextType,
   MaybeCanvasRenderBitmapType,
   UploaderState,
-  UploaderStates,
 } from "@storyteller/common";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -32,7 +31,7 @@ import {
   EnqueueContextualEditImage,
   EnqueueContextualEditImageSize,
 } from "@storyteller/tauri-api";
-import { usePrompt2DStore, RefImage } from "./promptStore";
+import { usePrompt2DStore } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { getCapabilitiesForModel } from "@storyteller/model-list";
 import { ImageModel } from "@storyteller/model-list";

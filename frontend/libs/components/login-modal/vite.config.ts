@@ -7,7 +7,13 @@ import * as path from 'path';
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../../node_modules/.vite/libs/components/login-modal',
-  plugins: [react(), dts({ entryRoot: 'src', tsconfigPath: path.join(__dirname, 'tsconfig.lib.json') })],
+  plugins: [
+    react(), 
+    dts({ 
+      entryRoot: 'src', 
+      tsconfigPath: path.join(__dirname, 'tsconfig.lib.json') 
+    })
+  ],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],

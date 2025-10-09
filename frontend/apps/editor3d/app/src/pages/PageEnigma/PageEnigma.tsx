@@ -88,10 +88,14 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     });
   });
 
+  console.log(">>> test - install events in PageEnigma");
+
   useGenerationEnqueueSuccessEvent();
   useGenerationEnqueueFailureEvent();
   useGenerationCompleteEvent();
   useGenerationFailedEvent();
+
+  console.log(">>> test - install events in PageEnigma block over");
 
   useFlashUserInputErrorEvent(async (event) => {
     console.log("Flash user input error event received:", event);

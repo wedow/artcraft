@@ -40,6 +40,12 @@
       "path": "./libs/components/tooltip"
     },
     {
+      "path": "./libs/tauri-api"
+    },
+    {
+      "path": "./libs/tauri-events"
+    },
+    {
       "path": "./libs/tauri-utils"
     },
     {
@@ -77,9 +83,6 @@
     },
     {
       "path": "./libs/common"
-    },
-    {
-      "path": "./libs/tauri-api"
     },
     {
       "path": "./libs/components/login-modal"
@@ -149,9 +152,6 @@
     },
     {
       "path": "./libs/analytics/google-analytics"
-    },
-    {
-      "path": "./libs/tauri-events"
     },
     {
       "path": "./libs/components/provider-setup-modal"

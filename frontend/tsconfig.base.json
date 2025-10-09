@@ -28,7 +28,22 @@
         // Uncomment if 2D ever gets used
         // "apps/editor2d/app/src/*",
         "apps/editor3d/app/src/*"
-      ]
+      ],
+      "@storyteller/api": ["libs/api/src/*"],
+      "@storyteller/api-enums": ["libs/api-enums/src/*"],
+      "@storyteller/tauri-api": ["libs/tauri-api/src/*"],
+      "@storyteller/tauri-events": ["libs/tauri-events/src/*"],
+      "@storyteller/tauri-utils": ["libs/tauri-utils/src/*"],
+      "@storyteller/ui-action-reminder-modal": ["libs/components/action-reminder-modal/src/*"],
+      "@storyteller/ui-button": ["libs/components/button/src/*"],
+      "@storyteller/ui-gallery-modal": ["libs/components/gallery-modal/src/*"],
+      "@storyteller/ui-modal": ["libs/components/modal/src/*"],
+      "@storyteller/ui-model-selector": ["libs/components/model-selector/src/*"],
+      "@storyteller/ui-pricing-modal": ["libs/components/pricing-modal/src/*"],
+      "@storyteller/ui-toaster": ["libs/components/ui-toaster/src/*"],
+      "@storyteller/ui-tutorial-modal": ["libs/components/tutorial-modal/src/*"],
+      
+
     }
   }
 }
