@@ -17,6 +17,7 @@
     "build": "vite build",
     "preview": "vite preview --port 8080",
     "dev": "echo 'editor3d' && vite dev",
+    "production-preview": "echo 'editor3d dev with production preview' && vite build && vite preview --port 5173",
     "staging-build": "vite build",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint playground/* .",
     "typecheck": "tsc",

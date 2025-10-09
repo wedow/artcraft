@@ -7,9 +7,6 @@
       "path": "../tauri-utils"
     },
     {
-      "path": "../api-enums"
-    },
-    {
       "path": "./tsconfig.lib.json"
     },
     {
