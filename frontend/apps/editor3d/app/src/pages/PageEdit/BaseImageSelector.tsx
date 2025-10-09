@@ -112,7 +112,12 @@ export const BaseImageSelector = ({
                         result.data.media_links?.cdn_url ||
                         result.data.public_bucket_url ||
                         finalUrl;
-                      thumbnailUrlTemplate = result.data.media_links?.thumbnail_template;
+                      // NB(bt,2025-10-09): I think `thumbnail_template` is wrong and that
+                      // `maybe_thumbnail_template` is the correct API field, but upstream
+                      // seems to imply otherwise. Let's simply check both keys for now.
+                      thumbnailUrlTemplate = 
+                        result.data.media_links?.thumbnail_template ||
+                        (result.data.media_links as any)?.maybe_thumbnail_template;
                     }
                   } catch (e) {
                     console.warn(
