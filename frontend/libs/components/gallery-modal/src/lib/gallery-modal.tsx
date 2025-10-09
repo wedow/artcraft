@@ -47,6 +47,9 @@ export interface GalleryItem {
   id: string;
   label: string;
   thumbnail: string | null;
+  // Thumbnail template is not a usable URL yet. It has some variables 
+  // like `{WIDTH}` which must be replaced downstream.
+  thumbnailUrlTemplate?: string;
   fullImage?: string | null;
   createdAt: string;
   mediaClass?: string;
@@ -266,6 +269,9 @@ export const GalleryModal = React.memo(
                       "{WIDTH}",
                       thumbnail_size.toString()
                     ),
+              // TODO(bt): Thumbnail template URL may be wrong for videos and other asset types, but I'm 
+              // trying to plumb it through for the inpainting editor, which is just images.
+              thumbnailUrlTemplate: item.media_links.maybe_thumbnail_template, 
               fullImage: item.media_links.cdn_url,
               createdAt: item.created_at,
               mediaClass:

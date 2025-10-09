@@ -14,6 +14,13 @@ import { TutorialModalButton } from "@storyteller/ui-tutorial-modal";
 export interface BaseSelectorImage {
   url: string;
   mediaToken: string;
+
+  // Link to the thumbnail *template* URL of the image
+  // This is not a URL itself! It must be converted into a URL by replacing parameters.
+  thumbnailUrlTemplate?: string;
+
+  // Link to the full image URL of the full image asset
+  fullImageUrl?: string;
 }
 
 export type BaseImageSelectorProps = {
@@ -41,13 +48,13 @@ export const BaseImageSelector = ({
     setSelectedGalleryImages([]);
   };
 
-  const handleImageSelect = (id: string) => {
+  const handleImageSelect = (mediaToken: string) => {
     // If already selected, deselect it
     // Else if not selected and under max limit, select it
-    if (selectedGalleryImages.includes(id)) {
+    if (selectedGalleryImages.includes(mediaToken)) {
       setSelectedGalleryImages([]);
     } else {
-      setSelectedGalleryImages([id]);
+      setSelectedGalleryImages([mediaToken]);
     }
   };
 
@@ -56,12 +63,14 @@ export const BaseImageSelector = ({
     if (selectedItems.length !== 1) {
       return;
     }
-
     const item = selectedItems[0];
-    if (!item.fullImage) return;
+    if (!item.fullImage) {
+      return
+    }
     const referenceImage: BaseSelectorImage = {
       url: item.fullImage,
       mediaToken: item.id,
+      thumbnailUrlTemplate: item.thumbnailUrlTemplate,
     };
     sendImageEvent(referenceImage);
   };
@@ -92,6 +101,7 @@ export const BaseImageSelector = ({
                 // Attempt to resolve the CDN URL for the uploaded image token; fallback to data URL
                 (async () => {
                   let finalUrl = reader.result as string;
+                  let thumbnailUrlTemplate = undefined;
                   try {
                     const api = new MediaFilesApi();
                     const result = await api.GetMediaFileByToken({
@@ -102,6 +112,7 @@ export const BaseImageSelector = ({
                         result.data.media_links?.cdn_url ||
                         result.data.public_bucket_url ||
                         finalUrl;
+                      thumbnailUrlTemplate = result.data.media_links?.thumbnail_template;
                     }
                   } catch (e) {
                     console.warn(
@@ -111,8 +122,10 @@ export const BaseImageSelector = ({
                   }
 
                   const referenceImage: BaseSelectorImage = {
-                    url: finalUrl,
                     mediaToken,
+                    url: finalUrl,
+                    fullImageUrl: finalUrl,
+                    thumbnailUrlTemplate: thumbnailUrlTemplate,
                   };
 
                   toast.success("Image uploaded successfully!");

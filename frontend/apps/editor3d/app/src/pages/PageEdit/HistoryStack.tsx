@@ -71,6 +71,8 @@ export const HistoryStack = ({
           ({
             url: editedImage.cdn_url,
             mediaToken: editedImage.media_token,
+            thumbnailUrlTemplate: editedImage.maybe_thumbnail_template,
+            fullImageUrl: editedImage.cdn_url,
           }) as BaseSelectorImage,
       ),
     };
@@ -110,6 +112,18 @@ export const HistoryStack = ({
     }
     prevPendingCountRef.current = current;
   }, [pendingPlaceholders.length]);
+
+  const getImageThumbnailSource = (image: BaseSelectorImage) => {
+    if (!!image.thumbnailUrlTemplate) {
+      // NB: this is the preferred way to populate the history stack thumbnails
+      return image.thumbnailUrlTemplate.replace("{WIDTH}", "256");
+    }
+    if (image.url.startsWith("data:")) {
+      return image.url;
+    }
+    console.warn("Using older image source for history stack image", image);
+    return `${image.url}?historystack+${sessionRandBuster.current}`;
+  };
 
   return (
     <div className="h-auto w-20 rounded-lg">
@@ -202,13 +216,10 @@ export const HistoryStack = ({
                     onClick={() => handleSelectWithPreload(image)}
                   >
                     <img
-                      src={
-                        image.url.startsWith("data:")
-                          ? image.url
-                          : `${image.url}?historystack+${sessionRandBuster.current}`
-                      }
+                      src={getImageThumbnailSource(image)}
                       alt=""
-                      crossOrigin="anonymous"
+                      // NB(bt,2025-10-09): We shouldn't need CORS here.
+                      //crossOrigin="anonymous"
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                     <div
