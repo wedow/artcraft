@@ -47,7 +47,7 @@ pub async fn list_tasks_for_frontend(
       updated_at as "updated_at: DateTime<Utc>",
       completed_at as "completed_at: DateTime<Utc>"
     FROM tasks
-    WHERE is_dismissed_by_user != 0
+    WHERE is_dismissed_by_user == 0
   "#);
 
   let result = query.fetch_all(db.get_pool())

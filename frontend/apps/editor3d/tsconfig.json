@@ -156,6 +156,9 @@
     },
     {
       "path": "../../libs/api"
+    },
+    {
+      "path": "../../libs/api-enums"
     }
   ]
 }

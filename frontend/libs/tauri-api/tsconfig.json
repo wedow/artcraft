@@ -10,6 +10,9 @@
     },
     {
       "path": "../model-list"
+    },
+    {
+      "path": "../api-enums"
     }
   ],
   "extends": "../../tsconfig.base.json"

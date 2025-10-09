@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload,\n      created_at as \"created_at: DateTime<Utc>\",\n      updated_at as \"updated_at: DateTime<Utc>\",\n      completed_at as \"completed_at: DateTime<Utc>\"\n    FROM tasks\n    WHERE is_dismissed_by_user != 0\n  ",
+  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload,\n      created_at as \"created_at: DateTime<Utc>\",\n      updated_at as \"updated_at: DateTime<Utc>\",\n      completed_at as \"completed_at: DateTime<Utc>\"\n    FROM tasks\n    WHERE is_dismissed_by_user == 0\n  ",
   "describe": {
     "columns": [
       {
@@ -82,5 +82,5 @@
       true
     ]
   },
-  "hash": "c43d7cf8ccc65ea193ff927265a185df46342cdeba2670d6cb0afedf342881d0"
+  "hash": "a142dc3fdf5b6e741c268d8f2e9996a28c214f5835681297d58a9431da8de939"
 }

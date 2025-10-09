@@ -48,6 +48,9 @@
   "references": [
     {
       "path": "../model-list/tsconfig.lib.json"
+    },
+    {
+      "path": "../api-enums/tsconfig.lib.json"
     }
   ]
 }
