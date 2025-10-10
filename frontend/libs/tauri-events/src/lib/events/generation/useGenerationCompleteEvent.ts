@@ -28,7 +28,6 @@ export const useGenerationCompleteEvent = () => {
         }
         const message = makeMessage(event.payload.data);
         toast.success(message);
-        (window as any).toast_3 = toast
       });
 
       if (isUnmounted) {

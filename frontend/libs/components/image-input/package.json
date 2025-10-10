@@ -13,8 +13,5 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
-  },
-  "peerDependencies": {
-    "react-hot-toast": "^2.5.2"
   }
 }

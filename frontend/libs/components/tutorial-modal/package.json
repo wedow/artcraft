@@ -2,16 +2,6 @@
   "name": "@storyteller/ui-tutorial-modal",
   "version": "0.0.1",
   "type": "module",
-  "nx": {
-    "name": "@storyteller/ui-tutorial-modal",
-    "targets": {
-      "build": {
-        "dependsOn": [
-          "^build"
-        ]
-      }
-    }
-  },
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
