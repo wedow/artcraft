@@ -12,35 +12,22 @@ type GenerationEnqueueSuccessEvent = {
   model?: GenerationModel,
 }; 
 
-console.log(">>> test - useGenerationEnqueueSuccessEvent defined")
-
 export const useGenerationEnqueueSuccessEvent = () => {
-  console.log(">>> test - useGenerationEnqueueSuccessEvent called")
-
   useEffect(() => {
-    console.log(">>> test - useGenerationEnqueueSuccessEvent useEffect")
-
     let isUnmounted = false;
     let unlisten: Promise<UnlistenFn>;
 
     const setup = async () => {
-      console.log(">>> test - useGenerationEnqueueSuccessEvent setup")
       unlisten = listen<BasicEventWrapper<GenerationEnqueueSuccessEvent>>('generation-enqueue-success-event', async (event) => {
-        console.log("Generation enqueue success event received (1):", event);
+        console.log("Generation enqueue success event received:", event);
         const prefs = await GetAppPreferences();
-        console.log("Generation enqueue success event received (2) ... prefs", prefs);
         const soundName = prefs.preferences?.enqueue_success_sound;
-        console.log("Generation enqueue success event received (3) ... soundName", soundName);
         if (soundName !== undefined) {
           const registry = SoundRegistry.getInstance();
-          console.log("Generation enqueue success event received (4) ... play sound", soundName);
           registry.playSound(soundName);
         }
-        console.log("Generation enqueue success event received (5) ... message before");
         const message = makeMessage(event.payload.data);
-        console.log("Generation enqueue success event received (6) ... message", message);
         toast.success(message);
-        (window as any).toast = toast
       });
 
       if (isUnmounted) {
@@ -51,7 +38,6 @@ export const useGenerationEnqueueSuccessEvent = () => {
     setup();
     
     return () => {
-      console.log(">>> test - useGenerationEnqueueSuccessEvent unmount")
       isUnmounted = true;
       unlisten.then(f => f());
     };
