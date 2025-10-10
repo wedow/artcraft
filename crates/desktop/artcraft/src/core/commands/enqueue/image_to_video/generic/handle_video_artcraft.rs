@@ -18,9 +18,6 @@ use artcraft_api_defs::generate::video::generate_veo_3_fast_image_to_video::Gene
 use artcraft_api_defs::generate::video::generate_veo_3_image_to_video::{GenerateVeo3AspectRatio, GenerateVeo3ImageToVideoRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
-use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
-use fal_client::requests::queue::video_gen::enqueue_kling_16_pro_image_to_video::Kling16ProAspectRatio;
-use fal_client::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::Veo2AspectRatio;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use storyteller_client::endpoints::generate::video::generate_kling_16_pro_image_to_video::generate_kling_16_pro_image_to_video;

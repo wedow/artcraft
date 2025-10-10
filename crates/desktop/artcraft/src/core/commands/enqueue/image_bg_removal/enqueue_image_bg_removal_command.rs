@@ -7,6 +7,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
@@ -18,8 +19,6 @@ use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
 use crate::core::utils::simple_http_download::simple_http_download;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -35,12 +34,11 @@ use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use serde_derive::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use std::time::Duration;
-use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 
 #[derive(Deserialize, Debug)]
 pub struct EnqueueImageBgRemovalCommand {
@@ -103,8 +101,6 @@ pub async fn enqueue_image_bg_removal_command(
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
-  fal_creds_manager: State<'_, FalCredentialManager>,
-  fal_task_queue: State<'_, FalTaskQueue>,
 ) -> ResponseOrErrorType<EnqueueImageBgRemovalSuccessResponse, EnqueueImageBgRemovalErrorType> {
 
   info!("enqueue_image_bg_removal_command called");
@@ -117,8 +113,6 @@ pub async fn enqueue_image_bg_removal_command(
     &provider_priority_store,
     &task_database,
     &storyteller_creds_manager,
-    &fal_creds_manager,
-    &fal_task_queue,
   ).await;
 
   match result {
@@ -167,8 +161,6 @@ pub async fn handle_request(
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  fal_creds_manager: &FalCredentialManager,
-  fal_task_queue: &FalTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   
   // TODO(bt,2025-07-07): Other model/provider routing...
@@ -180,8 +172,6 @@ pub async fn handle_request(
     app_env_configs,
     provider_priority_store,
     storyteller_creds_manager,
-    fal_creds_manager,
-    fal_task_queue,
   ).await?;
 
   let result = success_event

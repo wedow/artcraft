@@ -13,12 +13,9 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
@@ -118,8 +115,6 @@ pub async fn enqueue_image_to_video_command(
   app_data_root: State<'_, AppDataRoot>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
-  fal_creds_manager: State<'_, FalCredentialManager>,
-  fal_task_queue: State<'_, FalTaskQueue>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
@@ -134,10 +129,8 @@ pub async fn enqueue_image_to_video_command(
     &app_data_root,
     &provider_priority_store,
     &task_database,
-    &fal_creds_manager,
     &sora_creds_manager,
     &storyteller_creds_manager,
-    &fal_task_queue,
   ).await;
 
   match result {
@@ -207,10 +200,8 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
-  fal_creds_manager: &FalCredentialManager,
   sora_creds_manager: &SoraCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  fal_task_queue: &FalTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let result = match request.model {
@@ -231,9 +222,7 @@ pub async fn handle_request(
         app_env_configs,
         app_data_root,
         provider_priority_store,
-        fal_creds_manager,
         storyteller_creds_manager,
-        fal_task_queue,
       ).await
     }
   };

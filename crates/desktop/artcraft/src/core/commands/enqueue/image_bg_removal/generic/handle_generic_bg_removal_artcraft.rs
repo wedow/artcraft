@@ -9,8 +9,6 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::utils::save_base64_image_to_temp_dir::save_base64_image_to_temp_dir;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -23,7 +21,6 @@ use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image
 use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
-use fal_client::requests::queue::image_gen::enqueue_flux_pro_11_ultra_text_to_image::{enqueue_flux_pro_11_ultra_text_to_image, FluxPro11UltraTextToImageArgs};
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;

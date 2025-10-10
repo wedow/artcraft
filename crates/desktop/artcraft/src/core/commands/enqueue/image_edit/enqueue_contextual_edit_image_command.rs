@@ -20,8 +20,6 @@ use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
 use crate::core::utils::simple_http_download::simple_http_download;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -169,8 +167,6 @@ pub async fn enqueue_contextual_edit_image_command(
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
-  fal_creds_manager: State<'_, FalCredentialManager>,
-  fal_task_queue: State<'_, FalTaskQueue>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
 ) -> ResponseOrErrorType<EnqueueContextualEditImageSuccessResponse, EnqueueContextualEditImageErrorType> {
@@ -186,8 +182,6 @@ pub async fn enqueue_contextual_edit_image_command(
     &provider_priority_store,
     &task_database,
     &storyteller_creds_manager,
-    &fal_creds_manager,
-    &fal_task_queue,
     &sora_creds_manager,
     &sora_task_queue,
   ).await;
@@ -238,8 +232,6 @@ pub async fn handle_request(
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  fal_creds_manager: &FalCredentialManager,
-  fal_task_queue: &FalTaskQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
@@ -255,8 +247,6 @@ pub async fn handle_request(
         app_env_configs,
         provider_priority_store,
         storyteller_creds_manager,
-        fal_creds_manager,
-        fal_task_queue,
         sora_creds_manager,
         sora_task_queue,
       ).await?
@@ -269,8 +259,6 @@ pub async fn handle_request(
         app_env_configs,
         provider_priority_store,
         storyteller_creds_manager,
-        fal_creds_manager,
-        fal_task_queue,
         sora_creds_manager,
         sora_task_queue,
       ).await?
@@ -283,8 +271,6 @@ pub async fn handle_request(
         app_env_configs,
         provider_priority_store,
         storyteller_creds_manager,
-        fal_creds_manager,
-        fal_task_queue,
         sora_creds_manager,
         sora_task_queue,
       ).await?

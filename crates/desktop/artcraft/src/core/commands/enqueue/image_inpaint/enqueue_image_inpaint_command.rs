@@ -22,8 +22,6 @@ use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::get_url_file_extension::get_url_file_extension;
 use crate::core::utils::simple_http_download::simple_http_download;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -40,8 +38,8 @@ use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use serde_derive::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use std::time::Duration;
-use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
@@ -158,8 +156,6 @@ pub async fn enqueue_image_inpaint_command(
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
-  fal_creds_manager: State<'_, FalCredentialManager>,
-  fal_task_queue: State<'_, FalTaskQueue>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
 ) -> ResponseOrErrorType<EnqueueImageInpaintSuccessResponse, EnqueueInpaintImageErrorType> {
@@ -175,8 +171,6 @@ pub async fn enqueue_image_inpaint_command(
     &provider_priority_store,
     &task_database,
     &storyteller_creds_manager,
-    &fal_creds_manager,
-    &fal_task_queue,
     &sora_creds_manager,
     &sora_task_queue,
   ).await;
@@ -227,8 +221,6 @@ pub async fn handle_request(
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  fal_creds_manager: &FalCredentialManager,
-  fal_task_queue: &FalTaskQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
@@ -244,8 +236,6 @@ pub async fn handle_request(
         app_env_configs,
         provider_priority_store,
         storyteller_creds_manager,
-        fal_creds_manager,
-        fal_task_queue,
         sora_creds_manager,
         sora_task_queue,
       ).await?
@@ -258,8 +248,6 @@ pub async fn handle_request(
         app_env_configs,
         provider_priority_store,
         storyteller_creds_manager,
-        fal_creds_manager,
-        fal_task_queue,
         sora_creds_manager,
         sora_task_queue,
       ).await?
@@ -273,8 +261,6 @@ pub async fn handle_request(
         app_env_configs,
         provider_priority_store,
         storyteller_creds_manager,
-        fal_creds_manager,
-        fal_task_queue,
         sora_creds_manager,
         sora_task_queue,
       ).await?
@@ -288,8 +274,6 @@ pub async fn handle_request(
         app_env_configs,
         provider_priority_store,
         storyteller_creds_manager,
-        fal_creds_manager,
-        fal_task_queue,
         sora_creds_manager,
         sora_task_queue,
       ).await?

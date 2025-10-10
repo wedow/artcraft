@@ -9,8 +9,6 @@ use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -24,8 +22,6 @@ pub async fn handle_generic_bg_removal(
   app_env_configs: &AppEnvConfigs,
   provider_priority_store: &ProviderPriorityStore,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  fal_creds_manager: &FalCredentialManager,
-  fal_task_queue: &FalTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let priority = provider_priority_store.get_priority()?;
@@ -57,8 +53,6 @@ pub async fn handle_generic_bg_removal(
           app,
           app_data_root,
           app_env_configs,
-          fal_creds_manager,
-          fal_task_queue,
         ).await;
       }
     }

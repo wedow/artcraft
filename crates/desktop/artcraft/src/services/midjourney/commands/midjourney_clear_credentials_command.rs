@@ -1,12 +1,10 @@
 use crate::core::commands::response::shorthand::{Response, SimpleResponse};
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use errors::AnyhowResult;
-use fal_client::creds::fal_api_key::FalApiKey;
 use log::{error, info};
 use serde_derive::Deserialize;
 use tauri::State;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
 
 #[tauri::command]
 pub async fn midjourney_clear_credentials_command(

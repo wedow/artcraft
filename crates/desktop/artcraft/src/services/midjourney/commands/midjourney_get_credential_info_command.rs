@@ -1,6 +1,5 @@
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorMessage};
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use errors::AnyhowResult;
 use log::{error, info};

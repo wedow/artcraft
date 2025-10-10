@@ -660,7 +660,6 @@ dependencies = [
  "discord-rich-presence",
  "enums",
  "errors",
- "fal_client",
  "filesys",
  "futures 0.3.31",
  "idempotency",

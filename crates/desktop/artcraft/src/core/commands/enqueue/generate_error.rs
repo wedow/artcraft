@@ -1,10 +1,10 @@
 use crate::core::artcraft_error::ArtcraftError;
 use base64::DecodeError;
 use errors::AnyhowError;
-use fal_client::error::fal_error_plus::FalErrorPlus;
 use midjourney_client::error::midjourney_error::MidjourneyError;
 use openai_sora_client::error::sora_error::SoraError;
 use storyteller_client::error::storyteller_error::StorytellerError;
+//use fal_client::error::fal_error_plus::FalErrorPlus;
 
 #[derive(Debug)]
 pub enum GenerateError {
@@ -14,6 +14,9 @@ pub enum GenerateError {
 
   /// We couldn't find a provider to dispatch the request to.
   NoProviderAvailable,
+  
+  /// We pulled out Fal (for now) - it's impacting build speeds. We'll add it in the future.
+  FalNoLongerSupported,
 
   /// There was a billing, credits, or payments issue.
   BillingIssue(BillingIssueReason),
@@ -73,7 +76,7 @@ pub enum BillingProvider {
 
 #[derive(Debug)]
 pub enum ProviderFailureReason {
-  Fal(FalErrorPlus),
+  //Fal(FalErrorPlus),
   MidjourneyError(MidjourneyError),
   /// NB: The midjourney client doesn't categorize all errors, so we have to do so on our end.
   MidjourneyJobEnqueueFailed,
@@ -141,11 +144,11 @@ impl From<ArtcraftError> for GenerateError {
   }
 }
 
-impl From<FalErrorPlus> for GenerateError {
-  fn from(value: FalErrorPlus) -> Self {
-    Self::ProviderFailure(ProviderFailureReason::Fal(value))
-  }
-}
+//impl From<FalErrorPlus> for GenerateError {
+//  fn from(value: FalErrorPlus) -> Self {
+//    Self::ProviderFailure(ProviderFailureReason::Fal(value))
+//  }
+//}
 
 impl From<MidjourneyError> for GenerateError {
   fn from(value: MidjourneyError) -> Self {

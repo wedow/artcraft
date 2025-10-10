@@ -31,7 +31,6 @@ build_metadata.workspace = true
 cookie_store.workspace = true
 enums.workspace = true
 errors.workspace = true
-fal_client.workspace = true
 filesys.workspace = true
 idempotency.workspace = true
 images.workspace = true

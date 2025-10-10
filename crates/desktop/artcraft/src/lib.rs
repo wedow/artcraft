@@ -29,14 +29,6 @@ use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::threads::discord_presence_thread::discord_presence_thread;
 use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
-use crate::services::fal::commands::fal_background_removal_command::fal_background_removal_command;
-use crate::services::fal::commands::fal_hunyuan_image_to_3d_command::fal_hunyuan_image_to_3d_command;
-use crate::services::fal::commands::fal_kling_image_to_video_command::fal_kling_image_to_video_command;
-use crate::services::fal::commands::get_fal_api_key_command::get_fal_api_key_command;
-use crate::services::fal::commands::set_fal_api_key_command::set_fal_api_key_command;
-use crate::services::fal::state::fal_credential_manager::FalCredentialManager;
-use crate::services::fal::state::fal_task_queue::FalTaskQueue;
-use crate::services::fal::threads::fal_task_polling_thread::fal_task_polling_thread;
 use crate::services::midjourney::commands::midjourney_clear_credentials_command::midjourney_clear_credentials_command;
 use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
 use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
@@ -93,17 +85,10 @@ pub fn run() {
   let sora_creds_manager = SoraCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let sora_creds_manager_2 = sora_creds_manager.clone();
   
-  println!("Attempting to read existing fal credentials...");
-  let fal_creds_manager = FalCredentialManager::initialize_from_disk_infallible(&app_data_root);
-  let fal_creds_manager_2 = fal_creds_manager.clone();
-
   // Other state
   let sora_task_queue = SoraTaskQueue::new();
   let sora_task_queue_2 = sora_task_queue.clone();
 
-  let fal_task_queue = FalTaskQueue::new();
-  let fal_task_queue_2 = fal_task_queue.clone();
-  
   let app_env_configs = AppEnvConfigs::load_from_filesystem(&app_data_root)
     .expect("AppEnvConfigs should be loaded from disk");
   
@@ -136,8 +121,6 @@ pub fn run() {
       let storyteller_creds = storyteller_creds_manager_2.clone();
       let sora_creds = sora_creds_manager_2.clone();
       let sora_tasks = sora_task_queue_2.clone();
-      let fal_creds = fal_creds_manager_2.clone();
-      let fal_tasks = fal_task_queue_2.clone();
 
       tauri::async_runtime::block_on(async move {
         let result = setup_main_window(&app).await;
@@ -150,8 +133,6 @@ pub fn run() {
           storyteller_creds,
           sora_creds,
           sora_tasks,
-          fal_creds,
-          fal_tasks,
           midjourney_creds_manager_2,
         ).await;
 
@@ -167,8 +148,6 @@ pub fn run() {
     .manage(app_env_configs)
     .manage(app_preferences)
     .manage(artcraft_platform_info)
-    .manage(fal_creds_manager)
-    .manage(fal_task_queue)
     .manage(midjourney_creds_manager)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
@@ -184,13 +163,9 @@ pub fn run() {
     enqueue_image_to_3d_object_command,
     enqueue_image_to_video_command,
     enqueue_text_to_image_command,
-    fal_background_removal_command,
-    fal_hunyuan_image_to_3d_command,
-    fal_kling_image_to_video_command,
     flip_image,
     get_app_info_command,
     get_app_preferences_command,
-    get_fal_api_key_command,
     get_provider_order_command,
     get_task_queue_command,
     load_without_cors_command,
@@ -201,7 +176,6 @@ pub fn run() {
     midjourney_open_login_command,
     open_sora_login_command,
     platform_info_command,
-    set_fal_api_key_command,
     set_provider_order_command,
     sora_get_credential_info_command,
     sora_logout_command,
