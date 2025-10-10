@@ -4,29 +4,6 @@ import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 import * as path from 'path';
 
-/*
-import pkg from './package.json' assert { type: 'json' };
-
-// Treat *all* peer deps as externals (React, Zustand, etc.)
-const externals = [
-  ...Object.keys(pkg.peerDependencies ?? {}),
-  // (optional) anything else you want external
-  // 'react/jsx-runtime'
-];
-
-export default defineConfig({
-  build: {
-    lib: {
-      entry: 'src/index.ts',
-      formats: ['es', 'cjs'],
-      fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
-    },
-    rollupOptions: {
-      external: (id) =>
-        externals.some((dep) => id === dep || id.startsWith(`${dep}/`)),
-*/
-
-
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../../node_modules/.vite/libs/components/toaster',
@@ -68,10 +45,7 @@ export default defineConfig(() => ({
         'react-hot-toast'
       ],
       output: {
-        // only needed for UMD/IIFE; safe to omit for ESM/CJS
         globals: {
-          //react: 'React',
-          //'react-dom': 'ReactDOM',
           'react-hot-toast': 'react-hot-toast',
         },
         preserveModules: false,
