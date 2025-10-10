@@ -4,10 +4,39 @@ import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 import * as path from 'path';
 
+/*
+import pkg from './package.json' assert { type: 'json' };
+
+// Treat *all* peer deps as externals (React, Zustand, etc.)
+const externals = [
+  ...Object.keys(pkg.peerDependencies ?? {}),
+  // (optional) anything else you want external
+  // 'react/jsx-runtime'
+];
+
+export default defineConfig({
+  build: {
+    lib: {
+      entry: 'src/index.ts',
+      formats: ['es', 'cjs'],
+      fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
+    },
+    rollupOptions: {
+      external: (id) =>
+        externals.some((dep) => id === dep || id.startsWith(`${dep}/`)),
+*/
+
+
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../../node_modules/.vite/libs/components/toaster',
-  plugins: [react(), dts({ entryRoot: 'src', tsconfigPath: path.join(__dirname, 'tsconfig.lib.json') })],
+  plugins: [
+    react(), 
+    dts({ 
+      entryRoot: 'src', 
+      tsconfigPath: path.join(__dirname, 'tsconfig.lib.json') 
+    })
+  ],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
@@ -32,7 +61,21 @@ export default defineConfig(() => ({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react','react-dom','react/jsx-runtime']
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react-hot-toast'
+      ],
+      output: {
+        // only needed for UMD/IIFE; safe to omit for ESM/CJS
+        globals: {
+          //react: 'React',
+          //'react-dom': 'ReactDOM',
+          'react-hot-toast': 'react-hot-toast',
+        },
+        preserveModules: false,
+      },
     },
   },
   test: {

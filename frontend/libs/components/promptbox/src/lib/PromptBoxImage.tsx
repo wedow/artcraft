@@ -235,8 +235,8 @@ export const PromptBoxImage = ({
       return;
     }
 
-    console.log("Selected model:", selectedModel)
-    console.log("Prompt:", prompt)
+    console.debug("Selected model:", selectedModel)
+    console.debug("Prompt:", prompt)
 
     setIsEnqueueing(true);
 
@@ -274,7 +274,7 @@ export const PromptBoxImage = ({
       }
 
       const generateResponse = await EnqueueTextToImage(request);
-      console.log("PromptBoxImage - generateResponse", generateResponse);
+      console.debug("PromptBoxImage - generateResponse", generateResponse);
 
       await onEnqueuePressed?.(prompt, generationCount, subscriberId);
     } catch (err) {

@@ -151,3 +151,9 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
     </EngineProvider>
   );
 };
+
+(window as any).test_toast = () => {
+  toast.error('foo');
+}
+
+(window as any).toast_2 = toast;

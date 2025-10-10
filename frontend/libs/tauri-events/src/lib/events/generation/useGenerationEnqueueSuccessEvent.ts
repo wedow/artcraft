@@ -26,15 +26,21 @@ export const useGenerationEnqueueSuccessEvent = () => {
     const setup = async () => {
       console.log(">>> test - useGenerationEnqueueSuccessEvent setup")
       unlisten = listen<BasicEventWrapper<GenerationEnqueueSuccessEvent>>('generation-enqueue-success-event', async (event) => {
-        console.log("Generation enqueue success event received:", event);
+        console.log("Generation enqueue success event received (1):", event);
         const prefs = await GetAppPreferences();
+        console.log("Generation enqueue success event received (2) ... prefs", prefs);
         const soundName = prefs.preferences?.enqueue_success_sound;
+        console.log("Generation enqueue success event received (3) ... soundName", soundName);
         if (soundName !== undefined) {
           const registry = SoundRegistry.getInstance();
+          console.log("Generation enqueue success event received (4) ... play sound", soundName);
           registry.playSound(soundName);
         }
+        console.log("Generation enqueue success event received (5) ... message before");
         const message = makeMessage(event.payload.data);
+        console.log("Generation enqueue success event received (6) ... message", message);
         toast.success(message);
+        (window as any).toast = toast
       });
 
       if (isUnmounted) {
