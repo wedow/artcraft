@@ -369,7 +369,7 @@ const PageDraw = () => {
           input.click();
         }}
         onDelete={(): void => {
-          store.deleteSelectedItems();
+          store.RESET();
         }}
         activeToolId={store.activeTool}
         currentShape={store.currentShape}

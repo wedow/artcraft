@@ -196,6 +196,7 @@ interface SceneState {
 
   // Action for deleting selected items
   deleteSelectedItems: () => void;
+  RESET: () => void;
 
   // Clipboard actions
   copySelectedItems: () => void;
@@ -234,10 +235,8 @@ interface SceneState {
   sendBackward: (nodeIds: string[]) => void;
 
   // Start background removal (enqueues task with Tauri)
-  beginRemoveBackground: (
-    nodeIds: string[],
-  ) => Promise<void>;
-  
+  beginRemoveBackground: (nodeIds: string[]) => Promise<void>;
+
   // Finish background removal (handoff back from a Tauri-sent event)
   finishRemoveBackground: (
     nodeId: string,
@@ -273,7 +272,7 @@ const getNextZIndex = (nodes: Node[], lineNodes: LineNode[]): number => {
   return allZIndices.length > 0 ? Math.max(...allZIndices) + 1 : 1;
 };
 
-export const useSceneStore = create<SceneState>((set, get) => ({
+export const useSceneStore = create<SceneState>((set, get, store) => ({
   // Initial state
   nodes: [],
   lineNodes: [],
@@ -289,7 +288,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   fillColor: "white",
   currentShape: null,
   shapeColor: "#4d79b3",
-  
+
   // Cursor initial state
   cursorPosition: null,
   cursorVisible: false,
@@ -336,7 +335,6 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       get().saveState();
     }
   },
-
 
   updateNode: (
     id: string,
@@ -836,6 +834,10 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
       get().saveState(); // Save the final state once
     }
+  },
+
+  RESET: () => {
+    set(store.getInitialState());
   },
 
   // Clipboard actions
@@ -1437,9 +1439,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     });
     get().saveState();
   },
-  beginRemoveBackground: async (
-    nodeIds: string[],
-  ) => {
+  beginRemoveBackground: async (nodeIds: string[]) => {
     const hasImageNodes = nodeIds.some((id) => {
       const node = get().nodes.find((n) => n.id === id);
       return node ? node.type === "image" : false;
@@ -1455,7 +1455,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     }
     try {
       const base64Image = await convertFileToBase64(firstNode.imageFile);
-      // NB: This handler is async, so we subscribe (externally) and 
+      // NB: This handler is async, so we subscribe (externally) and
       // wait for the bg removal to complete.
       const _response = await EnqueueImageBgRemoval({
         base64_image: base64Image,
