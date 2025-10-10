@@ -42,11 +42,9 @@ memory_caching = { path = "../../../lib/caching/memory_caching" }
 migration = { path = "../../../lib/migration" }
 mimetypes = { path = "../../../lib/files/mimetypes" }
 mysql_queries = { path = "../../../schema/database/mysql_queries" }
-openai_sora_client = { path = "../../../api_clients/openai_sora_client" }
 primitives.workspace = true
 redis_common = { path = "../../../schema/database/redis_common" }
 redis_schema = { path = "../../../schema/database/redis_schema" }
-shared_service_components = { workspace = true }
 subprocess_common = { path = "../../../lib/subprocess_common" }
 thumbnail_generator = { path = "../../../api_clients/thumbnail_generator"}
 tokens.workspace = true
