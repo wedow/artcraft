@@ -26,7 +26,7 @@ interface GalleryDraggableItemProps {
   activeFilter: string;
   selected: boolean;
   onClick: () => void;
-  onImageError: () => void;
+  onImageError: (e: React.SyntheticEvent<HTMLImageElement>) => void;
   disableTooltipAndBadge?: boolean;
   imageFit?: "cover" | "contain";
   onDeleted?: (id: string) => void;

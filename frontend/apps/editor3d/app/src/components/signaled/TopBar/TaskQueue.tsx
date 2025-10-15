@@ -128,6 +128,11 @@ const CompletedCard = ({
           <img
             src={task.thumbnailUrl}
             alt={task.title}
+            onError={(e) => {
+              console.log("Failed to load thumbnail", e);
+              // NB: Replace the broken thumbnail with a placeholder.
+              e.currentTarget.src="/resources/placeholders/placeholder.png";
+            }}
             className="h-full w-full object-cover"
           />
         ) : (
@@ -147,7 +152,7 @@ const CompletedCard = ({
         )}
         {task.completedAt && (
           <div className="text-base-fg text-xs opacity-60">
-            {task.completedAt}
+            {task.completedAt.toISOString()}
           </div>
         )}
       </div>

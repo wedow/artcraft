@@ -637,9 +637,11 @@ export const GalleryModal = React.memo(
                                 activeFilter={activeFilter}
                                 selected={selectedItemIds.includes(item.id)}
                                 onClick={() => handleItemClick(item)}
-                                onImageError={() =>
-                                  handleImageError(item.thumbnail!)
-                                }
+                                onImageError={(e) => {
+                                  // NB: Replace the broken thumbnail with a placeholder.
+                                  e.currentTarget.src = "/resources/placeholders/placeholder.png";
+                                  handleImageError(item.thumbnail!);
+                                }}
                                 disableTooltipAndBadge={mode === "select"}
                                 imageFit={imageFit}
                                 onDeleted={handleItemDeleted}
