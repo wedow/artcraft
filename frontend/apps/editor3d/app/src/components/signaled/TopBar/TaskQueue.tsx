@@ -29,7 +29,6 @@ import {
   getProviderDisplayName,
   getModelDisplayName,
 } from "@storyteller/model-list";
-import { MediaFilesApi } from "@storyteller/api";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { ActionReminderModal } from "@storyteller/ui-action-reminder-modal";
 
@@ -38,7 +37,7 @@ type InProgressTask = {
   title: string;
   subtitle?: string;
   progress: number;
-  updatedAt?: string;
+  updatedAt?: Date;
   canDismiss?: boolean;
 };
 
@@ -47,8 +46,8 @@ type CompletedTask = {
   title: string;
   subtitle?: string;
   thumbnailUrl?: string;
-  completedAt?: string;
-  updatedAt?: string;
+  completedAt?: Date;
+  updatedAt?: Date;
   imageUrls?: string[];
   mediaTokens?: string[];
 };
@@ -225,19 +224,6 @@ export const TaskQueue = () => {
 
         const { tasks } = result;
 
-        //let mediaTokens: string[] = [];
-        //let imageUrls: string[] = [];
-        //let thumbnailUrls : string[] = [];
-        //for (const task of tasks) {
-        //  if (!!task.completed_item) {
-        //    mediaTokens.push(task.completed_item.primary_media_file_token);
-        //    imageUrls.push(task.completed_item.cdn_url)
-        //    if (!!task.completed_item.thumbnail_url_template) {
-        //      thumbnailUrls.push(task.completed_item.thumbnail_url_template.replace("{WIDTH}", "250"));
-        //    }
-        //  }
-        //}
-
         const now = Date.now();
         const inProg = tasks
           .filter(
@@ -267,7 +253,7 @@ export const TaskQueue = () => {
               title: `Generating ${parts.kind || "Task"}...`,
               subtitle: parts.subtitle,
               progress,
-              updatedAt: t.updated_at?.toISOString(),
+              updatedAt: t.updated_at,
               canDismiss,
             };
           });
@@ -290,11 +276,17 @@ export const TaskQueue = () => {
           .map((t: TaskQueueItem) => ({
             id: t.id,
             ...formatTitleParts(t),
-            thumbnailUrl: t.completed_item?.thumbnail_url_template ? t.completed_item?.thumbnail_url_template.replace("{WIDTH}", "250") : undefined,
-            completedAt: t.completed_at?.toISOString(),
-            updatedAt: t.updated_at?.toISOString(),
-            imageUrls: t.completed_item?.cdn_url ? [t.completed_item?.cdn_url] : [],
-            mediaTokens: t.completed_item?.primary_media_file_token ? [t.completed_item?.primary_media_file_token] : [],
+            thumbnailUrl: t.completed_item?.primary_media_file?.maybe_thumbnail_url_template ? 
+              t.completed_item?.primary_media_file?.maybe_thumbnail_url_template.replace("{WIDTH}", "250") : 
+              undefined,
+            imageUrls: t.completed_item?.primary_media_file?.cdn_url ? 
+              [t.completed_item?.primary_media_file?.cdn_url] : 
+              [],
+            mediaTokens: t.completed_item?.primary_media_file?.token ? 
+              [t.completed_item?.primary_media_file?.token] : 
+              [],
+            completedAt: t.completed_at,
+            updatedAt: t.updated_at,
           }));
 
         setInProgress(inProg);
@@ -460,7 +452,7 @@ export const TaskQueue = () => {
                                     label: t.title,
                                     thumbnail: t.thumbnailUrl || null,
                                     fullImage: t.imageUrls?.[0] || null,
-                                    createdAt: new Date().toISOString(),
+                                    createdAt: (t.completedAt || new Date()).toISOString(),
                                     mediaClass: "image",
                                   } as GalleryItem;
                                   galleryModalLightboxMediaId.value = item.id;
@@ -582,7 +574,7 @@ export const TaskQueue = () => {
                             label: t.title,
                             thumbnail: t.thumbnailUrl || null,
                             fullImage: t.imageUrls?.[0] || null,
-                            createdAt: new Date().toISOString(),
+                            createdAt: (t.completedAt || new Date()).toISOString(),
                             mediaClass: "image",
                           } as GalleryItem;
                           galleryModalLightboxMediaId.value = item.id;

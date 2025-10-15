@@ -26,9 +26,15 @@ export interface TaskQueueItem {
 }
 
 export interface TaskQueueCompletedItem {
-  primary_media_file_token: string,
+  primary_media_file: MediaFileData,
+  maybe_batch_token?: string,
+}
+
+export interface MediaFileData {
+  token: string,
   cdn_url: string,
-  thumbnail_url_template?: string,
+  maybe_thumbnail_url_template?: string,
+  created_at: Date,
 }
 
 interface GetTaskQueueSuccess extends CommandResult {
@@ -44,6 +50,12 @@ export const GetTaskQueue = async (): Promise<GetTaskQueueResponse> => {
 
   // Convert timestamps to Date objects
   const newTasks: TaskQueueItem[] = tasks.map((task) => {
+    let completed_item = task.completed_item;
+
+    if (!!completed_item) {
+      completed_item.primary_media_file.created_at = new Date(completed_item.primary_media_file.created_at);
+    }
+
     return {
       id: task.id,
       task_status: task.task_status,
@@ -51,7 +63,7 @@ export const GetTaskQueue = async (): Promise<GetTaskQueueResponse> => {
       model_type: task.model_type,
       provider: task.provider,
       provider_job_id: task.provider_job_id,
-      completed_item: task.completed_item,
+      completed_item: completed_item,
       created_at: new Date(task.created_at),
       updated_at: new Date(task.updated_at),
       completed_at: task.completed_at ? new Date(task.completed_at) : undefined,

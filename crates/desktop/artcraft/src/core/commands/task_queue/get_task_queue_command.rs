@@ -18,6 +18,7 @@ use serde_derive::{Deserialize, Serialize};
 use sqlite_tasks::queries::list_tasks_for_frontend::list_tasks_for_frontend;
 use storyteller_client::endpoints::media_files::delete_media_file::delete_media_file;
 use tauri::{AppHandle, State};
+use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::sqlite::tasks::TaskId;
 
@@ -42,9 +43,20 @@ pub struct TaskQueueItem {
 
 #[derive(Serialize)]
 pub struct CompletedItemData {
-  pub primary_media_file_token: MediaFileToken,
+  pub primary_media_file: MediaFileData,
+
+  /// If generated in a batch, we probably have a batch token we can query.
+  pub maybe_batch_token: Option<BatchGenerationToken>,
+}
+
+#[derive(Serialize)]
+pub struct MediaFileData {
+  pub token: MediaFileToken,
   pub cdn_url: String,
-  pub thumbnail_url_template: Option<String>,
+  pub maybe_thumbnail_url_template: Option<String>,
+
+  // NB: The frontend wants this.
+  pub created_at: DateTime<Utc>,
 }
 
 impl SerializeMarker for GetTaskQueueCommandResponse {}
@@ -93,9 +105,14 @@ pub async fn handle_request(
 
       if let Some((primary_media_file_token, media_file_url)) = token_and_url{
         completed_item = Some(CompletedItemData {
-          primary_media_file_token,
-          cdn_url: media_file_url,
-          thumbnail_url_template: task.on_complete_primary_media_file_thumbnail_url_template,
+          primary_media_file: MediaFileData {
+            token: primary_media_file_token,
+            cdn_url: media_file_url.clone(),
+            maybe_thumbnail_url_template: task.on_complete_primary_media_file_thumbnail_url_template.clone(),
+            // NB: This isn't the exact completion date. Also, fallback to now if missing.
+            created_at: task.completed_at.unwrap_or_else(Utc::now),
+          },
+          maybe_batch_token: task.on_complete_batch_token,
         });
       } else {
         warn!("Task {} is marked complete but has no primary media file token or URL.", task.id);
