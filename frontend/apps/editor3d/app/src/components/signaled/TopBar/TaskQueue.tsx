@@ -225,53 +225,17 @@ export const TaskQueue = () => {
 
         const { tasks } = result;
 
-        // // Fetch media files for thumbnails, using dummy tokens from API for now
-        // const tokens = result.results as string[] | undefined;
-
-        let imageUrls: string[] = [];
-        let thumbnailUrls : string[] = [];
-
-        //let mediaTokens: string[] | undefined = undefined;
-        let mediaTokens: string[] = [];
-
-        for (const task of tasks) {
-          if (!!task.completed_item) {
-            mediaTokens.push(task.completed_item.primary_media_file_token);
-            imageUrls.push(task.completed_item.cdn_url)
-            if (!!task.completed_item.thumbnail_url_template) {
-              thumbnailUrls.push(task.completed_item.thumbnail_url_template.replace("{WIDTH}", "250"));
-            }
-          }
-        }
-
-        //if (tokens && tokens.length > 0) {
-        //  //try {
-        //  //  const api = new MediaFilesApi();
-        //  //  const batchToken = tokens.find((t) => t.startsWith("batch_"));
-        //  //  if (batchToken) {
-        //  //    const resp = await api.GetMediaFilesByBatchToken({
-        //  //      batchToken,
-        //  //    });
-        //  //    if (resp.success && resp.data) {
-        //  //      imageUrls = resp.data
-        //  //        .filter((m) => !!m?.media_links?.cdn_url)
-        //  //        .map((m) => m.media_links.cdn_url);
-        //  //      mediaTokens = resp.data.map((m) => m.token);
-        //  //    }
-        //  //  } else {
-        //  //    const resp = await api.ListMediaFilesByTokens({
-        //  //      mediaTokens: tokens,
-        //  //    });
-        //  //    if (resp.success && resp.data) {
-        //  //      imageUrls = resp.data
-        //  //        .filter((m) => !!m?.media_links?.cdn_url)
-        //  //        .map((m) => m.media_links.cdn_url);
-        //  //      mediaTokens = resp.data.map((m) => m.token);
-        //  //    }
-        //  //  }
-        //  //} catch (_) {
-        //  //  // ignore
-        //  //}
+        //let mediaTokens: string[] = [];
+        //let imageUrls: string[] = [];
+        //let thumbnailUrls : string[] = [];
+        //for (const task of tasks) {
+        //  if (!!task.completed_item) {
+        //    mediaTokens.push(task.completed_item.primary_media_file_token);
+        //    imageUrls.push(task.completed_item.cdn_url)
+        //    if (!!task.completed_item.thumbnail_url_template) {
+        //      thumbnailUrls.push(task.completed_item.thumbnail_url_template.replace("{WIDTH}", "250"));
+        //    }
+        //  }
         //}
 
         const now = Date.now();
@@ -326,11 +290,11 @@ export const TaskQueue = () => {
           .map((t: TaskQueueItem) => ({
             id: t.id,
             ...formatTitleParts(t),
-            thumbnailUrl: imageUrls?.[0],
+            thumbnailUrl: t.completed_item?.thumbnail_url_template ? t.completed_item?.thumbnail_url_template.replace("{WIDTH}", "250") : undefined,
             completedAt: t.completed_at?.toISOString(),
             updatedAt: t.updated_at?.toISOString(),
-            imageUrls: imageUrls?.length ? imageUrls : undefined,
-            mediaTokens: mediaTokens?.length ? mediaTokens : undefined,
+            imageUrls: t.completed_item?.cdn_url ? [t.completed_item?.cdn_url] : [],
+            mediaTokens: t.completed_item?.primary_media_file_token ? [t.completed_item?.primary_media_file_token] : [],
           }));
 
         setInProgress(inProg);
@@ -495,7 +459,7 @@ export const TaskQueue = () => {
                                     id: firstMediaToken,
                                     label: t.title,
                                     thumbnail: t.thumbnailUrl || null,
-                                    fullImage: t.thumbnailUrl || null,
+                                    fullImage: t.imageUrls?.[0] || null,
                                     createdAt: new Date().toISOString(),
                                     mediaClass: "image",
                                   } as GalleryItem;
@@ -617,7 +581,7 @@ export const TaskQueue = () => {
                             id: t.id,
                             label: t.title,
                             thumbnail: t.thumbnailUrl || null,
-                            fullImage: t.thumbnailUrl || null,
+                            fullImage: t.imageUrls?.[0] || null,
                             createdAt: new Date().toISOString(),
                             mediaClass: "image",
                           } as GalleryItem;
