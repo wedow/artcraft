@@ -2,6 +2,7 @@ use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use chrono::{DateTime, Utc};
 use enums::common::generation_provider::GenerationProvider;
+use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
@@ -25,7 +26,7 @@ pub struct TaskItem {
   pub frontend_subscriber_id: Option<String>,
   pub frontend_subscriber_payload: Option<String>,
   pub on_complete_primary_media_file_token: Option<MediaFileToken>,
-  pub on_complete_primary_media_file_type: Option<String>,
+  pub on_complete_primary_media_file_class: Option<TaskMediaFileClass>,
   pub on_complete_batch_token: Option<BatchGenerationToken>,
   pub on_complete_primary_media_file_cdn_url: Option<String>,
   pub on_complete_primary_media_file_thumbnail_url_template: Option<String>,
@@ -51,7 +52,7 @@ pub async fn list_tasks_for_frontend(
       frontend_subscriber_id,
       frontend_subscriber_payload,
       on_complete_primary_media_file_token,
-      on_complete_primary_media_file_type,
+      on_complete_primary_media_file_class,
       on_complete_batch_token,
       on_complete_primary_media_file_cdn_url,
       on_complete_primary_media_file_thumbnail_url_template,
@@ -85,7 +86,9 @@ pub async fn list_tasks_for_frontend(
       frontend_subscriber_id: raw.frontend_subscriber_id,
       frontend_subscriber_payload: raw.frontend_subscriber_payload,
       on_complete_primary_media_file_token: raw.on_complete_primary_media_file_token.map(|t| MediaFileToken::new_from_str(&t)),
-      on_complete_primary_media_file_type: raw.on_complete_primary_media_file_type,
+      on_complete_primary_media_file_class: raw.on_complete_primary_media_file_class
+          .map(|c| TaskMediaFileClass::from_str(&c))
+          .transpose()?,
       on_complete_batch_token: raw.on_complete_batch_token.map(|t| BatchGenerationToken::new_from_str(&t)),
       on_complete_primary_media_file_cdn_url: raw.on_complete_primary_media_file_cdn_url,
       on_complete_primary_media_file_thumbnail_url_template: raw.on_complete_primary_media_file_thumbnail_url_template,
@@ -111,7 +114,7 @@ struct TaskItemRaw {
   frontend_subscriber_id: Option<String>,
   frontend_subscriber_payload: Option<String>,
   on_complete_primary_media_file_token: Option<String>,
-  on_complete_primary_media_file_type: Option<String>,
+  on_complete_primary_media_file_class: Option<String>,
   on_complete_batch_token: Option<String>,
   on_complete_primary_media_file_cdn_url: Option<String>,
   on_complete_primary_media_file_thumbnail_url_template: Option<String>,

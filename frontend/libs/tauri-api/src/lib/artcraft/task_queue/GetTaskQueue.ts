@@ -4,12 +4,12 @@ import {
   TaskStatus,
   TaskType,
   TaskModelType,
+  TaskMediaFileClass,
   GenerationProvider,
 } from "@storyteller/api-enums";
 
 interface GetTaskQueueResponse {
   tasks: TaskQueueItem[];
-  results?: string[];
 }
 
 export interface TaskQueueItem {
@@ -27,6 +27,7 @@ export interface TaskQueueItem {
 
 export interface TaskQueueCompletedItem {
   primary_media_file: MediaFileData,
+  media_file_class?: TaskMediaFileClass,
   maybe_batch_token?: string,
 }
 
@@ -70,12 +71,8 @@ export const GetTaskQueue = async (): Promise<GetTaskQueueResponse> => {
     };
   });
 
-  // Dummy tokens until backend provides real ones
-  const dummyTokens: string[] = ["batch_g_4r8m6kx41yxm7yvs0kqapm3e"];
-
   return {
     tasks: newTasks,
-    results: dummyTokens,
   };
 };
 

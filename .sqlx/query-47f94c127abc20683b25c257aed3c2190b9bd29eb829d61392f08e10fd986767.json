@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload,\n      on_complete_primary_media_file_token,\n      on_complete_primary_media_file_type,\n      on_complete_batch_token,\n      on_complete_primary_media_file_cdn_url,\n      on_complete_primary_media_file_thumbnail_url_template,\n      created_at as \"created_at: DateTime<Utc>\",\n      updated_at as \"updated_at: DateTime<Utc>\",\n      completed_at as \"completed_at: DateTime<Utc>\"\n    FROM tasks\n    WHERE is_dismissed_by_user == 0\n  ",
+  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload,\n      on_complete_primary_media_file_token,\n      on_complete_primary_media_file_class,\n      on_complete_batch_token,\n      on_complete_primary_media_file_cdn_url,\n      on_complete_primary_media_file_thumbnail_url_template,\n      created_at as \"created_at: DateTime<Utc>\",\n      updated_at as \"updated_at: DateTime<Utc>\",\n      completed_at as \"completed_at: DateTime<Utc>\"\n    FROM tasks\n    WHERE is_dismissed_by_user == 0\n  ",
   "describe": {
     "columns": [
       {
@@ -54,7 +54,7 @@
         "type_info": "Text"
       },
       {
-        "name": "on_complete_primary_media_file_type",
+        "name": "on_complete_primary_media_file_class",
         "ordinal": 10,
         "type_info": "Text"
       },
@@ -112,5 +112,5 @@
       true
     ]
   },
-  "hash": "37cfc2732a8a5989c317f6f4968b192ec4b210c7928dc12f6b6451fb2312798b"
+  "hash": "47f94c127abc20683b25c257aed3c2190b9bd29eb829d61392f08e10fd986767"
 }

@@ -18,6 +18,7 @@ use serde_derive::{Deserialize, Serialize};
 use sqlite_tasks::queries::list_tasks_for_frontend::list_tasks_for_frontend;
 use storyteller_client::endpoints::media_files::delete_media_file::delete_media_file;
 use tauri::{AppHandle, State};
+use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::sqlite::tasks::TaskId;
@@ -44,6 +45,9 @@ pub struct TaskQueueItem {
 #[derive(Serialize)]
 pub struct CompletedItemData {
   pub primary_media_file: MediaFileData,
+
+  /// The type of file(s) generated.
+  pub media_file_class: Option<TaskMediaFileClass>,
 
   /// If generated in a batch, we probably have a batch token we can query.
   pub maybe_batch_token: Option<BatchGenerationToken>,
@@ -112,6 +116,7 @@ pub async fn handle_request(
             // NB: This isn't the exact completion date. Also, fallback to now if missing.
             created_at: task.completed_at.unwrap_or_else(Utc::now),
           },
+          media_file_class: task.on_complete_primary_media_file_class,
           maybe_batch_token: task.on_complete_batch_token,
         });
       } else {

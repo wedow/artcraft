@@ -31,6 +31,7 @@ import {
 } from "@storyteller/model-list";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { ActionReminderModal } from "@storyteller/ui-action-reminder-modal";
+import { TaskMediaFileClass } from "@storyteller/api-enums";
 
 type InProgressTask = {
   id: string;
@@ -50,6 +51,7 @@ type CompletedTask = {
   updatedAt?: Date;
   imageUrls?: string[];
   mediaTokens?: string[];
+  mediaFileClass?: TaskMediaFileClass;
 };
 
 const InProgressCard = ({
@@ -130,8 +132,13 @@ const CompletedCard = ({
             alt={task.title}
             onError={(e) => {
               console.log("Failed to load thumbnail", e);
-              // NB: Replace the broken thumbnail with a placeholder.
-              e.currentTarget.src="/resources/placeholders/placeholder.png";
+              let errorPlaceholder = "/resources/placeholders/placeholder.png";
+              switch (task.mediaFileClass) {
+                case TaskMediaFileClass.Video:
+                  errorPlaceholder = "/resources/placeholders/placeholder_play.png";
+                  break;
+              }
+              e.currentTarget.src = errorPlaceholder;
             }}
             className="h-full w-full object-cover"
           />
@@ -580,7 +587,7 @@ export const TaskQueue = () => {
                             thumbnail: t.thumbnailUrl || null,
                             fullImage: t.imageUrls?.[0] || null,
                             createdAt: (t.completedAt || new Date()).toISOString(),
-                            mediaClass: "image",
+                            mediaClass: t.mediaFileClass,
                           } as GalleryItem;
                           galleryModalLightboxMediaId.value = item.id;
                           galleryModalLightboxImage.value = item as GalleryItem;

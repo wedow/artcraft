@@ -17,8 +17,10 @@ use crate::services::storyteller::threads::events::maybe_handle_text_to_image_co
 use crate::services::storyteller::threads::events::maybe_send_background_removal_complete_event::maybe_send_background_removal_complete_event;
 use anyhow::anyhow;
 use artcraft_api_defs::jobs::list_session_jobs::ListSessionJobsItem;
+use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::job_status_plus::JobStatusPlus;
+use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
@@ -143,15 +145,16 @@ async fn polling_loop(
       let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
         db: task_database.get_connection(),
         task_id: &task.id,
-        maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
         maybe_batch_token: job.maybe_result
             .as_ref()
             .map(|result| result.maybe_batch_token.as_ref())
             .flatten(),
+        maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
+        maybe_primary_media_file_class: get_media_file_class(&job),
+        maybe_primary_media_file_thumbnail_url_template: get_thumbnail_template(&job),
         maybe_primary_media_file_cdn_url: job.maybe_result
             .as_ref()
             .map(|result| result.media_links.cdn_url.as_str()),
-        maybe_primary_media_file_thumbnail_url_template: get_thumbnail_template(&job),
       }).await?;
 
       if !updated {
@@ -240,4 +243,46 @@ fn get_thumbnail_template<'a>(job: &'a ListSessionJobsItem) -> Option<&'a str> {
 
   // Last option - use the image thumbnail template if it exists.
   links.maybe_thumbnail_template.as_deref()
+}
+
+fn get_media_file_class<'a>(job: &'a ListSessionJobsItem) -> Option<TaskMediaFileClass> {
+  match job.request.inference_category {
+    InferenceCategory::BackgroundRemoval => return Some(TaskMediaFileClass::Image),
+    InferenceCategory::ImageGeneration => return Some(TaskMediaFileClass::Image),
+    InferenceCategory::VideoGeneration => return Some(TaskMediaFileClass::Video),
+    InferenceCategory::ObjectGeneration => return Some(TaskMediaFileClass::Dimensional),
+    _ => {}, // Fall-through
+  }
+
+  let result = match job.maybe_result.as_ref() {
+    None => return None,
+    Some(result) => result,
+  };
+
+  let url = result.media_links.cdn_url.as_str();
+
+  if url.ends_with("jpg")
+      || url.ends_with("jpeg")
+      || url.ends_with("png")
+  {
+    return Some(TaskMediaFileClass::Image);
+  }
+
+  if url.ends_with("mp4")
+      || url.ends_with("webm")
+  {
+    return Some(TaskMediaFileClass::Video);
+  }
+
+  if url.ends_with("glb") {
+    return Some(TaskMediaFileClass::Dimensional);
+  }
+
+  if url.ends_with("wav")
+      || url.ends_with("mp3")
+  {
+    return Some(TaskMediaFileClass::Audio);
+  }
+
+  None
 }
