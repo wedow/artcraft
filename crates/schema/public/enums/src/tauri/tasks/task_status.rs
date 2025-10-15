@@ -35,7 +35,7 @@ impl Default for TaskStatus {
 }
 
 impl TaskStatus {
-  pub fn to_str(&self) -> &'static str {
+  pub const fn to_str(&self) -> &'static str {
     match self {
       Self::Pending => "pending",
       Self::Started => "started",

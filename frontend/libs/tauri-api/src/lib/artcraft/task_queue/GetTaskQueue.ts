@@ -19,9 +19,15 @@ export interface TaskQueueItem {
   model_type?: TaskModelType;
   provider?: GenerationProvider;
   provider_job_id?: string;
+  completed_item?: TaskQueueCompletedItem;
   created_at: Date;
   updated_at: Date;
   completed_at?: Date;
+}
+
+export interface TaskQueueCompletedItem {
+  primary_media_file_token: string,
+  thumbnail_template?: string,
 }
 
 interface GetTaskQueueSuccess extends CommandResult {
@@ -44,6 +50,7 @@ export const GetTaskQueue = async (): Promise<GetTaskQueueResponse> => {
       model_type: task.model_type,
       provider: task.provider,
       provider_job_id: task.provider_job_id,
+      completed_item: task.completed_item,
       created_at: new Date(task.created_at),
       updated_at: new Date(task.updated_at),
       completed_at: task.completed_at ? new Date(task.completed_at) : undefined,

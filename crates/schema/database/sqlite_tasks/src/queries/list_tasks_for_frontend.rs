@@ -6,6 +6,8 @@ use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use tokens::tokens::batch_generations::BatchGenerationToken;
+use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::sqlite::tasks::TaskId;
 
 pub struct TaskList {
@@ -22,6 +24,10 @@ pub struct TaskItem {
   pub frontend_caller: Option<TauriCommandCaller>,
   pub frontend_subscriber_id: Option<String>,
   pub frontend_subscriber_payload: Option<String>,
+  pub on_complete_primary_media_file_token: Option<MediaFileToken>,
+  pub on_complete_primary_media_file_type: Option<String>,
+  pub on_complete_batch_token: Option<BatchGenerationToken>,
+  pub on_complete_primary_media_file_thumbnail_url_template: Option<String>,
   pub created_at: DateTime<Utc>,
   pub updated_at: DateTime<Utc>,
   pub completed_at: Option<DateTime<Utc>>,
@@ -43,6 +49,10 @@ pub async fn list_tasks_for_frontend(
       frontend_caller,
       frontend_subscriber_id,
       frontend_subscriber_payload,
+      on_complete_primary_media_file_token,
+      on_complete_primary_media_file_type,
+      on_complete_batch_token,
+      on_complete_primary_media_file_thumbnail_url_template,
       created_at as "created_at: DateTime<Utc>",
       updated_at as "updated_at: DateTime<Utc>",
       completed_at as "completed_at: DateTime<Utc>"
@@ -72,6 +82,10 @@ pub async fn list_tasks_for_frontend(
           .transpose()?,
       frontend_subscriber_id: raw.frontend_subscriber_id,
       frontend_subscriber_payload: raw.frontend_subscriber_payload,
+      on_complete_primary_media_file_token: raw.on_complete_primary_media_file_token.map(|t| MediaFileToken::new_from_str(&t)),
+      on_complete_primary_media_file_type: raw.on_complete_primary_media_file_type,
+      on_complete_batch_token: raw.on_complete_batch_token.map(|t| BatchGenerationToken::new_from_str(&t)),
+      on_complete_primary_media_file_thumbnail_url_template: raw.on_complete_primary_media_file_thumbnail_url_template,
       created_at: raw.created_at,
       updated_at: raw.updated_at,
       completed_at: raw.completed_at,
@@ -93,6 +107,10 @@ struct TaskItemRaw {
   frontend_caller: Option<String>,
   frontend_subscriber_id: Option<String>,
   frontend_subscriber_payload: Option<String>,
+  on_complete_primary_media_file_token: Option<String>,
+  on_complete_primary_media_file_type: Option<String>,
+  on_complete_batch_token: Option<String>,
+  on_complete_primary_media_file_thumbnail_url_template: Option<String>,
   created_at: DateTime<Utc>,
   updated_at: DateTime<Utc>,
   completed_at: Option<DateTime<Utc>>,

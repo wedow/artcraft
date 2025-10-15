@@ -25,18 +25,20 @@ use errors::AnyhowResult;
 use log::{error, info};
 use reqwest::Url;
 use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs, Task};
+use sqlite_tasks::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use storyteller_client::error::api_error::ApiError;
-use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::endpoints::jobs::list_session_jobs::{list_session_jobs, States};
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
+use storyteller_client::error::api_error::ApiError;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
 use tempdir::TempDir;
+use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn storyteller_task_polling_thread(
   app_handle: AppHandle,
@@ -134,10 +136,22 @@ async fn polling_loop(
         _ => {} // Fall-through.
       }
 
-      let updated = update_task_status(UpdateTaskArgs {
+      let maybe_primary_media_file_token = job.maybe_result
+          .as_ref()
+          .map(|result| MediaFileToken::new_from_str(&result.entity_token));
+
+      let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
         db: task_database.get_connection(),
         task_id: &task.id,
-        status: TaskStatus::CompleteSuccess,
+        maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
+        maybe_batch_token: job.maybe_result
+            .as_ref()
+            .map(|result| result.maybe_batch_token.as_ref())
+            .flatten(),
+        maybe_primary_media_file_thumbnail_url_template: job.maybe_result
+            .as_ref()
+            .map(|result| result.media_links.maybe_thumbnail_template.as_deref())
+            .flatten(),
       }).await?;
 
       if !updated {

@@ -34,9 +34,17 @@ pub struct TaskQueueItem {
   pub model_type: Option<TaskModelType>,
   pub provider: Option<GenerationProvider>,
   pub provider_job_id: Option<String>,
+  pub completed_item: Option<CompletedItemData>,
   pub created_at: DateTime<Utc>,
   pub updated_at: DateTime<Utc>,
   pub completed_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Serialize)]
+pub struct CompletedItemData {
+  pub primary_media_file_token: MediaFileToken,
+  pub thumbnail_template: Option<String>,
+  //pub cdn_url: Option<String>,
 }
 
 impl SerializeMarker for GetTaskQueueCommandResponse {}
@@ -74,17 +82,35 @@ pub async fn handle_request(
   let tasks = list_tasks_for_frontend(task_database.get_connection())
       .await?;
 
-  Ok(tasks.tasks.into_iter()
-      .map(|task| TaskQueueItem {
-        id: task.id,
-        task_status: task.status,
-        task_type: task.task_type,
-        model_type: task.model_type,
-        provider: task.provider,
-        provider_job_id: task.provider_job_id,
-        created_at: task.created_at,
-        updated_at: task.updated_at,
-        completed_at: task.completed_at,
-      })
-      .collect())
+  let mut transformed_tasks = Vec::with_capacity(tasks.tasks.len());
+
+  for task in tasks.tasks.into_iter() {
+    let mut completed_item = None;
+
+    if task.status == TaskStatus::CompleteSuccess {
+      if let Some(primary_media_file_token) = task.on_complete_primary_media_file_token {
+        completed_item = Some(CompletedItemData {
+          primary_media_file_token,
+          thumbnail_template: task.on_complete_primary_media_file_thumbnail_url_template,
+        });
+      } else {
+        warn!("Task {} is marked complete but has no primary media file token", task.id);
+      }
+    }
+
+    transformed_tasks.push(TaskQueueItem {
+      id: task.id,
+      task_status: task.status,
+      task_type: task.task_type,
+      model_type: task.model_type,
+      provider: task.provider,
+      provider_job_id: task.provider_job_id,
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+      completed_at: task.completed_at,
+      completed_item,
+    })
+  }
+
+  Ok(transformed_tasks)
 }

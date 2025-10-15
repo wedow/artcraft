@@ -219,43 +219,57 @@ export const TaskQueue = () => {
     const load = async () => {
       try {
         const result = await GetTaskQueue();
+
         if (cancelled) return;
         console.log("TaskQueue:GetTaskQueue result", result);
+
         const { tasks } = result;
 
         // Fetch media files for thumbnails, using dummy tokens from API for now
         const tokens = result.results as string[] | undefined;
+
         let imageUrls: string[] = [];
-        let mediaTokens: string[] | undefined = undefined;
-        if (tokens && tokens.length > 0) {
-          try {
-            const api = new MediaFilesApi();
-            const batchToken = tokens.find((t) => t.startsWith("batch_"));
-            if (batchToken) {
-              const resp = await api.GetMediaFilesByBatchToken({
-                batchToken,
-              });
-              if (resp.success && resp.data) {
-                imageUrls = resp.data
-                  .filter((m) => !!m?.media_links?.cdn_url)
-                  .map((m) => m.media_links.cdn_url);
-                mediaTokens = resp.data.map((m) => m.token);
-              }
-            } else {
-              const resp = await api.ListMediaFilesByTokens({
-                mediaTokens: tokens,
-              });
-              if (resp.success && resp.data) {
-                imageUrls = resp.data
-                  .filter((m) => !!m?.media_links?.cdn_url)
-                  .map((m) => m.media_links.cdn_url);
-                mediaTokens = resp.data.map((m) => m.token);
-              }
+        //let mediaTokens: string[] | undefined = undefined;
+        let mediaTokens: string[] = [];
+
+        for (const task of tasks) {
+          if (!!task.completed_item) {
+            mediaTokens.push(task.completed_item.primary_media_file_token);
+            if (!!task.completed_item.thumbnail_template) {
+              imageUrls.push(task.completed_item.thumbnail_template.replace("{WIDTH}", "250"));
             }
-          } catch (_) {
-            // ignore
           }
         }
+
+        //if (tokens && tokens.length > 0) {
+        //  //try {
+        //  //  const api = new MediaFilesApi();
+        //  //  const batchToken = tokens.find((t) => t.startsWith("batch_"));
+        //  //  if (batchToken) {
+        //  //    const resp = await api.GetMediaFilesByBatchToken({
+        //  //      batchToken,
+        //  //    });
+        //  //    if (resp.success && resp.data) {
+        //  //      imageUrls = resp.data
+        //  //        .filter((m) => !!m?.media_links?.cdn_url)
+        //  //        .map((m) => m.media_links.cdn_url);
+        //  //      mediaTokens = resp.data.map((m) => m.token);
+        //  //    }
+        //  //  } else {
+        //  //    const resp = await api.ListMediaFilesByTokens({
+        //  //      mediaTokens: tokens,
+        //  //    });
+        //  //    if (resp.success && resp.data) {
+        //  //      imageUrls = resp.data
+        //  //        .filter((m) => !!m?.media_links?.cdn_url)
+        //  //        .map((m) => m.media_links.cdn_url);
+        //  //      mediaTokens = resp.data.map((m) => m.token);
+        //  //    }
+        //  //  }
+        //  //} catch (_) {
+        //  //  // ignore
+        //  //}
+        //}
 
         const now = Date.now();
         const inProg = tasks
