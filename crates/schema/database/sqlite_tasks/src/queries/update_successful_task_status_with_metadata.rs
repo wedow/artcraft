@@ -12,6 +12,7 @@ pub struct UpdateSuccessfulTaskArgs<'a> {
   pub task_id: &'a TaskId,
   pub maybe_primary_media_file_token: Option<&'a MediaFileToken>,
   pub maybe_batch_token: Option<&'a BatchGenerationToken>,
+  pub maybe_primary_media_file_cdn_url: Option<&'a str>,
   pub maybe_primary_media_file_thumbnail_url_template: Option<&'a str>,
 }
 
@@ -32,12 +33,14 @@ pub async fn update_successful_task_status_with_metadata(
       task_status = ?,
       on_complete_primary_media_file_token = ?,
       on_complete_batch_token = ?,
+      on_complete_primary_media_file_cdn_url = ?,
       on_complete_primary_media_file_thumbnail_url_template = ?
     WHERE id = ?
   "#,
       SUCCESSFUL_STATUS,
       maybe_primary_media_token_temp,
       maybe_batch_token_temp,
+      args.maybe_primary_media_file_cdn_url,
       args.maybe_primary_media_file_thumbnail_url_template,
       task_id_temp,
   );

@@ -148,6 +148,9 @@ async fn polling_loop(
             .as_ref()
             .map(|result| result.maybe_batch_token.as_ref())
             .flatten(),
+        maybe_primary_media_file_cdn_url: job.maybe_result
+            .as_ref()
+            .map(|result| result.media_links.cdn_url.as_str()),
         maybe_primary_media_file_thumbnail_url_template: job.maybe_result
             .as_ref()
             .map(|result| result.media_links.maybe_thumbnail_template.as_deref())

@@ -10,10 +10,11 @@
 --   tasks_v2.sqlite - added model_type (nullable)
 --   tasks_v3.sqlite - added frontend_caller, comments
 --   tasks_v4.sqlite - added is_dismissed_by_user
---   tasks_v5.sqlite - added four fields:
+--   tasks_v5.sqlite - added five fields:
 --      on_complete_primary_media_file_token,
 --      on_complete_primary_media_file_type,
 --      on_complete_batch_token,
+--      on_complete_primary_media_file_cdn_url,
 --      on_complete_primary_media_file_thumbnail_url_template,
 --
 
@@ -74,6 +75,10 @@ CREATE TABLE tasks (
     -- When the generation completes, the batch token (if any).
     -- This will point to a collection of multiple files.
     on_complete_batch_token TEXT,
+
+    -- OPTIONAL.
+    -- The URL to the media file.
+    on_complete_primary_media_file_cdn_url TEXT,
 
     -- OPTIONAL.
     -- The URL template for the thumbnail of the primary media file.
