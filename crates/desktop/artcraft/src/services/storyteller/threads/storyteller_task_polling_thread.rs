@@ -151,10 +151,7 @@ async fn polling_loop(
         maybe_primary_media_file_cdn_url: job.maybe_result
             .as_ref()
             .map(|result| result.media_links.cdn_url.as_str()),
-        maybe_primary_media_file_thumbnail_url_template: job.maybe_result
-            .as_ref()
-            .map(|result| result.media_links.maybe_thumbnail_template.as_deref())
-            .flatten(),
+        maybe_primary_media_file_thumbnail_url_template: get_thumbnail_template(&job),
       }).await?;
 
       if !updated {
@@ -228,4 +225,19 @@ async fn send_additional_events(
   if let Err(err) = result {
     error!("Failed to send background removal complete event: {:?}", err);
   }
+}
+
+fn get_thumbnail_template<'a>(job: &'a ListSessionJobsItem) -> Option<&'a str> {
+  let links = match job.maybe_result.as_ref() {
+    None => return None,
+    Some(result) => &result.media_links,
+  };
+
+  // NB: We only populate video previews for video tasks.
+  if let Some(video) = links.maybe_video_previews.as_ref() {
+    return Some(&video.animated_thumbnail_template);
+  }
+
+  // Last option - use the image thumbnail template if it exists.
+  links.maybe_thumbnail_template.as_deref()
 }
