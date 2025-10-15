@@ -225,18 +225,21 @@ export const TaskQueue = () => {
 
         const { tasks } = result;
 
-        // Fetch media files for thumbnails, using dummy tokens from API for now
-        const tokens = result.results as string[] | undefined;
+        // // Fetch media files for thumbnails, using dummy tokens from API for now
+        // const tokens = result.results as string[] | undefined;
 
         let imageUrls: string[] = [];
+        let thumbnailUrls : string[] = [];
+
         //let mediaTokens: string[] | undefined = undefined;
         let mediaTokens: string[] = [];
 
         for (const task of tasks) {
           if (!!task.completed_item) {
             mediaTokens.push(task.completed_item.primary_media_file_token);
-            if (!!task.completed_item.thumbnail_template) {
-              imageUrls.push(task.completed_item.thumbnail_template.replace("{WIDTH}", "250"));
+            imageUrls.push(task.completed_item.cdn_url)
+            if (!!task.completed_item.thumbnail_url_template) {
+              thumbnailUrls.push(task.completed_item.thumbnail_url_template.replace("{WIDTH}", "250"));
             }
           }
         }

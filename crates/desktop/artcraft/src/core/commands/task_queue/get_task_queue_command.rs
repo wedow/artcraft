@@ -43,8 +43,8 @@ pub struct TaskQueueItem {
 #[derive(Serialize)]
 pub struct CompletedItemData {
   pub primary_media_file_token: MediaFileToken,
-  pub thumbnail_template: Option<String>,
-  //pub cdn_url: Option<String>,
+  pub cdn_url: String,
+  pub thumbnail_url_template: Option<String>,
 }
 
 impl SerializeMarker for GetTaskQueueCommandResponse {}
@@ -88,13 +88,17 @@ pub async fn handle_request(
     let mut completed_item = None;
 
     if task.status == TaskStatus::CompleteSuccess {
-      if let Some(primary_media_file_token) = task.on_complete_primary_media_file_token {
+      let token_and_url = task.on_complete_primary_media_file_token
+          .zip(task.on_complete_primary_media_file_cdn_url);
+
+      if let Some((primary_media_file_token, media_file_url)) = token_and_url{
         completed_item = Some(CompletedItemData {
           primary_media_file_token,
-          thumbnail_template: task.on_complete_primary_media_file_thumbnail_url_template,
+          cdn_url: media_file_url,
+          thumbnail_url_template: task.on_complete_primary_media_file_thumbnail_url_template,
         });
       } else {
-        warn!("Task {} is marked complete but has no primary media file token", task.id);
+        warn!("Task {} is marked complete but has no primary media file token or URL.", task.id);
       }
     }
 

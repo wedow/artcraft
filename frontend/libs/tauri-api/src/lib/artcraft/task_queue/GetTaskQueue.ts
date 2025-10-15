@@ -27,7 +27,8 @@ export interface TaskQueueItem {
 
 export interface TaskQueueCompletedItem {
   primary_media_file_token: string,
-  thumbnail_template?: string,
+  cdn_url: string,
+  thumbnail_url_template?: string,
 }
 
 interface GetTaskQueueSuccess extends CommandResult {
