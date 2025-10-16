@@ -37,33 +37,18 @@ pub async fn sora_image_gen_simple(args: SoraImageGenSimpleRequest<'_>) -> Resul
 
 #[cfg(test)]
 mod tests {
-  use crate::creds::sora_credential_builder::SoraCredentialBuilder;
   use crate::requests::image_gen::common::{ImageSize, NumImages};
   use crate::requests::image_gen::sora_image_gen_simple::{sora_image_gen_simple, SoraImageGenSimpleRequest};
+  use crate::test_utils::get_test_credentials::get_test_credentials;
   use errors::AnyhowResult;
-  use std::fs::read_to_string;
-  use testing::test_file_path::test_file_path;
 
   #[ignore] // You can manually run "ignore" tests in the IDE, but they won't run in CI.
   #[tokio::test]
   pub async fn manual_test() -> AnyhowResult<()> {
-    let sentinel = read_to_string(test_file_path("test_data/temp/sentinel.txt")?)?;
-    let sentinel = sentinel.trim().to_string();
-
-    let cookie = read_to_string(test_file_path("test_data/temp/cookie.txt")?)?;
-    let cookie = cookie.trim().to_string();
-
-    let bearer = read_to_string(test_file_path("test_data/temp/bearer.txt")?)?;
-    let bearer = bearer.trim().to_string();
-
-    let creds = SoraCredentialBuilder::new()
-        .with_cookies(&cookie)
-        .with_jwt_bearer_token(&bearer)
-        .with_sora_sentinel(&sentinel)
-        .build()?;
+    let creds = get_test_credentials()?;
 
     let response = sora_image_gen_simple(SoraImageGenSimpleRequest {
-      prompt: "A pirate and a ninja fight in a battle inside a UFO. Fully photo realistic, lifelike, lens flare".to_string(),
+      prompt: "A pirate ship sails into a water spout".to_string(),
       num_images: NumImages::One,
       image_size: ImageSize::Square,
       credentials: &creds,
