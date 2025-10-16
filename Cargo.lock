@@ -694,6 +694,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "url",
+ "url_utils",
  "web_base64",
  "workspace-build-acceleration",
 ]
@@ -12454,6 +12455,14 @@ dependencies = [
  "actix_helpers",
  "anyhow",
  "reusable_types",
+ "workspace-build-acceleration",
+]
+
+[[package]]
+name = "url_utils"
+version = "0.0.1"
+dependencies = [
+ "url",
  "workspace-build-acceleration",
 ]
 

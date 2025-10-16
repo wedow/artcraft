@@ -36,6 +36,7 @@ use storyteller_client::endpoints::media_files::upload_image_media_file_from_fil
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
+use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
 
 pub async fn poll_classic_sora_tasks(
   app_handle: &AppHandle,
@@ -117,6 +118,7 @@ pub async fn poll_classic_sora_tasks(
     &storyteller_creds,
     &sora_succeeded_tasks_by_id,
     &local_sqlite_tasks_by_sora_task_id,
+    DownloadExtension::Png,
   ).await?;
 
   Ok(())

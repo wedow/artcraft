@@ -9,6 +9,7 @@ use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
 use enums::common::generation_provider::GenerationProvider;
@@ -35,6 +36,7 @@ use storyteller_client::endpoints::media_files::upload_video_media_file_from_fil
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
+use url_utils::extension::extract_download_extension_from_url::{extract_download_extension_from_url, extract_download_extension_from_url_str};
 
 pub struct SuccessfulGeneration {
   pub prompt: Option<String>,
@@ -61,6 +63,7 @@ pub async fn handle_classic_successful_generations(
   storyteller_creds: &StorytellerCredentialSet,
   succeeded_tasks_by_id: &HashMap<TaskId, SuccessfulGeneration>,
   sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
+  recommended_download_extension: DownloadExtension,
 ) -> AnyhowResult<()> {
 
   for (task_id, generation) in succeeded_tasks_by_id.iter() {
@@ -98,7 +101,7 @@ pub async fn handle_classic_successful_generations(
 
     for (_i, item) in generation.items.iter().enumerate() {
       info!("Downloading generated file...");
-      let download_path = download_generation_item(item, &app_data_root).await?;
+      let download_path = download_generation_item(item, &app_data_root, recommended_download_extension).await?;
 
       info!("Uploading to backend...");
 
@@ -158,17 +161,25 @@ pub async fn handle_classic_successful_generations(
 }
 
 
-async fn download_generation_item(generation: &GenerationItem, app_data_root: &AppDataRoot) -> AnyhowResult<PathBuf> {
-  let url = Url::parse(&generation.url)?;
+async fn download_generation_item(
+  generation: &GenerationItem,
+  app_data_root: &AppDataRoot,
+  recommended_download_extension: DownloadExtension
+) -> AnyhowResult<PathBuf> {
+  info!("Downloading generation item from URL: {}", generation.url.as_str());
 
   let response = reqwest::get(&generation.url).await?;
   let image_bytes = response.bytes().await?;
 
-  let ext = url.path().split(".").last().unwrap_or("png");
-
+  let extension = extract_download_extension_from_url_str(&generation.url)
+      .map(|ext| ext.as_extension_without_period())
+      .unwrap_or_else(|| recommended_download_extension.as_extension_without_period());
+  
   let tempdir = app_data_root.temp_dir().path();
-  let download_filename = format!("{}.{}", generation.item_id, ext);
+  let download_filename = format!("{}.{}", generation.item_id, extension);
   let download_path = tempdir.join(download_filename);
+
+  info!("Writing to path: {:?}", download_path);
 
   let mut file = File::create(&download_path)?;
   file.write_all(&image_bytes)?;
