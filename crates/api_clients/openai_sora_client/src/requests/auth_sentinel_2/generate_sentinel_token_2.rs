@@ -6,7 +6,6 @@ use crate::error::sora_specific_api_error::SoraSpecificApiError;
 use crate::requests::auth_sentinel::request::GenerateSentinelRefreshRequest;
 use crate::requests::auth_sentinel_2::request::SentinelRequest;
 use crate::requests::auth_sentinel_2::response::SentinelResponse;
-use crate::requests::auth_sentinel_2::sentinel_token::SentinelResponsePieces;
 use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use errors::AnyhowResult;
 use idempotency::uuid::generate_random_uuid;
@@ -141,8 +140,8 @@ fn into_sora_sentinel_token(request: SentinelRequest, response: SentinelResponse
 
 #[cfg(test)]
 mod tests {
-  use std::fs::write;
   use super::*;
+  use std::fs::write;
 
   #[tokio::test]
   #[ignore] // Only manually trigger this
@@ -166,5 +165,4 @@ mod tests {
     assert_eq!(1, 2);
     Ok(())
   }
-
 }
