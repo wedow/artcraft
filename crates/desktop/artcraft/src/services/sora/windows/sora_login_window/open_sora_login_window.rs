@@ -12,22 +12,16 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 /// Name of the window
 pub (super) const LOGIN_WINDOW_NAME: &str = "login_window";
 
-pub (super) const START_URL_STR: &str = "https://google.com";
-
 pub (super) static START_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse(START_URL_STR).expect("URL should parse")
+  Url::parse("https://google.com").expect("URL should parse")
 });
-
-pub (super) const SORA_HOMEPAGE_URL_STR: &str = "https://sora.com/";
 
 pub (super) static SORA_HOMEPAGE_URL : Lazy<Url> = Lazy::new(|| {
-  Url::parse(SORA_HOMEPAGE_URL_STR).expect("URL should parse")
+  Url::parse("https://sora.com/").expect("URL should parse")
 });
 
-pub (super) const SORA_LOGIN_URL_STR: &str = "https://chatgpt.com/auth/login?next=%2Fsora%2F";
-
 pub (super) static SORA_LOGIN_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse(SORA_LOGIN_URL_STR).expect("URL should parse")
+  Url::parse("https://chatgpt.com/auth/login?next=%2Fsora%2F").expect("URL should parse")
 });
 
 //pub const SORA_ROOT_URL_STR: &str = "https://sora.com/";

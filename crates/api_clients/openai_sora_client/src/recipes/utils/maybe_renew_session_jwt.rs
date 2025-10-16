@@ -1,3 +1,4 @@
+use std::io::Write;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::error::sora_error::SoraError;
@@ -32,15 +33,26 @@ pub async fn maybe_renew_session_jwt(creds: &SoraCredentialSet) -> Result<Option
   }
   
   if !refresh_jwt {
+    println!("DO NOT REFRESH JWT");
+    std::io::stdout().flush().unwrap();
     return Ok(None);
   }
-  
+
+  println!("refreshing jwt...");
+  std::io::stdout().flush().unwrap();
+
   info!("Refreshing JWT...");
   let token = generate_bearer_jwt_with_cookie(creds.cookies.as_str()).await?;
 
+  println!("parsing jwt...");
+  std::io::stdout().flush().unwrap();
+
   info!("Parsing JWT bearer token...");
   let token = SoraJwtBearerToken::new(token)?;
-  
+
+  println!("token is: {:?}", token.as_str());
+  std::io::stdout().flush().unwrap();
+
   let mut updated_creds = creds.clone();
   updated_creds.jwt_bearer_token = Some(token);
   

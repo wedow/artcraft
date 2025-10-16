@@ -111,7 +111,9 @@ mod tests {
       let result = generate_bearer_jwt_with_cookie(cookie).await;
 
       assert!(result.is_ok());
-      println!("Bearer token: {}", result.unwrap());
+
+      let bearer = result.unwrap();
+      println!("Bearer token: {}", bearer);
     }
   }
 
