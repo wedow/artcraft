@@ -29,8 +29,13 @@ impl AppCredentialsDir {
     self.path.join("sora_bearer_token.txt")
   }
 
-  pub fn get_sora_sentinel_file_path(&self) -> PathBuf {
+  #[deprecated(note="use the new sentinel token methods")]
+  pub fn get_sora_legacy_sentinel_file_path(&self) -> PathBuf {
     self.path.join("sora_sentinel.txt")
+  }
+
+  pub fn get_sora_sentinel_token_file_path(&self) -> PathBuf {
+    self.path.join("sora_sentinel_token_store.json")
   }
 
   pub fn get_storyteller_avt_cookie_file_path(&self) -> PathBuf {

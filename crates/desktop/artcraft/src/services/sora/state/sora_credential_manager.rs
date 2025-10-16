@@ -90,7 +90,7 @@ impl SoraCredentialManager {
 
     remove_file_if_exists(creds_dir.get_sora_cookie_file_path())?;
     remove_file_if_exists(creds_dir.get_sora_bearer_token_file_path())?;
-    remove_file_if_exists(creds_dir.get_sora_sentinel_file_path())?;
+    remove_file_if_exists(creds_dir.get_sora_legacy_sentinel_file_path())?;
     
     Ok(())
   }
@@ -104,7 +104,7 @@ impl SoraCredentialManager {
     if let Err(err) = fs::remove_file(creds_dir.get_sora_bearer_token_file_path()) {
       error!("Failed to remove bearer token file: {:?}", err);
     }
-    if let Err(err) = fs::remove_file(creds_dir.get_sora_sentinel_file_path()) {
+    if let Err(err) = fs::remove_file(creds_dir.get_sora_legacy_sentinel_file_path()) {
       error!("Failed to remove sentinel file: {:?}", err);
     }
   }
@@ -166,7 +166,7 @@ impl SoraCredentialManager {
         .create(true)
         .write(true)
         .truncate(true)
-        .open(self.app_data_root.get_sora_sentinel_file_path())?;
+        .open(self.app_data_root.get_sora_legacy_sentinel_file_path())?;
 
     file.write_all(sentinel.as_bytes())?;
     file.flush()?;
@@ -206,7 +206,7 @@ fn persist_jwt_bearer_to_disk(bearer: &SoraJwtBearerToken, app_data_root: &AppDa
 }
 
 fn persist_sentinel_to_disk(sentinel: &SoraSentinel, app_data_root: &AppDataRoot) -> AnyhowResult<()> {
-  let filename = app_data_root.get_sora_sentinel_file_path();
+  let filename = app_data_root.get_sora_legacy_sentinel_file_path();
 
   let mut file = OpenOptions::new()
       .create(true)

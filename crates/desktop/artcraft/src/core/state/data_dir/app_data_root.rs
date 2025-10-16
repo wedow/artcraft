@@ -132,8 +132,12 @@ impl AppDataRoot {
     self.credentials_dir().get_sora_bearer_token_file_path()
   }
 
-  pub fn get_sora_sentinel_file_path(&self) -> PathBuf {
-    self.credentials_dir().get_sora_sentinel_file_path()
+  pub fn get_sora_legacy_sentinel_file_path(&self) -> PathBuf {
+    self.credentials_dir().get_sora_legacy_sentinel_file_path()
+  }
+
+  pub fn get_sora_sentinel_token_file_path(&self) -> PathBuf {
+    self.credentials_dir().get_sora_sentinel_token_file_path()
   }
 
   pub fn get_window_size_config_file(&self) -> PathBuf {
