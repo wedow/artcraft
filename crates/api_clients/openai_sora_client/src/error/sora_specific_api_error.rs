@@ -39,6 +39,13 @@ pub enum SoraSpecificApiError {
   ///     }
   ///   }
   UnauthorizedCookieOrBearerExpired,
+  
+  /// The Sora sentinel token response is missing fields
+  SentinelResponseIsMissingFields {
+    missing_token: bool,
+    missing_turnstile: bool,
+    raw_response: String,
+  },
 }
 
 impl Error for SoraSpecificApiError {}
@@ -53,6 +60,9 @@ impl Display for SoraSpecificApiError {
       Self::TokenExpiredError => write!(f, "JWT token has expired. Please refresh the token."),
       Self::TooManyConcurrentTasks => write!(f, "Too many concurrent tasks. Please wait."),
       Self::UnauthorizedCookieOrBearerExpired => write!(f, "Unauthorized: cookie and/or bearer token expired"),
+      Self::SentinelResponseIsMissingFields { missing_token: token_missing, missing_turnstile: turnstile_missing, raw_response } => {
+        write!(f, "Sentinel response is missing fields. token_missing: {}, turnstile_missing: {}. Raw response: {}", token_missing, turnstile_missing, raw_response)
+      },
     }
   }
 }

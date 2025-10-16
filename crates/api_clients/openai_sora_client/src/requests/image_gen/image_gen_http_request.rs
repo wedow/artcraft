@@ -1,3 +1,4 @@
+use std::io::Write;
 use crate::constants::user_agent::USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
@@ -148,6 +149,11 @@ pub (crate) async fn image_gen_http_request(
   let sentinel = credentials.sora_sentinel.as_ref()
       .map(|sentinel| sentinel.get_sentinel().to_string())
       .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
+
+
+  println!("Sentinel Token: {:?}", sentinel);
+  std::io::stdout().flush().unwrap();
+
 
   let mut http_request = client.post(SORA_IMAGE_GEN_URL)
       .header("User-Agent", USER_AGENT)

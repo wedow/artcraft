@@ -1,5 +1,6 @@
 pub mod auth_bearer;
 pub mod auth_sentinel;
+pub mod auth_sentinel_2;
 pub mod common;
 pub mod deprecated;
 pub mod generate_sora2_video;

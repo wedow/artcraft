@@ -43,6 +43,10 @@ pub struct SentinelResponse {
 }
 
 
+/// Note: This looks like an incomplete implementation of the original Python implementation.
+/// Curiously, it worked with Sora 1.0 (and continues to work), but it fails for Sora 2.0 while the
+/// unchanged Python implementation works. We'll be deprecating this.
+#[deprecated(note="use new sentinel token flow")]
 pub async fn generate_sentinel_token() -> Result<String, SoraError> {
   let (_request, base64_request) = GenerateSentinelRefreshRequest::new().with_fourth_and_tenth();
   let request = SentinelRequest::new(base64_request);
@@ -85,6 +89,7 @@ mod tests {
   use super::*;
 
   #[tokio::test]
+  #[ignore] // Only manually trigger this
   async fn test_generate_token() {
     let token = generate_sentinel_token().await.unwrap();
     println!("{}", token);

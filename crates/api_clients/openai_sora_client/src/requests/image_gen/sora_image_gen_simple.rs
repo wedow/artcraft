@@ -48,7 +48,7 @@ mod tests {
     let creds = get_test_credentials()?;
 
     let response = sora_image_gen_simple(SoraImageGenSimpleRequest {
-      prompt: "A pirate ship sails into a water spout".to_string(),
+      prompt: "A pirate ship sails into the bahamas, sunset".to_string(),
       num_images: NumImages::One,
       image_size: ImageSize::Square,
       credentials: &creds,
@@ -58,6 +58,7 @@ mod tests {
     println!("task_id: {}", response.task_id);
 
     assert!(response.task_id.0.starts_with("task_"));
+    assert_eq!(1, 2);
     Ok(())
   }
 }
