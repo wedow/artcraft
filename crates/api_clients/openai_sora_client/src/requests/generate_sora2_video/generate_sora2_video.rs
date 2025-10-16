@@ -3,6 +3,7 @@ use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
+use crate::requests::auth_sentinel_2::generate_sentinel_token_2::generate_sentinel_token_2;
 use crate::requests::common::task_id::TaskId;
 use crate::requests::generate_sora2_video::http_request::{HttpCreateRequest, InpaintItem};
 use crate::requests::generate_sora2_video::http_response::HttpCreateResponse;
@@ -13,7 +14,6 @@ use std::io::Write;
 use std::time::Duration;
 use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, CONTENT_TYPE, COOKIE, ORIGIN, REFERER, USER_AGENT};
 use wreq::Client;
-use crate::requests::auth_sentinel_2::generate_sentinel_token_2::generate_sentinel_token_2;
 
 const GENERATE_SORA_2_VIDEO_URL: &str = "https://sora.chatgpt.com/backend/nf/create";
 
@@ -47,21 +47,18 @@ pub (crate) async fn generate_sora2_video(
       .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
 
-  let sentinel_token = generate_sentinel_token_2().await?;
-  
-  let sentinel_token = sentinel_token.to_json()?;
-  
-  //let sentinel_token = args.credentials.sora_sentinel.as_ref()
-  //    .map(|sentinel| sentinel.get_sentinel().to_string())
-  //    .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
+  let sentinel_token = args.credentials.sora_sentinel_token
+      .as_ref()
+      .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
+
+  let sentinel_token = sentinel_token.to_request_header_json()?;
 
   let cookie = args.credentials.cookies.to_string();
 
   // TODO: Make the sec-* headers match the user agent and platform
-  // TODO: No sentinel?
   // TODO: device id
   //-H 'oai-device-id: 7c216860-5b73-4e63-983f-142dbcae1809' \
-  let mut http_request = client.post(GENERATE_SORA_2_VIDEO_URL)
+  let mut request_builder = client.post(GENERATE_SORA_2_VIDEO_URL)
       .header(ACCEPT, "*/*")
       .header("priority", "u=1, i")
       .header(REFERER, "https://sora.chatgpt.com/explore")
@@ -80,7 +77,7 @@ pub (crate) async fn generate_sora2_video(
       .header("sec-fetch-site", "same-origin");
 
   if let Some(timeout) = args.request_timeout {
-    http_request = http_request.timeout(timeout);
+    request_builder = request_builder.timeout(timeout);
   }
 
   let orientation = match args.orientation {
@@ -119,14 +116,12 @@ pub (crate) async fn generate_sora2_video(
     storyboard_id: None,
   };
 
-  let http_request = http_request.json(&request_body).build()
+  let http_request = request_builder.json(&request_body)
+      .build()
       .map_err(|err| {
         error!("Error building Sora image generation HTTP request: {:?}", err);
         SoraClientError::WreqClientError(err)
       })?;
-
-  println!("send request...");
-  std::io::stdout().flush().unwrap();
 
   let response = client.execute(http_request)
       .await
@@ -135,8 +130,6 @@ pub (crate) async fn generate_sora2_video(
         SoraClientError::WreqClientError(err)
       })?;
 
-  println!("read status...");
-  std::io::stdout().flush().unwrap();
   let status = response.status();
 
   let response_body = &response.text().await
@@ -170,7 +163,7 @@ mod tests {
     let creds = get_test_credentials()?;
     let request = GenerateSora2VideoArgs {
       //prompt: "A cute corgi wearing glasses, sitting on a picnic blanket and reading a book, digital art",
-      prompt: "A dog eating waffles in a Waffle House",
+      prompt: "A dog eating pancakes in an iHop",
       credentials: &creds,
       request_timeout: None,
       orientation: Orientation::Landscape,

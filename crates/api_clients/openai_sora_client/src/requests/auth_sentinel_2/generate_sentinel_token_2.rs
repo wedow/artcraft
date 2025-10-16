@@ -1,11 +1,12 @@
 use crate::constants::user_agent::CLIENT_USER_AGENT;
+use crate::creds::sora_sentinel_token::{RawSoraSentinelToken, SoraSentinelToken};
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::error::sora_specific_api_error::SoraSpecificApiError;
 use crate::requests::auth_sentinel::request::GenerateSentinelRefreshRequest;
 use crate::requests::auth_sentinel_2::request::SentinelRequest;
 use crate::requests::auth_sentinel_2::response::SentinelResponse;
-use crate::requests::auth_sentinel_2::sentinel_token::{SentinelResponsePieces, SentinelToken};
+use crate::requests::auth_sentinel_2::sentinel_token::SentinelResponsePieces;
 use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use errors::AnyhowResult;
 use idempotency::uuid::generate_random_uuid;
@@ -21,7 +22,7 @@ const SORA_SENTINEL_ENDPOINT: &str = "https://chatgpt.com/backend-api/sentinel/r
 
 
 /// This generates a Sentinel Token that works with Sora 1.0 and Sora 2.0 consumer products.
-pub async fn generate_sentinel_token_2() -> Result<SentinelToken, SoraError> {
+pub async fn generate_sentinel_token_2() -> Result<SoraSentinelToken, SoraError> {
   let (_request, base64_request) = GenerateSentinelRefreshRequest::new().with_fourth_and_tenth();
 
   let request = SentinelRequest::new(base64_request);
@@ -72,49 +73,75 @@ pub async fn generate_sentinel_token_2() -> Result<SentinelToken, SoraError> {
         SoraGenericApiError::SerdeResponseParseErrorWithBody(err, text_body.to_string())
       })?;
 
-  let response_pieces = sentinel_response_into_pieces(response, text_body)?;
-  let sentinel_token = SentinelToken::from_server_request(&request, &response_pieces);
+  let sentinel_token = into_sora_sentinel_token(request, response, text_body)?;
 
   Ok(sentinel_token)
 }
 
 
-fn sentinel_response_into_pieces(response: SentinelResponse, raw_body: &str) -> Result<SentinelResponsePieces, SoraSpecificApiError> {
+
+fn into_sora_sentinel_token(request: SentinelRequest, response: SentinelResponse, raw_body: &str) -> Result<SoraSentinelToken, SoraSpecificApiError> {
+  let maybe_token = response.token;
+
   let maybe_turnstile = response.turnstile
       .map(|turn| turn.dx)
       .flatten();
 
   let mut missing_token = false;
-  let mut missing_turnstile  = false;
+  let mut missing_turnstile = false;
 
-  match (response.token, maybe_turnstile) {
-    (None, None) => {
-      missing_token = true;
-      missing_turnstile = true;
+  let (token, turnstile) = {
+    let maybe_items = match (maybe_token, maybe_turnstile) {
+      (Some(token), Some(turnstile)) => {
+        Some((token, turnstile))
+      }
+      (None, None) => {
+        missing_token = true;
+        missing_turnstile = true;
+        None
+      }
+      (None, Some(_turnstile)) => {
+        missing_token = true;
+        None
+      }
+      (Some(_token), None) => {
+        missing_turnstile = true;
+        None
+      }
+    };
+    match maybe_items {
+      Some((token, turnstile)) => (token, turnstile),
+      _ => return Err(SoraSpecificApiError::SentinelResponseIsMissingFields {
+        missing_token,
+        missing_turnstile,
+        raw_response: raw_body.to_string(),
+      }),
     }
-    (None, Some(_turnstile)) => {
-      missing_token = true;
-    }
-    (Some(_token), None) => {
-      missing_turnstile = true;
-    }
-    (Some(token), Some(turnstile)) => {
-      return Ok(SentinelResponsePieces {
-        token,
-        turnstile_dx: turnstile,
-      });
-    }
-  }
+  };
 
-  Err(SoraSpecificApiError::SentinelResponseIsMissingFields {
-    missing_token,
-    missing_turnstile,
-    raw_response: raw_body.to_string(),
-  })
+  let sentinel_raw = RawSoraSentinelToken {
+    p: request.p,
+    id: request.id,
+    flow: request.flow,
+    t: turnstile,
+    c: token,
+  };
+
+  let sentinel = SoraSentinelToken {
+    token: sentinel_raw,
+    browser_user_agent: CLIENT_USER_AGENT.to_string(),
+    generated_at: Default::default(), // TODO
+    expires_at: None, // TODO
+    expires_in_seconds: None, // TODO
+  };
+
+  Ok(sentinel)
 }
+
 
 #[cfg(test)]
 mod tests {
+  use std::fs::write;
   use super::*;
 
   #[tokio::test]
@@ -125,4 +152,19 @@ mod tests {
     assert_eq!(1, 2);
     Ok(())
   }
+
+  #[tokio::test]
+  #[ignore] // Only manually trigger this
+  async fn write_token_to_disk() -> AnyhowResult<()> {
+    let filename = "/Users/bt/Artcraft/credentials/sora_sentinel_token_store.json";
+    let token = generate_sentinel_token_2().await?;
+
+    let json = token.to_persistent_storage_json()?;
+
+    write(filename, &json)?;
+
+    assert_eq!(1, 2);
+    Ok(())
+  }
+
 }

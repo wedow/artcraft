@@ -2,13 +2,20 @@ use crate::creds::sora_cookies::SoraCookies;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::creds::sora_sentinel::SoraSentinel;
+use crate::creds::sora_sentinel_token::SoraSentinelToken;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
 
 pub struct SoraCredentialBuilder {
   cookies: Option<String>,
+  
   jwt_bearer_token: Option<String>,
+  
+  #[deprecated(note="use sora_sentinel_token instead")]
   sora_sentinel: Option<String>,
+  
+  /// This is the newer sentinel token. Gradually phase out the older one.
+  sora_sentinel_token: Option<SoraSentinelToken>,
 }
 
 impl SoraCredentialBuilder {
@@ -17,6 +24,7 @@ impl SoraCredentialBuilder {
       cookies: None,
       jwt_bearer_token: None,
       sora_sentinel: None,
+      sora_sentinel_token: None,
     }
   }
   
@@ -37,6 +45,11 @@ impl SoraCredentialBuilder {
     self
   }
 
+  pub fn with_sora_sentinel_token(mut self, sentinel_token: &SoraSentinelToken) -> Self {
+    self.sora_sentinel_token = Some(sentinel_token.clone());
+    self
+  }
+
   // Mutable methods
 
   pub fn set_cookies(&mut self, cookies: &str) {
@@ -49,6 +62,10 @@ impl SoraCredentialBuilder {
 
   pub fn set_sora_sentinel(&mut self, sentinel: &str) {
     self.sora_sentinel = Some(sentinel.to_string());
+  }
+
+  pub fn set_sora_sentinel_token(&mut self, sentinel_token: &SoraSentinelToken) {
+    self.sora_sentinel_token = Some(sentinel_token.clone());
   }
   
   pub fn build(self) -> Result<SoraCredentialSet, SoraError> {
@@ -67,10 +84,16 @@ impl SoraCredentialBuilder {
       None => None,
     };
 
+    let sora_sentinel_token = match self.sora_sentinel_token {
+      Some(s) => Some(s),
+      None => None,
+    };
+
     Ok(SoraCredentialSet {
       cookies,
       jwt_bearer_token,
       sora_sentinel,
+      sora_sentinel_token,
     })
   }
 }
