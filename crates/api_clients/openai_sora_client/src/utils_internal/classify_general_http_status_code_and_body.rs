@@ -31,7 +31,7 @@ Message: {
 
 /// Classify the type of error that occurred.
 /// This first assumes the request failed and returned a non-200.
-pub async fn classify_general_http_status_code_and_body(status: StatusCode, response_body: &str) -> SoraError {
+pub fn classify_general_http_status_code_and_body(status: StatusCode, response_body: &str) -> SoraError {
   let message = response_body.to_string();
 
   // TODO: I *think* this is just the bearer token, not the cookie.

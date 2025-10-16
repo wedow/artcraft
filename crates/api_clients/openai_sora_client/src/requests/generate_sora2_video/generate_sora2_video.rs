@@ -7,7 +7,9 @@ use crate::requests::common::task_id::TaskId;
 use crate::requests::generate_sora2_video::http_request::{HttpCreateRequest, InpaintItem};
 use crate::requests::generate_sora2_video::http_response::HttpCreateResponse;
 use crate::requests::image_gen::image_gen_http_request::{RawSoraImageGenRequest, RawSoraResponse};
+use crate::utils_internal::classify_general_http_status_code_and_body::classify_general_http_status_code_and_body;
 use log::error;
+use std::io::Write;
 use std::time::Duration;
 use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, CONTENT_TYPE, COOKIE, ORIGIN, REFERER};
 use wreq::Client;
@@ -118,6 +120,9 @@ pub (crate) async fn generate_sora2_video(
         SoraClientError::WreqClientError(err)
       })?;
 
+  println!("send request...");
+  std::io::stdout().flush().unwrap();
+  
   let response = client.execute(http_request)
       .await
       .map_err(|err| {
@@ -125,6 +130,8 @@ pub (crate) async fn generate_sora2_video(
         SoraClientError::WreqClientError(err)
       })?;
 
+  println!("read status...");
+  std::io::stdout().flush().unwrap();
   let status = response.status();
 
   let response_body = &response.text().await
@@ -135,11 +142,7 @@ pub (crate) async fn generate_sora2_video(
 
   if !status.is_success() {
     error!("Sora image generation request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-
-    return Err(SoraGenericApiError::UncategorizedBadResponseWithStatusAndBody {
-      status_code: status,
-      body: response_body.to_string(),
-    }.into());
+    return Err(classify_general_http_status_code_and_body(status, response_body));
   }
 
   let response : HttpCreateResponse = serde_json::from_str(response_body)

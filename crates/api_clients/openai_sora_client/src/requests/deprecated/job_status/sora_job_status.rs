@@ -253,7 +253,7 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
 
   if !status.is_success() {
     error!("The sora status request failed; status = {:?} ; response body = {}", status, response_body);
-    let error = classify_general_http_status_code_and_body(status, &response_body).await;
+    let error = classify_general_http_status_code_and_body(status, &response_body);
     return Err(error);
   }
 

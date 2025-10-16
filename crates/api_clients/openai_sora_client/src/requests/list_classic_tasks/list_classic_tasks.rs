@@ -132,7 +132,7 @@ pub async fn list_classic_tasks(credentials: &SoraCredentialSet) -> Result<ListT
 
   if !status.is_success() {
     error!("The sora task list request failed; status = {:?} ; response body = {}", status, response_body);
-    let error = classify_general_http_status_code_and_body(status, &response_body).await;
+    let error = classify_general_http_status_code_and_body(status, &response_body);
     return Err(error);
   }
 
