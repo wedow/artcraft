@@ -1,4 +1,4 @@
-use crate::constants::user_agent::USER_AGENT;
+use crate::constants::user_agent::CLIENT_USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
@@ -60,7 +60,7 @@ pub async fn list_sora2_drafts(credentials: &SoraCredentialSet) -> Result<ListSo
       .header(ACCEPT, "*/*")
       .header(REFERER, "https://sora.chatgpt.com/drafts")
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
-      .header(wreq::header::USER_AGENT, USER_AGENT)
+      .header(wreq::header::USER_AGENT, CLIENT_USER_AGENT)
       .header(COOKIE, &cookie)
       .header(AUTHORIZATION, &authorization_header)
       .header("priority", "u=1, i")

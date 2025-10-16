@@ -1,3 +1,4 @@
+use crate::error::sora_client_error::SoraClientError;
 use crate::requests::auth_sentinel_2::request::SentinelRequest;
 use serde_derive::{Deserialize, Serialize};
 
@@ -17,12 +18,12 @@ pub struct SentinelToken {
   /// Frontend UI flow (this is the website flow used)
   #[serde(rename = "flow")]
   pub flow: String,
-  
+
   /// Turnstile dx from the response.
   /// response["turnstile"]["dx"]
   #[serde(rename = "t")]
   pub t: String,
-  
+
   /// Token from the response.
   /// response["token"]
   #[serde(rename = "c")]
@@ -44,5 +45,10 @@ impl SentinelToken {
       t: response.turnstile_dx.clone(),
       c: response.token.clone(),
     }
+  }
+
+  pub fn to_json(&self) -> Result<String, SoraClientError> {
+    serde_json::to_string(self)
+        .map_err(|err| SoraClientError::CouldNotSerializeSentinelToken(err))
   }
 }

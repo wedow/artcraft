@@ -1,4 +1,4 @@
-use crate::constants::user_agent::USER_AGENT;
+use crate::constants::user_agent::CLIENT_USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::error::sora_client_error::SoraClientError;
@@ -223,7 +223,7 @@ pub async fn get_image_gen_status(status_request: &StatusRequest, credentials: &
   }
 
   let http_request = client.get(url.as_str())
-      .header("User-Agent", USER_AGENT)
+      .header("User-Agent", CLIENT_USER_AGENT)
       .header("Cookie", credentials.cookies.as_str())
       .header("Authorization", bearer_header)
       .header("Content-Type", "application/json");

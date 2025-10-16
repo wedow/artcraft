@@ -1,4 +1,4 @@
-use crate::constants::user_agent::USER_AGENT;
+use crate::constants::user_agent::CLIENT_USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
@@ -11,8 +11,9 @@ use crate::utils_internal::classify_general_http_status_code_and_body::classify_
 use log::error;
 use std::io::Write;
 use std::time::Duration;
-use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, CONTENT_TYPE, COOKIE, ORIGIN, REFERER};
+use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, CONTENT_TYPE, COOKIE, ORIGIN, REFERER, USER_AGENT};
 use wreq::Client;
+use crate::requests::auth_sentinel_2::generate_sentinel_token_2::generate_sentinel_token_2;
 
 const GENERATE_SORA_2_VIDEO_URL: &str = "https://sora.chatgpt.com/backend/nf/create";
 
@@ -46,9 +47,13 @@ pub (crate) async fn generate_sora2_video(
       .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
 
-  let sentinel_token = args.credentials.sora_sentinel.as_ref()
-      .map(|sentinel| sentinel.get_sentinel().to_string())
-      .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
+  let sentinel_token = generate_sentinel_token_2().await?;
+  
+  let sentinel_token = sentinel_token.to_json()?;
+  
+  //let sentinel_token = args.credentials.sora_sentinel.as_ref()
+  //    .map(|sentinel| sentinel.get_sentinel().to_string())
+  //    .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
 
   let cookie = args.credentials.cookies.to_string();
 
@@ -57,13 +62,12 @@ pub (crate) async fn generate_sora2_video(
   // TODO: device id
   //-H 'oai-device-id: 7c216860-5b73-4e63-983f-142dbcae1809' \
   let mut http_request = client.post(GENERATE_SORA_2_VIDEO_URL)
-      //.header("OpenAI-Sentinel-Token", &sentinel);
       .header(ACCEPT, "*/*")
       .header("priority", "u=1, i")
       .header(REFERER, "https://sora.chatgpt.com/explore")
       .header(ORIGIN, "https://sora.chatgpt.com")
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
-      .header(wreq::header::USER_AGENT, USER_AGENT)
+      .header(USER_AGENT, CLIENT_USER_AGENT)
       .header(COOKIE, &cookie)
       .header("OpenAI-Sentinel-Token", sentinel_token)
       .header(AUTHORIZATION, &authorization_header)

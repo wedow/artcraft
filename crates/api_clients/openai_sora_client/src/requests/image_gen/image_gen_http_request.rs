@@ -1,5 +1,5 @@
 use std::io::Write;
-use crate::constants::user_agent::USER_AGENT;
+use crate::constants::user_agent::CLIENT_USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
@@ -156,7 +156,7 @@ pub (crate) async fn image_gen_http_request(
 
 
   let mut http_request = client.post(SORA_IMAGE_GEN_URL)
-      .header("User-Agent", USER_AGENT)
+      .header("User-Agent", CLIENT_USER_AGENT)
       .header("Cookie", &cookie)
       .header("Authorization", &authorization_header)
       .header("Content-Type", "application/json")

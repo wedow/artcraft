@@ -1,4 +1,4 @@
-use crate::constants::user_agent::USER_AGENT;
+use crate::constants::user_agent::CLIENT_USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
@@ -102,7 +102,7 @@ pub async fn list_classic_tasks(credentials: &SoraCredentialSet) -> Result<ListT
   //}
 
   let http_request = client.get(url.as_str())
-      .header("User-Agent", USER_AGENT)
+      .header("User-Agent", CLIENT_USER_AGENT)
       .header("Cookie", credentials.cookies.as_str())
       .header("Authorization", bearer_header)
       .header("Content-Type", "application/json");

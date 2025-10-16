@@ -1,4 +1,4 @@
-use crate::constants::user_agent::USER_AGENT;
+use crate::constants::user_agent::CLIENT_USER_AGENT;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_client_error::SoraClientError;
 use crate::error::sora_error::SoraError;
@@ -51,7 +51,7 @@ pub (crate) async fn upload_media_http_request(
       .header(AUTHORIZATION, &auth_header)
       .header(COOKIE, &cookie)
       .header(ORIGIN, "https://sora.chatgpt.com")
-      .header("user-agent", USER_AGENT)
+      .header("user-agent", CLIENT_USER_AGENT)
       .header(REFERER, "https://sora.chatgpt.com/explore")
       .header("priority", "u=1, i")
       .header("sec-ch-ua", "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"")

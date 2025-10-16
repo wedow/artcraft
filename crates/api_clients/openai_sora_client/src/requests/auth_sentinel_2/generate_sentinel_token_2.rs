@@ -1,4 +1,4 @@
-use crate::constants::user_agent::USER_AGENT;
+use crate::constants::user_agent::CLIENT_USER_AGENT;
 use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::error::sora_specific_api_error::SoraSpecificApiError;
@@ -9,10 +9,11 @@ use crate::requests::auth_sentinel_2::sentinel_token::{SentinelResponsePieces, S
 use crate::utils_internal::classify_general_http_error::classify_general_http_error;
 use errors::AnyhowResult;
 use idempotency::uuid::generate_random_uuid;
-use log::error;
+use log::{debug, error};
 use serde_derive::{Deserialize, Serialize};
 use std::io::Write;
 use thiserror::Error;
+use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, CONTENT_TYPE, COOKIE, ORIGIN, REFERER, USER_AGENT};
 use wreq::Client;
 
 const SORA_SENTINEL_ENDPOINT: &str = "https://chatgpt.com/backend-api/sentinel/req";
@@ -26,9 +27,23 @@ pub async fn generate_sentinel_token_2() -> Result<SentinelToken, SoraError> {
   let request = SentinelRequest::new(base64_request);
   let client = Client::new();
 
-  let response = client.post(SORA_SENTINEL_ENDPOINT)
-      .header("User-Agent", USER_AGENT)
-      .header("Content-Type", "application/json")
+  let request_builder = client.post(SORA_SENTINEL_ENDPOINT)
+      .header(USER_AGENT, CLIENT_USER_AGENT)
+      .header(ACCEPT, "*/*")
+      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
+      // TODO: Accept-Encoding
+      // TODO: Cookie
+      .header(REFERER, "https://chatgpt.com/backend-api/sentinel/frame.html")
+      .header(CONTENT_TYPE, "application/json")
+      .header(ORIGIN, "https://chatgpt.com")
+      .header("sec-gpc", "1")
+      .header("sec-fetch-dest", "empty")
+      .header("sec-fetch-mode", "cors")
+      .header("sec-fetch-site", "same-origin")
+      .header("priority", "u=4")
+      .header("te", "trailers");
+
+  let response = request_builder
       .json(&request)
       .send()
       .await
@@ -36,7 +51,7 @@ pub async fn generate_sentinel_token_2() -> Result<SentinelToken, SoraError> {
         error!("Client failed to generate sentinel token: {:?}", err);
         SoraGenericApiError::WreqError(err)
       })?;
-  
+
   if !response.status().is_success() {
     error!("Failed to generate sentinel: {}", response.status());
     let error = classify_general_http_error(response).await;
@@ -49,8 +64,7 @@ pub async fn generate_sentinel_token_2() -> Result<SentinelToken, SoraError> {
         SoraGenericApiError::WreqError(err)
       })?;
 
-  println!("Sentinel endpoint response body: {}", text_body);
-  std::io::stdout().flush().unwrap();
+  debug!("Sentinel endpoint response body: {}", text_body);
 
   let response = serde_json::from_str::<SentinelResponse>(&text_body)
       .map_err(|err| {
@@ -59,7 +73,6 @@ pub async fn generate_sentinel_token_2() -> Result<SentinelToken, SoraError> {
       })?;
 
   let response_pieces = sentinel_response_into_pieces(response, text_body)?;
-
   let sentinel_token = SentinelToken::from_server_request(&request, &response_pieces);
 
   Ok(sentinel_token)
