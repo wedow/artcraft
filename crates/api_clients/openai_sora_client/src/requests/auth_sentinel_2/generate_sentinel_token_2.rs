@@ -4,12 +4,14 @@ use crate::error::sora_error::SoraError;
 use crate::error::sora_generic_api_error::SoraGenericApiError;
 use crate::error::sora_specific_api_error::SoraSpecificApiError;
 use crate::requests::auth_sentinel::request::GenerateSentinelRefreshRequest;
+use crate::requests::auth_sentinel_2::extract_expiry::extract_expiry;
 use crate::requests::auth_sentinel_2::request::SentinelRequest;
 use crate::requests::auth_sentinel_2::response::SentinelResponse;
 use crate::utils_internal::classify_general_http_error::classify_general_http_error;
+use chrono::{DateTime, NaiveDateTime, TimeDelta, TimeZone, Utc};
 use errors::AnyhowResult;
 use idempotency::uuid::generate_random_uuid;
-use log::{debug, error};
+use log::{debug, error, info};
 use serde_derive::{Deserialize, Serialize};
 use std::io::Write;
 use thiserror::Error;
@@ -17,7 +19,6 @@ use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, AUTHORIZATION, CONTENT_TYPE, COOKIE,
 use wreq::Client;
 
 const SORA_SENTINEL_ENDPOINT: &str = "https://chatgpt.com/backend-api/sentinel/req";
-
 
 
 /// This generates a Sentinel Token that works with Sora 1.0 and Sora 2.0 consumer products.
@@ -77,9 +78,9 @@ pub async fn generate_sentinel_token_2() -> Result<SoraSentinelToken, SoraError>
   Ok(sentinel_token)
 }
 
-
-
 fn into_sora_sentinel_token(request: SentinelRequest, response: SentinelResponse, raw_body: &str) -> Result<SoraSentinelToken, SoraSpecificApiError> {
+  let expiry = extract_expiry(Utc::now(), &response);
+
   let maybe_token = response.token;
 
   let maybe_turnstile = response.turnstile
@@ -126,12 +127,12 @@ fn into_sora_sentinel_token(request: SentinelRequest, response: SentinelResponse
     c: token,
   };
 
+
   let sentinel = SoraSentinelToken {
     token: sentinel_raw,
     browser_user_agent: CLIENT_USER_AGENT.to_string(),
-    generated_at: Default::default(), // TODO
-    expires_at: None, // TODO
-    expires_in_seconds: None, // TODO
+    generated_at: expiry.generated_at,
+    expires_in_seconds: expiry.expires_in_seconds,
   };
 
   Ok(sentinel)

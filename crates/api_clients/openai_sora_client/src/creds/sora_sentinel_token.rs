@@ -1,5 +1,6 @@
 use crate::error::sora_client_error::SoraClientError;
 use chrono::{DateTime, TimeDelta, Utc};
+use log::{error, warn};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -14,13 +15,9 @@ pub struct SoraSentinelToken {
   /// Clientside time when it was generated (client-side).
   pub generated_at: DateTime<Utc>,
 
-  /// Expiration time (reported by the server)
+  /// Seconds of validity (reported by the server, or our best guess).
   /// If the server doesn't tell us, we'll fill it in with our best guess.
-  pub expires_at: Option<DateTime<Utc>>,
-
-  /// Seconds of validity (reported by the server)
-  /// If the server doesn't tell us, we'll fill it in with our best guess.
-  pub expires_in_seconds: Option<u32>,
+  pub expires_in_seconds: u32,
 }
 
 /// This is what is sent over the wire in requests.
@@ -50,22 +47,30 @@ pub struct RawSoraSentinelToken {
 }
 
 impl SoraSentinelToken {
+  /// Check to see if the sentinel token is expired and in need of a refresh.
   pub fn is_expired(&self) -> bool {
-    // NB(1): We're not trusting the server timestamp for now.
-    // NB(2): We're not self-expiring for now.
     let now = Utc::now();
 
-    if let Some(expires_in_seconds) = self.expires_in_seconds {
-      let maybe_expires_at = now
-          .checked_add_signed(TimeDelta::seconds(expires_in_seconds as i64));
+    let maybe_expires_at = self.generated_at
+        .checked_add_signed(TimeDelta::seconds(self.expires_in_seconds as i64));
 
-      if let Some(expires_at) = maybe_expires_at {
-        if now >= expires_at {
-          return true;
-        }
+    let expires_at = match maybe_expires_at {
+      Some(expires_at) => expires_at,
+      None => {
+        error!("Could not compute expires_at for sentinel token!");
+        return false;
       }
+    };
+    
+    if now >= expires_at {
+      return true;
     }
 
+    if expires_at.signed_duration_since(now).num_seconds() < 30 {
+      warn!("Less than 30 seconds remaining on sentinel token, treating as expired.");
+      return true;
+    }
+ 
     false
   }
 
