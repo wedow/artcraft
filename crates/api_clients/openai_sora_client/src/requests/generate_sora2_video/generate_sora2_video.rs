@@ -46,9 +46,9 @@ pub (crate) async fn generate_sora2_video(
       .ok_or(SoraClientError::NoBearerTokenForRequest)?
       .to_authorization_header_value();
 
-  //let sentinel = args.credentials.sora_sentinel.as_ref()
-  //    .map(|sentinel| sentinel.get_sentinel().to_string())
-  //    .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
+  let sentinel_token = args.credentials.sora_sentinel.as_ref()
+      .map(|sentinel| sentinel.get_sentinel().to_string())
+      .ok_or(SoraClientError::NoSentinelTokenForRequest)?;
 
   let cookie = args.credentials.cookies.to_string();
 
@@ -65,6 +65,7 @@ pub (crate) async fn generate_sora2_video(
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
       .header(wreq::header::USER_AGENT, USER_AGENT)
       .header(COOKIE, &cookie)
+      .header("OpenAI-Sentinel-Token", sentinel_token)
       .header(AUTHORIZATION, &authorization_header)
       .header(CONTENT_TYPE, "application/json")
       .header("sec-ch-ua", "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"")
@@ -122,7 +123,7 @@ pub (crate) async fn generate_sora2_video(
 
   println!("send request...");
   std::io::stdout().flush().unwrap();
-  
+
   let response = client.execute(http_request)
       .await
       .map_err(|err| {
@@ -164,7 +165,8 @@ mod tests {
   pub async fn manual_test() -> AnyhowResult<()> {
     let creds = get_test_credentials()?;
     let request = GenerateSora2VideoArgs {
-      prompt: "A cute corgi wearing glasses, sitting on a picnic blanket and reading a book, digital art",
+      //prompt: "A cute corgi wearing glasses, sitting on a picnic blanket and reading a book, digital art",
+      prompt: "A dog eating waffles in a Waffle House",
       credentials: &creds,
       request_timeout: None,
       orientation: Orientation::Landscape,
