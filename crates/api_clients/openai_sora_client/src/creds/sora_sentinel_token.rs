@@ -61,7 +61,7 @@ impl SoraSentinelToken {
         return false;
       }
     };
-    
+
     if now >= expires_at {
       return true;
     }
@@ -70,7 +70,7 @@ impl SoraSentinelToken {
       warn!("Less than 30 seconds remaining on sentinel token, treating as expired.");
       return true;
     }
- 
+
     false
   }
 
@@ -78,15 +78,15 @@ impl SoraSentinelToken {
   pub fn to_request_header_json(&self) -> Result<String, SoraClientError> {
     self.token.to_request_header_json()
   }
-  
+
   pub fn to_persistent_storage_json(&self) -> Result<String, SoraClientError> {
     serde_json::to_string(self)
         .map_err(|err| SoraClientError::CouldNotSerializeSentinelTokenStore(err))
   }
-  
+
   pub fn from_persistent_storage_json(json: &str) -> Result<Self, SoraClientError> {
     serde_json::from_str(json)
-        .map_err(|err| SoraClientError::CouldNotDeserializeSentinelTokenStore(err))
+        .map_err(|err| SoraClientError::CouldNotDeserializeSentinelTokenStore { error: err, raw_json: json.to_owned() })
   }
 }
 

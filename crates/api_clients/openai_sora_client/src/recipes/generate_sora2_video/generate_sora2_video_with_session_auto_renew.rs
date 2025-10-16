@@ -1,9 +1,9 @@
-use std::io::Write;
-use log::info;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::error::sora_error::SoraError;
+use crate::recipes::utils::maybe_renew_sentinel_token::maybe_renew_sentinel_token;
 use crate::recipes::utils::maybe_renew_session_jwt::maybe_renew_session_jwt;
 use crate::requests::generate_sora2_video::generate_sora2_video::{generate_sora2_video, GenerateSora2VideoArgs, GenerateSora2VideoResponse};
+use std::io::Write;
 
 /// Generate Sora 2 video with session auto-renewal.
 /// If a new sora credential is returned, replace the old one with the new one.
@@ -11,10 +11,12 @@ pub async fn generate_sora2_video_with_session_auto_renew(
   args: GenerateSora2VideoArgs<'_>,
 ) -> Result<(GenerateSora2VideoResponse, Option<SoraCredentialSet>), SoraError> {
 
-  println!("renew JWT...");
-  std::io::stdout().flush().unwrap();
-
   let mut maybe_new_creds = maybe_renew_session_jwt(&args.credentials).await?;
+
+  let use_creds = maybe_new_creds.as_ref()
+      .unwrap_or_else(|| &args.credentials);
+
+  let mut maybe_new_creds = maybe_renew_sentinel_token(use_creds).await?;
 
   let use_creds = maybe_new_creds.as_ref()
       .unwrap_or_else(|| &args.credentials);
@@ -22,8 +24,6 @@ pub async fn generate_sora2_video_with_session_auto_renew(
   let mut request = args.clone();
   request.credentials = use_creds;
 
-  println!("generate...");
-  std::io::stdout().flush().unwrap();
   let result = generate_sora2_video(request).await;
 
   match result {
@@ -45,7 +45,7 @@ mod tests {
     let creds = get_test_credentials()?;
 
     let args = GenerateSora2VideoArgs {
-      prompt: "a dog playing tennis",
+      prompt: "a Golden Retriever playing basketball at Venice Beach during sunset",
       credentials: &creds,
       request_timeout: None,
       orientation: Orientation::Landscape,

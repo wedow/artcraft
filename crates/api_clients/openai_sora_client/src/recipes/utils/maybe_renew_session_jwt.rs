@@ -1,11 +1,10 @@
-use std::io::Write;
 use crate::creds::sora_credential_set::SoraCredentialSet;
 use crate::creds::sora_jwt_bearer_token::SoraJwtBearerToken;
 use crate::error::sora_error::SoraError;
-use crate::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use crate::requests::auth_bearer::generate_bearer_jwt_with_cookie::generate_bearer_jwt_with_cookie;
 use chrono::{TimeDelta, Utc};
 use log::{info, warn};
+use std::io::Write;
 use std::ops::Sub;
 
 const EXPIRATION_DEADLINE : TimeDelta = TimeDelta::hours(12);
@@ -16,42 +15,31 @@ pub async fn maybe_renew_session_jwt(creds: &SoraCredentialSet) -> Result<Option
   
   match creds.jwt_bearer_token.as_ref() {
     None => {
-      info!("JWT not set.");
+      info!("JWT not set. It needs to be generated...");
       refresh_jwt = true;
     }
     Some(jwt) => {
       let now = Utc::now();
       let refresh_deadline = now.sub(EXPIRATION_DEADLINE);
       if jwt.jwt_claims().expiration.lt(&now) {
-        info!("JWT expiration time has elapsed.");
+        info!("JWT expiration time has elapsed. It needs to be renewed...");
         refresh_jwt = true;
       } else if jwt.jwt_claims().expiration.lt(&refresh_deadline) {
-        info!("JWT expiration time is under the expiration deadline.");
+        info!("JWT expiration time is under the expiration deadline. It needs to be renewed...");
         refresh_jwt = true;
       }
     }
   }
   
   if !refresh_jwt {
-    println!("DO NOT REFRESH JWT");
-    std::io::stdout().flush().unwrap();
     return Ok(None);
   }
-
-  println!("refreshing jwt...");
-  std::io::stdout().flush().unwrap();
 
   info!("Refreshing JWT...");
   let token = generate_bearer_jwt_with_cookie(creds.cookies.as_str()).await?;
 
-  println!("parsing jwt...");
-  std::io::stdout().flush().unwrap();
-
   info!("Parsing JWT bearer token...");
   let token = SoraJwtBearerToken::new(token)?;
-
-  println!("token is: {:?}", token.as_str());
-  std::io::stdout().flush().unwrap();
 
   let mut updated_creds = creds.clone();
   updated_creds.jwt_bearer_token = Some(token);

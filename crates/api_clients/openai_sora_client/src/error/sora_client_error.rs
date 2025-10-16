@@ -40,7 +40,10 @@ pub enum SoraClientError {
   CouldNotSerializeSentinelTokenStore(serde_json::Error),
   
   /// Error deserializing the sentinel token from JSON (typically for persistent storage).
-  CouldNotDeserializeSentinelTokenStore(serde_json::Error),
+  CouldNotDeserializeSentinelTokenStore { 
+    error: serde_json::Error, 
+    raw_json: String 
+  },
 }
 
 impl Error for SoraClientError {}
@@ -59,7 +62,9 @@ impl Display for SoraClientError {
       Self::WreqClientError(err) => write!(f, "Wreq client error (during client creation): {}", err),
       Self::CouldNotSerializeSentinelToken(err) => write!(f, "Could not serialize sentinel token to JSON: {}", err),
       Self::CouldNotSerializeSentinelTokenStore(err) => write!(f, "Could not serialize sentinel token store to JSON: {}", err),
-      Self::CouldNotDeserializeSentinelTokenStore(err) => write!(f, "Could not deserialize sentinel token store from JSON: {}", err),
+      Self::CouldNotDeserializeSentinelTokenStore { error, raw_json} => {
+        write!(f, "Could not deserialize sentinel token store from JSON: {:?}, raw JSON: {}", error, raw_json)
+      },
     }
   }
 }

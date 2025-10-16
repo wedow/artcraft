@@ -8,13 +8,13 @@ use std::fs::read_to_string;
 pub fn get_test_credentials() -> AnyhowResult<SoraCredentialSet> {
   // TODO: This should work on other folks' machines when they exist
   //  This is so brittle...
-  let sentinel = read_to_string("/Users/bt/Artcraft/credentials/sora_sentinel.txt")?;
-
   let sentinel_token = {
     let sentinel_json = read_to_string("/Users/bt/Artcraft/credentials/sora_sentinel_token_store.json")?;
-    let sentinel_json = sentinel.trim().to_string();
+    let sentinel_json = sentinel_json.trim().to_string();
     SoraSentinelToken::from_persistent_storage_json(&sentinel_json)?
   };
+
+  let sentinel = read_to_string("/Users/bt/Artcraft/credentials/sora_sentinel.txt")?;
 
   let cookie = read_to_string("/Users/bt/Artcraft/credentials/sora_cookies.txt")?;
   let cookie = cookie.trim().to_string();
