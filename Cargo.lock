@@ -4645,6 +4645,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "grok_client"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "cloudflare_errors",
+ "cookie_store 0.0.1",
+ "errors",
+ "filesys",
+ "futures 0.3.31",
+ "log",
+ "serde",
+ "serde_json",
+ "test_data",
+ "testing",
+ "tokio",
+ "url",
+ "workspace-build-acceleration",
+ "wreq",
+ "wreq-util",
+]
+
+[[package]]
 name = "group"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
