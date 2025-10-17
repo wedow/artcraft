@@ -37,7 +37,7 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
       //.header("Sec-WebSocket-Key", "BhBXbFSG6/1xcZVq4ySxcg==") // TODO
       //.header("Sec-GPC", "1")
       //.header(CONNECTION, "keep-alive, Upgrade")
-      .header(COOKIE, args.cookies.to_string())
+      //.header(COOKIE, args.cookies.to_string())
       //.header("Sec-Fetch-Dest", "empty")
       //.header("Sec-Fetch-Mode", "websocket")
       //.header("Sec-Fetch-Site", "same-origin")
@@ -72,6 +72,7 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
   println!("Into websocket...");
   info!("Into websocket...");
 
+  // ApiGeneric(WreqError(wreq::Error { kind: Upgrade, source: "unexpected status code: 403 Forbidden" }))
   let mut websocket = response.into_websocket()
       .await
       .map_err(|err| GrokGenericApiError::WreqError(err))?;
