@@ -94,38 +94,15 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
 mod tests {
   use super::*;
   use crate::test_utils::get_test_cookies::get_test_cookies;
-  use chrono::Local;
-  use env_logger::Builder;
+  use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
-  use std::io::Write;
   use log::LevelFilter;
-
-  fn setup_logs() {
-    println!("Log level: {:?}", env::var("RUST_LOG"));
-    let is_unsafe = env::set_var("RUST_LOG", "trace");
-    if is_unsafe.is_none() {
-      unsafe { std::env::set_var("RUST_LOG", "trace") }
-    }
-    println!("Log level: {:?}", env::var("RUST_LOG"));
-    Builder::new()
-        .is_test(true)
-        .format(|buf, record| {
-          writeln!(buf,
-            "{} [{}] - {}",
-            Local::now().format("%H:%M:%S%.6f"),
-            record.level(),
-            record.args()
-          )
-        })
-        .filter(None, LevelFilter::Trace)
-        .filter_level(LevelFilter::Trace)
-        .init();
-  }
 
   #[tokio::test]
   #[ignore] // manually test
   async fn create() -> AnyhowResult<()> {
-    setup_logs();
+    setup_test_logging(LevelFilter::Trace);
+
     let cookies = get_test_cookies()?;
     let args = CreateListenWebsocketArgs {
       cookies: &cookies,
