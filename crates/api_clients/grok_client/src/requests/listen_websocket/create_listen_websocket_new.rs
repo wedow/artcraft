@@ -1,14 +1,8 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::error::grok_generic_api_error::GrokGenericApiError;
-use log::{debug, error, info, trace, warn};
 use std::ops::Deref;
-use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
-use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, ORIGIN, PRAGMA, UPGRADE, USER_AGENT};
-use wreq::http1::{Http1Options, Http1OptionsBuilder};
-use wreq::ws::message::Message;
 use wreq::Client;
 use wreq_util::Emulation;
 
@@ -21,7 +15,7 @@ pub async fn create_listen_websocket_new() -> Result<(), GrokError> {
       .connect_timeout(Duration::from_secs(10))
       .build()
       .map_err(|err| GrokClientError::WreqClientError(err))?;
-  
+
   //.http1_only() // NB: Not needed - websockets are sent over HTTP/1.1 without this configuration
   //.cookie_store(true)
 
@@ -48,7 +42,6 @@ pub async fn create_listen_websocket_new() -> Result<(), GrokError> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
@@ -57,94 +50,10 @@ mod tests {
   #[ignore] // manually test
   async fn create() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-
-    let result = create_listen_websocket_new().await;
-
-    match result {
-      Ok(ok) => {
-        println!("Okay");
-      }
-      Err(err) => {
-        println!("{:?}", err);
-      }
-    }
-
+    let _result = create_listen_websocket_new().await;
     log::logger().flush();
-
     assert_eq!(1, 2);
-
     Ok(())
   }
 }
 
-
-
-
-
-/*
-let message = r#"
-  {"type":"conversation.item.create","timestamp":1760673207293,"item":{"type":"message","content":[{"requestId":"3cedf20e-f51f-da5d-a124-ccec05faedf1","text":"A pirannah","type":"input_text","properties":{"section_count":0,"is_kids_mode":false,"enable_nsfw":true,"skip_upsampler":false,"is_initial":false}}]}}
-"#.trim().to_string();
-
-let wire_message = Message::text(message);
-
-websocket.send(wire_message)
-    .await
-    .map_err(|err| GrokGenericApiError::WreqError(err))?;
-
-loop {
-  let maybe_message = websocket.recv().await;
-
-  if let Some(message) = maybe_message {
-    let message = message.map_err(|err| GrokGenericApiError::WreqError(err))?;
-
-    match message {
-      Message::Text(text) => {
-        println!("Received text message: {}", text);
-      }
-      Message::Binary(bin) => {
-        println!("Received binary message: {:?}", bin);
-      }
-      Message::Ping(ping) => {
-        println!("Received ping: {:?}", ping);
-      }
-      Message::Pong(pong) => {
-        println!("Received pong: {:?}", pong);
-      }
-      Message::Close(close_frame) => {
-        println!("Received close: {:?}", close_frame);
-        break;
-      }
-      _ => {
-        println!("Received other message: {:?}", message);
-      }
-    }
-
-    tokio::time::sleep(std::time::Duration::from_millis(15_000)).await;
-  }
-}
-*/
-
-//for (k, v) in response.headers().iter() {
-//  println!("Header: {}: {:?}", k, v);
-//}
-
-//println!("Upgrading...");
-//info!("Upgrading...");
-//let upgraded = response
-//    .upgrade()
-//    .await
-//    .map_err(|err| GrokClientError::WreqClientError(err))?;
-
-
-// println!("Into websocket...");
-// info!("Into websocket...");
-
-// // ApiGeneric(WreqError(wreq::Error { kind: Upgrade, source: "unexpected status code: 403 Forbidden" }))
-// let mut websocket = response.into_websocket()
-//     .await
-//     .map_err(|err| GrokGenericApiError::WreqError(err))?;
-
-// if let Some(protocol) = websocket.protocol() {
-//   println!("WebSocket subprotocol: {:?}", protocol);
-// }
