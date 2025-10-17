@@ -9,6 +9,7 @@ use crate::core::lifecycle::startup::tasks::spawn_storyteller_threads::spawn_sto
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::threads::midjourney_long_polling_thread::midjourney_long_polling_thread;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -26,6 +27,7 @@ pub async fn handle_tauri_startup(
   sora_credential_manager: SoraCredentialManager,
   sora_task_queue: SoraTaskQueue,
   mj_creds_manager: MidjourneyCredentialManager,
+  grok_creds_manager: GrokCredentialManager,
 ) -> AnyhowResult<()> {
 
   set_app_log_level(

@@ -32,6 +32,7 @@ impl TaskEnqueueSuccess{
     match self.provider {
       GenerationProvider::Artcraft => GenerationServiceProvider::Artcraft,
       GenerationProvider::Fal => GenerationServiceProvider::Fal,
+      GenerationProvider::Grok => GenerationServiceProvider::Grok,
       GenerationProvider::Midjourney => GenerationServiceProvider::Midjourney,
       GenerationProvider::Sora => GenerationServiceProvider::Sora,
     }

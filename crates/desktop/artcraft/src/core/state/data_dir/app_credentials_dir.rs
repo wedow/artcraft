@@ -21,6 +21,14 @@ impl DataSubdir for AppCredentialsDir {
 }
 
 impl AppCredentialsDir {
+  pub fn get_grok_state_path(&self) -> PathBuf {
+    self.path.join("grok_state.json")
+  }
+
+  pub fn get_grok_cookies_path(&self) -> PathBuf {
+    self.path.join("grok_cookies.txt")
+  }
+  
   pub fn get_sora_cookie_file_path(&self) -> PathBuf {
     self.path.join("sora_cookies.txt")
   }

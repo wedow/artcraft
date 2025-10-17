@@ -29,6 +29,8 @@ use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::threads::discord_presence_thread::discord_presence_thread;
 use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
+use crate::services::grok::commands::grok_open_login_command::grok_open_login_command;
+use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::midjourney::commands::midjourney_clear_credentials_command::midjourney_clear_credentials_command;
 use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
 use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
@@ -97,6 +99,9 @@ pub fn run() {
   let midjourney_creds_manager = MidjourneyCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let midjourney_creds_manager_2 = midjourney_creds_manager.clone();
 
+  let grok_creds_manager = GrokCredentialManager::initialize_from_disk_infallible(&app_data_root);
+  let grok_creds_manager_2 = grok_creds_manager.clone();
+
   println!("Initializing backend runtime...");
 
   let builder = tauri::Builder::default()
@@ -134,6 +139,7 @@ pub fn run() {
           sora_creds,
           sora_tasks,
           midjourney_creds_manager_2,
+          grok_creds_manager_2,
         ).await;
 
         if let Err(err) = result {
@@ -148,6 +154,7 @@ pub fn run() {
     .manage(app_env_configs)
     .manage(app_preferences)
     .manage(artcraft_platform_info)
+    .manage(grok_creds_manager)
     .manage(midjourney_creds_manager)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
@@ -168,6 +175,7 @@ pub fn run() {
     get_app_preferences_command,
     get_provider_order_command,
     get_task_queue_command,
+    grok_open_login_command,
     load_without_cors_command,
     mark_task_as_dismissed_command,
     media_file_delete_command,

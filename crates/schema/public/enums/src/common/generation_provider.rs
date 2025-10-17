@@ -15,6 +15,7 @@ use utoipa::ToSchema;
 pub enum GenerationProvider {
   Artcraft,
   Fal,
+  Grok,
   Midjourney,
   Sora,
 }
@@ -33,6 +34,7 @@ impl GenerationProvider {
     match self {
       Self::Artcraft => "artcraft",
       Self::Fal => "fal",
+      Self::Grok => "grok",
       Self::Midjourney => "midjourney",
       Self::Sora => "sora",
     }
@@ -42,6 +44,7 @@ impl GenerationProvider {
     match value {
       "artcraft" => Ok(Self::Artcraft),
       "fal" => Ok(Self::Fal),
+      "grok" => Ok(Self::Grok),
       "midjourney" => Ok(Self::Midjourney),
       "sora" => Ok(Self::Sora),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
@@ -54,6 +57,7 @@ impl GenerationProvider {
     BTreeSet::from([
       Self::Artcraft,
       Self::Fal,
+      Self::Grok,
       Self::Midjourney,
       Self::Sora,
     ])
@@ -73,6 +77,7 @@ mod tests {
     fn test_serialization() {
       assert_serialization(GenerationProvider::Artcraft, "artcraft");
       assert_serialization(GenerationProvider::Fal, "fal");
+      assert_serialization(GenerationProvider::Grok, "grok");
       assert_serialization(GenerationProvider::Midjourney, "midjourney");
       assert_serialization(GenerationProvider::Sora, "sora");
     }
@@ -81,6 +86,7 @@ mod tests {
     fn to_str() {
       assert_eq!(GenerationProvider::Artcraft.to_str(), "artcraft");
       assert_eq!(GenerationProvider::Fal.to_str(), "fal");
+      assert_eq!(GenerationProvider::Grok.to_str(), "grok");
       assert_eq!(GenerationProvider::Midjourney.to_str(), "midjourney");
       assert_eq!(GenerationProvider::Sora.to_str(), "sora");
     }
@@ -89,6 +95,7 @@ mod tests {
     fn from_str() {
       assert_eq!(GenerationProvider::from_str("artcraft").unwrap(), GenerationProvider::Artcraft);
       assert_eq!(GenerationProvider::from_str("fal").unwrap(), GenerationProvider::Fal);
+      assert_eq!(GenerationProvider::from_str("grok").unwrap(), GenerationProvider::Grok);
       assert_eq!(GenerationProvider::from_str("midjourney").unwrap(), GenerationProvider::Midjourney);
       assert_eq!(GenerationProvider::from_str("sora").unwrap(), GenerationProvider::Sora);
     }
@@ -107,9 +114,10 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = GenerationProvider::all_variants();
-      assert_eq!(variants.len(), 4);
+      assert_eq!(variants.len(), 5);
       assert_eq!(variants.pop_first(), Some(GenerationProvider::Artcraft));
       assert_eq!(variants.pop_first(), Some(GenerationProvider::Fal));
+      assert_eq!(variants.pop_first(), Some(GenerationProvider::Grok));
       assert_eq!(variants.pop_first(), Some(GenerationProvider::Midjourney));
       assert_eq!(variants.pop_first(), Some(GenerationProvider::Sora));
       assert_eq!(variants.pop_first(), None);
