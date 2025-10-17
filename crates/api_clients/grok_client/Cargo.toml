@@ -35,3 +35,8 @@ wreq.workspace = true
 filesys.workspace = true
 test_data.workspace = true
 testing.workspace = true
+log4rs = "1.4.0"
+env_logger.workspace = true
+env.workspace = true
+chrono.workspace = true
+

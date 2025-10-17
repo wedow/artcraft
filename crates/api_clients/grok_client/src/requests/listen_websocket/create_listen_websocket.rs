@@ -1,18 +1,18 @@
-use std::ops::Deref;
-use std::time::Duration;
-use log::info;
-use tokio::io::AsyncReadExt;
-use wreq::Client;
-use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, ORIGIN, PRAGMA, UPGRADE, USER_AGENT};
-use wreq::ws::message::Message;
-use wreq_util::Emulation;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
+use log::info;
+use std::ops::Deref;
+use std::sync::Arc;
+use std::time::Duration;
+use tokio::io::AsyncReadExt;
+use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, ORIGIN, PRAGMA, UPGRADE, USER_AGENT};
+use wreq::http1::Http1OptionsBuilder;
+use wreq::ws::message::Message;
+use wreq::Client;
+use wreq_util::Emulation;
 
 const WEBSOCKET_URL: &str = "wss://grok.com/ws/imagine/listen";
-//const WEBSOCKET_URL: &str = "https://grok.com/ws/imagine/listen";
-//const TASKS_URL: &str = "https://grok.com/rest/tasks";
 
 pub struct CreateListenWebsocketArgs<'a> {
   pub cookies: &'a str,
@@ -22,9 +22,11 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
   println!("Building client...");
   info!("Building client...");
 
+
   let client = Client::builder()
-      .emulation(Emulation::Safari26)
-      .cert_verification(false)
+      .emulation(Emulation::Chrome140)
+      .cert_verification(false) // TODO: REMOVE THIS.
+      .connection_verbose(true)
       .connect_timeout(Duration::from_secs(10))
       .build()
       .map_err(|err| GrokClientError::WreqClientError(err))?;
@@ -73,18 +75,6 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
   println!("Status: {}", status);
 
 
-  //for (k, v) in response.headers().iter() {
-  //  println!("Header: {}: {:?}", k, v);
-  //}
-
-  //println!("Upgrading...");
-  //info!("Upgrading...");
-  //let upgraded = response
-  //    .upgrade()
-  //    .await
-  //    .map_err(|err| GrokClientError::WreqClientError(err))?;
-
-
   println!("Into websocket...");
   info!("Into websocket...");
 
@@ -97,62 +87,45 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
     println!("WebSocket subprotocol: {:?}", protocol);
   }
 
-  /*
-  let message = r#"
-    {"type":"conversation.item.create","timestamp":1760673207293,"item":{"type":"message","content":[{"requestId":"3cedf20e-f51f-da5d-a124-ccec05faedf1","text":"A pirannah","type":"input_text","properties":{"section_count":0,"is_kids_mode":false,"enable_nsfw":true,"skip_upsampler":false,"is_initial":false}}]}}
-  "#.trim().to_string();
-
-  let wire_message = Message::text(message);
-
-  websocket.send(wire_message)
-      .await
-      .map_err(|err| GrokGenericApiError::WreqError(err))?;
-
-  loop {
-    let maybe_message = websocket.recv().await;
-
-    if let Some(message) = maybe_message {
-      let message = message.map_err(|err| GrokGenericApiError::WreqError(err))?;
-
-      match message {
-        Message::Text(text) => {
-          println!("Received text message: {}", text);
-        }
-        Message::Binary(bin) => {
-          println!("Received binary message: {:?}", bin);
-        }
-        Message::Ping(ping) => {
-          println!("Received ping: {:?}", ping);
-        }
-        Message::Pong(pong) => {
-          println!("Received pong: {:?}", pong);
-        }
-        Message::Close(close_frame) => {
-          println!("Received close: {:?}", close_frame);
-          break;
-        }
-        _ => {
-          println!("Received other message: {:?}", message);
-        }
-      }
-
-      tokio::time::sleep(std::time::Duration::from_millis(15_000)).await;
-    }
-  }
-  */
-
   Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-  use errors::AnyhowResult;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
   use super::*;
+  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use chrono::Local;
+  use env_logger::Builder;
+  use errors::AnyhowResult;
+  use std::io::Write;
+  use log::LevelFilter;
+
+  fn setup_logs() {
+    println!("Log level: {:?}", env::var("RUST_LOG"));
+    let is_unsafe = env::set_var("RUST_LOG", "trace");
+    if is_unsafe.is_none() {
+      unsafe { std::env::set_var("RUST_LOG", "trace") }
+    }
+    println!("Log level: {:?}", env::var("RUST_LOG"));
+    Builder::new()
+        .is_test(true)
+        .format(|buf, record| {
+          writeln!(buf,
+            "{} [{}] - {}",
+            Local::now().format("%H:%M:%S%.6f"),
+            record.level(),
+            record.args()
+          )
+        })
+        .filter(None, LevelFilter::Trace)
+        .filter_level(LevelFilter::Trace)
+        .init();
+  }
 
   #[tokio::test]
   #[ignore] // manually test
   async fn create() -> AnyhowResult<()> {
+    setup_logs();
     let cookies = get_test_cookies()?;
     let args = CreateListenWebsocketArgs {
       cookies: &cookies,
@@ -168,8 +141,70 @@ mod tests {
       }
     }
 
+    log::logger().flush();
+
     assert_eq!(1, 2);
 
     Ok(())
   }
 }
+
+
+
+
+
+/*
+let message = r#"
+  {"type":"conversation.item.create","timestamp":1760673207293,"item":{"type":"message","content":[{"requestId":"3cedf20e-f51f-da5d-a124-ccec05faedf1","text":"A pirannah","type":"input_text","properties":{"section_count":0,"is_kids_mode":false,"enable_nsfw":true,"skip_upsampler":false,"is_initial":false}}]}}
+"#.trim().to_string();
+
+let wire_message = Message::text(message);
+
+websocket.send(wire_message)
+    .await
+    .map_err(|err| GrokGenericApiError::WreqError(err))?;
+
+loop {
+  let maybe_message = websocket.recv().await;
+
+  if let Some(message) = maybe_message {
+    let message = message.map_err(|err| GrokGenericApiError::WreqError(err))?;
+
+    match message {
+      Message::Text(text) => {
+        println!("Received text message: {}", text);
+      }
+      Message::Binary(bin) => {
+        println!("Received binary message: {:?}", bin);
+      }
+      Message::Ping(ping) => {
+        println!("Received ping: {:?}", ping);
+      }
+      Message::Pong(pong) => {
+        println!("Received pong: {:?}", pong);
+      }
+      Message::Close(close_frame) => {
+        println!("Received close: {:?}", close_frame);
+        break;
+      }
+      _ => {
+        println!("Received other message: {:?}", message);
+      }
+    }
+
+    tokio::time::sleep(std::time::Duration::from_millis(15_000)).await;
+  }
+}
+*/
+
+//for (k, v) in response.headers().iter() {
+//  println!("Header: {}: {:?}", k, v);
+//}
+
+//println!("Upgrading...");
+//info!("Upgrading...");
+//let upgraded = response
+//    .upgrade()
+//    .await
+//    .map_err(|err| GrokClientError::WreqClientError(err))?;
+
