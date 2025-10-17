@@ -72,23 +72,22 @@ pub async fn get_tasks(args: TasksArgs<'_>) -> Result<(), GrokError> {
   //    .await
   //    .map_err(|err| GrokClientError::WreqClientError(err))?;
 
-
-  println!("Into websocket...");
-  info!("Into websocket...");
-
-
   Ok(())
 }
 
 #[cfg(test)]
 mod tests {
+  use log::LevelFilter;
   use super::*;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
+  use crate::test_utils::setup_test_logging::setup_test_logging;
 
   #[tokio::test]
   #[ignore] // manually test
   async fn create() -> AnyhowResult<()> {
+    setup_test_logging(LevelFilter::Trace);
+
     let cookies = get_test_cookies()?;
     let args = TasksArgs {
       cookies: &cookies,

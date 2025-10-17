@@ -1,13 +1,13 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
-use log::info;
+use log::{debug, error, info, trace, warn};
 use std::ops::Deref;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, ORIGIN, PRAGMA, UPGRADE, USER_AGENT};
-use wreq::http1::Http1OptionsBuilder;
+use wreq::http1::{Http1Options, Http1OptionsBuilder};
 use wreq::ws::message::Message;
 use wreq::Client;
 use wreq_util::Emulation;
@@ -24,10 +24,13 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
 
 
   let client = Client::builder()
-      .emulation(Emulation::Chrome140)
+      //.emulation(Emulation::Chrome140)
+      //.http1_only() // NB: Not needed - websockets are sent over HTTP/1.1 without this configuration
       .cert_verification(false) // TODO: REMOVE THIS.
       .connection_verbose(true)
       .connect_timeout(Duration::from_secs(10))
+      //.keylog()
+      //.http1_options(Http1Options::builder().build())
       .build()
       .map_err(|err| GrokClientError::WreqClientError(err))?;
 
@@ -38,20 +41,22 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
   info!("Configuring client...");
 
   let builder = client.websocket(WEBSOCKET_URL)
-      .header("Upgrade", "websocket")
-      .header("Origin", "https://grok.com")
-      .header("Cache-Control", "no-cache")
-      .header("Accept-Language", "en-US,en;q=0.9")
-      .header("Pragma", "no-cache")
-      .header("Cookie", cookies)
+      .header("Host", "grok.com") // Chrome
+      .header("Connection", "Upgrade") // Chrome
+      .header("Pragma", "no-cache") // Chrome
+      .header("Cache-Control", "no-cache") // Chrome
+      .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36") // Chrome
+      .header("Upgrade", "websocket") // Chrome
+      .header("Origin", "https://grok.com") // Chrome
+      .header("Sec-WebSocket-Version", "13") // Chrome
+      .header("Accept-Encoding", "gzip, deflate, br, zstd") // Chrome
+      .header("Accept-Language", "en-US,en;q=0.9") // Chrome
+      .header("Cookie", "cf_clearance=o10zUU.x20fFOkj6tPIzI73QFT.kG3rLwdtt5P9KNzI-1760710012-1.2.1.1-q0vgGudZ42zQLs1EEEdVDkqeJGaJxkL0m60w05izUQ4NVtFNawTmElVUNYS5gOXSRnCjQkTmcMu0bI4yw3gkf.0EyfR9fE3McXK9zjwnMDZLC5MDsYazzaMA87sU4seMjd3G8oKfdi.r2pZ2rUzkoLSAJ11.q7IpHUvWsk8zcpxm1hLg9LcvfX0c.Sbcf.8mwY_32NVpIZT_0rzdp71FJUOZGabSOK4isjC409u7GOg; _ga=GA1.1.1232202746.1760710013; i18nextLng=en; x-anonuserid=621371fd-a877-4245-900c-1aa8db6039f2; x-challenge=2CHUrpA5J8%2FW2%2F1H8glEE3WKIXTKrbU7mMARWLT5DHzp5MS6nUk1aTHt7gqzv1vCxfnIdHTdeq4ZLYwcBj1DL%2FBptSSVT9OKi9DQDsN%2BKk0Ur3jg1uS%2BuPtwYSNZ%2B6CtuLCrDZqlDh%2FfFTzYr2sQ9nT3R72HfOyS%2FFXw0qvCgoROCtZCiGY%3D; x-signature=qPh93ojC8uCXOUvq7t0SzcwsyXKOE%2BRXH6dH26oL8lxwRIabYha6eniSt329QvpjBEeUqlekeStaek44mDpEYg%3D%3D; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; stblid=b3331fc1-45d7-466b-83df-67427c0b2367; mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel=%7B%22distinct_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%2C%22%24device_id%22%3A%2279ce237a-a0f3-4913-bf4b-519ac8a98263%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D; _ga_8FEWB057YH=GS2.1.s1760710013$o1$g1$t1760710085$j60$l0$h0")
       .header("Sec-WebSocket-Key", "BhBXbFSG6/1xcZVq4ySxcg==") // TODO
-      .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
-      .header("Sec-WebSocket-Version", "13")
-      .header("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits")
+      .header("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits"); // Chrome
       //.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0")
       //.force_http2()
       //.header("Accept", "*/*")
-      //.header("Accept-Encoding", "gzip, deflate, br, zstd")
       //.header("Sec-WebSocket-Extensions", "permessage-deflate")
       //.header("Sec-GPC", "1")
       //.header("Connection", "keep-alive, Upgrade")
@@ -60,7 +65,6 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
       //.header("Sec-Fetch-Site", "same-origin")
       //.read_buffer_size(1024 * 1024)
       //.write_buffer_size(1024 * 1024)
-      ;
 
   println!("Sending...");
   info!("Sending...");
@@ -73,19 +77,6 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
 
   let status = response.status();
   println!("Status: {}", status);
-
-
-  println!("Into websocket...");
-  info!("Into websocket...");
-
-  // ApiGeneric(WreqError(wreq::Error { kind: Upgrade, source: "unexpected status code: 403 Forbidden" }))
-  let mut websocket = response.into_websocket()
-      .await
-      .map_err(|err| GrokGenericApiError::WreqError(err))?;
-
-  if let Some(protocol) = websocket.protocol() {
-    println!("WebSocket subprotocol: {:?}", protocol);
-  }
 
   Ok(())
 }
@@ -185,3 +176,15 @@ loop {
 //    .await
 //    .map_err(|err| GrokClientError::WreqClientError(err))?;
 
+
+// println!("Into websocket...");
+// info!("Into websocket...");
+
+// // ApiGeneric(WreqError(wreq::Error { kind: Upgrade, source: "unexpected status code: 403 Forbidden" }))
+// let mut websocket = response.into_websocket()
+//     .await
+//     .map_err(|err| GrokGenericApiError::WreqError(err))?;
+
+// if let Some(protocol) = websocket.protocol() {
+//   println!("WebSocket subprotocol: {:?}", protocol);
+// }

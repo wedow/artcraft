@@ -1,6 +1,6 @@
 use chrono::Local;
 use env_logger::Builder;
-use log::LevelFilter;
+use log::{debug, error, info, trace, warn, LevelFilter};
 use std::io::Write;
 
 const RUST_LOG : &str = "RUST_LOG";
@@ -32,6 +32,12 @@ pub fn setup_test_logging(level: LevelFilter) {
       .filter(None, level)
       .filter_level(level)
       .init();
+
+  trace!("Test trace log");
+  debug!("Test debug log");
+  info!("Test info log");
+  warn!("Test warn log");
+  error!("Test error log");
 }
 
 fn get_level_str(level: LevelFilter) -> &'static str {
