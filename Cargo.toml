@@ -269,5 +269,5 @@ url = { version = "2.5.4", features = ["serde"] }
 #   choco install pkgconfiglite -y
 #   choco install llvm -y
 #   choco install nasm -y
-wreq = { version = "6.0.0-rc.20", features = ["json", "multipart", "cookies"] }
+wreq = { version = "6.0.0-rc.20", features = ["json", "multipart", "cookies", "ws"] }
 wreq-util = "3.0.0-rc.5"
