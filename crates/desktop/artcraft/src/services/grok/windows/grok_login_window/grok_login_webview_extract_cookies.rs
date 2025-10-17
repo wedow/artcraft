@@ -6,9 +6,9 @@ use std::collections::HashSet;
 use tauri::webview::Cookie;
 use tauri::WebviewWindow;
 
-static WWW_COOKIE_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse("https://www.grok.com").expect("URL should parse")
-});
+//static WWW_COOKIE_URL: Lazy<Url> = Lazy::new(|| {
+//  Url::parse("https://www.grok.com").expect("URL should parse")
+//});
 
 static ROOT_COOKIE_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse("https://grok.com").expect("URL should parse")
@@ -27,18 +27,18 @@ pub fn grok_login_webview_extract_cookies(webview: &WebviewWindow) -> AnyhowResu
 }
 
 fn get_all_grok_cookies(webview: &WebviewWindow) -> AnyhowResult<Vec<Cookie>> {
-  let www_cookies = webview.cookies_for_url(WWW_COOKIE_URL.clone())?;
+  //let www_cookies = webview.cookies_for_url(WWW_COOKIE_URL.clone())?;
   let root_cookies = webview.cookies_for_url(ROOT_COOKIE_URL.clone())?;
 
-  let mut all_cookies = www_cookies;
-  let mut cookie_names = HashSet::new();
+  let mut all_cookies = root_cookies;
+  //let mut cookie_names = HashSet::new();
 
-  for cookie in root_cookies.iter() {
-    if !cookie_names.contains(cookie.name()) {
-      cookie_names.insert(cookie.name().to_string());
-      all_cookies.push(cookie.clone());
-    }
-  }
+  //for cookie in root_cookies.iter() {
+  //  if !cookie_names.contains(cookie.name()) {
+  //    cookie_names.insert(cookie.name().to_string());
+  //    all_cookies.push(cookie.clone());
+  //  }
+  //}
 
   Ok(all_cookies)
 }

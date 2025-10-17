@@ -29,7 +29,7 @@ pub async fn get_tasks(args: TasksArgs<'_>) -> Result<(), GrokError> {
 
   let builder = wreq::get(TASKS_URL)
       .header(ACCEPT, "*/*")
-      .header(USER_AGENT, "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0")
+      .header(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0")
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
       .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
       .header(ORIGIN, "https://grok.com")

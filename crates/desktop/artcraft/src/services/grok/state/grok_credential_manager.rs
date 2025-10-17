@@ -29,7 +29,7 @@ impl GrokCredentialManager {
     let result = GrokSerializableState::read_from_disk(app_data_root);
     match result {
       Err(err) => {
-        warn!("Failed to read midjourney state from disk: {:?}", err);
+        warn!("Failed to read grok state from disk: {:?}", err);
         cookies = Arc::new(RwLock::new(None));
         //user_info = Arc::new(RwLock::new(None));
       },
@@ -145,6 +145,10 @@ impl GrokCredentialManager {
     //  Ok(info) => info.clone(),
     //};
 
+    let maybe_cookies_header= maybe_cookies
+        .as_ref()
+        .map(|cookies| cookies.to_cookie_string());
+
     let maybe_cookies= maybe_cookies
         .map(|cookies| cookies.to_serializable());
 
@@ -162,10 +166,16 @@ impl GrokCredentialManager {
       user_cookies: maybe_cookies,
     };
 
-    let path = self.app_data_root.credentials_dir().get_midjourney_state_path();
+    let path = self.app_data_root.credentials_dir().get_grok_state_path();
     let serialized = serde_json::to_string(&state)?;
 
     std::fs::write(path, serialized)?;
+
+    // TODO: This is just for building the client and testing.
+    if let Some(cookies_header) = maybe_cookies_header {
+      let path = self.app_data_root.credentials_dir().get_grok_cookies_path();
+      std::fs::write(path, cookies_header)?;
+    }
 
     Ok(())
   }
