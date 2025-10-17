@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use std::time::Duration;
 use log::info;
 use tokio::io::AsyncReadExt;
 use wreq::Client;
@@ -11,6 +12,7 @@ use crate::error::grok_generic_api_error::GrokGenericApiError;
 
 const WEBSOCKET_URL: &str = "wss://grok.com/ws/imagine/listen";
 //const WEBSOCKET_URL: &str = "https://grok.com/ws/imagine/listen";
+//const TASKS_URL: &str = "https://grok.com/rest/tasks";
 
 pub struct CreateListenWebsocketArgs<'a> {
   pub cookies: &'a str,
@@ -21,7 +23,9 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
   info!("Building client...");
 
   let client = Client::builder()
-      .emulation(Emulation::Firefox139)
+      .emulation(Emulation::Safari26)
+      .cert_verification(false)
+      .connect_timeout(Duration::from_secs(10))
       .build()
       .map_err(|err| GrokClientError::WreqClientError(err))?;
 
@@ -36,22 +40,23 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
       .header("Accept", "*/*")
       .header("Accept-Language", "en-US,en;q=0.5")
       .header("Accept-Encoding", "gzip, deflate, br, zstd")
-      .header("Sec-WebSocket-Version", "13")
+      //.header("Sec-WebSocket-Version", "13")
       .header("Origin", "https://grok.com")
-      .header("Sec-WebSocket-Extensions", "permessage-deflate")
-      .header("Sec-WebSocket-Key", "BhBXbFSG6/1xcZVq4ySxcg==") // TODO
-      .header("Sec-GPC", "1")
-      .header("Connection", "keep-alive, Upgrade")
+      //.header("Sec-WebSocket-Extensions", "permessage-deflate")
+      //.header("Sec-WebSocket-Key", "BhBXbFSG6/1xcZVq4ySxcg==") // TODO
+      //.header("Sec-GPC", "1")
+      //.header("Connection", "keep-alive, Upgrade")
       .header("Cookie", cookies)
-      .header("Sec-Fetch-Dest", "empty")
-      .header("Sec-Fetch-Mode", "websocket")
-      .header("Sec-Fetch-Site", "same-origin")
-      .header("Pragma", "no-cache")
-      .header("Cache-Control", "no-cache")
-      .header("Upgrade", "websocket")
+      //.header("Sec-Fetch-Dest", "empty")
+      //.header("Sec-Fetch-Mode", "websocket")
+      //.header("Sec-Fetch-Site", "same-origin")
+      //.header("Pragma", "no-cache")
+      //.header("Cache-Control", "no-cache")
+      //.header("Upgrade", "websocket")
       .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0")
-      .read_buffer_size(1024 * 1024)
-      .write_buffer_size(1024 * 1024);
+      //.read_buffer_size(1024 * 1024)
+      //.write_buffer_size(1024 * 1024)
+      ;
 
   println!("Sending...");
   info!("Sending...");
@@ -81,7 +86,6 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
   println!("Into websocket...");
   info!("Into websocket...");
 
-  /*
   // ApiGeneric(WreqError(wreq::Error { kind: Upgrade, source: "unexpected status code: 403 Forbidden" }))
   let mut websocket = response.into_websocket()
       .await
@@ -91,6 +95,7 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
     println!("WebSocket subprotocol: {:?}", protocol);
   }
 
+  /*
   let message = r#"
     {"type":"conversation.item.create","timestamp":1760673207293,"item":{"type":"message","content":[{"requestId":"3cedf20e-f51f-da5d-a124-ccec05faedf1","text":"A pirannah","type":"input_text","properties":{"section_count":0,"is_kids_mode":false,"enable_nsfw":true,"skip_upsampler":false,"is_initial":false}}]}}
   "#.trim().to_string();
