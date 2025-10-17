@@ -1,0 +1,64 @@
+Here are some potential ways we might be caught up in a WAF rule.
+
+The other alternative is that it's some heuristic, potentially related to the handshake.
+
+Dropdown
+-----------
+
+cookie - string matching tools
+Cookie value of [name] [operator - string matching tools] [value]
+Referer - string matching tools
+Request method - equals / does not equal / in - strict list of [GET, POST, PURGE, PUT, HEAD, OPTIONS, DELETE, PATCH]
+Hostname - string matching tools
+SSL/HTTPS - checkbox
+HTTP Version - equals / does not equal / in - strict list of [HTTP/1.0, HTTP/1.1, HTTP/1.2, HTTP/2, HTTP/3, SPDY/3.1]
+User agent - string matching tools
+Client certificate verified - checkbox
+Header - map for any header name + string matching tools
+Fallthrough detected - checkbox
+X-Forwarded-For - string matching tools
+
+URI, Path, Query, etc.
+
+WAF Attack Score Class - Attack, Likely Attack, Likely Clean, Clean
+Disposable email check - bool
+User and password leaked - bool
+Password Leaked - bool
+
+
+Expressions
+--------------
+
+cookie:
+    (http.cookie wildcard r"asdf=foo*")
+
+Cookie value of:
+    (any(http.request.cookies[""][*] matches ".*"))
+
+Referer:
+    (http.referer eq "https://example.com")
+
+Hostname:
+    (http.host eq "foo.com")
+
+SSL/HTTPS:
+    (ssl) - strictly on
+    (not ssl) - strictly off
+
+HTTP Version:
+    (http.request.version eq "HTTP/1.0")
+
+User Agent:
+    (http.user_agent wildcard r"Mozilla/*")
+
+Client Certificate Verified:
+    (cf.tls_client_auth.cert_verified) - check on
+
+Header:
+    (any(http.request.headers["header-name"][*] eq "foo"))
+
+Fallthrough detected:
+    (cf.api_gateway.fallthrough_detected)
+
+X-Forwarded-For:
+    (http.x_forwarded_for wildcard r"192.0.*")
