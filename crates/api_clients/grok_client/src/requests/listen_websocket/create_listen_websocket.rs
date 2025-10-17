@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use log::info;
 use wreq::Client;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, ORIGIN, PRAGMA, UPGRADE, USER_AGENT};
@@ -17,31 +18,32 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
   println!("Building client...");
   info!("Building client...");
 
-  let client = Client::builder()
-      .emulation(Emulation::Firefox139)
-      .build()
-      .map_err(|err| GrokClientError::WreqClientError(err))?;
+  //let client = Client::builder()
+  //    .emulation(Emulation::Firefox139)
+  //    .build()
+  //    .map_err(|err| GrokClientError::WreqClientError(err))?;
 
   println!("Configuring client...");
   info!("Configuring client...");
 
-  let builder = client.get(WEBSOCKET_URL)
+  let builder = wreq::websocket(WEBSOCKET_URL)
       .header(ACCEPT, "*/*")
       .header(USER_AGENT, "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0")
-      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
-      .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
-      .header("Sec-WebSocket-Version", "13")
+      //.header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
+      //.header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
+      //.header("Sec-WebSocket-Version", "13")
       .header(ORIGIN, "https://grok.com")
-      .header("Sec-WebSocket-Extensions", "permessage-deflate")
-      // Sec-WebSocket-Key: BhBXbFSG6/1xcZVq4ySxcg==
-      .header("Sec-GPC", "1")
-      .header(CONNECTION, "keep-alive, Upgrade")
+      //.header("Sec-WebSocket-Extensions", "permessage-deflate")
+      //.header("Sec-WebSocket-Key", "BhBXbFSG6/1xcZVq4ySxcg==") // TODO
+      //.header("Sec-GPC", "1")
+      //.header(CONNECTION, "keep-alive, Upgrade")
       .header(COOKIE, args.cookies.to_string())
-      .header("Sec-Fetch-Dest", "empty")
-      .header("Sec-Fetch-Mode", "websocket")
-      .header("Sec-Fetch-Site", "same-origin")
+      //.header("Sec-Fetch-Dest", "empty")
+      //.header("Sec-Fetch-Mode", "websocket")
+      //.header("Sec-Fetch-Site", "same-origin")
       .header(PRAGMA, "no-cache")
       .header(CACHE_CONTROL, "no-cache")
+      .read_buffer_size(1024 * 1024);
       //.header(UPGRADE, "websocket")
       //.map_err(|err| GrokClientError::WreqClientError(err))?;
 
@@ -53,27 +55,30 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
       .map_err(|err| GrokClientError::WreqClientError(err))?;
 
   let status = response.status();
-
-  for (k, v) in response.headers().iter() {
-    println!("Header: {}: {:?}", k, v);
-  }
-
-  println!("Upgrading...");
-  info!("Upgrading...");
-
-  let upgraded = response
-      .upgrade()
-      .await
-      .map_err(|err| GrokClientError::WreqClientError(err))?;
-
   println!("Status: {}", status);
+
+  //for (k, v) in response.headers().iter() {
+  //  println!("Header: {}: {:?}", k, v);
+  //}
+
+  //println!("Upgrading...");
+  //info!("Upgrading...");
+  //let upgraded = response
+  //    .upgrade()
+  //    .await
+  //    .map_err(|err| GrokClientError::WreqClientError(err))?;
+
 
   println!("Into websocket...");
   info!("Into websocket...");
 
-  let mut websocket = upgraded.into_websocket()
+  let mut websocket = response.into_websocket()
       .await
       .map_err(|err| GrokGenericApiError::WreqError(err))?;
+
+  if let Some(protocol) = websocket.protocol() {
+    println!("WebSocket subprotocol: {:?}", protocol);
+  }
 
   let message = r#"
     {"type":"conversation.item.create","timestamp":1760675883072,"item":{"type":"message","content":[{"requestId":"3cedf20e-f51c-db5d-a124-bcec05feedf1","text":"A pirannah","type":"input_text","properties":{"section_count":0,"is_kids_mode":false,"enable_nsfw":true,"skip_upsampler":false,"is_initial":false}}]}}
