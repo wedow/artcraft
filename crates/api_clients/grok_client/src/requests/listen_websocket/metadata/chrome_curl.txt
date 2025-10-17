@@ -67,4 +67,10 @@ curl-impersonate-chrome  -vvv 'wss://grok.com/ws/imagine/listen' \
 
 Removing the cookie turns it into a Cloudflare 401.
 
+--------------------------------------------
 
+--include --no-buffer --header "Connection: Upgrade" \
+     --header "Upgrade: websocket" \
+     --header "Host: example.com" \
+     --header "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" \
+     --header "Sec-WebSocket-Version: 13" \
