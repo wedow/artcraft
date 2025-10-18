@@ -26,13 +26,15 @@ pub async fn get_tasks(args: TasksArgs<'_>) -> Result<(), GrokError> {
 
   info!("Configuring client...");
 
+  let cookie = "_ga=GA1.1.1232202746.1760710013; i18nextLng=en; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; stblid=b3331fc1-45d7-466b-83df-67427c0b2367; mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel=%7B%22distinct_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%2C%22%24device_id%22%3A%2279ce237a-a0f3-4913-bf4b-519ac8a98263%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D; _ga_8FEWB057YH=GS2.1.s1760724394$o3$g1$t1760724401$j53$l0$h0";
+
   let builder = client.get(TASKS_URL)
       .header(ACCEPT, "*/*")
       .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
       .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
       .header(ORIGIN, "https://grok.com")
-      .header(COOKIE, args.cookies.to_string())
+      .header(COOKIE, cookie)
       .header(PRAGMA, "no-cache")
       .header(CACHE_CONTROL, "no-cache");
 
