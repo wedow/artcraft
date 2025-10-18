@@ -25,6 +25,15 @@ fn build_firefox_139_client() -> Result<Client, GrokError> {
       .map_err(|err| GrokClientError::WreqClientError(err))?)
 }
 
+fn build_firefox_143_client() -> Result<Client, GrokError> {
+  Ok(Client::builder()
+      .emulation(Emulation::Firefox143) // NB: THIS IS IDENTICAL IN FINGERPRINT TO REAL FIREFOX !!!
+      .connection_verbose(true)
+      .connect_timeout(Duration::from_secs(10))
+      .build()
+      .map_err(|err| GrokClientError::WreqClientError(err))?)
+}
+
 async fn get_with_client(client: &Client) -> Result<String, GrokError> {
   let builder = client.get(FINGERPRINT_URL)
       .header("Accept", "application/json");
@@ -48,8 +57,8 @@ mod tests {
 
   #[tokio::test]
   #[ignore] // manually test
-  async fn test_chrome_140() -> AnyhowResult<()> {
-    let client = build_chrome_140_client()?;
+  async fn test() -> AnyhowResult<()> {
+    let client = build_firefox_143_client()?;
     let body = get_with_client(&client).await?;
     println!("{}", body);
     assert_eq!(1, 2);
