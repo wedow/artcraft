@@ -1,0 +1,127 @@
+{
+  "ja3": "772,4867-4866-4865-52393-52392-52394-49200-49196-49192-49188-49172-49162-159-107-57-65413-196-136-129-157-61-53-192-132-49199-49195-49191-49187-49171-49161-158-103-51-190-69-156-60-47-186-65-49169-49159-5-4-49170-49160-22-10-255,43-51-0-11-10-13-16,29-23-24-25,0",
+  "ja3n": "772,4867-4866-4865-52393-52392-52394-49200-49196-49192-49188-49172-49162-159-107-57-65413-196-136-129-157-61-53-192-132-49199-49195-49191-49187-49171-49161-158-103-51-190-69-156-60-47-186-65-49169-49159-5-4-49170-49160-22-10-255,0-10-11-13-16-43-51,29-23-24-25,0",
+  "ja3_digest": "24616f5fb8dca2ce982ecd4fc9151fae",
+  "ja3n_digest": "8e46727c37cb29291ec1c5b31cdbe987",
+  "scrapfly_fp": "version:772|ch_ciphers:4867-4866-4865-52393-52392-52394-49200-49196-49192-49188-49172-49162-159-107-57-65413-196-136-129-157-61-53-192-132-49199-49195-49191-49187-49171-49161-158-103-51-190-69-156-60-47-186-65-49169-49159-5-4-49170-49160-22-10-255|ch_extensions:0-10-11-13-16-43-51|groups:29-23-24-25|points:0|compression:0|supported_versions:772-771-770-769|supported_protocols:h2-http11|key_shares:29|psk:NO|signature_algs:2054-1537-1539-2053-1281-1283-2052-1025-1027-513-515|early_data:0|",
+  "scrapfly_fp_digest": "f0ccdcf334afd6553b6f4edcf4bf8d33",
+  "tls": {
+    "version": "0x0303 - TLS 1.2",
+    "ciphers": [
+      "TLS_CHACHA20_POLY1305_SHA256",
+      "TLS_AES_256_GCM_SHA384",
+      "TLS_AES_128_GCM_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+      "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
+      "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+      "0xFF85",
+      "0x00C4",
+      "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA",
+      "TLS_GOSTR341001_WITH_28147_CNT_IMIT",
+      "TLS_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_RSA_WITH_AES_256_CBC_SHA256",
+      "TLS_RSA_WITH_AES_256_CBC_SHA",
+      "0x00C0",
+      "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA",
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+      "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256",
+      "TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA",
+      "TLS_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA256",
+      "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA",
+      "TLS_ECDHE_RSA_WITH_RC4_128_SHA",
+      "TLS_ECDHE_ECDSA_WITH_RC4_128_SHA",
+      "TLS_RSA_WITH_RC4_128_SHA",
+      "TLS_RSA_WITH_RC4_128_MD5",
+      "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA",
+      "TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA",
+      "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
+      "TLS_RSA_WITH_3DES_EDE_CBC_SHA",
+      "TLS_EMPTY_RENEGOTIATION_INFO"
+    ],
+    "curves": [
+      "X25519 (29)",
+      "secp256r1 (23)",
+      "secp384r1 (24)",
+      "secp521r1 (25)"
+    ],
+    "extensions": [
+      "supported_versions (43) (IANA)",
+      "key_share (51) (IANA)",
+      "server_name (0) (IANA)",
+      "ec_point_formats (11) (IANA)",
+      "supported_groups (10) (IANA)",
+      "signature_algorithms (13) (IANA)",
+      "application_layer_protocol_negotiation (16) (IANA)"
+    ],
+    "points": [
+      "0x00"
+    ],
+    "protocols": [
+      "h2",
+      "http/1.1"
+    ],
+    "versions": [
+      "772",
+      "771",
+      "770",
+      "769"
+    ],
+    "handshake_duration": "86.820522ms",
+    "is_session_resumption": false,
+    "session_ticket_supported": false,
+    "support_secure_renegotiation": true,
+    "supported_tls_versions": [
+      772,
+      771,
+      770,
+      769
+    ],
+    "supported_protocols": [
+      "h2",
+      "http11"
+    ],
+    "signature_algorithms": [
+      2054,
+      1537,
+      1539,
+      2053,
+      1281,
+      1283,
+      2052,
+      1025,
+      1027,
+      513,
+      515
+    ],
+    "psk_key_exchange_mode": null,
+    "cert_compression_algorithms": "AA==",
+    "early_data": false,
+    "using_psk": false,
+    "selected_protocol": "h2",
+    "selected_curve_group": 29,
+    "selected_cipher_suite": 4867,
+    "key_shares": [
+      29
+    ]
+  }
+}

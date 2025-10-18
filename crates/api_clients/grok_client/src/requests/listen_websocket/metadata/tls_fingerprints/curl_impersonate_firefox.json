@@ -1,0 +1,120 @@
+{
+  "ja3": "772,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49187-49191-49172-158-52394-159-51-50-103-57-56-107-22-19-156-157-47-60-53-61-10-5-4,0-23-65281-10-11-35-16-5-34-51-43-13-45-28,29-23-24-25-256-257,0",
+  "ja3n": "772,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49187-49191-49172-158-52394-159-51-50-103-57-56-107-22-19-156-157-47-60-53-61-10-5-4,0-5-10-11-13-16-23-28-34-35-43-45-51-65281,29-23-24-25-256-257,0",
+  "ja3_digest": "fd4c25ca69d1fcaed40c6c9a02faa54e",
+  "ja3n_digest": "0351cd0b39726e68b27dc34b44a4fbad",
+  "scrapfly_fp": "version:772|ch_ciphers:4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49187-49191-49172-158-52394-159-51-50-103-57-56-107-22-19-156-157-47-60-53-61-10-5-4|ch_extensions:0-5-10-11-13-16-23-28-34-35-43-45-51-65281|groups:29-23-24-25-256-257|points:0|compression:0|supported_versions:772-771|supported_protocols:h2-http11|key_shares:29-23|psk:1|signature_algs:1027-1283-1539-2052-2053-2054-1025-1281-1537-515-513|early_data:0|",
+  "scrapfly_fp_digest": "f9599c49ad3166009db13c9168a3368d",
+  "tls": {
+    "version": "0x0303 - TLS 1.2",
+    "ciphers": [
+      "TLS_AES_128_GCM_SHA256",
+      "TLS_CHACHA20_POLY1305_SHA256",
+      "TLS_AES_256_GCM_SHA384",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+      "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+      "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
+      "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+      "TLS_DHE_DSS_WITH_AES_256_CBC_SHA",
+      "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
+      "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
+      "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA",
+      "TLS_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_RSA_WITH_AES_256_CBC_SHA",
+      "TLS_RSA_WITH_AES_256_CBC_SHA256",
+      "TLS_RSA_WITH_3DES_EDE_CBC_SHA",
+      "TLS_RSA_WITH_RC4_128_SHA",
+      "TLS_RSA_WITH_RC4_128_MD5"
+    ],
+    "curves": [
+      "X25519 (29)",
+      "secp256r1 (23)",
+      "secp384r1 (24)",
+      "secp521r1 (25)",
+      "ffdhe2048 (256)",
+      "ffdhe3072 (257)"
+    ],
+    "extensions": [
+      "server_name (0) (IANA)",
+      "extended_master_secret (23) (IANA)",
+      "extensionRenegotiationInfo (boringssl) (65281) (IANA)",
+      "supported_groups (10) (IANA)",
+      "ec_point_formats (11) (IANA)",
+      "session_ticket (35) (IANA)",
+      "application_layer_protocol_negotiation (16) (IANA)",
+      "status_request (5) (IANA)",
+      "delegated_credentials (34) (IANA)",
+      "key_share (51) (IANA)",
+      "supported_versions (43) (IANA)",
+      "signature_algorithms (13) (IANA)",
+      "psk_key_exchange_modes (45) (IANA)",
+      "record_size_limit (28) (IANA)",
+      "padding (21) (IANA)"
+    ],
+    "points": [
+      "0x00"
+    ],
+    "protocols": [
+      "h2",
+      "http/1.1"
+    ],
+    "versions": [
+      "772",
+      "771"
+    ],
+    "handshake_duration": "92.872472ms",
+    "is_session_resumption": false,
+    "session_ticket_supported": true,
+    "support_secure_renegotiation": true,
+    "supported_tls_versions": [
+      772,
+      771
+    ],
+    "supported_protocols": [
+      "h2",
+      "http11"
+    ],
+    "signature_algorithms": [
+      1027,
+      1283,
+      1539,
+      2052,
+      2053,
+      2054,
+      1025,
+      1281,
+      1537,
+      515,
+      513
+    ],
+    "psk_key_exchange_mode": "AQ==",
+    "cert_compression_algorithms": "AA==",
+    "early_data": false,
+    "using_psk": false,
+    "selected_protocol": "h2",
+    "selected_curve_group": 29,
+    "selected_cipher_suite": 4865,
+    "key_shares": [
+      29,
+      23
+    ]
+  }
+}
