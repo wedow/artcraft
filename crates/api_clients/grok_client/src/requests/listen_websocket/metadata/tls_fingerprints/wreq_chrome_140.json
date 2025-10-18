@@ -1,0 +1,103 @@
+{
+  "ja3": "772,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,65037-23-13-11-17613-16-5-45-51-0-35-65281-18-27-43-10,4588-29-23-24,0",
+  "ja3n": "772,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-5-10-11-13-16-18-23-27-35-43-45-51-17613-65037-65281,4588-29-23-24,0",
+  "ja3_digest": "d32a22eaeec9c58fb7db3d14f344aad0",
+  "ja3n_digest": "dcefaf3f0e71d260d19dc1d0749c9278",
+  "scrapfly_fp": "version:772|ch_ciphers:GREASE-4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53|ch_extensions:GREASE-0-5-10-11-13-16-18-23-27-35-43-45-51-17613-65037-65281-GREASE|groups:GREASE-4588-29-23-24|points:0|compression:0|supported_versions:GREASE-772-771|supported_protocols:h2-http11|key_shares:GREASE-4588-29|psk:1|signature_algs:1027-2052-1025-1283-2053-1281-2054-1537|early_data:0|",
+  "scrapfly_fp_digest": "2084695c9595178c76ba04d5d080dab8",
+  "tls": {
+    "version": "0x0303 - TLS 1.2",
+    "ciphers": [
+      "0x9A9A",
+      "TLS_AES_128_GCM_SHA256",
+      "TLS_AES_256_GCM_SHA384",
+      "TLS_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+      "TLS_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_RSA_WITH_AES_256_CBC_SHA"
+    ],
+    "curves": [
+      "TLS_GREASE (0xAAAA)",
+      "X25519MLKEM768 (4588)",
+      "X25519 (29)",
+      "secp256r1 (23)",
+      "secp384r1 (24)"
+    ],
+    "extensions": [
+      "GREASE (0xCACA)",
+      "extensionEncryptedClientHello (65037) (boringssl)",
+      "extended_master_secret (23) (IANA)",
+      "signature_algorithms (13) (IANA)",
+      "ec_point_formats (11) (IANA)",
+      "extensionApplicationSettingsNewCodepoint (17613) (boringssl)",
+      "application_layer_protocol_negotiation (16) (IANA)",
+      "status_request (5) (IANA)",
+      "psk_key_exchange_modes (45) (IANA)",
+      "key_share (51) (IANA)",
+      "server_name (0) (IANA)",
+      "session_ticket (35) (IANA)",
+      "extensionRenegotiationInfo (boringssl) (65281) (IANA)",
+      "signed_certificate_timestamp (18) (IANA)",
+      "compress_certificate (27) (IANA)",
+      "supported_versions (43) (IANA)",
+      "supported_groups (10) (IANA)",
+      "GREASE (0xBABA)"
+    ],
+    "points": [
+      "0x00"
+    ],
+    "protocols": [
+      "h2",
+      "http/1.1"
+    ],
+    "versions": [
+      "6682",
+      "772",
+      "771"
+    ],
+    "handshake_duration": "80.965498ms",
+    "is_session_resumption": false,
+    "session_ticket_supported": true,
+    "support_secure_renegotiation": true,
+    "supported_tls_versions": [
+      6682,
+      772,
+      771
+    ],
+    "supported_protocols": [
+      "h2",
+      "http11"
+    ],
+    "signature_algorithms": [
+      1027,
+      2052,
+      1025,
+      1283,
+      2053,
+      1281,
+      2054,
+      1537
+    ],
+    "psk_key_exchange_mode": "AQ==",
+    "cert_compression_algorithms": "AA==",
+    "early_data": false,
+    "using_psk": false,
+    "selected_protocol": "h2",
+    "selected_curve_group": 4588,
+    "selected_cipher_suite": 4865,
+    "key_shares": [
+      43690,
+      4588,
+      29
+    ]
+  }
+}
