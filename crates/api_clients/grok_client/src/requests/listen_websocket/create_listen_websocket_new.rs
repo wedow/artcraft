@@ -5,7 +5,7 @@ use std::ops::Deref;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
 use wreq::{Client, Proxy};
-use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, COOKIE, ORIGIN, SEC_WEBSOCKET_EXTENSIONS, USER_AGENT};
+use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, CACHE_CONTROL, COOKIE, ORIGIN, PRAGMA, SEC_WEBSOCKET_EXTENSIONS, USER_AGENT};
 use wreq_util::Emulation;
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 
@@ -53,10 +53,20 @@ pub async fn create_listen_websocket_new() -> Result<(), GrokError> {
       .header(COOKIE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
       .header(ORIGIN,"https://grok.com")
       .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
-      .header(SEC_WEBSOCKET_EXTENSIONS, "permessage-deflate; client_max_window_bits")
+      .header(SEC_WEBSOCKET_EXTENSIONS, "permessage-deflate")
       .header(ACCEPT, "*/*")
-      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
+      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
+      .header("Sec-Fetch-Dest", "empty")
+      .header("Sec-Fetch-Mode", "websocket")
+      .header("Sec-Fetch-Site", "same-origin")
+      .header(PRAGMA, "no-cache")
+      .header(CACHE_CONTROL, "no-cache")
       ;
+
+  // TODO: Connect: keep-alive --> keep-alive, Upgrade
+  // TODO: Accept-Encoding: "gzip, deflate, br, zstd"
+  // TODO: Camel case header names
+  // TODO: Header orders!
 
   let response = builder.send()
       .await
