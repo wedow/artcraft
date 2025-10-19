@@ -5,7 +5,7 @@ use crate::requests::listen_websocket::cookies::SESSION_COOKIES_WITHOUT_CF_CLEAR
 use std::ops::Deref;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
-use wreq::header::{HeaderMap, ACCEPT, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, HOST, ORIGIN, PRAGMA, SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_KEY, SEC_WEBSOCKET_VERSION, UPGRADE, USER_AGENT};
+use wreq::header::{HeaderMap, HeaderName, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, HOST, ORIGIN, PRAGMA, SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_KEY, SEC_WEBSOCKET_VERSION, UPGRADE, USER_AGENT};
 use wreq::{Client, Proxy, Version};
 use wreq_util::Emulation;
 
@@ -32,8 +32,8 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
 
   let mut proxy = None;
 
-  proxy = Some(Proxy::https("http://127.0.0.1:8080")
-      .map_err(|err| GrokClientError::WreqClientError(err))?);
+  //proxy = Some(Proxy::https("http://127.0.0.1:8080")
+  //    .map_err(|err| GrokClientError::WreqClientError(err))?);
 
   if let Some(proxy) = proxy {
     client_builder = client_builder
@@ -53,18 +53,19 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
       .version(Version::HTTP_11)
       .default_headers(false)
       .header(HOST, "grok.com")
-      .header(COOKIE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
-      .header(ORIGIN,"https://grok.com")
       .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
-      .header(SEC_WEBSOCKET_EXTENSIONS, "permessage-deflate")
       .header(ACCEPT, "*/*")
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
+      .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
+      .header(SEC_WEBSOCKET_VERSION, 13)
+      .header(ORIGIN,"https://grok.com")
+      .header(SEC_WEBSOCKET_EXTENSIONS, "permessage-deflate")
+      .header(SEC_WEBSOCKET_KEY, "X2NHDjwqbk4quToBT5L97Q==")
+      .header(CONNECTION, "keep-alive, Upgrade")
+      .header(COOKIE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
       .header("Sec-Fetch-Dest", "empty")
       .header("Sec-Fetch-Mode", "websocket")
       .header("Sec-Fetch-Site", "same-origin")
-      .header(SEC_WEBSOCKET_VERSION, 13)
-      .header(SEC_WEBSOCKET_KEY, "X2NHDjwqbk4quToBT5L97Q==")
-      .header(CONNECTION, "keep-alive, Upgrade")
       .header(PRAGMA, "no-cache")
       .header(CACHE_CONTROL, "no-cache")
       .header(UPGRADE, "websocket")

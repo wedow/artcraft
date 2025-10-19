@@ -1,3 +1,13 @@
+Host:                      grok.com
+User-Agent:                Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0
+Accept:                    */*
+Accept-Language:           en-US,en;q=0.5
+accept-encoding:           gzip, deflate, br, zstd
+Sec-WebSocket-Version:     13
+Origin:                    https://grok.com
+Sec-WebSocket-Extensions:  permessage-deflate
+Sec-WebSocket-Key:         X2NHDjwqbk4quToBT5L97Q==
+Connection:                keep-alive, Upgrade
 Cookie:                    _ga=GA1.1.1232202746.1760710013; i18nextLng=en; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTct
                            OWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzct
                            OTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; stblid=b3331fc1-45d7-466b-83df-67427c0b2367; mp_ea93da91
@@ -5,16 +15,9 @@ Cookie:                    _ga=GA1.1.1232202746.1760710013; i18nextLng=en; sso=e
                            913-bf4b-519ac8a98263%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A
                            %7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A
                            %5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D; _ga_8FEWB057YH=GS2.1.s1760724394$o3$g1$t1760724401$j53$l0$h0
-Origin:                    https://grok.com
-User-Agent:                Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0
-Sec-WebSocket-Extensions:  permessage-deflate
-Accept:                    */*
-Accept-Language:           en-US,en;q=0.5
 sec-fetch-dest:            empty
 sec-fetch-mode:            websocket
 sec-fetch-site:            same-origin
 Pragma:                    no-cache
 Cache-Control:             no-cache
 Upgrade:                   websocket
-accept-encoding:           zstd,gzip,deflate,br
-Host:                      grok.com
