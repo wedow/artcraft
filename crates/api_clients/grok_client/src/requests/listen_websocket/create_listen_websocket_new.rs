@@ -5,7 +5,7 @@ use std::ops::Deref;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
 use wreq::{Client, Proxy};
-use wreq::header::{ACCEPT_LANGUAGE, ORIGIN, USER_AGENT};
+use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, COOKIE, ORIGIN, SEC_WEBSOCKET_EXTENSIONS, USER_AGENT};
 use wreq_util::Emulation;
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 
@@ -49,13 +49,14 @@ pub async fn create_listen_websocket_new() -> Result<(), GrokError> {
 
   let builder = client.websocket(WEBSOCKET_URL)
       //.header("Host", "grok.com")
-      .header("Cookie", SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
       .default_headers(false)
+      .header(COOKIE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
       .header(ORIGIN,"https://grok.com")
-      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
       .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
-      .header("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits");
-  //.header("Accept", "*/*") // NB: Accept isn't in Chrome MITMProxy
+      .header(SEC_WEBSOCKET_EXTENSIONS, "permessage-deflate; client_max_window_bits")
+      .header(ACCEPT, "*/*")
+      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.9")
+      ;
 
   let response = builder.send()
       .await
