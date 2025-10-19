@@ -1,7 +1,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::requests::listen_websocket::cookies::SESSION_COOKIES_WITHOUT_CF_CLEARANCE;
+use crate::requests::listen_websocket::cookies::{FIREFOX_IMPERSONATE_COOKIE_WITH_CF_CLEARANCE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE};
 use std::ops::Deref;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
@@ -28,6 +28,7 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
       .emulation(Emulation::Firefox143)
       .default_headers(HeaderMap::new())
       .cookie_store(true)
+      .http1_options()
       .connection_verbose(true)
       .connect_timeout(Duration::from_secs(10));
 
@@ -49,13 +50,14 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
   println!();
   println!();
   let result = request_tasks(&client).await;
-  println!();
-  println!();
 
   match result {
     Ok(_) => println!("Request tasks succeeded"),
     Err(err) => println!("Request tasks failed: {:?}", err),
   }
+
+  println!();
+  println!();
 
   //.http1_only() // NB: Not needed - websockets are sent over HTTP/1.1 without this configuration
   //.cookie_store(true)
@@ -74,7 +76,7 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
       .header(SEC_WEBSOCKET_EXTENSIONS, "permessage-deflate")
       .header(SEC_WEBSOCKET_KEY, "X2NHDjwqbk4quToBT5L97Q==")
       .header(CONNECTION, "keep-alive, Upgrade")
-      .header(COOKIE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
+      .header(COOKIE, FIREFOX_IMPERSONATE_COOKIE_WITH_CF_CLEARANCE)
       .header("Sec-Fetch-Dest", "empty")
       .header("Sec-Fetch-Mode", "websocket")
       .header("Sec-Fetch-Site", "same-origin")
