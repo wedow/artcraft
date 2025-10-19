@@ -1,13 +1,14 @@
+use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
+use crate::requests::listen_websocket::cookies::FIREFOX_IMPERSONATE_COOKIE_WITH_CF_CLEARANCE;
 use log::info;
 use std::ops::Deref;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, ORIGIN, PRAGMA, UPGRADE, USER_AGENT};
 use wreq::ws::message::Message;
 use wreq::Client;
 use wreq_util::Emulation;
-use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 
 // Not even sure what this endpoint just, just testing auth
 const TASKS_URL: &str = "https://grok.com/rest/tasks";
@@ -66,11 +67,11 @@ pub async fn get_tasks(args: TasksArgs<'_>) -> Result<(), GrokError> {
 
 #[cfg(test)]
 mod tests {
-  use log::LevelFilter;
   use super::*;
   use crate::test_utils::get_test_cookies::get_test_cookies;
-  use errors::AnyhowResult;
   use crate::test_utils::setup_test_logging::setup_test_logging;
+  use errors::AnyhowResult;
+  use log::LevelFilter;
 
   #[tokio::test]
   #[ignore] // manually test

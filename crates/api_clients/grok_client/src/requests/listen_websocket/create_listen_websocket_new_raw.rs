@@ -33,8 +33,8 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
 
   let mut proxy = None;
 
-  //proxy = Some(Proxy::https("http://127.0.0.1:8080")
-  //    .map_err(|err| GrokClientError::WreqClientError(err))?);
+  proxy = Some(Proxy::https("http://127.0.0.1:8080")
+      .map_err(|err| GrokClientError::WreqClientError(err))?);
 
   if let Some(proxy) = proxy {
     client_builder = client_builder
@@ -112,6 +112,7 @@ async fn request_tasks(client: &Client) -> Result<(), GrokError> {
   const TASKS_URL: &str = "https://grok.com/rest/tasks";
 
   let builder = client.get(TASKS_URL)
+      .default_headers(false)
       .header(ACCEPT, "*/*")
       .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
