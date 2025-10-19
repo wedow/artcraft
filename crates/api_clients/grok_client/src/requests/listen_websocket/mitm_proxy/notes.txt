@@ -1,0 +1,13 @@
+
+Wreq request:
+
+- Cookie sent before Host !! both chrome and firefox send `Host` first!
+- `cookie` is lowercase
+- `host` is lowercase
+- `user-agent` sent twice!
+- no origin header (firefox and chrome have it)
+- sends "te: trailers" (chrome and firefox do not)
+- sends `sec-fetch-dest: document` (firefox doesn't, crhome sends "empty")
+- sends `sec-fetch-mode: navigate` (firefox doesn't, chrome sends "websocket)
+- sends "priority"
+
