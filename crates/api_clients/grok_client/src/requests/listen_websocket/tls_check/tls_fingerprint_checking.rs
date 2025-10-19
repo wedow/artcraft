@@ -1,8 +1,8 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use std::time::Duration;
-use wreq::header::USER_AGENT;
-use wreq::Client;
+use wreq::header::{HeaderMap, USER_AGENT};
+use wreq::{Client, Proxy};
 use wreq_util::Emulation;
 
 const FINGERPRINT_URL : &str = "https://tools.scrapfly.io/api/tls";
@@ -28,6 +28,20 @@ fn build_firefox_139_client() -> Result<Client, GrokError> {
 fn build_firefox_143_client() -> Result<Client, GrokError> {
   Ok(Client::builder()
       .emulation(Emulation::Firefox143) // NB: THIS IS IDENTICAL IN FINGERPRINT TO REAL FIREFOX !!!
+      .connection_verbose(true)
+      .connect_timeout(Duration::from_secs(10))
+      .build()
+      .map_err(|err| GrokClientError::WreqClientError(err))?)
+}
+
+fn build_raw_firefox_client_with_proxy() -> Result<Client, GrokError> {
+  let proxy = Proxy::https("http://127.0.0.1:8080")
+      .map_err(|err| GrokClientError::WreqClientError(err))?;
+  Ok(Client::builder()
+      .emulation(Emulation::Firefox143)
+      .default_headers(HeaderMap::new())
+      .proxy(proxy)
+      .cert_verification(false)
       .connection_verbose(true)
       .connect_timeout(Duration::from_secs(10))
       .build()

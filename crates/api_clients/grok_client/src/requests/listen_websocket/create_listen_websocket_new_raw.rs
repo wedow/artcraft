@@ -27,6 +27,7 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
   let mut client_builder = Client::builder()
       .emulation(Emulation::Firefox143)
       .default_headers(HeaderMap::new())
+      .cookie_store(true)
       .connection_verbose(true)
       .connect_timeout(Duration::from_secs(10));
 
@@ -44,6 +45,17 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
   let client = client_builder
       .build()
       .map_err(|err| GrokClientError::WreqClientError(err))?;
+
+  println!();
+  println!();
+  let result = request_tasks(&client).await;
+  println!();
+  println!();
+
+  match result {
+    Ok(_) => println!("Request tasks succeeded"),
+    Err(err) => println!("Request tasks failed: {:?}", err),
+  }
 
   //.http1_only() // NB: Not needed - websockets are sent over HTTP/1.1 without this configuration
   //.cookie_store(true)
@@ -91,6 +103,39 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
 
   for (name, value) in response.headers() {
     println!("Header: {}: {}", name.as_str(), value.to_str().unwrap());
+  }
+
+  Ok(())
+}
+
+async fn request_tasks(client: &Client) -> Result<(), GrokError> {
+  const TASKS_URL: &str = "https://grok.com/rest/tasks";
+
+  let builder = client.get(TASKS_URL)
+      .header(ACCEPT, "*/*")
+      .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
+      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
+      .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
+      .header(ORIGIN, "https://grok.com")
+      .header(COOKIE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
+      .header(PRAGMA, "no-cache")
+      .header(CACHE_CONTROL, "no-cache");
+
+  let response = builder.send()
+      .await
+      .map_err(|err| GrokClientError::WreqClientError(err))?;
+
+  println!("Tasks response version: {:?}", response.version());
+
+  let status = response.status();
+  println!("Tasks Status: {}", status);
+
+  for cookie in response.cookies() {
+    println!("Tasks cookie: {}={}", cookie.name(), cookie.value());
+  }
+
+  for (name, value) in response.headers() {
+    println!("Tasks header: {}: {}", name.as_str(), value.to_str().unwrap());
   }
 
   Ok(())
