@@ -1,0 +1,22 @@
+Host:                      grok.com
+Connection:                Upgrade
+Pragma:                    no-cache
+Cache-Control:             no-cache
+User-Agent:                Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Upgrade:                   websocket
+Origin:                    https://grok.com
+Sec-WebSocket-Version:     13
+Accept-Encoding:           gzip, deflate, br, zstd
+Accept-Language:           en-US,en;q=0.9
+Cookie:                    _ga=GA1.1.1232202746.1760710013; i18nextLng=en; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTct
+                           OWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzct
+                           OTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; stblid=b3331fc1-45d7-466b-83df-67427c0b2367; cf_clearanc
+                           e=pHyVLkkYV0wHKuAHOqhI3paeuJoM5VqHFXksRO.5poo-1760763724-1.2.1.1-uNM2i.EbSArwG0hMIz04Y3yMvxMnHMeuXgGbK_qdNGRB1ElLRJhO8pO5xs9zd1ZiR9NYLQmk5Z8Z
+                           BZazkIbsd0bHowJ06XjzcvWTDREB_enubIV82nhnkH_wVm2Cb9lQisSp0nAEeG7UubY4202XcmS3cDAiK_ihEXOI1zCiZdMC0JDgVThOU6HWunJrAiVkAQ880dhb.MmiJ2Lrs.8T1UdJQ
+                           WmE.DXmWja3dyUxKmU; mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel=%7B%22distinct_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%2C%22%24de
+                           vice_id%22%3A%2279ce237a-a0f3-4913-bf4b-519ac8a98263%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%
+                           22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mp
+                           r%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D;
+                           _ga_8FEWB057YH=GS2.1.s1760763724$o4$g1$t1760763725$j59$l0$h0
+Sec-WebSocket-Key:         RB4Awj8U5qcXxoQfKQPVtQ==
+Sec-WebSocket-Extensions:  permessage-deflate; client_max_window_bits

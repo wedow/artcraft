@@ -34,7 +34,7 @@ pub async fn create_listen_websocket_new() -> Result<(), GrokError> {
   //.cookie_store(true)
 
   let builder = client.websocket(WEBSOCKET_URL)
-      .header("Accept", "*/*")
+      //.header("Accept", "*/*") // NB: Accept isn't in Chrome MITMProxy
       .header("Cookie", SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
       .header("Host", "grok.com")
       .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT);

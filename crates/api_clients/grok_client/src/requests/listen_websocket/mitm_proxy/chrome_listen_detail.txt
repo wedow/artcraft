@@ -1,0 +1,37 @@
+Server Connection:
+    Address           grok.com:443
+    Resolved Address  104.18.28.234:443
+    HTTP Version      HTTP/1.1
+    ALPN              http/1.1
+Server Certificate:
+    Type           EC (secp256r1), 256 bits
+    SHA256 digest  bb 6e e7 1f 26 4c ea 10 5c a4 26 c1 93 3d f3 99 c5 a3 c9 e8 a6 e3 d3 03 e4 44 66 44 65 c1 3f 47
+    Valid from     2025-09-25 19:14:19+00:00
+    Valid to       2025-12-24 20:14:16+00:00
+    Serial         291992553975709925923951507305721322045
+    Subject        CN  grok.com
+    Issuer         C   US
+                   O   Google Trust Services
+                   CN  WE1
+    Alt names      grok.com, typeahead.grok.com
+Client Connection:
+    Address                 127.0.0.1:63171
+    HTTP Version            HTTP/1.1
+    TLS Version             TLSv1.3
+    Server Name Indication  grok.com
+    Cipher Name             TLS_AES_256_GCM_SHA384
+    ALPN                    http/1.1
+Timing:
+    Client conn. established    2025-10-18 01:02:06.884
+    Server conn. initiated      2025-10-18 01:02:06.888
+    Server conn. TCP handshake  2025-10-18 01:02:06.899
+    Server conn. TLS handshake  2025-10-18 01:02:06.923
+    Client conn. TLS handshake  2025-10-18 01:02:06.925
+    First request byte          2025-10-18 01:02:06.925
+    Request complete            2025-10-18 01:02:06.926
+    First response byte         2025-10-18 01:02:07.256
+    Response complete           2025-10-18 01:02:07.263
+    Client conn. closed         –
+    Server conn. closed         –
+
+TODO: Now try this with wreq and see what the differences are.

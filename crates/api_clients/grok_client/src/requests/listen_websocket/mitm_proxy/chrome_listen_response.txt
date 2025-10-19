@@ -1,0 +1,11 @@
+Date:                       Sat, 18 Oct 2025 05:02:07 GMT
+Connection:                 upgrade
+Upgrade:                    websocket
+Sec-WebSocket-Accept:       gFxhyC2TQkeKiqvLNdJNu4OSeRI=
+CF-Ray:                     99057b4dc9661395-ATL
+CF-Cache-Status:            DYNAMIC
+Strict-Transport-Security:  max-age=31536000; includeSubDomains
+x-trace-id:                 ba406937d0e501aa51e570cabc701502
+Vary:                       Accept-Encoding
+speculation-rules:          "/cdn-cgi/speculation"
+Server:                     cloudflare
