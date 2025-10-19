@@ -24,14 +24,23 @@ pub async fn create_listen_websocket_new() -> Result<(), GrokError> {
   Wreq Firefox is IDENTICAL to Real Firefox Normal Mode (non-private) mode. - So why is it not working!?
    */
 
-  //let proxy = Proxy::https("http://127.0.0.1:8080").map_err(|err| GrokClientError::WreqClientError(err))?;
-
-  let client = Client::builder()
+  let mut client_builder = Client::builder()
       .emulation(Emulation::Firefox143)
       .connection_verbose(true)
-      //.cert_verification(false)
-      //.proxy(proxy)
-      .connect_timeout(Duration::from_secs(10))
+      .connect_timeout(Duration::from_secs(10));
+
+  let mut proxy = None;
+
+  proxy = Some(Proxy::https("http://127.0.0.1:8080")
+      .map_err(|err| GrokClientError::WreqClientError(err))?);
+
+  if let Some(proxy) = proxy {
+    client_builder = client_builder
+        .cert_verification(false)
+        .proxy(proxy);
+  }
+
+  let client = client_builder
       .build()
       .map_err(|err| GrokClientError::WreqClientError(err))?;
 
