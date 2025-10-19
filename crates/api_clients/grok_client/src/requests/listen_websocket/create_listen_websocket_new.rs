@@ -6,7 +6,7 @@ use std::ops::Deref;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
 use wreq::header::USER_AGENT;
-use wreq::Client;
+use wreq::{Client, Proxy};
 use wreq_util::Emulation;
 
 const WEBSOCKET_URL: &str = "wss://grok.com/ws/imagine/listen";
@@ -23,9 +23,15 @@ pub async fn create_listen_websocket_new() -> Result<(), GrokError> {
 
   Wreq Firefox is IDENTICAL to Real Firefox Normal Mode (non-private) mode. - So why is it not working!?
    */
+
+  let proxy = Proxy::https("http://127.0.0.1:8080")
+      .map_err(|err| GrokClientError::WreqClientError(err))?;
+
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
       .connection_verbose(true)
+      .cert_verification(false)
+      .proxy(proxy)
       .connect_timeout(Duration::from_secs(10))
       .build()
       .map_err(|err| GrokClientError::WreqClientError(err))?;
@@ -70,7 +76,10 @@ mod tests {
   #[ignore] // manually test
   async fn create() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let _result = create_listen_websocket_new().await;
+    let result = create_listen_websocket_new().await;
+    if let Err(err) = result {
+      println!("Error: {:?}", err);
+    }
     log::logger().flush();
     assert_eq!(1, 2);
     Ok(())
