@@ -8,6 +8,13 @@ pub enum GrokGenericApiError {
   /// Specific Cloudflare errors.
   CloudflareError(CloudflareError),
 
+  /// We received a 403 on websocket upgrade, likely from Cloudflare.
+  /// Unfortunately we can't read the response body text to diagnose more because wreq has some API design issues.
+  LikelyCloudflareWebsocket403,
+
+  /// Unknown status code on websocket upgrade.
+  UnexpectedWebsocketUpgradeStatusCode(StatusCode),
+
   /// serde_json::Error, likely from JSON deserialization schema mismatch.
   /// Includes the original body.
   SerdeResponseParseErrorWithBody(serde_json::Error, String),
@@ -36,6 +43,8 @@ impl Display for GrokGenericApiError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::CloudflareError(err) => write!(f, "Cloudflare error: {}", err),
+      Self::LikelyCloudflareWebsocket403 => write!(f, "Likely Cloudflare 403 error on websocket upgrade"),
+      Self::UnexpectedWebsocketUpgradeStatusCode(status) => write!(f, "Unexpected websocket upgrade status code: {}", status),
       Self::SerdeResponseParseErrorWithBody(err, body) => write!(f, "Failed to parse response body: {:?}. Body: {}", err, body),
       Self::SerdeParseErrorWithBodyOnNon200(err, body) => write!(f, "Failed to parse non-200 response body: {:?}. Body: {}", err, body),
       Self::UncategorizedBadResponseWithStatusAndBody { status_code, body } => write!(f, "Uncategorized bad response: status code {}, body: {}", status_code, body),
