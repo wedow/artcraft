@@ -5,7 +5,7 @@ use crate::requests::listen_websocket::cookies::{FIREFOX_IMPERSONATE_COOKIE_WITH
 use std::ops::Deref;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
-use wreq::header::{HeaderMap, HeaderName, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, HOST, ORIGIN, PRAGMA, SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_KEY, SEC_WEBSOCKET_VERSION, UPGRADE, USER_AGENT};
+use wreq::header::{HeaderMap, HeaderName, OrigHeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, COOKIE, HOST, ORIGIN, PRAGMA, SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_KEY, SEC_WEBSOCKET_VERSION, UPGRADE, USER_AGENT};
 use wreq::{Client, Proxy, Version};
 use wreq_util::Emulation;
 
@@ -61,6 +61,26 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
   //.http1_only() // NB: Not needed - websockets are sent over HTTP/1.1 without this configuration
   //.cookie_store(true)
 
+  let mut original_headers = OrigHeaderMap::new();
+
+  original_headers.insert("Host");
+  original_headers.insert("User-Agent");
+  original_headers.insert("Accept");
+  original_headers.insert("Accept-Language");
+  original_headers.insert("Accept-Encoding");
+  original_headers.insert("Sec-WebSocket-Version");
+  original_headers.insert("Origin");
+  original_headers.insert("Sec-WebSocket-Extensions");
+  original_headers.insert("Sec-WebSocket-Key");
+  original_headers.insert("Cookie");
+  original_headers.insert("Sec-Fetch-Dest");
+  original_headers.insert("Sec-Fetch-Mode");
+  original_headers.insert("Sec-Fetch-Site");
+  original_headers.insert("Pragma");
+  original_headers.insert("Cache-Control");
+  original_headers.insert("Upgrade");
+  original_headers.insert("Connection");
+
   // NB: Sending a normal GET request seems to punch through Cloudflare and get a 400 instead
   let builder = client.get(WEBSOCKET_HTTPS_URL)
       .version(Version::HTTP_11)
@@ -82,6 +102,7 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
       .header(PRAGMA, "no-cache")
       .header(CACHE_CONTROL, "no-cache")
       .header(UPGRADE, "websocket")
+      .orig_headers(original_headers)
       ;
 
   // TODO: Connect: keep-alive --> keep-alive, Upgrade
