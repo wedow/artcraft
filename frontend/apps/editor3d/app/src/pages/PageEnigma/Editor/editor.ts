@@ -664,19 +664,20 @@ class Editor {
       this.mouse_controls.sceneManager = this.sceneManager;
     }
 
-    if (this.outliner_feature_flag) {
-      const result = this.sceneManager?.render_outliner(
-        this.timeline.characters,
-      );
-      if (result) outlinerState.items.value = result.items;
-    }
-
     // Attach freecam state controller
     this.mouseOverEventHandler = this.mouseOverEventHandler.bind(this);
 
     const onloadCallback = () => {
       console.log("Setting Scene is loaded");
       this._isEngineDataLoaded = true;
+
+      if (this.outliner_feature_flag) {
+        const result = this.sceneManager?.render_outliner(
+          this.timeline.characters,
+        );
+        if (result) outlinerState.items.value = result.items;
+      }
+
       setIs3DSceneLoaded(true);
     };
 
