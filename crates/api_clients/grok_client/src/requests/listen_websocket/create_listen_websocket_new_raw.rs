@@ -28,7 +28,6 @@ pub async fn create_listen_websocket_new_raw() -> Result<(), GrokError> {
       .emulation(Emulation::Firefox143)
       .default_headers(HeaderMap::new())
       .cookie_store(true)
-      .http1_options()
       .connection_verbose(true)
       .connect_timeout(Duration::from_secs(10));
 
