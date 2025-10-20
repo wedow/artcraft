@@ -2,7 +2,6 @@ use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
-use crate::requests::listen_websocket::cookies::SESSION_COOKIES_WITHOUT_CF_CLEARANCE;
 use cloudflare_mitigation::headers::firefox_websocket_http_1_1_headers::get_firefox_websocket_http_1_1_headers;
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
@@ -14,7 +13,11 @@ use wreq_util::Emulation;
 
 const WEBSOCKET_URL: &str = "wss://grok.com/ws/imagine/listen";
 
-pub async fn create_listen_websocket() -> Result<WebSocket, GrokError> {
+pub struct CreateListenWebsocketArgs<'a> {
+  pub cookies: &'a str,
+}
+
+pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Result<WebSocket, GrokError> {
   let mut client_builder = Client::builder()
       .emulation(Emulation::Firefox143)
       .connection_verbose(true)
@@ -29,7 +32,7 @@ pub async fn create_listen_websocket() -> Result<WebSocket, GrokError> {
   let builder = client.websocket(WEBSOCKET_URL)
       .default_headers(false)
       .orig_headers(get_firefox_websocket_http_1_1_headers())
-      .header(COOKIE, SESSION_COOKIES_WITHOUT_CF_CLEARANCE)
+      .header(COOKIE, args.cookies)
       .header(ORIGIN,"https://grok.com")
       .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
       .header(SEC_WEBSOCKET_EXTENSIONS, "permessage-deflate")
@@ -51,11 +54,17 @@ pub async fn create_listen_websocket() -> Result<WebSocket, GrokError> {
     101 => {
       // Successful WebSocket upgrade ... fallthrough.
     }
+    401 => {
+      // 401 is a likely authentication error with Grok itself.
+      // Unfortunately we can't read the response body text because wreq wants to consume the Response to get it, but the
+      // WebsocketResponse type wraps and doesn't let us move it. It's wreq's fault.
+      return Err(GrokError::ApiGeneric(GrokGenericApiError::LikelyWebsocketAuthentication401));
+    }
     403 => {
       // 403 is likely a cloudflare error
       // Unfortunately we can't read the response body text because wreq wants to consume the Response to get it, but the
       // WebsocketResponse type wraps and doesn't let us move it. It's wreq's fault.
-      return Err(GrokError::ApiGeneric(GrokGenericApiError::LikelyCloudflareWebsocket403));
+      return Err(GrokError::ApiGeneric(GrokGenericApiError::LikelyWebsocketCloudflare403));
     }
     _ => {
       return Err(GrokError::ApiGeneric(GrokGenericApiError::UnexpectedWebsocketUpgradeStatusCode(status)));
@@ -72,6 +81,7 @@ pub async fn create_listen_websocket() -> Result<WebSocket, GrokError> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
@@ -80,7 +90,12 @@ mod tests {
   #[ignore] // manually test
   async fn create() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let result = create_listen_websocket().await;
+    //let cookies = SESSION_COOKIES_WITHOUT_CF_CLEARANCE;
+    let cookies = get_test_cookies()?;
+    let args = CreateListenWebsocketArgs {
+      cookies: &cookies,
+    };
+    let result = create_listen_websocket(args).await;
     if let Err(err) = result {
       println!("Error: {:?}", err);
     }
