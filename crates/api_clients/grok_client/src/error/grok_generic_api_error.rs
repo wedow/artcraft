@@ -23,6 +23,9 @@ pub enum GrokGenericApiError {
     body: String,
   },
 
+  /// An error upgrading the connection to a websocket.
+  WreqWebsocketUpgradeError(wreq::Error),
+
   /// An uncaught error from the API client.
   WreqError(wreq::Error),
 }
@@ -36,6 +39,7 @@ impl Display for GrokGenericApiError {
       Self::SerdeResponseParseErrorWithBody(err, body) => write!(f, "Failed to parse response body: {:?}. Body: {}", err, body),
       Self::SerdeParseErrorWithBodyOnNon200(err, body) => write!(f, "Failed to parse non-200 response body: {:?}. Body: {}", err, body),
       Self::UncategorizedBadResponseWithStatusAndBody { status_code, body } => write!(f, "Uncategorized bad response: status code {}, body: {}", status_code, body),
+      Self::WreqWebsocketUpgradeError(err) => write!(f, "Websocket upgrade error: {}", err),
       Self::WreqError(err) => write!(f, "Wreq client error: {}", err),
     }
   }

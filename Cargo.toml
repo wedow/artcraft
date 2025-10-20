@@ -44,6 +44,7 @@ members = [
   "crates/lib/caching/memory_store",
   "crates/lib/caching/redis_caching",
   "crates/lib/cloudflare_errors",
+  "crates/lib/cloudflare_mitigation",
   "crates/lib/concurrency",
   "crates/lib/cookie_store",
   "crates/lib/cookies",
@@ -187,6 +188,7 @@ artcraft_api_defs = { path = "crates/api_clients/artcraft/artcraft_api_defs" }
 build_metadata = { path = "crates/lib/build_metadata" }
 cloud_storage = { path = "crates/api_clients/cloud_storage" }
 cloudflare_errors = { path = "crates/lib/cloudflare_errors" }
+cloudflare_mitigation = { path = "crates/lib/cloudflare_mitigation" }
 component_traits = { path = "crates/service/plugins/component_traits" }
 cookie_store = { path = "crates/lib/cookie_store" }
 crockford = { path = "crates/lib/data/crockford" }

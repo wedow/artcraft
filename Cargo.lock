@@ -2181,6 +2181,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cloudflare_mitigation"
+version = "0.0.1"
+dependencies = [
+ "once_cell",
+ "workspace-build-acceleration",
+ "wreq",
+]
+
+[[package]]
 name = "cmake"
 version = "0.1.54"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4666,6 +4675,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "cloudflare_errors",
+ "cloudflare_mitigation",
  "cookie_store 0.0.1",
  "env",
  "env_logger",
