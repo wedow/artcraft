@@ -25,6 +25,7 @@ mod tests {
   use errors::AnyhowResult;
   use std::io::Write;
   use std::time::Duration;
+  use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
 
   #[tokio::test]
   #[ignore] // manually test
@@ -34,7 +35,7 @@ mod tests {
 
     let cookies = get_test_cookies()?;
 
-    let mut websocket = create_listen_websocket(CreateListenWebsocketArgs {
+    let websocket = create_listen_websocket(CreateListenWebsocketArgs {
       cookies: &cookies,
     }).await?;
 
@@ -75,9 +76,28 @@ mod tests {
     //  }
     //}
 
+    //loop {
+    //  let maybe_message =
+    //      websocket.try_next_timeout(Duration::from_millis(1000)).await?;
+    //  match maybe_message {
+    //    None => {
+    //      println!("No message received within timeout.");
+    //      count = count + 1;
+    //    }
+    //    Some(message) => {
+    //      println!("[{count}] Received websocket message!");//: {:?}", message);
+    //      count = 0;
+    //    }
+    //  }
+    //  if count > 5 {
+    //    println!("No messages after 5 seconds");
+    //    break;
+    //  }
+    //}
+
     loop {
       let maybe_message =
-          websocket.try_next_timeout(Duration::from_millis(1000)).await?;
+          websocket.get_response_with_timeout(Duration::from_millis(1000)).await?;
 
       match maybe_message {
         None => {
@@ -85,12 +105,28 @@ mod tests {
           count = count + 1;
         }
         Some(message) => {
-          println!("[{count}] Received websocket message!");//: {:?}", message);
+          match message {
+            WebsocketServerMessage::ImageData(image) => {
+              println!("IMAGE: {:?}", image.percentage_complete);
+            }
+            WebsocketServerMessage::JsonData(json) => {
+              println!("JSON : {:?}", json.percentage_complete);
+            }
+            WebsocketServerMessage::Unknown(unknown) => {
+              println!("[UNKNOWN] websocket message: {:?}", unknown);
+            }
+          }
           count = 0;
         }
       }
 
-      if count > 5 {
+      // TODO: Make sure we capture all the events for images
+      // TODO: Explore the other APIs
+      // TODO understand the IDs
+      // TODO: Video websocket APIs
+      // TODO: Upload APIs
+
+      if count > 30 {
         println!("No messages after 5 seconds");
         break;
       }

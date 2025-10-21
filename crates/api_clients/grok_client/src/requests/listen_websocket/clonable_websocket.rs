@@ -8,6 +8,7 @@ use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use wreq::ws::message::Message;
 use wreq::ws::WebSocket;
+use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
 
 #[derive(Clone)]
 pub struct ClonableWebsocket {
@@ -44,6 +45,38 @@ impl ClonableWebsocket {
         })?;
     self.send(message_json).await
   }
+
+  pub async fn get_response_with_timeout(&self, duration: Duration) -> Result<Option<WebsocketServerMessage>, GrokError> {
+    match self.websocket.write() {
+      Err(_) => Err(GrokClientError::WebsocketLockError.into()),
+      Ok(mut websocket) => {
+        let result = tokio::time::timeout(duration, websocket.try_next()).await;
+
+        match result {
+          Err(elapsed) => {
+            info!("Websocket try_next() elapsed without receiving a message: {:?}", elapsed);
+            Ok(None) // Timeout elapsed.
+          }
+          Ok(inner) => {
+            let maybe_message = inner.map_err(GrokClientError::WebsocketReadError)?;
+
+            match maybe_message {
+              None => Ok(None),
+              Some(Message::Text(text)) => {
+                let maybe_message = WebsocketServerMessage::from_json_str(&text)?;
+                Ok(Some(maybe_message))
+              },
+              Some(_) => {
+                warn!("Received non-text websocket message.");
+                Ok(None)
+              },
+            }
+          }
+        }
+      },
+    }
+  }
+
 
   pub async fn try_next_timeout(&self, duration: Duration) -> Result<Option<Message>, GrokClientError> {
     match self.websocket.write() {

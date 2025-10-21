@@ -1,6 +1,7 @@
+use crate::error::grok_generic_api_error::GrokGenericApiError;
 use serde::Deserialize;
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(tag = "type")]
 pub enum WebsocketServerMessage {
   /// Json with root `type = "image"`
@@ -9,8 +10,7 @@ pub enum WebsocketServerMessage {
 
   /// Json with root `type = "json"`
   #[serde(rename = "json")]
-  JsonData {
-  },
+  JsonData(JsonDataMessage),
 
   /// Captures any other JSON messages.
   #[serde(untagged)]
@@ -19,7 +19,7 @@ pub enum WebsocketServerMessage {
 
 /// Images with a binary blob and URLs.
 /// We may receive several of these for a single prompt.
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct ImageDataMessage {
   /// UUID.
   pub id: Option<String>,
@@ -50,11 +50,11 @@ pub struct ImageDataMessage {
   pub model_name: Option<String>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct JsonDataMessage {
   /// UUID.
   pub job_id: Option<String>,
-  
+
   /// UUID.
   pub request_id: Option<String>,
 
@@ -72,6 +72,12 @@ pub struct JsonDataMessage {
   pub image_id: Option<String>,
 }
 
+impl WebsocketServerMessage {
+  pub fn from_json_str(json_str: &str) -> Result<Self, GrokGenericApiError> {
+    Ok(serde_json::from_str(json_str)
+        .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, json_str.to_string()))?)
+  }
+}
 
 #[cfg(test)]
 mod tests {
