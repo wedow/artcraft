@@ -6,11 +6,11 @@ use serde::Deserialize;
 pub enum WebsocketServerMessage {
   /// Json with root `type = "image"`
   #[serde(rename = "image")]
-  ImageData(ImageDataMessage),
+  Image(ImageDataMessage),
 
   /// Json with root `type = "json"`
   #[serde(rename = "json")]
-  JsonData(JsonDataMessage),
+  Json(JsonDataMessage),
 
   /// Captures any other JSON messages.
   #[serde(untagged)]
@@ -87,10 +87,11 @@ mod tests {
   fn test_image_complete() -> anyhow::Result<()> {
     let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/create_image_complete_response.json";
     let data = std::fs::read_to_string(path)?;
-    let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    let message = WebsocketServerMessage::from_json_str(&data)?;
 
     match message {
-      WebsocketServerMessage::ImageData(image_data) => {
+      WebsocketServerMessage::Image(image_data) => {
         assert_eq!(image_data.percentage_complete, Some(50));
         assert!(image_data.url.is_some());
       },
@@ -104,10 +105,11 @@ mod tests {
   fn test_image_status_complete() -> anyhow::Result<()> {
     let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/create_image_complete_status_notification.json";
     let data = std::fs::read_to_string(path)?;
-    let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    let message = WebsocketServerMessage::from_json_str(&data)?;
 
     match message {
-      WebsocketServerMessage::JsonData(image_data) => {
+      WebsocketServerMessage::Json(image_data) => {
         assert_eq!(image_data.percentage_complete, Some(100));
       },
       _ => panic!("Expected JsonData message"),
@@ -120,10 +122,11 @@ mod tests {
   fn test_in_progress() -> anyhow::Result<()> {
     let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/create_image_in_progress_response.json";
     let data = std::fs::read_to_string(path)?;
-    let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    let message = WebsocketServerMessage::from_json_str(&data)?;
 
     match message {
-      WebsocketServerMessage::JsonData(image_data) => {
+      WebsocketServerMessage::Json(image_data) => {
         assert_eq!(image_data.percentage_complete, Some(0));
       },
       _ => panic!("Expected JsonData message"),
@@ -136,7 +139,13 @@ mod tests {
   fn test_empty() -> anyhow::Result<()> {
     let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/empty.json";
     let data = std::fs::read_to_string(path)?;
-    let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    let message = WebsocketServerMessage::from_json_str(&data)?;
+
+     match message {
+      WebsocketServerMessage::Unknown(_value)=> {},
+      _ => panic!("Expected JsonData message"),
+    }
 
     Ok(())
   }
@@ -145,7 +154,13 @@ mod tests {
   fn test_other_type() -> anyhow::Result<()> {
     let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/other_type.json";
     let data = std::fs::read_to_string(path)?;
-    let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    ///let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    let message = WebsocketServerMessage::from_json_str(&data)?;
+
+    match message {
+      WebsocketServerMessage::Unknown(_value)=> {},
+      _ => panic!("Expected JsonData message"),
+    }
 
     Ok(())
   }

@@ -1,5 +1,6 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
+use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
 use futures::stream::FusedStream;
 use futures::{Stream, TryStreamExt};
 use log::{info, warn};
@@ -8,7 +9,6 @@ use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use wreq::ws::message::Message;
 use wreq::ws::WebSocket;
-use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
 
 #[derive(Clone)]
 pub struct ClonableWebsocket {

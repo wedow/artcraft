@@ -20,12 +20,14 @@ pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Resul
 mod tests {
   use crate::requests::listen_websocket::clonable_websocket::ClonableWebsocket;
   use crate::requests::listen_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+  use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
   use crate::requests::listen_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
+  use log::warn;
   use std::io::Write;
   use std::time::Duration;
-  use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
+  use wreq::ws::message::Message;
 
   #[tokio::test]
   #[ignore] // manually test
@@ -96,8 +98,29 @@ mod tests {
     //}
 
     loop {
+      //let maybe_message =
+      //    websocket.get_response_with_timeout(Duration::from_millis(1000)).await?;
+
       let maybe_message =
-          websocket.get_response_with_timeout(Duration::from_millis(1000)).await?;
+          websocket.try_next_timeout(Duration::from_millis(1000)).await?;
+
+      let mut maybe_raw_text : Option<String> = None;
+
+      let maybe_message = match maybe_message {
+        None => None,
+        Some(Message::Text(text)) => {
+          let maybe_message = WebsocketServerMessage::from_json_str(text.as_str())?;
+          let mut text = text.as_str().to_string();
+          text.truncate(100);
+          println!("Received message: {}", text);
+          maybe_raw_text = Some(text);
+          Some(maybe_message)
+        },
+        Some(_) => {
+          warn!("Received non-text websocket message.");
+          None
+        },
+      };
 
       match maybe_message {
         None => {
@@ -106,14 +129,16 @@ mod tests {
         }
         Some(message) => {
           match message {
-            WebsocketServerMessage::ImageData(image) => {
+            WebsocketServerMessage::Image(image) => {
               println!("IMAGE: {:?}", image.percentage_complete);
             }
-            WebsocketServerMessage::JsonData(json) => {
+            WebsocketServerMessage::Json(json) => {
               println!("JSON : {:?}", json.percentage_complete);
             }
             WebsocketServerMessage::Unknown(unknown) => {
-              println!("[UNKNOWN] websocket message: {:?}", unknown);
+              let typ = unknown.get("type");
+              let unknown_string = unknown.as_str();
+              println!("[UNKNOWN] websocket message: {:?}", maybe_raw_text);
             }
           }
           count = 0;
@@ -126,7 +151,7 @@ mod tests {
       // TODO: Video websocket APIs
       // TODO: Upload APIs
 
-      if count > 30 {
+      if count > 5 {
         println!("No messages after 5 seconds");
         break;
       }
