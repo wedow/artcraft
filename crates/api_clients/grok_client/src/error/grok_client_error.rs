@@ -7,6 +7,18 @@ pub enum GrokClientError {
   /// An error was encountered in building the Wreq client
   WreqClientError(wreq::Error),
 
+  /// Error serializing a message to send the websocket
+  WebsocketRequestSerializationError(serde_json::Error),
+
+  /// Error locking the websocket for sending/receiving
+  WebsocketLockError,
+
+  /// Error reading from a websocket.
+  WebsocketReadError(wreq::Error),
+
+  /// Error sending to an open websocket.
+  WebsocketSendError(wreq::Error),
+
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
 //
@@ -34,10 +46,6 @@ pub enum GrokClientError {
 //  /// Error parsing a request URL.
 //  UrlParseError(url::ParseError),
 //
-//
-//  /// Error serializing the sentinel token to JSON
-//  CouldNotSerializeSentinelToken(serde_json::Error),
-//
 //  /// Error serializing the sentinel store token to JSON (typically for persistent storage).
 //  CouldNotSerializeSentinelTokenStore(serde_json::Error),
 //
@@ -54,6 +62,10 @@ impl Display for GrokClientError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::WreqClientError(err) => write!(f, "Wreq client error (during client creation): {}", err),
+      Self::WebsocketRequestSerializationError(err) => write!(f, "Websocket request serialization error: {}", err),
+      Self::WebsocketLockError => write!(f, "Websocket lock error"),
+      Self::WebsocketReadError(err) => write!(f, "Websocket read error: {}", err),
+      Self::WebsocketSendError(err) => write!(f, "Websocket send error: {}", err),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),

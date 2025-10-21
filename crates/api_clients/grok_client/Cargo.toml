@@ -23,12 +23,14 @@ errors.workspace = true
 
 # External
 anyhow.workspace = true
+chrono.workspace = true
 futures.workspace = true
 log.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tokio = { version = "1", features = ["full"] }
 url.workspace = true
+uuid.workspace = true
 wreq-util.workspace = true
 wreq.workspace = true
 

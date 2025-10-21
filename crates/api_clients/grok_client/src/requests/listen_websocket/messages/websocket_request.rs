@@ -1,0 +1,75 @@
+use chrono::Utc;
+use serde::Serialize;
+use uuid::Uuid;
+
+#[derive(Serialize)]
+pub struct WebsocketRequest {
+  /// Type of message
+  /// eg. "conversation.item.create"
+  pub r#type: String,
+
+  /// Unix timestamp
+  pub timestamp: u64,
+
+  pub item: WebsocketRequestItem,
+}
+
+#[derive(Serialize)]
+pub struct WebsocketRequestItem {
+  /// Type of item
+  /// eg. "message"
+  pub r#type: String,
+
+  pub content: Vec<WebsocketRequestItemContent>,
+}
+
+#[derive(Serialize)]
+pub struct WebsocketRequestItemContent {
+  /// UUID
+  #[serde(rename="requestId")]
+  pub request_id: String,
+
+  /// Type of item content
+  /// eg. "input_text"
+  pub r#type: String,
+
+  /// The prompt for the request
+  pub text: String,
+
+  pub properties: WebsocketRequestItemContentProperties,
+}
+
+#[derive(Serialize)]
+pub struct WebsocketRequestItemContentProperties {
+  pub section_count: usize,
+  pub is_kids_mode: bool,
+  pub enable_nsfw: bool,
+  pub skip_upsampler: bool,
+  pub is_initial: bool,
+}
+
+impl WebsocketRequest {
+  pub fn new_image_prompt(prompt: &str) -> Self {
+    Self {
+      r#type: "conversation.item.create".to_string(),
+      timestamp: Utc::now().timestamp_millis() as u64,
+      item: WebsocketRequestItem {
+        r#type: "message".to_string(),
+        content: vec![
+          WebsocketRequestItemContent {
+            request_id: Uuid::new_v4().to_string(),
+            r#type: "input_text".to_string(),
+            text: prompt.to_string(),
+            properties: WebsocketRequestItemContentProperties {
+              section_count: 0,
+              is_kids_mode: false,
+              enable_nsfw: true,
+              skip_upsampler: false,
+              is_initial: false,
+            },
+          }
+        ],
+      },
+    }
+  }
+}

@@ -262,6 +262,7 @@ thiserror = "2.0.12"
 tokio = { version = "1.45.1", features = ["macros"] }
 toml = "0.8.22"
 url = { version = "2.5.4", features = ["serde"] }
+uuid = "1.18.1"
 
 # NB: wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
 #
