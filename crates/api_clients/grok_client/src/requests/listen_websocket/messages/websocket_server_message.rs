@@ -21,12 +21,20 @@ pub enum WebsocketServerMessage {
 /// We may receive several of these for a single prompt.
 #[derive(Deserialize, Clone)]
 pub struct ImageDataMessage {
+  /// UUID.
   pub id: Option<String>,
+
+  /// UUID.
   pub job_id: Option<String>,
+
+  /// UUID.
   pub request_id: Option<String>,
-  
-  /// The original text prompt used
+
+  /// Eg. "0", "50", "100"
+  pub percentage_complete: Option<i32>,
+
   pub prompt: Option<String>,
+  pub full_prompt: Option<String>,
 
   /// Base64 encoded image blob.
   pub blob: Option<String>,
@@ -40,10 +48,28 @@ pub struct ImageDataMessage {
   /// Name of the model used to generate the image
   /// eg. "imagine_h_1"
   pub model_name: Option<String>,
+}
 
-  /// Not sure if we're getting incomplete images.
-  /// I've seen percentages of "50", so I imagine so.
+#[derive(Deserialize, Clone)]
+pub struct JsonDataMessage {
+  /// UUID.
+  pub job_id: Option<String>,
+  
+  /// UUID.
+  pub request_id: Option<String>,
+
+  /// Eg. "0", "50", "100"
   pub percentage_complete: Option<i32>,
+
+  pub prompt: Option<String>,
+  pub full_prompt: Option<String>,
+
+  /// NSFW flag
+  pub r_rated: Option<bool>,
+
+  /// UUID.
+  /// NB: This is observed to be nullable.
+  pub image_id: Option<String>,
 }
 
 
