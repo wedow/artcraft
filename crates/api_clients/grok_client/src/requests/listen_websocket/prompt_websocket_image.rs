@@ -1,9 +1,6 @@
-use log::warn;
-use wreq::ws::WebSocket;
-use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::listen_websocket::clonable_websocket::ClonableWebsocket;
-use crate::requests::listen_websocket::messages::websocket_request::{WebsocketRequest, WebsocketRequestItem};
+use crate::requests::listen_websocket::messages::websocket_request::WebsocketRequest;
 
 pub struct PromptWebsocketImageArgs<'a> {
   pub websocket_wrapped: ClonableWebsocket,
@@ -21,17 +18,16 @@ pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Resul
 
 #[cfg(test)]
 mod tests {
-  use std::io::Write;
-  use std::time::Duration;
-  use anyhow::anyhow;
-  use futures::TryStreamExt;
-  use log::{warn, LevelFilter};
-  use errors::AnyhowResult;
   use crate::requests::listen_websocket::clonable_websocket::ClonableWebsocket;
   use crate::requests::listen_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
   use crate::requests::listen_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
+  use errors::AnyhowResult;
+  use futures::TryStreamExt;
+  use log::LevelFilter;
+  use std::io::Write;
+  use std::time::Duration;
 
   #[tokio::test]
   #[ignore] // manually test
@@ -53,24 +49,41 @@ mod tests {
 
     let result = prompt_websocket_image(PromptWebsocketImageArgs {
       websocket_wrapped: websocket.clone(),
-      prompt: "a dog riding a skateboard",
+      prompt: "a dog riding a bike in space",
     }).await?;
 
     println!("Reading...");
     std::io::stdout().flush()?;
 
     let mut count = 0;
-    while let Some(message) = websocket.try_next().await? {
-      println!("[{count}] Received websocket message: {:?}", message);
+    
+    //while let Some(message) = websocket.try_next().await? {
+    //  println!("[{count}] Received websocket message: {:?}", message);
+    //  count = count + 1;
+    //  tokio::time::sleep(Duration::from_millis(1000)).await;
+    //  if count > 1000 {
+    //    break;
+    //  }
+    //}
 
+    println!("Polling.");
+    
+    loop {
       count = count + 1;
+      
+      let bounds = websocket.size_hint()?;
+      
+      println!("Websocket size hint: {:?}", bounds);
+
 
       tokio::time::sleep(Duration::from_millis(1000)).await;
 
-      if count > 10 {
+      if count > 30 {
         break;
       }
     }
+    
+    println!("Done polling.");
 
     log::logger().flush();
 

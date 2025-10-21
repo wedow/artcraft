@@ -1,7 +1,7 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use futures::stream::FusedStream;
-use futures::TryStreamExt;
+use futures::{Stream, TryStreamExt};
 use log::warn;
 use serde::Serialize;
 use std::sync::{Arc, RwLock};
@@ -58,6 +58,13 @@ impl ClonableWebsocket {
           .try_next()
           .await
           .map_err(|err| GrokClientError::WebsocketReadError(err)),
+    }
+  }
+
+  pub fn size_hint(&self) -> Result<(usize, Option<usize>), GrokClientError> {
+    match self.websocket.read() {
+      Err(_) => Err(GrokClientError::WebsocketLockError),
+      Ok(websocket) => Ok(websocket.size_hint())
     }
   }
 }
