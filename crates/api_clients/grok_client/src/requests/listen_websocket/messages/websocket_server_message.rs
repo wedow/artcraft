@@ -5,8 +5,7 @@ use serde::Deserialize;
 pub enum WebsocketServerMessage {
   /// Json with root `type = "image"`
   #[serde(rename = "image")]
-  PromptImageData {
-  },
+  ImageData(ImageDataMessage),
 
   /// Json with root `type = "json"`
   #[serde(rename = "json")]
@@ -16,6 +15,35 @@ pub enum WebsocketServerMessage {
   /// Captures any other JSON messages.
   #[serde(untagged)]
   Unknown(serde_json::Value),
+}
+
+/// Images with a binary blob and URLs.
+/// We may receive several of these for a single prompt.
+#[derive(Deserialize, Clone)]
+pub struct ImageDataMessage {
+  pub id: Option<String>,
+  pub job_id: Option<String>,
+  pub request_id: Option<String>,
+  
+  /// The original text prompt used
+  pub prompt: Option<String>,
+
+  /// Base64 encoded image blob.
+  pub blob: Option<String>,
+
+  /// URL to the image.
+  pub url: Option<String>,
+
+  /// NSFW flag
+  pub r_rated: Option<bool>,
+
+  /// Name of the model used to generate the image
+  /// eg. "imagine_h_1"
+  pub model_name: Option<String>,
+
+  /// Not sure if we're getting incomplete images.
+  /// I've seen percentages of "50", so I imagine so.
+  pub percentage_complete: Option<i32>,
 }
 
 
