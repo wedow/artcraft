@@ -32,7 +32,7 @@ pub struct ImageDataMessage {
   pub request_id: Option<String>,
 
   /// Eg. "0", "50", "100"
-  pub percentage_complete: Option<i32>,
+  pub percentage_complete: Option<f32>,
 
   pub prompt: Option<String>,
   pub full_prompt: Option<String>,
@@ -60,7 +60,7 @@ pub struct JsonDataMessage {
   pub request_id: Option<String>,
 
   /// Eg. "0", "50", "100"
-  pub percentage_complete: Option<i32>,
+  pub percentage_complete: Option<f32>,
 
   pub prompt: Option<String>,
   pub full_prompt: Option<String>,
@@ -97,7 +97,7 @@ mod tests {
 
     match message {
       WebsocketServerMessage::Image(image_data) => {
-        assert_eq!(image_data.percentage_complete, Some(50));
+        assert_eq!(image_data.percentage_complete, Some(50.0));
         assert!(image_data.url.is_some());
       },
       _ => panic!("Expected ImageData message"),
@@ -115,7 +115,7 @@ mod tests {
 
     match message {
       WebsocketServerMessage::Json(image_data) => {
-        assert_eq!(image_data.percentage_complete, Some(100));
+        assert_eq!(image_data.percentage_complete, Some(100.0));
       },
       _ => panic!("Expected JsonData message"),
     }
@@ -132,7 +132,7 @@ mod tests {
 
     match message {
       WebsocketServerMessage::Json(image_data) => {
-        assert_eq!(image_data.percentage_complete, Some(0));
+        assert_eq!(image_data.percentage_complete, Some(0.0));
       },
       _ => panic!("Expected JsonData message"),
     }
