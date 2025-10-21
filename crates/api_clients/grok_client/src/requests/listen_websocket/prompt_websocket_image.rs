@@ -136,7 +136,7 @@ mod tests {
               println!("JSON : {:?}", json.percentage_complete);
             }
             WebsocketServerMessage::Unknown(unknown) => {
-              let typ = unknown.get("type");
+              //let typ = unknown.get("type");
               let unknown_string = unknown.as_str();
               println!("[UNKNOWN] websocket message: {:?}", maybe_raw_text);
             }

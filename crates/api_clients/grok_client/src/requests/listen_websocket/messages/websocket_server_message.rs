@@ -15,6 +15,7 @@ pub enum WebsocketServerMessage {
   /// Captures any other JSON messages.
   #[serde(untagged)]
   Unknown(serde_json::Value),
+  //Unknown(String),
 }
 
 /// Images with a binary blob and URLs.
@@ -136,6 +137,21 @@ mod tests {
   }
 
   #[test]
+  fn test_wire() -> anyhow::Result<()> {
+    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/wire.json";
+    let data = std::fs::read_to_string(path)?;
+    //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+    let message = WebsocketServerMessage::from_json_str(&data)?;
+
+    match message {
+      WebsocketServerMessage::Unknown(_value)=> {},
+      _ => panic!("Expected Unknown message"),
+    }
+
+    Ok(())
+  }
+
+  #[test]
   fn test_empty() -> anyhow::Result<()> {
     let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/empty.json";
     let data = std::fs::read_to_string(path)?;
@@ -144,7 +160,7 @@ mod tests {
 
      match message {
       WebsocketServerMessage::Unknown(_value)=> {},
-      _ => panic!("Expected JsonData message"),
+      _ => panic!("Expected Unknown message"),
     }
 
     Ok(())
@@ -159,7 +175,7 @@ mod tests {
 
     match message {
       WebsocketServerMessage::Unknown(_value)=> {},
-      _ => panic!("Expected JsonData message"),
+      _ => panic!("Expected Unknown message"),
     }
 
     Ok(())
