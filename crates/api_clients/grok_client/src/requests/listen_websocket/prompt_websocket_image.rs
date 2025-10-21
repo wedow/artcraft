@@ -22,6 +22,7 @@ pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Resul
 #[cfg(test)]
 mod tests {
   use std::io::Write;
+  use std::time::Duration;
   use anyhow::anyhow;
   use futures::TryStreamExt;
   use log::{warn, LevelFilter};
@@ -58,8 +59,17 @@ mod tests {
     println!("Reading...");
     std::io::stdout().flush()?;
 
-    if let Some(message) = websocket.try_next().await? {
-      warn!("Received websocket message: {:?}", message);
+    let mut count = 0;
+    while let Some(message) = websocket.try_next().await? {
+      println!("[{count}] Received websocket message: {:?}", message);
+
+      count = count + 1;
+
+      tokio::time::sleep(Duration::from_millis(1000)).await;
+
+      if count > 10 {
+        break;
+      }
     }
 
     log::logger().flush();
