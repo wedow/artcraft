@@ -1,0 +1,436 @@
+{
+    "result": {
+        "conversation": {
+            "conversationId": "e1a707c9-6053-4082-9a94-275fe9b89954",
+            "title": "New conversation",
+            "starred": false,
+            "createTime": "2025-10-21T23:40:42.126925Z",
+            "modifyTime": "2025-10-21T23:40:42.127437Z",
+            "systemPromptName": "",
+            "temporary": true,
+            "mediaTypes": [],
+            "workspaces": [],
+            "taskResult": null
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "userResponse": {
+                "responseId": "28ee1087-9153-45b6-b0d0-175d577c3f92",
+                "message": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content  --mode=normal",
+                "sender": "human",
+                "createTime": "2025-10-21T23:40:42.153063256Z",
+                "manual": false,
+                "partial": false,
+                "shared": false,
+                "query": "",
+                "queryType": "",
+                "webSearchResults": [],
+                "xpostIds": [],
+                "xposts": [],
+                "generatedImageUrls": [],
+                "imageAttachments": [],
+                "fileAttachments": [
+                    "21a79085-e206-4b0b-88ac-5f2b7a453e45"
+                ],
+                "cardAttachmentsJson": [],
+                "fileUris": [],
+                "fileAttachmentsMetadata": [],
+                "isControl": false,
+                "steps": [],
+                "imageEditUris": [],
+                "mediaTypes": [],
+                "webpageUrls": [],
+                "metadata": {},
+                "citedWebSearchResults": [],
+                "toolResponses": [],
+                "model": "grok-3",
+                "ragResults": [],
+                "citedRagResults": [],
+                "searchProductResults": []
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "28ee1087-9153-45b6-b0d0-175d577c3f92"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 1,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 5,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 12,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 20,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 32,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 44,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 55,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 95,
+                "audioUrls": [],
+                "videoPrompt": "",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "progress": 100,
+                "assetId": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+                "videoUrl": "users/85980643-ffab-4984-a3de-59a608c47d7f/generated/8e340f1f-f477-4b52-9337-58d1a6696ff6/generated_video.mp4",
+                "audioUrls": [],
+                "videoPrompt": "{\"shot\": {\"motion_level\": \"medium\", \"camera_depth\": \"medium shot\", \"camera_view\": \"low angle\", \"camera_movement\": \"static shot\"}, \"scene\": {\"location\": \"ornate, opulent interior hall or ballroom\", \"environment\": \"The setting is a luxurious, grand room with gilded architectural details, large windows, and a painted ceiling. The space is illuminated by large, ornate chandeliers emitting a warm, reddish glow. The overall atmosphere is rich and majestic.\"}, \"cinematography\": {\"lighting\": \"Artificial, warm lighting from crystal chandeliers, creating a reddish ambiance and reflections.\", \"style\": \"high-quality digital rendering or 3D CGI with a realistic and cinematic style\", \"texture\": \"Glossy, reflective surfaces on the chandelier crystals and the panther's fur, contrasted with the matte, ornate textures of the gilded architecture and ceiling.\", \"depth_of_field\": \"shallow focus on the foreground, with the panther and immediate chandelier elements in sharp focus, while the background architecture is slightly softer\"}, \"visual_details\": {\"objects\": [\"Sleek black panther: A large, muscular feline with glossy black fur, a powerful build, and a focused expression, draped over a chandelier.\", \"Ornate crystal chandelier: A large, elaborate light fixture with a gold-colored frame, numerous hanging crystal elements, and glowing red-tinted lights.\"], \"positioning\": [\"The Sleek black panther is positioned in the foreground, centered on top of the Ornate crystal chandelier, with its body extending across the frame.\", \"The Ornate crystal chandelier occupies the central and lower portions of the frame, hanging from the ceiling in an opulent room.\"], \"text_elements\": []}, \"motion\": \"The video begins with a Sleek black panther draped across an Ornate crystal chandelier in the foreground, its body oriented towards the right of the frame. The Sleek black panther slowly and deliberately shifts its weight, extending its front paws forward and downward while its head lowers, gazing intently at the glowing crystals below. The Sleek black panther's powerful muscles ripple under its glossy fur as it makes a slow, stretching motion, reaching with its paws to interact with the crystal elements, causing them to sway gently and reflect light in shifting patterns. The Sleek black panther then pushes off slightly, moving its body in a fluid, prowling motion along the top of the chandelier from left to right, its tail swishing in a controlled arc. The crystals of the Ornate crystal chandelier clink softly and swing in response to the Sleek black panther's movements, with light reflections dancing across its fur and the surrounding gilded environment. The Sleek black panther pauses, lifting its head to survey the space before continuing its cautious, exploratory prowl, maintaining a dominant and graceful presence atop the fixture. The camera remains static throughout, capturing the continuous, medium-paced interaction between the Sleek black panther and the Ornate crystal chandelier, with the background elements remaining softly out of focus, emphasizing the foreground action and the interplay of light and shadow in the luxurious setting.\", \"audio\": {\"music\": \"A dramatic, orchestral score with a sense of grandeur and subtle tension, featuring strings and low brass instruments.\", \"ambient\": \"Soft, ambient echoes of a large, opulent space, with faint, distant chimes and the subtle hum of chandelier lights.\", \"sound_effect\": \"Gentle clinking and tinkling of crystal elements as they sway, accompanied by the soft, rustling sound of the panther's fur and subtle paw movements.\", \"mix_level\": \"The music is prominent, blended with ambient sounds and sound effects to create a cohesive, immersive auditory experience.\"}, \"dialogue\": [], \"tags\": [\"luxury\", \"opulence\", \"black panther\", \"chandelier\", \"grand hall\", \"cinematic\", \"CGI\", \"animal\", \"elegance\", \"dramatic\"]}",
+                "imageReference": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "normal",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "I generated a video",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": true,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "modelResponse": {
+                "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc",
+                "message": "I generated a video",
+                "sender": "ASSISTANT",
+                "createTime": "2025-10-21T23:41:07.739118542Z",
+                "parentResponseId": "28ee1087-9153-45b6-b0d0-175d577c3f92",
+                "manual": false,
+                "partial": false,
+                "shared": false,
+                "query": "",
+                "queryType": "",
+                "webSearchResults": [],
+                "xpostIds": [],
+                "xposts": [],
+                "generatedImageUrls": [],
+                "imageAttachments": [],
+                "fileAttachments": [
+                    "8e340f1f-f477-4b52-9337-58d1a6696ff6"
+                ],
+                "cardAttachmentsJson": [],
+                "fileUris": [],
+                "fileAttachmentsMetadata": [],
+                "isControl": false,
+                "steps": [],
+                "imageEditUris": [],
+                "mediaTypes": [],
+                "webpageUrls": [],
+                "metadata": {
+                    "deepsearchPreset": "",
+                    "request_metadata": {
+                        "effort": "low",
+                        "mode": "fast",
+                        "model": "grok-3"
+                    }
+                },
+                "citedWebSearchResults": [],
+                "toolResponses": [],
+                "model": "grok-3",
+                "requestMetadata": {
+                    "model": "grok-3",
+                    "mode": "MODEL_MODE_FAST",
+                    "effort": "LOW"
+                },
+                "ragResults": [],
+                "citedRagResults": [],
+                "searchProductResults": []
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "a787b749-d78e-454e-b0e0-32b8c99af2cc"
+        }
+    }
+}{
+    "result": {
+        "title": {
+            "newTitle": "Video Generation: Normal Mode Demonstration"
+        }
+    }
+}
