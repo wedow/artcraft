@@ -1,1 +1,2 @@
 pub mod websocket_client_message;
+mod websocket_server_message;
