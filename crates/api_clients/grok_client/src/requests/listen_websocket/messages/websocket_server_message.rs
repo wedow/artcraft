@@ -84,9 +84,13 @@ impl WebsocketServerMessage {
 mod tests {
   use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
 
+  fn json_path(file_name: &str) -> String {
+    format!("/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/{}", file_name)
+  }
+
   #[test]
   fn test_image_complete() -> anyhow::Result<()> {
-    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/create_image_complete_response.json";
+    let path = json_path("create_image_complete_response.json");
     let data = std::fs::read_to_string(path)?;
     //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
     let message = WebsocketServerMessage::from_json_str(&data)?;
@@ -104,7 +108,7 @@ mod tests {
 
   #[test]
   fn test_image_status_complete() -> anyhow::Result<()> {
-    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/create_image_complete_status_notification.json";
+    let path = json_path("create_image_complete_status_notification.json");
     let data = std::fs::read_to_string(path)?;
     //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
     let message = WebsocketServerMessage::from_json_str(&data)?;
@@ -121,7 +125,7 @@ mod tests {
 
   #[test]
   fn test_in_progress() -> anyhow::Result<()> {
-    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/create_image_in_progress_response.json";
+    let path = json_path("create_image_in_progress_response.json");
     let data = std::fs::read_to_string(path)?;
     //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
     let message = WebsocketServerMessage::from_json_str(&data)?;
@@ -138,14 +142,14 @@ mod tests {
 
   #[test]
   fn test_wire() -> anyhow::Result<()> {
-    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/wire.json";
+    let path = json_path("wire.json");
     let data = std::fs::read_to_string(path)?;
     //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
     let message = WebsocketServerMessage::from_json_str(&data)?;
 
     match message {
-      WebsocketServerMessage::Unknown(_value)=> {},
-      _ => panic!("Expected Unknown message"),
+      WebsocketServerMessage::Json(_value)=> {},
+      _ => panic!("Expected Json message"),
     }
 
     Ok(())
@@ -153,14 +157,14 @@ mod tests {
 
   #[test]
   fn test_wire_formatted() -> anyhow::Result<()> {
-    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/wire_formatted.json";
+    let path = json_path("wire_formatted.json");
     let data = std::fs::read_to_string(path)?;
     //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
     let message = WebsocketServerMessage::from_json_str(&data)?;
 
     match message {
-      WebsocketServerMessage::Unknown(_value)=> {},
-      _ => panic!("Expected Unknown message"),
+      WebsocketServerMessage::Json(_value)=> {},
+      _ => panic!("Expected Json message"),
     }
 
     Ok(())
@@ -168,7 +172,7 @@ mod tests {
 
   #[test]
   fn test_empty() -> anyhow::Result<()> {
-    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/empty.json";
+    let path = json_path("empty.json");
     let data = std::fs::read_to_string(path)?;
     //let message: WebsocketServerMessage = serde_json::from_str(&data)?;
     let message = WebsocketServerMessage::from_json_str(&data)?;
@@ -183,7 +187,7 @@ mod tests {
 
   #[test]
   fn test_other_type() -> anyhow::Result<()> {
-    let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/other_type.json";
+    let path = json_path("other_type.json");
     let data = std::fs::read_to_string(path)?;
     ///let message: WebsocketServerMessage = serde_json::from_str(&data)?;
     let message = WebsocketServerMessage::from_json_str(&data)?;
