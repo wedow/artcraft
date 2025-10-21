@@ -1,6 +1,6 @@
 use crate::error::grok_error::GrokError;
 use crate::requests::listen_websocket::clonable_websocket::ClonableWebsocket;
-use crate::requests::listen_websocket::messages::websocket_request::WebsocketRequest;
+use crate::requests::listen_websocket::messages::websocket_client_message::WebsocketClientMessage;
 
 pub struct PromptWebsocketImageArgs<'a> {
   pub websocket_wrapped: ClonableWebsocket,
@@ -9,7 +9,7 @@ pub struct PromptWebsocketImageArgs<'a> {
 
 
 pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Result<(), GrokError> {
-  let message = WebsocketRequest::new_image_prompt(args.prompt);
+  let message = WebsocketClientMessage::new_image_prompt(args.prompt);
 
   args.websocket_wrapped.send_serializable(&message).await?;
 
@@ -22,10 +22,7 @@ mod tests {
   use crate::requests::listen_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
   use crate::requests::listen_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
-  use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
-  use futures::TryStreamExt;
-  use log::LevelFilter;
   use std::io::Write;
   use std::time::Duration;
 
@@ -49,7 +46,7 @@ mod tests {
 
     let result = prompt_websocket_image(PromptWebsocketImageArgs {
       websocket_wrapped: websocket.clone(),
-      prompt: "a dog riding a bike in space",
+      prompt: "a dog riding a motorcycle",
     }).await?;
 
     println!("Reading...");

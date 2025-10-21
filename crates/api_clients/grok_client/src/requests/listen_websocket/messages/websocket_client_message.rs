@@ -3,7 +3,7 @@ use serde::Serialize;
 use uuid::Uuid;
 
 #[derive(Serialize)]
-pub struct WebsocketRequest {
+pub struct WebsocketClientMessage {
   /// Type of message
   /// eg. "conversation.item.create"
   pub r#type: String,
@@ -11,20 +11,20 @@ pub struct WebsocketRequest {
   /// Unix timestamp
   pub timestamp: u64,
 
-  pub item: WebsocketRequestItem,
+  pub item: ClientMessageItem,
 }
 
 #[derive(Serialize)]
-pub struct WebsocketRequestItem {
+pub struct ClientMessageItem {
   /// Type of item
   /// eg. "message"
   pub r#type: String,
 
-  pub content: Vec<WebsocketRequestItemContent>,
+  pub content: Vec<ClientMessageItemContent>,
 }
 
 #[derive(Serialize)]
-pub struct WebsocketRequestItemContent {
+pub struct ClientMessageItemContent {
   /// UUID
   #[serde(rename="requestId")]
   pub request_id: String,
@@ -36,11 +36,11 @@ pub struct WebsocketRequestItemContent {
   /// The prompt for the request
   pub text: String,
 
-  pub properties: WebsocketRequestItemContentProperties,
+  pub properties: ClientMessageItemContentProperties,
 }
 
 #[derive(Serialize)]
-pub struct WebsocketRequestItemContentProperties {
+pub struct ClientMessageItemContentProperties {
   pub section_count: usize,
   pub is_kids_mode: bool,
   pub enable_nsfw: bool,
@@ -48,19 +48,20 @@ pub struct WebsocketRequestItemContentProperties {
   pub is_initial: bool,
 }
 
-impl WebsocketRequest {
+impl WebsocketClientMessage {
+  /// Create a new image prompt websocket client message
   pub fn new_image_prompt(prompt: &str) -> Self {
     Self {
       r#type: "conversation.item.create".to_string(),
       timestamp: Utc::now().timestamp_millis() as u64,
-      item: WebsocketRequestItem {
+      item: ClientMessageItem {
         r#type: "message".to_string(),
         content: vec![
-          WebsocketRequestItemContent {
+          ClientMessageItemContent {
             request_id: Uuid::new_v4().to_string(),
             r#type: "input_text".to_string(),
             text: prompt.to_string(),
-            properties: WebsocketRequestItemContentProperties {
+            properties: ClientMessageItemContentProperties {
               section_count: 0,
               is_kids_mode: false,
               enable_nsfw: true,

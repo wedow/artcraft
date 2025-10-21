@@ -45,24 +45,6 @@ impl ClonableWebsocket {
     self.send(message_json).await
   }
 
-  pub async fn is_terminated(&self) -> Result<bool, GrokClientError> {
-    match self.websocket.read() {
-      Err(_) => Err(GrokClientError::WebsocketLockError.into()),
-      Ok(websocket) => Ok(websocket.is_terminated()),
-    }
-  }
-
-  /// NB: This will block forever if there is no item.
-  pub async fn try_next(&self) -> Result<Option<Message>, GrokClientError> {
-    match self.websocket.write() {
-      Err(_) => Err(GrokClientError::WebsocketLockError),
-      Ok(mut websocket) => websocket
-          .try_next()
-          .await
-          .map_err(|err| GrokClientError::WebsocketReadError(err)),
-    }
-  }
-
   pub async fn try_next_timeout(&self, duration: Duration) -> Result<Option<Message>, GrokClientError> {
     match self.websocket.write() {
       Err(_) => Err(GrokClientError::WebsocketLockError),
@@ -71,7 +53,7 @@ impl ClonableWebsocket {
 
         match result {
           Err(elapsed) => {
-            info!("Websocket try_next() elapsed: {:?}", elapsed);
+            info!("Websocket try_next() elapsed without receiving a message: {:?}", elapsed);
             Ok(None) // Timeout elapsed.
           }
           Ok(inner) => {
@@ -83,10 +65,28 @@ impl ClonableWebsocket {
     }
   }
 
-  pub fn size_hint(&self) -> Result<(usize, Option<usize>), GrokClientError> {
-    match self.websocket.read() {
-      Err(_) => Err(GrokClientError::WebsocketLockError),
-      Ok(websocket) => Ok(websocket.size_hint())
-    }
-  }
+  // pub async fn is_terminated(&self) -> Result<bool, GrokClientError> {
+  //   match self.websocket.read() {
+  //     Err(_) => Err(GrokClientError::WebsocketLockError.into()),
+  //     Ok(websocket) => Ok(websocket.is_terminated()),
+  //   }
+  // }
+
+  // /// NB: This will block forever if there is no item.
+  // pub async fn try_next(&self) -> Result<Option<Message>, GrokClientError> {
+  //   match self.websocket.write() {
+  //     Err(_) => Err(GrokClientError::WebsocketLockError),
+  //     Ok(mut websocket) => websocket
+  //         .try_next()
+  //         .await
+  //         .map_err(|err| GrokClientError::WebsocketReadError(err)),
+  //   }
+  // }
+
+  // pub fn size_hint(&self) -> Result<(usize, Option<usize>), GrokClientError> {
+  //   match self.websocket.read() {
+  //     Err(_) => Err(GrokClientError::WebsocketLockError),
+  //     Ok(websocket) => Ok(websocket.size_hint())
+  //   }
+  // }
 }
