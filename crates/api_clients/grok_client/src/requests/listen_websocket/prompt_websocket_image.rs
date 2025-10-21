@@ -112,7 +112,7 @@ mod tests {
           let maybe_message = WebsocketServerMessage::from_json_str(text.as_str())?;
           let mut text = text.as_str().to_string();
           text.truncate(100);
-          println!("Received message: {}", text);
+          //println!("Received message: {}", text);
           maybe_raw_text = Some(text);
           Some(maybe_message)
         },
@@ -151,7 +151,7 @@ mod tests {
       // TODO: Video websocket APIs
       // TODO: Upload APIs
 
-      if count > 5 {
+      if count > 30 {
         println!("No messages after 5 seconds");
         break;
       }
