@@ -89,6 +89,14 @@ mod tests {
     let data = std::fs::read_to_string(path)?;
     let message: WebsocketServerMessage = serde_json::from_str(&data)?;
 
+    match message {
+      WebsocketServerMessage::ImageData(image_data) => {
+        assert_eq!(image_data.percentage_complete, Some(50));
+        assert!(image_data.url.is_some());
+      },
+      _ => panic!("Expected ImageData message"),
+    }
+
     Ok(())
   }
 
@@ -98,6 +106,13 @@ mod tests {
     let data = std::fs::read_to_string(path)?;
     let message: WebsocketServerMessage = serde_json::from_str(&data)?;
 
+    match message {
+      WebsocketServerMessage::JsonData(image_data) => {
+        assert_eq!(image_data.percentage_complete, Some(100));
+      },
+      _ => panic!("Expected JsonData message"),
+    }
+
     Ok(())
   }
 
@@ -106,6 +121,13 @@ mod tests {
     let path = "/Users/bt/dev/storyteller/storyteller-rust/crates/api_clients/grok_client/test_data/websocket_messages/create_image_in_progress_response.json";
     let data = std::fs::read_to_string(path)?;
     let message: WebsocketServerMessage = serde_json::from_str(&data)?;
+
+    match message {
+      WebsocketServerMessage::JsonData(image_data) => {
+        assert_eq!(image_data.percentage_complete, Some(0));
+      },
+      _ => panic!("Expected JsonData message"),
+    }
 
     Ok(())
   }
