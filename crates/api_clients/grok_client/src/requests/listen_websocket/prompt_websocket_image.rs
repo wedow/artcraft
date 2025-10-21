@@ -32,7 +32,7 @@ mod tests {
   #[tokio::test]
   #[ignore] // manually test
   async fn prompt() -> AnyhowResult<()> {
-    setup_test_logging(LevelFilter::Trace);
+    //setup_test_logging(LevelFilter::Trace);
     //let cookies = SESSION_COOKIES_WITHOUT_CF_CLEARANCE;
 
     let cookies = get_test_cookies()?;
@@ -56,7 +56,9 @@ mod tests {
     std::io::stdout().flush()?;
 
     let mut count = 0;
-    
+
+    println!("Polling.");
+
     //while let Some(message) = websocket.try_next().await? {
     //  println!("[{count}] Received websocket message: {:?}", message);
     //  count = count + 1;
@@ -66,23 +68,37 @@ mod tests {
     //  }
     //}
 
-    println!("Polling.");
-    
+    //loop {
+    //  count = count + 1;
+    //  let bounds = websocket.size_hint()?;
+    //  println!("Websocket size hint: {:?}", bounds);
+    //  tokio::time::sleep(Duration::from_millis(1000)).await;
+    //  if count > 30 {
+    //    break;
+    //  }
+    //}
+
     loop {
-      count = count + 1;
-      
-      let bounds = websocket.size_hint()?;
-      
-      println!("Websocket size hint: {:?}", bounds);
+      let maybe_message =
+          websocket.try_next_timeout(Duration::from_millis(1000)).await?;
 
+      match maybe_message {
+        None => {
+          println!("No message received within timeout.");
+          count = count + 1;
+        }
+        Some(message) => {
+          println!("[{count}] Received websocket message!");//: {:?}", message);
+          count = 0;
+        }
+      }
 
-      tokio::time::sleep(Duration::from_millis(1000)).await;
-
-      if count > 30 {
+      if count > 5 {
+        println!("No messages after 5 seconds");
         break;
       }
     }
-    
+
     println!("Done polling.");
 
     log::logger().flush();

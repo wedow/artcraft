@@ -2,9 +2,10 @@ use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use futures::stream::FusedStream;
 use futures::{Stream, TryStreamExt};
-use log::warn;
+use log::{info, warn};
 use serde::Serialize;
 use std::sync::{Arc, RwLock};
+use std::time::Duration;
 use wreq::ws::message::Message;
 use wreq::ws::WebSocket;
 
@@ -51,6 +52,7 @@ impl ClonableWebsocket {
     }
   }
 
+  /// NB: This will block forever if there is no item.
   pub async fn try_next(&self) -> Result<Option<Message>, GrokClientError> {
     match self.websocket.write() {
       Err(_) => Err(GrokClientError::WebsocketLockError),
@@ -58,6 +60,26 @@ impl ClonableWebsocket {
           .try_next()
           .await
           .map_err(|err| GrokClientError::WebsocketReadError(err)),
+    }
+  }
+
+  pub async fn try_next_timeout(&self, duration: Duration) -> Result<Option<Message>, GrokClientError> {
+    match self.websocket.write() {
+      Err(_) => Err(GrokClientError::WebsocketLockError),
+      Ok(mut websocket) => {
+        let result = tokio::time::timeout(duration, websocket.try_next()).await;
+
+        match result {
+          Err(elapsed) => {
+            info!("Websocket try_next() elapsed: {:?}", elapsed);
+            Ok(None) // Timeout elapsed.
+          }
+          Ok(inner) => {
+            let maybe_message = inner.map_err(GrokClientError::WebsocketReadError)?;
+            Ok(maybe_message)
+          }
+        }
+      },
     }
   }
 
