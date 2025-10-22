@@ -1,11 +1,13 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::requests::upload_file::grok_upload_file_response::GrokUploadFileResponse;
+use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::upload_file::request::UploadFileRequest;
+use crate::requests::upload_file::response::GrokApiUploadFileResponse;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use log::{error, info};
+use serde::Deserialize;
 use std::path::Path;
 use std::time::Duration;
 use tokio::fs::File;
@@ -20,7 +22,7 @@ const UPLOAD_FILE_URL : &str = "https://grok.com/rest/app-chat/upload-file";
 /// There's a better way to implement this.
 const INITIAL_BUFFER_SIZE : usize = 1024*1024;
 
-pub struct GrokUploadFile<'a, P: AsRef<Path>> {
+pub struct GrokUploadFileRequest<'a, P: AsRef<Path>> {
   pub file: FileSpec<'a, P>,
   pub cookie: String,
   pub request_timeout: Option<Duration>,
@@ -41,7 +43,13 @@ pub enum FileSpec<'a, P: AsRef<Path>> {
   }
 }
 
-impl <'a, P> GrokUploadFile<'a, P> where P: AsRef<Path> {
+#[derive(Clone, Debug)]
+pub struct GrokUploadFileResponse {
+  pub file_metadata_id: Option<String>,
+  pub file_uri: Option<String>,
+}
+
+impl <'a, P> GrokUploadFileRequest<'a, P> where P: AsRef<Path> {
 
   pub async fn upload(&self) -> Result<GrokUploadFileResponse, GrokError> {
     match &self.file {
@@ -95,13 +103,13 @@ impl <'a, P> GrokUploadFile<'a, P> where P: AsRef<Path> {
     };
 
     // The encoded images have '/' and '+'.
-    // TODO: Padding or no?
+    // The files have base64 padding!
     let base64_file = BASE64_STANDARD.encode(buffer);
 
-    self.do_upload(&base64_file, &filename, &mime_type ).await
+    self.do_upload(base64_file, &filename, &mime_type ).await
   }
 
-  async fn do_upload(&self, base64_file: &str, file_name: &str, mime_type: &str) -> Result<GrokUploadFileResponse, GrokError> {
+  async fn do_upload(&self, base64_file: String, file_name: &str, mime_type: &str) -> Result<GrokUploadFileResponse, GrokError> {
 
     let client = Client::builder()
         .emulation(Emulation::Firefox143)
@@ -144,7 +152,6 @@ impl <'a, P> GrokUploadFile<'a, P> where P: AsRef<Path> {
       request_builder = request_builder.timeout(timeout);
     }
 
-    /*
     let request_body = UploadFileRequest {
       fileName: file_name.to_string(),
       fileMimeType: mime_type.to_string(),
@@ -155,35 +162,64 @@ impl <'a, P> GrokUploadFile<'a, P> where P: AsRef<Path> {
     let http_request = request_builder.json(&request_body)
         .build()
         .map_err(|err| {
-          error!("Error building Sora image generation HTTP request: {:?}", err);
-          SoraClientError::WreqClientError(err)
+          error!("Error building image upload request: {:?}", err);
+          GrokClientError::WreqClientError(err)
         })?;
 
     let response = client.execute(http_request)
         .await
         .map_err(|err| {
-          error!("Error during Sora image generation request: {:?}", err);
-          SoraClientError::WreqClientError(err)
+          error!("Error during image upload: {:?}", err);
+          GrokGenericApiError::WreqError(err)
         })?;
 
     let status = response.status();
 
-    let response_body = &response.text().await
+    let response_body = &response.text()
+        .await
         .map_err(|err| {
-          error!("Error reading Sora image generation response body: {:?}", err);
-          SoraClientError::WreqClientError(err)
+          error!("Error reading Grok image upload response body: {:?}", err);
+          GrokGenericApiError::WreqError(err)
         })?;
 
-    if !status.is_success() {
-      error!("Sora image generation request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-      return Err(classify_general_http_status_code_and_body(status, response_body));
-    }
+    // TODO:
+    //if !status.is_success() {
+    //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
+    //  return Err(classify_general_http_status_code_and_body(status, response_body));
+    //}
 
-    let response : HttpCreateResponse = serde_json::from_str(response_body)
-        .map_err(|err| SoraGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
+    let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
+        .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-     */
-    
-    unimplemented!("todo")
+    Ok(GrokUploadFileResponse {
+      file_metadata_id: response.file_metadata_id,
+      file_uri: response.file_uri,
+    })
+  }
+}
+
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use errors::AnyhowResult;
+
+  #[tokio::test]
+  #[ignore]
+  async fn upload_file() -> AnyhowResult<()> {
+    //setup_test_logging(LevelFilter::Trace);
+    let cookies = get_test_cookies()?;
+    let request = GrokUploadFileRequest {
+      file: FileSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
+      cookie: cookies.to_string(),
+      request_timeout: None,
+    };
+
+    let result = request.upload().await?;
+
+    println!("Result: {:?}", result);
+    assert_eq!(1, 2);
+    Ok(())
   }
 }
