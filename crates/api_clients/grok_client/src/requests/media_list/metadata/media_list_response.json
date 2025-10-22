@@ -1,0 +1,103 @@
+{
+  "posts": [
+    {
+      "id": "21a79085-e206-4b0b-88ac-5f2b7a453e45",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-21T23:40:41.993980Z",
+      "prompt": "A black panther lounges on an ornate chandelier in a lavish, gilded room with multiple chandeliers and elegant decor.",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-21T23:41:07.708119Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/8e340f1f-f477-4b52-9337-58d1a6696ff6/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "21a79085-e206-4b0b-88ac-5f2b7a453e45",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1"
+    },
+    {
+      "id": "6136f31a-4aaf-48e0-ab86-fe9871feca91",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-21T23:33:38.986385Z",
+      "prompt": "a photorealistic pirate ship sailing",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/images/6136f31a-4aaf-48e0-ab86-fe9871feca91.png",
+      "mimeType": "image/png",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "30e27f72-da40-48ff-8ddf-2a064434da99",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-21T23:34:05.919219Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/30e27f72-da40-48ff-8ddf-2a064434da99/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "6136f31a-4aaf-48e0-ab86-fe9871feca91",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "the pirate ship is sailing and suddenly gets attacked by a sea monster",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "a photorealistic pirate ship sailing",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/images/6136f31a-4aaf-48e0-ab86-fe9871feca91.png"
+    },
+    {
+      "id": "dcecdbec-12b1-4614-bf7a-edf86fd10fbc",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-21T03:47:54.420776Z",
+      "prompt": "a video of a dog eating a cake",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/images/dcecdbec-12b1-4614-bf7a-edf86fd10fbc.png",
+      "mimeType": "image/png",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "f54b0aef-b320-4987-8f31-f89152f501a6",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-21T03:48:20.217760Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/f54b0aef-b320-4987-8f31-f89152f501a6/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "dcecdbec-12b1-4614-bf7a-edf86fd10fbc",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "extremely-crazy",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "a video of a dog eating a cake",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/images/dcecdbec-12b1-4614-bf7a-edf86fd10fbc.png"
+    }
+  ],
+  "nextCursor": "1761018527111"
+}
