@@ -19,6 +19,15 @@ pub enum GrokClientError {
   /// Error sending to an open websocket.
   WebsocketSendError(wreq::Error),
 
+  /// Can't open a local file for uploading.
+  CannotOpenLocalFileForUpload(std::io::Error),
+
+  /// Can't read a local file for uploading.
+  CannotReadLocalFileForUpload(std::io::Error),
+
+  /// File for upload has an invalid path.
+  FileForUploadHasInvalidPath,
+
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
 //
@@ -66,6 +75,9 @@ impl Display for GrokClientError {
       Self::WebsocketLockError => write!(f, "Websocket lock error"),
       Self::WebsocketReadError(err) => write!(f, "Websocket read error: {}", err),
       Self::WebsocketSendError(err) => write!(f, "Websocket send error: {}", err),
+      Self::CannotOpenLocalFileForUpload(err) => write!(f, "Cannot open local file for upload: {}", err),
+      Self::CannotReadLocalFileForUpload(err) => write!(f, "Cannot read local file for upload: {}", err),
+      Self::FileForUploadHasInvalidPath => write!(f, "File for upload has invalid path"),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),

@@ -1,0 +1,4 @@
+It looks like this requests generates the video and opens a long-lived, long-polling endpoint
+that delivers lots of JSON blobs, eventually that contain the final video ID.
+
+Before this is called, the "create media post" endpoint is called.

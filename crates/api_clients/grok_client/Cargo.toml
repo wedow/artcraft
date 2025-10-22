@@ -23,6 +23,7 @@ errors.workspace = true
 
 # External
 anyhow.workspace = true
+base64.workspace = true
 chrono.workspace = true
 futures.workspace = true
 log.workspace = true
