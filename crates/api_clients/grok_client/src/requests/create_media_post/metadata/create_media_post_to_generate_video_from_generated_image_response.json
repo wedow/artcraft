@@ -1,0 +1,15 @@
+{
+  "post": {
+    "id": "2d8260d7-3b7c-4bc1-84ca-6e82dd892c39",
+    "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+    "createTime": "2025-10-22T00:14:15.635290002Z",
+    "prompt": "an alien in the hallway",
+    "mediaType": "MEDIA_POST_TYPE_IMAGE",
+    "mediaUrl": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+    "mimeType": "image/png",
+    "audioUrls": [],
+    "childPosts": [],
+    "modelName": "imagine_h_1",
+    "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png"
+  }
+}

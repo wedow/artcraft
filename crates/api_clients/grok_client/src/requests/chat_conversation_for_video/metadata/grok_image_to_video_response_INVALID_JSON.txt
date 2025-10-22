@@ -1,0 +1,434 @@
+{
+    "result": {
+        "conversation": {
+            "conversationId": "781e7126-3d94-43a4-a33b-233006f223a1",
+            "title": "New conversation",
+            "starred": false,
+            "createTime": "2025-10-22T00:14:15.756597Z",
+            "modifyTime": "2025-10-22T00:14:15.756970Z",
+            "systemPromptName": "",
+            "temporary": true,
+            "mediaTypes": [],
+            "workspaces": [],
+            "taskResult": null
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "userResponse": {
+                "responseId": "b8cfdc09-8339-4bf3-8aad-fd6e51fe1ebf",
+                "message": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png  alien walks down the hallway --mode=custom",
+                "sender": "human",
+                "createTime": "2025-10-22T00:14:15.773227445Z",
+                "manual": false,
+                "partial": false,
+                "shared": false,
+                "query": "",
+                "queryType": "",
+                "webSearchResults": [],
+                "xpostIds": [],
+                "xposts": [],
+                "generatedImageUrls": [],
+                "imageAttachments": [],
+                "fileAttachments": [],
+                "cardAttachmentsJson": [],
+                "fileUris": [],
+                "fileAttachmentsMetadata": [],
+                "isControl": false,
+                "steps": [],
+                "imageEditUris": [],
+                "mediaTypes": [],
+                "webpageUrls": [],
+                "metadata": {},
+                "citedWebSearchResults": [],
+                "toolResponses": [],
+                "model": "grok-3",
+                "ragResults": [],
+                "citedRagResults": [],
+                "searchProductResults": []
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "b8cfdc09-8339-4bf3-8aad-fd6e51fe1ebf"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 1,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 5,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 14,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 21,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 31,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 41,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 53,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 95,
+                "audioUrls": [],
+                "videoPrompt": "alien walks down the hallway",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "streamingVideoGenerationResponse": {
+                "videoId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "progress": 100,
+                "assetId": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+                "videoUrl": "users/85980643-ffab-4984-a3de-59a608c47d7f/generated/019a9e76-e68b-4243-a479-7842f9d6ec0f/generated_video.mp4",
+                "audioUrls": [],
+                "videoPrompt": "{\"shot\": {\"motion_level\": \"medium\", \"camera_depth\": \"full shot\", \"camera_view\": \"eye level\", \"camera_movement\": \"tracking shot\"}, \"scene\": {\"location\": \"indoor hallway\", \"environment\": \"A narrow indoor hallway with light-colored walls, wooden flooring, and multiple doors on both sides. The space is illuminated by a ceiling light fixture, creating a warm, artificial lighting environment with some shadows.\"}, \"cinematography\": {\"lighting\": \"artificial ceiling light\", \"style\": \"realistic 3D CGI\", \"texture\": \"glossy wooden floor, matte walls, and a smooth, slightly reflective texture on the alien's skin\", \"depth_of_field\": \"deep focus\"}, \"visual_details\": {\"objects\": [\"Green humanoid alien: A tall, slender, green-skinned creature with a large head, large black eyes, long limbs, and a muscular yet lean physique.\"], \"positioning\": [\"The Green humanoid alien is initially centered in the frame at the far end of the hallway and moves towards the foreground as it walks down the center of the hallway.\"], \"text_elements\": []}, \"motion\": \"The video begins with a Green humanoid alien standing at the far end of a hallway, centered in the frame. The Green humanoid alien starts to walk steadily down the hallway directly toward the camera. Its long, slender arms swing slightly at its sides in a rhythmic motion as it takes deliberate steps with its long legs. The Green humanoid alien's large black eyes are fixed forward. As the Green humanoid alien moves from the background to the foreground, its reflection is visible on the glossy wooden floor beneath it. The camera tracks backward at a steady pace, maintaining a consistent distance and a full shot of the Green humanoid alien. The Green humanoid alien's movement is continuous and unhurried, causing it to grow larger in the frame as it approaches. The artificial light from the ceiling fixture casts shifting shadows on the walls and floor, moving in sync with the Green humanoid alien's progression. The Green humanoid alien continues walking down the center of the hallway, passing closed doors on both sides, until it occupies the foreground of the frame by the end of the clip.\", \"audio\": {\"music\": \"A low, ambient, and slightly ominous electronic score with a subtle, rhythmic pulse.\", \"ambient\": \"Faint echoes of footsteps in a hallway and a low hum.\", \"sound_effect\": \"Soft, rhythmic footstep sounds and a subtle, otherworldly humming sound.\", \"mix_level\": \"The music and sound effects are balanced, with the ambient sounds creating a cohesive atmosphere.\"}, \"dialogue\": [], \"tags\": [\"alien\", \"hallway\", \"sci-fi\", \"3D CGI\", \"suspense\", \"extraterrestrial\"]}",
+                "imageReference": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+                "audioTranscripts": [],
+                "moderated": false,
+                "mode": "custom",
+                "modelName": "imagine_xdit_1"
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "I generated a video with the prompt: 'alien walks down the hallway'",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": true,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "token": "",
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "response": {
+            "modelResponse": {
+                "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957",
+                "message": "I generated a video with the prompt: 'alien walks down the hallway'",
+                "sender": "ASSISTANT",
+                "createTime": "2025-10-22T00:14:39.558455127Z",
+                "parentResponseId": "b8cfdc09-8339-4bf3-8aad-fd6e51fe1ebf",
+                "manual": false,
+                "partial": false,
+                "shared": false,
+                "query": "",
+                "queryType": "",
+                "webSearchResults": [],
+                "xpostIds": [],
+                "xposts": [],
+                "generatedImageUrls": [],
+                "imageAttachments": [],
+                "fileAttachments": [
+                    "019a9e76-e68b-4243-a479-7842f9d6ec0f"
+                ],
+                "cardAttachmentsJson": [],
+                "fileUris": [],
+                "fileAttachmentsMetadata": [],
+                "isControl": false,
+                "steps": [],
+                "imageEditUris": [],
+                "mediaTypes": [],
+                "webpageUrls": [],
+                "metadata": {
+                    "deepsearchPreset": "",
+                    "request_metadata": {
+                        "effort": "low",
+                        "mode": "fast",
+                        "model": "grok-3"
+                    }
+                },
+                "citedWebSearchResults": [],
+                "toolResponses": [],
+                "model": "grok-3",
+                "requestMetadata": {
+                    "model": "grok-3",
+                    "mode": "MODEL_MODE_FAST",
+                    "effort": "LOW"
+                },
+                "ragResults": [],
+                "citedRagResults": [],
+                "searchProductResults": []
+            },
+            "isThinking": false,
+            "isSoftStop": false,
+            "responseId": "2ef7e177-f0f7-4044-9fd9-8920c03fc957"
+        }
+    }
+}{
+    "result": {
+        "title": {
+            "newTitle": "Video Generation: Alien Hallway Walk"
+        }
+    }
+}

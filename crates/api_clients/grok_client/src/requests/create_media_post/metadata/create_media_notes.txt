@@ -1,0 +1,2 @@
+I'm not sure what this endpoint does.
+It's right after file upload and right before video creation.

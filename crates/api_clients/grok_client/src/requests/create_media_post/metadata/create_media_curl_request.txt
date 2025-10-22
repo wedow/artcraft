@@ -1,6 +1,3 @@
-I'm not sure what this endpoint does.
-It's right after file upload and right before video creation.
-
 curl 'https://grok.com/rest/media/post/create' \
   -H 'accept: */*' \
   -H 'accept-language: en-US,en;q=0.9' \
@@ -24,4 +21,3 @@ curl 'https://grok.com/rest/media/post/create' \
   -H 'x-statsig-id: mNwPce3OuHbH7v3kKUCnTly5oHilV0VAiIxmTcaaOoB4WfFMQZuCeMejHjcCmGu2khEuMJw71PWMT5hgHn4GTW8csx8kmw' \
   -H 'x-xai-request-id: 51b30743-6092-49d5-abd8-c81d2325720f' \
   --data-raw '{"mediaType":"MEDIA_POST_TYPE_IMAGE","mediaUrl":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content"}'
-  
