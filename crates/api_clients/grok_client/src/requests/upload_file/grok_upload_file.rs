@@ -22,7 +22,8 @@ const UPLOAD_FILE_URL : &str = "https://grok.com/rest/app-chat/upload-file";
 /// There's a better way to implement this.
 const INITIAL_BUFFER_SIZE : usize = 1024*1024;
 
-pub struct GrokUploadFileRequest<'a, P: AsRef<Path>> {
+/// Request builder
+pub struct GrokUploadFile<'a, P: AsRef<Path>> {
   pub file: FileSpec<'a, P>,
   pub cookie: String,
   pub request_timeout: Option<Duration>,
@@ -43,13 +44,14 @@ pub enum FileSpec<'a, P: AsRef<Path>> {
   }
 }
 
+/// Response type
 #[derive(Clone, Debug)]
 pub struct GrokUploadFileResponse {
   pub file_metadata_id: Option<String>,
   pub file_uri: Option<String>,
 }
 
-impl <'a, P> GrokUploadFileRequest<'a, P> where P: AsRef<Path> {
+impl <'a, P> GrokUploadFile<'a, P> where P: AsRef<Path> {
 
   pub async fn upload(&self) -> Result<GrokUploadFileResponse, GrokError> {
     match &self.file {
@@ -210,7 +212,7 @@ mod tests {
   async fn upload_file() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
     let cookies = get_test_cookies()?;
-    let request = GrokUploadFileRequest {
+    let request = GrokUploadFile {
       file: FileSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
       cookie: cookies.to_string(),
       request_timeout: None,

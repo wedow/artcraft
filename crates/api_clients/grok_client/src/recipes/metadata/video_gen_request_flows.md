@@ -68,6 +68,15 @@ Generate Image -> Video Flow
 
 (TODO)
 
+2. Create Media Post
+
+  Request
+    {
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl":"https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png"
+    }
+
+
 3. Chat Conversation for Video
 
    Endpoint: https://grok.com/rest/app-chat/conversations/new
