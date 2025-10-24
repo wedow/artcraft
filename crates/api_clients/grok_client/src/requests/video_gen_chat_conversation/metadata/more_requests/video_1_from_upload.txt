@@ -1,0 +1,23 @@
+curl 'https://grok.com/rest/app-chat/conversations/new' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'baggage: sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=a70178dd605614c0d7d802211bb98d58,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.6923031198588183,sentry-sample_rate=0' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -b '_ga=GA1.1.1232202746.1760710013; i18nextLng=en; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; stblid=b3331fc1-45d7-466b-83df-67427c0b2367; cf_clearance=r8Af0A6SdygBrS_n_CoVmSdnYlDuZYCbuQ7ctUUnzH0-1761153368-1.2.1.1-0OFIiAijcxNPep6Hsj0zGk3OElsfpd66VUxZ0_3kGokIi0VB6QRnwagSG1BVJwlguWf7ij19dieSYMgMML_SwgijuN0GYN3PPGHR0HBzOwBmHhMPs1Z05GS621E9Q3hKkiM7BdeRzFs2ZpTnRVJUEV0OfuNeOvsH0K_GAxQ05LBz4EuQL7_EujHDFNB_KHpC.hg7Z2mMqRKN2JThEv8KmrjIWq9MiJ7uJq2EkkzTdu0; mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel=%7B%22distinct_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%2C%22%24device_id%22%3A%2279ce237a-a0f3-4913-bf4b-519ac8a98263%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D; _ga_8FEWB057YH=GS2.1.s1761152442$o14$g1$t1761154051$j49$l0$h0' \
+  -H 'origin: https://grok.com' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://grok.com/imagine/post/5088adf9-85fd-4f51-a514-005aae2e1027' \
+  -H 'sec-ch-ua: "Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sentry-trace: a70178dd605614c0d7d802211bb98d58-9b67b382ef8b611d-0' \
+  -H 'traceparent: 00-1e9cf7a2c56a1f16783b613191e7a1a9-e2c806c705dd0856-00' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+  -H 'x-statsig-id: JWnSxWdSIehXqgWnPtVBmedI/AeX2F7u0mrBWtlqQYItKm6hn0T2jo3+FgysEfOmUrCVjCHzUY/R6BeVN8JyIRKv6Zm8Jg' \
+  -H 'x-xai-request-id: d22009f5-bf35-41b4-834f-123aed8c935e' \
+  --data-raw '{"temporary":true,"modelName":"grok-3","message":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/5088adf9-85fd-4f51-a514-005aae2e1027/content  --mode=normal","fileAttachments":["5088adf9-85fd-4f51-a514-005aae2e1027"],"toolOverrides":{"videoGen":true}}'
