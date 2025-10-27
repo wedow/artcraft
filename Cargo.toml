@@ -243,7 +243,7 @@ indexmap = "2.9.0"
 log = "0.4.27"
 once_cell = "1.21.3"
 rand = "0.9.1"
-regex = "1.11.1"
+regex = "1.12.2"
 reqwest = { version = "0.12.23", features = ["json", "cookies"] }
 reqwest-websocket = {  version = "0.5.0" }
 serde = {  version = "1.0.219", features = ["derive"] }

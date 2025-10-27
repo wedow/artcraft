@@ -21,3 +21,5 @@ curl 'https://grok.com/rest/app-chat/conversations/new' \
   -H 'x-statsig-id: OXXO2XtOPfRLthm7IsldhftU4BuLxELyznbdRsV2XZ4xNnK9g1jqkpHiChCwDe+6TtmJkD3ZVxtt5raP7qpwux2GVfTCOg' \
   -H 'x-xai-request-id: 7cb93340-5fb6-4fb3-b88d-ff9f5d99d456' \
   --data-raw '{"temporary":true,"modelName":"grok-3","message":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/5088adf9-85fd-4f51-a514-005aae2e1027/content  --mode=normal","fileAttachments":["5088adf9-85fd-4f51-a514-005aae2e1027"],"toolOverrides":{"videoGen":true}}'
+
+Header 'x-xai-request-id: 7cb93340-5fb6-4fb3-b88d-ff9f5d99d456' is just a random UUID and it can be changed and the request will succeed

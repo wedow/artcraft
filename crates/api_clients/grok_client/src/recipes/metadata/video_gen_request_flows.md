@@ -61,6 +61,7 @@ Upload Image -> Video Flow
       }
     }
 
+Header 'x-xai-request-id: 7cb93340-5fb6-4fb3-b88d-ff9f5d99d456' is just a random UUID and it can be changed.
 
 
 Generate Image -> Video Flow

@@ -31,12 +31,12 @@ class XStatsigIDGenerator:
 
         # 定义多种绕过策略
         strategies = [
-            self._try_curl_with_proxy,
+            #self._try_curl_with_proxy,
             self._try_curl_with_different_ua,
-            self._try_requests_with_session,
-            self._try_curl_cffi_advanced,
-            self._try_alternative_endpoints,
-            self._try_cached_content
+            #self._try_requests_with_session,
+            #self._try_curl_cffi_advanced,
+            #self._try_alternative_endpoints,
+            #self._try_cached_content
         ]
 
         for i, strategy in enumerate(strategies):
@@ -99,16 +99,17 @@ class XStatsigIDGenerator:
         import subprocess
 
         user_agents = [
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-            'Mozilla/5.0 (Android 13; Mobile; rv:109.0) Gecko/109.0 Firefox/119.0',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0',
+            #'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+            #'Mozilla/5.0 (Android 13; Mobile; rv:109.0) Gecko/109.0 Firefox/119.0',
+            #'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            #'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
         ]
 
         for ua in user_agents:
             try:
                 curl_command = [
-                    'curl', '-s', '-L', '--max-time', '10',
+                    'curl-impersonate-ff', '-s', '-L', '--max-time', '10',
                     '--user-agent', ua,
                     '--header', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                     '--header', 'Accept-Language: en-US,en;q=0.9',
@@ -323,9 +324,9 @@ class XStatsigIDGenerator:
 
         # 模拟浏览器指纹信息
         fingerprint_data = {
-            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0",
             "language": "en",
-            "languages": ["en", "zh", "zh-TW", "zh-CN"],
+            "languages": ["en", "en-US"],
             "platform": "MacIntel",
             "cookieEnabled": True,
             "doNotTrack": None,
@@ -339,10 +340,10 @@ class XStatsigIDGenerator:
             "innerHeight": 654,
             "outerWidth": 1920,
             "outerHeight": 1055,
-            "timezone": "Asia/Shanghai",
-            "timezoneOffset": -480,
+            "timezone": "America/New York",
+            "timezoneOffset": -400,
             "hardwareConcurrency": 14,
-            "deviceMemory": 8,
+            "deviceMemory": 16,
             "maxTouchPoints": 0
         }
 
@@ -497,10 +498,11 @@ def main():
     generator = XStatsigIDGenerator()
 
     # 生成 x-statsig-id
-    method = "GET"
-    pathname = "/"
+    method = "POST"
+    pathname = "/rest/app-chat/conversations/new"
 
     statsig_id = generator.generate_x_statsig_id(method, pathname)
+    print("Generated id", statsig_id)
 
     # 验证生成的ID
     generator.verify_generated_id(statsig_id)
