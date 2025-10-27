@@ -1,4 +1,2 @@
 pub mod user_and_file_id_to_image_url;
 pub mod user_and_file_id_to_video_url;
-mod parse_verification_token_from_html;
-mod verification_token_to_anim;

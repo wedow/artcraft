@@ -28,7 +28,7 @@ pub fn verification_token_to_anim(verification_token: &str) -> Result<Anim, Grok
 
 #[cfg(test)]
 mod tests {
-  use crate::utils::verification_token_to_anim::verification_token_to_anim;
+  use crate::requests::index_page::utils::verification_token_to_anim::verification_token_to_anim;
 
   #[test]
   fn test() {
