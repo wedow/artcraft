@@ -28,6 +28,9 @@ pub enum GrokClientError {
   /// File for upload has an invalid path.
   FileForUploadHasInvalidPath,
 
+  /// Error parsing HTML
+  HtmlParsingError,
+
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
 //
@@ -78,6 +81,7 @@ impl Display for GrokClientError {
       Self::CannotOpenLocalFileForUpload(err) => write!(f, "Cannot open local file for upload: {}", err),
       Self::CannotReadLocalFileForUpload(err) => write!(f, "Cannot read local file for upload: {}", err),
       Self::FileForUploadHasInvalidPath => write!(f, "File for upload has invalid path"),
+      Self::HtmlParsingError => write!(f, "Html parsing error"),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),
