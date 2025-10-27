@@ -9,7 +9,6 @@ use wreq::ws::message::Message;
 use wreq::Client;
 use wreq_util::Emulation;
 
-// Not even sure what this endpoint just, just testing auth
 const INDEX_URL: &str = "https://grok.com";
 
 pub struct GetIndexPageArgs<'a> {

@@ -1,0 +1,44 @@
+use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+use crate::error::grok_client_error::GrokClientError;
+use crate::error::grok_error::GrokError;
+use wreq::Client;
+
+const INDEX_URL: &str = "https://grok.com";
+
+pub struct GetIndexPageScriptArgs<'a> {
+  pub client: &'a Client,
+  pub cookie: &'a str,
+  pub script_url: &'a str,
+}
+
+
+/// Get javascript that we'll need for client crypto purposes.
+pub async fn get_index_page_script(args: GetIndexPageScriptArgs<'_>) -> Result<String, GrokError> {
+  let script_url = format!("{}/{}", INDEX_URL, args.script_url);
+
+  let builder = args.client.get(script_url)
+      .header("User-Agent", FIREFOX_143_MAC_USER_AGENT)
+      .header("Accept", "*/*")
+      .header("Accept-Language", "en-US,en;q=0.5")
+      .header("Accept-Encoding", "gzip, deflate, br, zstd")
+      .header("Referer", "https://grok.com")
+      .header("Connection", "keep-alive")
+      .header("Sec-Fetch-Dest", "script")
+      .header("Sec-Fetch-Mode", "no-cors")
+      .header("Sec-Fetch-Site", "same-origin")
+      .header("TE", "trailers");
+
+  let response = builder.send()
+      .await
+      .map_err(|err| GrokClientError::WreqClientError(err))?;
+
+  // TODO: Cloudflare handling.
+
+  let body = response.text()
+      .await
+      .map_err(|err| GrokClientError::WreqClientError(err))?;
+
+  println!("Response body: {}", body);
+
+  Ok(body)
+}
