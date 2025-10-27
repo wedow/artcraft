@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use base64::DecodeError;
 
 #[derive(Debug)]
 pub enum GrokClientError {
@@ -30,6 +31,12 @@ pub enum GrokClientError {
 
   /// Error parsing HTML
   HtmlParsingError,
+  
+  /// Error decoding verification token
+  FailedToDecodeVerificationToken(DecodeError),
+  
+  /// Verification token bytes are invalid
+  InvalidVerificationTokenBytes,
 
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
@@ -82,6 +89,8 @@ impl Display for GrokClientError {
       Self::CannotReadLocalFileForUpload(err) => write!(f, "Cannot read local file for upload: {}", err),
       Self::FileForUploadHasInvalidPath => write!(f, "File for upload has invalid path"),
       Self::HtmlParsingError => write!(f, "Html parsing error"),
+      Self::FailedToDecodeVerificationToken(err) => write!(f, "Failed to decode verification token: {}", err),
+      Self::InvalidVerificationTokenBytes => write!(f, "Invalid verification token bytes"),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),
