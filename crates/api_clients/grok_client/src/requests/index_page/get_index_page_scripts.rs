@@ -52,7 +52,7 @@ mod tests {
   #[ignore] // manually test
   async fn test() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
-    
+
     let cookie = get_test_cookies()?;
 
     let index = get_index(GetIndexPageArgs {
@@ -69,7 +69,9 @@ mod tests {
     }).await?;
 
     for (k, v) in scripts.iter() {
-      println!("{}: {}\n\n", k, v);
+      let mut body = v.to_string();
+      body.truncate(100);
+      println!("{}: {}\n\n", k, body);
     }
 
     assert_eq!(1, 2);

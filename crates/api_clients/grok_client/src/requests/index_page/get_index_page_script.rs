@@ -14,7 +14,7 @@ pub struct GetIndexPageScriptArgs<'a> {
 
 /// Get javascript that we'll need for client crypto purposes.
 pub async fn get_index_page_script(args: GetIndexPageScriptArgs<'_>) -> Result<String, GrokError> {
-  let script_url = format!("{}/{}", INDEX_URL, args.script_url);
+  let script_url = get_script_url(args.script_url);
 
   let builder = args.client.get(script_url)
       .header("User-Agent", FIREFOX_143_MAC_USER_AGENT)
@@ -33,12 +33,17 @@ pub async fn get_index_page_script(args: GetIndexPageScriptArgs<'_>) -> Result<S
       .map_err(|err| GrokClientError::WreqClientError(err))?;
 
   // TODO: Cloudflare handling.
-
   let body = response.text()
       .await
       .map_err(|err| GrokClientError::WreqClientError(err))?;
 
-  println!("Response body: {}", body);
-
   Ok(body)
+}
+
+fn get_script_url(script_path: &str) -> String {
+  if script_path.starts_with("/") {
+    format!("{}{}", INDEX_URL, script_path)
+  } else {
+    format!("{}/{}", INDEX_URL, script_path)
+  }
 }
