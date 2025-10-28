@@ -1,5 +1,14 @@
 use crate::error::grok_client_error::GrokClientError;
+use crate::requests::index_page::signature::signature_simulate_style::signature_simulate_style;
 use crate::requests::index_page::signature::signature_xa::signature_xa;
+use once_cell::sync::Lazy;
+use regex::Regex;
+
+static NUMBER_REGEX : Lazy<Regex> = Lazy::new(|| {
+  Regex::new(r#"[\d\.\-]+"#)
+      .expect("Regex should parse")
+});
+
 /*
     @staticmethod
     def xs(x_bytes: bytes, svg: str, x_values: list) -> str:
@@ -67,6 +76,44 @@ xs.arr = [202, 221, 122, 9, 104, 148, 35, 141, 172, 239, 1, 134, 120, 204, 92, 1
   // > xs.vals = [73, 44, 215, 158, 218, 29, 68, 13, 98, 243, 134]
   println!("vals.len = {:?}", vals.len());
   println!("vals = {:?}", vals);
+
+  // k = Signature.simulateStyle(vals, c)
+  let k = signature_simulate_style(vals, c)?;
+
+  // > xs.k.color = rgb(67, 32, 227)
+  // > xs.k.transform = matrix(0.986679, -0.1626771, 0.1626771, 0.986679, 0, 0)
+  println!("k.color = {}", &k.color);
+  println!("k.transform = {}", &k.transform);
+
+  /*
+        concat = str(k["color"]) + str(k["transform"])
+        matches = findall(r"[\d\.\-]+", concat)
+        converted = []
+        for m in matches:
+            num = float(m)
+            hexstr = Signature.tohex(num)
+            converted.append(hexstr)
+        joined = "".join(converted)
+        cleaned = joined.replace(".", "").replace("-", "")
+        return cleaned
+   */
+
+  // concat = str(k["color"]) + str(k["transform"])
+  let concat = format!("{}{}", k.color, k.transform);
+
+  // > xs.concat = rgb(67, 32, 227)matrix(0.986679, -0.1626771, 0.1626771, 0.986679, 0, 0)
+  println!("concat = {}", concat);
+
+  // matches = findall(r"[\d\.\-]+", concat)
+  let matches = NUMBER_REGEX.captures_iter(&concat)
+      .filter_map(|captures| captures.get(0))
+      .map(|m| m.as_str().to_string())
+      .collect::<Vec<_>>();
+
+  // > xs.matches = ['67', '32', '227', '0.986679', '-0.1626771', '0.1626771', '0.986679', '0', '0']
+  println!("matches = {:?}", matches);
+
+
 
 
   Ok("".to_string())

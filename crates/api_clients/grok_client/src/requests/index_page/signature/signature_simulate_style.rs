@@ -180,7 +180,6 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   println!("sinv = {:?}", sinv);
 
   /*
-
         if is_effectively_zero(cosv):
             a = 0
             d = 0
