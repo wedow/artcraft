@@ -4,6 +4,7 @@ use crate::requests::index_page::utils::parse_numbers_from_xsid_script::parse_nu
 use crate::requests::index_page::utils::parse_on_demand_script_from_index_html::parse_on_demand_script_from_index_html;
 use crate::requests::index_page::utils::verification_token_to_loading_anim::LoadingAnim;
 use wreq::Client;
+use crate::requests::index_page::utils::parse_svg_paths_from_index_html::parse_svg_paths_from_index_html;
 // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 
 
@@ -48,6 +49,12 @@ pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, Grok
 
   println!("Numbers:\n\n");
   println!("{:?}", numbers);
+  println!("\n\n");
+  
+  let paths = parse_svg_paths_from_index_html(&args.html);
+
+  println!("Paths:\n\n");
+  println!("{:?}", paths);
   println!("\n\n");
 
   /*
@@ -131,6 +138,10 @@ mod tests {
     println!("Final Numbers: {:?}", result);
 
     println!("{:?}", result);
+
+    println!("Body:\n\n");
+    println!("{}", page_and_scripts.body);
+    println!("\n\n");
 
     /*
     ActionsAndXsid {
