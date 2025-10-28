@@ -70,7 +70,7 @@ mod tests {
   }
 
   #[test]
-  fn test_1() {
+  fn svg_test_1() {
     // Actual test case, called in loop:
     //    cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
     // Python Inputs:
@@ -98,7 +98,7 @@ mod tests {
   }
 
   #[test]
-  fn test_2() {
+  fn svg_test_2() {
     // Actual test case, called in loop:
     //    cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
     // Python Inputs:
@@ -121,6 +121,34 @@ mod tests {
     let observed = signature_h(x, param, c, e).unwrap();
 
     let expected = -0.23;
+
+    assert_eq!(expected, observed);
+  }
+
+  #[test]
+  fn svg_test_3() {
+    // Actual test case, called in loop:
+    //    cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
+    // Python Inputs:
+    //
+    // _h.x 243 <class 'int'>
+    // _h._param 0 <class 'int'>
+    // _h.c 1 <class 'int'>
+    // _h.e False <class 'bool'>
+    //
+    // Python Outputs:
+    //
+    // _h.f 0.9529411764705882 <class 'float'>
+    // _h.rounded 0.95 <class 'float'>
+
+    let x = 243.0; // NB: This was an int in python
+    let param = 0.0; // NB: This was an int in python
+    let c = 1.0; // NB: This was an int in python
+    let e = false;
+
+    let observed = signature_h(x, param, c, e).unwrap();
+
+    let expected = 0.95;
 
     assert_eq!(expected, observed);
   }
