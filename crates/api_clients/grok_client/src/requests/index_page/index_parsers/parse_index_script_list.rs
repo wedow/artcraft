@@ -9,7 +9,7 @@ static SCRIPT_SELECTOR: Lazy<Selector> = Lazy::new(|| {
 });
 
 
-pub fn parse_scripts_from_index_html(html: &str) -> Vec<String> {
+pub fn parse_index_svg_paths(html: &str) -> Vec<String> {
   let document = Html::parse_document(html);
   let selected = document.select(&SCRIPT_SELECTOR);
   selected
@@ -22,9 +22,9 @@ pub fn parse_scripts_from_index_html(html: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
+  use crate::requests::index_page::index_parsers::parse_index_script_list::parse_index_svg_paths;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
-  use crate::requests::index_page::utils::parse_scripts_from_index_html::parse_scripts_from_index_html;
 
   #[tokio::test]
   #[ignore] // Manual test invocation
@@ -34,7 +34,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let scripts = parse_scripts_from_index_html(&index.body);
+    let scripts = parse_index_svg_paths(&index.body);
 
     println!("Script count: {:?}", scripts.len());
 

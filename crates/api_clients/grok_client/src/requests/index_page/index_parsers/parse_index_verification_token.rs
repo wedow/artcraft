@@ -61,7 +61,7 @@ fn scrape_meta_tag_via_parsing(html: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::utils::parse_verification_token_from_index_html::parse_verification_token_from_index_html;
+  use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_verification_token_from_index_html;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 

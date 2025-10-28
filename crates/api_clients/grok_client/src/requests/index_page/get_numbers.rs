@@ -1,9 +1,9 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
+use crate::requests::index_page::index_parsers::parse_index_on_demand_script::parse_index_on_demand_script;
+use crate::requests::index_page::index_parsers::parse_index_svg_paths::parse_svg_paths_from_index_html;
 use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
 use crate::requests::index_page::utils::parse_numbers_from_xsid_script::parse_numbers_from_xsid_script;
-use crate::requests::index_page::utils::parse_on_demand_script_from_index_html::parse_on_demand_script_from_index_html;
-use crate::requests::index_page::utils::parse_svg_paths_from_index_html::parse_svg_paths_from_index_html;
 use crate::requests::index_page::utils::verification_token_to_loading_anim::LoadingAnim;
 use wreq::Client;
 
@@ -30,7 +30,7 @@ pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, Grok
   let script_link = match args.xsid_script_id {
     "ondemand.s" => {
       // TODO: Not sure this is relevant anymore. Not a full or correct implementation of this branch.
-      let on_demand = parse_on_demand_script_from_index_html(&args.html);
+      let on_demand = parse_index_on_demand_script(&args.html);
       let on_demand = on_demand.unwrap_or_else(|| "".to_string());
       format!("https://abs.twimg.com/responsive-web/client-web/ondemand.s.{}a.js", on_demand)
     },
@@ -64,8 +64,8 @@ pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, Grok
 mod tests {
   use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
   use crate::requests::index_page::get_numbers::{get_numbers, GetNumbersArgs};
+  use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_verification_token_from_index_html;
   use crate::requests::index_page::utils::find_script_actions_and_xsid::find_script_actions_and_xsid;
-  use crate::requests::index_page::utils::parse_verification_token_from_index_html::parse_verification_token_from_index_html;
   use crate::requests::index_page::utils::verification_token_to_loading_anim::verification_token_to_loading_anim;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;

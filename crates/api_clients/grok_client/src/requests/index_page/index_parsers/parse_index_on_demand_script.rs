@@ -6,7 +6,7 @@ static ON_DEMAND_REGEX : Lazy<Regex> = Lazy::new(|| {
       .expect("Regex should parse")
 });
 
-pub fn parse_on_demand_script_from_index_html(html: &str) -> Option<String> {
+pub fn parse_index_on_demand_script(html: &str) -> Option<String> {
   let on_demand = scrape_on_demand_via_regex(html);
 
   if let Some(on_demand) = on_demand {
@@ -26,7 +26,7 @@ fn scrape_on_demand_via_regex(html: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::utils::parse_on_demand_script_from_index_html::parse_on_demand_script_from_index_html;
+  use crate::requests::index_page::index_parsers::parse_index_on_demand_script::parse_index_on_demand_script;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -38,7 +38,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let result = parse_on_demand_script_from_index_html(&index.body);
+    let result = parse_index_on_demand_script(&index.body);
     println!("{:?}", result);
 
     assert_eq!(1, 2);

@@ -9,7 +9,7 @@ static BAGGAGE_SELECTOR : Lazy<Selector> = Lazy::new(|| {
 });
 
 
-pub fn parse_baggage_from_index_html(html: &str) -> Option<String> {
+pub fn parse_index_baggage(html: &str) -> Option<String> {
   let document = Html::parse_document(html);
   let selected = document.select(&BAGGAGE_SELECTOR);
   let mut values = selected
@@ -22,7 +22,7 @@ pub fn parse_baggage_from_index_html(html: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::utils::parse_baggage_from_index_html::parse_baggage_from_index_html;
+  use crate::requests::index_page::index_parsers::parse_index_baggage::parse_index_baggage;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -34,7 +34,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let baggage = parse_baggage_from_index_html(&index.body);
+    let baggage = parse_index_baggage(&index.body);
 
     println!("Baggage: {:?}", baggage);
 
