@@ -4,6 +4,7 @@ use crate::requests::index_page::signature::signature_h::signature_h;
 use log::error;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::fmt::format;
 
 static CLEAN_NON_DIGIT_REGEX : Lazy<Regex> = Lazy::new(|| {
   Regex::new(r#"[^\d]+"#)
@@ -168,22 +169,109 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // > rad -0.16340331401821492
   println!("rad = {:?}", rad);
 
+  // cosv = cos(rad)
+  // sinv = sin(rad)
+  let cosv = rad.cos();
+  let sinv = rad.sin();
+
+  // > cosv 0.9866793572390504
+  // > sinv -0.16267712192663833
+  println!("cosv = {:?}", cosv);
+  println!("sinv = {:?}", sinv);
+
   /*
 
-        def is_effectively_zero(val: float) -> bool:
-            return abs(val) < 1e-7
+        if is_effectively_zero(cosv):
+            a = 0
+            d = 0
+        else:
+            if is_effectively_integer(cosv):
+                a = int(round(cosv))
+                d = int(round(cosv))
+            else:
+                a = f"{cosv:.6f}"
+                d = f"{cosv:.6f}"
 
-        def is_effectively_integer(val: float) -> bool:
-            return abs(val - round(val)) < 1e-7
+        if is_effectively_zero(sinv):
+            bval = 0
+            cval = 0
+        else:
+            if is_effectively_integer(sinv):
+                bval = int(round(sinv))
+                cval = int(round(-sinv))
+            else:
+                bval = f"{sinv:.7f}"
+                cval = f"{(-sinv):.7f}"
 
-        cosv = cos(rad)
-        sinv = sin(rad)
-
+        transform = f"matrix({a}, {bval}, {cval}, {d}, 0, 0)"
+        return {"color": color, "transform": transform}
    */
 
+  let a;
+  let d;
+
+  if is_effectively_zero(cosv) {
+    // a = 0
+    // d = 0
+    a = "0".to_string();
+    d = "0".to_string();
+  } else {
+    if is_effectively_integer(cosv) {
+      // a = int(round(cosv))
+      // d = int(round(cosv))
+      let rounded = cosv.round() as i32;
+      a = format!("{:.0}", rounded);
+      d = format!("{:.0}", rounded);
+    } else {
+      //a = f"{cosv:.6f}"
+      //d = f"{cosv:.6f}"
+      a = format!("{:.6}", cosv);
+      d = format!("{:.6}", cosv);
+    }
+  }
+
+  let bval;
+  let cval;
+
+  if is_effectively_zero(sinv) {
+    // bval = 0
+    // cval = 0
+    bval = "0".to_string();
+    cval = "0".to_string();
+  } else {
+    if is_effectively_integer(cosv) {
+      // bval = int(round(sinv))
+      // cval = int(round(-sinv))
+      let rounded_pos = sinv.round() as i32;
+      let rounded_neg= (-1.0 * sinv).round() as i32;
+      bval = format!("{:.0}", rounded_pos);
+      cval = format!("{:.0}", rounded_neg);
+    } else {
+      // bval = f"{sinv:.7f}"
+      // cval = f"{(-sinv):.7f}"
+      bval = format!("{:.7}", sinv);
+      cval = format!("{:.7}", (sinv * -1.0));
+    }
+  }
+
+  // > a 0.986679
+  // > d 0.986679
+  // > bval -0.1626771
+  // > cval 0.1626771
+  println!("a = {}", a);
+  println!("d = {}", d);
+  println!("bval = {}", bval);
+  println!("cval = {}", cval);
+
+  // transform = f"matrix({a}, {bval}, {cval}, {d}, 0, 0)"
+  let transform = format!("matrix({a}, {bval}, {cval}, {d}, 0, 0)");
+
+  // transform matrix(0.986679, -0.1626771, 0.1626771, 0.986679, 0, 0)
+  println!("transform = {:?}", transform);
+
   Ok(SimulatedStyle {
-    color: "".to_string(),
-    transform: "".to_string(),
+    color,
+    transform,
   })
 }
 
@@ -198,18 +286,26 @@ fn is_effectively_integer(val: f64) -> bool {
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::index_page::signature::signature_simulate_style::signature_simulate_style;
 
-  #[test]
-  fn test() {
-    // from xs - 'vals'
-    let values = vec![73, 44, 215, 158, 218, 29, 68, 13, 98, 243, 134];
-    // from xs - 'c'
-    let c = 900;
+  mod test_signature_simulate_style {
+    use crate::requests::index_page::signature::signature_simulate_style::signature_simulate_style;
 
-    let output = signature_simulate_style(&values, c);
+    #[test]
+    fn test_1() {
+      // from xs - 'vals'
+      let values = vec![73, 44, 215, 158, 218, 29, 68, 13, 98, 243, 134];
+      // from xs - 'c'
+      let c = 900;
 
-    assert_eq!(1, 2);
+      let output = signature_simulate_style(&values, c).unwrap();
+
+      // NB: Values from python code
+      let expected_color = "rgb(67, 32, 227)";
+      let expected_transform = "matrix(0.986679, -0.1626771, 0.1626771, 0.986679, 0, 0)";
+
+      assert_eq!(&output.color, expected_color);
+      assert_eq!(&output.transform, expected_transform);
+    }
   }
 
   mod helper_functions {
