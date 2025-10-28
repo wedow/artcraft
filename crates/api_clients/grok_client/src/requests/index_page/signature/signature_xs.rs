@@ -45,9 +45,32 @@ xs.arr = [202, 221, 122, 9, 104, 148, 35, 141, 172, 239, 1, 134, 120, 204, 92, 1
 
   println!("idx = {}", idx);
 
-      
+  // c = ((arr[x_values[1]] % 16) * (arr[x_values[2]] % 16)) * (arr[x_values[3]] % 16)
+  let xv1 = ith_usize(x_values, 1)?;
+  let av1 = ith_u32(arr, xv1)? % 16;
+  let xv2 = ith_usize(x_values, 2)?;
+  let av2 = ith_u32(arr, xv2)? % 16;
+  let xv3 = ith_usize(x_values, 3)?;
+  let av3 = ith_u32(arr, xv3)? % 16;
+  let c = av1 * av2 * av3; // Max value: 4096 (16x16x16)
+
+  println!("c = {}", c);
+
+
 
   Ok("".to_string())
+}
+
+fn ith_usize(bytes: &[u8], i: usize) -> Result<usize, GrokClientError> {
+  bytes.get(i)
+      .map(|x| *x as usize)
+      .ok_or_else(|| GrokClientError::BadSignatureInputs)
+}
+
+fn ith_u32(bytes: &[u8], i: usize) -> Result<u32, GrokClientError> {
+  bytes.get(i)
+      .map(|x| *x as u32)
+      .ok_or_else(|| GrokClientError::BadSignatureInputs)
 }
 
 #[cfg(test)]
