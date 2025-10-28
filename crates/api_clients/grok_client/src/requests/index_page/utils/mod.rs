@@ -1,4 +1,3 @@
 pub mod find_script_actions_and_xsid;
-pub mod generate_sign_for_new_conversation;
 pub mod parse_numbers_from_xsid_script;
 pub mod verification_token_to_loading_anim;

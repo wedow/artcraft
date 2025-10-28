@@ -83,7 +83,7 @@ pub fn generate_sign(args: GenerateSignArgs<'_>) -> Result<(), GrokClientError> 
 mod tests {
   use errors::AnyhowResult;
   use crate::requests::index_page::index_parsers::parse_index_verification_token::VerificationToken;
-  use crate::requests::index_page::utils::generate_sign_for_new_conversation::{generate_sign, GenerateSignArgs};
+  use crate::requests::index_page::signature::generate_sign_for_new_conversation::{generate_sign, GenerateSignArgs};
 
   #[test]
   fn test() -> AnyhowResult<()> {
