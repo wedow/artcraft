@@ -125,14 +125,19 @@ mod tests {
   use crate::requests::index_page::signature::signature_to_hex::signature_to_hex;
 
   #[test]
-  fn test_1() -> AnyhowResult<()> {
-    assert_eq!(&signature_to_hex(67.0)?, "43");
+  fn integers() -> AnyhowResult<()> {
+    assert_eq!(&signature_to_hex(67.0)?, "43"); // Test case from Python
+    assert_eq!(&signature_to_hex(32.0)?, "20"); // Test case from Python
+    assert_eq!(&signature_to_hex(227.0)?, "e3"); // Test case from Python
+    assert_eq!(&signature_to_hex(0.0)?, "0"); // Test case from Python
     Ok(())
   }
 
   #[test]
-  fn test_2() -> AnyhowResult<()> {
-    assert_eq!(&signature_to_hex(67.0)?, "43");
+  fn fractions() -> AnyhowResult<()> {
+    assert_eq!(&signature_to_hex(0.986679)?, "0.fd70a3d70a3d7"); // Test case from Python
+    assert_eq!(&signature_to_hex(-0.1626771)?, "-0.28f5c28f5c28f6"); // Test case from Python
+    assert_eq!(&signature_to_hex(0.1626771)?, "0.28f5c28f5c28f6"); // Test case from Python
     Ok(())
   }
 }
