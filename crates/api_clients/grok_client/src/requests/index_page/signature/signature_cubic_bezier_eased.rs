@@ -104,6 +104,30 @@ mod tests {
     use crate::requests::index_page::signature::signature_cubic_bezier_eased::{bezier, signature_cubic_bezier_eased};
 
     #[test]
+    fn test_0() {
+      // bezier.u 0.5 <class 'float'>
+      // bezier.x1 0.05 <class 'float'>
+      // bezier.y1 -0.23 <class 'float'>
+      // bezier.x2 0.95 <class 'float'>
+      // bezier.y2 0.05 <class 'float'>
+      // bezier.x 0.49999999999999994 <class 'float'>
+      // bezier.y 0.057499999999999996 <class 'float'>
+      let u = 0.5;
+      let x1 = 0.05;
+      let y1 = -0.23;
+      let x2 = 0.95;
+      let y2 = 0.05;
+
+      let expected_x = 0.49999999999999994;
+      let expected_y = 0.057499999999999996;
+
+      let output = bezier(u, x1, y1, x2, y2);
+
+      assert_eq!(output.0, expected_x);
+      assert_eq!(output.1, expected_y);
+    }
+
+    #[test]
     fn test_1() {
       // NB: Test values that were run through Python
       let u = 0.29268743212748927; // bezier.u 0.29268743212748927 <class 'float'>
