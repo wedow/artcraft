@@ -26,7 +26,7 @@ static JSON_REGEX: Lazy<Regex> = Lazy::new(|| {
 pub struct VerificationToken(pub(crate) String);
 
 /// Parse the verification token from the root HTML
-pub fn parse_verification_token_and_anim(html: &str) -> Option<VerificationToken> {
+pub fn parse_verification_token_from_index_html(html: &str) -> Option<VerificationToken> {
   let maybe_meta = scrape_meta_tag_via_parsing(html);
 
   if let Some(meta) = maybe_meta {
@@ -61,7 +61,7 @@ fn scrape_meta_tag_via_parsing(html: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::utils::parse_verification_token_from_html::parse_verification_token_and_anim;
+  use crate::requests::index_page::utils::parse_verification_token_from_index_html::parse_verification_token_from_index_html;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -73,7 +73,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let result = parse_verification_token_and_anim(&index.body);
+    let result = parse_verification_token_from_index_html(&index.body);
     println!("{:?}", result);
     
     assert_eq!(1, 2);

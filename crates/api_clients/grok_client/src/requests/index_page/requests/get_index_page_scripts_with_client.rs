@@ -41,7 +41,7 @@ pub async fn get_index_page_scripts_with_client(args: GetIndexPageScriptsArgs<'_
 mod tests {
   use crate::requests::index_page::requests::get_index_page_scripts_with_client::{get_index_page_scripts_with_client, GetIndexPageScriptsArgs};
   use crate::requests::index_page::requests::get_index_page_with_client::{get_index_page_with_client, GetIndexPageWithClientArgs};
-  use crate::requests::index_page::utils::parse_scripts::parse_scripts;
+  use crate::requests::index_page::utils::parse_scripts_from_index_html::parse_scripts_from_index_html;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::utils::create_firefox_client::create_firefox_client;
   use errors::AnyhowResult;
@@ -59,7 +59,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let scripts = parse_scripts(&index.body);
+    let scripts = parse_scripts_from_index_html(&index.body);
 
     let scripts = get_index_page_scripts_with_client(GetIndexPageScriptsArgs {
       client: &client,

@@ -3,7 +3,7 @@ use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::index_page::requests::get_index_page_scripts_with_client::{get_index_page_scripts_with_client, GetIndexPageScriptsArgs};
 use crate::requests::index_page::requests::get_index_page_with_client::{get_index_page_with_client, GetIndexPageWithClientArgs};
-use crate::requests::index_page::utils::parse_scripts::parse_scripts;
+use crate::requests::index_page::utils::parse_scripts_from_index_html::parse_scripts_from_index_html;
 use crate::utils::create_firefox_client::create_firefox_client;
 use log::info;
 use std::collections::HashMap;
@@ -35,7 +35,7 @@ pub async fn get_index_page_and_scripts(args: GetIndexPageAndScriptsArgs<'_>) ->
     cookie: args.cookie,
   }).await?;
 
-  let scripts = parse_scripts(&index.body);
+  let scripts = parse_scripts_from_index_html(&index.body);
 
   info!("Fetching {} scripts...", scripts.len());
 
