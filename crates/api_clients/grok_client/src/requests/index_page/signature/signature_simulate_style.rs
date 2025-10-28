@@ -148,6 +148,26 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // > color rgb(67, 32, 227)
   println!("color = {:?}", color);
 
+  // endAngle = Signature._h(values[6], 60, 360, True)
+  let value_6 = values.get(6).map(|v| *v as f64).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
+  let end_angle = signature_h(value_6, 60.0, 360.0, true)?;
+
+  // > endAngle 140
+  println!("end_angle = {:?}", end_angle);
+
+  // angle = endAngle * easedY
+  let angle = end_angle * eased_y;
+
+  // > angle -9.362320251694596
+  println!("angle = {:?}", angle);
+
+  // rad = angle * pi / 180.0
+  let pi = std::f64::consts::PI;
+  let rad = angle * pi / 180.0;
+
+  // > rad -0.16340331401821492
+  println!("rad = {:?}", rad);
+
 
   Ok(SimulatedStyle {
     color: "".to_string(),
