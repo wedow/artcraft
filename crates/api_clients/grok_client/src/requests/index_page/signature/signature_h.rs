@@ -103,24 +103,24 @@ mod tests {
     //    cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
     // Python Inputs:
     //
-    // _h.x 13 <class 'int'>
-    // _h._param 0 <class 'int'>
+    // _h.x 98 <class 'int'>
+    // _h._param -1 <class 'int'>
     // _h.c 1 <class 'int'>
     // _h.e False <class 'bool'>
     //
     // Python Outputs:
     //
-    // _h.f 0.050980392156862744 <class 'float'>
-    // _h.rounded 0.05 <class 'float'>
+    // _h.f -0.2313725490196078 <class 'float'>
+    // _h.rounded -0.23 <class 'float'>
 
-    let x = 13.0; // NB: This was an int in python
-    let param = 0.0; // NB: This was an int in python
+    let x = 98.0; // NB: This was an int in python
+    let param = -1.0; // NB: This was an int in python
     let c = 1.0; // NB: This was an int in python
     let e = false;
 
     let observed = signature_h(x, param, c, e).unwrap();
 
-    let expected = 0.05;
+    let expected = -0.23;
 
     assert_eq!(expected, observed);
   }
