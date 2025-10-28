@@ -1,7 +1,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::requests::index_page::get_index_page_script::{get_index_page_script, GetIndexPageScriptArgs};
+use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
 use log::error;
 use std::collections::HashMap;
 use wreq::Client;
@@ -13,11 +13,11 @@ pub struct GetIndexPageScriptsArgs<'a> {
 }
 
 /// Get javascript that we'll need for client crypto purposes.
-pub async fn get_index_page_scripts(args: GetIndexPageScriptsArgs<'_>) -> Result<HashMap<String, String>, GrokError> {
+pub async fn get_index_page_scripts_with_client(args: GetIndexPageScriptsArgs<'_>) -> Result<HashMap<String, String>, GrokError> {
   let mut map = HashMap::with_capacity(args.scripts.len());
 
   for script_url in args.scripts {
-    let result = get_index_page_script(GetIndexPageScriptArgs {
+    let result = get_index_page_script_with_client(GetIndexPageScriptArgs {
       client: args.client,
       cookie: args.cookie,
       script_url,
@@ -39,30 +39,29 @@ pub async fn get_index_page_scripts(args: GetIndexPageScriptsArgs<'_>) -> Result
 
 #[cfg(test)]
 mod tests {
-  use log::LevelFilter;
-  use errors::AnyhowResult;
-  use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::get_index_page_scripts::{get_index_page_scripts, GetIndexPageScriptsArgs};
+  use crate::requests::index_page::requests::get_index_page_scripts_with_client::{get_index_page_scripts_with_client, GetIndexPageScriptsArgs};
+  use crate::requests::index_page::requests::get_index_page_with_client::{get_index_page_with_client, GetIndexPageWithClientArgs};
   use crate::requests::index_page::utils::parse_scripts::parse_scripts;
   use crate::test_utils::get_test_cookies::get_test_cookies;
-  use crate::test_utils::setup_test_logging::setup_test_logging;
   use crate::utils::create_firefox_client::create_firefox_client;
+  use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore] // manually test
   async fn test() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
 
+    let client = create_firefox_client()?;
     let cookie = get_test_cookies()?;
 
-    let index = get_index(GetIndexPageArgs {
+    let index = get_index_page_with_client(GetIndexPageWithClientArgs {
+      client: &client,
       cookie: &cookie,
     }).await?;
 
     let scripts = parse_scripts(&index.body);
-    let client = create_firefox_client()?;
 
-    let scripts = get_index_page_scripts(GetIndexPageScriptsArgs {
+    let scripts = get_index_page_scripts_with_client(GetIndexPageScriptsArgs {
       client: &client,
       cookie: &cookie,
       scripts: &scripts,

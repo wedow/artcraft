@@ -13,7 +13,7 @@ pub struct GetIndexPageScriptArgs<'a> {
 
 
 /// Get javascript that we'll need for client crypto purposes.
-pub async fn get_index_page_script(args: GetIndexPageScriptArgs<'_>) -> Result<String, GrokError> {
+pub async fn get_index_page_script_with_client(args: GetIndexPageScriptArgs<'_>) -> Result<String, GrokError> {
   let script_url = get_script_url(args.script_url);
 
   let builder = args.client.get(script_url)
