@@ -1,7 +1,7 @@
 use crate::error::grok_client_error::GrokClientError;
-use std::collections::HashMap;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::collections::HashMap;
 
 
 static ACTIONS_REGEX : Lazy<Regex> = Lazy::new(|| {
@@ -14,7 +14,16 @@ static XSID_SCRIPT_REGEX : Lazy<Regex> = Lazy::new(|| {
       .expect("Regex should parse")
 });
 
-pub fn find_script_xsid_and_actions(scripts: &HashMap<String, String>) -> Result<(), GrokClientError> {
+#[derive(Debug, Clone)]
+pub struct ActionsAndXsid {
+  /// A list of opaque IDs for "actions"
+  pub actions: Vec<String>,
+
+  /// The URL path of the xsid script, with no leading slash.
+  pub xsid_script_path: String,
+}
+
+pub fn find_script_actions_and_xsid(scripts: &HashMap<String, String>) -> Result<ActionsAndXsid, GrokClientError> {
   let mut action_script_path = None;
   let mut script_content_1 = None;
   let mut script_content_2 = None;
@@ -43,43 +52,31 @@ pub fn find_script_xsid_and_actions(scripts: &HashMap<String, String>) -> Result
     None => return Err(GrokClientError::ScriptLogicOutOfDate),
   };
 
-  let captures = ACTIONS_REGEX.captures(&script_content_1);
+  let actions = ACTIONS_REGEX.captures_iter(&script_content_1)
+      .flat_map(|captures| captures.get(1).map(|m| m.as_str().to_string()))
+      .collect::<Vec<_>>();
 
-  if let Some(captures) = captures {
-    for capture in captures.iter() {
-      println!("Actions Capture: {:?}", capture);
-    }
-  }
+  let xsid_script_path = XSID_SCRIPT_REGEX.captures(&script_content_2)
+      .map(|captures| captures.get(1).map(|m| m.as_str().to_string()))
+      .flatten();
 
-  let captures = XSID_SCRIPT_REGEX.captures(&script_content_2);
+  let xsid_script_path = match xsid_script_path {
+    Some(xsid_script) => xsid_script,
+    None => return Err(GrokClientError::ScriptLogicOutOfDate),
+  };
 
-  if let Some(captures) = captures {
-    for capture in captures.iter() {
-      println!("XSID Capture: {:?}", capture);
-    }
-  }
-
-  /*
-        actions: list = findall(r'createServerReference\)\("([a-f0-9]+)"', script_content1)
-        xsid_script: str = search(r'"(static/chunks/[^"]+\.js)"[^}]*?a\(880932\)', script_content2).group(1)
-
-        if actions and xsid_script:
-            Parser.grok_mapping.append({
-                "xsid_script": xsid_script,
-                "action_script": action_script,
-                "actions": actions
-            })
-   */
-
-  Ok(())
+  Ok(ActionsAndXsid {
+    actions,
+    xsid_script_path,
+  })
 }
 
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
+  use crate::requests::index_page::utils::find_script_actions_and_xsid::find_script_actions_and_xsid;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
-  use crate::requests::index_page::utils::find_script_xsid_and_actions::find_script_xsid_and_actions;
 
   #[tokio::test]
   #[ignore] // manually test
@@ -90,7 +87,9 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let result = find_script_xsid_and_actions(&page_and_scripts.scripts)?;
+    let result = find_script_actions_and_xsid(&page_and_scripts.scripts)?;
+
+    println!("{:?}", result);
 
     assert_eq!(1, 2);
     Ok(())
