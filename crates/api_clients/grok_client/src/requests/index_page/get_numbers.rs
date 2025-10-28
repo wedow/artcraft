@@ -6,8 +6,8 @@ use crate::requests::index_page::utils::parse_on_demand_script_from_index_html::
 use crate::requests::index_page::utils::parse_svg_paths_from_index_html::parse_svg_paths_from_index_html;
 use crate::requests::index_page::utils::verification_token_to_loading_anim::LoadingAnim;
 use wreq::Client;
-// self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 
+// self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 
 pub struct GetNumbersArgs<'a> {
   pub client: &'a Client,
@@ -101,6 +101,9 @@ mod tests {
     }).await?;
 
     println!("Final Numbers: {:?}", result);
+
+    println!("\n\nBody:\n\n");
+    println!("{}", page_and_scripts.body);
 
     assert_eq!(1, 2);
     Ok(())
