@@ -1,9 +1,9 @@
-use log::error;
 use crate::error::grok_client_error::GrokClientError;
-use once_cell::sync::Lazy;
-use regex::Regex;
 use crate::requests::index_page::signature::signature_cubic_bezier_eased::signature_cubic_bezier_eased;
 use crate::requests::index_page::signature::signature_h::signature_h;
+use log::error;
+use once_cell::sync::Lazy;
+use regex::Regex;
 
 static CLEAN_NON_DIGIT_REGEX : Lazy<Regex> = Lazy::new(|| {
   Regex::new(r#"[^\d]+"#)
@@ -168,6 +168,18 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // > rad -0.16340331401821492
   println!("rad = {:?}", rad);
 
+  /*
+
+        def is_effectively_zero(val: float) -> bool:
+            return abs(val) < 1e-7
+
+        def is_effectively_integer(val: float) -> bool:
+            return abs(val - round(val)) < 1e-7
+
+        cosv = cos(rad)
+        sinv = sin(rad)
+
+   */
 
   Ok(SimulatedStyle {
     color: "".to_string(),
@@ -175,10 +187,18 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   })
 }
 
+
+fn is_effectively_zero(val: f64) -> bool {
+  val.abs() <= 1e-7
+}
+
+fn is_effectively_integer(val: f64) -> bool {
+  (val - val.round()).abs() <= 1e-7
+}
+
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::signature::signature_simulate_style::signature_simulate_style;
-  use crate::requests::index_page::signature::signature_xa::signature_xa;
 
   #[test]
   fn test() {
@@ -190,5 +210,37 @@ mod tests {
     let output = signature_simulate_style(&values, c);
 
     assert_eq!(1, 2);
+  }
+
+  mod helper_functions {
+    use crate::requests::index_page::signature::signature_simulate_style::{is_effectively_integer, is_effectively_zero};
+
+    #[test]
+    fn test_is_effectively_zero() {
+      // Yes
+      assert!(is_effectively_zero(0.0));
+      assert!(is_effectively_zero(0.00000001));
+      assert!(is_effectively_zero(0.0000000001));
+      // No
+      assert!(!is_effectively_zero(0.000001));
+      assert!(!is_effectively_zero(1.0));
+      assert!(!is_effectively_zero(-1.0));
+      assert!(!is_effectively_zero(10.0));
+      assert!(!is_effectively_zero(0.231));
+    }
+
+    #[test]
+    fn test_is_effectively_integer() {
+      // Yes
+      assert!(is_effectively_integer(0.0));
+      assert!(is_effectively_integer(1.0));
+      assert!(is_effectively_integer(1.00000001));
+      assert!(is_effectively_integer(3.00000001));
+      assert!(is_effectively_integer(-0.00000001));
+      // No
+      assert!(!is_effectively_integer(3.5));
+      assert!(!is_effectively_integer(0.2));
+      assert!(!is_effectively_integer(-0.01234));
+    }
   }
 }
