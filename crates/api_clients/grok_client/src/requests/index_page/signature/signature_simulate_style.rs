@@ -1,6 +1,7 @@
 use crate::error::grok_client_error::GrokClientError;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use crate::requests::index_page::signature::signature_h::signature_h;
 
 static CLEAN_NON_DIGIT_REGEX : Lazy<Regex> = Lazy::new(|| {
   Regex::new(r#"[^\d]+"#)
@@ -87,6 +88,16 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   println!("t = {:?}", t);
 
   // cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
+  let subvalues = &values[7..];
+  let mut cp = Vec::with_capacity(subvalues.len());
+  for (i, v) in subvalues.iter().enumerate() {
+    let param = if i % 2 != 0 { - 1.0 } else { 0.0 };
+    let val = signature_h(*v as f64, param, 1.0, false)?;
+    cp.push(val);
+  }
+
+  // > cp [0.05, -0.23, 0.95, 0.05]
+  println!("cp = {:?}", cp);
 
   // > currentTime 900
   // > t 0.2197265625
