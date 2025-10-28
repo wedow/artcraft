@@ -37,6 +37,9 @@ pub enum GrokClientError {
   
   /// Verification token bytes are invalid
   InvalidVerificationTokenBytes,
+  
+  /// Our script logic is out of date
+  ScriptLogicOutOfDate,
 
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
@@ -91,6 +94,7 @@ impl Display for GrokClientError {
       Self::HtmlParsingError => write!(f, "Html parsing error"),
       Self::FailedToDecodeVerificationToken(err) => write!(f, "Failed to decode verification token: {}", err),
       Self::InvalidVerificationTokenBytes => write!(f, "Invalid verification token bytes"),
+      Self::ScriptLogicOutOfDate => write!(f, "Script logic out of date"),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),
