@@ -22,6 +22,7 @@ use crate::error::grok_client_error::GrokClientError;
         return cleaned
  */
 
+/// Based on "Grok-Api/core/xctid.py"
 /// `bytes` is
 /// `svg_data` is the <path d="" /> svg path stroke data
 /// `x_values` are the magic numbers from the script
