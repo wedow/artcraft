@@ -1,5 +1,5 @@
 use crate::error::grok_client_error::GrokClientError;
-
+use crate::requests::index_page::signature::signature_xa::signature_xa;
 /*
     @staticmethod
     def xs(x_bytes: bytes, svg: str, x_values: list) -> str:
@@ -57,6 +57,16 @@ xs.arr = [202, 221, 122, 9, 104, 148, 35, 141, 172, 239, 1, 134, 120, 204, 92, 1
 
   println!("c = {}", c);
 
+  // o = Signature.xa(svg)
+  let o = signature_xa(svg_data)?;
+
+  // vals = o[idx]
+  let vals = o.get(idx as usize).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
+
+  // > xs.vals.len = 11
+  // > xs.vals = [73, 44, 215, 158, 218, 29, 68, 13, 98, 243, 134]
+  println!("vals.len = {:?}", vals.len());
+  println!("vals = {:?}", vals);
 
 
   Ok("".to_string())
