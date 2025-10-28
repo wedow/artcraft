@@ -81,10 +81,13 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // currentTime = round(c / 10.0) * 10
   let current_time = ((c as f32 / 10.0).round()) as u32 * 10;
 
+  // > currentTime 900
   println!("current_time = {:?}", current_time);
 
   // t = currentTime / duration
   let t = current_time as f64 / duration as f64;
+
+  // > t 0.2197265625
   println!("t = {:?}", t);
 
   // cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
@@ -99,8 +102,7 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // > cp [0.05, -0.23, 0.95, 0.05]
   println!("cp = {:?}", cp);
 
-  // > currentTime 900
-  // > t 0.2197265625
+  // easedY = Signature.cubicBezierEased(t, cp[0], cp[1], cp[2], cp[3])
 
 
 
