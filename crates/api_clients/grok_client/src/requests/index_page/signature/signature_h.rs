@@ -1,5 +1,5 @@
 use crate::error::grok_client_error::GrokClientError;
-
+use crate::requests::index_page::signature::round_two_decimals::round_two_decimals;
 /*
     @staticmethod
     def _h(x: float, _param: float, c: float, e: bool):
@@ -32,7 +32,7 @@ pub fn signature_h(x: f64, param: f64, c: f64, e: bool) -> Result<f64, GrokClien
   }
 
   // rounded = round(float(f), 2)
-  let rounded = (f * 100.0).round() / 100.0; // NB: Round to two places like Python
+  let rounded = round_two_decimals(f);
 
   println!("rounded = {}", rounded);
 
