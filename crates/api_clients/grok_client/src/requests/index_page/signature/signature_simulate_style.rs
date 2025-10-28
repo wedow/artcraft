@@ -1,6 +1,8 @@
+use log::error;
 use crate::error::grok_client_error::GrokClientError;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use crate::requests::index_page::signature::signature_cubic_bezier_eased::signature_cubic_bezier_eased;
 use crate::requests::index_page::signature::signature_h::signature_h;
 
 static CLEAN_NON_DIGIT_REGEX : Lazy<Regex> = Lazy::new(|| {
@@ -103,7 +105,48 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   println!("cp = {:?}", cp);
 
   // easedY = Signature.cubicBezierEased(t, cp[0], cp[1], cp[2], cp[3])
+  let cp_0 = cp.get(0).map(|x| *x).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
+  let cp_1 = cp.get(1).map(|x| *x).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
+  let cp_2 = cp.get(2).map(|x| *x).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
+  let cp_3 = cp.get(3).map(|x| *x).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
+  let eased_y = signature_cubic_bezier_eased(t, cp_0, cp_1, cp_2, cp_3);
 
+  // > easedY -0.06687371608353283
+  println!("eased_y = {:?}", eased_y);
+
+  // NB: Safety
+  if values.len() < 6 {
+    error!("Values array is too short.");
+    return Err(GrokClientError::BadSignatureInputs);
+  }
+
+  // start = [float(x) for x in values[0:3]]
+  let start = values[0..3].iter().map(|x| *x as f64).collect::<Vec<_>>();
+
+  // end = [float(x) for x in values[3:6]]
+  let end = values[3..6].iter().map(|x| *x as f64).collect::<Vec<_>>();
+
+  // > start [73.0, 44.0, 215.0]
+  // > end [158.0, 218.0, 29.0]
+  println!("start = {:?}", start);
+  println!("end = {:?}", end);
+
+  // r = round(start[0] + (end[0] - start[0]) * easedY)
+  // g = round(start[1] + (end[1] - start[1]) * easedY)
+  // b = round(start[2] + (end[2] - start[2]) * easedY)
+
+  let r = (start[0] + (end[0] - start[0]) * eased_y).round() as u32;
+  let g = (start[1] + (end[1] - start[1]) * eased_y).round() as u32;
+  let b = (start[2] + (end[2] - start[2]) * eased_y).round() as u32;
+
+  // color = f"rgb({r}, {g}, {b})"
+  let color = format!("rgb({r}, {g}, {b})");
+
+  // > r 67
+  // > g 32
+  // > b 227
+  // > color rgb(67, 32, 227)
+  println!("color = {:?}", color);
 
 
   Ok(SimulatedStyle {
