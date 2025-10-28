@@ -27,6 +27,7 @@ use crate::requests::index_page::signature::round_two_decimals::round_two_decima
         return sign + format(intpart, "x") + "." + frac_str
  */
 
+/// Convert the floating point number to a hexadecimal representation
 pub fn signature_to_hex(num: f64) -> Result<String, GrokClientError> {
   // rounded = round(float(num), 2)
   let rounded = round_two_decimals(num);
@@ -60,19 +61,78 @@ pub fn signature_to_hex(num: f64) -> Result<String, GrokClientError> {
     return Ok(ret);
   }
 
-  Ok("".to_string())
+  /*
+
+        frac_digits = []
+        f = frac
+        for _ in range(20):
+            f *= 16
+            digit = int(floor(f + 1e-12))
+            frac_digits.append(format(digit, "x"))
+            f -= digit
+            if abs(f) < 1e-12:
+                break
+        frac_str = "".join(frac_digits).rstrip("0")
+        if frac_str == "":
+            return sign + format(intpart, "x")
+        return sign + format(intpart, "x") + "." + frac_str
+   */
+
+  let mut frac_digits = Vec::new();
+
+  let mut f = frac;
+
+  for _ in 0..20 {
+    // f *= 16
+    f *= 16.0;
+
+    // digit = int(floor(f + 1e-12))
+    let digit = (f + 1e-12).floor() as i32;
+
+    // frac_digits.append(format(digit, "x"))
+    frac_digits.push(format!("{digit:x}"));
+
+    // f -= digit
+    f -= digit as f64;
+    if f.abs() < 1e-12 {
+      break;
+    }
+  }
+
+  // frac_str = "".join(frac_digits).rstrip("0")
+  let frac_str = frac_digits.join("");
+  let frac_str = frac_str.trim_end_matches('0');
+
+  println!("frac_str = {}", frac_str);
+
+  if frac_str.is_empty() {
+    // return sign + format(intpart, "x")
+    let ret = format!("{sign}{intpart:x}");
+    println!("return = {}", ret);
+    return Ok(ret);
+  }
+
+  // return sign + format(intpart, "x") + "." + frac_str
+  let ret = format!("{sign}{intpart:x}.{frac_str}");
+  println!("return = {}", ret);
+
+  Ok(ret)
 }
 
 #[cfg(test)]
 mod tests {
+  use errors::AnyhowResult;
   use crate::requests::index_page::signature::signature_to_hex::signature_to_hex;
 
   #[test]
-  fn test_1() {
-    let num = 67.0;
-    let output = signature_to_hex(num).unwrap();
-    let expected = "43";
+  fn test_1() -> AnyhowResult<()> {
+    assert_eq!(&signature_to_hex(67.0)?, "43");
+    Ok(())
+  }
 
-    assert_eq!(&output, expected);
+  #[test]
+  fn test_2() -> AnyhowResult<()> {
+    assert_eq!(&signature_to_hex(67.0)?, "43");
+    Ok(())
   }
 }
