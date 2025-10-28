@@ -49,6 +49,7 @@ pub fn signature_h(x: f64, param: f64, c: f64, e: bool) -> Result<f64, GrokClien
 mod tests {
   use crate::requests::index_page::signature::signature_h::signature_h;
 
+  // TODO: This needs more tests for other parameter setups
   #[test]
   fn test_end_angle() {
     // "h" gets used lots of times, but the "end angle" calculation case is the most straightforward to use as a test case
@@ -64,6 +65,62 @@ mod tests {
     let observed = signature_h(x, param, c, e).unwrap();
 
     let expected = 140.0; // NB: Python returns in `int` for this (I checked the type), but it can also return floats. Ugh.
+
+    assert_eq!(expected, observed);
+  }
+
+  #[test]
+  fn test_1() {
+    // Actual test case, called in loop:
+    //    cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
+    // Python Inputs:
+    //
+    // _h.x 13 <class 'int'>
+    // _h._param 0 <class 'int'>
+    // _h.c 1 <class 'int'>
+    // _h.e False <class 'bool'>
+    //
+    // Python Outputs:
+    //
+    // _h.f 0.050980392156862744 <class 'float'>
+    // _h.rounded 0.05 <class 'float'>
+
+    let x = 13.0; // NB: This was an int in python
+    let param = 0.0; // NB: This was an int in python
+    let c = 1.0; // NB: This was an int in python
+    let e = false;
+
+    let observed = signature_h(x, param, c, e).unwrap();
+
+    let expected = 0.05;
+
+    assert_eq!(expected, observed);
+  }
+
+  #[test]
+  fn test_2() {
+    // Actual test case, called in loop:
+    //    cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
+    // Python Inputs:
+    //
+    // _h.x 13 <class 'int'>
+    // _h._param 0 <class 'int'>
+    // _h.c 1 <class 'int'>
+    // _h.e False <class 'bool'>
+    //
+    // Python Outputs:
+    //
+    // _h.f 0.050980392156862744 <class 'float'>
+    // _h.rounded 0.05 <class 'float'>
+
+    let x = 13.0; // NB: This was an int in python
+    let param = 0.0; // NB: This was an int in python
+    let c = 1.0; // NB: This was an int in python
+    let e = false;
+
+    let observed = signature_h(x, param, c, e).unwrap();
+
+    let expected = 0.05;
 
     assert_eq!(expected, observed);
   }
