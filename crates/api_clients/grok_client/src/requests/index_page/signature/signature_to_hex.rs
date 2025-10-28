@@ -1,5 +1,6 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::requests::index_page::signature::round_two_decimals::round_two_decimals;
+
 /*
     @staticmethod
     def tohex(num: float) -> str:
@@ -25,7 +26,7 @@ use crate::requests::index_page::signature::round_two_decimals::round_two_decima
         if frac_str == "":
             return sign + format(intpart, "x")
         return sign + format(intpart, "x") + "." + frac_str
- */
+*/
 
 /// Convert the floating point number to a hexadecimal representation
 pub fn signature_to_hex(num: f64) -> Result<String, GrokClientError> {
@@ -62,7 +63,6 @@ pub fn signature_to_hex(num: f64) -> Result<String, GrokClientError> {
   }
 
   /*
-
         frac_digits = []
         f = frac
         for _ in range(20):

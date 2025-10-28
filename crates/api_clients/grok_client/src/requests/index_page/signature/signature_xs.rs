@@ -1,8 +1,10 @@
+use log::error;
 use crate::error::grok_client_error::GrokClientError;
 use crate::requests::index_page::signature::signature_simulate_style::signature_simulate_style;
 use crate::requests::index_page::signature::signature_xa::signature_xa;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use crate::requests::index_page::signature::signature_to_hex::signature_to_hex;
 
 static NUMBER_REGEX : Lazy<Regex> = Lazy::new(|| {
   Regex::new(r#"[\d\.\-]+"#)
@@ -113,10 +115,37 @@ xs.arr = [202, 221, 122, 9, 104, 148, 35, 141, 172, 239, 1, 134, 120, 204, 92, 1
   // > xs.matches = ['67', '32', '227', '0.986679', '-0.1626771', '0.1626771', '0.986679', '0', '0']
   println!("matches = {:?}", matches);
 
+  /*
+        converted = []
+        for m in matches:
+            num = float(m)
+            hexstr = Signature.tohex(num)
+            converted.append(hexstr)
+        joined = "".join(converted)
+        cleaned = joined.replace(".", "").replace("-", "")
+   */
 
+  let mut converted = Vec::new();
 
+  for m in matches.iter() {
+    let num = m.as_str().parse::<f64>().map_err(|err| {
+      error!("Invalid floating point: {} - err: {:?}", m, err);
+      GrokClientError::BadSignatureInputs
+    })?;
 
-  Ok("".to_string())
+    let hexstr = signature_to_hex(num)?;
+    converted.push(hexstr);
+  }
+
+  let joined = converted.join("");
+  let cleaned = joined.replace(".", "").replace("-", "");
+
+  // > xs.joined = 4320e30.fd70a3d70a3d7-0.28f5c28f5c28f60.28f5c28f5c28f60.fd70a3d70a3d700
+  println!("joined = {}", joined);
+  // > xs.cleaned = 4320e30fd70a3d70a3d7028f5c28f5c28f6028f5c28f5c28f60fd70a3d70a3d700
+  println!("cleaned = {}", cleaned);
+
+  Ok(cleaned)
 }
 
 fn ith_usize(bytes: &[u8], i: usize) -> Result<usize, GrokClientError> {
@@ -141,8 +170,10 @@ mod tests {
     let svg_data = "M 10,30 C 147,16 51,222 136,87 h 31 s 177,77 40,114 C 68,166 18,188 114,44 h 220 s 148,210 202,25 C 220,36 246,218 12,120 h 244 s 34,154 56,161 C 211,204 208,60 174,14 h 155 s 157,116 220,95 C 116,164 53,210 174,232 h 139 s 148,151 135,221 C 167,196 118,27 149,247 h 233 s 129,238 113,21 C 73,44 215,158 218,29 h 68 s 13,98 243,134 C 44,98 149,35 20,178 h 163 s 219,104 41,152 C 237,107 118,120 127,117 h 57 s 41,167 43,136 C 116,168 44,246 182,209 h 143 s 238,93 237,119 C 142,36 64,67 97,111 h 71 s 230,247 119,27 C 206,56 158,51 71,115 h 135 s 120,186 74,57 C 197,165 180,214 102,16 h 88 s 252,48 189,166 C 163,237 57,253 154,60 h 96 s 84,56 15,66 C 177,101 10,202 185,227 h 29 s 204,55 115,219 C 103,82 127,143 194,99 h 102 s 179,63 84,110";
     let x_values = [40, 18, 3, 18];
 
-    signature_xs(&x_bytes, &svg_data, &x_values).unwrap();
+    let observed = signature_xs(&x_bytes, &svg_data, &x_values).unwrap();
 
-    assert_eq!(1,2);
+    let expected = "4320e30fd70a3d70a3d7028f5c28f5c28f6028f5c28f5c28f60fd70a3d70a3d700"; // NB: From python
+
+    assert_eq!(&observed, expected);
   }
 }
