@@ -22,6 +22,9 @@ pub struct IndexPageAndScripts {
 
   /// Script path -> Javascript payload.
   pub scripts: HashMap<String, String>,
+  
+  // The client that we used.
+  pub client: Client,
 }
 
 pub async fn get_index_page_and_scripts(args: GetIndexPageAndScriptsArgs<'_>) -> Result<IndexPageAndScripts, GrokError> {
@@ -48,6 +51,7 @@ pub async fn get_index_page_and_scripts(args: GetIndexPageAndScriptsArgs<'_>) ->
   Ok(IndexPageAndScripts {
     body: index.body,
     scripts,
+    client,
   })
 }
 

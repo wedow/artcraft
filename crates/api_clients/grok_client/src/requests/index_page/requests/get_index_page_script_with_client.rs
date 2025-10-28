@@ -14,7 +14,14 @@ pub struct GetIndexPageScriptArgs<'a> {
 
 /// Get javascript that we'll need for client crypto purposes.
 pub async fn get_index_page_script_with_client(args: GetIndexPageScriptArgs<'_>) -> Result<String, GrokError> {
-  let script_url = get_script_url(args.script_url);
+
+  let script_url;
+
+  if args.script_url.starts_with("https://") {
+    script_url = args.script_url.to_string();
+  } else {
+    script_url = get_script_url(args.script_url);
+  }
 
   let builder = args.client.get(script_url)
       .header("User-Agent", FIREFOX_143_MAC_USER_AGENT)

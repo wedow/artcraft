@@ -1,4 +1,6 @@
 pub mod find_script_actions_and_xsid;
+pub mod parse_numbers_from_xsid_script;
+pub mod parse_on_demand_script_from_index_html;
 pub mod parse_scripts_from_index_html;
 pub mod parse_verification_token_from_index_html;
-pub mod verification_token_to_anim;
+pub mod verification_token_to_loading_anim;
