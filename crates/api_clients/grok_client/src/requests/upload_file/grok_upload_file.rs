@@ -1,4 +1,6 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+use crate::datatypes::file_id::FileId;
+use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
@@ -23,42 +25,28 @@ const UPLOAD_FILE_URL : &str = "https://grok.com/rest/app-chat/upload-file";
 const INITIAL_BUFFER_SIZE : usize = 1024*1024;
 
 /// Request builder
-pub struct GrokUploadFile<'a, P: AsRef<Path>> {
-  pub file: FileSpec<'a, P>,
+pub struct GrokUploadFile<P: AsRef<Path>> {
+  pub file: FileUploadSpec<P>,
   pub cookie: String,
   pub request_timeout: Option<Duration>,
 }
 
-pub enum FileSpec<'a, P: AsRef<Path>> {
-  /// Path to the file
-  Path(P),
-
-  /// Bytes of the file
-  Bytes {
-    /// Must be owned.
-    bytes: &'a [u8],
-    /// Must be owned.
-    filename: String,
-    /// Mime type
-    mimetype: String,
-  }
-}
 
 /// Response type
 #[derive(Clone, Debug)]
 pub struct GrokUploadFileResponse {
-  pub file_metadata_id: Option<String>,
+  pub file_id: Option<FileId>,
   pub file_uri: Option<String>,
 }
 
-impl <'a, P> GrokUploadFile<'a, P> where P: AsRef<Path> {
+impl <P> GrokUploadFile<P> where P: AsRef<Path> {
 
   pub async fn upload(&self) -> Result<GrokUploadFileResponse, GrokError> {
     match &self.file {
-      FileSpec::Path(path) => {
+      FileUploadSpec::Path(path) => {
         self.upload_from_file(path.as_ref()).await
       }
-      FileSpec::Bytes { bytes, filename, mimetype } => {
+      FileUploadSpec::Bytes { bytes, filename, mimetype } => {
         unimplemented!("todo: implement bytes upload")
       }
     }
@@ -193,8 +181,11 @@ impl <'a, P> GrokUploadFile<'a, P> where P: AsRef<Path> {
     let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
         .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
+    let file_id = response.file_metadata_id
+        .map(|id| FileId(id));
+
     Ok(GrokUploadFileResponse {
-      file_metadata_id: response.file_metadata_id,
+      file_id: file_id,
       file_uri: response.file_uri,
     })
   }
@@ -213,7 +204,8 @@ mod tests {
     //setup_test_logging(LevelFilter::Trace);
     let cookies = get_test_cookies()?;
     let request = GrokUploadFile {
-      file: FileSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
+      //file: FileUploadSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
+      file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Spooky/06.1.jpg"),
       cookie: cookies.to_string(),
       request_timeout: None,
     };

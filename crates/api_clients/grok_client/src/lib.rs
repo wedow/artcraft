@@ -8,8 +8,8 @@ pub (crate) mod client;
 
 // User lib
 pub mod credentials;
+pub mod datatypes;
 pub mod error;
+pub mod recipes;
 pub mod requests;
-pub mod types;
 pub mod utils;
-mod recipes;

@@ -1,11 +1,11 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+use crate::datatypes::file_id::FileId;
+use crate::datatypes::user_id::UserId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::create_media_post::request::CreateMediaPostWireRequest;
-use crate::requests::upload_file::grok_upload_file::{FileSpec, GrokUploadFile, GrokUploadFileResponse};
-use crate::types::file_id::FileId;
-use crate::types::user_id::UserId;
+use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info};
 use std::time::Duration;
@@ -136,7 +136,7 @@ mod tests {
   use errors::AnyhowResult;
 
   #[tokio::test]
-  #[ignore]
+  #[ignore] // Client side tests only
   async fn create_media_post() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
     let cookies = get_test_cookies()?;
