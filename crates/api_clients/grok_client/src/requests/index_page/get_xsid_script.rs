@@ -1,9 +1,10 @@
 use crate::error::grok_error::GrokError;
-use crate::requests::index_page::index_parsers::parse_index_on_demand_script::parse_index_on_demand_script;
+use crate::requests::index_page::parsers::index::parse_index_on_demand_script::parse_index_on_demand_script;
+use crate::requests::index_page::parsers::script::parse_xsid_script_numbers::parse_xsid_script_numbers;
 use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
-use crate::requests::index_page::utils::parse_numbers_from_xsid_script::parse_numbers_from_xsid_script;
 use wreq::Client;
+
 // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 
 pub struct GetXsidScriptArgs<'a> {
@@ -37,7 +38,7 @@ pub async fn get_xsid_script(args: GetXsidScriptArgs<'_>) -> Result<Numbers, Gro
     script_url: &script_link,
   }).await?;
 
-  let numbers = parse_numbers_from_xsid_script(&xsid_script_body);
+  let numbers = parse_xsid_script_numbers(&xsid_script_body);
 
   Ok(Numbers{
     numbers,
@@ -49,9 +50,9 @@ pub async fn get_xsid_script(args: GetXsidScriptArgs<'_>) -> Result<Numbers, Gro
 mod tests {
   use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
   use crate::requests::index_page::get_numbers::{get_numbers, GetNumbersArgs};
-  use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_index_verification_token;
+  use crate::requests::index_page::parsers::index::parse_index_verification_token::parse_index_verification_token;
+  use crate::requests::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
   use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
-  use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -73,7 +74,7 @@ mod tests {
 
     println!("Loading Animation: {:?}", loading_anim);
 
-    let actions_and_xsid_script = find_script_actions_and_xsid_script_path(&page_and_scripts.scripts)?;
+    let actions_and_xsid_script = parse_script_actions_and_xsid_script_path(&page_and_scripts.scripts)?;
 
     println!("Actions and XSID: {:?}", actions_and_xsid_script);
 

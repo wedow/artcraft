@@ -39,9 +39,9 @@ pub async fn get_index_page_scripts_with_client(args: GetIndexPageScriptsArgs<'_
 
 #[cfg(test)]
 mod tests {
+  use crate::requests::index_page::parsers::index::parse_index_script_list::parse_index_svg_paths;
   use crate::requests::index_page::requests::get_index_page_scripts_with_client::{get_index_page_scripts_with_client, GetIndexPageScriptsArgs};
   use crate::requests::index_page::requests::get_index_page_with_client::{get_index_page_with_client, GetIndexPageWithClientArgs};
-  use crate::requests::index_page::index_parsers::parse_index_script_list::parse_index_svg_paths;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::utils::create_firefox_client::create_firefox_client;
   use errors::AnyhowResult;

@@ -1,7 +1,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::requests::index_page::index_parsers::parse_index_script_list::parse_index_svg_paths;
+use crate::requests::index_page::parsers::index::parse_index_script_list::parse_index_svg_paths;
 use crate::requests::index_page::requests::get_index_page_scripts_with_client::{get_index_page_scripts_with_client, GetIndexPageScriptsArgs};
 use crate::requests::index_page::requests::get_index_page_with_client::{get_index_page_with_client, GetIndexPageWithClientArgs};
 use crate::utils::create_firefox_client::create_firefox_client;

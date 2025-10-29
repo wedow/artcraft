@@ -22,7 +22,7 @@ pub fn parse_index_svg_paths(html: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::index_parsers::parse_index_script_list::parse_index_svg_paths;
+  use crate::requests::index_page::parsers::index::parse_index_script_list::parse_index_svg_paths;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 

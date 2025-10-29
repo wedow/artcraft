@@ -1,16 +1,16 @@
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
-use crate::requests::index_page::index_parsers::parse_index_baggage::parse_index_baggage;
-use crate::requests::index_page::index_parsers::parse_index_sentry_trace::parse_index_sentry_trace;
-use crate::requests::index_page::index_parsers::parse_index_svg_paths::parse_svg_paths_from_index_html;
-use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_index_verification_token;
+use crate::requests::index_page::parsers::index::parse_index_baggage::parse_index_baggage;
+use crate::requests::index_page::parsers::index::parse_index_sentry_trace::parse_index_sentry_trace;
+use crate::requests::index_page::parsers::index::parse_index_svg_paths::parse_svg_paths_from_index_html;
+use crate::requests::index_page::parsers::index::parse_index_verification_token::parse_index_verification_token;
+use crate::requests::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
 use crate::requests::index_page::pieces::baggage::Baggage;
 use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
 use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
 use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
-use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
 use crate::requests::index_page::utils::select_svg_path_by_loading_anim::select_svg_path_by_loading_anim;
 use std::collections::HashMap;
 
@@ -33,7 +33,7 @@ pub struct ClientSecrets {
   pub verification_token: VerificationToken,
 
   /// The SVG path data to use (chosen via verification_token)
-  /// We selected one of four-ish possible SVG paths (of length >= 200) by 
+  /// We selected one of four-ish possible SVG paths (of length >= 200) by
   /// the `verification token -> animation index` algo.
   pub svg_path: SvgPathData,
 
@@ -76,7 +76,7 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
 
   let svg_path = select_svg_path_by_loading_anim(&svg_paths, &loading_anim)?;
 
-  let actions_and_xsid_script = find_script_actions_and_xsid_script_path(&payloads.scripts)?;
+  let actions_and_xsid_script = parse_script_actions_and_xsid_script_path(&payloads.scripts)?;
 
   // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 

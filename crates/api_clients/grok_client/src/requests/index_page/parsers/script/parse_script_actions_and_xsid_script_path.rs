@@ -3,7 +3,6 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
 
-
 static ACTIONS_REGEX : Lazy<Regex> = Lazy::new(|| {
   Regex::new(r#"createServerReference\)\("([a-f0-9]+)""#)
       .expect("Regex should parse")
@@ -23,7 +22,7 @@ pub struct ActionsAndXsid {
   pub xsid_script_path: String,
 }
 
-pub fn find_script_actions_and_xsid_script_path(scripts: &HashMap<String, String>) -> Result<ActionsAndXsid, GrokClientError> {
+pub fn parse_script_actions_and_xsid_script_path(scripts: &HashMap<String, String>) -> Result<ActionsAndXsid, GrokClientError> {
   let mut action_script_path = None;
   let mut script_content_1 = None;
   let mut script_content_2 = None;
@@ -74,7 +73,7 @@ pub fn find_script_actions_and_xsid_script_path(scripts: &HashMap<String, String
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
-  use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
+  use crate::requests::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -87,7 +86,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let result = find_script_actions_and_xsid_script_path(&page_and_scripts.scripts)?;
+    let result = parse_script_actions_and_xsid_script_path(&page_and_scripts.scripts)?;
 
     println!("{:?}", result);
 

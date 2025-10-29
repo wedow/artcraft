@@ -37,7 +37,7 @@ fn split_sentry_trace(trace: &str) -> String {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::index_parsers::parse_index_sentry_trace::parse_index_sentry_trace;
+  use crate::requests::index_page::parsers::index::parse_index_sentry_trace::parse_index_sentry_trace;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -62,7 +62,7 @@ mod tests {
   }
 
   mod test_sentry_split {
-    use crate::requests::index_page::index_parsers::parse_index_sentry_trace::split_sentry_trace;
+    use crate::requests::index_page::parsers::index::parse_index_sentry_trace::split_sentry_trace;
 
     #[test]
     fn test_production_case() {

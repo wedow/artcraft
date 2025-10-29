@@ -27,7 +27,7 @@ pub fn parse_svg_paths_from_index_html(html: &str) -> Vec<SvgPathData> {
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page::{get_index, GetIndexPageArgs};
-  use crate::requests::index_page::index_parsers::parse_index_svg_paths::parse_svg_paths_from_index_html;
+  use crate::requests::index_page::parsers::index::parse_index_svg_paths::parse_svg_paths_from_index_html;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
