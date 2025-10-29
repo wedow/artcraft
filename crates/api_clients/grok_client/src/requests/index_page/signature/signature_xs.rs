@@ -37,7 +37,7 @@ static NUMBER_REGEX : Lazy<Regex> = Lazy::new(|| {
 /// `bytes` is
 /// `svg_data` is the <path d="" /> svg path stroke data
 /// `x_values` are the magic numbers from the script
-pub fn signature_xs(x_bytes: &[u8], svg_data: &str, x_values: &[u8]) -> Result<String, GrokClientError> {
+pub fn signature_xs(x_bytes: &[u8], svg_data: &str, x_values: &[u32]) -> Result<String, GrokClientError> {
   /*
 Inputs:
 > xs.x_bytes = b'\xca\xddz\th\x94#\x8d\xac\xef\x01\x86x\xcc\\tB\x13\xdah\x8f\x17\x93\xd58fE\xd4\x97\x1a{\xb2\xbb\x1c\xc4+-\xe28E6.~g_\x04\x86T'
@@ -148,8 +148,8 @@ xs.arr = [202, 221, 122, 9, 104, 148, 35, 141, 172, 239, 1, 134, 120, 204, 92, 1
   Ok(cleaned)
 }
 
-fn ith_usize(bytes: &[u8], i: usize) -> Result<usize, GrokClientError> {
-  bytes.get(i)
+fn ith_usize(numbers: &[u32], i: usize) -> Result<usize, GrokClientError> {
+  numbers.get(i)
       .map(|x| *x as usize)
       .ok_or_else(|| GrokClientError::BadSignatureInputs)
 }

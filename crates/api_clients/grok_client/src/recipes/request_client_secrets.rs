@@ -39,7 +39,7 @@ pub struct ClientSecrets {
   /// We selected one of four-ish possible SVG paths (of length >= 200) by
   /// the `verification token -> animation index` algo.
   pub svg_path: SvgPathData,
-  
+
   /// Numbers from the xsid script.
   pub numbers: XsidNumbers,
 
@@ -98,16 +98,6 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
       message: "Index did not include any SVG paths.".to_string(),
     }.into());
   }
-
-  // TODO: xsid
-
-  // xsid: str = Signature.generate_sign(
-  //   '/rest/app-chat/conversations/new',
-  //   'POST',
-  //   self.verification_token,
-  //   self.svg_data,
-  //   self.numbers
-  // )
 
   Ok(ClientSecrets {
     baggage,
