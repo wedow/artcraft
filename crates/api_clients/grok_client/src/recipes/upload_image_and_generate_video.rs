@@ -147,8 +147,8 @@ mod tests {
       verification_token: &secrets.verification_token,
       svg_data: &secrets.svg_path,
       numbers: &secrets.numbers,
-      file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Godzilla/which-godzilla-is-the-most-evil-across-all-official-media-v0-ygnqvsf8md5d1.jpg"),
-      prompt: "A scary reptile monster dances",
+      file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Dinosaurs/050824_FK_dino-brains_feat.jpg"),
+      prompt: "A dinosaur begins to breakdance",
       individual_request_timeout: None,
     }).await?;
 

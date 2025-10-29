@@ -11,7 +11,7 @@ use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
-use crate::requests::video_gen_chat_conversation::request::{CreateChatConversationWireRequest, ToolOverrides};
+use crate::requests::video_gen_chat_conversation::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info, warn};
 use std::time::Duration;
@@ -127,10 +127,46 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       ],
       tool_overrides: ToolOverrides {
         video_gen: true,
-      }
+      },
+      response_metadata: ResponseMetadata {
+        model_config_override: ModelConfigOverride {
+          model_map: ModelMap {
+            video_gen_model_config: VideoGenModelConfig {
+              parent_post_id: self.file_id.0.to_string(),
+            },
+          },
+        },
+      },
     };
 
     /*
+    October 29 request struct -
+
+    --data-raw
+       {
+         "temporary":true,
+         "modelName":"grok-3",
+         "message":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/d6d73ffd-ce87-40a3-9cc2-3432d7192652/content  --mode=normal",
+         "fileAttachments":["d6d73ffd-ce87-40a3-9cc2-3432d7192652"],
+         "toolOverrides":{
+           "videoGen":true
+         },
+         "responseMetadata":{
+           "modelConfigOverride":{
+           "modelMap":{
+             "videoGenModelConfig":{
+               "parentPostId":"d6d73ffd-ce87-40a3-9cc2-3432d7192652"
+             }
+           }
+         }
+       }
+     }
+     */
+
+
+    /*
+    October 22 request struct -
+
     --data-raw
       {
         "temporary":true,
