@@ -3,6 +3,8 @@ use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
 use crate::requests::index_page::index_parsers::parse_index_baggage::parse_index_baggage;
 use crate::requests::index_page::index_parsers::parse_index_sentry_trace::parse_index_sentry_trace;
+use crate::requests::index_page::index_parsers::parse_index_verification_token::{parse_index_verification_token, VerificationToken};
+use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
 use std::collections::HashMap;
 
 pub struct RequestClientSecretsArgs<'a> {
@@ -19,6 +21,9 @@ pub struct ClientSecrets {
 
   /// From the index HTML meta tag
   pub sentry_trace: String,
+
+  /// From the index HTML meta tag
+  pub verification_token: VerificationToken,
 
   /// Scripts (for later use)
   pub scripts: HashMap<String, String>,
@@ -41,6 +46,20 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
         message: "Index did not include sentry trace.".to_string()
       })?;
 
+  let verification_token = parse_index_verification_token(&payloads.index_body_html)
+      .ok_or_else(|| GrokGenericApiError::IndexHtmlDidNotIncludeExpectedData {
+        message: "Index did not include verification token.".to_string()
+      })?;
+
+  let actions_and_xsid_script = find_script_actions_and_xsid_script_path(&payloads.scripts)?;
+
+  // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
+
+  // TODO: SvgData
+  // TODO: Numbers
+  // Do we need "anim" ?
+  // TODO: xsid
+
   // xsid: str = Signature.generate_sign(
   //   '/rest/app-chat/conversations/new',
   //   'POST',
@@ -52,6 +71,7 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
   Ok(ClientSecrets {
     baggage,
     sentry_trace,
+    verification_token,
     scripts: payloads.scripts,
   })
 }
@@ -73,6 +93,7 @@ mod tests {
 
     println!("Baggage: {:?}", secrets.baggage);
     println!("Sentry trace: {:?}", secrets.sentry_trace);
+    println!("Verification token: {:?}", secrets.verification_token);
 
     assert_eq!(1, 2);
     Ok(())

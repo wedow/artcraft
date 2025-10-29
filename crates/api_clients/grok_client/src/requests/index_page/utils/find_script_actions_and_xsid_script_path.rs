@@ -23,7 +23,7 @@ pub struct ActionsAndXsid {
   pub xsid_script_path: String,
 }
 
-pub fn find_script_actions_and_xsid(scripts: &HashMap<String, String>) -> Result<ActionsAndXsid, GrokClientError> {
+pub fn find_script_actions_and_xsid_script_path(scripts: &HashMap<String, String>) -> Result<ActionsAndXsid, GrokClientError> {
   let mut action_script_path = None;
   let mut script_content_1 = None;
   let mut script_content_2 = None;
@@ -74,7 +74,7 @@ pub fn find_script_actions_and_xsid(scripts: &HashMap<String, String>) -> Result
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
-  use crate::requests::index_page::utils::find_script_actions_and_xsid::find_script_actions_and_xsid;
+  use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -87,7 +87,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let result = find_script_actions_and_xsid(&page_and_scripts.scripts)?;
+    let result = find_script_actions_and_xsid_script_path(&page_and_scripts.scripts)?;
 
     println!("{:?}", result);
 

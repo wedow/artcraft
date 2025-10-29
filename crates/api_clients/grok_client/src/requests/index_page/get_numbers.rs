@@ -64,8 +64,8 @@ pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, Grok
 mod tests {
   use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
   use crate::requests::index_page::get_numbers::{get_numbers, GetNumbersArgs};
-  use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_verification_token_from_index_html;
-  use crate::requests::index_page::utils::find_script_actions_and_xsid::find_script_actions_and_xsid;
+  use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_index_verification_token;
+  use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
   use crate::requests::index_page::utils::verification_token_to_loading_anim::verification_token_to_loading_anim;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
@@ -79,16 +79,16 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let verification_token = parse_verification_token_from_index_html(&page_and_scripts.index_body_html)
+    let verification_token = parse_index_verification_token(&page_and_scripts.index_body_html)
         .expect("expected verification token");
 
     println!("Verification Token: {:?}", verification_token);
 
-    let loading_anim = verification_token_to_loading_anim(&verification_token.0)?;
+    let loading_anim = verification_token_to_loading_anim(&verification_token)?;
 
     println!("Loading Animation: {:?}", loading_anim);
 
-    let actions_and_xsid_script = find_script_actions_and_xsid(&page_and_scripts.scripts)?;
+    let actions_and_xsid_script = find_script_actions_and_xsid_script_path(&page_and_scripts.scripts)?;
 
     println!("Actions and XSID: {:?}", actions_and_xsid_script);
 
