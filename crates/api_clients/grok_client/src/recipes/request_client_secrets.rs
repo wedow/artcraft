@@ -1,8 +1,9 @@
-use std::collections::HashMap;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
 use crate::requests::index_page::index_parsers::parse_index_baggage::parse_index_baggage;
+use crate::requests::index_page::index_parsers::parse_index_sentry_trace::parse_index_sentry_trace;
+use std::collections::HashMap;
 
 pub struct RequestClientSecretsArgs<'a> {
   pub cookies: &'a str,
@@ -15,32 +16,65 @@ pub struct RequestClientSecretsArgs<'a> {
 pub struct ClientSecrets {
   /// From the index HTML meta tag
   pub baggage: String,
-  
+
   /// From the index HTML meta tag
   pub sentry_trace: String,
-  
+
   /// Scripts (for later use)
   pub scripts: HashMap<String, String>,
 }
 
 /// Load all the things needed to make requests.
 pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Result<ClientSecrets, GrokError> {
-  
+
   let payloads = get_index_page_and_scripts(GetIndexPageAndScriptsArgs {
     cookie: args.cookies,
   }).await?;
-  
+
   let baggage = parse_index_baggage(&payloads.index_body_html)
-      .ok_or_else(|| GrokGenericApiError::IndexHtmlDidNotIncludeExpectedData { 
-        message: "Index did not include baggage.".to_string() 
+      .ok_or_else(|| GrokGenericApiError::IndexHtmlDidNotIncludeExpectedData {
+        message: "Index did not include baggage.".to_string()
       })?;
 
-  
-  
+  let sentry_trace = parse_index_sentry_trace(&payloads.index_body_html)
+      .ok_or_else(|| GrokGenericApiError::IndexHtmlDidNotIncludeExpectedData {
+        message: "Index did not include sentry trace.".to_string()
+      })?;
+
+  // xsid: str = Signature.generate_sign(
+  //   '/rest/app-chat/conversations/new',
+  //   'POST',
+  //   self.verification_token,
+  //   self.svg_data,
+  //   self.numbers
+  // )
+
   Ok(ClientSecrets {
     baggage,
-    sentry_trace: "TODO".to_string(),
+    sentry_trace,
     scripts: payloads.scripts,
   })
 }
 
+#[cfg(test)]
+mod tests {
+  use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
+  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use errors::AnyhowResult;
+
+  #[tokio::test]
+  #[ignore] // Manual test invocation
+  async fn test() -> AnyhowResult<()> {
+    let cookie = get_test_cookies()?;
+
+    let secrets = request_client_secrets(RequestClientSecretsArgs {
+      cookies: &cookie,
+    }).await?;
+
+    println!("Baggage: {:?}", secrets.baggage);
+    println!("Sentry trace: {:?}", secrets.sentry_trace);
+
+    assert_eq!(1, 2);
+    Ok(())
+  }
+}
