@@ -18,7 +18,7 @@ pub struct GetIndexPageAndScriptsArgs<'a> {
 
 pub struct IndexPageAndScripts {
   /// Index.html
-  pub body: String,
+  pub index_body_html: String,
 
   /// Script path -> Javascript payload.
   pub scripts: HashMap<String, String>,
@@ -49,7 +49,7 @@ pub async fn get_index_page_and_scripts(args: GetIndexPageAndScriptsArgs<'_>) ->
   }).await?;
 
   Ok(IndexPageAndScripts {
-    body: index.body,
+    index_body_html: index.body,
     scripts,
     client,
   })
@@ -70,7 +70,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let mut truncated_body = result.body.clone();
+    let mut truncated_body = result.index_body_html.clone();
     truncated_body.truncate(500);
 
     println!("Body:\n\n");

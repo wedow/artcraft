@@ -79,7 +79,7 @@ mod tests {
       cookie: &cookie,
     }).await?;
 
-    let verification_token = parse_verification_token_from_index_html(&page_and_scripts.body)
+    let verification_token = parse_verification_token_from_index_html(&page_and_scripts.index_body_html)
         .expect("expected verification token");
 
     println!("Verification Token: {:?}", verification_token);
@@ -94,7 +94,7 @@ mod tests {
 
     let result = get_numbers(GetNumbersArgs {
       client: &page_and_scripts.client,
-      html: &page_and_scripts.body,
+      html: &page_and_scripts.index_body_html,
       cookie: &cookie,
       loading_anim: &loading_anim,
       xsid_script_id: &actions_and_xsid_script.xsid_script_path,
@@ -103,7 +103,7 @@ mod tests {
     println!("Final Numbers: {:?}", result);
 
     println!("\n\nBody:\n\n");
-    println!("{}", page_and_scripts.body);
+    println!("{}", page_and_scripts.index_body_html);
 
     assert_eq!(1, 2);
     Ok(())

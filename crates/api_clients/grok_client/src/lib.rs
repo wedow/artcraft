@@ -12,3 +12,4 @@ pub mod error;
 pub mod requests;
 pub mod types;
 pub mod utils;
+mod recipes;
