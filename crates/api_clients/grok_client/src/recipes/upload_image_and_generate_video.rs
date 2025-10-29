@@ -13,6 +13,7 @@ use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
 use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
 use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
+use crate::requests::like_media::grok_like_media::GrokLikeMediaPost;
 use crate::requests::video_gen_chat_conversation::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 
@@ -96,9 +97,27 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
     numbers: &args.numbers,
   };
 
+  // TODO: Get URL
   let video_gen_result = request.send().await?;
 
   info!("Video Generation Enqueued");
+
+  info!("Liking media...");
+
+  let request = GrokLikeMediaPost {
+    file_id: &upload_file_id,
+    cookie: args.cookies,
+    request_timeout: args.individual_request_timeout,
+    baggage: &args.baggage,
+    sentry_trace: &args.sentry_trace,
+    verification_token: &args.verification_token,
+    svg_data: &args.svg_data,
+    numbers: &args.numbers,
+  };
+
+  let _like_result = request.send().await?;
+
+  info!("Media Liked");
 
   Ok(ImageUploadResult {
   })
@@ -122,7 +141,7 @@ mod tests {
 
   #[tokio::test]
   #[ignore] // Client side tests only
-  async fn create_media_post() -> AnyhowResult<()> {
+  async fn test_upload_image_and_generate_video() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Info);
 
     let cookies = get_test_cookies()?;
@@ -147,8 +166,8 @@ mod tests {
       verification_token: &secrets.verification_token,
       svg_data: &secrets.svg_path,
       numbers: &secrets.numbers,
-      file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Dinosaurs/050824_FK_dino-brains_feat.jpg"),
-      prompt: Some("A dinosaur begins to chase people"),
+      file: FileUploadSpec::Path("/Users/bt/Pictures/People/Ernest/0c120fb0-d6f3-11ec-9737-6f3f233a88c2.jpg"),
+      prompt: Some("A man in the forest runs away from a spooky ghost"),
       individual_request_timeout: None,
     }).await?;
 
