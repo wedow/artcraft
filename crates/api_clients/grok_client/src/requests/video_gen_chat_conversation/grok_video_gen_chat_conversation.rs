@@ -26,7 +26,7 @@ const CHAT_CONVERSATION_URL: &str = "https://grok.com/rest/app-chat/conversation
 pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub user_id: &'a UserId,
   pub file_id: &'a FileId,
-  pub media_type: MediaPostType,
+  pub media_type: VideoMediaPostType,
   pub cookie: &'a str,
   // TODO: Optional prompt
   pub prompt: &'a str,
@@ -40,7 +40,7 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub enum MediaPostType {
+pub enum VideoMediaPostType {
   UserUploadedImage,
   GrokGeneratedImage,
   Video,
@@ -111,9 +111,9 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
     }
 
     let media_url = match self.media_type {
-      MediaPostType::UserUploadedImage => user_and_file_id_to_image_url(self.user_id, self.file_id),
-      MediaPostType::GrokGeneratedImage => unimplemented!("implement for generated images"),
-      MediaPostType::Video => unimplemented!("implement for videos"),
+      VideoMediaPostType::UserUploadedImage => user_and_file_id_to_image_url(self.user_id, self.file_id),
+      VideoMediaPostType::GrokGeneratedImage => unimplemented!("implement for generated images"),
+      VideoMediaPostType::Video => unimplemented!("implement for videos"),
     };
 
     let prompt = format!("{media_url}  --mode=normal");
@@ -214,7 +214,7 @@ mod tests {
     let request = GrokVideoGenChatConversationBuilder {
       user_id: &user_id,
       file_id: &file_id,
-      media_type: MediaPostType::UserUploadedImage,
+      media_type: VideoMediaPostType::UserUploadedImage,
       cookie: &cookies,
       prompt: "dog shakes the glasses off",
       request_timeout: None,
