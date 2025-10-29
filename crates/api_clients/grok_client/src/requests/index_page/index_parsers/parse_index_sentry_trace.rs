@@ -1,6 +1,6 @@
+use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
 use once_cell::sync::Lazy;
 use scraper::{Html, Selector};
-
 // <meta name="baggage" content="sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=fb5c42c8cff6fd39161dd245154ca599,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.7208394686924251,sentry-sample_rate=0"/>
 
 static SENTRY_TRACE_SELECTOR : Lazy<Selector> = Lazy::new(|| {
@@ -11,8 +11,10 @@ static SENTRY_TRACE_SELECTOR : Lazy<Selector> = Lazy::new(|| {
 
 /// Extract the sentry trace, then process it.
 /// The Python library discards the latter half of the trace.
-pub fn parse_index_sentry_trace(html: &str) -> Option<String> {
-  get_meta_value(html).map(|trace| split_sentry_trace(&trace))
+pub fn parse_index_sentry_trace(html: &str) -> Option<SentryTrace> {
+  get_meta_value(html)
+      .map(|trace| split_sentry_trace(&trace))
+      .map(|trace| SentryTrace(trace))
 }
 
 fn get_meta_value(html: &str) -> Option<String> {

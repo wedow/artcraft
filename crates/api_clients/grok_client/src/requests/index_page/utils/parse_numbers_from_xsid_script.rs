@@ -1,3 +1,4 @@
+use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use log::error;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -8,8 +9,8 @@ static NUMBERS_REGEX : Lazy<Regex> = Lazy::new(|| {
       .expect("Regex should parse")
 });
 
-pub fn parse_numbers_from_xsid_script(script_body: &str) -> Vec<u32> {
-  NUMBERS_REGEX.captures_iter(&script_body)
+pub fn parse_numbers_from_xsid_script(script_body: &str) -> XsidNumbers {
+  let numbers = NUMBERS_REGEX.captures_iter(&script_body)
       .flat_map(|captures| captures.get(1).map(|m| m.as_str().to_string()))
       .flat_map(|num| match u32::from_str(&num) {
         Ok(num) => Some(num),
@@ -18,5 +19,9 @@ pub fn parse_numbers_from_xsid_script(script_body: &str) -> Vec<u32> {
           None
         }
       })
-      .collect::<_>()
+      .collect::<_>();
+  
+  XsidNumbers {
+    numbers,
+  }
 }

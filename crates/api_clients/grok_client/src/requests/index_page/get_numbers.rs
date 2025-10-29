@@ -1,13 +1,10 @@
-use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::index_page::index_parsers::parse_index_on_demand_script::parse_index_on_demand_script;
-use crate::requests::index_page::index_parsers::parse_index_svg_paths::parse_svg_paths_from_index_html;
-use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
+use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
-use crate::requests::index_page::utils::parse_numbers_from_xsid_script::parse_numbers_from_xsid_script;
 use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::LoadingAnim;
+use crate::requests::index_page::utils::parse_numbers_from_xsid_script::parse_numbers_from_xsid_script;
 use wreq::Client;
-
 // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 
 pub struct GetNumbersArgs<'a> {
@@ -18,15 +15,7 @@ pub struct GetNumbersArgs<'a> {
   pub xsid_script_id: &'a str,
 }
 
-#[derive(Clone, Debug)]
-pub struct NumbersAndSvg {
-  pub numbers: Vec<u32>,
-
-  /// We selected one of four possible SVG paths (of length >= 200) by the animation index.
-  pub svg_data: SvgPathData,
-}
-
-pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, GrokError> {
+pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<XsidNumbers, GrokError> {
 
   let script_link = match args.xsid_script_id {
     "ondemand.s" => {
@@ -44,21 +33,7 @@ pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, Grok
     script_url: &script_link,
   }).await?;
 
-  let numbers = parse_numbers_from_xsid_script(&xsid_script_body);
-
-  let paths = parse_svg_paths_from_index_html(&args.html);
-
-  let svg_data = paths.get(args.loading_anim.0);
-
-  let svg_data = match svg_data {
-    Some(s) => s.clone(),
-    None => return Err(GrokClientError::ScriptLogicOutOfDate.into()),
-  };
-
-  Ok(NumbersAndSvg {
-    numbers,
-    svg_data,
-  })
+  Ok(parse_numbers_from_xsid_script(&xsid_script_body))
 }
 
 #[cfg(test)]
@@ -66,8 +41,8 @@ mod tests {
   use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
   use crate::requests::index_page::get_numbers::{get_numbers, GetNumbersArgs};
   use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_index_verification_token;
-  use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
   use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
+  use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
