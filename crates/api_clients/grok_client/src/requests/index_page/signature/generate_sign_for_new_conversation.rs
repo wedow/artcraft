@@ -4,9 +4,10 @@ use base64::prelude::BASE64_STANDARD;
 use byteorder::{LittleEndian, WriteBytesExt};
 use chrono::{TimeDelta, Utc};
 use log::error;
+use sha2::{Digest, Sha256};
 use crate::error::grok_client_error::GrokClientError;
 use crate::requests::index_page::index_parsers::parse_index_verification_token::VerificationToken;
-
+use crate::requests::index_page::signature::signature_xs::signature_xs;
 /*
 xsid: str = Signature.generate_sign('/rest/app-chat/conversations/new', 'POST', self.verification_token, self.svg_data, self.numbers)
 
@@ -46,6 +47,7 @@ pub struct GenerateSignArgs<'a> {
 
   pub svg_data: &'a str,
 
+  // "x_values"
   pub numbers: &'a [u8],
 }
 
@@ -74,6 +76,48 @@ pub fn generate_sign(args: GenerateSignArgs<'_>) -> Result<(), GrokClientError> 
       })?; // TODO: Not sure this is right.
 
   println!("r = {:?}", r);
+
+  // o = Signature.xs(r, svg, x_values)
+  let o = signature_xs(&r, &args.svg_data, &args.numbers)?;
+
+  // generate_sign.o 4320e30fd70a3d70a3d7028f5c28f5c28f6028f5c28f5c28f60fd70a3d70a3d700
+  println!("o = {:?}", o);
+
+  //msg = "!".join([method, path, str(n)]) + "obfiowerehiring" + o
+  let method = args.method;
+  let path = args.path;
+  let msg = format!("{method}!{path}!{n}obfiowerehiring{o}");
+
+  // POST!/rest/app-chat/conversations/new!78721673obfiowerehiring4320e30fd70a3d70a3d7028f5c28f5c28f6028f5c28f5c28f60fd70a3d70a3d700
+  println!("msg = {}", msg);
+
+
+  //digest = sha256(msg.encode('utf-8')).digest()[:16]
+
+  let digest_all_bytes = Sha256::digest(msg.as_bytes()).to_vec();
+  println!("digest_all_bytes = {:?}", digest_all_bytes);
+
+  if digest_all_bytes.len() < 16 {
+    error!("Digest is too short: {}", digest_all_bytes.len());
+    return Err(GrokClientError::BadSignatureInputs);
+  }
+
+  let digest : &[u8] = &digest_all_bytes[.. 16];
+
+  println!("digest = {:?}", digest);
+
+  //prefix_byte = int(floor(random() if not random_float else random_float * 256))
+  let prefix_byte = 0; // NB: This is bad code? floor(random) = 0 always.
+
+  //assembled = bytes([prefix_byte]) + r + t + digest + bytes([3])
+
+  let mut assembled = vec![prefix_byte];
+  assembled.extend(r);
+  assembled.extend(t);
+  assembled.extend(digest);
+  assembled.extend([3]);
+
+  println!("assembled = {:?}", assembled);
 
   Ok(())
 }
