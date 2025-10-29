@@ -6,7 +6,11 @@ static SVG_PATH_SELECTOR: Lazy<Selector> = Lazy::new(|| {
       .expect("HTML selector should parse")
 });
 
-pub fn parse_svg_paths_from_index_html(html: &str) -> Vec<String> {
+/// Data on an SVG path, eg. <svg d={data} />
+#[derive(Debug, Clone)]
+pub struct SvgPathData(pub(crate) String);
+
+pub fn parse_svg_paths_from_index_html(html: &str) -> Vec<SvgPathData> {
   // From https://github.com/realasfngl/Grok-Api :
   //   all_d_values = findall(r'"d":"(M[^"]{200,})"', html)
   //   svg_data = all_d_values[int(loading.split("loading-x-anim-")[1])]
@@ -16,7 +20,7 @@ pub fn parse_svg_paths_from_index_html(html: &str) -> Vec<String> {
   selected
       .filter_map(|node| node.attr("d"))
       .filter(|path_data| path_data.len() >= 200) // NB: Not sure why these SVG strokes are more important.
-      .map(|s| s.to_string())
+      .map(|s| SvgPathData(s.to_string()))
       .collect::<Vec<_>>()
 }
 
@@ -41,7 +45,7 @@ mod tests {
     println!("Paths count: {:?}", paths.len());
 
     for path in paths {
-      println!("{}", path);
+      println!("{}", path.0);
     }
 
     assert_eq!(1, 2);

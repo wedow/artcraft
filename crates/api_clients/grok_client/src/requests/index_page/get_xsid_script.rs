@@ -1,31 +1,25 @@
-use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::index_page::index_parsers::parse_index_on_demand_script::parse_index_on_demand_script;
-use crate::requests::index_page::index_parsers::parse_index_svg_paths::{parse_svg_paths_from_index_html, SvgPathData};
 use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
 use crate::requests::index_page::utils::parse_numbers_from_xsid_script::parse_numbers_from_xsid_script;
-use crate::requests::index_page::utils::verification_token_to_loading_anim::LoadingAnim;
 use wreq::Client;
 
 // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 
-pub struct GetNumbersArgs<'a> {
+pub struct GetXsidScriptArgs<'a> {
   pub client: &'a Client,
   pub html: &'a str,
   pub cookie: &'a str,
-  pub loading_anim: &'a LoadingAnim,
   pub xsid_script_id: &'a str,
 }
 
 #[derive(Clone, Debug)]
-pub struct NumbersAndSvg {
+pub struct Numbers {
   pub numbers: Vec<u32>,
-
-  /// We selected one of four possible SVG paths (of length >= 200) by the animation index.
-  pub svg_data: SvgPathData,
+  pub xsid_script_body: String,
 }
 
-pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, GrokError> {
+pub async fn get_xsid_script(args: GetXsidScriptArgs<'_>) -> Result<Numbers, GrokError> {
 
   let script_link = match args.xsid_script_id {
     "ondemand.s" => {
@@ -45,18 +39,9 @@ pub async fn get_numbers(args: GetNumbersArgs<'_>) -> Result<NumbersAndSvg, Grok
 
   let numbers = parse_numbers_from_xsid_script(&xsid_script_body);
 
-  let paths = parse_svg_paths_from_index_html(&args.html);
-
-  let svg_data = paths.get(args.loading_anim.0);
-
-  let svg_data = match svg_data {
-    Some(s) => s.clone(),
-    None => return Err(GrokClientError::ScriptLogicOutOfDate.into()),
-  };
-
-  Ok(NumbersAndSvg {
+  Ok(Numbers{
     numbers,
-    svg_data,
+    xsid_script_body,
   })
 }
 
