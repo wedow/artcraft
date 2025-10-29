@@ -1,10 +1,11 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::index_page::index_parsers::parse_index_on_demand_script::parse_index_on_demand_script;
-use crate::requests::index_page::index_parsers::parse_index_svg_paths::{parse_svg_paths_from_index_html, SvgPathData};
+use crate::requests::index_page::index_parsers::parse_index_svg_paths::parse_svg_paths_from_index_html;
+use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
 use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
 use crate::requests::index_page::utils::parse_numbers_from_xsid_script::parse_numbers_from_xsid_script;
-use crate::requests::index_page::utils::verification_token_to_loading_anim::LoadingAnim;
+use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::LoadingAnim;
 use wreq::Client;
 
 // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
@@ -66,7 +67,7 @@ mod tests {
   use crate::requests::index_page::get_numbers::{get_numbers, GetNumbersArgs};
   use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_index_verification_token;
   use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
-  use crate::requests::index_page::utils::verification_token_to_loading_anim::verification_token_to_loading_anim;
+  use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -84,7 +85,7 @@ mod tests {
 
     println!("Verification Token: {:?}", verification_token);
 
-    let loading_anim = verification_token_to_loading_anim(&verification_token)?;
+    let loading_anim = convert_verification_token_to_loading_anim(&verification_token)?;
 
     println!("Loading Animation: {:?}", loading_anim);
 

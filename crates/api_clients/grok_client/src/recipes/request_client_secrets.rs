@@ -3,8 +3,14 @@ use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
 use crate::requests::index_page::index_parsers::parse_index_baggage::parse_index_baggage;
 use crate::requests::index_page::index_parsers::parse_index_sentry_trace::parse_index_sentry_trace;
-use crate::requests::index_page::index_parsers::parse_index_verification_token::{parse_index_verification_token, VerificationToken};
+use crate::requests::index_page::index_parsers::parse_index_svg_paths::parse_svg_paths_from_index_html;
+use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_index_verification_token;
+use crate::requests::index_page::pieces::baggage::Baggage;
+use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
+use crate::requests::index_page::pieces::verification_token::VerificationToken;
+use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
 use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
+use crate::requests::index_page::utils::select_svg_path_by_loading_anim::select_svg_path_by_loading_anim;
 use std::collections::HashMap;
 
 pub struct RequestClientSecretsArgs<'a> {
@@ -17,13 +23,16 @@ pub struct RequestClientSecretsArgs<'a> {
 // 3) x_statsig
 pub struct ClientSecrets {
   /// From the index HTML meta tag
-  pub baggage: String,
+  pub baggage: Baggage,
 
   /// From the index HTML meta tag
   pub sentry_trace: String,
 
   /// From the index HTML meta tag
   pub verification_token: VerificationToken,
+  
+  /// The SVG path data to use (chosen via verification_token)
+  pub svg_path: SvgPathData,
 
   /// Scripts (for later use)
   pub scripts: HashMap<String, String>,
@@ -51,6 +60,18 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
         message: "Index did not include verification token.".to_string()
       })?;
 
+  let svg_paths = parse_svg_paths_from_index_html(&payloads.index_body_html);
+  
+  if svg_paths.is_empty() {
+    return Err(GrokGenericApiError::IndexHtmlDidNotIncludeExpectedData {
+      message: "Index did not include any SVG paths.".to_string(),
+    }.into());
+  }
+  
+  let loading_anim = convert_verification_token_to_loading_anim(&verification_token)?;
+  
+  let svg_path = select_svg_path_by_loading_anim(&svg_paths, &loading_anim)?;
+  
   let actions_and_xsid_script = find_script_actions_and_xsid_script_path(&payloads.scripts)?;
 
   // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
@@ -72,6 +93,7 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
     baggage,
     sentry_trace,
     verification_token,
+    svg_path,
     scripts: payloads.scripts,
   })
 }
@@ -94,6 +116,7 @@ mod tests {
     println!("Baggage: {:?}", secrets.baggage);
     println!("Sentry trace: {:?}", secrets.sentry_trace);
     println!("Verification token: {:?}", secrets.verification_token);
+    println!("SVG path: {:?}", secrets.svg_path);
 
     assert_eq!(1, 2);
     Ok(())

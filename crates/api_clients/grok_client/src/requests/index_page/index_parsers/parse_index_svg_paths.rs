@@ -1,3 +1,4 @@
+use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
 use once_cell::sync::Lazy;
 use scraper::{Html, Selector};
 
@@ -6,9 +7,6 @@ static SVG_PATH_SELECTOR: Lazy<Selector> = Lazy::new(|| {
       .expect("HTML selector should parse")
 });
 
-/// Data on an SVG path, eg. <svg d={data} />
-#[derive(Debug, Clone)]
-pub struct SvgPathData(pub(crate) String);
 
 pub fn parse_svg_paths_from_index_html(html: &str) -> Vec<SvgPathData> {
   // From https://github.com/realasfngl/Grok-Api :

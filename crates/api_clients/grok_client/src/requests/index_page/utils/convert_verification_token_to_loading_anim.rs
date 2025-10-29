@@ -1,5 +1,5 @@
 use crate::error::grok_client_error::GrokClientError;
-use crate::requests::index_page::index_parsers::parse_index_verification_token::VerificationToken;
+use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use log::error;
@@ -16,7 +16,7 @@ impl LoadingAnim {
 /// This arbitrary algorithm is used by Grok.
 /// See https://github.com/realasfngl/Grok-Api
 /// The verification token comes from the index HTML.
-pub fn verification_token_to_loading_anim(verification_token: &VerificationToken) -> Result<LoadingAnim, GrokClientError> {
+pub fn convert_verification_token_to_loading_anim(verification_token: &VerificationToken) -> Result<LoadingAnim, GrokClientError> {
   // array: list = list(b64decode(verification_token)) -- note: we don't need to convert to a list
   let decoded_bytes = BASE64_STANDARD.decode(&verification_token.0)
       .map_err(|err| {
@@ -38,9 +38,9 @@ pub fn verification_token_to_loading_anim(verification_token: &VerificationToken
 #[cfg(test)]
 mod tests {
   use crate::error::grok_client_error::GrokClientError;
-  use crate::requests::index_page::utils::verification_token_to_loading_anim::verification_token_to_loading_anim;
+  use crate::requests::index_page::pieces::verification_token::VerificationToken;
+  use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
   use errors::AnyhowResult;
-  use crate::requests::index_page::index_parsers::parse_index_verification_token::VerificationToken;
 
   #[test]
   fn test() -> AnyhowResult<()> {
@@ -52,7 +52,7 @@ mod tests {
 
   fn to_id(verification_token: &str) -> Result<String, GrokClientError> {
     let verification_token = VerificationToken(verification_token.to_string());
-    let anim = verification_token_to_loading_anim(&verification_token)?;
+    let anim = convert_verification_token_to_loading_anim(&verification_token)?;
     Ok(anim.to_id())
   }
 }

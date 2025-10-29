@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use scraper::{Html, Selector};
-
+use crate::requests::index_page::pieces::baggage::Baggage;
 // <meta name="baggage" content="sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=fb5c42c8cff6fd39161dd245154ca599,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.7208394686924251,sentry-sample_rate=0"/>
 
 static BAGGAGE_SELECTOR : Lazy<Selector> = Lazy::new(|| {
@@ -9,14 +9,14 @@ static BAGGAGE_SELECTOR : Lazy<Selector> = Lazy::new(|| {
 });
 
 
-pub fn parse_index_baggage(html: &str) -> Option<String> {
+pub fn parse_index_baggage(html: &str) -> Option<Baggage> {
   let document = Html::parse_document(html);
   let selected = document.select(&BAGGAGE_SELECTOR);
   let mut values = selected
       .filter_map(|node| node.attr("content"))
       .map(|s| s.to_string())
       .collect::<Vec<_>>();
-  values.pop()
+  values.pop().map(|b| Baggage(b))
 }
 
 #[cfg(test)]

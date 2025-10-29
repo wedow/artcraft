@@ -51,7 +51,7 @@ mod tests {
   use crate::requests::index_page::get_numbers::{get_numbers, GetNumbersArgs};
   use crate::requests::index_page::index_parsers::parse_index_verification_token::parse_index_verification_token;
   use crate::requests::index_page::utils::find_script_actions_and_xsid_script_path::find_script_actions_and_xsid_script_path;
-  use crate::requests::index_page::utils::verification_token_to_loading_anim::verification_token_to_loading_anim;
+  use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -69,7 +69,7 @@ mod tests {
 
     println!("Verification Token: {:?}", verification_token);
 
-    let loading_anim = verification_token_to_loading_anim(&verification_token)?;
+    let loading_anim = convert_verification_token_to_loading_anim(&verification_token)?;
 
     println!("Loading Animation: {:?}", loading_anim);
 

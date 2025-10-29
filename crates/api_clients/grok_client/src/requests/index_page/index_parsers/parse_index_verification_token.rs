@@ -1,3 +1,4 @@
+use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use scraper::{Html, Selector};
@@ -21,9 +22,6 @@ static JSON_REGEX: Lazy<Regex> = Lazy::new(|| {
   Regex::new(r#""grok-site-verification\\?",\s*\\?"content\\?":\\?"([A-Za-z0-9/=+-]{5,})\\?""#)
       .expect("Regex should parse")
 });
-
-#[derive(Debug, Clone)]
-pub struct VerificationToken(pub(crate) String);
 
 /// Parse the verification token from the root HTML
 pub fn parse_index_verification_token(html: &str) -> Option<VerificationToken> {

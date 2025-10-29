@@ -1,3 +1,4 @@
 pub mod find_script_actions_and_xsid_script_path;
+pub mod select_svg_path_by_loading_anim;
 pub mod parse_numbers_from_xsid_script;
-pub mod verification_token_to_loading_anim;
+pub mod convert_verification_token_to_loading_anim;
