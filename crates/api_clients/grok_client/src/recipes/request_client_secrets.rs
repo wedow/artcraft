@@ -25,6 +25,7 @@ pub struct RequestClientSecretsArgs<'a> {
 // 1) baggage -- on index page
 // 2) sentry_trace -- on index page
 // 3) x_statsig
+#[derive(Clone)]
 pub struct ClientSecrets {
   /// From the index HTML meta tag
   pub baggage: Baggage,

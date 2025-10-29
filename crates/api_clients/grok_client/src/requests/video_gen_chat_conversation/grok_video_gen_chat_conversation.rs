@@ -2,6 +2,12 @@ use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
+use crate::requests::index_page::pieces::baggage::Baggage;
+use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
+use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
+use crate::requests::index_page::pieces::verification_token::VerificationToken;
+use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
+use crate::requests::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
 use crate::requests::upload_file::grok_upload_file::{FileSpec, GrokUploadFile, GrokUploadFileResponse};
 use crate::requests::video_gen_chat_conversation::request::{CreateChatConversationWireRequest, ToolOverrides};
 use crate::types::file_id::FileId;
@@ -26,9 +32,11 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub prompt: &'a str,
   pub request_timeout: Option<Duration>,
 
-  pub baggage: &'a str,
-  pub sentry_trace: &'a str,
-  pub x_statsig: &'a str,
+  pub baggage: &'a Baggage,
+  pub sentry_trace: &'a SentryTrace,
+  pub verification_token: &'a VerificationToken,
+  pub svg_data: &'a SvgPathData,
+  pub numbers: &'a XsidNumbers,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -53,16 +61,20 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
         .map_err(|err| GrokClientError::WreqClientError(err))?;
 
     let xai_request_id = Uuid::new_v4().to_string();
-    println!("{}", xai_request_id);
+    println!("xai_request_id (uuid) = {}", xai_request_id);
 
-    // f'{self.sentry_trace}-{str(uuid4()).replace("-", "")[:16]}-0',
-    //   inner bit = str(uuid4()).replace("-", "")[:16]
-    let sentry_start = self.sentry_trace;
-    let sentry_uuid = Uuid::new_v4().to_string();
-    let sentry_inner = sentry_uuid.replace("-", "")[..16].to_string();
-    let sentry_trace = format!("{sentry_start}-{sentry_inner}-0");
-
-    println!("{}", sentry_trace);
+    let sentry_trace_header = self.sentry_trace.to_http_request_header();
+    println!("sentry_trace = {}", sentry_trace_header);
+    
+    let x_statsig_id = generate_xsid(GenerateXsidArgs {
+      path: "/rest/app-chat/conversations/new",
+      method: "POST",
+      verification_token: &self.verification_token,
+      svg_data: &self.svg_data,
+      numbers: &self.numbers,
+    })?;
+    
+    println!("x_statsig_id = {}", x_statsig_id);
 
     // TODO: Headers were from Chromium, not Firefox. Partial implementation.
     let mut request_builder = client.post(CHAT_CONVERSATION_URL)
@@ -76,9 +88,9 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
         //.header("traceparent", "") // TODO ??
         .header(CONTENT_TYPE, "application/json")
         .header("x-xai-request-id", xai_request_id)
-        .header("x-statsig-id", self.x_statsig)
-        .header("sentry-trace", sentry_trace)
-        .header("baggage", self.baggage)
+        .header("x-statsig-id", x_statsig_id)
+        .header("sentry-trace", sentry_trace_header)
+        .header("baggage", &self.baggage.0)
         // TODO: Missing header "traceparent" ****
         .header(ORIGIN, "https://grok.com")
         //.header("priority", "u=1, i") // Different on firefox
@@ -176,6 +188,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
 
@@ -188,6 +201,16 @@ mod tests {
     let user_id = UserId("85980643-ffab-4984-a3de-59a608c47d7f".to_string()); // User
     let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
 
+    let secrets = request_client_secrets(RequestClientSecretsArgs {
+      cookies: &cookies,
+    }).await?;
+    
+    println!("Verification Token: {:?}", secrets.verification_token);
+    println!("Sentry Trace: {:?}", secrets.sentry_trace);
+    println!("Numbers: {:?}", secrets.numbers);
+    println!("Svg Path: {:?}", secrets.svg_path);
+    println!("Baggage: {:?}", secrets.baggage);
+
     let request = GrokVideoGenChatConversationBuilder {
       user_id: &user_id,
       file_id: &file_id,
@@ -195,10 +218,12 @@ mod tests {
       cookie: &cookies,
       prompt: "dog shakes the glasses off",
       request_timeout: None,
-      
-      baggage: "", // TODO
-      sentry_trace: "", // TODO
-      x_statsig: "", // TODO
+
+      baggage: &secrets.baggage,
+      sentry_trace: &secrets.sentry_trace,
+      verification_token: &secrets.verification_token,
+      svg_data: &secrets.svg_path,
+      numbers: &secrets.numbers,
     };
 
     let result = request.send().await?;
