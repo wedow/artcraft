@@ -44,8 +44,8 @@ pub struct ClientSecrets {
   /// Numbers from the xsid script.
   pub numbers: XsidNumbers,
 
-  /// Scripts (for later use)
-  pub scripts: HashMap<String, String>,
+  // /// Scripts (for later use)
+  // pub scripts: HashMap<String, String>,
 }
 
 /// Load all the things needed to make requests.
@@ -106,7 +106,7 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
     verification_token,
     svg_path,
     numbers,
-    scripts: payloads.scripts,
+    //scripts: payloads.scripts,
   })
 }
 

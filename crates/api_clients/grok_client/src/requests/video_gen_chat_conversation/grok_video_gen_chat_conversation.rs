@@ -24,13 +24,13 @@ const CHAT_CONVERSATION_URL: &str = "https://grok.com/rest/app-chat/conversation
 
 /// Request builder
 pub struct GrokVideoGenChatConversationBuilder<'a> {
-  pub user_id: &'a UserId,
   pub file_id: &'a FileId,
   pub media_type: VideoMediaPostType,
-  pub cookie: &'a str,
-  // TODO: Optional prompt
   pub prompt: Option<&'a str>,
   pub request_timeout: Option<Duration>,
+
+  pub cookie: &'a str,
+  pub user_id: &'a UserId,
 
   pub baggage: &'a Baggage,
   pub sentry_trace: &'a SentryTrace,
