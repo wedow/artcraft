@@ -9,7 +9,8 @@ use crate::types::user_id::UserId;
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info};
 use std::time::Duration;
-use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, CACHE_CONTROL, CONTENT_TYPE, COOKIE, ORIGIN, PRAGMA, REFERER, USER_AGENT};
+use uuid::Uuid;
+use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, COOKIE, ORIGIN, PRAGMA, REFERER, TE, USER_AGENT};
 use wreq::Client;
 use wreq_util::Emulation;
 
@@ -24,6 +25,10 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   // TODO: Optional prompt
   pub prompt: &'a str,
   pub request_timeout: Option<Duration>,
+
+  pub baggage: &'a str,
+  pub sentry_trace: &'a str,
+  pub x_statsig: &'a str,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -47,30 +52,47 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
         .build()
         .map_err(|err| GrokClientError::WreqClientError(err))?;
 
+    let xai_request_id = Uuid::new_v4().to_string();
+    println!("{}", xai_request_id);
+
+    // f'{self.sentry_trace}-{str(uuid4()).replace("-", "")[:16]}-0',
+    //   inner bit = str(uuid4()).replace("-", "")[:16]
+    let sentry_start = self.sentry_trace;
+    let sentry_uuid = Uuid::new_v4().to_string();
+    let sentry_inner = sentry_uuid.replace("-", "")[..16].to_string();
+    let sentry_trace = format!("{sentry_start}-{sentry_inner}-0");
+
+    println!("{}", sentry_trace);
+
     // TODO: Headers were from Chromium, not Firefox. Partial implementation.
     let mut request_builder = client.post(CHAT_CONVERSATION_URL)
+        //.header(PRAGMA, "no-cache") // Not on firefox
+        //.header(CACHE_CONTROL, "no-cache") // Not on firefox
+        .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
         .header(ACCEPT, "*/*")
         .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
-        // TODO: Missing header "baggage"
-        .header(CACHE_CONTROL, "no-cache")
-        .header(CONTENT_TYPE, "application/json")
-        .header(COOKIE, self.cookie.to_string())
-        .header(ORIGIN, "https://grok.com")
-        .header(PRAGMA, "no-cache")
-        .header("priority", "u=1, i")
+        .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
         .header(REFERER, "https://grok.com/imagine/favorites")
-        //.header("sec-ch-ua", "") // TODO
-        //.header("sec-ch-ua-mobile", "") // TODO
-        //.header("sec-ch-ua-platform", "") // TODO
+        //.header("traceparent", "") // TODO ??
+        .header(CONTENT_TYPE, "application/json")
+        .header("x-xai-request-id", xai_request_id)
+        .header("x-statsig-id", self.x_statsig)
+        .header("sentry-trace", sentry_trace)
+        .header("baggage", self.baggage)
+        // TODO: Missing header "traceparent" ****
+        .header(ORIGIN, "https://grok.com")
+        //.header("priority", "u=1, i") // Different on firefox
+        .header("priority", "u=4")
+        //.header("sec-ch-ua", "") // TODO / NB: NOT IN FIREFOX
+        //.header("sec-ch-ua-mobile", "") // TODO / NB: NOT IN FIREFOX
+        //.header("sec-ch-ua-platform", "") // TODO / NB: NOT IN FIREFOX
         .header("sec-fetch-dest", "empty")
         .header("sec-fetch-mode", "cors")
         .header("sec-fetch-site", "same-origin")
-        // TODO: Missing header "sentry-trace"
-        // TODO: Missing header "traceparent"
-        // TODO: Missing header "traceparent"
-        // TODO: Missing header "x-statsig-id"
-        // TODO: Missing header "x-xai-request-id"
-        .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT);
+        .header("Sec-GPC", "1")
+        .header(CONNECTION, "keep-alive")
+        .header(COOKIE, self.cookie.to_string())
+        .header(TE, "trailers");
 
     if let Some(timeout) = self.request_timeout {
       request_builder = request_builder.timeout(timeout);
@@ -171,8 +193,12 @@ mod tests {
       file_id: &file_id,
       media_type: MediaPostType::UserUploadedImage,
       cookie: &cookies,
-      prompt: "",
+      prompt: "dog shakes the glasses off",
       request_timeout: None,
+      
+      baggage: "", // TODO
+      sentry_trace: "", // TODO
+      x_statsig: "", // TODO
     };
 
     let result = request.send().await?;
@@ -181,4 +207,5 @@ mod tests {
     assert_eq!(1, 2);
     Ok(())
   }
+
 }

@@ -8,31 +8,6 @@ use chrono::{TimeDelta, Utc};
 use log::error;
 use sha2::{Digest, Sha256};
 use std::ops::Sub;
-/*
-xsid: str = Signature.generate_sign('/rest/app-chat/conversations/new', 'POST', self.verification_token, self.svg_data, self.numbers)
-
-    @staticmethod
-    def generate_sign(path: str, method: str, verification: str, svg: str, x_values: list, time_n: int = None, random_float: float = None) -> str:
-
-        n = int(time() - 1682924400) if not time_n else time_n
-        t = pack('<I', n)
-        r = b64decode(verification)
-        o = Signature.xs(r, svg, x_values)
-
-        msg = "!".join([method, path, str(n)]) + "obfiowerehiring" + o
-        digest = sha256(msg.encode('utf-8')).digest()[:16]
-
-        prefix_byte = int(floor(random() if not random_float else random_float * 256))
-        assembled = bytes([prefix_byte]) + r + t + digest + bytes([3])
-
-        arr = bytearray(assembled)
-        if len(arr) > 0:
-            first = arr[0]
-            for i in range(1, len(arr)):
-                arr[i] = arr[i] ^ first
-
-        return b64encode(bytes(arr)).decode('ascii').replace('=', '')
- */
 
 pub struct GenerateSignArgs<'a> {
   /// Path of the request,
@@ -51,13 +26,39 @@ pub struct GenerateSignArgs<'a> {
   pub numbers: &'a [u8],
 }
 
-pub fn generate_sign(args: GenerateSignArgs<'_>) -> Result<String, GrokClientError> {
+pub fn generate_xsid(args: GenerateSignArgs<'_>) -> Result<String, GrokClientError> {
   let timestamp = Utc::now().timestamp();
   let timestamp = timestamp as u32;
   generate_sign_with_timestamp(timestamp, args)
 }
 
 pub fn generate_sign_with_timestamp(timestamp: u32, args: GenerateSignArgs<'_>) -> Result<String, GrokClientError> {
+  /*
+  xsid: str = Signature.generate_sign('/rest/app-chat/conversations/new', 'POST', self.verification_token, self.svg_data, self.numbers)
+  
+      @staticmethod
+      def generate_sign(path: str, method: str, verification: str, svg: str, x_values: list, time_n: int = None, random_float: float = None) -> str:
+  
+          n = int(time() - 1682924400) if not time_n else time_n
+          t = pack('<I', n)
+          r = b64decode(verification)
+          o = Signature.xs(r, svg, x_values)
+  
+          msg = "!".join([method, path, str(n)]) + "obfiowerehiring" + o
+          digest = sha256(msg.encode('utf-8')).digest()[:16]
+  
+          prefix_byte = int(floor(random() if not random_float else random_float * 256))
+          assembled = bytes([prefix_byte]) + r + t + digest + bytes([3])
+  
+          arr = bytearray(assembled)
+          if len(arr) > 0:
+              first = arr[0]
+              for i in range(1, len(arr)):
+                  arr[i] = arr[i] ^ first
+  
+          return b64encode(bytes(arr)).decode('ascii').replace('=', '')
+   */
+
   let n = timestamp - 1682924400;
 
   println!("n = {}", n);
@@ -158,7 +159,7 @@ pub fn generate_sign_with_timestamp(timestamp: u32, args: GenerateSignArgs<'_>) 
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::index_parsers::parse_index_verification_token::VerificationToken;
-  use crate::requests::index_page::signature::generate_sign_for_new_conversation::{generate_sign, generate_sign_with_timestamp, GenerateSignArgs};
+  use crate::requests::index_page::signature::generate_xsid::{generate_sign_with_timestamp, GenerateSignArgs};
   use errors::AnyhowResult;
 
   // TODO: More test cases

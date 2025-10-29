@@ -1,0 +1,26 @@
+// On Oct 28th
+
+curl 'https://grok.com/rest/app-chat/conversations/new' \
+  --compressed \
+  -X POST \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en-US,en;q=0.5' \
+  -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  -H 'Referer: https://grok.com/imagine/post/0e1b621b-2d45-491b-91b0-e9cf6c6daaac' \
+  -H 'traceparent: 00-24ab2faa28a09e5fbd77c3fd17e0a178-00d2d7a6cd94c59b-00' \
+  -H 'Content-Type: application/json' \
+  -H 'x-xai-request-id: 81b61468-4d22-491e-b408-cf8db8939f82' \
+  -H 'x-statsig-id: BGbkSC6a8rL0NfXIqgCH1zmgRQonLVlF1VynmLcgKWBghgOYxMcTkRRvJ7jezoeQm0/6tQDlcvBFhJBg+UQo2nRBo9WbBw' \
+  -H 'sentry-trace: 73158c4dc7d7594f514fd3cbaa92d12f-9422691d0bc995f2-0' \
+  -H 'baggage: sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=73158c4dc7d7594f514fd3cbaa92d12f,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.1612817331950147,sentry-sample_rate=0' \
+  -H 'Origin: https://grok.com' \
+  -H 'Sec-GPC: 1' \
+  -H 'Connection: keep-alive' \
+  -H 'Cookie: stblid=69c6f0c0-d548-4a73-9126-79e1b45f59da; cf_clearance=AM0FYU_l1IkodcUyTSfXYQM6Sq3X2b73VNxahr.fZDo-1761698171-1.2.1.1-GrmC19dhjRZR0EODJ1Jp3e4N6lDCFNoh9c4r24EIHKytIKZmnb2JuadZFBxmHZRqQ5c2tezghMzIcHCfltNN36UkNjeqHujNMSGpccyj1CnbW5dWdZNl7BHCWuxwk1TjJUDlNu3abup8M5p2x55oaSecv875EOWFs6m16eXdzPNJMvRysRED221ldQ8YB2rWZfFtUAS66x0K2kKCUHzR5ydpqpk6JSvmBydKhwa7IHs; i18nextLng=en; x-anonuserid=41f3614a-1a08-4c9b-81b4-0c2085f6b8d8; x-challenge=tmsr%2B%2BbUg2pjTWyAOGqqFe%2BW38g66vDImJiVuiLtmSmNpaQm%2B46WajkdQoflNC1CyRKRcOLOc1ylzYI%2BerCVbWLrHr022ZWcTJqcN0o1499%2FcjPAAspeAKPV%2F6OAaHmYGu8eSXR4dj27qXSWxLixSctJLIQZVpKXX7njuuSkvKDQCwBgt%2BY%3D; x-signature=GqtNLJQw2%2BOk1rO6sby9vQT3N5%2BiX8g%2B8Bqrndiv51dSYQFC4v2%2FlrkKmH1utjqExbfvVjtks0%2Bn6RC3q61%2FRA%3D%3D; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiMmM1OGEyMjQtMDViZi00NjllLWFkYjUtNmY3ODdmZDU1MTc2In0.rnUG2UvKv32YBGSyYWrWh_1KaLiTix-6H4TZe4ZywfU; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiMmM1OGEyMjQtMDViZi00NjllLWFkYjUtNmY3ODdmZDU1MTc2In0.rnUG2UvKv32YBGSyYWrWh_1KaLiTix-6H4TZe4ZywfU; mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel=%7B%22distinct_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%2C%22%24device_id%22%3A%22c02bd50a-db0e-4f35-903e-b03f32f28b5f%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Priority: u=4' \
+  -H 'TE: trailers' \
+  --data-raw '{"temporary":true,"modelName":"grok-3","message":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/0e1b621b-2d45-491b-91b0-e9cf6c6daaac/content  --mode=normal","fileAttachments":["0e1b621b-2d45-491b-91b0-e9cf6c6daaac"],"toolOverrides":{"videoGen":true},"responseMetadata":{"modelConfigOverride":{"modelMap":{"videoGenModelConfig":{"parentPostId":"0e1b621b-2d45-491b-91b0-e9cf6c6daaac"}}}}}'
