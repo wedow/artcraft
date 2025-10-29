@@ -13,7 +13,7 @@ use crate::requests::index_page::signature::generate_xsid::{generate_xsid, Gener
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::requests::video_gen_chat_conversation::request::{CreateChatConversationWireRequest, ToolOverrides};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
-use log::{error, info};
+use log::{error, info, warn};
 use std::time::Duration;
 use uuid::Uuid;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, COOKIE, ORIGIN, PRAGMA, REFERER, TE, USER_AGENT};
@@ -65,7 +65,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 
     let sentry_trace_header = self.sentry_trace.to_http_request_header();
     println!("sentry_trace = {}", sentry_trace_header);
-    
+
     let x_statsig_id = generate_xsid(GenerateXsidArgs {
       path: "/rest/app-chat/conversations/new",
       method: "POST",
@@ -73,7 +73,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       svg_data: &self.svg_data,
       numbers: &self.numbers,
     })?;
-    
+
     println!("x_statsig_id = {}", x_statsig_id);
 
     // TODO: Headers were from Chromium, not Firefox. Partial implementation.
@@ -161,6 +161,8 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 
     let status = response.status();
 
+    info!("Video Generation Enqueue Status: {:?}", status);
+
     /// Body: {"error":{"code":7,"message":"Request rejected by anti-bot rules.","details":[]}}
     let response_body = &response.text()
         .await
@@ -169,7 +171,12 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           GrokGenericApiError::WreqError(err)
         })?;
 
-    println!("Body: {}", response_body);
+    if !status.is_success() {
+      warn!("Not successful enqueuing video gen: {:?}", response_body);
+    }
+
+    // TODO: Just for now...
+    info!("Video Body: {:?}", response_body);
 
     // TODO:
     //if !status.is_success() {
@@ -204,7 +211,7 @@ mod tests {
     let secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,
     }).await?;
-    
+
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
     println!("Numbers: {:?}", secrets.numbers);

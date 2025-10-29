@@ -147,8 +147,8 @@ mod tests {
       verification_token: &secrets.verification_token,
       svg_data: &secrets.svg_path,
       numbers: &secrets.numbers,
-      file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Spooky/06.1.jpg"),
-      prompt: "A spooky ghost hovers in mid air",
+      file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Godzilla/which-godzilla-is-the-most-evil-across-all-official-media-v0-ygnqvsf8md5d1.jpg"),
+      prompt: "A scary reptile monster dances",
       individual_request_timeout: None,
     }).await?;
 
