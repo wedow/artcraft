@@ -14,6 +14,12 @@ pub enum GrokGenericApiError {
     message: String,
   },
 
+  /// The downloaded javascript did not include the expected data.
+  /// This is necessary for handshakes between client and server.
+  ScriptBodyDidNotIncludeExpectedData {
+    message: String,
+  },
+
   /// Error creating the websocket due to 401 Unauthorized, likely an authentication error with Grok.
   /// Unfortunately we can't read the response body text to diagnose more because wreq has some API design issues.
   LikelyWebsocketAuthentication401,
@@ -54,6 +60,7 @@ impl Display for GrokGenericApiError {
     match self {
       Self::CloudflareError(err) => write!(f, "Cloudflare error: {}", err),
       Self::IndexHtmlDidNotIncludeExpectedData { message } => write!(f, "IndexHtmlDidNotIncludeExpectedData ( message: {} )", message),
+      Self::ScriptBodyDidNotIncludeExpectedData { message } => write!(f, "ScriptBodyDidNotIncludeExpectedData ( message: {} )", message),
       Self::LikelyWebsocketAuthentication401 => write!(f, "Likely websocket authentication 401 error (probably Grok authentication issue with cookies)"),
       Self::LikelyWebsocketCloudflare403 => write!(f, "Likely Cloudflare 403 error on websocket upgrade"),
       Self::UnexpectedWebsocketUpgradeStatusCode(status) => write!(f, "Unexpected websocket upgrade status code: {}", status),

@@ -1,15 +1,18 @@
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
+use crate::requests::index_page::get_xsid_script::{get_xsid_script, GetXsidScriptArgs};
 use crate::requests::index_page::parsers::index::parse_index_baggage::parse_index_baggage;
 use crate::requests::index_page::parsers::index::parse_index_sentry_trace::parse_index_sentry_trace;
 use crate::requests::index_page::parsers::index::parse_index_svg_paths::parse_svg_paths_from_index_html;
 use crate::requests::index_page::parsers::index::parse_index_verification_token::parse_index_verification_token;
 use crate::requests::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
+use crate::requests::index_page::parsers::script::parse_xsid_script_numbers::parse_xsid_script_numbers;
 use crate::requests::index_page::pieces::baggage::Baggage;
 use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
 use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
 use crate::requests::index_page::pieces::verification_token::VerificationToken;
+use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
 use crate::requests::index_page::utils::select_svg_path_by_loading_anim::select_svg_path_by_loading_anim;
 use std::collections::HashMap;
@@ -36,6 +39,9 @@ pub struct ClientSecrets {
   /// We selected one of four-ish possible SVG paths (of length >= 200) by
   /// the `verification token -> animation index` algo.
   pub svg_path: SvgPathData,
+  
+  /// Numbers from the xsid script.
+  pub numbers: XsidNumbers,
 
   /// Scripts (for later use)
   pub scripts: HashMap<String, String>,
@@ -78,11 +84,21 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
 
   let actions_and_xsid_script = parse_script_actions_and_xsid_script_path(&payloads.scripts)?;
 
-  // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
+  let xsid_script = get_xsid_script(GetXsidScriptArgs {
+    client: &payloads.client,
+    html: &payloads.index_body_html,
+    cookie: &args.cookies,
+    xsid_script_id: &actions_and_xsid_script.xsid_script_path,
+  }).await?;
 
-  // TODO: SvgData
-  // TODO: Numbers
-  // Do we need "anim" ?
+  let numbers = parse_xsid_script_numbers(&xsid_script.xsid_script_body);
+
+  if numbers.numbers.is_empty() {
+    return Err(GrokGenericApiError::IndexHtmlDidNotIncludeExpectedData {
+      message: "Index did not include any SVG paths.".to_string(),
+    }.into());
+  }
+
   // TODO: xsid
 
   // xsid: str = Signature.generate_sign(
@@ -98,6 +114,7 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
     sentry_trace,
     verification_token,
     svg_path,
+    numbers,
     scripts: payloads.scripts,
   })
 }
@@ -121,6 +138,7 @@ mod tests {
     println!("Sentry trace: {:?}", secrets.sentry_trace);
     println!("Verification token: {:?}", secrets.verification_token);
     println!("SVG path: {:?}", secrets.svg_path);
+    println!("Numbers: {:?}", secrets.numbers);
 
     assert_eq!(1, 2);
     Ok(())

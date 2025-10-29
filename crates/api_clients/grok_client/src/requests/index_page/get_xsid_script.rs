@@ -1,7 +1,5 @@
 use crate::error::grok_error::GrokError;
 use crate::requests::index_page::parsers::index::parse_index_on_demand_script::parse_index_on_demand_script;
-use crate::requests::index_page::parsers::script::parse_xsid_script_numbers::parse_xsid_script_numbers;
-use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
 use wreq::Client;
 
@@ -14,13 +12,13 @@ pub struct GetXsidScriptArgs<'a> {
   pub xsid_script_id: &'a str,
 }
 
+/// We pull numbers out of the xsid script
 #[derive(Clone, Debug)]
-pub struct Numbers {
-  pub numbers: XsidNumbers,
+pub struct XsidScript {
   pub xsid_script_body: String,
 }
 
-pub async fn get_xsid_script(args: GetXsidScriptArgs<'_>) -> Result<Numbers, GrokError> {
+pub async fn get_xsid_script(args: GetXsidScriptArgs<'_>) -> Result<XsidScript, GrokError> {
 
   let script_link = match args.xsid_script_id {
     "ondemand.s" => {
@@ -38,10 +36,7 @@ pub async fn get_xsid_script(args: GetXsidScriptArgs<'_>) -> Result<Numbers, Gro
     script_url: &script_link,
   }).await?;
 
-  let numbers = parse_xsid_script_numbers(&xsid_script_body);
-
-  Ok(Numbers{
-    numbers,
+  Ok(XsidScript {
     xsid_script_body,
   })
 }
