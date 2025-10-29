@@ -52,11 +52,13 @@ pub struct GenerateSignArgs<'a> {
 }
 
 pub fn generate_sign(args: GenerateSignArgs<'_>) -> Result<String, GrokClientError> {
-  let t = 1761646073; // TODO: REPLACE
+  let timestamp = Utc::now().timestamp();
+  let timestamp = timestamp as u32;
+  generate_sign_with_timestamp(timestamp, args)
+}
 
-  //let n = Utc::now().timestamp() - 1682924400;
-  let n = t - 1682924400;
-
+pub fn generate_sign_with_timestamp(timestamp: u32, args: GenerateSignArgs<'_>) -> Result<String, GrokClientError> {
+  let n = timestamp - 1682924400;
 
   println!("n = {}", n);
 
@@ -156,15 +158,17 @@ pub fn generate_sign(args: GenerateSignArgs<'_>) -> Result<String, GrokClientErr
 #[cfg(test)]
 mod tests {
   use crate::requests::index_page::index_parsers::parse_index_verification_token::VerificationToken;
-  use crate::requests::index_page::signature::generate_sign_for_new_conversation::{generate_sign, GenerateSignArgs};
+  use crate::requests::index_page::signature::generate_sign_for_new_conversation::{generate_sign, generate_sign_with_timestamp, GenerateSignArgs};
   use errors::AnyhowResult;
 
+  // TODO: More test cases
   #[test]
   fn test() -> AnyhowResult<()> {
     let ver = VerificationToken("yt16CWiUI42s7wGGeMxcdEIT2miPF5PVOGZF1Jcae7K7HMQrLeI4RTYufmdfBIZU".to_string());
     let svg_data = "M 10,30 C 147,16 51,222 136,87 h 31 s 177,77 40,114 C 68,166 18,188 114,44 h 220 s 148,210 202,25 C 220,36 246,218 12,120 h 244 s 34,154 56,161 C 211,204 208,60 174,14 h 155 s 157,116 220,95 C 116,164 53,210 174,232 h 139 s 148,151 135,221 C 167,196 118,27 149,247 h 233 s 129,238 113,21 C 73,44 215,158 218,29 h 68 s 13,98 243,134 C 44,98 149,35 20,178 h 163 s 219,104 41,152 C 237,107 118,120 127,117 h 57 s 41,167 43,136 C 116,168 44,246 182,209 h 143 s 238,93 237,119 C 142,36 64,67 97,111 h 71 s 230,247 119,27 C 206,56 158,51 71,115 h 135 s 120,186 74,57 C 197,165 180,214 102,16 h 88 s 252,48 189,166 C 163,237 57,253 154,60 h 96 s 84,56 15,66 C 177,101 10,202 185,227 h 29 s 204,55 115,219 C 103,82 127,143 194,99 h 102 s 179,63 84,110";
+    let timestamp = 1761646073;
 
-    let observed = generate_sign(GenerateSignArgs {
+    let observed = generate_sign_with_timestamp(timestamp, GenerateSignArgs {
       path: "/rest/app-chat/conversations/new",
       method: "POST",
       verification_token: &ver,
