@@ -24,7 +24,7 @@ pub (super) struct CreateChatConversationWireRequest {
 
 #[derive(Serialize)]
 pub (super) struct ToolOverrides {
-  #[serde(rename = "toolOverrides")]
+  #[serde(rename = "videoGen")]
   pub (super) video_gen: bool,
 }
 
@@ -76,10 +76,29 @@ October 29 request struct -
        }
      }
    }
- */
 
 
-/*
+October 29 generate from already uploaded image with prompt struct -
+--data-raw
+  {
+    "temporary":true,
+    "modelName":"grok-3",
+    "message":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/d6d73ffd-ce87-40a3-9cc2-3432d7192652/content  building gets hit by tornado --mode=custom",
+    "fileAttachments":["d6d73ffd-ce87-40a3-9cc2-3432d7192652"],
+    "toolOverrides":{
+      "videoGen":true
+    },
+    "responseMetadata":{
+      "modelConfigOverride":{
+        "modelMap":{
+          "videoGenModelConfig":{
+            "parentPostId":"d6d73ffd-ce87-40a3-9cc2-3432d7192652"
+          }
+        }
+      }
+    }
+  }
+
 October 22 request struct -
 
 --data-raw

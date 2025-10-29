@@ -29,7 +29,7 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub media_type: VideoMediaPostType,
   pub cookie: &'a str,
   // TODO: Optional prompt
-  pub prompt: &'a str,
+  pub prompt: Option<&'a str>,
   pub request_timeout: Option<Duration>,
 
   pub baggage: &'a Baggage,
@@ -116,7 +116,11 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       VideoMediaPostType::Video => unimplemented!("implement for videos"),
     };
 
-    let prompt = format!("{media_url}  --mode=normal");
+    let mut prompt = format!("{media_url}  --mode=normal");
+
+    if let Some(user_prompt) = self.prompt {
+      prompt = format!("{media_url}  {user_prompt} --mode=custom");
+    }
 
     let request_body = CreateChatConversationWireRequest {
       temporary: true,
@@ -139,47 +143,10 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       },
     };
 
-    /*
-    October 29 request struct -
-
-    --data-raw
-       {
-         "temporary":true,
-         "modelName":"grok-3",
-         "message":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/d6d73ffd-ce87-40a3-9cc2-3432d7192652/content  --mode=normal",
-         "fileAttachments":["d6d73ffd-ce87-40a3-9cc2-3432d7192652"],
-         "toolOverrides":{
-           "videoGen":true
-         },
-         "responseMetadata":{
-           "modelConfigOverride":{
-           "modelMap":{
-             "videoGenModelConfig":{
-               "parentPostId":"d6d73ffd-ce87-40a3-9cc2-3432d7192652"
-             }
-           }
-         }
-       }
-     }
-     */
-
-
-    /*
-    October 22 request struct -
-
-    --data-raw
-      {
-        "temporary":true,
-        "modelName":"grok-3",
-        "message":"https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content  --mode=normal",
-        "fileAttachments": [
-          "21a79085-e206-4b0b-88ac-5f2b7a453e45"
-        ],
-        "toolOverrides": {
-          "videoGen":true
-        }
-      }
-     */
+    // TODO TEMP
+    let request_debug = serde_json::to_string(&request_body).unwrap();
+    info!("request_debug_1 = {}", request_debug);
+    info!("request_debug_2 = {:?}", request_debug);
 
     let http_request = request_builder.json(&request_body)
         .build()
@@ -259,7 +226,7 @@ mod tests {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       cookie: &cookies,
-      prompt: "dog shakes the glasses off",
+      prompt: Some("dog shakes the glasses off"),
       request_timeout: None,
 
       baggage: &secrets.baggage,

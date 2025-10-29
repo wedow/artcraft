@@ -30,7 +30,7 @@ pub struct UploadImageAndGenerateVideo<'a, P: AsRef<Path>> {
   // NB: Must be owned.
   pub file: FileUploadSpec<P>,
 
-  pub prompt: &'a str,
+  pub prompt: Option<&'a str>,
 
   pub individual_request_timeout: Option<Duration>,
 }
@@ -148,7 +148,7 @@ mod tests {
       svg_data: &secrets.svg_path,
       numbers: &secrets.numbers,
       file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Dinosaurs/050824_FK_dino-brains_feat.jpg"),
-      prompt: "A dinosaur begins to breakdance",
+      prompt: Some("A dinosaur begins to chase people"),
       individual_request_timeout: None,
     }).await?;
 
