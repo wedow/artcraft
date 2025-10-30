@@ -153,16 +153,37 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           GrokClientError::WreqClientError(err)
         })?;
 
-    let response = client.execute(http_request)
+    info!("Sending request...");
+
+    let pending_response = client.execute(http_request);
+
+    info!("Pending response...");
+
+    let response = pending_response
         .await
         .map_err(|err| {
           error!("Error during create media: {:?}", err);
           GrokGenericApiError::WreqError(err)
         })?;
 
+    info!("Reading status...");
+
     let status = response.status();
 
     info!("Video Generation Enqueue Status: {:?}", status);
+
+    info!("Reading body...");
+
+    /*
+    Reading the body is what takes time.
+    18:03:09.085612 [INFO] - Configuring client...
+    18:03:09.089810 [INFO] - Sending request...
+    18:03:09.089872 [INFO] - Pending response...
+    18:03:09.274033 [INFO] - Reading status...
+    18:03:09.274262 [INFO] - Video Generation Enqueue Status: 200
+    18:03:09.274304 [INFO] - Reading body...
+    18:03:35.186344 [INFO] - Read body.
+    */
 
     /// TODO: Handle anti-bot detection
     /// Body: {"error":{"code":7,"message":"Request rejected by anti-bot rules.","details":[]}}
@@ -172,6 +193,8 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           error!("Error reading Grok create media response body: {:?}", err);
           GrokGenericApiError::WreqError(err)
         })?;
+
+    info!("Read body.");
 
     // TODO: Handle unsuccessful request, cloudflare, etc.
     if !status.is_success() {
@@ -210,7 +233,7 @@ mod tests {
     //let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
 
     let image_path = "/Users/bt/Pictures/Zelda 64 Art/7j8baxv9m8u61.jpg";
-    let maybe_prompt = Some("The hero shoots an arrow and the camera zooms out to follow the arrow");
+    let maybe_prompt = Some("The hero shoots an arrow and it hits a skeleton monster");
 
     let cookies = get_typed_test_cookies()?;
 

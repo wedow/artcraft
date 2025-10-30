@@ -156,7 +156,7 @@ mod tests {
     //let prompt = "our hero link plunges the sword into the pedestal, the temple is glowing with a blue aura";
 
     let image_path = "/Users/bt/Pictures/Zelda 64 Art/7j8baxv9m8u61.jpg";
-    let maybe_prompt = Some("The hero shoots an arrow and the camera zooms out to follow the arrow");
+    let maybe_prompt = Some("The hero shoots an arrow and it hits a skeleton monster");
 
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
