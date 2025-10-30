@@ -1,3 +1,4 @@
+use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
@@ -8,14 +9,8 @@ use crate::requests::index_page::parsers::index::parse_index_svg_paths::parse_sv
 use crate::requests::index_page::parsers::index::parse_index_verification_token::parse_index_verification_token;
 use crate::requests::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
 use crate::requests::index_page::parsers::script::parse_xsid_script_numbers::parse_xsid_script_numbers;
-use crate::requests::index_page::pieces::baggage::Baggage;
-use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
-use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
-use crate::requests::index_page::pieces::verification_token::VerificationToken;
-use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
 use crate::requests::index_page::utils::select_svg_path_by_loading_anim::select_svg_path_by_loading_anim;
-use std::collections::HashMap;
 
 pub struct RequestClientSecretsArgs<'a> {
   pub cookies: &'a str,
@@ -25,31 +20,9 @@ pub struct RequestClientSecretsArgs<'a> {
 // 1) baggage -- on index page
 // 2) sentry_trace -- on index page
 // 3) x_statsig
-#[derive(Clone)]
-pub struct ClientSecrets {
-  /// From the index HTML meta tag
-  pub baggage: Baggage,
-
-  /// From the index HTML meta tag
-  pub sentry_trace: SentryTrace,
-
-  /// From the index HTML meta tag
-  pub verification_token: VerificationToken,
-
-  /// The SVG path data to use (chosen via verification_token)
-  /// We selected one of four-ish possible SVG paths (of length >= 200) by
-  /// the `verification token -> animation index` algo.
-  pub svg_path: SvgPathData,
-
-  /// Numbers from the xsid script.
-  pub numbers: XsidNumbers,
-
-  // /// Scripts (for later use)
-  // pub scripts: HashMap<String, String>,
-}
 
 /// Load all the things needed to make requests.
-pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Result<ClientSecrets, GrokError> {
+pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Result<GrokClientSecrets, GrokError> {
 
   let payloads = get_index_page_and_scripts(GetIndexPageAndScriptsArgs {
     cookie: args.cookies,
@@ -81,7 +54,7 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
 
   let loading_anim = convert_verification_token_to_loading_anim(&verification_token)?;
 
-  let svg_path = select_svg_path_by_loading_anim(&svg_paths, &loading_anim)?;
+  let svg_path_data = select_svg_path_by_loading_anim(&svg_paths, &loading_anim)?;
 
   let actions_and_xsid_script = parse_script_actions_and_xsid_script_path(&payloads.scripts)?;
 
@@ -100,11 +73,11 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
     }.into());
   }
 
-  Ok(ClientSecrets {
+  Ok(GrokClientSecrets {
     baggage,
     sentry_trace,
     verification_token,
-    svg_path,
+    svg_path_data,
     numbers,
     //scripts: payloads.scripts,
   })
@@ -128,7 +101,7 @@ mod tests {
     println!("Baggage: {:?}", secrets.baggage);
     println!("Sentry trace: {:?}", secrets.sentry_trace);
     println!("Verification token: {:?}", secrets.verification_token);
-    println!("SVG path: {:?}", secrets.svg_path);
+    println!("SVG path: {:?}", secrets.svg_path_data);
     println!("Numbers: {:?}", secrets.numbers);
 
     assert_eq!(1, 2);

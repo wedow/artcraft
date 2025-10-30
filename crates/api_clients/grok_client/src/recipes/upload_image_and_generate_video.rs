@@ -155,7 +155,7 @@ mod tests {
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
     println!("Numbers: {:?}", secrets.numbers);
-    println!("Svg Path: {:?}", secrets.svg_path);
+    println!("Svg Path: {:?}", secrets.svg_path_data);
     println!("Baggage: {:?}", secrets.baggage);
 
     let result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
@@ -164,7 +164,7 @@ mod tests {
       baggage: &secrets.baggage,
       sentry_trace: &secrets.sentry_trace,
       verification_token: &secrets.verification_token,
-      svg_data: &secrets.svg_path,
+      svg_data: &secrets.svg_path_data,
       numbers: &secrets.numbers,
       file: FileUploadSpec::Path("/Users/bt/Pictures/People/Ernest/0c120fb0-d6f3-11ec-9737-6f3f233a88c2.jpg"),
       prompt: Some("A man in the forest runs away from a spooky ghost"),

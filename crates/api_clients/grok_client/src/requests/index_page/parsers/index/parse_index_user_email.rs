@@ -1,7 +1,6 @@
-use crate::datatypes::user_id::UserId;
+use crate::datatypes::user_email::UserEmail;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use crate::datatypes::user_email::UserEmail;
 
 /// Find the user email in the index.html payload
 /// eg.

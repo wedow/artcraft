@@ -218,7 +218,7 @@ mod tests {
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
     println!("Numbers: {:?}", secrets.numbers);
-    println!("Svg Path: {:?}", secrets.svg_path);
+    println!("Svg Path: {:?}", secrets.svg_path_data);
     println!("Baggage: {:?}", secrets.baggage);
 
     let request = GrokVideoGenChatConversationBuilder {
@@ -232,7 +232,7 @@ mod tests {
       baggage: &secrets.baggage,
       sentry_trace: &secrets.sentry_trace,
       verification_token: &secrets.verification_token,
-      svg_data: &secrets.svg_path,
+      svg_data: &secrets.svg_path_data,
       numbers: &secrets.numbers,
     };
 
