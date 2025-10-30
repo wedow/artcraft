@@ -2,7 +2,7 @@ use crate::datatypes::api::verification_token::VerificationToken;
 use crate::error::grok_client_error::GrokClientError;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use log::error;
+use log::{debug, error};
 
 #[derive(Debug, Clone)]
 pub struct LoadingAnim(pub(crate) usize);
@@ -28,6 +28,8 @@ pub fn convert_verification_token_to_loading_anim(verification_token: &Verificat
   let byte = decoded_bytes.get(5)
       .map(|byte| *byte)
       .ok_or(GrokClientError::InvalidVerificationTokenBytes)?;
+  
+  debug!("verification token byte: {}", byte);
 
   // note, we'll put the string construction in the `to_id()` method since we need the raw integer again
   let anim = (byte % 4) as usize;

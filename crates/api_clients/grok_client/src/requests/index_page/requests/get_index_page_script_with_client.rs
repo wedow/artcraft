@@ -1,6 +1,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
+use log::warn;
 use wreq::Client;
 
 const INDEX_URL: &str = "https://grok.com";
@@ -38,11 +39,17 @@ pub async fn get_index_page_script_with_client(args: GetIndexPageScriptArgs<'_>)
   let response = builder.send()
       .await
       .map_err(|err| GrokClientError::WreqClientError(err))?;
+  
+  let status = response.status();
 
   // TODO: Cloudflare handling.
   let body = response.text()
       .await
       .map_err(|err| GrokClientError::WreqClientError(err))?;
+
+  if !status.is_success() {
+    warn!("could not get index page script: {}, body: {}", status, body);
+  }
 
   Ok(body)
 }

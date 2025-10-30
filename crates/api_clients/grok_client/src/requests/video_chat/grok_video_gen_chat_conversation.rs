@@ -27,7 +27,6 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub file_id: &'a FileId,
   pub media_type: VideoMediaPostType,
   pub prompt: Option<&'a str>,
-  pub request_timeout: Option<Duration>,
 
   pub cookie: &'a str,
   pub user_id: &'a UserId,
@@ -37,6 +36,8 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub verification_token: &'a VerificationToken,
   pub svg_data: &'a SvgPathData,
   pub numbers: &'a XsidNumbers,
+
+  pub request_timeout: Option<Duration>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -174,18 +175,15 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           GrokGenericApiError::WreqError(err)
         })?;
 
+    // TODO: Handle unsuccessful request
     if !status.is_success() {
-      warn!("Not successful enqueuing video gen: {:?}", response_body);
+      warn!("Not successful enqueuing video gen (code: {}) : {:?}", status.as_u16(), response_body);
+      //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
+      //  return Err(classify_general_http_status_code_and_body(status, response_body));
     }
 
     // TODO: Just for now...
     info!("Video Body: {:?}", response_body);
-
-    // TODO:
-    //if !status.is_success() {
-    //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-    //  return Err(classify_general_http_status_code_and_body(status, response_body));
-    //}
 
     //let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
     //    .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
@@ -198,6 +196,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use errors::AnyhowResult;
@@ -209,11 +208,21 @@ mod tests {
 
     let cookies = get_typed_test_cookies()?;
 
-    let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
-
     let secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,
     }).await?;
+
+    //let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
+
+    let upload_request = GrokUploadFile {
+      file: FileUploadSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
+      cookie: cookies.to_string(),
+      request_timeout: None,
+    };
+
+    let upload_result = upload_request.upload().await?;
+
+    let file_id = upload_result.file_id.expect("upload should have file_id");
 
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
@@ -222,18 +231,19 @@ mod tests {
     println!("Baggage: {:?}", secrets.baggage);
 
     let request = GrokVideoGenChatConversationBuilder {
-      user_id: &secrets.user_id,
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
-      cookie: cookies.as_str(),
       prompt: Some("dog shakes the glasses off"),
-      request_timeout: None,
 
+      cookie: cookies.as_str(),
+      user_id: &secrets.user_id,
       baggage: &secrets.baggage,
       sentry_trace: &secrets.sentry_trace,
       verification_token: &secrets.verification_token,
       svg_data: &secrets.svg_path_data,
       numbers: &secrets.numbers,
+
+      request_timeout: None,
     };
 
     let result = request.send().await?;

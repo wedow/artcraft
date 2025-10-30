@@ -1,3 +1,4 @@
+use log::debug;
 use crate::error::grok_client_error::GrokClientError;
 use crate::requests::index_page::signature::round_two_decimals::round_two_decimals;
 /*
@@ -23,21 +24,21 @@ pub fn signature_h(x: f64, param: f64, c: f64, e: bool) -> Result<f64, GrokClien
   // f = ((x * (c - _param)) / 255.0) + _param
   let f = ((x * (c - param)) / 255.0) + param;
 
-  println!("f = {}", f);
+  debug!("[signature_h] f = {}", f);
 
   if e {
     let floor = f.floor();
-    println!("floor = {}", floor);
+    debug!("[signature_h] floor = {}", floor);
     return Ok(floor)
   }
 
   // rounded = round(float(f), 2)
   let rounded = round_two_decimals(f);
 
-  println!("rounded = {}", rounded);
+  debug!("[signature_h] rounded = {}", rounded);
 
   if rounded == 0.0 {
-    println!("rounded is zero");
+    debug!("[signature_h] rounded is zero");
     return Ok(0.0) // TODO: This might not work
   }
 

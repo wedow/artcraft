@@ -1,6 +1,7 @@
+use crate::error::grok_client_error::GrokClientError;
+use log::debug;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use crate::error::grok_client_error::GrokClientError;
 
 static CLEAN_NON_DIGIT_REGEX : Lazy<Regex> = Lazy::new(|| {
   Regex::new(r#"[^\d]+"#)
@@ -29,24 +30,24 @@ static CLEAN_NON_DIGIT_REGEX : Lazy<Regex> = Lazy::new(|| {
 pub fn signature_xa(svg_data: &str) -> Result<Vec<Vec<u32>>, GrokClientError> {
   // s = (svg) -- not this is needed, looks like a NO-OP to me.
   let s = svg_data;
-  println!("s.len() ={}", s.len());
+  debug!("[xa] s.len() ={}", s.len());
 
   // substr = s[9:]
   let substr = &s[9..];
-  println!("Substr ={}", substr);
-  println!("substr.len() ={}", substr.len());
+  debug!("[xa] substr ={}", substr);
+  debug!("[xa] substr.len() ={}", substr.len());
 
   // parts = substr.split("C")
   let parts = substr.split("C").collect::<Vec<_>>();
-  println!("parts.len() = {}", parts.len());
-  println!("parts = {:?}", parts);
+  debug!("[xa] parts.len() = {}", parts.len());
+  debug!("[xa] parts = {:?}", parts);
 
   let mut out = Vec::new();
 
   for part in parts {
     // cleaned = sub(r"[^\d]+", " ", part).strip()
     let cleaned = CLEAN_NON_DIGIT_REGEX.replace_all(part, " ").to_string().trim().to_string();
-    println!("cleaned len = {} value = {}", cleaned.len(), cleaned);
+    debug!("[xa] cleaned len = {} value = {}", cleaned.len(), cleaned);
     let mut nums;
     if cleaned == "" {
       // nums = [0]
@@ -60,7 +61,8 @@ pub fn signature_xa(svg_data: &str) -> Result<Vec<Vec<u32>>, GrokClientError> {
     }
     out.push(nums);
   }
-  println!("out = {:?}", out);
+
+  debug!("[xa] out = {:?}", out);
 
   Ok(out)
 }

@@ -7,7 +7,7 @@ use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use byteorder::{LittleEndian, WriteBytesExt};
 use chrono::{TimeDelta, Utc};
-use log::error;
+use log::{debug, error};
 use sha2::{Digest, Sha256};
 use std::ops::Sub;
 
@@ -63,43 +63,38 @@ pub fn generate_xsid_with_timestamp(timestamp: u32, args: GenerateXsidArgs<'_>) 
 
   let n = timestamp - 1682924400;
 
-  println!("n = {}", n);
+  debug!("[xsid] n = {}", n);
 
-  // MATCH !
-  // \x892\xb1\x04 vs
-  // [137, 50, 177, 4]
   let mut t = vec![];
   t.write_u32::<LittleEndian>(n).unwrap(); // TODO Unwrap
 
-  println!("t = {:?}", t);
+  debug!("[xsid] t = {:?}", t);
 
-  // MATCH !
   let r = BASE64_STANDARD.decode(&args.verification_token.0)
       .map_err(|err| {
         error!("Decode verification_token failed. {}", err);
         GrokClientError::FailedToDecodeVerificationToken(err)
       })?; // TODO: Not sure this is right.
 
-  println!("r = {:?}", r);
+  debug!("[xsid] r = {:?}", r);
 
   // o = Signature.xs(r, svg, x_values)
   let o = signature_xs(&r, &args.svg_data.0, &args.numbers.numbers)?;
 
-  // generate_sign.o 4320e30fd70a3d70a3d7028f5c28f5c28f6028f5c28f5c28f60fd70a3d70a3d700
-  println!("o = {:?}", o);
+  debug!("[xsid] o = {:?}", o);
 
-  //msg = "!".join([method, path, str(n)]) + "obfiowerehiring" + o
+  // msg = "!".join([method, path, str(n)]) + "obfiowerehiring" + o
   let method = args.method;
   let path = args.path;
   let msg = format!("{method}!{path}!{n}obfiowerehiring{o}");
 
   // POST!/rest/app-chat/conversations/new!78721673obfiowerehiring4320e30fd70a3d70a3d7028f5c28f5c28f6028f5c28f5c28f60fd70a3d70a3d700
-  println!("msg = {}", msg);
+  debug!("[xsid] msg = {}", msg);
 
   //digest = sha256(msg.encode('utf-8')).digest()[:16]
 
   let digest_all_bytes = Sha256::digest(msg.as_bytes()).to_vec();
-  println!("digest_all_bytes = {:?}", digest_all_bytes);
+  debug!("[xsid] digest_all_bytes = {:?}", digest_all_bytes);
 
   if digest_all_bytes.len() < 16 {
     error!("Digest is too short: {}", digest_all_bytes.len());
@@ -108,20 +103,19 @@ pub fn generate_xsid_with_timestamp(timestamp: u32, args: GenerateXsidArgs<'_>) 
 
   let digest : &[u8] = &digest_all_bytes[.. 16];
 
-  println!("digest = {:?}", digest);
+  debug!("[xsid] digest = {:?}", digest);
 
-  //prefix_byte = int(floor(random() if not random_float else random_float * 256))
+  // prefix_byte = int(floor(random() if not random_float else random_float * 256))
   let prefix_byte = 0; // NB: This is bad code? floor(random) = 0 always.
 
-  //assembled = bytes([prefix_byte]) + r + t + digest + bytes([3])
-
+  // assembled = bytes([prefix_byte]) + r + t + digest + bytes([3])
   let mut assembled = vec![prefix_byte];
   assembled.extend(r);
   assembled.extend(t);
   assembled.extend(digest);
   assembled.extend([3]);
 
-  println!("assembled = {:?}", assembled);
+  debug!("[xsid] assembled = {:?}", assembled);
 
   /*
         arr = bytearray(assembled)
@@ -144,15 +138,15 @@ pub fn generate_xsid_with_timestamp(timestamp: u32, args: GenerateXsidArgs<'_>) 
   //  }
   //}
 
-  println!("arr = {:?}", arr);
+  debug!("[xsid] arr = {:?}", arr);
 
-  // Uses + and /
-  //encoded = b64encode(bytes(arr)).decode('ascii').replace('=', '')
+  // Uses + and / for base64
+  // encoded = b64encode(bytes(arr)).decode('ascii').replace('=', '')
 
   let encoded_bytes = BASE64_STANDARD.encode(arr);
   let encoded_bytes = encoded_bytes.replace("=", "");
 
-  println!("encoded_bytes = {:?}", encoded_bytes);
+  debug!("[xsid] encoded_bytes = {:?}", encoded_bytes);
 
   Ok(encoded_bytes)
 }

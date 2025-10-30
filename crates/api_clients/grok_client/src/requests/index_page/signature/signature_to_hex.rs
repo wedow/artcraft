@@ -1,3 +1,4 @@
+use log::debug;
 use crate::error::grok_client_error::GrokClientError;
 use crate::requests::index_page::signature::round_two_decimals::round_two_decimals;
 
@@ -33,7 +34,7 @@ pub fn signature_to_hex(num: f64) -> Result<String, GrokClientError> {
   // rounded = round(float(num), 2)
   let rounded = round_two_decimals(num);
 
-  println!("rounded = {}", rounded);
+  debug!("[to_hex] rounded = {}", rounded);
 
   if rounded == 0.0 {
     return Ok("0".to_string());
@@ -43,22 +44,22 @@ pub fn signature_to_hex(num: f64) -> Result<String, GrokClientError> {
   let test = 1.0f64.copysign(rounded);
   let sign = if test < 0.0 { "-" } else { "" };
 
-  println!("sign = {}", sign);
+  debug!("[to_hex] sign = {}", sign);
 
   let absval = rounded.abs();
   let intpart = absval.floor() as u32;
 
-  println!("absval = {}", absval);
-  println!("intpart = {}", intpart);
+  debug!("[to_hex] absval = {}", absval);
+  debug!("[to_hex] intpart = {}", intpart);
 
   let frac = absval - (intpart as f64);
 
-  println!("frac = {}", frac);
+  debug!("[to_hex] frac = {}", frac);
 
   if frac == 0.0 {
     // return sign + format(intpart, "x") -- this is hex formatting
     let ret = format!("{sign}{intpart:x}");
-    println!("return = {}", ret);
+    debug!("[to_hex] return = {}", ret);
     return Ok(ret);
   }
 
@@ -103,18 +104,18 @@ pub fn signature_to_hex(num: f64) -> Result<String, GrokClientError> {
   let frac_str = frac_digits.join("");
   let frac_str = frac_str.trim_end_matches('0');
 
-  println!("frac_str = {}", frac_str);
+  debug!("[to_hex] frac_str = {}", frac_str);
 
   if frac_str.is_empty() {
     // return sign + format(intpart, "x")
     let ret = format!("{sign}{intpart:x}");
-    println!("return = {}", ret);
+    debug!("[to_hex] return = {}", ret);
     return Ok(ret);
   }
 
   // return sign + format(intpart, "x") + "." + frac_str
   let ret = format!("{sign}{intpart:x}.{frac_str}");
-  println!("return = {}", ret);
+  debug!("[to_hex] return = {}", ret);
 
   Ok(ret)
 }

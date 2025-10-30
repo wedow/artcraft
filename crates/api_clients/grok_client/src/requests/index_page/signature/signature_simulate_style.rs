@@ -1,7 +1,7 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::requests::index_page::signature::signature_cubic_bezier_eased::signature_cubic_bezier_eased;
 use crate::requests::index_page::signature::signature_h::signature_h;
-use log::error;
+use log::{debug, error};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt::format;
@@ -84,14 +84,12 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // currentTime = round(c / 10.0) * 10
   let current_time = ((c as f32 / 10.0).round()) as u32 * 10;
 
-  // > currentTime 900
-  println!("current_time = {:?}", current_time);
+  debug!("[simulate_style] current_time = {:?}", current_time);
 
   // t = currentTime / duration
   let t = current_time as f64 / duration as f64;
 
-  // > t 0.2197265625
-  println!("t = {:?}", t);
+  debug!("[simulate_style] t = {:?}", t);
 
   // cp = [Signature._h(v, -1 if (i % 2) else 0, 1, False) for i, v in enumerate(values[7:])]
   let subvalues = &values[7..];
@@ -102,8 +100,7 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
     cp.push(val);
   }
 
-  // > cp [0.05, -0.23, 0.95, 0.05]
-  println!("cp = {:?}", cp);
+  debug!("[simulate_style] cp = {:?}", cp);
 
   // easedY = Signature.cubicBezierEased(t, cp[0], cp[1], cp[2], cp[3])
   let cp_0 = cp.get(0).map(|x| *x).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
@@ -112,8 +109,7 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   let cp_3 = cp.get(3).map(|x| *x).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
   let eased_y = signature_cubic_bezier_eased(t, cp_0, cp_1, cp_2, cp_3);
 
-  // > easedY -0.06687371608353283
-  println!("eased_y = {:?}", eased_y);
+  debug!("[simulate_style] eased_y = {:?}", eased_y);
 
   // NB: Safety
   if values.len() < 6 {
@@ -127,10 +123,8 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // end = [float(x) for x in values[3:6]]
   let end = values[3..6].iter().map(|x| *x as f64).collect::<Vec<_>>();
 
-  // > start [73.0, 44.0, 215.0]
-  // > end [158.0, 218.0, 29.0]
-  println!("start = {:?}", start);
-  println!("end = {:?}", end);
+  debug!("[simulate_style] start = {:?}", start);
+  debug!("[simulate_style] end = {:?}", end);
 
   // r = round(start[0] + (end[0] - start[0]) * easedY)
   // g = round(start[1] + (end[1] - start[1]) * easedY)
@@ -143,41 +137,32 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
   // color = f"rgb({r}, {g}, {b})"
   let color = format!("rgb({r}, {g}, {b})");
 
-  // > r 67
-  // > g 32
-  // > b 227
-  // > color rgb(67, 32, 227)
-  println!("color = {:?}", color);
+  debug!("[simulate_style] color = {:?}", color);
 
   // endAngle = Signature._h(values[6], 60, 360, True)
   let value_6 = values.get(6).map(|v| *v as f64).ok_or_else(|| GrokClientError::BadSignatureInputs)?;
   let end_angle = signature_h(value_6, 60.0, 360.0, true)?;
 
-  // > endAngle 140
-  println!("end_angle = {:?}", end_angle);
+  debug!("[simulate_style] end_angle = {:?}", end_angle);
 
   // angle = endAngle * easedY
   let angle = end_angle * eased_y;
 
-  // > angle -9.362320251694596
-  println!("angle = {:?}", angle);
+  debug!("[simulate_style] angle = {:?}", angle);
 
   // rad = angle * pi / 180.0
   let pi = std::f64::consts::PI;
   let rad = angle * pi / 180.0;
 
-  // > rad -0.16340331401821492
-  println!("rad = {:?}", rad);
+  debug!("[simulate_style] rad = {:?}", rad);
 
   // cosv = cos(rad)
   // sinv = sin(rad)
   let cosv = rad.cos();
   let sinv = rad.sin();
 
-  // > cosv 0.9866793572390504
-  // > sinv -0.16267712192663833
-  println!("cosv = {:?}", cosv);
-  println!("sinv = {:?}", sinv);
+  debug!("[simulate_style] cosv = {:?}", cosv);
+  debug!("[simulate_style] sinv = {:?}", sinv);
 
   /*
         if is_effectively_zero(cosv):
@@ -253,20 +238,15 @@ pub fn signature_simulate_style(values: &[u32], c: u32) -> Result<SimulatedStyle
     }
   }
 
-  // > a 0.986679
-  // > d 0.986679
-  // > bval -0.1626771
-  // > cval 0.1626771
-  println!("a = {}", a);
-  println!("d = {}", d);
-  println!("bval = {}", bval);
-  println!("cval = {}", cval);
+  debug!("[simulate_style] a = {}", a);
+  debug!("[simulate_style] d = {}", d);
+  debug!("[simulate_style] bval = {}", bval);
+  debug!("[simulate_style] cval = {}", cval);
 
   // transform = f"matrix({a}, {bval}, {cval}, {d}, 0, 0)"
   let transform = format!("matrix({a}, {bval}, {cval}, {d}, 0, 0)");
 
-  // transform matrix(0.986679, -0.1626771, 0.1626771, 0.986679, 0, 0)
-  println!("transform = {:?}", transform);
+  debug!("[simulate_style] transform = {:?}", transform);
 
   Ok(SimulatedStyle {
     color,
