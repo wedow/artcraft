@@ -11,6 +11,7 @@ use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
+use crate::requests::video_chat::parse_video_id::parse_video_id;
 use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{debug, error, info, warn};
@@ -50,6 +51,7 @@ pub enum VideoMediaPostType {
 /// Response type
 #[derive(Debug)]
 pub struct GrokVideoGenChatConversationResponse {
+  pub video_file_id: Option<FileId>,
 }
 
 impl <'a> GrokVideoGenChatConversationBuilder<'a> {
@@ -180,10 +182,10 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
     // TODO: Just for now...
     info!("Video Body: {:?}", response_body);
 
-    //let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
-    //    .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
+    let file_id = parse_video_id(&response_body);
 
     Ok(GrokVideoGenChatConversationResponse {
+      video_file_id: file_id,
     })
   }
 }

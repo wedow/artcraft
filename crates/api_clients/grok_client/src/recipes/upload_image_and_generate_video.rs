@@ -1,4 +1,5 @@
 use crate::credentials::grok_full_credentials::GrokFullCredentials;
+use crate::datatypes::api::file_id::FileId;
 use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
@@ -7,6 +8,7 @@ use crate::requests::like_media::grok_like_media::GrokLikeMediaPost;
 use crate::requests::upload_file::grok_upload_file::GrokUploadFile;
 use crate::requests::video_chat::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
+use crate::utils::user_and_file_id_to_video_url::user_and_file_id_to_video_url;
 use log::{error, info};
 use std::path::Path;
 use std::time::Duration;
@@ -23,6 +25,8 @@ pub struct UploadImageAndGenerateVideo<'a, P: AsRef<Path>> {
 }
 
 pub struct ImageUploadResult {
+  pub video_file_id: Option<FileId>,
+  pub video_url: Option<String>,
 }
 
 pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAndGenerateVideo<'_, P>) -> Result<ImageUploadResult, GrokError> {
@@ -86,7 +90,15 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
   };
 
   // TODO: Get URL
-  let _video_gen_result = request.send().await?;
+  let video_gen_result = request.send().await?;
+
+  let maybe_video_file_id = video_gen_result.video_file_id;
+
+  let maybe_video_url = maybe_video_file_id
+      .as_ref()
+      .map(|file_id| {
+        user_and_file_id_to_video_url(&args.full_credentials.client_secrets.user_id, file_id, false)
+      });
 
   info!("Video Generation Enqueued");
 
@@ -108,6 +120,8 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
   info!("Media Liked");
 
   Ok(ImageUploadResult {
+    video_file_id: maybe_video_file_id,
+    video_url: maybe_video_url,
   })
 }
 
@@ -138,8 +152,8 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    let image_path = "/Users/bt/Pictures/Zelda 64 Art/brfn9cy0n8u61.jpg";
-    let prompt = "our hero link on horseback galloping through the fantasy world, bright sun behind him. a dormant volcano has a circling ring of smoke. the camera pulls back and follows our hero";
+    let image_path = "/Users/bt/Pictures/Zelda 64 Art/FCgYX6tWEAEhpsy.jpg";
+    let prompt = "our hero link plunges the sword into the pedestal, the temple is glowing with a blue aura";
 
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
@@ -149,12 +163,15 @@ mod tests {
 
     let credentials = GrokFullCredentials::from_cookies_and_client_secrets(cookies, secrets);
 
-    let result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
+    let video_result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
       full_credentials: &credentials,
       file: FileUploadSpec::Path(image_path),
       prompt: Some(prompt),
       individual_request_timeout: None,
     }).await?;
+
+    println!("Video File ID: {:?}", video_result.video_file_id);
+    println!("Video URL: {:?}", video_result.video_url);
 
     assert_eq!(1, 2);
 
