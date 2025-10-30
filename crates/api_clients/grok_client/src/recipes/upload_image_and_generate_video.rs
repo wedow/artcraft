@@ -49,7 +49,7 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
   };
 
   let url = user_and_file_id_to_image_url(
-    &args.full_credentials.client_secrets.user_id, 
+    &args.full_credentials.client_secrets.user_id,
     &upload_file_id
   );
 
@@ -138,6 +138,9 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
+    let image_path = "/Users/bt/Pictures/Zelda 64 Art/brfn9cy0n8u61.jpg";
+    let prompt = "our hero link on horseback galloping through the fantasy world, bright sun behind him. a dormant volcano has a circling ring of smoke. the camera pulls back and follows our hero";
+
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
     println!("Numbers: {:?}", secrets.numbers);
@@ -148,8 +151,8 @@ mod tests {
 
     let result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
       full_credentials: &credentials,
-      file: FileUploadSpec::Path("/Users/bt/Pictures/People/Ernest/0c120fb0-d6f3-11ec-9737-6f3f233a88c2.jpg"),
-      prompt: Some("A man in the forest cuts down a tree"),
+      file: FileUploadSpec::Path(image_path),
+      prompt: Some(prompt),
       individual_request_timeout: None,
     }).await?;
 

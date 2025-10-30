@@ -113,13 +113,11 @@ impl <'a> GrokCreateMediaPost<'a> {
           GrokGenericApiError::WreqError(err)
         })?;
 
-    println!("Body: {}", response_body);
-
     // TODO:
-    //if !status.is_success() {
-    //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-    //  return Err(classify_general_http_status_code_and_body(status, response_body));
-    //}
+    if !status.is_success() {
+      error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
+      //return Err(classify_general_http_status_code_and_body(status, response_body));
+    }
 
     //let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
     //    .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;

@@ -13,7 +13,7 @@ use crate::requests::index_page::signature::generate_xsid::{generate_xsid, Gener
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use std::time::Duration;
 use uuid::Uuid;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, COOKIE, ORIGIN, PRAGMA, REFERER, TE, USER_AGENT};
@@ -62,10 +62,10 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
         .map_err(|err| GrokClientError::WreqClientError(err))?;
 
     let xai_request_id = Uuid::new_v4().to_string();
-    println!("xai_request_id (uuid) = {}", xai_request_id);
-
     let sentry_trace_header = self.sentry_trace.to_http_request_header();
-    println!("sentry_trace = {}", sentry_trace_header);
+
+    debug!("xai_request_id (uuid) = {}", xai_request_id);
+    debug!("sentry_trace = {}", sentry_trace_header);
 
     let x_statsig_id = generate_xsid(GenerateXsidArgs {
       path: "/rest/app-chat/conversations/new",
@@ -75,7 +75,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       numbers: &self.numbers,
     })?;
 
-    println!("x_statsig_id = {}", x_statsig_id);
+    debug!("x_statsig_id = {}", x_statsig_id);
 
     // TODO: Headers were from Chromium, not Firefox. Partial implementation.
     let mut request_builder = client.post(CHAT_CONVERSATION_URL)
@@ -143,11 +143,6 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
         },
       },
     };
-
-    // TODO TEMP
-    let request_debug = serde_json::to_string(&request_body).unwrap();
-    info!("request_debug_1 = {}", request_debug);
-    info!("request_debug_2 = {:?}", request_debug);
 
     let http_request = request_builder.json(&request_body)
         .build()
