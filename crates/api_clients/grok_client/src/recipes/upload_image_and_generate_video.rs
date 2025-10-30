@@ -12,7 +12,7 @@ use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::like_media::grok_like_media::GrokLikeMediaPost;
 use crate::requests::upload_file::grok_upload_file::GrokUploadFile;
-use crate::requests::video_gen_chat_conversation::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
+use crate::requests::video_chat::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info};
 use std::path::Path;
@@ -156,7 +156,7 @@ mod tests {
     let result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
       full_credentials: &credentials,
       file: FileUploadSpec::Path("/Users/bt/Pictures/People/Ernest/0c120fb0-d6f3-11ec-9737-6f3f233a88c2.jpg"),
-      prompt: Some("A man in the forest runs away from a spooky ghost"),
+      prompt: Some("A man in the forest cuts down a tree"),
       individual_request_timeout: None,
     }).await?;
 

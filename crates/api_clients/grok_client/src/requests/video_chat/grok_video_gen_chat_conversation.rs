@@ -11,7 +11,7 @@ use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
-use crate::requests::video_gen_chat_conversation::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
+use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info, warn};
 use std::time::Duration;

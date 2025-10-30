@@ -1,6 +1,6 @@
 use crate::error::grok_error::GrokError;
-use crate::requests::listen_websocket::clonable_websocket::ClonableWebsocket;
-use crate::requests::listen_websocket::messages::websocket_client_message::WebsocketClientMessage;
+use crate::requests::image_websocket::clonable_websocket::ClonableWebsocket;
+use crate::requests::image_websocket::messages::websocket_client_message::WebsocketClientMessage;
 
 pub struct PromptWebsocketImageArgs<'a> {
   pub websocket_wrapped: ClonableWebsocket,
@@ -18,10 +18,10 @@ pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Resul
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::listen_websocket::clonable_websocket::ClonableWebsocket;
-  use crate::requests::listen_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-  use crate::requests::listen_websocket::messages::websocket_server_message::WebsocketServerMessage;
-  use crate::requests::listen_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
+  use crate::requests::image_websocket::clonable_websocket::ClonableWebsocket;
+  use crate::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+  use crate::requests::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
+  use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use errors::AnyhowResult;
   use log::warn;
