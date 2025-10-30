@@ -172,11 +172,11 @@ impl <P> GrokUploadFile<P> where P: AsRef<Path> {
           GrokGenericApiError::WreqError(err)
         })?;
 
-    // TODO:
-    //if !status.is_success() {
-    //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-    //  return Err(classify_general_http_status_code_and_body(status, response_body));
-    //}
+    // TODO: Handle bad statuses
+    if !status.is_success() {
+      error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
+      //return Err(classify_general_http_status_code_and_body(status, response_body));
+    }
 
     let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
         .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
@@ -185,7 +185,7 @@ impl <P> GrokUploadFile<P> where P: AsRef<Path> {
         .map(|id| FileId(id));
 
     Ok(GrokUploadFileResponse {
-      file_id: file_id,
+      file_id,
       file_uri: response.file_uri,
     })
   }
@@ -202,10 +202,11 @@ mod tests {
   #[ignore]
   async fn upload_file() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
+
     let cookies = get_test_cookies()?;
+
     let request = GrokUploadFile {
-      //file: FileUploadSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
-      file: FileUploadSpec::Path("/Users/bt/Pictures/Creatures/Spooky/06.1.jpg"),
+      file: FileUploadSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
       cookie: cookies.to_string(),
       request_timeout: None,
     };

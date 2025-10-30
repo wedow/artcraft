@@ -206,9 +206,9 @@ mod tests {
   #[ignore]
   async fn create_video() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
+
     let cookies = get_typed_test_cookies()?;
 
-    let user_id = UserId("85980643-ffab-4984-a3de-59a608c47d7f".to_string()); // User
     let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
 
     let secrets = request_client_secrets(RequestClientSecretsArgs {
@@ -222,7 +222,7 @@ mod tests {
     println!("Baggage: {:?}", secrets.baggage);
 
     let request = GrokVideoGenChatConversationBuilder {
-      user_id: &user_id,
+      user_id: &secrets.user_id,
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       cookie: cookies.as_str(),
@@ -242,5 +242,4 @@ mod tests {
     assert_eq!(1, 2);
     Ok(())
   }
-
 }

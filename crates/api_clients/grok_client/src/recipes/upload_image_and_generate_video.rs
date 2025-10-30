@@ -37,7 +37,6 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
   info!("Uploading file to Grok...");
 
   let request = GrokUploadFile {
-    //file: FileSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
     file: args.file,
     cookie: args.full_credentials.cookies.to_string(),
     request_timeout: args.individual_request_timeout,
@@ -94,7 +93,7 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
   };
 
   // TODO: Get URL
-  let video_gen_result = request.send().await?;
+  let _video_gen_result = request.send().await?;
 
   info!("Video Generation Enqueued");
 

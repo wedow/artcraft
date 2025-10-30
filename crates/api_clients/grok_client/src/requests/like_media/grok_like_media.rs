@@ -22,17 +22,19 @@ use wreq_util::Emulation;
 
 const LIKE_MEDIA_POST_URL: &str = "https://grok.com/rest/media/post/like";
 
+/// "Liking" media is currently necessary to preserve it in your account
 /// Request builder
 pub struct GrokLikeMediaPost<'a> {
   pub file_id: &'a FileId,
-  pub cookie: &'a str,
-  pub request_timeout: Option<Duration>,
 
+  pub cookie: &'a str,
   pub baggage: &'a Baggage,
   pub sentry_trace: &'a SentryTrace,
   pub verification_token: &'a VerificationToken,
   pub svg_data: &'a SvgPathData,
   pub numbers: &'a XsidNumbers,
+
+  pub request_timeout: Option<Duration>,
 }
 
 /// Response type
@@ -127,18 +129,12 @@ impl <'a> GrokLikeMediaPost<'a> {
           GrokGenericApiError::WreqError(err)
         })?;
     
+    // TODO: Classify errors
     if !status.is_success() {
-      warn!("Not successful liking media: {:?}", response_body);
+      warn!("Not successful liking media (status: {:?}) : {:?}", status, response_body);
+      //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
+      //  return Err(classify_general_http_status_code_and_body(status, response_body));
     }
-
-    // TODO: Just for now..
-    println!("Body: {}", response_body);
-
-    // TODO:
-    //if !status.is_success() {
-    //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-    //  return Err(classify_general_http_status_code_and_body(status, response_body));
-    //}
 
     //let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
     //    .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
@@ -152,7 +148,7 @@ impl <'a> GrokLikeMediaPost<'a> {
 mod tests {
   use super::*;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
-  use crate::test_utils::get_test_cookies::{get_test_cookies, get_typed_test_cookies};
+  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use errors::AnyhowResult;
 
   #[tokio::test]
@@ -161,7 +157,6 @@ mod tests {
     //setup_test_logging(LevelFilter::Trace);
     let cookies = get_typed_test_cookies()?;
 
-    let user_id = UserId("85980643-ffab-4984-a3de-59a608c47d7f".to_string()); // User
     let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
 
     let secrets = request_client_secrets(RequestClientSecretsArgs {
@@ -176,14 +171,15 @@ mod tests {
 
     let request = GrokLikeMediaPost {
       file_id: &file_id,
-      cookie: cookies.as_str(),
-      request_timeout: None,
 
+      cookie: cookies.as_str(),
       baggage: &secrets.baggage,
       sentry_trace: &secrets.sentry_trace,
       verification_token: &secrets.verification_token,
       svg_data: &secrets.svg_path_data,
       numbers: &secrets.numbers,
+      
+      request_timeout: None,
     };
 
     let result = request.send().await?;
