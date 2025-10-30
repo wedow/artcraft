@@ -1,7 +1,7 @@
+use crate::datatypes::api::svg_path_data::SvgPathData;
+use crate::datatypes::api::verification_token::VerificationToken;
+use crate::datatypes::api::xsid_numbers::XsidNumbers;
 use crate::error::grok_client_error::GrokClientError;
-use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
-use crate::requests::index_page::pieces::verification_token::VerificationToken;
-use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::signature::signature_xs::signature_xs;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
@@ -160,9 +160,9 @@ pub fn generate_xsid_with_timestamp(timestamp: u32, args: GenerateXsidArgs<'_>) 
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
-  use crate::requests::index_page::pieces::verification_token::VerificationToken;
-  use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
+  use crate::datatypes::api::svg_path_data::SvgPathData;
+  use crate::datatypes::api::verification_token::VerificationToken;
+  use crate::datatypes::api::xsid_numbers::XsidNumbers;
   use crate::requests::index_page::signature::generate_xsid::{generate_xsid_with_timestamp, GenerateXsidArgs};
   use errors::AnyhowResult;
 

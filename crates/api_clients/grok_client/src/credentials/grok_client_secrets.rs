@@ -1,10 +1,10 @@
-use crate::datatypes::user_email::UserEmail;
-use crate::datatypes::user_id::UserId;
-use crate::requests::index_page::pieces::baggage::Baggage;
-use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
-use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
-use crate::requests::index_page::pieces::verification_token::VerificationToken;
-use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
+use crate::datatypes::api::baggage::Baggage;
+use crate::datatypes::api::sentry_trace::SentryTrace;
+use crate::datatypes::api::svg_path_data::SvgPathData;
+use crate::datatypes::api::user_email::UserEmail;
+use crate::datatypes::api::user_id::UserId;
+use crate::datatypes::api::verification_token::VerificationToken;
+use crate::datatypes::api::xsid_numbers::XsidNumbers;
 
 #[derive(Clone)]
 pub struct GrokClientSecrets {
@@ -29,7 +29,7 @@ pub struct GrokClientSecrets {
   /// From index.html
   /// Not strictly needed to sign requests, but typically needed to generate URLs.
   pub user_id: UserId,
-  
+
   /// From index.html
   /// Not needed, but returned alongside other details.
   pub user_email: Option<UserEmail>,

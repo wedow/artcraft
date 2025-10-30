@@ -1,4 +1,4 @@
-use crate::requests::index_page::pieces::verification_token::VerificationToken;
+use crate::datatypes::api::verification_token::VerificationToken;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use scraper::{Html, Selector};

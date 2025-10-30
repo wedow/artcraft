@@ -1,4 +1,4 @@
-use crate::datatypes::user_email::UserEmail;
+use crate::datatypes::api::user_email::UserEmail;
 use once_cell::sync::Lazy;
 use regex::Regex;
 

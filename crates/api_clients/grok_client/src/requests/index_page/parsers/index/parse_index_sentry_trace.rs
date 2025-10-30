@@ -1,8 +1,8 @@
-use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
+use crate::datatypes::api::sentry_trace::SentryTrace;
 use once_cell::sync::Lazy;
 use scraper::{Html, Selector};
-// <meta name="baggage" content="sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=fb5c42c8cff6fd39161dd245154ca599,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.7208394686924251,sentry-sample_rate=0"/>
 
+/// eg. <meta name="baggage" content="sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=fb5c42c8cff6fd39161dd245154ca599,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.7208394686924251,sentry-sample_rate=0"/>
 static SENTRY_TRACE_SELECTOR : Lazy<Selector> = Lazy::new(|| {
   Selector::parse("meta[name=sentry-trace]")
       .expect("HTML selector should parse")

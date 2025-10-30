@@ -1,5 +1,5 @@
+use crate::datatypes::api::verification_token::VerificationToken;
 use crate::error::grok_client_error::GrokClientError;
-use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use log::error;
@@ -37,8 +37,8 @@ pub fn convert_verification_token_to_loading_anim(verification_token: &Verificat
 
 #[cfg(test)]
 mod tests {
+  use crate::datatypes::api::verification_token::VerificationToken;
   use crate::error::grok_client_error::GrokClientError;
-  use crate::requests::index_page::pieces::verification_token::VerificationToken;
   use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
   use errors::AnyhowResult;
 

@@ -1,11 +1,10 @@
+use crate::datatypes::api::xsid_numbers::XsidNumbers;
 use crate::error::grok_error::GrokError;
 use crate::requests::index_page::parsers::index::parse_index_on_demand_script::parse_index_on_demand_script;
 use crate::requests::index_page::parsers::script::parse_xsid_script_numbers::parse_xsid_script_numbers;
-use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::index_page::requests::get_index_page_script_with_client::{get_index_page_script_with_client, GetIndexPageScriptArgs};
 use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::LoadingAnim;
 use wreq::Client;
-
 // self.svg_data, self.numbers = Parser.parse_values(c_request.text, self.anim, self.xsid_script)
 
 pub struct GetNumbersArgs<'a> {

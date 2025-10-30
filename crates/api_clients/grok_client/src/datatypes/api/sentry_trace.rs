@@ -22,7 +22,7 @@ impl SentryTrace {
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
+  use crate::datatypes::api::sentry_trace::SentryTrace;
 
   #[test]
   fn test_real_trace() {

@@ -1,7 +1,5 @@
 use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::credentials::grok_cookies::GrokCookies;
-use crate::datatypes::user_email::UserEmail;
-use crate::datatypes::user_id::UserId;
 
 /// Includes the cookies and all the magic other bits needed to call the API.
 #[derive(Clone)]

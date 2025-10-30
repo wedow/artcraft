@@ -1,4 +1,4 @@
-use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
+use crate::datatypes::api::svg_path_data::SvgPathData;
 use once_cell::sync::Lazy;
 use scraper::{Html, Selector};
 

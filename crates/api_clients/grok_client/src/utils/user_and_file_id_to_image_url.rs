@@ -1,5 +1,5 @@
-use crate::datatypes::file_id::FileId;
-use crate::datatypes::user_id::UserId;
+use crate::datatypes::api::file_id::FileId;
+use crate::datatypes::api::user_id::UserId;
 
 /// Return media URLs to images given the user and file IDs.
 /// These are non-public and will return 403s unless you're logged in.
@@ -11,8 +11,8 @@ pub fn user_and_file_id_to_image_url(user: &UserId, file: &FileId) -> String {
 
 #[cfg(test)]
 mod tests {
-  use crate::datatypes::file_id::FileId;
-  use crate::datatypes::user_id::UserId;
+  use crate::datatypes::api::file_id::FileId;
+  use crate::datatypes::api::user_id::UserId;
   use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 
   #[test]

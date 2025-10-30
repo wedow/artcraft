@@ -1,6 +1,6 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
-use crate::datatypes::file_id::FileId;
-use crate::datatypes::user_id::UserId;
+use crate::datatypes::api::file_id::FileId;
+use crate::datatypes::api::user_id::UserId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;

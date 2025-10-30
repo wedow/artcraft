@@ -1,4 +1,4 @@
-use crate::datatypes::user_id::UserId;
+use crate::datatypes::api::user_id::UserId;
 use once_cell::sync::Lazy;
 use regex::Regex;
 

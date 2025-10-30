@@ -1,5 +1,5 @@
+use crate::datatypes::api::svg_path_data::SvgPathData;
 use crate::error::grok_client_error::GrokClientError;
-use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
 use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::LoadingAnim;
 use log::error;
 

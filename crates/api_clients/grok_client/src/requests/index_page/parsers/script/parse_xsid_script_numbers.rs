@@ -1,4 +1,4 @@
-use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
+use crate::datatypes::api::xsid_numbers::XsidNumbers;
 use log::error;
 use once_cell::sync::Lazy;
 use regex::Regex;

@@ -1,7 +1,6 @@
-use crate::requests::index_page::pieces::baggage::Baggage;
 use once_cell::sync::Lazy;
 use scraper::{Html, Selector};
-
+use crate::datatypes::api::baggage::Baggage;
 // <meta name="baggage" content="sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=fb5c42c8cff6fd39161dd245154ca599,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.7208394686924251,sentry-sample_rate=0"/>
 
 static BAGGAGE_SELECTOR : Lazy<Selector> = Lazy::new(|| {
