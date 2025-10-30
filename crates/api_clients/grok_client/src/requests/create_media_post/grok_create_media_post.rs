@@ -1,10 +1,12 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::datatypes::api::file_id::FileId;
+use crate::datatypes::api::post_id::PostId;
 use crate::datatypes::api::user_id::UserId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::create_media_post::request::CreateMediaPostWireRequest;
+use crate::requests::create_media_post::response::CreateMediaPostRawResponse;
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info};
@@ -32,8 +34,9 @@ pub enum MediaPostType {
 }
 
 /// Response type
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GrokCreateMediaPostResponse {
+  pub post_id: PostId,
 }
 
 impl <'a> GrokCreateMediaPost<'a> {
@@ -47,9 +50,17 @@ impl <'a> GrokCreateMediaPost<'a> {
 
     // TODO: Headers were from Chromium, not Firefox. Partial implementation.
     let mut request_builder = client.post(CREATE_MEDIA_POST_URL)
+        // TODO: Missing header "baggage"
+        // TODO: Missing header "sentry-trace"
+        // TODO: Missing header "traceparent"
+        // TODO: Missing header "traceparent"
+        // TODO: Missing header "x-statsig-id"
+        // TODO: Missing header "x-xai-request-id"
+        //.header("sec-ch-ua", "") // NB: Not present in firefox
+        //.header("sec-ch-ua-mobile", "") // NB: Not present in firefox
+        //.header("sec-ch-ua-platform", "") // NB: Not present in firefox
         .header(ACCEPT, "*/*")
         .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
-        // TODO: Missing header "baggage"
         .header(CACHE_CONTROL, "no-cache")
         .header(CONTENT_TYPE, "application/json")
         .header(COOKIE, self.cookie.to_string())
@@ -57,17 +68,9 @@ impl <'a> GrokCreateMediaPost<'a> {
         .header(PRAGMA, "no-cache")
         .header("priority", "u=1, i")
         .header(REFERER, "https://grok.com/imagine/favorites")
-        //.header("sec-ch-ua", "") // TODO
-        //.header("sec-ch-ua-mobile", "") // TODO
-        //.header("sec-ch-ua-platform", "") // TODO
         .header("sec-fetch-dest", "empty")
         .header("sec-fetch-mode", "cors")
         .header("sec-fetch-site", "same-origin")
-        // TODO: Missing header "sentry-trace"
-        // TODO: Missing header "traceparent"
-        // TODO: Missing header "traceparent"
-        // TODO: Missing header "x-statsig-id"
-        // TODO: Missing header "x-xai-request-id"
         .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT);
 
     //info!("Sending...");
@@ -106,23 +109,24 @@ impl <'a> GrokCreateMediaPost<'a> {
 
     let status = response.status();
 
-    let response_body = &response.text()
+    let response_body = response.text()
         .await
         .map_err(|err| {
           error!("Error reading Grok create media response body: {:?}", err);
           GrokGenericApiError::WreqError(err)
         })?;
 
-    // TODO:
+    // TODO: Handle errors (Cloudflare, Grok, etc.)
     if !status.is_success() {
       error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
       //return Err(classify_general_http_status_code_and_body(status, response_body));
     }
 
-    //let response : GrokApiUploadFileResponse = serde_json::from_str(response_body)
-    //    .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
+    let response : CreateMediaPostRawResponse = serde_json::from_str(&response_body)
+        .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-    Ok(GrokCreateMediaPostResponse{
+    Ok(GrokCreateMediaPostResponse {
+      post_id: PostId(response.post.id),
     })
   }
 }
@@ -153,6 +157,8 @@ mod tests {
     let result = request.send().await?;
 
     println!("Result: {:?}", result);
+    println!("Post ID: {:?}", result.post_id);
+
     assert_eq!(1, 2);
     Ok(())
   }

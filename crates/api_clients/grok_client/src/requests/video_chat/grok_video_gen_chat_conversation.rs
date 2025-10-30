@@ -110,6 +110,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
     })
   }
 
+
   pub async fn send(&self) -> Result<GrokVideoGenChatConversationResponse, GrokError> {
     info!("Configuring client and request...");
     let client = Self::build_client()?;
@@ -163,6 +164,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       video_file_id: file_id,
     })
   }
+
 
   fn build_client() -> Result<Client, GrokClientError> {
     Ok(Client::builder()
