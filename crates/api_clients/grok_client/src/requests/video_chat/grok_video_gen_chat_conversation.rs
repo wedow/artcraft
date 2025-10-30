@@ -18,7 +18,7 @@ use log::{debug, error, info, warn};
 use std::time::Duration;
 use uuid::Uuid;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, COOKIE, ORIGIN, PRAGMA, REFERER, TE, USER_AGENT};
-use wreq::Client;
+use wreq::{Client, Request, RequestBuilder};
 use wreq_util::Emulation;
 
 const CHAT_CONVERSATION_URL: &str = "https://grok.com/rest/app-chat/conversations/new";
@@ -57,13 +57,79 @@ pub struct GrokVideoGenChatConversationResponse {
 
 impl <'a> GrokVideoGenChatConversationBuilder<'a> {
   pub async fn send(&self) -> Result<GrokVideoGenChatConversationResponse, GrokError> {
-    info!("Configuring client...");
+    info!("Configuring client and request...");
 
-    let client = Client::builder()
+    let client = self.build_client()?;
+    let http_request = self.build_request(&client).await?;
+
+    info!("Sending request...");
+
+    let pending_response = client.execute(http_request);
+
+    info!("Pending response...");
+
+    let response = pending_response
+        .await
+        .map_err(|err| {
+          error!("Error during create media: {:?}", err);
+          GrokGenericApiError::WreqError(err)
+        })?;
+
+    info!("Reading status...");
+
+    let status = response.status();
+
+    info!("Video Generation Enqueue Status: {:?}", status);
+
+    info!("Reading body...");
+
+    /*
+    Reading the body is what takes time.
+    18:03:09.085612 [INFO] - Configuring client...
+    18:03:09.089810 [INFO] - Sending request...
+    18:03:09.089872 [INFO] - Pending response...
+    18:03:09.274033 [INFO] - Reading status...
+    18:03:09.274262 [INFO] - Video Generation Enqueue Status: 200
+    18:03:09.274304 [INFO] - Reading body...
+    18:03:35.186344 [INFO] - Read body.
+    */
+
+    /// TODO: Handle anti-bot detection
+    /// Body: {"error":{"code":7,"message":"Request rejected by anti-bot rules.","details":[]}}
+    let response_body = &response.text()
+        .await
+        .map_err(|err| {
+          error!("Error reading Grok create media response body: {:?}", err);
+          GrokGenericApiError::WreqError(err)
+        })?;
+
+    info!("Read body.");
+
+    // TODO: Handle unsuccessful request, cloudflare, etc.
+    if !status.is_success() {
+      warn!("Not successful enqueuing video gen (code: {}) : {:?}", status.as_u16(), response_body);
+      //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
+      //  return Err(classify_general_http_status_code_and_body(status, response_body));
+    }
+
+    // TODO: Just for now...
+    println!("Video Body: {:?}", response_body);
+
+    let file_id = parse_video_id(&response_body);
+
+    Ok(GrokVideoGenChatConversationResponse {
+      video_file_id: file_id,
+    })
+  }
+
+  pub fn build_client(&self) -> Result<Client, GrokClientError> {
+    Ok(Client::builder()
         .emulation(Emulation::Firefox143)
         .build()
-        .map_err(|err| GrokClientError::WreqClientError(err))?;
+        .map_err(|err| GrokClientError::WreqClientError(err))?)
+  }
 
+  async fn build_request(&self, client: &Client) -> Result<Request, GrokClientError> {
     let xai_request_id = Uuid::new_v4().to_string();
     let sentry_trace_header = self.sentry_trace.to_http_request_header();
 
@@ -153,64 +219,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           GrokClientError::WreqClientError(err)
         })?;
 
-    info!("Sending request...");
-
-    let pending_response = client.execute(http_request);
-
-    info!("Pending response...");
-
-    let response = pending_response
-        .await
-        .map_err(|err| {
-          error!("Error during create media: {:?}", err);
-          GrokGenericApiError::WreqError(err)
-        })?;
-
-    info!("Reading status...");
-
-    let status = response.status();
-
-    info!("Video Generation Enqueue Status: {:?}", status);
-
-    info!("Reading body...");
-
-    /*
-    Reading the body is what takes time.
-    18:03:09.085612 [INFO] - Configuring client...
-    18:03:09.089810 [INFO] - Sending request...
-    18:03:09.089872 [INFO] - Pending response...
-    18:03:09.274033 [INFO] - Reading status...
-    18:03:09.274262 [INFO] - Video Generation Enqueue Status: 200
-    18:03:09.274304 [INFO] - Reading body...
-    18:03:35.186344 [INFO] - Read body.
-    */
-
-    /// TODO: Handle anti-bot detection
-    /// Body: {"error":{"code":7,"message":"Request rejected by anti-bot rules.","details":[]}}
-    let response_body = &response.text()
-        .await
-        .map_err(|err| {
-          error!("Error reading Grok create media response body: {:?}", err);
-          GrokGenericApiError::WreqError(err)
-        })?;
-
-    info!("Read body.");
-
-    // TODO: Handle unsuccessful request, cloudflare, etc.
-    if !status.is_success() {
-      warn!("Not successful enqueuing video gen (code: {}) : {:?}", status.as_u16(), response_body);
-      //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-      //  return Err(classify_general_http_status_code_and_body(status, response_body));
-    }
-
-    // TODO: Just for now...
-    println!("Video Body: {:?}", response_body);
-
-    let file_id = parse_video_id(&response_body);
-
-    Ok(GrokVideoGenChatConversationResponse {
-      video_file_id: file_id,
-    })
+    Ok(http_request)
   }
 }
 
