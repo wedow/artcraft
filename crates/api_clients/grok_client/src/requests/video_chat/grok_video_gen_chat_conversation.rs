@@ -24,6 +24,7 @@ use wreq_util::Emulation;
 const CHAT_CONVERSATION_URL: &str = "https://grok.com/rest/app-chat/conversations/new";
 
 /// Request builder
+/// NOTE: Without sending a "like" request after generation, the video will likely never render!
 pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub file_id: &'a FileId,
   pub media_type: VideoMediaPostType,
@@ -83,24 +84,23 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
     let mut request_builder = client.post(CHAT_CONVERSATION_URL)
         //.header(PRAGMA, "no-cache") // Not on firefox
         //.header(CACHE_CONTROL, "no-cache") // Not on firefox
+        //.header("priority", "u=1, i") // Different on firefox
+        //.header("sec-ch-ua", "") // NB: NOT IN FIREFOX
+        //.header("sec-ch-ua-mobile", "") // NB: NOT IN FIREFOX
+        //.header("sec-ch-ua-platform", "") // NB: NOT IN FIREFOX
+        //.header("traceparent", "") // TODO: Not sure where this originates
         .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
         .header(ACCEPT, "*/*")
         .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
         .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
         .header(REFERER, "https://grok.com/imagine/favorites")
-        //.header("traceparent", "") // TODO ??
         .header(CONTENT_TYPE, "application/json")
         .header("x-xai-request-id", xai_request_id)
         .header("x-statsig-id", x_statsig_id)
         .header("sentry-trace", sentry_trace_header)
         .header("baggage", &self.baggage.0)
-        // TODO: Missing header "traceparent" ****
         .header(ORIGIN, "https://grok.com")
-        //.header("priority", "u=1, i") // Different on firefox
         .header("priority", "u=4")
-        //.header("sec-ch-ua", "") // TODO / NB: NOT IN FIREFOX
-        //.header("sec-ch-ua-mobile", "") // TODO / NB: NOT IN FIREFOX
-        //.header("sec-ch-ua-platform", "") // TODO / NB: NOT IN FIREFOX
         .header("sec-fetch-dest", "empty")
         .header("sec-fetch-mode", "cors")
         .header("sec-fetch-site", "same-origin")
@@ -164,6 +164,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 
     info!("Video Generation Enqueue Status: {:?}", status);
 
+    /// TODO: Handle anti-bot detection
     /// Body: {"error":{"code":7,"message":"Request rejected by anti-bot rules.","details":[]}}
     let response_body = &response.text()
         .await
@@ -172,7 +173,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           GrokGenericApiError::WreqError(err)
         })?;
 
-    // TODO: Handle unsuccessful request
+    // TODO: Handle unsuccessful request, cloudflare, etc.
     if !status.is_success() {
       warn!("Not successful enqueuing video gen (code: {}) : {:?}", status.as_u16(), response_body);
       //  error!("Upload file request returned an error (code {}) : {:?}", status.as_u16(), response_body);
@@ -180,7 +181,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
     }
 
     // TODO: Just for now...
-    info!("Video Body: {:?}", response_body);
+    println!("Video Body: {:?}", response_body);
 
     let file_id = parse_video_id(&response_body);
 
@@ -192,16 +193,24 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
+  use log::LevelFilter;
   use super::*;
   use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use errors::AnyhowResult;
+  use crate::test_utils::setup_test_logging::setup_test_logging;
+  use crate::utils::user_and_file_id_to_video_url::user_and_file_id_to_video_url;
 
   #[tokio::test]
   #[ignore]
   async fn create_video() -> AnyhowResult<()> {
-    //setup_test_logging(LevelFilter::Trace);
+    setup_test_logging(LevelFilter::Info);
+
+    //let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
+
+    let image_path = "/Users/bt/Pictures/Zelda 64 Art/7j8baxv9m8u61.jpg";
+    let maybe_prompt = Some("The hero shoots an arrow and the camera zooms out to follow the arrow");
 
     let cookies = get_typed_test_cookies()?;
 
@@ -209,10 +218,8 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    //let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
-
     let upload_request = GrokUploadFile {
-      file: FileUploadSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
+      file: FileUploadSpec::Path(image_path),
       cookie: cookies.to_string(),
       request_timeout: None,
     };
@@ -230,7 +237,7 @@ mod tests {
     let request = GrokVideoGenChatConversationBuilder {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
-      prompt: Some("dog shakes the glasses off"),
+      prompt: maybe_prompt,
 
       cookie: cookies.as_str(),
       user_id: &secrets.user_id,
@@ -246,6 +253,14 @@ mod tests {
     let result = request.send().await?;
 
     println!("Result: {:?}", result);
+
+    let video_id = result.video_file_id.expect("should have video id");
+
+    // NOTE: WITHOUT A "LIKE" REQUEST, THIS FILE WILL LIKELY CEASE TO EXIST.
+    let video_url = user_and_file_id_to_video_url(&secrets.user_id, &video_id, false);
+
+    println!("Video URL: {:?}", video_url);
+
     assert_eq!(1, 2);
     Ok(())
   }
