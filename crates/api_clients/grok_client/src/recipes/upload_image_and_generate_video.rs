@@ -89,8 +89,7 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
     numbers: &args.full_credentials.client_secrets.numbers,
   };
 
-  // TODO: Get URL
-  let video_gen_result = request.send().await?;
+  let video_gen_result = request.stream_only_video_id().await?;
 
   let maybe_video_file_id = video_gen_result.video_file_id;
 
@@ -155,8 +154,8 @@ mod tests {
     //let image_path = "/Users/bt/Pictures/Zelda 64 Art/FCgYX6tWEAEhpsy.jpg";
     //let prompt = "our hero link plunges the sword into the pedestal, the temple is glowing with a blue aura";
 
-    let image_path = "/Users/bt/Pictures/Zelda 64 Art/7j8baxv9m8u61.jpg";
-    let maybe_prompt = Some("The hero shoots an arrow and it hits a skeleton monster");
+    let image_path = "/Users/bt/Pictures/Wallpaper/digital_topography_midjourney.png";
+    let maybe_prompt = Some("the mountains are digitial and lights flicker up and down the topography. the camera pans gently by");
 
     println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
