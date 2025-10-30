@@ -1,3 +1,4 @@
+use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::credentials::grok_cookies::GrokCookies;
 use crate::datatypes::user_email::UserEmail;
 use crate::datatypes::user_id::UserId;
@@ -5,11 +6,22 @@ use crate::datatypes::user_id::UserId;
 /// Includes the cookies and all the magic other bits needed to call the API.
 #[derive(Clone)]
 pub struct GrokFullCredentials {
+  /// Entire cookie payload
   pub cookies: GrokCookies,
   
-  /// From index.html
-  pub user_email: Option<UserEmail>,
-  
-  /// From index.html
-  pub user_id: Option<UserId>,
+  /// Secrets from `index.html` and the xsid javascript.
+  /// Required for video generation.
+  pub client_secrets: GrokClientSecrets,
+}
+
+impl GrokFullCredentials {
+  pub fn from_cookies_and_client_secrets(
+    cookies: GrokCookies, 
+    client_secrets: GrokClientSecrets
+  ) -> Self {
+    Self {
+      cookies,
+      client_secrets,
+    }
+  }
 }

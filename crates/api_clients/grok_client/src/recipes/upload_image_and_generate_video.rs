@@ -1,11 +1,8 @@
+use crate::credentials::grok_full_credentials::GrokFullCredentials;
 use crate::datatypes::file_id::FileId;
 use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::datatypes::user_id::UserId;
 use crate::error::grok_error::GrokError;
-use crate::requests::upload_file::grok_upload_file::GrokUploadFile;
-use log::{error, info};
-use std::path::Path;
-use std::time::Duration;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::create_media_post::grok_create_media_post::{GrokCreateMediaPost, MediaPostType};
 use crate::requests::index_page::pieces::baggage::Baggage;
@@ -14,19 +11,15 @@ use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
 use crate::requests::index_page::pieces::verification_token::VerificationToken;
 use crate::requests::index_page::pieces::xsid_numbers::XsidNumbers;
 use crate::requests::like_media::grok_like_media::GrokLikeMediaPost;
+use crate::requests::upload_file::grok_upload_file::GrokUploadFile;
 use crate::requests::video_gen_chat_conversation::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
+use log::{error, info};
+use std::path::Path;
+use std::time::Duration;
 
 pub struct UploadImageAndGenerateVideo<'a, P: AsRef<Path>> {
-  pub cookies: &'a str,
-  pub baggage: &'a Baggage,
-  pub sentry_trace: &'a SentryTrace,
-  pub verification_token: &'a VerificationToken,
-  pub svg_data: &'a SvgPathData,
-  pub numbers: &'a XsidNumbers,
-
-  //pub file_id: &'a FileId,
-  pub user_id: &'a UserId,
+  pub full_credentials: &'a GrokFullCredentials,
 
   // NB: Must be owned.
   pub file: FileUploadSpec<P>,
@@ -46,7 +39,7 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
   let request = GrokUploadFile {
     //file: FileSpec::Path("/Users/bt/dev/storyteller/storyteller-rust/test_data/image/mochi.jpg"),
     file: args.file,
-    cookie: args.cookies.to_string(),
+    cookie: args.full_credentials.cookies.to_string(),
     request_timeout: args.individual_request_timeout,
   };
 
@@ -63,17 +56,20 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
     }
   };
 
-  let url = user_and_file_id_to_image_url(&args.user_id, &upload_file_id);
+  let url = user_and_file_id_to_image_url(
+    &args.full_credentials.client_secrets.user_id, 
+    &upload_file_id
+  );
 
   info!("Uploaded URI: {:?}", url);
 
   info!("Creating media post...");
 
   let request = GrokCreateMediaPost {
-    user_id: args.user_id,
+    user_id: &args.full_credentials.client_secrets.user_id,
     file_id: upload_file_id,
     media_type: MediaPostType::UserUploadedImage,
-    cookie: args.cookies,
+    cookie: args.full_credentials.cookies.as_str(),
     request_timeout: args.individual_request_timeout,
   };
 
@@ -84,17 +80,17 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
   info!("Generate video...");
 
   let request = GrokVideoGenChatConversationBuilder {
-    user_id: &args.user_id,
+    user_id: &args.full_credentials.client_secrets.user_id,
     file_id: &upload_file_id,
     media_type: VideoMediaPostType::UserUploadedImage,
-    cookie: args.cookies,
+    cookie: args.full_credentials.cookies.as_str(),
     prompt: args.prompt,
     request_timeout: args.individual_request_timeout,
-    baggage: &args.baggage,
-    sentry_trace: &args.sentry_trace,
-    verification_token: &args.verification_token,
-    svg_data: &args.svg_data,
-    numbers: &args.numbers,
+    baggage: &args.full_credentials.client_secrets.baggage,
+    sentry_trace: &args.full_credentials.client_secrets.sentry_trace,
+    verification_token: &args.full_credentials.client_secrets.verification_token,
+    svg_data: &args.full_credentials.client_secrets.svg_path_data,
+    numbers: &args.full_credentials.client_secrets.numbers,
   };
 
   // TODO: Get URL
@@ -106,13 +102,13 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
 
   let request = GrokLikeMediaPost {
     file_id: &upload_file_id,
-    cookie: args.cookies,
+    cookie: args.full_credentials.cookies.as_str(),
     request_timeout: args.individual_request_timeout,
-    baggage: &args.baggage,
-    sentry_trace: &args.sentry_trace,
-    verification_token: &args.verification_token,
-    svg_data: &args.svg_data,
-    numbers: &args.numbers,
+    baggage: &args.full_credentials.client_secrets.baggage,
+    sentry_trace: &args.full_credentials.client_secrets.sentry_trace,
+    verification_token: &args.full_credentials.client_secrets.verification_token,
+    svg_data: &args.full_credentials.client_secrets.svg_path_data,
+    numbers: &args.full_credentials.client_secrets.numbers,
   };
 
   let _like_result = request.send().await?;
@@ -126,14 +122,14 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
 
 #[cfg(test)]
 mod tests {
-  use log::LevelFilter;
-  use errors::AnyhowResult;
+  use crate::credentials::grok_full_credentials::GrokFullCredentials;
   use crate::datatypes::file_upload_spec::FileUploadSpec;
-  use crate::datatypes::user_id::UserId;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::recipes::upload_image_and_generate_video::{upload_image_and_generate_video, UploadImageAndGenerateVideo};
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
+  use errors::AnyhowResult;
+  use log::LevelFilter;
 
   // Result: GrokUploadFileResponse { file_metadata_id:
   // Some("acdee48f-9d6f-4bc6-9d06-fcc97dd4418a"), file_uri:
@@ -144,9 +140,7 @@ mod tests {
   async fn test_upload_image_and_generate_video() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Info);
 
-    let cookies = get_test_cookies()?;
-
-    let user_id = UserId("85980643-ffab-4984-a3de-59a608c47d7f".to_string()); // User
+    let cookies = get_typed_test_cookies()?;
 
     let secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,
@@ -158,14 +152,10 @@ mod tests {
     println!("Svg Path: {:?}", secrets.svg_path_data);
     println!("Baggage: {:?}", secrets.baggage);
 
+    let credentials = GrokFullCredentials::from_cookies_and_client_secrets(cookies, secrets);
+
     let result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
-      cookies: &cookies,
-      user_id: &user_id,
-      baggage: &secrets.baggage,
-      sentry_trace: &secrets.sentry_trace,
-      verification_token: &secrets.verification_token,
-      svg_data: &secrets.svg_path_data,
-      numbers: &secrets.numbers,
+      full_credentials: &credentials,
       file: FileUploadSpec::Path("/Users/bt/Pictures/People/Ernest/0c120fb0-d6f3-11ec-9737-6f3f233a88c2.jpg"),
       prompt: Some("A man in the forest runs away from a spooky ghost"),
       individual_request_timeout: None,

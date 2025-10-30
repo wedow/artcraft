@@ -199,14 +199,14 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 mod tests {
   use super::*;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore]
   async fn create_video() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
-    let cookies = get_test_cookies()?;
+    let cookies = get_typed_test_cookies()?;
 
     let user_id = UserId("85980643-ffab-4984-a3de-59a608c47d7f".to_string()); // User
     let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
@@ -225,7 +225,7 @@ mod tests {
       user_id: &user_id,
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
-      cookie: &cookies,
+      cookie: cookies.as_str(),
       prompt: Some("dog shakes the glasses off"),
       request_timeout: None,
 

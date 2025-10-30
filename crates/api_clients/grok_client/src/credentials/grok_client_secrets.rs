@@ -1,3 +1,5 @@
+use crate::datatypes::user_email::UserEmail;
+use crate::datatypes::user_id::UserId;
 use crate::requests::index_page::pieces::baggage::Baggage;
 use crate::requests::index_page::pieces::sentry_trace::SentryTrace;
 use crate::requests::index_page::pieces::svg_path_data::SvgPathData;
@@ -23,4 +25,12 @@ pub struct GrokClientSecrets {
   /// This doesn't come from the index.html
   /// These numbers are separately loaded from the xsid javascript
   pub numbers: XsidNumbers,
+
+  /// From index.html
+  /// Not strictly needed to sign requests, but typically needed to generate URLs.
+  pub user_id: UserId,
+  
+  /// From index.html
+  /// Not needed, but returned alongside other details.
+  pub user_email: Option<UserEmail>,
 }
