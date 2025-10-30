@@ -1694,6 +1694,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bstr"
+version = "1.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63044e1ae8e69f3b5a92c736ca6269b8d12fa7efe39bf34ddb06d102cf0e2cab"
+dependencies = [
+ "memchr",
+ "regex-automata",
+ "serde",
+]
+
+[[package]]
 name = "bucket_paths"
 version = "0.0.1"
 dependencies = [
@@ -4715,6 +4726,7 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
+ "bstr",
  "byteorder",
  "chrono",
  "cloudflare_errors",
@@ -12157,9 +12169,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-util"
-version = "0.7.12"
+version = "0.7.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61e7c3654c13bcd040d4a03abee2c75b1d14a37b423cf5a813ceae1cc903ec6a"
+checksum = "14307c986784f72ef81c89db7d9e28d6ac26d16213b109ea501696195e6e3ce5"
 dependencies = [
  "bytes 1.10.1",
  "futures-core",
@@ -14179,6 +14191,7 @@ dependencies = [
  "tokio",
  "tokio-boring2",
  "tokio-tungstenite",
+ "tokio-util",
  "tower 0.5.2",
  "tower-http",
  "want",
@@ -14188,9 +14201,9 @@ dependencies = [
 
 [[package]]
 name = "wreq-util"
-version = "3.0.0-rc.5"
+version = "3.0.0-rc.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a38c2ade0a913ec9e1f7f394de8ebdb78d7123e45f015f9d02fed5bdc9db67b"
+checksum = "05af16fb18a8b955ce166747c588ff64a39d49266e486211116dc5c38a73c13d"
 dependencies = [
  "typed-builder",
  "wreq",

@@ -232,6 +232,7 @@ actix-web-actors = "4.3.1+deprecated"
 actix-web-lab = "0.20.2"
 anyhow = "1.0.98"
 base64 = "0.22.1"
+bstr = "1.12.1"
 bytes = "1.10.1"
 chrono = { version = "0.4.41", features = ["serde"] }
 cookie = "0.18.1"
@@ -275,5 +276,5 @@ uuid = "1.18.1"
 #   choco install pkgconfiglite -y
 #   choco install llvm -y
 #   choco install nasm -y
-wreq = { version = "6.0.0-rc.20", features = ["json", "multipart", "cookies", "ws"] }
-wreq-util = "3.0.0-rc.5"
+wreq = { version = "6.0.0-rc.20", features = ["json", "multipart", "cookies", "ws", "stream"] }
+wreq-util = "3.0.0-rc.6"

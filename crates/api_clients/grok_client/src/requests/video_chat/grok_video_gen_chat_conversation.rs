@@ -12,13 +12,15 @@ use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::requests::video_chat::parse_video_id::parse_video_id;
+use crate::requests::video_chat::parse_video_id_from_partial_byte_stream_buffer::parse_video_id_from_partial_byte_stream_buffer;
 use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
+use futures::StreamExt;
 use log::{debug, error, info, warn};
 use std::time::Duration;
 use uuid::Uuid;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, COOKIE, ORIGIN, PRAGMA, REFERER, TE, USER_AGENT};
-use wreq::{Client, Request, RequestBuilder};
+use wreq::{Client, Request, RequestBuilder, Response};
 use wreq_util::Emulation;
 
 const CHAT_CONVERSATION_URL: &str = "https://grok.com/rest/app-chat/conversations/new";
@@ -55,28 +57,68 @@ pub struct GrokVideoGenChatConversationResponse {
   pub video_file_id: Option<FileId>,
 }
 
-impl <'a> GrokVideoGenChatConversationBuilder<'a> {
-  pub async fn send(&self) -> Result<GrokVideoGenChatConversationResponse, GrokError> {
-    info!("Configuring client and request...");
+/// Partial response type
+/// This is from an incomplete stream
+#[derive(Debug)]
+pub struct GrokVideoGenChatConversationPartialResponse {
+  pub video_file_id: Option<FileId>,
+}
 
-    let client = self.build_client()?;
-    let http_request = self.build_request(&client).await?;
+impl <'a> GrokVideoGenChatConversationBuilder<'a> {
+
+  /// Send the request and only wait long enough to get the video ID.
+  pub async fn stream_only_video_id(&self) -> Result<GrokVideoGenChatConversationPartialResponse, GrokError> {
+    info!("Configuring client and request...");
+    let client = Self::build_client()?;
+    let http_request = self.build_request(&client)?;
 
     info!("Sending request...");
-
-    let pending_response = client.execute(http_request);
-
-    info!("Pending response...");
-
-    let response = pending_response
-        .await
-        .map_err(|err| {
-          error!("Error during create media: {:?}", err);
-          GrokGenericApiError::WreqError(err)
-        })?;
+    let response = Self::send_request(&client, http_request).await?;
 
     info!("Reading status...");
+    let status = response.status();
 
+    info!("Video Generation Enqueue Status: {:?}", status);
+
+    let mut stream = response.bytes_stream();
+    
+    let mut buffer = Vec::with_capacity(1024 * 1024);
+
+    let mut file_id = None;
+
+    while let Some(chunk) = stream.next().await {
+      if let Ok(bytes) = chunk {
+        buffer.extend(bytes);
+      }
+
+      if let Some(id) = parse_video_id_from_partial_byte_stream_buffer(&buffer) {
+        file_id = Some(id);
+        info!("Got video id; ending stream early...");
+        break;
+      }
+    }
+
+    if file_id.is_none() {
+      warn!("Request ended without video id!");
+      if let Some(id) = parse_video_id_from_partial_byte_stream_buffer(&buffer) {
+        file_id = Some(id);
+      }
+    }
+    
+    Ok(GrokVideoGenChatConversationPartialResponse {
+      video_file_id: file_id,
+    })
+  }
+
+  pub async fn send(&self) -> Result<GrokVideoGenChatConversationResponse, GrokError> {
+    info!("Configuring client and request...");
+    let client = Self::build_client()?;
+    let http_request = self.build_request(&client)?;
+
+    info!("Sending request...");
+    let response = Self::send_request(&client, http_request).await?;
+
+    info!("Reading status...");
     let status = response.status();
 
     info!("Video Generation Enqueue Status: {:?}", status);
@@ -90,7 +132,7 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
     18:03:09.089872 [INFO] - Pending response...
     18:03:09.274033 [INFO] - Reading status...
     18:03:09.274262 [INFO] - Video Generation Enqueue Status: 200
-    18:03:09.274304 [INFO] - Reading body...
+    18:03:09.274304 [INFO] - Reading body... <-- This is what takes a while.
     18:03:35.186344 [INFO] - Read body.
     */
 
@@ -122,14 +164,14 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
     })
   }
 
-  pub fn build_client(&self) -> Result<Client, GrokClientError> {
+  fn build_client() -> Result<Client, GrokClientError> {
     Ok(Client::builder()
         .emulation(Emulation::Firefox143)
         .build()
         .map_err(|err| GrokClientError::WreqClientError(err))?)
   }
 
-  async fn build_request(&self, client: &Client) -> Result<Request, GrokClientError> {
+  fn build_request(&self, client: &Client) -> Result<Request, GrokClientError> {
     let xai_request_id = Uuid::new_v4().to_string();
     let sentry_trace_header = self.sentry_trace.to_http_request_header();
 
@@ -221,18 +263,27 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 
     Ok(http_request)
   }
+
+  async fn send_request(client: &Client, request: Request) -> Result<Response, GrokGenericApiError> {
+    Ok(client.execute(request)
+        .await
+        .map_err(|err| {
+          error!("Error during create media: {:?}", err);
+          GrokGenericApiError::WreqError(err)
+        })?)
+  }
 }
 
 #[cfg(test)]
 mod tests {
-  use log::LevelFilter;
   use super::*;
   use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
-  use errors::AnyhowResult;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use crate::utils::user_and_file_id_to_video_url::user_and_file_id_to_video_url;
+  use errors::AnyhowResult;
+  use log::LevelFilter;
 
   #[tokio::test]
   #[ignore]
@@ -283,6 +334,68 @@ mod tests {
     };
 
     let result = request.send().await?;
+
+    println!("Result: {:?}", result);
+
+    let video_id = result.video_file_id.expect("should have video id");
+
+    // NOTE: WITHOUT A "LIKE" REQUEST, THIS FILE WILL LIKELY CEASE TO EXIST.
+    let video_url = user_and_file_id_to_video_url(&secrets.user_id, &video_id, false);
+
+    println!("Video URL: {:?}", video_url);
+
+    assert_eq!(1, 2);
+    Ok(())
+  }
+
+
+  #[tokio::test]
+  #[ignore]
+  async fn stream_video_id() -> AnyhowResult<()> {
+    setup_test_logging(LevelFilter::Info);
+
+    let image_path = "/Users/bt/Pictures/Zelda 64 Art/7j8baxv9m8u61.jpg";
+    let maybe_prompt = Some("The hero puts down his bow");
+
+    let cookies = get_typed_test_cookies()?;
+
+    let secrets = request_client_secrets(RequestClientSecretsArgs {
+      cookies: &cookies,
+    }).await?;
+
+    let upload_request = GrokUploadFile {
+      file: FileUploadSpec::Path(image_path),
+      cookie: cookies.to_string(),
+      request_timeout: None,
+    };
+
+    let upload_result = upload_request.upload().await?;
+
+    let file_id = upload_result.file_id.expect("upload should have file_id");
+
+    println!("Verification Token: {:?}", secrets.verification_token);
+    println!("Sentry Trace: {:?}", secrets.sentry_trace);
+    println!("Numbers: {:?}", secrets.numbers);
+    println!("Svg Path: {:?}", secrets.svg_path_data);
+    println!("Baggage: {:?}", secrets.baggage);
+
+    let request = GrokVideoGenChatConversationBuilder {
+      file_id: &file_id,
+      media_type: VideoMediaPostType::UserUploadedImage,
+      prompt: maybe_prompt,
+
+      cookie: cookies.as_str(),
+      user_id: &secrets.user_id,
+      baggage: &secrets.baggage,
+      sentry_trace: &secrets.sentry_trace,
+      verification_token: &secrets.verification_token,
+      svg_data: &secrets.svg_path_data,
+      numbers: &secrets.numbers,
+
+      request_timeout: None,
+    };
+
+    let result = request.stream_only_video_id().await?;
 
     println!("Result: {:?}", result);
 

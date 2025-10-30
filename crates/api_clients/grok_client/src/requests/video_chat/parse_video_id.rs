@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 
 /// Find the video id in the response (which is streamed, appended JSON)
-// {\"videoId\":\"34fa0313-3cde-4693-b046-319093374dbe\"
+/// eg. {\"videoId\":\"34fa0313-3cde-4693-b046-319093374dbe\"
 static JSON_REGEX: Lazy<Regex> = Lazy::new(|| {
   // NB: Should be a 36 character UUID.
   Regex::new(r#"\\?"videoI[dD]\\?":\s*\\?"([a-zA-Z0-9-]{25,})\\?",?"#)
