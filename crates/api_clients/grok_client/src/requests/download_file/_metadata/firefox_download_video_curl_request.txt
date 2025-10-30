@@ -1,0 +1,17 @@
+// Note: this was accessing the file outside of the page (right click-> open in new tab)
+
+curl 'https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/34fa0313-3cde-4693-b046-319093374dbe/generated_video.mp4?cache=1' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0' \
+  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+  -H 'Accept-Language: en-US,en;q=0.5' \
+  -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  -H 'Referer: https://grok.com/' \
+  -H 'Sec-GPC: 1' \
+  -H 'Connection: keep-alive' \
+  -H 'Cookie: cf_clearance=exXZNJVPTGE_jw9bkiCb3mhyiRhx4m9KU3dOAIg4jQQ-1761851143-1.2.1.1-ylhkr3kBkOwGLyhesgDutGoC515v.kuElqWRvO63KLtVpPOGiOJ8oXNZpCKHjFfB.jS6ucdE1QVGpW06pr_dKs1QWI5vLEhDc7elgHiaGGAFOrNb..raDuk0UCvlQtXS9Iqy5k9eUq.LJ9QptwsjbAMm2K1y8tACePxF.qcDUXeoRWvlAOvWU4dTIS5ZsU6c1BD5ujgWYujpANhcE93qosdLJ6ho7f5elwI0aOLbx0k; x-anonuserid=41f3614a-1a08-4c9b-81b4-0c2085f6b8d8; x-challenge=tmsr%2B%2BbUg2pjTWyAOGqqFe%2BW38g66vDImJiVuiLtmSmNpaQm%2B46WajkdQoflNC1CyRKRcOLOc1ylzYI%2BerCVbWLrHr022ZWcTJqcN0o1499%2FcjPAAspeAKPV%2F6OAaHmYGu8eSXR4dj27qXSWxLixSctJLIQZVpKXX7njuuSkvKDQCwBgt%2BY%3D; x-signature=GqtNLJQw2%2BOk1rO6sby9vQT3N5%2BiX8g%2B8Bqrndiv51dSYQFC4v2%2FlrkKmH1utjqExbfvVjtks0%2Bn6RC3q61%2FRA%3D%3D; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiMmM1OGEyMjQtMDViZi00NjllLWFkYjUtNmY3ODdmZDU1MTc2In0.rnUG2UvKv32YBGSyYWrWh_1KaLiTix-6H4TZe4ZywfU; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiMmM1OGEyMjQtMDViZi00NjllLWFkYjUtNmY3ODdmZDU1MTc2In0.rnUG2UvKv32YBGSyYWrWh_1KaLiTix-6H4TZe4ZywfU; mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel=%7B%22distinct_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%2C%22%24device_id%22%3A%22c02bd50a-db0e-4f35-903e-b03f32f28b5f%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D' \
+  -H 'Upgrade-Insecure-Requests: 1' \
+  -H 'Sec-Fetch-Dest: document' \
+  -H 'Sec-Fetch-Mode: navigate' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'Sec-Fetch-User: ?1' \
+  -H 'Priority: u=0, i'
