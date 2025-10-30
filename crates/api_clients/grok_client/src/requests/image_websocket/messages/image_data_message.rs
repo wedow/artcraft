@@ -7,7 +7,7 @@ use serde::Deserialize;
 pub struct MessageImageData {
   /// UUID.
   /// Probably an identifier for the original request/prompt.
-  pub request_id: Option<String>,
+  pub request_id: String, // Option<String>,
 
   /// UUID.
   /// This turns out to be the file ID in the image URL (and `job_id`).

@@ -1,3 +1,4 @@
+use crate::datatypes::api::request_id::RequestId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::image_websocket::clonable_websocket::ClonableWebsocket;
@@ -21,8 +22,17 @@ pub struct ImageResults {
 
 #[derive(Clone, Debug)]
 pub struct ImageData {
+  /// The "task" that generated the image
+  /// Multiple images have the same "task"
+  pub request_id: RequestId,
+
+  /// Url where we can download the image.
   pub url: String,
+
+  /// The user-input prompt
   pub user_prompt: String,
+
+  /// An X.ai-enriched prompt
   pub enriched_prompt: String,
 }
 
@@ -78,6 +88,7 @@ pub async fn listen_for_website_images(args: ListenForWebsocketImagesArgs<'_>) -
     }
 
     images.push(ImageData {
+      request_id: RequestId(image_data.request_id),
       url : image_data.url,
       enriched_prompt: image_data.full_prompt,
       user_prompt: image_data.prompt,
@@ -102,16 +113,18 @@ mod tests {
   use crate::requests::image_websocket::listen_for_websocket_images::{listen_for_website_images, ListenForWebsocketImagesArgs};
   use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
   use std::io::Write;
   use std::time::Duration;
-  use crate::test_utils::setup_test_logging::setup_test_logging;
 
   #[tokio::test]
   #[ignore] // manually test
   async fn prompt() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Info);
+
+    let prompt = "A tornado hitting the city";
 
     let cookies = get_test_cookies()?;
 
@@ -126,7 +139,7 @@ mod tests {
 
     let _result = prompt_websocket_image(PromptWebsocketImageArgs {
       websocket_wrapped: websocket.clone(),
-      prompt: "a dog riding a motorcycle",
+      prompt,
     }).await?;
 
     println!("Reading...");
