@@ -2,42 +2,21 @@ use crate::datatypes::api::request_id::RequestId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::image_websocket::clonable_websocket::ClonableWebsocket;
-use crate::requests::image_websocket::messages::message_image_data::MessageImageData;
-use crate::utils::scrub_blobs_for_debug_logging::scrub_blobs_for_debug_logging;
-use log::info;
+use crate::requests::image_websocket::messages::message_request_id::MessageRequestId;
 use std::time::{Duration, Instant};
 use wreq::ws::message::Message;
 
-// Number of images we get per prompt by default
-const DEFAULT_IMAGE_COUNT: usize = 6;
-
-pub struct ListenForWebsocketImagesArgs<'a> {
+pub struct ListenForWebsocketRequestIdArgs<'a> {
   pub websocket: &'a ClonableWebsocket,
   pub timeout: Duration,
 }
 
 #[derive(Clone, Debug)]
-pub struct ImageResults {
-  pub images: Vec<ImageData>,
+pub struct RequestIdResult {
+  pub request_id: Option<RequestId>,
 }
 
-#[derive(Clone, Debug)]
-pub struct ImageData {
-  /// The "task" that generated the image
-  /// Multiple images have the same "task"
-  pub request_id: RequestId,
-
-  /// Url where we can download the image.
-  pub url: String,
-
-  /// The user-input prompt
-  pub user_prompt: String,
-
-  /// An X.ai-enriched prompt
-  pub enriched_prompt: String,
-}
-
-pub async fn listen_for_websocket_images(args: ListenForWebsocketImagesArgs<'_>) -> Result<ImageResults, GrokError> {
+pub async fn listen_for_websocket_request_id(args: ListenForWebsocketRequestIdArgs<'_>) -> Result<RequestIdResult, GrokError> {
   let start = Instant::now();
   let end_at = start.checked_add(args.timeout);
   let end_at = match end_at {
@@ -45,7 +24,7 @@ pub async fn listen_for_websocket_images(args: ListenForWebsocketImagesArgs<'_>)
     None => return Err(GrokClientError::TimeoutMathBroken.into()),
   };
 
-  let mut images = Vec::new();
+  let mut request_id = None;
 
   loop {
     if end_at < Instant::now() {
@@ -68,45 +47,23 @@ pub async fn listen_for_websocket_images(args: ListenForWebsocketImagesArgs<'_>)
       None => continue,
     };
 
-    let maybe_image_data = serde_json::from_str::<MessageImageData>(&message);
+    let maybe_parsed = serde_json::from_str::<MessageRequestId>(&message);
 
-    let image_data = match maybe_image_data {
-      Ok(image_data) => image_data,
+    let parsed = match maybe_parsed {
+      Ok(parsed) => parsed,
       Err(_err) => {
-
-        let message = scrub_blobs_for_debug_logging(&message);
-        println!("Unknown message: {}", message);
-
         // NB: Might not have been a parse error, since we're parsing irrelevant message payloads too.
         // This is slightly dangerous to do this way as we might mask true parsing errors with image payloads.
         continue;
       }
     };
 
-    match image_data.percentage_complete {
-      None => continue,
-      Some(percent) => {
-        if percent < 100.0 {
-          continue;
-        }
-      }
-    }
-
-    images.push(ImageData {
-      request_id: RequestId(image_data.request_id),
-      url : image_data.url,
-      enriched_prompt: image_data.full_prompt,
-      user_prompt: image_data.prompt,
-    });
-
-    if images.len() >= DEFAULT_IMAGE_COUNT {
-      info!("{} images generated; we're done polling.", images.len());
-      break;
-    }
+    request_id = Some(RequestId(parsed.request_id));
+    break;
   }
 
-  Ok(ImageResults {
-    images,
+  Ok(RequestIdResult {
+    request_id,
   })
 }
 
@@ -115,7 +72,7 @@ pub async fn listen_for_websocket_images(args: ListenForWebsocketImagesArgs<'_>)
 mod tests {
   use crate::requests::image_websocket::clonable_websocket::ClonableWebsocket;
   use crate::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-  use crate::requests::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ListenForWebsocketImagesArgs};
+  use crate::requests::image_websocket::listen_for_websocket_request_id::{listen_for_websocket_request_id, ListenForWebsocketRequestIdArgs};
   use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
@@ -129,7 +86,7 @@ mod tests {
   async fn prompt() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Info);
 
-    let prompt = "A tornado hitting the stadium";
+    let prompt = "A tiny tornado on a desk";
 
     let cookies = get_test_cookies()?;
 
@@ -152,17 +109,12 @@ mod tests {
 
     println!("Polling.");
 
-    let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {
+    let request_data = listen_for_websocket_request_id(ListenForWebsocketRequestIdArgs {
       websocket: &websocket,
       timeout: Duration::from_millis(10_000),
     }).await?;
 
-    println!("Done polling. Images: {}", images.images.len());
-
-    for image in images.images {
-      println!("Image: {:?}", image);
-    }
-
+    println!("Done polling. Request Data: {:?}", request_data);
     log::logger().flush();
 
     assert_eq!(1,2);
