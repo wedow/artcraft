@@ -33,7 +33,6 @@ mod tests {
   #[ignore] // manually test
   async fn prompt() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
-    //let cookies = SESSION_COOKIES_WITHOUT_CF_CLEARANCE;
 
     let cookies = get_test_cookies()?;
 
@@ -45,7 +44,6 @@ mod tests {
 
     println!("Sending...");
     std::io::stdout().flush()?;
-
 
     let result = prompt_websocket_image(PromptWebsocketImageArgs {
       websocket_wrapped: websocket.clone(),
@@ -151,7 +149,7 @@ mod tests {
       // TODO: Video websocket APIs
       // TODO: Upload APIs
 
-      if count > 30 {
+      if count > 5 {
         println!("No messages after 5 seconds");
         break;
       }

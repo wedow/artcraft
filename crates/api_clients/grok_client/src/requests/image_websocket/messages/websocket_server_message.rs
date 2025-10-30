@@ -35,6 +35,8 @@ pub struct ImageDataMessage {
   pub percentage_complete: Option<f32>,
 
   pub prompt: Option<String>,
+  
+  /// The enriched prompt
   pub full_prompt: Option<String>,
 
   /// Base64 encoded image blob.

@@ -1,6 +1,6 @@
+use base64::DecodeError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use base64::DecodeError;
 
 #[derive(Debug)]
 pub enum GrokClientError {
@@ -43,6 +43,9 @@ pub enum GrokClientError {
 
   /// Signature algorithm isn't working with inputs
   BadSignatureInputs,
+  
+  /// Something is broken with timeout math
+  TimeoutMathBroken,
 
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
@@ -99,6 +102,7 @@ impl Display for GrokClientError {
       Self::InvalidVerificationTokenBytes => write!(f, "Invalid verification token bytes"),
       Self::ScriptLogicOutOfDate => write!(f, "Script logic out of date"),
       Self::BadSignatureInputs => write!(f, "Bad signature inputs"),
+      Self::TimeoutMathBroken => write!(f, "Timeout math is broken"),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),
