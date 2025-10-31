@@ -4,6 +4,20 @@ import { SizeIconOption } from "../classes/metadata/SizeOption.js";
 
 export const VIDEO_MODELS: VideoModel[] = [
   new VideoModel({
+    id: "grok",
+    tauriId: "grok",
+    fullName: "Grok Video",
+    category: "video",
+    creator: ModelCreator.Kling,
+    selectorName: "Grok Video",
+    selectorDescription: "Fastest video model",
+    selectorBadges: ["20 sec."],
+    startFrame: true,
+    endFrame: false,
+    requiresImage: true,
+    progressBarTime: 50000,
+  }),
+  new VideoModel({
     id: "kling_1_6_pro",
     tauriId: "kling_1.6_pro",
     fullName: "Kling 1.6 Pro",
