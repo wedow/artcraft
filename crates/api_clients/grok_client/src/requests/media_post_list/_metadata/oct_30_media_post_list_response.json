@@ -1,0 +1,703 @@
+{
+  "posts": [
+    {
+      "id": "abd9331b-c5ac-49cc-8bec-c410c7efde98",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T23:49:37.583477Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/abd9331b-c5ac-49cc-8bec-c410c7efde98.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "ecec690e-15bd-4f5f-b4e9-9b8733c3fd69",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T23:50:04.862487Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/ecec690e-15bd-4f5f-b4e9-9b8733c3fd69/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "abd9331b-c5ac-49cc-8bec-c410c7efde98",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "an anime girl runs away from a giant t-rex",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/abd9331b-c5ac-49cc-8bec-c410c7efde98.jpg"
+    },
+    {
+      "id": "3c896963-8e6b-4e71-83e1-4253b2bf2ac8",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T23:22:19.528702Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/3c896963-8e6b-4e71-83e1-4253b2bf2ac8/content",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "b3929c27-0f02-4a17-bfb1-867ac555a72a",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T23:22:46.680830Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/b3929c27-0f02-4a17-bfb1-867ac555a72a/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "3c896963-8e6b-4e71-83e1-4253b2bf2ac8",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "an anime girl peacefully stands in front of a t-rex in a solar punk field. the t-rex roars and the girl streches and yawns",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1",
+          "thumbnailImageUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/b3929c27-0f02-4a17-bfb1-867ac555a72a/preview_image.jpg"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1"
+    },
+    {
+      "id": "6272020b-bb05-4b61-ae72-0df4500d813c",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T22:55:11.977212Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/6272020b-bb05-4b61-ae72-0df4500d813c.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "e3785eeb-0b18-4179-a3ba-878a59b5a230",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T22:55:37.558045Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/e3785eeb-0b18-4179-a3ba-878a59b5a230/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "6272020b-bb05-4b61-ae72-0df4500d813c",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "the mountains are digitial and lights flicker up and down the topography. the camera pans gently by",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/6272020b-bb05-4b61-ae72-0df4500d813c.jpg"
+    },
+    {
+      "id": "e40ee84c-fbc5-4fd0-9618-0a5b80f46a47",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T22:03:09.166736Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/e40ee84c-fbc5-4fd0-9618-0a5b80f46a47/content",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "ffa3304d-0c79-4f3b-ab8e-a56b6a603b30",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T22:03:34.259468Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/ffa3304d-0c79-4f3b-ab8e-a56b6a603b30/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "e40ee84c-fbc5-4fd0-9618-0a5b80f46a47",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "The hero shoots an arrow and it hits a skeleton monster",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1"
+    },
+    {
+      "id": "ba25cc83-c986-49bd-9e98-edbad66457a3",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T21:52:05.585904Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/ba25cc83-c986-49bd-9e98-edbad66457a3/content",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "432ffd25-686e-4970-9bae-5089a8993234",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T21:52:29.182159Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/432ffd25-686e-4970-9bae-5089a8993234/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "ba25cc83-c986-49bd-9e98-edbad66457a3",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "The hero shoots an arrow and the camera zooms out to follow the arrow",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1"
+    },
+    {
+      "id": "3ce7350b-323a-48c3-b8a0-798fd11e176c",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T19:25:03.911369Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/3ce7350b-323a-48c3-b8a0-798fd11e176c.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "ff98ccba-7879-478d-b8a1-089de60b23f1",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T19:25:30.649705Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/ff98ccba-7879-478d-b8a1-089de60b23f1/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "3ce7350b-323a-48c3-b8a0-798fd11e176c",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "our hero link plunges the sword into the pedestal, the temple is glowing with a blue aura",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/3ce7350b-323a-48c3-b8a0-798fd11e176c.jpg"
+    },
+    {
+      "id": "eabcc2a5-8a9b-4382-82d2-020b4b286e87",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T19:04:27.442590Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/eabcc2a5-8a9b-4382-82d2-020b4b286e87/content",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "34fa0313-3cde-4693-b046-319093374dbe",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T19:04:52.479768Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/34fa0313-3cde-4693-b046-319093374dbe/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "eabcc2a5-8a9b-4382-82d2-020b4b286e87",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "our hero link on horseback galloping through the fantasy world, bright sun behind him. a dormant volcano has a circling ring of smoke. the camera pulls back and follows our hero",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1",
+          "thumbnailImageUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/34fa0313-3cde-4693-b046-319093374dbe/preview_image.jpg"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1"
+    },
+    {
+      "id": "187f207f-7e4f-4491-a90c-a5ce7efa0586",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-30T18:31:07.586547Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/187f207f-7e4f-4491-a90c-a5ce7efa0586/content",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "d9b300c6-9562-4e24-a87a-3ede2a53f0bc",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-30T18:31:30.976720Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/d9b300c6-9562-4e24-a87a-3ede2a53f0bc/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "187f207f-7e4f-4491-a90c-a5ce7efa0586",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "A man in the forest cuts down a tree",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1"
+    },
+    {
+      "id": "def0be3d-d1dc-4511-98fe-0b71663cd689",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-29T07:36:42.981250Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/def0be3d-d1dc-4511-98fe-0b71663cd689.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "eb05dc4b-c243-4ff5-ba84-9bbea708cfb6",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-29T07:37:08.105827Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/eb05dc4b-c243-4ff5-ba84-9bbea708cfb6/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "def0be3d-d1dc-4511-98fe-0b71663cd689",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "A man in the forest runs away from a spooky ghost",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1",
+          "thumbnailImageUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/eb05dc4b-c243-4ff5-ba84-9bbea708cfb6/preview_image.jpg"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/def0be3d-d1dc-4511-98fe-0b71663cd689.jpg"
+    },
+    {
+      "id": "d6d73ffd-ce87-40a3-9cc2-3432d7192652",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-29T06:27:31.563653Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/d6d73ffd-ce87-40a3-9cc2-3432d7192652.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "3768b6db-9694-4630-b547-4d4fa061ac9b",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-29T06:49:30.755029Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/3768b6db-9694-4630-b547-4d4fa061ac9b/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "d6d73ffd-ce87-40a3-9cc2-3432d7192652",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "building gets hit by tornado",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1",
+          "thumbnailImageUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/3768b6db-9694-4630-b547-4d4fa061ac9b/preview_image.jpg"
+        },
+        {
+          "id": "2e68bc4b-ceb7-4eee-be13-8423fc9595b0",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-29T06:27:58.455499Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/2e68bc4b-ceb7-4eee-be13-8423fc9595b0/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "d6d73ffd-ce87-40a3-9cc2-3432d7192652",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/d6d73ffd-ce87-40a3-9cc2-3432d7192652.jpg"
+    },
+    {
+      "id": "0e1b621b-2d45-491b-91b0-e9cf6c6daaac",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-29T00:37:15.507858Z",
+      "prompt": "",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/0e1b621b-2d45-491b-91b0-e9cf6c6daaac.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "55ef6c27-87bc-4fff-a1a9-72acb06e53e5",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-29T00:37:42.725023Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/55ef6c27-87bc-4fff-a1a9-72acb06e53e5/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "0e1b621b-2d45-491b-91b0-e9cf6c6daaac",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1",
+          "thumbnailImageUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/55ef6c27-87bc-4fff-a1a9-72acb06e53e5/preview_image.jpg"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/0e1b621b-2d45-491b-91b0-e9cf6c6daaac.jpg"
+    },
+    {
+      "id": "5088adf9-85fd-4f51-a514-005aae2e1027",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-22T17:27:33.154910Z",
+      "prompt": "A serene pathway lined with trees and benches, bathed in soft sunlight, with fallen leaves scattered on the ground and a fence along the side.",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/5088adf9-85fd-4f51-a514-005aae2e1027.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "23b90ea3-3236-4d88-81d3-f978e8f0a29c",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:33:13.785269Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/23b90ea3-3236-4d88-81d3-f978e8f0a29c/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "5088adf9-85fd-4f51-a514-005aae2e1027",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "an explosion topples the trees and benches in the park",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        },
+        {
+          "id": "d5d9a592-250b-4f0e-85a4-c51463852834",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:31:48.884685Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/d5d9a592-250b-4f0e-85a4-c51463852834/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "5088adf9-85fd-4f51-a514-005aae2e1027",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        },
+        {
+          "id": "ddb08c24-1ad2-44dc-b9fe-a7850d0e512a",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:29:16.206510Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/ddb08c24-1ad2-44dc-b9fe-a7850d0e512a/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "5088adf9-85fd-4f51-a514-005aae2e1027",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        },
+        {
+          "id": "be350818-6610-461b-8103-e0a5e0548639",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:28:00.140298Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/be350818-6610-461b-8103-e0a5e0548639/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "5088adf9-85fd-4f51-a514-005aae2e1027",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/5088adf9-85fd-4f51-a514-005aae2e1027.jpg"
+    },
+    {
+      "id": "2d8260d7-3b7c-4bc1-84ca-6e82dd892c39",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-22T00:14:15.635290Z",
+      "prompt": "an alien in the hallway",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png",
+      "mimeType": "image/png",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "6128c2c7-d353-426f-a7e0-de052a014381",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:23:14.118415Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/6128c2c7-d353-426f-a7e0-de052a014381/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "2d8260d7-3b7c-4bc1-84ca-6e82dd892c39",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "alien runs down the hallway chasing after humans",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        },
+        {
+          "id": "8f7cf34b-a44a-4f1f-9199-47ad2a4fbfcc",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:21:45.452694Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/8f7cf34b-a44a-4f1f-9199-47ad2a4fbfcc/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "2d8260d7-3b7c-4bc1-84ca-6e82dd892c39",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "alien dances in the hallway",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        },
+        {
+          "id": "019a9e76-e68b-4243-a479-7842f9d6ec0f",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T00:14:39.537709Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/019a9e76-e68b-4243-a479-7842f9d6ec0f/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "2d8260d7-3b7c-4bc1-84ca-6e82dd892c39",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "alien walks down the hallway",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "an alien in the hallway",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/images/2d8260d7-3b7c-4bc1-84ca-6e82dd892c39.png"
+    },
+    {
+      "id": "990ddf90-8f34-42b1-81a5-39c509d62ff7",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-22T17:00:16.178428Z",
+      "prompt": "A dog wearing oversized glasses is held by a hand, with another dog nuzzling it near a window with a city view.",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/990ddf90-8f34-42b1-81a5-39c509d62ff7.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "640ddff1-e090-46e9-9595-b956cdd38775",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:17:34.830503Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/640ddff1-e090-46e9-9595-b956cdd38775/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "990ddf90-8f34-42b1-81a5-39c509d62ff7",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        },
+        {
+          "id": "a1057c67-399f-4a21-8e3d-eb7f48cf8765",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T17:14:22.396685Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/a1057c67-399f-4a21-8e3d-eb7f48cf8765/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "990ddf90-8f34-42b1-81a5-39c509d62ff7",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "A dog wearing oversized glasses is held by a hand, with another dog nuzzling it near a window with a city view.",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/990ddf90-8f34-42b1-81a5-39c509d62ff7.jpg"
+    },
+    {
+      "id": "5ef078a9-e4af-4354-a469-abd5d60a3882",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-22T04:24:17.856448Z",
+      "prompt": "A rainy train platform with a sleek train, illuminated street lamps, wet cobblestones, and scattered autumn leaves, creating a moody, atmospheric scene.",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/share-images/5ef078a9-e4af-4354-a469-abd5d60a3882.jpg",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "45c32947-3431-458f-82cf-1a1f1e5288ee",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-22T04:24:43.661840Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/45c32947-3431-458f-82cf-1a1f1e5288ee/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "5ef078a9-e4af-4354-a469-abd5d60a3882",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/share-images/5ef078a9-e4af-4354-a469-abd5d60a3882.jpg"
+    },
+    {
+      "id": "21a79085-e206-4b0b-88ac-5f2b7a453e45",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-21T23:40:41.993980Z",
+      "prompt": "A black panther lounges on an ornate chandelier in a lavish, gilded room with multiple chandeliers and elegant decor.",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/21a79085-e206-4b0b-88ac-5f2b7a453e45/content",
+      "mimeType": "image/jpeg",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "8e340f1f-f477-4b52-9337-58d1a6696ff6",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-21T23:41:07.708119Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/8e340f1f-f477-4b52-9337-58d1a6696ff6/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "21a79085-e206-4b0b-88ac-5f2b7a453e45",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "normal",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1"
+    },
+    {
+      "id": "6136f31a-4aaf-48e0-ab86-fe9871feca91",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-21T23:33:38.986385Z",
+      "prompt": "a photorealistic pirate ship sailing",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/images/6136f31a-4aaf-48e0-ab86-fe9871feca91.png",
+      "mimeType": "image/png",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "30e27f72-da40-48ff-8ddf-2a064434da99",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-21T23:34:05.919219Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/30e27f72-da40-48ff-8ddf-2a064434da99/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "6136f31a-4aaf-48e0-ab86-fe9871feca91",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "the pirate ship is sailing and suddenly gets attacked by a sea monster",
+          "mode": "custom",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "a photorealistic pirate ship sailing",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/images/6136f31a-4aaf-48e0-ab86-fe9871feca91.png"
+    },
+    {
+      "id": "dcecdbec-12b1-4614-bf7a-edf86fd10fbc",
+      "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+      "createTime": "2025-10-21T03:47:54.420776Z",
+      "prompt": "a video of a dog eating a cake",
+      "mediaType": "MEDIA_POST_TYPE_IMAGE",
+      "mediaUrl": "https://imagine-public.x.ai/imagine-public/images/dcecdbec-12b1-4614-bf7a-edf86fd10fbc.png",
+      "mimeType": "image/png",
+      "audioUrls": [],
+      "childPosts": [
+        {
+          "id": "f54b0aef-b320-4987-8f31-f89152f501a6",
+          "userId": "85980643-ffab-4984-a3de-59a608c47d7f",
+          "createTime": "2025-10-21T03:48:20.217760Z",
+          "prompt": "",
+          "mediaType": "MEDIA_POST_TYPE_VIDEO",
+          "mediaUrl": "https://assets.grok.com/users/85980643-ffab-4984-a3de-59a608c47d7f/generated/f54b0aef-b320-4987-8f31-f89152f501a6/generated_video.mp4",
+          "mimeType": "video/mp4",
+          "originalPostId": "dcecdbec-12b1-4614-bf7a-edf86fd10fbc",
+          "audioUrls": [],
+          "childPosts": [],
+          "originalPrompt": "",
+          "mode": "extremely-crazy",
+          "modelName": "imagine_xdit_1"
+        }
+      ],
+      "originalPrompt": "a video of a dog eating a cake",
+      "userInteractionStatus": {
+        "likeStatus": true
+      },
+      "modelName": "imagine_h_1",
+      "thumbnailImageUrl": "https://imagine-public.x.ai/cdn-cgi/image/width=500,fit=scale-down,format=auto/imagine-public/images/dcecdbec-12b1-4614-bf7a-edf86fd10fbc.png"
+    }
+  ],
+  "nextCursor": "1761018527111"
+}

@@ -5,3 +5,4 @@ pub mod index_page;
 pub mod like_media;
 pub mod upload_file;
 pub mod video_chat;
+mod media_post_list;
