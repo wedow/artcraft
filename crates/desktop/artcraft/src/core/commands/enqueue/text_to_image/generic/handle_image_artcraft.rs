@@ -58,6 +58,7 @@ pub async fn handle_image_artcraft(
     Some(
       ImageModel::Gemini25Flash |
       ImageModel::GptImage1 |
+      ImageModel::GrokImage |
       ImageModel::Midjourney
     ) => {
       return Err(GenerateError::AnyhowError(anyhow!("wrong logic: another branch should handle this: {:?}", request.model)));

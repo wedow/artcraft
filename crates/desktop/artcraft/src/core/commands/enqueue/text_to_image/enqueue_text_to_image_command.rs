@@ -328,7 +328,7 @@ pub async fn dispatch_request(
         app_env_configs,
         grok_creds_manager,
         grok_websocket_manager,
-      )
+      ).await;
     }
     Some(ImageModel::Midjourney) => {
       return handle_midjourney(
