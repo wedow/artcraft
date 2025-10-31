@@ -135,7 +135,7 @@ impl GrokCredentialManager {
   pub fn do_task_polling(&self) -> anyhow::Result<bool> {
     self.session_appears_active()
   }
-  
+
   // NB: This is just a heuristic. We'll add better checks later.
   pub fn session_appears_active(&self) -> anyhow::Result<bool> {
     let holder = match self.credential_data.read() {
@@ -143,31 +143,33 @@ impl GrokCredentialManager {
       Ok(store) => store.clone(),
     };
 
+    if holder.grok_user_data.is_some() {
+      return Ok(true);
+    }
+
     if holder.browser_cookies.is_none() {
       return Ok(false);
     }
 
-    let cookies = match holder.browser_cookies.as_ref() {
-      None => return Ok(false),
-      Some(cookies) => cookies,
-    };
+    // TODO: Heuristic
+    Ok(true)
 
-    let has_user_data = holder.grok_user_data.is_some();
-
-    // NB: We consider the session active if we have auth cookies and a user id.
-    //let has_user_id = user_info.user_id.is_some();
-    //let maybe_has_auth_cookies = cookie_store_has_auth_cookies(&cookies);
-    let maybe_has_auth_cookies = true; // TODO TODO TODO - fix this
-
-    // Misc cookies without login cookies are ~1055 length
-    // AUTH_I is ~1500 length
-    // AUTH_R is ~500 length
-    let maybe_has_big_enough_cookie = cookies.calculate_approx_cookie_character_length() > 2100;
-
-    // TODO: Heuristic should count.
-    // TODO: Consolidate with "login window thread" logic.
-    // TODO: Check timestamp of last valid request.
-    Ok(has_user_data || (maybe_has_auth_cookies && maybe_has_big_enough_cookie && maybe_has_big_enough_cookie))
+    //let cookies = match holder.browser_cookies.as_ref() {
+    //  None => return Ok(false),
+    //  Some(cookies) => cookies,
+    //};
+    //// NB: We consider the session active if we have auth cookies and a user id.
+    ////let has_user_id = user_info.user_id.is_some();
+    ////let maybe_has_auth_cookies = cookie_store_has_auth_cookies(&cookies);
+    //let maybe_has_auth_cookies = true; // TODO TODO TODO - fix this
+    //// Misc cookies without login cookies are ~1055 length
+    //// AUTH_I is ~1500 length
+    //// AUTH_R is ~500 length
+    //let maybe_has_big_enough_cookie = cookies.calculate_approx_cookie_character_length() > 2100;
+    //// TODO: Heuristic should count.
+    //// TODO: Consolidate with "login window thread" logic.
+    //// TODO: Check timestamp of last valid request.
+    //Ok((maybe_has_auth_cookies && maybe_has_big_enough_cookie && maybe_has_big_enough_cookie))
   }
 
   pub fn clear_credentials(&self) -> anyhow::Result<()> {
