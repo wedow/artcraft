@@ -1,5 +1,6 @@
 use cookie_store::cookie_store::CookieStore;
 use grok_client::credentials::grok_client_secrets::GrokClientSecrets;
+use grok_client::credentials::grok_full_credentials::GrokFullCredentials;
 use grok_client::credentials::grok_user_data::GrokUserData;
 
 #[derive(Clone)]
@@ -8,6 +9,10 @@ pub struct GrokCredentialHolder {
   /// Read once, write to disk
   /// The Grok client consumes a string-only form (rather than this cookie jar)
   pub browser_cookies: Option<CookieStore>,
+
+  /// Full credentials.
+  /// NOT PERSISTED TO DISK.
+  pub grok_full_credentials: Option<GrokFullCredentials>,
 
   /// Email, user id, etc.
   /// These can be persisted.
@@ -23,6 +28,7 @@ impl GrokCredentialHolder {
   pub fn empty() -> Self {
     Self {
       browser_cookies: None,
+      grok_full_credentials: None,
       grok_user_data: None,
       grok_client_secrets: None,
     }

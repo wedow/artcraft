@@ -1,6 +1,7 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_to_video::generic::handle_video::handle_video;
+use crate::core::commands::enqueue::image_to_video::grok::handle_grok_video::handle_grok_video;
 use crate::core::commands::enqueue::image_to_video::sora2::handle_sora2_video::handle_sora2_video;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
@@ -20,12 +21,16 @@ use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum VideoModel {
+  #[serde(rename = "grok")]
+  Grok,
+  
   #[serde(rename = "kling_1.6_pro")]
   Kling16Pro,
 
@@ -115,6 +120,7 @@ pub async fn enqueue_image_to_video_command(
   app_data_root: State<'_, AppDataRoot>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
+  grok_creds_manager: State<'_, GrokCredentialManager>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
@@ -129,6 +135,7 @@ pub async fn enqueue_image_to_video_command(
     &app_data_root,
     &provider_priority_store,
     &task_database,
+    &grok_creds_manager,
     &sora_creds_manager,
     &storyteller_creds_manager,
   ).await;
@@ -200,11 +207,21 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
+  grok_creds_manager: &GrokCredentialManager,
   sora_creds_manager: &SoraCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let result = match request.model {
+    Some(VideoModel::Grok) => {
+      handle_grok_video(
+        &request,
+        app,
+        app_data_root,
+        app_env_configs,
+        grok_creds_manager,
+      ).await
+    }
     Some(VideoModel::Sora2) => {
       handle_sora2_video(
         &request,

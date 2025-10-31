@@ -32,7 +32,6 @@ pub struct UploadImageAndGenerateVideo<'a, P: AsRef<Path>> {
   pub wait_for_generation: bool,
 
   pub individual_request_timeout: Option<Duration>,
-
 }
 
 #[derive(Debug, Clone)]

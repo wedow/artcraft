@@ -71,6 +71,11 @@ pub async fn handle_video_artcraft(
     None => {
       return Err(GenerateError::no_model_specified());
     }
+    Some(VideoModel::Grok) => {
+      return Err(GenerateError::AnyhowError(
+        anyhow!("wrong logic: another branch should handle this: {:?}",
+          request.model)));
+    }
     Some(VideoModel::Sora2) => {
       return Err(GenerateError::AnyhowError(
         anyhow!("wrong logic: another branch should handle this: {:?}", 

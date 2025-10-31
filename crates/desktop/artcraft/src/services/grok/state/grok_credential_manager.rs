@@ -4,6 +4,8 @@ use crate::services::grok::state::grok_serializable_state::{GrokSerializableStat
 use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
 use grok_client::credentials::grok_client_secrets::GrokClientSecrets;
+use grok_client::credentials::grok_cookies::GrokCookies;
+use grok_client::credentials::grok_full_credentials::GrokFullCredentials;
 use grok_client::credentials::grok_user_data::GrokUserData;
 use log::{info, warn};
 use std::fs::read_to_string;
@@ -50,6 +52,7 @@ impl GrokCredentialManager {
         credential_data = Arc::new(RwLock::new(GrokCredentialHolder {
           browser_cookies: maybe_cookies,
           grok_user_data: user_data,
+          grok_full_credentials: None, // NB: We don't want to keep this on disk. It goes stale.
           grok_client_secrets: None, // NB: We don't want to keep this on disk. It goes stale.
         }));
       }
@@ -68,6 +71,29 @@ impl GrokCredentialManager {
     }
   }
 
+  pub fn maybe_copy_cookie_header_string(&self) -> anyhow::Result<Option<String>> {
+    let maybe_cookies = self.maybe_copy_cookie_store()?;
+    let maybe_cookies = maybe_cookies.map(|cookies| {
+      cookies.to_cookie_string()
+    });
+    Ok(maybe_cookies)
+  }
+
+  pub fn maybe_copy_typed_cookies(&self) -> anyhow::Result<Option<GrokCookies>> {
+    let maybe_cookies = self.maybe_copy_cookie_header_string()?;
+    let maybe_cookies = maybe_cookies.map(|cookies| {
+      GrokCookies::new(cookies)
+    });
+    Ok(maybe_cookies)
+  }
+
+  pub fn maybe_copy_full_credentials(&self) -> anyhow::Result<Option<GrokFullCredentials>> {
+    match self.credential_data.read() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(holder) => Ok(holder.grok_full_credentials.clone()),
+    }
+  }
+
   pub fn maybe_copy_client_secrets(&self) -> anyhow::Result<Option<GrokClientSecrets>> {
     match self.credential_data.read() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
@@ -80,6 +106,16 @@ impl GrokCredentialManager {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
       Ok(mut holder) => {
         holder.browser_cookies = Some(store);
+        Ok(())
+      }
+    }
+  }
+
+  pub fn replace_full_credentials(&self,  creds: GrokFullCredentials) -> anyhow::Result<()> {
+    match self.credential_data.write() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut holder) => {
+        holder.grok_full_credentials = Some(creds);
         Ok(())
       }
     }
