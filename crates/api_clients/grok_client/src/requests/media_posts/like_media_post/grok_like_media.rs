@@ -1,9 +1,15 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+use crate::datatypes::api::baggage::Baggage;
+use crate::datatypes::api::file_id::FileId;
+use crate::datatypes::api::sentry_trace::SentryTrace;
+use crate::datatypes::api::svg_path_data::SvgPathData;
+use crate::datatypes::api::verification_token::VerificationToken;
+use crate::datatypes::api::xsid_numbers::XsidNumbers;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::requests::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
-use crate::requests::like_media::request::LikeMediaWireRequest;
+use crate::requests::media_posts::like_media_post::request::LikeMediaWireRequest;
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info, warn};
@@ -12,12 +18,6 @@ use uuid::Uuid;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, COOKIE, ORIGIN, PRAGMA, REFERER, TE, USER_AGENT};
 use wreq::Client;
 use wreq_util::Emulation;
-use crate::datatypes::api::baggage::Baggage;
-use crate::datatypes::api::file_id::FileId;
-use crate::datatypes::api::sentry_trace::SentryTrace;
-use crate::datatypes::api::svg_path_data::SvgPathData;
-use crate::datatypes::api::verification_token::VerificationToken;
-use crate::datatypes::api::xsid_numbers::XsidNumbers;
 
 const LIKE_MEDIA_POST_URL: &str = "https://grok.com/rest/media/post/like";
 
