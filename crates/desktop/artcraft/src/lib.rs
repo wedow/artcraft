@@ -32,6 +32,7 @@ use crate::core::threads::main_window_thread::main_window_thread::main_window_th
 use crate::services::grok::commands::grok_clear_credentials_command::grok_clear_credentials_command;
 use crate::services::grok::commands::grok_get_credential_info_command::grok_get_credential_info_command;
 use crate::services::grok::commands::grok_open_login_command::grok_open_login_command;
+use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_websocket_manager::GrokWebsocketManager;
 use crate::services::midjourney::commands::midjourney_clear_credentials_command::midjourney_clear_credentials_command;
@@ -108,6 +109,9 @@ pub fn run() {
   let grok_websocket_manager = GrokWebsocketManager::new();
   let grok_websocket_manager_2= grok_websocket_manager.clone();
 
+  let grok_prompt_queue = GrokImagePromptQueue::new();
+  let grok_prompt_queue_2 = grok_image_prompt_queue.clone();
+
   println!("Initializing backend runtime...");
 
   let builder = tauri::Builder::default()
@@ -147,6 +151,7 @@ pub fn run() {
           midjourney_creds_manager_2,
           grok_creds_manager_2,
           grok_websocket_manager_2,
+          grok_prompt_queue_2,
         ).await;
 
         if let Err(err) = result {
@@ -163,6 +168,7 @@ pub fn run() {
     .manage(artcraft_platform_info)
     .manage(grok_creds_manager)
     .manage(grok_websocket_manager)
+    .manage(grok_prompt_queue)
     .manage(midjourney_creds_manager)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)

@@ -14,6 +14,7 @@ pub enum ArtcraftError {
   // Lock errors
   RwLockReadError,
   RwLockWriteError,
+  MutexLockError,
 }
 
 impl Error for ArtcraftError {}
@@ -28,6 +29,7 @@ impl Display for ArtcraftError {
       Self::StorytellerError(e) => write!(f, "StorytellerError: {:?}", e),
       Self::RwLockReadError => write!(f, "RwLockReadError"),
       Self::RwLockWriteError => write!(f, "RwLockWriteError"),
+      Self::MutexLockError => write!(f, "MutexLockError"),
     }
   }
 }

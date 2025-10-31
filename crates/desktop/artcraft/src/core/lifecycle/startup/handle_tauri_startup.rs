@@ -10,7 +10,9 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
+use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::grok::state::grok_websocket_manager::GrokWebsocketManager;
+use crate::services::grok::threads::grok_image_websocket_thread::grok_image_websocket_thread::grok_image_websocket_thread;
 use crate::services::grok::threads::grok_video_task_polling::grok_video_task_polling_thread::grok_video_task_polling_thread;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::threads::midjourney_long_polling_thread::midjourney_long_polling_thread;
@@ -31,6 +33,7 @@ pub async fn handle_tauri_startup(
   mj_creds_manager: MidjourneyCredentialManager,
   grok_creds_manager: GrokCredentialManager,
   grok_websocket_manager: GrokWebsocketManager,
+  grok_image_prompt_queue: GrokImagePromptQueue,
 ) -> AnyhowResult<()> {
 
   set_app_log_level(
@@ -76,6 +79,16 @@ pub async fn handle_tauri_startup(
     root.clone(),
     task_database.clone(),
     grok_creds_manager.clone(),
+    storyteller_creds_manager.clone(),
+  ));
+
+  tauri::async_runtime::spawn(grok_image_websocket_thread(
+    app.clone(),
+    app_env_configs.clone(),
+    root.clone(),
+    task_database.clone(),
+    grok_creds_manager.clone(),
+    grok_image_prompt_queue.clone(),
     storyteller_creds_manager.clone(),
   ));
 
