@@ -110,7 +110,7 @@ pub fn run() {
   let grok_websocket_manager_2= grok_websocket_manager.clone();
 
   let grok_prompt_queue = GrokImagePromptQueue::new();
-  let grok_prompt_queue_2 = grok_image_prompt_queue.clone();
+  let grok_prompt_queue_2 = grok_prompt_queue.clone();
 
   println!("Initializing backend runtime...");
 

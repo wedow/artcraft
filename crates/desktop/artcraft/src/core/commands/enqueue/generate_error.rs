@@ -153,6 +153,7 @@ impl From<ArtcraftError> for GenerateError {
       ArtcraftError::StorytellerError(e) => Self::ProviderFailure(ProviderFailureReason::StorytellerError(e)),
       ArtcraftError::RwLockReadError => Self::AnyhowError(anyhow!("Lock read error")),
       ArtcraftError::RwLockWriteError => Self::AnyhowError(anyhow!("Lock write error")),
+      ArtcraftError::MutexLockError => Self::AnyhowError(anyhow!("Mutex lock error")),
     }
   }
 }
