@@ -662,6 +662,7 @@ dependencies = [
  "errors",
  "filesys",
  "futures 0.3.31",
+ "grok_client",
  "idempotency",
  "image",
  "images",

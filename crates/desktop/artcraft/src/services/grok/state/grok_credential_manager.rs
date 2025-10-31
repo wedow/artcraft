@@ -1,7 +1,10 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::grok::state::grok_credential_holder::GrokCredentialHolder;
 use crate::services::grok::state::grok_serializable_state::{GrokSerializableState, SERIALIZABLE_GROK_STATE_VERSION};
 use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
+use grok_client::credentials::grok_client_secrets::GrokClientSecrets;
+use grok_client::credentials::grok_user_data::GrokUserData;
 use log::{info, warn};
 use std::fs::read_to_string;
 use std::sync::{Arc, RwLock};
@@ -9,7 +12,8 @@ use std::sync::{Arc, RwLock};
 #[derive(Clone)]
 pub struct GrokCredentialManager {
   // TODO: Put last write/last read timestamps on these.
-  cookies: Arc<RwLock<Option<CookieStore>>>,
+  credential_data: Arc<RwLock<GrokCredentialHolder>>,
+
   //user_info: Arc<RwLock<Option<MidjourneyUserInfo>>>,
   app_data_root: AppDataRoot,
 }
@@ -17,94 +21,97 @@ pub struct GrokCredentialManager {
 impl GrokCredentialManager {
   pub fn initialize_empty(app_data_root: &AppDataRoot) -> Self {
     Self {
-      cookies: Arc::new(RwLock::new(None)),
+      credential_data: Arc::new(RwLock::new(GrokCredentialHolder::empty())),
       app_data_root: app_data_root.clone(),
     }
   }
 
   pub fn initialize_from_disk_infallible(app_data_root: &AppDataRoot) -> Self {
-    let mut cookies;
-    //let mut user_info;
+    let mut credential_data;
 
     let result = GrokSerializableState::read_from_disk(app_data_root);
     match result {
       Err(err) => {
         warn!("Failed to read grok state from disk: {:?}", err);
-        cookies = Arc::new(RwLock::new(None));
-        //user_info = Arc::new(RwLock::new(None));
+        credential_data = Arc::new(RwLock::new(GrokCredentialHolder::empty()));
       },
       Ok(None) => {
-        cookies = Arc::new(RwLock::new(None));
-        //user_info = Arc::new(RwLock::new(None));
+        credential_data = Arc::new(RwLock::new(GrokCredentialHolder::empty()));
       }
       Ok(Some(state)) => {
         let maybe_cookies = state.user_cookies
             .map(|cookies| cookies.to_cookie_store());
-        //let maybe_user_info = state.user_info
-        //    .map(|info| info.to_user_info());
-        cookies = Arc::new(RwLock::new(maybe_cookies));
-        //user_info = Arc::new(RwLock::new(maybe_user_info));
+
+        let mut user_data = None;
+        if let Some(user_id) = state.user_id {
+          user_data = Some(GrokUserData::from_id_and_email(user_id, state.user_email));
+        }
+
+        credential_data = Arc::new(RwLock::new(GrokCredentialHolder {
+          browser_cookies: maybe_cookies,
+          grok_user_data: user_data,
+          grok_client_secrets: None, // NB: We don't want to keep this on disk. It goes stale.
+        }));
       }
     };
 
     Self {
-      cookies,
+      credential_data,
       app_data_root: app_data_root.clone(),
     }
   }
 
   pub fn maybe_copy_cookie_store(&self) -> anyhow::Result<Option<CookieStore>> {
-    match self.cookies.read() {
+    match self.credential_data.read() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
-      Ok(store) => Ok(store.clone()),
+      Ok(holder) => Ok(holder.browser_cookies.clone()),
     }
   }
 
-  //pub fn maybe_copy_user_info(&self) -> anyhow::Result<Option<MidjourneyUserInfo>> {
-  //  match self.user_info.read() {
-  //    Err(err) => Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
-  //    Ok(info) => Ok(info.clone()),
-  //  }
-  //}
+  pub fn maybe_copy_client_secrets(&self) -> anyhow::Result<Option<GrokClientSecrets>> {
+    match self.credential_data.read() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(holder) => Ok(holder.grok_client_secrets.clone()),
+    }
+  }
 
   pub fn replace_cookie_store(&self, store: CookieStore) -> anyhow::Result<()> {
-    match self.cookies.write() {
+    match self.credential_data.write() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
-      Ok(mut current_store) => {
-        *current_store = Some(store);
+      Ok(mut holder) => {
+        holder.browser_cookies = Some(store);
         Ok(())
       }
     }
   }
 
-  //pub fn replace_user_info(&self, user_info: MidjourneyUserInfo) -> anyhow::Result<()> {
-  //  match self.user_info.write() {
-  //    Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
-  //    Ok(mut current_info) => {
-  //      *current_info = Some(user_info);
-  //      Ok(())
-  //    }
-  //  }
-  //}
+  pub fn replace_client_secrets(&self, secrets: GrokClientSecrets) -> anyhow::Result<()> {
+    match self.credential_data.write() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut holder) => {
+        holder.grok_client_secrets = Some(secrets);
+        Ok(())
+      }
+    }
+  }
 
   // NB: This is just a heuristic. We'll add better checks later.
   pub fn session_appears_active(&self) -> anyhow::Result<bool> {
-    let maybe_cookies = match self.cookies.read() {
+    let holder = match self.credential_data.read() {
       Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
       Ok(store) => store.clone(),
     };
 
-    //let maybe_user_info = match self.user_info.read() {
-    //  Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
-    //  Ok(info) => info.clone(),
-    //};
-
-    if maybe_cookies.is_none() {
+    if holder.browser_cookies.is_none() {
       return Ok(false);
     }
 
-    let cookies = maybe_cookies.unwrap();
-    //let user_info = maybe_user_info.unwrap();
+    let cookies = match holder.browser_cookies.as_ref() {
+      None => return Ok(false),
+      Some(cookies) => cookies,
+    };
+
+    let has_user_data = holder.grok_user_data.is_some();
 
     // NB: We consider the session active if we have auth cookies and a user id.
     //let has_user_id = user_info.user_id.is_some();
@@ -119,51 +126,36 @@ impl GrokCredentialManager {
     // TODO: Heuristic should count.
     // TODO: Consolidate with "login window thread" logic.
     // TODO: Check timestamp of last valid request.
-    Ok(maybe_has_auth_cookies && maybe_has_big_enough_cookie && maybe_has_big_enough_cookie)
+    Ok(has_user_data || (maybe_has_auth_cookies && maybe_has_big_enough_cookie && maybe_has_big_enough_cookie))
   }
 
   pub fn clear_credentials(&self) -> anyhow::Result<()> {
-    match self.cookies.write() {
+    match self.credential_data.write() {
       Err(err) => return Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
-      Ok(mut store) => *store = None,
+      Ok(mut store) => *store = GrokCredentialHolder::empty(),
     }
-    //match self.user_info.write() {
-    //  Err(err) => return Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
-    //  Ok(mut info) => *info = None,
-    //}
     Ok(())
   }
 
   pub fn persist_to_disk(&self) -> anyhow::Result<()> {
-    let maybe_cookies = match self.cookies.read() {
+    let creds = match self.credential_data.read() {
       Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
       Ok(store) => store.clone(),
     };
 
-    //let maybe_user_info = match self.user_info.read() {
-    //  Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
-    //  Ok(info) => info.clone(),
-    //};
-
-    let maybe_cookies_header= maybe_cookies
-        .as_ref()
-        .map(|cookies| cookies.to_cookie_string());
-
-    let maybe_cookies= maybe_cookies
-        .map(|cookies| cookies.to_serializable());
-
-    //let maybe_user_info= maybe_user_info
-    //    .map(|info| info.to_serializable());
-
-    if maybe_cookies.is_none() {
-      info!("Nothing to write to disk, skipping.");
-      return Ok(());
-
-    }
-
     let state = GrokSerializableState {
       version: SERIALIZABLE_GROK_STATE_VERSION,
-      user_cookies: maybe_cookies,
+      user_cookies: creds.browser_cookies
+          .as_ref()
+          .map(|cookies| cookies.to_serializable()),
+      user_id: creds.grok_user_data
+          .as_ref()
+          .map(|data| data.user_id.to_string()),
+      user_email: creds.grok_user_data
+          .as_ref()
+          .map(|data| data.user_email.as_ref())
+          .flatten()
+          .map(|email| email.to_string()),
     };
 
     let path = self.app_data_root.credentials_dir().get_grok_state_path();
@@ -172,7 +164,8 @@ impl GrokCredentialManager {
     std::fs::write(path, serialized)?;
 
     // TODO: This is just for building the client and testing.
-    if let Some(cookies_header) = maybe_cookies_header {
+    if let Some(cookies) = creds.browser_cookies.as_ref() {
+      let cookies_header = cookies.to_cookie_string();
       let path = self.app_data_root.credentials_dir().get_grok_cookies_path();
       std::fs::write(path, cookies_header)?;
     }

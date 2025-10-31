@@ -198,6 +198,7 @@ errors = { path = "crates/lib/errors" }
 fal_client = { path = "crates/api_clients/fal_client" }
 file_to_base64_url = { path = "crates/lib/files/file_to_base64_url" }
 filesys = { path = "crates/lib/files/filesys" }
+grok_client = { path = "crates/api_clients/grok_client" }
 idempotency = { path = "crates/lib/idempotency" }
 images = { path = "crates/lib/files/images" }
 jwt_light = { path = "crates/lib/jwt_light" }

@@ -32,6 +32,7 @@ cookie_store.workspace = true
 enums.workspace = true
 errors.workspace = true
 filesys.workspace = true
+grok_client.workspace = true
 idempotency.workspace = true
 images.workspace = true
 memory_store.workspace = true
