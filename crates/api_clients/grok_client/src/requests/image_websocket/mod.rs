@@ -1,4 +1,4 @@
-pub mod clonable_websocket;
+pub mod grok_websocket;
 pub mod create_listen_websocket;
 pub mod listen_for_websocket_images;
 pub mod listen_for_websocket_request_id;

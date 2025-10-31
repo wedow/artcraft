@@ -1,13 +1,13 @@
 use crate::datatypes::api::request_id::RequestId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::requests::image_websocket::clonable_websocket::ClonableWebsocket;
+use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
 use crate::requests::image_websocket::messages::message_request_id::MessageRequestId;
 use std::time::{Duration, Instant};
 use wreq::ws::message::Message;
 
 pub struct ListenForWebsocketRequestIdArgs<'a> {
-  pub websocket: &'a ClonableWebsocket,
+  pub websocket: &'a GrokWebsocket,
   pub timeout: Duration,
 }
 
@@ -70,7 +70,7 @@ pub async fn listen_for_websocket_request_id(args: ListenForWebsocketRequestIdAr
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::image_websocket::clonable_websocket::ClonableWebsocket;
+  use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
   use crate::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
   use crate::requests::image_websocket::listen_for_websocket_request_id::{listen_for_websocket_request_id, ListenForWebsocketRequestIdArgs};
   use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
@@ -94,7 +94,7 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    let websocket = ClonableWebsocket::new(websocket);
+    let websocket = GrokWebsocket::new(websocket);
 
     println!("Sending...");
     std::io::stdout().flush()?;

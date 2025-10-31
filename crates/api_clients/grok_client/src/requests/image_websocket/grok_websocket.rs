@@ -11,11 +11,11 @@ use wreq::ws::message::Message;
 use wreq::ws::WebSocket;
 
 #[derive(Clone)]
-pub struct ClonableWebsocket {
+pub struct GrokWebsocket {
   pub(crate) websocket: Arc<RwLock<WebSocket>>,
 }
 
-impl ClonableWebsocket {
+impl GrokWebsocket {
   pub fn new(websocket: WebSocket) -> Self {
     Self {
       websocket: Arc::new(RwLock::new(websocket)),
@@ -76,7 +76,6 @@ impl ClonableWebsocket {
       },
     }
   }
-
 
   pub async fn try_next_timeout(&self, duration: Duration) -> Result<Option<Message>, GrokClientError> {
     match self.websocket.write() {
