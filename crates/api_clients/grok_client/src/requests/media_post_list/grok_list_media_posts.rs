@@ -49,7 +49,7 @@ pub struct MediaPost {
 pub struct VideoData {
   pub file_id: FileId,
   pub video_url: String,
-  pub user_prompt: Option<String>,
+  pub prompt: Option<String>,
 }
 
 impl <'a> GrokMediaPostListRequest<'a> {
@@ -137,6 +137,11 @@ impl <'a> GrokMediaPostListRequest<'a> {
 
     for post in response.posts.into_iter() {
       let post_id = post.id;
+
+      // If the child video doesn't have a prompt, this parent prompt could
+      // be a VLM-based auto-prompt we can copy to the video.
+      let maybe_parent_prompt = empty_to_none(post.prompt);
+
       let mut video_data = None;
 
       for child in post.child_posts.into_iter() {
@@ -147,10 +152,16 @@ impl <'a> GrokMediaPostListRequest<'a> {
             has_video = true;
           }
           if has_video {
+            let mut maybe_video_prompt = empty_to_none(child.original_prompt);
+
+            if maybe_video_prompt.is_none() {
+              maybe_video_prompt = maybe_parent_prompt.clone();
+            }
+
             video_data = Some(VideoData {
               file_id: FileId(child.id),
               video_url: url,
-              user_prompt: child.original_prompt,
+              prompt: maybe_video_prompt,
             });
           }
         }
@@ -168,6 +179,15 @@ impl <'a> GrokMediaPostListRequest<'a> {
     })
   }
 }
+
+pub fn empty_to_none(opt: Option<String>) -> Option<String> {
+  match opt.as_deref() {
+    None => None,
+    Some("") => None,
+    _ => opt,
+  }
+}
+
 
 #[cfg(test)]
 mod tests {

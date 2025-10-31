@@ -3,7 +3,7 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug)]
 pub (crate) struct PostListRawResponse {
   pub posts: Vec<PostItem>,
-  
+
   #[serde(rename = "nextCursor")]
   pub next_cursor: Option<String>,
 }
@@ -13,6 +13,10 @@ pub (crate) struct PostItem {
   /// The "id" of the post.
   /// This is how we assert video task completion
   pub id: String,
+
+  /// Sometimes this is a VLM-generated prompt
+  /// This might become the prompt of the video if the video has no prompt.
+  pub prompt: Option<String>,
 
   /// eg. `MEDIA_POST_TYPE_IMAGE`
   #[serde(rename = "mediaType")]
