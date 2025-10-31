@@ -38,13 +38,7 @@ pub async fn handle_grok_video(
   grok_credential_manager: &GrokCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
-  let creds = match grok_credential_manager.maybe_copy_full_credentials()? {
-    Some(creds) => creds,
-    None => {
-      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Grok, &app);
-      return Err(GenerateError::needs_grok_credentials());
-    },
-  };
+  let creds = get_grok_creds(app, grok_credential_manager).await?;
 
   let image_token = match request.image_media_token.as_ref() {
     Some(token) => token,
@@ -83,8 +77,8 @@ pub async fn handle_grok_video(
   };
 
   Ok(TaskEnqueueSuccess {
-    provider: GenerationProvider::Sora,
-    model: Some(GenerationModel::Sora2),
+    provider: GenerationProvider::Grok,
+    model: Some(GenerationModel::GrokVideo),
     provider_job_id: Some(post_id.to_string()),
     task_type: TaskType::VideoGeneration,
   })
@@ -98,12 +92,15 @@ async fn get_grok_creds(app: &AppHandle, grok_credential_manager: &GrokCredentia
   let cookies = match grok_credential_manager.maybe_copy_cookie_store()? {
     Some(cookies) => cookies.to_cookie_string(),
     None => {
+      warn!("No Grok Cookie stored. Must login.");
       ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Grok, &app);
       return Err(GenerateError::needs_grok_credentials())
     }
   };
 
   let cookies = GrokCookies::new(cookies);
+
+  info!("Requesting Grok client secrets...");
 
   let upgraded = request_client_secrets(RequestClientSecretsArgs {
     cookies: &cookies,
@@ -119,6 +116,8 @@ async fn get_grok_creds(app: &AppHandle, grok_credential_manager: &GrokCredentia
       return Ok(full_creds)
     }
   }
+
+  warn!("Grok upgrade failed. Try logging in again...");
 
   ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Grok, &app);
   Err(GenerateError::needs_grok_credentials())
