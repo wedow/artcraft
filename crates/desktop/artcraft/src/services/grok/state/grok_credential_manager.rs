@@ -132,6 +132,11 @@ impl GrokCredentialManager {
   }
 
   // NB: This is just a heuristic. We'll add better checks later.
+  pub fn do_task_polling(&self) -> anyhow::Result<bool> {
+    self.session_appears_active()
+  }
+  
+  // NB: This is just a heuristic. We'll add better checks later.
   pub fn session_appears_active(&self) -> anyhow::Result<bool> {
     let holder = match self.credential_data.read() {
       Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),

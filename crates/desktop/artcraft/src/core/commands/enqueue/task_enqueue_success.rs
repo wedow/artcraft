@@ -68,6 +68,7 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Gemini25Flash) => Some(TaskModelType::Gemini25Flash),
       Some(GenerationModel::GptImage1) => Some(TaskModelType::GptImage1),
       Some(GenerationModel::Recraft3) => Some(TaskModelType::Recraft3),
+      Some(GenerationModel::GrokVideo) => Some(TaskModelType::GrokVideo),
       Some(GenerationModel::Kling21Pro) => Some(TaskModelType::Kling21Pro),
       Some(GenerationModel::Kling21Master) => Some(TaskModelType::Kling21Master),
       Some(GenerationModel::Seedance10Lite) => Some(TaskModelType::Seedance10Lite),

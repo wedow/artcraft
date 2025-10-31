@@ -1,5 +1,6 @@
 use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::credentials::grok_cookies::GrokCookies;
+use crate::datatypes::api::user_id::UserId;
 
 /// Includes the cookies and all the magic other bits needed to call the API.
 #[derive(Clone)]
@@ -21,5 +22,9 @@ impl GrokFullCredentials {
       cookies,
       client_secrets,
     }
+  }
+  
+  pub fn get_user_id_ref(&self) -> &UserId {
+    &self.client_secrets.user_id
   }
 }

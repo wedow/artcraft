@@ -113,6 +113,7 @@ async fn get_grok_creds(app: &AppHandle, grok_credential_manager: &GrokCredentia
     Ok(secrets) => {
       let full_creds = GrokFullCredentials::from_cookies_and_client_secrets(cookies, secrets);
       grok_credential_manager.replace_full_credentials(full_creds.clone())?;
+      grok_credential_manager.persist_to_disk()?;
       return Ok(full_creds)
     }
   }

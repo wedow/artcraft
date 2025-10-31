@@ -10,6 +10,7 @@ use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
+use crate::services::grok::threads::grok_video_task_polling::grok_video_task_polling_thread::grok_video_task_polling_thread;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::threads::midjourney_long_polling_thread::midjourney_long_polling_thread;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -66,6 +67,15 @@ pub async fn handle_tauri_startup(
     &storyteller_creds_manager,
     &sora_task_queue,
   )?;
+
+  tauri::async_runtime::spawn(grok_video_task_polling_thread(
+    app.clone(),
+    app_env_configs.clone(),
+    root.clone(),
+    task_database.clone(),
+    grok_creds_manager.clone(),
+    storyteller_creds_manager.clone(),
+  ));
 
   tauri::async_runtime::spawn(midjourney_long_polling_thread(
     app.clone(),
