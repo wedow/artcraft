@@ -100,7 +100,7 @@ mod tests {
     std::io::stdout().flush()?;
 
     let _result = prompt_websocket_image(PromptWebsocketImageArgs {
-      websocket_wrapped: websocket.clone(),
+      websocket_wrapped: &websocket,
       prompt,
     }).await?;
 

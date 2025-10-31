@@ -3,7 +3,7 @@ use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
 use crate::requests::image_websocket::messages::websocket_client_message::WebsocketClientMessage;
 
 pub struct PromptWebsocketImageArgs<'a> {
-  pub websocket_wrapped: GrokWebsocket,
+  pub websocket_wrapped: &'a GrokWebsocket,
   pub prompt: &'a str,
 }
 
@@ -46,7 +46,7 @@ mod tests {
     std::io::stdout().flush()?;
 
     let result = prompt_websocket_image(PromptWebsocketImageArgs {
-      websocket_wrapped: websocket.clone(),
+      websocket_wrapped: &websocket,
       prompt: "a dog riding a motorcycle",
     }).await?;
 

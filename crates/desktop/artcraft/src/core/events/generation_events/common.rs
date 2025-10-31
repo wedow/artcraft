@@ -30,6 +30,8 @@ pub enum GenerationModel {
   FluxProKontextMax,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  #[serde(rename = "grok_image")]
+  GrokImage,
   #[serde(rename = "gemini_25_flash")]
   Gemini25Flash,
   

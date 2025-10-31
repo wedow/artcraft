@@ -31,6 +31,8 @@ pub enum TaskModelType {
   Gemini25Flash,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  #[serde(rename = "grok_image")]
+  GrokImage,
   #[serde(rename = "recraft_3")]
   Recraft3,
   
@@ -84,6 +86,7 @@ impl TaskModelType {
       Self::FluxProKontextMax => "flux_pro_kontext_max",
       Self::Gemini25Flash => "gemini_25_flash",
       Self::GptImage1 => "gpt_image_1",
+      Self::GrokImage => "grok_image",
       Self::Recraft3 => "recraft_3",
       Self::Midjourney => "midjourney",
       // Video models
@@ -114,6 +117,7 @@ impl TaskModelType {
       "flux_pro_kontext_max" => Ok(Self::FluxProKontextMax),
       "gemini_25_flash" => Ok(Self::Gemini25Flash),
       "gpt_image_1" => Ok(Self::GptImage1),
+      "grok_image" => Ok(Self::GrokImage),
       "recraft_3" => Ok(Self::Recraft3),
       "midjourney" => Ok(Self::Midjourney),
       // Video models
@@ -147,6 +151,7 @@ impl TaskModelType {
       Self::FluxProKontextMax,
       Self::Gemini25Flash,
       Self::GptImage1,
+      Self::GrokImage,
       Self::Recraft3,
       Self::Midjourney,
       // Video models
@@ -187,6 +192,7 @@ mod tests {
       assert_serialization(TaskModelType::FluxProKontextMax, "flux_pro_kontext_max");
       assert_serialization(TaskModelType::Gemini25Flash, "gemini_25_flash");
       assert_serialization(TaskModelType::GptImage1, "gpt_image_1");
+      assert_serialization(TaskModelType::GrokImage, "grok_image");
       assert_serialization(TaskModelType::Recraft3, "recraft_3");
       assert_serialization(TaskModelType::Midjourney, "midjourney");
       // Video models
@@ -216,6 +222,7 @@ mod tests {
       assert_eq!(TaskModelType::FluxProKontextMax.to_str(), "flux_pro_kontext_max");
       assert_eq!(TaskModelType::Gemini25Flash.to_str(), "gemini_25_flash");
       assert_eq!(TaskModelType::GptImage1.to_str(), "gpt_image_1");
+      assert_eq!(TaskModelType::GrokImage.to_str(), "grok_image");
       assert_eq!(TaskModelType::Recraft3.to_str(), "recraft_3");
       assert_eq!(TaskModelType::Midjourney.to_str(), "midjourney");
       // Video models
@@ -245,6 +252,7 @@ mod tests {
       assert_eq!(TaskModelType::from_str("flux_pro_kontext_max").unwrap(), TaskModelType::FluxProKontextMax);
       assert_eq!(TaskModelType::from_str("gemini_25_flash").unwrap(), TaskModelType::Gemini25Flash);
       assert_eq!(TaskModelType::from_str("gpt_image_1").unwrap(), TaskModelType::GptImage1);
+      assert_eq!(TaskModelType::from_str("grok_image").unwrap(), TaskModelType::GrokImage);
       assert_eq!(TaskModelType::from_str("recraft_3").unwrap(), TaskModelType::Recraft3);
       assert_eq!(TaskModelType::from_str("midjourney").unwrap(), TaskModelType::Midjourney);
       // Video models
@@ -276,7 +284,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 22);
+      assert_eq!(variants.len(), 23);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -287,6 +295,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::FluxProKontextMax));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Gemini25Flash));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GptImage1));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::GrokImage));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Recraft3));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Midjourney));
       // Video models

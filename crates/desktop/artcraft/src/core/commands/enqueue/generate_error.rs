@@ -1,4 +1,5 @@
 use crate::core::artcraft_error::ArtcraftError;
+use anyhow::anyhow;
 use base64::DecodeError;
 use errors::AnyhowError;
 use grok_client::error::grok_error::GrokError;
@@ -79,6 +80,8 @@ pub enum BillingProvider {
 #[derive(Debug)]
 pub enum ProviderFailureReason {
   GrokError(GrokError),
+  /// NB: The Grok client doesn't say why certain errors (eg. missing fields) happen, so we synthesize this.
+  GrokJobEnqueueFailed,
   //Fal(FalErrorPlus),
   MidjourneyError(MidjourneyError),
   /// NB: The midjourney client doesn't categorize all errors, so we have to do so on our end.
@@ -148,6 +151,8 @@ impl From<ArtcraftError> for GenerateError {
       ArtcraftError::IoError(e) => Self::IoError(e),
       ArtcraftError::GrokError(e) => Self::ProviderFailure(ProviderFailureReason::GrokError(e)),
       ArtcraftError::StorytellerError(e) => Self::ProviderFailure(ProviderFailureReason::StorytellerError(e)),
+      ArtcraftError::RwLockReadError => Self::AnyhowError(anyhow!("Lock read error")),
+      ArtcraftError::RwLockWriteError => Self::AnyhowError(anyhow!("Lock write error")),
     }
   }
 }
