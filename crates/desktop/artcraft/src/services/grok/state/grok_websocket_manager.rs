@@ -2,14 +2,15 @@ use crate::core::artcraft_error::ArtcraftError;
 use errors::AnyhowResult;
 use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
 use log::error;
-use std::sync::{Arc, LockResult, RwLock};
+use std::sync::{Arc, RwLock};
 
 
 /// NB: This is inefficient because the websockets are locked at two layers.
 /// Should be fine for our performance needs, though.
 #[derive(Clone)]
 pub struct GrokWebsocketManager {
-  websocket: Arc<RwLock<Option<GrokWebsocket>>>,
+  //websocket: Arc<RwLock<Option<GrokWebsocket>>>,
+  websocket: Arc<RwLock<Option<()>>>,
 }
 
 impl GrokWebsocketManager {
@@ -22,7 +23,8 @@ impl GrokWebsocketManager {
   pub fn set_websocket(&self, websocket: GrokWebsocket) -> Result<(), ArtcraftError> {
     match self.websocket.write() {
       Ok(mut guard) => {
-        *guard = Some(websocket);
+        //*guard = Some(websocket);
+        *guard = Some(());
         Ok(())
       }
       Err(err) => {
@@ -48,7 +50,8 @@ impl GrokWebsocketManager {
   pub fn grab_websocket(&self) -> Result<Option<GrokWebsocket>, ArtcraftError> {
     match self.websocket.read() {
       Ok(guard) => {
-        Ok(guard.clone())
+        //Ok(guard.clone())
+        Ok(None)
       }
       Err(err) => {
         error!("Error reading locked websocket: {}", err);
