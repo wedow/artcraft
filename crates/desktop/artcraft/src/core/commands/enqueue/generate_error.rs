@@ -116,7 +116,7 @@ impl GenerateError {
   pub fn needs_fal_api_key() -> Self {
     Self::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey)
   }
-  
+
   pub fn needs_grok_credentials() -> Self {
     Self::MissingCredentials(MissingCredentialsReason::NeedsGrokCredentials)
   }
@@ -146,6 +146,7 @@ impl From<ArtcraftError> for GenerateError {
       ArtcraftError::AnyhowError(e) => Self::AnyhowError(e),
       ArtcraftError::DecodeError(e) => Self::DecodeError(e),
       ArtcraftError::IoError(e) => Self::IoError(e),
+      ArtcraftError::GrokError(e) => Self::ProviderFailure(ProviderFailureReason::GrokError(e)),
       ArtcraftError::StorytellerError(e) => Self::ProviderFailure(ProviderFailureReason::StorytellerError(e)),
     }
   }

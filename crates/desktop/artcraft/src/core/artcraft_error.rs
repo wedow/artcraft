@@ -1,3 +1,4 @@
+use grok_client::error::grok_error::GrokError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use storyteller_client::error::storyteller_error::StorytellerError;
@@ -7,6 +8,8 @@ pub enum ArtcraftError {
   AnyhowError(anyhow::Error),
   DecodeError(base64::DecodeError),
   IoError(std::io::Error),
+  // Service errors
+  GrokError(GrokError),
   StorytellerError(StorytellerError),
 }
 
@@ -18,6 +21,7 @@ impl Display for ArtcraftError {
       Self::AnyhowError(e) => write!(f, "AnyhowError: {:?}", e),
       Self::DecodeError(e) => write!(f, "DecodeError: {:?}", e),
       Self::IoError(e) => write!(f, "IoError: {:?}", e),
+      Self::GrokError(e) => write!(f, "GrokError: {:?}", e),
       Self::StorytellerError(e) => write!(f, "StorytellerError: {:?}", e),
     }
   }
@@ -41,8 +45,15 @@ impl From<std::io::Error> for ArtcraftError {
   }
 }
 
+impl From<GrokError> for ArtcraftError {
+  fn from(value: GrokError) -> Self {
+    Self::GrokError(value)
+  }
+}
+
 impl From<StorytellerError> for ArtcraftError {
   fn from(value: StorytellerError) -> Self {
     Self::StorytellerError(value)
   }
 }
+

@@ -53,6 +53,9 @@ pub enum GrokClientError {
   /// Something is broken with timeout math
   TimeoutMathBroken,
 
+  /// Can't make request because cookies aren't present
+  NoCookiesPresent,
+
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
 //
@@ -111,6 +114,7 @@ impl Display for GrokClientError {
       Self::ScriptLogicOutOfDate => write!(f, "Script logic out of date"),
       Self::BadSignatureInputs => write!(f, "Bad signature inputs"),
       Self::TimeoutMathBroken => write!(f, "Timeout math is broken"),
+      Self::NoCookiesPresent => write!(f, "No cookies present"),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),

@@ -7,6 +7,7 @@ use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
+use crate::services::grok::util::get_or_upgrade_grok_full_credentials::get_or_update_grok_full_credentials;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::utils::download_midjourney_image::download_midjourney_image;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -20,6 +21,7 @@ use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use enums::tauri::tasks::task_status::TaskStatus;
 use errors::AnyhowResult;
 use grok_client::credentials::grok_full_credentials::GrokFullCredentials;
+use grok_client::error::grok_error::GrokError;
 use grok_client::requests::download_video_file::download_video_file::{download_video_file, DownloadVideoFileArgs};
 use grok_client::requests::download_video_file::grok_download_video::GrokDownloadVideo;
 use grok_client::requests::media_posts::list_media_posts::grok_list_media_posts::{GrokMediaPostList, GrokMediaPostListRequest, VideoData};
@@ -49,7 +51,6 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use url::Url;
-use grok_client::error::grok_error::GrokError;
 
 pub async fn grok_video_task_polling_thread(
   app_handle: AppHandle,
@@ -100,14 +101,14 @@ async fn polling_loop(
       }
     };
 
-    let grok_full_creds = match grok_creds.maybe_copy_full_credentials()? {
-      Some(full_creds) => full_creds,
-      None => {
+    let grok_full_creds = match get_or_update_grok_full_credentials(&grok_creds).await {
+      Ok(creds) => creds,
+      Err(err) => {
+        info!("No full grok credentials: {:?}", err);
         tokio::time::sleep(std::time::Duration::from_millis(30_000)).await;
         continue;
       }
     };
-
 
     let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
@@ -143,6 +144,8 @@ async fn poll_grok_tasks(
   if local_tasks.is_empty() {
     return Ok(())
   }
+  
+  info!("Grok tasks waiting: {:?}", local_tasks.len());
 
   // Map of Grok Post ID to Local Task.
   let local_tasks_by_grok_post_id = local_tasks.iter()
@@ -182,7 +185,7 @@ async fn poll_grok_tasks(
       None => continue,
     };
 
-    upload_midjourney_batch(
+    upload_grok_video(
       &app_handle,
       &app_env_configs,
       app_data_root,
@@ -202,7 +205,7 @@ async fn poll_grok_tasks(
   Ok(())
 }
 
-async fn upload_midjourney_batch(
+async fn upload_grok_video(
   app_handle: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
