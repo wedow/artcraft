@@ -1,4 +1,4 @@
-pub mod download_file;
+pub mod download_video_file;
 pub mod image_websocket;
 pub mod index_page;
 pub mod media_posts;

@@ -85,7 +85,7 @@ pub async fn download_video_file(args: DownloadVideoFileArgs<'_>) -> Result<Vide
 mod tests {
   use crate::datatypes::api::file_id::FileId;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
-  use crate::requests::download_file::download_video_file::{download_video_file, DownloadVideoFileArgs};
+  use crate::requests::download_video_file::download_video_file::{download_video_file, DownloadVideoFileArgs};
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use errors::AnyhowResult;
 
