@@ -319,7 +319,6 @@ async fn upload_images_to_storyteller(
       Some(&storyteller_creds),
       &task,
       &batch_token,
-
     ).await?;
 
     return Ok(())
@@ -332,7 +331,7 @@ async fn send_frontend_ui_update(
   maybe_creds: Option<&StorytellerCredentialSet>,
   task: &Task,
   batch_token: &BatchGenerationToken,
-) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
+) -> AnyhowResult<()> {
 
   let result = list_batch_generated_redux_media_files(
     &app_env_configs.storyteller_host,
@@ -353,9 +352,13 @@ async fn send_frontend_ui_update(
       })
       .collect();
 
-  Ok(TextToImageGenerationCompleteEvent {
+  let event = TextToImageGenerationCompleteEvent {
     generated_images: media_files,
     maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
     maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
-  })
+  };
+
+  event.send_infallible(app);
+
+  Ok(())
 }
