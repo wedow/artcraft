@@ -4,7 +4,6 @@ use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
-use crate::services::grok::state::grok_websocket_manager::GrokWebsocketManager;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
@@ -16,7 +15,6 @@ pub async fn handle_grok(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   creds_manager: &GrokCredentialManager,
-  websocket_manager: &GrokWebsocketManager,
   grok_image_prompt_queue: &GrokImagePromptQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
@@ -47,14 +45,14 @@ pub async fn handle_grok(
   //};
   //
   //info!("Successfully enqueued MidJourney. Job token: {}", request_id);
-  
+
   let job_id = generate_random_uuid();
-  
+
   let prompt = request.prompt
       .as_deref()
       .map(|prompt| prompt.trim().to_string())
       .unwrap_or_else(|| "".to_string());
-  
+
   grok_image_prompt_queue.enqueue(&prompt)?;
 
   Ok(TaskEnqueueSuccess {

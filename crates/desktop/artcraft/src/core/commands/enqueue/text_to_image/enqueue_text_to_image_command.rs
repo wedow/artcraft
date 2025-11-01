@@ -22,7 +22,6 @@ use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
-use crate::services::grok::state::grok_websocket_manager::GrokWebsocketManager;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
@@ -151,7 +150,6 @@ pub async fn enqueue_text_to_image_command(
   task_database: State<'_, TaskDatabase>,
   mj_creds_manager: State<'_, MidjourneyCredentialManager>,
   grok_creds_manager: State<'_, GrokCredentialManager>,
-  grok_websocket_manager: State<'_, GrokWebsocketManager>,
   grok_image_prompt_queue: State<'_, GrokImagePromptQueue>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
@@ -168,7 +166,6 @@ pub async fn enqueue_text_to_image_command(
     &task_database,
     &mj_creds_manager,
     &grok_creds_manager,
-    &grok_websocket_manager,
     &grok_image_prompt_queue,
     &storyteller_creds_manager,
     &app_env_configs,
@@ -239,7 +236,6 @@ pub async fn handle_request(
   task_database: &TaskDatabase,
   mj_creds_manager: &MidjourneyCredentialManager,
   grok_creds_manager: &GrokCredentialManager,
-  grok_websocket_manager: &GrokWebsocketManager,
   grok_image_prompt_queue: &GrokImagePromptQueue,
   storyteller_creds_manager: &StorytellerCredentialManager,
   app_env_configs: &AppEnvConfigs,
@@ -256,7 +252,6 @@ pub async fn handle_request(
     &app_env_configs,
     &mj_creds_manager,
     &grok_creds_manager,
-    &grok_websocket_manager,
     &grok_image_prompt_queue,
     &sora_creds_manager,
     &sora_task_queue,
@@ -293,7 +288,6 @@ pub async fn dispatch_request(
   app_env_configs: &AppEnvConfigs,
   mj_creds_manager: &MidjourneyCredentialManager,
   grok_creds_manager: &GrokCredentialManager,
-  grok_websocket_manager: &GrokWebsocketManager,
   grok_image_prompt_queue: &GrokImagePromptQueue,
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
@@ -333,7 +327,6 @@ pub async fn dispatch_request(
         request,
         app_env_configs,
         grok_creds_manager,
-        grok_websocket_manager,
         grok_image_prompt_queue,
       ).await;
     }

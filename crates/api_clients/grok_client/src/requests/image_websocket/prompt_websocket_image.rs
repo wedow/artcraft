@@ -3,7 +3,7 @@ use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
 use crate::requests::image_websocket::messages::websocket_client_message::WebsocketClientMessage;
 
 pub struct PromptWebsocketImageArgs<'a> {
-  pub websocket_wrapped: &'a GrokWebsocket,
+  pub websocket: &'a mut GrokWebsocket,
   pub prompt: &'a str,
 }
 
@@ -11,15 +11,16 @@ pub struct PromptWebsocketImageArgs<'a> {
 pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Result<(), GrokError> {
   let message = WebsocketClientMessage::new_image_prompt(args.prompt);
 
-  args.websocket_wrapped.send_serializable(&message).await?;
+  args.websocket.send_serializable(&message).await?;
 
   Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
   use crate::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+  use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
+  use crate::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
   use crate::requests::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
   use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
@@ -40,13 +41,14 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    let websocket = GrokWebsocket::new(websocket);
+    //let websocket = GrokWrappedWebsocket::new(websocket);
+    let mut websocket = GrokWebsocket::new(websocket);
 
     println!("Sending...");
     std::io::stdout().flush()?;
 
     let result = prompt_websocket_image(PromptWebsocketImageArgs {
-      websocket_wrapped: &websocket,
+      websocket: &mut websocket,
       prompt: "a dog riding a motorcycle",
     }).await?;
 

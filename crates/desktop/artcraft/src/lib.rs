@@ -34,7 +34,6 @@ use crate::services::grok::commands::grok_get_credential_info_command::grok_get_
 use crate::services::grok::commands::grok_open_login_command::grok_open_login_command;
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
-use crate::services::grok::state::grok_websocket_manager::GrokWebsocketManager;
 use crate::services::midjourney::commands::midjourney_clear_credentials_command::midjourney_clear_credentials_command;
 use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
 use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
@@ -106,9 +105,6 @@ pub fn run() {
   let grok_creds_manager = GrokCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let grok_creds_manager_2 = grok_creds_manager.clone();
 
-  let grok_websocket_manager = GrokWebsocketManager::new();
-  let grok_websocket_manager_2= grok_websocket_manager.clone();
-
   let grok_prompt_queue = GrokImagePromptQueue::new();
   let grok_prompt_queue_2 = grok_prompt_queue.clone();
 
@@ -150,7 +146,6 @@ pub fn run() {
           sora_tasks,
           midjourney_creds_manager_2,
           grok_creds_manager_2,
-          grok_websocket_manager_2,
           grok_prompt_queue_2,
         ).await;
 
@@ -167,7 +162,6 @@ pub fn run() {
     .manage(app_preferences)
     .manage(artcraft_platform_info)
     .manage(grok_creds_manager)
-    .manage(grok_websocket_manager)
     .manage(grok_prompt_queue)
     .manage(midjourney_creds_manager)
     .manage(sora_creds_manager)

@@ -2,6 +2,7 @@ use crate::datatypes::api::request_id::RequestId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
+use crate::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
 use crate::requests::image_websocket::messages::message_image_data::MessageImageData;
 use crate::utils::scrub_blobs_for_debug_logging::scrub_blobs_for_debug_logging;
 use log::info;
@@ -12,7 +13,7 @@ use wreq::ws::message::Message;
 const DEFAULT_IMAGE_COUNT: usize = 6;
 
 pub struct ListenForWebsocketImagesArgs<'a> {
-  pub websocket: &'a GrokWebsocket,
+  pub websocket: &'a mut GrokWebsocket,
   pub timeout: Duration,
 }
 
@@ -113,8 +114,8 @@ pub async fn listen_for_websocket_images(args: ListenForWebsocketImagesArgs<'_>)
 
 #[cfg(test)]
 mod tests {
-  use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
   use crate::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+  use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
   use crate::requests::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ListenForWebsocketImagesArgs};
   use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
@@ -137,13 +138,14 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    let websocket = GrokWebsocket::new(websocket);
+    //let websocket = GrokWrappedWebsocket::new(websocket);
+    let mut websocket = GrokWebsocket::new(websocket);
 
     println!("Sending...");
     std::io::stdout().flush()?;
 
     let _result = prompt_websocket_image(PromptWebsocketImageArgs {
-      websocket_wrapped: &websocket,
+      websocket: &mut websocket,
       prompt,
     }).await?;
 
@@ -153,7 +155,7 @@ mod tests {
     println!("Polling.");
 
     let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {
-      websocket: &websocket,
+      websocket: &mut websocket,
       timeout: Duration::from_millis(10_000),
     }).await?;
 

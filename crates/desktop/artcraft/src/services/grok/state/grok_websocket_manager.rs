@@ -1,6 +1,6 @@
 use crate::core::artcraft_error::ArtcraftError;
 use errors::AnyhowResult;
-use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
+use grok_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
 use log::error;
 use std::sync::{Arc, RwLock};
 
@@ -20,7 +20,7 @@ impl GrokWebsocketManager {
     }
   }
 
-  pub fn set_websocket(&self, websocket: GrokWebsocket) -> Result<(), ArtcraftError> {
+  pub fn set_websocket(&self, websocket: GrokWrappedWebsocket) -> Result<(), ArtcraftError> {
     match self.websocket.write() {
       Ok(mut guard) => {
         //*guard = Some(websocket);
@@ -47,7 +47,7 @@ impl GrokWebsocketManager {
     }
   }
 
-  pub fn grab_websocket(&self) -> Result<Option<GrokWebsocket>, ArtcraftError> {
+  pub fn grab_websocket(&self) -> Result<Option<GrokWrappedWebsocket>, ArtcraftError> {
     match self.websocket.read() {
       Ok(guard) => {
         //Ok(guard.clone())

@@ -12,7 +12,7 @@ use enums::common::model_type::ModelType;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use errors::AnyhowResult;
 use grok_client::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
+use grok_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
 use grok_client::requests::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
 use grok_client::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
 use idempotency::uuid::generate_random_uuid;
@@ -24,6 +24,7 @@ use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
+use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 
 pub async fn grok_image_websocket_thread(
@@ -83,7 +84,7 @@ async fn inner_loop(
       cookies: &cookie_header,
     }).await?;
 
-    let websocket = GrokWebsocket::new(websocket);
+    let mut websocket = GrokWebsocket::new(websocket);
 
     //poll_task_loop(
     //  &app_handle,
@@ -123,12 +124,12 @@ async fn inner_loop(
       info!("Prompting Grok websocket: {}", prompt);
 
       let _result = prompt_websocket_image(PromptWebsocketImageArgs {
-        websocket_wrapped: &websocket,
+        websocket: &mut websocket,
         prompt: &prompt,
       }).await?;
 
       let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {
-        websocket: &websocket,
+        websocket: &mut websocket,
         timeout: Duration::from_millis(30_000),
       }).await?;
 
