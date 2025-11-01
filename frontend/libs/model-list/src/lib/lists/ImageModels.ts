@@ -4,6 +4,21 @@ import { ModelTag } from "../classes/metadata/ModelTag.js";
 
 export const IMAGE_MODELS: ImageModel[] = [
   new ImageModel({
+    id: "grok_image",
+    tauriId: "grok_image",
+    fullName: "Grok",
+    category: "image",
+    creator: ModelCreator.Grok,
+    selectorName: "Grok",
+    selectorDescription: "Fast af",
+    selectorBadges: ["10 sec."],
+    maxGenerationCount: 4,
+    defaultGenerationCount: 4,
+    canUseImagePrompt: false,
+    maxImagePromptCount: 6,
+    progressBarTime: 10000,
+  }),
+  new ImageModel({
     id: "midjourney",
     tauriId: "midjourney",
     fullName: "Midjourney",

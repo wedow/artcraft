@@ -200,10 +200,12 @@ async fn upload_images_to_storyteller(
     //  The first upload should produce a batch token that we can reuse.
     let batch_token = BatchGenerationToken::generate();
 
-    for image in images.images.iter() {
+    for (i, image) in images.images.iter().enumerate() {
       loop {
         let url = image.url.to_string();
         let file = download_url_to_temp_dir(&url, app_data_root).await?;
+
+        info!("Uploading image {} of {} ...", i, images.images.len());
 
         let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
           api_host: &app_env_configs.storyteller_host,
