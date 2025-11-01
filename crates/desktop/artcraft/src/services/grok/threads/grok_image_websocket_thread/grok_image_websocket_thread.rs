@@ -1,31 +1,39 @@
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
-use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
+use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
+use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use errors::AnyhowResult;
 use grok_client::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
 use grok_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
 use grok_client::requests::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
 use grok_client::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};
+use sqlite_tasks::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use std::time::Duration;
+use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs, UploadImageMediaFileSuccessResponse};
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
-use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
 use tokens::tokens::batch_generations::BatchGenerationToken;
+use tokens::tokens::sqlite::tasks::TaskId;
 
 pub async fn grok_image_websocket_thread(
   app_handle: AppHandle,
@@ -113,19 +121,19 @@ async fn inner_loop(
 
       let maybe_prompt = prompt_queue.dequeue()?;
 
-      let prompt = match maybe_prompt {
-        Some(prompt) => prompt,
+      let prompt_item = match maybe_prompt {
+        Some(prompt_item) => prompt_item,
         None => {
           tokio::time::sleep(std::time::Duration::from_millis(1_000)).await;
           continue;
         }
       };
 
-      info!("Prompting Grok websocket: {}", prompt);
+      info!("Prompting Grok websocket: {}", prompt_item.prompt);
 
       let _result = prompt_websocket_image(PromptWebsocketImageArgs {
         websocket: &mut websocket,
-        prompt: &prompt,
+        prompt: &prompt_item.prompt,
       }).await?;
 
       let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {
@@ -139,7 +147,7 @@ async fn inner_loop(
         &app_data_root,
         &task_database,
         &storyteller_creds_manager,
-        &prompt,
+        &prompt_item,
         &images,
       ).await?
     }
@@ -166,7 +174,7 @@ async fn upload_images_to_storyteller(
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  prompt: &str,
+  prompt_item: &PromptItem,
   images: &ImageResults,
 ) -> AnyhowResult<()> {
 
@@ -180,9 +188,11 @@ async fn upload_images_to_storyteller(
       }
     };
 
+    let prompt = prompt_item.prompt.trim().to_string();
+
     let request = CreatePromptRequest {
       uuid_idempotency_token: generate_random_uuid(),
-      positive_prompt: Some(prompt.trim().to_string()),
+      positive_prompt: Some(prompt),
       negative_prompt: None,
       model_type: Some(ModelType::GrokImage),
       generation_provider: Some(GenerationProvider::Grok),
@@ -199,6 +209,8 @@ async fn upload_images_to_storyteller(
     // TODO: Move this from clientside to the backend.
     //  The first upload should produce a batch token that we can reuse.
     let batch_token = BatchGenerationToken::generate();
+
+    let mut maybe_primary_media_file_token = None;
 
     for (i, image) in images.images.iter().enumerate() {
       loop {
@@ -217,8 +229,11 @@ async fn upload_images_to_storyteller(
         }).await;
 
         match result {
-          Ok(_) => {
-            break;
+          Ok(uploaded) => {
+            if maybe_primary_media_file_token.is_none() {
+              maybe_primary_media_file_token = Some(uploaded.media_file_token);
+            }
+            break; // Break retry loop.
           }
           Err(StorytellerError::Api(ApiError::TooManyRequests(_))) => {
             tokio::time::sleep(std::time::Duration::from_millis(10_000)).await;
@@ -231,6 +246,53 @@ async fn upload_images_to_storyteller(
         }
       } // Retry on 429s, etc.
     }
+
+    let mut maybe_cdn_url = None;
+    let mut maybe_thumbnail_url_template = None;
+
+    if let Some(media_file_token) = maybe_primary_media_file_token.as_ref() {
+      info!("Looking up file to grab CDN and thumbnail URLs: {:?} ...", media_file_token);
+
+      let lookup_result = get_media_file(
+        &app_env_configs.storyteller_host,
+        media_file_token,
+      ).await;
+      match lookup_result {
+        Ok(response) => {
+          maybe_cdn_url = Some(response.media_file.media_links.cdn_url.to_string());
+          maybe_thumbnail_url_template = media_links_to_thumbnail_template(&response.media_file.media_links)
+              .map(|s| s.to_string());
+        }
+        Err(err) => {
+          error!("Failed to look up media file after upload: {:?} (failing open)", err);
+        }
+      }
+    }
+
+    let task_id = TaskId::new_from_str(&prompt_item.task_id);
+
+    let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
+      db: task_database.get_connection(),
+      task_id: &task_id,
+      maybe_batch_token: Some(&batch_token),
+      maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
+      maybe_primary_media_file_class: Some(TaskMediaFileClass::Image),
+      maybe_primary_media_file_thumbnail_url_template: maybe_thumbnail_url_template.as_deref(),
+      maybe_primary_media_file_cdn_url: maybe_cdn_url.as_deref(),
+    }).await?;
+
+    if !updated {
+      return Ok(()); // If anything breaks with queries, don't spam events.
+    }
+
+    let event = GenerationCompleteEvent {
+      //media_file_token: result.media_file_token,
+      action: Some(GenerationAction::GenerateImage),
+      service: GenerationServiceProvider::Grok,
+      model: None,
+    };
+
+    event.send_infallible(&app_handle);
 
     return Ok(())
   }

@@ -5,7 +5,17 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct GrokImagePromptQueue {
-  pub prompt_queue: Arc<Mutex<VecDeque<String>>>,
+  pub prompt_queue: Arc<Mutex<VecDeque<PromptItem>>>,
+}
+
+
+#[derive(Clone, Debug)]
+pub struct PromptItem {
+  /// Local database task ID
+  pub task_id: String,
+  
+  /// Text prompt
+  pub prompt: String,
 }
 
 impl GrokImagePromptQueue {
@@ -15,10 +25,10 @@ impl GrokImagePromptQueue {
     }
   }
   
-  pub fn enqueue(&self, prompt: &str) -> Result<(), ArtcraftError> {
+  pub fn enqueue(&self, prompt_item: PromptItem) -> Result<(), ArtcraftError> {
     match self.prompt_queue.lock() {
       Ok(mut queue) => {
-        queue.push_back(prompt.to_string());
+        queue.push_back(prompt_item);
         Ok(())
       },
       Err(err) => {
@@ -28,7 +38,7 @@ impl GrokImagePromptQueue {
     }
   }
   
-  pub fn dequeue(&self) -> Result<Option<String>, ArtcraftError> {
+  pub fn dequeue(&self) -> Result<Option<PromptItem>, ArtcraftError> {
     match self.prompt_queue.lock() {
       Ok(mut queue) => {
         Ok(queue.pop_front())

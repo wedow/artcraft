@@ -4,11 +4,11 @@ use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
+use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
 use tauri::AppHandle;
-use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 
 pub async fn handle_grok(
   app: &AppHandle,
@@ -53,7 +53,10 @@ pub async fn handle_grok(
       .map(|prompt| prompt.trim().to_string())
       .unwrap_or_else(|| "".to_string());
 
-  grok_image_prompt_queue.enqueue(&prompt)?;
+  grok_image_prompt_queue.enqueue(PromptItem {
+    task_id: job_id.clone(),
+    prompt,
+  })?;
 
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Grok,
