@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload\n    FROM tasks\n    WHERE\n      provider = ?\n      AND provider_job_id = ?\n  ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "task_status",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "task_type",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "model_type",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "provider",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "provider_job_id",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "frontend_caller",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "frontend_subscriber_id",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "frontend_subscriber_payload",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "38ff2df237b16f077865711dd81261de1b5fa05a9787679ce9ccd4ac576b1069"
+}

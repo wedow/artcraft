@@ -1,4 +1,5 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
@@ -9,6 +10,7 @@ use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_ST
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use anyhow::anyhow;
 use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use enums::common::generation_provider::GenerationProvider;
@@ -22,12 +24,16 @@ use grok_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedW
 use grok_client::requests::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
 use grok_client::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
 use idempotency::uuid::generate_random_uuid;
-use log::{error, info};
+use log::{error, info, warn};
+use sqlite_tasks::queries::get_task_by_provider_and_provider_job_id::{get_task_by_provider_and_provider_job_id, GetTaskByProviderAndProviderJobIdArgs};
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};
+use sqlite_tasks::queries::task::Task;
 use sqlite_tasks::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use sqlite_tasks::queries::update_successful_task_status_with_metadata_by_provider::{update_successful_task_status_with_metadata_by_provider, UpdateSuccessfulTaskByProviderArgs};
 use std::time::Duration;
+use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
+use storyteller_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs, UploadImageMediaFileSuccessResponse};
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use storyteller_client::error::api_error::ApiError;
@@ -248,6 +254,29 @@ async fn upload_images_to_storyteller(
       } // Retry on 429s, etc.
     }
 
+    let event = GenerationCompleteEvent {
+      //media_file_token: result.media_file_token,
+      action: Some(GenerationAction::GenerateImage),
+      service: GenerationServiceProvider::Grok,
+      model: None,
+    };
+
+    event.send_infallible(&app_handle);
+
+    let task = get_task_by_provider_and_provider_job_id(GetTaskByProviderAndProviderJobIdArgs {
+      db: task_database.get_connection(),
+      provider: GenerationProvider::Grok,
+      provider_job_id: &prompt_item.task_id,
+    }).await?;
+
+    let task = match task {
+      Some(task) => task,
+      None => {
+        warn!("Couldn't find local sqlite task by id: {}", &prompt_item.task_id);
+        return Ok(());
+      }
+    };
+
     let mut maybe_cdn_url = None;
     let mut maybe_thumbnail_url_template = None;
 
@@ -270,10 +299,9 @@ async fn upload_images_to_storyteller(
       }
     }
 
-    let updated = update_successful_task_status_with_metadata_by_provider(UpdateSuccessfulTaskByProviderArgs {
+    let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
       db: task_database.get_connection(),
-      provider: GenerationProvider::Grok,
-      provider_job_id: &prompt_item.task_id,
+      task_id: &task.id,
       maybe_batch_token: Some(&batch_token),
       maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
       maybe_primary_media_file_class: Some(TaskMediaFileClass::Image),
@@ -285,15 +313,49 @@ async fn upload_images_to_storyteller(
       return Ok(()); // If anything breaks with queries, don't spam events.
     }
 
-    let event = GenerationCompleteEvent {
-      //media_file_token: result.media_file_token,
-      action: Some(GenerationAction::GenerateImage),
-      service: GenerationServiceProvider::Grok,
-      model: None,
-    };
+    send_frontend_ui_update(
+      app_handle,
+      app_env_configs,
+      Some(&storyteller_creds),
+      &task,
+      &batch_token,
 
-    event.send_infallible(&app_handle);
+    ).await?;
 
     return Ok(())
   }
+}
+
+async fn send_frontend_ui_update(
+  app: &AppHandle,
+  app_env_configs: &AppEnvConfigs,
+  maybe_creds: Option<&StorytellerCredentialSet>,
+  task: &Task,
+  batch_token: &BatchGenerationToken,
+) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
+
+  let result = list_batch_generated_redux_media_files(
+    &app_env_configs.storyteller_host,
+    maybe_creds,
+    batch_token,
+  ).await?;
+
+  if result.media_files.is_empty() {
+    return Err(anyhow!("No media files found for batch token: {}", batch_token));
+  }
+
+  let media_files = result.media_files
+      .into_iter()
+      .map(|file| GeneratedImage {
+        media_token: file.token,
+        cdn_url: file.media_links.cdn_url,
+        maybe_thumbnail_template: file.media_links.maybe_thumbnail_template,
+      })
+      .collect();
+
+  Ok(TextToImageGenerationCompleteEvent {
+    generated_images: media_files,
+    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
+    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
+  })
 }

@@ -1,5 +1,6 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
+use crate::queries::task::{RawTask, Task};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
@@ -16,33 +17,6 @@ pub struct ListTasksArgs<'a> {
 
 pub struct TaskList {
   pub tasks: Vec<Task>,
-}
-
-#[derive(Debug, Clone)]
-pub struct Task {
-  pub id: TaskId,
-  pub status: TaskStatus,
-  pub task_type: TaskType,
-  pub model_type: Option<TaskModelType>,
-  pub provider: GenerationProvider,
-  pub provider_job_id: Option<String>,
-  pub frontend_caller: Option<TauriCommandCaller>,
-  pub frontend_subscriber_id: Option<String>,
-  pub frontend_subscriber_payload: Option<String>,
-}
-
-#[derive(Debug)]
-#[derive(sqlx::FromRow)]
-struct RawTask {
-  id: String,
-  task_status: String,
-  task_type: String,
-  model_type: Option<String>,
-  provider: String,
-  provider_job_id: Option<String>,
-  frontend_caller: Option<String>,
-  frontend_subscriber_id: Option<String>,
-  frontend_subscriber_payload: Option<String>,
 }
 
 pub async fn list_tasks_by_provider_and_tokens(

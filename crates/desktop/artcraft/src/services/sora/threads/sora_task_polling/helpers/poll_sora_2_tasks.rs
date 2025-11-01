@@ -10,6 +10,7 @@ use crate::core::state::task_database::TaskDatabase;
 use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
+use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
 use crate::services::sora::threads::sora_task_polling::helpers::handle_failed_generations::{handle_classic_failed_generations, FailedGeneration};
 use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::{handle_classic_successful_generations, GenerationItem, SuccessfulGeneration};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -28,7 +29,8 @@ use openai_sora_client::requests::common::task_id::TaskId;
 use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::TaskStatus;
 use openai_sora_client::requests::list_sora2_drafts::list_sora2_drafts::Draft;
 use reqwest::Url;
-use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, Task, TaskList};
+use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
+use sqlite_tasks::queries::task::Task;
 use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -38,7 +40,6 @@ use storyteller_client::endpoints::media_files::upload_image_media_file_from_fil
 use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use tempdir::TempDir;
-use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
 
 pub async fn poll_sora_2_tasks(
   app_handle: &AppHandle,
