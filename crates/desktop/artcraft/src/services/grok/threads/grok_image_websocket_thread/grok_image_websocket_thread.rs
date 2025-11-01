@@ -25,6 +25,7 @@ use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};
 use sqlite_tasks::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
+use sqlite_tasks::queries::update_successful_task_status_with_metadata_by_provider::{update_successful_task_status_with_metadata_by_provider, UpdateSuccessfulTaskByProviderArgs};
 use std::time::Duration;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs, UploadImageMediaFileSuccessResponse};
@@ -269,11 +270,10 @@ async fn upload_images_to_storyteller(
       }
     }
 
-    let task_id = TaskId::new_from_str(&prompt_item.task_id);
-
-    let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
+    let updated = update_successful_task_status_with_metadata_by_provider(UpdateSuccessfulTaskByProviderArgs {
       db: task_database.get_connection(),
-      task_id: &task_id,
+      provider: GenerationProvider::Grok,
+      provider_job_id: &prompt_item.task_id,
       maybe_batch_token: Some(&batch_token),
       maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
       maybe_primary_media_file_class: Some(TaskMediaFileClass::Image),
