@@ -42,6 +42,10 @@ export enum OBJECT_FILE_TYPE {
   GLB = "glb",
 }
 
+export enum SPLAT_FILE_TYPE {
+  SPZ = "spz",
+}
+
 export enum CHARACTER_MMD_FILE_TYPE {
   PMD = "pmd",
   PMX = "pmx",

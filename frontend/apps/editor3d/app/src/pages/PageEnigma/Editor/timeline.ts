@@ -24,6 +24,7 @@ import { Vector3 } from "three";
 
 import { filmLength, outlinerState } from "../signals";
 import { CharacterAnimationEngine } from "./Engines/CharacterAnimationEngine";
+import { SplatMesh } from "@sparkjsdev/spark";
 
 export class TimeLine {
   editorEngine: Editor;
@@ -397,6 +398,13 @@ export class TimeLine {
       await this.editorEngine.sceneManager?.add_creation_undostack(obj);
     }
     return obj;
+  }
+
+  // This method is for local dev testing of objects
+  // and bypasses the queue system, that's kinda redundant anyway
+  public addLocalSplat(fileBytes: ArrayBuffer | Uint8Array) {
+    const splatMesh = new SplatMesh({ fileBytes: fileBytes });
+    this.editorEngine.sceneManager?.scene.scene.add(splatMesh);
   }
 
   public async addShape(data: MediaItem) {

@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+import { SplatFileType, SplatMesh } from "@sparkjsdev/spark";
+import { SPLAT_FILE_TYPE } from "~/enums";
 
 interface LoaderInterface {
   file: File;
@@ -32,10 +34,13 @@ export const loadPreviewOnCanvas = ({
   const camera = new THREE.PerspectiveCamera(35, aspectRatio, 0.1, 1000);
   camera.position.z = 2;
 
+  const gl2ctx = canvas.getContext("webgl2");
+
   const renderer = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true,
     canvas: canvas,
+    context: gl2ctx!,
     preserveDrawingBuffer: true,
   });
 
@@ -52,18 +57,30 @@ export const loadPreviewOnCanvas = ({
   scene.add(light);
 
   // load the file into the preview mini-scene depending of the file's type
-  if (file.name.includes(".glb")) {
+  if (file.name.endsWith(".glb")) {
     glbLoader({ file, scene, camera, renderer, statusCallback });
-  } else if (file.name.includes(".pmd")) {
+  } else if (file.name.endsWith(".pmd")) {
     pmdLoader({ file, scene, camera, renderer, statusCallback });
   } else if (
-    file.name.includes(".png") ||
-    file.name.includes(".jpg") ||
-    file.name.includes(".jpeg") ||
-    file.name.includes(".gif")
+    file.name.endsWith(".png") ||
+    file.name.endsWith(".jpg") ||
+    file.name.endsWith(".jpeg") ||
+    file.name.endsWith(".gif")
   ) {
     imagePlaneLoader({ file, scene, camera, renderer, statusCallback });
-  } else if (file.name.includes(".vmd")) {
+  } else if (file.name.endsWith(".spz")) {
+    file.arrayBuffer().then((arrayBuffer) => {
+      const splatMesh = new SplatMesh({
+        fileBytes: arrayBuffer, fileType: SplatFileType.SPZ,
+        onLoad: () => { scene.add(splatMesh) }
+      });
+    }).catch((loaderError) => {
+      statusCallback({
+        type: "SPLAT Loader Error",
+        message: String(loaderError),
+      });
+    });
+  } else if (file.name.endsWith(".vmd")) {
     statusCallback({
       type: "Preview Error",
       message: "Sorry, Preview is not available to VMD files yet",
