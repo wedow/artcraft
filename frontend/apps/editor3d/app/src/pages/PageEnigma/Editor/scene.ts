@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { GLTFLoader, GLTF } from "three/addons/loaders/GLTFLoader.js";
-import { MMDLoader } from "three/addons/loaders/MMDLoader.js";
+//import { MMDLoader } from "three/addons/loaders/MMDLoader.js";
 
 import { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import { generateUUID } from "three/src/math/MathUtils.js";
 import { LoadingPlaceHolderManager } from "./placeholder_manager";
-import { MMDAnimationHelper, Water } from "three/examples/jsm/Addons.js";
+//import { MMDAnimationHelper, Water } from "three/examples/jsm/Addons.js";
+import { Water } from "three/examples/jsm/Addons.js";
 import { MediaFileType } from "../enums";
 import { ChromaKeyMaterial } from "./chromakey";
 import { TimeLine } from "./timeline";
@@ -44,7 +45,8 @@ class Scene {
   mediaFilesApi: MediaFilesApi;
 
   updateSurfaceIdAttributeToMesh: Function;
-  helper: MMDAnimationHelper;
+  //helper: MMDAnimationHelper;
+  helper: undefined | null;
   ambientLight: THREE.AmbientLight | undefined;
   hemisphereLight: THREE.HemisphereLight | undefined;
   directional_light: THREE.DirectionalLight | undefined;
@@ -91,7 +93,8 @@ class Scene {
     this._create_skybox();
     // this._create_camera_obj();
 
-    this.helper = new MMDAnimationHelper({ afterglow: 0.0 });
+    this.helper = null;
+    //this.helper = new MMDAnimationHelper({ afterglow: 0.0 });
     this.scene.userData["helper"] = this.helper;
 
     // Subscribe to grid visibility changes
@@ -861,24 +864,24 @@ class Scene {
     await this.delay_mmd(500);
 
     return new Promise((resolve, reject) => {
-      const mmdLoader = new MMDLoader();
-      mmdLoader.loadWithAnimation(
-        media_url,
-        ["/resources/pose/Lumine Idle cycle.vmd"],
-        (mmd) => {
-          this.helper.add(mmd.mesh, {
-            animation: mmd.animation,
-            physics: false,
-          });
+      //const mmdLoader = new MMDLoader();
+      //mmdLoader.loadWithAnimation(
+      //  media_url,
+      //  ["/resources/pose/Lumine Idle cycle.vmd"],
+      //  (mmd) => {
+      //    this.helper.add(mmd.mesh, {
+      //      animation: mmd.animation,
+      //      physics: false,
+      //    });
 
-          mmd.mesh.scale.set(0.1, 0.1, 0.1);
-          resolve(mmd.mesh);
-        },
-        progress,
-        (error) => {
-          reject(error);
-        },
-      );
+      //    mmd.mesh.scale.set(0.1, 0.1, 0.1);
+      //    resolve(mmd.mesh);
+      //  },
+      //  progress,
+      //  (error) => {
+      //    reject(error);
+      //  },
+      //);
     });
   }
 

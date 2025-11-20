@@ -52,7 +52,6 @@
     "lil-gui": "^0.20.0",
     "onchange": "7.1.0",
     "stats.js": "^0.17.0",
-    "three": "^0.178.0",
     "ts-node": "10.9.2",
     "typescript": "^5.7.3",
     "vite": "^6.0.11",
@@ -61,7 +60,8 @@
     "spark-internal-rs": "file:rust/spark-internal-rs/pkg"
   },
   "dependencies": {
-    "fflate": "^0.8.2"
+    "fflate": "^0.8.2",
+    "three": "^0.178.0"
   },
   "keywords": ["3d", "three.js", "gsplats", "3dgs", "gaussian", "splats"]
 }

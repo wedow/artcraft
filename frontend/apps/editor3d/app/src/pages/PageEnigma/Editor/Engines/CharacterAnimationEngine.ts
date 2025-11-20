@@ -3,7 +3,8 @@ import { Retarget } from "../retargeting";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { get_media_url } from "~/Classes/ApiHelpers";
-import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader.js";
+// Three.js dropped support for MMD
+//import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader.js";
 import { ClipUI } from "../../clips/clip_ui";
 import Ijson from "~/interfaces/Ijson";
 
@@ -243,11 +244,12 @@ export class CharacterAnimationEngine implements Ijson {
           resolve(animationClip_1);
         });
       } else if (url.includes(".vmd")) {
-        const mmdLoader = new MMDLoader();
-        mmdLoader.loadAnimation(url, character as THREE.SkinnedMesh, (mmd) => {
-          mmd.name = url;
-          resolve(mmd as THREE.AnimationClip);
-        });
+        // Three.js dropped support for MMD
+        //const mmdLoader = new MMDLoader();
+        //mmdLoader.loadAnimation(url, character as THREE.SkinnedMesh, (mmd) => {
+        //  mmd.name = url;
+        //  resolve(mmd as THREE.AnimationClip);
+        //});
       }
     });
   }

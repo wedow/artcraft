@@ -2,10 +2,10 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import {
   FBXLoader,
-  MMDAnimationHelper,
-  MMDAnimationHelperMixer,
+  //MMDAnimationHelper,
+  //MMDAnimationHelperMixer,
 } from "three/examples/jsm/Addons.js";
-import { MMDLoader } from "three/addons/loaders/MMDLoader.js";
+//import { MMDLoader } from "three/addons/loaders/MMDLoader.js";
 
 import { MoveAIResult, Retarget } from "../Editor/retargeting";
 import IAnimationClip from "./ClipInterfaces/IAnimationClip";
@@ -32,8 +32,10 @@ export class AnimationClip implements IAnimationClip {
 
 
   private isMMD: boolean = false;
-  private obj: MMDAnimationHelperMixer | undefined;
-  private helper: MMDAnimationHelper | undefined;
+  //private obj: MMDAnimationHelperMixer | undefined;
+  //private helper: MMDAnimationHelper | undefined;
+  private obj: null | undefined;
+  private helper: null | undefined;
   private mmd_anim_clip: THREE.AnimationClip | undefined;
   private pose: Object | undefined;
   private processingClip: boolean = false;
@@ -119,19 +121,19 @@ export class AnimationClip implements IAnimationClip {
             resolve(animationClip);
           });
         } else if (url.includes(".vmd")) {
-          console.log("VMD Loader");
-          const root = this.mixer?.getRoot();
-          this.isMMD = true;
-          if (root) {
-            const mmdLoader = new MMDLoader();
-            this.mmd_url = url;
-            mmdLoader.loadAnimation(url, root as THREE.SkinnedMesh, (mmd) => {
-              mmd.name = this.mmd_url;
-              resolve(mmd as THREE.AnimationClip);
-            });
-            console.log("Loaded");
-          }
-          console.log("Dont");
+          //console.log("VMD Loader");
+          //const root = this.mixer?.getRoot();
+          //this.isMMD = true;
+          //if (root) {
+          //  const mmdLoader = new MMDLoader();
+          //  this.mmd_url = url;
+          //  mmdLoader.loadAnimation(url, root as THREE.SkinnedMesh, (mmd) => {
+          //    mmd.name = this.mmd_url;
+          //    resolve(mmd as THREE.AnimationClip);
+          //  });
+          //  console.log("Loaded");
+          //}
+          //console.log("Dont");
         }
       });
     });
@@ -231,12 +233,12 @@ export class AnimationClip implements IAnimationClip {
   }
 
   private async load_vpd_wrapped(): Promise<object> {
-    return new Promise((resolve) => {
-      const poseLoader = new MMDLoader();
-      poseLoader.loadVPD("/resources/pose/7.vpd", false, (vpd) => {
-        resolve(vpd);
-      }); // End of loadVPD call
-    }); // End of new Promise
+    //return new Promise((resolve) => {
+    //  const poseLoader = new MMDLoader();
+    //  poseLoader.loadVPD("/resources/pose/7.vpd", false, (vpd) => {
+    //    resolve(vpd);
+    //  }); // End of loadVPD call
+    //}); // End of new Promise
   }
 
   async animate(deltatime: number) {
@@ -246,72 +248,72 @@ export class AnimationClip implements IAnimationClip {
     this.update_bones();
 
     // Next
-    if (this.isMMD && this.mixer) {
-      if (this.obj === undefined) {
-        // Sets the ik helper and object for IK and animation.
-        this.helper = (this.mixer.getRoot() as THREE.Object3D).parent?.userData[
-          "helper"
-        ];
-      }
+    //if (this.isMMD && this.mixer) {
+    //  if (this.obj === undefined) {
+    //    // Sets the ik helper and object for IK and animation.
+    //    this.helper = (this.mixer.getRoot() as THREE.Object3D).parent?.userData[
+    //      "helper"
+    //    ];
+    //  }
 
-      this.obj = this.helper?.objects.get(
-        this.mixer?.getRoot() as THREE.SkinnedMesh,
-      );
+    //  this.obj = this.helper?.objects.get(
+    //    this.mixer?.getRoot() as THREE.SkinnedMesh,
+    //  );
 
-      const mesh = this.mixer?.getRoot() as THREE.SkinnedMesh;
+    //  const mesh = this.mixer?.getRoot() as THREE.SkinnedMesh;
 
-      if (this.helper) {
-        this.helper._restoreBones(mesh); // Privateish js function for resetting bones.
-        this.obj?.mixer?.setTime(deltatime); // Sets the time.
-        this.helper._saveBones(mesh); // Saves the bones location for restoration later.
+    //  if (this.helper) {
+    //    this.helper._restoreBones(mesh); // Privateish js function for resetting bones.
+    //    this.obj?.mixer?.setTime(deltatime); // Sets the time.
+    //    this.helper._saveBones(mesh); // Saves the bones location for restoration later.
 
-        mesh.updateMatrixWorld(true); // Updates mesh.
-        this.obj?.ikSolver.update(); // Updates IK Solver.
-        this.obj?.grantSolver.update(); // Updates Grant which moves the bones.
-      }
+    //    mesh.updateMatrixWorld(true); // Updates mesh.
+    //    this.obj?.ikSolver.update(); // Updates IK Solver.
+    //    this.obj?.grantSolver.update(); // Updates Grant which moves the bones.
+    //  }
 
-      // Changing of animation.
-      if (
-        this.obj &&
-        this.helper &&
-        this.processingClip === false &&
-        this.obj.mixer &&
-        this.mixer._actions[0]._clip.name !==
-        this.obj.mixer._actions[0]._clip.name &&
-        this.mixer !== undefined
-      ) {
-        // On animation change.
-        this.processingClip = true;
+    //  // Changing of animation.
+    //  if (
+    //    this.obj &&
+    //    this.helper &&
+    //    this.processingClip === false &&
+    //    this.obj.mixer &&
+    //    this.mixer._actions[0]._clip.name !==
+    //    this.obj.mixer._actions[0]._clip.name &&
+    //    this.mixer !== undefined
+    //  ) {
+    //    // On animation change.
+    //    this.processingClip = true;
 
-        const helper_mmd = this.helper.objects.get(mesh);
-        if (helper_mmd?.mixer !== undefined) {
-          const clips = helper_mmd.mixer._actions;
-          clips.forEach((clip) => {
-            this.helper?.objects.delete(clip._clip);
-          });
-        }
+    //    const helper_mmd = this.helper.objects.get(mesh);
+    //    if (helper_mmd?.mixer !== undefined) {
+    //      const clips = helper_mmd.mixer._actions;
+    //      clips.forEach((clip) => {
+    //        this.helper?.objects.delete(clip._clip);
+    //      });
+    //    }
 
-        this.helper.remove(mesh);
-        mesh.pose();
+    //    this.helper.remove(mesh);
+    //    mesh.pose();
 
-        const loader = new MMDLoader();
-        loader.loadAnimation(this.mmd_url, mesh, (mmd) => {
-          mmd.name = this.mmd_url;
-          this.helper?.add(mesh, {
-            animation: mmd,
-            physics: false,
-          });
-          this.processingClip = false;
-          if (helper_mmd?.mixer !== undefined) {
-            const clips = helper_mmd.mixer._actions;
-            clips.forEach((clip) => {
-              this.helper?.objects.delete(clip._clip);
-            });
-          }
-          this.obj.mixer = this.mixer;
-        });
-      }
-    }
+    //    //const loader = new MMDLoader();
+    //    //loader.loadAnimation(this.mmd_url, mesh, (mmd) => {
+    //    //  mmd.name = this.mmd_url;
+    //    //  this.helper?.add(mesh, {
+    //    //    animation: mmd,
+    //    //    physics: false,
+    //    //  });
+    //    //  this.processingClip = false;
+    //    //  if (helper_mmd?.mixer !== undefined) {
+    //    //    const clips = helper_mmd.mixer._actions;
+    //    //    clips.forEach((clip) => {
+    //    //      this.helper?.objects.delete(clip._clip);
+    //    //    });
+    //    //  }
+    //    //  this.obj.mixer = this.mixer;
+    //    //});
+    //  }
+    //}
   }
 
   async step(deltatime: number, isPlaying: boolean, frame: number) {
