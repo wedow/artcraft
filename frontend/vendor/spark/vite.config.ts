@@ -28,6 +28,15 @@ export default defineConfig(({ mode }) => {
     cacheDir: '../../node_modules/.vite/vendor/spark',
     appType: "mpa",
 
+    resolve: {
+      alias: {
+        'spark-internal-rs': path.resolve(
+          __dirname,
+          'rust/spark-internal-rs/pkg' // <-- or whatever actual path
+        ),
+      },
+    },
+
     plugins: [
       glsl({
         include: ["**/*.glsl"],
@@ -90,6 +99,7 @@ export default defineConfig(({ mode }) => {
       },
       emptyOutDir: isFirstPass,
     },
+    
 
     worker: {
       rollupOptions: {

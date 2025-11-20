@@ -24,6 +24,7 @@
     "konva": "^9.3.20",
     "lodash": "^4.17.21",
     "lucide-react": "^0.512.0",
+    "node": "^25.2.1",
     "pnpm": "^10.8.1",
     "posthog-js": "^1.141.0",
     "react": "18.3.1",
@@ -92,6 +93,7 @@
     "vite": "^6.0.0",
     "vite-plugin-banner": "^0.8.0",
     "vite-plugin-dts": "~4.5.0",
+    "vite-plugin-glsl": "^1.5.4",
     "vite-plugin-static-copy": "^2.3.1",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.0"

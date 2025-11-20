@@ -29,9 +29,9 @@
         // "apps/editor2d/app/src/*",
         "apps/editor3d/app/src/*"
       ],
-      "@sparkjsdev/spark": [
-        "vendor/spark/src/index.ts"
-      ]
+      //"@sparkjsdev/spark": [
+      //  "vendor/spark/src/index.ts"
+      //]
     }
   }
 }
