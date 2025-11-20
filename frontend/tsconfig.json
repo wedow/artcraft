@@ -173,6 +173,9 @@
     },
     {
       "path": "./libs/api-enums"
+    },
+    {
+      "path": "./vendor/spark"
     }
   ]
 }
