@@ -33,9 +33,9 @@ import { CloseButton } from "@storyteller/ui-close-button";
 import { ActionReminderModal } from "@storyteller/ui-action-reminder-modal";
 import { TaskMediaFileClass } from "@storyteller/api-enums";
 import {
-  getThumbnailUrl,
+  //getThumbnailUrl,
   THUMBNAIL_SIZES,
-  getPlaceholderForMediaClass,
+  //getPlaceholderForMediaClass,
 } from "@storyteller/common";
 
 type InProgressTask = {
@@ -137,9 +137,9 @@ const CompletedCard = ({
             src={task.thumbnailUrl}
             alt={task.title}
             onError={(e) => {
-              e.currentTarget.src = getPlaceholderForMediaClass(
-                task.mediaFileClass,
-              );
+              //e.currentTarget.src = getPlaceholderForMediaClass(
+              //  task.mediaFileClass,
+              //);
               e.currentTarget.style.opacity = "0.3";
             }}
             className="h-full w-full object-cover"
@@ -291,11 +291,12 @@ export const TaskQueue = () => {
             id: t.id,
             ...formatTitleParts(t),
             thumbnailUrl:
-              getThumbnailUrl(
-                t.completed_item?.primary_media_file
-                  ?.maybe_thumbnail_url_template,
-                { width: THUMBNAIL_SIZES.MEDIUM },
-              ) || undefined,
+              //getThumbnailUrl(
+              //  t.completed_item?.primary_media_file
+              //    ?.maybe_thumbnail_url_template,
+              //  { width: THUMBNAIL_SIZES.MEDIUM },
+              //) || undefined,
+              undefined,
             imageUrls: t.completed_item?.primary_media_file?.cdn_url
               ? [t.completed_item?.primary_media_file?.cdn_url]
               : [],
