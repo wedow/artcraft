@@ -53,6 +53,7 @@ import FindSurfaces from "./FindSurfaces.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { CharacterAnimationEngine } from "./Engines/CharacterAnimationEngine";
 import { cameras, selectedCameraId } from "~/pages/PageEnigma/signals/camera";
+import { SparkRenderer } from "@sparkjsdev/spark";
 
 export type EditorInitializeConfig = {
   sceneToken: string;
@@ -89,6 +90,7 @@ class Editor {
   render_camera_aspect_ratio: CameraAspectRatio =
     CameraAspectRatio.HORIZONTAL_3_2;
   renderer: THREE.WebGLRenderer | undefined;
+  sparkRenderer: SparkRenderer | null = null;
   rawRenderer: THREE.WebGLRenderer | undefined;
   clock: THREE.Clock | undefined;
   canvReference: HTMLCanvasElement | null = null;
@@ -552,6 +554,11 @@ class Editor {
       preserveDrawingBuffer: true,
     });
 
+    this.sparkRenderer = new SparkRenderer({
+      renderer: this.renderer,
+      autoUpdate: false,
+    });
+
     this.rawRenderer = new THREE.WebGLRenderer({
       antialias: true,
       canvas: this.canvasRenderCamReference,
@@ -666,6 +673,10 @@ class Editor {
 
     // Attach freecam state controller
     this.mouseOverEventHandler = this.mouseOverEventHandler.bind(this);
+
+    // Add spark renderer as a child of the camera
+    this.activeScene.scene.add(this.sparkRenderer);
+    this.camera?.add(this.sparkRenderer);
 
     const onloadCallback = () => {
       console.log("Setting Scene is loaded");
