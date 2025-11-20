@@ -21,5 +21,24 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   server: {
+    proxy: {
+      // Example: rewrite /@fs/path/to/wasm/* -> /wasm/*
+      //'^/@fs/.vite/deps/spark_internal_rs_bg.wasm': {
+      '^/@fs/.*vite/deps/.*.wasm$': {
+        target: 'http://localhost:5173',  // or another backend
+        //rewrite: (path) =>
+        //  path.replace(/^\/@fs\/path\/to\/wasm\//, '/Users/bt/dev/storyteller/storyteller-rust/frontend/vendor/spark/rust/spark-internal-rs/pkg/spark_internal_rs_bg.wasm'),
+        rewrite: (path) => {
+          const p = '/@fs/Users/bt/dev/storyteller/storyteller-rust/frontend/vendor/spark/rust/spark-internal-rs/pkg/spark_internal_rs_bg.wasm';
+          console.log('path', p);
+          // http://localhost:5173/@fs/Users/bt/dev/storyteller/storyteller-rust/frontend/apps/editor3d/node_modules/.vite/deps/spark_internal_rs_bg.wasm
+
+          const replaced = path.replace('storyteller-rust/frontend/apps/editor3d/node_modules/.vite/deps/', 'storyteller-rust/frontend/vendor/spark/rust/spark-internal-rs/pkg/');
+          console.log('replaced', replaced);
+          return replaced;
+        },
+        changeOrigin: true,
+      },
+    },
   }
 });

@@ -4,7 +4,7 @@ import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 import { SPLAT_TEX_HEIGHT, SPLAT_TEX_WIDTH } from "./defines";
 import { type Dyno, OutputRgba8, dynoBlock } from "./dyno";
 import { DynoProgram, DynoProgramTemplate } from "./dyno/program";
-import computeVec4Template from "./shaders/computeVec4.glsl";
+import computeVec4Template from "./shaders/computeVec4.glsl?raw";
 import { getTextureSize } from "./utils";
 
 // Readback can be used to run a Dyno program that maps an index to a 32-bit

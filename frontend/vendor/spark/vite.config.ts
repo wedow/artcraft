@@ -72,7 +72,7 @@ export default defineConfig(({ mode }) => {
       minify: isMinify,
       lib: {
         entry: path.resolve(__dirname, "src/index.ts"),
-        name: "spark",
+        name: "@sparkjsdev/spark",
         formats: ["es", "cjs"],
         fileName: (format) => {
           const base = format === "es" ? "spark.module" : `spark.${format}`;

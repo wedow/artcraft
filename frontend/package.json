@@ -17,7 +17,6 @@
     "@preact/signals-react": "^3.0.1",
     "@radix-ui/react-dialog": "^1.1.14",
     "@remix-run/serve": "^2.15.0",
-    "@sparkjsdev/spark": "file:/Users/bt/dev/3rd/spark",
     "dayjs": "^1.11.10",
     "detect-gpu": "^5.0.38",
     "embla-carousel-react": "^8.6.0",

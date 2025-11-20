@@ -19,7 +19,7 @@ import {
   outputPackedSplat,
 } from "./dyno";
 import { TPackedSplats, definePackedSplats } from "./dyno/splats";
-import computeUvec4Template from "./shaders/computeUvec4.glsl";
+import computeUvec4Template from "./shaders/computeUvec4.glsl?raw";
 import { getTextureSize, setPackedSplat, unpackSplat } from "./utils";
 
 export type SplatEncoding = {

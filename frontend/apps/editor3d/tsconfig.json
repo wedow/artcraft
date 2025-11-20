@@ -29,6 +29,9 @@
   },
   "references": [
     {
+      "path": "../../vendor/spark"
+    },
+    {
       "path": "../../libs/components/pagination"
     },
     {
