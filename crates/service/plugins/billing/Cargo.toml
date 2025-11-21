@@ -45,7 +45,7 @@ serde_derive = { workspace = true }
 serde_json = { workspace = true }
 
 # Money
-async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
+async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper-rustls", "connect", "billing", "checkout", "webhook-events"] }
 
 # Async traits
 # NB: note: `async` trait functions are not currently supported

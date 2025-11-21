@@ -101,13 +101,8 @@ strum_macros = "0.26.4"
 time = "0.3.30"
 url.workspace = true
 
-# Stripe for ArtCraft
-async_stripe_artcraft = { package = "async-stripe", version = "0.41.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
-#async_stripe_artcraft = { git = "https://github.com/arlyon/async-stripe", branch = "openapi-1720743905", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
-#async_stripe_artcraft = { git = "https://github.com/arlyon/async-stripe", branch = "next", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
-
 # Money
-async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
+async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper-rustls", "connect", "billing", "checkout", "webhook-events"] }
 
 # Language tag parsing
 # TODO: Move to language support crate
