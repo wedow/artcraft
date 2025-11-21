@@ -51,7 +51,7 @@ r2d2_redis = "0.14.0"
 tokio.workspace = true
 
 # HTTP
-reqwest = { version = "0.12.4", features = ["blocking"] }
+reqwest = { version = "0.12.4", default-features = false, features = ["charset", "http2", "system-proxy", "blocking", "rustls-tls"] }
 
 # Serialization
 serde.workspace = true
