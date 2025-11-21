@@ -6135,13 +6135,15 @@ dependencies = [
  "httpdate",
  "idna 0.5.0",
  "mime",
- "native-tls",
  "nom",
  "once_cell",
  "quoted_printable",
+ "rustls 0.21.12",
+ "rustls-pemfile 1.0.4",
  "socket2 0.5.10",
  "tokio",
  "url",
+ "webpki-roots 0.25.3",
 ]
 
 [[package]]
@@ -9192,6 +9194,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "sqlx",
+ "sqlx-core",
  "toml 0.8.22",
  "workspace-build-acceleration",
 ]
@@ -9499,6 +9502,7 @@ version = "0.21.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f56a14d1f48b391359b22f731fd4bd7e43c97f3c50eee276f3aa09c94784d3e"
 dependencies = [
+ "log",
  "ring",
  "rustls-webpki 0.101.7",
  "sct",
