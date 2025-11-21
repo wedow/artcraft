@@ -1149,9 +1149,11 @@ dependencies = [
  "http 1.3.1",
  "log",
  "native-tls",
+ "rustls 0.22.4",
  "serde",
  "serde_json",
  "url",
+ "webpki-roots 0.26.2",
 ]
 
 [[package]]
@@ -9500,6 +9502,20 @@ dependencies = [
  "ring",
  "rustls-webpki 0.101.7",
  "sct",
+]
+
+[[package]]
+name = "rustls"
+version = "0.22.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf4ef73721ac7bcd79b2b315da7779d8fc09718c6b3d2d1b2d94850eb8c18432"
+dependencies = [
+ "log",
+ "ring",
+ "rustls-pki-types",
+ "rustls-webpki 0.102.8",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
