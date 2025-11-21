@@ -14146,7 +14146,6 @@ dependencies = [
  "smallvec 1.15.1",
  "socket2 0.5.10",
  "spin 0.9.8",
- "sqlx",
  "sqlx-core",
  "sqlx-macros",
  "sqlx-macros-core",
