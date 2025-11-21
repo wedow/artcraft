@@ -1,3 +1,5 @@
+# NOTE: THIS IS NOT THE ACTIVE `sqlite` package!
+
 [package]
 name = "sqlite_queries"
 edition = "2018"
