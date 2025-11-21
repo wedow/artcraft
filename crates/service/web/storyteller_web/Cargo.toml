@@ -132,7 +132,7 @@ limitation = { path = "../../../vendor/limitation" }
 r2d2_redis = "0.14.0"
 
 # Elasticsearch
-elasticsearch = "8.5.0-alpha.1"
+elasticsearch = { version = "8.5.0-alpha.1", default-features = false, features = ["rustls-tls"] }
 
 # Files
 infer = "0.16.0"
