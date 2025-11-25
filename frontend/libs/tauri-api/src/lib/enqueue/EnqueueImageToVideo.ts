@@ -36,7 +36,7 @@ export interface EnqueueImageToVideoRequest {
   sora_orientation?: "portrait" | "landscape";
 
   // Optional. Whether to generate audio alongside the video (used by some models like Veo2)
-  generate_with_sound?: boolean;
+  generate_audio?: boolean;
 }
 
 interface RawEnqueueImageToVideoRequest {
@@ -47,7 +47,7 @@ interface RawEnqueueImageToVideoRequest {
   frontend_caller?: string;
   frontend_subscriber_id?: string;
   sora_orientation?: "portrait" | "landscape";
-  generate_with_sound?: boolean;
+  generate_audio?: boolean;
 }
 
 export interface EnqueueImageToVideoError extends CommandResult {
@@ -94,8 +94,8 @@ export const EnqueueImageToVideo = async (
     mutableRequest.sora_orientation = request.sora_orientation;
   }
 
-  if (typeof request.generate_with_sound === "boolean") {
-    mutableRequest.generate_with_sound = request.generate_with_sound;
+  if (typeof request.generate_audio === "boolean") {
+    mutableRequest.generate_audio = request.generate_audio;
   }
 
   const result = await invoke("enqueue_image_to_video_command", {

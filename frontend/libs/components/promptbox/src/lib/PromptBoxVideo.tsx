@@ -280,17 +280,13 @@ export const PromptBoxVideo = ({
       frontend_subscriber_id: subscriberId,
     };
 
+    if (selectedModel.generateWithSound) {
+      request.generate_audio = !!generateWithSound;
+    }
+
     if (selectedModel?.tauriId === "sora_2") {
       request.sora_orientation =
         resolution === "720p" ? "landscape" : "portrait";
-    }
-
-    if (selectedModel?.tauriId === "veo_2") {
-      request.generate_with_sound = !!generateWithSound;
-    }
-
-    if (selectedModel?.tauriId === "veo_3") {
-      request.generate_with_sound = !!generateWithSound;
     }
 
     await EnqueueImageToVideo(request);

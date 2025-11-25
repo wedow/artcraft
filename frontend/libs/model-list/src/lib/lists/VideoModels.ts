@@ -30,7 +30,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     endFrame: true,
     requiresImage: true,
     progressBarTime: 100000,
-    generateWithSound: true,
+    generateWithSound: false,
   }),
   new VideoModel({
     id: "kling_2_1_pro",
@@ -45,7 +45,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     endFrame: true,
     requiresImage: true,
     progressBarTime: 100000,
-    generateWithSound: true,
+    generateWithSound: false,
   }),
   new VideoModel({
     id: "kling_2_1_master",
@@ -60,7 +60,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     endFrame: false,
     requiresImage: true,
     progressBarTime: 100000,
-    generateWithSound: true,
+    generateWithSound: false,
   }),
   new VideoModel({
     id: "seedance_1_0_lite",
@@ -114,7 +114,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     startFrame: true,
     endFrame: false,
     requiresImage: true,
-    generateWithSound: true,
+    generateWithSound: false,
     progressBarTime: 100000,
   }),
   new VideoModel({

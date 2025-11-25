@@ -222,7 +222,7 @@ pub async fn handle_video_artcraft(
         prompt: request.prompt.clone(),
         duration: None,
         resolution: None,
-        generate_audio: None,
+        generate_audio: request.generate_audio,
       };
       let result = generate_veo_3_image_to_video(
         &app_env_configs.storyteller_host,
@@ -249,7 +249,7 @@ pub async fn handle_video_artcraft(
         prompt: request.prompt.clone(),
         duration: None,
         resolution: None,
-        generate_audio: None,
+        generate_audio: request.generate_audio,
       };
       let result = generate_veo_3_fast_image_to_video(
         &app_env_configs.storyteller_host,

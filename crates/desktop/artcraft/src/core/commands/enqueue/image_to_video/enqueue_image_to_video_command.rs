@@ -79,6 +79,11 @@ pub struct EnqueueImageToVideoRequest {
   /// Text prompt used to direct the video.
   pub prompt: Option<String>,
 
+  /// Optional.
+  /// Generate the video with audio, if there is an option.
+  /// Typically, this costs money when presented as an option, so we default to off.
+  pub generate_audio: Option<bool>,
+
   /// OPTIONAL.
   /// Only for Sora2 model currently.
   pub sora_orientation: Option<SoraOrientation>,
