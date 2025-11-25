@@ -10,7 +10,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use tauri::AppHandle;
 
 pub async fn handle_object(
-  request: EnqueueImageTo3dObjectRequest,
+  request: &EnqueueImageTo3dObjectRequest,
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,

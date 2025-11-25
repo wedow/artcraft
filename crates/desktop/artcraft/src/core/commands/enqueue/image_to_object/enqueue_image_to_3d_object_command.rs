@@ -17,6 +17,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize)]
@@ -27,6 +28,21 @@ pub struct EnqueueImageTo3dObjectRequest {
   
   /// The model to use.
   pub model: Option<EnqueueImageTo3dObjectModel>,
+
+  /// OPTIONAL.
+  /// Name of the frontend caller.
+  /// We'll use this to selectively trigger events.
+  pub frontend_caller: Option<TauriCommandCaller>,
+
+  /// OPTIONAL.
+  /// A frontend-defined identifier that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_id: Option<String>,
+
+  /// OPTIONAL.
+  /// A frontend-defined payload that we'll send back to the frontend
+  /// as a Tauri event on task completion.
+  pub frontend_subscriber_payload: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Copy, Clone)]
@@ -159,7 +175,7 @@ pub async fn handle_request(
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   let result = handle_object(
-    request,
+    &request,
     &app,
     &app_env_configs,
     &app_data_root,
@@ -173,7 +189,12 @@ pub async fn handle_request(
   };
 
   let result = success_event
-      .insert_into_task_database(task_database)
+      .insert_into_task_database_with_frontend_payload(
+        task_database,
+        request.frontend_caller.clone(),
+        request.frontend_subscriber_id.as_deref(),
+        request.frontend_subscriber_payload.as_deref(),
+      )
       .await;
 
   if let Err(err) = result {

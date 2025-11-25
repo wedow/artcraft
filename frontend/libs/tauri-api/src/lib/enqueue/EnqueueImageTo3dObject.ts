@@ -17,6 +17,19 @@ export enum EnqueueImageTo3dObjectErrorType {
 export interface EnqueueImageTo3dObjectRequest {
   image_media_token?: string;
   model?: EnqueueImageTo3dObjectModel;
+
+  // TODO: Actual enum.
+  frontend_caller?: string;
+
+  // Optional frontend state to return later.
+  frontend_subscriber_id?: string;
+}
+
+interface EnqueueImageTo3dObjectRequestRaw {
+  image_media_token?: string;
+  model?: EnqueueImageTo3dObjectModel;
+  frontend_caller?: string;
+  frontend_subscriber_id?: string;
 }
 
 export enum EnqueueImageTo3dObjectModel {
@@ -40,11 +53,22 @@ export interface EnqueueImageTo3dObjectSuccess extends CommandResult {
 export type EnqueueImageTo3dObjectResult = EnqueueImageTo3dObjectSuccess | EnqueueImageTo3dObjectError;
 
 export const EnqueueImageTo3dObject = async (request: EnqueueImageTo3dObjectRequest) : Promise<EnqueueImageTo3dObjectResult> => {
+  let mutableRequest : EnqueueImageTo3dObjectRequestRaw = {
+    image_media_token: request.image_media_token,
+    model: request.model,
+  };
+
+  if (!!request.frontend_caller) {
+    mutableRequest.frontend_caller = request.frontend_caller;
+  }
+
+  if (!!request.frontend_subscriber_id) {
+    mutableRequest.frontend_subscriber_id = request.frontend_subscriber_id;
+  }
+
   let result = await invoke("enqueue_image_to_3d_object_command", { 
-    request: {
-      image_media_token: request.image_media_token,
-      model: request.model,
-    }
+    request: mutableRequest,
   });
+
   return (result as EnqueueImageTo3dObjectResult);
 }
