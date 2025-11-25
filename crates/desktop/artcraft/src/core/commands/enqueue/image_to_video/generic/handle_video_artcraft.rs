@@ -31,7 +31,7 @@ use storyteller_client::utils::api_host::ApiHost;
 use tauri::AppHandle;
 
 pub async fn handle_video_artcraft(
-  request: EnqueueImageToVideoRequest,
+  request: &EnqueueImageToVideoRequest,
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
@@ -84,10 +84,10 @@ pub async fn handle_video_artcraft(
       selected_model = Some(GenerationModel::Kling1_6);
       let request = GenerateKling16ProImageToVideoRequest { 
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
-        end_frame_image_media_token: request.end_frame_image_media_token,
+        media_file_token: request.image_media_token.clone(),
+        end_frame_image_media_token: request.end_frame_image_media_token.clone(),
         aspect_ratio: Some(GenerateKling16ProAspectRatio::WideSixteenNine),
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         duration: None,
       };
       let result = generate_kling_16_pro_image_to_video(
@@ -111,9 +111,9 @@ pub async fn handle_video_artcraft(
       selected_model = Some(GenerationModel::Kling21Master);
       let request = GenerateKling21MasterImageToVideoRequest {
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
+        media_file_token: request.image_media_token.clone(),
         aspect_ratio: Some(GenerateKling21MasterAspectRatio::WideSixteenNine),
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         duration: None,
       };
       let result = generate_kling_21_master_image_to_video(
@@ -137,10 +137,10 @@ pub async fn handle_video_artcraft(
       selected_model = Some(GenerationModel::Kling21Pro);
       let request = GenerateKling21ProImageToVideoRequest {
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
-        end_frame_image_media_token: request.end_frame_image_media_token,
+        media_file_token: request.image_media_token.clone(),
+        end_frame_image_media_token: request.end_frame_image_media_token.clone(),
         aspect_ratio: Some(GenerateKling21ProAspectRatio::WideSixteenNine),
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         duration: None,
       };
       let result = generate_kling_21_pro_image_to_video(
@@ -164,9 +164,9 @@ pub async fn handle_video_artcraft(
       selected_model = Some(GenerationModel::Seedance10Lite);
       let request = GenerateSeedance10LiteImageToVideoRequest {
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
-        end_frame_image_media_token: request.end_frame_image_media_token,
-        prompt: request.prompt,
+        media_file_token: request.image_media_token.clone(),
+        end_frame_image_media_token: request.end_frame_image_media_token.clone(),
+        prompt: request.prompt.clone(),
         resolution: None,
         duration: None,
       };
@@ -191,9 +191,9 @@ pub async fn handle_video_artcraft(
       selected_model = Some(GenerationModel::Veo2);
       let request = GenerateVeo2ImageToVideoRequest {
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
+        media_file_token: request.image_media_token.clone(),
         aspect_ratio: Some(GenerateVeo2AspectRatio::WideSixteenNine),
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         duration: None,
       };
       let result = generate_veo_2_image_to_video(
@@ -217,9 +217,9 @@ pub async fn handle_video_artcraft(
       selected_model = Some(GenerationModel::Veo3);
       let request = GenerateVeo3ImageToVideoRequest {
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
+        media_file_token: request.image_media_token.clone(),
         aspect_ratio: Some(GenerateVeo3AspectRatio::WideSixteenNine),
-        prompt: request.prompt,
+        prompt: request.prompt.clone(),
         duration: None,
         resolution: None,
         generate_audio: None,
@@ -245,8 +245,8 @@ pub async fn handle_video_artcraft(
       selected_model = Some(GenerationModel::Veo3Fast);
       let request = GenerateVeo3FastImageToVideoRequest {
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
-        prompt: request.prompt,
+        media_file_token: request.image_media_token.clone(),
+        prompt: request.prompt.clone(),
         duration: None,
         resolution: None,
         generate_audio: None,

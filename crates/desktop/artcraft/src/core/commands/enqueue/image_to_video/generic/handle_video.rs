@@ -9,7 +9,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use tauri::AppHandle;
 
 pub async fn handle_video(
-  request: EnqueueImageToVideoRequest,
+  request: &EnqueueImageToVideoRequest,
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
@@ -25,7 +25,7 @@ pub async fn handle_video(
       Provider::Sora => {} // Fallthrough
       Provider::Artcraft => {
         return Ok(handle_video_artcraft(
-          request,
+          &request,
           &app,
           app_env_configs,
           app_data_root,
