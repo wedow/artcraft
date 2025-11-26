@@ -14,8 +14,8 @@ import { VideoModel } from "@storyteller/model-list";
 import { animated, useSpring } from "@react-spring/web";
 import { useImageToVideoStore } from "./ImageToVideoStore";
 import {
-  useImageToVideoGenerationCompleteEvent,
-  ImageToVideoGenerationCompleteEvent,
+  useVideoGenerationCompleteEvent,
+  VideoGenerationCompleteEvent,
 } from "@storyteller/tauri-events";
 // import { Badge } from "@storyteller/ui-badge";
 import { twMerge } from "tailwind-merge";
@@ -49,8 +49,8 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
     clearJobTokens: () => {},
   };
 
-  useImageToVideoGenerationCompleteEvent(
-    async (event: ImageToVideoGenerationCompleteEvent) => {
+  useVideoGenerationCompleteEvent(
+    async (event: VideoGenerationCompleteEvent) => {
       if (!event.generated_video) return;
       completeBatch(
         {
