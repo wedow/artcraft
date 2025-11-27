@@ -83,6 +83,8 @@ pub async fn download_video_file(args: DownloadVideoFileArgs<'_>) -> Result<Vide
 
 #[cfg(test)]
 mod tests {
+  use std::fs::File;
+  use std::io::Write;
   use crate::datatypes::api::file_id::FileId;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::requests::download_video_file::download_video_file::{download_video_file, DownloadVideoFileArgs};
@@ -116,6 +118,9 @@ mod tests {
     }).await?;
 
     println!("Video byte length: {:?}", download.bytes.len());
+
+    let mut file = File::create("download_video_file.test.mp4")?;
+    file.write_all(&download.bytes)?;
 
     assert_eq!(1, 2);
     Ok(())
