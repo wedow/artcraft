@@ -1,7 +1,7 @@
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::EnqueueContextualEditImageCommand;
 use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::EnqueueInpaintImageCommand;
-use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, SoraOrientation};
+use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, GrokAspectRatio, SoraOrientation};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::core::events::generation_events::common::GenerationModel;
@@ -19,6 +19,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use grok_client::credentials::grok_cookies::GrokCookies;
 use grok_client::credentials::grok_full_credentials::GrokFullCredentials;
+use grok_client::datatypes::api::aspect_ratio::AspectRatio;
 use grok_client::datatypes::file_upload_spec::FileUploadSpec;
 use grok_client::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
 use grok_client::recipes::upload_image_and_generate_video::{upload_image_and_generate_video, UploadImageAndGenerateVideo};
@@ -55,12 +56,20 @@ pub async fn handle_grok_video(
     image_token,
   ).await?;
 
+  let aspect_ratio = match request.grok_aspect_ratio {
+    None => AspectRatio::WideThreeByTwo,
+    Some(GrokAspectRatio::Landscape) => AspectRatio::WideThreeByTwo,
+    Some(GrokAspectRatio::Portrait) => AspectRatio::TallTwoByThree,
+    Some(GrokAspectRatio::Square) => AspectRatio::Square,
+  };
+
   info!("Calling Grok Video generate...");
 
   let upload = upload_image_and_generate_video(UploadImageAndGenerateVideo {
     full_credentials: &creds,
     file: FileUploadSpec::Path(local_image_file.path()),
     prompt: request.prompt.as_deref(),
+    aspect_ratio: Some(aspect_ratio),
     wait_for_generation: false,
     individual_request_timeout: Some(GROK_IMAGE_UPLOAD_TIMEOUT)
   }).await;

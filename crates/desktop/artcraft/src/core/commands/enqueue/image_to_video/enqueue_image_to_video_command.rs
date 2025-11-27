@@ -89,6 +89,10 @@ pub struct EnqueueImageToVideoRequest {
   pub sora_orientation: Option<SoraOrientation>,
 
   /// OPTIONAL.
+  /// Only for Grok model currently
+  pub grok_aspect_ratio: Option<GrokAspectRatio>,
+
+  /// OPTIONAL.
   /// Name of the frontend caller.
   /// We'll use this to selectively trigger events.
   pub frontend_caller: Option<TauriCommandCaller>,
@@ -110,6 +114,15 @@ pub struct EnqueueImageToVideoRequest {
 pub enum SoraOrientation {
   Portrait,
   Landscape,
+}
+
+// TODO: Not sure how to handle so many different types of video (model) x (services).
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum GrokAspectRatio {
+  Portrait,
+  Landscape,
+  Square
 }
 
 #[derive(Serialize)]

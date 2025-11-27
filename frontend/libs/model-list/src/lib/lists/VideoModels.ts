@@ -27,6 +27,11 @@ export const VIDEO_MODELS: VideoModel[] = [
         textLabel: "Portrait",
         icon: SizeIconOption.Portrait,
       },
+      {
+        tauriValue: "square",
+        textLabel: "Square",
+        icon: SizeIconOption.Square,
+      },
     ],
   }),
   new VideoModel({
