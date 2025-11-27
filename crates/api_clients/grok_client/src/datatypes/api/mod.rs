@@ -1,3 +1,4 @@
+pub mod aspect_ratio;
 pub mod baggage;
 pub mod file_id;
 pub mod post_id;

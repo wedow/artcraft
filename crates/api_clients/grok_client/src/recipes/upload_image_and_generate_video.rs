@@ -1,4 +1,5 @@
 use crate::credentials::grok_full_credentials::GrokFullCredentials;
+use crate::datatypes::api::aspect_ratio::AspectRatio;
 use crate::datatypes::api::file_id::FileId;
 use crate::datatypes::api::post_id::PostId;
 use crate::datatypes::file_upload_spec::FileUploadSpec;
@@ -22,6 +23,9 @@ pub struct UploadImageAndGenerateVideo<'a, P: AsRef<Path>> {
 
   /// Video generation prompt
   pub prompt: Option<&'a str>,
+
+  /// Aspect ratio for the video.
+  pub aspect_ratio: Option<AspectRatio>,
 
   /// Wait for the full video to be generated before returning
   /// By default, the endpoint stays open for 30-ish seconds while
@@ -109,6 +113,7 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
     media_type: VideoMediaPostType::UserUploadedImage,
     cookie: args.full_credentials.cookies.as_str(),
     prompt: args.prompt,
+    aspect_ratio: args.aspect_ratio,
     request_timeout: args.individual_request_timeout,
     baggage: &args.full_credentials.client_secrets.baggage,
     sentry_trace: &args.full_credentials.client_secrets.sentry_trace,
@@ -177,7 +182,7 @@ mod tests {
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
-
+  use crate::datatypes::api::aspect_ratio::AspectRatio;
   // Result: GrokUploadFileResponse { file_metadata_id:
   // Some("acdee48f-9d6f-4bc6-9d06-fcc97dd4418a"), file_uri:
   // Some("users/85980643-ffab-4984-a3de-59a608c47d7f/acdee48f-9d6f-4bc6-9d06-fcc97dd4418a/content") }
@@ -211,6 +216,7 @@ mod tests {
       full_credentials: &credentials,
       file: FileUploadSpec::Path(image_path),
       prompt: maybe_prompt,
+      aspect_ratio: Some(AspectRatio::Square),
       individual_request_timeout: None,
       wait_for_generation: false,
     }).await?;

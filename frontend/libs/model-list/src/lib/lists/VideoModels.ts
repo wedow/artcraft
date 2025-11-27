@@ -16,6 +16,18 @@ export const VIDEO_MODELS: VideoModel[] = [
     endFrame: false,
     requiresImage: true,
     progressBarTime: 50000,
+    sizeOptions: [
+      {
+        tauriValue: "landscape",
+        textLabel: "Landscape",
+        icon: SizeIconOption.Landscape,
+      },
+      {
+        tauriValue: "portrait",
+        textLabel: "Portrait",
+        icon: SizeIconOption.Portrait,
+      },
+    ],
   }),
   new VideoModel({
     id: "kling_1_6_pro",

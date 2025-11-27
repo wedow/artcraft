@@ -1,4 +1,5 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+use crate::datatypes::api::aspect_ratio::AspectRatio;
 use crate::datatypes::api::baggage::Baggage;
 use crate::datatypes::api::file_id::FileId;
 use crate::datatypes::api::sentry_trace::SentryTrace;
@@ -14,7 +15,7 @@ use crate::requests::index_page::signature::generate_xsid::{generate_xsid, Gener
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::requests::video_chat::parse_video_id::parse_video_id;
 use crate::requests::video_chat::parse_video_id_from_partial_byte_stream_buffer::parse_video_id_from_partial_byte_stream_buffer;
-use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
+use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenAspectRatio, VideoGenModelConfig};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use futures::StreamExt;
 use log::{debug, error, info, warn};
@@ -32,6 +33,7 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub file_id: &'a FileId,
   pub media_type: VideoMediaPostType,
   pub prompt: Option<&'a str>,
+  pub aspect_ratio: Option<AspectRatio>,
 
   pub cookie: &'a str,
   pub user_id: &'a UserId,
@@ -236,6 +238,13 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       prompt = format!("{media_url}  {user_prompt} --mode=custom");
     }
 
+    let aspect_ratio = match self.aspect_ratio {
+      Some(AspectRatio::Square) => VideoGenAspectRatio::Square,
+      Some(AspectRatio::WideThreeByTwo) => VideoGenAspectRatio::WideThreeByTwo,
+      Some(AspectRatio::TallTwoByThree) => VideoGenAspectRatio::TallTwoByThree,
+      None => VideoGenAspectRatio::WideThreeByTwo,
+    };
+
     let request_body = CreateChatConversationWireRequest {
       temporary: true,
       model_name: "grok-3".to_string(),
@@ -251,6 +260,8 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           model_map: ModelMap {
             video_gen_model_config: VideoGenModelConfig {
               parent_post_id: self.file_id.0.to_string(),
+              video_length: 6, // NB: API defaults to "6"
+              aspect_ratio,
             },
           },
         },
@@ -340,6 +351,7 @@ mod tests {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       prompt: maybe_prompt,
+      aspect_ratio: Some(AspectRatio::TallTwoByThree),
 
       cookie: cookies.as_str(),
       user_id: &secrets.user_id,
@@ -402,6 +414,7 @@ mod tests {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       prompt: maybe_prompt,
+      aspect_ratio: Some(AspectRatio::Square),
 
       cookie: cookies.as_str(),
       user_id: &secrets.user_id,
