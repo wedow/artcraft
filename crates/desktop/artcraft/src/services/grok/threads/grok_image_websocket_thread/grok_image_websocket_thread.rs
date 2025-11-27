@@ -39,6 +39,7 @@ use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
+use grok_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::sqlite::tasks::TaskId;
 
@@ -141,6 +142,7 @@ async fn inner_loop(
       let _result = prompt_websocket_image(PromptWebsocketImageArgs {
         websocket: &mut websocket,
         prompt: &prompt_item.prompt,
+        aspect_ratio: ClientMessageAspectRatio::WideThreeByTwo, // TODO: Make configurable.
       }).await?;
 
       let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {
