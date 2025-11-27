@@ -1,15 +1,16 @@
 use crate::error::grok_error::GrokError;
 use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
-use crate::requests::image_websocket::messages::websocket_client_message::WebsocketClientMessage;
+use crate::requests::image_websocket::messages::websocket_client_message::{ClientMessageAspectRatio, WebsocketClientMessage};
 
 pub struct PromptWebsocketImageArgs<'a> {
   pub websocket: &'a mut GrokWebsocket,
   pub prompt: &'a str,
+  pub aspect_ratio: ClientMessageAspectRatio,
 }
 
 
 pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Result<(), GrokError> {
-  let message = WebsocketClientMessage::new_image_prompt(args.prompt);
+  let message = WebsocketClientMessage::new_image_prompt(args.prompt, args.aspect_ratio);
 
   args.websocket.send_serializable(&message).await?;
 
@@ -21,6 +22,7 @@ mod tests {
   use crate::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
   use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
   use crate::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
+  use crate::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
   use crate::requests::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
   use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
@@ -50,6 +52,7 @@ mod tests {
     let result = prompt_websocket_image(PromptWebsocketImageArgs {
       websocket: &mut websocket,
       prompt: "a dog riding a motorcycle",
+      aspect_ratio: ClientMessageAspectRatio::WideThreeByTwo,
     }).await?;
 
     println!("Reading...");
