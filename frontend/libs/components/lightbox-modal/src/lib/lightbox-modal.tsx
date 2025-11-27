@@ -409,6 +409,8 @@ export function LightboxModal({
                                 e.currentTarget.src =
                                   PLACEHOLDER_IMAGES.DEFAULT;
                                 e.currentTarget.style.opacity = "0.3";
+                                // Set the `data-brokenurl` property for debugging the broken images:
+                                (e.currentTarget as HTMLImageElement).dataset.brokenurl = url || "";
                               }
                             }}
                             onLoad={() => {
