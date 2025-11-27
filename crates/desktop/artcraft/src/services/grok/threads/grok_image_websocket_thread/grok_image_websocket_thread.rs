@@ -22,6 +22,7 @@ use grok_client::requests::image_websocket::create_listen_websocket::{create_lis
 use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
 use grok_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
 use grok_client::requests::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
+use grok_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
 use grok_client::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info, warn};
@@ -39,7 +40,6 @@ use storyteller_client::endpoints::prompts::create_prompt::create_prompt;
 use storyteller_client::error::api_error::ApiError;
 use storyteller_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
-use grok_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::sqlite::tasks::TaskId;
 
@@ -142,7 +142,7 @@ async fn inner_loop(
       let _result = prompt_websocket_image(PromptWebsocketImageArgs {
         websocket: &mut websocket,
         prompt: &prompt_item.prompt,
-        aspect_ratio: ClientMessageAspectRatio::WideThreeByTwo, // TODO: Make configurable.
+        aspect_ratio: prompt_item.aspect_ratio,
       }).await?;
 
       let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {

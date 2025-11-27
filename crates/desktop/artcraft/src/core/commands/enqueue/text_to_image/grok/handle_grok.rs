@@ -1,12 +1,13 @@
 use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
-use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::EnqueueTextToImageRequest;
+use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
+use grok_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
 use idempotency::uuid::generate_random_uuid;
 use tauri::AppHandle;
 
@@ -53,9 +54,18 @@ pub async fn handle_grok(
       .map(|prompt| prompt.trim().to_string())
       .unwrap_or_else(|| "".to_string());
 
+  let aspect_ratio = match request.aspect_ratio {
+    None => ClientMessageAspectRatio::Square,
+    Some(TextToImageSize::Auto) => ClientMessageAspectRatio::Square,
+    Some(TextToImageSize::Square) => ClientMessageAspectRatio::Square,
+    Some(TextToImageSize::Wide) => ClientMessageAspectRatio::WideThreeByTwo,
+    Some(TextToImageSize::Tall) => ClientMessageAspectRatio::TallTwoByThree,
+  };
+
   grok_image_prompt_queue.enqueue(PromptItem {
     task_id: job_id.clone(),
     prompt,
+    aspect_ratio,
   })?;
 
   Ok(TaskEnqueueSuccess {
