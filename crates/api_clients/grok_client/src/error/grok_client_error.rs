@@ -56,6 +56,9 @@ pub enum GrokClientError {
   /// Can't make request because cookies aren't present
   NoCookiesPresent,
 
+  /// Unknown error generating video
+  ErrorGeneratingVideo,
+
 //  /// An error reading the file for upload.
 //  FileForUploadReadError(std::io::Error),
 //
@@ -115,6 +118,7 @@ impl Display for GrokClientError {
       Self::BadSignatureInputs => write!(f, "Bad signature inputs"),
       Self::TimeoutMathBroken => write!(f, "Timeout math is broken"),
       Self::NoCookiesPresent => write!(f, "No cookies present"),
+      Self::ErrorGeneratingVideo => write!(f, "Error generating video"),
 
       //Self::FileForUploadReadError(err) => write!(f, "Error reading file for upload: {}", err),
       //Self::FileForUploadHasInvalidPath => write!(f, "The file path provided for upload is invalid."),
