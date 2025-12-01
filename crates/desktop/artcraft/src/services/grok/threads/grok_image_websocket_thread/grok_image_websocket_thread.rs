@@ -18,6 +18,7 @@ use enums::common::model_type::ModelType;
 use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use errors::AnyhowResult;
+use grok_client::recipes::prompt_websocket_image_with_retry::{prompt_websocket_image_with_retry, PromptWebsocketImageWithRetryArgs};
 use grok_client::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
 use grok_client::requests::image_websocket::grok_websocket::GrokWebsocket;
 use grok_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
@@ -86,47 +87,33 @@ async fn inner_loop(
       continue;
     }
 
-    let maybe_cookie_header = grok_creds.maybe_copy_cookie_header_string()?;
+    let maybe_cookies = grok_creds.maybe_copy_typed_cookies()?;
 
-    let cookie_header = match maybe_cookie_header {
-      Some(cookie_header) => cookie_header,
+    //let maybe_cookie_header = grok_creds.maybe_copy_cookie_header_string()?;
+
+    let cookies = match maybe_cookies {
+      Some(cookies) => cookies,
       None => {
         tokio::time::sleep(std::time::Duration::from_millis(10_000)).await;
         continue;
-      }
+      },
     };
 
+    //let cookie_header = match maybe_cookie_header {
+    //  Some(cookie_header) => cookie_header,
+    //  None => {
+    //    tokio::time::sleep(std::time::Duration::from_millis(10_000)).await;
+    //    continue;
+    //  }
+    //};
+
     let websocket = create_listen_websocket(CreateListenWebsocketArgs {
-      cookies: &cookie_header,
+      cookies: cookies.as_str(),
     }).await?;
 
     let mut websocket = GrokWebsocket::new(websocket);
 
-    //poll_task_loop(
-    //  &app_handle,
-    //  &app_env_configs,
-    //  &app_data_root,
-    //  &task_database,
-    //  &grok_creds,
-    //  websocket,
-    //  prompt_queue,
-    //  &storyteller_creds_manager,
-    //).await?;
-
     loop {
-      // let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
-      //   db: task_database.get_connection(),
-      //   provider: GenerationProvider::Grok,
-      //   task_statuses: &TASK_DATABASE_PENDING_STATUSES,
-      // }).await?;
-      // // Only Grok images
-      // let local_tasks = local_tasks.tasks.into_iter()
-      //     .filter(|task| match task.model_type {
-      //       Some(TaskModelType::GrokImage) => true,
-      //       _ => false,
-      //     })
-      //     .collect::<Vec<_>>();
-
       let maybe_prompt = prompt_queue.dequeue()?;
 
       let prompt_item = match maybe_prompt {
@@ -137,13 +124,19 @@ async fn inner_loop(
         }
       };
 
-      info!("Prompting Grok websocket: {}", prompt_item.prompt);
+      info!("Prompt received over in-memory queue. Prompting Grok websocket: {}", prompt_item.prompt);
 
-      let _result = prompt_websocket_image(PromptWebsocketImageArgs {
+      let result = prompt_websocket_image_with_retry(PromptWebsocketImageWithRetryArgs {
         websocket: &mut websocket,
         prompt: &prompt_item.prompt,
         aspect_ratio: prompt_item.aspect_ratio,
+        cookies: &cookies,
       }).await?;
+
+      if let Some(new_websocket) = result.maybe_new_websocket {
+        info!("Replacing websocket with new one...");
+        websocket = new_websocket;
+      }
 
       let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {
         websocket: &mut websocket,
@@ -163,19 +156,6 @@ async fn inner_loop(
 
   }
 }
-
-//async fn poll_task_loop(
-//  app_handle: &AppHandle,
-//  app_env_configs: &AppEnvConfigs,
-//  app_data_root: &AppDataRoot,
-//  task_database: &TaskDatabase,
-//  grok_creds: &GrokCredentialManager,
-//  grok_websocket: GrokWebsocket,
-//  prompt_queue: &GrokImagePromptQueue,
-//  storyteller_creds_manager: &StorytellerCredentialManager,
-//) -> AnyhowResult<()> {
-//
-//}
 
 async fn upload_images_to_storyteller(
   app_handle: &AppHandle,
