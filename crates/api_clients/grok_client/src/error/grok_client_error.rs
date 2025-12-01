@@ -47,6 +47,18 @@ pub enum GrokClientError {
   /// Our script logic is out of date
   ScriptLogicOutOfDate,
 
+  /// Our script logic is out of date (SVG)
+  ScriptSvgLogicOutOfDate,
+
+  /// Our script logic is out of date (script 1)
+  Script1LogicOutOfDate,
+
+  /// Our script logic is out of date (script 2)
+  Script2LogicOutOfDate,
+  
+  /// Our script logic is out of date (xsid script)
+  ScriptXsidLogicOutOfDate,
+
   /// Signature algorithm isn't working with inputs
   BadSignatureInputs,
   
@@ -115,6 +127,10 @@ impl Display for GrokClientError {
       Self::FailedToDecodeVerificationToken(err) => write!(f, "Failed to decode verification token: {}", err),
       Self::InvalidVerificationTokenBytes => write!(f, "Invalid verification token bytes"),
       Self::ScriptLogicOutOfDate => write!(f, "Script logic out of date"),
+      Self::ScriptSvgLogicOutOfDate => write!(f, "Script logic out of date (SVG parsing)"),
+      Self::Script1LogicOutOfDate => write!(f, "Script logic out of date (script 1)"),
+      Self::Script2LogicOutOfDate => write!(f, "Script logic out of date (script 2)"),
+      Self::ScriptXsidLogicOutOfDate => write!(f, "Script logic out of date (xsid script)"),
       Self::BadSignatureInputs => write!(f, "Bad signature inputs"),
       Self::TimeoutMathBroken => write!(f, "Timeout math is broken"),
       Self::NoCookiesPresent => write!(f, "No cookies present"),
