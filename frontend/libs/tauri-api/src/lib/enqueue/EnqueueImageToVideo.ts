@@ -35,6 +35,9 @@ export interface EnqueueImageToVideoRequest {
   // Optional. Orientation of the video for Sora 2.
   sora_orientation?: "portrait" | "landscape";
 
+  // Optional. Aspect Ratio for the video for Grok Video.
+  grok_aspect_ratio?: "portrait" | "landscape" | "square";
+
   // Optional. Whether to generate audio alongside the video (used by some models like Veo2)
   generate_audio?: boolean;
 }
@@ -47,6 +50,7 @@ interface RawEnqueueImageToVideoRequest {
   frontend_caller?: string;
   frontend_subscriber_id?: string;
   sora_orientation?: "portrait" | "landscape";
+  grok_aspect_ratio?:  "portrait" | "landscape" | "square";
   generate_audio?: boolean;
 }
 
@@ -92,6 +96,10 @@ export const EnqueueImageToVideo = async (
 
   if (request.sora_orientation) {
     mutableRequest.sora_orientation = request.sora_orientation;
+  }
+
+  if (request.grok_aspect_ratio) {
+    mutableRequest.grok_aspect_ratio = request.grok_aspect_ratio;
   }
 
   if (typeof request.generate_audio === "boolean") {

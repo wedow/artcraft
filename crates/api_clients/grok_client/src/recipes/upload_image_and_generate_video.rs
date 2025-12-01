@@ -105,6 +105,9 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
 
   info!("Posted Image.");
 
+  info!("Video prompt: {:?}", args.prompt);
+  info!("Video aspect ratio: {:?}", args.aspect_ratio);
+
   info!("Generate video...");
 
   let request = GrokVideoGenChatConversationBuilder {
