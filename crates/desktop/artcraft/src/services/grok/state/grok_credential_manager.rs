@@ -102,11 +102,27 @@ impl GrokCredentialManager {
     }
   }
 
-  pub fn replace_full_credentials(&self,  creds: GrokFullCredentials) -> anyhow::Result<()> {
+  pub fn replace_full_credentials(&self, creds: GrokFullCredentials) -> anyhow::Result<()> {
     match self.credential_data.write() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
       Ok(mut holder) => {
         holder.grok_full_credentials = Some(creds);
+        Ok(())
+      }
+    }
+  }
+
+  pub fn replace_client_secrets_only(&self, secrets: GrokClientSecrets) -> anyhow::Result<()> {
+    match self.credential_data.write() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut holder) => {
+        let mut maybe_full_creds = holder.grok_full_credentials.clone();
+        if let Some(creds) = maybe_full_creds.as_mut() {
+          creds.client_secrets = secrets;
+        } else {
+          warn!("No existing credentials to replace secrets into.");
+        }
+        holder.grok_full_credentials = maybe_full_creds;
         Ok(())
       }
     }

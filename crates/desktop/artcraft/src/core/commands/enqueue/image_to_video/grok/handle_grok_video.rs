@@ -23,6 +23,7 @@ use grok_client::datatypes::api::aspect_ratio::AspectRatio;
 use grok_client::datatypes::file_upload_spec::FileUploadSpec;
 use grok_client::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
 use grok_client::recipes::upload_image_and_generate_video::{upload_image_and_generate_video, UploadImageAndGenerateVideo};
+use grok_client::recipes::upload_image_and_generate_video_with_retry::{upload_image_and_generate_video_with_retry, UploadImageAndGenerateVideoWithRetry};
 use log::{error, info, warn};
 use openai_sora_client::recipes::generate_sora2_video::generate_sora2_video_with_session_auto_renew::generate_sora2_video_with_session_auto_renew;
 use openai_sora_client::requests::generate_sora2_video::generate_sora2_video::{GenerateSora2VideoArgs, Orientation};
@@ -65,8 +66,8 @@ pub async fn handle_grok_video(
 
   info!("Calling Grok Video generate...");
 
-  let upload = upload_image_and_generate_video(UploadImageAndGenerateVideo {
-    full_credentials: &creds,
+  let upload_result = upload_image_and_generate_video_with_retry(UploadImageAndGenerateVideoWithRetry {
+    credentials: &creds,
     file: FileUploadSpec::Path(local_image_file.path()),
     prompt: request.prompt.as_deref(),
     aspect_ratio: Some(aspect_ratio),
@@ -74,14 +75,18 @@ pub async fn handle_grok_video(
     individual_request_timeout: Some(GROK_IMAGE_UPLOAD_TIMEOUT)
   }).await;
 
-  let post_id = match upload {
+  let post_id = match upload_result {
     Err(err) => {
       error!("Failed to use Grok video: {:?}", err);
       return Err(GenerateError::from(err));
     }
     Ok(result) => {
-      info!("Successfully enqueued Grok Video: post_id = {:?}", result.post_id);
-      result.post_id
+      if let Some(secrets) = result.maybe_new_client_secrets {
+        info!("New Grok secrets generated! Storing them in the credential manager...");
+        grok_credential_manager.replace_client_secrets_only(secrets)?;
+      }
+      info!("Successfully enqueued Grok Video: post_id = {:?}", result.upload_result.post_id);
+      result.upload_result.post_id
     }
   };
 
