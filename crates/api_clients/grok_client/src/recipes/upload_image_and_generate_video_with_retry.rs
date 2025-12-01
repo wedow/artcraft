@@ -1,5 +1,6 @@
 use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::credentials::grok_full_credentials::GrokFullCredentials;
+use crate::datatypes::api::aspect_ratio::AspectRatio;
 use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
@@ -26,6 +27,9 @@ pub struct UploadImageAndGenerateVideoWithRetry<'a, P: AsRef<Path>> {
   /// Video generation prompt
   pub prompt: Option<&'a str>,
 
+  /// Aspect ratio for the video.
+  pub aspect_ratio: Option<AspectRatio>,
+
   /// Wait for the full video to be generated before returning
   /// By default, the endpoint stays open for 30-ish seconds while
   /// the video generates and streams back JSON progress updates.
@@ -41,18 +45,18 @@ pub struct UploadImageAndGenerateVideoWithRetry<'a, P: AsRef<Path>> {
 pub struct ImageUploadAndGenerateVideoWithRetryResult {
   /// If new secrets were generated, they're stored here.
   pub maybe_new_client_secrets: Option<GrokClientSecrets>,
-  
+
   /// The video generation result.
   pub upload_result: ImageUploadAndGenerateVideoResult,
 }
 
 pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
-  args: UploadImageAndGenerateVideo<'_, P>
+  args: UploadImageAndGenerateVideoWithRetry<'_, P>
 ) -> Result<ImageUploadAndGenerateVideoWithRetryResult, GrokError> {
-  
-  let mut current_full_credentials_ref = args.full_credentials;
+
+  let mut current_full_credentials_ref = args.credentials;
   let mut maybe_new_credentials = None;
-  
+
   info!("Uploading file to Grok...");
 
   let request = GrokUploadFile {
@@ -121,7 +125,7 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
       numbers: &current_full_credentials_ref.client_secrets.numbers,
     };
 
-    let video_gen_result = 
+    let video_gen_result =
       if args.wait_for_generation {
         request.wait_for_video()
             .await
@@ -131,7 +135,7 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
             .await
             .map(|res| res.video_file_id)
       };
-    
+
     match video_gen_result {
       Ok(res) => {
         info!("Video Generation Enqueued!");
@@ -151,11 +155,15 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
     }
 
     info!("Refreshing Grok client secrets...");
-    
+
     let secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &current_full_credentials_ref.cookies,
     }).await?;
-    
+
+    // NB: This is just to appease the borrow checker. It doesn't like that we're borrowing `maybe_new_credentials`
+    // in a loop and replacing it while borrowed, hence this hack.
+    current_full_credentials_ref = args.credentials;
+
     maybe_new_credentials = Some(GrokFullCredentials::from_cookies_and_client_secrets(
       current_full_credentials_ref.cookies.clone(),
       secrets,
@@ -164,12 +172,8 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
     if let Some(creds) = maybe_new_credentials.as_ref() {
       current_full_credentials_ref = creds;
     }
-    
-    //current_full_credentials_ref = maybe_new_credentials
-    //    .as_ref()
-    //    .unwrap_or(current_full_credentials_ref);
   }
-  
+
   if !video_enqueued_successfully {
     if let Some(err) = last_error {
       return Err(err);
@@ -197,7 +201,7 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
     };
 
     let like_result = request.send().await;
-    
+
     match like_result {
       Ok(_) => {
         info!("Media Liked");
@@ -220,6 +224,10 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
       cookies: &current_full_credentials_ref.cookies,
     }).await?;
 
+    // NB: This is just to appease the borrow checker. It doesn't like that we're borrowing `maybe_new_credentials`
+    // in a loop and replacing it while borrowed, hence this hack.
+    current_full_credentials_ref = args.credentials;
+
     maybe_new_credentials = Some(GrokFullCredentials::from_cookies_and_client_secrets(
       current_full_credentials_ref.cookies.clone(),
       secrets,
@@ -228,9 +236,6 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
     if let Some(creds) = maybe_new_credentials.as_ref() {
       current_full_credentials_ref = creds;
     }
-    //current_full_credentials_ref = maybe_new_credentials
-    //    .as_ref()
-    //    .unwrap_or(current_full_credentials_ref);
   }
 
   if !video_liked_successfully {
@@ -241,7 +246,7 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
       return Err(GrokError::Client(GrokClientError::ErrorGeneratingVideo))
     }
   }
-  
+
   let maybe_video_url = maybe_video_file_id
       .as_ref()
       .map(|file_id| {
@@ -268,11 +273,12 @@ mod tests {
   use crate::datatypes::api::aspect_ratio::AspectRatio;
   use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
-  use crate::recipes::upload_image_and_generate_video::{upload_image_and_generate_video, UploadImageAndGenerateVideo};
+  use crate::recipes::upload_image_and_generate_video_with_retry::{upload_image_and_generate_video_with_retry, UploadImageAndGenerateVideoWithRetry};
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
+
   // Result: GrokUploadFileResponse { file_metadata_id:
   // Some("acdee48f-9d6f-4bc6-9d06-fcc97dd4418a"), file_uri:
   // Some("users/85980643-ffab-4984-a3de-59a608c47d7f/acdee48f-9d6f-4bc6-9d06-fcc97dd4418a/content") }
@@ -286,30 +292,42 @@ mod tests {
     //let prompt = "our hero link plunges the sword into the pedestal, the temple is glowing with a blue aura";
 
     let image_path = "/Users/bt/Pictures/Midjourney/hipster_girl.png";
-    let maybe_prompt = Some("an anime girl runs away from a giant t-rex");
+    let maybe_prompt = Some("an anime girl turns and high fives a giant t-rex");
 
     let cookies = get_typed_test_cookies()?;
 
-    let secrets = request_client_secrets(RequestClientSecretsArgs {
+    let mut bad_secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,
     }).await?;
 
-    println!("[test] Verification Token: {:?}", secrets.verification_token);
-    println!("[test] Sentry Trace: {:?}", secrets.sentry_trace);
-    println!("[test] Numbers: {:?}", secrets.numbers);
-    println!("[test] Svg Path: {:?}", secrets.svg_path_data);
-    println!("[test] Baggage: {:?}", secrets.baggage);
+    // NB: We're purposely messing these up to trigger "retry".
+    bad_secrets.numbers.numbers = Vec::new();
+    bad_secrets.sentry_trace.0 = "".to_string();
 
-    let credentials = GrokFullCredentials::from_cookies_and_client_secrets(cookies, secrets);
+    let credentials = GrokFullCredentials::from_cookies_and_client_secrets(cookies, bad_secrets);
 
-    let video_result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
-      full_credentials: &credentials,
+    let result = upload_image_and_generate_video_with_retry(UploadImageAndGenerateVideoWithRetry {
+      credentials: &credentials,
       file: FileUploadSpec::Path(image_path),
       prompt: maybe_prompt,
       aspect_ratio: Some(AspectRatio::Square),
       individual_request_timeout: None,
       wait_for_generation: false,
     }).await?;
+
+    let new_secrets = result.maybe_new_client_secrets;
+
+    println!("[test] New secrets ? : {:?}", new_secrets.is_some());
+
+    if let Some(secrets) = new_secrets {
+      println!("[test] Verification Token: {:?}", secrets.verification_token);
+      println!("[test] Sentry Trace: {:?}", secrets.sentry_trace);
+      println!("[test] Numbers: {:?}", secrets.numbers);
+      println!("[test] Svg Path: {:?}", secrets.svg_path_data);
+      println!("[test] Baggage: {:?}", secrets.baggage);
+    }
+
+    let video_result = result.upload_result;
 
     println!("[test] Post ID: {:?}", video_result.post_id);
     println!("[test] Image File ID: {:?}", video_result.image_file_id);
