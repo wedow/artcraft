@@ -5,10 +5,12 @@ pub struct NanoBananaProTextToImageInput {
   pub prompt: String,
 
   /// Eg. "16:9", "1:1", and a ton of other options. So many options.
-  pub aspect_ratio: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub aspect_ratio: Option<String>,
 
   /// Eg. "1K", "2K", "4K"
-  pub resolution: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub resolution: Option<String>,
 
   /// 1 - 4
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,7 +32,7 @@ pub struct NanoBananaProTextToImageOutput {
   pub images: Vec<ImageFile>,
 }
 
-pub fn gemini_25_flash_image_edit(
+pub fn nano_banana_pro_text_to_image(
   params: NanoBananaProTextToImageInput,
 ) -> FalRequest<NanoBananaProTextToImageInput, NanoBananaProTextToImageOutput> {
   FalRequest::new("fal-ai/nano-banana-pro", params)
