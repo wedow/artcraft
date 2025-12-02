@@ -2408,3 +2408,4 @@ pub mod yue;
 pub mod zonos;
 
 pub mod qwen_image_edit;
+pub mod nano_banana_pro;

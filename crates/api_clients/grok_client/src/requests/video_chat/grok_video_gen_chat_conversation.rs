@@ -6,6 +6,7 @@ use crate::datatypes::api::sentry_trace::SentryTrace;
 use crate::datatypes::api::svg_path_data::SvgPathData;
 use crate::datatypes::api::user_id::UserId;
 use crate::datatypes::api::verification_token::VerificationToken;
+use crate::datatypes::api::video_generation_mode::VideoGenerationMode;
 use crate::datatypes::api::xsid_numbers::XsidNumbers;
 use crate::error::categorize_grok_http_error::categorize_grok_http_error;
 use crate::error::grok_client_error::GrokClientError;
@@ -33,6 +34,7 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub file_id: &'a FileId,
   pub media_type: VideoMediaPostType,
   pub prompt: Option<&'a str>,
+  pub mode: Option<VideoGenerationMode>,
   pub aspect_ratio: Option<AspectRatio>,
 
   pub cookie: &'a str,
@@ -232,11 +234,22 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       VideoMediaPostType::Video => unimplemented!("implement for videos"),
     };
 
-    let mut prompt = format!("{media_url}  --mode=normal");
+    let mode_string = self.mode
+        .unwrap_or(VideoGenerationMode::Normal)
+        .as_api_mode_arg();
+
+    let mut prompt = format!("{media_url}  --mode={mode_string}");
 
     if let Some(user_prompt) = self.prompt {
-      prompt = format!("{media_url}  {user_prompt} --mode=custom");
+      // If a text prompt is set, mode seems to typically be "custom".
+      let mode_string = self.mode
+          .unwrap_or(VideoGenerationMode::Custom)
+          .as_api_mode_arg();
+
+      prompt = format!("{media_url}  {user_prompt} --mode={mode_string}");
     }
+
+    info!("Grok video prompt: {prompt}");
 
     let aspect_ratio = match self.aspect_ratio {
       Some(AspectRatio::Square) => VideoGenAspectRatio::Square,
@@ -351,6 +364,7 @@ mod tests {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       prompt: maybe_prompt,
+      mode: Some(VideoGenerationMode::Custom),
       aspect_ratio: Some(AspectRatio::TallTwoByThree),
 
       cookie: cookies.as_str(),
@@ -414,6 +428,7 @@ mod tests {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       prompt: maybe_prompt,
+      mode: None,
       aspect_ratio: Some(AspectRatio::Square),
 
       cookie: cookies.as_str(),

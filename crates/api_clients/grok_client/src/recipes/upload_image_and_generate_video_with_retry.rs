@@ -1,6 +1,7 @@
 use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::credentials::grok_full_credentials::GrokFullCredentials;
 use crate::datatypes::api::aspect_ratio::AspectRatio;
+use crate::datatypes::api::video_generation_mode::VideoGenerationMode;
 use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
@@ -29,6 +30,9 @@ pub struct UploadImageAndGenerateVideoWithRetry<'a, P: AsRef<Path>> {
 
   /// Aspect ratio for the video.
   pub aspect_ratio: Option<AspectRatio>,
+
+  /// Mode to generate the video: normal, fun, spicy, etc.
+  pub mode: Option<VideoGenerationMode>,
 
   /// Wait for the full video to be generated before returning
   /// By default, the endpoint stays open for 30-ish seconds while
@@ -116,6 +120,7 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
       media_type: VideoMediaPostType::UserUploadedImage,
       cookie: current_full_credentials_ref.cookies.as_str(),
       prompt: args.prompt,
+      mode: args.mode,
       aspect_ratio: args.aspect_ratio,
       request_timeout: args.individual_request_timeout,
       baggage: &current_full_credentials_ref.client_secrets.baggage,
@@ -271,6 +276,7 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
 mod tests {
   use crate::credentials::grok_full_credentials::GrokFullCredentials;
   use crate::datatypes::api::aspect_ratio::AspectRatio;
+  use crate::datatypes::api::video_generation_mode::VideoGenerationMode;
   use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::recipes::upload_image_and_generate_video_with_retry::{upload_image_and_generate_video_with_retry, UploadImageAndGenerateVideoWithRetry};
@@ -310,7 +316,8 @@ mod tests {
       credentials: &credentials,
       file: FileUploadSpec::Path(image_path),
       prompt: maybe_prompt,
-      aspect_ratio: Some(AspectRatio::Square),
+      mode: Some(VideoGenerationMode::Custom),
+      aspect_ratio: Some(AspectRatio::TallTwoByThree),
       individual_request_timeout: None,
       wait_for_generation: false,
     }).await?;

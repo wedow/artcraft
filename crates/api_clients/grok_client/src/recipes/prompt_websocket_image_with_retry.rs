@@ -92,6 +92,8 @@ mod tests {
       cookies: cookies.as_str(),
     }).await?;
 
+    let prompt = "A dinosaur on stilts walking on the beach";
+
     //let websocket = GrokWrappedWebsocket::new(websocket);
     let mut websocket = GrokWebsocket::new(websocket);
 
@@ -106,7 +108,7 @@ mod tests {
 
     let result = prompt_websocket_image_with_retry(PromptWebsocketImageWithRetryArgs {
       websocket: &mut websocket,
-      prompt: "a dog riding a motorcycle",
+      prompt,
       aspect_ratio: ClientMessageAspectRatio::WideThreeByTwo,
       cookies: &cookies,
     }).await?;
@@ -152,9 +154,19 @@ mod tests {
           match message {
             WebsocketServerMessage::Image(image) => {
               println!("IMAGE: {:?}", image.percentage_complete);
+              if let Some(percent) = image.percentage_complete {
+                if percent > 90.0 {
+                  println!("Image: {:?}", image);
+                }
+              }
             }
             WebsocketServerMessage::Json(json) => {
               println!("JSON : {:?}", json.percentage_complete);
+              if let Some(percent) = json.percentage_complete {
+                if percent > 90.0 {
+                  println!("Image: {:?}", json);
+                }
+              }
             }
             WebsocketServerMessage::Unknown(unknown) => {
               //let typ = unknown.get("type");

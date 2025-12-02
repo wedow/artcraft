@@ -1,0 +1,46 @@
+curl 'https://grok.com/rest/app-chat/conversations/new' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'baggage: sentry-environment=production,sentry-public_key=b311e0f2690c81f25e2c4cf6d4f7ce1c,sentry-trace_id=277d6351c5063fd659b51b77b50bb453,sentry-org_id=4508179396558848,sentry-sampled=false,sentry-sample_rand=0.9765826569629004,sentry-sample_rate=0' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -b '_ga=GA1.1.1232202746.1760710013; i18nextLng=en; sso=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; sso-rw=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGU3MDFiNzctOTdkNC00ZjM0LWExOTctOWFmMDU1MzY3NDAwIn0.-a6x0InxbGzfTVfUlrdzxskxCnvMDI8lC90z4wHeGIk; stblid=b3331fc1-45d7-466b-83df-67427c0b2367; x-userid=85980643-ffab-4984-a3de-59a608c47d7f; mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel=%7B%22distinct_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%2C%22%24device_id%22%3A%2279ce237a-a0f3-4913-bf4b-519ac8a98263%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2285980643-ffab-4984-a3de-59a608c47d7f%22%7D; cf_clearance=5QPOzLWH8eEniaDlJR23k9VB4XjRPHdR.kfVR15BRkI-1764645588-1.2.1.1-WBy8wpvS9.Q.ofWBIMTLHDrKRIPt0Xrn5kAQ6I7xf4u0JSbB.E4CRd.fK6kEZo8OTXMAdt.F0YkoLJzB0TufxM79dMu63TKLmorKB.gSgUWJcea1eQcLJ1WG80uhv4VCMrSJ_HHAaq6fqiNNvS7pArgMT4tvoaQXShfDuV8ivYsRp31LYMgNnRFdtiCiJ5mxhf7uUMpSS_UbvCSaYe7CysUr472alMjEYUd.QhKpb8E; _ga_8FEWB057YH=GS2.1.s1764645588$o22$g1$t1764645617$j31$l0$h0' \
+  -H 'origin: https://grok.com' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://grok.com/imagine/post/6136f31a-4aaf-48e0-ab86-fe9871feca91' \
+  -H 'sec-ch-ua: "Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sentry-trace: 277d6351c5063fd659b51b77b50bb453-928bfb8d1221fde1-0' \
+  -H 'traceparent: 00-b0bd9846c2990e253ecca887fdfba8a2-c415282f4b74bf60-00' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36' \
+  -H 'x-statsig-id: HjOCcSvnF01eIgszJ4J4qot//FLrCJb8Zz+f+AvBLs4ZNmt8fwsKc6PkyrjkEaImt9npwBpAUCrYQeeYTG/5jRWOKfLdHQ' \
+  -H 'x-xai-request-id: d5ac2ce6-ed77-4a5d-8905-613a498035d3' \
+  --data-raw '{"temporary":true,"modelName":"grok-3","message":"https://imagine-public.x.ai/imagine-public/images/6136f31a-4aaf-48e0-ab86-fe9871feca91.png  --mode=extremely-spicy-or-crazy","toolOverrides":{"videoGen":true},"responseMetadata":{"modelConfigOverride":{"modelMap":{"videoGenModelConfig":{"parentPostId":"6136f31a-4aaf-48e0-ab86-fe9871feca91","aspectRatio":"2:3","videoLength":6}}}}}'
+
+
+--data-raw
+  {
+    "temporary":true,
+    "modelName":"grok-3",
+    "message":"https://imagine-public.x.ai/imagine-public/images/6136f31a-4aaf-48e0-ab86-fe9871feca91.png  --mode=extremely-spicy-or-crazy",
+    "toolOverrides": {
+      "videoGen":true
+    },
+    "responseMetadata": {
+      "modelConfigOverride": {
+        "modelMap": {
+          "videoGenModelConfig": {
+            "parentPostId": "6136f31a-4aaf-48e0-ab86-fe9871feca91",
+            "aspectRatio": "2:3",
+            "videoLength":6
+          }
+        }
+      }
+    }
+  }
+
