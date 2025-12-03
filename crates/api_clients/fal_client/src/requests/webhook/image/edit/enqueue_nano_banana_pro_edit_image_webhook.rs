@@ -5,15 +5,15 @@ use fal::endpoints::fal_ai::nano_banana_pro::nano_banana_pro_image_edit::{nano_b
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
-pub struct EnqueueNanoBananaProImageEditArgs<'a, R: IntoUrl> {
+pub struct EnqueueNanoBananaProEditImageArgs<'a, R: IntoUrl> {
   // Request required
   pub prompt: &'a str,
   pub image_urls: Vec<String>,
-  pub num_images: EnqueueNanoBananaProImageEditNumImages,
+  pub num_images: EnqueueNanoBananaProEditImageNumImages,
 
   // Optional args
-  pub resolution: Option<EnqueueNanoBananaProImageEditResolution>,
-  pub aspect_ratio: Option<EnqueueNanoBananaProImageEditAspectRatio>,
+  pub resolution: Option<EnqueueNanoBananaProEditImageResolution>,
+  pub aspect_ratio: Option<EnqueueNanoBananaProEditImageAspectRatio>,
 
   // Fulfillment
   pub webhook_url: R,
@@ -21,7 +21,7 @@ pub struct EnqueueNanoBananaProImageEditArgs<'a, R: IntoUrl> {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum EnqueueNanoBananaProImageEditNumImages {
+pub enum EnqueueNanoBananaProEditImageNumImages {
   One,
   Two,
   Three,
@@ -29,7 +29,7 @@ pub enum EnqueueNanoBananaProImageEditNumImages {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum EnqueueNanoBananaProImageEditResolution {
+pub enum EnqueueNanoBananaProEditImageResolution {
   OneK,
   TwoK,
   FourK,
@@ -38,7 +38,7 @@ pub enum EnqueueNanoBananaProImageEditResolution {
 /// 21:9, 16:9, 3:2, 4:3, 5:4, 1:1, 4:5, 3:4, 2:3, 9:16
 /// Default is "1:1"
 #[derive(Copy, Clone, Debug)]
-pub enum EnqueueNanoBananaProImageEditAspectRatio {
+pub enum EnqueueNanoBananaProEditImageAspectRatio {
   // Square
   OneByOne,
   // Wide
@@ -55,39 +55,39 @@ pub enum EnqueueNanoBananaProImageEditAspectRatio {
 }
 
 pub async fn enqueue_nano_banana_pro_image_edit_webhook<R: IntoUrl>(
-  args: EnqueueNanoBananaProImageEditArgs<'_, R>
+  args: EnqueueNanoBananaProEditImageArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
 
   let num_images = match args.num_images {
-    EnqueueNanoBananaProImageEditNumImages::One => 1,
-    EnqueueNanoBananaProImageEditNumImages::Two => 2,
-    EnqueueNanoBananaProImageEditNumImages::Three => 3,
-    EnqueueNanoBananaProImageEditNumImages::Four => 4,
+    EnqueueNanoBananaProEditImageNumImages::One => 1,
+    EnqueueNanoBananaProEditImageNumImages::Two => 2,
+    EnqueueNanoBananaProEditImageNumImages::Three => 3,
+    EnqueueNanoBananaProEditImageNumImages::Four => 4,
   };
 
   let resolution = args.resolution
       .map(|resolution| match resolution {
-        EnqueueNanoBananaProImageEditResolution::OneK => "1K",
-        EnqueueNanoBananaProImageEditResolution::TwoK => "2K",
-        EnqueueNanoBananaProImageEditResolution::FourK => "4K",
+        EnqueueNanoBananaProEditImageResolution::OneK => "1K",
+        EnqueueNanoBananaProEditImageResolution::TwoK => "2K",
+        EnqueueNanoBananaProEditImageResolution::FourK => "4K",
       })
       .map(|resolution| resolution.to_string());
 
   let aspect_ratio = args.aspect_ratio
       .map(|aspect_ratio| match aspect_ratio {
         // Square
-        EnqueueNanoBananaProImageEditAspectRatio::OneByOne => "1:1",
+        EnqueueNanoBananaProEditImageAspectRatio::OneByOne => "1:1",
         // Wide
-        EnqueueNanoBananaProImageEditAspectRatio::FiveByFour => "5:4",
-        EnqueueNanoBananaProImageEditAspectRatio::FourByThree => "4:3",
-        EnqueueNanoBananaProImageEditAspectRatio::ThreeByTwo => "3:2",
-        EnqueueNanoBananaProImageEditAspectRatio::SixteenByNine => "16:9",
-        EnqueueNanoBananaProImageEditAspectRatio::TwentyOneByNine => "21:9",
+        EnqueueNanoBananaProEditImageAspectRatio::FiveByFour => "5:4",
+        EnqueueNanoBananaProEditImageAspectRatio::FourByThree => "4:3",
+        EnqueueNanoBananaProEditImageAspectRatio::ThreeByTwo => "3:2",
+        EnqueueNanoBananaProEditImageAspectRatio::SixteenByNine => "16:9",
+        EnqueueNanoBananaProEditImageAspectRatio::TwentyOneByNine => "21:9",
         // Tall
-        EnqueueNanoBananaProImageEditAspectRatio::FourByFive => "4:5",
-        EnqueueNanoBananaProImageEditAspectRatio::ThreeByFour => "3:4",
-        EnqueueNanoBananaProImageEditAspectRatio::TwoByThree => "2:3",
-        EnqueueNanoBananaProImageEditAspectRatio::NineBySixteen => "9:16",
+        EnqueueNanoBananaProEditImageAspectRatio::FourByFive => "4:5",
+        EnqueueNanoBananaProEditImageAspectRatio::ThreeByFour => "3:4",
+        EnqueueNanoBananaProEditImageAspectRatio::TwoByThree => "2:3",
+        EnqueueNanoBananaProEditImageAspectRatio::NineBySixteen => "9:16",
       })
       .map(|aspect_ratio| aspect_ratio.to_string());
 
@@ -113,10 +113,10 @@ pub async fn enqueue_nano_banana_pro_image_edit_webhook<R: IntoUrl>(
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::image::edit::enqueue_nano_banana_pro_image_edit_webhook::{enqueue_nano_banana_pro_image_edit_webhook, EnqueueNanoBananaProImageEditArgs, EnqueueNanoBananaProImageEditAspectRatio, EnqueueNanoBananaProImageEditNumImages, EnqueueNanoBananaProImageEditResolution};
+  use crate::requests::webhook::image::edit::enqueue_nano_banana_pro_edit_image_webhook::{enqueue_nano_banana_pro_image_edit_webhook, EnqueueNanoBananaProEditImageArgs, EnqueueNanoBananaProEditImageAspectRatio, EnqueueNanoBananaProEditImageNumImages, EnqueueNanoBananaProEditImageResolution};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use test_data::web::image_urls::{GHOST_IMAGE_URL, TREX_SKELETON_IMAGE_URL};
+  use test_data::web::image_urls::{ERNEST_SCARED_STUPID_IMAGE_URL, GHOST_IMAGE_URL, TREX_SKELETON_IMAGE_URL};
 
   #[tokio::test]
   #[ignore]
@@ -126,15 +126,16 @@ mod tests {
 
     let api_key = FalApiKey::from_str(&secret);
 
-    let args = EnqueueNanoBananaProImageEditArgs {
+    let args = EnqueueNanoBananaProEditImageArgs {
       image_urls: vec![
         GHOST_IMAGE_URL.to_string(),
         TREX_SKELETON_IMAGE_URL.to_string(),
+        ERNEST_SCARED_STUPID_IMAGE_URL.to_string(),
       ],
-      prompt: "add the ghost to the image of the t-rex skeleton, make it look spooky but friendly",
-      num_images: EnqueueNanoBananaProImageEditNumImages::Two,
-      aspect_ratio: Some(EnqueueNanoBananaProImageEditAspectRatio::SixteenByNine),
-      resolution: Some(EnqueueNanoBananaProImageEditResolution::TwoK),
+      prompt: "add the ghost and scared man to the image of the t-rex skeleton, make it look spooky but friendly",
+      num_images: EnqueueNanoBananaProEditImageNumImages::Two,
+      aspect_ratio: Some(EnqueueNanoBananaProEditImageAspectRatio::SixteenByNine),
+      resolution: Some(EnqueueNanoBananaProEditImageResolution::TwoK),
       api_key: &api_key,
       webhook_url: "https://example.com/webhook",
     };
