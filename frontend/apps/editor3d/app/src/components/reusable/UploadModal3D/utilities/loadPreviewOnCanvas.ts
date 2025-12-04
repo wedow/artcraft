@@ -56,6 +56,8 @@ export const loadPreviewOnCanvas = ({
 
   scene.add(light);
 
+  let splatMesh: SplatMesh | null = null;
+
   // load the file into the preview mini-scene depending of the file's type
   if (file.name.endsWith(".glb")) {
     glbLoader({ file, scene, camera, renderer, statusCallback });
@@ -70,7 +72,7 @@ export const loadPreviewOnCanvas = ({
     imagePlaneLoader({ file, scene, camera, renderer, statusCallback });
   } else if (file.name.endsWith(".spz")) {
     file.arrayBuffer().then((arrayBuffer) => {
-      const splatMesh = new SplatMesh({
+      splatMesh = new SplatMesh({
         fileBytes: arrayBuffer, fileType: SplatFileType.SPZ,
         onLoad: () => { scene.add(splatMesh) }
       });
@@ -95,6 +97,7 @@ export const loadPreviewOnCanvas = ({
   // Render the loaded data
   const animate = function () {
     renderer.render(scene, camera);
+    splatMesh?.rotateY(0.01);
   };
   renderer.setAnimationLoop(animate);
 };
