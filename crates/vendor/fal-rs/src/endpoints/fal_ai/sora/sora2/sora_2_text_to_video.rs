@@ -4,9 +4,6 @@ use crate::prelude::{Deserialize, FalRequest, Serialize};
 pub struct Sora2TextToVideoInput {
   pub prompt: String,
 
-  /// Starting frame
-  pub image_url: String,
-
   /// Possible enum values: 720p
   /// Default value 720p
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -21,7 +18,7 @@ pub struct Sora2TextToVideoInput {
   /// Possible enum values: 4, 8, 12
   /// Default value 4
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub duration: Option<String>,
+  pub duration: Option<u8>,
 
   /// Whether to delete the video after generation for privacy reasons.
   /// If True, the video cannot be used for remixing and will be permanently deleted.

@@ -18,7 +18,7 @@ pub struct Sora2ProTextToVideoInput {
   /// Possible enum values: 4, 8, 12
   /// Default value 4
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub duration: Option<String>,
+  pub duration: Option<u8>,
 
   /// Whether to delete the video after generation for privacy reasons.
   /// If True, the video cannot be used for remixing and will be permanently deleted.
