@@ -1,14 +1,16 @@
 use crate::prelude::{Deserialize, FalRequest, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct Veo3p1FirstLastFrameImageToVideoInput {
+pub struct Veo3p1FirstFrameImageToVideoInput {
   pub prompt: String,
 
   /// Starting frame
-  pub first_frame_url: String,
+  pub image_url: String,
 
-  /// Ending frame
-  pub last_frame_url: String,
+  /// Possible enum values: 9:16, 16:9 (NB: This differs from first-frame/last-frame)
+  /// Default value "16:9"
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub aspect_ratio: Option<String>,
 
   /// Duration in seconds
   /// Possible enum values: 4s, 6s, 8s
@@ -16,24 +18,19 @@ pub struct Veo3p1FirstLastFrameImageToVideoInput {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub duration: Option<String>,
 
-  /// Possible enum values: auto, 9:16, 16:9, 1:1
-  /// Default value "auto"
+  /// Generate audio
+  /// Default value "true"
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub aspect_ratio: Option<String>,
+  pub generate_audio: Option<bool>,
 
   /// Possible enum values: 720p, 1080p
   /// Default value 720p
   #[serde(skip_serializing_if = "Option::is_none")]
   pub resolution: Option<String>,
-
-  /// Generate audio
-  /// Defaults to "true"
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub generate_audio: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Veo3p1FirstLastFrameImageToVideoOutput {
+pub struct Veo3p1FirstFrameImageToVideoOutput {
   pub video: VideoFile,
 }
 
@@ -43,8 +40,8 @@ pub struct VideoFile {
   pub url: String,
 }
 
-pub fn veo_3p1_first_last_frame_image_to_video(
-  params: Veo3p1FirstLastFrameImageToVideoInput,
-) -> FalRequest<Veo3p1FirstLastFrameImageToVideoInput, Veo3p1FirstLastFrameImageToVideoOutput> {
-  FalRequest::new("fal-ai/veo3.1/first-last-frame-to-video", params)
+pub fn veo_3p1_first_frame_image_to_video(
+  params: Veo3p1FirstFrameImageToVideoInput,
+) -> FalRequest<Veo3p1FirstFrameImageToVideoInput, Veo3p1FirstFrameImageToVideoOutput> {
+  FalRequest::new("fal-ai/veo3.1/image-to-video", params)
 }
