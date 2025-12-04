@@ -18,7 +18,7 @@ import { UploadFilesSplat } from "./UploadFilesSplat";
 
 interface Props {
   onClose: () => void;
-  onSuccess: (splatArrayBuffer: ArrayBuffer) => void;
+  onSuccess: (splatArrayBuffer: ArrayBuffer, shouldFlip: boolean) => void;
   isOpen: boolean;
   title: string;
   titleIcon: IconDefinition;
@@ -77,7 +77,7 @@ export function UploadModalSplat(props: Props) {
               }}
               onClose={onClose}
               onUploadProgress={updateUploaderState}
-              onLocalBytes={(buffer) => { onSuccess(buffer); }}
+              onLocalBytes={(buffer, shouldFlip) => { onSuccess(buffer, shouldFlip); }}
             />
           </div>
         );

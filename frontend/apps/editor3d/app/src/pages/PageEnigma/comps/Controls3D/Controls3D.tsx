@@ -410,9 +410,9 @@ export const Controls3D = () => {
       <UploadModalSplat
         isOpen={uploadSplatIsShowing}
         onClose={() => setUploadSplatIsShowing(false)}
-        onSuccess={(buffer) => {
+        onSuccess={(buffer, shouldFlip) => {
           setUploadSplatIsShowing(false)
-          editorEngine?.timeline.addLocalSplat(buffer);
+          editorEngine?.timeline.addLocalSplat(buffer, shouldFlip);
         }}
         title="Upload an spz file"
         titleIcon={faCube}

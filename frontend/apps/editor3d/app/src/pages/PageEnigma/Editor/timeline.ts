@@ -402,8 +402,13 @@ export class TimeLine {
 
   // This method is for local dev testing of objects
   // and bypasses the queue system, that's kinda redundant anyway
-  public addLocalSplat(fileBytes: ArrayBuffer | Uint8Array) {
+  public addLocalSplat(fileBytes: ArrayBuffer | Uint8Array, flipVertical: boolean = false) {
     const splatMesh = new SplatMesh({ fileBytes: fileBytes });
+
+    if (flipVertical) {
+      splatMesh.rotateX(Math.PI);
+    }
+
     this.editorEngine.sceneManager?.scene.scene.add(splatMesh);
   }
 

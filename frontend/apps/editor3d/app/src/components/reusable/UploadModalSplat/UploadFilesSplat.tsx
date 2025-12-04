@@ -7,6 +7,7 @@ import { FilterEngineCategories, MediaFileAnimationType, UploaderStates } from "
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCube } from "@fortawesome/pro-solid-svg-icons";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "../UploadModal3D/utilities";
+import { WebGLRenderer } from "three";
 
 interface Props {
   title: string;
@@ -19,7 +20,7 @@ interface Props {
   };
   onClose: () => void;
   onUploadProgress: (newState: UploaderState) => void;
-  onLocalBytes: (bytes: ArrayBuffer) => void;
+  onLocalBytes: (bytes: ArrayBuffer, shouldFlip) => void;
 }
 
 export const UploadFilesSplat = ({
@@ -73,8 +74,10 @@ export const UploadFilesSplat = ({
     // Use the filename as the title
     const title = assetFile.value.name.split(".")[0];
 
+    const shouldFlip = title.endsWith("ceramic");
+
     assetFile.value.arrayBuffer().then((arrayBuffer) => {
-      onLocalBytes(arrayBuffer);
+      onLocalBytes(arrayBuffer, shouldFlip);
     }).catch((error) => {
       console.error("Error reading file as ArrayBuffer:", error);
     });
@@ -102,14 +105,21 @@ export const UploadFilesSplat = ({
   }, [fileSubtypes]);
 
   useEffect(() => {
+    let renderer: WebGLRenderer | null = null;
+
     if (canvasRef.current && assetFile.value) {
-      loadPreviewOnCanvas({
+      renderer = loadPreviewOnCanvas({
         file: assetFile.value,
         canvas: canvasRef.current,
         statusCallback: (statusObject: { type: string; message?: string }) => {
           setPreviewStatus(statusObject);
         },
-      });
+      }).renderer;
+    }
+
+    return () => {
+      renderer?.setAnimationLoop(null);
+      renderer?.dispose();
     }
   }, [assetFile.value]);
 

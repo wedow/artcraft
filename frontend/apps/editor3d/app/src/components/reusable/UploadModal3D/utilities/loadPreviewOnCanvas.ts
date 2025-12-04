@@ -13,6 +13,10 @@ interface LoaderInterface {
   statusCallback: (statusObject: { type: string; message?: string }) => void;
 }
 
+interface PreviewReturn {
+  renderer: THREE.WebGLRenderer;
+}
+
 export const loadPreviewOnCanvas = ({
   file,
   canvas,
@@ -21,7 +25,7 @@ export const loadPreviewOnCanvas = ({
   file: File;
   canvas: HTMLCanvasElement;
   statusCallback: (error: { type: string; message?: string }) => void;
-}) => {
+}): PreviewReturn => {
   // Setup of scene, camera, and renderer in the canvas
   const scene = new THREE.Scene();
 
@@ -74,8 +78,12 @@ export const loadPreviewOnCanvas = ({
     file.arrayBuffer().then((arrayBuffer) => {
       splatMesh = new SplatMesh({
         fileBytes: arrayBuffer, fileType: SplatFileType.SPZ,
-        onLoad: () => { scene.add(splatMesh) }
+        onLoad: () => { scene.add(splatMesh!) }
       });
+
+      if (file.name.split(".")[0].endsWith("ceramic")) {
+        splatMesh.rotateX(Math.PI);
+      }
     }).catch((loaderError) => {
       statusCallback({
         type: "SPLAT Loader Error",
@@ -100,6 +108,8 @@ export const loadPreviewOnCanvas = ({
     splatMesh?.rotateY(0.01);
   };
   renderer.setAnimationLoop(animate);
+
+  return { renderer };
 };
 
 const glbLoader = ({
