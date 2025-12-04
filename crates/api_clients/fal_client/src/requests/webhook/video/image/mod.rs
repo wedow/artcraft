@@ -1,6 +1,8 @@
+pub mod enqueue_hailuo_v2p3_fast_pro_image_to_video_webhook;
+pub mod enqueue_hailuo_v2p3_pro_image_to_video_webhook;
 pub mod enqueue_kling_v2p5_turbo_pro_image_to_video_webhook;
 pub mod enqueue_kling_v2p5_turbo_standard_image_to_video_webhook;
 pub mod enqueue_kling_v2p6_pro_image_to_video_webhook;
 pub mod enqueue_pixverse_v5_image_to_video_webhook;
-pub mod enqueue_sora_2_pro_image_to_video_webhook;
 pub mod enqueue_sora_2_image_to_video_webhook;
+pub mod enqueue_sora_2_pro_image_to_video_webhook;
