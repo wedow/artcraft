@@ -7,3 +7,4 @@ pub mod enqueue_pixverse_v5_image_to_video_webhook;
 pub mod enqueue_sora_2_image_to_video_webhook;
 pub mod enqueue_sora_2_pro_image_to_video_webhook;
 pub mod enqueue_veo_3p1_first_last_frame_image_to_video_webhook;
+pub mod enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook;
