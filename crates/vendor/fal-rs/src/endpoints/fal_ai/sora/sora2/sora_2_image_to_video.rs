@@ -1,13 +1,13 @@
 use crate::prelude::{Deserialize, FalRequest, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct Sora2ProImageToVideoInput {
+pub struct Sora2ImageToVideoInput {
   pub prompt: String,
 
   /// Starting frame
   pub image_url: String,
 
-  /// Possible enum values: auto, 720p, 1080p
+  /// Possible enum values: auto, 720p
   /// Default value auto
   #[serde(skip_serializing_if = "Option::is_none")]
   pub resolution: Option<String>,
@@ -31,7 +31,7 @@ pub struct Sora2ProImageToVideoInput {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Sora2ProImageToVideoOutput {
+pub struct Sora2ImageToVideoOutput {
   pub video: VideoFile,
 }
 
@@ -41,8 +41,8 @@ pub struct VideoFile {
   pub url: String,
 }
 
-pub fn sora_2_pro_image_to_video(
-  params: Sora2ProImageToVideoInput,
-) -> FalRequest<Sora2ProImageToVideoInput, Sora2ProImageToVideoOutput> {
-  FalRequest::new("fal-ai/sora-2/image-to-video/pro", params)
+pub fn sora_2_image_to_video(
+  params: Sora2ImageToVideoInput,
+) -> FalRequest<Sora2ImageToVideoInput, Sora2ImageToVideoOutput> {
+  FalRequest::new("fal-ai/sora-2/image-to-video", params)
 }
