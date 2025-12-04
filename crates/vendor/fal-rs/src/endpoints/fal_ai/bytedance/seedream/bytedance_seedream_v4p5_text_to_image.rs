@@ -1,7 +1,7 @@
 use crate::prelude::{Deserialize, FalRequest, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct BytedanceSeedream4p5TextToImageInput {
+pub struct BytedanceSeedreamV4p5TextToImageInput {
   pub prompt: String,
 
   /// Supports a custom height/width (which we didn't implement) OR an enum value -
@@ -32,7 +32,7 @@ pub struct BytedanceSeedream4p5TextToImageInput {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct BytedanceSeedream4p5TextToImageOutput {
+pub struct BytedanceSeedreamV4p5TextToImageOutput {
   pub images: Vec<ImageFile>,
 }
 
@@ -43,7 +43,7 @@ pub struct ImageFile {
 }
 
 pub fn bytedance_seedream_v4p5_text_to_image(
-  params: BytedanceSeedream4p5TextToImageInput,
-) -> FalRequest<BytedanceSeedream4p5TextToImageInput, BytedanceSeedream4p5TextToImageOutput> {
+  params: BytedanceSeedreamV4p5TextToImageInput,
+) -> FalRequest<BytedanceSeedreamV4p5TextToImageInput, BytedanceSeedreamV4p5TextToImageOutput> {
   FalRequest::new("fal-ai/bytedance/seedream/v4.5/text-to-image", params)
 }

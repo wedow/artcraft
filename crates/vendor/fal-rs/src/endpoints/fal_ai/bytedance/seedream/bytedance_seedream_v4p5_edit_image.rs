@@ -1,7 +1,7 @@
 use crate::prelude::{Deserialize, FalRequest, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct BytedanceSeedream4p5EditImageInput {
+pub struct BytedanceSeedreamV4p5EditImageInput {
   pub prompt: String,
 
   pub image_urls: Vec<String>,
@@ -28,17 +28,13 @@ pub struct BytedanceSeedream4p5EditImageInput {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub seed: Option<i64>,
 
-  /// Possible enum values: standard, fast (default "standard")
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub enhance_prompt_mode: Option<String>,
-
   /// Defaults to true
   #[serde(skip_serializing_if = "Option::is_none")]
   pub enable_safety_checker: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct BytedanceSeedream4p5EditImageOutput {
+pub struct BytedanceSeedreamV4p5EditImageOutput {
   pub images: Vec<ImageFile>,
 }
 
@@ -49,7 +45,7 @@ pub struct ImageFile {
 }
 
 pub fn bytedance_seedream_v4p5_edit_image(
-  params: BytedanceSeedream4p5EditImageInput,
-) -> FalRequest<BytedanceSeedream4p5EditImageInput, BytedanceSeedream4p5EditImageOutput> {
+  params: BytedanceSeedreamV4p5EditImageInput,
+) -> FalRequest<BytedanceSeedreamV4p5EditImageInput, BytedanceSeedreamV4p5EditImageOutput> {
   FalRequest::new("fal-ai/bytedance/seedream/v4.5/edit", params)
 }
