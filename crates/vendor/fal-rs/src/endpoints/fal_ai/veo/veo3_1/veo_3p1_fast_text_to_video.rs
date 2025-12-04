@@ -51,7 +51,7 @@ pub struct VideoFile {
   pub url: String,
 }
 
-pub fn veo_3p1_text_to_video(
+pub fn veo_3p1_fast_text_to_video(
   params: Veo3p1FastTextToVideoInput,
 ) -> FalRequest<Veo3p1FastTextToVideoInput, Veo3p1FastTextToVideoOutput> {
   FalRequest::new("fal-ai/veo3.1/fast", params)
