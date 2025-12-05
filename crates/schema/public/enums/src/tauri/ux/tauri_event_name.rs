@@ -54,7 +54,7 @@ pub enum TauriEventName {
   CanvasBgRemovedEvent,
 
   /// Special event:
-  /// Image edit is complete
+  /// Image generation is complete
   #[serde(rename = "text_to_image_generation_complete_event")]
   TextToImageGenerationCompleteEvent,
 
@@ -62,6 +62,16 @@ pub enum TauriEventName {
   /// Image edit is complete
   #[serde(rename = "image_edit_complete_event")]
   ImageEditCompleteEvent,
+  
+  /// Special event:
+  /// Object (3D mesh) generation is complete
+  #[serde(rename = "object_generation_complete_event")]
+  ObjectGenerationCompleteEvent,
+
+  /// Special event:
+  /// Video generation is complete
+  #[serde(rename = "video_generation_complete_event")]
+  VideoGenerationCompleteEvent,
 
   /// Special event:
   /// Refresh account states
@@ -102,6 +112,8 @@ impl TauriEventName {
       Self::CanvasBgRemovedEvent => "canvas_bg_removed_event",
       Self::TextToImageGenerationCompleteEvent => "text_to_image_generation_complete_event",
       Self::ImageEditCompleteEvent => "image_edit_complete_event",
+      Self::ObjectGenerationCompleteEvent => "object_generation_complete_event",
+      Self::VideoGenerationCompleteEvent => "video_generation_complete_event",
       Self::RefreshAccountStateEvent => "refresh_account_state_event",
       Self::ShowProviderBillingModalEvent => "show_provider_billing_modal_event",
       Self::ShowProviderLoginModalEvent => "show_provider_login_modal_event",
@@ -120,6 +132,8 @@ impl TauriEventName {
       "canvas_bg_removed_event" => Ok(Self::CanvasBgRemovedEvent),
       "text_to_image_generation_complete_event" => Ok(Self::TextToImageGenerationCompleteEvent),
       "image_edit_complete_event" => Ok(Self::ImageEditCompleteEvent),
+      "object_generation_complete_event" => Ok(Self::ObjectGenerationCompleteEvent),
+      "video_generation_complete_event" => Ok(Self::VideoGenerationCompleteEvent),
       "refresh_account_state_event" => Ok(Self::RefreshAccountStateEvent),
       "show_provider_billing_modal_event" => Ok(Self::ShowProviderBillingModalEvent),
       "show_provider_login_modal_event" => Ok(Self::ShowProviderLoginModalEvent),
@@ -141,6 +155,8 @@ impl TauriEventName {
       Self::CanvasBgRemovedEvent,
       Self::TextToImageGenerationCompleteEvent,
       Self::ImageEditCompleteEvent,
+      Self::ObjectGenerationCompleteEvent,
+      Self::VideoGenerationCompleteEvent,
       Self::RefreshAccountStateEvent,
       Self::ShowProviderBillingModalEvent,
       Self::ShowProviderLoginModalEvent,
@@ -168,6 +184,8 @@ mod tests {
       assert_serialization(TauriEventName::CanvasBgRemovedEvent, "canvas_bg_removed_event");
       assert_serialization(TauriEventName::TextToImageGenerationCompleteEvent, "text_to_image_generation_complete_event");
       assert_serialization(TauriEventName::ImageEditCompleteEvent, "image_edit_complete_event");
+      assert_serialization(TauriEventName::ObjectGenerationCompleteEvent, "object_generation_complete_event");
+      assert_serialization(TauriEventName::VideoGenerationCompleteEvent, "video_generation_complete_event");
       assert_serialization(TauriEventName::RefreshAccountStateEvent, "refresh_account_state_event");
       assert_serialization(TauriEventName::ShowProviderBillingModalEvent, "show_provider_billing_modal_event"); 
       assert_serialization(TauriEventName::ShowProviderLoginModalEvent, "show_provider_login_modal_event");
@@ -185,6 +203,8 @@ mod tests {
       assert_eq!(TauriEventName::CanvasBgRemovedEvent.to_str(), "canvas_bg_removed_event");
       assert_eq!(TauriEventName::TextToImageGenerationCompleteEvent.to_str(), "text_to_image_generation_complete_event");
       assert_eq!(TauriEventName::ImageEditCompleteEvent.to_str(), "image_edit_complete_event");
+      assert_eq!(TauriEventName::ObjectGenerationCompleteEvent.to_str(), "object_generation_complete_event");
+      assert_eq!(TauriEventName::VideoGenerationCompleteEvent.to_str(), "video_generation_complete_event");
       assert_eq!(TauriEventName::RefreshAccountStateEvent.to_str(), "refresh_account_state_event");
       assert_eq!(TauriEventName::ShowProviderBillingModalEvent.to_str(), "show_provider_billing_modal_event");
       assert_eq!(TauriEventName::ShowProviderLoginModalEvent.to_str(), "show_provider_login_modal_event");
@@ -202,6 +222,8 @@ mod tests {
       assert_eq!(TauriEventName::from_str("canvas_bg_removed_event").unwrap(), TauriEventName::CanvasBgRemovedEvent);
       assert_eq!(TauriEventName::from_str("text_to_image_generation_complete_event").unwrap(), TauriEventName::TextToImageGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("image_edit_complete_event").unwrap(), TauriEventName::ImageEditCompleteEvent);
+      assert_eq!(TauriEventName::from_str("object_generation_complete_event").unwrap(), TauriEventName::ObjectGenerationCompleteEvent);
+      assert_eq!(TauriEventName::from_str("video_generation_complete_event").unwrap(), TauriEventName::VideoGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("refresh_account_state_event").unwrap(), TauriEventName::RefreshAccountStateEvent);
       assert_eq!(TauriEventName::from_str("show_provider_billing_modal_event").unwrap(), TauriEventName::ShowProviderBillingModalEvent);
       assert_eq!(TauriEventName::from_str("show_provider_login_modal_event").unwrap(), TauriEventName::ShowProviderLoginModalEvent);
@@ -211,7 +233,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 13);
+      assert_eq!(variants.len(), 15);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
@@ -221,6 +243,8 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TauriEventName::CanvasBgRemovedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::TextToImageGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ImageEditCompleteEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::ObjectGenerationCompleteEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::VideoGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::RefreshAccountStateEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderBillingModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderLoginModalEvent));

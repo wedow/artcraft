@@ -73,6 +73,7 @@ mod tests {
   use crate::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
   use crate::requests::image_websocket::grok_websocket::GrokWebsocket;
   use crate::requests::image_websocket::listen_for_websocket_request_id::{listen_for_websocket_request_id, ListenForWebsocketRequestIdArgs};
+  use crate::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
   use crate::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
@@ -103,6 +104,7 @@ mod tests {
     let _result = prompt_websocket_image(PromptWebsocketImageArgs {
       websocket: &mut websocket,
       prompt,
+      aspect_ratio: ClientMessageAspectRatio::Square,
     }).await?;
 
     println!("Reading...");

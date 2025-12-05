@@ -47,6 +47,6 @@ export class VideoModel extends Model {
     this.endFrame = args.endFrame;
     this.requiresImage = args.requiresImage;
     this.sizeOptions = args.sizeOptions ?? [];
-    this.generateWithSound = args.generateWithSound;
+    this.generateWithSound = args.generateWithSound || false;
   }
 }

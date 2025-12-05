@@ -25,11 +25,7 @@ interface ClassyModelSelectorProps {
   providerTooltipDelayMs?: number;
 }
 
-const DEFAULT_PROVIDER_OPTIONS: Provider[] = [
-  Provider.ArtCraft,
-  Provider.Fal,
-  Provider.Sora,
-];
+const DEFAULT_PROVIDER_OPTIONS: Provider[] = [Provider.ArtCraft];
 
 function ProviderTooltipContent({
   page,

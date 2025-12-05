@@ -11,7 +11,7 @@ pub fn select_svg_path_by_loading_anim(
       .map(|path| path.clone())
       .ok_or_else(|| {
         error!("There was not an SVG path data at index {} (array len {})", loading_anim.0, svg_paths.len());
-        GrokClientError::ScriptLogicOutOfDate
+        GrokClientError::ScriptSvgLogicOutOfDate
       })
 }
 

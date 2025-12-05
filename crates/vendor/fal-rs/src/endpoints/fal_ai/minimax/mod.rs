@@ -75,6 +75,20 @@ pub mod video_01_live;
     )))
 )]
 pub mod video_01_subject_reference;
+#[cfg(any(
+    feature = "endpoints",
+    feature = "endpoints_fal-ai",
+    feature = "endpoints_fal-ai_minimax"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "endpoints",
+        feature = "endpoints_fal-ai",
+        feature = "endpoints_fal-ai_minimax"
+    )))
+)]
+pub mod hailuo;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct File {

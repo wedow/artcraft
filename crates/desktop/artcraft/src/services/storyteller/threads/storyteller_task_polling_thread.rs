@@ -12,6 +12,7 @@ use crate::core::utils::enum_conversion::task_type::to_generation_action;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::storyteller::threads::events::maybe_handle_frontend_caller_notification::maybe_handle_frontend_caller_notification;
 use crate::services::storyteller::threads::events::maybe_handle_inpainting_complete_event::maybe_handle_inpainting_complete_event;
 use crate::services::storyteller::threads::events::maybe_handle_text_to_image_complete_event::maybe_handle_text_to_image_complete_event;
 use crate::services::storyteller::threads::events::maybe_send_background_removal_complete_event::maybe_send_background_removal_complete_event;
@@ -197,7 +198,7 @@ async fn send_additional_events(
 ) {
   info!("Attempting to dispatch events for completed Storyteller : {:?}", task);
 
-  let result = maybe_handle_text_to_image_complete_event(
+  let result = maybe_handle_frontend_caller_notification(
     app_handle,
     app_env_configs,
     creds,
@@ -206,30 +207,42 @@ async fn send_additional_events(
   ).await;
 
   if let Err(err) = result {
-    error!("Failed to send text-to-image complete event: {:?}", err);
+    error!("Failed to send generation complete event: {:?}", err);
   }
 
-  let result = maybe_handle_inpainting_complete_event(
-    app_handle,
-    app_env_configs,
-    creds,
-    task,
-    job,
-  ).await;
+  //let result = maybe_handle_text_to_image_complete_event(
+  //  app_handle,
+  //  app_env_configs,
+  //  creds,
+  //  task,
+  //  job,
+  //).await;
 
-  if let Err(err) = result {
-    error!("Failed to send image inpainting complete event: {:?}", err);
-  }
+  //if let Err(err) = result {
+  //  error!("Failed to send text-to-image complete event: {:?}", err);
+  //}
 
-  let result = maybe_send_background_removal_complete_event(
-    app_handle,
-    task,
-    job,
-  ).await;
+  //let result = maybe_handle_inpainting_complete_event(
+  //  app_handle,
+  //  app_env_configs,
+  //  creds,
+  //  task,
+  //  job,
+  //).await;
 
-  if let Err(err) = result {
-    error!("Failed to send background removal complete event: {:?}", err);
-  }
+  //if let Err(err) = result {
+  //  error!("Failed to send image inpainting complete event: {:?}", err);
+  //}
+
+  //let result = maybe_send_background_removal_complete_event(
+  //  app_handle,
+  //  task,
+  //  job,
+  //).await;
+
+  //if let Err(err) = result {
+  //  error!("Failed to send background removal complete event: {:?}", err);
+  //}
 }
 
 fn get_thumbnail_template<'a>(job: &'a ListSessionJobsItem) -> Option<&'a str> {

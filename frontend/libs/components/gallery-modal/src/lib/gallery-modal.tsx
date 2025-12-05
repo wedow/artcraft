@@ -663,6 +663,8 @@ export const GalleryModal = React.memo(
                                   e.currentTarget.src =
                                     PLACEHOLDER_IMAGES.DEFAULT;
                                   e.currentTarget.style.opacity = "0.3";
+                                  // Set the `data-brokenurl` property for debugging the broken images:
+                                  (e.currentTarget as HTMLImageElement).dataset.brokenurl = item.thumbnail || "";
                                   handleImageError(item.thumbnail!);
                                 }}
                                 disableTooltipAndBadge={mode === "select"}

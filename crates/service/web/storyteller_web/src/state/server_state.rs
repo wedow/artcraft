@@ -227,15 +227,6 @@ pub struct StripeSettings {
   pub client: stripe::Client,
 }
 
-#[derive(Clone)]
-pub struct StripeArtcraftSettings {
-  pub secret_key: String,
-  pub secret_webhook_signing_key: String,
-  pub checkout_success_url: String,
-  pub checkout_cancel_url: String,
-  pub client: async_stripe_artcraft::Client,
-}
-
 /// Flags set at service startup
 #[derive(Clone)]
 pub struct StaticFeatureFlags {

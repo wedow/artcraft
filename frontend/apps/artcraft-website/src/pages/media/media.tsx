@@ -265,6 +265,8 @@ export default function MediaPage() {
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src = PLACEHOLDER_IMAGES.DEFAULT;
                         (e.currentTarget as HTMLImageElement).style.opacity = "0.3";
+                        // Set the `data-brokenurl` property for debugging the broken images:
+                        (e.currentTarget as HTMLImageElement).dataset.brokenurl = media.url || "";
                         setMedia(prev => ({ ...prev, isLoaded: true }));
                       }}
                       onLoad={() => setMedia(prev => ({ ...prev, isLoaded: true }))}

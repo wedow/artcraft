@@ -50,7 +50,6 @@ generic-array = { version = "0.14.7", default-features = false, features = ["mor
 getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2.14", default-features = false, features = ["js", "std"] }
 hashbrown = { version = "0.14.5" }
 hmac = { version = "0.12.1", default-features = false, features = ["reset"] }
-hyper-582f2526e08bb6a0 = { package = "hyper", version = "0.14.28", features = ["full"] }
 idna = { version = "1.0.3" }
 indexmap-dff4ba8e3ae991db = { package = "indexmap", version = "1.9.3", default-features = false, features = ["serde-1"] }
 indexmap-f595c2ba2a3f28df = { package = "indexmap", version = "2.9.0", features = ["serde"] }
@@ -60,7 +59,6 @@ log = { version = "0.4.27", default-features = false, features = ["kv_unstable",
 md-5 = { version = "0.10.6" }
 memchr = { version = "2.7.4", features = ["use_std"] }
 mime_guess = { version = "2.0.4" }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn", "vendored"] }
 num-bigint = { version = "0.4.6" }
 num-integer = { version = "0.1.46", features = ["i128"] }
 num-iter = { version = "0.1.45", default-features = false, features = ["i128", "std"] }
@@ -78,7 +76,6 @@ rand_core = { version = "0.6.4", default-features = false, features = ["std"] }
 regex = { version = "1.11.1" }
 regex-automata = { version = "0.4.9", default-features = false, features = ["dfa-onepass", "hybrid", "meta", "nfa-backtrack", "perf-inline", "perf-literal", "unicode"] }
 regex-syntax = { version = "0.8.5" }
-reqwest = { version = "0.12.15", features = ["blocking", "brotli", "cookies", "deflate", "gzip", "json", "multipart", "native-tls-alpn", "native-tls-vendored", "rustls-tls", "rustls-tls-manual-roots", "rustls-tls-native-roots", "socks", "stream", "trust-dns", "zstd"] }
 rsa = { version = "0.9.6", features = ["getrandom", "hazmat", "sha2"] }
 schemars = { version = "0.8.21", features = ["preserve_order", "url", "uuid1"] }
 scopeguard = { version = "1.2.0" }
@@ -89,8 +86,6 @@ sha1 = { version = "0.10.6" }
 sha2 = { version = "0.10.8", features = ["oid"] }
 smallvec = { version = "1.13.2", default-features = false, features = ["const_new", "union"] }
 socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
-sqlx = { version = "0.7.3", features = ["bigdecimal", "chrono", "mysql", "runtime-tokio-native-tls", "sqlite", "tls-rustls"] }
-sqlx-core = { version = "0.7.3", features = ["_rt-tokio", "_tls-native-tls", "_tls-rustls", "any", "bigdecimal", "chrono", "json", "migrate", "offline"] }
 sqlx-mysql = { version = "0.7.3", default-features = false, features = ["any", "bigdecimal", "chrono", "json", "migrate", "offline"] }
 sqlx-sqlite = { version = "0.7.3", default-features = false, features = ["any", "chrono", "json", "migrate", "offline"] }
 stable_deref_trait = { version = "1.2.0" }
@@ -145,7 +140,6 @@ libc = { version = "0.2.170", features = ["extra_traits"] }
 log = { version = "0.4.27", default-features = false, features = ["kv_unstable", "std"] }
 md-5 = { version = "0.10.6" }
 memchr = { version = "2.7.4", features = ["use_std"] }
-native-tls = { version = "0.2.14", default-features = false, features = ["alpn", "vendored"] }
 num-bigint = { version = "0.4.6" }
 num-integer = { version = "0.1.46", features = ["i128"] }
 num-iter = { version = "0.1.45", default-features = false, features = ["i128", "std"] }
@@ -171,9 +165,6 @@ serde_json = { version = "1.0.140", features = ["alloc", "preserve_order", "raw_
 sha1 = { version = "0.10.6" }
 sha2 = { version = "0.10.8", features = ["oid"] }
 smallvec = { version = "1.13.2", default-features = false, features = ["const_new", "union"] }
-sqlx-core = { version = "0.7.3", features = ["_rt-tokio", "_tls-native-tls", "_tls-rustls", "any", "bigdecimal", "chrono", "json", "migrate", "offline"] }
-sqlx-macros = { version = "0.7.3", features = ["_rt-tokio", "_tls-native-tls", "_tls-rustls", "bigdecimal", "chrono", "json", "migrate", "mysql", "sqlite"] }
-sqlx-macros-core = { version = "0.7.3", features = ["_rt-tokio", "_tls-native-tls", "_tls-rustls", "bigdecimal", "chrono", "json", "migrate", "mysql", "sqlite"] }
 sqlx-mysql = { version = "0.7.3", default-features = false, features = ["any", "bigdecimal", "chrono", "json", "migrate", "offline"] }
 sqlx-sqlite = { version = "0.7.3", default-features = false, features = ["any", "chrono", "json", "migrate", "offline"] }
 stable_deref_trait = { version = "1.2.0" }
@@ -195,12 +186,6 @@ zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
 [target.x86_64-unknown-linux-gnu.dependencies]
 async-compression = { version = "0.4.5", default-features = false, features = ["brotli", "gzip", "tokio", "zlib", "zstd"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3.1", default-features = false, features = ["std"] }
-hyper-dff4ba8e3ae991db = { package = "hyper", version = "1.6.0", features = ["client", "http1", "http2"] }
-hyper-rustls = { version = "0.27.3", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12", "webpki-tokio"] }
-hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
-hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
-openssl = { version = "0.10.71", features = ["vendored"] }
-openssl-sys = { version = "0.9.106", default-features = false, features = ["vendored"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
 spin = { version = "0.9.8" }
 tokio-util = { version = "0.7.12", features = ["codec", "io"] }
@@ -212,8 +197,6 @@ zstd-sys = { version = "2.0.10", default-features = false, features = ["legacy",
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3.1", default-features = false, features = ["std"] }
 heck = { version = "0.4.1", features = ["unicode"] }
-openssl = { version = "0.10.71", features = ["vendored"] }
-openssl-sys = { version = "0.9.106", default-features = false, features = ["vendored"] }
 socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
 spin = { version = "0.9.8" }
 toml_edit = { version = "0.19.15", features = ["serde"] }
@@ -225,10 +208,6 @@ zstd-sys = { version = "2.0.10", default-features = false, features = ["legacy",
 async-compression = { version = "0.4.5", default-features = false, features = ["brotli", "gzip", "tokio", "zlib", "zstd"] }
 core-foundation-sys = { version = "0.8.7" }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3.1", default-features = false, features = ["std"] }
-hyper-dff4ba8e3ae991db = { package = "hyper", version = "1.6.0", features = ["client", "http1", "http2"] }
-hyper-rustls = { version = "0.27.3", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12", "webpki-tokio"] }
-hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
-hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
 quick-xml = { version = "0.32.0", features = ["serialize"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
 security-framework = { version = "2.10.0", features = ["alpn"] }
@@ -254,10 +233,6 @@ zstd-sys = { version = "2.0.10", default-features = false, features = ["legacy",
 [target.x86_64-pc-windows-msvc.dependencies]
 async-compression = { version = "0.4.5", default-features = false, features = ["brotli", "gzip", "tokio", "zlib", "zstd"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3.1", default-features = false, features = ["std"] }
-hyper-dff4ba8e3ae991db = { package = "hyper", version = "1.6.0", features = ["client", "http1", "http2"] }
-hyper-rustls = { version = "0.27.3", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12", "webpki-tokio"] }
-hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
-hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
 spin = { version = "0.9.8" }
 tokio-util = { version = "0.7.12", features = ["codec", "io"] }
@@ -274,12 +249,7 @@ async-compression = { version = "0.4.5", default-features = false, features = ["
 cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 deranged = { version = "0.3.11", default-features = false, features = ["powerfmt", "serde", "std"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3.1", default-features = false, features = ["std"] }
-hyper-dff4ba8e3ae991db = { package = "hyper", version = "1.6.0", features = ["client", "http1", "http2"] }
-hyper-rustls = { version = "0.27.3", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12", "webpki-tokio"] }
-hyper-tls = { version = "0.6.0", default-features = false, features = ["alpn"] }
-hyper-util = { version = "0.1.10", features = ["client-legacy", "http1", "http2"] }
 mime_guess = { version = "2.0.4" }
-reqwest = { version = "0.12.15", features = ["blocking", "brotli", "cookies", "deflate", "gzip", "json", "multipart", "native-tls-alpn", "native-tls-vendored", "rustls-tls", "rustls-tls-manual-roots", "rustls-tls-native-roots", "socks", "stream", "trust-dns", "zstd"] }
 rustls-pki-types = { version = "1.7.0", features = ["std"] }
 socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
 spin = { version = "0.9.8" }

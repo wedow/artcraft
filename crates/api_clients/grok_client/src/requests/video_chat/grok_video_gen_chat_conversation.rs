@@ -1,10 +1,12 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+use crate::datatypes::api::aspect_ratio::AspectRatio;
 use crate::datatypes::api::baggage::Baggage;
 use crate::datatypes::api::file_id::FileId;
 use crate::datatypes::api::sentry_trace::SentryTrace;
 use crate::datatypes::api::svg_path_data::SvgPathData;
 use crate::datatypes::api::user_id::UserId;
 use crate::datatypes::api::verification_token::VerificationToken;
+use crate::datatypes::api::video_generation_mode::VideoGenerationMode;
 use crate::datatypes::api::xsid_numbers::XsidNumbers;
 use crate::error::categorize_grok_http_error::categorize_grok_http_error;
 use crate::error::grok_client_error::GrokClientError;
@@ -14,7 +16,7 @@ use crate::requests::index_page::signature::generate_xsid::{generate_xsid, Gener
 use crate::requests::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::requests::video_chat::parse_video_id::parse_video_id;
 use crate::requests::video_chat::parse_video_id_from_partial_byte_stream_buffer::parse_video_id_from_partial_byte_stream_buffer;
-use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenModelConfig};
+use crate::requests::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenAspectRatio, VideoGenModelConfig};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use futures::StreamExt;
 use log::{debug, error, info, warn};
@@ -32,6 +34,8 @@ pub struct GrokVideoGenChatConversationBuilder<'a> {
   pub file_id: &'a FileId,
   pub media_type: VideoMediaPostType,
   pub prompt: Option<&'a str>,
+  pub mode: Option<VideoGenerationMode>,
+  pub aspect_ratio: Option<AspectRatio>,
 
   pub cookie: &'a str,
   pub user_id: &'a UserId,
@@ -230,11 +234,29 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
       VideoMediaPostType::Video => unimplemented!("implement for videos"),
     };
 
-    let mut prompt = format!("{media_url}  --mode=normal");
+    let mode_string = self.mode
+        .unwrap_or(VideoGenerationMode::Normal)
+        .as_api_mode_arg();
+
+    let mut prompt = format!("{media_url}  --mode={mode_string}");
 
     if let Some(user_prompt) = self.prompt {
-      prompt = format!("{media_url}  {user_prompt} --mode=custom");
+      // If a text prompt is set, mode seems to typically be "custom".
+      let mode_string = self.mode
+          .unwrap_or(VideoGenerationMode::Custom)
+          .as_api_mode_arg();
+
+      prompt = format!("{media_url}  {user_prompt} --mode={mode_string}");
     }
+
+    info!("Grok video prompt: {prompt}");
+
+    let aspect_ratio = match self.aspect_ratio {
+      Some(AspectRatio::Square) => VideoGenAspectRatio::Square,
+      Some(AspectRatio::WideThreeByTwo) => VideoGenAspectRatio::WideThreeByTwo,
+      Some(AspectRatio::TallTwoByThree) => VideoGenAspectRatio::TallTwoByThree,
+      None => VideoGenAspectRatio::WideThreeByTwo,
+    };
 
     let request_body = CreateChatConversationWireRequest {
       temporary: true,
@@ -251,6 +273,8 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
           model_map: ModelMap {
             video_gen_model_config: VideoGenModelConfig {
               parent_post_id: self.file_id.0.to_string(),
+              video_length: 6, // NB: API defaults to "6"
+              aspect_ratio,
             },
           },
         },
@@ -340,6 +364,8 @@ mod tests {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       prompt: maybe_prompt,
+      mode: Some(VideoGenerationMode::Custom),
+      aspect_ratio: Some(AspectRatio::TallTwoByThree),
 
       cookie: cookies.as_str(),
       user_id: &secrets.user_id,
@@ -402,6 +428,8 @@ mod tests {
       file_id: &file_id,
       media_type: VideoMediaPostType::UserUploadedImage,
       prompt: maybe_prompt,
+      mode: None,
+      aspect_ratio: Some(AspectRatio::Square),
 
       cookie: cookies.as_str(),
       user_id: &secrets.user_id,

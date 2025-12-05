@@ -19,7 +19,7 @@ use storyteller_client::endpoints::generate::object::generate_hunyuan_3d_2_1_ima
 use tauri::AppHandle;
 
 pub async fn handle_object_artcraft(
-  request: EnqueueImageTo3dObjectRequest,
+  request: &EnqueueImageTo3dObjectRequest,
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
@@ -59,7 +59,7 @@ pub async fn handle_object_artcraft(
       used_model = Some(GenerationModel::Hunyuan3d2_0);
       let request = GenerateHunyuan20ImageTo3dRequest { 
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
+        media_file_token: request.image_media_token.clone(),
       };
       let result = generate_hunyuan3d_2_0_image_to_3d(
         &app_env_configs.storyteller_host,
@@ -82,7 +82,7 @@ pub async fn handle_object_artcraft(
       used_model = Some(GenerationModel::Hunyuan3d2_1);
       let request = GenerateHunyuan21ImageTo3dRequest {
         uuid_idempotency_token,
-        media_file_token: request.image_media_token,
+        media_file_token: request.image_media_token.clone(),
       };
       let result = generate_hunyuan3d_2_1_image_to_3d(
         &app_env_configs.storyteller_host,

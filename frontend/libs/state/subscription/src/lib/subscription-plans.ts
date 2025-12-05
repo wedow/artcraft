@@ -9,7 +9,6 @@ export const FREE_PLAN: SubscriptionPlanDetails = {
   features: [
     { text: "Free daily generations", included: true },
     { text: "Limited access to ArtCraft tools", included: true },
-    { text: "~15 Midjourney images", included: true },
     { text: "~10 GPT-Image-1 images", included: true },
     { text: "~1 minute Kling video", included: true },
   ],
@@ -28,7 +27,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDetails[] = [
     originalYearlyPrice: 120,
     features: [
       { text: "~1,000 Flux images", included: true },
-      { text: "~300 Midjourney images", included: true },
       { text: "~100 GPT-Image-1 images", included: true },
       { text: "~10 minutes Kling video", included: true },
       { text: "Commercial license", included: true },
@@ -45,7 +43,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDetails[] = [
     originalYearlyPrice: 420,
     features: [
       { text: "~5,000 Flux images", included: true },
-      { text: "~1,000 Midjourney images", included: true },
       { text: "~300 GPT-Image-1 images", included: true },
       { text: "~30 minutes Kling video", included: true },
       { text: "Commercial license", included: true },
@@ -62,7 +59,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDetails[] = [
     originalYearlyPrice: 720,
     features: [
       { text: "~15,000 Flux images", included: true },
-      { text: "~3,000 Midjourney images", included: true },
       { text: "~500 GPT-Image-1 images", included: true },
       { text: "~60 minutes Kling video", included: true },
       { text: "Commercial license", included: true },

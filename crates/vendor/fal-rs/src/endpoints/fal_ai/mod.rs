@@ -1933,6 +1933,20 @@ pub mod skyreels_i2v;
 #[cfg(any(
     feature = "endpoints",
     feature = "endpoints_fal-ai",
+    feature = "endpoints_fal-ai_sora"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "endpoints",
+        feature = "endpoints_fal-ai",
+        feature = "endpoints_fal-ai_sora"
+    )))
+)]
+pub mod sora;
+#[cfg(any(
+    feature = "endpoints",
+    feature = "endpoints_fal-ai",
     feature = "endpoints_fal-ai_stable-audio"
 ))]
 #[cfg_attr(
@@ -2199,6 +2213,20 @@ pub mod veo3;
 #[cfg(any(
     feature = "endpoints",
     feature = "endpoints_fal-ai",
+    feature = "endpoints_fal-ai_veo"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "endpoints",
+        feature = "endpoints_fal-ai",
+        feature = "endpoints_fal-ai_veo"
+    )))
+)]
+pub mod veo;
+#[cfg(any(
+    feature = "endpoints",
+    feature = "endpoints_fal-ai",
     feature = "endpoints_fal-ai_video-prompt-generator"
 ))]
 #[cfg_attr(
@@ -2408,3 +2436,4 @@ pub mod yue;
 pub mod zonos;
 
 pub mod qwen_image_edit;
+pub mod nano_banana_pro;

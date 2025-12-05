@@ -41,10 +41,10 @@ once_cell.workspace = true
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
-sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
+sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio-rustls", "chrono" ] }
 
 # Money
-async-stripe = { version = "1.0.0-alpha.2", features = [] }
+async-stripe = { version = "1.0.0-alpha.2", default-features = false, features = ["rustls-tls-native"] }
 async-stripe-checkout = { version = "1.0.0-alpha.2", features = ["checkout_session"] }
 async-stripe-core = { version = "1.0.0-alpha.2", features = ["customer"] }
 async-stripe-shared= { version = "1.0.0-alpha.2", features = [] }

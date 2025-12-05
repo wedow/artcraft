@@ -25,10 +25,7 @@ import {
   ModelPage,
 } from "@storyteller/ui-model-selector";
 import { Button } from "@storyteller/ui-button";
-import {
-  getProviderDisplayName,
-  getModelDisplayName,
-} from "@storyteller/model-list";
+import { getProviderDisplayName } from "@storyteller/model-list";
 import { CloseButton } from "@storyteller/ui-close-button";
 import { ActionReminderModal } from "@storyteller/ui-action-reminder-modal";
 import { TaskMediaFileClass } from "@storyteller/api-enums";
@@ -37,6 +34,7 @@ import {
   THUMBNAIL_SIZES,
   getPlaceholderForMediaClass,
 } from "@storyteller/common";
+import { coverImageCache } from "~/pages/PageImageTo3DObject/ImageTo3DStore";
 
 type InProgressTask = {
   id: string;
@@ -68,7 +66,7 @@ const InProgressCard = ({
   onDismiss?: () => void;
 }) => {
   return (
-    <div className="mb-2 rounded-md border border-ui-divider bg-ui-background p-2">
+    <div className="rounded-md p-2 transition-colors hover:bg-ui-controls/40">
       <div className="flex items-center gap-2.5">
         <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded bg-ui-controls">
           <FontAwesomeIcon
@@ -126,7 +124,7 @@ const CompletedCard = ({
 }) => {
   return (
     <div
-      className="mb-2 flex cursor-pointer items-center gap-2.5 rounded-md border border-ui-divider bg-ui-background p-2 transition-colors hover:bg-ui-controls/40"
+      className="flex cursor-pointer items-center gap-2.5 rounded-md p-2 transition-colors hover:bg-ui-controls/40"
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : -1}
@@ -141,6 +139,9 @@ const CompletedCard = ({
                 task.mediaFileClass,
               );
               e.currentTarget.style.opacity = "0.3";
+              // Set the `data-brokenurl` property for debugging the broken images:
+              (e.currentTarget as HTMLImageElement).dataset.brokenurl =
+                task.thumbnailUrl;
             }}
             className="h-full w-full object-cover"
           />
@@ -212,13 +213,37 @@ export const TaskQueue = () => {
         ? getProviderDisplayName(String(t.provider).toLowerCase())
         : undefined;
       const taskTypeStr = t.task_type ? String(t.task_type) : "";
-      const kind = taskTypeStr.includes("video")
-        ? "Video"
-        : taskTypeStr.includes("image")
-          ? "Image"
-          : undefined;
+      const is3DModel =
+        taskTypeStr.includes("3d") ||
+        taskTypeStr.includes("object") ||
+        taskTypeStr.includes("dimensional");
+      const kind = is3DModel
+        ? "3D Model"
+        : taskTypeStr.includes("video")
+          ? "Video"
+          : taskTypeStr.includes("image")
+            ? "Image"
+            : undefined;
+
+      const formatModelName = (modelType: string): string => {
+        const formatted = modelType
+          .replace(/_/g, " ")
+          .replace(/(\d)([a-zA-Z])/g, "$1 $2")
+          .replace(/([a-zA-Z])(\d)/g, "$1 $2")
+          .split(" ")
+          .map((word) =>
+            word.length <= 2
+              ? word.toUpperCase()
+              : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+          )
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+        return formatted;
+      };
+
       const modelDisplay = t.model_type
-        ? getModelDisplayName(String(t.model_type))
+        ? formatModelName(String(t.model_type))
         : undefined;
 
       const title = kind || "Task";
@@ -287,28 +312,33 @@ export const TaskQueue = () => {
               (b.completed_at?.getTime() || b.updated_at.getTime()) -
               (a.completed_at?.getTime() || a.updated_at.getTime()),
           )
-          .map((t: TaskQueueItem) => ({
-            id: t.id,
-            ...formatTitleParts(t),
-            thumbnailUrl:
-              getThumbnailUrl(
-                t.completed_item?.primary_media_file
-                  ?.maybe_thumbnail_url_template,
-                { width: THUMBNAIL_SIZES.MEDIUM },
-              ) || undefined,
-            imageUrls: t.completed_item?.primary_media_file?.cdn_url
-              ? [t.completed_item?.primary_media_file?.cdn_url]
-              : [],
-            mediaTokens: (() => {
-              const primaryToken = t.completed_item?.primary_media_file?.token;
-              const tokens: string[] = primaryToken ? [primaryToken] : [];
-              return tokens;
-            })(),
-            mediaFileClass: t.completed_item?.media_file_class,
-            batchImageToken: t.completed_item?.maybe_batch_token,
-            completedAt: t.completed_at,
-            updatedAt: t.updated_at,
-          }));
+          .map((t: TaskQueueItem) => {
+            const mediaToken = t.completed_item?.primary_media_file?.token;
+            // Try server thumbnail first, then fall back to local cache
+            const serverThumbnail = getThumbnailUrl(
+              t.completed_item?.primary_media_file?.maybe_thumbnail_url_template,
+              { width: THUMBNAIL_SIZES.MEDIUM },
+            );
+            const cachedThumbnail = mediaToken ? coverImageCache.get(mediaToken) : undefined;
+            
+            return {
+              id: t.id,
+              ...formatTitleParts(t),
+              thumbnailUrl: serverThumbnail || cachedThumbnail || undefined,
+              imageUrls: t.completed_item?.primary_media_file?.cdn_url
+                ? [t.completed_item?.primary_media_file?.cdn_url]
+                : [],
+              mediaTokens: (() => {
+                const primaryToken = t.completed_item?.primary_media_file?.token;
+                const tokens: string[] = primaryToken ? [primaryToken] : [];
+                return tokens;
+              })(),
+              mediaFileClass: t.completed_item?.media_file_class,
+              batchImageToken: t.completed_item?.maybe_batch_token,
+              completedAt: t.completed_at,
+              updatedAt: t.updated_at,
+            };
+          });
 
         setInProgress(inProg);
         setCompleted(done);
@@ -334,6 +364,16 @@ export const TaskQueue = () => {
 
     load();
     const id = setInterval(load, 5000);
+
+    // Listen for cover image uploads to refresh and show new thumbnails
+    const handleCoverUploaded = () => {
+      if (!cancelled) {
+        // Small delay to allow server to process
+        setTimeout(load, 1000);
+      }
+    };
+    window.addEventListener("cover-image-uploaded", handleCoverUploaded);
+
     let unlisten: Promise<UnlistenFn> | null = null;
     (async () => {
       // Update immediately when Tauri signals a generation completion
@@ -346,6 +386,7 @@ export const TaskQueue = () => {
     return () => {
       cancelled = true;
       clearInterval(id);
+      window.removeEventListener("cover-image-uploaded", handleCoverUploaded);
       if (unlisten) {
         unlisten.then((f) => f());
       }

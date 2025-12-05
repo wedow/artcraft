@@ -51,10 +51,55 @@ pub (super) struct ModelMap {
 pub (super) struct VideoGenModelConfig {
   #[serde(rename = "parentPostId")]
   pub (super) parent_post_id: String,
+
+  /// Newer field as of November
+  /// values: "1:1", "2:3" (tall),
+  #[serde(rename = "aspectRatio")]
+  pub (super) aspect_ratio: VideoGenAspectRatio,
+
+  /// Newer field as of November
+  /// default seems to be "6"
+  #[serde(rename = "videoLength")]
+  pub (super) video_length: u32,
 }
 
+#[derive(Serialize, Clone, Copy, Debug)]
+pub (super) enum VideoGenAspectRatio {
+  #[serde(rename = "2:3")]
+  TallTwoByThree,
+
+  #[serde(rename = "3:2")]
+  WideThreeByTwo,
+
+  #[serde(rename = "1:1")]
+  Square,
+}
 
 /*
+
+November 27 no image (text only) square aspect ratio -
+
+--data-raw
+  {
+    "temporary":true,
+    "modelName":"grok-3",
+    "message":"A waterspout wrecks an oil tanker, misty, huge waves --mode=custom",
+    "toolOverrides": {
+      "videoGen":true
+    },
+    "responseMetadata": {
+      "modelConfigOverride": {
+        "modelMap": {
+          "videoGenModelConfig": {
+            "parentPostId":"b0b88b45-9724-49bd-a82c-c83ddcd2937f",
+            "aspectRatio":"2:3",
+            "videoLength":6
+          }
+        }
+      }
+    }
+  }
+
 October 29 request struct -
 
 --data-raw
@@ -113,4 +158,6 @@ October 22 request struct -
       "videoGen":true
     }
   }
- */
+
+*/
+

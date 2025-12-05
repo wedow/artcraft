@@ -10,6 +10,7 @@ import {
   faGlobe,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
+import { set3DPageMounted } from "~/pages/PageEnigma/Editor/editor";
 
 export type AppId =
   | "IMAGE"
@@ -105,9 +106,8 @@ export const ALL_APPS: FullAppItem[] = [
     description: "Convert references into textured assets",
     icon: faCube,
     category: "generate",
-    // action: "IMAGE_TO_3D_OBJECT",
+    action: "IMAGE_TO_3D_OBJECT",
     color: "bg-emerald-500/40",
-    badge: "SOON",
   },
   {
     id: "image-to-3d-world",
@@ -211,6 +211,11 @@ export const goToApp = (action?: string) => {
       "IMAGE_TO_3D_WORLD",
     ].includes(action)
   ) {
+    if (action === "3D") {
+      set3DPageMounted(true);
+    } else {
+      set3DPageMounted(false);
+    }
     useTabStore.getState().setActiveTab(action as TabId);
   }
 };

@@ -46,11 +46,24 @@ pub struct ClientMessageItemContentProperties {
   pub enable_nsfw: bool,
   pub skip_upsampler: bool,
   pub is_initial: bool,
+  pub aspect_ratio: ClientMessageAspectRatio,
+}
+
+#[derive(Serialize, Clone, Copy, Debug)]
+pub enum ClientMessageAspectRatio {
+  #[serde(rename = "2:3")]
+  TallTwoByThree,
+
+  #[serde(rename = "3:2")]
+  WideThreeByTwo,
+
+  #[serde(rename = "1:1")]
+  Square,
 }
 
 impl WebsocketClientMessage {
   /// Create a new image prompt websocket client message
-  pub fn new_image_prompt(prompt: &str) -> Self {
+  pub fn new_image_prompt(prompt: &str, aspect_ratio: ClientMessageAspectRatio) -> Self {
     Self {
       r#type: "conversation.item.create".to_string(),
       timestamp: Utc::now().timestamp_millis() as u64,
@@ -67,6 +80,7 @@ impl WebsocketClientMessage {
               enable_nsfw: true,
               skip_upsampler: false,
               is_initial: false,
+              aspect_ratio,
             },
           }
         ],

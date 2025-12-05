@@ -35,6 +35,8 @@ import type { UploadImageFn } from "./ImagePromptRow";
 import { twMerge } from "tailwind-merge";
 import { toast } from "@storyteller/ui-toaster";
 
+type GROK_ASPECT_RATIO = "landscape" | "portrait" | "square";
+
 const DEFAULT_RESOLUTIONS: SizeOption[] = [
   {
     tauriValue: "720p",
@@ -205,6 +207,7 @@ export const PromptBoxVideo = ({
   }, [isImageRowVisible, onImageRowVisibilityChange]);
 
   const handleResolutionSelect = (selectedItem: PopoverItem) => {
+    console.log(">>>> handleResolutionSelect", selectedItem);
     setResolution(selectedItem.label as any);
     setResolutionList((prev) =>
       resolutionOptions.map((item) => ({
@@ -280,17 +283,19 @@ export const PromptBoxVideo = ({
       frontend_subscriber_id: subscriberId,
     };
 
-    if (selectedModel?.tauriId === "sora_2") {
-      request.sora_orientation =
-        resolution === "720p" ? "landscape" : "portrait";
+    if (selectedModel.generateWithSound) {
+      request.generate_audio = !!generateWithSound;
     }
 
-    if (selectedModel?.tauriId === "veo_2") {
-      request.generate_with_sound = !!generateWithSound;
-    }
+    switch (selectedModel?.tauriId) {
+      case "grok_video":
+        request.grok_aspect_ratio = getGrokAspectRatio();
+        break;
 
-    if (selectedModel?.tauriId === "veo_3") {
-      request.generate_with_sound = !!generateWithSound;
+      case "sora_2":
+        request.sora_orientation =
+          resolution === "720p" ? "landscape" : "portrait";
+        break;
     }
 
     await EnqueueImageToVideo(request);
@@ -322,6 +327,26 @@ export const PromptBoxVideo = ({
       handleEnqueue();
     }
   };
+
+  const getGrokAspectRatio = (): GROK_ASPECT_RATIO => {
+    // NB: This function was just written to give us better type safety. 
+    // There has to be a cleaner appraoach.
+    const maybeAspectRatio = selectedModel?.
+      sizeOptions?.
+      find((option) => option.textLabel === resolution)?.
+      tauriValue;
+
+    switch (maybeAspectRatio) {
+      case "landscape":
+        return "landscape";
+      case "portrait":
+        return "portrait";
+      case "square":
+        return "square";
+      default:
+        return "landscape";
+    }
+  }
 
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
 

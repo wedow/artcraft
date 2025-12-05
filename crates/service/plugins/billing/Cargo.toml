@@ -45,7 +45,7 @@ serde_derive = { workspace = true }
 serde_json = { workspace = true }
 
 # Money
-async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper", "connect", "billing", "checkout", "webhook-events"] }
+async-stripe = { version = "0.26.0", default-features = false, features = ["runtime-tokio-hyper-rustls", "connect", "billing", "checkout", "webhook-events"] }
 
 # Async traits
 # NB: note: `async` trait functions are not currently supported
@@ -53,7 +53,7 @@ async-stripe = { version = "0.26.0", default-features = false, features = ["runt
 # include support for async fn in traits.
 async-trait = "0.1.58"
 
-sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio", "tls-rustls", "chrono" ] }
+sqlx = { version = "0.7.4", features = [ "mysql", "runtime-tokio-rustls", "chrono" ] }
 
 utoipa = { version = "4", features = ["chrono","actix_extras"] }
 

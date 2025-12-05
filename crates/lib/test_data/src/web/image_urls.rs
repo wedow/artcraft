@@ -35,3 +35,12 @@ pub const TALL_MOCHI_WITH_GLASSES_GLASSES_MASK_IMAGE_URL : &str = "https://cdn-2
 
 // media token: m_77cpdyaby60z0qv9g6tv67gw2a1337
 pub const TREX_SKELETON_IMAGE_URL : &str = "https://cdn-2.fakeyou.com/media/f/4/j/5/3/f4j53296sc35wqs3csgw4j4vvjf5yyxe/image_f4j53296sc35wqs3csgw4j4vvjf5yyxe.png";
+
+// media token: m_zyh17gn6prfp4xs6z76mqkz9k0sr0j
+pub const TALL_CORGI_SHIBA_TREASURE_OCEAN_URL: &str = "https://cdn-2.fakeyou.com/media/j/z/7/2/p/jz72pgwb6fegem74pr36yy88hsshwx4m/artcraft_jz72pgwb6fegem74pr36yy88hsshwx4m.png";
+
+// media token: m_a9c4g43nw87y6mebjammrqz849c5xe
+pub const WIDE_CORGI_SHIBA_TREASURE_OCEAN_URL: &str = "https://cdn-2.fakeyou.com/media/v/a/g/g/a/vaggan4137tqsz173432cjjg33xkrxpc/artcraft_vaggan4137tqsz173432cjjg33xkrxpc.png";
+
+// media token: m_ytkp3tk2ptvr03p75fwqvend0m3qsg
+pub const TALL_CORGI_SHIBA_TREASURE_SKY_URL: &str = "https://cdn-2.fakeyou.com/media/a/4/s/x/x/a4sxxecwenrbta5kx5jk34dp2z9apxqv/artcraft_a4sxxecwenrbta5kx5jk34dp2z9apxqv.png";

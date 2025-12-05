@@ -25,9 +25,14 @@ pub async fn setup_main_window(
       .focusable(true)
       .focused(true);
 
-  #[cfg(not(target_os = "macos"))]
+  // NB: Setting decorations(false) "breaks" Mac, though I never documented how/why.
+  // NB: On Linux, setting decorations(false) will cause the window to be unable to be
+  // resized, despite the arrow cursor indicating resize is possible. This might be
+  // fixable another way, but for now it seems fine to disable this. There also seem to
+  // be some performance loss with decorations(false), but I might be imagining it.
+  #[cfg(target_os = "windows")]
   let win_builder = win_builder
-      .decorations(false); // NB: This breaks Mac!
+      .decorations(false); // NB: This breaks Mac! (And breaks resize on Linux)
 
   #[cfg(target_os = "windows")]
   let win_builder = win_builder
