@@ -1,7 +1,6 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
-use crate::core::commands::enqueue::text_to_image::gemini_25_flash::handle_gemini_25_flash::handle_gemini_25_flash;
 use crate::core::commands::enqueue::text_to_image::generic::handle_image_artcraft::handle_image_artcraft;
 use crate::core::commands::enqueue::text_to_image::generic::handle_image_fal::handle_image_fal;
 use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1::handle_gpt_image_1;
