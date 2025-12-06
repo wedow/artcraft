@@ -36,6 +36,7 @@ use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::commands::enqueue::text_to_image::nano_banana_pro::handle_nano_banana_pro::handle_nano_banana_pro;
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
@@ -315,7 +316,7 @@ pub async fn dispatch_request(
       ).await;
     }
     Some(ImageModel::NanoBananaPro) => {
-      return handle_nano_banana(
+      return handle_nano_banana_pro(
         request,
         app,
         app_data_root,
