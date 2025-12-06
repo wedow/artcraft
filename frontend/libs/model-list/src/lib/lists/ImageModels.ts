@@ -2,6 +2,8 @@ import { ImageModel } from "../classes/ImageModel.js";
 import { ModelCreator } from "../classes/metadata/ModelCreator.js";
 import { ModelTag } from "../classes/metadata/ModelTag.js";
 
+// TODO: Some of the model configs, such as generation counts, are authoritatively controlled in `legacy/Models.ts`
+
 export const IMAGE_MODELS: ImageModel[] = [
   new ImageModel({
     id: "grok_image",
@@ -124,7 +126,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     defaultGenerationCount: 1,
     canEditImages: true,
     canUseImagePrompt: true,
-    maxImagePromptCount: 6,
+    maxImagePromptCount: 4,
     canTextToImage: true,
     tags: [ModelTag.InstructiveEdit],
     progressBarTime: 25000,
@@ -138,7 +140,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorName: "GPT Image 1 (GPT-4o)",
     selectorDescription: "Slow, but super smart",
     selectorBadges: ["60 sec."],
-    maxGenerationCount: 1,
+    maxGenerationCount: 4,
     defaultGenerationCount: 1,
     tags: [ModelTag.InstructiveEdit],
     canEditImages: true,

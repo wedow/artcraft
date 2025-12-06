@@ -135,6 +135,21 @@ const ALL_MODELS: ModelConfig[] = [
     tags: [ModelTag.InstructiveEdit, ModelTag.NonMaskedInpainting],
   }),
   cfg({
+    id: "nano_banana_pro",
+    category: "image",
+    info: {
+      name: "Nano Banana Pro",
+      tauri_id: "nano_banana_pro",
+      creator: mc.Google,
+    },
+    description: "Extremely powerful",
+    badges: [{ label: "35 sec." }],
+    capabilities: {
+      maxGenerationCount: 4,
+    },
+    tags: [ModelTag.InstructiveEdit, ModelTag.NonMaskedInpainting],
+  }),
+  cfg({
     id: "flux_pro_inpaint",
     category: "image",
     info: {
