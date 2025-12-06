@@ -1,1 +1,1 @@
-pub mod nano_banana_pro_edit_image_handler;
+pub mod nano_banana_pro_multi_function_image_gen_handler;

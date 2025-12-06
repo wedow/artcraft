@@ -16,6 +16,8 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
+use fal_client::requests::webhook::image::edit::enqueue_nano_banana_pro_edit_image_webhook::{enqueue_nano_banana_pro_image_edit_webhook, EnqueueNanoBananaProEditImageArgs, EnqueueNanoBananaProEditImageAspectRatio, EnqueueNanoBananaProEditImageNumImages, EnqueueNanoBananaProEditImageResolution};
+use fal_client::requests::webhook::image::text::enqueue_nano_banana_pro_text_to_image_webhook::{enqueue_nano_banana_pro_text_to_image_webhook, EnqueueNanoBananaProTextToImageArgs, EnqueueNanoBananaProTextToImageAspectRatio, EnqueueNanoBananaProTextToImageNumImages, EnqueueNanoBananaProTextToImageResolution};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -30,8 +32,6 @@ use sqlx::pool::PoolConnection;
 use sqlx::{Acquire, MySql};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
-use fal_client::requests::webhook::image::edit::enqueue_nano_banana_pro_edit_image_webhook::{enqueue_nano_banana_pro_image_edit_webhook, EnqueueNanoBananaProEditImageArgs, EnqueueNanoBananaProEditImageAspectRatio, EnqueueNanoBananaProEditImageNumImages, EnqueueNanoBananaProEditImageResolution};
-use fal_client::requests::webhook::image::text::enqueue_nano_banana_pro_text_to_image_webhook::{enqueue_nano_banana_pro_text_to_image_webhook, EnqueueNanoBananaProTextToImageArgs, EnqueueNanoBananaProTextToImageAspectRatio, EnqueueNanoBananaProTextToImageNumImages, EnqueueNanoBananaProTextToImageResolution};
 
 /// Nano Banana Pro Multi-Function (generate + edit)
 #[utoipa::path(
@@ -45,7 +45,7 @@ use fal_client::requests::webhook::image::text::enqueue_nano_banana_pro_text_to_
     ("request" = NanoBananaProMultiFunctionImageGenRequest, description = "Payload for Request"),
   )
 )]
-pub async fn nano_banana_pro_edit_image_handler(
+pub async fn nano_banana_pro_multi_function_image_gen_handler(
   http_request: HttpRequest,
   request: Json<NanoBananaProMultiFunctionImageGenRequest>,
   server_state: web::Data<Arc<ServerState>>
