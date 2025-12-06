@@ -168,13 +168,14 @@ export const IMAGE_MODELS: ImageModel[] = [
     fullName: "Flux Pro Inpaint",
     category: "image",
     creator: ModelCreator.BlackForestLabs,
-    selectorName: "Flux Pro",
+    selectorName: "Flux Pro (Inpainting)",
     selectorDescription: "Fast inpainting",
     selectorBadges: ["30 sec."],
     maxGenerationCount: 1, // NB: Fal only allows one image for some reason!
     defaultGenerationCount: 1, // NB: Fal only allows one image for some reason!
     canEditImages: true,
     usesInpaintingMask: true,
+    editingIsInpainting: true,
     canTextToImage: false,
     progressBarTime: 30000,
   }),
@@ -191,6 +192,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     defaultGenerationCount: 4,
     canEditImages: true,
     usesInpaintingMask: true,
+    editingIsInpainting: true,
     canTextToImage: false,
     progressBarTime: 10000,
   }),
