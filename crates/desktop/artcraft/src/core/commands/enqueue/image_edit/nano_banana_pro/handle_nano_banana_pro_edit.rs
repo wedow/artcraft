@@ -1,8 +1,6 @@
 use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::EnqueueContextualEditImageCommand;
-use crate::core::commands::enqueue::image_edit::gemini_25_flash::handle_gemini_25_flash_edit_artcraft::handle_gemini_25_flash_edit_artcraft;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_artcraft::handle_gpt_image_1_edit_artcraft;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_sora::handle_gpt_image_1_edit_sora;
+use crate::core::commands::enqueue::image_edit::nano_banana_pro::handle_nano_banana_pro_edit_artcraft::handle_nano_banana_pro_edit_artcraft;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -13,7 +11,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use log::info;
 use tauri::AppHandle;
 
-pub async fn handle_gemini_25_flash_edit(
+pub async fn handle_nano_banana_pro_edit(
   request: &EnqueueContextualEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -39,8 +37,8 @@ pub async fn handle_gemini_25_flash_edit(
         // Fallthrough
       }
       Provider::Artcraft => {
-        info!("Dispatching gemini 2.5 flash (edit) via Artcraft...");
-        return handle_gemini_25_flash_edit_artcraft(
+        info!("Dispatching Nano Banana Pro (edit) via Artcraft...");
+        return handle_nano_banana_pro_edit_artcraft(
           request, 
           app,
           app_data_root,

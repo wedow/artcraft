@@ -1,8 +1,9 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit::handle_flux_kontext_edit;
-use crate::core::commands::enqueue::image_edit::gemini_25_flash::handle_gemini_25_flash_edit::handle_gemini_25_flash_edit;
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
+use crate::core::commands::enqueue::image_edit::nano_banana::handle_nano_banana_edit::handle_nano_banana_edit;
+use crate::core::commands::enqueue::image_edit::nano_banana_pro::handle_nano_banana_pro_edit::handle_nano_banana_pro_edit;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
@@ -36,8 +37,8 @@ use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use serde_derive::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use std::time::Duration;
-use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
+use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
@@ -52,6 +53,12 @@ pub enum ContextualImageEditModel {
 
   #[serde(rename = "gemini_25_flash")]
   Gemini25Flash,
+
+  #[serde(rename = "nano_banana")]
+  NanoBanana,
+
+  #[serde(rename = "nano_banana_pro")]
+  NanoBananaPro,
 
   #[serde(rename = "gpt_image_1")]
   GptImage1,
@@ -93,6 +100,9 @@ pub struct EnqueueContextualEditImageCommand {
   /// Image quality.
   pub image_quality: Option<EditImageQuality>,
 
+  /// Image resolution
+  pub image_resolution: Option<EditImageResolution>,
+
   /// OPTIONAL.
   /// Name of the frontend caller.
   /// We'll use this to selectively trigger events.
@@ -125,6 +135,17 @@ pub enum EditImageQuality {
   High,
   Medium,
   Low,
+}
+
+#[derive(Deserialize, Debug, Copy, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum EditImageResolution {
+  /// 1K - nano banana pro
+  OneK,
+  /// 2K - nano banana pro
+  TwoK,
+  /// 4K - nano banana pro
+  FourK,
 }
 
 #[derive(Serialize, Debug)]
@@ -251,8 +272,20 @@ pub async fn handle_request(
         sora_task_queue,
       ).await?
     }
-    Some(ContextualImageEditModel::Gemini25Flash) => {
-      handle_gemini_25_flash_edit(
+    Some(ContextualImageEditModel::Gemini25Flash | ContextualImageEditModel::NanoBanana) => {
+      handle_nano_banana_edit(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await?
+    }
+    Some(ContextualImageEditModel::NanoBananaPro) => {
+      handle_nano_banana_pro_edit(
         request,
         app,
         app_data_root,

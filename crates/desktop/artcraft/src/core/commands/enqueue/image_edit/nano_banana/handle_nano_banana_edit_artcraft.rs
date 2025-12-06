@@ -29,7 +29,7 @@ use tauri::AppHandle;
 
 pub(super) const MAX_IMAGES: usize = 10;
 
-pub async fn handle_gemini_25_flash_edit_artcraft(
+pub async fn handle_nano_banana_edit_artcraft(
   request: &EnqueueContextualEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -44,7 +44,7 @@ pub async fn handle_gemini_25_flash_edit_artcraft(
     },
   };
 
-  info!("Calling Artcraft gemini 2.5 flash (edit) ...");
+  info!("Calling Artcraft Nano Banana (edit) ...");
 
   let uuid_idempotency_token = generate_random_uuid();
   
@@ -98,12 +98,12 @@ pub async fn handle_gemini_25_flash_edit_artcraft(
   let job_id = match result {
     Ok(enqueued) => {
       // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued Artcraft gpt-image-1. Job token: {}", 
+      info!("Successfully enqueued Artcraft Nano Banana. Job token: {}",
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft gpt-image-1: {:?}", err);
+      error!("Failed to use Artcraft Nano Banana: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };

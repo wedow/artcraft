@@ -34,7 +34,11 @@ pub enum GenerationModel {
   GrokImage,
   #[serde(rename = "gemini_25_flash")]
   Gemini25Flash,
-  
+  #[serde(rename = "nano_banana")]
+  NanoBanana,
+  #[serde(rename = "nano_banana_pro")]
+  NanoBananaPro,
+
   #[serde(rename = "hunyuan_3d_2_0")]
   Hunyuan3d2_0,
   #[serde(rename = "hunyuan_3d_2_1")]

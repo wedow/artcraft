@@ -29,6 +29,9 @@ export interface EnqueueContextualEditImageRequest {
   aspect_ratio?: EnqueueContextualEditImageSize;
 
   image_quality?: EnqueueContextualEditImageQuality;
+
+  /// Image resolution. Support: Nano Banana Pro
+  image_resolution?: EnqueueContextualEditImageResolution;
 }
 
 
@@ -73,6 +76,12 @@ export enum EnqueueContextualEditImageQuality {
   High = "high",
   Medium = "medium",
   Low = "low",
+}
+
+export enum EnqueueContextualEditImageResolution {
+  OneK = "one_k",
+  TwoK = "two_k",
+  FourK = "four_k",
 }
 
 export interface EnqueueContextualEditImageError extends CommandResult {
