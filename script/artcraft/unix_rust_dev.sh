@@ -45,6 +45,11 @@ sqlx_offline() {
 #sqlx_migrate
 sqlx_offline
 
+# Issue with Linux performance
+# https://github.com/tauri-apps/tauri/issues/13498
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+export WEBKIT_DISABLE_COMPOSITING_MODE=1
+
 echo "Build and run..."
 RUSTFLAGS="-Awarnings" cargo tauri dev \
   --no-dev-server \

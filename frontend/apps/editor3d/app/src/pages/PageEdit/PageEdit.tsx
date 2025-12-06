@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Konva from "konva"; // just for types
-import { EnqueueContextualEditImage, EnqueueImageInpaint } from "@storyteller/tauri-api";
+import { EnqueueEditImage, EnqueueImageInpaint } from "@storyteller/tauri-api";
 import { ContextMenuContainer } from "../PageDraw/components/ui/ContextMenu";
 import { useCopyPasteHotkeys } from "../PageDraw/hooks/useCopyPasteHotkeys";
 import { useDeleteHotkeys } from "../PageDraw/hooks/useDeleteHotkeys";
@@ -298,7 +298,7 @@ const PageEdit = () => {
             frontend_subscriber_id: subscriberId,
           });
         } else {
-          result = await EnqueueContextualEditImage({
+          result = await EnqueueEditImage({
             model: selectedImageModel,
             image_media_tokens: [editedImageToken],
             disable_system_prompt: true, // No meaning yet

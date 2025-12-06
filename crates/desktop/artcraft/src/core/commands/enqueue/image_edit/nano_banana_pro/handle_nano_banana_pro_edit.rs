@@ -1,5 +1,5 @@
 use crate::core::commands::enqueue::generate_error::GenerateError;
-use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::EnqueueContextualEditImageCommand;
+use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::EnqueueEditImageCommand;
 use crate::core::commands::enqueue::image_edit::nano_banana_pro::handle_nano_banana_pro_edit_artcraft::handle_nano_banana_pro_edit_artcraft;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
@@ -12,7 +12,7 @@ use log::info;
 use tauri::AppHandle;
 
 pub async fn handle_nano_banana_pro_edit(
-  request: &EnqueueContextualEditImageCommand,
+  request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,

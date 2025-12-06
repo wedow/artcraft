@@ -28,8 +28,8 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import { PromptsApi } from "@storyteller/api";
 import {
-  EnqueueContextualEditImage,
-  EnqueueContextualEditImageSize,
+  EnqueueEditImage,
+  EnqueueEditImageSize,
 } from "@storyteller/tauri-api";
 import { usePrompt2DStore } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
@@ -235,7 +235,7 @@ export const PromptBox2D = ({
 
     const aspectRatio = getCurrentAspectRatio();
 
-    const generateResponse = await EnqueueContextualEditImage({
+    const generateResponse = await EnqueueEditImage({
       model: selectedImageModel,
       scene_image_media_token: snapshotMediaToken.data!,
       image_media_tokens: referenceImages.map((image) => image.mediaToken),
@@ -354,16 +354,16 @@ export const PromptBox2D = ({
     return iconElement.props.icon;
   };
 
-  const getCurrentAspectRatio = (): EnqueueContextualEditImageSize => {
+  const getCurrentAspectRatio = (): EnqueueEditImageSize => {
     const selected = aspectRatioList.find((item) => item.selected);
     switch (selected?.label) {
       case "3:2":
-        return EnqueueContextualEditImageSize.Wide;
+        return EnqueueEditImageSize.Wide;
       case "2:3":
-        return EnqueueContextualEditImageSize.Tall;
+        return EnqueueEditImageSize.Tall;
       case "1:1":
       default:
-        return EnqueueContextualEditImageSize.Square;
+        return EnqueueEditImageSize.Square;
     }
   };
 

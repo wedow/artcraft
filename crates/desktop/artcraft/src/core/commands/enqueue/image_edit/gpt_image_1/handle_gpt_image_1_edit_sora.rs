@@ -1,5 +1,5 @@
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
-use crate::core::commands::enqueue::image_edit::enqueue_contextual_edit_image_command::{EditImageSize, EnqueueContextualEditImageCommand, EnqueueContextualEditImageErrorType};
+use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageSize, EnqueueEditImageCommand, EnqueueEditImageErrorType};
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::MAX_IMAGES;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
@@ -42,7 +42,7 @@ const SORA_IMAGE_REMIX_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 
 const DEFAULT_ASPECT_RATIO : EditImageSize = EditImageSize::Square;
 
 pub async fn handle_gpt_image_1_edit_sora(
-  request: &EnqueueContextualEditImageCommand,
+  request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,

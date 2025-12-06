@@ -47,7 +47,7 @@ use tokens::tokens::media_files::MediaFileToken;
 /// Don't change the serializations without coordinating with the frontend.
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
-pub enum ContextualImageEditModel {
+pub enum ImageEditModel {
   #[serde(rename = "flux_pro_kontext_max")]
   FluxProKontextMax,
 
@@ -71,9 +71,9 @@ pub enum ContextualImageEditModel {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct EnqueueContextualEditImageCommand {
+pub struct EnqueueEditImageCommand {
   /// The model to use.
-  pub model: Option<ContextualImageEditModel>,
+  pub model: Option<ImageEditModel>,
 
   /// Images to use for the image edit.
   /// The first image is typically a 2D canvas or 3D stage, but doesn't have to be.
@@ -150,7 +150,7 @@ pub enum EditImageResolution {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "snake_case")]
-pub enum EnqueueContextualEditImageErrorType {
+pub enum EnqueueEditImageErrorType {
   /// Caller didn't specify a model
   ModelNotSpecified,
 
@@ -174,15 +174,15 @@ pub enum EnqueueContextualEditImageErrorType {
 }
 
 #[derive(Serialize)]
-pub struct EnqueueContextualEditImageSuccessResponse {
+pub struct EnqueueEditImageSuccessResponse {
 }
 
-impl SerializeMarker for EnqueueContextualEditImageSuccessResponse {}
+impl SerializeMarker for EnqueueEditImageSuccessResponse {}
 
 #[tauri::command]
-pub async fn enqueue_contextual_edit_image_command(
+pub async fn enqueue_edit_image_command(
   app: AppHandle,
-  request: EnqueueContextualEditImageCommand,
+  request: EnqueueEditImageCommand,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
@@ -190,9 +190,9 @@ pub async fn enqueue_contextual_edit_image_command(
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   sora_creds_manager: State<'_, SoraCredentialManager>,
   sora_task_queue: State<'_, SoraTaskQueue>,
-) -> ResponseOrErrorType<EnqueueContextualEditImageSuccessResponse, EnqueueContextualEditImageErrorType> {
+) -> ResponseOrErrorType<EnqueueEditImageSuccessResponse, EnqueueEditImageErrorType> {
 
-  info!("enqueue_contextual_edit_image_command called; image media tokens : {:?}, full request: {:?}",
+  info!("enqueue_edit_image_command called; image media tokens : {:?}, full request: {:?}",
     &request.image_media_tokens, &request);
 
   let result = handle_request(
@@ -240,13 +240,13 @@ pub async fn enqueue_contextual_edit_image_command(
       
       CreditsBalanceChangedEvent{}.send_infallible(&app);
 
-      Ok(EnqueueContextualEditImageSuccessResponse {}.into())
+      Ok(EnqueueEditImageSuccessResponse {}.into())
     }
   }
 }
 
 pub async fn handle_request(
-  request: &EnqueueContextualEditImageCommand,
+  request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
@@ -260,7 +260,7 @@ pub async fn handle_request(
     None => {
       return Err(GenerateError::no_model_specified())
     }
-    Some(ContextualImageEditModel::FluxProKontextMax) => {
+    Some(ImageEditModel::FluxProKontextMax) => {
       handle_flux_kontext_edit(
         request,
         app,
@@ -272,7 +272,7 @@ pub async fn handle_request(
         sora_task_queue,
       ).await?
     }
-    Some(ContextualImageEditModel::Gemini25Flash | ContextualImageEditModel::NanoBanana) => {
+    Some(ImageEditModel::Gemini25Flash | ImageEditModel::NanoBanana) => {
       handle_nano_banana_edit(
         request,
         app,
@@ -284,7 +284,7 @@ pub async fn handle_request(
         sora_task_queue,
       ).await?
     }
-    Some(ContextualImageEditModel::NanoBananaPro) => {
+    Some(ImageEditModel::NanoBananaPro) => {
       handle_nano_banana_pro_edit(
         request,
         app,
@@ -296,7 +296,7 @@ pub async fn handle_request(
         sora_task_queue,
       ).await?
     }
-    Some(ContextualImageEditModel::GptImage1) => {
+    Some(ImageEditModel::GptImage1) => {
       handle_gpt_image_1_edit(
         request,
         app,
@@ -338,31 +338,31 @@ pub async fn handle_request(
   Ok(success_event)
 }
 
-fn error_to_tauri_response(error: GenerateError) -> CommandErrorResponseWrapper<EnqueueContextualEditImageErrorType, ()> {
+fn error_to_tauri_response(error: GenerateError) -> CommandErrorResponseWrapper<EnqueueEditImageErrorType, ()> {
   let mut status = CommandErrorStatus::ServerError;
-  let mut error_type = EnqueueContextualEditImageErrorType::ServerError;
+  let mut error_type = EnqueueEditImageErrorType::ServerError;
   let mut error_message = "A server error occurred. Please try again. If it continues, please tell our staff about the problem.".to_string();
 
   match error {
     GenerateError::BadInput(BadInputReason::NoModelSpecified) => {
       status = CommandErrorStatus::BadRequest;
-      error_type = EnqueueContextualEditImageErrorType::ModelNotSpecified;
+      error_type = EnqueueEditImageErrorType::ModelNotSpecified;
       error_message = "No model specified for image generation".to_string();
     }
     GenerateError::NoProviderAvailable => {
       status = CommandErrorStatus::ServerError;
-      error_type = EnqueueContextualEditImageErrorType::NoProviderAvailable;
+      error_type = EnqueueEditImageErrorType::NoProviderAvailable;
       error_message = "No configured provider available for image generation".to_string();
     }
     GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages { min, max, requested }) => {
       status = CommandErrorStatus::BadRequest;
-      error_type = EnqueueContextualEditImageErrorType::BadRequest;
+      error_type = EnqueueEditImageErrorType::BadRequest;
       error_message = format!("Invalid number of images requested ({}). Must be between {} and {}", requested, min, max);
 
     }
     GenerateError::BadInput(BadInputReason::InvalidNumberOfInputImages{  min, max, provided }) => {
       status = CommandErrorStatus::BadRequest;
-      error_type = EnqueueContextualEditImageErrorType::BadRequest;
+      error_type = EnqueueEditImageErrorType::BadRequest;
       error_message = format!("Invalid number of input images ({}). Must be between {} and {}", provided, min, max);
     }
     _ => {} // Fall-through for now

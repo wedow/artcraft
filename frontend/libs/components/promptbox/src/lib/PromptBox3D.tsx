@@ -38,8 +38,8 @@ import { Modal } from "@storyteller/ui-modal";
 import { Signal } from "@preact/signals-react";
 import {
   CommandSuccessStatus,
-  EnqueueContextualEditImage,
-  EnqueueContextualEditImageSize,
+  EnqueueEditImage,
+  EnqueueEditImageSize,
 } from "@storyteller/tauri-api";
 import { usePrompt3DStore } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
@@ -336,7 +336,7 @@ export const PromptBox3D = ({
 
         const aspectRatio = getCurrentAspectRatio();
 
-        const generateResponse = await EnqueueContextualEditImage({
+        const generateResponse = await EnqueueEditImage({
           model: selectedImageModel,
           scene_image_media_token: snapshotResult.data!,
           image_media_tokens: referenceImages.map((image) => image.mediaToken),
@@ -400,16 +400,16 @@ export const PromptBox3D = ({
     }
   };
 
-  const getCurrentAspectRatio = (): EnqueueContextualEditImageSize => {
+  const getCurrentAspectRatio = (): EnqueueEditImageSize => {
     switch (cameraAspectRatio.value) {
       case CameraAspectRatio.HORIZONTAL_3_2:
-        return EnqueueContextualEditImageSize.Wide;
+        return EnqueueEditImageSize.Wide;
       case CameraAspectRatio.VERTICAL_2_3:
       case CameraAspectRatio.VERTICAL_9_16:
-        return EnqueueContextualEditImageSize.Tall;
+        return EnqueueEditImageSize.Tall;
       case CameraAspectRatio.SQUARE_1_1:
       default:
-        return EnqueueContextualEditImageSize.Square;
+        return EnqueueEditImageSize.Square;
     }
   };
 

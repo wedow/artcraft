@@ -2,10 +2,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 import { ImageModel } from "@storyteller/model-list";
 
-export interface EnqueueContextualEditImageRequest {
+export interface EnqueueEditImageRequest {
 
   /// The model to use.
-  model?: ImageModel | EnqueueContextualEditImageModel;
+  model?: ImageModel | EnqueueEditImageModel;
 
   /// If set, this is the first image in the contextual image set.
   /// This gets submitted along with `image_media_tokens` and will 
@@ -26,12 +26,12 @@ export interface EnqueueContextualEditImageRequest {
   /// Number of images to generate.
   image_count?: number;
 
-  aspect_ratio?: EnqueueContextualEditImageSize;
+  aspect_ratio?: EnqueueEditImageSize;
 
-  image_quality?: EnqueueContextualEditImageQuality;
+  image_quality?: EnqueueEditImageQuality;
 
   /// Image resolution. Support: Nano Banana Pro
-  image_resolution?: EnqueueContextualEditImageResolution;
+  image_resolution?: EnqueueEditImageResolution;
 
   // TODO: Actual enum.
   frontend_caller?: string;
@@ -43,20 +43,20 @@ export interface EnqueueContextualEditImageRequest {
 
 // Shape of request sent to Tauri
 // (We do some transformations from the public-facing request object.)
-interface RawEnqueueContextualEditImageRequest {
-  model?: EnqueueContextualEditImageModel | string;
+interface RawEnqueueEditImageRequest {
+  model?: EnqueueEditImageModel | string;
   scene_image_media_token?: string;
   image_media_tokens?: string[];
   prompt?: string;
   disable_system_prompt?: boolean;
   image_count?: number;
-  aspect_ratio?: EnqueueContextualEditImageSize;
-  image_quality?: EnqueueContextualEditImageQuality;
+  aspect_ratio?: EnqueueEditImageSize;
+  image_quality?: EnqueueEditImageQuality;
   frontend_caller?: string;
   frontend_subscriber_id?: string;
 }
 
-export enum EnqueueContextualEditImageErrorType {
+export enum EnqueueEditImageErrorType {
   ModelNotSpecified = "model_not_specified",
   NoProviderAvailable = "no_provider_available",
   BadRequest = "bad_request",
@@ -67,46 +67,46 @@ export enum EnqueueContextualEditImageErrorType {
   SoraIsHavingProblems = "sora_is_having_problems",
 }
 
-export enum EnqueueContextualEditImageModel {
+export enum EnqueueEditImageModel {
   GptImage1 = "gpt_image_1",
   FluxProKontextMax = "flux_pro_kontext_max",
 }
 
-export enum EnqueueContextualEditImageSize {
+export enum EnqueueEditImageSize {
   Auto = "auto",
   Square = "square",
   Wide = "wide",
   Tall = "tall",
 }
 
-export enum EnqueueContextualEditImageQuality {
+export enum EnqueueEditImageQuality {
   Auto = "auto",
   High = "high",
   Medium = "medium",
   Low = "low",
 }
 
-export enum EnqueueContextualEditImageResolution {
+export enum EnqueueEditImageResolution {
   OneK = "one_k",
   TwoK = "two_k",
   FourK = "four_k",
 }
 
-export interface EnqueueContextualEditImageError extends CommandResult {
-  error_type: EnqueueContextualEditImageErrorType;
+export interface EnqueueEditImageError extends CommandResult {
+  error_type: EnqueueEditImageErrorType;
   error_message?: string;
 }
 
-export interface EnqueueContextualEditImagePayload {
+export interface EnqueueEditImagePayload {
 }
 
-export interface EnqueueContextualEditImageSuccess extends CommandResult {
-  payload: EnqueueContextualEditImagePayload;
+export interface EnqueueEditImageSuccess extends CommandResult {
+  payload: EnqueueEditImagePayload;
 }
 
-export type EnqueueContextualEditImageResult = EnqueueContextualEditImageSuccess | EnqueueContextualEditImageError;
+export type EnqueueEditImageResult = EnqueueEditImageSuccess | EnqueueEditImageError;
 
-export const EnqueueContextualEditImage = async (request: EnqueueContextualEditImageRequest) : Promise<EnqueueContextualEditImageResult> => {
+export const EnqueueEditImage = async (request: EnqueueEditImageRequest) : Promise<EnqueueEditImageResult> => {
   let modelName = undefined;
 
   if (!!request.model) {
@@ -122,7 +122,7 @@ export const EnqueueContextualEditImage = async (request: EnqueueContextualEditI
     throw new Error("No model specified in request: " + JSON.stringify(request));
   }
 
-  let mutableRequest : RawEnqueueContextualEditImageRequest = {
+  let mutableRequest : RawEnqueueEditImageRequest = {
     model: modelName,
     prompt: request.prompt,
   };
@@ -159,9 +159,9 @@ export const EnqueueContextualEditImage = async (request: EnqueueContextualEditI
     mutableRequest.frontend_subscriber_id = request.frontend_subscriber_id;
   }
 
-  const result = await invoke("enqueue_contextual_edit_image_command", { 
+  const result = await invoke("enqueue_edit_image_command", { 
     request: mutableRequest,
   });
   
-  return (result as EnqueueContextualEditImageResult);
+  return (result as EnqueueEditImageResult);
 }
