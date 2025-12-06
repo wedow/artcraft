@@ -5,4 +5,5 @@ pub mod generate_flux_pro_11_text_to_image;
 pub mod generate_flux_pro_11_ultra_text_to_image;
 pub mod generate_gpt_image_1_text_to_image;
 pub mod inpaint;
+pub mod multi_function;
 pub mod remove_image_background;

@@ -38,8 +38,13 @@ pub enum ModelType {
   SeedEdit3,
   #[serde(rename = "qwen")]
   Qwen,
+  /// Gemini 2.5 Flash, AKA "Nano Banana"
   #[serde(rename = "gemini_25_flash")]
   Gemini25Flash,
+  #[serde(rename = "nano_banana")]
+  NanoBanana,
+  #[serde(rename = "nano_banana_pro")]
+  NanoBananaPro,
 
   /// Midjourney without distinguishing a model type or version
   #[serde(rename = "midjourney")]
@@ -117,6 +122,8 @@ impl ModelType {
       Self::SeedEdit3 => "seededit_3",
       Self::Qwen => "qwen",
       Self::Gemini25Flash => "gemini_25_flash",
+      Self::NanoBanana => "nano_banana",
+      Self::NanoBananaPro => "nano_banana_pro",
       Self::Midjourney => "midjourney",
       Self::MidjourneyV6 => "midjourney_v6",
       Self::MidjourneyV6p1 => "midjourney_v6p1",
@@ -160,6 +167,8 @@ impl ModelType {
       "seededit_3" => Ok(Self::SeedEdit3),
       "qwen" => Ok(Self::Qwen),
       "gemini_25_flash" => Ok(Self::Gemini25Flash),
+      "nano_banana" => Ok(Self::NanoBanana),
+      "nano_banana_pro" => Ok(Self::NanoBananaPro),
       "midjourney" => Ok(Self::Midjourney),
       "midjourney_v6" => Ok(Self::MidjourneyV6),
       "midjourney_v6p1" => Ok(Self::MidjourneyV6p1),
@@ -207,6 +216,8 @@ impl ModelType {
       Self::SeedEdit3,
       Self::Qwen,
       Self::Gemini25Flash,
+      Self::NanoBanana,
+      Self::NanoBananaPro,
       Self::Midjourney,
       Self::MidjourneyV6,
       Self::MidjourneyV6p1,
@@ -259,6 +270,8 @@ mod tests {
       assert_serialization(ModelType::SeedEdit3, "seededit_3");
       assert_serialization(ModelType::Qwen, "qwen");
       assert_serialization(ModelType::Gemini25Flash, "gemini_25_flash");
+      assert_serialization(ModelType::NanoBanana, "nano_banana");
+      assert_serialization(ModelType::NanoBananaPro, "nano_banana_pro");
       assert_serialization(ModelType::Midjourney, "midjourney");
       assert_serialization(ModelType::MidjourneyV6, "midjourney_v6");
       assert_serialization(ModelType::MidjourneyV6p1, "midjourney_v6p1");
@@ -299,6 +312,8 @@ mod tests {
       assert_eq!(ModelType::SeedEdit3.to_str(), "seededit_3");
       assert_eq!(ModelType::Qwen.to_str(), "qwen");
       assert_eq!(ModelType::Gemini25Flash.to_str(), "gemini_25_flash");
+      assert_eq!(ModelType::NanoBanana.to_str(), "nano_banana");
+      assert_eq!(ModelType::NanoBananaPro.to_str(), "nano_banana_pro");
       assert_eq!(ModelType::Midjourney.to_str(), "midjourney");
       assert_eq!(ModelType::MidjourneyV6.to_str(), "midjourney_v6");
       assert_eq!(ModelType::MidjourneyV6p1.to_str(), "midjourney_v6p1");
@@ -341,6 +356,8 @@ mod tests {
       assert_eq!(ModelType::from_str("seededit_3").unwrap(), ModelType::SeedEdit3);
       assert_eq!(ModelType::from_str("qwen").unwrap(), ModelType::Qwen);
       assert_eq!(ModelType::from_str("gemini_25_flash").unwrap(), ModelType::Gemini25Flash);
+      assert_eq!(ModelType::from_str("nano_banana").unwrap(), ModelType::NanoBanana);
+      assert_eq!(ModelType::from_str("nano_banana_pro").unwrap(), ModelType::NanoBananaPro);
       assert_eq!(ModelType::from_str("midjourney").unwrap(), ModelType::Midjourney);
       assert_eq!(ModelType::from_str("midjourney_v6").unwrap(), ModelType::MidjourneyV6);
       assert_eq!(ModelType::from_str("midjourney_v6p1").unwrap(), ModelType::MidjourneyV6p1);
@@ -368,7 +385,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 33);
+      assert_eq!(variants.len(), 35);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
@@ -383,6 +400,8 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(ModelType::SeedEdit3));
       assert_eq!(variants.pop_first(), Some(ModelType::Qwen));
       assert_eq!(variants.pop_first(), Some(ModelType::Gemini25Flash));
+      assert_eq!(variants.pop_first(), Some(ModelType::NanoBanana));
+      assert_eq!(variants.pop_first(), Some(ModelType::NanoBananaPro));
       assert_eq!(variants.pop_first(), Some(ModelType::Midjourney));
       assert_eq!(variants.pop_first(), Some(ModelType::MidjourneyV6));
       assert_eq!(variants.pop_first(), Some(ModelType::MidjourneyV6p1));
