@@ -9,6 +9,7 @@ use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image
 use crate::core::commands::enqueue::text_to_image::grok::handle_grok::handle_grok;
 use crate::core::commands::enqueue::text_to_image::midjourney::handle_midjourney::handle_midjourney;
 use crate::core::commands::enqueue::text_to_image::nano_banana::handle_nano_banana::handle_nano_banana;
+use crate::core::commands::enqueue::text_to_image::nano_banana_pro::handle_nano_banana_pro::handle_nano_banana_pro;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
@@ -36,7 +37,6 @@ use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::commands::enqueue::text_to_image::nano_banana_pro::handle_nano_banana_pro::handle_nano_banana_pro;
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
@@ -81,6 +81,9 @@ pub struct EnqueueTextToImageRequest {
   /// Aspect ratio.
   pub aspect_ratio: Option<TextToImageSize>,
 
+  /// Aspect ratio.
+  pub image_resolution: Option<TextToImageResolution>,
+
   /// The number of images to generate.
   pub number_images: Option<u32>,
 
@@ -120,6 +123,17 @@ pub enum TextToImageSize {
   Square,
   Wide,
   Tall,
+}
+
+#[derive(Deserialize, Debug, Copy, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum TextToImageResolution {
+  /// 1K - nano banana pro
+  OneK,
+  /// 2K - nano banana pro
+  TwoK,
+  /// 4K - nano banana pro
+  FourK,
 }
 
 #[derive(Serialize)]
