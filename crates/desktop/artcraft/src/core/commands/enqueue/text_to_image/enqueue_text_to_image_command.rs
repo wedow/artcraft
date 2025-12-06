@@ -8,6 +8,7 @@ use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image
 use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
 use crate::core::commands::enqueue::text_to_image::grok::handle_grok::handle_grok;
 use crate::core::commands::enqueue::text_to_image::midjourney::handle_midjourney::handle_midjourney;
+use crate::core::commands::enqueue::text_to_image::nano_banana::handle_nano_banana::handle_nano_banana;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
@@ -58,6 +59,10 @@ pub enum ImageModel {
 
   #[serde(rename = "gemini_25_flash")]
   Gemini25Flash,
+  #[serde(rename = "nano_banana")]
+  NanoBanana,
+  #[serde(rename = "nano_banana_pro")]
+  NanoBananaPro,
 
   // Generic Midjourney model, version unknown.
   #[serde(rename = "midjourney")]
@@ -297,8 +302,20 @@ pub async fn dispatch_request(
     None => {
       return Err(GenerateError::BadInput(BadInputReason::NoModelSpecified));
     }
-    Some(ImageModel::Gemini25Flash) => {
-      return handle_gemini_25_flash(
+    Some(ImageModel::NanoBanana | ImageModel::Gemini25Flash) => {
+      return handle_nano_banana(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        provider_priority_store,
+        storyteller_creds_manager,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await;
+    }
+    Some(ImageModel::NanoBananaPro) => {
+      return handle_nano_banana(
         request,
         app,
         app_data_root,

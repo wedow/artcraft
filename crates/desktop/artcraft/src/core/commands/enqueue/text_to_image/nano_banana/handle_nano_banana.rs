@@ -3,9 +3,9 @@ use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_
 use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_sora::handle_gpt_image_1_edit_sora;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
-use crate::core::commands::enqueue::text_to_image::gemini_25_flash::handle_gemini_25_flash_artcraft::handle_gemini_25_flash_artcraft;
 use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1_artcraft::handle_gpt_image_1_artcraft;
 use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
+use crate::core::commands::enqueue::text_to_image::nano_banana::handle_nano_banana_artcraft::handle_nano_banana_artcraft;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
@@ -24,7 +24,7 @@ use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use std::time::Duration;
 use tauri::AppHandle;
 
-pub async fn handle_gemini_25_flash(
+pub async fn handle_nano_banana(
   request: &EnqueueTextToImageRequest,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -50,8 +50,8 @@ pub async fn handle_gemini_25_flash(
         // Fallthrough
       }
       Provider::Artcraft => {
-        info!("Dispatching gemini 2.5 flash via Artcraft...");
-        return handle_gemini_25_flash_artcraft(
+        info!("Dispatching Nano Banana via Artcraft...");
+        return handle_nano_banana_artcraft(
           request,
           app_env_configs,
           storyteller_creds_manager
