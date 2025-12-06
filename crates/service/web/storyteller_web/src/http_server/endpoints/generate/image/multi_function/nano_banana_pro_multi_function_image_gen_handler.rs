@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+use std::iter::FromIterator;
 use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
@@ -250,13 +252,13 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
   };
 
 
-  if let Some(media_tokens) = request.image_media_tokens {
+  if let Some(media_tokens) = &request.image_media_tokens {
     if let Some(token) = prompt_token.as_ref() {
       let result = insert_batch_prompt_context_items(InsertBatchArgs {
         prompt_token: token.clone(),
-        items: media_tokens.into_iter().map(|token| {
+        items: media_tokens.iter().map(|token| {
           PromptContextItem {
-            media_token: token,
+            media_token: token.clone(),
             context_semantic_type: PromptContextSemanticType::Imgref,
           }
         }).collect(),
@@ -331,9 +333,17 @@ async fn lookup_image_urls(
 
   if media_files.len() != tokens.len() {
     warn!("Wrong number of media files returned for tokens: {} found for {} tokens", media_files.len(), tokens.len());
+
+    let requested : HashSet<&MediaFileToken> = HashSet::from_iter(tokens.iter());
+    let returned : HashSet<&MediaFileToken> = HashSet::from_iter(media_files.iter().map(|m| &m.token));
+
+    let diff = requested.difference(&returned)
+        .cloned()
+        .collect::<Vec<&MediaFileToken>>();
+
     return Err(CommonWebError::BadInputWithSimpleMessage(
-      format!("Not all media files could be found. Media files found: {}, tokens provided: {}",
-        media_files.len(), tokens.len())));
+      format!("Not all media files could be found. Media files found: {}, tokens provided: {}, in original: {:?}, req {:?}, ret {:?}",
+        media_files.len(), tokens.len(), diff, requested, returned)));
   }
 
   let media_domain = get_media_domain(&http_request);
