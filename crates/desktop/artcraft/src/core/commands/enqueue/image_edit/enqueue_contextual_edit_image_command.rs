@@ -256,7 +256,7 @@ pub async fn handle_request(
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
-  let success_event= match request.model {
+  let mut success_event= match request.model {
     None => {
       return Err(GenerateError::no_model_specified())
     }
@@ -309,7 +309,18 @@ pub async fn handle_request(
       ).await?
     }
   };
-  
+
+  match request.frontend_caller {
+    Some(TauriCommandCaller::ImageEditor) => {
+      // NB: Certain image generations enqueued in the inpainting editor are classed
+      // as "image_generation" and won't update the inpainting UI. This is a hack to
+      // temporarily fix the UI event binding.
+      // TODO: The frontend shouldn't require us to change the type to inpainting.
+      success_event.task_type = TaskType::ImageInpaintEdit;
+    }
+    _ => {} // fall-through
+  }
+
   let result = success_event
       .insert_into_task_database_with_frontend_payload(
         task_database,
