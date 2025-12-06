@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Konva from "konva"; // just for types
-import { EnqueueImageInpaint } from "@storyteller/tauri-api";
+import { EnqueueContextualEditImage, EnqueueImageInpaint } from "@storyteller/tauri-api";
 import { ContextMenuContainer } from "../PageDraw/components/ui/ContextMenu";
 import { useCopyPasteHotkeys } from "../PageDraw/hooks/useCopyPasteHotkeys";
 import { useDeleteHotkeys } from "../PageDraw/hooks/useDeleteHotkeys";
@@ -285,15 +285,32 @@ const PageEdit = () => {
         `inpaint-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
       try {
-        const result = await EnqueueImageInpaint({
-          model: selectedImageModel,
-          image_media_token: editedImageToken,
-          mask_image_raw_bytes: arrayBuffer,
-          prompt: prompt,
-          image_count: generationCount,
-          frontend_caller: "image_editor",
-          frontend_subscriber_id: subscriberId,
-        });
+        let result;
+
+        if (selectedImageModel?.editingIsInpainting) {
+          result = await EnqueueImageInpaint({
+            model: selectedImageModel,
+            image_media_token: editedImageToken,
+            mask_image_raw_bytes: arrayBuffer,
+            prompt: prompt,
+            image_count: generationCount,
+            frontend_caller: "image_editor",
+            frontend_subscriber_id: subscriberId,
+          });
+        } else {
+          result = await EnqueueContextualEditImage({
+            model: selectedImageModel,
+            image_media_tokens: [editedImageToken],
+            disable_system_prompt: true, // No meaning yet
+            prompt: prompt,
+            image_count: generationCount,
+            frontend_caller: "image_editor",
+            frontend_subscriber_id: subscriberId,
+            //scene_image_media_token,
+            //aspect_ratio: aspectRatio,
+          });
+        }
+
         if (result.status === "success") {
           setPendingGenerations((prev) => [
             ...prev,
@@ -310,7 +327,8 @@ const PageEdit = () => {
     [generationCount, selectedImageModel, store.baseImageInfo?.mediaToken],
   );
 
-  const isNanoBananaModel = selectedImageModel?.id === "gemini_25_flash";
+  const isNanoBananaModel = selectedImageModel?.isNanoBananaModel();
+
   const supportsMaskedInpainting =
     selectedImageModel?.usesInpaintingMask ?? false;
 

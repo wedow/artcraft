@@ -32,6 +32,12 @@ export interface EnqueueContextualEditImageRequest {
 
   /// Image resolution. Support: Nano Banana Pro
   image_resolution?: EnqueueContextualEditImageResolution;
+
+  // TODO: Actual enum.
+  frontend_caller?: string;
+
+  // Optional frontend state to return later.
+  frontend_subscriber_id?: string;
 }
 
 
@@ -46,6 +52,8 @@ interface RawEnqueueContextualEditImageRequest {
   image_count?: number;
   aspect_ratio?: EnqueueContextualEditImageSize;
   image_quality?: EnqueueContextualEditImageQuality;
+  frontend_caller?: string;
+  frontend_subscriber_id?: string;
 }
 
 export enum EnqueueContextualEditImageErrorType {
@@ -141,6 +149,14 @@ export const EnqueueContextualEditImage = async (request: EnqueueContextualEditI
 
   if (!!request.disable_system_prompt) {
     mutableRequest.disable_system_prompt = request.disable_system_prompt;
+  }
+
+  if (!!request.frontend_caller) {
+    mutableRequest.frontend_caller = request.frontend_caller;
+  }
+
+  if (!!request.frontend_subscriber_id) {
+    mutableRequest.frontend_subscriber_id = request.frontend_subscriber_id;
   }
 
   const result = await invoke("enqueue_contextual_edit_image_command", { 

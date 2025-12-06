@@ -21,6 +21,11 @@ export class ImageModel extends Model {
   // For inpainting models, does it require sending a mask?
   readonly usesInpaintingMask: boolean;
 
+  // For editing models, is "editing" == "inpainting"?
+  // Examples of "true" are "flux dev juggernaut"
+  // Examples of "false" are "nano_banana_pro", which is just "editing".
+  readonly editingIsInpainting: boolean;
+
   // Whether this model supports additional image prompts (reference images)
   readonly canUseImagePrompt: boolean;
 
@@ -44,6 +49,7 @@ export class ImageModel extends Model {
     defaultGenerationCount: number;
     canEditImages?: boolean;
     usesInpaintingMask?: boolean;
+    editingIsInpainting?: boolean;
     canUseImagePrompt?: boolean;
     maxImagePromptCount?: number;
     canTextToImage?: boolean;
@@ -66,8 +72,24 @@ export class ImageModel extends Model {
     this.defaultGenerationCount = args.defaultGenerationCount;
     this.canEditImages = args.canEditImages ?? false;
     this.usesInpaintingMask = args.usesInpaintingMask ?? false;
+    this.editingIsInpainting = args.editingIsInpainting ?? false;
     this.canUseImagePrompt = args.canUseImagePrompt ?? false;
     this.maxImagePromptCount = Math.max(0, args.maxImagePromptCount ?? 1);
     this.canTextToImage = args.canTextToImage === false ? false : true; // Default to true !
+  }
+
+  // If the model is a "Nano Banana"-type model, we may want to enable certain features. 
+  // For example, in the editor, we may want to use the marker.
+  // TODO: Rather than "isNanoBananaModel()", we should have: "enableEditorMarker" as it's 
+  // more semantic.
+  isNanoBananaModel(): boolean {
+    switch(this.id) {
+      case "gemini_25_flash":
+      case "nano_banana":
+      case "nano_banana_pro":
+        return true;
+      default:
+        return false;
+    }
   }
 }
