@@ -172,6 +172,7 @@ impl RawUserBookmarkRecord {
               MediaFileType::Fbx => Some("3d file".to_string()),
               MediaFileType::Glb => Some("3d file".to_string()),
               MediaFileType::Gltf => Some("3d file".to_string()),
+              MediaFileType::Spz => Some("3d splat".to_string()),
               MediaFileType::SceneRon => Some("3d scene".to_string()),
               MediaFileType::SceneJson => Some("3d scene".to_string()),
               MediaFileType::Pmd => Some("polygon data".to_string()),

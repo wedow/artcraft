@@ -152,6 +152,7 @@ CREATE TABLE media_files (
   --   * `vmd`
   --   * `pmx`
   --   * `csv`
+  --   * `spz` Gaussian splats
   media_type VARCHAR(16) NOT NULL,
 
   -- Broad class of media:

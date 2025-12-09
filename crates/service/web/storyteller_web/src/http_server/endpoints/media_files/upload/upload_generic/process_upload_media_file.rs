@@ -26,6 +26,8 @@ use crate::state::server_state::ServerState;
 // TODO(bt,2023-12-20): THIS CODE NEEDS CLEANUP. This has been cargo culted three+ times.
 //  It's ridiculous and complicated.
 
+const GZIP_MIME_TYPE : &str = "application/gzip";
+
 pub enum SuccessCase {
   MediaAlreadyUploaded {
     existing_media_file_token: MediaFileToken,
@@ -168,9 +170,21 @@ pub async fn process_upload_media_file(
   let mut maybe_codec_name = None;
   let mut media_file_type = None;
 
+  let mut is_spz = false;
+
   if let Some(mimetype) = maybe_mimetype.as_deref() {
 
-    if !allowed_mimetypes.contains(mimetype) {
+    // `.spz` files are Gaussian splats
+    let is_spz_extension = upload_media_request.file_name
+        .as_deref()
+        .map(|filename| filename.trim().to_ascii_lowercase().ends_with(".spz"))
+        .unwrap_or(false);
+
+    is_spz = mimetype == GZIP_MIME_TYPE && is_spz_extension;
+
+    let is_allowed_mimetype_bypass = is_spz;
+
+    if !allowed_mimetypes.contains(mimetype) && !is_allowed_mimetype_bypass {
       // NB: Don't let our error message inject malicious strings
       let filtered_mimetype = mimetype
           .chars()
@@ -240,6 +254,8 @@ pub async fn process_upload_media_file(
       "image/jpeg" => false,
       "image/png" => false,
       "image/webp" => false,
+      // Don't decode gzip, gaussian splats (spz)
+      "application/gzip" => false,
       _ => true,
     };
 
@@ -256,6 +272,10 @@ pub async fn process_upload_media_file(
       maybe_duration_millis = basic_info.duration_millis;
       maybe_codec_name = basic_info.codec_name;
     }
+  }
+
+  if is_spz {
+    media_file_type = Some(MediaFileType::Spz);
   }
 
   if media_file_type.is_none() && maybe_mimetype.is_none() {
@@ -298,6 +318,7 @@ pub async fn process_upload_media_file(
     MediaFileType::Fbx => MediaFileClass::Dimensional,
     MediaFileType::Glb => MediaFileClass::Dimensional,
     MediaFileType::Gltf => MediaFileClass::Dimensional,
+    MediaFileType::Spz => MediaFileClass::Dimensional,
     MediaFileType::SceneRon => MediaFileClass::Dimensional,
     MediaFileType::SceneJson => MediaFileClass::Dimensional,
     MediaFileType::Pmd => MediaFileClass::Dimensional,

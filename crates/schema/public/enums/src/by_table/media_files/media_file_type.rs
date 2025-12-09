@@ -41,6 +41,11 @@ pub enum MediaFileType {
   /// glTF files (for Bevy)
   Gltf,
 
+  /// Spz Gaussian splats
+  /// This is a standard file format for Gaussian Splats, used by World Labs.
+  /// The mime type is application/gzip.
+  Spz,
+
   /// Bevy's scene files (in RON; Rusty Object Notation)
   /// This will be replaced with another format in future versions of Bevy
   SceneRon,
@@ -130,6 +135,7 @@ impl MediaFileType {
       Self::Fbx => "fbx",
       Self::Glb => "glb",
       Self::Gltf => "gltf",
+      Self::Spz => "spz",
       Self::SceneRon => "scene_ron",
       Self::SceneJson => "scene_json",
       Self::Pmd => "pmd",
@@ -154,6 +160,7 @@ impl MediaFileType {
       "fbx" => Ok(Self::Fbx),
       "glb" => Ok(Self::Glb),
       "gltf" => Ok(Self::Gltf),
+      "spz" => Ok(Self::Spz),
       "scene_ron" => Ok(Self::SceneRon),
       "scene_json" => Ok(Self::SceneJson),
       "pmd" => Ok(Self::Pmd),
@@ -181,6 +188,7 @@ impl MediaFileType {
       Self::Fbx,
       Self::Glb,
       Self::Gltf,
+      Self::Spz,
       Self::SceneRon,
       Self::SceneJson,
       Self::Pmd,
@@ -237,6 +245,7 @@ mod tests {
       assert_serialization(MediaFileType::Fbx, "fbx");
       assert_serialization(MediaFileType::Glb, "glb");
       assert_serialization(MediaFileType::Gltf, "gltf");
+      assert_serialization(MediaFileType::Spz, "spz");
       assert_serialization(MediaFileType::SceneRon, "scene_ron");
       assert_serialization(MediaFileType::SceneJson, "scene_json");
       assert_serialization(MediaFileType::Pmd, "pmd");
@@ -264,6 +273,7 @@ mod tests {
       assert_eq!(MediaFileType::Fbx.to_str(), "fbx");
       assert_eq!(MediaFileType::Glb.to_str(), "glb");
       assert_eq!(MediaFileType::Gltf.to_str(), "gltf");
+      assert_eq!(MediaFileType::Spz.to_str(), "spz");
       assert_eq!(MediaFileType::SceneRon.to_str(), "scene_ron");
       assert_eq!(MediaFileType::SceneJson.to_str(), "scene_json");
       assert_eq!(MediaFileType::Pmd.to_str(), "pmd");
@@ -287,6 +297,7 @@ mod tests {
       assert_eq!(MediaFileType::from_str("fbx").unwrap(), MediaFileType::Fbx);
       assert_eq!(MediaFileType::from_str("glb").unwrap(), MediaFileType::Glb);
       assert_eq!(MediaFileType::from_str("gltf").unwrap(), MediaFileType::Gltf);
+      assert_eq!(MediaFileType::from_str("spz").unwrap(), MediaFileType::Spz);
       assert_eq!(MediaFileType::from_str("scene_ron").unwrap(), MediaFileType::SceneRon);
       assert_eq!(MediaFileType::from_str("scene_json").unwrap(), MediaFileType::SceneJson);
       assert_eq!(MediaFileType::from_str("pmd").unwrap(), MediaFileType::Pmd);
@@ -309,7 +320,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = MediaFileType::all_variants();
-      assert_eq!(variants.len(), 19);
+      assert_eq!(variants.len(), 20);
       assert_eq!(variants.pop_first(), Some(MediaFileType::Audio));
       assert_eq!(variants.pop_first(), Some(MediaFileType::Image));
       assert_eq!(variants.pop_first(), Some(MediaFileType::Video));
@@ -317,6 +328,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(MediaFileType::Fbx));
       assert_eq!(variants.pop_first(), Some(MediaFileType::Glb));
       assert_eq!(variants.pop_first(), Some(MediaFileType::Gltf));
+      assert_eq!(variants.pop_first(), Some(MediaFileType::Spz));
       assert_eq!(variants.pop_first(), Some(MediaFileType::SceneRon));
       assert_eq!(variants.pop_first(), Some(MediaFileType::SceneJson));
       assert_eq!(variants.pop_first(), Some(MediaFileType::Pmd));
