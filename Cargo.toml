@@ -18,6 +18,7 @@ members = [
   "crates/api_clients/openart_client",
   "crates/api_clients/runwayml_client",
   "crates/api_clients/thumbnail_generator",
+  "crates/api_clients/world_labs_client",
 
   # CLI tools for operations, etc.
   "crates/cli/devenv/dev-database-seed",

@@ -1,0 +1,12 @@
+{
+    "context": null,
+    "id": "25ddd6ab-931c-480b-a817-cfbb562da980",
+    "display_name": "uploaded_image_1ed9f547-5527-48d3-b5df-aab476532317.jpeg",
+    "owner_id": "sVgAQDyH3BfYOBfF6epWTjLHygX2",
+    "status": "CREATED",
+    "created_at": 1765323283,
+    "updated_at": 1765323283,
+    "object_uri": null,
+    "mime_type": "image/jpeg",
+    "metadata": null
+}

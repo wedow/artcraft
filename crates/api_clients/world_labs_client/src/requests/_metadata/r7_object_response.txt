@@ -1,0 +1,66 @@
+{
+    "context": null,
+    "id": "10ad82a1-5f61-447f-b162-e3da0ef3e5b5",
+    "display_name": null,
+    "owner_id": "sVgAQDyH3BfYOBfF6epWTjLHygX2",
+    "status": "CREATED",
+    "created_at": 1765323283,
+    "updated_at": 1765323555,
+    "object_uri": null,
+    "mime_type": "application/run+json",
+    "metadata": {
+        "version": "0.0.1",
+        "name": "Moonlit Graveyard Vigil",
+        "createdAt": 1765323283075,
+        "updatedAt": 1765323555619,
+        "useAdvancedEditing": false,
+        "draftMode": false,
+        "nodes": {
+            "5046e0da-ce2c-428f-a5d8-3b99143d4ce3": {
+                "id": "5046e0da-ce2c-428f-a5d8-3b99143d4ce3",
+                "type": "input",
+                "parentId": null,
+                "source": {
+                    "type": "image",
+                    "image_url": "https://cdn.marble.worldlabs.ai/object/25ddd6ab-931c-480b-a817-cfbb562da980/asset.jpg"
+                },
+                "createdAt": 1765323289174,
+                "title": "Moonlit Graveyard Vigil",
+                "caption": "The scene is a somber and gothic graveyard at night, captured in a realistic, almost cinematic style, evoking a mood of quiet contemplation and melancholy. Numerous headstones and crypts of varying sizes and designs emerge from the overgrown grass, their weathered surfaces suggesting a long history. Tall, dark trees with skeletal branches stand against the cloudy night sky, their leaves barely visible, enhancing the scene's desolate atmosphere. A full, luminous moon hangs high in the sky, casting soft, ethereal light over the entire graveyard, illuminating the intricate carvings on some of the older monuments and the subtle textures of the ground. The ground itself is a mix of patchy grass and fallen leaves, indicating a neglected or aged burial ground, with small, indistinct flora growing in scattered clusters. Pathways, possibly made of worn earth or gravel, wind between the graves, though they are largely obscured by the low light and foliage. A low, stone wall or barrier might enclose the graveyard on one side, separating it from an unseen, silent world beyond. The moon remains a singular, dominant light source, creating long, soft shadows that stretch across the uneven terrain of the cemetery. "
+            },
+            "e132bc85-ecf1-4126-b466-f8c281ebaabf": {
+                "id": "e132bc85-ecf1-4126-b466-f8c281ebaabf",
+                "type": "pano",
+                "parentId": "5046e0da-ce2c-428f-a5d8-3b99143d4ce3",
+                "source": {
+                    "type": "generate_world",
+                    "url": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/d51d9ddd-bf33-4ce6-a1e0-b35bacde335b_panos/rgb_0.png",
+                    "world_id": "323bfcc0-086a-4822-acc5-b38b4ddc624d",
+                    "status": "complete"
+                },
+                "createdAt": 1765323290361
+            },
+            "5d90764a-7356-4c0c-b819-8c6fbdfa4300": {
+                "id": "5d90764a-7356-4c0c-b819-8c6fbdfa4300",
+                "type": "world",
+                "parentId": "e132bc85-ecf1-4126-b466-f8c281ebaabf",
+                "source": {
+                    "type": "generate_world",
+                    "world_id": "323bfcc0-086a-4822-acc5-b38b4ddc624d",
+                    "spz_urls": {
+                        "500k": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/514bcf69-1f9e-4fa1-ba82-5e3eacd3aa0e_ceramic_500k.spz",
+                        "full_res": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/7a169623-8993-448d-b0c4-a9780287d0ce_ceramic.spz",
+                        "100k": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/044f6002-c5d9-4064-a690-1ff1a6bb40e2_dust_100k.spz"
+                    },
+                    "posed_cubemaps_url": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/84fb4783-e74f-4676-b825-84834a349437_cubemaps",
+                    "minimap_url": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/4e373e4c-b7c2-4122-aa7f-a27cf6377f8d_minimap.png",
+                    "minimap_metadata": "[0.0, 1.486802339553833, 13.666599082946778]",
+                    "status": "complete",
+                    "mpi_url": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/17b7b9f7-1448-4e03-a244-ac51b87bc1a2_dust_mpi",
+                    "cond_image_url": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/307390d3_image_prompt_sanitized.png"
+                },
+                "createdAt": 1765323290361
+            }
+        }
+    }
+}

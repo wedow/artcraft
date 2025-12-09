@@ -1,0 +1,20 @@
+curl 'https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/worlds' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk1MTg5MTkxMTA3NjA1NDM0NGUxNWUyNTY0MjViYjQyNWVlYjNhNWMiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVmljdG9yIFZvaWNlIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0t3MGFhWEtZU3F5LVhra242OXlkSUpGR25KQTM3UzEzWHZqTlk0ZDl4Q3pVektVdz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS93bHQtdHJhaW5pbmctZ3NjIiwiYXVkIjoid2x0LXRyYWluaW5nLWdzYyIsImF1dGhfdGltZSI6MTc2NTMyMDg0MiwidXNlcl9pZCI6InNWZ0FRRHlIM0JmWU9CZkY2ZXBXVGpMSHlnWDIiLCJzdWIiOiJzVmdBUUR5SDNCZllPQmZGNmVwV1RqTEh5Z1gyIiwiaWF0IjoxNzY1MzIwODQyLCJleHAiOjE3NjUzMjQ0NDIsImVtYWlsIjoidmljdG9ydm9pY2U4OUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjExNjQ1OTMwMDE5ODYxOTg4ODgzNiJdLCJlbWFpbCI6WyJ2aWN0b3J2b2ljZTg5QGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6Imdvb2dsZS5jb20ifX0.SHy8_FpsekZ3LvRdwfDMqW1BDdBHVfJO78x0xtJuIhsKKrUCD88eb256MsAKFb_ak6mujk7GjzajUtkcV-JiZhxElzQ_lu1kQiOoSWcnmuXe8Pm1trx-NN1DUGLbVj2CopdmsRmX2Fs_hFgXd4KhGmcaiqKxEVKZGoq2vB4Bs2kvIjA7u3bqAdS75BsJ5kaxvvIrqY7WjmpVb2LWr6uZIaSZa2BFZi_CAs8rGFV7cO9zg3xGD8MKwG6DmJbopYrtHHECxHbYCe1f-HS5eXCN_tJFIq7CHV9RSyv3KkT5Da9yOIeDP8YBATxTLNWqdkq3h-mXmkFvgL7-n49-aqcIgA' \
+  -H 'baggage: sentry-environment=prod,sentry-release=rel-4c2ae3c,sentry-public_key=3779934420ee57f00d05e5fb1e57f79d,sentry-trace_id=f6a6fcf2cd474d488082c00a8f915ab6,sentry-org_id=4509005975388160,sentry-transaction=%2F(main)%2F_explore%2F,sentry-sampled=true,sentry-sample_rand=0.8715408597022593,sentry-sample_rate=1' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://marble.worldlabs.ai' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://marble.worldlabs.ai/' \
+  -H 'sec-ch-ua: "Not_A Brand";v="99", "Chromium";v="142"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'sentry-trace: f6a6fcf2cd474d488082c00a8f915ab6-aae165f4896b6b44-1' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36' \
+  --data-raw $'{"permission":{"public":true},"generation_input":{"model":"Marble 0.1-plus","prompt":{"type":"image","image_prompt":{"uri":"https://cdn.marble.worldlabs.ai/object/25ddd6ab-931c-480b-a817-cfbb562da980/asset.jpg"},"text_prompt":"The scene is a somber and gothic graveyard at night, captured in a realistic, almost cinematic style, evoking a mood of quiet contemplation and melancholy. Numerous headstones and crypts of varying sizes and designs emerge from the overgrown grass, their weathered surfaces suggesting a long history. Tall, dark trees with skeletal branches stand against the cloudy night sky, their leaves barely visible, enhancing the scene\'s desolate atmosphere. A full, luminous moon hangs high in the sky, casting soft, ethereal light over the entire graveyard, illuminating the intricate carvings on some of the older monuments and the subtle textures of the ground. The ground itself is a mix of patchy grass and fallen leaves, indicating a neglected or aged burial ground, with small, indistinct flora growing in scattered clusters. Pathways, possibly made of worn earth or gravel, wind between the graves, though they are largely obscured by the low light and foliage. A low, stone wall or barrier might enclose the graveyard on one side, separating it from an unseen, silent world beyond. The moon remains a singular, dominant light source, creating long, soft shadows that stretch across the uneven terrain of the cemetery. "}},"context":{"run_id":"10ad82a1-5f61-447f-b162-e3da0ef3e5b5"}}'

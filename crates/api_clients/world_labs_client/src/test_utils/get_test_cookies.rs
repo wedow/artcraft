@@ -1,0 +1,15 @@
+use crate::credentials::world_labs_cookies::WorldLabsCookies;
+use errors::AnyhowResult;
+use std::fs::read_to_string;
+
+#[cfg(test)]
+pub fn get_test_cookies() -> AnyhowResult<String> {
+  let cookies = read_to_string("/home/bt/Artcraft/credentials/world_lab_cookies.txt")?;
+  let cookies = cookies.trim().to_string();
+  Ok(cookies)
+}
+
+pub fn get_typed_test_cookies() -> AnyhowResult<WorldLabsCookies> {
+  let cookies = get_test_cookies()?;
+  Ok(WorldLabsCookies::new(cookies))
+}

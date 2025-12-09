@@ -1,0 +1,19 @@
+{
+    "context": null,
+    "id": "10ad82a1-5f61-447f-b162-e3da0ef3e5b5",
+    "display_name": null,
+    "owner_id": "sVgAQDyH3BfYOBfF6epWTjLHygX2",
+    "status": "CREATED",
+    "created_at": 1765323283,
+    "updated_at": 1765323283,
+    "object_uri": null,
+    "mime_type": "application/run+json",
+    "metadata": {
+        "version": "0.0.1",
+        "createdAt": 1765323283075,
+        "updatedAt": 1765323283075,
+        "useAdvancedEditing": false,
+        "draftMode": false,
+        "nodes": {}
+    }
+}

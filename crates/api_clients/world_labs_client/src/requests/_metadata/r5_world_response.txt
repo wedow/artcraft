@@ -1,0 +1,39 @@
+{
+    "context": null,
+    "id": "323bfcc0-086a-4822-acc5-b38b4ddc624d",
+    "display_name": null,
+    "status": "INITIALIZING",
+    "error": null,
+    "owner_id": "sVgAQDyH3BfYOBfF6epWTjLHygX2",
+    "created_at": 1765323290,
+    "updated_at": 1765323290,
+    "permission": {
+        "public": true,
+        "allowed_readers": [],
+        "allowed_writers": []
+    },
+    "stats": null,
+    "application_data": {
+        "owner_username": "victorv",
+        "owner_display_name": "Victor Voice",
+        "reactions": null,
+        "pinned": false
+    },
+    "generation_input": {
+        "model": "Marble 0.1-plus",
+        "seed": null,
+        "prompt": {
+            "type": "image",
+            "text_prompt": "The scene is a somber and gothic graveyard at night, captured in a realistic, almost cinematic style, evoking a mood of quiet contemplation and melancholy. Numerous headstones and crypts of varying sizes and designs emerge from the overgrown grass, their weathered surfaces suggesting a long history. Tall, dark trees with skeletal branches stand against the cloudy night sky, their leaves barely visible, enhancing the scene's desolate atmosphere. A full, luminous moon hangs high in the sky, casting soft, ethereal light over the entire graveyard, illuminating the intricate carvings on some of the older monuments and the subtle textures of the ground. The ground itself is a mix of patchy grass and fallen leaves, indicating a neglected or aged burial ground, with small, indistinct flora growing in scattered clusters. Pathways, possibly made of worn earth or gravel, wind between the graves, though they are largely obscured by the low light and foliage. A low, stone wall or barrier might enclose the graveyard on one side, separating it from an unseen, silent world beyond. The moon remains a singular, dominant light source, creating long, soft shadows that stretch across the uneven terrain of the cemetery. ",
+            "image_prompt": {
+                "uri": "https://cdn.marble.worldlabs.ai/323bfcc0-086a-4822-acc5-b38b4ddc624d/307390d3_image_prompt_sanitized.png",
+                "data_base64": null,
+                "extension": null
+            },
+            "is_pano": false
+        }
+    },
+    "tags": null,
+    "hq_mesh_export_op_id": null,
+    "generation_output": null
+}
