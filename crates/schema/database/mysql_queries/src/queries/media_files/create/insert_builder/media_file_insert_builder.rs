@@ -40,7 +40,6 @@ pub struct MediaFileInsertBuilder {
   origin_product_category: MediaFileOriginProductCategory, // NB: Non-nullable field
   // maybe_origin_model_type: Option<MediaFileOriginModelType>,
   // maybe_origin_model_token: Option<&'a ModelWeightToken>,
-  // maybe_origin_filename: Option<String>,
 
   // Media info
   maybe_mime_type: Option<String>,
@@ -51,6 +50,10 @@ pub struct MediaFileInsertBuilder {
   maybe_frame_width: Option<u32>,
   maybe_frame_height: Option<u32>,
   checksum_sha2: Option<String>, // NB: Non-nullable field
+  
+  // File name
+  maybe_title: Option<String>,
+  maybe_origin_filename: Option<String>,
 
   // Media info for certain product areas
   maybe_engine_category: Option<MediaFileEngineCategory>, // TODO: Deprecate
@@ -100,6 +103,8 @@ impl MediaFileInsertBuilder {
       maybe_frame_width: None,
       maybe_frame_height: None,
       checksum_sha2: None,
+      maybe_title: None,
+      maybe_origin_filename: None,
       maybe_engine_category: None,
       maybe_batch_generation_token: None,
       public_bucket_directory_hash: None,
@@ -176,7 +181,6 @@ impl MediaFileInsertBuilder {
 
   // TODO: Method for maybe_origin_model_type
   // TODO: Method for maybe_origin_model_token
-  // TODO: Method for maybe_origin_filename
 
   pub fn mime_type(mut self, mime_type: &str) -> Self {
     self.maybe_mime_type = Some(mime_type.to_string());
@@ -226,7 +230,16 @@ impl MediaFileInsertBuilder {
     self
   }
 
-  // TODO: maybe_title
+  pub fn maybe_title(mut self, maybe_title: Option<&str>) -> Self {
+    self.maybe_title = maybe_title.map(|title| title.to_string());
+    self
+  }
+
+  pub fn maybe_origin_filename(mut self, maybe_origin_filename: Option<&str>) -> Self {
+    self.maybe_origin_filename = maybe_origin_filename.map(|s| s.to_string());
+    self
+  }
+
   // TODO: maybe_text_transcript
   // TODO: maybe_scene_source_media_file_token
   // TODO: maybe_prompt_token
@@ -274,7 +287,7 @@ impl MediaFileInsertBuilder {
       origin_product_category: self.origin_product_category,
       maybe_origin_model_type: None, // TODO
       maybe_origin_model_token: None, // TODO
-      maybe_origin_filename: None, // TODO
+      maybe_origin_filename: self.maybe_origin_filename,
       maybe_mime_type: self.maybe_mime_type.as_deref(),
       file_size_bytes: self.file_size_bytes,
       maybe_duration_millis: self.maybe_duration_millis,
@@ -284,7 +297,7 @@ impl MediaFileInsertBuilder {
       maybe_frame_height: self.maybe_frame_height,
       maybe_engine_category: self.maybe_engine_category,
       checksum_sha2: &checksum_sha2,
-      maybe_title: None, // TODO
+      maybe_title: self.maybe_title.as_deref(),
       maybe_text_transcript: None, // TODO
       maybe_scene_source_media_file_token: None, // TODO
       maybe_prompt_token: self.maybe_prompt_token.as_ref(),

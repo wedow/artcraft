@@ -7,6 +7,7 @@ use log::{error, info, warn};
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
+use enums::by_table::media_files::media_file_origin_category::MediaFileOriginCategory;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
@@ -15,6 +16,7 @@ use media::decode_basic_audio_info::decode_basic_audio_bytes_info;
 use mimetypes::mimetype_for_bytes::get_mimetype_for_bytes;
 use mimetypes::mimetype_to_extension::mimetype_to_extension;
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
+use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use mysql_queries::queries::media_files::create::specialized_insert::insert_media_file_from_file_upload::{insert_media_file_from_file_upload, InsertMediaFileFromUploadArgs, UploadType};
 use tokens::tokens::media_files::MediaFileToken;
 
@@ -356,8 +358,21 @@ pub async fn process_upload_media_file(
       MediaFileType::Bvh => Some(".bvh".to_string()),
       MediaFileType::Fbx => Some(".fbx".to_string()),
       MediaFileType::Gltf => Some(".gltf".to_string()),
+      MediaFileType::Spz => Some(".spz".to_string()),
       _ => None,
     };
+  }
+
+  // For WorldLabs spz files.
+  let is_world_labs_spz= upload_media_request.file_name
+      .as_deref()
+      .map(|filename| filename.trim().to_ascii_lowercase())
+      .filter(|filename| filename.contains("ceramic"))
+      .filter(|filename| filename.ends_with(".spz"))
+      .is_some();
+
+  if is_world_labs_spz {
+    extension = Some(".ceramic.spz".to_string());
   }
 
   const PREFIX : Option<&str> = Some("upload_");
@@ -376,39 +391,61 @@ pub async fn process_upload_media_file(
         MediaFileUploadError::ServerError
       })?;
 
-  let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
-    maybe_media_class: Some(media_file_class),
-    media_file_type,
-    maybe_creator_user_token: maybe_user_token.as_ref(),
-    maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(),
-    creator_ip_address: &ip_address,
-    creator_set_visibility,
-    upload_type,
-    maybe_engine_category: None,
-    maybe_prompt_token: None,
-    maybe_batch_token: None,
-    maybe_animation_type: None,
-    maybe_mime_type: Some(mime_type),
-    file_size_bytes: file_size_bytes as u64,
-    maybe_duration_millis: None, // TODO: Fix this?
-    sha256_checksum: &hash,
-    maybe_title: upload_media_request.title.as_deref(),
-    maybe_scene_source_media_file_token: None,
-    is_intermediate_system_file: false, // NB: is_user_upload = TRUE
-    public_bucket_directory_hash: public_upload_path.get_object_hash(),
-    maybe_public_bucket_prefix: PREFIX,
-    maybe_public_bucket_extension: extension.as_deref(),
-    pool: &server_state.mysql_pool,
-  })
+  let media_token = MediaFileInsertBuilder::new()
+      .maybe_creator_user(maybe_user_token.as_ref())
+      .maybe_creator_anonymous_visitor(maybe_avt_token.as_ref())
+      .creator_ip_address(&ip_address)
+      .public_bucket_directory_hash(&public_upload_path)
+      .media_file_class(media_file_class)
+      .media_file_type(media_file_type)
+      .media_file_origin_category(MediaFileOriginCategory::Upload)
+      .creator_set_visibility(creator_set_visibility)
+      .mime_type(mime_type)
+      .file_size_bytes(file_size_bytes as u64)
+      .checksum_sha2(&hash)
+      .maybe_title(upload_media_request.title.as_deref())
+      .maybe_origin_filename(upload_media_request.file_name.as_deref())
+      .is_intermediate_system_file(false)
+      .insert_pool(&server_state.mysql_pool)
       .await
       .map_err(|err| {
         warn!("New generic download creation DB error: {:?}", err);
         MediaFileUploadError::ServerError
       })?;
 
-  info!("new media file id: {} token: {:?}", record_id, &token);
+  //let (token, record_id) = insert_media_file_from_file_upload(InsertMediaFileFromUploadArgs {
+  //  maybe_media_class: Some(media_file_class), // DONE
+  //  media_file_type, // DONE
+  //  maybe_creator_user_token: maybe_user_token.as_ref(), // DONE
+  //  maybe_creator_anonymous_visitor_token: maybe_avt_token.as_ref(), // DONE
+  //  creator_ip_address: &ip_address, // DONE
+  //  creator_set_visibility, // DONE
+  //  upload_type, // DONE - weird type
+  //  maybe_engine_category: None, // DONE
+  //  maybe_prompt_token: None, // DONE
+  //  maybe_batch_token: None, // DONE
+  //  maybe_animation_type: None, // DONE
+  //  maybe_mime_type: Some(mime_type), // DONE
+  //  file_size_bytes: file_size_bytes as u64, // DONE
+  //  maybe_duration_millis: None, // TODO: Fix this? // DONE
+  //  sha256_checksum: &hash, // DONE
+  //  maybe_title: upload_media_request.title.as_deref(), // DONE
+  //  maybe_scene_source_media_file_token: None, // DONE
+  //  is_intermediate_system_file: false, // NB: is_user_upload = TRUE // DONE
+  //  public_bucket_directory_hash: public_upload_path.get_object_hash(), // DONE
+  //  maybe_public_bucket_prefix: PREFIX, // DONE
+  //  maybe_public_bucket_extension: extension.as_deref(), // DONE
+  //  pool: &server_state.mysql_pool,
+  //})
+  //    .await
+  //    .map_err(|err| {
+  //      warn!("New generic download creation DB error: {:?}", err);
+  //      MediaFileUploadError::ServerError
+  //    })?;
+
+  info!("new media file - token: {:?}", &media_token);
 
   Ok(SuccessCase::MediaSuccessfullyUploaded {
-    media_file_token: token,
+    media_file_token: media_token,
   })
 }
