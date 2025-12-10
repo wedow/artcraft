@@ -24,17 +24,19 @@ use wreq_util::Emulation;
 
 const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
-pub struct ObjectsCreateInitialArgs<'a> {
+pub struct CreateObjectArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
   pub request_timeout: Option<Duration>,
 }
 
-pub struct ObjectsCreateResponse {
+pub struct CreateObjectResponse {
   pub id: ObjectId,
 }
 
-pub async fn objects_create_initial(args: ObjectsCreateInitialArgs<'_>) -> Result<ObjectsCreateResponse, WorldLabsError> {
+/// This request initializes a new world object inference and returns the object id.
+/// Request #1 (of ~10)
+pub async fn create_object(args: CreateObjectArgs<'_>) -> Result<CreateObjectResponse, WorldLabsError> {
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
       .build()
@@ -96,7 +98,7 @@ pub async fn objects_create_initial(args: ObjectsCreateInitialArgs<'_>) -> Resul
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-  Ok(ObjectsCreateResponse{
+  Ok(CreateObjectResponse {
     id: ObjectId(response.id),
   })
 }
