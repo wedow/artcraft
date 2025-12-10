@@ -1,0 +1,19 @@
+curl 'https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/cf326bd0-b7eb-454c-b433-54f36eb4d5a6:upload' \
+  -X POST \
+  -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en-US,en;q=0.5' \
+  -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  -H 'Referer: https://marble.worldlabs.ai/' \
+  -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk1MTg5MTkxMTA3NjA1NDM0NGUxNWUyNTY0MjViYjQyNWVlYjNhNWMiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVmljdG9yIFZvaWNlIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0t3MGFhWEtZU3F5LVhra242OXlkSUpGR25KQTM3UzEzWHZqTlk0ZDl4Q3pVektVdz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS93bHQtdHJhaW5pbmctZ3NjIiwiYXVkIjoid2x0LXRyYWluaW5nLWdzYyIsImF1dGhfdGltZSI6MTc2NTMyNTM3NCwidXNlcl9pZCI6InNWZ0FRRHlIM0JmWU9CZkY2ZXBXVGpMSHlnWDIiLCJzdWIiOiJzVmdBUUR5SDNCZllPQmZGNmVwV1RqTEh5Z1gyIiwiaWF0IjoxNzY1MzI1Mzc0LCJleHAiOjE3NjUzMjg5NzQsImVtYWlsIjoidmljdG9ydm9pY2U4OUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjExNjQ1OTMwMDE5ODYxOTg4ODgzNiJdLCJlbWFpbCI6WyJ2aWN0b3J2b2ljZTg5QGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6Imdvb2dsZS5jb20ifX0.U_mp4iAw14poJz11UFKg3QVO6TSfE8Gps6VqLhg4GLLumjilgnuyD8mnKFznRFX0R-OyBf8mugVk59zfy4BugeZ0cXRkm1FWHqR9BVJZ9BQoEobXw4RqHkUvtgSe2qnx8a4fLUVp5zxNPpXfEjLAdcG4YnNwdZ7-TxyCDvO3U_WHkG3aAJup1q5KOqURDeYoQ7m7THeobyM3pnmDO03GIMdYgLV3Lnpvk6FTprtsV8SxWr8ZJ-Cy1g_I9wtKcB4B5bIFLjfV4r8W_-uq_g5ddbri-Yy28Ah97jxFIFOVChbPSbQpS-TRshW6M2cM5Y2EhGudpgVQBM-Tekco9fGSRw' \
+  -H 'Origin: https://marble.worldlabs.ai' \
+  -H 'Sec-GPC: 1' \
+  -H 'Connection: keep-alive' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Priority: u=4' \
+  -H 'Pragma: no-cache' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Length: 0' \
+  -H 'TE: trailers'
