@@ -2,6 +2,7 @@ use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use crate::credentials::world_labs_cookies::WorldLabsCookies;
 use crate::error::world_labs_client_error::WorldLabsClientError;
 use crate::error::world_labs_error::WorldLabsError;
+use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
 use crate::requests::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use chrono::Utc;
 use http_headers::names::{PRIORITY, SEC_FETCH_DEST, SEC_FETCH_MODE, SEC_FETCH_SITE, SEC_GPC};
@@ -13,25 +14,26 @@ use http_headers::values::pragma::PRAGMA_NO_CACHE;
 use http_headers::values::priority::PRIORITY_HIGHEST;
 use http_headers::values::sec::{SEC_FETCH_DEST_EMPTY, SEC_FETCH_MODE_CORS, SEC_FETCH_SITE_CROSS_SITE};
 use http_headers::values::te::TE_TRAILERS;
-use serde::Serialize;
-use std::time::Duration;
 use log::error;
+use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, ORIGIN, PRAGMA, REFERER, TE};
 use wreq::Client;
 use wreq_util::Emulation;
-use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
 
 const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
 pub struct ObjectsCreateInitialArgs<'a> {
-
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
-
   pub request_timeout: Option<Duration>,
 }
 
-pub async fn objects_create_initial(args: ObjectsCreateInitialArgs<'_>) -> Result<(), WorldLabsError> {
+pub struct ObjectsCreateResponse {
+  pub id: String,
+}
+
+pub async fn objects_create_initial(args: ObjectsCreateInitialArgs<'_>) -> Result<ObjectsCreateResponse, WorldLabsError> {
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
       .build()
@@ -90,14 +92,12 @@ pub async fn objects_create_initial(args: ObjectsCreateInitialArgs<'_>) -> Resul
     //return Err(classify_general_http_status_code_and_body(status, response_body));
   }
 
-  let response : CreateMediaPostRawResponse = serde_json::from_str(&response_body)
-      .map_err(|err| GrokGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
+  let response : RawResponse = serde_json::from_str(&response_body)
+      .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-  Ok(GrokCreateMediaPostResponse {
-    post_id: PostId(response.post.id),
+  Ok(ObjectsCreateResponse{
+    id: response.id,
   })
-
-  Ok(())
 }
 
 #[derive(Serialize)]
@@ -147,7 +147,8 @@ impl Default for RawRequest {
   }
 }
 
-#[derive(Serialize)]
-pub struct RawResponse {
+#[derive(Deserialize)]
+struct RawResponse {
+  pub id: String,
+  //pub owner_id: String,
 }
-
