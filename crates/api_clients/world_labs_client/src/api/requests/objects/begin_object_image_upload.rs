@@ -17,7 +17,7 @@ use http_headers::values::pragma::PRAGMA_NO_CACHE;
 use http_headers::values::priority::PRIORITY_4;
 use http_headers::values::sec::{SEC_FETCH_DEST_EMPTY, SEC_FETCH_MODE_CORS, SEC_FETCH_SITE_CROSS_SITE};
 use http_headers::values::te::TE_TRAILERS;
-use log::error;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use uuid::Uuid;
@@ -27,15 +27,15 @@ use wreq_util::Emulation;
 
 const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
-fn get_url(object_id: &ObjectId) -> String {
-  format!("{}/{}:upload", BASE_URL, object_id.0)
+fn get_url(upload_id: &UploadId) -> String {
+  format!("{}/{}:upload", BASE_URL, upload_id.0)
 }
 
 pub struct BeginObjectImageUploadArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
   pub upload_mime_type: UploadMimeType,
-  pub object_id: &'a ObjectId,
+  pub upload_id: &'a UploadId,
   pub request_timeout: Option<Duration>,
 }
 
@@ -52,7 +52,7 @@ pub async fn begin_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> 
       .build()
       .map_err(|err| WorldLabsClientError::WreqClientError(err))?;
 
-  let url = get_url(args.object_id);
+  let url = get_url(args.upload_id);
 
   let mut request_builder = client.post(url)
       .header(ACCEPT, ACCEPT_ALL)
@@ -105,6 +105,8 @@ pub async fn begin_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> 
     error!("Request returned an error (code {}) : {:?}", status.as_u16(), response_body);
     //return Err(classify_general_http_status_code_and_body(status, response_body));
   }
+  
+  info!("Ready for Google upload: {:?}", &response_body);
 
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
@@ -122,13 +124,13 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
-  use crate::api::api_types::object_id::ObjectId;
+  use crate::api::api_types::upload_id::UploadId;
   use crate::api::requests::objects::begin_object_image_upload::get_url;
 
   #[test]
   fn test_get_url() {
-    let object_id = ObjectId("foo-bar-baz-bin".to_string());
+    let upload_id = UploadId("foo-bar-baz-bin".to_string());
     let expected = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/foo-bar-baz-bin:upload";
-    assert_eq!(get_url(&object_id), expected);
+    assert_eq!(get_url(&upload_id), expected);
   }
 }

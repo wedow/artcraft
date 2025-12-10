@@ -31,21 +31,21 @@ fn get_url(object_id: &ObjectId) -> String {
   format!("{}/{}:complete", BASE_URL, object_id.0)
 }
 
-pub struct BeginObjectImageUploadArgs<'a> {
+pub struct FinalizeObjectImageUploadArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
   pub object_id: &'a ObjectId,
   pub request_timeout: Option<Duration>,
 }
 
-pub struct BeginObjectImageUploadResponse {
+pub struct FinalizeObjectImageUploadResponse {
   pub object_url: String,
 }
 
 /// Marble Image-to-World
 /// Mark the upload as complete.
 /// Request #5 (of ~10)
-pub async fn finalize_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> Result<BeginObjectImageUploadResponse, WorldLabsError> {
+pub async fn finalize_object_image_upload(args: FinalizeObjectImageUploadArgs<'_>) -> Result<FinalizeObjectImageUploadResponse, WorldLabsError> {
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
       .build()
@@ -107,7 +107,7 @@ pub async fn finalize_object_image_upload(args: BeginObjectImageUploadArgs<'_>) 
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-  Ok(BeginObjectImageUploadResponse {
+  Ok(FinalizeObjectImageUploadResponse {
     object_url: response.object_uri,
   })
 }

@@ -5,6 +5,12 @@ use wreq::StatusCode;
 
 #[derive(Debug)]
 pub enum WorldLabsGenericApiError {
+  /// Unknown error occurred when uploading to Google GCP
+  GoogleUploadFailed {
+    status_code: StatusCode,
+    body: String,
+  },
+
   /// Specific Cloudflare errors.
   CloudflareError(CloudflareError),
 
@@ -64,6 +70,7 @@ impl Error for WorldLabsGenericApiError {}
 impl Display for WorldLabsGenericApiError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
+      Self::GoogleUploadFailed { status_code, body } => write!(f, "Google world upload failed with HTTP {}: {:?}", status_code, body),
       Self::CloudflareError(err) => write!(f, "Cloudflare error: {}", err),
       Self::IndexHtmlDidNotIncludeExpectedData { message } => write!(f, "IndexHtmlDidNotIncludeExpectedData ( message: {} )", message),
       Self::ScriptBodyDidNotIncludeExpectedData { message } => write!(f, "ScriptBodyDidNotIncludeExpectedData ( message: {} )", message),

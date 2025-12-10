@@ -19,10 +19,9 @@ use std::time::Duration;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACHE_CONTROL, CONNECTION, CONTENT_LENGTH, CONTENT_TYPE, ORIGIN, PRAGMA, REFERER, TE};
 use wreq::Client;
 use wreq_util::Emulation;
+use crate::error::world_labs_specific_api_error::WorldLabsSpecificApiError;
 
 pub struct GoogleUploadImageArgs<'a> {
-  pub cookies: &'a WorldLabsCookies,
-  pub bearer_token: &'a WorldLabsBearerToken,
   pub upload_url: &'a str,
   pub upload_mime_type: UploadMimeType,
   pub file_bytes: Vec<u8>,
@@ -40,14 +39,13 @@ pub async fn google_upload_image(args: GoogleUploadImageArgs<'_>) -> Result<(), 
 
   let content_type = args.upload_mime_type.content_type();
 
-  let mut request_builder = client.post(args.upload_url)
+  let mut request_builder = client.put(args.upload_url)
       .header(ACCEPT, ACCEPT_ALL)
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
       .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
       .header(REFERER, REFERER_VALUE)
       .header(CONTENT_TYPE, content_type)
       .header("x-goog-content-length-range", "0,1048576000")
-      .header(AUTHORIZATION, args.bearer_token.to_bearer_token_string())
       .header(ORIGIN, ORIGIN_VALUE)
       .header(SEC_GPC, "1")
       .header(CONNECTION, CONNECTION_KEEP_ALIVE)
@@ -91,7 +89,12 @@ pub async fn google_upload_image(args: GoogleUploadImageArgs<'_>) -> Result<(), 
   // TODO: Handle errors (Cloudflare, Grok, etc.)
   if !status.is_success() {
     error!("Request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-    //return Err(classify_general_http_status_code_and_body(status, response_body));
+
+    if response_body.contains("SignatureDoesNotMatch") || response_body.contains("does not match the signature") {
+      return Err(WorldLabsSpecificApiError::GoogleUploadSignatureDoesNotMatch.into());
+    } else {
+      return Err(WorldLabsGenericApiError::GoogleUploadFailed { status_code: status, body: response_body }.into());
+    }
   }
 
   Ok(())
