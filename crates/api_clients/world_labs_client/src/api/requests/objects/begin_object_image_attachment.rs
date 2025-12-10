@@ -27,21 +27,21 @@ use wreq_util::Emulation;
 
 const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
-pub struct PostObjectImageArgs<'a> {
+pub struct BeginObjectImageAttachmentArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
   pub upload_mime_type: UploadMimeType,
   pub request_timeout: Option<Duration>,
 }
 
-pub struct PostObjectImageResponse {
+pub struct BeginObjectImageAttachmentResponse {
   pub id: UploadId,
 }
 
 /// Marble Image-to-World
 /// This request follows object initialization and prepares for image upload.
 /// Request #2 (of ~10)
-pub async fn post_object_image(args: PostObjectImageArgs<'_>) -> Result<PostObjectImageResponse, WorldLabsError> {
+pub async fn begin_object_image_attachment(args: BeginObjectImageAttachmentArgs<'_>) -> Result<BeginObjectImageAttachmentResponse, WorldLabsError> {
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
       .build()
@@ -103,7 +103,7 @@ pub async fn post_object_image(args: PostObjectImageArgs<'_>) -> Result<PostObje
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-  Ok(PostObjectImageResponse {
+  Ok(BeginObjectImageAttachmentResponse {
     id: UploadId(response.id),
   })
 }
@@ -134,7 +134,7 @@ struct RawResponse {
 #[cfg(test)]
 mod tests {
   use crate::api::api_types::upload_mime_type::UploadMimeType;
-  use crate::api::requests::objects::post_object_image::RawRequest;
+  use crate::api::requests::objects::begin_object_image_attachment::RawRequest;
 
   #[test]
   fn test_request() {

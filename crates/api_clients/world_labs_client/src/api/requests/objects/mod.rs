@@ -1,2 +1,2 @@
 pub mod create_object;
-mod post_object_image;
+mod begin_object_image_attachment;
