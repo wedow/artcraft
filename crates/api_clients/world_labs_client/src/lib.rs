@@ -1,6 +1,8 @@
 
 #[cfg(test)]
 pub (crate) mod test_utils;
-mod client;
-mod credentials;
-mod requests;
+
+pub mod client;
+pub mod credentials;
+pub mod error;
+pub mod requests;

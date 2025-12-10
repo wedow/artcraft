@@ -20,6 +20,7 @@ cloudflare_errors.workspace = true
 cloudflare_mitigation.workspace = true
 cookie_store.workspace = true
 errors.workspace = true
+http_headers.workspace = true
 
 # External
 anyhow.workspace = true

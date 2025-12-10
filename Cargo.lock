@@ -5152,6 +5152,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "http_headers"
+version = "0.0.1"
+dependencies = [
+ "errors",
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "http_server_common"
 version = "0.0.1"
 dependencies = [
@@ -14182,6 +14190,7 @@ dependencies = [
  "errors",
  "filesys",
  "futures 0.3.31",
+ "http_headers",
  "log",
  "log4rs",
  "once_cell",
