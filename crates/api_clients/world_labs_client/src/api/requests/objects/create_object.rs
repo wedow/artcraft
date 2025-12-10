@@ -34,7 +34,8 @@ pub struct CreateObjectResponse {
   pub id: ObjectId,
 }
 
-/// This request initializes a new world object inference and returns the object id.
+/// Marble Image-to-World
+/// This request starts the process: it initializes a new world object inference and returns the object id.
 /// Request #1 (of ~10)
 pub async fn create_object(args: CreateObjectArgs<'_>) -> Result<CreateObjectResponse, WorldLabsError> {
   let client = Client::builder()

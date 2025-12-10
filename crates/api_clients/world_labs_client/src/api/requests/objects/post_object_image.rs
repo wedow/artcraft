@@ -1,4 +1,5 @@
 use crate::api::api_types::object_id::ObjectId;
+use crate::api::api_types::upload_id::UploadId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
@@ -34,11 +35,12 @@ pub struct PostObjectImageArgs<'a> {
 }
 
 pub struct PostObjectImageResponse {
-  pub id: ObjectId,
+  pub id: UploadId,
 }
 
-/// This request initializes a new world object inference and returns the object id.
-/// Request #1 (of ~10)
+/// Marble Image-to-World
+/// This request follows object initialization and prepares for image upload.
+/// Request #2 (of ~10)
 pub async fn post_object_image(args: PostObjectImageArgs<'_>) -> Result<PostObjectImageResponse, WorldLabsError> {
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
@@ -102,7 +104,7 @@ pub async fn post_object_image(args: PostObjectImageArgs<'_>) -> Result<PostObje
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
   Ok(PostObjectImageResponse {
-    id: ObjectId(response.id),
+    id: UploadId(response.id),
   })
 }
 
@@ -127,7 +129,6 @@ impl RawRequest {
 #[derive(Deserialize)]
 struct RawResponse {
   pub id: String,
-  //pub owner_id: String,
 }
 
 #[cfg(test)]
