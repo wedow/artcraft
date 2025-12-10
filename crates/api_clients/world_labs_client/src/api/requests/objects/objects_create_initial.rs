@@ -1,9 +1,10 @@
+use crate::api::api_types::object_id::ObjectId;
+use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use crate::credentials::world_labs_cookies::WorldLabsCookies;
 use crate::error::world_labs_client_error::WorldLabsClientError;
 use crate::error::world_labs_error::WorldLabsError;
 use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
-use crate::requests::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use chrono::Utc;
 use http_headers::names::{PRIORITY, SEC_FETCH_DEST, SEC_FETCH_MODE, SEC_FETCH_SITE, SEC_GPC};
 use http_headers::values::accept::ACCEPT_ALL;
@@ -30,7 +31,7 @@ pub struct ObjectsCreateInitialArgs<'a> {
 }
 
 pub struct ObjectsCreateResponse {
-  pub id: String,
+  pub id: ObjectId,
 }
 
 pub async fn objects_create_initial(args: ObjectsCreateInitialArgs<'_>) -> Result<ObjectsCreateResponse, WorldLabsError> {
@@ -96,7 +97,7 @@ pub async fn objects_create_initial(args: ObjectsCreateInitialArgs<'_>) -> Resul
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
   Ok(ObjectsCreateResponse{
-    id: response.id,
+    id: ObjectId(response.id),
   })
 }
 
