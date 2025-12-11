@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { TransformControls } from "three/examples/jsm/Addons";
 import { FKBoneBlacklistStrings } from "./FKBoneFilter";
+import { TransformControls } from "../TransformControls";
 
 export const FKHelperSphereName = "__FKHelperSphere__";
 
