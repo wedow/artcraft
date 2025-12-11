@@ -25,7 +25,125 @@ fetch("https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/6623842d-3669-49b
   "credentials": "include"
 });
 
+Request Payload:
+
+{"object":{"metadata":{"version":"0.0.1","createdAt":1765433415549,"updatedAt":1765433417487,"useAdvancedEditing":false,"draftMode":false,"nodes":{"9b864e10-5a9b-46a1-8a94-2b571649a60d":{"id":"9b864e10-5a9b-46a1-8a94-2b571649a60d","type":"input","parentId":null,"source":{"type":"image","image_url":"https://cdn.marble.worldlabs.ai/object/ee33d03e-b153-4d56-a7cb-a08bf86bd20e/asset.jpg"},"createdAt":1765433417487},"22b9587b-2b4d-49c2-a6eb-e985d890e7db":{"id":"22b9587b-2b4d-49c2-a6eb-e985d890e7db","type":"pano","parentId":"9b864e10-5a9b-46a1-8a94-2b571649a60d","source":{"type":"generate_world","world_id":"pending","status":"pending"},"createdAt":1765433417487},"8e63a168-0c85-470d-b655-b185e0e13fee":{"id":"8e63a168-0c85-470d-b655-b185e0e13fee","type":"world","parentId":"22b9587b-2b4d-49c2-a6eb-e985d890e7db","source":{"type":"generate_world","world_id":"pending","posed_cubemaps_url":"","minimap_url":"","minimap_metadata":"","status":"pending"},"createdAt":1765433417487}}}},"update_mask":["metadata"]}
+
+Request Payload Pretty Print:
+
+{
+  "object": {
+    "metadata": {
+      "version": "0.0.1",
+      "createdAt": 1765433415549,
+      "updatedAt": 1765433417487,
+      "useAdvancedEditing": false,
+      "draftMode": false,
+      "nodes": {
+        "9b864e10-5a9b-46a1-8a94-2b571649a60d": {
+          "id": "9b864e10-5a9b-46a1-8a94-2b571649a60d",
+          "type": "input",
+          "parentId": null,
+          "source": {
+            "type": "image",
+            "image_url": "https://cdn.marble.worldlabs.ai/object/ee33d03e-b153-4d56-a7cb-a08bf86bd20e/asset.jpg"
+          },
+          "createdAt": 1765433417487
+        },
+        "22b9587b-2b4d-49c2-a6eb-e985d890e7db": {
+          "id": "22b9587b-2b4d-49c2-a6eb-e985d890e7db",
+          "type": "pano",
+          "parentId": "9b864e10-5a9b-46a1-8a94-2b571649a60d",
+          "source": {
+            "type": "generate_world",
+            "world_id": "pending",
+            "status": "pending"
+          },
+          "createdAt": 1765433417487
+        },
+        "8e63a168-0c85-470d-b655-b185e0e13fee": {
+          "id": "8e63a168-0c85-470d-b655-b185e0e13fee",
+          "type": "world",
+          "parentId": "22b9587b-2b4d-49c2-a6eb-e985d890e7db",
+          "source": {
+            "type": "generate_world",
+            "world_id": "pending",
+            "posed_cubemaps_url": "",
+            "minimap_url": "",
+            "minimap_metadata": "",
+            "status": "pending"
+          },
+          "createdAt": 1765433417487
+        }
+      }
+    }
+  },
+  "update_mask": [
+    "metadata"
+  ]
+}
+
+Response:
+
 {"context":null,"id":"6623842d-3669-49b9-976f-5b239c24e353","display_name":null,"owner_id":"hdYte3rVrWbswJZEglL5CdmKfxv1","status":"CREATED","created_at":1765433415,"updated_at":1765433417,"object_uri":null,"mime_type":"application/run+json","metadata":{"version":"0.0.1","createdAt":1765433415549,"updatedAt":1765433417487,"useAdvancedEditing":false,"draftMode":false,"nodes":{"9b864e10-5a9b-46a1-8a94-2b571649a60d":{"id":"9b864e10-5a9b-46a1-8a94-2b571649a60d","type":"input","parentId":null,"source":{"type":"image","image_url":"https://cdn.marble.worldlabs.ai/object/ee33d03e-b153-4d56-a7cb-a08bf86bd20e/asset.jpg"},"createdAt":1765433417487},"22b9587b-2b4d-49c2-a6eb-e985d890e7db":{"id":"22b9587b-2b4d-49c2-a6eb-e985d890e7db","type":"pano","parentId":"9b864e10-5a9b-46a1-8a94-2b571649a60d","source":{"type":"generate_world","world_id":"pending","status":"pending"},"createdAt":1765433417487},"8e63a168-0c85-470d-b655-b185e0e13fee":{"id":"8e63a168-0c85-470d-b655-b185e0e13fee","type":"world","parentId":"22b9587b-2b4d-49c2-a6eb-e985d890e7db","source":{"type":"generate_world","world_id":"pending","posed_cubemaps_url":"","minimap_url":"","minimap_metadata":"","status":"pending"},"createdAt":1765433417487}}}}
+
+Response Pretty Print:
+
+{
+  "context": null,
+  "id": "6623842d-3669-49b9-976f-5b239c24e353",
+  "display_name": null,
+  "owner_id": "hdYte3rVrWbswJZEglL5CdmKfxv1",
+  "status": "CREATED",
+  "created_at": 1765433415,
+  "updated_at": 1765433417,
+  "object_uri": null,
+  "mime_type": "application/run+json",
+  "metadata": {
+    "version": "0.0.1",
+    "createdAt": 1765433415549,
+    "updatedAt": 1765433417487,
+    "useAdvancedEditing": false,
+    "draftMode": false,
+    "nodes": {
+      "9b864e10-5a9b-46a1-8a94-2b571649a60d": {
+        "id": "9b864e10-5a9b-46a1-8a94-2b571649a60d",
+        "type": "input",
+        "parentId": null,
+        "source": {
+          "type": "image",
+          "image_url": "https://cdn.marble.worldlabs.ai/object/ee33d03e-b153-4d56-a7cb-a08bf86bd20e/asset.jpg"
+        },
+        "createdAt": 1765433417487
+      },
+      "22b9587b-2b4d-49c2-a6eb-e985d890e7db": {
+        "id": "22b9587b-2b4d-49c2-a6eb-e985d890e7db",
+        "type": "pano",
+        "parentId": "9b864e10-5a9b-46a1-8a94-2b571649a60d",
+        "source": {
+          "type": "generate_world",
+          "world_id": "pending",
+          "status": "pending"
+        },
+        "createdAt": 1765433417487
+      },
+      "8e63a168-0c85-470d-b655-b185e0e13fee": {
+        "id": "8e63a168-0c85-470d-b655-b185e0e13fee",
+        "type": "world",
+        "parentId": "22b9587b-2b4d-49c2-a6eb-e985d890e7db",
+        "source": {
+          "type": "generate_world",
+          "world_id": "pending",
+          "posed_cubemaps_url": "",
+          "minimap_url": "",
+          "minimap_metadata": "",
+          "status": "pending"
+        },
+        "createdAt": 1765433417487
+      }
+    }
+  }
+}
 
 The URL is accessible in the browser:
 
