@@ -1,0 +1,54 @@
+{
+  "object": {
+    "metadata": {
+      "version": "0.0.1",
+      "name": "Cozy A-frame Cabin Retreat",
+      "createdAt": 1765325556528,
+      "updatedAt": 1765325565023,
+      "useAdvancedEditing": false,
+      "draftMode": false,
+      "nodes": {
+        "bcb8d155-0117-4d20-85cf-aa76627996e8": {
+          "id": "bcb8d155-0117-4d20-85cf-aa76627996e8",
+          "type": "input",
+          "parentId": null,
+          "source": {
+            "type": "image",
+            "image_url": "https://cdn.marble.worldlabs.ai/object/cf326bd0-b7eb-454c-b433-54f36eb4d5a6/asset.jpg"
+          },
+          "createdAt": 1765325562986,
+          "title": "Cozy A-frame Cabin Retreat",
+          "caption": "The scene is a cozy A-frame cabin interior, rendered in a realistic style, exuding warmth and rustic charm, creating a tranquil and inviting atmosphere. A prominent wooden A-frame structure defines the architecture, featuring angled timber beams that converge towards the peak of the ceiling. The walls and ceiling are paneled with warm-toned wooden planks, creating a consistent and enveloping aesthetic throughout the space. A large, floor-to-ceiling window dominates one wall, offering an expansive view of a lush forest with tall trees and autumnal foliage outside, suggesting the cabin is nestled deep within nature. A plush bed occupies a significant portion of the floor space, adorned with a dark grey duvet, numerous pillows, and a rust-colored throw blanket, inviting comfort and relaxation. A cream-colored faux fur rug rests on the wooden floor beside the bed, adding texture and a soft landing. A black wood-burning stove with a visible fire provides heat and a focal point for the room, situated near the large window. The floor is made of polished light wood planks. On the other side of the cabin, a continuation of the wooden paneling and A-frame structure mirrors the visible portion, maintaining architectural consistency. Another large window, identical in style and size to the visible one, would likely offer a similar forest view on the opposite side of the cabin, bathing the entire space in natural light filtered through the trees. A small, rustic armchair with a woven texture would be positioned near the stove on the opposite side, providing an additional seating area for enjoying the warmth. A stack of neatly chopped firewood is arranged next to the stove, ready for use, emphasizing the cabins rustic functionality. "
+        },
+        "b62ec969-b045-4f4e-8926-5f4c2f067b60": {
+          "id": "b62ec969-b045-4f4e-8926-5f4c2f067b60",
+          "type": "pano",
+          "parentId": "bcb8d155-0117-4d20-85cf-aa76627996e8",
+          "source": {
+            "type": "generate_world",
+            "world_id": "3e8d210f-28ea-4375-92d8-3ee6f14db61d",
+            "status": "pending"
+          },
+          "createdAt": 1765325565022
+        },
+        "42bf7afb-bf2f-434e-b5a3-573b48ac849a": {
+          "id": "42bf7afb-bf2f-434e-b5a3-573b48ac849a",
+          "type": "world",
+          "parentId": "b62ec969-b045-4f4e-8926-5f4c2f067b60",
+          "source": {
+            "type": "generate_world",
+            "world_id": "3e8d210f-28ea-4375-92d8-3ee6f14db61d",
+            "posed_cubemaps_url": "",
+            "minimap_url": "",
+            "minimap_metadata": "",
+            "status": "pending"
+          },
+          "createdAt": 1765325565022
+        }
+      }
+    }
+  },
+  "update_mask": [
+    "metadata"
+  ]
+}
