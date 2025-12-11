@@ -74,12 +74,12 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   info!("Request #4 of 10: upload to Google GCP ...");
 
   info!("Google upload URL: {:?}", &google_upload_url);
-  
-  
-  if true {
-    error!("test early exit.");
-    return Err(WorldLabsError::ApiGeneric(WorldLabsGenericApiError::UploadFailed));
-  }
+
+
+  //if true {
+  //  error!("test early exit.");
+  //  return Err(WorldLabsError::ApiGeneric(WorldLabsGenericApiError::UploadFailed));
+  //}
 
   let _response = google_upload_image(GoogleUploadImageArgs {
     upload_url: &google_upload_url,

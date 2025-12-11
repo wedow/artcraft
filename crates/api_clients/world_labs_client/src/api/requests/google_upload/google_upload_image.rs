@@ -42,23 +42,23 @@ pub async fn google_upload_image(args: GoogleUploadImageArgs<'_>) -> Result<(), 
   debug!("Requesting URL: {}", args.upload_url);
 
   let mut request_builder = client.put(args.upload_url)
-      .header(ACCEPT, ACCEPT_ALL)
-      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
-      .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
-      .header(REFERER, REFERER_VALUE)
       .header(CONTENT_TYPE, content_type)
-      .header("x-goog-content-length-range", "0,1048576000")
-      .header(ORIGIN, ORIGIN_VALUE)
-      .header(SEC_GPC, "1")
-      .header(CONNECTION, CONNECTION_KEEP_ALIVE)
-      .header(SEC_FETCH_DEST, SEC_FETCH_DEST_EMPTY)
-      .header(SEC_FETCH_MODE, SEC_FETCH_MODE_CORS)
-      .header(SEC_FETCH_SITE, SEC_FETCH_SITE_CROSS_SITE)
-      .header(PRIORITY, PRIORITY_6)
-      .header(PRAGMA, PRAGMA_NO_CACHE)
-      .header(CACHE_CONTROL, CACHE_CONTROL_NO_CACHE)
-      .header(CONTENT_LENGTH, 0)
-      .header(TE, TE_TRAILERS);
+      .header("x-goog-content-length-range", "0,1048576000");
+      //.header(ACCEPT, ACCEPT_ALL)
+      //.header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
+      //.header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
+      //.header(REFERER, REFERER_VALUE)
+      //.header(ORIGIN, ORIGIN_VALUE)
+      //.header(SEC_GPC, "1")
+      //.header(CONNECTION, CONNECTION_KEEP_ALIVE)
+      //.header(SEC_FETCH_DEST, SEC_FETCH_DEST_EMPTY)
+      //.header(SEC_FETCH_MODE, SEC_FETCH_MODE_CORS)
+      //.header(SEC_FETCH_SITE, SEC_FETCH_SITE_CROSS_SITE)
+      //.header(PRIORITY, PRIORITY_6)
+      //.header(PRAGMA, PRAGMA_NO_CACHE)
+      //.header(CACHE_CONTROL, CACHE_CONTROL_NO_CACHE)
+      //.header(CONTENT_LENGTH, 0)
+      //.header(TE, TE_TRAILERS);
 
   if let Some(timeout) = args.request_timeout {
     request_builder = request_builder.timeout(timeout);
