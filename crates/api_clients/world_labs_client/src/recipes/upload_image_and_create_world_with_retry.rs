@@ -39,6 +39,8 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let object_id = response.id;
 
+  info!("Object id: {}", object_id.0);
+
   // TODO - multiple types.
   let upload_mime_type= UploadMimeType::ImageJpeg;
 
@@ -52,6 +54,8 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   }).await?;
 
   let upload_id = response.id;
+
+  info!("Upload id: {}", upload_id.0);
 
   info!("Request #3 of 10: begin image upload ...");
 
@@ -112,7 +116,7 @@ mod tests {
     let cookies = get_typed_test_cookies().unwrap();
     let bearer_token = get_test_bearer_token().unwrap();
 
-    let file_path = "/home/bt/Pictures/locations/island2.jpg";
+    let file_path = "/home/bt/Pictures/locations/island.jpg";
     let file_bytes = file_read_bytes(file_path).unwrap();
 
     println!("File bytes len: {}", file_bytes.len());
