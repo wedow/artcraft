@@ -400,6 +400,7 @@ export class TimeLine {
   // and bypasses the queue system, that's kinda redundant anyway
   public addLocalSplat(fileBytes: ArrayBuffer | Uint8Array, flipVertical: boolean = false) {
     const splatMesh = new SplatMesh({ fileBytes: fileBytes });
+    splatMesh.name = `{SplatMesh-${Date.now()}}`;
 
     if (flipVertical) {
       splatMesh.rotateX(Math.PI);
