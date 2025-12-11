@@ -89,7 +89,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   let response = finalize_object_image_upload(FinalizeObjectImageUploadArgs {
     cookies: &args.cookies,
     bearer_token: &args.bearer_token,
-    object_id: &object_id,
+    upload_id: &upload_id,
     request_timeout: args.individual_request_timeout,
   }).await?;
 

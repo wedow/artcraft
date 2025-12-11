@@ -27,14 +27,14 @@ use wreq_util::Emulation;
 
 const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
-fn get_url(object_id: &ObjectId) -> String {
-  format!("{}/{}:complete", BASE_URL, object_id.0)
+fn get_url(upload_id: &UploadId) -> String {
+  format!("{}/{}:complete", BASE_URL, upload_id.0)
 }
 
 pub struct FinalizeObjectImageUploadArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
-  pub object_id: &'a ObjectId,
+  pub upload_id: &'a UploadId,
   pub request_timeout: Option<Duration>,
 }
 
@@ -51,7 +51,7 @@ pub async fn finalize_object_image_upload(args: FinalizeObjectImageUploadArgs<'_
       .build()
       .map_err(|err| WorldLabsClientError::WreqClientError(err))?;
 
-  let url = get_url(args.object_id);
+  let url = get_url(args.upload_id);
 
   debug!("Requesting URL: {}", url);
 
@@ -125,13 +125,13 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
-  use crate::api::api_types::object_id::ObjectId;
+  use crate::api::api_types::upload_id::UploadId;
   use crate::api::requests::objects::finalize_object_image_upload::get_url;
 
   #[test]
   fn test_get_url() {
-    let object_id = ObjectId("foo-bar-baz-bin".to_string());
+    let upload_id = UploadId("foo-bar-baz-bin".to_string());
     let expected = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/foo-bar-baz-bin:complete";
-    assert_eq!(get_url(&object_id), expected);
+    assert_eq!(get_url(&upload_id), expected);
   }
 }
