@@ -1,0 +1,29 @@
+https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects
+
+fetch("https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-US,en;q=0.9",
+    "authorization": "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk1MTg5MTkxMTA3NjA1NDM0NGUxNWUyNTY0MjViYjQyNWVlYjNhNWMiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVm9jb2RlcyBWb2NvZGVzIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0x6Mi0yT2FBbTBNUXhSNmo4Q05yLVBvOF9Yci1hcnlBVGlDbjRjMGlfVHVEbUxfZz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS93bHQtdHJhaW5pbmctZ3NjIiwiYXVkIjoid2x0LXRyYWluaW5nLWdzYyIsImF1dGhfdGltZSI6MTc2NTQzMzEwOCwidXNlcl9pZCI6ImhkWXRlM3JWcldic3dKWkVnbEw1Q2RtS2Z4djEiLCJzdWIiOiJoZFl0ZTNyVnJXYnN3SlpFZ2xMNUNkbUtmeHYxIiwiaWF0IjoxNzY1NDMzMTA4LCJleHAiOjE3NjU0MzY3MDgsImVtYWlsIjoidm9jb2RlczIwMjBAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMTMxMDE5Njc2MTIzOTY3OTM3NzciXSwiZW1haWwiOlsidm9jb2RlczIwMjBAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.Q5yHeLfkTZb6DigaHmjwcejZNPw4byf0QAo-5z7FnZ2UJKfQINcwSQlXRTpDj-t4J8I5WlVBmqX9CM3UtSlQ4lJyc5UI2r5MPUri7Djl8NItKF0QEZhf-MO10crXuEG2IMNsiePrMjy9fDgHzOywA2HNpyJluZu9vgZqZxT4Nol11gcsxBssk7k-YWJR7Ig-pUgRzqkM0BgdX2HRad_gI2Fe7oH6s1cw1lJ157wYL-ltAH-diVWLuwlxolc7BeRDOEuqLlHtQgd4zVvVPrcOOSwwxOSPChgAaafERLBwaTBbFe3M0xqbdvPb7IU58LA-E3HlXyFsXcDf6m5anOyhrQ",
+    "baggage": "sentry-environment=prod,sentry-release=rel-5f2dd5e,sentry-public_key=3779934420ee57f00d05e5fb1e57f79d,sentry-trace_id=59eba427c8e042aaae0b9d30f7f3aa4f,sentry-org_id=4509005975388160,sentry-replay_id=ada67eaa105f47049ac59d52f38232dd,sentry-transaction=%2F(auth)%2Fonboarding,sentry-sampled=true,sentry-sample_rand=0.7143690752789659,sentry-sample_rate=1",
+    "cache-control": "no-cache",
+    "content-type": "application/json",
+    "pragma": "no-cache",
+    "priority": "u=1, i",
+    "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Chromium\";v=\"142\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Linux\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "cross-site",
+    "sentry-trace": "59eba427c8e042aaae0b9d30f7f3aa4f-81eca8557b198888-1"
+  },
+  "referrer": "https://marble.worldlabs.ai/",
+  "body": "{\"metadata\":{\"version\":\"0.0.1\",\"createdAt\":1765433415549,\"updatedAt\":1765433415549,\"useAdvancedEditing\":false,\"draftMode\":false,\"nodes\":{}},\"mime_type\":\"application/run+json\"}",
+  "method": "POST",
+  "mode": "cors",
+  "credentials": "include"
+});
+
+
+{"context":null,"id":"6623842d-3669-49b9-976f-5b239c24e353","display_name":null,"owner_id":"hdYte3rVrWbswJZEglL5CdmKfxv1","status":"CREATED","created_at":1765433415,"updated_at":1765433415,"object_uri":null,"mime_type":"application/run+json","metadata":{"version":"0.0.1","createdAt":1765433415549,"updatedAt":1765433415549,"useAdvancedEditing":false,"draftMode":false,"nodes":{}}}
