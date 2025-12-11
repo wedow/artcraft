@@ -1,7 +1,7 @@
-use crate::api::api_types::object_id::ObjectId;
-use crate::api::api_types::upload_id::UploadId;
+use crate::api::api_types::run_object_id::RunObjectId;
+use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
-use crate::api::api_types::world_id::WorldId;
+use crate::api::api_types::world_object_id::WorldObjectId;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::api::utils::upload_id_to_image_url::upload_id_to_image_url;
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
@@ -30,15 +30,15 @@ const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/worlds";
 pub struct CreateWorldArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
-  pub upload_id: &'a UploadId,
+  pub upload_id: &'a UploadObjectId,
   pub upload_mime_type: UploadMimeType,
-  pub run_id: &'a ObjectId,
+  pub run_id: &'a RunObjectId,
   pub text_prompt: &'a str,
   pub request_timeout: Option<Duration>,
 }
 
 pub struct CreateWorldResponse {
-  pub world_id: WorldId,
+  pub world_id: WorldObjectId,
 }
 
 /// Marble Image-to-World
@@ -112,7 +112,7 @@ pub async fn create_world(args: CreateWorldArgs<'_>) -> Result<CreateWorldRespon
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
   Ok(CreateWorldResponse {
-    world_id: WorldId(response.id),
+    world_id: WorldObjectId(response.id),
   })
 }
 
@@ -152,7 +152,7 @@ struct Context {
 }
 
 impl RawRequest {
-  pub fn for_image_and_run(image_upload_id: &UploadId, image_mime_type: UploadMimeType, run_id: &ObjectId, text_prompt: &str) -> Self {
+  pub fn for_image_and_run(image_upload_id: &UploadObjectId, image_mime_type: UploadMimeType, run_id: &RunObjectId, text_prompt: &str) -> Self {
     let image_url = upload_id_to_image_url(image_upload_id, image_mime_type);
     Self {
       permission: Permission {

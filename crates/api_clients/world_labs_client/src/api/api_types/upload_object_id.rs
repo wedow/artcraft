@@ -2,9 +2,9 @@
 /// These are used to upload images.
 /// These appear to be bare UUIDs.
 #[derive(Clone, Debug)]
-pub struct UploadId(pub String);
+pub struct UploadObjectId(pub String);
 
-impl UploadId {
+impl UploadObjectId {
   pub fn as_str(&self) -> &str {
     &self.0
   }

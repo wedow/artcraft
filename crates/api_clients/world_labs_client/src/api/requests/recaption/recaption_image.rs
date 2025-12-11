@@ -1,5 +1,5 @@
-use crate::api::api_types::object_id::ObjectId;
-use crate::api::api_types::upload_id::UploadId;
+use crate::api::api_types::run_object_id::RunObjectId;
+use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::api::utils::upload_id_to_image_url::upload_id_to_image_url;
@@ -29,9 +29,9 @@ const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/recaption2";
 pub struct RecaptionImageArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
-  pub upload_id: &'a UploadId,
+  pub upload_id: &'a UploadObjectId,
   pub upload_mime_type: UploadMimeType,
-  pub run_id: &'a ObjectId,
+  pub run_id: &'a RunObjectId,
   pub request_timeout: Option<Duration>,
 }
 
@@ -142,7 +142,7 @@ struct Context {
 }
 
 impl RawRequest {
-  pub fn for_image_and_run(image_upload_id: &UploadId, image_mime_type: UploadMimeType, run_id: &ObjectId) -> Self {
+  pub fn for_image_and_run(image_upload_id: &UploadObjectId, image_mime_type: UploadMimeType, run_id: &RunObjectId) -> Self {
     let image_url = upload_id_to_image_url(image_upload_id, image_mime_type);
     Self {
       world_prompt: WorldPrompt {

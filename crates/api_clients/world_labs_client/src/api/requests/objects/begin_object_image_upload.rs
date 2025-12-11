@@ -1,5 +1,5 @@
-use crate::api::api_types::object_id::ObjectId;
-use crate::api::api_types::upload_id::UploadId;
+use crate::api::api_types::run_object_id::RunObjectId;
+use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
@@ -27,7 +27,7 @@ use wreq_util::Emulation;
 
 const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
-fn get_url(upload_id: &UploadId) -> String {
+fn get_url(upload_id: &UploadObjectId) -> String {
   format!("{}/{}:upload", BASE_URL, upload_id.0)
 }
 
@@ -35,7 +35,7 @@ pub struct BeginObjectImageUploadArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
   pub upload_mime_type: UploadMimeType,
-  pub upload_id: &'a UploadId,
+  pub upload_id: &'a UploadObjectId,
   pub request_timeout: Option<Duration>,
 }
 
@@ -132,12 +132,12 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
-  use crate::api::api_types::upload_id::UploadId;
+  use crate::api::api_types::upload_object_id::UploadObjectId;
   use crate::api::requests::objects::begin_object_image_upload::get_url;
 
   #[test]
   fn test_get_url() {
-    let upload_id = UploadId("foo-bar-baz-bin".to_string());
+    let upload_id = UploadObjectId("foo-bar-baz-bin".to_string());
     let expected = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/foo-bar-baz-bin:upload";
     assert_eq!(get_url(&upload_id), expected);
   }

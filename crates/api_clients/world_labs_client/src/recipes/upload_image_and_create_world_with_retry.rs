@@ -1,9 +1,9 @@
-use crate::api::api_types::object_id::ObjectId;
+use crate::api::api_types::run_object_id::RunObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
 use crate::api::requests::google_upload::google_upload_image::{google_upload_image, GoogleUploadImageArgs};
-use crate::api::requests::objects::begin_object_image_attachment::{begin_object_image_attachment, BeginObjectImageAttachmentArgs};
+use crate::api::requests::objects::create_upload_object::{create_upload_object, CreateUploadObjectArgs};
 use crate::api::requests::objects::begin_object_image_upload::{begin_object_image_upload, BeginObjectImageUploadArgs};
-use crate::api::requests::objects::create_object::{create_object, CreateObjectArgs};
+use crate::api::requests::objects::create_run_object::{create_run_object, CreateRunObjectArgs};
 use crate::api::requests::objects::finalize_object_image_upload::{finalize_object_image_upload, FinalizeObjectImageUploadArgs};
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use crate::credentials::world_labs_cookies::WorldLabsCookies;
@@ -23,7 +23,7 @@ pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
 }
 
 pub struct UploadImageAndCreateWorldWithRetryResponse {
-  pub object_id: ObjectId,
+  pub object_id: RunObjectId,
   pub image_upload_url: String,
 }
 
@@ -32,24 +32,24 @@ pub struct UploadImageAndCreateWorldWithRetryResponse {
 /// Request #5 (of ~10)
 pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreateWorldWithRetryArgs<'_>) -> Result<UploadImageAndCreateWorldWithRetryResponse, WorldLabsError> {
 
-  info!("Request #1 of 10: create object ...");
+  info!("Request #1 of 10: create run object ...");
 
-  let response = create_object(CreateObjectArgs {
+  let response = create_run_object(CreateRunObjectArgs {
     cookies: args.cookies,
     bearer_token: args.bearer_token,
     request_timeout: args.individual_request_timeout,
   }).await?;
 
-  let object_id = response.id;
+  let run_object_id = response.id;
 
-  info!("Object id: {}", object_id.0);
+  info!("Object id: {}", run_object_id.0);
 
   // TODO - multiple types.
   let upload_mime_type= UploadMimeType::ImageJpeg;
 
   info!("Request #2 of 10: begin image attachment ...");
 
-  let response = begin_object_image_attachment(BeginObjectImageAttachmentArgs {
+  let response = create_upload_object(CreateUploadObjectArgs {
     cookies: &args.cookies,
     bearer_token: &args.bearer_token,
     upload_mime_type,
@@ -103,7 +103,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     bearer_token: &args.bearer_token,
     upload_id: &upload_id,
     upload_mime_type,
-    run_id: &object_id,
+    run_id: &run_object_id,
     request_timeout: args.individual_request_timeout,
   }).await?;
 
@@ -111,7 +111,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   info!("Caption: {}", response.caption);
 
   Ok(UploadImageAndCreateWorldWithRetryResponse {
-    object_id,
+    object_id: run_object_id,
     image_upload_url: image_url,
   })
 }

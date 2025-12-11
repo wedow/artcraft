@@ -2,4 +2,4 @@
 /// These are used to create inference runs and refer to the result
 /// These appear to be bare UUIDs.
 #[derive(Clone, Debug)]
-pub struct ObjectId(pub String);
+pub struct RunObjectId(pub String);
