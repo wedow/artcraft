@@ -3,3 +3,9 @@
 /// These appear to be bare UUIDs.
 #[derive(Clone, Debug)]
 pub struct UploadId(pub String);
+
+impl UploadId {
+  pub fn as_str(&self) -> &str {
+    &self.0
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "world_prompt": {
+    "type": "image",
+    "image_prompt": {
+      "uri": "https://cdn.marble.worldlabs.ai/object/cf326bd0-b7eb-454c-b433-54f36eb4d5a6/asset.jpg"
+    },
+    "text_prompt": ""
+  },
+  "user_caption": "",
+  "context": {
+    "run_id": "a37a82a4-0b39-47e1-acf9-07a65888d5be"
+  }
+}

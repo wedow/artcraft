@@ -13,6 +13,7 @@ use anyhow::bail;
 use log::{error, info};
 use serde::Deserialize;
 use std::time::Duration;
+use crate::api::requests::recaption::recaption_image::{recaption_image, RecaptionImageArgs};
 
 pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
@@ -75,22 +76,12 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   info!("Google upload URL: {:?}", &google_upload_url);
 
-
-  //if true {
-  //  error!("test early exit.");
-  //  return Err(WorldLabsError::ApiGeneric(WorldLabsGenericApiError::UploadFailed));
-  //}
-
   let _response = google_upload_image(GoogleUploadImageArgs {
     upload_url: &google_upload_url,
     upload_mime_type,
     file_bytes: args.file_bytes,
     request_timeout: args.individual_request_timeout,
   }).await?;
-
-  info!("Sleeping briefly...");
-
-  tokio::time::sleep(Duration::from_millis(10_000)).await;
 
   info!("Request #5 of 10: finalize object upload ...");
 
@@ -101,9 +92,27 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     request_timeout: args.individual_request_timeout,
   }).await?;
 
+  let image_url = response.object_url;
+
+  info!("Object/image URL: {image_url}");
+
+  info!("Request #6 of 10: captioning with VLM ...");
+
+  let response = recaption_image(RecaptionImageArgs {
+    cookies: &args.cookies,
+    bearer_token: &args.bearer_token,
+    upload_id: &upload_id,
+    upload_mime_type,
+    run_id: &object_id,
+    request_timeout: args.individual_request_timeout,
+  }).await?;
+
+  info!("Title: {}", response.title);
+  info!("Caption: {}", response.caption);
+
   Ok(UploadImageAndCreateWorldWithRetryResponse {
     object_id,
-    image_upload_url: response.object_url.to_string(),
+    image_upload_url: image_url,
   })
 }
 
