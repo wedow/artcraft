@@ -53,7 +53,7 @@ pub async fn begin_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> 
       .map_err(|err| WorldLabsClientError::WreqClientError(err))?;
 
   let url = get_url(args.upload_id);
-  
+
   debug!("Requesting URL: {}", url);
 
   let mut request_builder = client.post(url)
@@ -114,6 +114,8 @@ pub async fn begin_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> 
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
+  info!("Curl command: {}", response.curl_example);
+
   Ok(BeginObjectImageUploadResponse {
     upload_url: response.upload_url,
   })
@@ -123,6 +125,9 @@ pub async fn begin_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> 
 struct RawResponse {
   /// eg. "https://storage.googleapis.com/wlt-training-gsc-marble-assets-prod/temp/objects/{...}",
   pub upload_url: String,
+
+  /// Just for debugging, the server reports a test cURL command
+  pub curl_example: String,
 }
 
 #[cfg(test)]

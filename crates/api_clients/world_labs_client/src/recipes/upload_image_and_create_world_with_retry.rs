@@ -8,9 +8,11 @@ use crate::api::requests::objects::finalize_object_image_upload::{finalize_objec
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use crate::credentials::world_labs_cookies::WorldLabsCookies;
 use crate::error::world_labs_error::WorldLabsError;
+use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
+use anyhow::bail;
+use log::{error, info};
 use serde::Deserialize;
 use std::time::Duration;
-use log::info;
 
 pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
@@ -72,6 +74,12 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   info!("Request #4 of 10: upload to Google GCP ...");
 
   info!("Google upload URL: {:?}", &google_upload_url);
+  
+  
+  if true {
+    error!("test early exit.");
+    return Err(WorldLabsError::ApiGeneric(WorldLabsGenericApiError::UploadFailed));
+  }
 
   let _response = google_upload_image(GoogleUploadImageArgs {
     upload_url: &google_upload_url,
@@ -101,12 +109,12 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
 #[cfg(test)]
 mod tests {
-  use log::LevelFilter;
   use crate::recipes::upload_image_and_create_world_with_retry::{upload_image_and_create_world_with_retry, UploadImageAndCreateWorldWithRetryArgs};
   use crate::test_utils::get_test_bearer_token::get_test_bearer_token;
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
-  use filesys::file_read_bytes::file_read_bytes;
   use crate::test_utils::setup_test_logging::setup_test_logging;
+  use filesys::file_read_bytes::file_read_bytes;
+  use log::LevelFilter;
 
   #[tokio::test]
   #[ignore] // Client side tests only

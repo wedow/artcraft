@@ -125,13 +125,39 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
+  use log::LevelFilter;
   use crate::api::api_types::upload_id::UploadId;
-  use crate::api::requests::objects::finalize_object_image_upload::get_url;
+  use crate::api::requests::objects::finalize_object_image_upload::{finalize_object_image_upload, get_url, FinalizeObjectImageUploadArgs};
+  use crate::test_utils::get_test_bearer_token::get_test_bearer_token;
+  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+  use crate::test_utils::setup_test_logging::setup_test_logging;
 
   #[test]
   fn test_get_url() {
     let upload_id = UploadId("foo-bar-baz-bin".to_string());
     let expected = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/foo-bar-baz-bin:complete";
     assert_eq!(get_url(&upload_id), expected);
+  }
+
+  #[tokio::test]
+  #[ignore] // Client side tests only
+  async fn test_requests() {
+    setup_test_logging(LevelFilter::Debug);
+
+    let cookies = get_typed_test_cookies().unwrap();
+    let bearer_token = get_test_bearer_token().unwrap();
+
+    let upload_id = UploadId("09d86ef8-edcd-42d9-9b95-8efd28be0bee".to_string());
+
+    let response = finalize_object_image_upload(FinalizeObjectImageUploadArgs {
+      cookies: &cookies,
+      bearer_token: &bearer_token,
+      upload_id: &upload_id,
+      request_timeout: None,
+    }).await.unwrap();
+
+    println!("Object URL: {}", response.object_url);
+
+    assert_eq!(1, 2);
   }
 }
