@@ -17,7 +17,7 @@ use http_headers::values::pragma::PRAGMA_NO_CACHE;
 use http_headers::values::priority::PRIORITY_4;
 use http_headers::values::sec::{SEC_FETCH_DEST_EMPTY, SEC_FETCH_MODE_CORS, SEC_FETCH_SITE_CROSS_SITE};
 use http_headers::values::te::TE_TRAILERS;
-use log::{error, info};
+use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use uuid::Uuid;
@@ -53,6 +53,8 @@ pub async fn begin_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> 
       .map_err(|err| WorldLabsClientError::WreqClientError(err))?;
 
   let url = get_url(args.upload_id);
+  
+  debug!("Requesting URL: {}", url);
 
   let mut request_builder = client.post(url)
       .header(ACCEPT, ACCEPT_ALL)
@@ -104,9 +106,10 @@ pub async fn begin_object_image_upload(args: BeginObjectImageUploadArgs<'_>) -> 
   if !status.is_success() {
     error!("Request returned an error (code {}) : {:?}", status.as_u16(), response_body);
     //return Err(classify_general_http_status_code_and_body(status, response_body));
+    return Err(WorldLabsGenericApiError::UncategorizedBadResponseWithStatusAndBody { status_code: status, body: response_body}.into())
   }
-  
-  info!("Ready for Google upload: {:?}", &response_body);
+
+  debug!("Response body (200) (ready for Google upload): {}", response_body);
 
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;

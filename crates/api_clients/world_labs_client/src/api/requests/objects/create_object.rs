@@ -15,7 +15,7 @@ use http_headers::values::pragma::PRAGMA_NO_CACHE;
 use http_headers::values::priority::PRIORITY_HIGHEST;
 use http_headers::values::sec::{SEC_FETCH_DEST_EMPTY, SEC_FETCH_MODE_CORS, SEC_FETCH_SITE_CROSS_SITE};
 use http_headers::values::te::TE_TRAILERS;
-use log::error;
+use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, ORIGIN, PRAGMA, REFERER, TE};
@@ -42,6 +42,8 @@ pub async fn create_object(args: CreateObjectArgs<'_>) -> Result<CreateObjectRes
       .emulation(Emulation::Firefox143)
       .build()
       .map_err(|err| WorldLabsClientError::WreqClientError(err))?;
+
+  debug!("Requesting URL: {}", URL);
 
   let mut request_builder = client.post(URL)
       .header(ACCEPT, ACCEPT_ALL)
@@ -94,7 +96,10 @@ pub async fn create_object(args: CreateObjectArgs<'_>) -> Result<CreateObjectRes
   if !status.is_success() {
     error!("Request returned an error (code {}) : {:?}", status.as_u16(), response_body);
     //return Err(classify_general_http_status_code_and_body(status, response_body));
+    return Err(WorldLabsGenericApiError::UncategorizedBadResponseWithStatusAndBody { status_code: status, body: response_body}.into())
   }
+
+  debug!("Response body (200): {}", response_body);
 
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;

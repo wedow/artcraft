@@ -25,5 +25,38 @@ fetch("https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects", {
   "credentials": "include"
 });
 
+Request Body:
 
-{"context":null,"id":"6623842d-3669-49b9-976f-5b239c24e353","display_name":null,"owner_id":"hdYte3rVrWbswJZEglL5CdmKfxv1","status":"CREATED","created_at":1765433415,"updated_at":1765433415,"object_uri":null,"mime_type":"application/run+json","metadata":{"version":"0.0.1","createdAt":1765433415549,"updatedAt":1765433415549,"useAdvancedEditing":false,"draftMode":false,"nodes":{}}}
+{
+  "metadata": {
+    "version": "0.0.1",
+    "createdAt": 1765433415549,
+    "updatedAt": 1765433415549,
+    "useAdvancedEditing": false,
+    "draftMode": false,
+    "nodes": {}
+  },
+  "mime_type": "application/run+json"
+}
+
+Response:
+
+{
+  "context":null,
+  "id":"6623842d-3669-49b9-976f-5b239c24e353",
+  "display_name":null,
+  "owner_id":"hdYte3rVrWbswJZEglL5CdmKfxv1",
+  "status":"CREATED",
+  "created_at":1765433415,
+  "updated_at":1765433415,
+  "object_uri":null,
+  "mime_type":"application/run+json",
+  "metadata":{
+    "version":"0.0.1",
+    "createdAt":1765433415549,
+    "updatedAt":1765433415549,
+    "useAdvancedEditing":false,
+    "draftMode":false,
+    "nodes":{}
+  }
+}

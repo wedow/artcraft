@@ -24,4 +24,21 @@ fetch("https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/ee33d03e-b153-4d5
   "credentials": "include"
 });
 
+Response:
+
 {"context":null,"id":"ee33d03e-b153-4d56-a7cb-a08bf86bd20e","display_name":"uploaded_image_f21c0e52-5202-43eb-ba46-121860ae8265.jpeg","owner_id":"hdYte3rVrWbswJZEglL5CdmKfxv1","status":"READY","created_at":1765433416,"updated_at":1765433417,"object_uri":"https://cdn.marble.worldlabs.ai/object/ee33d03e-b153-4d56-a7cb-a08bf86bd20e/asset.jpg","mime_type":"image/jpeg","metadata":null}
+
+Response Pretty Print:
+
+{
+  "context": null,
+  "id": "ee33d03e-b153-4d56-a7cb-a08bf86bd20e",
+  "display_name": "uploaded_image_f21c0e52-5202-43eb-ba46-121860ae8265.jpeg",
+  "owner_id": "hdYte3rVrWbswJZEglL5CdmKfxv1",
+  "status": "READY",
+  "created_at": 1765433416,
+  "updated_at": 1765433417,
+  "object_uri": "https://cdn.marble.worldlabs.ai/object/ee33d03e-b153-4d56-a7cb-a08bf86bd20e/asset.jpg",
+  "mime_type": "image/jpeg",
+  "metadata": null
+}
