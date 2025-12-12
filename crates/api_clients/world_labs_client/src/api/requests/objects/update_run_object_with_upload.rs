@@ -160,7 +160,7 @@ struct ObjectMetadata {
 impl Default for RawRequest {
   fn default() -> Self {
     let now = Utc::now();
-    let now = now.timestamp().unsigned_abs();
+    let now = now.timestamp().unsigned_abs() * 1000; // NB: Millisecond resolution
     Self {
       object: ObjectDef {
         metadata: ObjectMetadata {

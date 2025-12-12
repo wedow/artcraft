@@ -47,7 +47,7 @@ pub struct RunObjectMetadata {
 impl Default for RunObject {
   fn default() -> Self {
     let now = Utc::now();
-    let now = now.timestamp().unsigned_abs();
+    let now = now.timestamp().unsigned_abs() * 1000; // Millisecond resolution
     Self {
       id: None,
       metadata: RunObjectMetadata{
@@ -72,8 +72,8 @@ mod tests {
     let object = RunObject::default();
     assert!(object.id.is_none());
     assert_eq!(&object.metadata.version, "0.0.1");
-    assert!(object.metadata.created_at > 1765433415549);
-    assert!(object.metadata.updated_at > 1765433415549);
+    assert!(object.metadata.created_at > 1705433415549);
+    assert!(object.metadata.updated_at > 1705433415549);
     assert_eq!(&object.mime_type, "application/run+json");
   }
 }
