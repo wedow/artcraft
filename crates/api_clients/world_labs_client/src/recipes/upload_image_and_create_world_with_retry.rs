@@ -41,6 +41,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   }).await?;
 
   let run_object_id = response.id;
+  let run_object = response.run_object;
 
   info!("Object id: {}", run_object_id.0);
 

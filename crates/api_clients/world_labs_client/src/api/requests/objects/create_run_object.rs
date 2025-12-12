@@ -1,3 +1,4 @@
+use crate::api::api_types::run_object::RunObject;
 use crate::api::api_types::run_object_id::RunObjectId;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
@@ -5,6 +6,7 @@ use crate::credentials::world_labs_cookies::WorldLabsCookies;
 use crate::error::world_labs_client_error::WorldLabsClientError;
 use crate::error::world_labs_error::WorldLabsError;
 use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
+use crate::error::world_labs_specific_api_error::WorldLabsSpecificApiError;
 use chrono::Utc;
 use http_headers::names::{PRIORITY, SEC_FETCH_DEST, SEC_FETCH_MODE, SEC_FETCH_SITE, SEC_GPC};
 use http_headers::values::accept::ACCEPT_ALL;
@@ -32,6 +34,7 @@ pub struct CreateRunObjectArgs<'a> {
 
 pub struct CreateRunObjectResponse {
   pub id: RunObjectId,
+  pub run_object: RunObject,
 }
 
 /// Marble Image-to-World
@@ -67,9 +70,9 @@ pub async fn create_run_object(args: CreateRunObjectArgs<'_>) -> Result<CreateRu
     request_builder = request_builder.timeout(timeout);
   }
 
-  let request_payload = RawRequest::default();
+  let new_run_object = RunObject::default();
 
-  let http_request = request_builder.json(&request_payload)
+  let http_request = request_builder.json(&new_run_object)
       .build()
       .map_err(|err| {
         error!("Error building request: {:?}", err);
@@ -101,63 +104,18 @@ pub async fn create_run_object(args: CreateRunObjectArgs<'_>) -> Result<CreateRu
 
   debug!("Response body (200): {}", response_body);
 
-  let response : RawResponse = serde_json::from_str(&response_body)
+  let response : RunObject = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-  Ok(CreateRunObjectResponse {
-    id: RunObjectId(response.id),
-  })
-}
-
-#[derive(Serialize)]
-struct RawRequest {
-  pub metadata: RawRequestMetadata,
-  pub mime_type: String,
-}
-
-#[derive(Serialize)]
-struct RawRequestMetadata {
-  pub version: String,
-
-  #[serde(rename = "createdAt")]
-  pub created_at: u64,
-
-  #[serde(rename = "updatedAt")]
-  pub updated_at: u64,
-
-  #[serde(rename = "usesAdvancedEditing")]
-  pub uses_advanced_editing: bool,
-
-  #[serde(rename = "draftMode")]
-  pub draft_mode: bool,
-
-  pub nodes: RawRequestNodes,
-}
-
-#[derive(Serialize)]
-struct RawRequestNodes {
-}
-
-impl Default for RawRequest {
-  fn default() -> Self {
-    let now = Utc::now();
-    let now = now.timestamp().unsigned_abs();
-    Self {
-      metadata: RawRequestMetadata {
-        version: "0.0.1".to_string(),
-        created_at: now,
-        updated_at: now,
-        uses_advanced_editing: false,
-        draft_mode: false,
-        nodes: RawRequestNodes {},
-      },
-      mime_type: "application/run+json".to_string(),
+  let run_id = match &response.id {
+    Some(id) => RunObjectId(id.to_string()),
+    None => {
+      return Err(WorldLabsSpecificApiError::NoRunIdInResponse { response_body }.into())
     }
-  }
-}
+  };
 
-#[derive(Deserialize)]
-struct RawResponse {
-  pub id: String,
-  //pub owner_id: String,
+  Ok(CreateRunObjectResponse {
+    id: run_id,
+    run_object: response,
+  })
 }
