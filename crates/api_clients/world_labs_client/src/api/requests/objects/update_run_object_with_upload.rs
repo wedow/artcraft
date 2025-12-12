@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::api::api_types::run_object_id::RunObjectId;
 use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
@@ -21,6 +22,8 @@ use http_headers::values::te::TE_TRAILERS;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use chrono::Utc;
+use serde_json::Value;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, ORIGIN, PRAGMA, REFERER, TE};
 use wreq::Client;
 use wreq_util::Emulation;
@@ -31,7 +34,7 @@ fn get_url(run_id: &RunObjectId) -> String {
   format!("{}/{}", BASE_URL, run_id.0)
 }
 
-pub struct PatchObjectRunAfterUploadArgs<'a> {
+pub struct UpdateRunObjectWithUploadArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
   pub run_id: &'a RunObjectId,
@@ -42,14 +45,14 @@ pub struct PatchObjectRunAfterUploadArgs<'a> {
   pub request_timeout: Option<Duration>,
 }
 
-pub struct PatchObjectRunAfterUploadResponse {
+pub struct UpdateRunObjectWithUploadResponse {
   pub world_id: WorldObjectId,
 }
 
 /// Marble Image-to-World
 /// This request patches an object. Seems to update it with the attached files.
 /// Request #6 (of ~10)
-pub async fn patch_object_run_after_upload(args: PatchObjectRunAfterUploadArgs<'_>) -> Result<PatchObjectRunAfterUploadResponse, WorldLabsError> {
+pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'_>) -> Result<UpdateRunObjectWithUploadResponse, WorldLabsError> {
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
       .build()
@@ -81,7 +84,7 @@ pub async fn patch_object_run_after_upload(args: PatchObjectRunAfterUploadArgs<'
     request_builder = request_builder.timeout(timeout);
   }
 
-  let request_payload = RawRequest::for_image_and_run(args.upload_id, args.upload_mime_type, args.run_id, args.text_prompt);
+  let request_payload = RawRequest::default();
 
   let http_request = request_builder.json(&request_payload)
       .build()
@@ -118,7 +121,7 @@ pub async fn patch_object_run_after_upload(args: PatchObjectRunAfterUploadArgs<'
   let response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
-  Ok(PatchObjectRunAfterUploadResponse {
+  Ok(UpdateRunObjectWithUploadResponse {
     world_id: WorldObjectId(response.id),
   })
 }
@@ -126,8 +129,7 @@ pub async fn patch_object_run_after_upload(args: PatchObjectRunAfterUploadArgs<'
 #[derive(Serialize)]
 struct RawRequest {
   pub object: ObjectDef,
-  pub generation_input: GenerationInput,
-  pub context: Context,
+  pub update_mask: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -138,59 +140,39 @@ struct ObjectDef {
 #[derive(Serialize)]
 struct ObjectMetadata {
   pub version: String,
+
   #[serde(rename = "createdAt")]
-  pub created_at: String,
+  pub created_at: u64,
+
   #[serde(rename = "updatedAt")]
-  pub updated_at: String,
+  pub updated_at: u64,
+
   #[serde(rename = "usesAdvancedEditing")]
   pub uses_advanced_editing: bool,
+
   #[serde(rename = "draftMode")]
   pub draft_mode: bool,
+
+  /// Polymorphic set of ID-to-object mappings.
+  pub nodes: HashMap<String, Value>,
 }
 
-#[derive(Serialize)]
-struct GenerationInput {
-  pub model: String,
-  pub prompt: Prompt,
-}
-
-#[derive(Serialize)]
-struct Prompt {
-  pub r#type: String,
-  pub image_prompt: ImagePrompt,
-  pub text_prompt: String,
-}
-
-#[derive(Serialize)]
-struct ImagePrompt {
-  pub uri: String,
-}
-
-#[derive(Serialize)]
-struct Context {
-  pub run_id: String,
-}
-
-impl RawRequest {
-  pub fn for_image_and_run(image_upload_id: &UploadObjectId, image_mime_type: UploadMimeType, run_id: &RunObjectId, text_prompt: &str) -> Self {
-    let image_url = upload_id_to_image_url(image_upload_id, image_mime_type);
+impl Default for RawRequest {
+  fn default() -> Self {
+    let now = Utc::now();
+    let now = now.timestamp().unsigned_abs();
     Self {
-      permission: Permission {
-        public: true,
+      object: ObjectDef {
+        metadata: ObjectMetadata {
+          version: "0.0.1".to_string(),
+          created_at: now,
+          updated_at: now,
+          uses_advanced_editing: false,
+          draft_mode: false,
+          nodes: HashMap::new(),
+        }
       },
-      generation_input: GenerationInput {
-        model: "Marble 0.1-plus".to_string(),
-        prompt: Prompt {
-          r#type: "image".to_string(),
-          image_prompt: ImagePrompt {
-            uri: image_url,
-          },
-          text_prompt: text_prompt.to_string(),
-        },
-      },
-      context: Context {
-        run_id: run_id.0.clone(),
-      }
+      update_mask: vec!["metadata".to_string()]
     }
   }
 }
@@ -202,4 +184,13 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
+  use crate::api::requests::objects::update_run_object_with_upload::RawRequest;
+
+  #[test]
+  fn request_default() {
+    let request = RawRequest::default();
+    assert_eq!(request.object.metadata.version, "0.0.1");
+    assert!(request.object.metadata.created_at > 10000);
+    assert!(request.object.metadata.updated_at > 10000);
+  }
 }
