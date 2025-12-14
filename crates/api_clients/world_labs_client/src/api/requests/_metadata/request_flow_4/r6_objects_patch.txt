@@ -40,6 +40,9 @@ Request Payload Pretty Print:
       "useAdvancedEditing": false,
       "draftMode": false,
       "nodes": {
+      
+        // This is a new UUID that gets used downstream - 
+        
         "9b864e10-5a9b-46a1-8a94-2b571649a60d": {
           "id": "9b864e10-5a9b-46a1-8a94-2b571649a60d",
           "type": "input",
@@ -50,6 +53,8 @@ Request Payload Pretty Print:
           },
           "createdAt": 1765433417487
         },
+        
+        
         "22b9587b-2b4d-49c2-a6eb-e985d890e7db": {
           "id": "22b9587b-2b4d-49c2-a6eb-e985d890e7db",
           "type": "pano",
@@ -61,6 +66,8 @@ Request Payload Pretty Print:
           },
           "createdAt": 1765433417487
         },
+        
+        
         "8e63a168-0c85-470d-b655-b185e0e13fee": {
           "id": "8e63a168-0c85-470d-b655-b185e0e13fee",
           "type": "world",
@@ -75,6 +82,8 @@ Request Payload Pretty Print:
           },
           "createdAt": 1765433417487
         }
+        
+        
       }
     }
   },
