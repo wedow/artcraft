@@ -3,7 +3,7 @@ use crate::api::api_types::pano_object_id::PanoObjectId;
 use crate::api::api_types::run_object_id::RunObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
 use crate::api::api_types::upload_object_id::UploadObjectId;
-use crate::api::api_types::world_object_id::WorldObjectId;
+use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::api::utils::upload_id_to_image_url::upload_id_to_image_url;
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
@@ -55,13 +55,13 @@ pub struct UpdateRunObjectWithUploadPayloadArgs<'a> {
 
   pub image_input_id: &'a ImageInputObjectId,
   pub pano_id: &'a PanoObjectId,
-  pub world_id: &'a WorldObjectId,
+  pub meta_world_id: &'a MetaWorldObjectId,
 }
 
 pub struct UpdateRunObjectWithUploadResponse {
   pub image_input_id: ImageInputObjectId,
   pub pano_id: PanoObjectId,
-  pub world_id: WorldObjectId,
+  pub world_id: MetaWorldObjectId,
 }
 
 /// Marble Image-to-World
@@ -133,13 +133,13 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
 
   debug!("Response body (200): {}", response_body);
 
-  let response : RawResponse = serde_json::from_str(&response_body)
+  let _response : RawResponse = serde_json::from_str(&response_body)
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
   Ok(UpdateRunObjectWithUploadResponse {
     image_input_id: args.payload_args.image_input_id.clone(),
     pano_id: args.payload_args.pano_id.clone(),
-    world_id: args.payload_args.world_id.clone(),
+    world_id: args.payload_args.meta_world_id.clone(),
   })
 }
 
@@ -186,7 +186,7 @@ impl RawRequest {
     });
     request.add_world_node({
       let mut node = WorldNode::default();
-      node.id = args.world_id.to_string();
+      node.id = args.meta_world_id.to_string();
       node.parent_id= Some(args.pano_id.to_string());
       node
     });
@@ -397,7 +397,7 @@ mod tests {
   use crate::api::api_types::image_input_object_id::ImageInputObjectId;
   use crate::api::api_types::pano_object_id::PanoObjectId;
   use crate::api::api_types::run_object_id::RunObjectId;
-  use crate::api::api_types::world_object_id::WorldObjectId;
+  use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
   use crate::api::requests::objects::update_run_object_with_upload::{RawRequest, UpdateRunObjectWithUploadPayloadArgs};
 
   #[test]
@@ -413,7 +413,7 @@ mod tests {
     let run_id = RunObjectId::from_str("79795b32-e44d-4333-bac1-05b2c9a3ea12");
     let image_input_id = ImageInputObjectId::from_str("bc17252b-811e-49d7-be3e-b7c538df9d30");
     let pano_id = PanoObjectId::from_str("82f6b488-8afe-4311-9022-80ad5789ad92");
-    let world_id = WorldObjectId::from_str("f08ec501-601c-47c6-a104-402d1820b8f0");
+    let world_id = MetaWorldObjectId::from_str("f08ec501-601c-47c6-a104-402d1820b8f0");
 
     let args = UpdateRunObjectWithUploadPayloadArgs {
       run_created_at_timestamp: 1234,
@@ -421,7 +421,7 @@ mod tests {
       run_id: &run_id,
       image_input_id: &image_input_id,
       pano_id: &pano_id,
-      world_id: &world_id,
+      meta_world_id: &world_id,
     };
 
     let request = RawRequest::from_args(&args);

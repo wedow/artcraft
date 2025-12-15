@@ -16,9 +16,11 @@ use std::time::Duration;
 use uuid::Uuid;
 use crate::api::api_types::image_input_object_id::ImageInputObjectId;
 use crate::api::api_types::pano_object_id::PanoObjectId;
-use crate::api::api_types::world_object_id::WorldObjectId;
+use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
+use crate::api::api_types::world_id::WorldObjectId;
 use crate::api::requests::objects::update_run_object_with_upload::{update_run_object_with_upload, UpdateRunObjectWithUploadArgs, UpdateRunObjectWithUploadPayloadArgs};
 use crate::api::requests::recaption::recaption_image::{recaption_image, RecaptionImageArgs};
+use crate::api::requests::worlds::create_world::{create_world, CreateWorldArgs};
 
 pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
@@ -28,7 +30,8 @@ pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
 }
 
 pub struct UploadImageAndCreateWorldWithRetryResponse {
-  pub object_id: RunObjectId,
+  pub run_id: RunObjectId,
+  pub world_id: WorldObjectId,
   pub image_upload_url: String,
 }
 
@@ -106,7 +109,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let image_input_id = ImageInputObjectId::new();
   let pano_id = PanoObjectId::new();
-  let world_id = WorldObjectId::new();
+  let meta_world_id = MetaWorldObjectId::new();
 
   let response = update_run_object_with_upload(UpdateRunObjectWithUploadArgs {
     cookies: &args.cookies,
@@ -117,7 +120,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
       image_upload_url: &image_url,
       image_input_id: &image_input_id,
       pano_id: &pano_id,
-      world_id: &world_id,
+      meta_world_id: &meta_world_id,
     },
     request_timeout: args.individual_request_timeout,
   }).await?;
@@ -135,9 +138,26 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   info!("Title: {}", response.title);
   info!("Caption: {}", response.caption);
+  
+  let text_prompt = response.caption;
+
+  info!("Request #8 of 10: create world ...");
+
+  let response = create_world(CreateWorldArgs {
+    cookies: &args.cookies,
+    bearer_token: &args.bearer_token,
+    text_prompt: &text_prompt,
+    image_upload_url: &image_url,
+    request_timeout: args.individual_request_timeout,
+  }).await?;
+
+  let world_id = response.world_id;
+  
+  info!("World ID: {}", &world_id.0);
 
   Ok(UploadImageAndCreateWorldWithRetryResponse {
-    object_id: run_object_id,
+    run_id: run_object_id,
+    world_id,
     image_upload_url: image_url,
   })
 }
@@ -173,7 +193,7 @@ mod tests {
     }).await.unwrap();
 
     println!("Upload URL: {}", results.image_upload_url);
-    println!("Object ID: {}", results.object_id.0);
+    println!("Object ID: {}", results.run_id.0);
 
   }
 }
