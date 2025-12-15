@@ -61,6 +61,7 @@ export const UploadFiles3D = ({
   );
 
   const handleSubmit = () => {
+    // BUG: Setting the state here might not update the state value until the next render so the old file would be uploaded.
     if (!assetFile.value) {
       setAssetFile((curr) => ({
         ...curr,
