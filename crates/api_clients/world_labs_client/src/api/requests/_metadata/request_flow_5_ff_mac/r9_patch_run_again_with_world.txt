@@ -1,0 +1,160 @@
+https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/79795b32-e44d-4333-bac1-05b2c9a3ea12
+
+curl 'https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/79795b32-e44d-4333-bac1-05b2c9a3ea12' \
+  -X PATCH \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:146.0) Gecko/20100101 Firefox/146.0' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en-US,en;q=0.5' \
+  -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  -H 'Referer: https://marble.worldlabs.ai/' \
+  -H 'authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjM4MTFiMDdmMjhiODQxZjRiNDllNDgyNTg1ZmQ2NmQ1NWUzOGRiNWQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vd2x0LXRyYWluaW5nLWdzYyIsImF1ZCI6IndsdC10cmFpbmluZy1nc2MiLCJhdXRoX3RpbWUiOjE3NjU3NTY0OTYsInVzZXJfaWQiOiJDQXJKSjJQUUZGZDhsMlJmOHVwdFpobDg2ZDMzIiwic3ViIjoiQ0FySkoyUFFGRmQ4bDJSZjh1cHRaaGw4NmQzMyIsImlhdCI6MTc2NTc1NjQ5NiwiZXhwIjoxNzY1NzYwMDk2LCJlbWFpbCI6InNhYmFsaWQyMzRAY3JzYXkuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInNhYmFsaWQyMzRAY3JzYXkuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.XWTpmC30BtMCLYfUISHyHuqScL2E-T9uUhZGpbZlcaT0VxJpMTFlDuXAgQKRK1xlnwvmypaKZQizyzOl-CjxtA_W_9iiOfPvbZ66gG1ry7XLYtqT8rxunuEX0MldiTdZznHuB7oiel03GiR1cc74B-4RYeNhjm7VCVpMOVw2zyQ75f8y2aylDDk-3BLoir_cnEru-K97l8ywrcTLCosaAaT-7SkKre_UeIZuuC-MDbw2Ccq3tWNC4oZaHaxKZLuDDRmkapPvN8HJ2rubG506AQ1O007f6N2zHbJDmxgm1niDMuOLGNbOp7XDelxIBS_cRGEPhSJfCjmuGnkRAk4zdw' \
+  -H 'baggage: sentry-environment=prod,sentry-release=rel-3d78b11,sentry-public_key=3779934420ee57f00d05e5fb1e57f79d,sentry-trace_id=602e8913a9bb4f9f94d2e730b1637158,sentry-org_id=4509005975388160,sentry-transaction=%2F(main)%2F_explore%2F,sentry-sampled=true,sentry-sample_rand=0.1775266372869313,sentry-sample_rate=1' \
+  -H 'content-type: application/json' \
+  -H 'sentry-trace: 602e8913a9bb4f9f94d2e730b1637158-8f4c2f0bc8fc4683-1' \
+  -H 'Origin: https://marble.worldlabs.ai' \
+  -H 'Connection: keep-alive' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Priority: u=4' \
+  -H 'TE: trailers' \
+  --data-raw '{"object":{"metadata":{"version":"0.0.1","name":"Cows Grazing in Indoor Pasture","createdAt":1765756772176,"updatedAt":1765756779076,"useAdvancedEditing":false,"draftMode":false,"nodes":{"bc17252b-811e-49d7-be3e-b7c538df9d30":{"id":"bc17252b-811e-49d7-be3e-b7c538df9d30","type":"input","parentId":null,"source":{"type":"image","image_url":"https://cdn.marble.worldlabs.ai/object/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg"},"createdAt":1765756773647,"title":"Cows Grazing in Indoor Pasture","caption":"The scene is a surreal indoor agricultural environment, depicted with a realistic and slightly eerie tone, as rows of bright lights illuminate a vast, artificial pasture. The overall mood is quiet and contemplative, emphasizing the unusual juxtaposition of natural elements within a manufactured setting. Large herds of cattle are distributed across the lush, green grassy floor, peacefully grazing on the abundant vegetation. The entire space is encased within a massive, warehouse-like structure, supported by countless concrete columns that extend from the floor to the ceiling in an orderly grid. Above the columns, a network of metal beams forms the infrastructure of the roof, from which an extensive array of industrial lights is suspended. These lights are arranged in long, parallel lines, creating a striking visual perspective that converges towards a distant vanishing point at the center of the structure. The dense, vibrant green grass covers every inch of the ground, appearing soft and uniform, without any discernible paths or bare patches. Each cow is distinct, varying in color from black to brown and white, and each is engaged in individual grazing or resting. The concrete columns maintain a consistent light gray color and texture, creating a rhythmic architectural presence throughout the vast indoor landscape. To the right, another cluster of columns continues the architectural pattern, while the grassy expanse remains uninterrupted, extending toward the edges of the structure. "},"82f6b488-8afe-4311-9022-80ad5789ad92":{"id":"82f6b488-8afe-4311-9022-80ad5789ad92","type":"pano","parentId":"bc17252b-811e-49d7-be3e-b7c538df9d30","source":{"type":"generate_world","world_id":"d60cfa21-5506-43de-9a9c-0707fc17a5ec","status":"pending"},"createdAt":1765756773647},"f08ec501-601c-47c6-a104-402d1820b8f0":{"id":"f08ec501-601c-47c6-a104-402d1820b8f0","type":"world","parentId":"82f6b488-8afe-4311-9022-80ad5789ad92","source":{"type":"generate_world","world_id":"d60cfa21-5506-43de-9a9c-0707fc17a5ec","posed_cubemaps_url":"","minimap_url":"","minimap_metadata":"","status":"pending"},"createdAt":1765756773647}}}},"update_mask":["metadata"]}'
+
+Request Body:
+
+{
+  "object": {
+    "metadata": {
+      "version": "0.0.1",
+      "name": "Cows Grazing in Indoor Pasture",
+      "createdAt": 1765756772176,
+      "updatedAt": 1765756779076,
+      "useAdvancedEditing": false,
+      "draftMode": false,
+      "nodes": {
+        "bc17252b-811e-49d7-be3e-b7c538df9d30": {
+          "id": "bc17252b-811e-49d7-be3e-b7c538df9d30",
+          "type": "input",
+          "parentId": null,
+          "source": {
+            "type": "image",
+            "image_url": "https://cdn.marble.worldlabs.ai/object/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg"
+          },
+          "createdAt": 1765756773647,
+          "title": "Cows Grazing in Indoor Pasture",
+          "caption": "The scene is a surreal indoor agricultural environment, depicted with a realistic and slightly eerie tone, as rows of bright lights illuminate a vast, artificial pasture. The overall mood is quiet and contemplative, emphasizing the unusual juxtaposition of natural elements within a manufactured setting. Large herds of cattle are distributed across the lush, green grassy floor, peacefully grazing on the abundant vegetation. The entire space is encased within a massive, warehouse-like structure, supported by countless concrete columns that extend from the floor to the ceiling in an orderly grid. Above the columns, a network of metal beams forms the infrastructure of the roof, from which an extensive array of industrial lights is suspended. These lights are arranged in long, parallel lines, creating a striking visual perspective that converges towards a distant vanishing point at the center of the structure. The dense, vibrant green grass covers every inch of the ground, appearing soft and uniform, without any discernible paths or bare patches. Each cow is distinct, varying in color from black to brown and white, and each is engaged in individual grazing or resting. The concrete columns maintain a consistent light gray color and texture, creating a rhythmic architectural presence throughout the vast indoor landscape. To the right, another cluster of columns continues the architectural pattern, while the grassy expanse remains uninterrupted, extending toward the edges of the structure. "
+        },
+        "82f6b488-8afe-4311-9022-80ad5789ad92": {
+          "id": "82f6b488-8afe-4311-9022-80ad5789ad92",
+          "type": "pano",
+          "parentId": "bc17252b-811e-49d7-be3e-b7c538df9d30",
+          "source": {
+            "type": "generate_world",
+            "world_id": "d60cfa21-5506-43de-9a9c-0707fc17a5ec",
+            "status": "pending"
+          },
+          "createdAt": 1765756773647
+        },
+        "f08ec501-601c-47c6-a104-402d1820b8f0": {
+          "id": "f08ec501-601c-47c6-a104-402d1820b8f0",
+          "type": "world",
+          "parentId": "82f6b488-8afe-4311-9022-80ad5789ad92",
+          "source": {
+            "type": "generate_world",
+            "world_id": "d60cfa21-5506-43de-9a9c-0707fc17a5ec",
+            "posed_cubemaps_url": "",
+            "minimap_url": "",
+            "minimap_metadata": "",
+            "status": "pending"
+          },
+          "createdAt": 1765756773647
+        }
+      }
+    }
+  },
+  "update_mask": [
+    "metadata"
+  ]
+}
+
+Response:
+
+{"context":null,"id":"79795b32-e44d-4333-bac1-05b2c9a3ea12","display_name":null,"owner_id":"CArJJ2PQFFd8l2Rf8uptZhl86d33","status":"CREATED","created_at":1765756772,"updated_at":1765756779,"object_uri":null,"mime_type":"application/run+json","metadata":{"version":"0.0.1","name":"Cows Grazing in Indoor Pasture","createdAt":1765756772176,"updatedAt":1765756779076,"useAdvancedEditing":false,"draftMode":false,"nodes":{"bc17252b-811e-49d7-be3e-b7c538df9d30":{"id":"bc17252b-811e-49d7-be3e-b7c538df9d30","type":"input","parentId":null,"source":{"type":"image","image_url":"https://cdn.marble.worldlabs.ai/object/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg"},"createdAt":1765756773647,"title":"Cows Grazing in Indoor Pasture","caption":"The scene is a surreal indoor agricultural environment, depicted with a realistic and slightly eerie tone, as rows of bright lights illuminate a vast, artificial pasture. The overall mood is quiet and contemplative, emphasizing the unusual juxtaposition of natural elements within a manufactured setting. Large herds of cattle are distributed across the lush, green grassy floor, peacefully grazing on the abundant vegetation. The entire space is encased within a massive, warehouse-like structure, supported by countless concrete columns that extend from the floor to the ceiling in an orderly grid. Above the columns, a network of metal beams forms the infrastructure of the roof, from which an extensive array of industrial lights is suspended. These lights are arranged in long, parallel lines, creating a striking visual perspective that converges towards a distant vanishing point at the center of the structure. The dense, vibrant green grass covers every inch of the ground, appearing soft and uniform, without any discernible paths or bare patches. Each cow is distinct, varying in color from black to brown and white, and each is engaged in individual grazing or resting. The concrete columns maintain a consistent light gray color and texture, creating a rhythmic architectural presence throughout the vast indoor landscape. To the right, another cluster of columns continues the architectural pattern, while the grassy expanse remains uninterrupted, extending toward the edges of the structure. "},"82f6b488-8afe-4311-9022-80ad5789ad92":{"id":"82f6b488-8afe-4311-9022-80ad5789ad92","type":"pano","parentId":"bc17252b-811e-49d7-be3e-b7c538df9d30","source":{"type":"generate_world","world_id":"d60cfa21-5506-43de-9a9c-0707fc17a5ec","status":"pending"},"createdAt":1765756773647},"f08ec501-601c-47c6-a104-402d1820b8f0":{"id":"f08ec501-601c-47c6-a104-402d1820b8f0","type":"world","parentId":"82f6b488-8afe-4311-9022-80ad5789ad92","source":{"type":"generate_world","world_id":"d60cfa21-5506-43de-9a9c-0707fc17a5ec","posed_cubemaps_url":"","minimap_url":"","minimap_metadata":"","status":"pending"},"createdAt":1765756773647}}}}
+
+Response Pretty Print:
+
+{
+  "context": null,
+  "id": "79795b32-e44d-4333-bac1-05b2c9a3ea12",
+  "display_name": null,
+  "owner_id": "CArJJ2PQFFd8l2Rf8uptZhl86d33",
+  "status": "CREATED",
+  "created_at": 1765756772,
+  "updated_at": 1765756779,
+  "object_uri": null,
+  "mime_type": "application/run+json",
+  "metadata": {
+    "version": "0.0.1",
+    "name": "Cows Grazing in Indoor Pasture",
+    "createdAt": 1765756772176,
+    "updatedAt": 1765756779076,
+    "useAdvancedEditing": false,
+    "draftMode": false,
+    "nodes": {
+      "bc17252b-811e-49d7-be3e-b7c538df9d30": {
+        "id": "bc17252b-811e-49d7-be3e-b7c538df9d30",
+        "type": "input",
+        "parentId": null,
+        "source": {
+          "type": "image",
+          "image_url": "https://cdn.marble.worldlabs.ai/object/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg"
+        },
+        "createdAt": 1765756773647,
+        "title": "Cows Grazing in Indoor Pasture",
+        "caption": "The scene is a surreal indoor agricultural environment, depicted with a realistic and slightly eerie tone, as rows of bright lights illuminate a vast, artificial pasture. The overall mood is quiet and contemplative, emphasizing the unusual juxtaposition of natural elements within a manufactured setting. Large herds of cattle are distributed across the lush, green grassy floor, peacefully grazing on the abundant vegetation. The entire space is encased within a massive, warehouse-like structure, supported by countless concrete columns that extend from the floor to the ceiling in an orderly grid. Above the columns, a network of metal beams forms the infrastructure of the roof, from which an extensive array of industrial lights is suspended. These lights are arranged in long, parallel lines, creating a striking visual perspective that converges towards a distant vanishing point at the center of the structure. The dense, vibrant green grass covers every inch of the ground, appearing soft and uniform, without any discernible paths or bare patches. Each cow is distinct, varying in color from black to brown and white, and each is engaged in individual grazing or resting. The concrete columns maintain a consistent light gray color and texture, creating a rhythmic architectural presence throughout the vast indoor landscape. To the right, another cluster of columns continues the architectural pattern, while the grassy expanse remains uninterrupted, extending toward the edges of the structure. "
+      },
+      "82f6b488-8afe-4311-9022-80ad5789ad92": {
+        "id": "82f6b488-8afe-4311-9022-80ad5789ad92",
+        "type": "pano",
+        "parentId": "bc17252b-811e-49d7-be3e-b7c538df9d30",
+        "source": {
+          "type": "generate_world",
+          "world_id": "d60cfa21-5506-43de-9a9c-0707fc17a5ec",
+          "status": "pending"
+        },
+        "createdAt": 1765756773647
+      },
+      "f08ec501-601c-47c6-a104-402d1820b8f0": {
+        "id": "f08ec501-601c-47c6-a104-402d1820b8f0",
+        "type": "world",
+        "parentId": "82f6b488-8afe-4311-9022-80ad5789ad92",
+        "source": {
+          "type": "generate_world",
+          "world_id": "d60cfa21-5506-43de-9a9c-0707fc17a5ec",
+          "posed_cubemaps_url": "",
+          "minimap_url": "",
+          "minimap_metadata": "",
+          "status": "pending"
+        },
+        "createdAt": 1765756773647
+      }
+    }
+  }
+}
+
+=====================
+
+IDs/UUIDs/Filenames thus far:
+
+- CArJJ2PQFFd8l2Rf8uptZhl86d33 - returned in first request; "owner ID"
+- 79795b32-e44d-4333-bac1-05b2c9a3ea12 - returned in first request; "run ID"
+- uploaded_image_d008d227-9564-46f1-ba4e-9fcede900901.jpeg - sent in second request, `display_name` - `"upload filename"
+- 13ca760c-8ef9-4bf5-acc3-5a507fad3abf - returned in second request, "upload id"
+- 13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg - returned in third request, "upload id" with asset.jpg filename suffix
+- https://cdn.marble.worldlabs.ai/object/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg - returned in fifth request, `object_uri` of upload
+- bc17252b-811e-49d7-be3e-b7c538df9d30 - returned in 6th request, "type=input id source type image", used as parent of "pano"
+- 82f6b488-8afe-4311-9022-80ad5789ad92 - returned in 6th request, "type=pano id", used as parent of "world"
+- f08ec501-601c-47c6-a104-402d1820b8f0 - returned in 6th request, "type=world id"
+- d60cfa21-5506-43de-9a9c-0707fc17a5ec - returned in 8th request, "world id"
+- https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/c3edfcf7_image_prompt_sanitized.png - returned in 8th request, "image prompt"
+
