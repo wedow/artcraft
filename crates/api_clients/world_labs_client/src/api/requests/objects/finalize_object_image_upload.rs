@@ -40,6 +40,7 @@ pub struct FinalizeObjectImageUploadArgs<'a> {
 
 pub struct FinalizeObjectImageUploadResponse {
   pub object_url: String,
+  pub updated_at: u64,
 }
 
 /// Marble Image-to-World
@@ -114,6 +115,7 @@ pub async fn finalize_object_image_upload(args: FinalizeObjectImageUploadArgs<'_
 
   Ok(FinalizeObjectImageUploadResponse {
     object_url: response.object_uri,
+    updated_at: response.updated_at,
   })
 }
 
@@ -121,6 +123,10 @@ pub async fn finalize_object_image_upload(args: FinalizeObjectImageUploadArgs<'_
 struct RawResponse {
   /// eg. "https://cdn.marble.worldlabs.ai/object/foo-bar-baz-bin/asset.jpg"
   pub object_uri: String,
+
+  /// Seconds-resolution timestamp.
+  /// eg. `1765745771`
+  pub updated_at: u64,
 }
 
 #[cfg(test)]

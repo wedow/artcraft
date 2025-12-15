@@ -13,7 +13,6 @@ const RUN_VERSION : &str = "0.0.1";
 ///   - request #6 - patch run after image upload
 /// Gotta go fast?
 #[derive(Serialize, Deserialize, Clone)]
-
 pub struct RunObject {
   /// The primary ID of the run.
   /// This won't exist until we post it to the server.

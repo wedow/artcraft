@@ -154,7 +154,7 @@ struct ObjectMetadata {
   pub draft_mode: bool,
 
   /// Polymorphic set of ID-to-object mappings.
-  pub nodes: HashMap<String, Value>,
+  pub nodes: HashMap<String, NodeValue>,
 }
 
 impl Default for RawRequest {
@@ -177,6 +177,68 @@ impl Default for RawRequest {
   }
 }
 
+impl RawRequest {
+  pub fn add_image_input_node(&mut self, node: ImageInputNode) {
+    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::ImageInput(node));
+  }
+}
+
+#[derive(Serialize)]
+#[serde(untagged)]
+//#[serde(tag = "type", content = "value")]
+enum NodeValue {
+  ImageInput(ImageInputNode),
+}
+
+#[derive(Serialize, Default)]
+struct ImageInputNode {
+  pub id: String,
+  pub r#type: TypeInput,
+  #[serde(rename = "parentId")]
+  pub parent_id: Option<String>,
+  pub source: ImageInputNodeSource,
+  #[serde(rename = "createdAt")]
+  pub created_at: u64,
+}
+
+#[derive(Serialize, Default)]
+struct ImageInputNodeSource {
+  pub r#type: TypeInput,
+  pub image_url: String,
+}
+
+#[derive(Serialize, Default)]
+enum TypeInput {
+  #[serde(rename = "input")]
+  #[default]
+  Input
+}
+
+//impl Default for ImageInputNode {
+//  fn default() -> Self {
+//    Self {
+//      id: "".to_string(),
+//      r#type: TypeInput::Input,
+//      parent_id: None,
+//      source: ImageInputNodeSource {
+//        r#type: TypeInput::Input,
+//        image_url: "".to_string()
+//      },
+//      created_at: 0,
+//    }
+//  }
+//}
+
+impl ImageInputNode {
+  pub fn with_id(id: String) -> Self{
+    Self {
+      id,
+      ..Default::default()
+    }
+  }
+}
+
+
 #[derive(Deserialize)]
 struct RawResponse {
   pub id: String,
@@ -184,7 +246,7 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
-  use crate::api::requests::objects::update_run_object_with_upload::RawRequest;
+  use crate::api::requests::objects::update_run_object_with_upload::{ImageInputNode, RawRequest};
 
   #[test]
   fn request_default() {
@@ -192,5 +254,16 @@ mod tests {
     assert_eq!(request.object.metadata.version, "0.0.1");
     assert!(request.object.metadata.created_at > 10000);
     assert!(request.object.metadata.updated_at > 10000);
+  }
+
+  #[test]
+  fn json() {
+    let mut request = RawRequest::default();
+
+    request.add_image_input_node(ImageInputNode::with_id("foo_id".to_string()));
+
+    let json = serde_json::to_string_pretty(&request).unwrap();
+    println!("{}", json);
+    assert_eq!(json, r#"{"type":"abcxyz_image_input_id","value":"image_input_id"}"#);
   }
 }
