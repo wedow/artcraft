@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 /// Type for Image Input Object Ids
 /// These are used to refer to worlds
 /// These appear to be bare UUIDs.
@@ -5,6 +7,11 @@
 pub struct ImageInputObjectId(pub String);
 
 impl ImageInputObjectId {
+  pub fn new() -> Self {
+    let uuid = Uuid::new_v4().to_string();
+    Self(uuid)
+  }
+  
   pub fn from_str(s: &str) -> Self {
     Self(s.to_string())
   }

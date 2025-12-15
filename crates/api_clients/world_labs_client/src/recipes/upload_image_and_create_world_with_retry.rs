@@ -13,6 +13,11 @@ use anyhow::bail;
 use log::{error, info};
 use serde::Deserialize;
 use std::time::Duration;
+use uuid::Uuid;
+use crate::api::api_types::image_input_object_id::ImageInputObjectId;
+use crate::api::api_types::pano_object_id::PanoObjectId;
+use crate::api::api_types::world_object_id::WorldObjectId;
+use crate::api::requests::objects::update_run_object_with_upload::{update_run_object_with_upload, UpdateRunObjectWithUploadArgs, UpdateRunObjectWithUploadPayloadArgs};
 use crate::api::requests::recaption::recaption_image::{recaption_image, RecaptionImageArgs};
 
 pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
@@ -97,7 +102,28 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   info!("Object/image URL: {image_url}");
 
-  info!("Request #6 of 10: captioning with VLM ...");
+  info!("Request #6 of 10: Patch run with new info...");
+
+  let image_input_id = ImageInputObjectId::new();
+  let pano_id = PanoObjectId::new();
+  let world_id = WorldObjectId::new();
+  
+  let response = update_run_object_with_upload(UpdateRunObjectWithUploadArgs {
+    cookies: &args.cookies,
+    bearer_token: &args.bearer_token,
+    payload_args: UpdateRunObjectWithUploadPayloadArgs {
+      run_id: &run_object_id,
+      run_created_at_timestamp: run_object.metadata.created_at,
+      image_upload_url: &image_url,
+      image_input_id: &image_input_id,
+      pano_id: &pano_id,
+      world_id: &world_id,
+    },
+    request_timeout: args.individual_request_timeout,
+  }).await?;
+  
+  
+  info!("Request #7 of 10: captioning with VLM ...");
 
   let response = recaption_image(RecaptionImageArgs {
     cookies: &args.cookies,

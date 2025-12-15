@@ -41,12 +41,12 @@ pub struct UpdateRunObjectWithUploadArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
 
-  pub payload_args: PayloadArgs<'a>,
+  pub payload_args: UpdateRunObjectWithUploadPayloadArgs<'a>,
 
   pub request_timeout: Option<Duration>,
 }
 
-pub struct PayloadArgs<'a> {
+pub struct UpdateRunObjectWithUploadPayloadArgs<'a> {
   pub run_id: &'a RunObjectId,
   pub run_created_at_timestamp: u64,
 
@@ -99,9 +99,7 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
     request_builder = request_builder.timeout(timeout);
   }
 
-  // Build payload
-  let mut payload = RawRequest::default();
-
+  let payload = RawRequest::from_args(&args.payload_args);
 
   let http_request = request_builder.json(&payload)
       .build()
@@ -139,8 +137,8 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
   Ok(UpdateRunObjectWithUploadResponse {
-    image_input_id: ImageInputObjectId("todo".to_string()),
-    pano_id: PanoObjectId("todo".to_string()),
+    image_input_id: args.payload_args.image_input_id.clone(),
+    pano_id: args.payload_args.pano_id.clone(),
     world_id: WorldObjectId("todo".to_string()),
   })
 }
@@ -172,7 +170,7 @@ impl Default for RawRequest {
 }
 
 impl RawRequest {
-  pub fn from_args(args: PayloadArgs) -> Self {
+  pub fn from_args(args: &UpdateRunObjectWithUploadPayloadArgs) -> Self {
     let mut request = RawRequest::default();
     request.add_image_input_node({
       let mut node = ImageInputNode::default();
@@ -400,7 +398,7 @@ mod tests {
   use crate::api::api_types::pano_object_id::PanoObjectId;
   use crate::api::api_types::run_object_id::RunObjectId;
   use crate::api::api_types::world_object_id::WorldObjectId;
-  use crate::api::requests::objects::update_run_object_with_upload::{PayloadArgs, RawRequest};
+  use crate::api::requests::objects::update_run_object_with_upload::{RawRequest, UpdateRunObjectWithUploadPayloadArgs};
 
   #[test]
   fn request_default() {
@@ -417,14 +415,16 @@ mod tests {
     let pano_id = PanoObjectId::from_str("82f6b488-8afe-4311-9022-80ad5789ad92");
     let world_id = WorldObjectId::from_str("f08ec501-601c-47c6-a104-402d1820b8f0");
 
-    let request = RawRequest::from_args(PayloadArgs {
+    let args = UpdateRunObjectWithUploadPayloadArgs {
       run_created_at_timestamp: 1234,
       image_upload_url: "https://todo.com",
       run_id: &run_id,
       image_input_id: &image_input_id,
       pano_id: &pano_id,
       world_id: &world_id,
-    });
+    };
+
+    let request = RawRequest::from_args(&args);
 
     let json = serde_json::to_string_pretty(&request).unwrap();
     println!("{}", json);
