@@ -29,6 +29,7 @@ bstr.workspace = true
 byteorder = "1.5.0"
 chrono.workspace = true
 futures.workspace = true
+indexmap.workspace = true
 log.workspace = true
 once_cell.workspace = true
 regex.workspace = true

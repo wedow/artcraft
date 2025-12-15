@@ -23,6 +23,7 @@ use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use chrono::Utc;
+use indexmap::IndexMap;
 use serde_json::Value;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, ORIGIN, PRAGMA, REFERER, TE};
 use wreq::Client;
@@ -154,7 +155,8 @@ struct ObjectMetadata {
   pub draft_mode: bool,
 
   /// Polymorphic set of ID-to-object mappings.
-  pub nodes: HashMap<String, NodeValue>,
+  /// NB: IndexMap maintains insertion order.
+  pub nodes: IndexMap<String, NodeValue>,
 }
 
 impl Default for RawRequest {
@@ -169,7 +171,7 @@ impl Default for RawRequest {
           updated_at: now,
           uses_advanced_editing: false,
           draft_mode: false,
-          nodes: HashMap::new(),
+          nodes: IndexMap::new(),
         }
       },
       update_mask: vec!["metadata".to_string()]
@@ -181,6 +183,9 @@ impl RawRequest {
   pub fn add_image_input_node(&mut self, node: ImageInputNode) {
     self.object.metadata.nodes.insert(node.id.clone(), NodeValue::ImageInput(node));
   }
+  pub fn add_pano_node(&mut self, node: PanoNode) {
+    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::Pano(node));
+  }
 }
 
 #[derive(Serialize)]
@@ -188,6 +193,7 @@ impl RawRequest {
 //#[serde(tag = "type", content = "value")]
 enum NodeValue {
   ImageInput(ImageInputNode),
+  Pano(PanoNode),
 }
 
 #[derive(Serialize, Default)]
@@ -214,6 +220,63 @@ enum TypeInput {
   Input
 }
 
+#[derive(Serialize, Default)]
+enum StatusPending {
+  #[serde(rename = "pending")]
+  #[default]
+  Pending
+}
+
+impl ImageInputNode {
+  pub fn with_id(id: &str) -> Self{
+    Self {
+      id: id.to_string(),
+      ..Default::default()
+    }
+  }
+}
+
+#[derive(Serialize, Default)]
+struct PanoNode {
+  pub id: String,
+  pub r#type: TypePano,
+  #[serde(rename = "parentId")]
+  pub parent_id: Option<String>,
+  pub source: PanoNodeSource,
+  #[serde(rename = "createdAt")]
+  pub created_at: u64,
+}
+
+#[derive(Serialize, Default)]
+struct PanoNodeSource {
+  pub r#type: TypeGenerateWorld,
+  pub world_id: StatusPending,
+  pub status: StatusPending,
+}
+
+#[derive(Serialize, Default)]
+enum TypePano {
+  #[serde(rename = "pano")]
+  #[default]
+  Pano
+}
+
+#[derive(Serialize, Default)]
+enum TypeGenerateWorld {
+  #[serde(rename = "generate_world")]
+  #[default]
+  GenerateWorld
+}
+
+impl PanoNode {
+  pub fn with_id(id: &str) -> Self{
+    Self {
+      id: id.to_string(),
+      ..Default::default()
+    }
+  }
+}
+
 //impl Default for ImageInputNode {
 //  fn default() -> Self {
 //    Self {
@@ -229,15 +292,6 @@ enum TypeInput {
 //  }
 //}
 
-impl ImageInputNode {
-  pub fn with_id(id: String) -> Self{
-    Self {
-      id,
-      ..Default::default()
-    }
-  }
-}
-
 
 #[derive(Deserialize)]
 struct RawResponse {
@@ -246,7 +300,7 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
-  use crate::api::requests::objects::update_run_object_with_upload::{ImageInputNode, RawRequest};
+  use crate::api::requests::objects::update_run_object_with_upload::{ImageInputNode, PanoNode, PanoNodeSource, RawRequest};
 
   #[test]
   fn request_default() {
@@ -260,7 +314,8 @@ mod tests {
   fn json() {
     let mut request = RawRequest::default();
 
-    request.add_image_input_node(ImageInputNode::with_id("foo_id".to_string()));
+    request.add_image_input_node(ImageInputNode::with_id("foo_id"));
+    request.add_pano_node(PanoNode::with_id("bar_id"));
 
     let json = serde_json::to_string_pretty(&request).unwrap();
     println!("{}", json);
