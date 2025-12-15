@@ -20,3 +20,68 @@ curl 'https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/worlds/d60cfa21-5506-43de-
 Response:
 
 {"context":null,"id":"d60cfa21-5506-43de-9a9c-0707fc17a5ec","display_name":null,"status":"SUCCEEDED","error":null,"owner_id":"CArJJ2PQFFd8l2Rf8uptZhl86d33","created_at":1765756778,"updated_at":1765757084,"permission":{"public":true,"allowed_readers":[],"allowed_writers":[]},"stats":null,"application_data":{"owner_username":"Sabalid","owner_display_name":"Sabalid","reactions":null,"pinned":false},"generation_input":{"model":"Marble 0.1-plus","seed":null,"prompt":{"type":"image","text_prompt":"The scene is a surreal indoor agricultural environment, depicted with a realistic and slightly eerie tone, as rows of bright lights illuminate a vast, artificial pasture. The overall mood is quiet and contemplative, emphasizing the unusual juxtaposition of natural elements within a manufactured setting. Large herds of cattle are distributed across the lush, green grassy floor, peacefully grazing on the abundant vegetation. The entire space is encased within a massive, warehouse-like structure, supported by countless concrete columns that extend from the floor to the ceiling in an orderly grid. Above the columns, a network of metal beams forms the infrastructure of the roof, from which an extensive array of industrial lights is suspended. These lights are arranged in long, parallel lines, creating a striking visual perspective that converges towards a distant vanishing point at the center of the structure. The dense, vibrant green grass covers every inch of the ground, appearing soft and uniform, without any discernible paths or bare patches. Each cow is distinct, varying in color from black to brown and white, and each is engaged in individual grazing or resting. The concrete columns maintain a consistent light gray color and texture, creating a rhythmic architectural presence throughout the vast indoor landscape. To the right, another cluster of columns continues the architectural pattern, while the grassy expanse remains uninterrupted, extending toward the edges of the structure. ","image_prompt":{"uri":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/c3edfcf7_image_prompt_sanitized.png","data_base64":null,"extension":null},"is_pano":false}},"tags":null,"hq_mesh_export_op_id":null,"generation_output":{"ply_url":null,"wlg_url":null,"cond_image_url":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/c3edfcf7_image_prompt_sanitized.png","mpi_url":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/98fe3c48-1bbc-47c4-9566-e8c5148ea2f9_dust_mpi","minimap_url":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/9f1d6596-c3bb-4dfd-ad87-3c017d1bf14c_minimap.png","minimap_metadata":"[0.0, 2.499943256378174, 18.699874114990237]","spz_urls":{"500k":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/2fd338ed-3221-4aef-bff5-63cbdc0e5704_ceramic_500k.spz","full_res":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/1002dd35-fcad-4eeb-ba15-0d113c1778d8_ceramic.spz","100k":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/67f1291c-7aec-42fe-8c36-092383c1f326_dust_100k.spz"},"skypano_url":null,"posed_cond_image":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/9a62b2f9-9c14-4909-9368-e2e7ff4550db_cond_image","collider_mesh_url":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/ddcd9298.glb","hq_mesh_url":null,"full_res_mesh_url":null,"semantics_metadata":null,"posed_cubemaps_url":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/dba9fbb9-ed62-4be0-9196-d052eee06b82_cubemaps","posed_panos_url":"https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/f11182b6-61b1-4e31-87c6-23e1f74c675c_panos","panos_metadata":null}}
+
+Response Pretty print:
+
+{
+  "context": null,
+  "id": "d60cfa21-5506-43de-9a9c-0707fc17a5ec",
+  "display_name": null,
+  "status": "SUCCEEDED",
+  "error": null,
+  "owner_id": "CArJJ2PQFFd8l2Rf8uptZhl86d33",
+  "created_at": 1765756778,
+  "updated_at": 1765757084,
+  "permission": {
+    "public": true,
+    "allowed_readers": [],
+    "allowed_writers": []
+  },
+  "stats": null,
+  "application_data": {
+    "owner_username": "Sabalid",
+    "owner_display_name": "Sabalid",
+    "reactions": null,
+    "pinned": false
+  },
+  "generation_input": {
+    "model": "Marble 0.1-plus",
+    "seed": null,
+    "prompt": {
+      "type": "image",
+      "text_prompt": "The scene is a surreal indoor agricultural environment, depicted with a realistic and slightly eerie tone, as rows of bright lights illuminate a vast, artificial pasture. The overall mood is quiet and contemplative, emphasizing the unusual juxtaposition of natural elements within a manufactured setting. Large herds of cattle are distributed across the lush, green grassy floor, peacefully grazing on the abundant vegetation. The entire space is encased within a massive, warehouse-like structure, supported by countless concrete columns that extend from the floor to the ceiling in an orderly grid. Above the columns, a network of metal beams forms the infrastructure of the roof, from which an extensive array of industrial lights is suspended. These lights are arranged in long, parallel lines, creating a striking visual perspective that converges towards a distant vanishing point at the center of the structure. The dense, vibrant green grass covers every inch of the ground, appearing soft and uniform, without any discernible paths or bare patches. Each cow is distinct, varying in color from black to brown and white, and each is engaged in individual grazing or resting. The concrete columns maintain a consistent light gray color and texture, creating a rhythmic architectural presence throughout the vast indoor landscape. To the right, another cluster of columns continues the architectural pattern, while the grassy expanse remains uninterrupted, extending toward the edges of the structure. ",
+      "image_prompt": {
+        "uri": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/c3edfcf7_image_prompt_sanitized.png",
+        "data_base64": null,
+        "extension": null
+      },
+      "is_pano": false
+    }
+  },
+  "tags": null,
+  "hq_mesh_export_op_id": null,
+  "generation_output": {
+    "ply_url": null,
+    "wlg_url": null,
+    "cond_image_url": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/c3edfcf7_image_prompt_sanitized.png",
+    "mpi_url": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/98fe3c48-1bbc-47c4-9566-e8c5148ea2f9_dust_mpi",
+    "minimap_url": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/9f1d6596-c3bb-4dfd-ad87-3c017d1bf14c_minimap.png",
+    "minimap_metadata": "[0.0, 2.499943256378174, 18.699874114990237]",
+    "spz_urls": {
+      "500k": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/2fd338ed-3221-4aef-bff5-63cbdc0e5704_ceramic_500k.spz",
+      "full_res": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/1002dd35-fcad-4eeb-ba15-0d113c1778d8_ceramic.spz",
+      "100k": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/67f1291c-7aec-42fe-8c36-092383c1f326_dust_100k.spz"
+    },
+    "skypano_url": null,
+    "posed_cond_image": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/9a62b2f9-9c14-4909-9368-e2e7ff4550db_cond_image",
+    "collider_mesh_url": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/ddcd9298.glb",
+    "hq_mesh_url": null,
+    "full_res_mesh_url": null,
+    "semantics_metadata": null,
+    "posed_cubemaps_url": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/dba9fbb9-ed62-4be0-9196-d052eee06b82_cubemaps",
+    "posed_panos_url": "https://cdn.marble.worldlabs.ai/d60cfa21-5506-43de-9a9c-0707fc17a5ec/f11182b6-61b1-4e31-87c6-23e1f74c675c_panos",
+    "panos_metadata": null
+  }
+}
+
+
