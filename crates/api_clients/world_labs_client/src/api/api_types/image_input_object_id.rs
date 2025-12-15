@@ -1,10 +1,10 @@
-/// Type for World IDs.
+/// Type for Image Input Object Ids
 /// These are used to refer to worlds
 /// These appear to be bare UUIDs.
 #[derive(Clone, Debug)]
-pub struct WorldObjectId(pub String);
+pub struct ImageInputObjectId(pub String);
 
-impl WorldObjectId {
+impl ImageInputObjectId {
   pub fn from_str(s: &str) -> Self {
     Self(s.to_string())
   }

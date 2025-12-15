@@ -1,10 +1,10 @@
-/// Type for World IDs.
+/// Type for Pano Object Ids
 /// These are used to refer to worlds
 /// These appear to be bare UUIDs.
 #[derive(Clone, Debug)]
-pub struct WorldObjectId(pub String);
+pub struct PanoObjectId(pub String);
 
-impl WorldObjectId {
+impl PanoObjectId {
   pub fn from_str(s: &str) -> Self {
     Self(s.to_string())
   }
@@ -12,7 +12,7 @@ impl WorldObjectId {
   pub fn as_str(&self) -> &str {
     &self.0
   }
-
+  
   pub fn to_string(&self) -> String {
     self.0.clone()
   }

@@ -1,7 +1,8 @@
-use std::collections::HashMap;
+use crate::api::api_types::image_input_object_id::ImageInputObjectId;
+use crate::api::api_types::pano_object_id::PanoObjectId;
 use crate::api::api_types::run_object_id::RunObjectId;
-use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
+use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::api_types::world_object_id::WorldObjectId;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::api::utils::upload_id_to_image_url::upload_id_to_image_url;
@@ -10,6 +11,7 @@ use crate::credentials::world_labs_cookies::WorldLabsCookies;
 use crate::error::world_labs_client_error::WorldLabsClientError;
 use crate::error::world_labs_error::WorldLabsError;
 use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
+use chrono::Utc;
 use http_headers::names::{PRIORITY, SEC_FETCH_DEST, SEC_FETCH_MODE, SEC_FETCH_SITE, SEC_GPC};
 use http_headers::values::accept::ACCEPT_ALL;
 use http_headers::values::cache_control::CACHE_CONTROL_NO_CACHE;
@@ -19,12 +21,12 @@ use http_headers::values::pragma::PRAGMA_NO_CACHE;
 use http_headers::values::priority::PRIORITY_4;
 use http_headers::values::sec::{SEC_FETCH_DEST_EMPTY, SEC_FETCH_MODE_CORS, SEC_FETCH_SITE_CROSS_SITE};
 use http_headers::values::te::TE_TRAILERS;
+use indexmap::IndexMap;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
-use chrono::Utc;
-use indexmap::IndexMap;
 use serde_json::Value;
+use std::collections::HashMap;
+use std::time::Duration;
 use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACHE_CONTROL, CONNECTION, CONTENT_TYPE, ORIGIN, PRAGMA, REFERER, TE};
 use wreq::Client;
 use wreq_util::Emulation;
@@ -38,15 +40,27 @@ fn get_url(run_id: &RunObjectId) -> String {
 pub struct UpdateRunObjectWithUploadArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
-  pub run_id: &'a RunObjectId,
 
-  pub upload_id: &'a UploadObjectId,
-  pub upload_mime_type: UploadMimeType,
-  pub text_prompt: &'a str,
+  pub payload_args: PayloadArgs<'a>,
+
   pub request_timeout: Option<Duration>,
 }
 
+pub struct PayloadArgs<'a> {
+  pub run_id: &'a RunObjectId,
+  pub run_created_at_timestamp: u64,
+
+  // eg. https://cdn.marble.worldlabs.ai/object/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg
+  pub image_upload_url: &'a str,
+
+  pub image_input_id: &'a ImageInputObjectId,
+  pub pano_id: &'a PanoObjectId,
+  pub world_id: &'a WorldObjectId,
+}
+
 pub struct UpdateRunObjectWithUploadResponse {
+  pub image_input_id: ImageInputObjectId,
+  pub pano_id: PanoObjectId,
   pub world_id: WorldObjectId,
 }
 
@@ -59,7 +73,7 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
       .build()
       .map_err(|err| WorldLabsClientError::WreqClientError(err))?;
 
-  let url = get_url(args.run_id);
+  let url = get_url(args.payload_args.run_id);
 
   debug!("Requesting URL: {}", url);
 
@@ -85,9 +99,11 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
     request_builder = request_builder.timeout(timeout);
   }
 
-  let request_payload = RawRequest::default();
+  // Build payload
+  let mut payload = RawRequest::default();
 
-  let http_request = request_builder.json(&request_payload)
+
+  let http_request = request_builder.json(&payload)
       .build()
       .map_err(|err| {
         error!("Error building request: {:?}", err);
@@ -123,7 +139,9 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
       .map_err(|err| WorldLabsGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.to_string()))?;
 
   Ok(UpdateRunObjectWithUploadResponse {
-    world_id: WorldObjectId(response.id),
+    image_input_id: ImageInputObjectId("todo".to_string()),
+    pano_id: PanoObjectId("todo".to_string()),
+    world_id: WorldObjectId("todo".to_string()),
   })
 }
 
@@ -131,6 +149,84 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
 struct RawRequest {
   pub object: ObjectDef,
   pub update_mask: Vec<String>,
+}
+
+impl Default for RawRequest {
+  fn default() -> Self {
+    let now = Utc::now();
+    let now = now.timestamp_millis().unsigned_abs();
+    Self {
+      object: ObjectDef {
+        metadata: ObjectMetadata {
+          version: "0.0.1".to_string(),
+          created_at: now,
+          updated_at: now,
+          uses_advanced_editing: false,
+          draft_mode: false,
+          nodes: IndexMap::new(),
+        }
+      },
+      update_mask: vec!["metadata".to_string()]
+    }
+  }
+}
+
+impl RawRequest {
+  pub fn from_args(args: PayloadArgs) -> Self {
+    let mut request = RawRequest::default();
+    request.add_image_input_node({
+      let mut node = ImageInputNode::default();
+      node.id = args.image_input_id.to_string();
+      node.source.image_url = args.image_upload_url.to_string();
+      node
+    });
+    request.add_pano_node({
+      let mut node = PanoNode::default();
+      node.id = args.pano_id.to_string();
+      node.parent_id= Some(args.image_input_id.to_string());
+      node
+    });
+    request.add_world_node({
+      let mut node = WorldNode::default();
+      node.id = args.world_id.to_string();
+      node.parent_id= Some(args.pano_id.to_string());
+      node
+    });
+    request.set_updated_now();
+    request
+  }
+
+  pub fn add_image_input_node(&mut self, mut node: ImageInputNode) {
+    node.created_at = self.object.metadata.updated_at;
+    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::ImageInput(node));
+  }
+
+  pub fn add_pano_node(&mut self, mut node: PanoNode) {
+    node.created_at = self.object.metadata.updated_at;
+    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::Pano(node));
+  }
+
+  pub fn add_world_node(&mut self, mut node: WorldNode) {
+    node.created_at = self.object.metadata.updated_at;
+    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::World(node));
+  }
+
+  pub fn set_updated_now(&mut self) {
+    let now = Utc::now();
+    let now = now.timestamp_millis().unsigned_abs();
+    self.set_updated_at(now);
+  }
+
+  pub fn set_updated_at(&mut self, updated_at: u64) {
+    self.object.metadata.updated_at = updated_at;
+    for (_key, node) in self.object.metadata.nodes.iter_mut() {
+      match node {
+        NodeValue::ImageInput(value) => value.created_at = updated_at,
+        NodeValue::Pano(value) => value.created_at = updated_at,
+        NodeValue::World(value) => value.created_at = updated_at,
+      }
+    }
+  }
 }
 
 #[derive(Serialize)]
@@ -159,38 +255,6 @@ struct ObjectMetadata {
   pub nodes: IndexMap<String, NodeValue>,
 }
 
-impl Default for RawRequest {
-  fn default() -> Self {
-    let now = Utc::now();
-    let now = now.timestamp().unsigned_abs() * 1000; // NB: Millisecond resolution
-    Self {
-      object: ObjectDef {
-        metadata: ObjectMetadata {
-          version: "0.0.1".to_string(),
-          created_at: now,
-          updated_at: now,
-          uses_advanced_editing: false,
-          draft_mode: false,
-          nodes: IndexMap::new(),
-        }
-      },
-      update_mask: vec!["metadata".to_string()]
-    }
-  }
-}
-
-impl RawRequest {
-  pub fn add_image_input_node(&mut self, node: ImageInputNode) {
-    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::ImageInput(node));
-  }
-  pub fn add_pano_node(&mut self, node: PanoNode) {
-    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::Pano(node));
-  }
-  pub fn add_world_node(&mut self, node: WorldNode) {
-    self.object.metadata.nodes.insert(node.id.clone(), NodeValue::World(node));
-  }
-}
-
 #[derive(Serialize)]
 #[serde(untagged)]
 //#[serde(tag = "type", content = "value")]
@@ -213,7 +277,7 @@ struct ImageInputNode {
 
 #[derive(Serialize, Default)]
 struct ImageInputNodeSource {
-  pub r#type: TypeInput,
+  pub r#type: TypeImage,
   pub image_url: String,
 }
 
@@ -222,6 +286,13 @@ enum TypeInput {
   #[serde(rename = "input")]
   #[default]
   Input
+}
+
+#[derive(Serialize, Default)]
+enum TypeImage {
+  #[serde(rename = "image")]
+  #[default]
+  Image
 }
 
 #[derive(Serialize, Default)]
@@ -318,7 +389,6 @@ impl WorldNode {
   }
 }
 
-
 #[derive(Deserialize)]
 struct RawResponse {
   pub id: String,
@@ -326,7 +396,11 @@ struct RawResponse {
 
 #[cfg(test)]
 mod tests {
-  use crate::api::requests::objects::update_run_object_with_upload::{ImageInputNode, PanoNode, PanoNodeSource, RawRequest, WorldNode};
+  use crate::api::api_types::image_input_object_id::ImageInputObjectId;
+  use crate::api::api_types::pano_object_id::PanoObjectId;
+  use crate::api::api_types::run_object_id::RunObjectId;
+  use crate::api::api_types::world_object_id::WorldObjectId;
+  use crate::api::requests::objects::update_run_object_with_upload::{PayloadArgs, RawRequest};
 
   #[test]
   fn request_default() {
@@ -338,14 +412,23 @@ mod tests {
 
   #[test]
   fn json() {
-    let mut request = RawRequest::default();
+    let run_id = RunObjectId::from_str("79795b32-e44d-4333-bac1-05b2c9a3ea12");
+    let image_input_id = ImageInputObjectId::from_str("bc17252b-811e-49d7-be3e-b7c538df9d30");
+    let pano_id = PanoObjectId::from_str("82f6b488-8afe-4311-9022-80ad5789ad92");
+    let world_id = WorldObjectId::from_str("f08ec501-601c-47c6-a104-402d1820b8f0");
 
-    request.add_image_input_node(ImageInputNode::with_id("foo_id"));
-    request.add_pano_node(PanoNode::with_id("bar_id"));
-    request.add_world_node(WorldNode::with_id("baz_id"));
+    let request = RawRequest::from_args(PayloadArgs {
+      run_created_at_timestamp: 1234,
+      image_upload_url: "https://todo.com",
+      run_id: &run_id,
+      image_input_id: &image_input_id,
+      pano_id: &pano_id,
+      world_id: &world_id,
+    });
 
     let json = serde_json::to_string_pretty(&request).unwrap();
     println!("{}", json);
+
     assert_eq!(json, r#"{"type":"abcxyz_image_input_id","value":"image_input_id"}"#);
   }
 }
