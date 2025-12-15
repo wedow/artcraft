@@ -1,0 +1,24 @@
+https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/13ca760c-8ef9-4bf5-acc3-5a507fad3abf:upload
+
+curl 'https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects/13ca760c-8ef9-4bf5-acc3-5a507fad3abf:upload' \
+  -X POST \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:146.0) Gecko/20100101 Firefox/146.0' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en-US,en;q=0.5' \
+  -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  -H 'Referer: https://marble.worldlabs.ai/' \
+  -H 'authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjM4MTFiMDdmMjhiODQxZjRiNDllNDgyNTg1ZmQ2NmQ1NWUzOGRiNWQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vd2x0LXRyYWluaW5nLWdzYyIsImF1ZCI6IndsdC10cmFpbmluZy1nc2MiLCJhdXRoX3RpbWUiOjE3NjU3NTY0OTYsInVzZXJfaWQiOiJDQXJKSjJQUUZGZDhsMlJmOHVwdFpobDg2ZDMzIiwic3ViIjoiQ0FySkoyUFFGRmQ4bDJSZjh1cHRaaGw4NmQzMyIsImlhdCI6MTc2NTc1NjQ5NiwiZXhwIjoxNzY1NzYwMDk2LCJlbWFpbCI6InNhYmFsaWQyMzRAY3JzYXkuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInNhYmFsaWQyMzRAY3JzYXkuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.XWTpmC30BtMCLYfUISHyHuqScL2E-T9uUhZGpbZlcaT0VxJpMTFlDuXAgQKRK1xlnwvmypaKZQizyzOl-CjxtA_W_9iiOfPvbZ66gG1ry7XLYtqT8rxunuEX0MldiTdZznHuB7oiel03GiR1cc74B-4RYeNhjm7VCVpMOVw2zyQ75f8y2aylDDk-3BLoir_cnEru-K97l8ywrcTLCosaAaT-7SkKre_UeIZuuC-MDbw2Ccq3tWNC4oZaHaxKZLuDDRmkapPvN8HJ2rubG506AQ1O007f6N2zHbJDmxgm1niDMuOLGNbOp7XDelxIBS_cRGEPhSJfCjmuGnkRAk4zdw' \
+  -H 'baggage: sentry-environment=prod,sentry-release=rel-3d78b11,sentry-public_key=3779934420ee57f00d05e5fb1e57f79d,sentry-trace_id=602e8913a9bb4f9f94d2e730b1637158,sentry-org_id=4509005975388160,sentry-transaction=%2F(main)%2F_explore%2F,sentry-sampled=true,sentry-sample_rand=0.1775266372869313,sentry-sample_rate=1' \
+  -H 'sentry-trace: 602e8913a9bb4f9f94d2e730b1637158-b8b8cd20f8f5248e-1' \
+  -H 'Origin: https://marble.worldlabs.ai' \
+  -H 'Connection: keep-alive' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Priority: u=4' \
+  -H 'Content-Length: 0' \
+  -H 'TE: trailers'
+
+Response:
+
+{"upload_id":"13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg","upload_url":"https://storage.googleapis.com/wlt-training-gsc-marble-assets-prod/temp/objects/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=wlt-training-gsc-sa%40wlt-training-gsc.iam.gserviceaccount.com%2F20251214%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20251214T235932Z&X-Goog-Expires=3600&X-Goog-SignedHeaders=content-type%3Bhost%3Bx-goog-content-length-range&X-Goog-Signature=0add84395f6752011ef8f90f4a65a3ce772af0591abc76b8e97149954c1325f936d4c09cfed949210ccd864b80fbb440d302cb1b2af4c08c568c8cb7d8ecbca5461f3de3350d2c36a21412808c2c2bb078fd2444f22ed2879aa3541b60bccffcb26d6c2c4a2628458c1a778bd5839c34029e1ff6b3a4ff8896d05016560f24ab7aa875a2991e9028c313ae0872403b77cd1001b0312a81b156311310215d0128d8148b37df579ca3f125a310622193c8c50afe4d0b0e6d985ed77508a26b63d74e2246630e31874a5e271ab97d485c348b319e30c9f1982fa5f6c4f060babef6beec62f563cef57b601f86e9071c5fce00fc90be145f042c363700ee8f741d85","required_headers":{"Content-Type":"image/jpeg","x-goog-content-length-range":"0,1048576000"},"curl_example":"curl -X PUT -H 'Content-Type: image/jpeg' -H 'x-goog-content-length-range: 0,1048576000' --upload-file my-file 'https://storage.googleapis.com/wlt-training-gsc-marble-assets-prod/temp/objects/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=wlt-training-gsc-sa%40wlt-training-gsc.iam.gserviceaccount.com%2F20251214%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20251214T235932Z&X-Goog-Expires=3600&X-Goog-SignedHeaders=content-type%3Bhost%3Bx-goog-content-length-range&X-Goog-Signature=0add84395f6752011ef8f90f4a65a3ce772af0591abc76b8e97149954c1325f936d4c09cfed949210ccd864b80fbb440d302cb1b2af4c08c568c8cb7d8ecbca5461f3de3350d2c36a21412808c2c2bb078fd2444f22ed2879aa3541b60bccffcb26d6c2c4a2628458c1a778bd5839c34029e1ff6b3a4ff8896d05016560f24ab7aa875a2991e9028c313ae0872403b77cd1001b0312a81b156311310215d0128d8148b37df579ca3f125a310622193c8c50afe4d0b0e6d985ed77508a26b63d74e2246630e31874a5e271ab97d485c348b319e30c9f1982fa5f6c4f060babef6beec62f563cef57b601f86e9071c5fce00fc90be145f042c363700ee8f741d85'"}
