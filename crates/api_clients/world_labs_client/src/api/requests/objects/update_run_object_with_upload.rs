@@ -139,7 +139,7 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
   Ok(UpdateRunObjectWithUploadResponse {
     image_input_id: args.payload_args.image_input_id.clone(),
     pano_id: args.payload_args.pano_id.clone(),
-    world_id: WorldObjectId("todo".to_string()),
+    world_id: args.payload_args.world_id.clone(),
   })
 }
 

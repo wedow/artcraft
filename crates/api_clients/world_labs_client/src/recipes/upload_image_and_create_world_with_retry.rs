@@ -107,7 +107,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   let image_input_id = ImageInputObjectId::new();
   let pano_id = PanoObjectId::new();
   let world_id = WorldObjectId::new();
-  
+
   let response = update_run_object_with_upload(UpdateRunObjectWithUploadArgs {
     cookies: &args.cookies,
     bearer_token: &args.bearer_token,
@@ -121,8 +121,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     },
     request_timeout: args.individual_request_timeout,
   }).await?;
-  
-  
+
   info!("Request #7 of 10: captioning with VLM ...");
 
   let response = recaption_image(RecaptionImageArgs {
@@ -160,7 +159,8 @@ mod tests {
     let cookies = get_typed_test_cookies().unwrap();
     let bearer_token = get_test_bearer_token().unwrap();
 
-    let file_path = "/home/bt/Pictures/locations/island.jpg";
+    //let file_path = "/home/bt/Pictures/locations/island.jpg";
+    let file_path = "/Users/bt/Pictures/Midjourney/desert_room.jpeg";
     let file_bytes = file_read_bytes(file_path).unwrap();
 
     println!("File bytes len: {}", file_bytes.len());
