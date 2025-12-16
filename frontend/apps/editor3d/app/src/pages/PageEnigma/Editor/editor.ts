@@ -676,8 +676,8 @@ class Editor {
     this.mouseOverEventHandler = this.mouseOverEventHandler.bind(this);
 
     // Add spark renderer as a child of the camera
-    this.activeScene.scene.add(this.sparkRenderer);
-    this.camera?.add(this.sparkRenderer);
+    // this.activeScene.scene.add(this.sparkRenderer);
+    // this.camera?.add(this.sparkRenderer);
 
     const onloadCallback = () => {
       console.log("Setting Scene is loaded");

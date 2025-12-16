@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { SplatMesh } from "@sparkjsdev/spark";
 
 export interface Viewer3DProps {
   modelUrl?: string;
@@ -27,7 +28,7 @@ export function Viewer3D({
   const controlsRef = useRef<OrbitControls | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const cubeRef = useRef<THREE.Mesh | null>(null);
-  const loadedModelRef = useRef<THREE.Group | null>(null);
+  const loadedModelRef = useRef<THREE.Object3D | null>(null);
   const gridRef = useRef<THREE.GridHelper | null>(null);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const thumbnailCapturedRef = useRef(false);
@@ -191,7 +192,6 @@ export function Viewer3D({
     thumbnailCapturedRef.current = false;
 
     const scene = sceneRef.current;
-    const loader = new GLTFLoader();
 
     if (loadedModelRef.current) {
       console.log("[Viewer3D] Removing previous model");
@@ -203,95 +203,112 @@ export function Viewer3D({
       cubeRef.current.visible = false;
     }
 
-    loader.load(
-      modelUrl,
-      (gltf) => {
-        console.log("[Viewer3D] Model loaded successfully");
-        const model = gltf.scene;
+    const onModelLoaded = (model: THREE.Object3D) => {
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
 
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scale = 2 / maxDim;
+      model.scale.multiplyScalar(scale);
 
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2 / maxDim;
-        model.scale.multiplyScalar(scale);
+      const scaledBox = new THREE.Box3().setFromObject(model);
+      const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
+      const scaledSize = scaledBox.getSize(new THREE.Vector3());
 
-        const scaledBox = new THREE.Box3().setFromObject(model);
-        const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
-        const scaledSize = scaledBox.getSize(new THREE.Vector3());
+      model.position.x = -scaledCenter.x;
+      model.position.z = -scaledCenter.z;
+      model.position.y = -scaledBox.min.y;
 
-        model.position.x = -scaledCenter.x;
-        model.position.z = -scaledCenter.z;
-        model.position.y = -scaledBox.min.y;
+      scene.add(model);
+      loadedModelRef.current = model;
+      setIsModelLoaded(true);
 
-        scene.add(model);
-        loadedModelRef.current = model;
-        setIsModelLoaded(true);
+      const modelHeight = scaledSize.y;
+      const maxModelDim = Math.max(scaledSize.x, scaledSize.y, scaledSize.z);
 
-        const modelHeight = scaledSize.y;
-        const maxModelDim = Math.max(scaledSize.x, scaledSize.y, scaledSize.z);
+      // Calculate distance needed to fit the model based on camera FOV (50 degrees)
+      const fov = 50;
+      const fovRad = (fov * Math.PI) / 180;
+      const fitDistance = maxModelDim / 2 / Math.tan(fovRad / 2);
 
-        // Calculate distance needed to fit the model based on camera FOV (50 degrees)
-        const fov = 50;
-        const fovRad = (fov * Math.PI) / 180;
-        const fitDistance = maxModelDim / 2 / Math.tan(fovRad / 2);
+      // Add padding (1.4x) to ensure model isn't touching edges
+      const cameraDistance = fitDistance * 1.4;
 
-        // Add padding (1.4x) to ensure model isn't touching edges
-        const cameraDistance = fitDistance * 1.4;
-
-        if (cameraRef.current && controlsRef.current) {
-          // Position camera at 45-degree angle
-          const angle = Math.PI / 4;
-          cameraRef.current.position.set(
-            Math.sin(angle) * cameraDistance,
-            modelHeight * 0.5 + cameraDistance * 0.35,
-            Math.cos(angle) * cameraDistance
-          );
-          controlsRef.current.target.set(0, modelHeight * 0.4, 0);
-          controlsRef.current.update();
-        }
-
-        // Capture thumbnail after a short delay to ensure rendering is complete
-        if (onThumbnailCapture && !thumbnailCapturedRef.current) {
-          thumbnailCapturedRef.current = true;
-          setTimeout(() => {
-            if (rendererRef.current && sceneRef.current && cameraRef.current) {
-              // Temporarily hide grid for thumbnail
-              if (gridRef.current) {
-                gridRef.current.visible = false;
-              }
-              // Also hide placeholder cube
-              if (cubeRef.current) {
-                cubeRef.current.visible = false;
-              }
-
-              // Render and capture
-              rendererRef.current.render(sceneRef.current, cameraRef.current);
-              const dataUrl =
-                rendererRef.current.domElement.toDataURL("image/png");
-              onThumbnailCapture(dataUrl);
-
-              // Restore grid visibility
-              if (gridRef.current) {
-                gridRef.current.visible = showGrid;
-              }
-            }
-          }, 100);
-        }
-      },
-      (progress) => {
-        console.log(
-          "[Viewer3D] Loading progress:",
-          ((progress.loaded / progress.total) * 100).toFixed(2) + "%"
+      if (cameraRef.current && controlsRef.current) {
+        // Position camera at 45-degree angle
+        const angle = Math.PI / 4;
+        cameraRef.current.position.set(
+          Math.sin(angle) * cameraDistance,
+          modelHeight * 0.5 + cameraDistance * 0.35,
+          Math.cos(angle) * cameraDistance
         );
-      },
-      (error) => {
-        console.error("[Viewer3D] Error loading model:", error);
-        if (cubeRef.current) {
-          cubeRef.current.visible = true;
-        }
+        controlsRef.current.target.set(0, modelHeight * 0.4, 0);
+        controlsRef.current.update();
       }
-    );
+
+      // Capture thumbnail after a short delay to ensure rendering is complete
+      if (onThumbnailCapture && !thumbnailCapturedRef.current) {
+        thumbnailCapturedRef.current = true;
+        setTimeout(() => {
+          if (rendererRef.current && sceneRef.current && cameraRef.current) {
+            // Temporarily hide grid for thumbnail
+            if (gridRef.current) {
+              gridRef.current.visible = false;
+            }
+            // Also hide placeholder cube
+            if (cubeRef.current) {
+              cubeRef.current.visible = false;
+            }
+
+            // Render and capture
+            rendererRef.current.render(sceneRef.current, cameraRef.current);
+            const dataUrl =
+              rendererRef.current.domElement.toDataURL("image/png");
+            onThumbnailCapture(dataUrl);
+
+            // Restore grid visibility
+            if (gridRef.current) {
+              gridRef.current.visible = showGrid;
+            }
+          }
+        }, 100);
+      }
+    }
+
+    if (modelUrl.endsWith(".spz")) {
+      console.log("[Viewer3D] .spz format detected");
+      new SplatMesh({
+        url: modelUrl, onLoad: (mesh) => {
+          scene.add(mesh);
+          setIsModelLoaded(true);
+          // onModelLoaded(mesh);
+          console.log("Splat loaded")
+        }
+      });
+    } else {
+
+      const loader = new GLTFLoader();
+      loader.load(
+        modelUrl,
+        (gltf) => {
+          console.log("[Viewer3D] Model loaded successfully");
+          const model = gltf.scene;
+          onModelLoaded(model);
+        },
+        (progress) => {
+          console.log(
+            "[Viewer3D] Loading progress:",
+            ((progress.loaded / progress.total) * 100).toFixed(2) + "%"
+          );
+        },
+        (error) => {
+          console.error("[Viewer3D] Error loading model:", error);
+          if (cubeRef.current) {
+            cubeRef.current.visible = true;
+          }
+        }
+      );
+    }
 
     return () => {
       if (loadedModelRef.current && sceneRef.current) {

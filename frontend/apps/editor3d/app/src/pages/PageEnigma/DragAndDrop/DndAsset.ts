@@ -96,24 +96,20 @@ class DndAsset {
         // if (dragItem.value.type === AssetType.CAMERA) {
         //   console.log("Dragged In Camera Type")
         // }
-        if (dragItem.value.type === AssetType.OBJECT) {
-          addObject(dragItem.value);
-        }
-
-        if (dragItem.value.type === AssetType.SHAPE) {
-          addShape(dragItem.value);
-        }
-
         /*
          FIXME:
          THIS IS A TEMPARARY SOLUTION TO A LONG PROBLEM WITH SKYBOXES
          UPDATE THIS WHEN UPLOADING SKYBOXES ARE FULLY IMPLEMENTED.
          THIS IS JUST TEMPARARY!!!
-        
         */
-        if (dragItem.value.type === AssetType.SKYBOX) {
-          addObject(dragItem.value);
+        if (mediaItem.type === AssetType.OBJECT || mediaItem.type === AssetType.SPLAT || mediaItem.type === AssetType.SKYBOX) {
+          addObject(mediaItem);
         }
+
+        if (mediaItem.type === AssetType.SHAPE) {
+          addShape(mediaItem);
+        }
+
         this.endDrag();
         return;
       }

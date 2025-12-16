@@ -17,6 +17,7 @@ import { InfiniteGridHelper } from "./InfiniteGridHelper";
 import { cameras, selectedCameraId } from "../signals/camera";
 import { MediaFilesApi } from "@storyteller/api";
 import toast from "react-hot-toast";
+import { SplatMesh } from "@sparkjsdev/spark";
 
 class Scene {
   name: string;
@@ -597,7 +598,17 @@ class Scene {
         obj.userData["media_file_type"] = MediaFileType.Image;
       }
       return obj;
+    } else if (
+      url.includes(".spz")
+    ) {
+      return await this.loadSplatWithPlaceholder(
+        media_id,
+        name,
+        auto_add,
+        position,
+      );
     }
+
     return await this.loadGlbWithPlaceholder(
       media_id,
       name,
@@ -627,6 +638,43 @@ class Scene {
       }
     }
     return false;
+  }
+
+  async loadSplatWithPlaceholder(
+    media_id: string,
+    name: string,
+    auto_add: boolean = true,
+    position: THREE.Vector3 = new THREE.Vector3(-0.5, 1.5, 0),
+  ): Promise<THREE.Object3D> {
+    if (this.placeholder_manager === undefined) {
+      throw Error("Place holder Manager is undefined");
+    }
+
+    const url = await this.getMediaURL(media_id);
+    const key = media_id + name + generateUUID();
+    await this.placeholder_manager.add(key, `Loading: ${name}`, position);
+
+    const splat: SplatMesh = await this.load_splat_wrapped_no_cors(url, async () => {
+      if (this.placeholder_manager === undefined) {
+        throw Error("Place holder Manager is undefined");
+      }
+      await this.placeholder_manager.remove(key);
+    }).catch(async (error) => {
+      if (this.placeholder_manager !== undefined) {
+        await this.placeholder_manager.remove(key);
+      }
+      toast.error("Failed to load splat.");
+      throw error;
+    });
+
+    splat.userData["media_id"] = media_id;
+    splat.userData["media_file_type"] = MediaFileType.SPZ;
+
+    if (auto_add) {
+      this.scene.add(splat);
+    }
+    this.updateSurfaceIdAttributeToMesh(this.scene);
+    return splat;
   }
 
   async loadGlbWithPlaceholder(
@@ -806,6 +854,35 @@ class Scene {
           reject(error);
         },
       );
+    });
+  }
+
+  /**
+     * Load a full media_url via Tauri (without browser cors)
+     * @param media_url
+     * @param onComplete
+     * @returns
+     */
+  private async load_splat_wrapped_no_cors(
+    media_url: string,
+    onComplete: () => void,
+  ): Promise<SplatMesh> {
+    return new Promise(async (resolve, reject) => {
+      let buffer;
+      try {
+        buffer = await LoadWithoutCors(media_url); // Load via Tauri!
+      } catch (error) {
+        console.error("load Splat from Tauri error:", error);
+        reject(error);
+        return;
+      }
+
+      new SplatMesh({
+        fileBytes: buffer, onLoad: (mesh) => {
+          resolve(mesh);
+          onComplete();
+        }
+      });
     });
   }
 

@@ -190,7 +190,7 @@ export class TimeLine {
           this.queueNewObjectMessage(
             newObject,
             data.data as MediaItem,
-            AssetType.OBJECT,
+            newObject.type as AssetType
           );
         const result = this.editorEngine.sceneManager?.render_outliner(
           this.characters,
@@ -321,7 +321,7 @@ export class TimeLine {
   queueNewObjectMessage(
     item: THREE.Object3D<THREE.Object3DEventMap>,
     data: MediaItem,
-    asset_type: AssetType.OBJECT | AssetType.CHARACTER | AssetType.SHAPE,
+    asset_type: AssetType.OBJECT | AssetType.CHARACTER | AssetType.SHAPE | AssetType.SPLAT,
   ) {
     Queue.publish({
       queueName: QueueNames.FROM_ENGINE,

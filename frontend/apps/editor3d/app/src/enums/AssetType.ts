@@ -7,4 +7,5 @@ export enum AssetType {
   OBJECT = "object",
   SKYBOX = "skybox",
   SHAPE = "shape",
+  SPLAT = "splat",
 }

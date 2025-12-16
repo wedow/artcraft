@@ -16,6 +16,9 @@ export enum MediaFileType {
   // open source 3D file format.
   GLB = "glb",
 
+  // SPLAT file type. SPZ format is a compressed and smaller format.
+  SPZ = "spz",
+
   // MMD is the format for anime characters.
   // open source 3D file format.
   MMD = "mmd",

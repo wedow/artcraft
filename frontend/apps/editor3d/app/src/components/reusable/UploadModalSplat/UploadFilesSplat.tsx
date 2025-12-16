@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCube } from "@fortawesome/pro-solid-svg-icons";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "../UploadModal3D/utilities";
 import { WebGLRenderer } from "three";
+import { upload3DObjects } from "../UploadModal3D/utilities/upload3DObjects";
 
 interface Props {
   title: string;
@@ -74,22 +75,22 @@ export const UploadFilesSplat = ({
     // Use the filename as the title
     const title = assetFile.value.name.split(".")[0];
 
-    const shouldFlip = title.endsWith("ceramic");
-
-    assetFile.value.arrayBuffer().then((arrayBuffer) => {
-      onLocalBytes(arrayBuffer, shouldFlip);
-    }).catch((error) => {
-      console.error("Error reading file as ArrayBuffer:", error);
-    });
-
-    // upload3DObjects({
-    //   title: title,
-    //   assetFile: assetFile.value,
-    //   thumbnailSnapshot: thumbnailFile,
-    //   engineCategory: engineCategory,
-    //   animationType: subtype,
-    //   progressCallback: onUploadProgress,
+    // const shouldFlip = title.search("ceramic") != -1;
+    //
+    // assetFile.value.arrayBuffer().then((arrayBuffer) => {
+    //   onLocalBytes(arrayBuffer, shouldFlip);
+    // }).catch((error) => {
+    //   console.error("Error reading file as ArrayBuffer:", error);
     // });
+
+    upload3DObjects({
+      title: title,
+      assetFile: assetFile.value,
+      thumbnailSnapshot: thumbnailFile,
+      engineCategory: engineCategory,
+      animationType: subtype,
+      progressCallback: onUploadProgress,
+    });
   };
 
   useEffect(() => {
