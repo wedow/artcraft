@@ -72,9 +72,10 @@ pub struct UpdateRunObjectWithWorldResponse {
 }
 
 /// Marble Image-to-World
-/// This request patches an object. Seems to update it with the attached files.
-/// Request #6 (of ~10)
-pub async fn update_run_object_with_upload(args: UpdateRunObjectWithWorldArgs<'_>) -> Result<UpdateRunObjectWithWorldResponse, WorldLabsError> {
+/// This request patches the run object a second time. It updates
+/// more fields - prompt, world_id, etc.
+/// Request #9 (of ~10)
+pub async fn update_run_object_with_world(args: UpdateRunObjectWithWorldArgs<'_>) -> Result<UpdateRunObjectWithWorldResponse, WorldLabsError> {
   let client = Client::builder()
       .emulation(Emulation::Firefox143)
       .build()
@@ -208,6 +209,7 @@ impl RawRequest {
     let now = Utc::now();
     let now = now.timestamp_millis().unsigned_abs();
     request.object.metadata.updated_at = now;
+    request.object.metadata.name = Some(args.title.to_string());
     request
   }
 
@@ -422,19 +424,22 @@ mod tests {
     let image_input_id = ImageInputObjectId::from_str("bc17252b-811e-49d7-be3e-b7c538df9d30");
     let pano_id = PanoObjectId::from_str("82f6b488-8afe-4311-9022-80ad5789ad92");
     let meta_world_id = MetaWorldObjectId::from_str("f08ec501-601c-47c6-a104-402d1820b8f0");
-    let world_id = WorldObjectId::from_str("f08ec501-601c-47c6-a104-402d1820b8f0");
+    let world_id = WorldObjectId::from_str("d60cfa21-5506-43de-9a9c-0707fc17a5ec");
+
+    let title = "Cows Grazing in Indoor Pasture";
+    let caption = "The scene is a surreal indoor agricultural environment, depicted with a realistic and slightly eerie tone, as rows of bright lights illuminate a vast, artificial pasture. The overall mood is quiet and contemplative, emphasizing the unusual juxtaposition of natural elements within a manufactured setting. Large herds of cattle are distributed across the lush, green grassy floor, peacefully grazing on the abundant vegetation. The entire space is encased within a massive, warehouse-like structure, supported by countless concrete columns that extend from the floor to the ceiling in an orderly grid. Above the columns, a network of metal beams forms the infrastructure of the roof, from which an extensive array of industrial lights is suspended. These lights are arranged in long, parallel lines, creating a striking visual perspective that converges towards a distant vanishing point at the center of the structure. The dense, vibrant green grass covers every inch of the ground, appearing soft and uniform, without any discernible paths or bare patches. Each cow is distinct, varying in color from black to brown and white, and each is engaged in individual grazing or resting. The concrete columns maintain a consistent light gray color and texture, creating a rhythmic architectural presence throughout the vast indoor landscape. To the right, another cluster of columns continues the architectural pattern, while the grassy expanse remains uninterrupted, extending toward the edges of the structure. ";
 
     let args = UpdateRunObjectWithWorldPayloadArgs {
-      run_created_at_timestamp: 1234,
-      first_patch_timestamp: 5555,
-      image_upload_url: "https://todo.com",
+      run_created_at_timestamp: 1765756772176,
+      first_patch_timestamp: 1765756773647,
+      image_upload_url: "https://cdn.marble.worldlabs.ai/object/13ca760c-8ef9-4bf5-acc3-5a507fad3abf/asset.jpg",
       run_id: &run_id,
       image_input_id: &image_input_id,
       pano_id: &pano_id,
       meta_world_id: &meta_world_id,
       world_id: &world_id,
-      title: "Title Text",
-      text_prompt: "actual text prompt goes here, juse more words",
+      title,
+      text_prompt: caption,
     };
 
     let request = RawRequest::from_args(&args);

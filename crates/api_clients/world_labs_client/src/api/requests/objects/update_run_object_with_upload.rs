@@ -61,7 +61,8 @@ pub struct UpdateRunObjectWithUploadPayloadArgs<'a> {
 pub struct UpdateRunObjectWithUploadResponse {
   pub image_input_id: ImageInputObjectId,
   pub pano_id: PanoObjectId,
-  pub world_id: MetaWorldObjectId,
+  pub meta_world_id: MetaWorldObjectId,
+  pub run_updated_timestamp: u64,
 }
 
 /// Marble Image-to-World
@@ -100,6 +101,7 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
   }
 
   let payload = RawRequest::from_args(&args.payload_args);
+  let updated_at = payload.object.metadata.updated_at;
 
   let http_request = request_builder.json(&payload)
       .build()
@@ -139,7 +141,8 @@ pub async fn update_run_object_with_upload(args: UpdateRunObjectWithUploadArgs<'
   Ok(UpdateRunObjectWithUploadResponse {
     image_input_id: args.payload_args.image_input_id.clone(),
     pano_id: args.payload_args.pano_id.clone(),
-    world_id: args.payload_args.meta_world_id.clone(),
+    meta_world_id: args.payload_args.meta_world_id.clone(),
+    run_updated_timestamp: updated_at,
   })
 }
 

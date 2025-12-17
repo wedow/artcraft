@@ -19,6 +19,7 @@ use crate::api::api_types::pano_object_id::PanoObjectId;
 use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
 use crate::api::api_types::world_id::WorldObjectId;
 use crate::api::requests::objects::update_run_object_with_upload::{update_run_object_with_upload, UpdateRunObjectWithUploadArgs, UpdateRunObjectWithUploadPayloadArgs};
+use crate::api::requests::objects::update_run_object_with_world::{update_run_object_with_world, UpdateRunObjectWithWorldArgs, UpdateRunObjectWithWorldPayloadArgs};
 use crate::api::requests::recaption::recaption_image::{recaption_image, RecaptionImageArgs};
 use crate::api::requests::worlds::create_world::{create_world, CreateWorldArgs};
 
@@ -105,11 +106,11 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   info!("Object/image URL: {image_url}");
 
-  info!("Request #6 of 10: Patch run with new info...");
+  info!("Request #6 of 10: Patch run with new info (first time) ...");
 
-  let image_input_id = ImageInputObjectId::new();
-  let pano_id = PanoObjectId::new();
-  let meta_world_id = MetaWorldObjectId::new();
+  let image_input_id = ImageInputObjectId::generate_new();
+  let pano_id = PanoObjectId::generate_new();
+  let meta_world_id = MetaWorldObjectId::generate_new();
 
   let response = update_run_object_with_upload(UpdateRunObjectWithUploadArgs {
     cookies: &args.cookies,
@@ -125,6 +126,8 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     request_timeout: args.individual_request_timeout,
   }).await?;
 
+  let run_first_updated_at = response.run_updated_timestamp;
+
   info!("Request #7 of 10: captioning with VLM ...");
 
   let response = recaption_image(RecaptionImageArgs {
@@ -138,7 +141,8 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   info!("Title: {}", response.title);
   info!("Caption: {}", response.caption);
-  
+
+  let title = response.title;
   let text_prompt = response.caption;
 
   info!("Request #8 of 10: create world ...");
@@ -152,8 +156,29 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   }).await?;
 
   let world_id = response.world_id;
-  
+
   info!("World ID: {}", &world_id.0);
+
+  info!("Request #9 of 10: patch run with new info (second time) ...");
+
+  let response = update_run_object_with_world(UpdateRunObjectWithWorldArgs {
+    cookies: &args.cookies,
+    bearer_token: &args.bearer_token,
+    payload_args: UpdateRunObjectWithWorldPayloadArgs {
+      run_id: &run_object_id,
+      run_created_at_timestamp: run_object.metadata.created_at,
+      first_patch_timestamp: run_first_updated_at,
+      image_upload_url: &image_url,
+      image_input_id: &image_input_id,
+      pano_id: &pano_id,
+      meta_world_id: &meta_world_id,
+      world_id: &world_id,
+      title: &title,
+      text_prompt: &text_prompt,
+    },
+    request_timeout: args.individual_request_timeout,
+  }).await?;
+  
 
   Ok(UploadImageAndCreateWorldWithRetryResponse {
     run_id: run_object_id,

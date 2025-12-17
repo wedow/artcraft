@@ -7,7 +7,7 @@ use uuid::Uuid;
 pub struct ImageInputObjectId(pub String);
 
 impl ImageInputObjectId {
-  pub fn new() -> Self {
+  pub fn generate_new() -> Self {
     let uuid = Uuid::new_v4().to_string();
     Self(uuid)
   }
