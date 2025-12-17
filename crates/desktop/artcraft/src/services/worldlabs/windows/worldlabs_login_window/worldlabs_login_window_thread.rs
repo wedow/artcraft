@@ -21,6 +21,7 @@ use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
+use crate::core::utils::window::get_webview_window_url_path::get_webview_window_url_path;
 
 pub async fn worldlabs_login_window_thread(
   app: AppHandle,
@@ -73,14 +74,12 @@ async fn check_login_window(
   visited_login: &mut bool,
 ) -> AnyhowResult<bool> {
 
-  /* Login flow looks like this:
+  // World labs has no distinct login page. Everything is in a single SPA.
 
-  1. Start:  https://accounts.x.ai/sign-in?redirect=grok-com
-  2. SSO / Google Login (etc): https://accounts.google.com/v3/signin/challenge/pwd?[query]
-  3. Done / Landing: https://grok.com/...
-   */
-
+  let mut is_logged_in = false;
+  
   // See if pricing exists.
+  // We'll use redirection to detect if we're done.
   let pricing_script = r#"
     (() => {
       let pricing = document.querySelectorAll("a[href='/pricing']");
@@ -94,57 +93,29 @@ async fn check_login_window(
   webview_window.eval(pricing_script)?;
 
   let hostname = get_webview_window_hostname(webview_window)?;
+  let path = get_webview_window_url_path(webview_window)?;
 
-  let cookie_store = worldlabs_login_webview_extract_cookies(webview_window)?;
-
-  let maybe_has_auth_cookies = true; //cookie_store_has_auth_cookies(&cookie_store); // TODO TODO FIXME
-  let maybe_has_enough_cookies = cookie_store.len() > 6;
-
-  // Misc cookies without login cookies are ~1055 length
-  // AUTH_I is ~1500 length
-  // AUTH_R is ~500 length
-  let maybe_has_big_enough_cookie = cookie_store.calculate_approx_cookie_character_length() > 2100;
-
-  let mut heuristic_count = 0;
-
-  if maybe_has_auth_cookies {
-    heuristic_count += 1;
-  }
-  if maybe_has_enough_cookies {
-    heuristic_count += 1;
-  }
-  if maybe_has_big_enough_cookie {
-    heuristic_count += 1;
+  match hostname.as_str() {
+    "www.worldlabs.ai" => {
+      is_logged_in = true;
+    },
+    _ => {}
   }
 
-  if heuristic_count < 3 {
+  match path.as_str() {
+    "/about" => {
+      is_logged_in = true;
+    },
+    _ => {}
+  }
+
+  if !is_logged_in {
     return Ok(false);
   }
 
-  info!("Heuristic count is ({}); we're likely done.", heuristic_count);
+  let cookie_store = worldlabs_login_webview_extract_cookies(webview_window)?;
 
   info!("Current cookies (len {}): {:?}", cookie_store.len(), cookie_store.to_cookie_string());
-
-  //let response = get_user_info(GetUserInfoRequest {
-  //  hostname: MidjourneyHostname::Standard,
-  //  cookie_header: cookie_store.to_cookie_string(),
-  //}).await;
-  
-  //match response {
-  //  Err(err) => {
-  //    error!("Error getting midjourney user info: {:?}", err);
-  //    // NB: Fall through. Allow us to update the cookies.
-  //  }
-  //  Ok(user_info) => {
-  //    info!("Got midjourney user info: {:?}", user_info);
-  //    let user_info = MidjourneyUserInfo::from_api_response(user_info);
-  //
-  //    //if let Err(err) = grok_creds_manager.replace_user_info(user_info) {
-  //    //  error!("Error saving midjourney user info: {:?}", err);
-  //    //  // NB: Fall through. Allow us to update the cookies.
-  //    //}
-  //  }
-  //}
 
   worldlabs_creds_manager.replace_cookie_store(cookie_store)?;
 
