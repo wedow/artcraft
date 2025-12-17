@@ -1,10 +1,10 @@
 use crate::core::commands::response::shorthand::{Response, SimpleResponse};
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::Deserialize;
 use tauri::State;
-use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 
 #[tauri::command]
 pub async fn worldlabs_clear_credentials_command(

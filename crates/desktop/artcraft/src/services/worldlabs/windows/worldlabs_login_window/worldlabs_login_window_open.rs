@@ -7,6 +7,7 @@ use errors::AnyhowResult;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 use std::time::Duration;
+use log::info;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 /// Name of the window
@@ -17,11 +18,11 @@ pub (super) static START_URL: Lazy<Url> = Lazy::new(|| {
 });
 
 pub (super) static WORLDLABS_HOMEPAGE_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse("https://grok.com/").expect("URL should parse")
+  Url::parse("https://marble.worldlabs.ai/").expect("URL should parse")
 });
 
 pub (super) static WORLDLABS_LOGIN_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse("https://accounts.x.ai/sign-in?redirect=grok-com").expect("URL should parse")
+  Url::parse("https://marble.worldlabs.ai/").expect("URL should parse")
 });
 
 pub async fn worldlabs_login_window_open(
@@ -43,7 +44,7 @@ pub async fn worldlabs_login_window_open(
       .resizable(true)
       .visible(true)
       .closable(true)
-      .min_inner_size(200.0, 800.0)
+      .min_inner_size(800.0, 800.0)
       .focused(true)
       .devtools(true)
       .build()?;
@@ -55,10 +56,18 @@ pub async fn worldlabs_login_window_open(
 
   webview.navigate(WORLDLABS_HOMEPAGE_URL.clone())?;
 
-  // NB: We're starting to get Cloudflare protection screens. Let's try to avoid.
-  tokio::time::sleep(Duration::from_millis(100)).await;
+  tokio::time::sleep(Duration::from_millis(200)).await;
 
-  webview.navigate(WORLDLABS_LOGIN_URL.clone())?;
+  for _ in 0 .. 100 {
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    info!("Running script...");
+
+    // Close "welcome"
+    webview.eval(r#"document.querySelectorAll("div:has(h2) ~ button[data-slot=dialog-close]")"#)?;
+
+    // Open "login"
+    webview.eval(r#"document.querySelectorAll("button:has(span[data-slot=avatar])").forEach((el) => el.click())"#)?;
+  }
 
   let app_handle = app.clone();
   let app_data_root = app_data_root.clone();
