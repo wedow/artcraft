@@ -178,12 +178,11 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     },
     request_timeout: args.individual_request_timeout,
   }).await?;
-  
 
   Ok(UploadImageAndCreateWorldWithRetryResponse {
     run_id: run_object_id,
-    world_id,
     image_upload_url: image_url,
+    world_id,
   })
 }
 
@@ -205,7 +204,7 @@ mod tests {
     let bearer_token = get_test_bearer_token().unwrap();
 
     //let file_path = "/home/bt/Pictures/locations/island.jpg";
-    let file_path = "/Users/bt/Pictures/Midjourney/desert_room.jpeg";
+    let file_path = "/Users/bt/Pictures/Midjourney/winding_road.jpeg";
     let file_bytes = file_read_bytes(file_path).unwrap();
 
     println!("File bytes len: {}", file_bytes.len());
