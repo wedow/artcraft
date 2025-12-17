@@ -65,6 +65,8 @@ pub async fn worldlabs_login_window_thread(
   }
 }
 
+/// NOTE: THERE IS THIS - https://marble.worldlabs.ai/sign-in?redirect=%2Fworlds
+
 /// Returns true if we can exit.
 async fn check_login_window(
   app_handle: &AppHandle,
@@ -77,7 +79,7 @@ async fn check_login_window(
   // World labs has no distinct login page. Everything is in a single SPA.
 
   let mut is_logged_in = false;
-  
+
   // See if pricing exists.
   // We'll use redirection to detect if we're done.
   let pricing_script = r#"
@@ -87,6 +89,56 @@ async fn check_login_window(
       if (pricing.length > 0) {
         window.location.href = "https://www.worldlabs.ai/about";
       }
+    })();
+  "#;
+
+  let indexed_db_access = r#"
+    (() => {
+      let db;
+
+      const request = indexedDB.open("firebaseLocalStorageDb");
+      request.onerror = (event) => {
+        console.error("Indexed DB Error", event);
+      };
+
+      request.onsuccess = (event) => {
+        db = event.target.result;
+        let tx = db.transaction("firebaseLocalStorage", "readonly");
+        let store = tx.objectStore("firebaseLocalStorage");
+
+        let keysRequest = store.getAllKeys();
+
+        keysRequest.onerror = (event) => {
+          console.error("Error with getting all keys", error);
+        };
+
+        keysRequest.onsuccess = () => {
+          console.error('keys', keysRequest.result); // array of keys
+
+          let keys = keysRequest.result; // array of keys
+          let key = keys[0];
+
+          const getKeyRequest = store.getKey(key);
+
+          getKeyRequest.onsuccess = () => {
+            console.error('key result', getKeyRequest.result);
+          };
+
+          store.openCursor().onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              console.error('cursor value', cursor.value);
+              let tokens = cursor.value?.value?.stsTokenManager;
+              console.error('tokens', tokens);
+
+              cursor.continue();
+            } else {
+              console.error("Entries all displayed.");
+            }
+          };
+
+        };
+      };
     })();
   "#;
 

@@ -1,4 +1,27 @@
 
+/*
+
+This is issued by Google, even for email+password login:
+
+  https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={ENTROPY}
+
+Value:
+
+{
+    "kind": "identitytoolkit#VerifyPasswordResponse",
+    "localId": "{{WorldLabsUserId}}",
+    "email": "{{email@whatever.com}}",
+    "displayName": "",
+    "idToken": "{{BEARER_TOKEN}}",
+    "registered": true,
+    "refreshToken": "{{REFRESH_TOKEN}}",
+    "expiresIn": "3600"
+}
+
+
+
+*/
+
 #[derive(Clone)]
 pub struct WorldLabsBearerToken {
   /// The bearer token

@@ -42,10 +42,10 @@ impl WorldlabsCredentialManager {
         let maybe_browser_cookies = state.user_cookies
             .as_ref()
             .map(|cookies| cookies.to_cookie_store());
-        
+
         let maybe_bearer = state.bearer_token
             .map(|bearer| WorldLabsBearerToken::new(bearer));
-        
+
         let maybe_cookies = maybe_browser_cookies
             .as_ref()
             .map(|cookies| cookies.to_cookie_string())
@@ -188,7 +188,7 @@ impl WorldlabsCredentialManager {
     // TODO: This is just for building the client and testing.
     if let Some(cookies) = creds.browser_cookies.as_ref() {
       let cookies_header = cookies.to_cookie_string();
-      let path = self.app_data_root.credentials_dir().get_worldlabs_state_path();
+      let path = self.app_data_root.credentials_dir().get_worldlabs_cookies_path();
       std::fs::write(path, cookies_header)?;
     }
 
