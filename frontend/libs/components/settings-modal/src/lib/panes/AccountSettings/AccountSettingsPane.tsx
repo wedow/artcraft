@@ -1,6 +1,5 @@
 import { SoraAccountBlock } from "./SoraAccountBlock";
 import { ArtcraftAccountBlock } from "./ArtcraftAccountBlock";
-import { FalApiKeyBlock } from "./FalApiKeyBlock";
 import { MidjourneyAccountBlock } from "./MidjourneyAccountBlock";
 import { GrokAccountBlock } from "./GrokAccountBlock";
 import { WorldLabsAccountBlock } from "./WorldLabsAccountBlock";
@@ -43,11 +42,10 @@ export const AccountSettingsPane = ({
         <ArtcraftAccountBlock
           globalAccountLogoutCallback={globalAccountLogoutCallback}
         />
-        <MidjourneyAccountBlock />
         <GrokAccountBlock />
-        <WorldLabsAccountBlock />
+        <MidjourneyAccountBlock />
         <SoraAccountBlock />
-        <FalApiKeyBlock />
+        <WorldLabsAccountBlock />
         {/*
         <OpenAIApiKeyBlock/>
         <hr />

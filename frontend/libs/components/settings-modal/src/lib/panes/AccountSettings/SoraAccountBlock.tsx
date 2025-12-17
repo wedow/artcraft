@@ -63,7 +63,7 @@ export const SoraAccountBlock = () => {
 
   return(
     <div className="flex justify-between items-center">
-      <span>OpenAI / Sora Account:</span>
+      <span>Sora (OpenAI) Account:</span>
       <pre>{soraSession?.payload?.maybe_email || "Not logged in"}</pre>
       <Button
         variant={
