@@ -5,13 +5,13 @@ use std::fs::read_to_string;
 
 /// History
 ///  v1 - initial
-pub (super) const SERIALIZABLE_GROK_STATE_VERSION: u32 = 1;
+pub (super) const SERIALIZABLE_WORLDLABS_STATE_VERSION: u32 = 1;
 
 /// We only need to serialize Grok cookies.
 /// Most of the other state (verification_token, etc.) can be pulled at runtime.
 /// We will cache the `user_id` and `user_email`.
 #[derive(Serialize, Deserialize)]
-pub (super) struct GrokSerializableState {
+pub (super) struct WorldlabsSerializableState {
   pub (super) version: u32,
   
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -24,9 +24,9 @@ pub (super) struct GrokSerializableState {
   pub (super) user_email: Option<String>,
 }
 
-impl GrokSerializableState {
-  pub fn read_from_disk(root: &AppDataRoot) -> anyhow::Result<Option<GrokSerializableState>> {
-    let state_path = root.credentials_dir().get_grok_state_path();
+impl WorldlabsSerializableState {
+  pub fn read_from_disk(root: &AppDataRoot) -> anyhow::Result<Option<WorldlabsSerializableState>> {
+    let state_path = root.credentials_dir().get_worldlabs_state_path();
 
     if !state_path.exists() {
       return Ok(None);
@@ -36,7 +36,7 @@ impl GrokSerializableState {
         .trim()
         .to_string();
 
-    let state: GrokSerializableState = serde_json::from_str(&contents)?;
+    let state: WorldlabsSerializableState = serde_json::from_str(&contents)?;
 
     Ok(Some(state))
   }

@@ -698,6 +698,7 @@ dependencies = [
  "url_utils",
  "web_base64",
  "workspace-build-acceleration",
+ "world_labs_client",
 ]
 
 [[package]]

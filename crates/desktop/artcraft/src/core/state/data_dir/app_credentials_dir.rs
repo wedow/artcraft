@@ -61,4 +61,12 @@ impl AppCredentialsDir {
   pub fn get_midjourney_state_path(&self) -> PathBuf {
     self.path.join("midjourney_state.json")
   }
+
+  pub fn get_worldlabs_state_path(&self) -> PathBuf {
+    self.path.join("worldlabs_state.json")
+  }
+
+  pub fn get_worldlabs_cookies_path(&self) -> PathBuf {
+    self.path.join("worldlabs_cookies.txt")
+  }
 }

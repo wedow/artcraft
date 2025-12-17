@@ -220,6 +220,7 @@ testing = { path = "crates/lib/testing" }
 tokens = { path = "crates/schema/public/tokens" }
 url_utils = { path = "crates/lib/url_utils" }
 web_base64 = { path = "crates/lib/data/web_base64" }
+world_labs_client = { path = "crates/api_clients/world_labs_client" }
 
 # External libs
 # Centrally pinned versions so that we can uniformly upgrade/downgrade versions across the workspace
