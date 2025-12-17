@@ -38,6 +38,7 @@ use crate::services::midjourney::commands::midjourney_clear_credentials_command:
 use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
 use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
+use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use crate::services::sora::commands::check_sora_session_command::check_sora_session_command;
 use crate::services::sora::commands::open_sora_login_command::open_sora_login_command;
 use crate::services::sora::commands::sora_get_credential_info_command::sora_get_credential_info_command;
@@ -111,6 +112,9 @@ pub fn run() {
   let grok_prompt_queue = GrokImagePromptQueue::new();
   let grok_prompt_queue_2 = grok_prompt_queue.clone();
 
+  let worldlabs_creds_manager = WorldlabsCredentialManager::initialize_from_disk_infallible(&app_data_root);
+  let worldlabs_creds_manager_2 = worldlabs_creds_manager.clone();
+
   println!("Initializing backend runtime...");
 
   let builder = tauri::Builder::default()
@@ -150,6 +154,7 @@ pub fn run() {
           midjourney_creds_manager_2,
           grok_creds_manager_2,
           grok_prompt_queue_2,
+          worldlabs_creds_manager_2,
         ).await;
 
         if let Err(err) = result {
@@ -169,7 +174,8 @@ pub fn run() {
     .manage(midjourney_creds_manager)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
-    .manage(storyteller_creds_manager_3);
+    .manage(storyteller_creds_manager_3)
+    .manage(worldlabs_creds_manager);
 
   // TODO: Break this out into another module, because RustRover/IntelliJ lags with these macros.
   //  My first attempt at naively doing this didn't work because the macros can't find their codegen'd targets.

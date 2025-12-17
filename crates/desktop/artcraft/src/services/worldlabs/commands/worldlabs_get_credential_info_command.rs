@@ -35,6 +35,7 @@ fn get_info(
   let mut can_clear_state = true;
   
   let maybe_cookies = creds.maybe_copy_cookie_store()?;
+
   //let maybe_full_credentials = creds.user()?;
   //
   //if maybe_cookies.is_none()  && maybe_full_credentials.is_none() {
@@ -45,6 +46,10 @@ fn get_info(
   //    .map(|full_creds| full_creds.client_secrets.user_email)
   //    .map(|maybe_email| maybe_email.map(|email| email.to_string()))
   //    .flatten();
+
+  if maybe_cookies.is_none() {
+    can_clear_state = false;
+  }
   
   Ok(WorldlabsGetCredentialInfoResponse {
     maybe_email: None,
