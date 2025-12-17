@@ -33,7 +33,7 @@ pub async fn worldlabs_login_window_thread(
     let login_webview_window = match app.get_webview_window(WORLDLABS_LOGIN_WINDOW_NAME) {
       Some(webview) => webview,
       None => {
-        info!("Exit Grok login thread.");
+        info!("Exit WorldLabs login thread.");
         return; // NB: Only exit if we don't have the webview.
       }
     };
@@ -80,37 +80,25 @@ async fn check_login_window(
   3. Done / Landing: https://grok.com/...
    */
 
+  // See if pricing exists.
+  let pricing_script = r#"
+    (() => {
+      let pricing = document.querySelectorAll("a[href='/pricing']");
+      console.log('pricing', pricing);
+      if (pricing.length > 0) {
+        window.location.href = "https://www.worldlabs.ai/about";
+      }
+    })();
+  "#;
+
+  webview_window.eval(pricing_script)?;
+
   let hostname = get_webview_window_hostname(webview_window)?;
-
-  let mut maybe_at_destination = false;
-
-  match hostname.as_str() {
-    "www.grok.com" |
-    "grok.com"
-    => {
-      maybe_at_destination = true;
-    }
-    // chatgpt.com/auth is also an auth domain
-    "accounts.x.ai" |
-    "auth.openai.com" |
-    "accounts.google.com" |
-    "accounts.youtube.com" |
-    "login.live.com" |
-    "appleid.apple.com"
-    => {
-      // NB: We're in auth flow.
-      info!("Grok webview is in auth flow; hostname `{}`.", hostname);
-      *visited_login = true;
-      return Ok(false)
-    }
-    _ => {}, // We just don't know...
-  }
 
   let cookie_store = worldlabs_login_webview_extract_cookies(webview_window)?;
 
   let maybe_has_auth_cookies = true; //cookie_store_has_auth_cookies(&cookie_store); // TODO TODO FIXME
   let maybe_has_enough_cookies = cookie_store.len() > 6;
-  let maybe_completed_login_cycle = *visited_login && maybe_at_destination;
 
   // Misc cookies without login cookies are ~1055 length
   // AUTH_I is ~1500 length
@@ -123,9 +111,6 @@ async fn check_login_window(
     heuristic_count += 1;
   }
   if maybe_has_enough_cookies {
-    heuristic_count += 1;
-  }
-  if maybe_completed_login_cycle {
     heuristic_count += 1;
   }
   if maybe_has_big_enough_cookie {

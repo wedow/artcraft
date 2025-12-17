@@ -9,6 +9,7 @@ use reqwest::Url;
 use std::time::Duration;
 use log::info;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::webview::NewWindowResponse;
 
 /// Name of the window
 pub (super) const WORLDLABS_LOGIN_WINDOW_NAME: &str = "worldlabs_login_window";
@@ -38,6 +39,12 @@ pub async fn worldlabs_login_window_open(
 
   let window = WebviewWindowBuilder::new(app, WORLDLABS_LOGIN_WINDOW_NAME, url)
       //.user_agent(openai_sora_client::credentials::USER_AGENT)
+      .on_new_window(move |url, features| {
+        // WorldLabs needs popups as they (1) don't have a distinct login page
+        // (it's embedded) and (2) they don't redirect with OAuth, but rather
+        // open a popup to Google. It still works, but it's annoying.
+        NewWindowResponse::Allow
+      })
       .always_on_top(false)
       .title("Login to WorldLabs")
       .center()
@@ -58,16 +65,19 @@ pub async fn worldlabs_login_window_open(
 
   tokio::time::sleep(Duration::from_millis(200)).await;
 
+  info!("Running script...");
+
   for _ in 0 .. 100 {
     tokio::time::sleep(Duration::from_millis(100)).await;
-    info!("Running script...");
 
-    // Close "welcome"
+    // Close the "welcome" modal
     webview.eval(r#"document.querySelectorAll("div:has(h2) ~ button[data-slot=dialog-close]")"#)?;
 
-    // Open "login"
+    // Open the "login" modal
     webview.eval(r#"document.querySelectorAll("button:has(span[data-slot=avatar])").forEach((el) => el.click())"#)?;
   }
+
+  info!("Script done...");
 
   let app_handle = app.clone();
   let app_data_root = app_data_root.clone();
