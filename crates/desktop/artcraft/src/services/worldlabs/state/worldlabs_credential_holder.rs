@@ -1,5 +1,6 @@
 use cookie_store::cookie_store::CookieStore;
-use grok_client::credentials::grok_full_credentials::GrokFullCredentials;
+use world_labs_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
+use world_labs_client::credentials::world_labs_cookies::WorldLabsCookies;
 
 #[derive(Clone)]
 pub struct WorldlabsCredentialHolder {
@@ -8,16 +9,21 @@ pub struct WorldlabsCredentialHolder {
   /// The Worldlabs client consumes a string-only form (rather than this cookie jar)
   pub browser_cookies: Option<CookieStore>,
 
-  /// Full credentials.
+  /// Copy of cookies, specifically for the client library.
   /// NOT PERSISTED TO DISK.
-  pub worldlabs_full_credentials: Option<GrokFullCredentials>,
+  pub world_labs_cookies: Option<WorldLabsCookies>,
+
+  /// Bearer token
+  /// This needs to be persisted to disk.
+  pub world_labs_bearer_token: Option<WorldLabsBearerToken>,
 }
 
 impl WorldlabsCredentialHolder {
   pub fn empty() -> Self {
     Self {
       browser_cookies: None,
-      worldlabs_full_credentials: None,
+      world_labs_cookies: None,
+      world_labs_bearer_token: None,
     }
   }
 }

@@ -1,12 +1,13 @@
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::worldlabs::state::worldlabs_credential_holder::WorldlabsCredentialHolder;
+use crate::services::worldlabs::state::worldlabs_serializable_state::{WorldlabsSerializableState, SERIALIZABLE_WORLDLABS_STATE_VERSION};
 use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
 use log::{info, warn};
 use std::fs::read_to_string;
 use std::sync::{Arc, RwLock};
+use world_labs_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use world_labs_client::credentials::world_labs_cookies::WorldLabsCookies;
-use crate::services::worldlabs::state::worldlabs_credential_holder::WorldlabsCredentialHolder;
-use crate::services::worldlabs::state::worldlabs_serializable_state::{WorldlabsSerializableState, SERIALIZABLE_WORLDLABS_STATE_VERSION};
 
 #[derive(Clone)]
 pub struct WorldlabsCredentialManager {
@@ -38,17 +39,22 @@ impl WorldlabsCredentialManager {
         credential_data = Arc::new(RwLock::new(WorldlabsCredentialHolder::empty()));
       }
       Ok(Some(state)) => {
-        let maybe_cookies = state.user_cookies
+        let maybe_browser_cookies = state.user_cookies
+            .as_ref()
             .map(|cookies| cookies.to_cookie_store());
-
-        let mut user_data = None;
-        if let Some(user_id) = state.user_id {
-          user_data = Some(WorldlabsUserData::from_id_and_email(user_id, state.user_email));
-        }
+        
+        let maybe_bearer = state.bearer_token
+            .map(|bearer| WorldLabsBearerToken::new(bearer));
+        
+        let maybe_cookies = maybe_browser_cookies
+            .as_ref()
+            .map(|cookies| cookies.to_cookie_string())
+            .map(|cookies| WorldLabsCookies::new(cookies));
 
         credential_data = Arc::new(RwLock::new(WorldlabsCredentialHolder {
-          browser_cookies: maybe_cookies,
-          worldlabs_full_credentials: None, // NB: We don't want to keep this on disk. It goes stale.
+          browser_cookies: maybe_browser_cookies,
+          world_labs_bearer_token: maybe_bearer,
+          world_labs_cookies: maybe_cookies,
         }));
       }
     };
@@ -61,7 +67,7 @@ impl WorldlabsCredentialManager {
 
   pub fn maybe_copy_cookie_store(&self) -> anyhow::Result<Option<CookieStore>> {
     match self.credential_data.read() {
-      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
       Ok(holder) => Ok(holder.browser_cookies.clone()),
     }
   }
@@ -82,10 +88,10 @@ impl WorldlabsCredentialManager {
     Ok(maybe_cookies)
   }
 
-  pub fn maybe_copy_full_credentials(&self) -> anyhow::Result<Option<WorldLabsFullCredentials>> {
+  pub fn maybe_copy_bearer_token(&self) -> anyhow::Result<Option<WorldLabsBearerToken>> {
     match self.credential_data.read() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
-      Ok(holder) => Ok(holder.worldlabs_full_credentials.clone()),
+      Ok(holder) => Ok(holder.world_labs_bearer_token.clone()),
     }
   }
 
@@ -99,27 +105,11 @@ impl WorldlabsCredentialManager {
     }
   }
 
-  pub fn replace_full_credentials(&self, creds: WorldlabsFullCredentials) -> anyhow::Result<()> {
+  pub fn replace_bearer_token(&self, creds: WorldLabsBearerToken) -> anyhow::Result<()> {
     match self.credential_data.write() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
       Ok(mut holder) => {
-        holder.worldlabs_full_credentials = Some(creds);
-        Ok(())
-      }
-    }
-  }
-
-  pub fn replace_client_secrets_only(&self, secrets: WorldLabsClientSecrets) -> anyhow::Result<()> {
-    match self.credential_data.write() {
-      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
-      Ok(mut holder) => {
-        let mut maybe_full_creds = holder.worldlabs_full_credentials.clone();
-        if let Some(creds) = maybe_full_creds.as_mut() {
-          creds.client_secrets = secrets;
-        } else {
-          warn!("No existing credentials to replace secrets into.");
-        }
-        holder.worldlabs_full_credentials = maybe_full_creds;
+        holder.world_labs_bearer_token = Some(creds);
         Ok(())
       }
     }
@@ -137,7 +127,7 @@ impl WorldlabsCredentialManager {
       Ok(store) => store.clone(),
     };
 
-    if holder.worldlabs_full_credentials.is_some() {
+    if holder.world_labs_bearer_token.is_some() {
       return Ok(true);
     }
 
@@ -185,17 +175,12 @@ impl WorldlabsCredentialManager {
       user_cookies: creds.browser_cookies
           .as_ref()
           .map(|cookies| cookies.to_serializable()),
-      user_id: creds.worldlabs_full_credentials
-          .as_ref()
-          .map(|creds| creds.client_secrets.user_id.to_string()),
-      user_email: creds.worldlabs_full_credentials
-          .as_ref()
-          .map(|data| data.client_secrets.user_email.as_ref())
-          .flatten()
-          .map(|email| email.to_string()),
+      user_id: None, // TODO
+      user_email: None, // TODO
+      bearer_token: creds.world_labs_bearer_token.map(|token| token.to_raw_string())
     };
 
-    let path = self.app_data_root.credentials_dir().get_grok_state_path();
+    let path = self.app_data_root.credentials_dir().get_worldlabs_state_path();
     let serialized = serde_json::to_string(&state)?;
 
     std::fs::write(path, serialized)?;
@@ -203,7 +188,7 @@ impl WorldlabsCredentialManager {
     // TODO: This is just for building the client and testing.
     if let Some(cookies) = creds.browser_cookies.as_ref() {
       let cookies_header = cookies.to_cookie_string();
-      let path = self.app_data_root.credentials_dir().get_grok_cookies_path();
+      let path = self.app_data_root.credentials_dir().get_worldlabs_state_path();
       std::fs::write(path, cookies_header)?;
     }
 

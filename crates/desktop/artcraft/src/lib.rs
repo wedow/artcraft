@@ -32,8 +32,8 @@ use crate::core::threads::main_window_thread::main_window_thread::main_window_th
 use crate::services::grok::commands::grok_clear_credentials_command::grok_clear_credentials_command;
 use crate::services::grok::commands::grok_get_credential_info_command::grok_get_credential_info_command;
 use crate::services::grok::commands::grok_open_login_command::grok_open_login_command;
-use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
+use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::midjourney::commands::midjourney_clear_credentials_command::midjourney_clear_credentials_command;
 use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
 use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
@@ -55,6 +55,9 @@ use crate::services::storyteller::commands::stripe_customer_portal::storyteller_
 use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_switch_plan_command::storyteller_open_customer_portal_switch_plan_command;
 use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_update_payment_method_command::storyteller_open_customer_portal_update_payment_method_command;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::services::worldlabs::commands::worldlabs_clear_credentials_command::worldlabs_clear_credentials_command;
+use crate::services::worldlabs::commands::worldlabs_get_credential_info_command::worldlabs_get_credential_info_command;
+use crate::services::worldlabs::commands::worldlabs_open_login_command::worldlabs_open_login_command;
 use log::error;
 
 use tauri_plugin_dialog;
@@ -207,6 +210,9 @@ pub fn run() {
     storyteller_open_subscription_purchase_command,
     storyteller_purge_credentials_command,
     update_app_preferences_command,
+    worldlabs_clear_credentials_command,
+    worldlabs_get_credential_info_command,
+    worldlabs_open_login_command,
   ]);
 
   builder.run(tauri::generate_context!("tauri.conf.json"))

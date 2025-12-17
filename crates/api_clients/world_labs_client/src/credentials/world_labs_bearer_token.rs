@@ -29,7 +29,7 @@ impl WorldLabsBearerToken {
     self.bearer_token.clone()
   }
 
-  pub fn to_bearer_token_string(&self) -> String {
+  pub fn to_bearer_token_header_string(&self) -> String {
     format!("Bearer {}", self.bearer_token)
   }
 }

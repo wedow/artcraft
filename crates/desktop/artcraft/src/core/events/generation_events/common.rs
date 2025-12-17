@@ -8,6 +8,7 @@ pub enum GenerationServiceProvider {
   Grok,
   Midjourney,
   Sora,
+  WorldLabs,
 }
 
 #[derive(Debug, Copy, Clone, Serialize)]

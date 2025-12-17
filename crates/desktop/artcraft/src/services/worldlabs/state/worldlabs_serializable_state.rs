@@ -18,6 +18,9 @@ pub (super) struct WorldlabsSerializableState {
   pub (super) user_cookies: Option<SerializableCookieStore>,
 
   #[serde(skip_serializing_if = "Option::is_none")]
+  pub (super) bearer_token: Option<String>,
+
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub (super) user_id: Option<String>,
 
   #[serde(skip_serializing_if = "Option::is_none")]

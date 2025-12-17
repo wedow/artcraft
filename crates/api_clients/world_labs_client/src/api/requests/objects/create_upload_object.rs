@@ -55,7 +55,7 @@ pub async fn create_upload_object(args: CreateUploadObjectArgs<'_>) -> Result<Cr
       .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
       .header(REFERER, REFERER_VALUE)
       .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
-      .header(AUTHORIZATION, args.bearer_token.to_bearer_token_string())
+      .header(AUTHORIZATION, args.bearer_token.to_bearer_token_header_string())
       .header(ORIGIN, ORIGIN_VALUE)
       .header(SEC_GPC, "1")
       .header(CONNECTION, CONNECTION_KEEP_ALIVE)

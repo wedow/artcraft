@@ -61,7 +61,7 @@ pub async fn finalize_object_image_upload(args: FinalizeObjectImageUploadArgs<'_
       .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
       .header(ACCEPT_ENCODING, "gzip, deflate, br, zstd")
       .header(REFERER, REFERER_VALUE)
-      .header(AUTHORIZATION, args.bearer_token.to_bearer_token_string())
+      .header(AUTHORIZATION, args.bearer_token.to_bearer_token_header_string())
       .header(ORIGIN, ORIGIN_VALUE)
       .header(SEC_GPC, "1")
       .header(CONNECTION, CONNECTION_KEEP_ALIVE)
