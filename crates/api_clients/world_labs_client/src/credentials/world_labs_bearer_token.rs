@@ -1,3 +1,8 @@
+use crate::credentials::jwt_claims::JwtClaims;
+use crate::error::world_labs_client_error::WorldLabsClientError;
+use crate::error::world_labs_error::WorldLabsError;
+use jwt_light::parse_jwt_claims_trait::ParseJwtClaims;
+use log::error;
 
 /*
 
@@ -17,8 +22,6 @@ Value:
     "refreshToken": "{{REFRESH_TOKEN}}",
     "expiresIn": "3600"
 }
-
-
 
 */
 
@@ -54,5 +57,13 @@ impl WorldLabsBearerToken {
 
   pub fn to_bearer_token_header_string(&self) -> String {
     format!("Bearer {}", self.bearer_token)
+  }
+  
+  pub fn parse_jwt_claims(&self) -> Result<JwtClaims, WorldLabsError> {
+    JwtClaims::parse_claims(&self.bearer_token)
+        .map_err(|err| {
+          error!("Failed to parse bearer token into JWT claims: {}", err);
+          WorldLabsError::Client(WorldLabsClientError::FailedToParseJwtClaims(err))
+        })
   }
 }

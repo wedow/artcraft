@@ -14193,6 +14193,7 @@ dependencies = [
  "futures 0.3.31",
  "http_headers",
  "indexmap 2.9.0",
+ "jwt_light",
  "log",
  "log4rs",
  "once_cell",

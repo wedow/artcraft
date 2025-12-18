@@ -5,6 +5,8 @@ use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::Serialize;
 use tauri::State;
+use world_labs_client::credentials::jwt_claims::JwtClaims;
+use world_labs_client::error::world_labs_error::WorldLabsError;
 
 #[derive(Serialize)]
 pub struct WorldlabsGetCredentialInfoResponse {
@@ -37,23 +39,25 @@ fn get_info(
   let maybe_cookies = creds.maybe_copy_cookie_store()?;
   let maybe_bearer = creds.maybe_copy_bearer_token()?;
 
-  //let maybe_full_credentials = creds.user()?;
-  //
-  //if maybe_cookies.is_none()  && maybe_full_credentials.is_none() {
-  //  can_clear_state = false;
-  //}
-  //
-  //let maybe_email = maybe_full_credentials
-  //    .map(|full_creds| full_creds.client_secrets.user_email)
-  //    .map(|maybe_email| maybe_email.map(|email| email.to_string()))
-  //    .flatten();
-
   if maybe_cookies.is_none() && maybe_bearer.is_none() {
     can_clear_state = false;
   }
-  
+
+  let mut maybe_email = None;
+
+  if let Some(bearer) = maybe_bearer {
+    match bearer.parse_jwt_claims() {
+      Ok(claims) => {
+        maybe_email = claims.email;
+      }
+      Err(err) => {
+        error!("Failed to parse JWT bearer claims: {}", err);
+      }
+    }
+  }
+
   Ok(WorldlabsGetCredentialInfoResponse {
-    maybe_email: None,
+    maybe_email,
     can_clear_state,
   })
 }

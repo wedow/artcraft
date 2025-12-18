@@ -7,6 +7,9 @@ pub enum WorldLabsClientError {
 
   /// An error was encountered in building the Wreq client
   WreqClientError(wreq::Error),
+  
+  /// Failed to parse JWT claims.
+  FailedToParseJwtClaims(jwt_light::error::JwtError),
 
   /// Error serializing a message to send the websocket
   WebsocketRequestSerializationError(serde_json::Error),
@@ -114,6 +117,7 @@ impl Display for WorldLabsClientError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::WreqClientError(err) => write!(f, "Wreq client error (during client creation): {}", err),
+      Self::FailedToParseJwtClaims(err) => write!(f, "Failed to parse JWT claims: {}", err),
       Self::WebsocketRequestSerializationError(err) => write!(f, "Websocket request serialization error: {}", err),
       Self::WebsocketLockError => write!(f, "Websocket lock error"),
       Self::WebsocketReadError(err) => write!(f, "Websocket read error: {}", err),
