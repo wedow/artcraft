@@ -35,6 +35,7 @@ fn get_info(
   let mut can_clear_state = true;
   
   let maybe_cookies = creds.maybe_copy_cookie_store()?;
+  let maybe_bearer = creds.maybe_copy_bearer_token()?;
 
   //let maybe_full_credentials = creds.user()?;
   //
@@ -47,7 +48,7 @@ fn get_info(
   //    .map(|maybe_email| maybe_email.map(|email| email.to_string()))
   //    .flatten();
 
-  if maybe_cookies.is_none() {
+  if maybe_cookies.is_none() && maybe_bearer.is_none() {
     can_clear_state = false;
   }
   

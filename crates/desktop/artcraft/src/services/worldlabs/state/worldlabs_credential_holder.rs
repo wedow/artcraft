@@ -1,6 +1,7 @@
 use cookie_store::cookie_store::CookieStore;
 use world_labs_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use world_labs_client::credentials::world_labs_cookies::WorldLabsCookies;
+use world_labs_client::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
 
 #[derive(Clone)]
 pub struct WorldlabsCredentialHolder {
@@ -16,6 +17,10 @@ pub struct WorldlabsCredentialHolder {
   /// Bearer token
   /// This needs to be persisted to disk.
   pub world_labs_bearer_token: Option<WorldLabsBearerToken>,
+  
+  /// Refresh token
+  /// This needs to be persisted to disk.
+  pub world_labs_refresh_token: Option<WorldLabsRefreshToken>,
 }
 
 impl WorldlabsCredentialHolder {
@@ -24,6 +29,7 @@ impl WorldlabsCredentialHolder {
       browser_cookies: None,
       world_labs_cookies: None,
       world_labs_bearer_token: None,
+      world_labs_refresh_token: None,
     }
   }
 }

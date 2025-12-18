@@ -8,6 +8,7 @@ use std::fs::read_to_string;
 use std::sync::{Arc, RwLock};
 use world_labs_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use world_labs_client::credentials::world_labs_cookies::WorldLabsCookies;
+use world_labs_client::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
 
 #[derive(Clone)]
 pub struct WorldlabsCredentialManager {
@@ -43,18 +44,22 @@ impl WorldlabsCredentialManager {
             .as_ref()
             .map(|cookies| cookies.to_cookie_store());
 
-        let maybe_bearer = state.bearer_token
-            .map(|bearer| WorldLabsBearerToken::new(bearer));
-
         let maybe_cookies = maybe_browser_cookies
             .as_ref()
             .map(|cookies| cookies.to_cookie_string())
             .map(|cookies| WorldLabsCookies::new(cookies));
 
+        let maybe_bearer = state.bearer_token
+            .map(|bearer| WorldLabsBearerToken::new(bearer));
+
+        let maybe_refresh = state.refresh_token
+            .map(|bearer| WorldLabsRefreshToken::new(bearer));
+
         credential_data = Arc::new(RwLock::new(WorldlabsCredentialHolder {
           browser_cookies: maybe_browser_cookies,
-          world_labs_bearer_token: maybe_bearer,
           world_labs_cookies: maybe_cookies,
+          world_labs_bearer_token: maybe_bearer,
+          world_labs_refresh_token: maybe_refresh,
         }));
       }
     };
@@ -105,15 +110,26 @@ impl WorldlabsCredentialManager {
     }
   }
 
-  pub fn replace_bearer_token(&self, creds: WorldLabsBearerToken) -> anyhow::Result<()> {
+  pub fn replace_bearer_token(&self, token: WorldLabsBearerToken) -> anyhow::Result<()> {
     match self.credential_data.write() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
       Ok(mut holder) => {
-        holder.world_labs_bearer_token = Some(creds);
+        holder.world_labs_bearer_token = Some(token);
         Ok(())
       }
     }
   }
+
+  pub fn replace_refresh_token(&self, token: WorldLabsRefreshToken) -> anyhow::Result<()> {
+    match self.credential_data.write() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut holder) => {
+        holder.world_labs_refresh_token = Some(token);
+        Ok(())
+      }
+    }
+  }
+
 
   // NB: This is just a heuristic. We'll add better checks later.
   pub fn do_task_polling(&self) -> anyhow::Result<bool> {
@@ -135,25 +151,7 @@ impl WorldlabsCredentialManager {
       return Ok(false);
     }
 
-    // TODO: Heuristic
-    Ok(true)
-
-    //let cookies = match holder.browser_cookies.as_ref() {
-    //  None => return Ok(false),
-    //  Some(cookies) => cookies,
-    //};
-    //// NB: We consider the session active if we have auth cookies and a user id.
-    ////let has_user_id = user_info.user_id.is_some();
-    ////let maybe_has_auth_cookies = cookie_store_has_auth_cookies(&cookies);
-    //let maybe_has_auth_cookies = true; // TODO TODO TODO - fix this
-    //// Misc cookies without login cookies are ~1055 length
-    //// AUTH_I is ~1500 length
-    //// AUTH_R is ~500 length
-    //let maybe_has_big_enough_cookie = cookies.calculate_approx_cookie_character_length() > 2100;
-    //// TODO: Heuristic should count.
-    //// TODO: Consolidate with "login window thread" logic.
-    //// TODO: Check timestamp of last valid request.
-    //Ok((maybe_has_auth_cookies && maybe_has_big_enough_cookie && maybe_has_big_enough_cookie))
+    Ok(false)
   }
 
   pub fn clear_credentials(&self) -> anyhow::Result<()> {
@@ -177,7 +175,8 @@ impl WorldlabsCredentialManager {
           .map(|cookies| cookies.to_serializable()),
       user_id: None, // TODO
       user_email: None, // TODO
-      bearer_token: creds.world_labs_bearer_token.map(|token| token.to_raw_string())
+      bearer_token: creds.world_labs_bearer_token.map(|token| token.to_raw_string()),
+      refresh_token: creds.world_labs_refresh_token.map(|token| token.to_raw_string()),
     };
 
     let path = self.app_data_root.credentials_dir().get_worldlabs_state_path();
@@ -195,4 +194,3 @@ impl WorldlabsCredentialManager {
     Ok(())
   }
 }
-
