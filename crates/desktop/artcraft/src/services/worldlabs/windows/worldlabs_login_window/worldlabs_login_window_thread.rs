@@ -94,57 +94,53 @@ async fn check_login_window(
     })();
   "#;
 
-  webview_window.eval(pricing_script)?;
+  //webview_window.eval(pricing_script)?;
 
-  let indexed_db_access = r#"
+  let extract_bearer_tokens= r#"
     (() => {
-      let db;
+      if (window.tokens) {
+        return;
+      }
+
+      console.error("...getting tokens...");
 
       const request = indexedDB.open("firebaseLocalStorageDb");
-      request.onerror = (event) => {
-        console.error("Indexed DB Error", event);
-      };
+      request.onerror = (event) => {};
 
       request.onsuccess = (event) => {
-        db = event.target.result;
-        let tx = db.transaction("firebaseLocalStorage", "readonly");
-        let store = tx.objectStore("firebaseLocalStorage");
+        const db = event.target.result;
 
-        let keysRequest = store.getAllKeys();
+        const tx = db.transaction("firebaseLocalStorage", "readonly");
+        const store = tx.objectStore("firebaseLocalStorage");
 
-        keysRequest.onerror = (event) => {
-          console.error("Error with getting all keys", error);
-        };
+        const keysRequest = store.getAllKeys();
+
+        keysRequest.onerror = (event) => {};
 
         keysRequest.onsuccess = () => {
-          console.error('keys', keysRequest.result); // array of keys
-
-          let keys = keysRequest.result; // array of keys
-          let key = keys[0];
+          const keys = keysRequest.result; // array of keys
+          const key = keys[0];
 
           const getKeyRequest = store.getKey(key);
 
-          getKeyRequest.onsuccess = () => {
-            console.error('key result', getKeyRequest.result);
-          };
+          getKeyRequest.onsuccess = () => {};
 
           store.openCursor().onsuccess = (event) => {
             const cursor = event.target.result;
             if (cursor) {
-              console.error('cursor value', cursor.value);
               let tokens = cursor.value?.value?.stsTokenManager;
-              alert(tokens);
-              console.error('tokens', tokens);
-
+              if (tokens?.accessToken && tokens?.refreshToken) {
+                window.tokens = tokens;
+              }
               cursor.continue();
-            } else {
-              console.error("Entries all displayed.");
             }
           };
         };
       };
     })();
   "#;
+
+  webview_window.eval(extract_bearer_tokens)?;
 
 
   let hostname = get_webview_window_hostname(webview_window)?;
@@ -163,7 +159,7 @@ async fn check_login_window(
     },
     _ => {}
   }
-  
+
   is_logged_in = false;
 
   if !is_logged_in {
