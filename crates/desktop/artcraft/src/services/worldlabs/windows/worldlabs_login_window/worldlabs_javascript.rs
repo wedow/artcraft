@@ -4,11 +4,8 @@
 pub (super) const WORLDLABS_JAVASCRIPT_EXPORT_BEARER_TOKENS : &str = r#"
     (async () => {
       if (window.tokensExported) {
-        console.error(">>> Tokens already gotten !");
         return;
       }
-
-      console.error(">>> Getting tokens...");
 
       const request = indexedDB.open("firebaseLocalStorageDb");
 
@@ -17,44 +14,29 @@ pub (super) const WORLDLABS_JAVASCRIPT_EXPORT_BEARER_TOKENS : &str = r#"
       request.onsuccess = (event) => {
         const db = event.target.result;
 
-        console.error(">>> Start transaction...");
-
         const tx = db.transaction("firebaseLocalStorage", "readonly");
-
-        console.error(">>> Object store open ...");
-
         const store = tx.objectStore("firebaseLocalStorage");
-
-        console.error(">>> key request...");
 
         const keysRequest = store.getAllKeys();
 
         keysRequest.onerror = (event) => {};
 
         keysRequest.onsuccess = () => {
-          console.error(">>> keys array...");
-
           const keys = keysRequest.result; // array of keys
-
-          console.error(">>> keys", keys);
           if (keys.length < 1) {
             return;
           }
 
           const key = keys[0];
-
-          console.error(">>> get key...");
-
           const getKeyRequest = store.getKey(key);
 
           getKeyRequest.onsuccess = () => {};
 
           store.openCursor().onsuccess = async (event) => {
             const cursor = event.target.result;
+
             if (cursor) {
               let tokens = cursor.value?.value?.stsTokenManager;
-
-              console.error("tokens", tokens);
 
               if (tokens?.accessToken && tokens?.refreshToken) {
                 // Send to Tauri
@@ -80,11 +62,8 @@ pub (super) const WORLDLABS_JAVASCRIPT_EXPORT_BEARER_TOKENS : &str = r#"
 pub (super) const WORLDLABS_JAVASCRIPT_SEND_BEARER_TO_TAURI : &str = r#"
     (async () => {
       if (!(window.tokens?.accessToken && window.tokens?.refreshToken)) {
-        console.error(">>> No tokens to export");
         return;
       }
-
-      console.error(">>> Sending to Tauri");
 
       let result = await window.__TAURI__.core.invoke("worldlabs_receive_bearer_command", {
         request: {
