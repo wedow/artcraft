@@ -92,6 +92,8 @@ async fn check_login_window(
     })();
   "#;
 
+  webview_window.eval(pricing_script)?;
+
   let indexed_db_access = r#"
     (() => {
       let db;
@@ -129,6 +131,7 @@ async fn check_login_window(
             if (cursor) {
               console.error('cursor value', cursor.value);
               let tokens = cursor.value?.value?.stsTokenManager;
+              alert(tokens);
               console.error('tokens', tokens);
 
               cursor.continue();
@@ -136,13 +139,11 @@ async fn check_login_window(
               console.error("Entries all displayed.");
             }
           };
-
         };
       };
     })();
   "#;
 
-  webview_window.eval(pricing_script)?;
 
   let hostname = get_webview_window_hostname(webview_window)?;
   let path = get_webview_window_url_path(webview_window)?;
