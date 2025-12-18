@@ -21,6 +21,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use errors::AnyhowResult;
 use tauri::{AppHandle, Manager};
+use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 
 pub async fn handle_tauri_startup(
   app: AppHandle,
@@ -33,6 +34,7 @@ pub async fn handle_tauri_startup(
   mj_creds_manager: MidjourneyCredentialManager,
   grok_creds_manager: GrokCredentialManager,
   grok_image_prompt_queue: GrokImagePromptQueue,
+  worldlabs_bearer_bridge: WorldlabsBearerBridge,
   worldlabs_creds_manager: WorldlabsCredentialManager,
 ) -> AnyhowResult<()> {
 

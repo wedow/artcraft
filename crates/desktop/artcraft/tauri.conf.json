@@ -10,6 +10,7 @@
     "beforeBuildCommand": "nx run editor3d:build"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
     ],
     "security": {

@@ -5,10 +5,12 @@ use crate::core::events::generation_events::generation_complete_event::Generatio
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::window::get_webview_window_hostname::get_webview_window_hostname;
+use crate::core::utils::window::get_webview_window_url_path::get_webview_window_url_path;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
+use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_login_webview_extract_cookies::worldlabs_login_webview_extract_cookies;
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_login_window_open::WORLDLABS_LOGIN_WINDOW_NAME;
@@ -21,11 +23,11 @@ use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
-use crate::core::utils::window::get_webview_window_url_path::get_webview_window_url_path;
 
 pub async fn worldlabs_login_window_thread(
   app: AppHandle,
   app_data_root: AppDataRoot,
+  worldlabs_bearer_bridge: WorldlabsBearerBridge,
   worldlabs_creds_manager: WorldlabsCredentialManager,
 ) {
   let mut visited_login = false;
@@ -161,6 +163,8 @@ async fn check_login_window(
     },
     _ => {}
   }
+  
+  is_logged_in = false;
 
   if !is_logged_in {
     return Ok(false);

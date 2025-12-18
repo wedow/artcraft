@@ -59,6 +59,8 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use crate::services::worldlabs::commands::worldlabs_clear_credentials_command::worldlabs_clear_credentials_command;
 use crate::services::worldlabs::commands::worldlabs_get_credential_info_command::worldlabs_get_credential_info_command;
 use crate::services::worldlabs::commands::worldlabs_open_login_command::worldlabs_open_login_command;
+use crate::services::worldlabs::commands::worldlabs_receive_bearer_command::worldlabs_receive_bearer_command;
+use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use log::error;
 
 use tauri_plugin_dialog;
@@ -115,6 +117,9 @@ pub fn run() {
   let worldlabs_creds_manager = WorldlabsCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let worldlabs_creds_manager_2 = worldlabs_creds_manager.clone();
 
+  let worldlabs_bearer_bridge = WorldlabsBearerBridge::empty();
+  let worldlabs_bearer_bridge_2 = worldlabs_bearer_bridge.clone();
+
   println!("Initializing backend runtime...");
 
   let builder = tauri::Builder::default()
@@ -154,6 +159,7 @@ pub fn run() {
           midjourney_creds_manager_2,
           grok_creds_manager_2,
           grok_prompt_queue_2,
+          worldlabs_bearer_bridge_2,
           worldlabs_creds_manager_2,
         ).await;
 
@@ -175,6 +181,7 @@ pub fn run() {
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)
+    .manage(worldlabs_bearer_bridge)
     .manage(worldlabs_creds_manager);
 
   // TODO: Break this out into another module, because RustRover/IntelliJ lags with these macros.
@@ -219,6 +226,7 @@ pub fn run() {
     worldlabs_clear_credentials_command,
     worldlabs_get_credential_info_command,
     worldlabs_open_login_command,
+    worldlabs_receive_bearer_command,
   ]);
 
   builder.run(tauri::generate_context!("tauri.conf.json"))
