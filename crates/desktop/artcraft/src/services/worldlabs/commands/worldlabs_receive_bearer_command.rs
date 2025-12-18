@@ -10,11 +10,11 @@ use tauri::State;
 use tokens::tokens::media_files::MediaFileToken;
 
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct WorldlabsReceiveBearerRequest {
   /// REQUIRED.
   pub bearer_token: String,
-  
+
   /// REQUIRED.
   pub refresh_token: String,
 }
@@ -33,6 +33,8 @@ pub async fn worldlabs_receive_bearer_command(
   bearer_bridge: State<'_, WorldlabsBearerBridge>,
 ) -> SimpleResponse {
   info!("worldlabs_receive_bearer_command called");
+
+  info!("Request: {:?}", request);
 
   set_bearer(request, &bearer_bridge)
       .map_err(|err| {

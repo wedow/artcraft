@@ -7,7 +7,7 @@ pub struct WorldlabsBearerBridge {
   state: Arc<RwLock<Option<WorldlabsBearerBridgeInner>>>
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct WorldlabsBearerBridgeInner {
   pub bearer_token: String,
   pub refresh_token: String,

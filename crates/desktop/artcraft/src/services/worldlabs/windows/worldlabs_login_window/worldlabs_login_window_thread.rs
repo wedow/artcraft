@@ -45,6 +45,7 @@ pub async fn worldlabs_login_window_thread(
       &app,
       &login_webview_window,
       &app_data_root,
+      &worldlabs_bearer_bridge,
       &worldlabs_creds_manager,
       &mut visited_login,
     ).await;
@@ -74,6 +75,7 @@ async fn check_login_window(
   app_handle: &AppHandle,
   webview_window: &WebviewWindow,
   app_data_root: &AppDataRoot,
+  worldlabs_bearer_bridge: &WorldlabsBearerBridge,
   worldlabs_creds_manager: &WorldlabsCredentialManager,
   visited_login: &mut bool,
 ) -> AnyhowResult<bool> {
@@ -99,10 +101,11 @@ async fn check_login_window(
   let extract_bearer_tokens= r#"
     (() => {
       if (window.tokens) {
+        console.error(">>> Tokens already gotten !");
         return;
       }
 
-      console.error("...getting tokens...");
+      console.error(">>> Getting tokens...");
 
       const request = indexedDB.open("firebaseLocalStorageDb");
       request.onerror = (event) => {};
@@ -141,6 +144,35 @@ async fn check_login_window(
   "#;
 
   webview_window.eval(extract_bearer_tokens)?;
+
+  let export_bearer_tokens= r#"
+    (async () => {
+      if (!(window.tokens?.accessToken && window.tokens?.refreshToken)) {
+        console.error(">>> No tokens to export");
+        return;
+      }
+
+      console.error(">>> Sending to Tauri");
+
+      let result = await window.__TAURI__.core.invoke("worldlabs_receive_bearer_command", {
+        request: {
+          bearer_token: window.tokens.accessToken,
+          refresh_token: window.tokens.refreshToken,
+        }
+      });
+
+      error.log('>>> result', result);
+
+    })();
+  "#;
+
+  webview_window.eval(export_bearer_tokens)?;
+
+  let maybe_bearer = worldlabs_bearer_bridge.get()?;
+
+  if let Some(bearer) = maybe_bearer {
+    info!("Rust Got bearer: {:?}", bearer);
+  }
 
 
   let hostname = get_webview_window_hostname(webview_window)?;
