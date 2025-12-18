@@ -43,26 +43,27 @@ pub (super) const WORLDLABS_JAVASCRIPT_EXPORT_BEARER_TOKENS : &str = r#"
 
           getKeyRequest.onsuccess = () => {};
 
-          store.openCursor().onsuccess = (event) => {
+          store.openCursor().onsuccess = async (event) => {
             const cursor = event.target.result;
             if (cursor) {
               let tokens = cursor.value?.value?.stsTokenManager;
+
+              console.error("tokens", tokens);
 
               if (tokens?.accessToken && tokens?.refreshToken) {
                 // Send to Tauri
                 let result = await window.__TAURI__.core.invoke("worldlabs_receive_bearer_command", {
                   request: {
-                    bearer_token: window.tokens.accessToken,
-                    refresh_token: window.tokens.refreshToken,
+                    bearer_token: tokens.accessToken,
+                    refresh_token: tokens.refreshToken,
                   }
                 });
-
-                window.tokens = tokens;
                 window.tokensExported = true;
               }
               cursor.continue();
             }
           }; // end cursor
+
         }; // end keyRequest
       }; // end DB
     })();
