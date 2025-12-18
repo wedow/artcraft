@@ -35,6 +35,12 @@ pub (super) const WORLDLABS_JAVASCRIPT_EXPORT_BEARER_TOKENS : &str = r#"
           console.error(">>> keys array...");
 
           const keys = keysRequest.result; // array of keys
+
+          console.error(">>> keys", keys);
+          if (keys.length < 1) {
+            return;
+          }
+
           const key = keys[0];
 
           console.error(">>> get key...");
