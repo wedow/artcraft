@@ -7,6 +7,7 @@ use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::api::utils::upload_id_to_image_url::upload_id_to_image_url;
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use crate::credentials::world_labs_cookies::WorldLabsCookies;
+use crate::error::filter_world_labs_http_error::filter_world_labs_http_error;
 use crate::error::world_labs_client_error::WorldLabsClientError;
 use crate::error::world_labs_error::WorldLabsError;
 use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
@@ -103,12 +104,11 @@ pub async fn create_world(args: CreateWorldArgs<'_>) -> Result<CreateWorldRespon
         WorldLabsGenericApiError::WreqError(err)
       })?;
 
-  // TODO: Handle errors (Cloudflare, Grok, etc.)
   if !status.is_success() {
     error!("Request returned an error (code {}) : {:?}", status.as_u16(), response_body);
-    //return Err(classify_general_http_status_code_and_body(status, response_body));
-    return Err(WorldLabsGenericApiError::UncategorizedBadResponseWithStatusAndBody { status_code: status, body: response_body}.into())
   }
+
+  filter_world_labs_http_error(status, Some(&response_body))?;
 
   debug!("Response body (200): {}", response_body);
 

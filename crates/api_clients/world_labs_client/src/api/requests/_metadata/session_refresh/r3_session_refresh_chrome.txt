@@ -1,0 +1,35 @@
+
+curl 'https://securetoken.googleapis.com/v1/token?key=AIzaSyAA88yObUN-0pnXAxcgOrT2exZxFWLW1BI' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/x-www-form-urlencoded' \
+  -H 'origin: https://marble.worldlabs.ai' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://marble.worldlabs.ai/' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  -H 'x-browser-channel: stable' \
+  -H 'x-browser-copyright: Copyright 2025 Google LLC. All Rights reserved.' \
+  -H 'x-browser-validation: AUXUCdutEJ+6gl6bYtz7E2kgIT4=' \
+  -H 'x-browser-year: 2025' \
+  -H 'x-client-data: CIe2yQEIorbJAQipncoBCKSCywEIlqHLAQiGoM0BCJSkzwE=' \
+  -H 'x-client-version: Chrome/JsCore/12.6.0/FirebaseCore-web' \
+  -H 'x-firebase-client: eyJ2ZXJzaW9uIjoyLCJoZWFydGJlYXRzIjpbeyJhZ2VudCI6ImZpcmUtY29yZS8wLjE0LjYgZmlyZS1jb3JlLWVzbTIwMjAvMC4xNC42IGZpcmUtanMvIGZpcmUtanMtYWxsLWFwcC8xMi42LjAgZmlyZS1hdXRoLzEuMTEuMSBmaXJlLWF1dGgtZXNtMjAyMC8xLjExLjEiLCJkYXRlcyI6WyIyMDI1LTEyLTE5Il19XX0' \
+  --data-raw 'grant_type=refresh_token&refresh_token=AMf-vBxnsxb_SP5MCL4zFK1uVPwHfID_5ekdzWmx89DFJdabIY8qrjbyfLEkRZcEnm8FtDYVfGKMvMhRbzgjVDzDUvegVTcYrJwable0MD-7HqIh9eNjfex03-dQthIR-sZFMm90Vw2AXMeR938gpHT7A4nt50skiMzCuQ9wjXteSKWJq1tHqUBjsQlU4jXCrempkTuSRqasbiMkYB9IqywwS2JlCg3XI6sOo_oaLLePJOQ5pwOGraQkcMd6jlyQDPtQY2mxg2oo3PA2v3dA4ebFYJSTH1CDnVAvtdYiWozrNgruD792unWJnn9Mw4aqwMgx_hK_ZecPmi8ZQ_uTwR-TMk4abT8zoOGAexxqQ-Q0dvrnyktQO--a_9YI7oeCG1BlxDzJUqSS0DELB1i0QOlBw3A3AUptYA1uaxxhz_VwX-0Qq4VybcDlvFzp65u6RUh_VEZcQlyt'
+
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjM4MTFiMDdmMjhiODQxZjRiNDllNDgyNTg1ZmQ2NmQ1NWUzOGRiNWQiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQnJhbmRvbiBUaG9tYXMiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2UtZXRkc3Q0QjBIbXJ6d3ptTG4xTG45Uko4X2lhYzN5czhqRWhtOWZEdTdYM0QxSTA9czk2LWMiLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vd2x0LXRyYWluaW5nLWdzYyIsImF1ZCI6IndsdC10cmFpbmluZy1nc2MiLCJhdXRoX3RpbWUiOjE3NjM0MTU5MDAsInVzZXJfaWQiOiJmN01odFFLM295WWlZdnNldE1IWW1rYWtpcnYyIiwic3ViIjoiZjdNaHRRSzNveVlpWXZzZXRNSFlta2FraXJ2MiIsImlhdCI6MTc2NjEzNTY1NSwiZXhwIjoxNzY2MTM5MjU1LCJlbWFpbCI6ImVjaGVsb25AZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMTYwMTEyMDc0OTIzOTUyMDAzOTYiXSwiZW1haWwiOlsiZWNoZWxvbkBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.S100Y7_GDtt7g8bGxMyG9NKY-f1XvsnTTISCdk3foBcRsSgyKTNi99uP2nKQzOy4XZCdL_PCcNz4WZgoJ6mHqvjms6CdbDGky9GxZ19--I9lomRFDErv33hebSA-z-PzUVUKe55iz_Y69gmvCC6I1nLRueDGn4jI5zLN-rLlpRSFZ6zhcbAsE92EdOGYE_mwiPLqxO4LyEgUnAlTfHnXCrLSf_92VILJNBboEJaQ9wMgAV41FaMgovBu8Zu-YC2Y_iRztcce9JhgRhBH6XkIc1yz2qtdaBqF5HACgoL90u5Iic-M9wdRqquR20TayJ3C4m9XG3-9OaqHF86U-6r1VQ",
+  "expires_in": "3600",
+  "token_type": "Bearer",
+  "refresh_token": "AMf-vBxnsxb_SP5MCL4zFK1uVPwHfID_5ekdzWmx89DFJdabIY8qrjbyfLEkRZcEnm8FtDYVfGKMvMhRbzgjVDzDUvegVTcYrJwable0MD-7HqIh9eNjfex03-dQthIR-sZFMm90Vw2AXMeR938gpHT7A4nt50skiMzCuQ9wjXteSKWJq1tHqUBjsQlU4jXCrempkTuSRqasbiMkYB9IqywwS2JlCg3XI6sOo_oaLLePJOQ5pwOGraQkcMd6jlyQDPtQY2mxg2oo3PA2v3dA4ebFYJSTH1CDnVAvtdYiWozrNgruD792unWJnn9Mw4aqwMgx_hK_ZecPmi8ZQ_uTwR-TMk4abT8zoOGAexxqQ-Q0dvrnyktQO--a_9YI7oeCG1BlxDzJUqSS0DELB1i0QOlBw3A3AUptYA1uaxxhz_VwX-0Qq4VybcDlvFzp65u6RUh_VEZcQlyt",
+  "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjM4MTFiMDdmMjhiODQxZjRiNDllNDgyNTg1ZmQ2NmQ1NWUzOGRiNWQiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQnJhbmRvbiBUaG9tYXMiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2UtZXRkc3Q0QjBIbXJ6d3ptTG4xTG45Uko4X2lhYzN5czhqRWhtOWZEdTdYM0QxSTA9czk2LWMiLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vd2x0LXRyYWluaW5nLWdzYyIsImF1ZCI6IndsdC10cmFpbmluZy1nc2MiLCJhdXRoX3RpbWUiOjE3NjM0MTU5MDAsInVzZXJfaWQiOiJmN01odFFLM295WWlZdnNldE1IWW1rYWtpcnYyIiwic3ViIjoiZjdNaHRRSzNveVlpWXZzZXRNSFlta2FraXJ2MiIsImlhdCI6MTc2NjEzNTY1NSwiZXhwIjoxNzY2MTM5MjU1LCJlbWFpbCI6ImVjaGVsb25AZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMTYwMTEyMDc0OTIzOTUyMDAzOTYiXSwiZW1haWwiOlsiZWNoZWxvbkBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.S100Y7_GDtt7g8bGxMyG9NKY-f1XvsnTTISCdk3foBcRsSgyKTNi99uP2nKQzOy4XZCdL_PCcNz4WZgoJ6mHqvjms6CdbDGky9GxZ19--I9lomRFDErv33hebSA-z-PzUVUKe55iz_Y69gmvCC6I1nLRueDGn4jI5zLN-rLlpRSFZ6zhcbAsE92EdOGYE_mwiPLqxO4LyEgUnAlTfHnXCrLSf_92VILJNBboEJaQ9wMgAV41FaMgovBu8Zu-YC2Y_iRztcce9JhgRhBH6XkIc1yz2qtdaBqF5HACgoL90u5Iic-M9wdRqquR20TayJ3C4m9XG3-9OaqHF86U-6r1VQ",
+  "user_id": "f7MhtQK3oyYiYvsetMHYmkakirv2",
+  "project_id": "661553802735"
+}

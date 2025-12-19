@@ -24,13 +24,15 @@ use crate::api::requests::objects::update_run_object_with_upload::{update_run_ob
 use crate::api::requests::objects::update_run_object_with_world::{update_run_object_with_world, UpdateRunObjectWithWorldArgs, UpdateRunObjectWithWorldPayloadArgs};
 use crate::api::requests::recaption::recaption_image::{recaption_image, RecaptionImageArgs};
 use crate::api::requests::worlds::create_world::{create_world, CreateWorldArgs};
+use crate::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
 use crate::error::world_labs_client_error::WorldLabsClientError;
 
 pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
+  pub file: FileBytesOrPath,
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
+  pub refresh_token: &'a WorldLabsRefreshToken,
   pub individual_request_timeout: Option<Duration>,
-  pub file: FileBytesOrPath,
 }
 
 pub enum FileBytesOrPath {
@@ -42,6 +44,14 @@ pub struct UploadImageAndCreateWorldWithRetryResponse {
   pub run_id: RunObjectId,
   pub world_id: WorldObjectId,
   pub image_upload_url: String,
+
+  /// If the tokens were renewed, this is them.
+  pub maybe_new_access_tokens: Option<NewAccessTokens>,
+}
+
+pub struct NewAccessTokens {
+  pub bearer_token: WorldLabsBearerToken,
+  pub refresh_token: WorldLabsRefreshToken,
 }
 
 /// Marble Image-to-World
@@ -67,7 +77,8 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
       }
     }
   };
-  
+
+
   info!("Request #1 of 10: create run object ...");
 
   let response = create_run_object(CreateRunObjectArgs {
@@ -210,6 +221,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     run_id: run_object_id,
     image_upload_url: image_url,
     world_id,
+    maybe_new_access_tokens: None,
   })
 }
 
@@ -221,6 +233,9 @@ mod tests {
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use filesys::file_read_bytes::file_read_bytes;
   use log::LevelFilter;
+  use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
+  use crate::credentials::world_labs_cookies::WorldLabsCookies;
+  use crate::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
 
   #[tokio::test]
   #[ignore] // Client side tests only
@@ -229,9 +244,10 @@ mod tests {
 
     let cookies = get_typed_test_cookies().unwrap();
     let bearer_token = get_test_bearer_token().unwrap();
+    let refresh_token = WorldLabsRefreshToken::new("".to_string());
 
     //let file_path = "/home/bt/Pictures/locations/island.jpg";
-    let file_path = "/Users/bt/Pictures/Midjourney/winding_road.jpeg";
+    let file_path = "/Users/bt/Pictures/Midjourney/dusk_house.jpeg";
     let file_bytes = file_read_bytes(file_path).unwrap();
 
     println!("File bytes len: {}", file_bytes.len());
@@ -239,12 +255,47 @@ mod tests {
     let results = upload_image_and_create_world_with_retry(UploadImageAndCreateWorldWithRetryArgs {
       cookies: &cookies,
       bearer_token: &bearer_token,
+      refresh_token: &refresh_token,
       individual_request_timeout: None,
       file: FileBytesOrPath::Bytes(file_bytes),
     }).await.unwrap();
 
     println!("Upload URL: {}", results.image_upload_url);
     println!("Object ID: {}", results.run_id.0);
+  }
 
+
+  #[tokio::test]
+  #[ignore] // Client side tests only
+  async fn test_requests_2() {
+    setup_test_logging(LevelFilter::Debug);
+
+    // bt@brand.io
+    let cookies = "";
+    let bearer_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk4OGQ1YTM3OWI3OGJkZjFlNTBhNDA5MTEzZjJiMGM3NWU0NTJlNDciLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQnJhbmRvbiBUaG9tYXMiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS0lucl8yWGJ2Z1VERUxNOEpCTGdfa2tKbVpxWl9WcTlzZkI2bVR4VmQzc1NJRk4tST1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS93bHQtdHJhaW5pbmctZ3NjIiwiYXVkIjoid2x0LXRyYWluaW5nLWdzYyIsImF1dGhfdGltZSI6MTc2MDE3Nzk3OCwidXNlcl9pZCI6IjA1c0dhaHRySWdVMjVMaXR5NjhoZjRpMmV4SjIiLCJzdWIiOiIwNXNHYWh0cklnVTI1TGl0eTY4aGY0aTJleEoyIiwiaWF0IjoxNzY2MTI2ODg4LCJleHAiOjE3NjYxMzA0ODgsImVtYWlsIjoiYnRAYnJhbmQuaW8iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjEwNjEwODI2NzgzNTYyOTEwMTc1OSJdLCJlbWFpbCI6WyJidEBicmFuZC5pbyJdfSwic2lnbl9pbl9wcm92aWRlciI6Imdvb2dsZS5jb20ifX0.YLXZHg0rzMzyhhyJsO3DSMhU8GjnxtQtg1GiDwaxZjuybmabqOcR_b4C2lE2XwESg_dDYnIkmdas9wsHshy2bGPCAAtrinQpxTHWhIDxy0bsF8yW0BCOszwVseiTkXd6vveaGYH06EvH-nM4Q5AB_oKbsgRyMEbXhepvX7SlrmeaXxqldCLRalDj6gcEIY_TSwMmjnZ6-sFMPe92YjLY1ITPRx7S3YyWNwBG6mVpgoHcHudNAJ4TFxborZlhC1zpF0NDgtIhN5ITg0I1P0A-JTaBTJHukQwCPKhifFRA1kfcxzbAoZyPiPw2DdgXpDDnNzXUYgnaOOVyGs96Tx8hOQ";
+    let refresh_token = "AMf-vByUgA0J9S93vULECe-sD50cbR85AFVYF60gKAmLFF1MBYwXlKRJCsv7z3oSpLtP0ApyOU5fAl52qHWM2U0yKgEu5gQ5UCUDt5SEG4UBRHWvHEmLLcu-Zl04Fq4ljocSEO3qJzuX1wyshmptZxlDPRkjdLYgyn-Kp03woI2yRPKLuQF5hQtABHabsNUh9Zhs129sgxuUlOuw4zsFI4L8UdE3bEuF3k6Mic7KlE3440YwyQ8Qtmk9zHtXIx2ob56N-1WTGSqwMUuQ1mX4OOvLve9bw2zDW3UzchomTWkh732886RPrP-DNRkPbO3FejUEMxuYQFWYX3EEeIEdfNGXFNGPL1dNniSXlSaKadpX699Ishjviv-x9o-pPQa3zoAj3NzWLyd8mn5rDBh9qAO_iDETaeo01Sjhb4mGYfAWZ-g4S6nW778";
+
+    //let cookies = get_typed_test_cookies().unwrap();
+
+    let bearer_token = WorldLabsBearerToken::new(bearer_token.to_string());
+    let refresh_token = WorldLabsRefreshToken::new(refresh_token.to_string());
+    let cookies = WorldLabsCookies::new(cookies.to_string());
+
+    //let file_path = "/home/bt/Pictures/locations/island.jpg";
+    let file_path = "/Users/bt/Pictures/Midjourney/train_ghibli.jpeg";
+    let file_bytes = file_read_bytes(file_path).unwrap();
+
+    println!("File bytes len: {}", file_bytes.len());
+
+    let results = upload_image_and_create_world_with_retry(UploadImageAndCreateWorldWithRetryArgs {
+      cookies: &cookies,
+      bearer_token: &bearer_token,
+      refresh_token: &refresh_token,
+      individual_request_timeout: None,
+      file: FileBytesOrPath::Bytes(file_bytes),
+    }).await.unwrap();
+
+    println!("Upload URL: {}", results.image_upload_url);
+    println!("Object ID: {}", results.run_id.0);
   }
 }

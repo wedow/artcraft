@@ -51,3 +51,9 @@ impl From<WorldLabsGenericApiError> for WorldLabsError {
     Self::ApiGeneric(error)
   }
 }
+
+impl From<CloudflareError> for WorldLabsError {
+  fn from(error: CloudflareError) -> Self {
+    Self::ApiGeneric(WorldLabsGenericApiError::CloudflareError(error))
+  }
+}
