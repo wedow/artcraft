@@ -35,7 +35,4 @@ export * from "./lib/sora/useSoraLoginListener.js";
 export * from "./lib/sora/waitForSoraLogin.js";
 export * from "./lib/system/GetAppInfo.js";
 export * from "./lib/util/LoadWithoutCors.js";
-<<<<<<< HEAD
-=======
 export * from "./lib/worldlabs/WorldLabsGetCredentialInfo.js";
->>>>>>> e213d3349 (frontend components, remove profiling, open login modal)
