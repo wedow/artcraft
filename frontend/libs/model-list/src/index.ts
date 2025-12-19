@@ -14,4 +14,6 @@ export * from "./lib/lists/AllModels.js";
 export * from "./lib/lists/AllModelsById.js";
 export * from "./lib/lists/ImageModels.js";
 export * from "./lib/lists/VideoModels.js";
+export * from "./lib/lists/GaussianModels.js";
+
 

@@ -1,7 +1,7 @@
 import { ModelInfo } from "./ModelInfo.js";
 import { ModelTag } from "../classes/metadata/ModelTag.js";
 
-export type ModelCategory = "image" | "video";
+export type ModelCategory = "image" | "video" | "gaussian";
 
 // Centralized model capability definition
 // For setting options for the model

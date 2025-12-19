@@ -22,6 +22,7 @@ import {
   EnqueueImageTo3dObject,
   EnqueueImageTo3dObjectModel,
   EnqueueImageTo3dWorld,
+  EnqueueImageToGaussian,
   EnqueueImageTo3dWorldModel,
 } from "@storyteller/tauri-api";
 import { toast } from "react-hot-toast";
@@ -31,6 +32,7 @@ import { addObject } from "../../pages/PageEnigma/signals/objectGroup/addObject"
 import { set3DPageMounted } from "../../pages/PageEnigma/Editor/editor";
 import { AssetType } from "~/enums";
 import type { MediaItem } from "../../pages/PageEnigma/models";
+import { GAUSSIAN_MODELS } from "libs/model-list/src/lib/lists/GaussianModels";
 
 type Mode = "image" | "text";
 type Variant = "object" | "world";
@@ -206,7 +208,9 @@ export const ImageTo3DExperience = ({
     if (activeMode === "image" && !uploadedMediaToken) return;
     if (activeMode === "text" && prompt.trim().length <= 3) return;
 
+    console.log("Set is generating...");
     setIsGenerating(true);
+
     const snapshotPrompt = prompt.trim();
     const snapshotPreview = uploadedPreview || undefined;
     const snapshotName = uploadedName;
@@ -219,6 +223,7 @@ export const ImageTo3DExperience = ({
           : snapshotName || "Generated Model";
 
       if (variant === "object") {
+        console.log("Start object generation...");
         objectStartGeneration(
           activeMode,
           note,
@@ -227,7 +232,11 @@ export const ImageTo3DExperience = ({
           subscriberId,
         );
       } else {
+        console.log("Start gaussian generation...");
         worldStartGeneration(activeMode, note, snapshotPreview, subscriberId);
+
+
+
       }
       setSelectedResultId(subscriberId);
 
@@ -239,9 +248,9 @@ export const ImageTo3DExperience = ({
               frontend_caller: "mini_app",
               frontend_subscriber_id: subscriberId,
             })
-          : await EnqueueImageTo3dWorld({
-              image_media_token: uploadedMediaToken || undefined,
-              model: EnqueueImageTo3dWorldModel.Hunyuan3d2,
+          : await EnqueueImageToGaussian({
+              image_media_tokens: uploadedMediaToken ? [uploadedMediaToken] : undefined,
+              model: GAUSSIAN_MODELS[0],
               frontend_caller: "mini_app",
               frontend_subscriber_id: subscriberId,
             });

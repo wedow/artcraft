@@ -2,7 +2,7 @@ import { ModelCreator } from "./metadata/ModelCreator.js";
 import { ModelCategory, ModelConfig } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
 
-export type ModelKind = "model" | "image_model" | "video_model";
+export type ModelKind = "model" | "image_model" | "video_model" | "gaussian_model";
 
 // NB: Do not create instances of this class directly, use subclasses.
 export class Model {

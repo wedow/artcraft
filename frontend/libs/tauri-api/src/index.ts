@@ -8,6 +8,7 @@ export * from "./lib/enqueue/EnqueueEditImage.js";
 export * from "./lib/enqueue/EnqueueImageBgRemovalCommand.js";
 export * from "./lib/enqueue/EnqueueImageInpaint.js";
 export * from "./lib/enqueue/EnqueueImageTo3dObject.js";
+export * from "./lib/enqueue/EnqueueImageToGaussian.js";
 export * from "./lib/enqueue/EnqueueImageTo3dWorld.js";
 export * from "./lib/enqueue/EnqueueImageToVideo.js";
 export * from "./lib/enqueue/EnqueueTextToImage.js";
