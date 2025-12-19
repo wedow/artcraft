@@ -137,6 +137,16 @@ impl WorldlabsCredentialManager {
     }
   }
 
+  pub fn replace_bearer_and_refresh_token(&self, bearer_token: WorldLabsBearerToken, refresh_token: WorldLabsRefreshToken) -> anyhow::Result<()> {
+    match self.credential_data.write() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
+      Ok(mut holder) => {
+        holder.world_labs_bearer_token = Some(bearer_token);
+        holder.world_labs_refresh_token = Some(refresh_token);
+        Ok(())
+      }
+    }
+  }
 
   // NB: This is just a heuristic. We'll add better checks later.
   pub fn do_task_polling(&self) -> anyhow::Result<bool> {

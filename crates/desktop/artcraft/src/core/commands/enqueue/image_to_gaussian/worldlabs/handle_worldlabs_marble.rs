@@ -47,6 +47,14 @@ pub async fn handle_worldlabs_marble(
     }
   };
 
+  let world_labs_refresh = match worldlabs_creds_manager.maybe_copy_refresh_token()? {
+    Some(bearer) => bearer,
+    None => {
+      error!("No WorldLabs refresh token!");
+      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsWorldLabsCredentials));
+    }
+  };
+
   let job_id = generate_random_uuid();
 
   let maybe_prompt = request.prompt
@@ -66,6 +74,7 @@ pub async fn handle_worldlabs_marble(
   let response = upload_image_and_create_world_with_retry(UploadImageAndCreateWorldWithRetryArgs {
     cookies: &world_labs_cookies,
     bearer_token: &world_labs_bearer,
+    refresh_token: &world_labs_refresh,
     individual_request_timeout: None,
     file: FileBytesOrPath::Path(file_path),
   }).await?;
@@ -75,6 +84,16 @@ pub async fn handle_worldlabs_marble(
 
   info!("Run ID: {:?}", run_id);
   info!("World ID: {:?}", world_id);
+  
+  if let Some(new_access) = response.maybe_new_access_tokens {
+    info!("New access tokens were generated; saving.");
+    worldlabs_creds_manager.replace_bearer_and_refresh_token(
+      new_access.bearer_token,
+      new_access.refresh_token
+    )?;
+
+    worldlabs_creds_manager.persist_to_disk()?;
+  }
 
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::WorldLabs,
