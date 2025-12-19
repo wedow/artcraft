@@ -100,6 +100,13 @@ impl WorldlabsCredentialManager {
     }
   }
 
+  pub fn maybe_copy_refresh_token(&self) -> anyhow::Result<Option<WorldLabsRefreshToken>> {
+    match self.credential_data.read() {
+      Err(err) => Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
+      Ok(holder) => Ok(holder.world_labs_refresh_token.clone()),
+    }
+  }
+
   pub fn replace_cookie_store(&self, store: CookieStore) -> anyhow::Result<()> {
     match self.credential_data.write() {
       Err(err) => Err(anyhow::anyhow!("Failed to acquire write lock: {:?}", err)),
