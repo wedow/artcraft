@@ -44,8 +44,11 @@ export function ProviderSetupModal({
 
   const buttonOnClick = async () => {
     switch (provider) {
+      case GenerationProvider.WorldLabs:
+        await invoke("worldlabs_open_login_command");
+        break;
       case GenerationProvider.Grok:
-        await invoke("grok_open_login_command"); // TODO: Rename in Tauri
+        await invoke("grok_open_login_command");
         break;
       case GenerationProvider.Midjourney:
         await invoke("midjourney_open_login_command");
@@ -123,6 +126,8 @@ function getServiceProviderName(provider: GenerationProvider) : string {
       return "Midjourney";
     case GenerationProvider.Sora:
       return "Sora";
+    case GenerationProvider.WorldLabs:
+      return "WorldLabs";
     case GenerationProvider.Artcraft:
     default:
       return "Artcraft";

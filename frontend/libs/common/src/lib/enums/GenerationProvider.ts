@@ -4,4 +4,5 @@ export enum GenerationProvider {
   Fal = "fal",
   Midjourney = "midjourney",
   Sora = "sora",
+  WorldLabs = "world_labs",
 }
