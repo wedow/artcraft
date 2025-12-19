@@ -1,4 +1,6 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
+use crate::core::events::functional_events::gaussian_generation_complete_event::{GaussianGenerationCompleteEvent, GeneratedGaussian};
 use crate::core::events::functional_events::image_edit_complete_event::{EditedImage, ImageEditCompleteEvent};
 use crate::core::events::functional_events::object_generation_complete_event::{GeneratedObject, ObjectGenerationCompleteEvent};
 use crate::core::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
@@ -18,7 +20,6 @@ use storyteller_client::endpoints::media_files::list_batch_generated_redux_media
 use tauri::AppHandle;
 use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
 
 pub async fn maybe_handle_frontend_caller_notification(
   app: &AppHandle,
@@ -64,6 +65,13 @@ pub async fn maybe_handle_frontend_caller_notification(
     }
     TaskType::ObjectGeneration => {
       let _r = handle_object_generation(
+        app,
+        task,
+        job_result,
+      ).await?;
+    }
+    TaskType::GaussianGeneration => {
+      let _r = handle_gaussian_generation(
         app,
         task,
         job_result,
@@ -211,6 +219,29 @@ async fn handle_object_generation(
   // NB: For now, we only generate one object (3d mesh) at a time.
   let event = ObjectGenerationCompleteEvent {
     generated_object: Some(GeneratedObject {
+      media_token: MediaFileToken::new_from_str(&job_result.entity_token),
+      cdn_url: job_result.media_links.cdn_url.clone(),
+      maybe_thumbnail_template: media_links_to_thumbnail_template(&job_result.media_links)
+          .map(|s| s.to_owned()),
+    }),
+    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
+    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
+  };
+
+  event.send_infallible(&app);
+
+  Ok(())
+}
+
+async fn handle_gaussian_generation(
+  app: &AppHandle,
+  task: &Task,
+  job_result: &ListSessionResultDetailsResponse,
+) -> AnyhowResult<()> {
+
+  // NB: For now, we only generate one object (gaussian) at a time.
+  let event = GaussianGenerationCompleteEvent {
+    generated_gaussian: Some(GeneratedGaussian {
       media_token: MediaFileToken::new_from_str(&job_result.entity_token),
       cdn_url: job_result.media_links.cdn_url.clone(),
       maybe_thumbnail_template: media_links_to_thumbnail_template(&job_result.media_links)

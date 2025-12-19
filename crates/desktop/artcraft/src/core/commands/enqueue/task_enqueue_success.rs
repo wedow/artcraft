@@ -21,6 +21,7 @@ impl TaskEnqueueSuccess{
   pub fn to_frontend_event_action(&self) -> GenerationAction {
     match self.task_type {
       TaskType::ImageGeneration => GenerationAction::GenerateImage,
+      TaskType::GaussianGeneration => GenerationAction::GenerateGaussian,
       TaskType::VideoGeneration => GenerationAction::GenerateVideo,
       TaskType::BackgroundRemoval => GenerationAction::RemoveBackground,
       TaskType::ObjectGeneration => GenerationAction::ImageTo3d,
@@ -82,6 +83,7 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Veo3Fast) => Some(TaskModelType::Veo3Fast),
       Some(GenerationModel::Hunyuan3d2_0) => Some(TaskModelType::Hunyuan3d2_0),
       Some(GenerationModel::Hunyuan3d2_1) => Some(TaskModelType::Hunyuan3d2_1),
+      Some(GenerationModel::WorldlabsMarble) => Some(TaskModelType::WorldlabsMarble),
       Some(GenerationModel::Midjourney) => Some(TaskModelType::Midjourney), // NB: This is a generic Midjourney model, version unknown.
 
       // TODO: These seem wrong -

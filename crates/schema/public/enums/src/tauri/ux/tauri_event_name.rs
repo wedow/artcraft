@@ -67,6 +67,11 @@ pub enum TauriEventName {
   /// Object (3D mesh) generation is complete
   #[serde(rename = "object_generation_complete_event")]
   ObjectGenerationCompleteEvent,
+  
+  /// Special event:
+  /// Gaussian generation is complete
+  #[serde(rename = "gaussian_generation_complete_event")]
+  GaussianGenerationCompleteEvent,
 
   /// Special event:
   /// Video generation is complete
@@ -113,6 +118,7 @@ impl TauriEventName {
       Self::TextToImageGenerationCompleteEvent => "text_to_image_generation_complete_event",
       Self::ImageEditCompleteEvent => "image_edit_complete_event",
       Self::ObjectGenerationCompleteEvent => "object_generation_complete_event",
+      Self::GaussianGenerationCompleteEvent => "gaussian_generation_complete_event",
       Self::VideoGenerationCompleteEvent => "video_generation_complete_event",
       Self::RefreshAccountStateEvent => "refresh_account_state_event",
       Self::ShowProviderBillingModalEvent => "show_provider_billing_modal_event",
@@ -133,6 +139,7 @@ impl TauriEventName {
       "text_to_image_generation_complete_event" => Ok(Self::TextToImageGenerationCompleteEvent),
       "image_edit_complete_event" => Ok(Self::ImageEditCompleteEvent),
       "object_generation_complete_event" => Ok(Self::ObjectGenerationCompleteEvent),
+      "gaussian_generation_complete_event" => Ok(Self::GaussianGenerationCompleteEvent),
       "video_generation_complete_event" => Ok(Self::VideoGenerationCompleteEvent),
       "refresh_account_state_event" => Ok(Self::RefreshAccountStateEvent),
       "show_provider_billing_modal_event" => Ok(Self::ShowProviderBillingModalEvent),
@@ -156,6 +163,7 @@ impl TauriEventName {
       Self::TextToImageGenerationCompleteEvent,
       Self::ImageEditCompleteEvent,
       Self::ObjectGenerationCompleteEvent,
+      Self::GaussianGenerationCompleteEvent,
       Self::VideoGenerationCompleteEvent,
       Self::RefreshAccountStateEvent,
       Self::ShowProviderBillingModalEvent,
@@ -185,6 +193,7 @@ mod tests {
       assert_serialization(TauriEventName::TextToImageGenerationCompleteEvent, "text_to_image_generation_complete_event");
       assert_serialization(TauriEventName::ImageEditCompleteEvent, "image_edit_complete_event");
       assert_serialization(TauriEventName::ObjectGenerationCompleteEvent, "object_generation_complete_event");
+      assert_serialization(TauriEventName::GaussianGenerationCompleteEvent, "gaussian_generation_complete_event");
       assert_serialization(TauriEventName::VideoGenerationCompleteEvent, "video_generation_complete_event");
       assert_serialization(TauriEventName::RefreshAccountStateEvent, "refresh_account_state_event");
       assert_serialization(TauriEventName::ShowProviderBillingModalEvent, "show_provider_billing_modal_event"); 
@@ -204,6 +213,7 @@ mod tests {
       assert_eq!(TauriEventName::TextToImageGenerationCompleteEvent.to_str(), "text_to_image_generation_complete_event");
       assert_eq!(TauriEventName::ImageEditCompleteEvent.to_str(), "image_edit_complete_event");
       assert_eq!(TauriEventName::ObjectGenerationCompleteEvent.to_str(), "object_generation_complete_event");
+      assert_eq!(TauriEventName::GaussianGenerationCompleteEvent.to_str(), "gaussian_generation_complete_event");
       assert_eq!(TauriEventName::VideoGenerationCompleteEvent.to_str(), "video_generation_complete_event");
       assert_eq!(TauriEventName::RefreshAccountStateEvent.to_str(), "refresh_account_state_event");
       assert_eq!(TauriEventName::ShowProviderBillingModalEvent.to_str(), "show_provider_billing_modal_event");
@@ -223,6 +233,7 @@ mod tests {
       assert_eq!(TauriEventName::from_str("text_to_image_generation_complete_event").unwrap(), TauriEventName::TextToImageGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("image_edit_complete_event").unwrap(), TauriEventName::ImageEditCompleteEvent);
       assert_eq!(TauriEventName::from_str("object_generation_complete_event").unwrap(), TauriEventName::ObjectGenerationCompleteEvent);
+      assert_eq!(TauriEventName::from_str("gaussian_generation_complete_event").unwrap(), TauriEventName::GaussianGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("video_generation_complete_event").unwrap(), TauriEventName::VideoGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("refresh_account_state_event").unwrap(), TauriEventName::RefreshAccountStateEvent);
       assert_eq!(TauriEventName::from_str("show_provider_billing_modal_event").unwrap(), TauriEventName::ShowProviderBillingModalEvent);
@@ -233,7 +244,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 15);
+      assert_eq!(variants.len(), 16);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
@@ -244,6 +255,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TauriEventName::TextToImageGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ImageEditCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ObjectGenerationCompleteEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::GaussianGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::VideoGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::RefreshAccountStateEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderBillingModalEvent));

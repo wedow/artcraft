@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use crate::api::api_types::run_object_id::RunObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
 use crate::api::requests::google_upload::google_upload_image::{google_upload_image, GoogleUploadImageArgs};
@@ -14,6 +15,7 @@ use log::{error, info};
 use serde::Deserialize;
 use std::time::Duration;
 use uuid::Uuid;
+use filesys::file_read_bytes::file_read_bytes;
 use crate::api::api_types::image_input_object_id::ImageInputObjectId;
 use crate::api::api_types::pano_object_id::PanoObjectId;
 use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
@@ -22,12 +24,18 @@ use crate::api::requests::objects::update_run_object_with_upload::{update_run_ob
 use crate::api::requests::objects::update_run_object_with_world::{update_run_object_with_world, UpdateRunObjectWithWorldArgs, UpdateRunObjectWithWorldPayloadArgs};
 use crate::api::requests::recaption::recaption_image::{recaption_image, RecaptionImageArgs};
 use crate::api::requests::worlds::create_world::{create_world, CreateWorldArgs};
+use crate::error::world_labs_client_error::WorldLabsClientError;
 
 pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
   pub cookies: &'a WorldLabsCookies,
   pub bearer_token: &'a WorldLabsBearerToken,
   pub individual_request_timeout: Option<Duration>,
-  pub file_bytes: Vec<u8>,
+  pub file: FileBytesOrPath,
+}
+
+pub enum FileBytesOrPath {
+  Bytes(Vec<u8>),
+  Path(PathBuf),
 }
 
 pub struct UploadImageAndCreateWorldWithRetryResponse {
@@ -41,6 +49,25 @@ pub struct UploadImageAndCreateWorldWithRetryResponse {
 /// Request #5 (of ~10)
 pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreateWorldWithRetryArgs<'_>) -> Result<UploadImageAndCreateWorldWithRetryResponse, WorldLabsError> {
 
+  info!("Checking file input...");
+  
+  let file_bytes = match args.file {
+    FileBytesOrPath::Bytes(bytes) => {
+      info!("File bytes provided");
+      bytes
+    }
+    FileBytesOrPath::Path(path) => {
+      info!("File path provided");
+      match file_read_bytes(&path) {
+        Ok(bytes) => bytes,
+        Err(err) => {
+          error!("Error reading file bytes from path: {:?} - error: {:?}", path, err);
+          return Err(WorldLabsClientError::CannotReadLocalFileForUpload(err).into());
+        }
+      }
+    }
+  };
+  
   info!("Request #1 of 10: create run object ...");
 
   let response = create_run_object(CreateRunObjectArgs {
@@ -89,7 +116,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
   let _response = google_upload_image(GoogleUploadImageArgs {
     upload_url: &google_upload_url,
     upload_mime_type,
-    file_bytes: args.file_bytes,
+    file_bytes,
     request_timeout: args.individual_request_timeout,
   }).await?;
 
@@ -188,7 +215,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
 #[cfg(test)]
 mod tests {
-  use crate::recipes::upload_image_and_create_world_with_retry::{upload_image_and_create_world_with_retry, UploadImageAndCreateWorldWithRetryArgs};
+  use crate::recipes::upload_image_and_create_world_with_retry::{upload_image_and_create_world_with_retry, FileBytesOrPath, UploadImageAndCreateWorldWithRetryArgs};
   use crate::test_utils::get_test_bearer_token::get_test_bearer_token;
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
@@ -213,7 +240,7 @@ mod tests {
       cookies: &cookies,
       bearer_token: &bearer_token,
       individual_request_timeout: None,
-      file_bytes: file_bytes,
+      file: FileBytesOrPath::Bytes(file_bytes),
     }).await.unwrap();
 
     println!("Upload URL: {}", results.image_upload_url);

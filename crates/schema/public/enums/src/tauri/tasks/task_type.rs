@@ -15,6 +15,7 @@ pub enum TaskType {
   ImageInpaintEdit,
   VideoGeneration,
   ObjectGeneration,
+  GaussianGeneration,
   BackgroundRemoval,
 }
 
@@ -31,6 +32,7 @@ impl TaskType {
       Self::ImageInpaintEdit => "image_inpaint_edit",
       Self::VideoGeneration => "video_generation",
       Self::ObjectGeneration => "object_generation",
+      Self::GaussianGeneration => "gaussian_generation",
       Self::BackgroundRemoval => "background_removal",
     }
   }
@@ -41,6 +43,7 @@ impl TaskType {
       "image_inpaint_edit" => Ok(Self::ImageInpaintEdit),
       "video_generation" => Ok(Self::VideoGeneration),
       "object_generation" => Ok(Self::ObjectGeneration),
+      "gaussian_generation" => Ok(Self::GaussianGeneration),
       "background_removal" => Ok(Self::BackgroundRemoval),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
@@ -54,6 +57,7 @@ impl TaskType {
       Self::ImageInpaintEdit,
       Self::VideoGeneration,
       Self::ObjectGeneration,
+      Self::GaussianGeneration,
       Self::BackgroundRemoval,
     ])
   }
@@ -74,6 +78,7 @@ mod tests {
       assert_serialization(TaskType::ImageInpaintEdit, "image_inpaint_edit");
       assert_serialization(TaskType::VideoGeneration, "video_generation");
       assert_serialization(TaskType::ObjectGeneration, "object_generation");
+      assert_serialization(TaskType::GaussianGeneration, "gaussian_generation");
       assert_serialization(TaskType::BackgroundRemoval, "background_removal");
     }
 
@@ -83,6 +88,7 @@ mod tests {
       assert_eq!(TaskType::ImageInpaintEdit.to_str(), "image_inpaint_edit");
       assert_eq!(TaskType::VideoGeneration.to_str(), "video_generation");
       assert_eq!(TaskType::ObjectGeneration.to_str(), "object_generation");
+      assert_eq!(TaskType::GaussianGeneration.to_str(), "gaussian_generation");
       assert_eq!(TaskType::BackgroundRemoval.to_str(), "background_removal");
     }
 
@@ -92,6 +98,7 @@ mod tests {
       assert_eq!(TaskType::from_str("image_inpaint_edit").unwrap(), TaskType::ImageInpaintEdit);
       assert_eq!(TaskType::from_str("video_generation").unwrap(), TaskType::VideoGeneration);
       assert_eq!(TaskType::from_str("object_generation").unwrap(), TaskType::ObjectGeneration);
+      assert_eq!(TaskType::from_str("gaussian_generation").unwrap(), TaskType::GaussianGeneration);
       assert_eq!(TaskType::from_str("background_removal").unwrap(), TaskType::BackgroundRemoval);
     }
     
@@ -109,11 +116,12 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskType::all_variants();
-      assert_eq!(variants.len(), 5);
+      assert_eq!(variants.len(), 6);
       assert_eq!(variants.pop_first(), Some(TaskType::ImageGeneration));
       assert_eq!(variants.pop_first(), Some(TaskType::ImageInpaintEdit));
       assert_eq!(variants.pop_first(), Some(TaskType::VideoGeneration));
       assert_eq!(variants.pop_first(), Some(TaskType::ObjectGeneration));
+      assert_eq!(variants.pop_first(), Some(TaskType::GaussianGeneration));
       assert_eq!(variants.pop_first(), Some(TaskType::BackgroundRemoval));
       assert_eq!(variants.pop_first(), None);
     }

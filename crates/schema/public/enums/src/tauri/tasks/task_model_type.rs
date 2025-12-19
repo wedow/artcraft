@@ -69,6 +69,8 @@ pub enum TaskModelType {
   Hunyuan3d2_0,
   #[serde(rename = "hunyuan_3d_2.1")]
   Hunyuan3d2_1,
+  #[serde(rename = "worldlabs_marble")]
+  WorldlabsMarble,
 }
 
 impl_enum_display_and_debug_using_to_str!(TaskModelType);
@@ -108,6 +110,7 @@ impl TaskModelType {
       // 3D Object generation models
       Self::Hunyuan3d2_0 => "hunyuan_3d_2.0",
       Self::Hunyuan3d2_1 => "hunyuan_3d_2.1",
+      Self::WorldlabsMarble => "worldlabs_marble",
     }
   }
 
@@ -141,6 +144,7 @@ impl TaskModelType {
       // 3D Object generation models
       "hunyuan_3d_2.0" => Ok(Self::Hunyuan3d2_0),
       "hunyuan_3d_2.1" => Ok(Self::Hunyuan3d2_1),
+      "worldlabs_marble" => Ok(Self::WorldlabsMarble),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
@@ -177,6 +181,7 @@ impl TaskModelType {
       // 3D Object generation models
       Self::Hunyuan3d2_0,
       Self::Hunyuan3d2_1,
+      Self::WorldlabsMarble,
     ])
   }
 }
@@ -220,6 +225,7 @@ mod tests {
       // 3D Object generation models
       assert_serialization(TaskModelType::Hunyuan3d2_0, "hunyuan_3d_2.0");
       assert_serialization(TaskModelType::Hunyuan3d2_1, "hunyuan_3d_2.1");
+      assert_serialization(TaskModelType::WorldlabsMarble, "worldlabs_marble");
     }
 
     #[test]
@@ -252,6 +258,7 @@ mod tests {
       // 3D Object generation models
       assert_eq!(TaskModelType::Hunyuan3d2_0.to_str(), "hunyuan_3d_2.0");
       assert_eq!(TaskModelType::Hunyuan3d2_1.to_str(), "hunyuan_3d_2.1");
+      assert_eq!(TaskModelType::WorldlabsMarble.to_str(), "worldlabs_marble");
     }
 
     #[test]
@@ -284,6 +291,7 @@ mod tests {
       // 3D Object generation models
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.0").unwrap(), TaskModelType::Hunyuan3d2_0);
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.1").unwrap(), TaskModelType::Hunyuan3d2_1);
+      assert_eq!(TaskModelType::from_str("worldlabs_marble").unwrap(), TaskModelType::WorldlabsMarble);
     }
 
     #[test]
@@ -300,7 +308,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 25);
+      assert_eq!(variants.len(), 26);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -329,6 +337,7 @@ mod tests {
       // 3D Object generation models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d2_0));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d2_1));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::WorldlabsMarble));
       assert_eq!(variants.pop_first(), None);
     }
   }

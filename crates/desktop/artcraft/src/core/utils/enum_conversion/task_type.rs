@@ -7,6 +7,7 @@ pub fn to_generation_action(task_type: TaskType) -> GenerationAction {
     TaskType::VideoGeneration => GenerationAction::GenerateVideo,
     TaskType::BackgroundRemoval => GenerationAction::RemoveBackground,
     TaskType::ObjectGeneration => GenerationAction::ImageTo3d,
+    TaskType::GaussianGeneration => GenerationAction::GenerateGaussian,
     TaskType::ImageInpaintEdit => GenerationAction::ImageInpaintEdit,
   }
 }

@@ -1,1 +1,1 @@
-mod upload_image_and_create_world_with_retry;
+pub mod upload_image_and_create_world_with_retry;

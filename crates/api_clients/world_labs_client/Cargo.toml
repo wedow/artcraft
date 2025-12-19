@@ -20,6 +20,7 @@ cloudflare_errors.workspace = true
 cloudflare_mitigation.workspace = true
 cookie_store.workspace = true
 errors.workspace = true
+filesys.workspace = true
 http_headers.workspace = true
 jwt_light.workspace = true
 
