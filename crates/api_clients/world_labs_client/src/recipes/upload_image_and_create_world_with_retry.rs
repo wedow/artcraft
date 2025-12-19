@@ -1,31 +1,33 @@
-use std::path::PathBuf;
+use crate::api::api_types::image_input_object_id::ImageInputObjectId;
+use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
+use crate::api::api_types::pano_object_id::PanoObjectId;
 use crate::api::api_types::run_object_id::RunObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
+use crate::api::api_types::world_id::WorldObjectId;
+use crate::api::requests::google_refresh_token::google_refresh_token::{google_refresh_token, GoogleRefreshTokenArgs};
 use crate::api::requests::google_upload::google_upload_image::{google_upload_image, GoogleUploadImageArgs};
-use crate::api::requests::objects::create_upload_object::{create_upload_object, CreateUploadObjectArgs};
 use crate::api::requests::objects::begin_object_image_upload::{begin_object_image_upload, BeginObjectImageUploadArgs};
 use crate::api::requests::objects::create_run_object::{create_run_object, CreateRunObjectArgs};
+use crate::api::requests::objects::create_upload_object::{create_upload_object, CreateUploadObjectArgs};
 use crate::api::requests::objects::finalize_object_image_upload::{finalize_object_image_upload, FinalizeObjectImageUploadArgs};
-use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
-use crate::credentials::world_labs_cookies::WorldLabsCookies;
-use crate::error::world_labs_error::WorldLabsError;
-use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
-use anyhow::bail;
-use log::{error, info};
-use serde::Deserialize;
-use std::time::Duration;
-use uuid::Uuid;
-use filesys::file_read_bytes::file_read_bytes;
-use crate::api::api_types::image_input_object_id::ImageInputObjectId;
-use crate::api::api_types::pano_object_id::PanoObjectId;
-use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
-use crate::api::api_types::world_id::WorldObjectId;
 use crate::api::requests::objects::update_run_object_with_upload::{update_run_object_with_upload, UpdateRunObjectWithUploadArgs, UpdateRunObjectWithUploadPayloadArgs};
 use crate::api::requests::objects::update_run_object_with_world::{update_run_object_with_world, UpdateRunObjectWithWorldArgs, UpdateRunObjectWithWorldPayloadArgs};
 use crate::api::requests::recaption::recaption_image::{recaption_image, RecaptionImageArgs};
 use crate::api::requests::worlds::create_world::{create_world, CreateWorldArgs};
+use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
+use crate::credentials::world_labs_cookies::WorldLabsCookies;
 use crate::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
 use crate::error::world_labs_client_error::WorldLabsClientError;
+use crate::error::world_labs_error::WorldLabsError;
+use crate::error::world_labs_generic_api_error::WorldLabsGenericApiError;
+use anyhow::bail;
+use chrono::{TimeDelta, Utc};
+use filesys::file_read_bytes::file_read_bytes;
+use log::{error, info, warn};
+use serde::Deserialize;
+use std::path::PathBuf;
+use std::time::Duration;
+use uuid::Uuid;
 
 pub struct UploadImageAndCreateWorldWithRetryArgs<'a> {
   pub file: FileBytesOrPath,
@@ -59,6 +61,55 @@ pub struct NewAccessTokens {
 /// Request #5 (of ~10)
 pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreateWorldWithRetryArgs<'_>) -> Result<UploadImageAndCreateWorldWithRetryResponse, WorldLabsError> {
 
+  info!("Checking to see if bearer token needs refresh (fails open) ...");
+
+  let mut maybe_refresh_bearer = false;
+
+  match args.bearer_token.parse_jwt_claims() {
+    Err(err) => {
+      warn!("Failed to parse bearer_token jwt claims (failing open) : {}", err);
+    }
+    Ok(jwt) => {
+      let now = Utc::now();
+      if now > jwt.expiration {
+        info!("Bearer is expired.");
+        maybe_refresh_bearer = true;
+      }
+
+      let sooner_expiry = jwt.expiration
+          .checked_sub_signed(TimeDelta::minutes(30))
+          .unwrap_or(jwt.expiration);
+
+      if now > sooner_expiry {
+        info!("Bearer will expire soon, so we're renewing it in advance.");
+        maybe_refresh_bearer = true;
+      }
+    }
+  };
+
+  let mut maybe_new_access_tokens = None;
+
+  if maybe_refresh_bearer {
+    info!("Refreshing bearer token...");
+
+    let updated = google_refresh_token(GoogleRefreshTokenArgs {
+      refresh_token: &args.refresh_token,
+      request_timeout: args.individual_request_timeout,
+    }).await?;
+
+    info!("Bearer token refreshed!");
+
+    maybe_new_access_tokens = Some(NewAccessTokens {
+      bearer_token: updated.bearer_token,
+      refresh_token: updated.refresh_token,
+    });
+  }
+
+  let use_bearer_token = maybe_new_access_tokens
+      .as_ref()
+      .map(|tokens| &tokens.bearer_token)
+      .unwrap_or_else(|| args.bearer_token);
+
   info!("Checking file input...");
   
   let file_bytes = match args.file {
@@ -78,12 +129,11 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     }
   };
 
-
   info!("Request #1 of 10: create run object ...");
 
   let response = create_run_object(CreateRunObjectArgs {
     cookies: args.cookies,
-    bearer_token: args.bearer_token,
+    bearer_token: use_bearer_token,
     request_timeout: args.individual_request_timeout,
   }).await?;
 
@@ -99,7 +149,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let response = create_upload_object(CreateUploadObjectArgs {
     cookies: &args.cookies,
-    bearer_token: &args.bearer_token,
+    bearer_token: &use_bearer_token,
     upload_mime_type,
     request_timeout: args.individual_request_timeout,
   }).await?;
@@ -112,7 +162,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let response = begin_object_image_upload(BeginObjectImageUploadArgs {
     cookies: &args.cookies,
-    bearer_token: &args.bearer_token,
+    bearer_token: &use_bearer_token,
     upload_mime_type,
     request_timeout: args.individual_request_timeout,
     upload_id: &upload_id,
@@ -135,7 +185,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let response = finalize_object_image_upload(FinalizeObjectImageUploadArgs {
     cookies: &args.cookies,
-    bearer_token: &args.bearer_token,
+    bearer_token: &use_bearer_token,
     upload_id: &upload_id,
     request_timeout: args.individual_request_timeout,
   }).await?;
@@ -152,7 +202,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let response = update_run_object_with_upload(UpdateRunObjectWithUploadArgs {
     cookies: &args.cookies,
-    bearer_token: &args.bearer_token,
+    bearer_token: &use_bearer_token,
     payload_args: UpdateRunObjectWithUploadPayloadArgs {
       run_id: &run_object_id,
       run_created_at_timestamp: run_object.metadata.created_at,
@@ -170,7 +220,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let response = recaption_image(RecaptionImageArgs {
     cookies: &args.cookies,
-    bearer_token: &args.bearer_token,
+    bearer_token: &use_bearer_token,
     upload_id: &upload_id,
     upload_mime_type,
     run_id: &run_object_id,
@@ -187,7 +237,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let response = create_world(CreateWorldArgs {
     cookies: &args.cookies,
-    bearer_token: &args.bearer_token,
+    bearer_token: &use_bearer_token,
     text_prompt: &text_prompt,
     image_upload_url: &image_url,
     request_timeout: args.individual_request_timeout,
@@ -201,7 +251,7 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
 
   let response = update_run_object_with_world(UpdateRunObjectWithWorldArgs {
     cookies: &args.cookies,
-    bearer_token: &args.bearer_token,
+    bearer_token: &use_bearer_token,
     payload_args: UpdateRunObjectWithWorldPayloadArgs {
       run_id: &run_object_id,
       run_created_at_timestamp: run_object.metadata.created_at,
@@ -221,21 +271,21 @@ pub async fn upload_image_and_create_world_with_retry(args: UploadImageAndCreate
     run_id: run_object_id,
     image_upload_url: image_url,
     world_id,
-    maybe_new_access_tokens: None,
+    maybe_new_access_tokens,
   })
 }
 
 #[cfg(test)]
 mod tests {
+  use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
+  use crate::credentials::world_labs_cookies::WorldLabsCookies;
+  use crate::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
   use crate::recipes::upload_image_and_create_world_with_retry::{upload_image_and_create_world_with_retry, FileBytesOrPath, UploadImageAndCreateWorldWithRetryArgs};
   use crate::test_utils::get_test_bearer_token::get_test_bearer_token;
   use crate::test_utils::get_test_cookies::get_typed_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use filesys::file_read_bytes::file_read_bytes;
   use log::LevelFilter;
-  use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
-  use crate::credentials::world_labs_cookies::WorldLabsCookies;
-  use crate::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
 
   #[tokio::test]
   #[ignore] // Client side tests only
@@ -244,7 +294,7 @@ mod tests {
 
     let cookies = get_typed_test_cookies().unwrap();
     let bearer_token = get_test_bearer_token().unwrap();
-    let refresh_token = WorldLabsRefreshToken::new("".to_string());
+    let refresh_token = WorldLabsRefreshToken::new("AMf-vBy91tuAOoeCwbXV3zNcFAM79ayEKb_cRmTBhVLAIRB1kDzswDgenVnxHfgbmUP95YTlJkpSwJUK3eTZv0iV1An-rZUVII8tOoyLNpV-O1dhytsMXFjR5Mc_hRxUhwuRphUZT6Zub9T1Twd8OL88twFnN-qlwq12W_eRZnEC_IExX0-j6vhfRbVXY0Bf9F1jddeaN7FMgagVzlIt7c7hbboR3XRlU61oBhuEw90ynHWPhDrnTVBtT9xI_TrNFr-v6mMh3M1DGFN9iaHVl74fEwbV6VanUGua55uxdVgia-SyOkYboKRGanWof2g69vZNvREdlMiNFYfWDtsHgcd_DaS6oemS5CVoSbK8sRREUAXHRCmwO5OyZehacnKstyy0TnNwZuvtn_KMzpk3ZmLM-Q-yERlJvpd9rHU-d-uV2R-yZIWgT3rshE9WyK9i4p731RgXfEC6".to_string());
 
     //let file_path = "/home/bt/Pictures/locations/island.jpg";
     let file_path = "/Users/bt/Pictures/Midjourney/dusk_house.jpeg";
