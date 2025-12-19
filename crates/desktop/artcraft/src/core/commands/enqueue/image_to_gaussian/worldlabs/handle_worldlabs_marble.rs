@@ -2,6 +2,7 @@ use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateErr
 use crate::core::commands::enqueue::image_to_gaussian::enqueue_image_to_gaussian_command::EnqueueImageToGaussianRequest;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
+use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -35,7 +36,8 @@ pub async fn handle_worldlabs_marble(
     Some(cookies) => cookies,
     None => {
       error!("No WorldLabs cookies!");
-      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsWorldLabsCredentials));
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::WorldLabs, &app);
+      return Err(GenerateError::needs_worldlabs_credentials());
     }
   };
 
@@ -43,7 +45,8 @@ pub async fn handle_worldlabs_marble(
     Some(bearer) => bearer,
     None => {
       error!("No WorldLabs bearer token!");
-      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsWorldLabsCredentials));
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::WorldLabs, &app);
+      return Err(GenerateError::needs_worldlabs_credentials());
     }
   };
 
@@ -51,11 +54,10 @@ pub async fn handle_worldlabs_marble(
     Some(bearer) => bearer,
     None => {
       error!("No WorldLabs refresh token!");
-      return Err(GenerateError::MissingCredentials(MissingCredentialsReason::NeedsWorldLabsCredentials));
+      ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::WorldLabs, &app);
+      return Err(GenerateError::needs_worldlabs_credentials());
     }
   };
-
-  let job_id = generate_random_uuid();
 
   let maybe_prompt = request.prompt
       .as_deref()

@@ -138,6 +138,10 @@ impl GenerateError {
   pub fn needs_storyteller_credentials() -> Self {
     Self::MissingCredentials(MissingCredentialsReason::NeedsStorytellerCredentials)
   }
+
+  pub fn needs_worldlabs_credentials() -> Self {
+    Self::MissingCredentials(MissingCredentialsReason::NeedsWorldLabsCredentials)
+  }
 }
 
 impl From<AnyhowError> for GenerateError {
