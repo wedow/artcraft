@@ -1,4 +1,6 @@
 pub mod accept;
+pub mod accept_encoding;
+pub mod accept_language;
 pub mod cache_control;
 pub mod connection;
 pub mod content_type;

@@ -1,0 +1,49 @@
+
+curl 'https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAA88yObUN-0pnXAxcgOrT2exZxFWLW1BI' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://marble.worldlabs.ai' \
+  -H 'priority: u=1, i' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  -H 'x-browser-channel: stable' \
+  -H 'x-browser-copyright: Copyright 2025 Google LLC. All Rights reserved.' \
+  -H 'x-browser-validation: AUXUCdutEJ+6gl6bYtz7E2kgIT4=' \
+  -H 'x-browser-year: 2025' \
+  -H 'x-client-data: CIe2yQEIorbJAQipncoBCKSCywEIlqHLAQiGoM0BCJSkzwE=' \
+  -H 'x-client-version: Chrome/JsCore/12.6.0/FirebaseCore-web' \
+  --data-raw '{"idToken":"eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk4OGQ1YTM3OWI3OGJkZjFlNTBhNDA5MTEzZjJiMGM3NWU0NTJlNDciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vd2x0LXRyYWluaW5nLWdzYyIsImF1ZCI6IndsdC10cmFpbmluZy1nc2MiLCJhdXRoX3RpbWUiOjE3NjYwMDI5MjMsInVzZXJfaWQiOiJDQXJKSjJQUUZGZDhsMlJmOHVwdFpobDg2ZDMzIiwic3ViIjoiQ0FySkoyUFFGRmQ4bDJSZjh1cHRaaGw4NmQzMyIsImlhdCI6MTc2NjEyODA4NiwiZXhwIjoxNzY2MTMxNjg2LCJlbWFpbCI6InNhYmFsaWQyMzRAY3JzYXkuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsic2FiYWxpZDIzNEBjcnNheS5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.T1V-C-5dyNorLKXIE4aqi76RvwU5Fdw-YH0YOU_TQb7nNgKy1HsmQswssBFHw4KP2DKjvbZif4TIFJQTnsYAfCh1VvOVtHFUY-kGTRSU5wLPUbH_1EiOLgletGP6YeM3MiZq8fWG1VSWe6xmogmTfhSf3NcRW46L6GeJLXmJXPrHl6Hxszvr1aSmxm1Ee412bCN2hhgGcmTYm7-jaeT9MdnKddu-wv_5Bd6Eb5kCXZHvZIqgaWR_5ACMJq7zyefrCZUSISh3jTycRsVaFKvv09Mm_rJHFQbV2FXCNDx4S80nR7TyUd8SDehKiGsPRgUq-mGvCPBabk0dpAn73LAFrA"}'
+
+
+Response:
+
+{
+  "kind": "identitytoolkit#GetAccountInfoResponse",
+  "users": [
+    {
+      "localId": "CArJJ2PQFFd8l2Rf8uptZhl86d33",
+      "email": "sabalid234@crsay.com",
+      "passwordHash": "UkVEQUNURUQ=",
+      "emailVerified": true,
+      "passwordUpdatedAt": 1765756496440,
+      "providerUserInfo": [
+        {
+          "providerId": "password",
+          "federatedId": "sabalid234@crsay.com",
+          "email": "sabalid234@crsay.com",
+          "rawId": "sabalid234@crsay.com"
+        }
+      ],
+      "validSince": "1765756496",
+      "lastLoginAt": "1766098175534",
+      "createdAt": "1765756496440",
+      "lastRefreshAt": "2025-12-19T07:08:06.869541Z"
+    }
+  ]
+}
