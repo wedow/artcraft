@@ -223,7 +223,6 @@ export const ImageTo3DExperience = ({
           : snapshotName || "Generated Model";
 
       if (variant === "object") {
-        console.log("Start object generation...");
         objectStartGeneration(
           activeMode,
           note,
@@ -232,11 +231,7 @@ export const ImageTo3DExperience = ({
           subscriberId,
         );
       } else {
-        console.log("Start gaussian generation...");
         worldStartGeneration(activeMode, note, snapshotPreview, subscriberId);
-
-
-
       }
       setSelectedResultId(subscriberId);
 
