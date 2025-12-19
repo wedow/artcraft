@@ -8,6 +8,7 @@ use crate::core::commands::app_preferences::update_app_preference_command::updat
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::enqueue_edit_image_command;
 use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::enqueue_image_inpaint_command;
+use crate::core::commands::enqueue::image_to_gaussian::enqueue_image_to_gaussian_command::enqueue_image_to_gaussian_command;
 use crate::core::commands::enqueue::image_to_object::enqueue_image_to_3d_object_command::enqueue_image_to_3d_object_command;
 use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::enqueue_image_to_video_command;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::enqueue_text_to_image_command;
@@ -38,7 +39,6 @@ use crate::services::midjourney::commands::midjourney_clear_credentials_command:
 use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
 use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
-use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use crate::services::sora::commands::check_sora_session_command::check_sora_session_command;
 use crate::services::sora::commands::open_sora_login_command::open_sora_login_command;
 use crate::services::sora::commands::sora_get_credential_info_command::sora_get_credential_info_command;
@@ -61,6 +61,7 @@ use crate::services::worldlabs::commands::worldlabs_get_credential_info_command:
 use crate::services::worldlabs::commands::worldlabs_open_login_command::worldlabs_open_login_command;
 use crate::services::worldlabs::commands::worldlabs_receive_bearer_command::worldlabs_receive_bearer_command;
 use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
+use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use log::error;
 
 use tauri_plugin_dialog;
@@ -192,6 +193,7 @@ pub fn run() {
     enqueue_image_bg_removal_command,
     enqueue_image_inpaint_command,
     enqueue_image_to_3d_object_command,
+    enqueue_image_to_gaussian_command,
     enqueue_image_to_video_command,
     enqueue_text_to_image_command,
     flip_image,
