@@ -1,8 +1,6 @@
 use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::EnqueueEditImageCommand;
 use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit_artcraft::handle_flux_kontext_edit_artcraft;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_artcraft::handle_gpt_image_1_edit_artcraft;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit_sora::handle_gpt_image_1_edit_sora;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;

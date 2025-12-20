@@ -1,6 +1,6 @@
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize, EnqueueEditImageCommand};
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::MAX_IMAGES;
+use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1_edit::MAX_IMAGES;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -12,11 +12,11 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::{GptImage1EditImageImageQuality, GptImage1EditImageImageSize, GptImage1EditImageNumImages, GptImage1EditImageRequest};
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen::{GptImage1p5MultiFunctionImageGenNumImages, GptImage1p5MultiFunctionImageGenQuality, GptImage1p5MultiFunctionImageGenRequest, GptImage1p5MultiFunctionImageGenSize};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
@@ -26,9 +26,10 @@ use storyteller_client::endpoints::generate::image::generate_flux_1_dev_text_to_
 use storyteller_client::endpoints::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
 use storyteller_client::endpoints::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
 use storyteller_client::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
+use storyteller_client::endpoints::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen_image::gpt_image_1p5_multi_function_image_gen;
 use tauri::AppHandle;
 
-pub async fn handle_gpt_image_1_edit_artcraft(
+pub async fn handle_gpt_image_1p5_edit_artcraft(
   request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -43,32 +44,32 @@ pub async fn handle_gpt_image_1_edit_artcraft(
     },
   };
 
-  info!("Calling Artcraft gpt-image-1 (edit) ...");
+  info!("Calling Artcraft gpt-image-1.5 (edit) ...");
 
   let uuid_idempotency_token = generate_random_uuid();
   
   let image_quality = request.image_quality
       .map(|quality| match quality {
-        EditImageQuality::Auto => GptImage1EditImageImageQuality::Auto,
-        EditImageQuality::High => GptImage1EditImageImageQuality::High,
-        EditImageQuality::Medium => GptImage1EditImageImageQuality::Medium,
-        EditImageQuality::Low => GptImage1EditImageImageQuality::Low,
+        EditImageQuality::Auto => GptImage1p5MultiFunctionImageGenQuality::High,
+        EditImageQuality::High => GptImage1p5MultiFunctionImageGenQuality::High,
+        EditImageQuality::Medium => GptImage1p5MultiFunctionImageGenQuality::Medium,
+        EditImageQuality::Low => GptImage1p5MultiFunctionImageGenQuality::Low,
       });
   
   let image_size = request.aspect_ratio
       .map(|size| match size {
-        EditImageSize::Auto => GptImage1EditImageImageSize::Square,
-        EditImageSize::Square => GptImage1EditImageImageSize::Square,
-        EditImageSize::Tall => GptImage1EditImageImageSize::Vertical,
-        EditImageSize::Wide => GptImage1EditImageImageSize::Horizontal,
+        EditImageSize::Auto => GptImage1p5MultiFunctionImageGenSize::Square,
+        EditImageSize::Square => GptImage1p5MultiFunctionImageGenSize::Square,
+        EditImageSize::Tall => GptImage1p5MultiFunctionImageGenSize::Tall,
+        EditImageSize::Wide => GptImage1p5MultiFunctionImageGenSize::Wide,
       });
 
   let num_images = match request.image_count {
     None => None,
-    Some(1) => Some(GptImage1EditImageNumImages::One),
-    Some(2) => Some(GptImage1EditImageNumImages::Two),
-    Some(3) => Some(GptImage1EditImageNumImages::Three),
-    Some(4) => Some(GptImage1EditImageNumImages::Four),
+    Some(1) => Some(GptImage1p5MultiFunctionImageGenNumImages::One),
+    Some(2) => Some(GptImage1p5MultiFunctionImageGenNumImages::Two),
+    Some(3) => Some(GptImage1p5MultiFunctionImageGenNumImages::Three),
+    Some(4) => Some(GptImage1p5MultiFunctionImageGenNumImages::Four),
     Some(other) => {
       return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages {
         min: 1,
@@ -96,16 +97,22 @@ pub async fn handle_gpt_image_1_edit_artcraft(
     }));
   }
 
-  let request = GptImage1EditImageRequest {
+  let request = GptImage1p5MultiFunctionImageGenRequest {
     uuid_idempotency_token,
     prompt: Some(request.prompt.clone()),
     image_media_tokens: Some(media_tokens),
+    quality: image_quality,
     image_size,
     num_images,
-    image_quality,
+    // Only for inpainting
+    mask_image_token: None,
+    // Not provided
+    input_fidelity: None,
+    output_format: None,
+    background: None,
   };
 
-  let result = gpt_image_1_edit_image(
+  let result = gpt_image_1p5_multi_function_image_gen(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -114,19 +121,19 @@ pub async fn handle_gpt_image_1_edit_artcraft(
   let job_id = match result {
     Ok(enqueued) => {
       // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued Artcraft gpt-image-1. Job token: {}", 
+      info!("Successfully enqueued Artcraft gpt-image-1.5. Job token: {}", 
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft gpt-image-1: {:?}", err);
+      error!("Failed to use Artcraft gpt-image-1.5: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };
   
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::GptImage1),
+    model: Some(GenerationModel::GptImage1p5),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })

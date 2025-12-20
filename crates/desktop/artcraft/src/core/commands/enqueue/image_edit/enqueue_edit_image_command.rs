@@ -1,9 +1,12 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit::handle_flux_kontext_edit;
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
+use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
+use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1p5_artcraft::handle_gpt_image_1p5_edit_artcraft;
 use crate::core::commands::enqueue::image_edit::nano_banana::handle_nano_banana_edit::handle_nano_banana_edit;
 use crate::core::commands::enqueue::image_edit::nano_banana_pro::handle_nano_banana_pro_edit::handle_nano_banana_pro_edit;
+use crate::core::commands::enqueue::image_edit::seedream::handle_seedream_4_artcraft::handle_seedream_4_edit_artcraft;
+use crate::core::commands::enqueue::image_edit::seedream::handle_seedream_4p5_artcraft::handle_seedream_4p5_edit_artcraft;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
@@ -62,6 +65,15 @@ pub enum ImageEditModel {
 
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  
+  #[serde(rename = "gpt_image_1p5")]
+  GptImage1p5,
+  
+  #[serde(rename = "seedream_4")]
+  Seedream4,
+  
+  #[serde(rename = "seedream_4p5")]
+  Seedream4p5,
   
 //  #[serde(rename = "qwen")]
 //  Qwen,
@@ -306,6 +318,33 @@ pub async fn handle_request(
         storyteller_creds_manager,
         sora_creds_manager,
         sora_task_queue,
+      ).await?
+    }
+    Some(ImageEditModel::GptImage1p5) => {
+      handle_gpt_image_1p5_edit_artcraft(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        storyteller_creds_manager,
+      ).await?
+    }
+    Some(ImageEditModel::Seedream4) => {
+      handle_seedream_4_edit_artcraft(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        storyteller_creds_manager,
+      ).await?
+    }
+    Some(ImageEditModel::Seedream4p5) => {
+      handle_seedream_4p5_edit_artcraft(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        storyteller_creds_manager,
       ).await?
     }
   };

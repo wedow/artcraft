@@ -1,6 +1,6 @@
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageSize, EnqueueEditImageCommand, EnqueueEditImageErrorType};
-use crate::core::commands::enqueue::image_edit::gpt_image_1::handle_gpt_image_1_edit::MAX_IMAGES;
+use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1_edit::MAX_IMAGES;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
