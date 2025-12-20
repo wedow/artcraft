@@ -29,6 +29,8 @@ pub enum ModelType {
   FluxProKontextMax,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  #[serde(rename = "gpt_image_1p5")]
+  GptImage1p5,
   // Generic grok image model without a version
   #[serde(rename = "grok_image")]
   GrokImage,
@@ -117,6 +119,7 @@ impl ModelType {
       Self::FluxPro11Ultra => "flux_pro_1p1_ultra",
       Self::FluxProKontextMax => "flux_pro_kontext_max",
       Self::GptImage1 => "gpt_image_1",
+      Self::GptImage1p5 => "gpt_image_1p5",
       Self::GrokImage => "grok_image",
       Self::Recraft3 => "recraft_3",
       Self::SeedEdit3 => "seededit_3",
@@ -162,6 +165,7 @@ impl ModelType {
       "flux_pro_1p1_ultra" => Ok(Self::FluxPro11Ultra),
       "flux_pro_kontext_max" => Ok(Self::FluxProKontextMax),
       "gpt_image_1" => Ok(Self::GptImage1),
+      "gpt_image_1p5" => Ok(Self::GptImage1p5),
       "grok_image" => Ok(Self::GrokImage),
       "recraft_3" => Ok(Self::Recraft3),
       "seededit_3" => Ok(Self::SeedEdit3),
@@ -211,6 +215,7 @@ impl ModelType {
       Self::FluxPro11Ultra,
       Self::FluxProKontextMax,
       Self::GptImage1,
+      Self::GptImage1p5,
       Self::GrokImage,
       Self::Recraft3,
       Self::SeedEdit3,
@@ -265,6 +270,7 @@ mod tests {
       assert_serialization(ModelType::FluxPro11Ultra, "flux_pro_1p1_ultra");
       assert_serialization(ModelType::FluxProKontextMax, "flux_pro_kontext_max");
       assert_serialization(ModelType::GptImage1, "gpt_image_1");
+      assert_serialization(ModelType::GptImage1p5, "gpt_image_1p5");
       assert_serialization(ModelType::GrokImage, "grok_image");
       assert_serialization(ModelType::Recraft3, "recraft_3");
       assert_serialization(ModelType::SeedEdit3, "seededit_3");
@@ -307,6 +313,7 @@ mod tests {
       assert_eq!(ModelType::FluxPro11Ultra.to_str(), "flux_pro_1p1_ultra");
       assert_eq!(ModelType::FluxProKontextMax.to_str(), "flux_pro_kontext_max");
       assert_eq!(ModelType::GptImage1.to_str(), "gpt_image_1");
+      assert_eq!(ModelType::GptImage1p5.to_str(), "gpt_image_1p5");
       assert_eq!(ModelType::GrokImage.to_str(), "grok_image");
       assert_eq!(ModelType::Recraft3.to_str(), "recraft_3");
       assert_eq!(ModelType::SeedEdit3.to_str(), "seededit_3");
@@ -351,6 +358,7 @@ mod tests {
       assert_eq!(ModelType::from_str("flux_pro_1p1_ultra").unwrap(), ModelType::FluxPro11Ultra);
       assert_eq!(ModelType::from_str("flux_pro_kontext_max").unwrap(), ModelType::FluxProKontextMax);
       assert_eq!(ModelType::from_str("gpt_image_1").unwrap(), ModelType::GptImage1);
+      assert_eq!(ModelType::from_str("gpt_image_1p5").unwrap(), ModelType::GptImage1p5);
       assert_eq!(ModelType::from_str("grok_image").unwrap(), ModelType::GrokImage);
       assert_eq!(ModelType::from_str("recraft_3").unwrap(), ModelType::Recraft3);
       assert_eq!(ModelType::from_str("seededit_3").unwrap(), ModelType::SeedEdit3);
@@ -385,7 +393,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 35);
+      assert_eq!(variants.len(), 36);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
@@ -395,6 +403,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(ModelType::FluxPro11Ultra));
       assert_eq!(variants.pop_first(), Some(ModelType::FluxProKontextMax));
       assert_eq!(variants.pop_first(), Some(ModelType::GptImage1));
+      assert_eq!(variants.pop_first(), Some(ModelType::GptImage1p5));
       assert_eq!(variants.pop_first(), Some(ModelType::GrokImage));
       assert_eq!(variants.pop_first(), Some(ModelType::Recraft3));
       assert_eq!(variants.pop_first(), Some(ModelType::SeedEdit3));

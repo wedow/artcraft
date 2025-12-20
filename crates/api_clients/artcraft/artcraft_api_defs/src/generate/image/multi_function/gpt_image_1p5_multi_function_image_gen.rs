@@ -20,7 +20,7 @@ pub struct GptImage1p5MultiFunctionImageGenRequest {
   
   /// Only for image editing, which turns this into an inpainting task.
   /// Text to image should not set this.
-  pub mask_image_token: Option<String>,
+  pub mask_image_token: Option<MediaFileToken>,
 
   /// Number of images to generate. Default is one.
   pub num_images: Option<GptImage1p5MultiFunctionImageGenNumImages>,

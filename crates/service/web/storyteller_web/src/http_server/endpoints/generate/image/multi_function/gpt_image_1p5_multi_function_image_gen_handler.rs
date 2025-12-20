@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 use std::sync::Arc;
 
@@ -8,10 +8,10 @@ use crate::http_server::endpoints::generate::common::payments_error_test::paymen
 use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
-use crate::util::lookup::lookup_image_urls_as_optional_list::lookup_image_urls_as_optional_list;
+use crate::util::lookup::lookup_image_urls_as_map::lookup_image_urls_as_map;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::{NanoBananaProMultiFunctionImageGenAspectRatio, NanoBananaProMultiFunctionImageGenImageResolution, NanoBananaProMultiFunctionImageGenNumImages, NanoBananaProMultiFunctionImageGenRequest, NanoBananaProMultiFunctionImageGenResponse};
+use artcraft_api_defs::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen::{GptImage1p5MultiFunctionImageGenBackground, GptImage1p5MultiFunctionImageGenInputFidelity, GptImage1p5MultiFunctionImageGenNumImages, GptImage1p5MultiFunctionImageGenQuality, GptImage1p5MultiFunctionImageGenRequest, GptImage1p5MultiFunctionImageGenResponse, GptImage1p5MultiFunctionImageGenSize};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 use enums::by_table::prompts::prompt_type::PromptType;
@@ -19,8 +19,8 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
-use fal_client::requests::webhook::image::edit::enqueue_nano_banana_pro_edit_image_webhook::{enqueue_nano_banana_pro_image_edit_webhook, EnqueueNanoBananaProEditImageArgs, EnqueueNanoBananaProEditImageAspectRatio, EnqueueNanoBananaProEditImageNumImages, EnqueueNanoBananaProEditImageResolution};
-use fal_client::requests::webhook::image::text::enqueue_nano_banana_pro_text_to_image_webhook::{enqueue_nano_banana_pro_text_to_image_webhook, EnqueueNanoBananaProTextToImageArgs, EnqueueNanoBananaProTextToImageAspectRatio, EnqueueNanoBananaProTextToImageNumImages, EnqueueNanoBananaProTextToImageResolution};
+use fal_client::requests::webhook::image::edit::enqueue_gpt_image_1p5_edit_image_webhook::{enqueue_gpt_image_1p5_image_edit_webhook, EnqueueGptImage1p5EditImageArgs, EnqueueGptImage1p5EditImageBackground, EnqueueGptImage1p5EditImageInputFidelity, EnqueueGptImage1p5EditImageNumImages, EnqueueGptImage1p5EditImageQuality, EnqueueGptImage1p5EditImageSize};
+use fal_client::requests::webhook::image::text::enqueue_gpt_image_1p5_text_to_image_webhook::{enqueue_gpt_image_1p5_text_to_image_webhook, EnqueueGptImage1p5TextToImageArgs, EnqueueGptImage1p5TextToImageBackground, EnqueueGptImage1p5TextToImageNumImages, EnqueueGptImage1p5TextToImageQuality, EnqueueGptImage1p5TextToImageSize};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -36,23 +36,23 @@ use sqlx::{Acquire, MySql};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-/// Nano Banana Pro Multi-Function (generate + edit)
+/// Gpt Image 1.5 Multi-Function (generate + edit + inpaint)
 #[utoipa::path(
   post,
   tag = "Generate Images (Multi-Function)",
-  path = "/v1/generate/image/multi_function/nano_banana_pro",
+  path = "/v1/generate/image/multi_function/gpt_image_1p5",
   responses(
-    (status = 200, description = "Success", body = NanoBananaProMultiFunctionImageGenResponse),
+    (status = 200, description = "Success", body = GptImage1p5MultiFunctionImageGenResponse),
   ),
   params(
-    ("request" = NanoBananaProMultiFunctionImageGenRequest, description = "Payload for Request"),
+    ("request" = GptImage1p5MultiFunctionImageGenRequest, description = "Payload for Request"),
   )
 )]
 pub async fn nano_banana_pro_multi_function_image_gen_handler(
   http_request: HttpRequest,
-  request: Json<NanoBananaProMultiFunctionImageGenRequest>,
+  request: Json<GptImage1p5MultiFunctionImageGenRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<NanoBananaProMultiFunctionImageGenResponse>, CommonWebError> {
+) -> Result<Json<GptImage1p5MultiFunctionImageGenResponse>, CommonWebError> {
   
   payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
   
@@ -86,18 +86,52 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
-  
-  let image_urls = match request.image_media_tokens.as_ref() {
+
+  let mut query_media_tokens = None;
+
+  if let Some(media_tokens) = request.image_media_tokens.as_ref() {
+    if !media_tokens.is_empty() {
+      let mut tokens = Vec::new();
+      tokens.extend(media_tokens.iter().map(|token| token.to_owned()));
+
+      if let Some(mask_media_token) = request.mask_image_token.as_ref() {
+        // NB: Masks are only relevant when this is an image editing exercise.
+        tokens.push(mask_media_token.to_owned());
+      }
+
+      query_media_tokens = Some(tokens);
+    }
+  }
+
+  let image_urls_by_token = match query_media_tokens {
+    None => HashMap::new(),
     Some(media_tokens) => {
       info!("Looking up image media tokens: {:?}", media_tokens);
-      lookup_image_urls_as_optional_list(
+      lookup_image_urls_as_map(
         &http_request,
         &mut mysql_connection,
         server_state.server_environment,
-        media_tokens,
+        &media_tokens,
       ).await?
-    },
+    }
+  };
+
+  let maybe_image_urls = match request.image_media_tokens.as_ref() {
     None => None,
+    Some(tokens) => {
+      let urls = tokens.iter()
+          .filter_map(|token| image_urls_by_token.get(token))
+          .map(|url| url.to_string())
+          .collect::<Vec<_>>();
+      Some(urls)
+    }
+  };
+
+  let maybe_mask_url = match request.mask_image_token.as_ref() {
+    None => None,
+    Some(token) => {
+      image_urls_by_token.get(&token).map(|url| url.to_string())
+    }
   };
 
   insert_idempotency_token(&request.uuid_idempotency_token, &mut *mysql_connection)
@@ -111,100 +145,112 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
 
   let fal_result;
 
-  if let Some(input_image_urls) = image_urls.as_deref() {
-    info!("nano banana pro edit image");
+  if let Some(input_image_urls) = maybe_image_urls.as_deref() {
+    info!("gpt image 1.5 edit image");
 
     let num_images = match request.num_images {
-      Some(NanoBananaProMultiFunctionImageGenNumImages::One) => EnqueueNanoBananaProEditImageNumImages::One,
-      Some(NanoBananaProMultiFunctionImageGenNumImages::Two) => EnqueueNanoBananaProEditImageNumImages::Two,
-      Some(NanoBananaProMultiFunctionImageGenNumImages::Three) => EnqueueNanoBananaProEditImageNumImages::Three,
-      Some(NanoBananaProMultiFunctionImageGenNumImages::Four) => EnqueueNanoBananaProEditImageNumImages::Four,
-      None => EnqueueNanoBananaProEditImageNumImages::One, // Default to One
+      Some(GptImage1p5MultiFunctionImageGenNumImages::One) => EnqueueGptImage1p5EditImageNumImages::One,
+      Some(GptImage1p5MultiFunctionImageGenNumImages::Two) => EnqueueGptImage1p5EditImageNumImages::Two,
+      Some(GptImage1p5MultiFunctionImageGenNumImages::Three) => EnqueueGptImage1p5EditImageNumImages::Three,
+      Some(GptImage1p5MultiFunctionImageGenNumImages::Four) => EnqueueGptImage1p5EditImageNumImages::Four,
+      None => EnqueueGptImage1p5EditImageNumImages::One, // Default to One
     };
 
-    let resolution = match request.resolution {
-      Some(NanoBananaProMultiFunctionImageGenImageResolution::OneK) => EnqueueNanoBananaProEditImageResolution::OneK,
-      Some(NanoBananaProMultiFunctionImageGenImageResolution::TwoK) => EnqueueNanoBananaProEditImageResolution::TwoK,
-      Some(NanoBananaProMultiFunctionImageGenImageResolution::FourK) => EnqueueNanoBananaProEditImageResolution::FourK,
-      None => EnqueueNanoBananaProEditImageResolution::OneK,
+    let image_size = match request.image_size {
+      Some(GptImage1p5MultiFunctionImageGenSize::Square) => EnqueueGptImage1p5EditImageSize::Square,
+      Some(GptImage1p5MultiFunctionImageGenSize::Wide) => EnqueueGptImage1p5EditImageSize::Wide,
+      Some(GptImage1p5MultiFunctionImageGenSize::Tall) => EnqueueGptImage1p5EditImageSize::Tall,
+      None => EnqueueGptImage1p5EditImageSize::Square,
     };
 
-    let aspect_ratio = match request.aspect_ratio {
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne) => EnqueueNanoBananaProEditImageAspectRatio::OneByOne,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::FiveByFour) => EnqueueNanoBananaProEditImageAspectRatio::FiveByFour,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::FourByThree) => EnqueueNanoBananaProEditImageAspectRatio::FourByThree,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::ThreeByTwo) => EnqueueNanoBananaProEditImageAspectRatio::ThreeByTwo,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::SixteenByNine) => EnqueueNanoBananaProEditImageAspectRatio::SixteenByNine,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::TwentyOneByNine) => EnqueueNanoBananaProEditImageAspectRatio::TwentyOneByNine,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::FourByFive) => EnqueueNanoBananaProEditImageAspectRatio::FourByFive,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::ThreeByFour) => EnqueueNanoBananaProEditImageAspectRatio::ThreeByFour,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::TwoByThree) => EnqueueNanoBananaProEditImageAspectRatio::TwoByThree,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::NineBySixteen) => EnqueueNanoBananaProEditImageAspectRatio::NineBySixteen,
-      None => EnqueueNanoBananaProEditImageAspectRatio::OneByOne,
+    let background = match request.background {
+      Some(GptImage1p5MultiFunctionImageGenBackground::Auto) => EnqueueGptImage1p5EditImageBackground::Auto,
+      Some(GptImage1p5MultiFunctionImageGenBackground::Transparent) => EnqueueGptImage1p5EditImageBackground::Transparent,
+      Some(GptImage1p5MultiFunctionImageGenBackground::Opaque) => EnqueueGptImage1p5EditImageBackground::Opaque,
+      None => EnqueueGptImage1p5EditImageBackground::Auto,
     };
 
-    let args = EnqueueNanoBananaProEditImageArgs {
+    let quality = match request.quality {
+      Some(GptImage1p5MultiFunctionImageGenQuality::Low) => EnqueueGptImage1p5EditImageQuality::Low,
+      Some(GptImage1p5MultiFunctionImageGenQuality::Medium) => EnqueueGptImage1p5EditImageQuality::Medium,
+      Some(GptImage1p5MultiFunctionImageGenQuality::High) => EnqueueGptImage1p5EditImageQuality::High,
+      None => EnqueueGptImage1p5EditImageQuality::High,
+    };
+
+    let input_fidelity = match request.input_fidelity {
+      Some(GptImage1p5MultiFunctionImageGenInputFidelity::Low) => EnqueueGptImage1p5EditImageInputFidelity::Low,
+      Some(GptImage1p5MultiFunctionImageGenInputFidelity::High) => EnqueueGptImage1p5EditImageInputFidelity::High,
+      None => EnqueueGptImage1p5EditImageInputFidelity::High,
+    };
+
+    let args = EnqueueGptImage1p5EditImageArgs {
       prompt: request.prompt.as_deref().unwrap_or(""),
       image_urls: input_image_urls.to_owned(),
       num_images,
-      resolution: Some(resolution),
-      aspect_ratio: Some(aspect_ratio),
+      mask_image_url: maybe_mask_url,
+      image_size: Some(image_size),
+      background: Some(background),
+      quality: Some(quality),
+      input_fidelity: Some(input_fidelity),
+      output_format: None,
       webhook_url: &server_state.fal.webhook_url,
       api_key: &server_state.fal.api_key,
     };
 
-    fal_result = enqueue_nano_banana_pro_image_edit_webhook(args)
+    fal_result = enqueue_gpt_image_1p5_image_edit_webhook(args)
         .await
         .map_err(|err| {
-          warn!("Error calling enqueue_nano_banana_pro_image_edit_webhook: {:?}", err);
+          warn!("Error calling enqueue_gpt_image_1p5_image_edit_webhook: {:?}", err);
           CommonWebError::ServerError
         })?;
 
   } else {
-    info!("nano banana pro text-to-image");
+    info!("gpt image 1.5 text-to-image");
 
     let num_images = match request.num_images {
-      Some(NanoBananaProMultiFunctionImageGenNumImages::One) => EnqueueNanoBananaProTextToImageNumImages::One,
-      Some(NanoBananaProMultiFunctionImageGenNumImages::Two) => EnqueueNanoBananaProTextToImageNumImages::Two,
-      Some(NanoBananaProMultiFunctionImageGenNumImages::Three) => EnqueueNanoBananaProTextToImageNumImages::Three,
-      Some(NanoBananaProMultiFunctionImageGenNumImages::Four) => EnqueueNanoBananaProTextToImageNumImages::Four,
-      None => EnqueueNanoBananaProTextToImageNumImages::One, // Default to One
+      Some(GptImage1p5MultiFunctionImageGenNumImages::One) => EnqueueGptImage1p5TextToImageNumImages::One,
+      Some(GptImage1p5MultiFunctionImageGenNumImages::Two) => EnqueueGptImage1p5TextToImageNumImages::Two,
+      Some(GptImage1p5MultiFunctionImageGenNumImages::Three) => EnqueueGptImage1p5TextToImageNumImages::Three,
+      Some(GptImage1p5MultiFunctionImageGenNumImages::Four) => EnqueueGptImage1p5TextToImageNumImages::Four,
+      None => EnqueueGptImage1p5TextToImageNumImages::One, // Default to One
     };
 
-    let resolution = match request.resolution {
-      Some(NanoBananaProMultiFunctionImageGenImageResolution::OneK) => EnqueueNanoBananaProTextToImageResolution::OneK,
-      Some(NanoBananaProMultiFunctionImageGenImageResolution::TwoK) => EnqueueNanoBananaProTextToImageResolution::TwoK,
-      Some(NanoBananaProMultiFunctionImageGenImageResolution::FourK) => EnqueueNanoBananaProTextToImageResolution::FourK,
-      None => EnqueueNanoBananaProTextToImageResolution::OneK,
+    let image_size = match request.image_size {
+      Some(GptImage1p5MultiFunctionImageGenSize::Square) => EnqueueGptImage1p5TextToImageSize::Square,
+      Some(GptImage1p5MultiFunctionImageGenSize::Wide) => EnqueueGptImage1p5TextToImageSize::Wide,
+      Some(GptImage1p5MultiFunctionImageGenSize::Tall) => EnqueueGptImage1p5TextToImageSize::Tall,
+      None => EnqueueGptImage1p5TextToImageSize::Square,
     };
 
-    let aspect_ratio = match request.aspect_ratio {
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne) => EnqueueNanoBananaProTextToImageAspectRatio::OneByOne,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::FiveByFour) => EnqueueNanoBananaProTextToImageAspectRatio::FiveByFour,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::FourByThree) => EnqueueNanoBananaProTextToImageAspectRatio::FourByThree,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::ThreeByTwo) => EnqueueNanoBananaProTextToImageAspectRatio::ThreeByTwo,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::SixteenByNine) => EnqueueNanoBananaProTextToImageAspectRatio::SixteenByNine,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::TwentyOneByNine) => EnqueueNanoBananaProTextToImageAspectRatio::TwentyOneByNine,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::FourByFive) => EnqueueNanoBananaProTextToImageAspectRatio::FourByFive,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::ThreeByFour) => EnqueueNanoBananaProTextToImageAspectRatio::ThreeByFour,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::TwoByThree) => EnqueueNanoBananaProTextToImageAspectRatio::TwoByThree,
-      Some(NanoBananaProMultiFunctionImageGenAspectRatio::NineBySixteen) => EnqueueNanoBananaProTextToImageAspectRatio::NineBySixteen,
-      None => EnqueueNanoBananaProTextToImageAspectRatio::OneByOne,
+    let background = match request.background {
+      Some(GptImage1p5MultiFunctionImageGenBackground::Auto) => EnqueueGptImage1p5TextToImageBackground::Auto,
+      Some(GptImage1p5MultiFunctionImageGenBackground::Transparent) => EnqueueGptImage1p5TextToImageBackground::Transparent,
+      Some(GptImage1p5MultiFunctionImageGenBackground::Opaque) => EnqueueGptImage1p5TextToImageBackground::Opaque,
+      None => EnqueueGptImage1p5TextToImageBackground::Auto,
     };
 
-    let args = EnqueueNanoBananaProTextToImageArgs {
+    let quality = match request.quality {
+      Some(GptImage1p5MultiFunctionImageGenQuality::Low) => EnqueueGptImage1p5TextToImageQuality::Low,
+      Some(GptImage1p5MultiFunctionImageGenQuality::Medium) => EnqueueGptImage1p5TextToImageQuality::Medium,
+      Some(GptImage1p5MultiFunctionImageGenQuality::High) => EnqueueGptImage1p5TextToImageQuality::High,
+      None => EnqueueGptImage1p5TextToImageQuality::High,
+    };
+
+    let args = EnqueueGptImage1p5TextToImageArgs {
       prompt: request.prompt.as_deref().unwrap_or(""),
       num_images,
-      resolution: Some(resolution),
-      aspect_ratio: Some(aspect_ratio),
+      output_format: None,
+      image_size: Some(image_size),
+      background: Some(background),
+      quality: Some(quality),
       webhook_url: &server_state.fal.webhook_url,
       api_key: &server_state.fal.api_key,
     };
 
-    fal_result = enqueue_nano_banana_pro_text_to_image_webhook(args)
+    fal_result = enqueue_gpt_image_1p5_text_to_image_webhook(args)
         .await
         .map_err(|err| {
-          warn!("Error calling enqueue_nano_banana_pro_text_to_image_webhook: {:?}", err);
+          warn!("Error calling enqueue_gpt_image_1p5_text_to_image_webhook: {:?}", err);
           CommonWebError::ServerError
         })?;
   }
@@ -234,7 +280,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
     maybe_creator_user_token: maybe_user_session
         .as_ref()
         .map(|s| &s.user_token),
-    maybe_model_type: Some(ModelType::NanoBananaPro),
+    maybe_model_type: Some(ModelType::GptImage1p5),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
     maybe_negative_prompt: None,
@@ -302,7 +348,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
         CommonWebError::ServerError
       })?;
 
-  Ok(Json(NanoBananaProMultiFunctionImageGenResponse {
+  Ok(Json(GptImage1p5MultiFunctionImageGenResponse {
     success: true,
     inference_job_token: job_token,
   }))
