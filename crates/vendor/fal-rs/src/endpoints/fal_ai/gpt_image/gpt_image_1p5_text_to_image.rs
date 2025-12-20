@@ -18,7 +18,7 @@ pub struct GptImage1p5TextToImageInput {
 
   /// 1 - 4
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub number_of_images: Option<u8>,
+  pub num_images: Option<u8>,
 
   /// Possible enum values: jpeg, png, webp
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -36,7 +36,7 @@ pub struct GptImage1p5TextToImageOutput {
   pub images: Vec<ImageFile>,
 }
 
-pub fn nano_banana_pro_text_to_image(
+pub fn gpt_image_1p5_text_to_image(
   params: GptImage1p5TextToImageInput,
 ) -> FalRequest<GptImage1p5TextToImageInput, GptImage1p5TextToImageOutput> {
   FalRequest::new("fal-ai/gpt-image-1.5", params)

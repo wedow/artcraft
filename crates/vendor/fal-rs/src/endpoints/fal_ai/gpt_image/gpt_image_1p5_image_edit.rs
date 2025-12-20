@@ -28,7 +28,7 @@ pub struct GptImage1p5ImageEditInput {
 
   /// 1 - 4
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub number_of_images: Option<u8>,
+  pub num_images: Option<u8>,
 
   /// Possible enum values: jpeg, png, webp
   #[serde(skip_serializing_if = "Option::is_none")]
