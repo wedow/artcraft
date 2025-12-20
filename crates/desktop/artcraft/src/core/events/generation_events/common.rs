@@ -31,6 +31,8 @@ pub enum GenerationModel {
   FluxProKontextMax,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  #[serde(rename = "gpt_image_1p5")]
+  GptImage1p5,
   #[serde(rename = "grok_image")]
   GrokImage,
   #[serde(rename = "gemini_25_flash")]
@@ -39,6 +41,10 @@ pub enum GenerationModel {
   NanoBanana,
   #[serde(rename = "nano_banana_pro")]
   NanoBananaPro,
+  #[serde(rename = "seedream_4")]
+  Seedream4,
+  #[serde(rename = "seedream_4p5")]
+  Seedream4p5,
 
   #[serde(rename = "hunyuan_3d_2_0")]
   Hunyuan3d2_0,

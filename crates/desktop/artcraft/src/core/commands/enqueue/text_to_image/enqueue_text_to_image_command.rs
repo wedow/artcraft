@@ -3,12 +3,14 @@ use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateErr
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::generic::handle_image_artcraft::handle_image_artcraft;
 use crate::core::commands::enqueue::text_to_image::generic::handle_image_fal::handle_image_fal;
-use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1::handle_gpt_image_1;
-use crate::core::commands::enqueue::text_to_image::gpt_image_1::handle_gpt_image_1_sora::handle_gpt_image_1_sora;
+use crate::core::commands::enqueue::text_to_image::gpt_image::handle_gpt_image_1::handle_gpt_image_1;
+use crate::core::commands::enqueue::text_to_image::gpt_image::handle_gpt_image_1p5::handle_gpt_image_1p5;
 use crate::core::commands::enqueue::text_to_image::grok::handle_grok::handle_grok;
 use crate::core::commands::enqueue::text_to_image::midjourney::handle_midjourney::handle_midjourney;
 use crate::core::commands::enqueue::text_to_image::nano_banana::handle_nano_banana::handle_nano_banana;
 use crate::core::commands::enqueue::text_to_image::nano_banana_pro::handle_nano_banana_pro::handle_nano_banana_pro;
+use crate::core::commands::enqueue::text_to_image::seedream::handle_seedream_4_artcraft::handle_seedream_4_artcraft;
+use crate::core::commands::enqueue::text_to_image::seedream::handle_seedream_4p5_artcraft::handle_seedream_4p5_artcraft;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
@@ -50,19 +52,25 @@ pub enum ImageModel {
   FluxPro11,
   #[serde(rename = "flux_pro_11_ultra")]
   FluxPro11Ultra,
-  #[serde(rename = "gpt_image_1")]
-  GptImage1,
   #[serde(rename = "grok_image")]
   GrokImage,
   #[serde(rename = "recraft_3")]
   Recraft3,
 
+  #[serde(rename = "gpt_image_1")]
+  GptImage1,
+  #[serde(rename = "gpt_image_1p5")]
+  GptImage1p5,
   #[serde(rename = "gemini_25_flash")]
   Gemini25Flash,
   #[serde(rename = "nano_banana")]
   NanoBanana,
   #[serde(rename = "nano_banana_pro")]
   NanoBananaPro,
+  #[serde(rename = "seedream_4")]
+  Seedream4,
+  #[serde(rename = "seedream_4p5")]
+  Seedream4p5,
 
   // Generic Midjourney model, version unknown.
   #[serde(rename = "midjourney")]
@@ -352,6 +360,15 @@ pub async fn dispatch_request(
         sora_task_queue,
       ).await;
     }
+    Some(ImageModel::GptImage1p5) => {
+      return handle_gpt_image_1p5(
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
+        storyteller_creds_manager,
+      ).await;
+    }
     Some(ImageModel::GrokImage) => {
       return handle_grok(
         app,
@@ -367,6 +384,20 @@ pub async fn dispatch_request(
         request,
         app_env_configs,
         mj_creds_manager,
+      ).await;
+    }
+    Some(ImageModel::Seedream4) => {
+      return handle_seedream_4_artcraft(
+        request,
+        app_env_configs,
+        storyteller_creds_manager,
+      ).await;
+    }
+    Some(ImageModel::Seedream4p5) => {
+      return handle_seedream_4p5_artcraft(
+        request,
+        app_env_configs,
+        storyteller_creds_manager,
       ).await;
     }
     _ => {
