@@ -3,7 +3,7 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-pub const BYTEDANCE_SEEDREAM_V4_MULTI_FUNCTION_IMAGE_GEN_PATH: &str = "/v1/generate/image/multi_function/bytedance_seedream_v4";
+pub const BYTEDANCE_SEEDREAM_V4_MULTI_FUNCTION_IMAGE_GEN_PATH: &str = "/v1/generate/image/multi_function/bytedance_seedream_4";
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct BytedanceSeedreamV4MultiFunctionImageGenRequest {
