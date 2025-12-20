@@ -11,7 +11,7 @@ use crate::state::server_state::ServerState;
 use crate::util::lookup::lookup_image_urls_as_optional_list::lookup_image_urls_as_optional_list;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::image::multi_function::bytedance_seedream_v4p5_multi_function_image_gen::{BytedanceSeedreamV4p5MultiFunctionImageGenImageSize, BytedanceSeedreamV4p5MultiFunctionImageGenNumImages, BytedanceSeedreamV4p5MultiFunctionImageGenRequest, BytedanceSeedreamV4p5MultiFunctionImageGenResponse};
+use artcraft_api_defs::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen::{BytedanceSeedreamV4MultiFunctionImageGenImageSize, BytedanceSeedreamV4MultiFunctionImageGenNumImages, BytedanceSeedreamV4MultiFunctionImageGenRequest, BytedanceSeedreamV4MultiFunctionImageGenResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 use enums::by_table::prompts::prompt_type::PromptType;
@@ -19,8 +19,8 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
-use fal_client::requests::webhook::image::edit::enqueue_bytedance_seedream_v4p5_edit_image_webhook::{enqueue_bytedance_seedream_v4p5_edit_image_webhook, EnqueueBytedanceSeedreamV4p5EditImageArgs, EnqueueBytedanceSeedreamV4p5EditImageNumImages, EnqueueBytedanceSeedreamV4p5EditImageSize};
-use fal_client::requests::webhook::image::text::enqueue_bytedance_seedream_v4p5_text_to_image_webhook::{enqueue_bytedance_seedream_v4p5_text_to_image_webhook, EnqueueBytedanceSeedreamV4p5TextToImageArgs, EnqueueBytedanceSeedreamV4p5TextToImageNumImages, EnqueueBytedanceSeedreamV4p5TextToImageSize};
+use fal_client::requests::webhook::image::edit::enqueue_bytedance_seedream_v4_edit_image_webhook::{enqueue_bytedance_seedream_v4_edit_image_webhook, EnqueueBytedanceSeedreamV4EditImageArgs, EnqueueBytedanceSeedreamV4EditImageNumImages, EnqueueBytedanceSeedreamV4EditImageSize};
+use fal_client::requests::webhook::image::text::enqueue_bytedance_seedream_v4_text_to_image_webhook::{enqueue_bytedance_seedream_v4_text_to_image_webhook, EnqueueBytedanceSeedreamV4TextToImageArgs, EnqueueBytedanceSeedreamV4TextToImageNumImages, EnqueueBytedanceSeedreamV4TextToImageSize};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -36,23 +36,23 @@ use sqlx::{Acquire, MySql};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-/// Bytedance Seedream 4.5 Multi-Function (generate + edit)
+/// Bytedance Seedream 4 Multi-Function (generate + edit)
 #[utoipa::path(
   post,
   tag = "Generate Images (Multi-Function)",
-  path = "/v1/generate/image/multi_function/bytedance_seedream_v4p5",
+  path = "/v1/generate/image/multi_function/bytedance_seedream_v4",
   responses(
-    (status = 200, description = "Success", body = BytedanceSeedreamV4p5MultiFunctionImageGenResponse),
+    (status = 200, description = "Success", body = BytedanceSeedreamV4MultiFunctionImageGenResponse),
   ),
   params(
-    ("request" = BytedanceSeedreamV4p5MultiFunctionImageGenRequest, description = "Payload for Request"),
+    ("request" = BytedanceSeedreamV4MultiFunctionImageGenRequest, description = "Payload for Request"),
   )
 )]
-pub async fn bytedance_seedream_v4p5_multi_function_image_gen_handler(
+pub async fn bytedance_seedream_v4_multi_function_image_gen_handler(
   http_request: HttpRequest,
-  request: Json<BytedanceSeedreamV4p5MultiFunctionImageGenRequest>,
+  request: Json<BytedanceSeedreamV4MultiFunctionImageGenRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<BytedanceSeedreamV4p5MultiFunctionImageGenResponse>, CommonWebError> {
+) -> Result<Json<BytedanceSeedreamV4MultiFunctionImageGenResponse>, CommonWebError> {
   
   payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
   
@@ -115,30 +115,31 @@ pub async fn bytedance_seedream_v4p5_multi_function_image_gen_handler(
     info!("edit image case");
 
     let num_images = match request.num_images {
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::One) => EnqueueBytedanceSeedreamV4p5EditImageNumImages::One,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Two) => EnqueueBytedanceSeedreamV4p5EditImageNumImages::Two,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Three) => EnqueueBytedanceSeedreamV4p5EditImageNumImages::Three,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Four) => EnqueueBytedanceSeedreamV4p5EditImageNumImages::Four,
-      None => EnqueueBytedanceSeedreamV4p5EditImageNumImages::One, // Default to One
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::One) => EnqueueBytedanceSeedreamV4EditImageNumImages::One,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Two) => EnqueueBytedanceSeedreamV4EditImageNumImages::Two,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Three) => EnqueueBytedanceSeedreamV4EditImageNumImages::Three,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Four) => EnqueueBytedanceSeedreamV4EditImageNumImages::Four,
+      None => EnqueueBytedanceSeedreamV4EditImageNumImages::One, // Default to One
     };
 
     let image_size = match request.image_size {
       // Square
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Square) => EnqueueBytedanceSeedreamV4p5EditImageSize::Square,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::SquareHd) => EnqueueBytedanceSeedreamV4p5EditImageSize::SquareHd,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square) => EnqueueBytedanceSeedreamV4EditImageSize::Square,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::SquareHd) => EnqueueBytedanceSeedreamV4EditImageSize::SquareHd,
       // Tall
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::PortraitFourThree) => EnqueueBytedanceSeedreamV4p5EditImageSize::PortraitFourThree,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::PortraitSixteenNine) => EnqueueBytedanceSeedreamV4p5EditImageSize::PortraitSixteenNine,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitFourThree) => EnqueueBytedanceSeedreamV4EditImageSize::PortraitFourThree,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine) => EnqueueBytedanceSeedreamV4EditImageSize::PortraitSixteenNine,
       // Wide
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::LandscapeFourThree) => EnqueueBytedanceSeedreamV4p5EditImageSize::LandscapeFourThree,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::LandscapeSixteenNine) => EnqueueBytedanceSeedreamV4p5EditImageSize::LandscapeSixteenNine,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeFourThree) => EnqueueBytedanceSeedreamV4EditImageSize::LandscapeFourThree,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine) => EnqueueBytedanceSeedreamV4EditImageSize::LandscapeSixteenNine,
       // Auto
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Auto2k) => EnqueueBytedanceSeedreamV4p5EditImageSize::Auto2k,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Auto4k) => EnqueueBytedanceSeedreamV4p5EditImageSize::Auto4k,
-      None => EnqueueBytedanceSeedreamV4p5EditImageSize::SquareHd,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Auto) => EnqueueBytedanceSeedreamV4EditImageSize::Auto,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Auto2k) => EnqueueBytedanceSeedreamV4EditImageSize::Auto2k,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Auto4k) => EnqueueBytedanceSeedreamV4EditImageSize::Auto4k,
+      None => EnqueueBytedanceSeedreamV4EditImageSize::SquareHd,
     };
 
-    let args = EnqueueBytedanceSeedreamV4p5EditImageArgs {
+    let args = EnqueueBytedanceSeedreamV4EditImageArgs {
       prompt: request.prompt.as_deref().unwrap_or(""),
       image_urls: input_image_urls.to_owned(),
       num_images: Some(num_images),
@@ -148,10 +149,10 @@ pub async fn bytedance_seedream_v4p5_multi_function_image_gen_handler(
       api_key: &server_state.fal.api_key,
     };
 
-    fal_result = enqueue_bytedance_seedream_v4p5_edit_image_webhook(args)
+    fal_result = enqueue_bytedance_seedream_v4_edit_image_webhook(args)
         .await
         .map_err(|err| {
-          warn!("Error calling enqueue_bytedance_seedream_v4p5_edit_image_webhook: {:?}", err);
+          warn!("Error calling enqueue_bytedance_seedream_v4_edit_image_webhook: {:?}", err);
           CommonWebError::ServerError
         })?;
 
@@ -159,30 +160,31 @@ pub async fn bytedance_seedream_v4p5_multi_function_image_gen_handler(
     info!("text-to-image case");
 
     let num_images = match request.num_images {
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::One) => EnqueueBytedanceSeedreamV4p5TextToImageNumImages::One,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Two) => EnqueueBytedanceSeedreamV4p5TextToImageNumImages::Two,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Three) => EnqueueBytedanceSeedreamV4p5TextToImageNumImages::Three,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Four) => EnqueueBytedanceSeedreamV4p5TextToImageNumImages::Four,
-      None => EnqueueBytedanceSeedreamV4p5TextToImageNumImages::One, // Default to One
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::One) => EnqueueBytedanceSeedreamV4TextToImageNumImages::One,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Two) => EnqueueBytedanceSeedreamV4TextToImageNumImages::Two,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Three) => EnqueueBytedanceSeedreamV4TextToImageNumImages::Three,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Four) => EnqueueBytedanceSeedreamV4TextToImageNumImages::Four,
+      None => EnqueueBytedanceSeedreamV4TextToImageNumImages::One, // Default to One
     };
 
     let image_size = match request.image_size {
       // Square
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Square) => EnqueueBytedanceSeedreamV4p5TextToImageSize::Square,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::SquareHd) => EnqueueBytedanceSeedreamV4p5TextToImageSize::SquareHd,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square) => EnqueueBytedanceSeedreamV4TextToImageSize::Square,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::SquareHd) => EnqueueBytedanceSeedreamV4TextToImageSize::SquareHd,
       // Tall
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::PortraitFourThree) => EnqueueBytedanceSeedreamV4p5TextToImageSize::PortraitFourThree,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::PortraitSixteenNine) => EnqueueBytedanceSeedreamV4p5TextToImageSize::PortraitSixteenNine,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitFourThree) => EnqueueBytedanceSeedreamV4TextToImageSize::PortraitFourThree,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine) => EnqueueBytedanceSeedreamV4TextToImageSize::PortraitSixteenNine,
       // Wide
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::LandscapeFourThree) => EnqueueBytedanceSeedreamV4p5TextToImageSize::LandscapeFourThree,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::LandscapeSixteenNine) => EnqueueBytedanceSeedreamV4p5TextToImageSize::LandscapeSixteenNine,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeFourThree) => EnqueueBytedanceSeedreamV4TextToImageSize::LandscapeFourThree,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine) => EnqueueBytedanceSeedreamV4TextToImageSize::LandscapeSixteenNine,
       // Auto
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Auto2k) => EnqueueBytedanceSeedreamV4p5TextToImageSize::Auto2k,
-      Some(BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Auto4k) => EnqueueBytedanceSeedreamV4p5TextToImageSize::Auto4k,
-      None => EnqueueBytedanceSeedreamV4p5TextToImageSize::SquareHd,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Auto) => EnqueueBytedanceSeedreamV4TextToImageSize::Auto,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Auto2k) => EnqueueBytedanceSeedreamV4TextToImageSize::Auto2k,
+      Some(BytedanceSeedreamV4MultiFunctionImageGenImageSize::Auto4k) => EnqueueBytedanceSeedreamV4TextToImageSize::Auto4k,
+      None => EnqueueBytedanceSeedreamV4TextToImageSize::SquareHd,
     };
 
-    let args = EnqueueBytedanceSeedreamV4p5TextToImageArgs {
+    let args = EnqueueBytedanceSeedreamV4TextToImageArgs {
       prompt: request.prompt.as_deref().unwrap_or(""),
       num_images: Some(num_images),
       image_size: Some(image_size),
@@ -191,10 +193,10 @@ pub async fn bytedance_seedream_v4p5_multi_function_image_gen_handler(
       api_key: &server_state.fal.api_key,
     };
 
-    fal_result = enqueue_bytedance_seedream_v4p5_text_to_image_webhook(args)
+    fal_result = enqueue_bytedance_seedream_v4_text_to_image_webhook(args)
         .await
         .map_err(|err| {
-          warn!("Error calling enqueue_bytedance_seedream_v4p5_text_to_image_webhook: {:?}", err);
+          warn!("Error calling enqueue_bytedance_seedream_v4_text_to_image_webhook: {:?}", err);
           CommonWebError::ServerError
         })?;
   }
@@ -224,7 +226,7 @@ pub async fn bytedance_seedream_v4p5_multi_function_image_gen_handler(
     maybe_creator_user_token: maybe_user_session
         .as_ref()
         .map(|s| &s.user_token),
-    maybe_model_type: Some(ModelType::Seedream4p5),
+    maybe_model_type: Some(ModelType::Seedream4),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
     maybe_negative_prompt: None,
@@ -292,7 +294,7 @@ pub async fn bytedance_seedream_v4p5_multi_function_image_gen_handler(
         CommonWebError::ServerError
       })?;
 
-  Ok(Json(BytedanceSeedreamV4p5MultiFunctionImageGenResponse {
+  Ok(Json(BytedanceSeedreamV4MultiFunctionImageGenResponse {
     success: true,
     inference_job_token: job_token,
   }))
