@@ -60,6 +60,9 @@ pub async fn handle_image_artcraft(
       ImageModel::NanoBanana |
       ImageModel::NanoBananaPro |
       ImageModel::GptImage1 |
+      ImageModel::GptImage1p5 |
+      ImageModel::Seedream4 |
+      ImageModel::Seedream4p5 |
       ImageModel::GrokImage |
       ImageModel::Midjourney
     ) => {

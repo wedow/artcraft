@@ -35,6 +35,12 @@ pub enum TaskModelType {
   NanoBananaPro,
   #[serde(rename = "gpt_image_1")]
   GptImage1,
+  #[serde(rename = "gpt_image_1p5")]
+  GptImage1p5,
+  #[serde(rename = "seedream_4")]
+  Seedream4,
+  #[serde(rename = "seedream_4p5")]
+  Seedream4p5,
   #[serde(rename = "grok_image")]
   GrokImage,
   #[serde(rename = "recraft_3")]
@@ -94,6 +100,9 @@ impl TaskModelType {
       Self::NanoBanana => "nano_banana",
       Self::NanoBananaPro => "nano_banana_pro",
       Self::GptImage1 => "gpt_image_1",
+      Self::GptImage1p5 => "gpt_image_1p5",
+      Self::Seedream4 => "seedream_4",
+      Self::Seedream4p5 => "seedream_4p5",
       Self::GrokImage => "grok_image",
       Self::Recraft3 => "recraft_3",
       Self::Midjourney => "midjourney",
@@ -128,6 +137,9 @@ impl TaskModelType {
       "nano_banana" => Ok(Self::NanoBanana),
       "nano_banana_pro" => Ok(Self::NanoBananaPro),
       "gpt_image_1" => Ok(Self::GptImage1),
+      "gpt_image_1p5" => Ok(Self::GptImage1p5),
+      "seedream_4" => Ok(Self::Seedream4),
+      "seedream_4p5" => Ok(Self::Seedream4p5),
       "grok_image" => Ok(Self::GrokImage),
       "recraft_3" => Ok(Self::Recraft3),
       "midjourney" => Ok(Self::Midjourney),
@@ -165,6 +177,9 @@ impl TaskModelType {
       Self::NanoBanana,
       Self::NanoBananaPro,
       Self::GptImage1,
+      Self::GptImage1p5,
+      Self::Seedream4,
+      Self::Seedream4p5,
       Self::GrokImage,
       Self::Recraft3,
       Self::Midjourney,
@@ -209,6 +224,9 @@ mod tests {
       assert_serialization(TaskModelType::NanoBanana, "nano_banana");
       assert_serialization(TaskModelType::NanoBananaPro, "nano_banana_pro");
       assert_serialization(TaskModelType::GptImage1, "gpt_image_1");
+      assert_serialization(TaskModelType::GptImage1p5, "gpt_image_1p5");
+      assert_serialization(TaskModelType::Seedream4, "seedream_4");
+      assert_serialization(TaskModelType::Seedream4p5, "seedream_4p5");
       assert_serialization(TaskModelType::GrokImage, "grok_image");
       assert_serialization(TaskModelType::Recraft3, "recraft_3");
       assert_serialization(TaskModelType::Midjourney, "midjourney");
@@ -242,6 +260,9 @@ mod tests {
       assert_eq!(TaskModelType::NanoBanana.to_str(), "nano_banana");
       assert_eq!(TaskModelType::NanoBananaPro.to_str(), "nano_banana_pro");
       assert_eq!(TaskModelType::GptImage1.to_str(), "gpt_image_1");
+      assert_eq!(TaskModelType::GptImage1p5.to_str(), "gpt_image_1p5");
+      assert_eq!(TaskModelType::Seedream4.to_str(), "seedream_4");
+      assert_eq!(TaskModelType::Seedream4p5.to_str(), "seedream_4p5");
       assert_eq!(TaskModelType::GrokImage.to_str(), "grok_image");
       assert_eq!(TaskModelType::Recraft3.to_str(), "recraft_3");
       assert_eq!(TaskModelType::Midjourney.to_str(), "midjourney");
@@ -275,6 +296,9 @@ mod tests {
       assert_eq!(TaskModelType::from_str("nano_banana").unwrap(), TaskModelType::NanoBanana);
       assert_eq!(TaskModelType::from_str("nano_banana_pro").unwrap(), TaskModelType::NanoBananaPro);
       assert_eq!(TaskModelType::from_str("gpt_image_1").unwrap(), TaskModelType::GptImage1);
+      assert_eq!(TaskModelType::from_str("gpt_image_1p5").unwrap(), TaskModelType::GptImage1p5);
+      assert_eq!(TaskModelType::from_str("seedream_4").unwrap(), TaskModelType::Seedream4);
+      assert_eq!(TaskModelType::from_str("seedream_4p5").unwrap(), TaskModelType::Seedream4p5);
       assert_eq!(TaskModelType::from_str("grok_image").unwrap(), TaskModelType::GrokImage);
       assert_eq!(TaskModelType::from_str("recraft_3").unwrap(), TaskModelType::Recraft3);
       assert_eq!(TaskModelType::from_str("midjourney").unwrap(), TaskModelType::Midjourney);
@@ -308,7 +332,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 26);
+      assert_eq!(variants.len(), 29);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -321,6 +345,9 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::NanoBanana));
       assert_eq!(variants.pop_first(), Some(TaskModelType::NanoBananaPro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GptImage1));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::GptImage1p5));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Seedream4));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Seedream4p5));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GrokImage));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Recraft3));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Midjourney));
