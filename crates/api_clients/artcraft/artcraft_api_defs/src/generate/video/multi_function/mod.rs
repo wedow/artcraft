@@ -1,2 +1,3 @@
 pub mod kling_2_5_turbo_multi_function_video_gen;
 pub mod kling_2_6_multi_function_video_gen;
+pub mod veo_3p1_multi_function_video_gen;
