@@ -1,0 +1,1 @@
+pub mod kling_2_5_turbo_multi_function_video_gen;
