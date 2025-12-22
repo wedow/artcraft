@@ -1,1 +1,2 @@
 pub mod kling_2p5_turbo_pro_multi_function_video_gen_handler;
+pub mod kling_2p6_pro_multi_function_video_gen_handler;

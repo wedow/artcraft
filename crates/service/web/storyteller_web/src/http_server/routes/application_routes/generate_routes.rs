@@ -26,6 +26,7 @@ use crate::http_server::endpoints::generate::video::generate_veo_2_image_to_vide
 use crate::http_server::endpoints::generate::video::generate_veo_3_fast_image_to_video_handler::generate_veo_3_fast_image_to_video_handler;
 use crate::http_server::endpoints::generate::video::generate_veo_3_image_to_video_handler::generate_veo_3_image_to_video_handler;
 use crate::http_server::endpoints::generate::video::multi_function::kling_2p5_turbo_pro_multi_function_video_gen_handler::kling_2p5_turbo_pro_multi_function_video_gen_handler;
+use crate::http_server::endpoints::generate::video::multi_function::kling_2p6_pro_multi_function_video_gen_handler::kling_2p6_pro_multi_function_video_gen_handler;
 use actix_http::body::MessageBody;
 use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
@@ -123,6 +124,10 @@ where
           .service(web::scope("/multi_function")
               .service(web::resource("/kling_2p5_turbo_pro")
                   .route(web::post().to(kling_2p5_turbo_pro_multi_function_video_gen_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+              .service(web::resource("/kling_2p6_pro")
+                  .route(web::post().to(kling_2p6_pro_multi_function_video_gen_handler))
                   .route(web::head().to(|| HttpResponse::Ok()))
               )
           )
