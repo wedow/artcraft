@@ -59,16 +59,26 @@ pub enum TaskModelType {
   Kling21Pro,
   #[serde(rename = "kling_2.1_master")]
   Kling21Master,
+  #[serde(rename = "kling_2p5_turbo_pro")]
+  Kling2p5TurboPro,
+  #[serde(rename = "kling_2p6_pro")]
+  Kling2p6Pro,
   #[serde(rename = "seedance_1.0_lite")]
   Seedance10Lite,
   #[serde(rename = "sora_2")]
   Sora2,
+  #[serde(rename = "sora_2_pro")]
+  Sora2Pro,
   #[serde(rename = "veo_2")]
   Veo2,
   #[serde(rename = "veo_3")]
   Veo3,
   #[serde(rename = "veo_3_fast")]
   Veo3Fast,
+  #[serde(rename = "veo_3p1")]
+  Veo3p1,
+  #[serde(rename = "veo_3p1_fast")]
+  Veo3p1Fast,
 
   // 3D Object generation models
   #[serde(rename = "hunyuan_3d_2.0")]
@@ -111,11 +121,16 @@ impl TaskModelType {
       Self::Kling16Pro => "kling_1.6_pro",
       Self::Kling21Pro => "kling_2.1_pro",
       Self::Kling21Master => "kling_2.1_master",
+      Self::Kling2p5TurboPro => "kling_2p5_turbo_pro",
+      Self::Kling2p6Pro => "kling_2p6_pro",
       Self::Seedance10Lite => "seedance_1.0_lite",
       Self::Sora2 => "sora_2",
+      Self::Sora2Pro => "sora_2_pro",
       Self::Veo2 => "veo_2",
       Self::Veo3 => "veo_3",
       Self::Veo3Fast => "veo_3_fast",
+      Self::Veo3p1 => "veo_3p1",
+      Self::Veo3p1Fast => "veo_3p1_fast",
       // 3D Object generation models
       Self::Hunyuan3d2_0 => "hunyuan_3d_2.0",
       Self::Hunyuan3d2_1 => "hunyuan_3d_2.1",
@@ -148,11 +163,16 @@ impl TaskModelType {
       "kling_1.6_pro" => Ok(Self::Kling16Pro),
       "kling_2.1_pro" => Ok(Self::Kling21Pro),
       "kling_2.1_master" => Ok(Self::Kling21Master),
+      "kling_2p5_turbo_pro" => Ok(Self::Kling2p5TurboPro),
+      "kling_2p6_pro" => Ok(Self::Kling2p6Pro),
       "seedance_1.0_lite" => Ok(Self::Seedance10Lite),
       "sora_2" => Ok(Self::Sora2),
+      "sora_2_pro" => Ok(Self::Sora2Pro),
       "veo_2" => Ok(Self::Veo2),
       "veo_3" => Ok(Self::Veo3),
       "veo_3_fast" => Ok(Self::Veo3Fast),
+      "veo_3p1" => Ok(Self::Veo3p1),
+      "veo_3p1_fast" => Ok(Self::Veo3p1Fast),
       // 3D Object generation models
       "hunyuan_3d_2.0" => Ok(Self::Hunyuan3d2_0),
       "hunyuan_3d_2.1" => Ok(Self::Hunyuan3d2_1),
@@ -188,11 +208,16 @@ impl TaskModelType {
       Self::Kling16Pro,
       Self::Kling21Pro,
       Self::Kling21Master,
+      Self::Kling2p5TurboPro,
+      Self::Kling2p6Pro,
       Self::Seedance10Lite,
       Self::Sora2,
+      Self::Sora2Pro,
       Self::Veo2,
       Self::Veo3,
       Self::Veo3Fast,
+      Self::Veo3p1,
+      Self::Veo3p1Fast,
       // 3D Object generation models
       Self::Hunyuan3d2_0,
       Self::Hunyuan3d2_1,
@@ -235,11 +260,16 @@ mod tests {
       assert_serialization(TaskModelType::Kling16Pro, "kling_1.6_pro");
       assert_serialization(TaskModelType::Kling21Pro, "kling_2.1_pro");
       assert_serialization(TaskModelType::Kling21Master, "kling_2.1_master");
+      assert_serialization(TaskModelType::Kling2p5TurboPro, "kling_2p5_turbo_pro");
+      assert_serialization(TaskModelType::Kling2p6Pro, "kling_2p6_pro");
       assert_serialization(TaskModelType::Seedance10Lite, "seedance_1.0_lite");
       assert_serialization(TaskModelType::Sora2, "sora_2");
+      assert_serialization(TaskModelType::Sora2Pro, "sora_2_pro");
       assert_serialization(TaskModelType::Veo2, "veo_2");
       assert_serialization(TaskModelType::Veo3, "veo_3");
       assert_serialization(TaskModelType::Veo3Fast, "veo_3_fast");
+      assert_serialization(TaskModelType::Veo3p1, "veo_3p1");
+      assert_serialization(TaskModelType::Veo3p1Fast, "veo_3p1_fast");
       // 3D Object generation models
       assert_serialization(TaskModelType::Hunyuan3d2_0, "hunyuan_3d_2.0");
       assert_serialization(TaskModelType::Hunyuan3d2_1, "hunyuan_3d_2.1");
@@ -271,11 +301,16 @@ mod tests {
       assert_eq!(TaskModelType::Kling16Pro.to_str(), "kling_1.6_pro");
       assert_eq!(TaskModelType::Kling21Pro.to_str(), "kling_2.1_pro");
       assert_eq!(TaskModelType::Kling21Master.to_str(), "kling_2.1_master");
+      assert_eq!(TaskModelType::Kling2p5TurboPro.to_str(), "kling_2p5_turbo_pro");
+      assert_eq!(TaskModelType::Kling2p6Pro.to_str(), "kling_2p6_pro");
       assert_eq!(TaskModelType::Seedance10Lite.to_str(), "seedance_1.0_lite");
       assert_eq!(TaskModelType::Sora2.to_str(), "sora_2");
+      assert_eq!(TaskModelType::Sora2Pro.to_str(), "sora_2_pro");
       assert_eq!(TaskModelType::Veo2.to_str(), "veo_2");
       assert_eq!(TaskModelType::Veo3.to_str(), "veo_3");
       assert_eq!(TaskModelType::Veo3Fast.to_str(), "veo_3_fast");
+      assert_eq!(TaskModelType::Veo3p1.to_str(), "veo_3p1");
+      assert_eq!(TaskModelType::Veo3p1Fast.to_str(), "veo_3p1_fast");
       // 3D Object generation models
       assert_eq!(TaskModelType::Hunyuan3d2_0.to_str(), "hunyuan_3d_2.0");
       assert_eq!(TaskModelType::Hunyuan3d2_1.to_str(), "hunyuan_3d_2.1");
@@ -307,11 +342,16 @@ mod tests {
       assert_eq!(TaskModelType::from_str("kling_1.6_pro").unwrap(), TaskModelType::Kling16Pro);
       assert_eq!(TaskModelType::from_str("kling_2.1_pro").unwrap(), TaskModelType::Kling21Pro);
       assert_eq!(TaskModelType::from_str("kling_2.1_master").unwrap(), TaskModelType::Kling21Master);
+      assert_eq!(TaskModelType::from_str("kling_2p5_turbo_pro").unwrap(), TaskModelType::Kling2p5TurboPro);
+      assert_eq!(TaskModelType::from_str("kling_2p6_pro").unwrap(), TaskModelType::Kling2p6Pro);
       assert_eq!(TaskModelType::from_str("seedance_1.0_lite").unwrap(), TaskModelType::Seedance10Lite);
       assert_eq!(TaskModelType::from_str("sora_2").unwrap(), TaskModelType::Sora2);
+      assert_eq!(TaskModelType::from_str("sora_2_pro").unwrap(), TaskModelType::Sora2Pro);
       assert_eq!(TaskModelType::from_str("veo_2").unwrap(), TaskModelType::Veo2);
       assert_eq!(TaskModelType::from_str("veo_3").unwrap(), TaskModelType::Veo3);
       assert_eq!(TaskModelType::from_str("veo_3_fast").unwrap(), TaskModelType::Veo3Fast);
+      assert_eq!(TaskModelType::from_str("veo_3p1").unwrap(), TaskModelType::Veo3p1);
+      assert_eq!(TaskModelType::from_str("veo_3p1_fast").unwrap(), TaskModelType::Veo3p1Fast);
       // 3D Object generation models
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.0").unwrap(), TaskModelType::Hunyuan3d2_0);
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.1").unwrap(), TaskModelType::Hunyuan3d2_1);
@@ -332,7 +372,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 29);
+      assert_eq!(variants.len(), 34);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -356,11 +396,16 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::Kling16Pro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Kling21Pro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Kling21Master));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Kling2p5TurboPro));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Kling2p6Pro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance10Lite));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Sora2));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Sora2Pro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo2));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3Fast));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3p1));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3p1Fast));
       // 3D Object generation models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d2_0));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d2_1));

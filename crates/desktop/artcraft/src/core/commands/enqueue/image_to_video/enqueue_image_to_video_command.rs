@@ -1,6 +1,6 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
-use crate::core::commands::enqueue::image_to_video::generic::handle_video::handle_video;
+use crate::core::commands::enqueue::image_to_video::artcraft::handle_artcraft_video::handle_video_artcraft;
 use crate::core::commands::enqueue::image_to_video::grok::handle_grok_video::handle_grok_video;
 use crate::core::commands::enqueue::image_to_video::sora2::handle_sora2_video::handle_sora2_video;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -42,10 +42,10 @@ pub enum VideoModel {
 
   #[serde(rename = "kling_2.1_master")]
   Kling21Master,
-  
+
   #[serde(rename = "kling_2p5_turbo_pro")]
   Kling2p5TurboPro,
-  
+
   #[serde(rename = "kling_2p6_pro")]
   Kling2p6Pro,
 
@@ -54,7 +54,7 @@ pub enum VideoModel {
 
   #[serde(rename = "sora_2")]
   Sora2,
-  
+
   #[serde(rename = "sora_2_pro")]
   Sora2Pro,
 
@@ -69,7 +69,7 @@ pub enum VideoModel {
 
   #[serde(rename = "veo_3p1")]
   Veo3p1,
-  
+
   #[serde(rename = "veo_3p1_fast")]
   Veo3p1Fast,
 }
@@ -274,6 +274,7 @@ pub async fn handle_request(
       ).await
     }
     Some(VideoModel::Sora2) => {
+      // TODO: Route based on forthcoming provider parameter.
       handle_sora2_video(
         &request,
         app,
@@ -284,12 +285,10 @@ pub async fn handle_request(
       ).await
     }
     _ => {
-      handle_video(
+      handle_video_artcraft(
         &request,
         app,
         app_env_configs,
-        app_data_root,
-        provider_priority_store,
         storyteller_creds_manager,
       ).await
     }
