@@ -95,6 +95,8 @@ pub enum ModelType {
   Seedance10Pro,
   #[serde(rename = "sora_2")]
   Sora2,
+  #[serde(rename = "sora_2_pro")]
+  Sora2Pro,
   #[serde(rename = "veo_2")]
   Veo2,
   #[serde(rename = "veo_3")]
@@ -160,6 +162,7 @@ impl ModelType {
       Self::Seedance10Lite => "seedance_1p0_lite",
       Self::Seedance10Pro => "seedance_1p0_pro",
       Self::Sora2 => "sora_2",
+      Self::Sora2Pro => "sora_2_pro",
       Self::Veo2 => "veo_2",
       Self::Veo3 => "veo_3",
       Self::Veo3Fast => "veo_3_fast",
@@ -212,6 +215,7 @@ impl ModelType {
       "seedance_1p0_lite" => Ok(Self::Seedance10Lite),
       "seedance_1p0_pro" => Ok(Self::Seedance10Pro),
       "sora_2" => Ok(Self::Sora2),
+      "sora_2_pro" => Ok(Self::Sora2Pro),
       "veo_2" => Ok(Self::Veo2),
       "veo_3" => Ok(Self::Veo3),
       "veo_3_fast" => Ok(Self::Veo3Fast),
@@ -268,6 +272,7 @@ impl ModelType {
       Self::Seedance10Lite,
       Self::Seedance10Pro,
       Self::Sora2,
+      Self::Sora2Pro,
       Self::Veo2,
       Self::Veo3,
       Self::Veo3Fast,
@@ -328,6 +333,7 @@ mod tests {
       assert_serialization(ModelType::Seedance10Lite, "seedance_1p0_lite");
       assert_serialization(ModelType::Seedance10Pro, "seedance_1p0_pro");
       assert_serialization(ModelType::Sora2, "sora_2");
+      assert_serialization(ModelType::Sora2Pro, "sora_2_pro");
       assert_serialization(ModelType::Veo2, "veo_2");
       assert_serialization(ModelType::Veo3, "veo_3");
       assert_serialization(ModelType::Veo3Fast, "veo_3_fast");
@@ -378,6 +384,7 @@ mod tests {
       assert_eq!(ModelType::Seedance10Lite.to_str(), "seedance_1p0_lite");
       assert_eq!(ModelType::Seedance10Pro.to_str(), "seedance_1p0_pro");
       assert_eq!(ModelType::Sora2.to_str(), "sora_2");
+      assert_eq!(ModelType::Sora2Pro.to_str(), "sora_2_pro");
       assert_eq!(ModelType::Veo2.to_str(), "veo_2");
       assert_eq!(ModelType::Veo3.to_str(), "veo_3");
       assert_eq!(ModelType::Veo3Fast.to_str(), "veo_3_fast");
@@ -428,6 +435,7 @@ mod tests {
       assert_eq!(ModelType::from_str("seedance_1p0_lite").unwrap(), ModelType::Seedance10Lite);
       assert_eq!(ModelType::from_str("seedance_1p0_pro").unwrap(), ModelType::Seedance10Pro);
       assert_eq!(ModelType::from_str("sora_2").unwrap(), ModelType::Sora2);
+      assert_eq!(ModelType::from_str("sora_2_pro").unwrap(), ModelType::Sora2Pro);
       assert_eq!(ModelType::from_str("veo_2").unwrap(), ModelType::Veo2);
       assert_eq!(ModelType::from_str("veo_3").unwrap(), ModelType::Veo3);
       assert_eq!(ModelType::from_str("veo_3_fast").unwrap(), ModelType::Veo3Fast);
@@ -442,7 +450,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 42);
+      assert_eq!(variants.len(), 43);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
@@ -480,6 +488,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(ModelType::Seedance10Lite));
       assert_eq!(variants.pop_first(), Some(ModelType::Seedance10Pro));
       assert_eq!(variants.pop_first(), Some(ModelType::Sora2));
+      assert_eq!(variants.pop_first(), Some(ModelType::Sora2Pro));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo2));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo3));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo3Fast));
