@@ -11,6 +11,7 @@ use crate::state::server_state::ServerState;
 use crate::util::lookup::lookup_image_urls_as_map::lookup_image_urls_as_map;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
+use artcraft_api_defs::generate::video::multi_function::veo_3p1_fast_multi_function_video_gen::{Veo3p1FastMultiFunctionVideoGenAspectRatio, Veo3p1FastMultiFunctionVideoGenDuration, Veo3p1FastMultiFunctionVideoGenRequest, Veo3p1FastMultiFunctionVideoGenResolution, Veo3p1FastMultiFunctionVideoGenResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 use enums::by_table::prompts::prompt_type::PromptType;
@@ -18,6 +19,9 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
+use fal_client::requests::webhook::video::image::enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook::{enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook, EnqueueVeo3p1FastFirstLastFrameImageToVideoArgs, EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio, EnqueueVeo3p1FastFirstLastFrameImageToVideoDurationSeconds, EnqueueVeo3p1FastFirstLastFrameImageToVideoResolution};
+use fal_client::requests::webhook::video::image::enqueue_veo_3p1_fast_image_to_video_webhook::{enqueue_veo_3p1_fast_image_to_video_webhook, EnqueueVeo3p1FastImageToVideoArgs, EnqueueVeo3p1FastImageToVideoAspectRatio, EnqueueVeo3p1FastImageToVideoDurationSeconds, EnqueueVeo3p1FastImageToVideoResolution};
+use fal_client::requests::webhook::video::text::enqueue_veo_3p1_fast_text_to_video_webhook::{enqueue_veo_3p1_fast_text_to_video_webhook, EnqueueVeo3p1FastTextToVideoArgs, EnqueueVeo3p1FastTextToVideoAspectRatio, EnqueueVeo3p1FastTextToVideoDurationSeconds, EnqueueVeo3p1FastTextToVideoResolution};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -32,10 +36,6 @@ use sqlx::pool::PoolConnection;
 use sqlx::{Acquire, MySql};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
-use artcraft_api_defs::generate::video::multi_function::veo_3p1_fast_multi_function_video_gen::{Veo3p1FastMultiFunctionVideoGenAspectRatio, Veo3p1FastMultiFunctionVideoGenDuration, Veo3p1FastMultiFunctionVideoGenRequest, Veo3p1FastMultiFunctionVideoGenResolution, Veo3p1FastMultiFunctionVideoGenResponse};
-use fal_client::requests::webhook::video::image::enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook::{enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook, EnqueueVeo3p1FastFirstLastFrameImageToVideoArgs, EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio, EnqueueVeo3p1FastFirstLastFrameImageToVideoDurationSeconds, EnqueueVeo3p1FastFirstLastFrameImageToVideoResolution};
-use fal_client::requests::webhook::video::image::enqueue_veo_3p1_fast_image_to_video_webhook::{enqueue_veo_3p1_fast_image_to_video_webhook, EnqueueVeo3p1FastImageToVideoArgs, EnqueueVeo3p1FastImageToVideoAspectRatio, EnqueueVeo3p1FastImageToVideoDurationSeconds, EnqueueVeo3p1FastImageToVideoResolution};
-use fal_client::requests::webhook::video::text::enqueue_veo_3p1_fast_text_to_video_webhook::{enqueue_veo_3p1_fast_text_to_video_webhook, EnqueueVeo3p1FastTextToVideoArgs, EnqueueVeo3p1FastTextToVideoAspectRatio, EnqueueVeo3p1FastTextToVideoDurationSeconds, EnqueueVeo3p1FastTextToVideoResolution};
 
 /// Veo 3.1 Fast Multi-Function (text and image to video)
 #[utoipa::path(
