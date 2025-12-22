@@ -3,7 +3,7 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-pub const VEO_3P1_MULTI_FUNCTION_VIDEO_VIDEO_PATH: &str = "/v1/generate/video/multi_function/veo_3p1_fast";
+pub const VEO_3P1_FAST_MULTI_FUNCTION_VIDEO_VIDEO_PATH: &str = "/v1/generate/video/multi_function/veo_3p1_fast";
 
 /// Both text-to-video and image-to-video in one request.
 #[derive(Serialize, Deserialize, ToSchema)]

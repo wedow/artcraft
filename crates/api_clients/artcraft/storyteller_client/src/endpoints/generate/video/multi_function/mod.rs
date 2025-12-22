@@ -1,0 +1,2 @@
+pub mod veo_3p1_multi_function_video_gen;
+pub mod veo_3p1_fast_multi_function_video_gen;
