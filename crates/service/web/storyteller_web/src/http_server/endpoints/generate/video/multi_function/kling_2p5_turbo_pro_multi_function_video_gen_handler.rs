@@ -157,11 +157,11 @@ pub async fn kling_2p5_turbo_pro_multi_function_video_gen_handler(
     };
 
     let args = EnqueueKlingV2p5TurboProImageToVideoArgs {
-      prompt: request.prompt.as_deref().unwrap_or("").map(|s| s.to_string()),
+      prompt: request.prompt.as_deref().unwrap_or("").to_string(),
       image_url: start_frame_url,
       tail_image_url: maybe_end_frame_image_url,
-      negative_prompt: request.negative_prompt,
-      duration,
+      negative_prompt: request.negative_prompt.clone(),
+      duration: Some(duration),
       webhook_url: &server_state.fal.webhook_url,
       api_key: &server_state.fal.api_key,
     };
@@ -190,10 +190,10 @@ pub async fn kling_2p5_turbo_pro_multi_function_video_gen_handler(
     };
 
     let args = EnqueueKlingV2p5TurboProTextToVideoArgs {
-      prompt: request.prompt.as_deref().unwrap_or(""),
-      negative_prompt: request.negative_prompt,
-      duration,
-      aspect_ratio,
+      prompt: request.prompt.as_deref().unwrap_or("").to_string(),
+      negative_prompt: request.negative_prompt.clone(),
+      duration: Some(duration),
+      aspect_ratio: Some(aspect_ratio),
       webhook_url: &server_state.fal.webhook_url,
       api_key: &server_state.fal.api_key,
     };
