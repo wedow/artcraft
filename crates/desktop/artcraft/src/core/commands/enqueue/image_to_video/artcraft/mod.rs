@@ -1,4 +1,6 @@
 mod get_storyteller_creds_or_error;
+mod handle_artcraft_kling_2p5_turbo_pro;
+mod handle_artcraft_kling_2p6_pro;
 mod handle_artcraft_sora2;
 mod handle_artcraft_sora2_pro;
 mod handle_artcraft_video;

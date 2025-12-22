@@ -70,6 +70,10 @@ pub enum GenerationModel {
   Kling21Master,
   #[serde(rename = "kling_2.1_pro")]
   Kling21Pro,
+  #[serde(rename = "kling_2p5_turbo_pro")]
+  Kling2p5TurboPro,
+  #[serde(rename = "kling_2p6_pro")]
+  Kling2p6Pro,
   #[serde(rename = "recraft_3")]
   Recraft3,
   #[serde(rename = "sora")]
