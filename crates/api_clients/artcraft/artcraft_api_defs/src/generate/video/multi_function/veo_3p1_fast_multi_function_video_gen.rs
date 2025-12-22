@@ -72,7 +72,6 @@ pub enum Veo3p1FastMultiFunctionVideoGenDuration {
 #[serde(rename_all = "snake_case")]
 pub enum Veo3p1FastMultiFunctionVideoGenAspectRatio {
   Auto,
-  Square,
   SixteenByNine,
   NineBySixteen,
 }

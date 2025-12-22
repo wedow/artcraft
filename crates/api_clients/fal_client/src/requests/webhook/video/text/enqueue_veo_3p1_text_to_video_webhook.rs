@@ -34,7 +34,6 @@ pub enum EnqueueVeo3p1TextToVideoDurationSeconds {
 #[derive(Copy, Clone, Debug)]
 pub enum EnqueueVeo3p1TextToVideoAspectRatio {
   Auto,
-  Square,
   SixteenByNine,
   NineBySixteen,
 }
@@ -60,7 +59,6 @@ pub async fn enqueue_veo_3p1_text_to_video_webhook<R: IntoUrl>(
   let aspect_ratio = args.aspect_ratio
       .map(|aspect_ratio| match aspect_ratio {
         EnqueueVeo3p1TextToVideoAspectRatio::Auto => "auto",
-        EnqueueVeo3p1TextToVideoAspectRatio::Square => "1:1",
         EnqueueVeo3p1TextToVideoAspectRatio::SixteenByNine => "16:9",
         EnqueueVeo3p1TextToVideoAspectRatio::NineBySixteen => "9:16",
       })

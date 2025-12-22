@@ -162,10 +162,9 @@ pub async fn veo_3p1_multi_function_video_gen_handler(
 
       let aspect_ratio = match request.aspect_ratio {
         Some(Veo3p1MultiFunctionVideoGenAspectRatio::Auto) => EnqueueVeo3p1FirstLastFrameImageToVideoAspectRatio::Auto,
-        Some(Veo3p1MultiFunctionVideoGenAspectRatio::Square) => EnqueueVeo3p1FirstLastFrameImageToVideoAspectRatio::Square,
         Some(Veo3p1MultiFunctionVideoGenAspectRatio::SixteenByNine) => EnqueueVeo3p1FirstLastFrameImageToVideoAspectRatio::SixteenByNine,
         Some(Veo3p1MultiFunctionVideoGenAspectRatio::NineBySixteen) => EnqueueVeo3p1FirstLastFrameImageToVideoAspectRatio::NineBySixteen,
-        None => EnqueueVeo3p1FirstLastFrameImageToVideoAspectRatio::Square,
+        None => EnqueueVeo3p1FirstLastFrameImageToVideoAspectRatio::SixteenByNine,
       };
 
       let resolution = match request.resolution {
@@ -205,10 +204,9 @@ pub async fn veo_3p1_multi_function_video_gen_handler(
 
       let aspect_ratio = match request.aspect_ratio {
         Some(Veo3p1MultiFunctionVideoGenAspectRatio::Auto) => EnqueueVeo3p1ImageToVideoAspectRatio::Auto,
-        Some(Veo3p1MultiFunctionVideoGenAspectRatio::Square) => EnqueueVeo3p1ImageToVideoAspectRatio::Square,
         Some(Veo3p1MultiFunctionVideoGenAspectRatio::SixteenByNine) => EnqueueVeo3p1ImageToVideoAspectRatio::SixteenByNine,
         Some(Veo3p1MultiFunctionVideoGenAspectRatio::NineBySixteen) => EnqueueVeo3p1ImageToVideoAspectRatio::NineBySixteen,
-        None => EnqueueVeo3p1ImageToVideoAspectRatio::Square,
+        None => EnqueueVeo3p1ImageToVideoAspectRatio::SixteenByNine,
       };
 
       let resolution = match request.resolution {
@@ -248,10 +246,9 @@ pub async fn veo_3p1_multi_function_video_gen_handler(
 
     let aspect_ratio = match request.aspect_ratio {
       Some(Veo3p1MultiFunctionVideoGenAspectRatio::Auto) => EnqueueVeo3p1TextToVideoAspectRatio::Auto,
-      Some(Veo3p1MultiFunctionVideoGenAspectRatio::Square) => EnqueueVeo3p1TextToVideoAspectRatio::Square,
       Some(Veo3p1MultiFunctionVideoGenAspectRatio::SixteenByNine) => EnqueueVeo3p1TextToVideoAspectRatio::SixteenByNine,
       Some(Veo3p1MultiFunctionVideoGenAspectRatio::NineBySixteen) => EnqueueVeo3p1TextToVideoAspectRatio::NineBySixteen,
-      None => EnqueueVeo3p1TextToVideoAspectRatio::Square,
+      None => EnqueueVeo3p1TextToVideoAspectRatio::SixteenByNine,
     };
 
     let resolution = match request.resolution {

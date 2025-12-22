@@ -36,7 +36,6 @@ pub enum EnqueueVeo3p1FastFirstLastFrameImageToVideoDurationSeconds {
 #[derive(Copy, Clone, Debug)]
 pub enum EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio {
   Auto,
-  Square,
   SixteenByNine,
   NineBySixteen,
 }
@@ -62,7 +61,6 @@ pub async fn enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook<R: Int
   let aspect_ratio = args.aspect_ratio
       .map(|aspect_ratio| match aspect_ratio {
         EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio::Auto => "auto",
-        EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio::Square => "1:1",
         EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio::SixteenByNine => "16:9",
         EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio::NineBySixteen => "9:16",
       })
