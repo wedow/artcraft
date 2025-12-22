@@ -130,7 +130,7 @@ pub async fn infer_w2l_handler(
 
   let redis_count_key = RedisKeys::w2l_template_usage_count(&w2l_template_token);
 
-  redis.incr(&redis_count_key, 1)
+  redis.incr::<_, _, ()>(&redis_count_key, 1)
       .map_err(|e| {
         warn!("redis error: {:?}", e);
         InferW2lError::ServerError

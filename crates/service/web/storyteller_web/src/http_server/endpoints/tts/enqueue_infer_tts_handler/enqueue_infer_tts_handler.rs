@@ -369,7 +369,7 @@ pub async fn enqueue_infer_tts_handler(
 
   let redis_count_key = RedisKeys::tts_model_usage_count(&request.tts_model_token);
 
-  redis.incr(&redis_count_key, 1)
+  redis.incr::<_, _, ()>(&redis_count_key, 1)
       .map_err(|e| {
         warn!("redis error: {:?}", e);
         InferTtsError::ServerError

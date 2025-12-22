@@ -16,7 +16,7 @@ pub trait HkeyStoreAdapter {
 
   fn persist_to_redis(&self, redis_key: &str, redis: &mut PooledConnection<RedisConnectionManager>) -> AnyhowResult<()> {
     let map = self.serialize_payload()?;
-    redis.hset_multiple(redis_key, &map)?;
+    redis.hset_multiple::<_, _, _, ()>(redis_key, &map)?;
     Ok(())
   }
 

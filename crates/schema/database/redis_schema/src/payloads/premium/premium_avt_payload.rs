@@ -43,7 +43,7 @@ impl PremiumAvtPayload {
     let expire_at= Utc::now()
         .add(PremiumUserRedisKey::get_redis_ttl())
         .timestamp() as usize;
-    redis.expire_at(self.key.as_str(), expire_at)?;
+    redis.expire_at::<_, ()>(self.key.as_str(), expire_at)?;
     Ok(())
   }
 }

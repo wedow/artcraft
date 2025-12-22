@@ -292,7 +292,7 @@ pub async fn enqueue_voice_conversion_inference_handler(
 
   let redis_count_key = RedisKeys::web_vc_model_usage_count(&model_token);
 
-  redis.incr(&redis_count_key, 1)
+  redis.incr::<_, _, ()>(&redis_count_key, 1)
       .map_err(|e| {
         warn!("redis error: {:?}", e);
         EnqueueVoiceConversionInferenceError::ServerError
