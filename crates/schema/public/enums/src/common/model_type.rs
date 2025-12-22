@@ -103,6 +103,8 @@ pub enum ModelType {
   Veo3Fast,
   #[serde(rename = "veo_3p1")]
   Veo3p1,
+  #[serde(rename = "veo_3p1_fast")]
+  Veo3p1Fast,
 
   // 3D Object generation models
   #[serde(rename = "hunyuan_3d_2p0")]
@@ -162,6 +164,7 @@ impl ModelType {
       Self::Veo3 => "veo_3",
       Self::Veo3Fast => "veo_3_fast",
       Self::Veo3p1 => "veo_3p1",
+      Self::Veo3p1Fast => "veo_3p1_fast",
 
       // 3D Object generation models
       Self::Hunyuan3d2_0 => "hunyuan_3d_2p0",
@@ -213,6 +216,7 @@ impl ModelType {
       "veo_3" => Ok(Self::Veo3),
       "veo_3_fast" => Ok(Self::Veo3Fast),
       "veo_3p1" => Ok(Self::Veo3p1),
+      "veo_3p1_fast" => Ok(Self::Veo3p1Fast),
 
       // 3D Object generation models
       "hunyuan_3d_2p0" => Ok(Self::Hunyuan3d2_0),
@@ -268,6 +272,7 @@ impl ModelType {
       Self::Veo3,
       Self::Veo3Fast,
       Self::Veo3p1,
+      Self::Veo3p1Fast,
 
       // 3D Object generation models
       Self::Hunyuan3d2_0,
@@ -327,6 +332,7 @@ mod tests {
       assert_serialization(ModelType::Veo3, "veo_3");
       assert_serialization(ModelType::Veo3Fast, "veo_3_fast");
       assert_serialization(ModelType::Veo3p1, "veo_3p1");
+      assert_serialization(ModelType::Veo3p1Fast, "veo_3p1_fast");
       // 3D Object generation models
       assert_serialization(ModelType::Hunyuan3d2_0, "hunyuan_3d_2p0");
       assert_serialization(ModelType::Hunyuan3d2_1, "hunyuan_3d_2p1");
@@ -376,6 +382,7 @@ mod tests {
       assert_eq!(ModelType::Veo3.to_str(), "veo_3");
       assert_eq!(ModelType::Veo3Fast.to_str(), "veo_3_fast");
       assert_eq!(ModelType::Veo3p1.to_str(), "veo_3p1");
+      assert_eq!(ModelType::Veo3p1Fast.to_str(), "veo_3p1_fast");
 
       // 3D Object generation models
       assert_eq!(ModelType::Hunyuan3d2_0.to_str(), "hunyuan_3d_2p0");
@@ -425,6 +432,7 @@ mod tests {
       assert_eq!(ModelType::from_str("veo_3").unwrap(), ModelType::Veo3);
       assert_eq!(ModelType::from_str("veo_3_fast").unwrap(), ModelType::Veo3Fast);
       assert_eq!(ModelType::from_str("veo_3p1").unwrap(), ModelType::Veo3p1);
+      assert_eq!(ModelType::from_str("veo_3p1_fast").unwrap(), ModelType::Veo3p1Fast);
       
       // 3D Object generation models
       assert_eq!(ModelType::from_str("hunyuan_3d_2p0").unwrap(), ModelType::Hunyuan3d2_0);
@@ -434,7 +442,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = ModelType::all_variants();
-      assert_eq!(variants.len(), 41);
+      assert_eq!(variants.len(), 42);
       // Image models
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(ModelType::Flux1Schnell));
@@ -476,6 +484,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(ModelType::Veo3));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo3Fast));
       assert_eq!(variants.pop_first(), Some(ModelType::Veo3p1));
+      assert_eq!(variants.pop_first(), Some(ModelType::Veo3p1Fast));
       // 3D Object generation models
       assert_eq!(variants.pop_first(), Some(ModelType::Hunyuan3d2_0));
       assert_eq!(variants.pop_first(), Some(ModelType::Hunyuan3d2_1));
