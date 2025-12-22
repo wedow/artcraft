@@ -11,7 +11,7 @@ use crate::state::server_state::ServerState;
 use crate::util::lookup::lookup_image_urls_as_map::lookup_image_urls_as_map;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::video::multi_function::kling_2_6_multi_function_video_gen::{Kling2p6ProMultiFunctionVideoGenAspectRatio, Kling2p6ProMultiFunctionVideoGenDuration, Kling2p6ProMultiFunctionVideoGenRequest, Kling2p6ProMultiFunctionVideoGenResponse};
+use artcraft_api_defs::generate::video::multi_function::sora_2_multi_function_video_gen::{Sora2MultiFunctionVideoGenAspectRatio, Sora2MultiFunctionVideoGenDuration, Sora2MultiFunctionVideoGenRequest, Sora2MultiFunctionVideoGenResolution, Sora2MultiFunctionVideoGenResponse};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 use enums::by_table::prompts::prompt_type::PromptType;
@@ -19,8 +19,8 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
-use fal_client::requests::webhook::video::image::enqueue_kling_v2p6_pro_image_to_video_webhook::{enqueue_kling_v2p6_pro_image_to_video_webhook, EnqueueKlingV2p6ProImageToVideoArgs, EnqueueKlingV2p6ProImageToVideoDurationSeconds};
-use fal_client::requests::webhook::video::text::enqueue_kling_v2p6_pro_text_to_video_webhook::{enqueue_kling_v2p6_pro_text_to_video_webhook, EnqueueKlingV2p6ProTextToVideoArgs, EnqueueKlingV2p6ProTextToVideoAspectRatio, EnqueueKlingV2p6ProTextToVideoDurationSeconds};
+use fal_client::requests::webhook::video::image::enqueue_sora_2_image_to_video_webhook::{enqueue_sora_2_image_to_video_webhook, EnqueueSora2ImageToVideoArgs, EnqueueSora2ImageToVideoAspectRatio, EnqueueSora2ImageToVideoDurationSeconds, EnqueueSora2ImageToVideoResolution};
+use fal_client::requests::webhook::video::text::enqueue_sora_2_text_to_video_webhook::{enqueue_sora_2_text_to_video_webhook, EnqueueSora2TextToVideoArgs, EnqueueSora2TextToVideoAspectRatio, EnqueueSora2TextToVideoDurationSeconds, EnqueueSora2TextToVideoResolution};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -36,23 +36,23 @@ use sqlx::{Acquire, MySql};
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
-/// Kling 2.6 Pro Multi-Function (text and image to video)
+/// Sora 2 Multi-Function (text and image to video)
 #[utoipa::path(
   post,
   tag = "Generate Video (Multi-Function)",
-  path = "/v1/generate/video/multi_function/kling_2p6_pro",
+  path = "/v1/generate/video/multi_function/sora_2",
   responses(
-    (status = 200, description = "Success", body = Kling2p6ProMultiFunctionVideoGenResponse),
+    (status = 200, description = "Success", body = Sora2MultiFunctionVideoGenResponse),
   ),
   params(
-    ("request" = Kling2p6ProMultiFunctionVideoGenRequest, description = "Payload for Request"),
+    ("request" = Sora2MultiFunctionVideoGenRequest, description = "Payload for Request"),
   )
 )]
-pub async fn kling_2p6_pro_multi_function_video_gen_handler(
+pub async fn sora_2_multi_function_video_gen_handler(
   http_request: HttpRequest,
-  request: Json<Kling2p6ProMultiFunctionVideoGenRequest>,
+  request: Json<Sora2MultiFunctionVideoGenRequest>,
   server_state: web::Data<Arc<ServerState>>
-) -> Result<Json<Kling2p6ProMultiFunctionVideoGenResponse>, CommonWebError> {
+) -> Result<Json<Sora2MultiFunctionVideoGenResponse>, CommonWebError> {
   
   payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
   
@@ -89,10 +89,10 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
 
   let mut query_media_tokens = None;
 
-  if let Some(start_frame_token) = request.start_frame_image_media_token.as_ref() {
+  if let Some(start_frame_token) = request.image_media_token.as_ref() {
     let mut tokens = Vec::new();
     tokens.push(start_frame_token.to_owned());
-    
+
     // if let Some(end_frame_token) = request.end_frame_image_media_token.as_ref() {
     //   // NB: Masks are only relevant when this is an image editing exercise.
     //   tokens.push(end_frame_token.to_owned());
@@ -114,7 +114,7 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
     }
   };
 
-  let maybe_start_frame_image_url = match request.start_frame_image_media_token.as_ref() {
+  let maybe_image_url = match request.image_media_token.as_ref() {
     None => None,
     Some(token) => match image_urls_by_token.get(token) {
       Some(url) => Some(url.to_string()),
@@ -145,29 +145,43 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
 
   let fal_result;
 
-  if let Some(start_frame_url) = maybe_start_frame_image_url {
+  if let Some(image_url) = maybe_image_url {
     info!("image-to-video case");
 
     let duration = match request.duration {
-      Some(Kling2p6ProMultiFunctionVideoGenDuration::FiveSeconds) => EnqueueKlingV2p6ProImageToVideoDurationSeconds::Five,
-      Some(Kling2p6ProMultiFunctionVideoGenDuration::TenSeconds) => EnqueueKlingV2p6ProImageToVideoDurationSeconds::Ten,
-      None => EnqueueKlingV2p6ProImageToVideoDurationSeconds::Five,
+      Some(Sora2MultiFunctionVideoGenDuration::FourSeconds) => EnqueueSora2ImageToVideoDurationSeconds::Four,
+      Some(Sora2MultiFunctionVideoGenDuration::EightSeconds) => EnqueueSora2ImageToVideoDurationSeconds::Eight,
+      Some(Sora2MultiFunctionVideoGenDuration::TwelveSeconds) => EnqueueSora2ImageToVideoDurationSeconds::Twelve,
+      None => EnqueueSora2ImageToVideoDurationSeconds::Eight,
     };
 
-    let args = EnqueueKlingV2p6ProImageToVideoArgs {
+    let aspect_ratio = match request.aspect_ratio {
+      Some(Sora2MultiFunctionVideoGenAspectRatio::Auto) => EnqueueSora2ImageToVideoAspectRatio::Auto,
+      Some(Sora2MultiFunctionVideoGenAspectRatio::SixteenByNine) => EnqueueSora2ImageToVideoAspectRatio::SixteenByNine,
+      Some(Sora2MultiFunctionVideoGenAspectRatio::NineBySixteen) => EnqueueSora2ImageToVideoAspectRatio::NineBySixteen,
+      None => EnqueueSora2ImageToVideoAspectRatio::SixteenByNine,
+    };
+
+    let resolution = match request.resolution {
+      Some(Sora2MultiFunctionVideoGenResolution::Auto) => EnqueueSora2ImageToVideoResolution::Auto,
+      Some(Sora2MultiFunctionVideoGenResolution::SevenTwentyP) => EnqueueSora2ImageToVideoResolution::SevenTwentyP,
+      None => EnqueueSora2ImageToVideoResolution::SevenTwentyP,
+    };
+
+    let args = EnqueueSora2ImageToVideoArgs {
+      image_url,
       prompt: request.prompt.as_deref().unwrap_or("").to_string(),
-      image_url: start_frame_url,
-      generate_audio: request.generate_audio,
-      negative_prompt: request.negative_prompt.clone(),
       duration: Some(duration),
+      aspect_ratio: Some(aspect_ratio),
+      resolution: Some(resolution),
       webhook_url: &server_state.fal.webhook_url,
       api_key: &server_state.fal.api_key,
     };
 
-    fal_result = enqueue_kling_v2p6_pro_image_to_video_webhook(args)
+    fal_result = enqueue_sora_2_image_to_video_webhook(args)
         .await
         .map_err(|err| {
-          warn!("Error calling enqueue_kling_v2p6_pro_image_to_video_webhook: {:?}", err);
+          warn!("Error calling enqueue_sora_2_image_to_video_webhook: {:?}", err);
           CommonWebError::ServerError
         })?;
 
@@ -175,32 +189,38 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
     info!("text-to-video case");
     
     let duration = match request.duration {
-      Some(Kling2p6ProMultiFunctionVideoGenDuration::FiveSeconds) => EnqueueKlingV2p6ProTextToVideoDurationSeconds::Five,
-      Some(Kling2p6ProMultiFunctionVideoGenDuration::TenSeconds) => EnqueueKlingV2p6ProTextToVideoDurationSeconds::Ten,
-      None => EnqueueKlingV2p6ProTextToVideoDurationSeconds::Five,
+      Some(Sora2MultiFunctionVideoGenDuration::FourSeconds) => EnqueueSora2TextToVideoDurationSeconds::Four,
+      Some(Sora2MultiFunctionVideoGenDuration::EightSeconds) => EnqueueSora2TextToVideoDurationSeconds::Eight,
+      Some(Sora2MultiFunctionVideoGenDuration::TwelveSeconds) => EnqueueSora2TextToVideoDurationSeconds::Twelve,
+      None => EnqueueSora2TextToVideoDurationSeconds::Eight,
     };
 
     let aspect_ratio = match request.aspect_ratio {
-      Some(Kling2p6ProMultiFunctionVideoGenAspectRatio::Square) => EnqueueKlingV2p6ProTextToVideoAspectRatio::Square,
-      Some(Kling2p6ProMultiFunctionVideoGenAspectRatio::SixteenByNine) => EnqueueKlingV2p6ProTextToVideoAspectRatio::SixteenByNine,
-      Some(Kling2p6ProMultiFunctionVideoGenAspectRatio::NineBySixteen) => EnqueueKlingV2p6ProTextToVideoAspectRatio::NineBySixteen,
-      None => EnqueueKlingV2p6ProTextToVideoAspectRatio::Square,
+      Some(Sora2MultiFunctionVideoGenAspectRatio::Auto) => EnqueueSora2TextToVideoAspectRatio::Auto,
+      Some(Sora2MultiFunctionVideoGenAspectRatio::SixteenByNine) => EnqueueSora2TextToVideoAspectRatio::SixteenByNine,
+      Some(Sora2MultiFunctionVideoGenAspectRatio::NineBySixteen) => EnqueueSora2TextToVideoAspectRatio::NineBySixteen,
+      None => EnqueueSora2TextToVideoAspectRatio::SixteenByNine,
     };
 
-    let args = EnqueueKlingV2p6ProTextToVideoArgs {
+    let resolution = match request.resolution {
+      Some(Sora2MultiFunctionVideoGenResolution::Auto) => EnqueueSora2TextToVideoResolution::Auto,
+      Some(Sora2MultiFunctionVideoGenResolution::SevenTwentyP) => EnqueueSora2TextToVideoResolution::SevenTwentyP,
+      None => EnqueueSora2TextToVideoResolution::SevenTwentyP,
+    };
+
+    let args = EnqueueSora2TextToVideoArgs {
       prompt: request.prompt.as_deref().unwrap_or("").to_string(),
-      negative_prompt: request.negative_prompt.clone(),
-      generate_audio: request.generate_audio,
       duration: Some(duration),
       aspect_ratio: Some(aspect_ratio),
+      resolution: Some(resolution),
       webhook_url: &server_state.fal.webhook_url,
       api_key: &server_state.fal.api_key,
     };
 
-    fal_result = enqueue_kling_v2p6_pro_text_to_video_webhook(args)
+    fal_result = enqueue_sora_2_text_to_video_webhook(args)
         .await
         .map_err(|err| {
-          warn!("Error calling enqueue_kling_v2p6_pro_text_to_video_webhook: {:?}", err);
+          warn!("Error calling enqueue_sora_2_text_to_video_webhook: {:?}", err);
           CommonWebError::ServerError
         })?;
   }
@@ -230,7 +250,7 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
     maybe_creator_user_token: maybe_user_session
         .as_ref()
         .map(|s| &s.user_token),
-    maybe_model_type: Some(ModelType::Kling2p6Pro),
+    maybe_model_type: Some(ModelType::Sora2),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
     maybe_negative_prompt: None,
@@ -251,7 +271,7 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
   if let Some(token) = prompt_token.as_ref() {
     let mut context_items = Vec::with_capacity(2);
     
-    if let Some(media_token) = &request.start_frame_image_media_token {
+    if let Some(media_token) = &request.image_media_token {
       context_items.push(PromptContextItem {
         media_token: media_token.clone(),
         context_semantic_type: PromptContextSemanticType::VidStartFrame,
@@ -309,7 +329,7 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
         CommonWebError::ServerError
       })?;
 
-  Ok(Json(Kling2p6ProMultiFunctionVideoGenResponse {
+  Ok(Json(Sora2MultiFunctionVideoGenResponse {
     success: true,
     inference_job_token: job_token,
   }))
