@@ -93,10 +93,10 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
     let mut tokens = Vec::new();
     tokens.push(start_frame_token.to_owned());
     
-    if let Some(end_frame_token) = request.end_frame_image_media_token.as_ref() {
-      // NB: Masks are only relevant when this is an image editing exercise.
-      tokens.push(end_frame_token.to_owned());
-    }
+    // if let Some(end_frame_token) = request.end_frame_image_media_token.as_ref() {
+    //   // NB: Masks are only relevant when this is an image editing exercise.
+    //   tokens.push(end_frame_token.to_owned());
+    // }
 
     query_media_tokens = Some(tokens);
   }
@@ -124,15 +124,15 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
     }
   };
 
-  let maybe_end_frame_image_url = match request.end_frame_image_media_token.as_ref() {
-    None => None,
-    Some(token) => match image_urls_by_token.get(token) {
-      Some(url) => Some(url.to_string()),
-      None => {
-        return Err(CommonWebError::BadInputWithSimpleMessage("Media for end frame not found.".to_string()));
-      }
-    }
-  };
+  //let maybe_end_frame_image_url = match request.end_frame_image_media_token.as_ref() {
+  //  None => None,
+  //  Some(token) => match image_urls_by_token.get(token) {
+  //    Some(url) => Some(url.to_string()),
+  //    None => {
+  //      return Err(CommonWebError::BadInputWithSimpleMessage("Media for end frame not found.".to_string()));
+  //    }
+  //  }
+  //};
   
   insert_idempotency_token(&request.uuid_idempotency_token, &mut *mysql_connection)
       .await
@@ -258,12 +258,12 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
       });
     }
 
-    if let Some(media_token) = &request.end_frame_image_media_token {
-      context_items.push(PromptContextItem {
-        media_token: media_token.clone(),
-        context_semantic_type: PromptContextSemanticType::VidEndFrame,
-      });
-    }
+    // if let Some(media_token) = &request.end_frame_image_media_token {
+    //   context_items.push(PromptContextItem {
+    //     media_token: media_token.clone(),
+    //     context_semantic_type: PromptContextSemanticType::VidEndFrame,
+    //   });
+    // }
 
     if !context_items.is_empty() {
       let result = insert_batch_prompt_context_items(InsertBatchArgs {

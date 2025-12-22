@@ -27,10 +27,10 @@ pub struct Kling2p6ProMultiFunctionVideoGenRequest {
   /// If absent, we're doing text-to-video
   pub start_frame_image_media_token: Option<MediaFileToken>,
 
-  /// Optional.
-  /// Only for image-to-video
-  /// Source of the ending frame (if desired)
-  pub end_frame_image_media_token: Option<MediaFileToken>,
+  // /// Optional.
+  // /// Only for image-to-video
+  // /// Source of the ending frame (if desired)
+  // pub end_frame_image_media_token: Option<MediaFileToken>,
 
   /// Optional
   /// Duration of the video
