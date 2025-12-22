@@ -62,7 +62,6 @@ pub async fn handle_video_artcraft(
 
   info!("Calling Artcraft image to video...");
 
-
   let uuid_idempotency_token = generate_random_uuid();
   
   let mut selected_model = None;
