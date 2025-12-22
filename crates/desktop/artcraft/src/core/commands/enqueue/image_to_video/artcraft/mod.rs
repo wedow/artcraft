@@ -4,3 +4,5 @@ mod handle_artcraft_kling_2p6_pro;
 mod handle_artcraft_sora2;
 mod handle_artcraft_sora2_pro;
 mod handle_artcraft_video;
+mod handle_artcraft_veo3p1;
+mod handle_artcraft_veo3p1_fast;
