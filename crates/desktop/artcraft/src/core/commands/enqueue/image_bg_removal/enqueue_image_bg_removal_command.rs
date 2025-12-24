@@ -1,6 +1,6 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
-use crate::core::commands::enqueue::image_bg_removal::generic::handle_generic_bg_removal::handle_generic_bg_removal;
+use crate::core::commands::enqueue::image_bg_removal::artcraft::handle_generic_bg_removal_artcraft::handle_generic_bg_removal_artcraft;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
@@ -164,12 +164,11 @@ pub async fn handle_request(
   
   // TODO(bt,2025-07-07): Other model/provider routing...
   
-  let success_event = handle_generic_bg_removal(
+  let success_event = handle_generic_bg_removal_artcraft(
     request,
     app,
     app_data_root,
     app_env_configs,
-    provider_priority_store,
     storyteller_creds_manager,
   ).await?;
 

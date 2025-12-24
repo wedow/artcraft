@@ -1,2 +1,2 @@
 pub mod enqueue_image_bg_removal_command;
-pub mod generic;
+pub (super) mod artcraft;
