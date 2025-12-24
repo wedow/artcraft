@@ -1,6 +1,7 @@
 use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::image_to_video::enqueue_image_to_video_command::{EnqueueImageToVideoRequest, SoraOrientation};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -16,9 +17,8 @@ use openai_sora_client::recipes::list_sora2_drafts::list_sora2_drafts_with_sessi
 use openai_sora_client::requests::generate_sora2_video::generate_sora2_video::{GenerateSora2VideoArgs, Orientation};
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 
-pub (super) async fn handle_sora2_video_sora(
+pub async fn handle_sora_sora2(
   request: &EnqueueImageToVideoRequest,
   app: &AppHandle,
   app_data_root: &AppDataRoot,

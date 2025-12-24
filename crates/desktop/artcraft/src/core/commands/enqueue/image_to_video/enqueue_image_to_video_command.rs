@@ -3,6 +3,7 @@ use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateErr
 use crate::core::commands::enqueue::image_to_video::artcraft::handle_artcraft_video::handle_video_artcraft;
 use crate::core::commands::enqueue::image_to_video::grok::handle_grok_video::handle_grok_video;
 use crate::core::commands::enqueue::image_to_video::sora2::handle_sora2_video::handle_sora2_video;
+use crate::core::commands::enqueue::image_to_video::sora2::handle_sora_sora2::handle_sora_sora2;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -275,12 +276,11 @@ pub async fn handle_request(
     }
     Some(VideoModel::Sora2) => {
       // TODO: Route based on forthcoming provider parameter.
-      handle_sora2_video(
+      handle_sora_sora2(
         &request,
         app,
         app_data_root,
         app_env_configs,
-        provider_priority_store,
         sora_creds_manager,
       ).await
     }
