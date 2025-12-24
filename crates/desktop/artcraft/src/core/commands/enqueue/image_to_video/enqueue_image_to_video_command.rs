@@ -2,7 +2,6 @@ use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_fr
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_to_video::artcraft::handle_artcraft_video::handle_video_artcraft;
 use crate::core::commands::enqueue::image_to_video::grok::handle_grok_video::handle_grok_video;
-use crate::core::commands::enqueue::image_to_video::sora2::handle_sora2_video::handle_sora2_video;
 use crate::core::commands::enqueue::image_to_video::sora2::handle_sora_sora2::handle_sora_sora2;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};

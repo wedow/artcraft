@@ -18,7 +18,7 @@ use storyteller_client::endpoints::generate::object::generate_hunyuan_3d_2_0_ima
 use storyteller_client::endpoints::generate::object::generate_hunyuan_3d_2_1_image_to_3d::generate_hunyuan3d_2_1_image_to_3d;
 use tauri::AppHandle;
 
-pub async fn handle_object_artcraft(
+pub async fn handle_artcraft_object(
   request: &EnqueueImageTo3dObjectRequest,
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,

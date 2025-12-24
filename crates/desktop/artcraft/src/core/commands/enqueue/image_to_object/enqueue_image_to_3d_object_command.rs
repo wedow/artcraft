@@ -1,6 +1,6 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
-use crate::core::commands::enqueue::image_to_object::generic::handle_object::handle_object;
+use crate::core::commands::enqueue::image_to_object::artcraft::handle_artcraft_object::handle_artcraft_object;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
@@ -14,10 +14,10 @@ use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Deserialize)]
@@ -174,12 +174,11 @@ pub async fn handle_request(
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
-  let result = handle_object(
+  let result = handle_artcraft_object(
     &request,
     &app,
     &app_env_configs,
     &app_data_root,
-    &provider_priority_store,
     &storyteller_creds_manager,
   ).await;
   
