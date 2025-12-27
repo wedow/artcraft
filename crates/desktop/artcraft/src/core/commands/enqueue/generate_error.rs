@@ -1,6 +1,8 @@
 use crate::core::artcraft_error::ArtcraftError;
 use anyhow::anyhow;
 use base64::DecodeError;
+use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use errors::AnyhowError;
 use grok_client::error::grok_error::GrokError;
 use midjourney_client::error::midjourney_error::MidjourneyError;
@@ -20,6 +22,12 @@ pub enum GenerateError {
   
   /// We pulled out Fal (for now) - it's impacting build speeds. We'll add it in the future.
   FalNoLongerSupported,
+  
+  /// Wrong provider for the model
+  BadProviderForModel {
+    provider: GenerationProvider,
+    model: ModelType,
+  },
 
   /// There was a billing, credits, or payments issue.
   BillingIssue(BillingIssueReason),

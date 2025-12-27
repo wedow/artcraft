@@ -1,6 +1,5 @@
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageSize, EnqueueEditImageCommand, EnqueueEditImageErrorType};
-use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1_edit::MAX_IMAGES;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -35,13 +34,14 @@ use std::time::Duration;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use tauri::AppHandle;
 
+const MAX_IMAGES: usize = 4;
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
 const SORA_IMAGE_REMIX_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 
 const DEFAULT_ASPECT_RATIO : EditImageSize = EditImageSize::Square;
 
-pub async fn handle_gpt_image_1_edit_sora(
+pub async fn handle_sora_gpt_image_1_edit(
   request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,

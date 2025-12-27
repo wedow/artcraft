@@ -32,7 +32,7 @@ use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::Imag
 
 pub(super) const MAX_IMAGES: usize = 10;
 
-pub async fn handle_nano_banana_pro_edit_artcraft(
+pub async fn handle_artcraft_nano_banana_pro_edit(
   request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,

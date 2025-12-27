@@ -1,0 +1,15 @@
+use enums::common::model_type::ModelType;
+use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::ImageEditModel;
+
+pub fn image_edit_model_to_model_type(model: ImageEditModel) -> ModelType {
+  match model {
+    ImageEditModel::FluxProKontextMax => ModelType::FluxProKontextMax,
+    ImageEditModel::Gemini25Flash => ModelType::NanoBanana,
+    ImageEditModel::NanoBanana => ModelType::NanoBanana,
+    ImageEditModel::NanoBananaPro => ModelType::NanoBananaPro,
+    ImageEditModel::GptImage1 => ModelType::GptImage1,
+    ImageEditModel::GptImage1p5 => ModelType::GptImage1p5,
+    ImageEditModel::Seedream4 => ModelType::Seedream4,
+    ImageEditModel::Seedream4p5 => ModelType::Seedream4p5,
+  }
+}

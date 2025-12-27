@@ -29,7 +29,7 @@ use storyteller_client::endpoints::generate::image::generate_flux_pro_11_text_to
 use storyteller_client::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
 use tauri::AppHandle;
 
-pub async fn handle_flux_kontext_edit_artcraft(
+pub async fn handle_artcraft_flux_kontext_edit(
   request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,

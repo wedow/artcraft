@@ -1,6 +1,5 @@
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize, EnqueueEditImageCommand};
-use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1_edit::MAX_IMAGES;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
@@ -12,24 +11,25 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
+use artcraft_api_defs::generate::image::edit::flux_pro_kontext_max_edit_image::{FluxProKontextMaxEditImageNumImages, FluxProKontextMaxEditImageRequest};
+use artcraft_api_defs::generate::image::edit::gemini_25_flash_edit_image::{Gemini25FlashEditImageNumImages, Gemini25FlashEditImageRequest};
+use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::{GptImage1EditImageImageQuality, GptImage1EditImageImageSize, GptImage1EditImageNumImages, GptImage1EditImageRequest};
 use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
-use artcraft_api_defs::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen::{GptImage1p5MultiFunctionImageGenNumImages, GptImage1p5MultiFunctionImageGenQuality, GptImage1p5MultiFunctionImageGenRequest, GptImage1p5MultiFunctionImageGenSize};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
+use storyteller_client::endpoints::generate::image::edit::flux_pro_kontext_max_edit_image::flux_pro_kontext_max_edit_image;
+use storyteller_client::endpoints::generate::image::edit::gemini_25_flash_edit_image::gemini_25_flash_edit_image;
 use storyteller_client::endpoints::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
-use storyteller_client::endpoints::generate::image::generate_flux_1_dev_text_to_image::generate_flux_1_dev_text_to_image;
-use storyteller_client::endpoints::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
-use storyteller_client::endpoints::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
-use storyteller_client::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
-use storyteller_client::endpoints::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen_image::gpt_image_1p5_multi_function_image_gen;
 use tauri::AppHandle;
 
-pub async fn handle_gpt_image_1p5_edit_artcraft(
+pub(super) const MAX_IMAGES: usize = 10;
+
+pub async fn handle_artcraft_nano_banana_edit(
   request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -44,32 +44,16 @@ pub async fn handle_gpt_image_1p5_edit_artcraft(
     },
   };
 
-  info!("Calling Artcraft gpt-image-1.5 (edit) ...");
+  info!("Calling Artcraft Nano Banana (edit) ...");
 
   let uuid_idempotency_token = generate_random_uuid();
   
-  let image_quality = request.image_quality
-      .map(|quality| match quality {
-        EditImageQuality::Auto => GptImage1p5MultiFunctionImageGenQuality::High,
-        EditImageQuality::High => GptImage1p5MultiFunctionImageGenQuality::High,
-        EditImageQuality::Medium => GptImage1p5MultiFunctionImageGenQuality::Medium,
-        EditImageQuality::Low => GptImage1p5MultiFunctionImageGenQuality::Low,
-      });
-  
-  let image_size = request.aspect_ratio
-      .map(|size| match size {
-        EditImageSize::Auto => GptImage1p5MultiFunctionImageGenSize::Square,
-        EditImageSize::Square => GptImage1p5MultiFunctionImageGenSize::Square,
-        EditImageSize::Tall => GptImage1p5MultiFunctionImageGenSize::Tall,
-        EditImageSize::Wide => GptImage1p5MultiFunctionImageGenSize::Wide,
-      });
-
   let num_images = match request.image_count {
     None => None,
-    Some(1) => Some(GptImage1p5MultiFunctionImageGenNumImages::One),
-    Some(2) => Some(GptImage1p5MultiFunctionImageGenNumImages::Two),
-    Some(3) => Some(GptImage1p5MultiFunctionImageGenNumImages::Three),
-    Some(4) => Some(GptImage1p5MultiFunctionImageGenNumImages::Four),
+    Some(1) => Some(Gemini25FlashEditImageNumImages::One),
+    Some(2) => Some(Gemini25FlashEditImageNumImages::Two),
+    Some(3) => Some(Gemini25FlashEditImageNumImages::Three),
+    Some(4) => Some(Gemini25FlashEditImageNumImages::Four),
     Some(other) => {
       return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages {
         min: 1,
@@ -78,41 +62,34 @@ pub async fn handle_gpt_image_1p5_edit_artcraft(
       }));
     },
   };
-  
+
   let mut media_tokens = Vec::with_capacity(10);
-  
+
   if let Some(scene_image_media_token) = request.scene_image_media_token.clone() {
     media_tokens.push(scene_image_media_token);
   }
-  
+
   if let Some(image_media_tokens) = request.image_media_tokens.as_ref() {
     media_tokens.extend_from_slice(image_media_tokens);
   }
-  
+
   if media_tokens.len() > MAX_IMAGES {
-    return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfInputImages { 
+    return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfInputImages {
       min: 1,
       max: MAX_IMAGES as u32,
-      provided: media_tokens.len() as u32,
+      provided: media_tokens.len() as u32, 
     }));
   }
 
-  let request = GptImage1p5MultiFunctionImageGenRequest {
+  let request = Gemini25FlashEditImageRequest {
     uuid_idempotency_token,
     prompt: Some(request.prompt.clone()),
     image_media_tokens: Some(media_tokens),
-    quality: image_quality,
-    image_size,
     num_images,
-    // Only for inpainting
-    mask_image_token: None,
-    // Not provided
-    input_fidelity: None,
-    output_format: None,
-    background: None,
+    image_quality: None,
   };
 
-  let result = gpt_image_1p5_multi_function_image_gen(
+  let result = gemini_25_flash_edit_image(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -121,19 +98,19 @@ pub async fn handle_gpt_image_1p5_edit_artcraft(
   let job_id = match result {
     Ok(enqueued) => {
       // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued Artcraft gpt-image-1.5. Job token: {}", 
+      info!("Successfully enqueued Artcraft Nano Banana. Job token: {}",
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft gpt-image-1.5: {:?}", err);
+      error!("Failed to use Artcraft Nano Banana: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };
   
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::GptImage1p5),
+    model: Some(GenerationModel::Gemini25Flash),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })

@@ -11,25 +11,17 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::generate::image::edit::flux_pro_kontext_max_edit_image::{FluxProKontextMaxEditImageNumImages, FluxProKontextMaxEditImageRequest};
-use artcraft_api_defs::generate::image::edit::gemini_25_flash_edit_image::{Gemini25FlashEditImageNumImages, Gemini25FlashEditImageRequest};
-use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::{GptImage1EditImageImageQuality, GptImage1EditImageImageSize, GptImage1EditImageNumImages, GptImage1EditImageRequest};
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::multi_function::bytedance_seedream_v4p5_multi_function_image_gen::{BytedanceSeedreamV4p5MultiFunctionImageGenImageSize, BytedanceSeedreamV4p5MultiFunctionImageGenNumImages, BytedanceSeedreamV4p5MultiFunctionImageGenRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
-use storyteller_client::endpoints::generate::image::edit::flux_pro_kontext_max_edit_image::flux_pro_kontext_max_edit_image;
-use storyteller_client::endpoints::generate::image::edit::gemini_25_flash_edit_image::gemini_25_flash_edit_image;
-use storyteller_client::endpoints::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
+use storyteller_client::endpoints::generate::image::multi_function::bytedance_seedream_v4p5_multi_function_image_gen_image::bytedance_seedream_v4p5_multi_function_image_gen;
 use tauri::AppHandle;
 
-pub(super) const MAX_IMAGES: usize = 10;
+const MAX_IMAGES: usize = 4;
 
-pub async fn handle_nano_banana_edit_artcraft(
+pub async fn handle_artcraft_seedream_4p5_edit(
   request: &EnqueueEditImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -44,16 +36,24 @@ pub async fn handle_nano_banana_edit_artcraft(
     },
   };
 
-  info!("Calling Artcraft Nano Banana (edit) ...");
+  info!("Calling Artcraft seedream 4.5 (edit) ...");
 
   let uuid_idempotency_token = generate_random_uuid();
   
+  let image_size = request.aspect_ratio
+      .map(|size| match size {
+        EditImageSize::Auto => BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Square,
+        EditImageSize::Square => BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::Square,
+        EditImageSize::Tall => BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::PortraitSixteenNine,
+        EditImageSize::Wide => BytedanceSeedreamV4p5MultiFunctionImageGenImageSize::LandscapeSixteenNine,
+      });
+
   let num_images = match request.image_count {
     None => None,
-    Some(1) => Some(Gemini25FlashEditImageNumImages::One),
-    Some(2) => Some(Gemini25FlashEditImageNumImages::Two),
-    Some(3) => Some(Gemini25FlashEditImageNumImages::Three),
-    Some(4) => Some(Gemini25FlashEditImageNumImages::Four),
+    Some(1) => Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::One),
+    Some(2) => Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Two),
+    Some(3) => Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Three),
+    Some(4) => Some(BytedanceSeedreamV4p5MultiFunctionImageGenNumImages::Four),
     Some(other) => {
       return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages {
         min: 1,
@@ -62,34 +62,36 @@ pub async fn handle_nano_banana_edit_artcraft(
       }));
     },
   };
-
+  
   let mut media_tokens = Vec::with_capacity(10);
-
+  
   if let Some(scene_image_media_token) = request.scene_image_media_token.clone() {
     media_tokens.push(scene_image_media_token);
   }
-
+  
   if let Some(image_media_tokens) = request.image_media_tokens.as_ref() {
     media_tokens.extend_from_slice(image_media_tokens);
   }
-
+  
   if media_tokens.len() > MAX_IMAGES {
-    return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfInputImages {
+    return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfInputImages { 
       min: 1,
       max: MAX_IMAGES as u32,
-      provided: media_tokens.len() as u32, 
+      provided: media_tokens.len() as u32,
     }));
   }
 
-  let request = Gemini25FlashEditImageRequest {
+  let request = BytedanceSeedreamV4p5MultiFunctionImageGenRequest {
     uuid_idempotency_token,
     prompt: Some(request.prompt.clone()),
     image_media_tokens: Some(media_tokens),
+    image_size,
     num_images,
-    image_quality: None,
+    // Not provided
+    max_images: None,
   };
 
-  let result = gemini_25_flash_edit_image(
+  let result = bytedance_seedream_v4p5_multi_function_image_gen(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -98,19 +100,19 @@ pub async fn handle_nano_banana_edit_artcraft(
   let job_id = match result {
     Ok(enqueued) => {
       // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued Artcraft Nano Banana. Job token: {}",
+      info!("Successfully enqueued Artcraft seedream 4.5. Job token: {}",
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft Nano Banana: {:?}", err);
+      error!("Failed to use Artcraft seedream 4.5: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };
   
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::Gemini25Flash),
+    model: Some(GenerationModel::Seedream4p5),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })

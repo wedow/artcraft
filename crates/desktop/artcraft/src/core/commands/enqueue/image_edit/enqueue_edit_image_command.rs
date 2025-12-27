@@ -1,12 +1,8 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
-use crate::core::commands::enqueue::image_edit::flux_kontext::handle_flux_kontext_edit::handle_flux_kontext_edit;
-use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1_edit::handle_gpt_image_1_edit;
-use crate::core::commands::enqueue::image_edit::gpt_image::handle_gpt_image_1p5_artcraft::handle_gpt_image_1p5_edit_artcraft;
-use crate::core::commands::enqueue::image_edit::nano_banana::handle_nano_banana_edit::handle_nano_banana_edit;
-use crate::core::commands::enqueue::image_edit::nano_banana_pro::handle_nano_banana_pro_edit::handle_nano_banana_pro_edit;
-use crate::core::commands::enqueue::image_edit::seedream::handle_seedream_4_artcraft::handle_seedream_4_edit_artcraft;
-use crate::core::commands::enqueue::image_edit::seedream::handle_seedream_4p5_artcraft::handle_seedream_4p5_edit_artcraft;
+use crate::core::commands::enqueue::image_edit::artcraft::handle_image_edit_artcraft::handle_image_edit_artcraft;
+use crate::core::commands::enqueue::image_edit::image_edit_models::image_edit_model_to_model_type;
+use crate::core::commands::enqueue::image_edit::sora::handle_image_edit_sora::handle_image_edit_sora;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
@@ -28,6 +24,7 @@ use crate::services::sora::state::sora_credential_manager::SoraCredentialManager
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use enums::common::generation_provider::GenerationProvider;
+use enums::common::model_type::ModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
@@ -84,6 +81,10 @@ pub enum ImageEditModel {
 
 #[derive(Deserialize, Debug)]
 pub struct EnqueueEditImageCommand {
+  /// The provider to use (defaults to Artcraft/Storyteller).
+  /// Not all (provider, model) combinations are valid.
+  pub provider: Option<GenerationProvider>,
+
   /// The model to use.
   pub model: Option<ImageEditModel>,
 
@@ -268,84 +269,41 @@ pub async fn handle_request(
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
-  let mut success_event= match request.model {
+
+  let model = match request.model {
+    Some(model) => model,
     None => {
       return Err(GenerateError::no_model_specified())
     }
-    Some(ImageEditModel::FluxProKontextMax) => {
-      handle_flux_kontext_edit(
+  };
+
+  let mut success_event = match request.provider {
+    None | Some(GenerationProvider::Artcraft) => {
+      handle_image_edit_artcraft(
+        model,
         request,
         app,
         app_data_root,
         app_env_configs,
-        provider_priority_store,
         storyteller_creds_manager,
+      ).await?
+    }
+    Some(GenerationProvider::Sora) => {
+      handle_image_edit_sora(
+        model,
+        request,
+        app,
+        app_data_root,
+        app_env_configs,
         sora_creds_manager,
         sora_task_queue,
       ).await?
     }
-    Some(ImageEditModel::Gemini25Flash | ImageEditModel::NanoBanana) => {
-      handle_nano_banana_edit(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await?
-    }
-    Some(ImageEditModel::NanoBananaPro) => {
-      handle_nano_banana_pro_edit(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await?
-    }
-    Some(ImageEditModel::GptImage1) => {
-      handle_gpt_image_1_edit(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await?
-    }
-    Some(ImageEditModel::GptImage1p5) => {
-      handle_gpt_image_1p5_edit_artcraft(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        storyteller_creds_manager,
-      ).await?
-    }
-    Some(ImageEditModel::Seedream4) => {
-      handle_seedream_4_edit_artcraft(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        storyteller_creds_manager,
-      ).await?
-    }
-    Some(ImageEditModel::Seedream4p5) => {
-      handle_seedream_4p5_edit_artcraft(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        storyteller_creds_manager,
-      ).await?
+    _ => {
+      return Err(GenerateError::BadProviderForModel {
+        provider: request.provider.unwrap_or(GenerationProvider::Artcraft),
+        model: image_edit_model_to_model_type(model),
+      })
     }
   };
 
