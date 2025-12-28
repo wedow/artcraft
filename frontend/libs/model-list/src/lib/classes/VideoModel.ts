@@ -3,6 +3,7 @@ import { Model, ModelKind } from "./Model.js";
 import { ModelCategory } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
 import { SizeOption } from "./metadata/SizeOption.js";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export class VideoModel extends Model {
   // Typescript type discriminator property
@@ -41,6 +42,7 @@ export class VideoModel extends Model {
     sizeOptions?: SizeOption[];
     progressBarTime?: number;
     generateWithSound?: boolean;
+    providers?: GenerationProvider[];
   }) {
     super(args);
     this.startFrame = args.startFrame;

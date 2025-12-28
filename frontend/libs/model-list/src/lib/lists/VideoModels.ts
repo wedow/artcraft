@@ -1,3 +1,4 @@
+import { GenerationProvider } from "@storyteller/api-enums";
 import { VideoModel } from "../classes/VideoModel.js";
 import { ModelCreator } from "../classes/metadata/ModelCreator.js";
 import { SizeIconOption } from "../classes/metadata/SizeOption.js";
@@ -9,6 +10,9 @@ export const VIDEO_MODELS: VideoModel[] = [
     fullName: "Grok Video",
     category: "video",
     creator: ModelCreator.Grok,
+    providers: [
+      GenerationProvider.Grok
+    ],
     selectorName: "Grok Video",
     selectorDescription: "Fastest video model",
     selectorBadges: ["20 sec."],
@@ -129,6 +133,10 @@ export const VIDEO_MODELS: VideoModel[] = [
     fullName: "Sora 2",
     category: "video",
     creator: ModelCreator.OpenAi,
+    providers: [
+      GenerationProvider.Artcraft,
+      GenerationProvider.Sora,
+    ],
     selectorName: "Sora 2",
     selectorDescription: "Smart video model",
     selectorBadges: ["2 min."],

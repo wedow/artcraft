@@ -1,6 +1,7 @@
 import { ModelCreator } from "./metadata/ModelCreator.js";
 import { ModelCategory, ModelConfig } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export type ModelKind = "model" | "image_model" | "video_model" | "gaussian_model";
 
@@ -40,6 +41,9 @@ export class Model {
   // A list of filterable "capabilities" that can be used to filter models.
   readonly tags: ModelTag[];
 
+  // Use `getProviders()` to read the list.
+  protected readonly providers?: GenerationProvider[];
+
   // Optional provider preferences; two-to-many via page and providers.
   readonly preferredProvidersByPage?: Partial<Record<string, string[]>>;
 
@@ -56,6 +60,7 @@ export class Model {
     selectorDescription: string;
     selectorBadges: string[];
     tags?: ModelTag[];
+    providers?: GenerationProvider[];
     preferredProvidersByPage?: Partial<Record<string, string[]>>;
     progressBarTime?: number;
   }) {
@@ -68,8 +73,13 @@ export class Model {
     this.selectorDescription = args.selectorDescription;
     this.selectorBadges = args.selectorBadges;
     this.tags = args.tags ?? [];
+    this.providers = args.providers;
     this.preferredProvidersByPage = args.preferredProvidersByPage;
     this.progressBarTime = args.progressBarTime ?? 20000;
+  }
+
+  getProviders(): GenerationProvider[] {
+    return this.providers ?? [GenerationProvider.Artcraft];
   }
 
   toLegacyBadges(): { label: string }[] {

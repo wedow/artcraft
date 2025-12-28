@@ -4,7 +4,10 @@
 
 export enum GenerationProvider {
   Artcraft = "artcraft",
-  Fal = "fal",
+  Grok = "grok",
   Midjourney = "midjourney",
   Sora = "sora",
+  WorldLabs = "world_labs",
+  // NB: We should build our own open source Fal
+  //Fal = "fal",
 }

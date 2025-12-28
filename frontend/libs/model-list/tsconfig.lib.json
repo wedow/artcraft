@@ -20,6 +20,9 @@
   "references": [
     {
       "path": "../tauri-utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../api-enums/tsconfig.lib.json"
     }
   ],
   "exclude": [

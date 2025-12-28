@@ -234,8 +234,13 @@ pub async fn handle_request(
     }
   };
 
-  let success_event = match request.provider {
-    None | Some(GenerationProvider::Artcraft) => {
+  let provider = request.provider
+      .unwrap_or(GenerationProvider::Artcraft);
+
+  info!("image inpaint with {:?} via provider {:?}", &model, &provider);
+
+  let success_event = match provider {
+    GenerationProvider::Artcraft => {
       handle_inpaint_artcraft(
         model,
         request,
@@ -245,7 +250,7 @@ pub async fn handle_request(
         storyteller_creds_manager,
       ).await?
     }
-    Some(provider) => {
+    _ => {
       return Err(GenerateError::BadProviderForModel {
         provider,
         model: image_inpaint_model_to_model_type(model),

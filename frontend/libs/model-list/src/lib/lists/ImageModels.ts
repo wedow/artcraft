@@ -1,3 +1,4 @@
+import { GenerationProvider } from "@storyteller/api-enums";
 import { ImageModel } from "../classes/ImageModel.js";
 import { ModelCreator } from "../classes/metadata/ModelCreator.js";
 import { ModelTag } from "../classes/metadata/ModelTag.js";
@@ -11,6 +12,9 @@ export const IMAGE_MODELS: ImageModel[] = [
     fullName: "Grok",
     category: "image",
     creator: ModelCreator.Grok,
+    providers: [
+      GenerationProvider.Grok, 
+    ],
     selectorName: "Grok",
     selectorDescription: "Fast af",
     selectorBadges: ["10 sec."],
@@ -27,6 +31,9 @@ export const IMAGE_MODELS: ImageModel[] = [
     fullName: "Midjourney",
     category: "image",
     creator: ModelCreator.Midjourney,
+    providers: [
+      GenerationProvider.Midjourney
+    ],
     selectorName: "Midjourney",
     selectorDescription: "Stunning style and quality",
     selectorBadges: ["45 sec."],
@@ -147,6 +154,10 @@ export const IMAGE_MODELS: ImageModel[] = [
     fullName: "GPT Image 1 (GPT-4o)",
     category: "image",
     creator: ModelCreator.OpenAi,
+    providers: [
+      GenerationProvider.Artcraft, 
+      GenerationProvider.Sora
+    ],
     selectorName: "GPT Image 1 (GPT-4o)",
     selectorDescription: "Slow, but super smart",
     selectorBadges: ["60 sec."],

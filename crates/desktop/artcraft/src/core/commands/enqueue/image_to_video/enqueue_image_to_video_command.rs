@@ -4,6 +4,7 @@ use crate::core::commands::enqueue::image_to_video::artcraft::handle_artcraft_vi
 use crate::core::commands::enqueue::image_to_video::grok::handle_grok_video::handle_grok_video;
 use crate::core::commands::enqueue::image_to_video::sora2::handle_sora_sora2::handle_sora_sora2;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::TextToImageModel;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
@@ -20,6 +21,7 @@ use crate::services::grok::state::grok_credential_manager::GrokCredentialManager
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
@@ -76,6 +78,10 @@ pub enum VideoModel {
 
 #[derive(Deserialize, Debug)]
 pub struct EnqueueImageToVideoRequest {
+  /// The provider to use (defaults to Artcraft/Storyteller).
+  /// Not all (provider, model) combinations are valid.
+  pub provider: Option<GenerationProvider>,
+
   /// REQUIRED.
   /// The model to use.
   pub model: Option<VideoModel>,
@@ -263,8 +269,22 @@ pub async fn handle_request(
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
-  let result = match request.model {
-    Some(VideoModel::GrokVideo) => {
+  let model = match request.model {
+    Some(model) => model,
+    None => {
+      return Err(GenerateError::no_model_specified())
+    }
+  };
+
+  let provider = match (model, request.provider) {
+    (VideoModel::GrokVideo, _) => GenerationProvider::Grok,
+    _ => request.provider.unwrap_or(GenerationProvider::Artcraft),
+  };
+
+  info!("generate video with {:?} via provider {:?}", &model, &provider);
+
+  let result = match provider {
+    GenerationProvider::Grok => {
       handle_grok_video(
         &request,
         app,
@@ -273,8 +293,7 @@ pub async fn handle_request(
         grok_creds_manager,
       ).await
     }
-    Some(VideoModel::Sora2) => {
-      // TODO: Route based on forthcoming provider parameter.
+    GenerationProvider::Sora => {
       handle_sora_sora2(
         &request,
         app,

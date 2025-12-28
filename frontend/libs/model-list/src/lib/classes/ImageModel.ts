@@ -2,6 +2,7 @@ import { ModelCreator } from "src/index.js";
 import { Model, ModelKind } from "./Model.js";
 import { ModelCategory } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export class ImageModel extends Model {
   // Typescript type discriminator property
@@ -63,6 +64,7 @@ export class ImageModel extends Model {
     canChangeAspectRatio?: boolean;
     tags?: ModelTag[];
     progressBarTime?: number;
+    providers?: GenerationProvider[];
   }) {
     if (args.maxGenerationCount < 1) {
       throw new Error("maxGenerationCount must be at least 1");

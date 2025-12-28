@@ -277,8 +277,13 @@ pub async fn handle_request(
     }
   };
 
-  let mut success_event = match request.provider {
-    None | Some(GenerationProvider::Artcraft) => {
+  let provider = request.provider
+      .unwrap_or(GenerationProvider::Artcraft);
+  
+  info!("edit image with {:?} via provider {:?}", &model, &provider);
+
+  let mut success_event = match provider {
+    GenerationProvider::Artcraft => {
       handle_image_edit_artcraft(
         model,
         request,
@@ -288,7 +293,7 @@ pub async fn handle_request(
         storyteller_creds_manager,
       ).await?
     }
-    Some(GenerationProvider::Sora) => {
+    GenerationProvider::Sora => {
       handle_image_edit_sora(
         model,
         request,
@@ -301,7 +306,7 @@ pub async fn handle_request(
     }
     _ => {
       return Err(GenerateError::BadProviderForModel {
-        provider: request.provider.unwrap_or(GenerationProvider::Artcraft),
+        provider,
         model: image_edit_model_to_model_type(model),
       })
     }

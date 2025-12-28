@@ -333,6 +333,8 @@ pub async fn dispatch_request(
     _ => request.provider.unwrap_or(GenerationProvider::Artcraft),
   };
 
+  info!("generate image with {:?} via provider {:?}", &model, &provider);
+
   match provider {
     GenerationProvider::Artcraft => {
       handle_text_to_image_artcraft(
