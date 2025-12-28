@@ -1,16 +1,16 @@
 import { create } from "zustand";
 import { ModelPage } from "./model-pages";
 import { ImageModel, Model, VideoModel } from "@storyteller/model-list";
-import { Provider } from "@storyteller/tauri-api";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 interface ClassyModelSelectorState {
   selectedModels: { [page in ModelPage]?: Model };
-  selectedProviders: { [page in ModelPage]?: { [modelId: string]: Provider } };
+  selectedProviders: { [page in ModelPage]?: { [modelId: string]: GenerationProvider } };
   setSelectedModel: (page: ModelPage, model: Model) => void;
   setSelectedProvider: (
     page: ModelPage,
     modelId: string,
-    provider: Provider
+    provider: GenerationProvider
   ) => void;
 }
 
@@ -73,7 +73,7 @@ export const getSelectedVideoModel = (
 export const getSelectedProviderForModel = (
   page: ModelPage,
   modelId: string
-): Provider | undefined => {
+): GenerationProvider | undefined => {
   const { selectedProviders } = useClassyModelSelectorStore.getState();
   const byPage = selectedProviders[page];
   if (!byPage) return undefined;
@@ -107,7 +107,7 @@ export const useSelectedVideoModel = (
 export const useSelectedProviderForModel = (
   page: ModelPage,
   modelId: string | undefined
-): Provider | undefined =>
+): GenerationProvider | undefined =>
   useClassyModelSelectorStore((s) =>
     modelId ? s.selectedProviders[page]?.[modelId] : undefined
   );

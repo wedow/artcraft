@@ -12,6 +12,9 @@
       "path": "../../tauri-api"
     },
     {
+      "path": "../../api-enums"
+    },
+    {
       "path": "../../model-list"
     },
     {

@@ -1,21 +1,21 @@
 import { getCreatorIcon, ModelCreator } from "@storyteller/model-list";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
-import { Provider } from "@storyteller/tauri-api";
+import { GenerationProvider } from "@storyteller/api-enums";
 import { ReactNode } from "react";
 
-const PROVIDER_TO_CREATOR: Partial<Record<Provider, ModelCreator>> = {
-  [Provider.ArtCraft]: ModelCreator.ArtCraft,
-  [Provider.Fal]: ModelCreator.Fal,
-  [Provider.Sora]: ModelCreator.OpenAi,
-  [Provider.Grok]: ModelCreator.Grok,
-  [Provider.Midjourney]: ModelCreator.Midjourney,
+const GENERATION_PROVIDER_TO_CREATOR: Partial<Record<GenerationProvider, ModelCreator>> = {
+  [GenerationProvider.Artcraft]: ModelCreator.ArtCraft,
+  [GenerationProvider.Grok]: ModelCreator.Grok,
+  [GenerationProvider.Midjourney]: ModelCreator.Midjourney,
+  [GenerationProvider.Sora]: ModelCreator.OpenAi,
+  [GenerationProvider.WorldLabs]: ModelCreator.WorldLabs,
 };
 
 export const getProviderIcon = (
-  provider: Provider,
+  provider: GenerationProvider,
   className = "h-4 w-4 icon-auto-contrast"
 ): ReactNode => {
-  const creator = PROVIDER_TO_CREATOR[provider];
+  const creator = GENERATION_PROVIDER_TO_CREATOR[provider];
   if (creator) return getCreatorIcon(creator, className);
   return (
     <img
@@ -30,21 +30,19 @@ export const getProviderIcon = (
   );
 };
 
-export const getProviderDisplayName = (provider: Provider | string): string => {
+export const getProviderDisplayName = (provider: GenerationProvider): string => {
   switch (provider) {
-    case Provider.ArtCraft:
+    case GenerationProvider.Artcraft:
       return "ArtCraft";
-    case Provider.Fal:
-      return "Fal";
-    case Provider.Sora:
-      return "Sora / ChatGPT";
-    case Provider.Grok:
+    case GenerationProvider.Grok:
       return "Grok";
-    case Provider.Midjourney:
+    case GenerationProvider.Midjourney:
       return "Midjourney";
-    case "worldlabs":
+    case GenerationProvider.Sora:
+      return "Sora / ChatGPT";
+    case GenerationProvider.WorldLabs:
       return "World Labs";
     default:
-      return provider;
+      return "Unknown Provider";
   }
 };

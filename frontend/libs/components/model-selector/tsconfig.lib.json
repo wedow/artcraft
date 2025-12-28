@@ -53,6 +53,9 @@
       "path": "../../tauri-api/tsconfig.lib.json"
     },
     {
+      "path": "../../api-enums/tsconfig.lib.json"
+    },
+    {
       "path": "../../model-list/tsconfig.lib.json"
     }
   ]
