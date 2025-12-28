@@ -1,10 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 import { ImageModel, ModelInfo } from "@storyteller/model-list";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export interface EnqueueImageInpaintRequest {
   // The model to use.
   model?: ImageModel | ModelInfo | EnqueueImageInpaintModel;
+
+  // The provider to use.
+  provider?: GenerationProvider;
 
   // The image we're editing.
   image_media_token?: string;
@@ -30,6 +34,7 @@ export interface EnqueueImageInpaintRequest {
 // (We do some transformations from the public-facing request object.)
 interface RawEnqueueImageInpaintRequest {
   model?: EnqueueImageInpaintModel | string;
+  provider?: GenerationProvider;
   image_media_token?: string;
   mask_image_raw_bytes?: Uint8Array;
   prompt?: string;
@@ -89,6 +94,10 @@ export const EnqueueImageInpaint = async (request: EnqueueImageInpaintRequest) :
     model: modelName,
     prompt: request.prompt,
   };
+  
+  if (!!request.provider) {
+    mutableRequest.provider = request.provider;
+  }
 
   if (!!request.image_media_token) {
     mutableRequest.image_media_token = request.image_media_token;

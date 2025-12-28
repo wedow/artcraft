@@ -29,6 +29,7 @@ import { ImageModel, getCapabilitiesForModel } from "@storyteller/model-list";
 import { twMerge } from "tailwind-merge";
 import { ImagePromptRow, type UploadImageFn } from "./ImagePromptRow";
 import { RefImage, usePromptEditStore } from "./promptStore";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export interface PromptBoxEditProps {
   onModeChange?: (mode: string) => void;
@@ -39,11 +40,13 @@ export interface PromptBoxEditProps {
       aspectRatio?: string;
       resolution?: string;
       images?: RefImage[];
+      selectedProvider?: GenerationProvider;
     },
   ) => void | Promise<void>;
   isDisabled?: boolean;
   onFitPressed?: () => void | Promise<void>;
   selectedImageModel?: ImageModel;
+  selectedProvider?: GenerationProvider;
   generationCount?: number;
   onGenerationCountChange?: (count: number) => void;
   supportsMaskedInpainting?: boolean;
@@ -62,6 +65,7 @@ export const PromptBoxEdit = ({
   isDisabled,
   onFitPressed,
   selectedImageModel,
+  selectedProvider,
   generationCount: generationCountProp,
   onGenerationCountChange,
   supportsMaskedInpainting = false,
@@ -277,6 +281,7 @@ export const PromptBoxEdit = ({
           aspectRatio,
           resolution,
           images: referenceImages,
+          selectedProvider: selectedProvider,
         }),
       );
     } finally {

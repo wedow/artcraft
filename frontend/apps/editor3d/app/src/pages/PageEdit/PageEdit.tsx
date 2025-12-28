@@ -5,6 +5,8 @@ import {
   EnqueueImageInpaint,
   EnqueueEditImageSize,
   EnqueueEditImageResolution,
+  EnqueueEditImageRequest,
+  EnqueueImageInpaintRequest,
 } from "@storyteller/tauri-api";
 import { PromptsApi } from "@storyteller/api";
 import { RefImage, usePromptEditStore } from "@storyteller/ui-promptbox";
@@ -21,6 +23,7 @@ import MarkerToolControlBar from "./MarkerToolControlBar";
 import {
   ClassyModelSelector,
   useSelectedImageModel,
+  useSelectedProviderForModel,
   IMAGE_EDITOR_PAGE_MODEL_LIST,
   ModelPage,
   //ProviderSelector,
@@ -29,6 +32,8 @@ import {
 import { ImageModel } from "@storyteller/model-list";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
 import { TutorialModalButton } from "@storyteller/ui-tutorial-modal";
+import { GenerationProvider } from "@storyteller/api-enums";
+
 
 const PAGE_ID: ModelPage = ModelPage.ImageEditor;
 
@@ -38,6 +43,9 @@ const PageEdit = () => {
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
 
+  const selectedProvider : GenerationProvider | undefined = 
+    useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
+  
   // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
@@ -322,6 +330,7 @@ const PageEdit = () => {
         aspectRatio?: string;
         resolution?: string;
         images?: RefImage[];
+        selectedProvider?: GenerationProvider;
       },
     ) => {
       const editedImageToken = store.baseImageInfo?.mediaToken;
@@ -374,7 +383,7 @@ const PageEdit = () => {
 
         if (selectedImageModel?.editingIsInpainting) {
           const arrayBuffer = await getMaskArrayBuffer();
-          result = await EnqueueImageInpaint({
+          let request : EnqueueImageInpaintRequest = {
             model: selectedImageModel,
             image_media_token: editedImageToken,
             mask_image_raw_bytes: arrayBuffer,
@@ -382,7 +391,11 @@ const PageEdit = () => {
             image_count: generationCount,
             frontend_caller: "image_editor",
             frontend_subscriber_id: subscriberId,
-          });
+          };
+          if (!!options?.selectedProvider) {
+            request.provider = options.selectedProvider;
+          }
+          result = await EnqueueImageInpaint(request);
         } else if (selectedImageModel?.isNanoBananaModel()) {
           const compositeFile = await getCompositeCanvasFile();
           if (!compositeFile) {
@@ -398,7 +411,7 @@ const PageEdit = () => {
             return;
           }
           const imgs = options?.images || [];
-          result = await EnqueueEditImage({
+          let request: EnqueueEditImageRequest = {
             model: selectedImageModel,
             scene_image_media_token: snapshotResult.data,
             image_media_tokens: imgs
@@ -410,10 +423,14 @@ const PageEdit = () => {
             frontend_subscriber_id: subscriberId,
             aspect_ratio: mapAspectRatio(options?.aspectRatio),
             image_resolution: mapResolution(options?.resolution),
-          });
+          };
+          if (!!options?.selectedProvider) {
+            request.provider = options.selectedProvider;
+          }
+          result = await EnqueueEditImage(request);
         } else {
           const imgs = options?.images || [];
-          result = await EnqueueEditImage({
+          let request : EnqueueEditImageRequest = {
             model: selectedImageModel,
             image_media_tokens: [
               editedImageToken,
@@ -428,10 +445,14 @@ const PageEdit = () => {
             frontend_subscriber_id: subscriberId,
             aspect_ratio: mapAspectRatio(options?.aspectRatio),
             image_resolution: mapResolution(options?.resolution),
-          });
+          };
+          if (!!options?.selectedProvider) {
+            request.provider = options.selectedProvider;
+          }
+          result = await EnqueueEditImage(request);
         }
 
-        if (result.status === "success") {
+        if (result?.status === "success") {
           setPendingGenerations((prev) => [
             ...prev,
             { id: subscriberId as string, count: generationCount },
@@ -609,6 +630,7 @@ const PageEdit = () => {
       >
         <PromptEditor
           selectedImageModel={selectedImageModel}
+          selectedProvider={selectedProvider}
           onModeChange={(mode: string) => {
             store.setActiveTool(mode as ActiveEditTool);
           }}
