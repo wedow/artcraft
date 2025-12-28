@@ -28,6 +28,7 @@ import {
 import { Badge } from "@storyteller/ui-badge";
 import { twMerge } from "tailwind-merge";
 import { TutorialModalButton } from "@storyteller/ui-tutorial-modal";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 const PAGE_ID: ModelPage = ModelPage.TextToImage;
 
@@ -44,7 +45,8 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
 
-  const selectedProvider = useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
+  const selectedProvider : GenerationProvider | undefined = 
+    useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
 
   const jobContext: JobContextType = {
     jobTokens: [],

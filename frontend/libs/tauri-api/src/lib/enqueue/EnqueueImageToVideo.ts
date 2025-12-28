@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 import { Model } from "@storyteller/model-list";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export enum EnqueueImageToVideoErrorType {
   /// Caller didn't specify a model
@@ -16,6 +17,9 @@ export enum EnqueueImageToVideoErrorType {
 export interface EnqueueImageToVideoRequest {
   // Required. The model to use.
   model?: Model;
+
+  // The provider to use.
+  provider?: GenerationProvider;
 
   // Required. Starting frame.
   image_media_token?: string;
@@ -44,6 +48,7 @@ export interface EnqueueImageToVideoRequest {
 
 interface RawEnqueueImageToVideoRequest {
   model?: string;
+  provider?: GenerationProvider;
   image_media_token?: string;
   end_frame_image_media_token?: string;
   prompt?: string;
@@ -76,6 +81,10 @@ export const EnqueueImageToVideo = async (
     model: request.model?.tauriId,
     image_media_token: request.image_media_token,
   };
+
+  if (request.provider) {
+    mutableRequest.provider = request.provider;
+  }
 
   if (request.prompt) {
     mutableRequest.prompt = request.prompt;

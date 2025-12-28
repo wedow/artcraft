@@ -50,9 +50,9 @@ export interface EnqueueTextToImageRequest {
 // Shape of request sent to Tauri
 // (We do some transformations from the public-facing request object.)
 interface EnqueueTextToImageRawRequest {
-  prompt?: string;
   model?: EnqueueTextToImageModel | string; // TODO: Shouldn't allow string
   provider?: GenerationProvider;
+  prompt?: string;
   aspect_ratio?: EnqueueTextToImageSize;
   image_resolution?: EnqueueTextToImageResolution;
   number_images?: number;

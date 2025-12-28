@@ -7,6 +7,7 @@ import {
   IMAGE_TO_VIDEO_PAGE_MODEL_LIST,
   ModelPage,
   useSelectedVideoModel,
+  useSelectedProviderForModel,
   //ProviderSelector,
   //PROVIDER_LOOKUP_BY_PAGE,
 } from "@storyteller/ui-model-selector";
@@ -21,6 +22,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { uploadImage } from "../../components/reusable/UploadModalMedia/uploadImage";
 import { TutorialModalButton } from "@storyteller/ui-tutorial-modal";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 const PAGE_ID: ModelPage = ModelPage.ImageToVideo;
 
@@ -41,6 +43,9 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
 
   const selectedVideoModel: VideoModel | undefined =
     useSelectedVideoModel(PAGE_ID);
+
+  const selectedProvider: GenerationProvider | undefined = 
+    useSelectedProviderForModel(PAGE_ID, selectedVideoModel?.id);
 
   const jobContext: JobContextType = {
     jobTokens: [],
@@ -186,6 +191,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
               <PromptBoxVideo
                 useJobContext={() => jobContext}
                 selectedModel={selectedVideoModel}
+                selectedProvider={selectedProvider}
                 imageMediaId={imageMediaId}
                 url={imageUrl ?? undefined}
                 onImageRowVisibilityChange={setImageRowVisible}

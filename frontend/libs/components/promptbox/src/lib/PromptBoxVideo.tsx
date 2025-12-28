@@ -36,6 +36,7 @@ import { ImagePromptRow } from "./ImagePromptRow";
 import type { UploadImageFn } from "./ImagePromptRow";
 import { twMerge } from "tailwind-merge";
 import { toast } from "@storyteller/ui-toaster";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 type GROK_ASPECT_RATIO = "landscape" | "portrait" | "square";
 
@@ -59,6 +60,7 @@ interface PromptBoxVideoProps {
     subscriberId: string,
   ) => void | Promise<void>;
   selectedModel?: VideoModel;
+  selectedProvider?: GenerationProvider;
   imageMediaId?: string;
   url?: string;
   onImageRowVisibilityChange?: (visible: boolean) => void;
@@ -69,6 +71,7 @@ export const PromptBoxVideo = ({
   useJobContext,
   onEnqueuePressed,
   selectedModel,
+  selectedProvider,
   imageMediaId,
   url,
   onImageRowVisibilityChange,
@@ -284,6 +287,11 @@ export const PromptBoxVideo = ({
       frontend_caller: "image_to_video",
       frontend_subscriber_id: subscriberId,
     };
+
+    if (!!selectedProvider) {
+      request.provider = selectedProvider;
+    }
+
 
     if (selectedModel.generateWithSound) {
       request.generate_audio = !!generateWithSound;
