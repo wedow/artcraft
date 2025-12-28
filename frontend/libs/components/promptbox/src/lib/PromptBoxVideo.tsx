@@ -292,7 +292,6 @@ export const PromptBoxVideo = ({
       request.provider = selectedProvider;
     }
 
-
     if (selectedModel.generateWithSound) {
       request.generate_audio = !!generateWithSound;
     }

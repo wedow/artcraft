@@ -1,11 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 import { ImageModel } from "@storyteller/model-list";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export interface EnqueueEditImageRequest {
-
   /// The model to use.
   model?: ImageModel | EnqueueEditImageModel;
+
+  // The provider to use.
+  provider?: GenerationProvider;
 
   /// If set, this is the first image in the contextual image set.
   /// This gets submitted along with `image_media_tokens` and will 
@@ -45,6 +48,7 @@ export interface EnqueueEditImageRequest {
 // (We do some transformations from the public-facing request object.)
 interface RawEnqueueEditImageRequest {
   model?: EnqueueEditImageModel | string;
+  provider?: GenerationProvider;
   scene_image_media_token?: string;
   image_media_tokens?: string[];
   prompt?: string;
@@ -126,6 +130,10 @@ export const EnqueueEditImage = async (request: EnqueueEditImageRequest) : Promi
     model: modelName,
     prompt: request.prompt,
   };
+  
+  if (!!request.provider) {
+    mutableRequest.provider = request.provider;
+  }
 
   if (!!request.scene_image_media_token) {
     mutableRequest.scene_image_media_token = request.scene_image_media_token;

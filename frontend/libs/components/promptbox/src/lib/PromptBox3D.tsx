@@ -42,10 +42,12 @@ import {
   EnqueueEditImage,
   EnqueueEditImageSize,
   EnqueueEditImageResolution,
+  EnqueueEditImageRequest,
 } from "@storyteller/tauri-api";
 import { usePrompt3DStore } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { ImageModel } from "@storyteller/model-list";
+import { GenerationProvider } from "@storyteller/api-enums";
 import { ImagePromptRow } from "./ImagePromptRow";
 
 interface PromptBox3DProps {
@@ -67,6 +69,7 @@ interface PromptBox3DProps {
   onAspectRatioSelect: (newRatio: CameraAspectRatio) => void;
   setEnginePrompt: (prompt: string) => void;
   selectedImageModel?: ImageModel;
+  selectedProvider?: GenerationProvider;
   snapshotCurrentFrame:
     | ((shouldDownload?: boolean) => {
         base64Snapshot: string;
@@ -94,6 +97,7 @@ export const PromptBox3D = ({
   onAspectRatioSelect,
   setEnginePrompt,
   selectedImageModel,
+  selectedProvider,
   snapshotCurrentFrame,
 }: PromptBox3DProps) => {
   useSignals();
@@ -366,7 +370,7 @@ export const PromptBox3D = ({
         const aspectRatio = getCurrentAspectRatio();
         const resolution = getCurrentResolution();
 
-        const generateResponse = await EnqueueEditImage({
+        let request: EnqueueEditImageRequest = {
           model: selectedImageModel,
           scene_image_media_token: snapshotResult.data!,
           image_media_tokens: referenceImages.map((image) => image.mediaToken),
@@ -375,7 +379,13 @@ export const PromptBox3D = ({
           image_count: 1,
           aspect_ratio: aspectRatio,
           image_resolution: resolution,
-        });
+        };
+
+        if (!!selectedProvider) {
+          request.provider = selectedProvider;
+        }
+    
+        const generateResponse = await EnqueueEditImage(request);
 
         console.log("generateResponse", generateResponse);
 

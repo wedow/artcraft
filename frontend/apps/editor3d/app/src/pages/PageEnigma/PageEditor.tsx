@@ -77,6 +77,7 @@ import {
   STAGE_3D_PAGE_MODEL_LIST,
   ModelPage,
   useSelectedImageModel,
+  useSelectedProviderForModel,
   ClassyModelSelector,
   //ProviderSelector,
   //PROVIDER_LOOKUP_BY_PAGE,
@@ -87,6 +88,7 @@ import { useTabStore } from "../Stores/TabState";
 import PageEdit from "../PageEdit/PageEdit";
 import { ImageModel } from "@storyteller/model-list";
 import { TutorialModalButton } from "@storyteller/ui-tutorial-modal";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 const PAGE_ID: ModelPage = ModelPage.Stage3D;
 
@@ -116,6 +118,9 @@ export const PageEditor = () => {
 
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
+
+  const selectedProvider : GenerationProvider | undefined = 
+    useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
 
   const height =
     dndTimelineHeight.value > -1
@@ -530,6 +535,7 @@ export const PageEditor = () => {
                   handleCameraFocalLengthChange={handleCameraFocalLengthChange}
                   onAspectRatioSelect={onAspectRatioSelect}
                   selectedImageModel={selectedImageModel}
+                  selectedProvider={selectedProvider}
                   setEnginePrompt={(prompt) => {
                     console.log("setEnginePrompt", prompt);
                     if (!editorEngine) {
