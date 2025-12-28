@@ -45,7 +45,7 @@ use storyteller_client::endpoints::media_files::upload_image_media_file_from_fil
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
 
-pub async fn handle_gemini_25_flash_inpaint_artcraft(
+pub async fn handle_artcraft_nano_banana_inpaint(
   request: &EnqueueInpaintImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,

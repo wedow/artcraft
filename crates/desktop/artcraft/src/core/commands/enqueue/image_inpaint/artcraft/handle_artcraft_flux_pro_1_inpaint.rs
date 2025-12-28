@@ -19,7 +19,7 @@ use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::Gener
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
-use artcraft_api_defs::generate::image::inpaint::flux_dev_juggernaut_inpaint_image::{FluxDevJuggernautInpaintImageNumImages, FluxDevJuggernautInpaintImageRequest};
+use artcraft_api_defs::generate::image::inpaint::flux_pro_1_inpaint_image::{FluxPro1InpaintImageNumImages, FluxPro1InpaintImageRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
@@ -34,7 +34,6 @@ use storyteller_client::endpoints::generate::image::generate_flux_1_dev_text_to_
 use storyteller_client::endpoints::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
 use storyteller_client::endpoints::generate::image::generate_flux_pro_11_text_to_image::generate_flux_pro_11_text_to_image;
 use storyteller_client::endpoints::generate::image::generate_flux_pro_11_ultra_text_to_image::generate_flux_pro_11_ultra_text_to_image;
-use storyteller_client::endpoints::generate::image::inpaint::flux_dev_juggernaut_inpaint_image::flux_dev_juggernaut_inpaint_image;
 use storyteller_client::endpoints::generate::image::inpaint::flux_pro_1_inpaint_image::flux_pro_1_inpaint_image;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_bytes::{upload_image_media_file_from_bytes, ImageType, UploadImageBytesArgs};
@@ -42,7 +41,7 @@ use storyteller_client::endpoints::media_files::upload_image_media_file_from_fil
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
 
-pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
+pub async fn handle_artcraft_flux_pro_1_inpaint(
   request: &EnqueueInpaintImageCommand,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
@@ -70,16 +69,16 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
     &creds,
   ).await?;
 
-  info!("Calling Artcraft flux dev juggernaut inpaint ...");
+  info!("Calling Artcraft flux pro 1 inpaint ...");
 
   let uuid_idempotency_token = generate_random_uuid();
 
   let num_images = match request.image_count {
     None => None,
-    Some(1) => Some(FluxDevJuggernautInpaintImageNumImages::One),
-    Some(2) => Some(FluxDevJuggernautInpaintImageNumImages::Two),
-    Some(3) => Some(FluxDevJuggernautInpaintImageNumImages::Three),
-    Some(4) => Some(FluxDevJuggernautInpaintImageNumImages::Four),
+    Some(1) => Some(FluxPro1InpaintImageNumImages::One),
+    Some(2) => Some(FluxPro1InpaintImageNumImages::Two),
+    Some(3) => Some(FluxPro1InpaintImageNumImages::Three),
+    Some(4) => Some(FluxPro1InpaintImageNumImages::Four),
     Some(other) => {
       return Err(GenerateError::BadInput(BadInputReason::InvalidNumberOfRequestedImages {
         min: 1,
@@ -89,7 +88,7 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
     },
   };
 
-  let request = FluxDevJuggernautInpaintImageRequest {
+  let request = FluxPro1InpaintImageRequest {
     uuid_idempotency_token,
     prompt: Some(request.prompt.clone()),
     image_media_token,
@@ -97,7 +96,7 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
     num_images,
   };
 
-  let result = flux_dev_juggernaut_inpaint_image(
+  let result = flux_pro_1_inpaint_image(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -106,19 +105,19 @@ pub async fn handle_flux_dev_juggernaut_inpaint_artcraft(
   let job_id = match result {
     Ok(enqueued) => {
       // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued Artcraft flux dev juggernaut inpaint. Job token: {}",
+      info!("Successfully enqueued Artcraft flux pro 1 inpaint. Job token: {}",
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft flux dev juggernaut inpaint: {:?}", err);
+      error!("Failed to use Artcraft flux pro 1 inpaint: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };
   
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::FluxDevJuggernaut),
+    model: Some(GenerationModel::FluxPro1),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageInpaintEdit,
   })
@@ -144,7 +143,7 @@ async fn get_mask(
   let image_bytes = normalize_image_bytes_to_flux_mask(image_bytes)
       .map_err(|err| {
         error!("Failed to convert image bytes to png: {:?}", err);
-        GenerateError::AnyhowError(anyhow!("Failed to convert image bytes to png mask"))
+        GenerateError::AnyhowError(anyhow!("could not encode image mask to png"))
       })?;
 
   info!("Uploading image media file from bytes...");

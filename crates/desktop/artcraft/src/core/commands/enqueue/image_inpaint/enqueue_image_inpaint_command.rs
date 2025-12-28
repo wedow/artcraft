@@ -1,9 +1,8 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
-use crate::core::commands::enqueue::image_inpaint::flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint;
-use crate::core::commands::enqueue::image_inpaint::flux_pro_1_inpaint::handle_flux_pro_1_inpaint::handle_flux_pro_1_inpaint;
-use crate::core::commands::enqueue::image_inpaint::flux_pro_kontext_inpaint::handle_flux_pro_kontext_inpaint::handle_flux_pro_kontext_inpaint;
-use crate::core::commands::enqueue::image_inpaint::gemini_25_flash_inpaint::handle_gemini_25_flash_inpaint::handle_gemini_25_flash_inpaint;
+use crate::core::commands::enqueue::image_edit::image_edit_models::image_edit_model_to_model_type;
+use crate::core::commands::enqueue::image_inpaint::artcraft::handle_inpaint_artcraft::handle_inpaint_artcraft;
+use crate::core::commands::enqueue::image_inpaint::inpaint_models::image_inpaint_model_to_model_type;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
@@ -70,6 +69,10 @@ pub enum ImageInpaintModel {
 
 #[derive(Deserialize, Debug)]
 pub struct EnqueueInpaintImageCommand {
+  /// The provider to use (defaults to Artcraft/Storyteller).
+  /// Not all (provider, model) combinations are valid.
+  pub provider: Option<GenerationProvider>,
+
   /// REQUIRED (Option<T> is just for error messages).
   /// The model to use.
   pub model: Option<ImageInpaintModel>,
@@ -223,59 +226,30 @@ pub async fn handle_request(
   sora_creds_manager: &SoraCredentialManager,
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
-  let success_event= match request.model {
+
+  let model = match request.model {
+    Some(model) => model,
     None => {
       return Err(GenerateError::no_model_specified())
     }
-    Some(ImageInpaintModel::FluxDevJuggernaut) => {
-      handle_flux_dev_juggernaut_inpaint(
+  };
+
+  let success_event = match request.provider {
+    None | Some(GenerationProvider::Artcraft) => {
+      handle_inpaint_artcraft(
+        model,
         request,
         app,
         app_data_root,
         app_env_configs,
-        provider_priority_store,
         storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
       ).await?
     }
-    Some(ImageInpaintModel::FluxPro1) => {
-      handle_flux_pro_1_inpaint(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await?
-    }
-    Some(ImageInpaintModel::FluxProKontextMax) => {
-      // TODO: Redirect to contextual image edit handler.
-      handle_flux_pro_kontext_inpaint(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await?
-    }
-    Some(ImageInpaintModel::Gemini25Flash) => {
-      // TODO: Redirect to contextual image edit handler.
-      handle_gemini_25_flash_inpaint(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await?
+    Some(provider) => {
+      return Err(GenerateError::BadProviderForModel {
+        provider,
+        model: image_inpaint_model_to_model_type(model),
+      })
     }
   };
 
