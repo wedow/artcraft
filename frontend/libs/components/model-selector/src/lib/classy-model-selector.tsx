@@ -5,11 +5,12 @@ import {
 } from "./classy-model-selector-store";
 import { useEffect, useMemo } from "react";
 import { ModelPage } from "./model-pages";
-import { GenerationProvider } from "@storyteller/api-enums";
+import { Provider } from "@storyteller/tauri-api";
 import { getProviderDisplayName, getProviderIcon } from "./provider-icons";
-import { ALL_MODELS_BY_ID, Model } from "@storyteller/model-list";
+import { Model } from "@storyteller/model-list";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 interface ClassyModelSelectorProps {
   items: Omit<PopoverItem, "selected">[];
@@ -20,6 +21,7 @@ interface ClassyModelSelectorProps {
   panelClassName?: string;
   showIconsInList?: boolean;
   triggerLabel?: string;
+  providersByModel?: Partial<Record<string, Provider[]>>;
   providerTooltipDelayMs?: number;
   maxListHeight?: number | string;
 }
@@ -43,7 +45,6 @@ function ProviderTooltipContent({
 }) {
   const { setSelectedModel, setSelectedProvider } =
     useClassyModelSelectorStore();
-
   const selectedProvider = useSelectedProviderForModel(page, modelId);
 
   // Initialize provider for this model if missing
@@ -98,6 +99,7 @@ function ProviderTooltipContent({
 export function ClassyModelSelector({
   items,
   page,
+  providersByModel,
   providerTooltipDelayMs = 300,
   maxListHeight = "60vh",
   ...popoverProps
@@ -113,9 +115,9 @@ export function ClassyModelSelector({
   // For the first mount, make sure the selected model is set for other components to listen
   useEffect(() => {
     // Initialize selected model if not set
-    //if (!selectedModels[page] && items[0]) {
-    //  setSelectedModel(page, items[0].model!);
-    //}
+    if (!selectedModels[page] && items[0]) {
+      setSelectedModel(page, items[0].model!);
+    }
   }, []);
 
   // Initialize a default provider for each model so we can render icons even when not selected
@@ -123,27 +125,14 @@ export function ClassyModelSelector({
     for (const item of items) {
       const modelId = item.model?.id;
       if (!modelId) continue;
-
-      const model = ALL_MODELS_BY_ID.get(modelId);
-      if (!model) continue;
-
-      const modelProviders = model.getProviders();
-
-      if (modelProviders.length > 0) {
-        setSelectedProvider(page, modelId, modelProviders[0]);
+      if (selectedProvidersByModel[modelId]) continue;
+      const allowed = item.model?.getProviders() || DEFAULT_PROVIDER_OPTIONS;
+      if (allowed.length > 0) {
+        setSelectedProvider(page, modelId, allowed[0]);
       }
-
-      //if (selectedProvidersByModel[modelId]) continue;
-      //const allowed =
-      //  providersByModel?.[modelId] ??
-      //  PROVIDER_LOOKUP_BY_PAGE[page]?.[modelId] ??
-      //  DEFAULT_PROVIDER_OPTIONS;
-      //if (allowed.length > 0) {
-      //  setSelectedProvider(page, modelId, allowed[0]);
-      //}
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, page, selectedProvidersByModel]);
+  }, [items, providersByModel, page, selectedProvidersByModel]);
 
   const handleModelSelect = (item: PopoverItem) => {
     console.log(`Model selector changed on page "${page}": `, item.model);
@@ -154,7 +143,6 @@ export function ClassyModelSelector({
     () =>
       items.map((item) => {
         const modelId = item.model?.id;
-
         const allowedProviders = item.model?.getProviders() || DEFAULT_PROVIDER_OPTIONS;
 
         const hasMultipleProviders = allowedProviders.length >= 2;
@@ -209,6 +197,7 @@ export function ClassyModelSelector({
       selectedProvider,
       selectedProvidersByModel,
       page,
+      providersByModel,
       providerTooltipDelayMs,
     ],
   );
