@@ -1,16 +1,12 @@
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
+use crate::core::commands::enqueue::image_edit::image_edit_models::image_edit_model_to_model_type;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
-use crate::core::commands::enqueue::text_to_image::generic::handle_image_artcraft::handle_image_artcraft;
-use crate::core::commands::enqueue::text_to_image::generic::handle_image_fal::handle_image_fal;
-use crate::core::commands::enqueue::text_to_image::gpt_image::handle_gpt_image_1::handle_gpt_image_1;
-use crate::core::commands::enqueue::text_to_image::gpt_image::handle_gpt_image_1p5::handle_gpt_image_1p5;
+use crate::core::commands::enqueue::text_to_image::artcraft::handle_text_to_image_artcraft::handle_text_to_image_artcraft;
 use crate::core::commands::enqueue::text_to_image::grok::handle_grok::handle_grok;
 use crate::core::commands::enqueue::text_to_image::midjourney::handle_midjourney::handle_midjourney;
-use crate::core::commands::enqueue::text_to_image::nano_banana::handle_nano_banana::handle_nano_banana;
-use crate::core::commands::enqueue::text_to_image::nano_banana_pro::handle_nano_banana_pro::handle_nano_banana_pro;
-use crate::core::commands::enqueue::text_to_image::seedream::handle_seedream_4_artcraft::handle_seedream_4_artcraft;
-use crate::core::commands::enqueue::text_to_image::seedream::handle_seedream_4p5_artcraft::handle_seedream_4p5_artcraft;
+use crate::core::commands::enqueue::text_to_image::sora::handle_text_to_image_sora::handle_text_to_image_sora;
+use crate::core::commands::enqueue::text_to_image::text_to_image_models::text_to_image_model_to_model_type;
 use crate::core::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::core::commands::response::shorthand::Response;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
@@ -43,7 +39,7 @@ use tokens::tokens::media_files::MediaFileToken;
 /// Don't change the serializations without coordinating with the frontend.
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
-pub enum ImageModel {
+pub enum TextToImageModel {
   #[serde(rename = "flux_1_dev")]
   Flux1Dev,
   #[serde(rename = "flux_1_schnell")]
@@ -79,11 +75,15 @@ pub enum ImageModel {
 
 #[derive(Deserialize)]
 pub struct EnqueueTextToImageRequest {
-  /// Text prompt for the image generation. Required.
-  pub prompt: Option<String>,
+  /// The provider to use (defaults to Artcraft/Storyteller).
+  /// Not all (provider, model) combinations are valid.
+  pub provider: Option<GenerationProvider>,
 
   /// The model to use.
-  pub model: Option<ImageModel>,
+  pub model: Option<TextToImageModel>,
+
+  /// Text prompt for the image generation. Required.
+  pub prompt: Option<String>,
 
   /// Aspect ratio.
   pub aspect_ratio: Option<TextToImageSize>,
@@ -320,103 +320,60 @@ pub async fn dispatch_request(
   sora_task_queue: &SoraTaskQueue,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
-  match request.model {
+  let model = match request.model {
+    Some(model) => model,
     None => {
-      return Err(GenerateError::BadInput(BadInputReason::NoModelSpecified));
+      return Err(GenerateError::no_model_specified())
     }
-    Some(ImageModel::NanoBanana | ImageModel::Gemini25Flash) => {
-      return handle_nano_banana(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await;
-    }
-    Some(ImageModel::NanoBananaPro) => {
-      return handle_nano_banana_pro(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager,
-        sora_task_queue,
-      ).await;
-    }
-    Some(ImageModel::GptImage1) => {
-      return handle_gpt_image_1(
-        request,
-        app,
-        app_data_root,
-        app_env_configs,
-        provider_priority_store,
-        storyteller_creds_manager,
-        sora_creds_manager, 
-        sora_task_queue,
-      ).await;
-    }
-    Some(ImageModel::GptImage1p5) => {
-      return handle_gpt_image_1p5(
+  };
+
+  let provider = match (model, request.provider) {
+    (TextToImageModel::GrokImage, _) => GenerationProvider::Grok,
+    (TextToImageModel::Midjourney, _) => GenerationProvider::Midjourney,
+    _ => request.provider.unwrap_or(GenerationProvider::Artcraft),
+  };
+
+  match provider {
+    GenerationProvider::Artcraft => {
+      handle_text_to_image_artcraft(
+        model,
         request,
         app,
         app_data_root,
         app_env_configs,
         storyteller_creds_manager,
-      ).await;
+      ).await
     }
-    Some(ImageModel::GrokImage) => {
-      return handle_grok(
+    GenerationProvider::Grok => {
+      handle_grok(
         app,
         request,
         app_env_configs,
         grok_creds_manager,
         grok_image_prompt_queue,
-      ).await;
+      ).await
     }
-    Some(ImageModel::Midjourney) => {
-      return handle_midjourney(
+    GenerationProvider::Midjourney => {
+      handle_midjourney(
         app,
         request,
         app_env_configs,
         mj_creds_manager,
-      ).await;
+      ).await
     }
-    Some(ImageModel::Seedream4) => {
-      return handle_seedream_4_artcraft(
+    GenerationProvider::Sora => {
+      handle_text_to_image_sora(
         request,
-        app_env_configs,
-        storyteller_creds_manager,
-      ).await;
-    }
-    Some(ImageModel::Seedream4p5) => {
-      return handle_seedream_4p5_artcraft(
-        request,
-        app_env_configs,
-        storyteller_creds_manager,
-      ).await;
+        app,
+        sora_creds_manager,
+        sora_task_queue,
+      ).await
     }
     _ => {
-      // Fall-through
-    }
-  };
-
-  let priority = provider_priority_store.get_priority()?;
-  
-  for provider in priority.iter() {
-    match provider {
-      Provider::Fal => {} // Fallthrough
-      Provider::Sora => {} // Fallthrough
-      Provider::Artcraft => {
-        return handle_image_artcraft(
-          request, &app, app_env_configs, app_data_root, storyteller_creds_manager).await;
-      }
+      Err(GenerateError::BadProviderForModel {
+        provider,
+        model: text_to_image_model_to_model_type(model),
+      })
     }
   }
-  
-  Err(GenerateError::NoProviderAvailable)
 }

@@ -11,16 +11,20 @@ use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen::{BytedanceSeedreamV4MultiFunctionImageGenImageSize, BytedanceSeedreamV4MultiFunctionImageGenNumImages, BytedanceSeedreamV4MultiFunctionImageGenRequest};
+use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::{GenerateGptImage1TextToImageImageQuality, GenerateGptImage1TextToImageImageSize, GenerateGptImage1TextToImageNumImages, GenerateGptImage1TextToImageRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
+use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
+use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simple_image_gen_with_session_auto_renew, SimpleImageGenAutoRenewRequest};
+use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use std::time::Duration;
-use storyteller_client::endpoints::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen_image::bytedance_seedream_v4_multi_function_image_gen;
+use storyteller_client::endpoints::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
+use storyteller_client::endpoints::generate::image::generate_gpt_image_1_text_to_image::generate_gpt_image_1_text_to_image;
 use tauri::AppHandle;
 
-pub async fn handle_seedream_4_artcraft(
+pub async fn handle_artcraft_gpt_image_1_text_to_image(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -33,24 +37,34 @@ pub async fn handle_seedream_4_artcraft(
     },
   };
 
-  info!("Calling Artcraft seedream 4 ...");
+  info!("Calling Artcraft gpt-image-1 ...");
 
   let uuid_idempotency_token = generate_random_uuid();
 
+  let image_quality = Some(GenerateGptImage1TextToImageImageQuality::High);
+  
+  //let image_quality = request.image_quality
+  //    .map(|quality| match quality {
+  //      EditImageQuality::Auto => GenerateGptImage1TextToImageImageQuality::Auto,
+  //      EditImageQuality::High => GenerateGptImage1TextToImageImageQuality::High,
+  //      EditImageQuality::Medium => GenerateGptImage1TextToImageImageQuality::Medium,
+  //      EditImageQuality::Low => GenerateGptImage1TextToImageImageQuality::Low,
+  //    });
+
   let image_size = request.aspect_ratio
       .map(|size| match size {
-        TextToImageSize::Auto => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
-        TextToImageSize::Square => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
-        TextToImageSize::Tall => BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine,
-        TextToImageSize::Wide => BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine,
+        TextToImageSize::Auto => GenerateGptImage1TextToImageImageSize::Square,
+        TextToImageSize::Square => GenerateGptImage1TextToImageImageSize::Square,
+        TextToImageSize::Tall => GenerateGptImage1TextToImageImageSize::Vertical,
+        TextToImageSize::Wide => GenerateGptImage1TextToImageImageSize::Horizontal,
       });
 
   let num_images = match request.number_images {
     None => None,
-    Some(1) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::One),
-    Some(2) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Two),
-    Some(3) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Three),
-    Some(4) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Four),
+    Some(1) => Some(GenerateGptImage1TextToImageNumImages::One),
+    Some(2) => Some(GenerateGptImage1TextToImageNumImages::Two),
+    Some(3) => Some(GenerateGptImage1TextToImageNumImages::Three),
+    Some(4) => Some(GenerateGptImage1TextToImageNumImages::Four),
     // TODO: Error
     //Some(other) => {
     //  return Err(InternalImageError::InvalidNumberOfRequestedImages {
@@ -59,21 +73,18 @@ pub async fn handle_seedream_4_artcraft(
     //    requested: other,
     //  });
     //},
-    _ => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::One), // Default to one image if invalid number
+    _ => Some(GenerateGptImage1TextToImageNumImages::One), // Default to one image if invalid number
   };
 
-  let request = BytedanceSeedreamV4MultiFunctionImageGenRequest {
+  let request = GenerateGptImage1TextToImageRequest {
     uuid_idempotency_token,
     prompt: request.prompt.clone(),
-    num_images,
     image_size,
-    // Not provided for text-to-image
-    image_media_tokens: None,
-    // Not provided
-    max_images: None,
+    num_images,
+    image_quality,
   };
 
-  let result = bytedance_seedream_v4_multi_function_image_gen(
+  let result = generate_gpt_image_1_text_to_image(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -81,19 +92,20 @@ pub async fn handle_seedream_4_artcraft(
 
   let job_id = match result {
     Ok(enqueued) => {
-      info!("Successfully enqueued Artcraft seedream 4. Job token: {}", 
+      // TODO(bt,2025-07-05): Enqueue job token?
+      info!("Successfully enqueued Artcraft gpt-image-1. Job token: {}", 
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft seedream 4: {:?}", err);
+      error!("Failed to use Artcraft gpt-image-1: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };
 
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::Seedream4p5),
+    model: Some(GenerationModel::GptImage1),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })

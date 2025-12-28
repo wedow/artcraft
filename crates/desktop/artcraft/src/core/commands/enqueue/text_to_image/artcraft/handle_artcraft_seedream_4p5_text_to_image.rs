@@ -20,7 +20,7 @@ use std::time::Duration;
 use storyteller_client::endpoints::generate::image::multi_function::bytedance_seedream_v4p5_multi_function_image_gen_image::bytedance_seedream_v4p5_multi_function_image_gen;
 use tauri::AppHandle;
 
-pub async fn handle_seedream_4p5_artcraft(
+pub async fn handle_artcraft_seedream_4p5_text_to_image(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,

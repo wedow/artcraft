@@ -11,16 +11,16 @@ use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen::{GptImage1p5MultiFunctionImageGenNumImages, GptImage1p5MultiFunctionImageGenQuality, GptImage1p5MultiFunctionImageGenRequest, GptImage1p5MultiFunctionImageGenSize};
+use artcraft_api_defs::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen::{BytedanceSeedreamV4MultiFunctionImageGenImageSize, BytedanceSeedreamV4MultiFunctionImageGenNumImages, BytedanceSeedreamV4MultiFunctionImageGenRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
 use std::time::Duration;
-use storyteller_client::endpoints::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen_image::gpt_image_1p5_multi_function_image_gen;
+use storyteller_client::endpoints::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen_image::bytedance_seedream_v4_multi_function_image_gen;
 use tauri::AppHandle;
 
-pub async fn handle_gpt_image_1p5_artcraft(
+pub async fn handle_artcraft_seedream_4_text_to_image(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -33,24 +33,24 @@ pub async fn handle_gpt_image_1p5_artcraft(
     },
   };
 
-  info!("Calling Artcraft gpt-image-1.5 ...");
+  info!("Calling Artcraft seedream 4 ...");
 
   let uuid_idempotency_token = generate_random_uuid();
 
   let image_size = request.aspect_ratio
       .map(|size| match size {
-        TextToImageSize::Auto => GptImage1p5MultiFunctionImageGenSize::Square,
-        TextToImageSize::Square => GptImage1p5MultiFunctionImageGenSize::Square,
-        TextToImageSize::Tall => GptImage1p5MultiFunctionImageGenSize::Tall,
-        TextToImageSize::Wide => GptImage1p5MultiFunctionImageGenSize::Wide,
+        TextToImageSize::Auto => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
+        TextToImageSize::Square => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
+        TextToImageSize::Tall => BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine,
+        TextToImageSize::Wide => BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine,
       });
 
   let num_images = match request.number_images {
     None => None,
-    Some(1) => Some(GptImage1p5MultiFunctionImageGenNumImages::One),
-    Some(2) => Some(GptImage1p5MultiFunctionImageGenNumImages::Two),
-    Some(3) => Some(GptImage1p5MultiFunctionImageGenNumImages::Three),
-    Some(4) => Some(GptImage1p5MultiFunctionImageGenNumImages::Four),
+    Some(1) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::One),
+    Some(2) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Two),
+    Some(3) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Three),
+    Some(4) => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::Four),
     // TODO: Error
     //Some(other) => {
     //  return Err(InternalImageError::InvalidNumberOfRequestedImages {
@@ -59,25 +59,21 @@ pub async fn handle_gpt_image_1p5_artcraft(
     //    requested: other,
     //  });
     //},
-    _ => Some(GptImage1p5MultiFunctionImageGenNumImages::One), // Default to one image if invalid number
+    _ => Some(BytedanceSeedreamV4MultiFunctionImageGenNumImages::One), // Default to one image if invalid number
   };
 
-  let request = GptImage1p5MultiFunctionImageGenRequest {
+  let request = BytedanceSeedreamV4MultiFunctionImageGenRequest {
     uuid_idempotency_token,
     prompt: request.prompt.clone(),
-    image_size,
     num_images,
+    image_size,
     // Not provided for text-to-image
     image_media_tokens: None,
-    mask_image_token: None,
-    input_fidelity: None,
     // Not provided
-    output_format: None,
-    background: None,
-    quality: None,
+    max_images: None,
   };
 
-  let result = gpt_image_1p5_multi_function_image_gen(
+  let result = bytedance_seedream_v4_multi_function_image_gen(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -85,19 +81,19 @@ pub async fn handle_gpt_image_1p5_artcraft(
 
   let job_id = match result {
     Ok(enqueued) => {
-      info!("Successfully enqueued Artcraft gpt-image-1.5. Job token: {}", 
+      info!("Successfully enqueued Artcraft seedream 4. Job token: {}", 
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft gpt-image-1.5: {:?}", err);
+      error!("Failed to use Artcraft seedream 4: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };
 
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::GptImage1p5),
+    model: Some(GenerationModel::Seedream4p5),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })

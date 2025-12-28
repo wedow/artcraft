@@ -11,20 +11,16 @@ use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::{GenerateGptImage1TextToImageImageQuality, GenerateGptImage1TextToImageImageSize, GenerateGptImage1TextToImageNumImages, GenerateGptImage1TextToImageRequest};
+use artcraft_api_defs::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen::{GptImage1p5MultiFunctionImageGenNumImages, GptImage1p5MultiFunctionImageGenQuality, GptImage1p5MultiFunctionImageGenRequest, GptImage1p5MultiFunctionImageGenSize};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
-use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
-use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simple_image_gen_with_session_auto_renew, SimpleImageGenAutoRenewRequest};
-use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use std::time::Duration;
-use storyteller_client::endpoints::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
-use storyteller_client::endpoints::generate::image::generate_gpt_image_1_text_to_image::generate_gpt_image_1_text_to_image;
+use storyteller_client::endpoints::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen_image::gpt_image_1p5_multi_function_image_gen;
 use tauri::AppHandle;
 
-pub async fn handle_gpt_image_1_artcraft(
+pub async fn handle_artcraft_gpt_image_1p5_text_to_image(
   request: &EnqueueTextToImageRequest,
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -37,34 +33,24 @@ pub async fn handle_gpt_image_1_artcraft(
     },
   };
 
-  info!("Calling Artcraft gpt-image-1 ...");
+  info!("Calling Artcraft gpt-image-1.5 ...");
 
   let uuid_idempotency_token = generate_random_uuid();
 
-  let image_quality = Some(GenerateGptImage1TextToImageImageQuality::High);
-  
-  //let image_quality = request.image_quality
-  //    .map(|quality| match quality {
-  //      EditImageQuality::Auto => GenerateGptImage1TextToImageImageQuality::Auto,
-  //      EditImageQuality::High => GenerateGptImage1TextToImageImageQuality::High,
-  //      EditImageQuality::Medium => GenerateGptImage1TextToImageImageQuality::Medium,
-  //      EditImageQuality::Low => GenerateGptImage1TextToImageImageQuality::Low,
-  //    });
-
   let image_size = request.aspect_ratio
       .map(|size| match size {
-        TextToImageSize::Auto => GenerateGptImage1TextToImageImageSize::Square,
-        TextToImageSize::Square => GenerateGptImage1TextToImageImageSize::Square,
-        TextToImageSize::Tall => GenerateGptImage1TextToImageImageSize::Vertical,
-        TextToImageSize::Wide => GenerateGptImage1TextToImageImageSize::Horizontal,
+        TextToImageSize::Auto => GptImage1p5MultiFunctionImageGenSize::Square,
+        TextToImageSize::Square => GptImage1p5MultiFunctionImageGenSize::Square,
+        TextToImageSize::Tall => GptImage1p5MultiFunctionImageGenSize::Tall,
+        TextToImageSize::Wide => GptImage1p5MultiFunctionImageGenSize::Wide,
       });
 
   let num_images = match request.number_images {
     None => None,
-    Some(1) => Some(GenerateGptImage1TextToImageNumImages::One),
-    Some(2) => Some(GenerateGptImage1TextToImageNumImages::Two),
-    Some(3) => Some(GenerateGptImage1TextToImageNumImages::Three),
-    Some(4) => Some(GenerateGptImage1TextToImageNumImages::Four),
+    Some(1) => Some(GptImage1p5MultiFunctionImageGenNumImages::One),
+    Some(2) => Some(GptImage1p5MultiFunctionImageGenNumImages::Two),
+    Some(3) => Some(GptImage1p5MultiFunctionImageGenNumImages::Three),
+    Some(4) => Some(GptImage1p5MultiFunctionImageGenNumImages::Four),
     // TODO: Error
     //Some(other) => {
     //  return Err(InternalImageError::InvalidNumberOfRequestedImages {
@@ -73,18 +59,25 @@ pub async fn handle_gpt_image_1_artcraft(
     //    requested: other,
     //  });
     //},
-    _ => Some(GenerateGptImage1TextToImageNumImages::One), // Default to one image if invalid number
+    _ => Some(GptImage1p5MultiFunctionImageGenNumImages::One), // Default to one image if invalid number
   };
 
-  let request = GenerateGptImage1TextToImageRequest {
+  let request = GptImage1p5MultiFunctionImageGenRequest {
     uuid_idempotency_token,
     prompt: request.prompt.clone(),
     image_size,
     num_images,
-    image_quality,
+    // Not provided for text-to-image
+    image_media_tokens: None,
+    mask_image_token: None,
+    input_fidelity: None,
+    // Not provided
+    output_format: None,
+    background: None,
+    quality: None,
   };
 
-  let result = generate_gpt_image_1_text_to_image(
+  let result = gpt_image_1p5_multi_function_image_gen(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -92,20 +85,19 @@ pub async fn handle_gpt_image_1_artcraft(
 
   let job_id = match result {
     Ok(enqueued) => {
-      // TODO(bt,2025-07-05): Enqueue job token?
-      info!("Successfully enqueued Artcraft gpt-image-1. Job token: {}", 
+      info!("Successfully enqueued Artcraft gpt-image-1.5. Job token: {}", 
         enqueued.inference_job_token);
       enqueued.inference_job_token
     }
     Err(err) => {
-      error!("Failed to use Artcraft gpt-image-1: {:?}", err);
+      error!("Failed to use Artcraft gpt-image-1.5: {:?}", err);
       return Err(GenerateError::from(err));
     }
   };
 
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::GptImage1),
+    model: Some(GenerationModel::GptImage1p5),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
