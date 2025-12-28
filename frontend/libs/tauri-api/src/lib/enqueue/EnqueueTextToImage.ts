@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 import { Model } from "@storyteller/model-list";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export enum EnqueueTextToImageErrorType {
   /// Caller didn't specify a model
@@ -16,6 +17,9 @@ export enum EnqueueTextToImageErrorType {
 export interface EnqueueTextToImageRequest {
   // The model to use.
   model?: Model | EnqueueTextToImageModel;
+
+  // The provider to use.
+  provider?: GenerationProvider;
 
   // The text prompt.
   prompt?: string;
@@ -48,6 +52,7 @@ export interface EnqueueTextToImageRequest {
 interface EnqueueTextToImageRawRequest {
   prompt?: string;
   model?: EnqueueTextToImageModel | string; // TODO: Shouldn't allow string
+  provider?: GenerationProvider;
   aspect_ratio?: EnqueueTextToImageSize;
   image_resolution?: EnqueueTextToImageResolution;
   number_images?: number;
@@ -112,6 +117,10 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
     model: modelName,
     prompt: request.prompt,
   };
+
+  if (!!request.provider) {
+    mutableRequest.provider = request.provider;
+  }
 
   if (!!request.aspect_ratio) {
     mutableRequest.aspect_ratio = request.aspect_ratio;

@@ -32,6 +32,7 @@ import { usePromptImageStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { twMerge } from "tailwind-merge";
 import { ImagePromptRow } from "./ImagePromptRow";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -50,6 +51,7 @@ interface PromptBoxImageProps {
     subscriberId: string,
   ) => void | Promise<void>;
   selectedModel?: ImageModel;
+  selectedProvider?: GenerationProvider;
   imageMediaId?: string;
   url?: string;
   onImageRowVisibilityChange?: (visible: boolean) => void;
@@ -60,6 +62,7 @@ export const PromptBoxImage = ({
   uploadImage,
   onEnqueuePressed,
   selectedModel,
+  selectedProvider,
   imageMediaId,
   url,
   onImageRowVisibilityChange,
@@ -298,6 +301,10 @@ export const PromptBoxImage = ({
         frontend_caller: "text_to_image",
         frontend_subscriber_id: subscriberId,
       };
+
+      if (!!selectedProvider) {
+        request.provider = selectedProvider;
+      }
 
       if (
         selectedModel?.canUseImagePrompt &&
