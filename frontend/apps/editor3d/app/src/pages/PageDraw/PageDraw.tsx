@@ -19,9 +19,11 @@ import {
   //ProviderSelector,
   //PROVIDER_LOOKUP_BY_PAGE,
   useSelectedImageModel,
+  useSelectedProviderForModel,
 } from "@storyteller/ui-model-selector";
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
 import { TutorialModalButton } from "@storyteller/ui-tutorial-modal";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 const PAGE_ID: ModelPage = ModelPage.Canvas2D;
 
@@ -60,6 +62,9 @@ const PageDraw = () => {
 
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
+
+  const selectedProvider : GenerationProvider | undefined = 
+    useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
 
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
   useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
@@ -304,6 +309,7 @@ const PageDraw = () => {
           onFitPressed={onFitPressed}
           //selectedModelInfo={selectedModelInfo}
           selectedImageModel={selectedImageModel}
+          selectedProvider={selectedProvider}
         />
       </div>
       <SideToolbar

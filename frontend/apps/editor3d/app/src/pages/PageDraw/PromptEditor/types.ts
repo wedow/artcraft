@@ -1,5 +1,6 @@
 import { ImageModel } from "@storyteller/model-list";
 import { ModelInfo } from "@storyteller/model-list";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export interface PromptEditorProps {
   initialPrompt?: string;
@@ -13,6 +14,7 @@ export interface PromptEditorProps {
   onFitPressed?: () => void;
   selectedModelInfo?: ModelInfo;
   selectedImageModel?: ImageModel;
+  selectedProvider?: GenerationProvider;
 }
 
 export type AspectRatio = "1:1" | "3:2" | "2:3";

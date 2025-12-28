@@ -32,6 +32,7 @@ import {
   EnqueueEditImage,
   EnqueueEditImageSize,
   EnqueueEditImageResolution,
+  EnqueueEditImageRequest,
 } from "@storyteller/tauri-api";
 import { usePrompt2DStore } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
@@ -39,6 +40,7 @@ import { getCapabilitiesForModel } from "@storyteller/model-list";
 import { ImageModel } from "@storyteller/model-list";
 import { ImagePromptRow } from "./ImagePromptRow";
 import { twMerge } from "tailwind-merge";
+import { GenerationProvider } from "@storyteller/api-enums";
 
 export type AspectRatio = "wide" | "tall" | "square";
 
@@ -53,6 +55,7 @@ interface PromptBox2DProps {
     progressCallback: (newState: UploaderState) => void;
   }) => Promise<void>;
   selectedImageModel?: ImageModel;
+  selectedProvider?: GenerationProvider;
   getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
   useJobContext: () => JobContextType;
@@ -69,6 +72,7 @@ export const PromptBox2D = ({
   onEnqueuePressed,
   onAspectRatioChange,
   selectedImageModel,
+  selectedProvider,
   onFitPressed,
 }: PromptBox2DProps) => {
   useSignals();
@@ -272,7 +276,7 @@ export const PromptBox2D = ({
     const aspectRatio = getCurrentAspectRatio();
     const resolution = getCurrentResolution();
 
-    const generateResponse = await EnqueueEditImage({
+    let request : EnqueueEditImageRequest = {
       model: selectedImageModel,
       scene_image_media_token: snapshotMediaToken.data!,
       image_media_tokens: referenceImages
@@ -283,7 +287,13 @@ export const PromptBox2D = ({
       image_count: generationCount,
       aspect_ratio: aspectRatio,
       image_resolution: resolution,
-    });
+    };
+
+    if (!!selectedProvider) {
+      request.provider = selectedProvider;
+    }
+
+    const generateResponse = await EnqueueEditImage(request);
 
     console.log("generateResponse", generateResponse);
   };

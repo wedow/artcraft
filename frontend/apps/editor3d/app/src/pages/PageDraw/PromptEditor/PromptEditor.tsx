@@ -17,6 +17,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
   onFitPressed,
   //selectedModelInfo,
   selectedImageModel,
+  selectedProvider,
 }) => {
   const [images, setImages] = useState<ImageStyle[]>([]);
 
@@ -48,6 +49,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
           onFitPressed={onFitPressed}
           //selectedModelInfo={selectedModelInfo}
           selectedImageModel={selectedImageModel}
+          selectedProvider={selectedProvider}
         />
       </JobProvider>
 
