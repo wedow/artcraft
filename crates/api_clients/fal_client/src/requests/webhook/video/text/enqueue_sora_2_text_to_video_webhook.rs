@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::sora::sora2::sora_2_text_to_video::{sora_2_text_to_video, Sora2TextToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -39,6 +40,21 @@ pub enum EnqueueSora2TextToVideoAspectRatio {
   SixteenByNine,
 }
 
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueSora2TextToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "The pricing is $0.1/s for Sora 2."
+    let duration = self.duration.unwrap_or(EnqueueSora2TextToVideoDurationSeconds::Four);
+    match duration {
+      EnqueueSora2TextToVideoDurationSeconds::Four => 40, // $0.10 * 4
+      EnqueueSora2TextToVideoDurationSeconds::Eight => 80, // $0.10 * 8
+      EnqueueSora2TextToVideoDurationSeconds::Twelve => 120 // $0.10 * 12
+    }
+  }
+}
+
+/// Sora 2 Text-to-Video
+/// https://fal.ai/models/fal-ai/sora-2/text-to-video
 pub async fn enqueue_sora_2_text_to_video_webhook<R: IntoUrl>(
   args: EnqueueSora2TextToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {

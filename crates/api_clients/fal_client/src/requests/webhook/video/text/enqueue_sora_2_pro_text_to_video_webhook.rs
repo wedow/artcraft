@@ -1,9 +1,10 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
+use fal::endpoints::fal_ai::sora::sora2::sora_2_pro_text_to_video::{sora_2_pro_text_to_video, Sora2ProTextToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
-use fal::endpoints::fal_ai::sora::sora2::sora_2_pro_text_to_video::{sora_2_pro_text_to_video, Sora2ProTextToVideoInput};
 
 pub struct EnqueueSora2ProTextToVideoArgs<'a, R: IntoUrl> {
   // Request required
@@ -40,6 +41,34 @@ pub enum EnqueueSora2ProTextToVideoAspectRatio {
   SixteenByNine,
 }
 
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueSora2ProTextToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "If an OpenAI API key is provided, it will be directly charged by OpenAI.
+    //  Otherwise, you will be charged fal credits.
+    //  The pricing is $0.30/s for 720p and $0.50/s for 1080p."
+    // NB(bt): There's no way to provide an API key with this endpoint?
+
+    let duration = self.duration.unwrap_or(EnqueueSora2ProTextToVideoDurationSeconds::Four);
+    let resolution = self.resolution.unwrap_or(EnqueueSora2ProTextToVideoResolution::Auto); // WHAT IS THIS?!
+
+    match (duration, resolution) {
+      (EnqueueSora2ProTextToVideoDurationSeconds::Four, EnqueueSora2ProTextToVideoResolution::Auto) => 120, // TODO: Auto = ???
+      (EnqueueSora2ProTextToVideoDurationSeconds::Four, EnqueueSora2ProTextToVideoResolution::SevenTwentyP) => 120,
+      (EnqueueSora2ProTextToVideoDurationSeconds::Four, EnqueueSora2ProTextToVideoResolution::TenEightyP) => 200,
+      (EnqueueSora2ProTextToVideoDurationSeconds::Eight, EnqueueSora2ProTextToVideoResolution::Auto) => 240, // TODO: Auto = ???
+      (EnqueueSora2ProTextToVideoDurationSeconds::Eight, EnqueueSora2ProTextToVideoResolution::SevenTwentyP) => 240,
+      (EnqueueSora2ProTextToVideoDurationSeconds::Eight, EnqueueSora2ProTextToVideoResolution::TenEightyP) => 400,
+      (EnqueueSora2ProTextToVideoDurationSeconds::Twelve, EnqueueSora2ProTextToVideoResolution::Auto) => 360, // TODO: Auto = ???
+      (EnqueueSora2ProTextToVideoDurationSeconds::Twelve, EnqueueSora2ProTextToVideoResolution::SevenTwentyP) => 360,
+      (EnqueueSora2ProTextToVideoDurationSeconds::Twelve, EnqueueSora2ProTextToVideoResolution::TenEightyP) => 600,
+    }
+  }
+}
+
+
+/// Sora 2 Pro Text-to-Video
+/// https://fal.ai/models/fal-ai/sora-2/text-to-video/pro
 pub async fn enqueue_sora_2_pro_text_to_video_webhook<R: IntoUrl>(
   args: EnqueueSora2ProTextToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
@@ -88,9 +117,9 @@ pub async fn enqueue_sora_2_pro_text_to_video_webhook<R: IntoUrl>(
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
+  use crate::requests::webhook::video::text::enqueue_sora_2_pro_text_to_video_webhook::{enqueue_sora_2_pro_text_to_video_webhook, EnqueueSora2ProTextToVideoArgs, EnqueueSora2ProTextToVideoAspectRatio, EnqueueSora2ProTextToVideoDurationSeconds, EnqueueSora2ProTextToVideoResolution};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use crate::requests::webhook::video::text::enqueue_sora_2_pro_text_to_video_webhook::{enqueue_sora_2_pro_text_to_video_webhook, EnqueueSora2ProTextToVideoArgs, EnqueueSora2ProTextToVideoAspectRatio, EnqueueSora2ProTextToVideoDurationSeconds, EnqueueSora2ProTextToVideoResolution};
 
   #[tokio::test]
   #[ignore]
