@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::kling_video::v2_6::kling_v2p6_pro_text_to_video::{kling_v2p6_pro_text_to_video, KlingV2p6ProTextToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -33,6 +34,26 @@ pub enum EnqueueKlingV2p6ProTextToVideoAspectRatio {
   NineBySixteen,
 }
 
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueKlingV2p6ProTextToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For every second of video you generated, you will be
+    //  charged $0.07 (audio off) or $0.14 (audio on).
+    //  For example, a 5s video with audio on will cost $0.70"
+    let generate_audio = self.generate_audio.unwrap_or(true);
+    let duration = self.duration.unwrap_or(EnqueueKlingV2p6ProTextToVideoDurationSeconds::Five);
+
+    match (generate_audio, duration) {
+      (false, EnqueueKlingV2p6ProTextToVideoDurationSeconds::Five) => 35, // audio off: $0.07 * 5 = $0.35
+      (false, EnqueueKlingV2p6ProTextToVideoDurationSeconds::Ten) => 70, // audio off: $0.07 * 10 = $0.70
+      (true, EnqueueKlingV2p6ProTextToVideoDurationSeconds::Five) => 70, // audio on: $0.14 * 5 = $0.70
+      (true, EnqueueKlingV2p6ProTextToVideoDurationSeconds::Ten) => 140, // audio on: $0.14 * 10 = $1.40
+    }
+  }
+}
+
+
+/// Kling 2.6 Pro Text-to-Video
+/// https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video
 pub async fn enqueue_kling_v2p6_pro_text_to_video_webhook<R: IntoUrl>(
   args: EnqueueKlingV2p6ProTextToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
@@ -74,9 +95,9 @@ pub async fn enqueue_kling_v2p6_pro_text_to_video_webhook<R: IntoUrl>(
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
+  use crate::requests::webhook::video::text::enqueue_kling_v2p6_pro_text_to_video_webhook::{enqueue_kling_v2p6_pro_text_to_video_webhook, EnqueueKlingV2p6ProTextToVideoArgs, EnqueueKlingV2p6ProTextToVideoAspectRatio, EnqueueKlingV2p6ProTextToVideoDurationSeconds};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use crate::requests::webhook::video::text::enqueue_kling_v2p6_pro_text_to_video_webhook::{enqueue_kling_v2p6_pro_text_to_video_webhook, EnqueueKlingV2p6ProTextToVideoArgs, EnqueueKlingV2p6ProTextToVideoAspectRatio, EnqueueKlingV2p6ProTextToVideoDurationSeconds};
 
   #[tokio::test]
   #[ignore]
