@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::kling_video::v1_6::pro::image_to_video::{image_to_video, ProImageToVideoRequest};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -29,11 +30,25 @@ pub enum Kling1p6ProAspectRatio {
   TallNineSixteen, // 9:16
 }
 
+impl <U: IntoUrl, T: IntoUrl, V: IntoUrl> FalRequestCostCalculator for Kling1p6ProArgs<'_, U, T, V> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "Your request will cost $0.095 per second."
+    match self.duration {
+      Kling1p6ProDuration::Default => 48, // $0.095 * 5 = $0.475 (round up)
+      Kling1p6ProDuration::FiveSeconds => 48, // $0.095 * 5 = $0.475 (round up)
+      Kling1p6ProDuration::TenSeconds => 95, // $0.095 * 10 = $0.95
+    }
+  }
+}
+
+
+/// Kling 1.6 Pro Image-to-Video
+/// https://fal.ai/models/fal-ai/kling-video/v1.6/pro/image-to-video
 pub async fn enqueue_kling_v1p6_pro_image_to_video_webhook<U: IntoUrl, T: IntoUrl, V: IntoUrl>(
   args: Kling1p6ProArgs<'_, U, T, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
-    Kling1p6ProDuration::Default => None,
+    Kling1p6ProDuration::Default => None, // defaults to "5"
     Kling1p6ProDuration::FiveSeconds => Some("5".to_string()), // Gross...
     Kling1p6ProDuration::TenSeconds => Some("10".to_string()),
   };
