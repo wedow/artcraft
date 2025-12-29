@@ -73,7 +73,7 @@ pub async fn enqueue_seedance_1_lite_image_to_video_webhook<U: IntoUrl, T: IntoU
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::video::enqueue_seedance_1_lite_image_to_video_webhook::{enqueue_seedance_1_lite_image_to_video_webhook, Seedance1LiteArgs, Seedance1LiteDuration, Seedance1LiteResolution};
+  use crate::requests::webhook::video::image::enqueue_seedance_1_lite_image_to_video_webhook::{enqueue_seedance_1_lite_image_to_video_webhook, Seedance1LiteArgs, Seedance1LiteDuration, Seedance1LiteResolution};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, TALL_MOCHI_WITH_GLASSES_IMAGE_URL};

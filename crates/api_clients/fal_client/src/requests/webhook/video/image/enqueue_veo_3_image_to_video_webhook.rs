@@ -81,10 +81,10 @@ pub async fn enqueue_veo_3_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::video::enqueue_veo_3_image_to_video_webhook::{enqueue_veo_3_image_to_video_webhook, Veo3Args, Veo3AspectRatio, Veo3Duration, Veo3Resolution};
+  use crate::requests::webhook::video::image::enqueue_veo_3_image_to_video_webhook::{enqueue_veo_3_image_to_video_webhook, Veo3Args, Veo3AspectRatio, Veo3Duration, Veo3Resolution};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
-  use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, TREX_SKELETON_IMAGE_URL};
+  use test_data::web::image_urls::TREX_SKELETON_IMAGE_URL;
 
   #[tokio::test]
   #[ignore]

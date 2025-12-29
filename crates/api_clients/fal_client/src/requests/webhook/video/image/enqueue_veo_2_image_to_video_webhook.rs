@@ -72,7 +72,7 @@ pub async fn enqueue_veo_2_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::video::enqueue_veo_2_image_to_video_webhook::{enqueue_veo_2_image_to_video_webhook, Veo2Args, Veo2AspectRatio, Veo2Duration};
+  use crate::requests::webhook::video::image::enqueue_veo_2_image_to_video_webhook::{enqueue_veo_2_image_to_video_webhook, Veo2Args, Veo2AspectRatio, Veo2Duration};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
 
