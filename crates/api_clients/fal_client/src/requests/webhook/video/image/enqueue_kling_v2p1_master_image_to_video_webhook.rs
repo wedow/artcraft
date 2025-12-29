@@ -4,6 +4,7 @@ use crate::error::fal_error_plus::FalErrorPlus;
 use fal::endpoints::fal_ai::kling_video::v2_1::master::image_to_video::{image_to_video, MasterImageToVideoRequest};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 
 pub struct Kling2p1MasterArgs<'a, U: IntoUrl, V: IntoUrl> {
   pub image_url: U,
@@ -28,11 +29,26 @@ pub enum Kling2p1MasterAspectRatio {
   TallNineSixteen, // 9:16
 }
 
+impl <U: IntoUrl, V: IntoUrl> FalRequestCostCalculator for Kling2p1MasterArgs<'_, U, V> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For 5s video your request will cost $1.40.
+    //  For every additional second you will be charged $0.28."
+    match self.duration {
+      Kling2p1MasterDuration::Default => 140, // $1.40 for 5 seconds
+      Kling2p1MasterDuration::FiveSeconds => 140, // $1.40 for 5 seconds
+      Kling2p1MasterDuration::TenSeconds => 280, // $1.40 + (0.28 * 5) = $2.80
+    }
+  }
+}
+
+
+/// Kling 2.1 Master Image-to-Video
+/// https://fal.ai/models/fal-ai/kling-video/v2.1/master/image-to-video
 pub async fn enqueue_kling_v2p1_master_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
   args: Kling2p1MasterArgs<'_, U, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
-    Kling2p1MasterDuration::Default => None,
+    Kling2p1MasterDuration::Default => None, // defaults to "5"
     Kling2p1MasterDuration::FiveSeconds => Some("5".to_string()), // Gross...
     Kling2p1MasterDuration::TenSeconds => Some("10".to_string()),
   };
