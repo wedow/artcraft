@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::minimax::hailuo::hailuo_v2p3_pro_image_to_video::{hailuo_v2p3_pro_image_to_video, HailuoV2p3ProImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -18,6 +19,16 @@ pub struct EnqueueHailuoV2p3ProImageToVideoArgs<'a, R: IntoUrl> {
   pub api_key: &'a FalApiKey,
 }
 
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueHailuoV2p3ProImageToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    /// "Your request will cost $0.49 per video generation."
+    49
+  }
+}
+
+
+/// Hailuo 2.3 Pro Image-to-Video
+/// https://fal.ai/models/fal-ai/minimax/hailuo-2.3/pro/image-to-video
 pub async fn enqueue_hailuo_v2p3_pro_image_to_video_webhook<R: IntoUrl>(
   args: EnqueueHailuoV2p3ProImageToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
