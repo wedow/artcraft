@@ -12,9 +12,15 @@ pub struct ImageToVideoRequest {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub end_image_url: Option<String>,
 
-  /// The resolution of the generated video frame
+  /// The resolution of the generated video frame.
+  /// Defaults to "720p"
   #[serde(skip_serializing_if = "Option::is_none")]
   pub resolution: Option<String>,
+
+  /// Aspect ratio.
+  /// Defaults to "auto"
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub aspect_ratio: Option<String>,
 
   /// The duration of the generated video in seconds
   #[serde(skip_serializing_if = "Option::is_none")]
