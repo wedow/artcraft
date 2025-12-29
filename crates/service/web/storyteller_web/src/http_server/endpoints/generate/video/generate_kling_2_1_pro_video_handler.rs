@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::billing::wallets::attempt_wallet_deduction::attempt_wallet_deduction_else_common_web_error;
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
@@ -17,6 +18,7 @@ use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
+use fal_client::requests::traits::fal_request_cost_calculator_trait::FalRequestCostCalculator;
 use fal_client::requests::webhook::video::image::enqueue_kling_v2p1_pro_image_to_video_webhook::enqueue_kling_v2p1_pro_image_to_video_webhook;
 use fal_client::requests::webhook::video::image::enqueue_kling_v2p1_pro_image_to_video_webhook::Kling2p1ProArgs;
 use fal_client::requests::webhook::video::image::enqueue_kling_v2p1_pro_image_to_video_webhook::Kling2p1ProAspectRatio;
@@ -26,10 +28,12 @@ use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
+use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue_with_apriori_job_token::{insert_generic_inference_job_for_fal_queue_with_apriori_job_token, InsertGenericInferenceForFalWithAprioriJobTokenArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::get::get_media_file::{get_media_file, get_media_file_with_connection};
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
 use sqlx::Acquire;
+use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use utoipa::ToSchema;
 
 /// Kling 2.1 Pro Image to Video
@@ -69,15 +73,12 @@ pub async fn generate_kling_2_1_pro_video_handler(
       .avt_cookie_manager
       .get_avt_token_from_request(&http_request);
 
-  // TODO: Limit usage for new accounts. Billing, free credits metering, etc.
-
-  //let user_session = match maybe_user_session {
-  //  Some(session) => session,
-  //  None => {
-  //    warn!("not logged in");
-  //    return Err(RemoveImageBackgroundError::NotAuthorized);
-  //  }
-  //};
+  let user_token = match maybe_user_session.as_ref() {
+    Some(session) => &session.user_token,
+    None => {
+      return Err(CommonWebError::NotAuthorized);
+    }
+  };
 
   let start_frame_media_file_token = match &request.media_file_token {
     Some(token) => token,
@@ -144,6 +145,8 @@ pub async fn generate_kling_2_1_pro_video_handler(
 
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
   
+  let apriori_job_token = InferenceJobToken::generate();
+  
   let prompt = request.prompt
       .as_deref()
       .map(|prompt| prompt.trim())
@@ -171,6 +174,17 @@ pub async fn generate_kling_2_1_pro_video_handler(
     aspect_ratio,
     api_key: &server_state.fal.api_key,
   };
+  
+  let cost = args.calculate_cost_in_cents();
+
+  info!("Charging wallet: {}", cost);
+
+  attempt_wallet_deduction_else_common_web_error(
+    user_token,
+    Some(apriori_job_token.as_str()),
+    cost,
+    &mut mysql_connection,
+  ).await?;
 
   let fal_result = enqueue_kling_v2p1_pro_image_to_video_webhook(args)
       .await
@@ -222,7 +236,8 @@ pub async fn generate_kling_2_1_pro_video_handler(
     }
   };
 
-  let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
+  let db_result = insert_generic_inference_job_for_fal_queue_with_apriori_job_token(InsertGenericInferenceForFalWithAprioriJobTokenArgs {
+    apriori_job_token: &apriori_job_token,
     uuid_idempotency_token: &request.uuid_idempotency_token,
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::VideoGeneration,

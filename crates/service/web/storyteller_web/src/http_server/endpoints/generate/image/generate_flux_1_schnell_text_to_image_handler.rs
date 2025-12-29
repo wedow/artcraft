@@ -90,7 +90,7 @@ pub async fn generate_flux_1_schnell_text_to_image_handler(
         CommonWebError::BadInputWithSimpleMessage("repeated idempotency token".to_string())
       })?;
 
-  // TODO: This is test code
+  //// TODO: This is test code
   let credits = match request.num_images {
     Some(GenerateFlux1SchnellTextToImageNumImages::One) => 25,
     Some(GenerateFlux1SchnellTextToImageNumImages::Two) => 50,
