@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 use std::sync::Arc;
 
+use crate::billing::wallets::attempt_wallet_deduction::attempt_wallet_deduction_else_common_web_error;
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
@@ -19,6 +20,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
+use fal_client::requests::traits::fal_request_cost_calculator_trait::FalRequestCostCalculator;
 use fal_client::requests::webhook::video::image::enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook::{enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook, EnqueueVeo3p1FastFirstLastFrameImageToVideoArgs, EnqueueVeo3p1FastFirstLastFrameImageToVideoAspectRatio, EnqueueVeo3p1FastFirstLastFrameImageToVideoDurationSeconds, EnqueueVeo3p1FastFirstLastFrameImageToVideoResolution};
 use fal_client::requests::webhook::video::image::enqueue_veo_3p1_fast_image_to_video_webhook::{enqueue_veo_3p1_fast_image_to_video_webhook, EnqueueVeo3p1FastImageToVideoArgs, EnqueueVeo3p1FastImageToVideoAspectRatio, EnqueueVeo3p1FastImageToVideoDurationSeconds, EnqueueVeo3p1FastImageToVideoResolution};
 use fal_client::requests::webhook::video::text::enqueue_veo_3p1_fast_text_to_video_webhook::{enqueue_veo_3p1_fast_text_to_video_webhook, EnqueueVeo3p1FastTextToVideoArgs, EnqueueVeo3p1FastTextToVideoAspectRatio, EnqueueVeo3p1FastTextToVideoDurationSeconds, EnqueueVeo3p1FastTextToVideoResolution};
@@ -27,6 +29,7 @@ use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
+use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue_with_apriori_job_token::{insert_generic_inference_job_for_fal_queue_with_apriori_job_token, InsertGenericInferenceForFalWithAprioriJobTokenArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::{batch_get_media_files_by_tokens, batch_get_media_files_by_tokens_with_connection};
 use mysql_queries::queries::prompt_context_items::insert_batch_prompt_context_items::{insert_batch_prompt_context_items, InsertBatchArgs, PromptContextItem};
@@ -34,6 +37,7 @@ use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPrompt
 use server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;
 use sqlx::{Acquire, MySql};
+use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 
@@ -74,15 +78,12 @@ pub async fn veo_3p1_fast_multi_function_video_gen_handler(
       .avt_cookie_manager
       .get_avt_token_from_request(&http_request);
 
-  // TODO: Limit usage for new accounts. Billing, free credits metering, etc.
-
-  //let user_session = match maybe_user_session {
-  //  Some(session) => session,
-  //  None => {
-  //    warn!("not logged in");
-  //    return Err(CommonWebError::NotAuthorized);
-  //  }
-  //};
+  let user_token = match maybe_user_session.as_ref() {
+    Some(session) => &session.user_token,
+    None => {
+      return Err(CommonWebError::NotAuthorized);
+    }
+  };
 
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
@@ -144,6 +145,8 @@ pub async fn veo_3p1_fast_multi_function_video_gen_handler(
 
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
 
+  let apriori_job_token = InferenceJobToken::generate();
+  
   let fal_result;
 
   let generate_audio = request.generate_audio.unwrap_or(true);
@@ -185,6 +188,17 @@ pub async fn veo_3p1_fast_multi_function_video_gen_handler(
         api_key: &server_state.fal.api_key,
       };
 
+      let cost = args.calculate_cost_in_cents();
+
+      info!("Charging wallet: {}", cost);
+
+      attempt_wallet_deduction_else_common_web_error(
+        user_token,
+        Some(apriori_job_token.as_str()),
+        cost,
+        &mut mysql_connection,
+      ).await?;
+
       fal_result = enqueue_veo_3p1_fast_first_last_frame_image_to_video_webhook(args)
           .await
           .map_err(|err| {
@@ -225,6 +239,17 @@ pub async fn veo_3p1_fast_multi_function_video_gen_handler(
         webhook_url: &server_state.fal.webhook_url,
         api_key: &server_state.fal.api_key,
       };
+
+      let cost = args.calculate_cost_in_cents();
+
+      info!("Charging wallet: {}", cost);
+
+      attempt_wallet_deduction_else_common_web_error(
+        user_token,
+        Some(apriori_job_token.as_str()),
+        cost,
+        &mut mysql_connection,
+      ).await?;
 
       fal_result = enqueue_veo_3p1_fast_image_to_video_webhook(args)
           .await
@@ -270,6 +295,17 @@ pub async fn veo_3p1_fast_multi_function_video_gen_handler(
       webhook_url: &server_state.fal.webhook_url,
       api_key: &server_state.fal.api_key,
     };
+    
+    let cost = args.calculate_cost_in_cents();
+
+    info!("Charging wallet: {}", cost);
+
+    attempt_wallet_deduction_else_common_web_error(
+      user_token,
+      Some(apriori_job_token.as_str()),
+      cost,
+      &mut mysql_connection,
+    ).await?;
 
     fal_result = enqueue_veo_3p1_fast_text_to_video_webhook(args)
         .await
@@ -353,7 +389,8 @@ pub async fn veo_3p1_fast_multi_function_video_gen_handler(
     }
   }
 
-  let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
+  let db_result = insert_generic_inference_job_for_fal_queue_with_apriori_job_token(InsertGenericInferenceForFalWithAprioriJobTokenArgs {
+    apriori_job_token: &apriori_job_token,
     uuid_idempotency_token: &request.uuid_idempotency_token,
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::VideoGeneration,

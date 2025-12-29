@@ -170,7 +170,7 @@ pub async fn kling_2p6_pro_multi_function_video_gen_handler(
     
     let cost = args.calculate_cost_in_cents();
     
-    info!("Charging wallet...");
+    info!("Charging wallet: {}", cost);
     
     attempt_wallet_deduction_else_common_web_error(
       user_token,
