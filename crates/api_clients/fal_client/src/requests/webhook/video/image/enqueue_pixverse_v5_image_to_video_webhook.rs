@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::pixverse::v5::pixverse_v5_image_to_video::{pixverse_v5_image_to_video, PixverseV5ImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -14,8 +15,11 @@ pub struct EnqueuePixverseV5ImageToVideoArgs<'a, R: IntoUrl> {
   pub negative_prompt: Option<String>,
   
   // NB: eight-second videos do not work with 1080P
+  // NB: Defaults to 5 seconds
   pub duration: Option<EnqueuePixverseV5ImageToVideoDurationSeconds>,
   pub aspect_ratio: Option<EnqueuePixverseV5ImageToVideoAspectRatio>,
+
+  // NB: Defaults to 720p
   pub resolution: Option<EnqueuePixverseV5ImageToVideoResolution>,
   pub style: Option<EnqueuePixverseV5ImageToVideoStyle>,
 
@@ -56,6 +60,33 @@ pub enum EnqueuePixverseV5ImageToVideoStyle {
   Cyberpunk,
 }
 
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueuePixverseV5ImageToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For 5s video your request will cost
+    //  $0.15 for 360p and 540p,
+    //  $0.2 for 720p and
+    //  $0.4 for 1080p.
+    //  For $1 you can run this model with approximately 2 times."
+    let duration = self.duration.unwrap_or(EnqueuePixverseV5ImageToVideoDurationSeconds::Five);
+    let resolution = self.resolution.unwrap_or(EnqueuePixverseV5ImageToVideoResolution::SevenTwentyP);
+    match (duration, resolution) {
+      // Five seconds
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Five, EnqueuePixverseV5ImageToVideoResolution::ThreeSixtyP) => 15, // $0.15
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Five, EnqueuePixverseV5ImageToVideoResolution::FiveFortyP) => 15, // $0.15
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Five, EnqueuePixverseV5ImageToVideoResolution::SevenTwentyP) => 20, // $0.20
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Five, EnqueuePixverseV5ImageToVideoResolution::TenEightyP) => 40, // $0.40
+      // Ten seconds
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Eight, EnqueuePixverseV5ImageToVideoResolution::ThreeSixtyP) => 30, // NB: Doubling since unclear
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Eight, EnqueuePixverseV5ImageToVideoResolution::FiveFortyP) => 30, // NB: Doubling since unclear
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Eight, EnqueuePixverseV5ImageToVideoResolution::SevenTwentyP) => 40, // NB: Doubling since unclear
+      (EnqueuePixverseV5ImageToVideoDurationSeconds::Eight, EnqueuePixverseV5ImageToVideoResolution::TenEightyP) => 80, // NB: Doubling since unclear
+    }
+  }
+}
+
+
+/// Pixverse 5 Image-to-Video
+/// https://fal.ai/models/fal-ai/pixverse/v5/image-to-video
 pub async fn enqueue_pixverse_v5_image_to_video_webhook<R: IntoUrl>(
   args: EnqueuePixverseV5ImageToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
