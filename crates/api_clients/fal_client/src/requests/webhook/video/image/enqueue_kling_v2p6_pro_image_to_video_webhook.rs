@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::kling_video::v2_6::kling_v2p6_pro_image_to_video::{kling_v2p6_pro_image_to_video, KlingV2p6ProImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -11,8 +12,13 @@ pub struct EnqueueKlingV2p6ProImageToVideoArgs<'a, R: IntoUrl> {
   pub image_url: String,
 
   // Optional args
+
+  /// NB: Generate audio defaults to true, and it costs twice as much.
   pub generate_audio: Option<bool>,
+
   pub negative_prompt: Option<String>,
+
+  /// NB: Duration defaults to 5 seconds
   pub duration: Option<EnqueueKlingV2p6ProImageToVideoDurationSeconds>,
 
   // Fulfillment
@@ -26,6 +32,26 @@ pub enum EnqueueKlingV2p6ProImageToVideoDurationSeconds {
   Ten,
 }
 
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueKlingV2p6ProImageToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For every second of video you generated, you will be
+    //  charged $0.07 (audio off) or $0.14 (audio on).
+    //  For example, a 5s video with audio on will cost $0.70"
+    let generate_audio = self.generate_audio.unwrap_or(true);
+    let duration = self.duration.unwrap_or(EnqueueKlingV2p6ProImageToVideoDurationSeconds::Five);
+
+    match (generate_audio, duration) {
+      (false, EnqueueKlingV2p6ProImageToVideoDurationSeconds::Five) => 35, // audio off: $0.07 * 5 = $0.35
+      (false, EnqueueKlingV2p6ProImageToVideoDurationSeconds::Ten) => 70, // audio off: $0.07 * 10 = $0.70
+      (true, EnqueueKlingV2p6ProImageToVideoDurationSeconds::Five) => 70, // audio on: $0.14 * 5 = $0.70
+      (true, EnqueueKlingV2p6ProImageToVideoDurationSeconds::Ten) => 140, // audio on: $0.14 * 10 = $1.40
+    }
+  }
+}
+
+
+/// Kling 2.6 Pro Image-to-Video
+/// https://fal.ai/models/fal-ai/kling-video/v2.6/pro/image-to-video
 pub async fn enqueue_kling_v2p6_pro_image_to_video_webhook<R: IntoUrl>(
   args: EnqueueKlingV2p6ProImageToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
