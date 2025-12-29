@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::veo3::image_to_video_fast::{image_to_video_fast, ImageToVideoFastInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -17,7 +18,9 @@ pub struct Veo3FastArgs<'a, U: IntoUrl, V: IntoUrl> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Veo3FastDuration {
-  Default,
+  Default, // NB: Defaults to 8 seconds.
+  FourSeconds,
+  SixSeconds,
   EightSeconds,
 }
 
@@ -28,11 +31,34 @@ pub enum Veo3FastResolution {
   TenEightyP,
 }
 
+impl <U: IntoUrl, V: IntoUrl> FalRequestCostCalculator for Veo3FastArgs<'_, U, V> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For every second of video you generated, you will be charged
+    // $0.10 (audio off) or $0.15 (audio on).
+    // For example, a 5s video with audio on will cost $0.75."
+    match (self.duration, self.generate_audio) {
+      (Veo3FastDuration::FourSeconds, false) => 40,
+      (Veo3FastDuration::SixSeconds, false) => 60,
+      (Veo3FastDuration::EightSeconds, false) => 80,
+      (Veo3FastDuration::Default, false) => 80, // NB: Default is 8 seconds
+      (Veo3FastDuration::FourSeconds, true) => 60,
+      (Veo3FastDuration::SixSeconds, true) => 90,
+      (Veo3FastDuration::EightSeconds, true) => 120,
+      (Veo3FastDuration::Default, true) => 120, // NB: Default is 8 seconds
+    }
+  }
+}
+
+
+/// Veo 3 Fast Image-to-Video
+/// https://fal.ai/models/fal-ai/veo3/fast/image-to-video
 pub async fn enqueue_veo_3_fast_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
   args: Veo3FastArgs<'_, U, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
-    Veo3FastDuration::Default => None,
+    Veo3FastDuration::Default => None, // NB: Defaults to 8.
+    Veo3FastDuration::FourSeconds => Some("4s".to_string()),
+    Veo3FastDuration::SixSeconds => Some("6s".to_string()),
     Veo3FastDuration::EightSeconds => Some("8s".to_string()),
   };
   

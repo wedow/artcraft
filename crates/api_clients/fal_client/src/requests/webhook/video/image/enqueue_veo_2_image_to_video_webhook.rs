@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::veo2::image_to_video::image_to_video;
 use fal::endpoints::fal_ai::veo2::image_to_video::ImageToVideoInput;
 use fal::webhook::WebhookResponse;
@@ -17,7 +18,7 @@ pub struct Veo2Args<'a, U: IntoUrl, V: IntoUrl> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Veo2Duration {
-  Default,
+  Default, // NB: Default is 5 seconds
   FiveSeconds,
   SixSeconds,
   SevenSeconds,
@@ -32,11 +33,28 @@ pub enum Veo2AspectRatio {
   TallNineSixteen, // 9:16
 }
 
+impl <U: IntoUrl, V: IntoUrl> FalRequestCostCalculator for Veo2Args<'_, U, V> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For 5s video your request will cost $2.50.
+    // For every aditional second you will be charged $0.50."
+    match self.duration {
+      Veo2Duration::Default => 250,
+      Veo2Duration::FiveSeconds => 250,
+      Veo2Duration::SixSeconds => 300,
+      Veo2Duration::SevenSeconds => 350,
+      Veo2Duration::EightSeconds => 400,
+    }
+  }
+}
+
+
+/// Veo 2 Image-to-Video
+/// https://fal.ai/models/fal-ai/veo2/image-to-video
 pub async fn enqueue_veo_2_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
   args: Veo2Args<'_, U, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
-    Veo2Duration::Default => None,
+    Veo2Duration::Default => None, // NB: Default is 5 seconds.
     Veo2Duration::FiveSeconds => Some("5s".to_string()),
     Veo2Duration::SixSeconds => Some("6s".to_string()),
     Veo2Duration::SevenSeconds => Some("7s".to_string()),

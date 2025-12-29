@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::veo3::image_to_video::{image_to_video, ImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -18,7 +19,9 @@ pub struct Veo3Args<'a, U: IntoUrl, V: IntoUrl> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Veo3Duration {
-  Default,
+  Default, // Default is 8 seconds
+  FourSeconds,
+  SixSeconds,
   EightSeconds,
 }
 
@@ -37,11 +40,36 @@ pub enum Veo3Resolution {
   TenEightyP,
 }
 
+impl <U: IntoUrl, V: IntoUrl> FalRequestCostCalculator for Veo3Args<'_, U, V> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For every second of video you generated, you will be charged
+    //  $0.20 (audio off) or
+    //  $0.40 (audio on).
+    //  For example, a 5s video with audio on will cost $2."
+
+    match (self.duration, self.generate_audio) {
+      (Veo3Duration::FourSeconds, false) => 80,
+      (Veo3Duration::SixSeconds, false) => 120,
+      (Veo3Duration::EightSeconds, false) => 160,
+      (Veo3Duration::Default, false) => 160, // NB: Default is 8 seconds
+      (Veo3Duration::FourSeconds, true) => 160,
+      (Veo3Duration::SixSeconds, true) => 240,
+      (Veo3Duration::EightSeconds, true) => 320,
+      (Veo3Duration::Default, true) => 320, // NB: Default is 8 seconds320
+    }
+  }
+}
+
+
+/// Veo 3 Image-to-Video
+/// https://fal.ai/models/fal-ai/veo3/image-to-video
 pub async fn enqueue_veo_3_image_to_video_webhook<U: IntoUrl, V: IntoUrl>(
   args: Veo3Args<'_, U, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
     Veo3Duration::Default => None,
+    Veo3Duration::FourSeconds => Some("4s".to_string()),
+    Veo3Duration::SixSeconds => Some("6s".to_string()),
     Veo3Duration::EightSeconds => Some("8s".to_string()),
   };
 
