@@ -86,7 +86,7 @@ impl <U: IntoUrl, T: IntoUrl, V: IntoUrl> FalRequestCostCalculator for Seedance1
 }
 
 
-/// Seedance 1 Lite Image-to-Video
+/// Seedance 1.0 Lite Image-to-Video
 /// https://fal.ai/models/fal-ai/bytedance/seedance/v1/lite/image-to-video
 pub async fn enqueue_seedance_1_lite_image_to_video_webhook<U: IntoUrl, T: IntoUrl, V: IntoUrl>(
   args: Seedance1LiteArgs<'_, U, T, V>
