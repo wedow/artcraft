@@ -10,17 +10,17 @@ use crate::util::lookup::fetch_all_required_media_files::fetch_all_required_medi
 use crate::util::traits::into_media_links_trait::IntoMediaLinks;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteDuration;
 use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
 use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoResponse;
 use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteResolution;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::{GenerateSeedance10LiteAspectRatio, GenerateSeedance10LiteDuration};
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::video::image::enqueue_seedance_1_lite_image_to_video_webhook::enqueue_seedance_1_lite_image_to_video_webhook;
 use fal_client::requests::webhook::video::image::enqueue_seedance_1_lite_image_to_video_webhook::Seedance1LiteDuration;
+use fal_client::requests::webhook::video::image::enqueue_seedance_1_lite_image_to_video_webhook::{enqueue_seedance_1_lite_image_to_video_webhook, Seedance1LiteAspectRatio};
 use fal_client::requests::webhook::video::image::enqueue_seedance_1_lite_image_to_video_webhook::{Seedance1LiteArgs, Seedance1LiteResolution};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
@@ -161,7 +161,19 @@ pub async fn generate_seedance_1_0_lite_image_to_video_handler(
     Some(GenerateSeedance10LiteDuration::TenSeconds) => Seedance1LiteDuration::TenSeconds,
     None => Seedance1LiteDuration::FiveSeconds, 
   };
-  
+
+  let aspect_ratio = request.aspect_ratio
+      .as_ref()
+      .map(|ar| match ar {
+        GenerateSeedance10LiteAspectRatio::Auto => Seedance1LiteAspectRatio::Auto,
+        GenerateSeedance10LiteAspectRatio::TwentyOneByNine => Seedance1LiteAspectRatio::TwentyOneByNine,
+        GenerateSeedance10LiteAspectRatio::SixteenByNine => Seedance1LiteAspectRatio::SixteenByNine,
+        GenerateSeedance10LiteAspectRatio::FourByThree => Seedance1LiteAspectRatio::FourByThree,
+        GenerateSeedance10LiteAspectRatio::Square => Seedance1LiteAspectRatio::Square,
+        GenerateSeedance10LiteAspectRatio::ThreeByFour => Seedance1LiteAspectRatio::ThreeByFour,
+        GenerateSeedance10LiteAspectRatio::NineBySixteen => Seedance1LiteAspectRatio::NineBySixteen,
+      });
+
   let args = Seedance1LiteArgs {
     image_url: start_frame_url,
     end_frame_image_url: maybe_end_frame_url,
@@ -170,6 +182,7 @@ pub async fn generate_seedance_1_0_lite_image_to_video_handler(
     duration,
     resolution,
     prompt,
+    aspect_ratio,
     camera_fixed: false, // TODO: Parameterize
     seed: None, // TODO: Parameterize
   };

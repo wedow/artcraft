@@ -1,6 +1,7 @@
 use crate::errors::select_exactly_one_error::SelectExactlyOneError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use crate::errors::select_optional_record_error::SelectOptionalRecordError;
 
 #[derive(Debug)]
 pub enum WalletSpendError {
@@ -15,6 +16,9 @@ pub enum WalletSpendError {
   
   /// Error selecting the wallet
   SelectError(SelectExactlyOneError),
+
+  /// Error selecting the wallet
+  SelectOptionalError(SelectOptionalRecordError),
   
   /// Error updating the wallet
   SqlxError(sqlx::Error),
@@ -32,6 +36,7 @@ impl Display for WalletSpendError {
           requested_to_spend_amount, available_amount)
       },
       WalletSpendError::SelectError(err) => write!(f, "Error selecting wallet: {}", err),
+      WalletSpendError::SelectOptionalError(err) => write!(f, "Error selecting wallet: {}", err),
       WalletSpendError::SqlxError(err) => write!(f, "Database error: {}", err),
     }
   }
@@ -40,6 +45,12 @@ impl Display for WalletSpendError {
 impl From<SelectExactlyOneError> for WalletSpendError {
   fn from(err: SelectExactlyOneError) -> Self {
     WalletSpendError::SelectError(err)
+  }
+}
+
+impl From<SelectOptionalRecordError> for WalletSpendError {
+  fn from(err: SelectOptionalRecordError) -> Self {
+    WalletSpendError::SelectOptionalError(err)
   }
 }
 

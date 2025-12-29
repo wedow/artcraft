@@ -21,11 +21,14 @@ pub struct GenerateSeedance10LiteImageToVideoRequest {
   /// Optional text prompt.
   pub prompt: Option<String>,
   
-  /// Optional: aspect ratio of the generated video.
+  /// Optional: resolution of the generated video.
   pub resolution: Option<GenerateSeedance10LiteResolution>,
 
-  /// Optional: aspect ratio of the generated video.
+  /// Optional: duration of the generated video.
   pub duration: Option<GenerateSeedance10LiteDuration>,
+
+  /// Optional: aspect ratio of the generated video.
+  pub aspect_ratio: Option<GenerateSeedance10LiteAspectRatio>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -40,6 +43,19 @@ pub enum GenerateSeedance10LiteResolution {
 pub enum GenerateSeedance10LiteDuration {
   FiveSeconds,
   TenSeconds,
+}
+
+
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum GenerateSeedance10LiteAspectRatio {
+  Auto,
+  TwentyOneByNine,
+  SixteenByNine,
+  FourByThree,
+  Square,
+  ThreeByFour,
+  NineBySixteen,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
