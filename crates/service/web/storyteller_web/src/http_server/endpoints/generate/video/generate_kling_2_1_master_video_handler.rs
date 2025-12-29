@@ -15,10 +15,7 @@ use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::video::enqueue_kling_21_master_image_to_video_webhook::enqueue_kling_21_master_image_to_video_webhook;
-use fal_client::requests::webhook::video::enqueue_kling_21_master_image_to_video_webhook::Kling21MasterArgs;
-use fal_client::requests::webhook::video::enqueue_kling_21_master_image_to_video_webhook::Kling21MasterAspectRatio;
-use fal_client::requests::webhook::video::enqueue_kling_21_master_image_to_video_webhook::Kling21MasterDuration;
+use fal_client::requests::webhook::video::image::enqueue_kling_v2p1_master_image_to_video_webhook::{enqueue_kling_v2p1_master_image_to_video_webhook, Kling2p1MasterArgs, Kling2p1MasterAspectRatio, Kling2p1MasterDuration};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -139,19 +136,19 @@ pub async fn generate_kling_2_1_master_video_handler(
       .unwrap_or_else(|| "");
   
   let aspect_ratio = match &request.aspect_ratio {
-    Some(GenerateKling21MasterAspectRatio::Square) => Kling21MasterAspectRatio::Square,
-    Some(GenerateKling21MasterAspectRatio::WideSixteenNine) => Kling21MasterAspectRatio::WideSixteenNine,
-    Some(GenerateKling21MasterAspectRatio::TallNineSixteen) => Kling21MasterAspectRatio::TallNineSixteen,
-    None => Kling21MasterAspectRatio::WideSixteenNine, // Default to 16:9
+    Some(GenerateKling21MasterAspectRatio::Square) => Kling2p1MasterAspectRatio::Square,
+    Some(GenerateKling21MasterAspectRatio::WideSixteenNine) => Kling2p1MasterAspectRatio::WideSixteenNine,
+    Some(GenerateKling21MasterAspectRatio::TallNineSixteen) => Kling2p1MasterAspectRatio::TallNineSixteen,
+    None => Kling2p1MasterAspectRatio::WideSixteenNine, // Default to 16:9
   };
   
   let duration = match &request.duration {
-    Some(GenerateKling21MasterDuration::FiveSeconds) => Kling21MasterDuration::FiveSeconds,
-    Some(GenerateKling21MasterDuration::TenSeconds) => Kling21MasterDuration::TenSeconds,
-    None => Kling21MasterDuration::FiveSeconds, 
+    Some(GenerateKling21MasterDuration::FiveSeconds) => Kling2p1MasterDuration::FiveSeconds,
+    Some(GenerateKling21MasterDuration::TenSeconds) => Kling2p1MasterDuration::TenSeconds,
+    None => Kling2p1MasterDuration::FiveSeconds, 
   };
   
-  let args = Kling21MasterArgs {
+  let args = Kling2p1MasterArgs {
     image_url: media_links.cdn_url,
     webhook_url: &server_state.fal.webhook_url,
     duration,
@@ -160,7 +157,7 @@ pub async fn generate_kling_2_1_master_video_handler(
     api_key: &server_state.fal.api_key,
   };
 
-  let fal_result = enqueue_kling_21_master_image_to_video_webhook(args)
+  let fal_result = enqueue_kling_v2p1_master_image_to_video_webhook(args)
       .await
       .map_err(|err| {
         warn!("Error calling enqueue_kling_21_master_image_to_video_webhook: {:?}", err);

@@ -5,43 +5,43 @@ use fal::endpoints::fal_ai::kling_video::v1_6::pro::image_to_video::{image_to_vi
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
 
-pub struct Kling16ProArgs<'a, U: IntoUrl, T: IntoUrl, V: IntoUrl> {
+pub struct Kling1p6ProArgs<'a, U: IntoUrl, T: IntoUrl, V: IntoUrl> {
   pub image_url: U,
   pub end_frame_image_url: Option<T>,
   pub webhook_url: V,
   pub prompt: &'a str,
   pub api_key: &'a FalApiKey,
-  pub duration: Kling16Duration,
-  pub aspect_ratio: Kling16ProAspectRatio,
+  pub duration: Kling1p6ProDuration,
+  pub aspect_ratio: Kling1p6ProAspectRatio,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum Kling16Duration {
+pub enum Kling1p6ProDuration {
   Default,
   FiveSeconds,
   TenSeconds,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum Kling16ProAspectRatio {
+pub enum Kling1p6ProAspectRatio {
   Square, // 1:1
   WideSixteenNine, // 16:9
   TallNineSixteen, // 9:16
 }
 
-pub async fn enqueue_kling_16_pro_image_to_video_webhook<U: IntoUrl, T: IntoUrl, V: IntoUrl>(
-  args: Kling16ProArgs<'_, U, T, V>
+pub async fn enqueue_kling_v1p6_pro_image_to_video_webhook<U: IntoUrl, T: IntoUrl, V: IntoUrl>(
+  args: Kling1p6ProArgs<'_, U, T, V>
 ) -> Result<WebhookResponse, FalErrorPlus> {
   let duration = match args.duration {
-    Kling16Duration::Default => None,
-    Kling16Duration::FiveSeconds => Some("5".to_string()), // Gross...
-    Kling16Duration::TenSeconds => Some("10".to_string()),
+    Kling1p6ProDuration::Default => None,
+    Kling1p6ProDuration::FiveSeconds => Some("5".to_string()), // Gross...
+    Kling1p6ProDuration::TenSeconds => Some("10".to_string()),
   };
   
   let aspect_ratio = match args.aspect_ratio {
-    Kling16ProAspectRatio::Square => Some("1:1".to_string()),
-    Kling16ProAspectRatio::WideSixteenNine => Some("16:9".to_string()),
-    Kling16ProAspectRatio::TallNineSixteen => Some("9:16".to_string()),
+    Kling1p6ProAspectRatio::Square => Some("1:1".to_string()),
+    Kling1p6ProAspectRatio::WideSixteenNine => Some("16:9".to_string()),
+    Kling1p6ProAspectRatio::TallNineSixteen => Some("9:16".to_string()),
   };
 
   let image_url = args.image_url.as_str().to_string();
@@ -71,7 +71,7 @@ pub async fn enqueue_kling_16_pro_image_to_video_webhook<U: IntoUrl, T: IntoUrl,
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
-  use crate::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::{enqueue_kling_16_pro_image_to_video_webhook, Kling16Duration, Kling16ProArgs, Kling16ProAspectRatio};
+  use crate::requests::webhook::video::image::enqueue_kling_v1p6_pro_image_to_video_webhook::{enqueue_kling_v1p6_pro_image_to_video_webhook, Kling1p6ProArgs, Kling1p6ProAspectRatio, Kling1p6ProDuration};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use test_data::web::image_urls::{JUNO_AT_LAKE_IMAGE_URL, TALL_MOCHI_WITH_GLASSES_IMAGE_URL};
@@ -84,17 +84,17 @@ mod tests {
 
     let api_key = FalApiKey::from_str(&secret);
 
-    let args = Kling16ProArgs {
+    let args = Kling1p6ProArgs {
       image_url: TALL_MOCHI_WITH_GLASSES_IMAGE_URL,
       end_frame_image_url: Some(JUNO_AT_LAKE_IMAGE_URL.to_string()),
       prompt: "shiba in glasses runs to the lake and stands by the shore",
       api_key: &api_key,
-      duration: Kling16Duration::Default,
-      aspect_ratio: Kling16ProAspectRatio::WideSixteenNine,
+      duration: Kling1p6ProDuration::Default,
+      aspect_ratio: Kling1p6ProAspectRatio::WideSixteenNine,
       webhook_url: "https://example.com/webhook",
     };
 
-    let result = enqueue_kling_16_pro_image_to_video_webhook(args).await?;
+    let result = enqueue_kling_v1p6_pro_image_to_video_webhook(args).await?;
 
     Ok(())
   }

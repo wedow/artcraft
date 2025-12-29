@@ -17,10 +17,7 @@ use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
-use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::enqueue_kling_16_pro_image_to_video_webhook;
-use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::Kling16Duration;
-use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::Kling16ProArgs;
-use fal_client::requests::webhook::video::enqueue_kling_16_pro_image_to_video_webhook::Kling16ProAspectRatio;
+use fal_client::requests::webhook::video::image::enqueue_kling_v1p6_pro_image_to_video_webhook::{enqueue_kling_v1p6_pro_image_to_video_webhook, Kling1p6ProArgs, Kling1p6ProAspectRatio, Kling1p6ProDuration};
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
@@ -151,19 +148,19 @@ pub async fn generate_kling_1_6_pro_video_handler(
       .unwrap_or_else(|| "");
   
   let aspect_ratio = match &request.aspect_ratio {
-    Some(GenerateKling16ProAspectRatio::Square) => Kling16ProAspectRatio::Square,
-    Some(GenerateKling16ProAspectRatio::WideSixteenNine) => Kling16ProAspectRatio::WideSixteenNine,
-    Some(GenerateKling16ProAspectRatio::TallNineSixteen) => Kling16ProAspectRatio::TallNineSixteen,
-    None => Kling16ProAspectRatio::WideSixteenNine, // Default to 16:9
+    Some(GenerateKling16ProAspectRatio::Square) => Kling1p6ProAspectRatio::Square,
+    Some(GenerateKling16ProAspectRatio::WideSixteenNine) => Kling1p6ProAspectRatio::WideSixteenNine,
+    Some(GenerateKling16ProAspectRatio::TallNineSixteen) => Kling1p6ProAspectRatio::TallNineSixteen,
+    None => Kling1p6ProAspectRatio::WideSixteenNine, // Default to 16:9
   };
   
   let duration = match &request.duration {
-    Some(GenerateKling16ProDuration::FiveSeconds) => Kling16Duration::FiveSeconds,
-    Some(GenerateKling16ProDuration::TenSeconds) => Kling16Duration::TenSeconds,
-    None => Kling16Duration::FiveSeconds, 
+    Some(GenerateKling16ProDuration::FiveSeconds) => Kling1p6ProDuration::FiveSeconds,
+    Some(GenerateKling16ProDuration::TenSeconds) => Kling1p6ProDuration::TenSeconds,
+    None => Kling1p6ProDuration::FiveSeconds, 
   };
 
-  let args = Kling16ProArgs {
+  let args = Kling1p6ProArgs {
     image_url: start_frame_url,
     end_frame_image_url: maybe_end_frame_url,
     webhook_url: &server_state.fal.webhook_url,
@@ -173,7 +170,7 @@ pub async fn generate_kling_1_6_pro_video_handler(
     api_key: &server_state.fal.api_key,
   };
 
-  let fal_result = enqueue_kling_16_pro_image_to_video_webhook(args)
+  let fal_result = enqueue_kling_v1p6_pro_image_to_video_webhook(args)
       .await
       .map_err(|err| {
         warn!("Error calling enqueue_kling_16_pro_image_to_video_webhook: {:?}", err);
