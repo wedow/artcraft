@@ -1,9 +1,10 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
+use fal::endpoints::fal_ai::kling_video::v2_5::kling_v2p5_turbo_standard_image_to_video::{kling_v2p5_turbo_standard_image_to_video, KlingV2p5TurboStandardImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
-use fal::endpoints::fal_ai::kling_video::v2_5::kling_v2p5_turbo_standard_image_to_video::{kling_v2p5_turbo_standard_image_to_video, KlingV2p5TurboStandardImageToVideoInput};
 
 pub struct EnqueueKlingV2p5TurboStandardImageToVideoArgs<'a, R: IntoUrl> {
   // Request required
@@ -25,10 +26,26 @@ pub enum EnqueueKlingV2p5TurboStandardImageToVideoDurationSeconds {
   Ten,
 }
 
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueKlingV2p5TurboStandardImageToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For 5s video your request will cost $0.21.
+    //  For every additional second you will be charged $0.042."
+    match self.duration {
+      None => 21, // $0.21
+      Some(EnqueueKlingV2p5TurboStandardImageToVideoDurationSeconds::Five) => 21, // $0.21
+      Some(EnqueueKlingV2p5TurboStandardImageToVideoDurationSeconds::Ten) => 42, // $0.21 + (5 * $0.042) = $0.42
+    }
+  }
+}
+
+/// Kling 2.5 Turbo Standard Image-to-Video
+/// https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/standard/image-to-video
 pub async fn enqueue_kling_v2p5_turbo_standard_image_to_video_webhook<R: IntoUrl>(
   args: EnqueueKlingV2p5TurboStandardImageToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
 
+  // NB: Defaults to 5 seconds.
   let duration = args.duration
       .map(|resolution| match resolution {
         EnqueueKlingV2p5TurboStandardImageToVideoDurationSeconds::Five => "5",
@@ -57,10 +74,10 @@ pub async fn enqueue_kling_v2p5_turbo_standard_image_to_video_webhook<R: IntoUrl
 #[cfg(test)]
 mod tests {
   use crate::creds::fal_api_key::FalApiKey;
+  use crate::requests::webhook::video::image::enqueue_kling_v2p5_turbo_standard_image_to_video_webhook::{enqueue_kling_v2p5_turbo_standard_image_to_video_webhook, EnqueueKlingV2p5TurboStandardImageToVideoArgs, EnqueueKlingV2p5TurboStandardImageToVideoDurationSeconds};
   use errors::AnyhowResult;
   use std::fs::read_to_string;
   use test_data::web::image_urls::TREX_SKELETON_IMAGE_URL;
-  use crate::requests::webhook::video::image::enqueue_kling_v2p5_turbo_standard_image_to_video_webhook::{enqueue_kling_v2p5_turbo_standard_image_to_video_webhook, EnqueueKlingV2p5TurboStandardImageToVideoArgs, EnqueueKlingV2p5TurboStandardImageToVideoDurationSeconds};
 
   #[tokio::test]
   #[ignore]
