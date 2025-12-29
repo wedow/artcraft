@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::veo::veo3_1::veo_3p1_first_last_frame_image_to_video::{veo_3p1_first_last_frame_image_to_video, Veo3p1FirstLastFrameImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -46,6 +47,31 @@ pub enum EnqueueVeo3p1FirstLastFrameImageToVideoResolution {
   TenEightyP,
 }
 
+impl <R: IntoUrl> FalRequestCostCalculator for EnqueueVeo3p1FirstLastFrameImageToVideoArgs<'_, R> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For every second of video you generated, you will be charged
+    //  $0.20 (audio off) or
+    //  $0.40 (audio on).
+    //  For example, a 5s video with audio on will cost $2."
+    let duration = self.duration
+        .unwrap_or(EnqueueVeo3p1FirstLastFrameImageToVideoDurationSeconds::Eight);
+
+    let generate_audio = self.generate_audio.unwrap_or(true);
+
+    match (duration, generate_audio) {
+      (EnqueueVeo3p1FirstLastFrameImageToVideoDurationSeconds::Four, false) => 80,
+      (EnqueueVeo3p1FirstLastFrameImageToVideoDurationSeconds::Six, false) => 120,
+      (EnqueueVeo3p1FirstLastFrameImageToVideoDurationSeconds::Eight, false) => 160,
+      (EnqueueVeo3p1FirstLastFrameImageToVideoDurationSeconds::Four, true) => 160,
+      (EnqueueVeo3p1FirstLastFrameImageToVideoDurationSeconds::Six, true) => 240,
+      (EnqueueVeo3p1FirstLastFrameImageToVideoDurationSeconds::Eight, true) => 320,
+    }
+  }
+}
+
+
+/// Veo 3.1 First Frame / Last Frame Image-to-Video
+/// https://fal.ai/models/fal-ai/veo3.1/first-last-frame-to-video
 pub async fn enqueue_veo_3p1_first_last_frame_image_to_video_webhook<R: IntoUrl>(
   args: EnqueueVeo3p1FirstLastFrameImageToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
