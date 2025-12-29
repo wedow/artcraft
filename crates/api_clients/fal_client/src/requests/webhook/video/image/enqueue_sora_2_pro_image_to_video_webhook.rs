@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::sora::sora2::sora_2_pro_image_to_video::{sora_2_pro_image_to_video, Sora2ProImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -41,6 +42,33 @@ pub enum EnqueueSora2ProImageToVideoAspectRatio {
   SixteenByNine,
 }
 
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueSora2ProImageToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "If an OpenAI API key is provided, it will be directly charged by OpenAI.
+    //  Otherwise, you will be charged fal credits.
+    //  The pricing is $0.30/s for 720p and $0.50/s for 1080p."
+    // NB(bt): There's no way to provide an API key with this endpoint?
+
+    let duration = self.duration.unwrap_or(EnqueueSora2ProImageToVideoDurationSeconds::Four);
+    let resolution = self.resolution.unwrap_or(EnqueueSora2ProImageToVideoResolution::Auto); // WHAT IS THIS?!
+
+    match (duration, resolution) {
+      (EnqueueSora2ProImageToVideoDurationSeconds::Four, EnqueueSora2ProImageToVideoResolution::Auto) => 120, // TODO: Auto = ???
+      (EnqueueSora2ProImageToVideoDurationSeconds::Four, EnqueueSora2ProImageToVideoResolution::SevenTwentyP) => 120,
+      (EnqueueSora2ProImageToVideoDurationSeconds::Four, EnqueueSora2ProImageToVideoResolution::TenEightyP) => 200,
+      (EnqueueSora2ProImageToVideoDurationSeconds::Eight, EnqueueSora2ProImageToVideoResolution::Auto) => 240, // TODO: Auto = ???
+      (EnqueueSora2ProImageToVideoDurationSeconds::Eight, EnqueueSora2ProImageToVideoResolution::SevenTwentyP) => 240,
+      (EnqueueSora2ProImageToVideoDurationSeconds::Eight, EnqueueSora2ProImageToVideoResolution::TenEightyP) => 400,
+      (EnqueueSora2ProImageToVideoDurationSeconds::Twelve, EnqueueSora2ProImageToVideoResolution::Auto) => 360, // TODO: Auto = ???
+      (EnqueueSora2ProImageToVideoDurationSeconds::Twelve, EnqueueSora2ProImageToVideoResolution::SevenTwentyP) => 360,
+      (EnqueueSora2ProImageToVideoDurationSeconds::Twelve, EnqueueSora2ProImageToVideoResolution::TenEightyP) => 600,
+    }
+  }
+}
+
+
+/// Sora 2 Pro Image-to-Video
+/// https://fal.ai/models/fal-ai/sora-2/image-to-video/pro
 pub async fn enqueue_sora_2_pro_image_to_video_webhook<R: IntoUrl>(
   args: EnqueueSora2ProImageToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {

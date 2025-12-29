@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::sora::sora2::sora_2_image_to_video::{sora_2_image_to_video, Sora2ImageToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -11,8 +12,11 @@ pub struct EnqueueSora2ImageToVideoArgs<'a, R: IntoUrl> {
   pub image_url: String,
 
   // Optional args
-  pub resolution: Option<EnqueueSora2ImageToVideoResolution>,
+
+  // NB: Duration defaults to four seconds
   pub duration: Option<EnqueueSora2ImageToVideoDurationSeconds>,
+
+  pub resolution: Option<EnqueueSora2ImageToVideoResolution>,
   pub aspect_ratio: Option<EnqueueSora2ImageToVideoAspectRatio>,
 
   // Fulfillment
@@ -40,6 +44,20 @@ pub enum EnqueueSora2ImageToVideoAspectRatio {
   SixteenByNine,
 }
 
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueSora2ImageToVideoArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "The pricing is $0.1/s for Sora 2."
+    let duration = self.duration.unwrap_or(EnqueueSora2ImageToVideoDurationSeconds::Four);
+    match duration {
+      EnqueueSora2ImageToVideoDurationSeconds::Four => 40, // $0.10 * 4
+      EnqueueSora2ImageToVideoDurationSeconds::Eight => 80, // $0.10 * 8
+      EnqueueSora2ImageToVideoDurationSeconds::Twelve => 120 // $0.10 * 12
+    }
+  }
+}
+
+/// Sora 2 Image-to-Video
+/// https://fal.ai/models/fal-ai/sora-2/image-to-video
 pub async fn enqueue_sora_2_image_to_video_webhook<R: IntoUrl>(
   args: EnqueueSora2ImageToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
