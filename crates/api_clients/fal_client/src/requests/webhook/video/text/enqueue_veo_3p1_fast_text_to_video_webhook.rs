@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::veo::veo3_1::veo_3p1_fast_text_to_video::{veo_3p1_fast_text_to_video, Veo3p1FastTextToVideoInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -44,6 +45,31 @@ pub enum EnqueueVeo3p1FastTextToVideoResolution {
   TenEightyP,
 }
 
+impl <R: IntoUrl> FalRequestCostCalculator for EnqueueVeo3p1FastTextToVideoArgs<'_, R> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // "For every second of video you generated, you will be charged
+    // $0.10 (audio off) or
+    // $0.15 (audio on).
+    // For example, a 5s video with audio on will cost $0.75."
+    let duration = self.duration
+        .unwrap_or(EnqueueVeo3p1FastTextToVideoDurationSeconds::Eight);
+
+    let generate_audio = self.generate_audio.unwrap_or(true);
+
+    match (duration, generate_audio) {
+      (EnqueueVeo3p1FastTextToVideoDurationSeconds::Four, false) => 40,
+      (EnqueueVeo3p1FastTextToVideoDurationSeconds::Six, false) => 60,
+      (EnqueueVeo3p1FastTextToVideoDurationSeconds::Eight, false) => 80,
+      (EnqueueVeo3p1FastTextToVideoDurationSeconds::Four, true) => 60,
+      (EnqueueVeo3p1FastTextToVideoDurationSeconds::Six, true) => 90,
+      (EnqueueVeo3p1FastTextToVideoDurationSeconds::Eight, true) => 120,
+    }
+  }
+}
+
+
+/// Veo 3.1 Fast Text-to-Video
+/// https://fal.ai/models/fal-ai/veo3.1/fast
 pub async fn enqueue_veo_3p1_fast_text_to_video_webhook<R: IntoUrl>(
   args: EnqueueVeo3p1FastTextToVideoArgs<'_, R>
 ) -> Result<WebhookResponse, FalErrorPlus> {
