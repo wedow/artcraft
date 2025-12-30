@@ -7,3 +7,4 @@ pub mod generate_gpt_image_1_text_to_image;
 pub mod inpaint;
 pub mod multi_function;
 pub mod remove_image_background;
+pub mod text;

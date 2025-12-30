@@ -11,6 +11,9 @@ pub struct Gemini25FlashEditArgs<'a, R: IntoUrl> {
   pub prompt: &'a str,
   pub image_urls: Vec<String>,
   pub num_images: Gemini25FlashEditNumImages,
+  
+  // Optional
+  pub aspect_ratio: Option<Gemini25FlashEditAspectRatio>,
 
   // Fulfillment
   pub webhook_url: R,
@@ -25,6 +28,26 @@ pub enum Gemini25FlashEditNumImages {
   Four,
 }
 
+/// auto, 21:9, 16:9, 3:2, 4:3, 5:4, 1:1, 4:5, 3:4, 2:3, 9:16
+/// Default is "auto"
+#[derive(Copy, Clone, Debug)]
+pub enum Gemini25FlashEditAspectRatio {
+  // Automatic (default)
+  Auto,
+  // Square
+  OneByOne,
+  // Wide
+  FiveByFour,
+  FourByThree,
+  ThreeByTwo,
+  SixteenByNine,
+  TwentyOneByNine,
+  // Tall
+  FourByFive,
+  ThreeByFour,
+  TwoByThree,
+  NineBySixteen, // NB: No NineByTwentyOne ?
+}
 
 pub async fn enqueue_gemini_25_flash_edit_webhook<R: IntoUrl>(
   args: Gemini25FlashEditArgs<'_, R>
@@ -37,9 +60,30 @@ pub async fn enqueue_gemini_25_flash_edit_webhook<R: IntoUrl>(
     Gemini25FlashEditNumImages::Four => 4,
   };
 
+  let aspect_ratio = args.aspect_ratio
+      .map(|aspect_ratio| match aspect_ratio {
+        // Auto
+        Gemini25FlashEditAspectRatio::Auto => "auto",
+        // Square
+        Gemini25FlashEditAspectRatio::OneByOne => "1:1",
+        // Wide
+        Gemini25FlashEditAspectRatio::FiveByFour => "5:4",
+        Gemini25FlashEditAspectRatio::FourByThree => "4:3",
+        Gemini25FlashEditAspectRatio::ThreeByTwo => "3:2",
+        Gemini25FlashEditAspectRatio::SixteenByNine => "16:9",
+        Gemini25FlashEditAspectRatio::TwentyOneByNine => "21:9",
+        // Tall
+        Gemini25FlashEditAspectRatio::FourByFive => "4:5",
+        Gemini25FlashEditAspectRatio::ThreeByFour => "3:4",
+        Gemini25FlashEditAspectRatio::TwoByThree => "2:3",
+        Gemini25FlashEditAspectRatio::NineBySixteen => "9:16",
+      })
+      .map(|aspect_ratio| aspect_ratio.to_string());
+
   let request = Gemini25FlashImageEditInput {
     prompt: args.prompt.to_string(),
     image_urls: args.image_urls,
+    aspect_ratio,
     // Constants
     num_images: Some(num_images),
     output_format: Some("png".to_string()),
@@ -75,6 +119,7 @@ mod tests {
         TREX_SKELETON_IMAGE_URL.to_string(),
       ],
       num_images: Gemini25FlashEditNumImages::Two,
+      aspect_ratio: None,
       prompt: "add the ghost to the image of the t-rex skeleton, make it look spooky but friendly",
       api_key: &api_key,
       webhook_url: "https://example.com/webhook",

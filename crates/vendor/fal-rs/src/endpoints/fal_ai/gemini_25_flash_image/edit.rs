@@ -14,6 +14,12 @@ pub struct Gemini25FlashImageEditInput {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub output_format: Option<String>,
 
+  /// The aspect ratio of the generated image.
+  /// Default value: "auto"
+  /// Possible enum values: auto, 21:9, 16:9, 3:2, 4:3, 5:4, 1:1, 4:5, 3:4, 2:3, 9:16
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub aspect_ratio: Option<String>,
+
   // /// Resolution, eg. "720p"
   // #[serde(skip_serializing_if = "Option::is_none")]
   // pub resolution: Option<String>,
