@@ -148,6 +148,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     progressBarTime: 25000,
     canChangeResolution: true,
     canChangeAspectRatio: true,
+    defaultAspectRatio: CommonAspectRatio.Square,
     aspectRatios: [
       CommonAspectRatio.Auto,
       CommonAspectRatio.Square,

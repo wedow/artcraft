@@ -74,7 +74,7 @@ pub enum TextToImageModel {
   Midjourney,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct EnqueueTextToImageRequest {
   /// The provider to use (defaults to Artcraft/Storyteller).
   /// Not all (provider, model) combinations are valid.
@@ -190,6 +190,8 @@ pub async fn enqueue_text_to_image_command(
 ) -> Response<EnqueueTextToImageSuccessResponse, EnqueueTextToImageErrorType, ()> {
 
   info!("enqueue_text_to_image called");
+
+  info!("request: {:?}", request);
 
   let result = handle_request(
     request,

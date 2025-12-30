@@ -27,12 +27,13 @@ import {
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { ImageModel, getCapabilitiesForModel } from "@storyteller/model-list";
+import { CommonAspectRatio, ImageModel, getCapabilitiesForModel } from "@storyteller/model-list";
 import { usePromptImageStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { twMerge } from "tailwind-merge";
 import { ImagePromptRow } from "./ImagePromptRow";
 import { GenerationProvider } from "@storyteller/api-enums";
+import { AspectRatioPicker } from "./common/AspectRatioPicker";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -108,6 +109,9 @@ export const PromptBoxImage = ({
     showImagePrompts ||
     referenceImages.length > 0 ||
     uploadingImages.length > 0;
+
+  // New aspect ratio state will begin to phase out old aspect ratio
+  const [commonAspectRatio, setCommonAspectRatio] = useState<CommonAspectRatio | undefined>(undefined);
 
   useEffect(() => {
     onImageRowVisibilityChange?.(isImageRowVisible);
@@ -289,7 +293,7 @@ export const PromptBoxImage = ({
     }, 10000);
 
     try {
-      const aspectRatio = getCurrentAspectRatio();
+      const aspectRatio = getCurrentLegacyAspectRatio();
       const resolution = getCurrentResolution();
 
       const request: EnqueueTextToImageRequest = {
@@ -304,6 +308,10 @@ export const PromptBoxImage = ({
 
       if (!!selectedProvider) {
         request.provider = selectedProvider;
+      }
+
+      if (selectedModel?.supportsNewAspectRatio()) {
+        request.common_aspect_ratio = commonAspectRatio;
       }
 
       if (
@@ -335,7 +343,7 @@ export const PromptBoxImage = ({
     return iconElement.props.icon;
   };
 
-  const getCurrentAspectRatio = (): EnqueueTextToImageSize => {
+  const getCurrentLegacyAspectRatio = (): EnqueueTextToImageSize => {
     const selected = aspectRatioList.find((item) => item.selected);
     switch (selected?.label.toLowerCase()) {
       case "wide":
@@ -469,7 +477,14 @@ export const PromptBoxImage = ({
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              {selectedModel?.canChangeAspectRatio && (
+              {selectedModel?.supportsNewAspectRatio() && (
+                <AspectRatioPicker
+                  model={selectedModel}
+                  currentAspectRatio={commonAspectRatio}
+                  handleCommonAspectRatioSelect={setCommonAspectRatio}
+                />
+              )}
+              {selectedModel?.canChangeAspectRatio && !selectedModel?.supportsNewAspectRatio() && (
                 <Tooltip
                   content="Aspect Ratio"
                   position="top"

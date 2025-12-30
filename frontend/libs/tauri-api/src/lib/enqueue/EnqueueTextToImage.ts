@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
-import { Model } from "@storyteller/model-list";
+import { CommonAspectRatio, Model } from "@storyteller/model-list";
 import { GenerationProvider } from "@storyteller/api-enums";
 
 export enum EnqueueTextToImageErrorType {
@@ -24,8 +24,12 @@ export interface EnqueueTextToImageRequest {
   // The text prompt.
   prompt?: string;
 
+  // TODO: This is deprecated and will be phased out.
   // The desired output aspect ratio.
   aspect_ratio?: EnqueueTextToImageSize;
+
+  // This is the new aspect ratio.
+  common_aspect_ratio?: CommonAspectRatio;
 
   // Image resolution. Support: Nano Banana Pro
   image_resolution?: EnqueueTextToImageResolution;
@@ -54,6 +58,7 @@ interface EnqueueTextToImageRawRequest {
   provider?: GenerationProvider;
   prompt?: string;
   aspect_ratio?: EnqueueTextToImageSize;
+  common_aspect_ratio?: CommonAspectRatio;
   image_resolution?: EnqueueTextToImageResolution;
   number_images?: number;
   image_media_tokens?: string[];
@@ -124,6 +129,10 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
 
   if (!!request.aspect_ratio) {
     mutableRequest.aspect_ratio = request.aspect_ratio;
+  }
+
+  if (!!request.common_aspect_ratio) {
+    mutableRequest.common_aspect_ratio = request.common_aspect_ratio;
   }
 
   if (!!request.image_resolution) {

@@ -5,7 +5,7 @@ use utoipa::ToSchema;
 
 pub const NANO_BANANA_PRO_MULTI_FUNCTION_IMAGE_GEN_PATH: &str = "/v1/generate/image/multi_function/nano_banana_pro";
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug)]
 pub struct NanoBananaProMultiFunctionImageGenRequest {
   /// Idempotency token to prevent duplicate requests.
   pub uuid_idempotency_token: String,

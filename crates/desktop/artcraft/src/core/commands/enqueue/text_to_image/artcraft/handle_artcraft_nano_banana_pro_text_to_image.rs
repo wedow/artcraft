@@ -77,6 +77,8 @@ pub async fn handle_artcraft_nano_banana_pro_text_to_image(
     resolution,
     aspect_ratio,
   };
+  
+  info!("Calling Artcraft with request {:?}", request);
 
   let result = nano_banana_pro_multi_function_image_gen(
     &app_env_configs.storyteller_host,
