@@ -48,8 +48,10 @@ pub enum NanoBananaProMultiFunctionImageGenImageResolution {
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum NanoBananaProMultiFunctionImageGenAspectRatio {
+  // Auto (only for image editing)
+  Auto, // Default for image editing.
   // Square
-  OneByOne, // Default
+  OneByOne, // Default for text-to-image
   // Wide
   FiveByFour,
   FourByThree,

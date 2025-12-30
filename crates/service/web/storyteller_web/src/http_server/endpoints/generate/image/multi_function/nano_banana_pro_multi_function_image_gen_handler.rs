@@ -130,6 +130,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
     };
 
     let aspect_ratio = match request.aspect_ratio {
+      Some(NanoBananaProMultiFunctionImageGenAspectRatio::Auto) => EnqueueNanoBananaProEditImageAspectRatio::Auto,
       Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne) => EnqueueNanoBananaProEditImageAspectRatio::OneByOne,
       Some(NanoBananaProMultiFunctionImageGenAspectRatio::FiveByFour) => EnqueueNanoBananaProEditImageAspectRatio::FiveByFour,
       Some(NanoBananaProMultiFunctionImageGenAspectRatio::FourByThree) => EnqueueNanoBananaProEditImageAspectRatio::FourByThree,
@@ -179,6 +180,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
     };
 
     let aspect_ratio = match request.aspect_ratio {
+      Some(NanoBananaProMultiFunctionImageGenAspectRatio::Auto) => EnqueueNanoBananaProTextToImageAspectRatio::OneByOne, // NB: "auto" is only for edit image, not text-to-image !
       Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne) => EnqueueNanoBananaProTextToImageAspectRatio::OneByOne,
       Some(NanoBananaProMultiFunctionImageGenAspectRatio::FiveByFour) => EnqueueNanoBananaProTextToImageAspectRatio::FiveByFour,
       Some(NanoBananaProMultiFunctionImageGenAspectRatio::FourByThree) => EnqueueNanoBananaProTextToImageAspectRatio::FourByThree,

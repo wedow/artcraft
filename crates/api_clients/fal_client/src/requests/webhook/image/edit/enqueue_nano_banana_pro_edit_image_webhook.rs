@@ -30,15 +30,17 @@ pub enum EnqueueNanoBananaProEditImageNumImages {
 
 #[derive(Copy, Clone, Debug)]
 pub enum EnqueueNanoBananaProEditImageResolution {
-  OneK,
+  OneK, // Default value "1K"
   TwoK,
   FourK,
 }
 
-/// 21:9, 16:9, 3:2, 4:3, 5:4, 1:1, 4:5, 3:4, 2:3, 9:16
-/// Default is "1:1"
+/// auto, 21:9, 16:9, 3:2, 4:3, 5:4, 1:1, 4:5, 3:4, 2:3, 9:16
+/// Default is "auto"
 #[derive(Copy, Clone, Debug)]
 pub enum EnqueueNanoBananaProEditImageAspectRatio {
+  // Automatic (default)
+  Auto,
   // Square
   OneByOne,
   // Wide
@@ -75,6 +77,8 @@ pub async fn enqueue_nano_banana_pro_image_edit_webhook<R: IntoUrl>(
 
   let aspect_ratio = args.aspect_ratio
       .map(|aspect_ratio| match aspect_ratio {
+        // Auto
+        EnqueueNanoBananaProEditImageAspectRatio::Auto => "auto",
         // Square
         EnqueueNanoBananaProEditImageAspectRatio::OneByOne => "1:1",
         // Wide
