@@ -1,3 +1,4 @@
+pub mod api_adapters;
 pub mod artcraft_error;
 pub mod commands;
 pub mod events;

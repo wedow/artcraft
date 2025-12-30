@@ -1,6 +1,9 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_nano_banana_pro::aspect_ratio_to_artcraft_nano_banana_pro;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
+use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::ImageEditModel::NanoBanana;
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageResolution, EditImageSize, EnqueueEditImageCommand};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
@@ -18,6 +21,7 @@ use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::Gener
 use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
 use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::{NanoBananaProMultiFunctionImageGenAspectRatio, NanoBananaProMultiFunctionImageGenImageResolution, NanoBananaProMultiFunctionImageGenNumImages, NanoBananaProMultiFunctionImageGenRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
@@ -25,10 +29,8 @@ use log::{error, info};
 use storyteller_client::endpoints::generate::image::edit::flux_pro_kontext_max_edit_image::flux_pro_kontext_max_edit_image;
 use storyteller_client::endpoints::generate::image::edit::gemini_25_flash_edit_image::gemini_25_flash_edit_image;
 use storyteller_client::endpoints::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
-use tauri::AppHandle;
-use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::{NanoBananaProMultiFunctionImageGenAspectRatio, NanoBananaProMultiFunctionImageGenImageResolution, NanoBananaProMultiFunctionImageGenNumImages, NanoBananaProMultiFunctionImageGenRequest};
 use storyteller_client::endpoints::generate::image::multi_function::nano_banana_pro_multi_function_image_gen_image::nano_banana_pro_multi_function_image_gen;
-use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::ImageEditModel::NanoBanana;
+use tauri::AppHandle;
 
 pub(super) const MAX_IMAGES: usize = 10;
 
@@ -66,14 +68,7 @@ pub async fn handle_artcraft_nano_banana_pro_edit(
     },
   };
 
-  let aspect_ratio = request.aspect_ratio
-      .map(|aspect_ratio| match aspect_ratio {
-        EditImageSize::Auto => None,
-        EditImageSize::Square => Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne),
-        EditImageSize::Wide => Some(NanoBananaProMultiFunctionImageGenAspectRatio::SixteenByNine),
-        EditImageSize::Tall => Some(NanoBananaProMultiFunctionImageGenAspectRatio::NineBySixteen),
-      })
-      .flatten();
+  let aspect_ratio = get_aspect_ratio(request);
 
   let resolution = request.image_resolution
       .map(|image_resolution| match image_resolution {
@@ -134,4 +129,24 @@ pub async fn handle_artcraft_nano_banana_pro_edit(
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueEditImageCommand) -> Option<NanoBananaProMultiFunctionImageGenAspectRatio> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_nano_banana_pro(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    return match aspect_ratio {
+      EditImageSize::Auto => Some(NanoBananaProMultiFunctionImageGenAspectRatio::Auto),
+      EditImageSize::Square => Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne),
+      EditImageSize::Wide => Some(NanoBananaProMultiFunctionImageGenAspectRatio::SixteenByNine),
+      EditImageSize::Tall => Some(NanoBananaProMultiFunctionImageGenAspectRatio::NineBySixteen),
+    }
+  }
+
+  None
 }

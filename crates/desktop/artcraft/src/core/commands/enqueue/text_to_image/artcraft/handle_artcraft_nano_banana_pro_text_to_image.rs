@@ -1,3 +1,5 @@
+use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_nano_banana_pro::aspect_ratio_to_artcraft_nano_banana_pro;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageResolution, EditImageSize};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -58,14 +60,7 @@ pub async fn handle_artcraft_nano_banana_pro_text_to_image(
     },
   };
 
-  let aspect_ratio = request.aspect_ratio
-      .map(|aspect_ratio| match aspect_ratio {
-        TextToImageSize::Auto => None,
-        TextToImageSize::Square => Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne),
-        TextToImageSize::Wide => Some(NanoBananaProMultiFunctionImageGenAspectRatio::SixteenByNine),
-        TextToImageSize::Tall => Some(NanoBananaProMultiFunctionImageGenAspectRatio::NineBySixteen),
-      })
-      .flatten();
+  let aspect_ratio = get_aspect_ratio(request);
 
   let resolution = request.image_resolution
       .map(|image_resolution| match image_resolution {
@@ -108,4 +103,24 @@ pub async fn handle_artcraft_nano_banana_pro_text_to_image(
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<NanoBananaProMultiFunctionImageGenAspectRatio> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_nano_banana_pro(common_aspect_ratio);
+    return Some(aspect);
+  }
+  
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    return match aspect_ratio {
+      TextToImageSize::Auto => Some(NanoBananaProMultiFunctionImageGenAspectRatio::Auto),
+      TextToImageSize::Square => Some(NanoBananaProMultiFunctionImageGenAspectRatio::OneByOne),
+      TextToImageSize::Wide => Some(NanoBananaProMultiFunctionImageGenAspectRatio::SixteenByNine),
+      TextToImageSize::Tall => Some(NanoBananaProMultiFunctionImageGenAspectRatio::NineBySixteen),
+    }
+  }
+  
+  None
 }

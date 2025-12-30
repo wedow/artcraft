@@ -1,3 +1,4 @@
+use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::artcraft::handle_image_edit_artcraft::handle_image_edit_artcraft;
@@ -108,7 +109,12 @@ pub struct EnqueueEditImageCommand {
   pub image_count: Option<u32>,
 
   /// Aspect ratio.
+  #[deprecated(note="use common_aspect_ratio")]
   pub aspect_ratio: Option<EditImageSize>,
+
+  /// New field for aspect ratio.
+  /// Not all models support each of these aspect ratios, but we can choose or interpolate sensibly.
+  pub common_aspect_ratio: Option<CommonAspectRatio>,
 
   /// Image quality.
   pub image_quality: Option<EditImageQuality>,

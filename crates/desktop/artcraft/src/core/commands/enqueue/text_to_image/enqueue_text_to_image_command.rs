@@ -34,6 +34,7 @@ use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
@@ -86,7 +87,12 @@ pub struct EnqueueTextToImageRequest {
   pub prompt: Option<String>,
 
   /// Aspect ratio.
+  #[deprecated(note="use common_aspect_ratio")]
   pub aspect_ratio: Option<TextToImageSize>,
+  
+  /// New field for aspect ratio.
+  /// Not all models support each of these aspect ratios, but we can choose or interpolate sensibly.
+  pub common_aspect_ratio: Option<CommonAspectRatio>,
 
   /// Aspect ratio.
   pub image_resolution: Option<TextToImageResolution>,
