@@ -3,6 +3,7 @@ import { Model, ModelKind } from "./Model.js";
 import { ModelCategory } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
 import { GenerationProvider } from "@storyteller/api-enums";
+import { CommonAspectRatio } from "./properties/CommonAspectRatio.js";
 
 export class ImageModel extends Model {
   // Typescript type discriminator property
@@ -43,6 +44,10 @@ export class ImageModel extends Model {
   // Whether the model supports changing aspect ratio
   readonly canChangeAspectRatio: boolean;
 
+  // Aspect ratios supported by this model
+  // (This is a new field that will take time to roll out and replace the old aspect ratios)
+  readonly aspectRatios: CommonAspectRatio[];
+
   constructor(args: {
     id: string;
     tauriId: string;
@@ -65,6 +70,7 @@ export class ImageModel extends Model {
     tags?: ModelTag[];
     progressBarTime?: number;
     providers?: GenerationProvider[];
+    aspectRatios?: CommonAspectRatio[];
   }) {
     if (args.maxGenerationCount < 1) {
       throw new Error("maxGenerationCount must be at least 1");
@@ -88,6 +94,7 @@ export class ImageModel extends Model {
     this.canTextToImage = args.canTextToImage === false ? false : true; // Default to true !
     this.canChangeResolution = args.canChangeResolution ?? false;
     this.canChangeAspectRatio = args.canChangeAspectRatio ?? false;
+    this.aspectRatios = args.aspectRatios ?? [];
   }
 
   // If the model is a "Nano Banana"-type model, we may want to enable certain features. 

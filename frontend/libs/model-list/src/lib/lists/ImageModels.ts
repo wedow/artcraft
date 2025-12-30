@@ -2,6 +2,7 @@ import { GenerationProvider } from "@storyteller/api-enums";
 import { ImageModel } from "../classes/ImageModel.js";
 import { ModelCreator } from "../classes/metadata/ModelCreator.js";
 import { ModelTag } from "../classes/metadata/ModelTag.js";
+import { CommonAspectRatio } from "../classes/properties/CommonAspectRatio.js";
 
 // TODO: Some of the model configs, such as generation counts, are authoritatively controlled in `legacy/Models.ts`
 
@@ -147,6 +148,19 @@ export const IMAGE_MODELS: ImageModel[] = [
     progressBarTime: 25000,
     canChangeResolution: true,
     canChangeAspectRatio: true,
+    aspectRatios: [
+      CommonAspectRatio.Auto,
+      CommonAspectRatio.Square,
+      CommonAspectRatio.WideFiveByFour,
+      CommonAspectRatio.WideFourByThree,
+      CommonAspectRatio.WideThreeByTwo,
+      CommonAspectRatio.WideSixteenByNine,
+      CommonAspectRatio.WideTwentyOneByNine,
+      CommonAspectRatio.TallFourByFive,
+      CommonAspectRatio.TallThreeByFour,
+      CommonAspectRatio.TallTwoByThree,
+      CommonAspectRatio.TallNineBySixteen,
+    ]
   }),
   new ImageModel({
     id: "gpt_image_1",

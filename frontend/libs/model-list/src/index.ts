@@ -1,6 +1,7 @@
 export * from "./lib/classes/ImageModel.js";
 export * from "./lib/classes/Model.js";
 export * from "./lib/classes/VideoModel.js";
+export * from "./lib/classes/properties/CommonAspectRatio.js";
 export * from "./lib/classes/metadata/ModelCreator.js";
 export * from "./lib/classes/metadata/ModelCreatorIcons.js";
 export * from "./lib/classes/metadata/ModelMapping.js";
