@@ -486,7 +486,7 @@ export const PromptBoxImage = ({
               )}
               {selectedModel?.canChangeAspectRatio && !selectedModel?.supportsNewAspectRatio() && (
                 <Tooltip
-                  content="Aspect Ratio"
+                  content="Aspect Ratio (Legacy)"
                   position="top"
                   className="z-50"
                   closeOnClick={true}
@@ -495,7 +495,7 @@ export const PromptBoxImage = ({
                     items={aspectRatioList}
                     onSelect={handleAspectRatioSelect}
                     mode="toggle"
-                    panelTitle="Aspect Ratio"
+                    panelTitle="Aspect Ratio (Legacy)"
                     showIconsInList
                     triggerIcon={
                       <FontAwesomeIcon
