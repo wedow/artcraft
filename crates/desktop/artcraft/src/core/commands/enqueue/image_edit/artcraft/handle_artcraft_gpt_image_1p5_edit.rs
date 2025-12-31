@@ -1,3 +1,6 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_gpt_image_1::aspect_ratio_to_artcraft_gpt_image_1;
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_gpt_image_1p5::aspect_ratio_to_artcraft_gpt_image_1p5;
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_nano_banana_pro::aspect_ratio_to_artcraft_nano_banana_pro;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize, EnqueueEditImageCommand};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -57,13 +60,7 @@ pub async fn handle_artcraft_gpt_image_1p5_edit(
         EditImageQuality::Low => GptImage1p5MultiFunctionImageGenQuality::Low,
       });
   
-  let image_size = request.aspect_ratio
-      .map(|size| match size {
-        EditImageSize::Auto => GptImage1p5MultiFunctionImageGenSize::Square,
-        EditImageSize::Square => GptImage1p5MultiFunctionImageGenSize::Square,
-        EditImageSize::Tall => GptImage1p5MultiFunctionImageGenSize::Tall,
-        EditImageSize::Wide => GptImage1p5MultiFunctionImageGenSize::Wide,
-      });
+  let image_size = get_aspect_ratio(request);
 
   let num_images = match request.image_count {
     None => None,
@@ -138,4 +135,24 @@ pub async fn handle_artcraft_gpt_image_1p5_edit(
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueEditImageCommand) -> Option<GptImage1p5MultiFunctionImageGenSize> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_gpt_image_1p5(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    return match aspect_ratio {
+      EditImageSize::Auto => Some(GptImage1p5MultiFunctionImageGenSize::Square),
+      EditImageSize::Square => Some(GptImage1p5MultiFunctionImageGenSize::Square),
+      EditImageSize::Wide => Some(GptImage1p5MultiFunctionImageGenSize::Wide),
+      EditImageSize::Tall => Some(GptImage1p5MultiFunctionImageGenSize::Tall),
+    }
+  }
+
+  None
 }

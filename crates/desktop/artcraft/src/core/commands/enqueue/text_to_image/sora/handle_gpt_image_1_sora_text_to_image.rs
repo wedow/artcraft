@@ -1,3 +1,5 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_grok_image::aspect_ratio_to_grok_image;
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_sora_native_gpt_image_1::aspect_ratio_to_sora_native_gpt_image_1;
 use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
@@ -10,6 +12,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
+use grok_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
 use log::{error, info};
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simple_image_gen_with_session_auto_renew, SimpleImageGenAutoRenewRequest};
@@ -54,13 +57,8 @@ pub async fn handle_gpt_image_1_sora_text_to_image(
 
   let prompt = request.prompt.as_deref().unwrap_or("");
   
-  let size = match request.aspect_ratio {
-    None => ImageSize::Square,
-    Some(TextToImageSize::Auto) => ImageSize::Square,
-    Some(TextToImageSize::Square) => ImageSize::Square,
-    Some(TextToImageSize::Tall) => ImageSize::Tall,
-    Some(TextToImageSize::Wide) => ImageSize::Wide,
-  };
+  let aspect_ratio = get_aspect_ratio(request)
+      .unwrap_or(ImageSize::Square);
 
   let num_images = match request.number_images {
     None => NumImages::One,
@@ -75,7 +73,7 @@ pub async fn handle_gpt_image_1_sora_text_to_image(
       simple_image_gen_with_session_auto_renew(SimpleImageGenAutoRenewRequest {
         prompt: prompt.to_string(),
         num_images,
-        image_size: size,
+        image_size: aspect_ratio,
         credentials: &creds,
         request_timeout: Some(SORA_SIMPLE_IMAGE_GEN_TIMEOUT),
       }).await;
@@ -114,4 +112,24 @@ pub async fn handle_gpt_image_1_sora_text_to_image(
     model: Some(GenerationModel::GptImage1),
     provider_job_id: Some(response.task_id.to_string()),
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<ImageSize> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_sora_native_gpt_image_1(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    return match aspect_ratio {
+      TextToImageSize::Auto => Some(ImageSize::Square),
+      TextToImageSize::Square => Some(ImageSize::Square),
+      TextToImageSize::Wide => Some(ImageSize::Wide),
+      TextToImageSize::Tall => Some(ImageSize::Tall),
+    }
+  }
+
+  None
 }

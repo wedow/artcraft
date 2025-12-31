@@ -222,6 +222,12 @@ export const IMAGE_MODELS: ImageModel[] = [
     maxImagePromptCount: 6,
     progressBarTime: 60000,
     canChangeAspectRatio: true,
+    defaultAspectRatio: CommonAspectRatio.Square,
+    aspectRatios: [
+      CommonAspectRatio.Square,
+      CommonAspectRatio.Wide,
+      CommonAspectRatio.Tall,
+    ]
   }),
   new ImageModel({
     id: "seedream_4",

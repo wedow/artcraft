@@ -1,5 +1,6 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_gpt_image_1p5::aspect_ratio_to_artcraft_gpt_image_1p5;
 use crate::core::commands::enqueue::generate_error::GenerateError;
-use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize};
+use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize, EnqueueEditImageCommand};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -37,13 +38,7 @@ pub async fn handle_artcraft_gpt_image_1p5_text_to_image(
 
   let uuid_idempotency_token = generate_random_uuid();
 
-  let image_size = request.aspect_ratio
-      .map(|size| match size {
-        TextToImageSize::Auto => GptImage1p5MultiFunctionImageGenSize::Square,
-        TextToImageSize::Square => GptImage1p5MultiFunctionImageGenSize::Square,
-        TextToImageSize::Tall => GptImage1p5MultiFunctionImageGenSize::Tall,
-        TextToImageSize::Wide => GptImage1p5MultiFunctionImageGenSize::Wide,
-      });
+  let aspect_ratio = get_aspect_ratio(request);
 
   let num_images = match request.number_images {
     None => None,
@@ -65,7 +60,7 @@ pub async fn handle_artcraft_gpt_image_1p5_text_to_image(
   let request = GptImage1p5MultiFunctionImageGenRequest {
     uuid_idempotency_token,
     prompt: request.prompt.clone(),
-    image_size,
+    image_size: aspect_ratio,
     num_images,
     // Not provided for text-to-image
     image_media_tokens: None,
@@ -101,4 +96,24 @@ pub async fn handle_artcraft_gpt_image_1p5_text_to_image(
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<GptImage1p5MultiFunctionImageGenSize> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_gpt_image_1p5(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    return match aspect_ratio {
+      TextToImageSize::Auto => Some(GptImage1p5MultiFunctionImageGenSize::Square),
+      TextToImageSize::Square => Some(GptImage1p5MultiFunctionImageGenSize::Square),
+      TextToImageSize::Wide => Some(GptImage1p5MultiFunctionImageGenSize::Wide),
+      TextToImageSize::Tall => Some(GptImage1p5MultiFunctionImageGenSize::Tall),
+    }
+  }
+
+  None
 }

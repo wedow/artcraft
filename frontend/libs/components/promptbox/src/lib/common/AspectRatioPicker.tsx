@@ -92,6 +92,7 @@ const getAspectRatioIcon = (aspectRatio: CommonAspectRatio) : IconDefinition => 
     case CommonAspectRatio.Square:
       return faSquare;
 
+    case CommonAspectRatio.Wide:
     case CommonAspectRatio.WideFiveByFour:
     case CommonAspectRatio.WideFourByThree:
     case CommonAspectRatio.WideThreeByTwo:
@@ -101,6 +102,7 @@ const getAspectRatioIcon = (aspectRatio: CommonAspectRatio) : IconDefinition => 
       return faRectangleWide;
 
     // Tall
+    case CommonAspectRatio.Tall:
     case CommonAspectRatio.TallFourByFive:
     case CommonAspectRatio.TallThreeByFour:
     case CommonAspectRatio.TallTwoByThree:
@@ -145,6 +147,13 @@ const getAspectRatioTextLabel = (aspectRatio: CommonAspectRatio) : string => {
     case CommonAspectRatio.TallNineByTwentyOne:
       return "9:21";
 
+
+    // Semantic cases
+    case CommonAspectRatio.Wide:
+      return "Wide";
+    case CommonAspectRatio.Tall:
+      return "Tall";
+
     default:
       return "Square"; // Fail open-ish
   }
@@ -165,6 +174,8 @@ const popOverLabelToAspectRatio = (label: string, model: ImageModel): CommonAspe
     case "2:3": return CommonAspectRatio.TallTwoByThree;
     case "9:16": return CommonAspectRatio.TallNineBySixteen;
     case "9:21": return CommonAspectRatio.TallNineByTwentyOne;
+    case "Wide": return CommonAspectRatio.Wide;
+    case "Tall": return CommonAspectRatio.Tall;
   }
   // If we can't find it, return the model's default aspect ratio or Square as fallback
   return model.defaultAspectRatio || CommonAspectRatio.Square;
