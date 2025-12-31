@@ -46,9 +46,10 @@ import {
 } from "@storyteller/tauri-api";
 import { usePrompt3DStore } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
-import { ImageModel } from "@storyteller/model-list";
+import { CommonAspectRatio, ImageModel } from "@storyteller/model-list";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { ImagePromptRow } from "./ImagePromptRow";
+import { AspectRatioPicker } from "./common/AspectRatioPicker";
 
 interface PromptBox3DProps {
   cameras: Signal<Camera[]>;
@@ -155,6 +156,9 @@ export const PromptBox3D = ({
     showImagePrompts ||
     (selectedImageModel?.canUseImagePrompt && referenceImages.length > 0) ||
     false;
+
+  // New aspect ratio state will begin to phase out old aspect ratio
+  const [commonAspectRatio, setCommonAspectRatio] = useState<CommonAspectRatio | undefined>(undefined);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -384,6 +388,10 @@ export const PromptBox3D = ({
         if (!!selectedProvider) {
           request.provider = selectedProvider;
         }
+
+        if (selectedImageModel?.supportsNewAspectRatio()) {
+          request.common_aspect_ratio = commonAspectRatio;
+        }
     
         const generateResponse = await EnqueueEditImage(request);
 
@@ -594,7 +602,14 @@ export const PromptBox3D = ({
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              {selectedImageModel?.canChangeAspectRatio && (
+              {selectedImageModel?.supportsNewAspectRatio() && (
+                <AspectRatioPicker
+                  model={selectedImageModel}
+                  currentAspectRatio={commonAspectRatio}
+                  handleCommonAspectRatioSelect={setCommonAspectRatio}
+                />
+              )}
+              {selectedImageModel?.canChangeAspectRatio && !selectedImageModel?.supportsNewAspectRatio() && (
                 <Tooltip
                   content="Aspect ratio"
                   position="top"
