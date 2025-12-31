@@ -22,4 +22,8 @@ pub enum CommonAspectRatio {
   TallTwoByThree,
   TallNineBySixteen,
   TallNineByTwentyOne,
+  // Imprecise semantic values that we probably remap to other meanings
+  // on a model-by-model basis.
+  Wide,
+  Tall,
 }

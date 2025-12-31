@@ -24,4 +24,9 @@ export enum CommonAspectRatio {
   TallTwoByThree = "tall_two_by_three",
   TallNineBySixteen = "tall_nine_by_sixteen",
   TallNineByTwentyOne = "tall_nine_by_twenty_one",
+
+  // Imprecise semantic values (that probably are mapped to other meanings)
+  // Not appropriate for all models to use these values.
+  Wide = "wide",
+  Tall = "tall",
 }
