@@ -25,11 +25,12 @@ import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect, useRef, useState } from "react";
-import { ImageModel, getCapabilitiesForModel } from "@storyteller/model-list";
+import { CommonAspectRatio, ImageModel, getCapabilitiesForModel } from "@storyteller/model-list";
 import { twMerge } from "tailwind-merge";
 import { ImagePromptRow, type UploadImageFn } from "./ImagePromptRow";
 import { RefImage, usePromptEditStore } from "./promptStore";
 import { GenerationProvider } from "@storyteller/api-enums";
+import { AspectRatioPicker } from "./common/AspectRatioPicker";
 
 export interface PromptBoxEditProps {
   onModeChange?: (mode: string) => void;
@@ -48,6 +49,8 @@ export interface PromptBoxEditProps {
   selectedImageModel?: ImageModel;
   selectedProvider?: GenerationProvider;
   generationCount?: number;
+  commonAspectRatio?: CommonAspectRatio;
+  setCommonAspectRatio: (aspectRatio: CommonAspectRatio) => void;
   onGenerationCountChange?: (count: number) => void;
   supportsMaskedInpainting?: boolean;
   isEnqueueing?: boolean;
@@ -67,6 +70,8 @@ export const PromptBoxEdit = ({
   selectedImageModel,
   selectedProvider,
   generationCount: generationCountProp,
+  commonAspectRatio,
+  setCommonAspectRatio,
   onGenerationCountChange,
   supportsMaskedInpainting = false,
   uploadImage,
@@ -443,7 +448,14 @@ export const PromptBoxEdit = ({
             </div>
             <div className="mt-2 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                {selectedImageModel?.canChangeAspectRatio && (
+                {selectedImageModel?.supportsNewAspectRatio() && (
+                  <AspectRatioPicker
+                    model={selectedImageModel}
+                    currentAspectRatio={commonAspectRatio}
+                    handleCommonAspectRatioSelect={setCommonAspectRatio}
+                  />
+                )}
+                {selectedImageModel?.canChangeAspectRatio && !selectedImageModel?.supportsNewAspectRatio() && (
                   <Tooltip
                     content="Aspect Ratio"
                     position="top"

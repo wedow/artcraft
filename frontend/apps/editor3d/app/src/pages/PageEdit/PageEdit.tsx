@@ -29,7 +29,7 @@ import {
   //ProviderSelector,
   //PROVIDER_LOOKUP_BY_PAGE,
 } from "@storyteller/ui-model-selector";
-import { ImageModel } from "@storyteller/model-list";
+import { CommonAspectRatio, ImageModel } from "@storyteller/model-list";
 import { HistoryStack, ImageBundle } from "./HistoryStack";
 import { TutorialModalButton } from "@storyteller/ui-tutorial-modal";
 import { GenerationProvider } from "@storyteller/api-enums";
@@ -62,6 +62,9 @@ const PageEdit = () => {
     { id: string; count: number }[]
   >([]);
   const [generationCount, setGenerationCount] = useState<number>(1);
+
+  // New aspect ratio state will begin to phase out old aspect ratio
+  const [commonAspectRatio, setCommonAspectRatio] = useState<CommonAspectRatio | undefined>(undefined);
 
   // Use the Zustand store
   const store = useEditStore();
@@ -382,6 +385,7 @@ const PageEdit = () => {
         let result;
 
         if (selectedImageModel?.editingIsInpainting) {
+          // CASE 1 - INPAINTING (Only a few models do this!)
           const arrayBuffer = await getMaskArrayBuffer();
           let request : EnqueueImageInpaintRequest = {
             model: selectedImageModel,
@@ -395,8 +399,12 @@ const PageEdit = () => {
           if (!!options?.selectedProvider) {
             request.provider = options.selectedProvider;
           }
+          //if (selectedImageModel?.supportsNewAspectRatio()) {
+          //  request.common_aspect_ratio = commonAspectRatio;
+          //}
           result = await EnqueueImageInpaint(request);
         } else if (selectedImageModel?.isNanoBananaModel()) {
+          // CASE 2 - NANO BANANA
           const compositeFile = await getCompositeCanvasFile();
           if (!compositeFile) {
             console.error("Failed to create composite canvas");
@@ -427,8 +435,12 @@ const PageEdit = () => {
           if (!!options?.selectedProvider) {
             request.provider = options.selectedProvider;
           }
+          if (selectedImageModel?.supportsNewAspectRatio()) {
+            request.common_aspect_ratio = commonAspectRatio;
+          }
           result = await EnqueueEditImage(request);
         } else {
+          // CASE 3 - DEFAULT
           const imgs = options?.images || [];
           let request : EnqueueEditImageRequest = {
             model: selectedImageModel,
@@ -448,6 +460,9 @@ const PageEdit = () => {
           };
           if (!!options?.selectedProvider) {
             request.provider = options.selectedProvider;
+          }
+          if (selectedImageModel?.supportsNewAspectRatio()) {
+            request.common_aspect_ratio = commonAspectRatio;
           }
           result = await EnqueueEditImage(request);
         }
@@ -631,6 +646,8 @@ const PageEdit = () => {
         <PromptEditor
           selectedImageModel={selectedImageModel}
           selectedProvider={selectedProvider}
+          commonAspectRatio={commonAspectRatio}
+          setCommonAspectRatio={setCommonAspectRatio}
           onModeChange={(mode: string) => {
             store.setActiveTool(mode as ActiveEditTool);
           }}

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
-import { ImageModel } from "@storyteller/model-list";
+import { CommonAspectRatio, ImageModel } from "@storyteller/model-list";
 import { GenerationProvider } from "@storyteller/api-enums";
 
 export interface EnqueueEditImageRequest {
@@ -29,7 +29,11 @@ export interface EnqueueEditImageRequest {
   /// Number of images to generate.
   image_count?: number;
 
+  // TODO: This is deprecated and will be phased out.
   aspect_ratio?: EnqueueEditImageSize;
+
+  // This is the new aspect ratio.
+  common_aspect_ratio?: CommonAspectRatio;
 
   image_quality?: EnqueueEditImageQuality;
 
@@ -55,6 +59,7 @@ interface RawEnqueueEditImageRequest {
   disable_system_prompt?: boolean;
   image_count?: number;
   aspect_ratio?: EnqueueEditImageSize;
+  common_aspect_ratio?: CommonAspectRatio;
   image_quality?: EnqueueEditImageQuality;
   frontend_caller?: string;
   frontend_subscriber_id?: string;
@@ -145,6 +150,10 @@ export const EnqueueEditImage = async (request: EnqueueEditImageRequest) : Promi
 
   if (!!request.aspect_ratio) {
     mutableRequest.aspect_ratio = request.aspect_ratio;
+  }
+
+  if (!!request.common_aspect_ratio) {
+    mutableRequest.common_aspect_ratio = request.common_aspect_ratio;
   }
 
   if (!!request.image_count) {
