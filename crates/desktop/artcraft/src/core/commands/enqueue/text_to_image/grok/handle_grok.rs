@@ -1,3 +1,4 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_grok_image::aspect_ratio_to_grok_image;
 use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
@@ -54,18 +55,12 @@ pub async fn handle_grok(
       .map(|prompt| prompt.trim().to_string())
       .unwrap_or_else(|| "".to_string());
 
-  let aspect_ratio = match request.aspect_ratio {
-    None => ClientMessageAspectRatio::Square,
-    Some(TextToImageSize::Auto) => ClientMessageAspectRatio::Square,
-    Some(TextToImageSize::Square) => ClientMessageAspectRatio::Square,
-    Some(TextToImageSize::Wide) => ClientMessageAspectRatio::WideThreeByTwo,
-    Some(TextToImageSize::Tall) => ClientMessageAspectRatio::TallTwoByThree,
-  };
+  let aspect_ratio = get_aspect_ratio(request);
 
   grok_image_prompt_queue.enqueue(PromptItem {
     task_id: job_id.clone(),
     prompt,
-    aspect_ratio,
+    aspect_ratio: aspect_ratio.unwrap_or(ClientMessageAspectRatio::Square),
   })?;
 
   Ok(TaskEnqueueSuccess {
@@ -76,73 +71,22 @@ pub async fn handle_grok(
   })
 }
 
-// TODO:
-// fn handle_midjourney_errors(
-//   app: &AppHandle,
-//   maybe_errors: Option<Vec<TextToImageError>>
-// ) -> Result<TaskEnqueueSuccess, GenerateError> {
-//   if let Some(errors) = maybe_errors {
-//     if !errors.is_empty() {
-//       let messages: Vec<String> = errors.iter()
-//           .map(|e| format!("{:?}", e))
-//           .collect();
-//
-//       let combined_message = messages.join("; ");
-//
-//       let event = FlashUserInputErrorEvent {
-//         message: format!("Midjourney Error: {}", combined_message),
-//       };
-//
-//       if let Err(err) = event.send(&app) {
-//         error!("Failed to send FlashUserInputErrorEvent: {:?}", err); // Fail open
-//       }
-//     }
-//   }
-//
-//   Err(GenerateError::ProviderFailure(ProviderFailureReason::MidjourneyJobEnqueueFailed))
-// }
+fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<ClientMessageAspectRatio> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_grok_image(common_aspect_ratio);
+    return Some(aspect);
+  }
 
-//async fn get_websocket(app: &AppHandle, creds_manager: &GrokCredentialManager, websocket_manager: &GrokWebsocketManager) -> Result<GrokWebsocket, GenerateError> {
-//  let maybe_websocket = websocket_manager.grab_websocket()?;
-//
-//  let websocket = match maybe_websocket {
-//    Some(websocket) => websocket,
-//    None => {
-//      let cookies = match creds_manager.maybe_copy_cookie_store() {
-//        Ok(Some(cookies)) => cookies.to_cookie_string(),
-//        Ok(None) => {
-//          error!("Grok credentials not found.");
-//          ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Grok, &app);
-//          return Err(GenerateError::needs_grok_credentials());
-//        }
-//        Err(err) => {
-//          error!("Error reading Midjourney credentials: {:?}", err);
-//          ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Grok, &app);
-//          return Err(GenerateError::needs_grok_credentials());
-//        },
-//      };
-//
-//      info!("Creating Grok websocket...");
-//
-//      let create_websocket_result = create_listen_websocket(CreateListenWebsocketArgs {
-//        cookies: &cookies,
-//      }).await;
-//
-//      let websocket = match create_websocket_result {
-//        Ok(websocket) => GrokWebsocket::new(websocket),
-//        Err(err) => {
-//          error!("Error creating websocket: {:?}", err);
-//          ShowProviderLoginModalEvent::send_for_provider(GenerationProvider::Grok, &app);
-//          return Err(GenerateError::needs_grok_credentials());
-//        }
-//      };
-//
-//      info!("Setting managed Grok websocket...");
-//      websocket_manager.set_websocket(websocket.clone())?;
-//
-//      websocket
-//    }
-//  };
-//
-//  Ok(websocket)
-//}
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    return match aspect_ratio {
+      TextToImageSize::Auto => Some(ClientMessageAspectRatio::Square),
+      TextToImageSize::Square => Some(ClientMessageAspectRatio::Square),
+      TextToImageSize::Wide => Some(ClientMessageAspectRatio::WideThreeByTwo),
+      TextToImageSize::Tall => Some(ClientMessageAspectRatio::TallTwoByThree),
+    }
+  }
+
+  None
+}

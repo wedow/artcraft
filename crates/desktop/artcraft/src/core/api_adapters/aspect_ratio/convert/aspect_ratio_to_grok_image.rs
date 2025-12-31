@@ -1,0 +1,28 @@
+use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use grok_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
+
+pub fn aspect_ratio_to_grok_image(aspect_ratio: CommonAspectRatio) -> ClientMessageAspectRatio {
+  match aspect_ratio {
+    // Exact
+    CommonAspectRatio::Square => ClientMessageAspectRatio::Square,
+    CommonAspectRatio::WideThreeByTwo => ClientMessageAspectRatio::WideThreeByTwo,
+    CommonAspectRatio::TallTwoByThree => ClientMessageAspectRatio::TallTwoByThree,
+
+    // Non-matching
+    CommonAspectRatio::Auto => ClientMessageAspectRatio::Square,
+    
+    // Mismatch - wide
+    CommonAspectRatio::Wide 
+    | CommonAspectRatio::WideFiveByFour 
+    | CommonAspectRatio::WideFourByThree 
+    | CommonAspectRatio::WideSixteenByNine 
+    | CommonAspectRatio::WideTwentyOneByNine => ClientMessageAspectRatio::WideThreeByTwo,
+
+    // Mismatch - tall
+    CommonAspectRatio::Tall 
+    | CommonAspectRatio::TallFourByFive 
+    | CommonAspectRatio::TallThreeByFour 
+    | CommonAspectRatio::TallNineBySixteen 
+    | CommonAspectRatio::TallNineByTwentyOne => ClientMessageAspectRatio::TallTwoByThree,
+  }
+}

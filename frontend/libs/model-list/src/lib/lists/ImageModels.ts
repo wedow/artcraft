@@ -25,6 +25,12 @@ export const IMAGE_MODELS: ImageModel[] = [
     maxImagePromptCount: 6,
     progressBarTime: 10000,
     canChangeAspectRatio: true,
+    defaultAspectRatio: CommonAspectRatio.Square,
+    aspectRatios: [
+      CommonAspectRatio.Square,
+      CommonAspectRatio.WideThreeByTwo,
+      CommonAspectRatio.TallTwoByThree,
+    ]
   }),
   new ImageModel({
     id: "midjourney",
