@@ -7,9 +7,14 @@ pub fn aspect_ratio_to_grok_image(aspect_ratio: CommonAspectRatio) -> ClientMess
     CommonAspectRatio::Square => ClientMessageAspectRatio::Square,
     CommonAspectRatio::WideThreeByTwo => ClientMessageAspectRatio::WideThreeByTwo,
     CommonAspectRatio::TallTwoByThree => ClientMessageAspectRatio::TallTwoByThree,
+    
+    // Close enough
+    CommonAspectRatio::SquareHd => ClientMessageAspectRatio::Square,
 
     // Non-matching
-    CommonAspectRatio::Auto => ClientMessageAspectRatio::Square,
+    CommonAspectRatio::Auto
+    | CommonAspectRatio::Auto2k
+    | CommonAspectRatio::Auto4k => ClientMessageAspectRatio::Square,
     
     // Mismatch - wide
     CommonAspectRatio::Wide 

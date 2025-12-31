@@ -29,4 +29,11 @@ export enum CommonAspectRatio {
   // Not appropriate for all models to use these values.
   Wide = "wide",
   Tall = "tall",
+  
+  // Auto values that bake in resolution
+  Auto2k = "auto_2k",
+  Auto4k = "auto_4k",
+
+  // Defined aspect ratios that bake in resolution
+  SquareHd = "square_hd",
 }

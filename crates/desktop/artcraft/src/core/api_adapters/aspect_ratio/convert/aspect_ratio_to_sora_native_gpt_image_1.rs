@@ -9,7 +9,12 @@ pub fn aspect_ratio_to_sora_native_gpt_image_1(aspect_ratio: CommonAspectRatio) 
     CommonAspectRatio::Tall => ImageSize::Tall,
 
     // Non-matching
-    CommonAspectRatio::Auto => ImageSize::Square,
+    CommonAspectRatio::Auto
+    | CommonAspectRatio::Auto2k
+    | CommonAspectRatio::Auto4k => ImageSize::Square,
+
+    // Mismatch - square
+    CommonAspectRatio::SquareHd => ImageSize::Square,
 
     // Mismatch - wide
     CommonAspectRatio::WideThreeByTwo

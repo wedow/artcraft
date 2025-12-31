@@ -16,11 +16,14 @@ pub fn aspect_ratio_to_artcraft_nano_banana(aspect_ratio: CommonAspectRatio) -> 
     CommonAspectRatio::TallNineBySixteen => NanoBananaMultiFunctionImageGenAspectRatio::NineBySixteen,
     // Special
     // NB: this is only for image-to-image editing, not text-to-image. 
-    CommonAspectRatio::Auto => NanoBananaMultiFunctionImageGenAspectRatio::Auto,
+    CommonAspectRatio::Auto
+    | CommonAspectRatio::Auto2k
+    | CommonAspectRatio::Auto4k => NanoBananaMultiFunctionImageGenAspectRatio::Auto,
     // NB: "9:21" value does not exist. Interpolated.
     CommonAspectRatio::TallNineByTwentyOne => NanoBananaMultiFunctionImageGenAspectRatio::NineBySixteen,
     // Semantic values
     CommonAspectRatio::Wide => NanoBananaMultiFunctionImageGenAspectRatio::SixteenByNine,
     CommonAspectRatio::Tall => NanoBananaMultiFunctionImageGenAspectRatio::NineBySixteen,
+    CommonAspectRatio::SquareHd => NanoBananaMultiFunctionImageGenAspectRatio::OneByOne,
   }
 }

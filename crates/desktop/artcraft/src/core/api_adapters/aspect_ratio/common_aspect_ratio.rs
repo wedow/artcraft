@@ -31,10 +31,6 @@ pub enum CommonAspectRatio {
   Wide,
   Tall,
 
-  //Possible enum values: square_hd, square,
-  // portrait_4_3, portrait_16_9, landscape_4_3, landscape_16_9,
-  // auto, auto_2K, auto_4K
-
   // Auto values that bake in resolution
   Auto2k,
   Auto4k,
