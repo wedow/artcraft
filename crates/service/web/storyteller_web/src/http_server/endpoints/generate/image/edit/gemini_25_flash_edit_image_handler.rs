@@ -44,6 +44,7 @@ use utoipa::ToSchema;
     ("request" = Gemini25FlashEditImageRequest, description = "Payload for Request"),
   )
 )]
+#[deprecated(note="use `nano_banana_multi_function_image_gen_handler` instead")]
 pub async fn gemini_25_flash_edit_image_handler(
   http_request: HttpRequest,
   request: Json<Gemini25FlashEditImageRequest>,
@@ -148,13 +149,14 @@ pub async fn gemini_25_flash_edit_image_handler(
     Some(Gemini25FlashEditImageNumImages::Four) => Gemini25FlashEditNumImages::Four,
     None => Gemini25FlashEditNumImages::One, // Default to One
   };
-  
+
   let args = Gemini25FlashEditArgs {
     image_urls,
     prompt: request.prompt.as_deref().unwrap_or(""),
     webhook_url: &server_state.fal.webhook_url,
     api_key: &server_state.fal.api_key,
     num_images,
+    aspect_ratio: None, // TODO
   };
 
   let fal_result = enqueue_gemini_25_flash_edit_webhook(args)

@@ -13,6 +13,7 @@ use crate::http_server::endpoints::generate::image::inpaint::flux_pro_1_inpaint_
 use crate::http_server::endpoints::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen_handler::bytedance_seedream_v4_multi_function_image_gen_handler;
 use crate::http_server::endpoints::generate::image::multi_function::bytedance_seedream_v4p5_multi_function_image_gen_handler::bytedance_seedream_v4p5_multi_function_image_gen_handler;
 use crate::http_server::endpoints::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen_handler::gpt_image_1p5_multi_function_image_gen_handler;
+use crate::http_server::endpoints::generate::image::multi_function::nano_banana_multi_function_image_gen_handler::nano_banana_multi_function_image_gen_handler;
 use crate::http_server::endpoints::generate::image::multi_function::nano_banana_pro_multi_function_image_gen_handler::nano_banana_pro_multi_function_image_gen_handler;
 use crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler;
 use crate::http_server::endpoints::generate::object::generate_hunyuan_2_0_image_to_3d_handler::generate_hunyuan_2_0_image_to_3d_handler;
@@ -60,6 +61,10 @@ where
               )
               .service(web::resource("/gpt_image_1p5")
                   .route(web::post().to(gpt_image_1p5_multi_function_image_gen_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+              .service(web::resource("/nano_banana")
+                  .route(web::post().to(nano_banana_multi_function_image_gen_handler))
                   .route(web::head().to(|| HttpResponse::Ok()))
               )
               .service(web::resource("/nano_banana_pro")
