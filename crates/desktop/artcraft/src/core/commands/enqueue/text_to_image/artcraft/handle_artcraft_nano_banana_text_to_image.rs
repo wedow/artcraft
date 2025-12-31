@@ -1,3 +1,4 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_nano_banana::aspect_ratio_to_artcraft_nano_banana;
 use crate::core::commands::enqueue::generate_error::{GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -13,17 +14,15 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_api_defs::generate::image::edit::gemini_25_flash_edit_image::{Gemini25FlashEditImageNumImages, Gemini25FlashEditImageRequest};
 use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::{GenerateGptImage1TextToImageImageQuality, GenerateGptImage1TextToImageImageSize, GenerateGptImage1TextToImageNumImages, GenerateGptImage1TextToImageRequest};
+use artcraft_api_defs::generate::image::multi_function::nano_banana_multi_function_image_gen::{NanoBananaMultiFunctionImageGenAspectRatio, NanoBananaMultiFunctionImageGenNumImages, NanoBananaMultiFunctionImageGenRequest};
+use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenAspectRatio;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
 use log::{error, info};
-use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
-use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simple_image_gen_with_session_auto_renew, SimpleImageGenAutoRenewRequest};
-use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use std::time::Duration;
-use storyteller_client::endpoints::generate::image::edit::gemini_25_flash_edit_image::gemini_25_flash_edit_image;
-use storyteller_client::endpoints::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
-use storyteller_client::endpoints::generate::image::generate_gpt_image_1_text_to_image::generate_gpt_image_1_text_to_image;
+use storyteller_client::endpoints::generate::image::multi_function::nano_banana_multi_function_image_gen_image::nano_banana_multi_function_image_gen;
+use storyteller_client::endpoints::generate::image::multi_function::nano_banana_pro_multi_function_image_gen_image::nano_banana_pro_multi_function_image_gen;
 use tauri::AppHandle;
 
 pub async fn handle_artcraft_nano_banana_text_to_image(
@@ -43,24 +42,26 @@ pub async fn handle_artcraft_nano_banana_text_to_image(
 
   let uuid_idempotency_token = generate_random_uuid();
 
-  let num_images = match request.number_images{
+  let num_images = match request.number_images {
     None => None,
-    Some(1) => Some(Gemini25FlashEditImageNumImages::One),
-    Some(2) => Some(Gemini25FlashEditImageNumImages::Two),
-    Some(3) => Some(Gemini25FlashEditImageNumImages::Three),
-    Some(4) => Some(Gemini25FlashEditImageNumImages::Four),
-    _ => Some(Gemini25FlashEditImageNumImages::One), // Default to one image if invalid number
+    Some(1) => Some(NanoBananaMultiFunctionImageGenNumImages::One),
+    Some(2) => Some(NanoBananaMultiFunctionImageGenNumImages::Two),
+    Some(3) => Some(NanoBananaMultiFunctionImageGenNumImages::Three),
+    Some(4) => Some(NanoBananaMultiFunctionImageGenNumImages::Four),
+    _ => Some(NanoBananaMultiFunctionImageGenNumImages::One), // Default to one image if invalid number
   };
 
-  let request = Gemini25FlashEditImageRequest {
+  let aspect_ratio = get_aspect_ratio(request);
+  
+  let request = NanoBananaMultiFunctionImageGenRequest {
     uuid_idempotency_token,
     prompt: request.prompt.clone(),
     image_media_tokens: request.image_media_tokens.clone(),
     num_images,
-    image_quality: None,
+    aspect_ratio,
   };
 
-  let result = gemini_25_flash_edit_image(
+  let result = nano_banana_multi_function_image_gen(
     &app_env_configs.storyteller_host,
     Some(&creds),
     request,
@@ -81,8 +82,28 @@ pub async fn handle_artcraft_nano_banana_text_to_image(
 
   Ok(TaskEnqueueSuccess {
     provider: GenerationProvider::Artcraft,
-    model: Some(GenerationModel::GptImage1),
+    model: Some(GenerationModel::NanoBanana),
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<NanoBananaMultiFunctionImageGenAspectRatio> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_nano_banana(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    return match aspect_ratio {
+      TextToImageSize::Auto => Some(NanoBananaMultiFunctionImageGenAspectRatio::Auto),
+      TextToImageSize::Square => Some(NanoBananaMultiFunctionImageGenAspectRatio::OneByOne),
+      TextToImageSize::Wide => Some(NanoBananaMultiFunctionImageGenAspectRatio::SixteenByNine),
+      TextToImageSize::Tall => Some(NanoBananaMultiFunctionImageGenAspectRatio::NineBySixteen),
+    }
+  }
+
+  None
 }

@@ -1,1 +1,2 @@
 pub mod aspect_ratio_to_artcraft_nano_banana_pro;
+pub mod aspect_ratio_to_artcraft_nano_banana;
