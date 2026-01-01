@@ -92,6 +92,7 @@ const getAspectRatioIcon = (aspectRatio: CommonAspectRatio) : IconDefinition => 
     case CommonAspectRatio.Square:
       return faSquare;
 
+    // Wide 
     case CommonAspectRatio.Wide:
     case CommonAspectRatio.WideFiveByFour:
     case CommonAspectRatio.WideFourByThree:
@@ -110,8 +111,17 @@ const getAspectRatioIcon = (aspectRatio: CommonAspectRatio) : IconDefinition => 
     case CommonAspectRatio.TallNineBySixteen:
     case CommonAspectRatio.TallNineByTwentyOne:
       return faRectangleVertical; // TODO: New FontAwesome 7 has "Tall".
+    
+    // With resolution baked in
+    case CommonAspectRatio.Auto2k:
+      return faMagicWandSparkles;
+    case CommonAspectRatio.Auto4k:
+      return faMagicWandSparkles;
+    case CommonAspectRatio.SquareHd:
+      return faSquare;
 
     default:
+      console.error("Unknown aspect ratio in icon mapping:", aspectRatio);
       return faSquare; // Fail open-ish
   }
 }
@@ -147,6 +157,13 @@ const getAspectRatioTextLabel = (aspectRatio: CommonAspectRatio) : string => {
     case CommonAspectRatio.TallNineByTwentyOne:
       return "9:21 (Tall)";
 
+    // With resolution baked in
+    case CommonAspectRatio.Auto2k:
+      return "Auto (2K)";
+    case CommonAspectRatio.Auto4k:
+      return "Auto (4K)";
+    case CommonAspectRatio.SquareHd:
+      return "Square (HD)";
 
     // Semantic cases
     case CommonAspectRatio.Wide:
@@ -155,6 +172,7 @@ const getAspectRatioTextLabel = (aspectRatio: CommonAspectRatio) : string => {
       return "Tall";
 
     default:
+      console.error("Unknown aspect ratio:", aspectRatio);
       return "Square"; // Fail open-ish
   }
 }
@@ -174,7 +192,11 @@ const popOverLabelToAspectRatio = (label: string, model: ImageModel): CommonAspe
     case "2:3 (Tall)": return CommonAspectRatio.TallTwoByThree;
     case "9:16 (Tall)": return CommonAspectRatio.TallNineBySixteen;
     case "9:21 (Tall)": return CommonAspectRatio.TallNineByTwentyOne;
+    case "Auto (2K)": return CommonAspectRatio.Auto2k;
+    case "Auto (4K)": return CommonAspectRatio.Auto4k;
+    case "Square (HD)": return CommonAspectRatio.SquareHd;
   }
+  console.error("Unknown aspect ratio label:", label, "for model:", model.id);
   // If we can't find it, return the model's default aspect ratio or Square as fallback
   return model.defaultAspectRatio || CommonAspectRatio.Square;
 }

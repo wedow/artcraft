@@ -246,6 +246,17 @@ export const IMAGE_MODELS: ImageModel[] = [
     maxImagePromptCount: 6,
     progressBarTime: 60000,
     canChangeAspectRatio: true,
+    defaultAspectRatio: CommonAspectRatio.SquareHd,
+    aspectRatios: [
+      CommonAspectRatio.Auto2k,
+      CommonAspectRatio.Auto4k,
+      CommonAspectRatio.Square,
+      CommonAspectRatio.SquareHd,
+      CommonAspectRatio.WideFourByThree,
+      CommonAspectRatio.WideSixteenByNine,
+      CommonAspectRatio.TallThreeByFour,
+      CommonAspectRatio.TallNineBySixteen,
+    ]
   }),
   new ImageModel({
     id: "seedream_4p5",
@@ -264,6 +275,17 @@ export const IMAGE_MODELS: ImageModel[] = [
     maxImagePromptCount: 6,
     progressBarTime: 60000,
     canChangeAspectRatio: true,
+    defaultAspectRatio: CommonAspectRatio.SquareHd,
+    aspectRatios: [
+      CommonAspectRatio.Auto2k,
+      CommonAspectRatio.Auto4k,
+      CommonAspectRatio.Square,
+      CommonAspectRatio.SquareHd,
+      CommonAspectRatio.WideFourByThree,
+      CommonAspectRatio.WideSixteenByNine,
+      CommonAspectRatio.TallThreeByFour,
+      CommonAspectRatio.TallNineBySixteen,
+    ]
   }),
   new ImageModel({
     id: "flux_pro_kontext_max",
