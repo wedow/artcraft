@@ -32,9 +32,11 @@ pub enum CommonAspectRatio {
   Tall,
 
   // Auto values that bake in resolution
+  // These are from the Seedream models
   Auto2k,
   Auto4k,
 
   // Defined aspect ratios that bake in resolution
+  // These are from the Seedream models
   SquareHd,
 }

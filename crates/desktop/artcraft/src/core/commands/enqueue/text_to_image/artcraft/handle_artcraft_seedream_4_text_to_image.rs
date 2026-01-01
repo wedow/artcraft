@@ -1,5 +1,6 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_seedream_4::aspect_ratio_to_artcraft_seedream_4;
 use crate::core::commands::enqueue::generate_error::GenerateError;
-use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize};
+use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize, EnqueueEditImageCommand};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -37,13 +38,7 @@ pub async fn handle_artcraft_seedream_4_text_to_image(
 
   let uuid_idempotency_token = generate_random_uuid();
 
-  let image_size = request.aspect_ratio
-      .map(|size| match size {
-        TextToImageSize::Auto => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
-        TextToImageSize::Square => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
-        TextToImageSize::Tall => BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine,
-        TextToImageSize::Wide => BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine,
-      });
+  let image_size = get_aspect_ratio(request);
 
   let num_images = match request.number_images {
     None => None,
@@ -97,4 +92,25 @@ pub async fn handle_artcraft_seedream_4_text_to_image(
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<BytedanceSeedreamV4MultiFunctionImageGenImageSize> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_seedream_4(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    let aspect_ratio = match aspect_ratio {
+      TextToImageSize::Auto => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
+      TextToImageSize::Square => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
+      TextToImageSize::Tall => BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine,
+      TextToImageSize::Wide => BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine,
+    };
+    return Some(aspect_ratio);
+  }
+
+  None
 }

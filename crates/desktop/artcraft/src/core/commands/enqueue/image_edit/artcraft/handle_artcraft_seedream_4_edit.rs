@@ -1,3 +1,5 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_nano_banana_pro::aspect_ratio_to_artcraft_nano_banana_pro;
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_seedream_4::aspect_ratio_to_artcraft_seedream_4;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize, EnqueueEditImageCommand};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -12,6 +14,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
 use artcraft_api_defs::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen::{BytedanceSeedreamV4MultiFunctionImageGenImageSize, BytedanceSeedreamV4MultiFunctionImageGenNumImages, BytedanceSeedreamV4MultiFunctionImageGenRequest};
+use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenAspectRatio;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
@@ -40,13 +43,7 @@ pub async fn handle_artcraft_seedream_4_edit(
 
   let uuid_idempotency_token = generate_random_uuid();
   
-  let image_size = request.aspect_ratio
-      .map(|size| match size {
-        EditImageSize::Auto => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
-        EditImageSize::Square => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
-        EditImageSize::Tall => BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine,
-        EditImageSize::Wide => BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine,
-      });
+  let image_size = get_aspect_ratio(request);
 
   let num_images = match request.image_count {
     None => None,
@@ -116,4 +113,25 @@ pub async fn handle_artcraft_seedream_4_edit(
     provider_job_id: Some(job_id.to_string()),
     task_type: TaskType::ImageGeneration,
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueEditImageCommand) -> Option<BytedanceSeedreamV4MultiFunctionImageGenImageSize> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_seedream_4(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    let aspect_ratio = match aspect_ratio {
+      EditImageSize::Auto => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
+      EditImageSize::Square => BytedanceSeedreamV4MultiFunctionImageGenImageSize::Square,
+      EditImageSize::Tall => BytedanceSeedreamV4MultiFunctionImageGenImageSize::PortraitSixteenNine,
+      EditImageSize::Wide => BytedanceSeedreamV4MultiFunctionImageGenImageSize::LandscapeSixteenNine,
+    };
+    return Some(aspect_ratio);
+  }
+
+  None
 }
