@@ -7,8 +7,8 @@ use crate::http_server::validations::validate_idempotency_token_format::validate
 use crate::state::server_state::ServerState;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
-use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
+use artcraft_api_defs::generate::image::bg_removal::remove_image_background::RemoveImageBackgroundRequest;
+use artcraft_api_defs::generate::image::bg_removal::remove_image_background::RemoveImageBackgroundResponse;
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;

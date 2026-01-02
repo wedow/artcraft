@@ -1,4 +1,3 @@
-pub mod gemini_25_flash_text_to_image;
 pub mod generate_flux_1_dev_text_to_image;
 pub mod generate_flux_1_schnell_text_to_image;
 pub mod generate_flux_pro_11_text_to_image;

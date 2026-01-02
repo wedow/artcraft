@@ -13,10 +13,11 @@ pub struct FluxPro11Args<'a, U: IntoUrl> {
   pub num_images: FluxPro11NumImages,
 }
 
+// TODO(bt,2026-01-01): This seems to disagree between Fal.ai and Fal.rs client libraries.
 #[derive(Copy, Clone, Debug)]
 pub enum FluxPro11AspectRatio {
   Square, // 1:1
-  SquareHd, // 1:1
+  SquareHd, // 1:1 (TODO: Is this in the API? I checked recently and don't see it.)
   LandscapeFourByThree, // 4:3
   LandscapeSixteenByNine, // 16:9
   PortraitThreeByFour, // 3:4

@@ -2,7 +2,7 @@ use crate::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use crate::error::storyteller_error::StorytellerError;
 use crate::utils::api_host::ApiHost;
 use crate::utils::basic_json_post_request::basic_json_post_request;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageRequest, GenerateFlux1SchnellTextToImageResponse, GENERATE_FLUX_1_SCHNELL_TEXT_TO_IMAGE_PATH};
+use artcraft_api_defs::generate::image::text::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageRequest, GenerateFlux1SchnellTextToImageResponse, GENERATE_FLUX_1_SCHNELL_TEXT_TO_IMAGE_PATH};
 
 
 pub async fn generate_flux_1_schnell_text_to_image(

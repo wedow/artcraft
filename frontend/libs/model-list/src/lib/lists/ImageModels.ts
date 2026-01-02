@@ -50,6 +50,7 @@ export const IMAGE_MODELS: ImageModel[] = [
     maxImagePromptCount: 6,
     progressBarTime: 45000,
     canChangeAspectRatio: true,
+    // TODO: Rust client doesn't support aspect ratios for MidJourney yet.
   }),
   new ImageModel({
     id: "flux_pro_1_1_ultra",

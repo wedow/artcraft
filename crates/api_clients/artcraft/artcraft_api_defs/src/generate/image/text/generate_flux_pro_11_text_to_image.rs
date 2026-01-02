@@ -19,6 +19,7 @@ pub struct GenerateFluxPro11TextToImageRequest {
   pub num_images: Option<GenerateFluxPro11TextToImageNumImages>,
 }
 
+// TODO(btw,2026-01-01): Fal.ai and Fal.rs client libraries seem to disagree about the options.
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum GenerateFluxPro11TextToImageAspectRatio {

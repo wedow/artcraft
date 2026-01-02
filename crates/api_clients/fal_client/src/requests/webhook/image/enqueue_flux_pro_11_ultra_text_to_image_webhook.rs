@@ -16,10 +16,14 @@ pub struct FluxPro11UltraArgs<'a, U: IntoUrl> {
 #[derive(Copy, Clone, Debug)]
 pub enum FluxPro11UltraAspectRatio {
   Square, // 1:1
+  LandscapeThreeByTwo, // 3:2
   LandscapeFourByThree, // 4:3
   LandscapeSixteenByNine, // 16:9
+  LandscapeTwentyOneByNine, // 21:9
+  PortraitTwoByThree, // 2:3
   PortraitThreeByFour, // 3:4
   PortraitNineBySixteen, // 9:16
+  PortraitNineByTwentyOne, // 9:21
   //Custom { width: u32, height: u32 }, // TODO
 }
 
@@ -44,10 +48,14 @@ pub async fn enqueue_flux_pro_11_ultra_text_to_image_webhook<U: IntoUrl>(
 
   let aspect_ratio = match args.aspect_ratio {
     FluxPro11UltraAspectRatio::Square => AspectRatioProperty::Property_1_1,
+    FluxPro11UltraAspectRatio::LandscapeThreeByTwo => AspectRatioProperty::Property_3_2,
     FluxPro11UltraAspectRatio::LandscapeFourByThree => AspectRatioProperty::Property_4_3,
     FluxPro11UltraAspectRatio::LandscapeSixteenByNine => AspectRatioProperty::Property_16_9,
+    FluxPro11UltraAspectRatio::LandscapeTwentyOneByNine => AspectRatioProperty::Property_21_9,
+    FluxPro11UltraAspectRatio::PortraitTwoByThree => AspectRatioProperty::Property_2_3,
     FluxPro11UltraAspectRatio::PortraitThreeByFour => AspectRatioProperty::Property_3_4,
     FluxPro11UltraAspectRatio::PortraitNineBySixteen => AspectRatioProperty::Property_9_16,
+    FluxPro11UltraAspectRatio::PortraitNineByTwentyOne => AspectRatioProperty::Property_9_21,
   };
   
   let request = FluxProUltraTextToImageInput {

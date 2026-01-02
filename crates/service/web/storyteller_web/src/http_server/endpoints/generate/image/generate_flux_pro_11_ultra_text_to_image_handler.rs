@@ -7,9 +7,9 @@ use crate::http_server::validations::validate_idempotency_token_format::validate
 use crate::state::server_state::ServerState;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageNumImages;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::{GenerateFluxPro11UltraTextToImageAspectRatio, GenerateFluxPro11UltraTextToImageNumImages, GenerateFluxPro11UltraTextToImageRequest};
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageNumImages;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_ultra_text_to_image::{GenerateFluxPro11UltraTextToImageAspectRatio, GenerateFluxPro11UltraTextToImageNumImages, GenerateFluxPro11UltraTextToImageRequest};
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
@@ -123,6 +123,10 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
     Some(GenerateFluxPro11UltraTextToImageAspectRatio::LandscapeSixteenByNine) => FluxPro11UltraAspectRatio::LandscapeSixteenByNine,
     Some(GenerateFluxPro11UltraTextToImageAspectRatio::PortraitThreeByFour) => FluxPro11UltraAspectRatio::PortraitThreeByFour,
     Some(GenerateFluxPro11UltraTextToImageAspectRatio::PortraitNineBySixteen) => FluxPro11UltraAspectRatio::PortraitNineBySixteen,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::LandscapeThreeByTwo) => FluxPro11UltraAspectRatio::LandscapeThreeByTwo,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::LandscapeTwentyOneByNine) => FluxPro11UltraAspectRatio::LandscapeTwentyOneByNine,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::PortraitTwoByThree) => FluxPro11UltraAspectRatio::PortraitTwoByThree,
+    Some(GenerateFluxPro11UltraTextToImageAspectRatio::PortraitNineByTwentyOne) => FluxPro11UltraAspectRatio::PortraitNineByTwentyOne,
     None => FluxPro11UltraAspectRatio::LandscapeSixteenByNine, // Default
   };
   

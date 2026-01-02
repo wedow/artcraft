@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
+use crate::billing::wallets::temporary_test_wallet_deduction::temporary_test_wallet_deduction;
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageAspectRatio, GenerateFlux1SchnellTextToImageNumImages, GenerateFlux1SchnellTextToImageRequest, GenerateFlux1SchnellTextToImageResponse};
+use artcraft_api_defs::generate::image::text::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageAspectRatio, GenerateFlux1SchnellTextToImageNumImages, GenerateFlux1SchnellTextToImageRequest, GenerateFlux1SchnellTextToImageResponse};
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
@@ -22,8 +23,6 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
 use sqlx::Acquire;
 use utoipa::ToSchema;
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
-use crate::billing::wallets::temporary_test_wallet_deduction::temporary_test_wallet_deduction;
 
 /// Flux 1 Schnell text to image
 #[utoipa::path(

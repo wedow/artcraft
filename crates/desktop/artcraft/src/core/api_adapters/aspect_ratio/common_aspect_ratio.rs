@@ -13,16 +13,16 @@ pub enum CommonAspectRatio {
   Square,
 
   // Wide
-  WideFiveByFour,
-  WideFourByThree,
   WideThreeByTwo,
+  WideFourByThree,
+  WideFiveByFour,
   WideSixteenByNine,
   WideTwentyOneByNine,
 
   // Tall
-  TallFourByFive,
-  TallThreeByFour,
   TallTwoByThree,
+  TallThreeByFour,
+  TallFourByFive,
   TallNineBySixteen,
   TallNineByTwentyOne,
 

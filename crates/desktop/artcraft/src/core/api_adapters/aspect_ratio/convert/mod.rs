@@ -1,3 +1,5 @@
+pub mod aspect_ratio_to_artcraft_flux_pro_1p1;
+pub mod aspect_ratio_to_artcraft_flux_pro_1p1_ultra;
 pub mod aspect_ratio_to_artcraft_gpt_image_1;
 pub mod aspect_ratio_to_artcraft_gpt_image_1p5;
 pub mod aspect_ratio_to_artcraft_nano_banana;

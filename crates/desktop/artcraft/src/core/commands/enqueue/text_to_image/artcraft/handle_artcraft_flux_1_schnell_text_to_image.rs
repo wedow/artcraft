@@ -4,12 +4,12 @@ use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageAspectRatio, GenerateFlux1SchnellTextToImageNumImages, GenerateFlux1SchnellTextToImageRequest};
+use artcraft_api_defs::generate::image::text::generate_flux_1_schnell_text_to_image::{GenerateFlux1SchnellTextToImageAspectRatio, GenerateFlux1SchnellTextToImageNumImages, GenerateFlux1SchnellTextToImageRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
-use log::{error, info};
 use idempotency::uuid::generate_random_uuid;
-use storyteller_client::endpoints::generate::image::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
+use log::{error, info};
+use storyteller_client::endpoints::generate::image::text::generate_flux_1_schnell_text_to_image::generate_flux_1_schnell_text_to_image;
 
 pub async fn handle_artcraft_flux_1_schnell_text_to_image(
   request: &EnqueueTextToImageRequest,

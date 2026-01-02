@@ -15,7 +15,6 @@ use crate::services::midjourney::state::midjourney_credential_manager::Midjourne
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::{GenerateGptImage1TextToImageImageQuality, GenerateGptImage1TextToImageImageSize, GenerateGptImage1TextToImageNumImages, GenerateGptImage1TextToImageRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use idempotency::uuid::generate_random_uuid;
@@ -29,8 +28,6 @@ use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_o
 use openai_sora_client::recipes::simple_image_gen_with_session_auto_renew::{simple_image_gen_with_session_auto_renew, SimpleImageGenAutoRenewRequest};
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use std::time::Duration;
-use storyteller_client::endpoints::generate::image::edit::gpt_image_1_edit_image::gpt_image_1_edit_image;
-use storyteller_client::endpoints::generate::image::generate_gpt_image_1_text_to_image::generate_gpt_image_1_text_to_image;
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
 
