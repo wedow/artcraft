@@ -134,40 +134,13 @@ export const PromptBox2D = ({
     },
   ]);
 
-  const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
-    [],
-  );
-
-  // Update generation count options from selected model capabilities
   useEffect(() => {
-    const caps = getCapabilitiesForModel(selectedImageModel);
-    const items: PopoverItem[] = Array.from(
-      { length: caps.maxGenerationCount },
-      (_, i) => i + 1,
-    ).map((count) => ({
-      label: String(count),
-      selected: count === generationCount,
-    }));
-    setGenerationCountList(items);
-
-    // Clamp selection to allowed range
-    if (generationCount < 1 || generationCount > caps.maxGenerationCount) {
-      setGenerationCount(
-        Math.min(Math.max(1, generationCount), caps.maxGenerationCount),
-      );
+    if (selectedImageModel?.isValidGenerationCount(generationCount)) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedImageModel]);
-
-  // Keep UI selection in sync when store value changes
-  useEffect(() => {
-    setGenerationCountList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === String(generationCount),
-      })),
-    );
-  }, [generationCount]);
+    const defaultGenerations = selectedImageModel?.defaultGenerationCount || 4;
+    setGenerationCount(defaultGenerations);
+  }, [selectedImageModel, generationCount]);
 
   useEffect(() => {
     setResolutionList((prev) =>
@@ -208,17 +181,6 @@ export const PromptBox2D = ({
   };
 
   // Image prompt row replaces legacy upload/gallery UI
-
-  const handleGenerationCountSelect = (selectedItem: PopoverItem) => {
-    const count = parseInt(selectedItem.label, 10);
-    setGenerationCount(count);
-    setGenerationCountList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === selectedItem.label,
-      })),
-    );
-  };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
@@ -613,23 +575,13 @@ export const PromptBox2D = ({
                   </Button>
                 </Tooltip>
               )}
-              <Tooltip
-                content="Number of generations"
-                position="top"
-                className="z-50"
-                closeOnClick={true}
-              >
-                <PopoverMenu
-                  items={generationCountList}
-                  onSelect={handleGenerationCountSelect}
-                  mode="toggle"
-                  panelTitle="No. of images"
-                  triggerIcon={
-                    <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
-                  }
-                  buttonClassName="h-9"
-                />
-              </Tooltip>
+              <GenerationCountPicker
+                currentModel={selectedImageModel}
+                currentCount={generationCount}
+                handleCountChange={(count) => {
+                  setGenerationCount(count);
+                }}
+              />
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isEnqueueing ? faSparkles : undefined}

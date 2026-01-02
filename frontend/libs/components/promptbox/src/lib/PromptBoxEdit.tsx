@@ -31,6 +31,7 @@ import { ImagePromptRow, type UploadImageFn } from "./ImagePromptRow";
 import { RefImage, usePromptEditStore } from "./promptStore";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { AspectRatioPicker } from "./common/AspectRatioPicker";
+import { GenerationCountPicker } from "./common/GenerationCountPicker";
 
 export interface PromptBoxEditProps {
   onModeChange?: (mode: string) => void;
@@ -82,9 +83,6 @@ export const PromptBoxEdit = ({
   const [prompt, setPrompt] = useState("");
   const [useSystemPrompt, setUseSystemPrompt] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
-  const [generationCount, setGenerationCount] = useState<number>(
-    typeof generationCountProp === "number" ? generationCountProp : 1,
-  );
   const [internalEnqueueing, setInternalEnqueueing] = useState(false);
   const referenceImages = usePromptEditStore((s) => s.referenceImages);
   const setReferenceImages = usePromptEditStore((s) => s.setReferenceImages);
@@ -94,10 +92,6 @@ export const PromptBoxEdit = ({
   const setResolution = usePromptEditStore((s) => s.setResolution);
 
   const [showImagePrompts, setShowImagePrompts] = useState(false);
-
-  const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
-    [],
-  );
 
   const [aspectRatioList, setAspectRatioList] = useState<PopoverItem[]>([
     {
@@ -141,6 +135,8 @@ export const PromptBoxEdit = ({
       icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
     },
   ]);
+
+  const generationCount = generationCountProp || 1;
 
   useEffect(() => {
     setAspectRatioList((prev) =>
@@ -193,42 +189,12 @@ export const PromptBoxEdit = ({
   });
 
   useEffect(() => {
-    if (typeof generationCountProp === "number") {
-      setGenerationCount(generationCountProp);
+    if (selectedImageModel?.isValidGenerationCount(generationCount)) {
+      return;
     }
-  }, [generationCountProp]);
-
-  useEffect(() => {
-    const caps = getCapabilitiesForModel(selectedImageModel);
-    const items: PopoverItem[] = Array.from(
-      { length: caps.maxGenerationCount },
-      (_, i) => i + 1,
-    ).map((count) => ({
-      label: String(count),
-      selected: count === generationCount,
-      icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
-    }));
-    setGenerationCountList(items);
-
-    if (generationCount < 1 || generationCount > caps.maxGenerationCount) {
-      const clamped = Math.min(
-        Math.max(1, generationCount),
-        caps.maxGenerationCount,
-      );
-      setGenerationCount(clamped);
-      onGenerationCountChange?.(clamped);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedImageModel]);
-
-  useEffect(() => {
-    setGenerationCountList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === String(generationCount),
-      })),
-    );
-  }, [generationCount]);
+    const defaultGenerations = selectedImageModel?.defaultGenerationCount || 4;
+    onGenerationCountChange?.(defaultGenerations);
+  }, [selectedImageModel, generationCount]);
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
@@ -532,24 +498,13 @@ export const PromptBoxEdit = ({
                     </Button>
                   </Tooltip>
                 )}
-                <Tooltip
-                  content="Number of generations"
-                  position="top"
-                  className="z-50"
-                  closeOnClick={true}
-                >
-                  <PopoverMenu
-                    items={generationCountList}
-                    onSelect={handleGenerationCountSelect}
-                    mode="toggle"
-                    panelTitle="No. of images"
-                    triggerIcon={
-                      <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
-                    }
-                    panelClassName="min-w-28"
-                    buttonClassName="h-9"
-                  />
-                </Tooltip>
+                <GenerationCountPicker
+                  currentModel={selectedImageModel}
+                  currentCount={generationCount}
+                  handleCountChange={(count) => {
+                    onGenerationCountChange?.(count);
+                  }}
+                />
                 <Button
                   className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                   icon={

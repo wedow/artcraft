@@ -177,9 +177,7 @@ export const PromptBoxImage = ({
     if (selectedModel?.isValidGenerationCount(generationCount)) {
       return;
     }
-
     const defaultGenerations = selectedModel?.defaultGenerationCount || 4;
-
     setGenerationCount(defaultGenerations);
   }, [selectedModel, generationCount]);
 
