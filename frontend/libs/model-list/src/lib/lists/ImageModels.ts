@@ -19,9 +19,10 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorName: "Grok",
     selectorDescription: "Fast af",
     selectorBadges: ["10 sec."],
+    // NB: Grok only supports 6 images at a time
     defaultGenerationCount: 6,
     maxGenerationCount: 6,
-    generationCountOptions: [6],
+    predefinedGenerationCounts: [6],
     canUseImagePrompt: false,
     maxImagePromptCount: 6,
     progressBarTime: 10000,
@@ -45,9 +46,10 @@ export const IMAGE_MODELS: ImageModel[] = [
     selectorName: "Midjourney",
     selectorDescription: "Stunning style and quality",
     selectorBadges: ["45 sec."],
+    // NB: Midjourney only supports 4 images at a time
     maxGenerationCount: 4,
     defaultGenerationCount: 4,
-    generationCountOptions: [4],
+    predefinedGenerationCounts: [4],
     canUseImagePrompt: false,
     maxImagePromptCount: 6,
     progressBarTime: 45000,

@@ -19,14 +19,15 @@ export const GenerationCountPicker = ({
 }: GenerationCountPickerProps) => {
 
   const maxGenerationCount = currentModel?.maxGenerationCount || DEFAULT_GENERATION_COUNT;
-  const hasCustomOptions = !!currentModel?.generationCountOptions;
+  const hasPredefinedOptions = !!currentModel?.predefinedGenerationCounts;
 
   let generationCountOptions: PopoverItem[];
 
-  if (hasCustomOptions) {
-    generationCountOptions = buildCustomCountOptions(currentModel?.generationCountOptions || [], currentCount);
+  // Count pickers either have a "[1,2, ... max]" set of options, or a pre-defined list of options.
+  if (hasPredefinedOptions) {
+    generationCountOptions = buildPredefinedCountOptions(currentModel?.predefinedGenerationCounts || [], currentCount);
   } else {
-    generationCountOptions = buildCountOptions(maxGenerationCount, currentCount);
+    generationCountOptions = buildSequentialCountOptions(maxGenerationCount, currentCount);
   }
 
   const onSelect = (item: PopoverItem) => {
@@ -64,7 +65,7 @@ export const GenerationCountPicker = ({
   )
 }
 
-const buildCountOptions = (maxCount: number, currentCount: number): PopoverItem[] => {
+const buildSequentialCountOptions = (maxCount: number, currentCount: number): PopoverItem[] => {
   const options = [];
   for (let i = 0; i < maxCount; i++) {
     const count = i + 1;
@@ -76,7 +77,7 @@ const buildCountOptions = (maxCount: number, currentCount: number): PopoverItem[
   return options;
 }
 
-const buildCustomCountOptions = (options: number[], currentCount: number): PopoverItem[] => {
+const buildPredefinedCountOptions = (options: number[], currentCount: number): PopoverItem[] => {
   const result: PopoverItem[] = [];
   options.forEach(option => {
     result.push({

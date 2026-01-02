@@ -174,13 +174,14 @@ export const PromptBoxImage = ({
   }, [imageMediaId, url]);
 
   useEffect(() => {
-    const caps = getCapabilitiesForModel(selectedModel);
-    const defaultCount = Math.min(
-      Math.max(1, caps.defaultGenerationCount ?? 1),
-      caps.maxGenerationCount,
-    );
-    setGenerationCount(defaultCount);
-  }, [selectedModel]);
+    if (selectedModel?.isValidGenerationCount(generationCount)) {
+      return;
+    }
+
+    const defaultGenerations = selectedModel?.defaultGenerationCount || 4;
+
+    setGenerationCount(defaultGenerations);
+  }, [selectedModel, generationCount]);
 
   useEffect(() => {
     setAspectRatioList((prev) =>
