@@ -1,9 +1,12 @@
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_flux_1_dev::aspect_ratio_to_artcraft_flux_1_dev;
+use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_nano_banana_pro::aspect_ratio_to_artcraft_nano_banana_pro;
 use crate::core::commands::enqueue::generate_error::GenerateError;
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::core::commands::enqueue::text_to_image::enqueue_text_to_image_command::{EnqueueTextToImageRequest, TextToImageSize};
 use crate::core::events::generation_events::common::GenerationModel;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenAspectRatio;
 use artcraft_api_defs::generate::image::text::generate_flux_1_dev_text_to_image::{GenerateFlux1DevTextToImageAspectRatio, GenerateFlux1DevTextToImageNumImages, GenerateFlux1DevTextToImageRequest};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
@@ -30,14 +33,7 @@ pub async fn handle_artcraft_flux_1_dev_text_to_image(
   let request = GenerateFlux1DevTextToImageRequest {
     uuid_idempotency_token,
     prompt: request.prompt.clone(),
-    aspect_ratio: request.aspect_ratio
-        .map(|aspect| match aspect {
-          // TODO(bt,2025-07-14): Support other aspect ratios.
-          TextToImageSize::Tall => GenerateFlux1DevTextToImageAspectRatio::PortraitNineBySixteen,
-          TextToImageSize::Wide => GenerateFlux1DevTextToImageAspectRatio::LandscapeSixteenByNine,
-          TextToImageSize::Auto => GenerateFlux1DevTextToImageAspectRatio::SquareHd,
-          TextToImageSize::Square => GenerateFlux1DevTextToImageAspectRatio::SquareHd,
-        }),
+    aspect_ratio: get_aspect_ratio(request),
     num_images: request.number_images
         .and_then(|num| match num {
           1 => Some(GenerateFlux1DevTextToImageNumImages::One),
@@ -71,4 +67,25 @@ pub async fn handle_artcraft_flux_1_dev_text_to_image(
     model: Some(GenerationModel::Flux1Dev),
     provider_job_id: Some(job_token.to_string()),
   })
+}
+
+fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<GenerateFlux1DevTextToImageAspectRatio> {
+  if let Some(common_aspect_ratio) = request.common_aspect_ratio {
+    // Handle modern aspect ratio
+    let aspect = aspect_ratio_to_artcraft_flux_1_dev(common_aspect_ratio);
+    return Some(aspect);
+  }
+
+  if let Some(aspect_ratio) = request.aspect_ratio {
+    // Handle deprecated aspect ratio
+    let aspect = match aspect_ratio {
+      TextToImageSize::Tall => GenerateFlux1DevTextToImageAspectRatio::PortraitNineBySixteen,
+      TextToImageSize::Wide => GenerateFlux1DevTextToImageAspectRatio::LandscapeSixteenByNine,
+      TextToImageSize::Auto => GenerateFlux1DevTextToImageAspectRatio::SquareHd,
+      TextToImageSize::Square => GenerateFlux1DevTextToImageAspectRatio::SquareHd,
+    };
+    return Some(aspect);
+  }
+
+  None
 }
