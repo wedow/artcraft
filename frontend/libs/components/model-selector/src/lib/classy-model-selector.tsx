@@ -11,6 +11,7 @@ import { Model } from "@storyteller/model-list";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
 import { GenerationProvider } from "@storyteller/api-enums";
+import { defaultModelForPage } from "./defaultModelForPage";
 
 interface ClassyModelSelectorProps {
   items: Omit<PopoverItem, "selected">[];
@@ -106,7 +107,10 @@ export function ClassyModelSelector({
 }: ClassyModelSelectorProps) {
   const { selectedModels, setSelectedModel, setSelectedProvider } =
     useClassyModelSelectorStore();
-  const selectedModel = selectedModels[page] || items[0]?.model;
+  const itemModels: Model[] = items
+    .map(item => item.model)
+    .filter(model => model !== undefined);
+  const selectedModel = selectedModels[page] || defaultModelForPage(itemModels, page);
   const selectedProvider = useSelectedProviderForModel(page, selectedModel?.id);
   const selectedProvidersByModel = useClassyModelSelectorStore(
     (s) => s.selectedProviders[page] ?? {},
@@ -116,7 +120,7 @@ export function ClassyModelSelector({
   useEffect(() => {
     // Initialize selected model if not set
     if (!selectedModels[page] && items[0]) {
-      setSelectedModel(page, items[0].model!);
+      setSelectedModel(page, defaultModelForPage(itemModels, page));
     }
   }, []);
 

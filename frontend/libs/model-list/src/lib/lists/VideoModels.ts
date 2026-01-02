@@ -259,3 +259,11 @@ export const VIDEO_MODELS: VideoModel[] = [
     progressBarTime: 100000,
   }),
 ];
+
+export const VIDEO_MODELS_BY_ID: Map<string, VideoModel> = new Map(
+  VIDEO_MODELS.map((model) => [model.id, model]),
+);
+
+if (VIDEO_MODELS_BY_ID.size !== VIDEO_MODELS.length) {
+  throw new Error("All video models must have unique IDs");
+}
