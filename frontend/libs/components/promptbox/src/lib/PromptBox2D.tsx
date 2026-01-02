@@ -41,6 +41,7 @@ import { ImageModel } from "@storyteller/model-list";
 import { ImagePromptRow } from "./ImagePromptRow";
 import { twMerge } from "tailwind-merge";
 import { GenerationProvider } from "@storyteller/api-enums";
+import { GenerationCountPicker } from "./common/GenerationCountPicker";
 
 export type AspectRatio = "wide" | "tall" | "square";
 

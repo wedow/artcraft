@@ -17,6 +17,9 @@ export class ImageModel extends Model {
   // Default number of images that can be generated at once
   readonly defaultGenerationCount: number;
 
+  // If set, use this instead of `maxGenerationCount`.
+  readonly generationCountOptions?: number[];
+
   // Signals image editing models that focus on editing a single image.
   readonly canEditImages: boolean;
 
@@ -63,6 +66,7 @@ export class ImageModel extends Model {
     selectorBadges: string[];
     maxGenerationCount: number;
     defaultGenerationCount: number;
+    generationCountOptions?: number[];
     canEditImages?: boolean;
     usesInpaintingMask?: boolean;
     editingIsInpainting?: boolean;
@@ -91,6 +95,7 @@ export class ImageModel extends Model {
     super(args);
     this.maxGenerationCount = args.maxGenerationCount;
     this.defaultGenerationCount = args.defaultGenerationCount;
+    this.generationCountOptions = args.generationCountOptions;
     this.canEditImages = args.canEditImages ?? false;
     this.usesInpaintingMask = args.usesInpaintingMask ?? false;
     this.editingIsInpainting = args.editingIsInpainting ?? false;

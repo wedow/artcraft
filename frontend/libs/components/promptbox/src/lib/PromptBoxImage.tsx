@@ -34,6 +34,7 @@ import { twMerge } from "tailwind-merge";
 import { ImagePromptRow } from "./ImagePromptRow";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { AspectRatioPicker } from "./common/AspectRatioPicker";
+import { GenerationCountPicker } from "./common/GenerationCountPicker";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -150,9 +151,6 @@ export const PromptBoxImage = ({
       icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
     },
   ]);
-  const [generationCountList, setGenerationCountList] = useState<PopoverItem[]>(
-    [],
-  );
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -181,28 +179,8 @@ export const PromptBoxImage = ({
       Math.max(1, caps.defaultGenerationCount ?? 1),
       caps.maxGenerationCount,
     );
-
     setGenerationCount(defaultCount);
-
-    const items: PopoverItem[] = Array.from(
-      { length: caps.maxGenerationCount },
-      (_, i) => i + 1,
-    ).map((count) => ({
-      label: String(count),
-      selected: count === defaultCount,
-      icon: <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />,
-    }));
-    setGenerationCountList(items);
   }, [selectedModel]);
-
-  useEffect(() => {
-    setGenerationCountList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === String(generationCount),
-      })),
-    );
-  }, [generationCount]);
 
   useEffect(() => {
     setAspectRatioList((prev) =>
@@ -234,17 +212,6 @@ export const PromptBoxImage = ({
 
   const handleResolutionSelect = (selectedItem: PopoverItem) => {
     setResolution(selectedItem.label.toLowerCase() as any);
-  };
-
-  const handleGenerationCountSelect = (selectedItem: PopoverItem) => {
-    const count = parseInt(selectedItem.label, 10);
-    setGenerationCount(count);
-    setGenerationCountList((prev) =>
-      prev.map((item) => ({
-        ...item,
-        selected: item.label === selectedItem.label,
-      })),
-    );
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -544,24 +511,13 @@ export const PromptBoxImage = ({
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
-              <Tooltip
-                content="Number of generations"
-                position="top"
-                className="z-50"
-                closeOnClick={true}
-              >
-                <PopoverMenu
-                  items={generationCountList}
-                  onSelect={handleGenerationCountSelect}
-                  mode="toggle"
-                  triggerIcon={
-                    <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
-                  }
-                  panelClassName="min-w-28"
-                  panelTitle="No. of images"
-                  buttonClassName="h-9"
-                />
-              </Tooltip>
+              <GenerationCountPicker
+                currentModel={selectedModel}
+                currentCount={generationCount}
+                handleCountChange={(count) => {
+                  setGenerationCount(count);
+                }}
+              />
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
                 icon={!isEnqueueing ? faSparkles : undefined}
