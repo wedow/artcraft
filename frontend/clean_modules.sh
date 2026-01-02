@@ -5,7 +5,7 @@ set -euxo pipefail
 echo "Removing Build directories..."
 rm -rf ./apps/artcraft-website/dist/
 rm -rf ./apps/editor2d/dist/
-rm -rf ./apps/editor3d/dist/
+rm -rf ./apps/artcraft/dist/
 rm -rf ./libs/api/dist/
 rm -rf ./libs/build-env/dist/
 rm -rf ./libs/common/dist/
@@ -68,6 +68,5 @@ rm -rf ./.nx/
 
 echo "Removing Node Modules directories..."
 rm -rf ./node_modules/
-rm -rf ./apps/editor2d/node_modules/
-rm -rf ./apps/editor3d/node_modules/
+rm -rf ./apps/artcraft/node_modules/
 

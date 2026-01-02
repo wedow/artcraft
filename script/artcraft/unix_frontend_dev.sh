@@ -24,6 +24,6 @@ npm install --verbose
 
 export VITE_ENVIRONMENT_TYPE="production"
 
-nx dev editor3d
+nx dev artcraft
 
 popd || exit

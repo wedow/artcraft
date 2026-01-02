@@ -23,7 +23,7 @@ try
     Write-Host "If this isn't running on port 5173, you may need to kill a zombie process!"  -ForegroundColor red -BackgroundColor white
     Write-Host ""
 
-    npx nx dev editor3d
+    npx nx dev artcraft
 }
 finally
 {

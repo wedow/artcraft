@@ -4,10 +4,10 @@
   "version": "0.0.1",
   "identifier": "ai.artcraft.app",
   "build": {
-    "frontendDist": "../../../frontend/apps/editor3d/dist",
+    "frontendDist": "../../../frontend/apps/artcraft/dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "nx run editor3d:dev",
-    "beforeBuildCommand": "nx run editor3d:build"
+    "beforeDevCommand": "nx run artcraft:dev",
+    "beforeBuildCommand": "nx run artcraft:build"
   },
   "app": {
     "withGlobalTauri": true,

@@ -14,7 +14,7 @@ set -euxo pipefail
 # Run this script!
 #
 
-echo 'TEMPORARY HACK: Build internal dependencies of editor3d since nx is not finding them...'
+echo 'TEMPORARY HACK: Build internal dependencies of artcraft since nx is not finding them...'
 
 # A 'clean' will remove nx
 npm install

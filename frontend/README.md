@@ -18,12 +18,12 @@ Run dev server:
 nx dev editor2d
 ```
 
-## Editor3d
+## artcraft
 
 Run dev server:
 
 ```bash
-nx dev editor3d
+nx dev artcraft
 ```
 
 ```
@@ -39,11 +39,11 @@ import { Button } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
 
 building:
-npx nx build editor3d
+npx nx build artcraft
 npx nx build editor2d
 
 dev:
-npx nx dev editor3d
+npx nx dev artcraft
 npx nx dev editor2d
 
 
@@ -62,6 +62,6 @@ or
 in frontend folder
 
 % nx build -project type
-% nx build editor3d
-% nx dev editor3d
+% nx build artcraft
+% nx dev artcraft
 ```

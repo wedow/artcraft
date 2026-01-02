@@ -27,7 +27,7 @@
       "~/*": [
         // Uncomment if 2D ever gets used
         // "apps/editor2d/app/src/*",
-        "apps/editor3d/app/src/*"
+        "apps/artcraft/app/src/*"
       ]
     }
   }

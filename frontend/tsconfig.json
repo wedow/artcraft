@@ -10,7 +10,7 @@
       "path": "./libs/login"
     },
     {
-      "path": "./apps/editor3d"
+      "path": "./apps/artcraft"
     },
     {
       "path": "./libs/components/toaster"

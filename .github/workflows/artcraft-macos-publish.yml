@@ -200,10 +200,10 @@ jobs:
 
           # Use npx to ensure we use the local nx version
           echo "Building with npx nx..."
-          npx nx run editor3d:build
+          npx nx run artcraft:build
 
           echo "Checking build output..."
-          ls -la apps/editor3d/dist/ | head -10
+          ls -la apps/artcraft/dist/ | head -10
 
           # Update Tauri config to skip the build (since we already built)
           cd ${{ github.workspace }}/crates/desktop/artcraft
