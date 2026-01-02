@@ -10,7 +10,6 @@ export * from "./lib/classes/metadata/SizeOption.js";
 export * from "./lib/legacy/ModelConfig.js";
 export * from "./lib/legacy/ModelInfo.js";
 export * from "./lib/legacy/Models.js";
-export * from "./lib/legacy/ModelsByPage.js";
 export * from "./lib/lists/AllModels.js";
 export * from "./lib/lists/AllModelsById.js";
 export * from "./lib/lists/ImageModels.js";
