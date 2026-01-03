@@ -18,7 +18,7 @@ use http_headers::values::pragma::PRAGMA_NO_CACHE;
 use http_headers::values::priority::PRIORITY_4;
 use http_headers::values::sec::{SEC_FETCH_DEST_EMPTY, SEC_FETCH_MODE_CORS, SEC_FETCH_SITE_CROSS_SITE};
 use http_headers::values::te::TE_TRAILERS;
-use log::{debug, error};
+use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use uuid::Uuid;
@@ -55,7 +55,7 @@ pub async fn poll_world_status(args: PollWorldStatusArgs<'_>) -> Result<PollWorl
 
   let url = get_url(args.world_id);
 
-  debug!("Requesting URL: {}", url);
+  info!("Polling World: {}", url);
 
   let mut request_builder = client.get(url)
       .header(ACCEPT, ACCEPT_ALL)

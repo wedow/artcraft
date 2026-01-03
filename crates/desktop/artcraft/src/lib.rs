@@ -21,6 +21,7 @@ use crate::core::commands::providers::get_provider_order_command::get_provider_o
 use crate::core::commands::providers::set_provider_order_command::set_provider_order_command;
 use crate::core::commands::task_queue::get_task_queue_command::get_task_queue_command;
 use crate::core::commands::task_queue::mark_task_as_dismissed_command::mark_task_as_dismissed_command;
+use crate::core::commands::task_queue::tasks_nuke_all_command::tasks_nuke_all_command;
 use crate::core::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::core::lifecycle::startup::setup_main_window::setup_main_window;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
@@ -221,6 +222,7 @@ pub fn run() {
     storyteller_open_customer_portal_cancel_plan_command,
     storyteller_open_customer_portal_manage_plan_command,
     storyteller_open_customer_portal_switch_plan_command,
+    tasks_nuke_all_command,
     storyteller_open_customer_portal_update_payment_method_command,
     storyteller_open_subscription_purchase_command,
     storyteller_purge_credentials_command,

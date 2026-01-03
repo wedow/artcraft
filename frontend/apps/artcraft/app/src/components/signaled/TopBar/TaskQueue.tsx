@@ -18,7 +18,7 @@ import {
 } from "@storyteller/ui-gallery-modal";
 import type { GalleryItem } from "@storyteller/ui-gallery-modal";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GetTaskQueue, MarkTaskAsDismissed } from "@storyteller/tauri-api";
+import { GetTaskQueue, MarkTaskAsDismissed, TasksNukeAll } from "@storyteller/tauri-api";
 import type { TaskQueueItem } from "@storyteller/tauri-api";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import {
@@ -528,12 +528,8 @@ export const TaskQueue = () => {
   };
 
   const dismissAll = async () => {
-    const allIds = [
-      ...completed.map((t) => t.id),
-      ...inProgress.map((t) => t.id),
-    ];
     try {
-      await Promise.all(allIds.map((id) => MarkTaskAsDismissed(id)));
+      await TasksNukeAll();
     } catch (_) {
       // ignore
     } finally {
