@@ -26,7 +26,10 @@ use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACH
 use wreq::Client;
 use wreq_util::Emulation;
 
-const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/worlds";
+const BASE_URL : &str = "https://api.worldlabs.ai/api/v1/worlds";
+
+// Note: WorldLabs is phasing out the old URL scheme:
+// const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/worlds";
 
 fn get_url(world_id: &WorldObjectId) -> String {
   format!("{}/{}", BASE_URL, world_id.0)
@@ -170,6 +173,29 @@ mod tests {
     let bearer_token = get_test_bearer_token().unwrap();
 
     let world_id = WorldObjectId("d60cfa21-5506-43de-9a9c-0707fc17a5ec".to_string());
+
+    let response = poll_world_status(PollWorldStatusArgs {
+      cookies: &cookies,
+      bearer_token: &bearer_token,
+      world_id: &world_id,
+      request_timeout: None,
+    }).await.unwrap();
+
+    println!("Is complete: {}", response.is_complete);
+    println!("Spz Url: {}", response.spz_splat_url.unwrap_or_else(|| "incomplete".to_string()));
+
+    assert_eq!(1, 2);
+  }
+
+  #[tokio::test]
+  #[ignore] // Client side tests only
+  async fn test_request_2() {
+    setup_test_logging(LevelFilter::Debug);
+
+    let cookies = get_typed_test_cookies().unwrap();
+    let bearer_token = get_test_bearer_token().unwrap();
+
+    let world_id = WorldObjectId("e739b11e-6039-49c7-b73d-b79e1b28e295".to_string());
 
     let response = poll_world_status(PollWorldStatusArgs {
       cookies: &cookies,

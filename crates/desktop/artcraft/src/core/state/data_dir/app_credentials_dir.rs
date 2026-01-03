@@ -69,4 +69,12 @@ impl AppCredentialsDir {
   pub fn get_worldlabs_cookies_path(&self) -> PathBuf {
     self.path.join("worldlabs_cookies.txt")
   }
+
+  pub fn get_worldlabs_bearer_path(&self) -> PathBuf {
+    self.path.join("worldlabs_bearer.txt")
+  }
+
+  pub fn get_worldlabs_refresh_path(&self) -> PathBuf {
+    self.path.join("worldlabs_refresh.txt")
+  }
 }

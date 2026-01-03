@@ -192,8 +192,12 @@ impl WorldlabsCredentialManager {
           .map(|cookies| cookies.to_serializable()),
       user_id: None, // TODO
       user_email: None, // TODO
-      bearer_token: creds.world_labs_bearer_token.map(|token| token.to_raw_string()),
-      refresh_token: creds.world_labs_refresh_token.map(|token| token.to_raw_string()),
+      bearer_token: creds.world_labs_bearer_token
+          .as_ref()
+          .map(|token| token.to_raw_string()),
+      refresh_token: creds.world_labs_refresh_token
+          .as_ref()
+          .map(|token| token.to_raw_string()),
     };
 
     let path = self.app_data_root.credentials_dir().get_worldlabs_state_path();
@@ -202,10 +206,25 @@ impl WorldlabsCredentialManager {
     std::fs::write(path, serialized)?;
 
     // TODO: This is just for building the client and testing.
-    if let Some(cookies) = creds.browser_cookies.as_ref() {
-      let cookies_header = cookies.to_cookie_string();
-      let path = self.app_data_root.credentials_dir().get_worldlabs_cookies_path();
-      std::fs::write(path, cookies_header)?;
+    {
+      if let Some(cookies) = creds.browser_cookies.as_ref() {
+        let cookies_header = cookies.to_cookie_string();
+        let path = self.app_data_root.credentials_dir().get_worldlabs_cookies_path();
+        std::fs::write(path, cookies_header)?;
+      }
+
+      // TODO: This is just for building the client and testing.
+      if let Some(bearer) = creds.world_labs_bearer_token.as_ref() {
+        let value = bearer.to_raw_string();
+        let path = self.app_data_root.credentials_dir().get_worldlabs_bearer_path();
+        std::fs::write(path, value)?;
+      }
+
+      if let Some(refresh) = creds.world_labs_refresh_token.as_ref() {
+        let value = refresh.to_raw_string();
+        let path = self.app_data_root.credentials_dir().get_worldlabs_refresh_path();
+        std::fs::write(path, value)?;
+      }
     }
 
     Ok(())
