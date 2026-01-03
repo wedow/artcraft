@@ -1,9 +1,9 @@
 use crate::api::api_types::image_input_object_id::ImageInputObjectId;
+use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
 use crate::api::api_types::pano_object_id::PanoObjectId;
 use crate::api::api_types::run_object_id::RunObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
 use crate::api::api_types::upload_object_id::UploadObjectId;
-use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::api::utils::upload_id_to_image_url::upload_id_to_image_url;
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
@@ -31,7 +31,10 @@ use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACH
 use wreq::Client;
 use wreq_util::Emulation;
 
-const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
+const BASE_URL : &str = "https://api.worldlabs.ai/api/v1/objects";
+
+// Note: WorldLabs is phasing out the old URL scheme:
+// const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
 fn get_url(run_id: &RunObjectId) -> String {
   format!("{}/{}", BASE_URL, run_id.0)
@@ -398,9 +401,9 @@ struct RawResponse {
 #[cfg(test)]
 mod tests {
   use crate::api::api_types::image_input_object_id::ImageInputObjectId;
+  use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
   use crate::api::api_types::pano_object_id::PanoObjectId;
   use crate::api::api_types::run_object_id::RunObjectId;
-  use crate::api::api_types::meta_world_object_id::MetaWorldObjectId;
   use crate::api::requests::objects::update_run_object_with_upload::{RawRequest, UpdateRunObjectWithUploadPayloadArgs};
 
   #[test]

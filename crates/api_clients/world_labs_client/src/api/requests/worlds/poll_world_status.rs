@@ -172,7 +172,7 @@ mod tests {
     let cookies = get_typed_test_cookies().unwrap();
     let bearer_token = get_test_bearer_token().unwrap();
 
-    let world_id = WorldObjectId("d60cfa21-5506-43de-9a9c-0707fc17a5ec".to_string());
+    let world_id = WorldObjectId("403c379b-b7d2-4449-8f1e-ebdb56142604".to_string());
 
     let response = poll_world_status(PollWorldStatusArgs {
       cookies: &cookies,

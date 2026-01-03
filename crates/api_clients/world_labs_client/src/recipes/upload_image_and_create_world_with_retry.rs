@@ -295,7 +295,7 @@ mod tests {
     let refresh_token = get_typed_test_refresh_token().unwrap();
 
     //let file_path = "/home/bt/Pictures/locations/island.jpg";
-    let file_path = "/Users/bt/Pictures/Midjourney/rocks.jpeg";
+    let file_path = "/Users/bt/Pictures/Midjourney/jeep.jpeg";
     let file_bytes = file_read_bytes(file_path).unwrap();
 
     println!("File bytes len: {}", file_bytes.len());

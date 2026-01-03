@@ -1,6 +1,6 @@
 use crate::api::api_types::run_object_id::RunObjectId;
-use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::api_types::upload_mime_type::UploadMimeType;
+use crate::api::api_types::upload_object_id::UploadObjectId;
 use crate::api::common::common_header_values::{ORIGIN_VALUE, REFERER_VALUE};
 use crate::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use crate::credentials::world_labs_cookies::WorldLabsCookies;
@@ -25,7 +25,10 @@ use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACH
 use wreq::Client;
 use wreq_util::Emulation;
 
-const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
+const URL : &str = "https://api.worldlabs.ai/api/v1/objects";
+
+// Note: WorldLabs is phasing out the old URL scheme:
+// const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
 pub struct CreateUploadObjectArgs<'a> {
   pub cookies: &'a WorldLabsCookies,

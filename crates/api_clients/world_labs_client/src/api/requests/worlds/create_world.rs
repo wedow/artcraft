@@ -27,7 +27,10 @@ use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACH
 use wreq::Client;
 use wreq_util::Emulation;
 
-const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/worlds";
+const URL : &str = "https://api.worldlabs.ai/api/v1/worlds";
+
+// Note: WorldLabs is phasing out the old URL scheme:
+//const URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/worlds";
 
 pub struct CreateWorldArgs<'a> {
   pub cookies: &'a WorldLabsCookies,

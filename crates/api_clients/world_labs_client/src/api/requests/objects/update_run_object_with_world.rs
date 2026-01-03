@@ -31,8 +31,10 @@ use wreq::header::{ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, AUTHORIZATION, CACH
 use wreq::Client;
 use wreq_util::Emulation;
 use crate::api::api_types::world_id::WorldObjectId;
+const BASE_URL : &str = "https://api.worldlabs.ai/api/v1/objects";
 
-const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
+// Note: WorldLabs is phasing out the old URL scheme:
+// const BASE_URL : &str = "https://marble2-kgw-prod-iac1.wlt-ai.art/api/v1/objects";
 
 fn get_url(run_id: &RunObjectId) -> String {
   format!("{}/{}", BASE_URL, run_id.0)
