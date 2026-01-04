@@ -52,8 +52,18 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
   return (
     <>
       <div className="space-y-4 text-base-fg">
+        <Label>Support ArtCraft</Label>
+        <p className="text-sm opacity-70">
+          You do not have to purchase anything from us to use ArtCraft, but
+          you can support ArtCraft development by subscribing or buying credits. 
+        </p>
+      </div>
+
+      <br />
+
+      <div className="space-y-4 text-base-fg">
         <div className="space-y-2">
-          <Label>Current Plan</Label>
+          <Label>Current ArtCraft Plan</Label>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xl font-semibold ">
               <FontAwesomeIcon
@@ -102,7 +112,7 @@ export const BillingSettingsPane = (args: BillingSettingsPaneProps) => {
 
         <div className="flex flex-col">
           <Label htmlFor="credits" className="flex items-center gap-2">
-            Your credit balance
+            Your ArtCraft credit balance
           </Label>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

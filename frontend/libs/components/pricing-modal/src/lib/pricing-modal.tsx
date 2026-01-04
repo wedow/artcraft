@@ -18,9 +18,9 @@ const billingTabs = [
 
 const pricingConfig = {
   header: {
-    title: "Purchase a subscription",
+    title: "Subscribe to ArtCraft",
     subtitle:
-      "Upgrade to gain access to Pro features and generate more, faster.",
+      "Support ArtCraft development and get generation credits without having to add 3rd party services.",
   },
   yearlyDiscount: 20,
 };
