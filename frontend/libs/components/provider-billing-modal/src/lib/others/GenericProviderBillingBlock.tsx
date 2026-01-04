@@ -24,8 +24,12 @@ function getServiceProviderName(provider: GenerationProvider) : string {
       return "Sora";
     case GenerationProvider.Fal:
       return "Fal";
+    case GenerationProvider.Grok:
+      return "Grok";
     case GenerationProvider.Midjourney:
       return "Midjourney";
+    case GenerationProvider.WorldLabs:
+      return "World Labs";
     case GenerationProvider.Artcraft:
     default:
       return "Artcraft";

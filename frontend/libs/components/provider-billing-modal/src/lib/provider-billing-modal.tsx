@@ -23,9 +23,11 @@ export function ProviderBillingModal({
   let block;
 
   switch (provider) {
+    case GenerationProvider.Fal:
+    case GenerationProvider.Grok:
     case GenerationProvider.Midjourney:
     case GenerationProvider.Sora:
-    case GenerationProvider.Fal:
+    case GenerationProvider.WorldLabs:
       // NB: We're just going to ask users to set up billing on the provider's website.
       block = <GenericProviderBillingBlock provider={provider} />;
       break;
