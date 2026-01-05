@@ -9,6 +9,9 @@ import {
 import { PreferenceName, UpdateAppPreferences } from "@storyteller/tauri-api";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Label } from "@storyteller/ui-label";
+import { DownloadDirectoryReveal } from "@storyteller/tauri-api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFolder, faMagnifyingGlass, faRotateLeft } from "@fortawesome/pro-solid-svg-icons";
 
 interface MiscSettingsPaneProps {}
 
@@ -71,6 +74,10 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
     await reloadPreferences();
   };
 
+  const showDirectory = async () => {
+    await DownloadDirectoryReveal();
+  };
+
   return (
     <div className="space-y-4 text-base-fg">
       <div className="space-y-2">
@@ -85,10 +92,16 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
       </div>
       <div className="flex gap-2">
         <Button variant="primary" onClick={openDirectoryPicker}>
+          <FontAwesomeIcon icon={faFolder} />
           Choose Directory
         </Button>
-        <Button variant="secondary" onClick={clearDirectory}>
+        <Button variant="destructive" onClick={clearDirectory}>
+          <FontAwesomeIcon icon={faRotateLeft} />
           Use Default
+        </Button>
+        <Button variant="secondary" onClick={showDirectory}>
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+          Show Directory
         </Button>
       </div>
     </div>

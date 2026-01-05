@@ -1,6 +1,6 @@
 use grok_client::error::grok_error::GrokError;
 use std::error::Error;
-use std::fmt::{write, Display, Formatter};
+use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use storyteller_client::error::storyteller_error::StorytellerError;
 

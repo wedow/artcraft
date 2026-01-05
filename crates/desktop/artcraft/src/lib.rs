@@ -5,6 +5,7 @@ use tauri::Manager;
 
 use crate::core::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::core::commands::download::download_directory_reveal_command::download_directory_reveal_command;
 use crate::core::commands::download::download_media_file_command::download_media_file_command;
 use crate::core::commands::download::download_url_command::download_url_command;
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
@@ -129,6 +130,7 @@ pub fn run() {
   let builder = tauri::Builder::default()
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_http::init())
+    .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_upload::init())
     .setup(move |app| {
       // TODO(bt): This is broken on windows
@@ -192,6 +194,7 @@ pub fn run() {
   //  My first attempt at naively doing this didn't work because the macros can't find their codegen'd targets.
   let builder = builder.invoke_handler(tauri::generate_handler![
     check_sora_session_command,
+    download_directory_reveal_command,
     download_media_file_command,
     download_url_command,
     enqueue_edit_image_command,
@@ -226,10 +229,10 @@ pub fn run() {
     storyteller_open_customer_portal_cancel_plan_command,
     storyteller_open_customer_portal_manage_plan_command,
     storyteller_open_customer_portal_switch_plan_command,
-    tasks_nuke_all_command,
     storyteller_open_customer_portal_update_payment_method_command,
     storyteller_open_subscription_purchase_command,
     storyteller_purge_credentials_command,
+    tasks_nuke_all_command,
     update_app_preferences_command,
     worldlabs_clear_credentials_command,
     worldlabs_get_credential_info_command,
