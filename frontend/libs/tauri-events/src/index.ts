@@ -13,3 +13,4 @@ export * from "./lib/events/generation/useGenerationEnqueueFailureEvent";
 export * from "./lib/events/generation/useGenerationEnqueueSuccessEvent";
 export * from "./lib/events/generation/useGenerationFailedEvent";
 export * from "./lib/events/warning/FlashUserInputErrorEvent";
+export * from "./lib/events/warning/FlashFileDownloadErrorEvent";

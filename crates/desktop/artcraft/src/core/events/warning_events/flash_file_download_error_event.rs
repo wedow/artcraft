@@ -6,7 +6,18 @@ use std::path::PathBuf;
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct FlashFileDownloadErrorEvent {
-  pub filename: PathBuf,
+  pub error_type: FlashFileDownloadErrorType,
+  pub filename: Option<PathBuf>,
+  pub message: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FlashFileDownloadErrorType {
+  FileAlreadyDownloaded,
+  FilesystemError,
+  NetworkError,
+  UnknownError,
 }
 
 impl BasicSendableEvent for FlashFileDownloadErrorEvent {

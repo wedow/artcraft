@@ -180,7 +180,8 @@ export const TopBar = ({ pageName }: Props) => {
       }
     } catch (error) {
       console.error(">>> Failed to download file:", error);
-      toast.error("Failed to download file");
+      // NB: Rust/Tauri should now flash a toast instead.
+      //toast.error("Failed to download file");
     }
   };
 

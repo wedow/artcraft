@@ -4,7 +4,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::warning_events::flash_file_download_error_event::FlashFileDownloadErrorEvent;
+use crate::core::events::warning_events::flash_file_download_error_event::{FlashFileDownloadErrorType, FlashFileDownloadErrorEvent};
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences::AppPreferences;
 use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
@@ -63,26 +63,37 @@ pub async fn download_url_command(
 
   if let Err(err) = result {
     error!("Error downloading media: {:?}", err);
-    
-    let mut message = "error downloading file";
+
+    let mut endpoint_message = "unknown error when downloading file";
     let mut error_type = DownloadUrlErrorType::UnknownError;
-    
+
+    let mut flash_error_type = FlashFileDownloadErrorType::UnknownError;
+    let mut flash_filename = None;
+    let mut flash_message = Some("Failed to download file".to_string());
+
     match err {
       ArtcraftError::CannotDownloadFilePathAlreadyExists { path } => {
-        message = "file already downloaded";
+        endpoint_message = "file already downloaded";
         error_type = DownloadUrlErrorType::FilesystemError;
-        
-        let event = FlashFileDownloadErrorEvent {
-          filename: path,
-        };
-        event.send_infallible(&app);
+
+        flash_error_type = FlashFileDownloadErrorType::FileAlreadyDownloaded;
+        flash_message = Some(format!("File already downloaded: {:?}", path));
+        flash_filename = Some(path);
       }
       _ => {}, // NB: Fall-through
     }
-    
+
+    let event = FlashFileDownloadErrorEvent {
+      filename: flash_filename,
+      message: flash_message,
+      error_type: flash_error_type,
+    };
+
+    event.send_infallible(&app);
+
     return Err(CommandErrorResponseWrapper {
       status: CommandErrorStatus::ServerError,
-      error_message: Some(message.to_string()),
+      error_message: Some(endpoint_message.to_string()),
       error_type: Some(error_type),
       error_details: None,
     });
