@@ -63,6 +63,7 @@ import { APP_DESCRIPTORS } from "~/config/appMenu";
 import { AppsQuickMenu } from "./AppsQuickMenu";
 import { useRemoveBackgroundStore } from "~/pages/PageRemoveBackground/RemoveBackgroundStore";
 import { useImageTo3DWorldStore } from "~/pages/PageImageTo3DWorld/ImageTo3DWorldStore";
+import { DownloadUrl } from "@storyteller/tauri-api";
 
 interface Props {
   pageName: string;
@@ -170,13 +171,15 @@ export const TopBar = ({ pageName }: Props) => {
 
   const downloadFile = async (url: string, mediaClass?: string) => {
     try {
-      await downloadFileFromUrl(url);
+      //await downloadFileFromUrl(url);
+      await DownloadUrl(url);
       if (mediaClass === FilterMediaClasses.DIMENSIONAL) {
         toast.success(`Downloaded 3D model`);
       } else {
         toast.success(`Downloaded ${mediaClass}`);
       }
     } catch (error) {
+      console.error(">>> Failed to download file:", error);
       toast.error("Failed to download file");
     }
   };

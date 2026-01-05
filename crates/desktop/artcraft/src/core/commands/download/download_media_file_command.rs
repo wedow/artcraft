@@ -16,6 +16,7 @@ use std::str::FromStr;
 use storyteller_client::endpoints::media_files::get_media_file::get_media_file;
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 
 #[derive(Deserialize, Debug)]
 pub struct DownloadMediaFileRequest {
@@ -41,7 +42,7 @@ pub enum DownloadMediaFileErrorType {
 pub async fn download_media_file_command(
   request: DownloadMediaFileRequest,
   app: AppHandle,
-  app_prefs: State<'_, AppPreferences>,
+  app_prefs: State<'_, AppPreferencesManager>,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
 ) -> ResponseOrErrorType<DownloadMediaFileSuccessResponse, DownloadMediaFileErrorType> {
@@ -76,10 +77,12 @@ pub async fn download_media_file_command(
 pub async fn handle_request(
   request: DownloadMediaFileRequest,
   app: &AppHandle,
-  app_prefs: &AppPreferences,
+  app_prefs: &AppPreferencesManager,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs
 ) -> Result<(), ArtcraftError> {
+
+  let app_prefs = app_prefs.get_clone()?;
 
   // TODO: Api should return the extension and suggested filename so we can better construct something.
   let media_file = get_media_file(
@@ -90,9 +93,9 @@ pub async fn handle_request(
   let asset_url = media_file.media_file.media_links.cdn_url;
 
   let download_path = download_url_to_user_download_dir(
-    &asset_url, 
-    app_data_root, 
-    app_prefs
+    &asset_url,
+    app_data_root,
+    &app_prefs
   ).await?;
 
   info!("downloaded to: {:?}", download_path);

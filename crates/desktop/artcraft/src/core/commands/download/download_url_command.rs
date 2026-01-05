@@ -5,6 +5,7 @@ use crate::core::commands::response::shorthand::{Response, ResponseOrErrorType};
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::app_preferences::app_preferences::AppPreferences;
+use crate::core::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::core::utils::download_url_to_user_download_dir::download_url_to_user_download_dir;
@@ -41,7 +42,7 @@ pub enum DownloadUrlErrorType {
 pub async fn download_url_command(
   request: DownloadUrlRequest,
   app: AppHandle,
-  app_prefs: State<'_, AppPreferences>,
+  app_prefs: State<'_, AppPreferencesManager>,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
 ) -> ResponseOrErrorType<DownloadUrlSuccessResponse, DownloadUrlErrorType> {
@@ -76,15 +77,17 @@ pub async fn download_url_command(
 pub async fn handle_request(
   request: DownloadUrlRequest,
   app: &AppHandle,
-  app_prefs: &AppPreferences,
+  app_prefs: &AppPreferencesManager,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs
 ) -> Result<(), ArtcraftError> {
 
+  let app_prefs = app_prefs.get_clone()?;
+
   let download_path = download_url_to_user_download_dir(
-    &request.url, 
-    app_data_root, 
-    app_prefs
+    &request.url,
+    app_data_root,
+    &app_prefs
   ).await?;
 
   info!("downloaded to: {:?}", download_path);
