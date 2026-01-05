@@ -14,7 +14,8 @@ export interface GetAppInfoPayload {
   storyteller_host?: string | null;
   os_platform?: string | null;
   os_version?: string | null;
-  root_directory: string;
+  artcraft_root_directory: string;
+  download_directory: string;
 }
 
 // Returns the Success and Error variants directly.
