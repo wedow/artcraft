@@ -169,6 +169,9 @@ impl From<ArtcraftError> for GenerateError {
       ArtcraftError::RwLockReadError => Self::AnyhowError(anyhow!("Lock read error")),
       ArtcraftError::RwLockWriteError => Self::AnyhowError(anyhow!("Lock write error")),
       ArtcraftError::MutexLockError => Self::AnyhowError(anyhow!("Mutex lock error")),
+      ArtcraftError::ReqwestError(err) => Self::AnyhowError(anyhow!("Reqwest error: {:?}", err)),
+      ArtcraftError::BadDownloadFilename { path } => Self::AnyhowError(anyhow!("Bad download file name: {:?}", path)),
+      ArtcraftError::CannotDownloadFilePathAlreadyExists { path } => Self::AnyhowError(anyhow!("Cannot download already existing file: {:?}", path)),
     }
   }
 }

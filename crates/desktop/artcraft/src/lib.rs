@@ -5,6 +5,8 @@ use tauri::Manager;
 
 use crate::core::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::core::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::core::commands::download::download_media_file_command::download_media_file_command;
+use crate::core::commands::download::download_url_command::download_url_command;
 use crate::core::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::enqueue_edit_image_command;
 use crate::core::commands::enqueue::image_inpaint::enqueue_image_inpaint_command::enqueue_image_inpaint_command;
@@ -190,6 +192,8 @@ pub fn run() {
   //  My first attempt at naively doing this didn't work because the macros can't find their codegen'd targets.
   let builder = builder.invoke_handler(tauri::generate_handler![
     check_sora_session_command,
+    download_media_file_command,
+    download_url_command,
     enqueue_edit_image_command,
     enqueue_image_bg_removal_command,
     enqueue_image_inpaint_command,
