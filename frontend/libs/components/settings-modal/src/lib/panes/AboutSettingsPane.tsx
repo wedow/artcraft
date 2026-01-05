@@ -60,6 +60,13 @@ export const AboutSettingsPane = (args: AboutSettingsPaneProps) => {
           <div>{appInfo?.os_platform} ({appInfo?.os_version})</div>
         </div>
 
+        <div className="space-y-1">
+          <Label>
+            Data Directory
+          </Label>
+          <div>{appInfo?.root_directory}</div>
+        </div>
+
       </div>
     </>
   );

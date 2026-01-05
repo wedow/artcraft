@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use crate::core::commands::response::shorthand::InfallibleResponse;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
@@ -7,6 +8,7 @@ use chrono::{DateTime, Utc};
 use log::info;
 use serde_derive::Serialize;
 use tauri::State;
+use crate::core::state::data_dir::app_data_root::AppDataRoot;
 
 #[derive(Debug, Serialize)]
 pub struct AppInfoResponse {
@@ -22,6 +24,8 @@ pub struct AppInfoResponse {
   pub os_version: String,
 
   pub storyteller_host: String,
+
+  pub root_directory: PathBuf,
 }
 
 impl SerializeMarker for AppInfoResponse {}
@@ -38,6 +42,7 @@ pub enum DetectedOs {
 
 #[tauri::command]
 pub fn get_app_info_command(
+  app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   artcraft_platform_info: State<'_, ArtcraftPlatformInfo>,
 ) -> InfallibleResponse<AppInfoResponse> {
@@ -52,6 +57,8 @@ pub fn get_app_info_command(
     ArtcraftOs::Unknown => DetectedOs::Unknown,
   };
 
+  let root_directory = app_data_root.path().to_path_buf();
+
   AppInfoResponse {
     artcraft_version: artcraft_platform_info.artcraft_version.clone(),
     build_timestamp: artcraft_platform_info.build_timestamp,
@@ -61,6 +68,7 @@ pub fn get_app_info_command(
     os_platform,
     os_version: artcraft_platform_info.os_version.clone(),
     storyteller_host,
+    root_directory,
   }.into()
 }
 
