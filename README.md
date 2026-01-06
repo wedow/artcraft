@@ -4,6 +4,9 @@ ArtCraft is the IDE for interactive AI image and video creation.
 We turn prompting into *crafting*, so your ideas become a form of tangible expression and computing.
 This is Adobe Photoshop for everyone, and we're giving away the source code!
 
+TEST
+
+![alt](https://github.com/storytold/github-media/blob/main/ship-editing.gif)
 
 TEST - this has a JWT, which will obviously expire and not work. 
 
