@@ -1,4 +1,4 @@
-ArtCraft
+TEST
 ========
 ArtCraft is the IDE for interactive AI image and video creation.
 We turn prompting into *crafting*, so your ideas become a form of tangible expression and computing.
