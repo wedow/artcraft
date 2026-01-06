@@ -28,6 +28,7 @@ Test 4
   <video src="https://raw.githubusercontent.com/storytold/github-media/refs/heads/main/artcraft-intro.mp4" width="80%" controls></video>
 </p>
 
+Why is the preview not updating??
 
 Gif Test
 
