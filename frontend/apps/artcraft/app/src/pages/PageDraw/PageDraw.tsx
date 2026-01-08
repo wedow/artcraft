@@ -24,6 +24,7 @@ import {
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
 import { HelpMenuButton } from "@storyteller/ui-help-menu";
 import { GenerationProvider } from "@storyteller/api-enums";
+import { HistoryStack } from "../PageEdit/HistoryStack";
 
 const PAGE_ID: ModelPage = ModelPage.Canvas2D;
 
@@ -59,12 +60,26 @@ const PageDraw = () => {
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const store = useSceneStore();
+  const baseImageUrl = store.baseImageInfo?.url;
+  const [pendingGenerations, setPendingGenerations] = useState<
+    { id: string; count: number }[]
+  >([]);
+  const addHistoryImageBundle = useSceneStore(
+    (state) => state.addHistoryImageBundle,
+  );
+  const removeHistoryImage = useSceneStore((state) => state.removeHistoryImage);
+  const historyImageBundles = useSceneStore(
+    (state) => state.historyImageBundles,
+  );
 
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
 
-  const selectedProvider : GenerationProvider | undefined = 
+  const selectedProvider: GenerationProvider | undefined =
     useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
+
+  const supportsMaskedInpainting =
+    selectedImageModel?.usesInpaintingMask ?? false;
 
   useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
   useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
@@ -270,9 +285,44 @@ const PageDraw = () => {
     <>
       <div className="fixed inset-0 -z-10 bg-ui-background" />
       <div
-        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
+      >
+        <HistoryStack
+          onClear={() => {
+            store.RESET();
+            setPendingGenerations([]);
+          }}
+          imageBundles={historyImageBundles}
+          pendingPlaceholders={pendingGenerations}
+          blurredBackgroundUrl={baseImageUrl}
+          onImageSelect={(baseImage) => {
+            store.clearLineNodes();
+            store.setBaseImageInfo(baseImage);
+          }}
+          onImageRemove={(baseImage) => {
+            if (
+              pendingGenerations.length === 0 &&
+              store.historyImageBundles.length === 1 &&
+              store.historyImageBundles[0].images.length <= 1
+            ) {
+              store.RESET();
+            } else {
+              removeHistoryImage(baseImage);
+            }
+          }}
+          onNewImageBundle={(newBundle: ImageBundle) => {
+            addHistoryImageBundle(newBundle);
+          }}
+          onResolvePending={(id: string) =>
+            setPendingGenerations((prev) => prev.filter((p) => p.id !== id))
+          }
+          selectedImageToken={store.baseImageInfo?.mediaToken}
+        />
+      </div>
+      <div
+        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
       >
         <PromptEditor
           initialPrompt=""
