@@ -24,7 +24,8 @@ import {
 import { useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
 import { HelpMenuButton } from "@storyteller/ui-help-menu";
 import { GenerationProvider } from "@storyteller/api-enums";
-import { HistoryStack } from "../PageEdit/HistoryStack";
+import { HistoryStack, ImageBundle } from "../PageEdit/HistoryStack";
+import { BaseImageSelector, BaseSelectorImage } from "../PageEdit/BaseImageSelector";
 
 const PAGE_ID: ModelPage = ModelPage.Canvas2D;
 
@@ -280,6 +281,32 @@ const PageDraw = () => {
     autoFitCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Display image selector on launch, otherwise hide it
+  // Also show loading state if info is set but image is loading
+  if (!store.baseImageInfo || !store.baseImageBitmap) {
+    return (
+      <div
+        className={
+          "bg-ui-panel-gradient flex h-[calc(100vh-56px)] w-full items-center justify-center p-8"
+        }
+      >
+        <div className="w-full max-w-5xl">
+          <div className="aspect-video overflow-hidden rounded-2xl border border-ui-panel-border bg-ui-background shadow-lg">
+            <BaseImageSelector
+              onImageSelect={(image: BaseSelectorImage) => {
+                addHistoryImageBundle({ images: [image] });
+                store.setBaseImageInfo(image);
+              }}
+              showLoading={
+                store.baseImageInfo !== null && store.baseImageInfo === null
+              }
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
