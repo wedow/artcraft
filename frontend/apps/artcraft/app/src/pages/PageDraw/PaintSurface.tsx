@@ -21,6 +21,7 @@ import { useStageCentering } from "./hooks/useCenteredStage";
 import { useGlobalMouseUp } from "./hooks/useGlobalMouseUp";
 import { loadImageFromUrl } from "~/Helpers/ImageHelpers";
 import { checkerboard } from "@storyteller/common";
+import { DragState } from "../PageEdit/EditPaintSurface";
 
 export type MiraiProps = {
   nodes: Node[];
@@ -89,7 +90,9 @@ export const PaintSurface = ({
     endY: number;
   } | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState<DragState | undefined>(
+    undefined,
+  );
   const isSelectingRef = React.useRef(false);
   const [currentLineId, setCurrentLineId] = useState<string | null>(null);
 
@@ -242,7 +245,7 @@ export const PaintSurface = ({
       e.target.name()?.includes("rotater");
 
     if (!isWithinLeftPanel(stagePoint) && !isTransformerTarget) {
-      setIsDragging(true);
+      setIsDragging({ ...point, anchorX: stage.x(), anchorY: stage.y() });
       return;
     }
 
@@ -252,11 +255,11 @@ export const PaintSurface = ({
     ) {
       if ((e.evt as MouseEvent).button === 1) {
         setIsMiddleMousePressed(true);
-        setIsDragging(true);
+        setIsDragging({ ...point, anchorX: stage.x(), anchorY: stage.y() });
         return;
       }
       if (!isTransformerTarget) {
-        setIsDragging(true);
+        setIsDragging({ ...point, anchorX: stage.x(), anchorY: stage.y() });
       }
       return;
     }
@@ -417,28 +420,26 @@ export const PaintSurface = ({
         }
         store.setCursorVisible(false);
       }
-    }
 
-    if (isDragging) {
-      const currentStage = e.target.getStage();
-      if (!currentStage) return;
+      if (isDragging) {
+        const currentStage = e.target.getStage();
+        if (!currentStage) return;
 
-      currentStage.container().style.cursor = "grabbing";
+        currentStage.container().style.cursor = "grabbing";
 
-      const dragSensitivity = 3.0;
-      let newPos = { x: currentStage.x(), y: currentStage.y() };
-      if ("movementX" in e.evt && "movementY" in e.evt) {
-        newPos = {
-          x:
-            currentStage.x() +
-            (e.evt as MouseEvent).movementX * dragSensitivity,
-          y:
-            currentStage.y() +
-            (e.evt as MouseEvent).movementY * dragSensitivity,
+        const displacement = {
+          x: pointer.x - isDragging.x,
+          y: pointer.y - isDragging.y,
         };
+        const newPos = {
+          x: isDragging.anchorX + displacement.x,
+          y: isDragging.anchorY + displacement.y,
+        };
+        console.log(isDragging, displacement, newPos);
+        currentStage.position(newPos);
+
+        return;
       }
-      currentStage.position(newPos);
-      return;
     }
 
     if (
@@ -596,7 +597,7 @@ export const PaintSurface = ({
       }
     }
 
-    setIsDragging(false);
+    setIsDragging(undefined);
     setIsDrawing(false);
     setCurrentLineId(null);
     setIsSelecting(false);
