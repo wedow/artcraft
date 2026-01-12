@@ -57,6 +57,7 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
 export type ActiveTool =
   | "select"
   | "draw"
+  | "inpaint"
   | "eraser"
   | "backgroundColor"
   | "shape";
@@ -1563,6 +1564,15 @@ export const useSceneStore = create<SceneState>((set, get, store) => ({
   },
 
   getAspectRatioDimensions: () => {
+    // First we check the base image info if it exists
+    // Otherwise we use default landscape
+    const baseImageInfo = get().baseImageBitmap;
+
+    // If base image exists, use its dimensions
+    if (baseImageInfo) {
+      return { width: baseImageInfo.width, height: baseImageInfo.height };
+    }
+
     const { aspectRatioType } = get();
     switch (aspectRatioType) {
       case AspectRatioType.PORTRAIT:

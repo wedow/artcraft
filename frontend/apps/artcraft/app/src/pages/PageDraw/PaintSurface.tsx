@@ -8,6 +8,7 @@ import {
   Line,
   Image,
   Transformer,
+  Group,
 } from "react-konva";
 import Konva from "konva";
 import { LineNode, useSceneStore } from "./stores/SceneState";
@@ -18,19 +19,25 @@ import SplitPane from "./components/ui/SplitPane";
 import { useRightPanelLayoutManagement } from "./hooks/useRightPanelLayoutManagement";
 import { useStageCentering } from "./hooks/useCenteredStage";
 import { useGlobalMouseUp } from "./hooks/useGlobalMouseUp";
+import { loadImageFromUrl } from "~/Helpers/ImageHelpers";
+import { checkerboard } from "@storyteller/common";
 
 export type MiraiProps = {
   nodes: Node[];
   selectedNodeIds: string[];
   onCanvasSizeChange?: (width: number, height: number) => void;
   fillColor?: string;
-  activeTool?: "select" | "draw" | "eraser" | "backgroundColor" | "shape";
+  activeTool?: "select" | "draw" | "eraser" | "backgroundColor" | "shape" | "inpaint";
   brushColor?: string;
   brushSize?: number;
   onSelectionChange?: (isSelecting: boolean) => void;
   stageRef: React.RefObject<Konva.Stage>;
   transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>;
+  baseImageRef: React.RefObject<Konva.Image>;
 };
+
+const InpaintingColor = "rgba(39, 187, 245, 0.54)";
+export const INPAINT_LAYER_ID = "invis-mask-layer";
 
 export const PaintSurface = ({
   nodes,
@@ -43,6 +50,7 @@ export const PaintSurface = ({
   onSelectionChange,
   stageRef,
   transformerRefs,
+  baseImageRef,
 }: MiraiProps) => {
   const singlePaneMode = true;
 
@@ -52,6 +60,11 @@ export const PaintSurface = ({
   const rightContainerRef = React.useRef<HTMLDivElement>(null);
   const cursorLayerRef = React.useRef<Konva.Layer>(null);
   const cursorShapeRef = React.useRef<Konva.Circle>(null);
+  // TODO: Polish this by using canvas graphics instead of a bitmap
+  // Or at least manually do the pattern fill to avoid image interpolation
+  const [checkerImage, setCheckerImage] = useState<HTMLImageElement | null>(
+    null,
+  );
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({
@@ -204,6 +217,7 @@ export const PaintSurface = ({
       activeTool !== "draw" &&
       activeTool !== "eraser" &&
       activeTool !== "shape" &&
+      activeTool !== "inpaint" &&
       nodeDraggable &&
       !isMiddleMousePressed
     );
@@ -248,25 +262,45 @@ export const PaintSurface = ({
     }
 
     if (
-      (activeTool === "draw" || activeTool === "eraser") &&
+      (activeTool === "draw" || activeTool === "eraser" || activeTool === "inpaint") &&
       isWithinLeftPanel(stagePoint)
     ) {
-      const lineId = `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const lineId = `line-${activeTool}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const opacity = activeTool === "draw" ? store.brushOpacity : 1;
+      const strokeColor =
+        activeTool === "eraser"
+          ? "#FFFFFF"
+          : activeTool === "draw"
+            ? brushColor
+            : InpaintingColor;
+
+      const composite =
+        activeTool === "eraser"
+          ? "destination-out"
+          : "source-over";
+
+      console.log("Starting new line with composite:", composite);
+
+      const zindex =
+        activeTool === "eraser" ?
+          999 : activeTool === "inpaint" ?
+            998 : 1;
 
       const newLineNode: LineNode = {
         id: lineId,
         type: "line",
         points: [stagePoint.x, stagePoint.y],
-        stroke: activeTool === "draw" ? brushColor : fillColor || "#ffffff",
+        stroke: strokeColor,
         strokeWidth: brushSize / stage.scaleX(),
         draggable: true,
         opacity: opacity,
         locked: false,
-        zIndex: store.lineNodes.length,
+        zIndex: zindex,
+        globalCompositeOperation: composite,
         x: 0,
         y: 0,
       };
+
       store.selectNode(null);
       store.addLineNode(newLineNode, false);
       setCurrentLineId(lineId);
@@ -359,7 +393,7 @@ export const PaintSurface = ({
 
       const isWithinCanvas = isWithinLeftPanel(stagePoint);
 
-      if (activeTool === "draw" || activeTool === "eraser") {
+      if (activeTool === "draw" || activeTool === "eraser" || activeTool === "inpaint") {
         if (isWithinCanvas || isDrawing) {
           stage.container().style.cursor = "none";
           store.setCursorPosition(pointer);
@@ -410,7 +444,7 @@ export const PaintSurface = ({
     if (
       isDrawing &&
       currentLineId &&
-      (activeTool === "draw" || activeTool === "eraser")
+      (activeTool === "draw" || activeTool === "eraser" || activeTool === "inpaint")
     ) {
       const point = stage.getPointerPosition();
       if (!point) return;
@@ -424,6 +458,7 @@ export const PaintSurface = ({
       const currentLine = store.lineNodes.find(
         (line) => line.id === currentLineId,
       );
+
       if (currentLine) {
         const updatedPoints = [
           ...currentLine.points,
@@ -499,10 +534,10 @@ export const PaintSurface = ({
       setSelectionRect((prev) =>
         prev
           ? {
-              ...prev,
-              endX: clampedPoint.x,
-              endY: clampedPoint.y,
-            }
+            ...prev,
+            endX: clampedPoint.x,
+            endY: clampedPoint.y,
+          }
           : null,
       );
     }
@@ -587,7 +622,7 @@ export const PaintSurface = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2),
+      Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   };
 
@@ -719,7 +754,7 @@ export const PaintSurface = ({
     const container = e.target.getStage()?.container();
     if (!container) return;
     const defaultCursor =
-      activeTool === "draw" || activeTool === "eraser"
+      activeTool === "draw" || activeTool === "eraser" || activeTool === "inpaint"
         ? "none"
         : activeTool === "select"
           ? "grab"
@@ -734,7 +769,7 @@ export const PaintSurface = ({
       return;
     }
 
-    if (activeTool === "draw" || activeTool === "eraser") {
+    if (activeTool === "draw" || activeTool === "eraser" || activeTool === "inpaint") {
       stage.container().style.cursor = "none";
       const pointer = stage.getPointerPosition();
       if (pointer) {
@@ -765,7 +800,7 @@ export const PaintSurface = ({
     if (
       store.cursorVisible &&
       store.cursorPosition &&
-      (activeTool === "draw" || activeTool === "eraser")
+      (activeTool === "draw" || activeTool === "eraser" || activeTool === "inpaint")
     ) {
       const stageX = stage.x();
       const stageY = stage.y();
@@ -783,6 +818,10 @@ export const PaintSurface = ({
 
       if (activeTool === "draw") {
         cursorNode.fill(brushColor);
+        cursorNode.stroke("rgba(255, 255, 255, 0.7)");
+        cursorNode.strokeWidth(1);
+      } else if (activeTool === "inpaint") {
+        cursorNode.fill(InpaintingColor);
         cursorNode.stroke("rgba(255, 255, 255, 0.7)");
         cursorNode.strokeWidth(1);
       } else {
@@ -811,6 +850,7 @@ export const PaintSurface = ({
       if (
         activeTool === "draw" ||
         activeTool === "eraser" ||
+        activeTool === "inpaint" ||
         activeTool === "shape"
       ) {
         return;
@@ -1050,6 +1090,10 @@ export const PaintSurface = ({
           offsetX={lineNode.offsetX || 0}
           offsetY={lineNode.offsetY || 0}
           listening={listeningEnabled}
+          // @ts-expect-error: We don't have globalCompositeOperation in the type definition
+          globalCompositeOperation={
+            lineNode.globalCompositeOperation || "source-over"
+          }
         />
       );
     }
@@ -1236,6 +1280,11 @@ export const PaintSurface = ({
     return null;
   };
 
+  // Load the checkboard image for transparency background
+  useEffect(() => {
+    loadImageFromUrl(checkerboard).then(setCheckerImage);
+  }, []);
+
   // Separate function to render transformers on their own layer
   const renderTransformers = () => {
     // Don't render individual transformers when multiple nodes are selected
@@ -1398,6 +1447,18 @@ export const PaintSurface = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedNodeIds]);
 
+  const inpaintingLineNodes: LineNode[] = [];
+  const drawLineNodes: LineNode[] = [];
+
+  store.lineNodes.forEach((line) => {
+    if (line.id.startsWith("line-eraser") || line.id.startsWith("line-inpaint")) {
+      inpaintingLineNodes.push(line);
+    }
+    if (line.id.startsWith("line-eraser") || line.id.startsWith("line-draw")) {
+      drawLineNodes.push(line);
+    }
+  });
+
   return (
     <SplitPane
       singlePaneMode={singlePaneMode}
@@ -1431,16 +1492,30 @@ export const PaintSurface = ({
             onTouchEnd={handleTouchEnd}
           >
             <Layer
-              ref={leftPanelRef}
               clipFunc={(ctx) => {
                 ctx.rect(
                   0,
                   0,
                   store.getAspectRatioDimensions().width,
                   store.getAspectRatioDimensions().height,
-                );
+                ); // leftPanelWidth, leftPanelHeight);
               }}
+              imageSmoothingEnabled={false} // Disable image smoothing for pixel art
+              zIndex={-2}
             >
+              <Rect
+                x={0}
+                y={0}
+                fillPatternImage={checkerImage || undefined}
+                fillPatternRepeat="repeat"
+                fillPatternScaleX={window.devicePixelRatio}
+                fillPatternScaleY={window.devicePixelRatio}
+                width={store.getAspectRatioDimensions().width}
+                height={store.getAspectRatioDimensions().height}
+                listening={false}
+                imageSmoothingEnabled={false} // Disable image smoothing for pixel art
+                zIndex={-2}
+              />
               <Rect
                 x={0}
                 y={0}
@@ -1451,9 +1526,36 @@ export const PaintSurface = ({
                 zIndex={-1}
               />
 
-              {[...nodes, ...store.lineNodes]
-                .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
+              <Image
+                ref={baseImageRef}
+                x={0}
+                y={0}
+                image={store.baseImageBitmap || undefined}
+                width={store.getAspectRatioDimensions().width}
+                height={store.getAspectRatioDimensions().height}
+                listening={false}
+              />
+            </Layer>
+            <Layer
+              ref={leftPanelRef}
+              clipFunc={(ctx) => {
+                ctx.rect(
+                  0,
+                  0,
+                  store.getAspectRatioDimensions().width,
+                  store.getAspectRatioDimensions().height,
+                );
+              }}
+            >
+
+              {nodes
                 .map((node) => renderNode(node))}
+
+              <Group
+                cach>
+                {drawLineNodes
+                  .map((node) => renderNode(node))}
+              </Group>
 
               {selectionRect && (
                 <Rect
@@ -1482,6 +1584,21 @@ export const PaintSurface = ({
                   listening={false}
                 />
               )}
+            </Layer>
+            <Layer
+              clipFunc={(ctx) => {
+                ctx.rect(
+                  0,
+                  0,
+                  store.getAspectRatioDimensions().width,
+                  store.getAspectRatioDimensions().height,
+                );
+              }}
+              id={INPAINT_LAYER_ID}
+              listening={false}
+            >
+              {inpaintingLineNodes
+                .map((node) => renderNode(node))}
             </Layer>
             <Layer ref={cursorLayerRef} listening={false} draggable={false}>
               <Circle ref={cursorShapeRef} visible={false} />

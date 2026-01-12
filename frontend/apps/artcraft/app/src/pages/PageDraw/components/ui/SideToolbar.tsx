@@ -10,6 +10,8 @@ import {
   faPaintBrush,
   faXmark,
   faTrashXmark,
+  faEraser,
+  faSendBack,
 } from "@fortawesome/pro-solid-svg-icons";
 import {
   faShapes,
@@ -270,11 +272,19 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       popout: BrushPopout,
     },
     {
-      id: "delete",
-      label: "Delete",
-      icon: <FontAwesomeIcon icon={faTrash} className="h-5 w-5" />,
+      id: "inpaint",
+      label: "Mask",
+      icon: <FontAwesomeIcon icon={faSendBack} className="h-5 w-5" />,
       onClick: () => {
-        onDelete();
+        store.setActiveTool("inpaint");
+      },
+    },
+    {
+      id: "erase",
+      label: "Eraser",
+      icon: <FontAwesomeIcon icon={faEraser} className="h-5 w-5" />,
+      onClick: () => {
+        store.setActiveTool("eraser");
       },
     },
     { id: "separator-3", type: "separator" },

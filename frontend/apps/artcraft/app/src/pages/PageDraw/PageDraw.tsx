@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { PaintSurface } from "./PaintSurface";
+import { INPAINT_LAYER_ID, PaintSurface } from "./PaintSurface";
 import "./App.css";
 import PromptEditor from "./PromptEditor/PromptEditor";
 import SideToolbar from "./components/ui/SideToolbar";
@@ -26,6 +26,7 @@ import { HelpMenuButton } from "@storyteller/ui-help-menu";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { HistoryStack, ImageBundle } from "../PageEdit/HistoryStack";
 import { BaseImageSelector, BaseSelectorImage } from "../PageEdit/BaseImageSelector";
+import { normalizeCanvas } from "~/Helpers/CanvasHelpers";
 
 const PAGE_ID: ModelPage = ModelPage.Canvas2D;
 
@@ -61,6 +62,7 @@ const PageDraw = () => {
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
   const store = useSceneStore();
+  const baseImageKonvaRef = useRef<Konva.Image>({} as Konva.Image);
   const baseImageUrl = store.baseImageInfo?.url;
   const [pendingGenerations, setPendingGenerations] = useState<
     { id: string; count: number }[]
@@ -109,6 +111,46 @@ const PageDraw = () => {
       event.image_cdn_url,
     );
   });
+
+  // Create a function to use the left layer ref and download the bitmap from it
+  const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
+    if (
+      !stageRef.current ||
+      !baseImageKonvaRef.current
+    ) {
+      console.error("Stage or left panel ref is not available");
+      throw new Error("Stage or left panel or base image ref is not available");
+    }
+
+    const layer = stageRef.current.getLayers().find((l) => l.name() === INPAINT_LAYER_ID)!;
+
+    // Get the canvas area that's covered by the image/rectangle
+    const rect = baseImageKonvaRef.current;
+    const layerCrop = layer.toCanvas({
+      x: stageRef.current.x(),
+      y: stageRef.current.y(),
+      width: rect.width() * stageRef.current.scaleX(),
+      height: rect.height() * stageRef.current.scaleY(),
+      pixelRatio: 1 / stageRef.current.scaleX(),
+    });
+
+    // Using the pixelRatio scaling may result in off-by-one rounding errors,
+    // So we re-fit the image to a canvas of precise size.
+    const fittedCanvas = normalizeCanvas(
+      layerCrop,
+      rect.width(),
+      rect.height(),
+    );
+
+    // Convert colored canvas to alpha mask
+    // NOTE: This isn't needed because the tauri backend uses the alpha channel anyway
+    // drawAlphaMask(fittedCanvas, rect.width(), rect.height());
+
+    const blob = await fittedCanvas.convertToBlob({ type: "image/png" });
+    const arrayBuffer = await blob.arrayBuffer();
+
+    return new Uint8Array(arrayBuffer);
+  };
 
   // Listen for gallery drag and drop events
   useEffect(() => {
@@ -523,6 +565,7 @@ const PageDraw = () => {
             onSelectionChange={setIsSelecting}
             stageRef={stageRef}
             transformerRefs={transformerRefs}
+            baseImageRef={baseImageKonvaRef}
           />
         </ContextMenuContainer>
       </div>
