@@ -35,6 +35,7 @@ export type MiraiProps = {
   stageRef: React.RefObject<Konva.Stage>;
   transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>;
   baseImageRef: React.RefObject<Konva.Image>;
+  showMaskLayer: boolean;
 };
 
 const InpaintingColor = "rgba(39, 187, 245, 0.54)";
@@ -54,6 +55,7 @@ export const PaintSurface = ({
   stageRef,
   transformerRefs,
   baseImageRef,
+  showMaskLayer = false,
 }: MiraiProps) => {
   const singlePaneMode = true;
 
@@ -1600,6 +1602,7 @@ export const PaintSurface = ({
               }}
               id={INPAINT_LAYER_ID}
               listening={false}
+              visible={showMaskLayer}
             >
               {inpaintingLineNodes
                 .map((node) => renderNode(node))}

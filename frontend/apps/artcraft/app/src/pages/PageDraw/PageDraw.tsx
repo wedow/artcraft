@@ -559,6 +559,13 @@ const PageDraw = () => {
     stage.batchDraw();
   };
 
+  // When the model inpainting support changes, we need to auto-change the tool so it's not set to inpainting
+  useEffect(() => {
+    if (!supportsMaskedInpainting && store.activeTool === "inpaint") {
+      store.setActiveTool("select");
+    }
+  }, [store, supportsMaskedInpainting]);
+
   // Auto-fit canvas to screen on initial load
   useEffect(() => {
     const autoFitCanvas = async () => {
@@ -753,9 +760,7 @@ const PageDraw = () => {
           input.value = "";
           input.click();
         }}
-        onDelete={(): void => {
-          store.RESET();
-        }}
+        supportsMaskTool={supportsMaskedInpainting}
         activeToolId={store.activeTool}
         currentShape={store.currentShape}
       />
@@ -826,6 +831,7 @@ const PageDraw = () => {
             stageRef={stageRef}
             transformerRefs={transformerRefs}
             baseImageRef={baseImageKonvaRef}
+            showMaskLayer={supportsMaskedInpainting}
           />
         </ContextMenuContainer>
       </div>

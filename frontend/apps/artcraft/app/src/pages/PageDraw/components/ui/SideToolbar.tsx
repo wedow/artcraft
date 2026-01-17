@@ -53,9 +53,9 @@ export interface SideToolbarProps {
   onPaintBrush: (hex: string, size: number, opacity: number) => void;
   onCanvasBackground: (hex: string) => void;
   onUploadImage: () => void;
-  onDelete: () => void;
   activeToolId: string;
   className?: string;
+  supportsMaskTool?: boolean;
 }
 
 const SideToolbar: React.FC<SideToolbarProps> = ({
@@ -65,7 +65,7 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
   onPaintBrush,
   onCanvasBackground,
   onUploadImage,
-  onDelete,
+  supportsMaskTool = false,
   activeToolId,
   className = "",
 }) => {
@@ -387,6 +387,10 @@ const SideToolbar: React.FC<SideToolbarProps> = ({
       )}
 
       {tools.map((tool) => {
+        if (tool.id == "inpaint" && !supportsMaskTool) {
+          return;
+        }
+
         if (tool.type === "separator") {
           return <div key={tool.id} className="my-1 h-px w-8 bg-white/15" />;
         }
