@@ -39,6 +39,8 @@ export type MiraiProps = {
 
 const InpaintingColor = "rgba(39, 187, 245, 0.54)";
 export const INPAINT_LAYER_ID = "invis-mask-layer";
+export const BG_LAYER_ID = "bg-layer";
+export const DRAW_LAYER_ID = "draw-layer";
 
 export const PaintSurface = ({
   nodes,
@@ -435,7 +437,6 @@ export const PaintSurface = ({
           x: isDragging.anchorX + displacement.x,
           y: isDragging.anchorY + displacement.y,
         };
-        console.log(isDragging, displacement, newPos);
         currentStage.position(newPos);
 
         return;
@@ -1503,6 +1504,7 @@ export const PaintSurface = ({
               }}
               imageSmoothingEnabled={false} // Disable image smoothing for pixel art
               zIndex={-2}
+              id={BG_LAYER_ID}
             >
               <Rect
                 x={0}
@@ -1538,6 +1540,7 @@ export const PaintSurface = ({
               />
             </Layer>
             <Layer
+              id={DRAW_LAYER_ID}
               ref={leftPanelRef}
               clipFunc={(ctx) => {
                 ctx.rect(

@@ -24,8 +24,8 @@ import {
   ClassyModelSelector,
   useSelectedImageModel,
   useSelectedProviderForModel,
-  IMAGE_EDITOR_PAGE_MODEL_LIST,
   ModelPage,
+  IMAGE_EDITOR_PAGE_MODEL_LIST,
   //ProviderSelector,
   //PROVIDER_LOOKUP_BY_PAGE,
 } from "@storyteller/ui-model-selector";
@@ -43,9 +43,9 @@ const PageEdit = () => {
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
 
-  const selectedProvider : GenerationProvider | undefined = 
+  const selectedProvider: GenerationProvider | undefined =
     useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
-  
+
   // State for canvas dimensions
   const canvasWidth = useRef<number>(1024);
   const canvasHeight = useRef<number>(1024);
@@ -387,7 +387,7 @@ const PageEdit = () => {
         if (selectedImageModel?.editingIsInpainting) {
           // CASE 1 - INPAINTING (Only a few models do this!)
           const arrayBuffer = await getMaskArrayBuffer();
-          let request : EnqueueImageInpaintRequest = {
+          const request: EnqueueImageInpaintRequest = {
             model: selectedImageModel,
             image_media_token: editedImageToken,
             mask_image_raw_bytes: arrayBuffer,
@@ -396,7 +396,7 @@ const PageEdit = () => {
             frontend_caller: "image_editor",
             frontend_subscriber_id: subscriberId,
           };
-          if (!!options?.selectedProvider) {
+          if (options?.selectedProvider) {
             request.provider = options.selectedProvider;
           }
           //if (selectedImageModel?.supportsNewAspectRatio()) {
@@ -419,7 +419,7 @@ const PageEdit = () => {
             return;
           }
           const imgs = options?.images || [];
-          let request: EnqueueEditImageRequest = {
+          const request: EnqueueEditImageRequest = {
             model: selectedImageModel,
             scene_image_media_token: snapshotResult.data,
             image_media_tokens: imgs
@@ -432,7 +432,7 @@ const PageEdit = () => {
             aspect_ratio: mapAspectRatio(options?.aspectRatio),
             image_resolution: mapResolution(options?.resolution),
           };
-          if (!!options?.selectedProvider) {
+          if (options?.selectedProvider) {
             request.provider = options.selectedProvider;
           }
           if (selectedImageModel?.supportsNewAspectRatio()) {
@@ -442,7 +442,7 @@ const PageEdit = () => {
         } else {
           // CASE 3 - DEFAULT
           const imgs = options?.images || [];
-          let request : EnqueueEditImageRequest = {
+          const request: EnqueueEditImageRequest = {
             model: selectedImageModel,
             image_media_tokens: [
               editedImageToken,
@@ -458,7 +458,7 @@ const PageEdit = () => {
             aspect_ratio: mapAspectRatio(options?.aspectRatio),
             image_resolution: mapResolution(options?.resolution),
           };
-          if (!!options?.selectedProvider) {
+          if (options?.selectedProvider) {
             request.provider = options.selectedProvider;
           }
           if (selectedImageModel?.supportsNewAspectRatio()) {
@@ -554,9 +554,8 @@ const PageEdit = () => {
       {(store.activeTool === "marker" || store.activeTool === "eraser") &&
         isNanoBananaModel && (
           <div
-            className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${
-              isSelecting ? "pointer-events-none" : "pointer-events-auto"
-            }`}
+            className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+              }`}
           >
             <MarkerToolControlBar
               currentSize={
@@ -579,9 +578,8 @@ const PageEdit = () => {
       {(store.activeTool === "edit" || store.activeTool === "eraser") &&
         supportsMaskedInpainting && (
           <div
-            className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${
-              isSelecting ? "pointer-events-none" : "pointer-events-auto"
-            }`}
+            className={`preserve-aspect-ratio fixed left-1/2 top-0 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+              }`}
           >
             <MarkerToolControlBar
               currentSize={
@@ -602,9 +600,8 @@ const PageEdit = () => {
           </div>
         )}
       <div
-        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
       >
         <HistoryStack
           onClear={() => {
@@ -639,9 +636,8 @@ const PageEdit = () => {
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${
-          isSelecting ? "pointer-events-none" : "pointer-events-auto"
-        }`}
+        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
       >
         <PromptEditor
           selectedImageModel={selectedImageModel}

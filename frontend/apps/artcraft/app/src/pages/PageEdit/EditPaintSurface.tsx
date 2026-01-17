@@ -481,11 +481,11 @@ export const EditPaintSurface = ({
       setSelectionRect((prev) =>
         prev
           ? {
-              // Ensure prev is not null
-              ...prev,
-              endX: clampedPoint.x,
-              endY: clampedPoint.y,
-            }
+            // Ensure prev is not null
+            ...prev,
+            endX: clampedPoint.x,
+            endY: clampedPoint.y,
+          }
           : null,
       );
     }
@@ -638,8 +638,8 @@ export const EditPaintSurface = ({
     if (!container) return;
     const defaultCursor =
       activeTool === "edit" ||
-      activeTool === "marker" ||
-      activeTool === "eraser"
+        activeTool === "marker" ||
+        activeTool === "eraser"
         ? "none"
         : activeTool === "select"
           ? "grab"
@@ -693,7 +693,7 @@ export const EditPaintSurface = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2),
+      Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   };
 
@@ -1405,31 +1405,7 @@ export const EditPaintSurface = ({
                     store.getAspectRatioDimensions().height,
                   ); // leftPanelWidth, leftPanelHeight);
                 }}
-                imageSmoothingEnabled={false} // Disable image smoothing for pixel art
-              >
-                <Rect
-                  x={0}
-                  y={0}
-                  fillPatternImage={checkerImage || undefined}
-                  fillPatternRepeat="repeat"
-                  fillPatternScaleX={window.devicePixelRatio}
-                  fillPatternScaleY={window.devicePixelRatio}
-                  width={store.getAspectRatioDimensions().width}
-                  height={store.getAspectRatioDimensions().height}
-                  listening={false}
-                  zIndex={-2}
-                  imageSmoothingEnabled={false} // Disable image smoothing for pixel art
-                />
-              </Layer>
-              <Layer
-                clipFunc={(ctx) => {
-                  ctx.rect(
-                    0,
-                    0,
-                    store.getAspectRatioDimensions().width,
-                    store.getAspectRatioDimensions().height,
-                  ); // leftPanelWidth, leftPanelHeight);
-                }}
+                listening={false}
               >
                 <Image
                   ref={baseImageRef}
@@ -1497,11 +1473,11 @@ export const EditPaintSurface = ({
             scaleY={previewScale}
             x={0}
             y={0}
-            // style={{
-            //   background: '#f5f5f5',
-            //   border: '1px solid #ddd',
-            //   borderRadius: '8px',
-            // }}
+          // style={{
+          //   background: '#f5f5f5',
+          //   border: '1px solid #ddd',
+          //   borderRadius: '8px',
+          // }}
           >
             <Layer>
               <Image

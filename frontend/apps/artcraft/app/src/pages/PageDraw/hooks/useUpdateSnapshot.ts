@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import Konva from "konva";
+import { BG_LAYER_ID, DRAW_LAYER_ID } from "../PaintSurface";
 
-export const captureStageImageBitmap = async (
+export const captureStageEditsBitmap = async (
   stageRef: React.RefObject<Konva.Stage>,
   transformerRefs: React.RefObject<{ [key: string]: Konva.Transformer }>,
   width: number = 1024,
@@ -23,6 +24,16 @@ export const captureStageImageBitmap = async (
       transformer.visible(false);
     },
   );
+
+  // Disable all the layers that we don't need
+  // We only need the base image layer and the edits layer
+  stageRef.current.getLayers().forEach((layer) => {
+    if (layer.id() == BG_LAYER_ID || layer.id() == DRAW_LAYER_ID) {
+      layer.visible(true);
+    } else {
+      layer.visible(false);
+    }
+  });
 
   stageRef.current.position({ x: 0, y: 0 });
   stageRef.current.scale({ x: 1, y: 1 });
@@ -46,6 +57,11 @@ export const captureStageImageBitmap = async (
         transformer.visible(true);
       },
     );
+
+    // Restore all layers visibility
+    stageRef.current.getLayers().forEach((layer) => {
+      layer.visible(true);
+    });
 
     stageRef.current.position(oldPos);
     stageRef.current.scale(oldScale);

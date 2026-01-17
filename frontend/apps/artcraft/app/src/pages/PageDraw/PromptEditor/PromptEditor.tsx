@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import ImageStyleSelector from "./ImageStyleSelector";
 import { PromptEditorProps, ImageStyle } from "./types";
-import { PromptBox2D } from "@storyteller/ui-promptbox";
+import { PromptBox2D, PromptBox2DProps } from "@storyteller/ui-promptbox";
 import { uploadImage } from "../../../components/reusable/UploadModalMedia/uploadImage";
 import { EncodeImageBitmapToBase64 } from "../utilities/EncodeImageBitmapToBase64";
 import { JobProvider, useJobContext } from "../JobContext";
@@ -10,14 +10,19 @@ import { JobProvider, useJobContext } from "../JobContext";
 // Set this value on when enqueue is pressed nasty global variable.
 import { getCanvasRenderBitmap } from "../../../signals/canvasRenderBitmap";
 
-const PromptEditor: React.FC<PromptEditorProps> = ({
-  onImageStyleChange,
-  onEnqueuePressed,
-  onAspectRatioChange,
-  onFitPressed,
-  //selectedModelInfo,
+const PromptEditor: React.FC<PromptBox2DProps> = ({
+  uploadImage,
   selectedImageModel,
   selectedProvider,
+  EncodeImageBitmapToBase64,
+  onGenerateClick,
+  isDisabled = false,
+  isEnqueueing = false,
+  generationCount = 1,
+  onGenerationCountChange,
+  onAspectRatioChange,
+  onFitPressed,
+  usePrompt2DStore
 }) => {
   const [images, setImages] = useState<ImageStyle[]>([]);
 
@@ -31,7 +36,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
 
     const updatedImages = [...images, newImage];
     setImages(updatedImages);
-    onImageStyleChange?.(updatedImages);
+    // onImageStyleChange?.(updatedImages);
   };
 
   return (
@@ -40,16 +45,19 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
 
       <JobProvider>
         <PromptBox2D
+          usePrompt2DStore={usePrompt2DStore}
           uploadImage={uploadImage}
-          getCanvasRenderBitmap={getCanvasRenderBitmap}
-          EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
-          useJobContext={useJobContext}
-          onEnqueuePressed={onEnqueuePressed}
-          onAspectRatioChange={onAspectRatioChange}
-          onFitPressed={onFitPressed}
           //selectedModelInfo={selectedModelInfo}
           selectedImageModel={selectedImageModel}
           selectedProvider={selectedProvider}
+          EncodeImageBitmapToBase64={EncodeImageBitmapToBase64}
+          onGenerateClick={onGenerateClick}
+          isDisabled={isDisabled}
+          isEnqueueing={isEnqueueing}
+          generationCount={generationCount}
+          onGenerationCountChange={onGenerationCountChange}
+          onAspectRatioChange={onAspectRatioChange}
+          onFitPressed={onFitPressed}
         />
       </JobProvider>
 
