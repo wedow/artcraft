@@ -39,7 +39,7 @@ use utoipa::{IntoParams, ToSchema};
 /// maintained a keepalive. This prevents wasted work when users who are unlikely to return
 /// navigate away. Premium users have accounts and can always return to the site, so they
 /// typically do not require keepalive.
-const JOB_KEEPALIVE_TTL_SECONDS : usize = 60 * 3;
+const JOB_KEEPALIVE_TTL_SECONDS : u64 = 60 * 3;
 
 #[derive(Deserialize, ToSchema, IntoParams)]
 pub struct BatchGetInferenceJobStatusQueryParams {

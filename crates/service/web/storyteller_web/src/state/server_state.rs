@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use elasticsearch::Elasticsearch;
-use r2d2_redis::{r2d2, RedisConnectionManager};
+use redis::Client;
 use sqlx::MySqlPool;
 
 use actix_helpers::middleware::banned_cidr_filter::banned_cidr_set::BannedCidrSet;
@@ -75,7 +75,7 @@ pub struct ServerState {
 
   pub elasticsearch: Elasticsearch,
 
-  pub redis_pool: r2d2::Pool<RedisConnectionManager>,
+  pub redis_pool: r2d2::Pool<Client>,
   pub redis_ttl_cache: RedisTtlCache,
 
   pub redis_rate_limiters: RedisRateLimiters,
