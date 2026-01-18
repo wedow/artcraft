@@ -194,10 +194,10 @@ impl Limiter {
     /// - A time computation failed
     ///
     /// [`Status`]: struct.Status.html
-    pub fn count<K: Into<String>>(&self, key: K) -> impl Future<Item = Status, Error = Error> {
+    pub async fn count<K: Into<String>>(&self, key: K) -> Result<Status, Error> {
         let limit = self.limit;
 
-        self.track(key).and_then(move |(count, reset_epoch_utc)| {
+        self.track(key).await.and_then(move |(count, reset_epoch_utc)| {
             let status = build_status(count, limit, reset_epoch_utc);
 
             if count > limit {
@@ -209,37 +209,47 @@ impl Limiter {
     }
 
     /// Tracks the given key in a period and returns the count and TTL for the key in seconds.
-    fn track<K: Into<String>>(&self, key: K) -> impl Future<Item = (usize, usize), Error = Error> {
+    async fn track<K: Into<String>>(&self, key: K) -> Result<(usize, usize), Error> {
         let key = key.into();
         let exipres = self.period.as_secs();
 
-        self.client
-            .get_async_connection()
-            .from_err()
-            .and_then(move |con| {
-                // The seed of this approach is outlined Atul R in a blog post about rate limiting
-                // using NodeJS and Redis. For more details, see
-                // https://blog.atulr.com/rate-limiter/
-                let mut pipe = redis::pipe();
-                pipe.atomic()
-                    .cmd("SET")
-                    .arg(&key)
-                    .arg(0)
-                    .arg("EX")
-                    .arg(exipres)
-                    .arg("NX")
-                    .ignore()
-                    .cmd("INCR")
-                    .arg(&key)
-                    .cmd("TTL")
-                    .arg(&key);
+        let mut conn = self.client
+            .get_multiplexed_async_connection()
+            .await
+            .map_err(|err| Error::from(err))?;
+        
+        // The seed of this approach is outlined Atul R in a blog post about rate limiting
+        // using NodeJS and Redis. For more details, see
+        // https://blog.atulr.com/rate-limiter/
+        let mut pipe = redis::pipe();
+        pipe.atomic()
+            .cmd("SET")
+            .arg(&key)
+            .arg(0)
+            .arg("EX")
+            .arg(exipres)
+            .arg("NX")
+            .ignore()
+            .cmd("INCR")
+            .arg(&key)
+            .cmd("TTL")
+            .arg(&key);
 
-                pipe.query_async(con)
-                    .from_err()
-                    .and_then(|(_, (count, ttl)): (_, (usize, u64))| {
-                        Ok((count, epoch_utc_plus(Duration::from_secs(ttl))?))
-                    })
-            })
+        //let result = pipe.query_async(&mut conn)
+        //    .await
+        //    .map_err(|err| Error::from(err))
+        //    .and_then(|(_, (count, ttl)): (_, (usize, u64))| {
+        //        Ok((count, epoch_utc_plus(Duration::from_secs(ttl))?))
+        //    })?;
+
+        let result = pipe.query_async(&mut conn)
+            .await
+            .map_err(|err| Error::from(err))
+            .and_then(|(ignore, count, ttl): ((), usize, u64)| {
+                Ok((count, epoch_utc_plus(Duration::from_secs(ttl))?))
+            })?;
+        
+        Ok(result)
     }
 }
 

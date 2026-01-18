@@ -23,7 +23,7 @@ normal = ["workspace-build-acceleration"]
 [dependencies]
 chrono = "0.4.9"
 futures = "0.1.29"
-redis = "0.13.0"
+redis.workspace = true
 time = "0.3.30"
 
 # Workspace hack (faster compile times)
