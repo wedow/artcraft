@@ -16,21 +16,20 @@ path = "src/lib.rs"
 normal = ["workspace-build-acceleration"]
 
 [dependencies]
-# Internal
-errors = { path = "../../errors" }
-
 # Workspace hack (faster compile times)
-workspace-build-acceleration = { version = "0.1", path = "../../../workspace-build-acceleration" }
+workspace-build-acceleration.workspace = true
+
+# Internal
+errors.workspace = true
 
 # Redis Database
-#r2d2_redis = "0.14.0"
-redis = { version = "1.0.2", features = ["r2d2", "tokio-rustls-comp"] }
-r2d2 = "0.8.10"
+r2d2.workspace = true
+redis.workspace = true
 
 # Serialization
-serde = "1.0.125"
-serde_derive = "1.0.125"
-serde_json = "1.0.108"
+serde.workspace = true
+serde_derive.workspace = true
+serde_json.workspace = true
 
 [dev-dependencies]
 # None yet
