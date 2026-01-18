@@ -29,8 +29,7 @@ use chrono::Utc;
 use elasticsearch::http::transport::Transport;
 use elasticsearch::Elasticsearch;
 use log::info;
-use r2d2_redis::r2d2;
-use r2d2_redis::RedisConnectionManager;
+use redis::Client;
 use tokio::runtime::Runtime;
 
 use actix_cors_configs::cors::build_cors_config;
@@ -160,7 +159,7 @@ async fn main() -> AnyhowResult<()> {
 
   info!("Connected to redis...");
 
-  let redis_manager = RedisConnectionManager::new(
+  let redis_manager = Client::open(
     common_env.redis_0_connection_string.clone())?;
 
   let redis_pool = r2d2::Pool::builder()

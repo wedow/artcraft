@@ -11,7 +11,7 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use log::{error, info, warn};
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 use sqlx::pool::PoolConnection;
 use sqlx::MySql;
 use utoipa::ToSchema;

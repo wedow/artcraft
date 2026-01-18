@@ -16,7 +16,7 @@ use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums_public::by_table::media_files::public_media_file_model_type::PublicMediaFileModelType;
 use log::{debug, error, warn};
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::batch_get_media_files_by_tokens;
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 use tokens::tokens::media_files::MediaFileToken;
 use utoipa::ToSchema;
 

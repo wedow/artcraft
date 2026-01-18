@@ -29,7 +29,7 @@ use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use log::error;
 use mysql_queries::queries::generic_inference::web::batch_get_inference_job_status::batch_get_inference_job_status;
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 use redis_common::redis_keys::RedisKeys;
 use server_environment::ServerEnvironment;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;

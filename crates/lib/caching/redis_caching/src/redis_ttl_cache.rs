@@ -1,13 +1,11 @@
-use std::future::Future;
-
-use r2d2_redis::r2d2::{Pool, PooledConnection};
-use r2d2_redis::redis::Commands;
-use r2d2_redis::RedisConnectionManager;
+use r2d2::{Pool, PooledConnection};
+use redis::{Client, Commands};
 use serde::{Deserialize, Serialize};
+use std::future::Future;
 
 use errors::AnyhowResult;
 
-const DEFAULT_TTL_SECONDS : usize = 60;
+const DEFAULT_TTL_SECONDS : u64 = 60;
 
 const REDIS_KEY_PREFIX : &str = "_c";
 
@@ -17,16 +15,16 @@ const REDIS_KEY_PREFIX : &str = "_c";
 
 #[derive(Clone)]
 pub struct RedisTtlCache {
-  redis_pool: Pool<RedisConnectionManager>,
-  default_key_ttl: usize,
+  redis_pool: Pool<Client>,
+  default_key_ttl: u64,
 }
 
 impl RedisTtlCache {
-  pub fn new(redis_pool: Pool<RedisConnectionManager>) -> Self {
+  pub fn new(redis_pool: Pool<Client>) -> Self {
     Self::new_with_ttl(redis_pool, DEFAULT_TTL_SECONDS)
   }
 
-  pub fn new_with_ttl(redis_pool: Pool<RedisConnectionManager>, key_ttl: usize) -> Self {
+  pub fn new_with_ttl(redis_pool: Pool<Client>, key_ttl: u64) -> Self {
     Self {
       redis_pool,
       default_key_ttl: key_ttl,
@@ -43,8 +41,8 @@ impl RedisTtlCache {
 }
 
 pub struct RedisTtlCacheConnection {
-  redis_connection: PooledConnection<RedisConnectionManager>,
-  default_key_ttl: usize,
+  redis_connection: PooledConnection<Client>,
+  default_key_ttl: u64,
 }
 
 impl RedisTtlCacheConnection {

@@ -7,7 +7,7 @@ use actix_web::web::Path;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::warn;
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 
 use mysql_queries::queries::w2l::w2l_inference_jobs::get_w2l_inference_job_status::get_w2l_inference_job_status;
 use redis_common::redis_keys::RedisKeys;

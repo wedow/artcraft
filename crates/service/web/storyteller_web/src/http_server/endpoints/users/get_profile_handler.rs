@@ -12,9 +12,8 @@ use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::{error, warn};
-use r2d2_redis::r2d2::PooledConnection;
-use r2d2_redis::redis::Commands;
-use r2d2_redis::{r2d2, RedisConnectionManager};
+use r2d2::PooledConnection;
+use redis::{Client, Commands};
 use sqlx::MySqlPool;
 use utoipa::ToSchema;
 
@@ -140,7 +139,7 @@ pub async fn get_profile_handler(
   http_request: HttpRequest,
   path: Path<GetProfilePathInfo>,
   mysql_pool: web::Data<MySqlPool>,
-  redis_pool: web::Data<r2d2::Pool<RedisConnectionManager>>,
+  redis_pool: web::Data<r2d2::Pool<Client>>,
   session_checker: web::Data<SessionChecker>,
 ) -> Result<HttpResponse, ProfileError>
 {
@@ -245,7 +244,7 @@ pub async fn get_profile_handler(
   if store_in_cache {
     if let Some(redis) = maybe_redis.as_mut() {
       if let Ok(redis_payload) = serde_json::to_string(&user_data) {
-        const SECONDS : usize = 60;
+        const SECONDS : u64 = 60;
         // NB: Compiler can't figure out the throwaway result type
         let _r : Option<String> = redis.set_ex(&cache_key, redis_payload, SECONDS).ok();
       }
@@ -343,7 +342,7 @@ pub (crate) struct RedisCacheData {
 // TODO: Async
 pub (crate) fn try_get_user_from_redis_cache(
   cache_key: &str,
-  redis: &mut PooledConnection<RedisConnectionManager>,
+  redis: &mut PooledConnection<Client>,
 ) -> Option<RedisCacheData> {
 
   let results : Option<String> = redis.get(cache_key).ok().flatten();

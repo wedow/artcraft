@@ -6,7 +6,7 @@ use actix_web::web::Path;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use derive_more::Display;
 use log::warn;
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 
 use redis_common::redis_keys::RedisKeys;
 

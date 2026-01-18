@@ -29,7 +29,7 @@ use log::{error, warn};
 use mysql_queries::queries::generic_inference::web::job_status::GenericInferenceJobStatus;
 use mysql_queries::queries::generic_inference::web::list_session_jobs::{list_session_jobs_from_connection, ListSessionJobsForUserArgs, SessionUser};
 use primitives::numerics::i64_to_u64_zero_clamped::i64_to_u64_zero_clamped;
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 use redis_common::redis_keys::RedisKeys;
 use server_environment::ServerEnvironment;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;

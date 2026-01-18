@@ -12,7 +12,7 @@ use actix_web::{
 use actix_web_actors::ws;
 use chrono::{DateTime, Utc};
 use log::error;
-use r2d2_redis::redis::{Commands, RedisResult};
+use redis::{Commands, RedisResult};
 use utoipa::ToSchema;
 use web::Data;
 

@@ -8,8 +8,7 @@ use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json, Path};
 use actix_web::{HttpRequest, HttpResponse};
 use log::warn;
-use r2d2_redis::redis::Commands;
-use r2d2_redis::{r2d2, RedisConnectionManager};
+use redis::{Client, Commands};
 use utoipa::ToSchema;
 
 use enums::by_table::users::user_feature_flag::UserFeatureFlag;
@@ -112,7 +111,7 @@ pub async fn edit_user_feature_flags_handler(
   request: Json<EditUserFeatureFlagsRequest>,
   server_state: Data<Arc<ServerState>>,
   //redis_ttl_cache: Data<RedisTtlCache>,
-  redis_pool: Data<r2d2::Pool<RedisConnectionManager>>,
+  redis_pool: Data<r2d2::Pool<Client>>,
 ) -> Result<HttpResponse, EditUserFeatureFlagsError> {
 
   let maybe_user_session = server_state

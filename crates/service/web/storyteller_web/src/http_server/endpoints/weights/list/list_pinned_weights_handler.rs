@@ -5,7 +5,7 @@ use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::{debug, error, warn};
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 use utoipa::ToSchema;
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
@@ -126,7 +126,7 @@ pub async fn list_pinned_weights_handler(
       .unwrap_or_else(|| "".to_string())
       .split(",")
       .into_iter()
-      .map(|item| item.trim())
+      .map(|item: &str| item.trim())
       .filter(|item| !item.is_empty())
       .map(|item| ModelWeightToken::new_from_str(item))
       .collect::<Vec<ModelWeightToken>>();

@@ -12,7 +12,7 @@ use actix_web::web::BytesMut;
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use futures::TryStreamExt;
 use log::{error, info, warn};
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 
 use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_ip::get_request_ip;

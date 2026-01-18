@@ -7,7 +7,7 @@ use actix_web::web::{Json, Path};
 use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::error;
-use r2d2_redis::redis::{Commands, RedisResult};
+use redis::{Commands, RedisResult};
 use utoipa::ToSchema;
 
 use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;

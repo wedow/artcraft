@@ -7,7 +7,7 @@ use actix_web::web::Path;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::warn;
-use r2d2_redis::redis::Commands;
+use redis::Commands;
 
 use http_server_common::response::serialize_as_json_error::serialize_as_json_error;
 use mysql_queries::queries::generic_download::web::get_generic_download_job_status::get_generic_download_job_status;

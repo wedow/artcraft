@@ -1,9 +1,9 @@
 use std::ops::Add;
 
 use chrono::Utc;
-use r2d2_redis::r2d2::PooledConnection;
-use r2d2_redis::redis::Commands;
-use r2d2_redis::RedisConnectionManager;
+use r2d2::PooledConnection;
+use redis::Client;
+use redis::Commands;
 
 use errors::AnyhowResult;
 
@@ -26,7 +26,7 @@ impl PremiumIpAddressPayload {
     }
   }
 
-  pub fn read_from_redis(key: PremiumIpAddressRedisKey, redis: &mut PooledConnection<RedisConnectionManager>) -> AnyhowResult<Self> {
+  pub fn read_from_redis(key: PremiumIpAddressRedisKey, redis: &mut PooledConnection<Client>) -> AnyhowResult<Self> {
     let payload = PremiumPayload::read_from_redis(key.as_str(), redis)?;
     Ok(Self {
       key,
@@ -34,16 +34,16 @@ impl PremiumIpAddressPayload {
     })
   }
 
-  pub fn persist_to_redis_with_expiry(&self, redis: &mut PooledConnection<RedisConnectionManager>) -> AnyhowResult<()> {
+  pub fn persist_to_redis_with_expiry(&self, redis: &mut PooledConnection<Client>) -> AnyhowResult<()> {
     self.payload.persist_to_redis(self.key.as_str(), redis)?;
     self.set_key_expiry(redis)?;
     Ok(())
   }
 
-  pub fn set_key_expiry(&self, redis: &mut PooledConnection<RedisConnectionManager>) -> AnyhowResult<()> {
+  pub fn set_key_expiry(&self, redis: &mut PooledConnection<Client>) -> AnyhowResult<()> {
     let expire_at= Utc::now()
         .add(PremiumUserRedisKey::get_redis_ttl())
-        .timestamp() as usize;
+        .timestamp() as i64;
     redis.expire_at::<_, ()>(self.key.as_str(), expire_at)?;
     Ok(())
   }

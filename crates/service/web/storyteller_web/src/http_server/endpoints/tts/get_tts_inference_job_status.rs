@@ -7,7 +7,7 @@ use actix_web::web::Path;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use chrono::{DateTime, Utc};
 use log::error;
-use r2d2_redis::redis::{Commands, RedisResult};
+use redis::{Commands, RedisResult};
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use mysql_queries::queries::generic_inference::web::get_inference_job_status::get_inference_job_status;
