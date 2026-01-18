@@ -261,7 +261,7 @@ pub async fn enqueue_infer_f5_tts_handler(
       },
     };
 
-    if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+    if let Err(_err) = rate_limiter.rate_limit_request(&http_request).await {
       return Err(InferTtsError::RateLimited);
     }
   }

@@ -72,7 +72,7 @@ pub async fn enqueue_generic_download_handler(
   request: web::Json<EnqueueGenericDownloadRequest>,
   server_state: web::Data<Arc<ServerState>>) -> Result<HttpResponse, EnqueueGenericDownloadError>
 {
-  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request) {
+  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request).await {
     return Err(EnqueueGenericDownloadError::RateLimited);
   }
 

@@ -243,7 +243,7 @@ pub async fn enqueue_infer_seed_vc_handler(
       },
     };
 
-    if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+    if let Err(_err) = rate_limiter.rate_limit_request(&http_request).await {
       return Err(InferSeedVcError::RateLimited);
     }
   }

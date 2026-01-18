@@ -36,7 +36,7 @@ impl RedisRateLimiter {
     }
   }
 
-  pub fn rate_limit_request(&self, request: &HttpRequest) -> Result<(), RateLimiterError> {
+  pub async fn rate_limit_request(&self, request: &HttpRequest) -> Result<(), RateLimiterError> {
     if !self.limiter_enabled {
       return Ok(())
     }
@@ -50,19 +50,19 @@ impl RedisRateLimiter {
     let ip_address = get_request_ip(&request);
 
     let rate_limit_key = format!("rate_limit:{}:{}", &self.limit_key_prefix, ip_address);
-    self.rate_limit_key(&rate_limit_key)
+    self.rate_limit_key(&rate_limit_key).await
   }
 
-  pub fn rate_limit_key(&self, rate_limit_key: &str) -> Result<(), RateLimiterError> {
+  pub async fn rate_limit_key(&self, rate_limit_key: &str) -> Result<(), RateLimiterError> {
     if !self.limiter_enabled {
       return Ok(())
     }
 
     // NB: This library uses old-school futures (pre-async/await)
-    let permit = self.limiter.count(rate_limit_key);
+    let permit = self.limiter.count(rate_limit_key).await;
 
     // TODO/FIXME: This could block.
-    match permit.wait() {
+    match permit {
       Ok(_) => Ok(()),
       Err(err) => match err {
         Error::Client(_) => Ok(()), // NB: Fail open for failure to connect to Redis

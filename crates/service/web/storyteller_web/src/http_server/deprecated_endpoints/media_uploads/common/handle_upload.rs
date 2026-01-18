@@ -81,7 +81,7 @@ pub async fn handle_upload(
     Some(ref _session) => &server_state.redis_rate_limiters.file_upload_logged_in,
   };
 
-  if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+  if let Err(_err) = rate_limiter.rate_limit_request(&http_request).await {
     return Err(UploadError::RateLimited);
   }
 

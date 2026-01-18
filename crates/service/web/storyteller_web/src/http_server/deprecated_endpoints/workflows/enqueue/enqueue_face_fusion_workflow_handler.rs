@@ -178,7 +178,7 @@ pub async fn enqueue_face_fusion_workflow_handler(
 
   // ==================== RATE LIMIT ==================== //
 
-  if let Err(_err) = server_state.redis_rate_limiters.logged_in.rate_limit_request(&http_request) {
+  if let Err(_err) = server_state.redis_rate_limiters.logged_in.rate_limit_request(&http_request).await {
     return Err(EnqueueFaceFusionWorkflowError::RateLimited);
   }
 

@@ -104,7 +104,7 @@ pub async fn redeem_beta_key_handler(
 
   let rate_limiter = &server_state.redis_rate_limiters.logged_out;
 
-  if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+  if let Err(_err) = rate_limiter.rate_limit_request(&http_request).await {
     return Err(RedeemBetaKeyError::RateLimited);
   }
 

@@ -132,7 +132,7 @@ pub async fn enqueue_gptsovits_model_download_handler(
 
   let maybe_routing_tag= get_routing_tag_header(&http_request);
 
-  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request) {
+  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request).await {
     return Err(EnqueueGptSovitsModelDownloadError::RateLimited);
   }
 

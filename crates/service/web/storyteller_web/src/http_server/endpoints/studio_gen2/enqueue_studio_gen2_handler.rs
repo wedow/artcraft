@@ -211,7 +211,7 @@ pub async fn enqueue_studio_gen2_handler(
     },
   };
 
-  if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+  if let Err(_err) = rate_limiter.rate_limit_request(&http_request).await {
     return Err(EnqueueStudioGen2Error::RateLimited);
   }
 

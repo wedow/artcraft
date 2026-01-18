@@ -301,7 +301,7 @@ pub async fn enqueue_video_style_transfer_handler(
         },
     };
 
-    if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+    if let Err(_err) = rate_limiter.rate_limit_request(&http_request).await {
         return Err(EnqueueVideoStyleTransferError::RateLimited);
     }
 

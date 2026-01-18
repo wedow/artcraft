@@ -123,11 +123,11 @@ pub async fn upload_zs_sample_handler(
     Some(ref _user) => &server_state.redis_rate_limiters.file_upload_logged_in,
   };
 
-  if let Err(_err) = rate_limiter.rate_limit_request(&http_request) {
+  if let Err(_err) = rate_limiter.rate_limit_request(&http_request).await {
     return Err(UploadSampleError::RateLimited);
   }
 
-  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request) {
+  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request).await {
     return Err(UploadSampleError::RateLimited);
   }
 

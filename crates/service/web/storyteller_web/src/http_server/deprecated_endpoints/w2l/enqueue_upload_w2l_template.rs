@@ -89,7 +89,7 @@ pub async fn upload_w2l_template_handler(
   request: web::Json<UploadW2lTemplateRequest>,
   server_state: web::Data<Arc<ServerState>>) -> Result<HttpResponse, UploadW2lTemplateError>
 {
-  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request) {
+  if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request).await {
     return Err(UploadW2lTemplateError::RateLimited);
   }
 
