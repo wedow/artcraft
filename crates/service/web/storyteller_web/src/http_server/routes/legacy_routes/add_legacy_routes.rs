@@ -41,10 +41,12 @@ use crate::http_server::deprecated_endpoints::w2l::get_w2l_template_use_count::g
 use crate::http_server::deprecated_endpoints::w2l::get_w2l_upload_template_job_status::get_w2l_upload_template_job_status_handler;
 use crate::http_server::deprecated_endpoints::w2l::list_w2l_templates::list_w2l_templates_handler;
 use crate::http_server::deprecated_endpoints::w2l::set_w2l_template_mod_approval::set_w2l_template_mod_approval_handler;
+use crate::http_server::endpoints::app_state::get_app_state_handler::get_app_state_handler;
 use crate::http_server::endpoints::download_job::enqueue_generic_download::enqueue_generic_download_handler;
 use crate::http_server::endpoints::download_job::get_generic_upload_job_status::get_generic_download_job_status_handler;
 use crate::http_server::endpoints::misc::enable_alpha_easy_handler::enable_alpha_easy_handler;
 use crate::http_server::endpoints::misc::enable_alpha_handler::enable_alpha_handler;
+use crate::http_server::endpoints::stats::get_unified_queue_stats_handler::get_unified_queue_stats_handler;
 use crate::http_server::endpoints::trending::list_trending_tts_models::list_trending_tts_models_handler;
 use crate::http_server::endpoints::voice_clone_requests::check_if_voice_clone_request_submitted::check_if_voice_clone_request_submitted_handler;
 use crate::http_server::endpoints::voice_clone_requests::create_voice_clone_request::create_voice_clone_request_handler;
@@ -72,6 +74,8 @@ use crate::http_server::routes::legacy_routes::desktop_vc_app_routes::add_deskto
 use crate::http_server::routes::legacy_routes::image_studio_routes::add_image_studio_routes;
 use crate::http_server::routes::legacy_routes::model_download_routes::add_model_download_routes;
 use crate::http_server::routes::legacy_routes::studio_gen2_routes::add_studio_gen2_routes;
+use crate::http_server::routes::legacy_routes::tts_routes::add_tts_routes;
+use crate::http_server::routes::legacy_routes::voice_conversion_routes::add_voice_conversion_routes;
 use crate::http_server::routes::legacy_routes::workflow_routes::add_workflow_routes;
 use actix_helpers::route_builder::RouteBuilder;
 use actix_http::body::MessageBody;
@@ -79,9 +83,6 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::Error;
 use actix_web::{web, App, HttpResponse};
-use crate::http_server::endpoints::app_state::get_app_state_handler::get_app_state_handler;
-use crate::http_server::endpoints::service::status_alert_handler::status_alert_handler;
-use crate::http_server::endpoints::stats::get_unified_queue_stats_handler::get_unified_queue_stats_handler;
 
 pub fn add_legacy_routes<T, B> (app: App<T>) -> App<T>
 where
@@ -113,6 +114,10 @@ where
   app = add_desktop_vc_app_routes(app); // /v1/vc/...
   app = add_media_upload_routes(app); // /v1/media_upload/...
   app = add_trending_routes(app); // /v1/trending/...
+
+  // Remaining FakeYou surface area
+  app = add_tts_routes(app); // /tts
+  app = add_voice_conversion_routes(app); // /v1/voice_conversion
 
   // ==================== Animations ====================
 

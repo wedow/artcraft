@@ -10,11 +10,9 @@ use crate::http_server::routes::application_routes::prompts_routes::add_prompts_
 use crate::http_server::routes::application_routes::stripe_artcraft_routes::add_stripe_artcraft_routes;
 use crate::http_server::routes::application_routes::subscription_routes::add_subscription_routes;
 use crate::http_server::routes::application_routes::tag_routes::add_tag_routes;
-use crate::http_server::routes::application_routes::tts_routes::add_tts_routes;
 use crate::http_server::routes::application_routes::user_bookmarks_routes::add_user_bookmarks_routes;
 use crate::http_server::routes::application_routes::user_rating_routes::add_user_rating_routes;
 use crate::http_server::routes::application_routes::user_routes::add_user_routes;
-use crate::http_server::routes::application_routes::voice_conversion_routes::add_voice_conversion_routes;
 use crate::http_server::routes::application_routes::webhook_routes::add_webhook_routes;
 use crate::http_server::routes::application_routes::weights_routes::add_weights_routes;
 use actix_http::body::MessageBody;
@@ -41,12 +39,10 @@ where
   // Artcraft surface area
   app = add_generate_routes(app); // /v1/generate/...
   app = add_webhook_routes(app); // /v1/webhooks/... (fal)
-
-  // Remaining FakeYou surface area
+  
+  // Legacy FakeYou surface area that might be useful again one day
   app = add_tag_routes(app); // /v1/tags
-  app = add_tts_routes(app); // /tts
   app = add_weights_routes(app); // v1/weights
-  app = add_voice_conversion_routes(app); // /v1/voice_conversion
 
   // Media files routes
   app = add_media_file_routes(app); // /v1/media_files/...

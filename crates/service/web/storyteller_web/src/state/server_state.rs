@@ -285,6 +285,14 @@ pub struct StaticFeatureFlags {
   /// TEMPORARY: Require users to have a flag on their `users` table record to use video style transfer.
   /// This will also prevent anonymous users from using the service APIs marked as VST-only.
   pub force_session_video_style_transfer_flags: bool,
+  
+  /// Disable TTS endpoints
+  /// If true, respond with 429.
+  pub disable_tts: bool,
+
+  /// Disable voice conversion endpoints
+  /// If true, respond with 429.
+  pub disable_voice_conversion: bool,
 }
 
 /// Instead of top level service denial, these are bans against entities that instead return
