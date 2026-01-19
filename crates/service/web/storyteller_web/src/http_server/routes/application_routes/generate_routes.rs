@@ -18,6 +18,7 @@ use crate::http_server::endpoints::generate::image::multi_function::nano_banana_
 use crate::http_server::endpoints::generate::image::remove_image_background_handler::remove_image_background_handler;
 use crate::http_server::endpoints::generate::object::generate_hunyuan_2_0_image_to_3d_handler::generate_hunyuan_2_0_image_to_3d_handler;
 use crate::http_server::endpoints::generate::object::generate_hunyuan_2_1_image_to_3d_handler::generate_hunyuan_2_1_image_to_3d_handler;
+use crate::http_server::endpoints::generate::object::multi_function::generate_hunyuan3d_v3_multi_function_object_handler::generate_hunyuan3d_v3_multi_function_object_handler;
 use crate::http_server::endpoints::generate::video::generate_kling_1_6_pro_video_handler::generate_kling_1_6_pro_video_handler;
 use crate::http_server::endpoints::generate::video::generate_kling_2_1_master_video_handler::generate_kling_2_1_master_video_handler;
 use crate::http_server::endpoints::generate::video::generate_kling_2_1_pro_video_handler::generate_kling_2_1_pro_video_handler;
@@ -190,6 +191,12 @@ where
           )
       )
       .service(web::scope("/object")
+          .service(web::scope("/multi_function")
+              .service(web::resource("/hunyuan3d_v3")
+                  .route(web::post().to(generate_hunyuan3d_v3_multi_function_object_handler))
+                  .route(web::head().to(|| HttpResponse::Ok()))
+              )
+          )
           .service(web::resource("/hunyuan_2.0_image_to_3d")
               .route(web::post().to(generate_hunyuan_2_0_image_to_3d_handler))
               .route(web::head().to(|| HttpResponse::Ok()))
