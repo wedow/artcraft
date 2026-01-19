@@ -183,7 +183,7 @@ export const Create3dModal = ({ onModelComplete }: Create3dModalProps = {}) => {
       // Enqueue the image for 3D model creation using the Hunyuan 3D 2 model
       const result = await EnqueueImageTo3dObject({
         image_media_token: mediaToken,
-        model: EnqueueImageTo3dObjectModel.Hunyuan3d2,
+        model: EnqueueImageTo3dObjectModel.Hunyuan3d3,
         frontend_caller: "mini_app",
       });
 

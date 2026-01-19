@@ -252,7 +252,7 @@ export const ImageTo3DExperience = ({
         variant === "object"
           ? await EnqueueImageTo3dObject({
               image_media_token: uploadedMediaToken || undefined,
-              model: EnqueueImageTo3dObjectModel.Hunyuan3d2,
+              model: EnqueueImageTo3dObjectModel.Hunyuan3d3,
               frontend_caller: "mini_app",
               frontend_subscriber_id: subscriberId,
             })

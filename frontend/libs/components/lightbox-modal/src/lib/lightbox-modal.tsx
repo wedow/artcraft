@@ -735,7 +735,7 @@ export function LightboxModal({
                       gtagEvent("image_to_3d_clicked");
                       await EnqueueImageTo3dObject({
                         image_media_token: selectedMediaToken,
-                        model: EnqueueImageTo3dObjectModel.Hunyuan3d2_0,
+                        model: EnqueueImageTo3dObjectModel.Hunyuan3d3,
                         frontend_caller: "mini_app",
                       });
                     }}

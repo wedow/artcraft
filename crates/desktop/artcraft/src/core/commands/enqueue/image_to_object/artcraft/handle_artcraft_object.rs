@@ -17,6 +17,8 @@ use log::{error, info};
 use storyteller_client::endpoints::generate::object::generate_hunyuan_3d_2_0_image_to_3d::generate_hunyuan3d_2_0_image_to_3d;
 use storyteller_client::endpoints::generate::object::generate_hunyuan_3d_2_1_image_to_3d::generate_hunyuan3d_2_1_image_to_3d;
 use tauri::AppHandle;
+use artcraft_api_defs::generate::object::multi_function::hunyuan3d_v3_multi_function_object_gen::Hunyuan3dV3MultiFunctionObjectGenRequest;
+use storyteller_client::endpoints::generate::object::multi_function::hunyuan3d_v3_multi_function_object_gen::hunyuan3d_v3_multi_function_object_gen;
 
 pub async fn handle_artcraft_object(
   request: &EnqueueImageTo3dObjectRequest,
@@ -96,6 +98,37 @@ pub async fn handle_artcraft_object(
         }
         Err(err) => {
           error!("Failed to use Artcraft Hunyuan 3D 2.1: {:?}", err);
+          return Err(GenerateError::from(err));
+        }
+      }
+    }
+    Some(EnqueueImageTo3dObjectModel::Hunyuan3d3) => {
+      info!("enqueue Artcraft Hunyuan 3D 3");
+      used_model = Some(GenerationModel::Hunyuan3d3);
+      let request = Hunyuan3dV3MultiFunctionObjectGenRequest {
+        uuid_idempotency_token,
+        image_media_token: request.image_media_token.clone(),
+        prompt: None,
+        back_image_media_token: None,
+        left_image_media_token: None,
+        right_image_media_token: None,
+        face_count: None,
+        generate_type: None,
+        polygon_type: None,
+        enable_pbr: None,
+      };
+      let result = hunyuan3d_v3_multi_function_object_gen(
+        &app_env_configs.storyteller_host,
+        Some(&creds),
+        request,
+      ).await;
+      match result {
+        Ok(enqueued) => {
+          info!("Successfully enqueued Artcraft Hunyuan 3D 3");
+          enqueued.inference_job_token
+        }
+        Err(err) => {
+          error!("Failed to use Artcraft Hunyuan 3D 3: {:?}", err);
           return Err(GenerateError::from(err));
         }
       }

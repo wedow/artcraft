@@ -91,6 +91,7 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Veo3Fast) => Some(TaskModelType::Veo3Fast),
       Some(GenerationModel::Hunyuan3d2_0) => Some(TaskModelType::Hunyuan3d2_0),
       Some(GenerationModel::Hunyuan3d2_1) => Some(TaskModelType::Hunyuan3d2_1),
+      Some(GenerationModel::Hunyuan3d3) => Some(TaskModelType::Hunyuan3d3),
       Some(GenerationModel::WorldlabsMarble) => Some(TaskModelType::WorldlabsMarble),
       Some(GenerationModel::Midjourney) => Some(TaskModelType::Midjourney), // NB: This is a generic Midjourney model, version unknown.
 

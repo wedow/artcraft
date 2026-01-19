@@ -55,6 +55,8 @@ pub enum EnqueueImageTo3dObjectModel {
   Hunyuan3d2_0,
   #[serde(rename = "hunyuan_3d_2_1")]
   Hunyuan3d2_1,
+  #[serde(rename = "hunyuan_3d_3")]
+  Hunyuan3d3,
 }
 
 #[derive(Serialize)]

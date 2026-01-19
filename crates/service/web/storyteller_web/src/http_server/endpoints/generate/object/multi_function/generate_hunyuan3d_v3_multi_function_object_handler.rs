@@ -152,6 +152,9 @@ pub async fn generate_hunyuan3d_v3_multi_function_object_handler(
     .unwrap_or(false);
 
   let has_image = image_url.is_some();
+  
+  // Defaults
+  let enable_pbr = request.enable_pbr.unwrap_or(true);
 
   let fal_result = match (has_prompt, has_image) {
     // Text-to-3D: prompt only, no image
@@ -176,7 +179,7 @@ pub async fn generate_hunyuan3d_v3_multi_function_object_handler(
         face_count: request.face_count,
         generate_type,
         polygon_type,
-        enable_pbr: request.enable_pbr,
+        enable_pbr: Some(enable_pbr),
         webhook_url: &server_state.fal.webhook_url,
         api_key: &server_state.fal.api_key,
       };
@@ -215,7 +218,7 @@ pub async fn generate_hunyuan3d_v3_multi_function_object_handler(
         face_count: request.face_count,
         generate_type,
         polygon_type,
-        enable_pbr: request.enable_pbr,
+        enable_pbr: Some(enable_pbr),
         webhook_url: &server_state.fal.webhook_url,
         api_key: &server_state.fal.api_key,
       };
@@ -256,7 +259,7 @@ pub async fn generate_hunyuan3d_v3_multi_function_object_handler(
         face_count: request.face_count,
         generate_type,
         polygon_type,
-        enable_pbr: request.enable_pbr,
+        enable_pbr: Some(enable_pbr),
         webhook_url: &server_state.fal.webhook_url,
         api_key: &server_state.fal.api_key,
       };
