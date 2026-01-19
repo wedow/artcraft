@@ -18,6 +18,7 @@ use mysql_queries::queries::generic_inference::fal::get_inference_job_by_fal_id:
 use mysql_queries::queries::generic_inference::fal::mark_fal_generic_inference_job_successfully_done::{mark_fal_generic_inference_job_successfully_done, MarkJobArgs};
 use serde_json::Value;
 use utoipa::ToSchema;
+use crate::http_server::endpoints::webhooks::handle_model_glb_payload::handle_model_glb_payload;
 // 1. tauri --> hit endpoint to enqueue
 //
 // 2. webhook 
@@ -142,8 +143,8 @@ pub async fn fal_webhook_handler(
 
   info!("Fal webhook job record: {:?}", job);
 
- let mut maybe_media_token = None;
- let mut maybe_batch_token = None;
+  let mut maybe_media_token = None;
+  let mut maybe_batch_token = None;
 
   if let Some(payload_obj) = payload.as_object() {
     if payload_obj.contains_key("image") {
@@ -155,6 +156,10 @@ pub async fn fal_webhook_handler(
     } else if payload_obj.contains_key("video") {
       info!("Handling video payload for job: {:?}", job.job_token);
       let token = handle_video_payload(payload_obj, &job, &server_state).await?;
+      maybe_media_token = Some(token);
+    } else if payload_obj.contains_key("model_glb") {
+      info!("Handling model_glb payload for job: {:?}", job.job_token);
+      let token = handle_model_glb_payload(payload_obj, &job, &server_state).await?;
       maybe_media_token = Some(token);
     } else if payload_obj.contains_key("model_mesh") {
       info!("Handling model_mesh payload for job: {:?}", job.job_token);
