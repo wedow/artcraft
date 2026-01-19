@@ -1,18 +1,17 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::http_server::common_responses::common_web_error::CommonWebError;
-use crate::http_server::common_responses::media::media_links_builder::MediaLinksBuilder;
 use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
-use crate::http_server::endpoints::media_files::helpers::get_media_domain::get_media_domain;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
+use crate::util::lookup::lookup_image_urls_as_map::lookup_image_urls_as_map;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
 use artcraft_api_defs::generate::object::multi_function::hunyuan3d_v3_multi_function_object_gen::{
   Hunyuan3dV3GenerateType, Hunyuan3dV3MultiFunctionObjectGenRequest,
   Hunyuan3dV3MultiFunctionObjectGenResponse, Hunyuan3dV3PolygonType,
 };
-use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
@@ -36,14 +35,11 @@ use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job
   insert_generic_inference_job_for_fal_queue, FalCategory, InsertGenericInferenceForFalArgs,
 };
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
-use mysql_queries::queries::media_files::get::get_media_file::get_media_file_with_connection;
 use mysql_queries::queries::prompt_context_items::insert_batch_prompt_context_items::{
   insert_batch_prompt_context_items, InsertBatchArgs, PromptContextItem,
 };
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
-use server_environment::ServerEnvironment;
-use sqlx::pool::PoolConnection;
-use sqlx::{Acquire, MySql};
+use sqlx::Acquire;
 use tokens::tokens::media_files::MediaFileToken;
 
 /// Hunyuan 3D v3 Multi-Function (text-to-3d, image-to-3d, sketch-to-3d)
@@ -84,6 +80,61 @@ pub async fn generate_hunyuan3d_v3_multi_function_object_handler(
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
 
+  // Collect all media tokens to look up in a single batch query
+  let mut query_media_tokens: Vec<MediaFileToken> = Vec::new();
+
+  if let Some(token) = &request.image_media_token {
+    query_media_tokens.push(token.clone());
+  }
+  if let Some(token) = &request.back_image_media_token {
+    query_media_tokens.push(token.clone());
+  }
+  if let Some(token) = &request.left_image_media_token {
+    query_media_tokens.push(token.clone());
+  }
+  if let Some(token) = &request.right_image_media_token {
+    query_media_tokens.push(token.clone());
+  }
+
+  // Perform a single batch lookup for all image URLs
+  let image_urls_by_token = if query_media_tokens.is_empty() {
+    HashMap::new()
+  } else {
+    info!("Looking up image media tokens: {:?}", query_media_tokens);
+    lookup_image_urls_as_map(
+      &http_request,
+      &mut mysql_connection,
+      server_state.server_environment,
+      &query_media_tokens,
+    )
+    .await?
+  };
+
+  // Extract individual URLs from the map
+  let image_url = request
+    .image_media_token
+    .as_ref()
+    .and_then(|token| image_urls_by_token.get(token))
+    .map(|url| url.to_string());
+
+  let back_image_url = request
+    .back_image_media_token
+    .as_ref()
+    .and_then(|token| image_urls_by_token.get(token))
+    .map(|url| url.to_string());
+
+  let left_image_url = request
+    .left_image_media_token
+    .as_ref()
+    .and_then(|token| image_urls_by_token.get(token))
+    .map(|url| url.to_string());
+
+  let right_image_url = request
+    .right_image_media_token
+    .as_ref()
+    .and_then(|token| image_urls_by_token.get(token))
+    .map(|url| url.to_string());
+
   insert_idempotency_token(&request.uuid_idempotency_token, &mut *mysql_connection)
     .await
     .map_err(|err| {
@@ -93,65 +144,13 @@ pub async fn generate_hunyuan3d_v3_multi_function_object_handler(
 
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
 
-  // Look up all image URLs upfront to avoid borrow issues
-  let image_url = match &request.image_media_token {
-    Some(token) => Some(
-      lookup_media_url(
-        &http_request,
-        &mut mysql_connection,
-        server_state.server_environment,
-        token,
-      )
-      .await?,
-    ),
-    None => None,
-  };
-
-  let back_image_url = match &request.back_image_media_token {
-    Some(token) => Some(
-      lookup_media_url(
-        &http_request,
-        &mut mysql_connection,
-        server_state.server_environment,
-        token,
-      )
-      .await?,
-    ),
-    None => None,
-  };
-
-  let left_image_url = match &request.left_image_media_token {
-    Some(token) => Some(
-      lookup_media_url(
-        &http_request,
-        &mut mysql_connection,
-        server_state.server_environment,
-        token,
-      )
-      .await?,
-    ),
-    None => None,
-  };
-
-  let right_image_url = match &request.right_image_media_token {
-    Some(token) => Some(
-      lookup_media_url(
-        &http_request,
-        &mut mysql_connection,
-        server_state.server_environment,
-        token,
-      )
-      .await?,
-    ),
-    None => None,
-  };
-
   // Determine which mode we're in based on inputs
   let has_prompt = request
     .prompt
     .as_ref()
     .map(|p| !p.trim().is_empty())
     .unwrap_or(false);
+
   let has_image = image_url.is_some();
 
   let fal_result = match (has_prompt, has_image) {
@@ -300,7 +299,7 @@ pub async fn generate_hunyuan3d_v3_multi_function_object_handler(
     maybe_apriori_prompt_token: None,
     prompt_type: PromptType::ArtcraftApp,
     maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
-    maybe_model_type: Some(ModelType::Hunyuan3dV3),
+    maybe_model_type: Some(ModelType::Hunyuan3d3),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
     maybe_negative_prompt: None,

@@ -113,8 +113,8 @@ pub enum ModelType {
   Hunyuan3d2_0,
   #[serde(rename = "hunyuan_3d_2p1")]
   Hunyuan3d2_1,
-  #[serde(rename = "hunyuan_3d_v3")]
-  Hunyuan3dV3,
+  #[serde(rename = "hunyuan_3d_3")]
+  Hunyuan3d3,
 }
 
 impl_enum_display_and_debug_using_to_str!(ModelType);
@@ -174,7 +174,7 @@ impl ModelType {
       // 3D Object generation models
       Self::Hunyuan3d2_0 => "hunyuan_3d_2p0",
       Self::Hunyuan3d2_1 => "hunyuan_3d_2p1",
-      Self::Hunyuan3dV3 => "hunyuan_3d_v3",
+      Self::Hunyuan3d3 => "hunyuan_3d_3",
     }
   }
 
@@ -228,7 +228,7 @@ impl ModelType {
       // 3D Object generation models
       "hunyuan_3d_2p0" => Ok(Self::Hunyuan3d2_0),
       "hunyuan_3d_2p1" => Ok(Self::Hunyuan3d2_1),
-      "hunyuan_3d_v3" => Ok(Self::Hunyuan3dV3),
+      "hunyuan_3d_3" => Ok(Self::Hunyuan3d3),
 
       _ => Err(format!("invalid model_type: {:?}", job_status)),
     }
@@ -286,7 +286,7 @@ impl ModelType {
       // 3D Object generation models
       Self::Hunyuan3d2_0,
       Self::Hunyuan3d2_1,
-      Self::Hunyuan3dV3,
+      Self::Hunyuan3d3,
     ])
   }
 }
@@ -347,7 +347,7 @@ mod tests {
       // 3D Object generation models
       assert_serialization(ModelType::Hunyuan3d2_0, "hunyuan_3d_2p0");
       assert_serialization(ModelType::Hunyuan3d2_1, "hunyuan_3d_2p1");
-      assert_serialization(ModelType::Hunyuan3dV3, "hunyuan_3d_v3");
+      assert_serialization(ModelType::Hunyuan3d3, "hunyuan_3d_3");
     }
 
     #[test]
@@ -400,7 +400,7 @@ mod tests {
       // 3D Object generation models
       assert_eq!(ModelType::Hunyuan3d2_0.to_str(), "hunyuan_3d_2p0");
       assert_eq!(ModelType::Hunyuan3d2_1.to_str(), "hunyuan_3d_2p1");
-      assert_eq!(ModelType::Hunyuan3dV3.to_str(), "hunyuan_3d_v3");
+      assert_eq!(ModelType::Hunyuan3d3.to_str(), "hunyuan_3d_3");
     }
 
     #[test]
@@ -452,7 +452,7 @@ mod tests {
       // 3D Object generation models
       assert_eq!(ModelType::from_str("hunyuan_3d_2p0").unwrap(), ModelType::Hunyuan3d2_0);
       assert_eq!(ModelType::from_str("hunyuan_3d_2p1").unwrap(), ModelType::Hunyuan3d2_1);
-      assert_eq!(ModelType::from_str("hunyuan_3d_v3").unwrap(), ModelType::Hunyuan3dV3);
+      assert_eq!(ModelType::from_str("hunyuan_3d_3").unwrap(), ModelType::Hunyuan3d3);
     }
 
     #[test]
@@ -505,7 +505,7 @@ mod tests {
       // 3D Object generation models
       assert_eq!(variants.pop_first(), Some(ModelType::Hunyuan3d2_0));
       assert_eq!(variants.pop_first(), Some(ModelType::Hunyuan3d2_1));
-      assert_eq!(variants.pop_first(), Some(ModelType::Hunyuan3dV3));
+      assert_eq!(variants.pop_first(), Some(ModelType::Hunyuan3d3));
 
       assert_eq!(variants.pop_first(), None);
     }
