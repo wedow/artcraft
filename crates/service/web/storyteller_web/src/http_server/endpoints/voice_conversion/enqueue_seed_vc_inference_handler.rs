@@ -119,8 +119,13 @@ impl fmt::Display for InferSeedVcError {
 pub async fn enqueue_infer_seed_vc_handler(
   http_request: HttpRequest,
   request: Json<InferSeedVcRequest>,
-  server_state: web::Data<Arc<ServerState>>) -> Result<Json<InferSeedVcSuccessResponse>, InferSeedVcError>
-{
+  server_state: web::Data<Arc<ServerState>>
+) -> Result<Json<InferSeedVcSuccessResponse>, InferSeedVcError> {
+
+  if server_state.flags.disable_voice_conversion {
+    return Err(InferSeedVcError::RateLimited);
+  }
+  
   let mut is_from_api = false;
   let mut maybe_user_token : Option<String> = None;
   let mut priority_level ;

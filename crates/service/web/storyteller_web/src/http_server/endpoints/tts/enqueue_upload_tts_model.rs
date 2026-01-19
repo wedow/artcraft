@@ -11,16 +11,15 @@ use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
 
+use crate::http_server::validations::validate_model_title::validate_model_title;
+use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
+use crate::state::server_state::ServerState;
 use config::bad_urls::is_bad_tts_model_download_url;
 use enums::by_table::generic_download_jobs::generic_download_type::GenericDownloadType;
 use enums::common::visibility::Visibility;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::queries::generic_download::web::insert_generic_download_job::{insert_generic_download_job, InsertGenericDownloadJobArgs};
 use mysql_queries::queries::tts::tts_model_upload_jobs::insert_tts_model_upload_job::{insert_tts_model_upload_job, InsertTtsModelUploadJobArgs};
-
-use crate::http_server::validations::validate_model_title::validate_model_title;
-use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
-use crate::state::server_state::ServerState;
 
 #[derive(Deserialize, Copy, Clone)]
 pub enum SupportedTtsModelType {
@@ -111,8 +110,13 @@ impl fmt::Display for UploadTtsModelError {
 pub async fn upload_tts_model_handler(
   http_request: HttpRequest,
   request: web::Json<UploadTtsModelRequest>,
-  server_state: web::Data<Arc<ServerState>>) -> Result<HttpResponse, UploadTtsModelError>
-{
+  server_state: web::Data<Arc<ServerState>>
+) -> Result<HttpResponse, UploadTtsModelError> {
+  
+  if server_state.flags.disable_tts {
+    return Err(UploadTtsModelError::RateLimited);
+  }
+  
   if let Err(_err) = server_state.redis_rate_limiters.model_upload.rate_limit_request(&http_request).await {
     return Err(UploadTtsModelError::RateLimited);
   }

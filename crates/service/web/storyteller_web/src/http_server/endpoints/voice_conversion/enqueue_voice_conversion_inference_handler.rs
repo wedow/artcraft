@@ -156,6 +156,11 @@ pub async fn enqueue_voice_conversion_inference_handler(
   server_state: web::Data<Arc<ServerState>>
 ) -> Result<Json<EnqueueVoiceConversionInferenceSuccessResponse>, EnqueueVoiceConversionInferenceError>
 {
+
+  if server_state.flags.disable_voice_conversion {
+    return Err(EnqueueVoiceConversionInferenceError::RateLimited);
+  }
+  
   let mut maybe_user_token : Option<UserToken> = None;
   let mut priority_level ;
   let disable_rate_limiter = false; // NB: Careful!

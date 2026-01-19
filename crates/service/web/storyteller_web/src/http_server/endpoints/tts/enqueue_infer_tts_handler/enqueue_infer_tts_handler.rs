@@ -11,9 +11,9 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use log::{info, warn};
-use redis::Commands;
 use rand::seq::IndexedRandom;
 use rand::Rng;
+use redis::Commands;
 use utoipa::ToSchema;
 
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
@@ -154,8 +154,13 @@ impl fmt::Display for InferTtsError {
 pub async fn enqueue_infer_tts_handler(
   http_request: HttpRequest,
   request: Json<InferTtsRequest>,
-  server_state: web::Data<Arc<ServerState>>) -> Result<Json<InferTtsSuccessResponse>, InferTtsError>
-{
+  server_state: web::Data<Arc<ServerState>>
+) -> Result<Json<InferTtsSuccessResponse>, InferTtsError> {
+
+  if server_state.flags.disable_tts {
+    return Err(InferTtsError::RateLimited);
+  }
+
   let mut is_from_api = false;
   let mut maybe_user_token : Option<String> = None;
   let mut priority_level ;
