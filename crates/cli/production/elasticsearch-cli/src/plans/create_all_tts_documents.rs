@@ -86,7 +86,7 @@ async fn create_tts_model_index(client: &Elasticsearch, _delete: bool) -> Anyhow
   info!("Creating TTS model index...");
 
   let index_path = get_storyteller_rust_root()
-      .join("_elasticsearch/index_definitions/tts_models_v1.json");
+      .join("_database/elasticsearch/index_definitions/tts_models_v1.json");
 
   info!("Reading index file: {:?}", index_path);
 

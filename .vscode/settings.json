@@ -2,8 +2,9 @@
   "files.exclude": {
     "**/*~": true,
     ".sqlx/**": true,
-    "_elasticsearch/**": true,
-    "_sql/**": true,
+    "_database/**": true,
+    "_database/elasticsearch/**": true,
+    "_database/sql/**": true,
     "frontend_old/**": true,
     "includes/**": true,
     "target/**": true,

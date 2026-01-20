@@ -1,3 +1,31 @@
+# =============================================================
+# ======= (0) install packages in the final build image =======
+# =============================================================
+
+# Final image - we build it upfront to cache dependencies
+FROM ubuntu:jammy as final-container
+
+# See: https://github.com/opencontainers/image-spec/blob/master/annotations.md
+LABEL org.opencontainers.image.title='Storyteller Rust (CPU)'
+LABEL org.opencontainers.image.authors='bt@brand.io, echelon@gmail.com'
+LABEL org.opencontainers.image.description='All of the binaries from the Rust monorepo (CPU)'
+LABEL org.opencontainers.image.documentation='https://github.com/storytold/storyteller-web'
+LABEL org.opencontainers.image.source='https://github.com/storytold/storyteller-web'
+LABEL org.opencontainers.image.url='https://github.com/storytold/storyteller-web'
+
+WORKDIR /
+
+# Install ffmpeg because rust's (symphonia, mp4 crate, etc.) all fail to decode video metadata
+# Install rsync to copy files to other containers
+# Install vim for debugging
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
+        ffmpeg \
+        rsync \
+        vim \
+        --no-install-recommends \
+    && apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
+
 # ================================================================
 # =============== (1) set up core rust build image ===============
 # ================================================================
@@ -12,27 +40,29 @@ WORKDIR /tmp
 # NB: cmake is required for freetype-sys-0.13.1, which in turn has only been added for egui.
 # NB: fontconfig is required by servo-fontconfig-sys, which is in the dependency chain for egui.
 # NB: libfontconfig-dev is required by servo-fontconfig-sys, which is in the dependency chain for egui.
+# NB: pkg-config and libssl are for container TLS; we may switch to rustls in the future.
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
         build-essential \
         cmake \
         curl \
+        ffmpeg \
         fontconfig \
         libfontconfig1-dev \
-        pkg-config musl musl-dev musl-tools
+        libssl-dev \
+        pkg-config
 
 # NB: Fix for fontconfig (servo-fontconfig-sys): https://github.com/alacritty/alacritty/issues/4423#issuecomment-727277235
 # TODO(bt, 2023-02-23): This has not been verified to work yet.
 RUN export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
-
-ARG RUST_TOOLCHAIN="1.86.0"
 
 # Install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh  -s -- --default-toolchain $RUST_TOOLCHAIN -y
 
 # Install correct Rust version
-#RUN $HOME/.cargo/bin/rustup default stable-x86_64-unknown-linux-gnu
+#RUN $HOME/.cargo/bin/rustup install $RUST_VERSION
+#RUN $HOME/.cargo/bin/rustup default $RUST_VERSION
 
 # Report Rust version for build debugging
 RUN $HOME/.cargo/bin/rustup show
@@ -72,7 +102,7 @@ FROM rust-base AS builder
 COPY Cargo.lock .
 COPY Cargo.toml .
 COPY .sqlx/ .sqlx
-COPY _elasticsearch ./_elasticsearch
+COPY _database ./_database/
 COPY crates/ ./crates
 COPY includes/ ./includes
 COPY test_data/ ./test_data
@@ -96,34 +126,37 @@ RUN echo "Disk usage at current directory (after tests):"
 RUN pwd
 RUN du -hsc * | sort -hr
 
-# Build all the binaries that run on GPU, including "dummy-service".
-RUN RUSTFLAGS="-C target-feature=+crt-static" SQLX_OFFLINE=true \
+# Build all the binaries.
+RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
   $HOME/.cargo/bin/cargo build \
-  --release --target=x86_64-unknown-linux-gnu \
+  --release \
+  --bin storyteller-web
+
+RUN SQLX_OFFLINE=true \
+  LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
+  $HOME/.cargo/bin/cargo build \
+  --release \
   --bin dummy-service
 
-RUN RUSTFLAGS="-C target-feature=+crt-static" SQLX_OFFLINE=true \
+RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
   $HOME/.cargo/bin/cargo build \
-  --release --target=x86_64-unknown-linux-gnu \
-  --bin download-job
+  --release \
+  --bin analytics-job
 
-RUN RUSTFLAGS="-C target-feature=+crt-static" SQLX_OFFLINE=true \
+RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
   $HOME/.cargo/bin/cargo build \
-  --release --target=x86_64-unknown-linux-gnu \
-  --bin inference-job
+  --release \
+  --bin email-sender-job
 
-RUN ls -lR $HOME/.cargo/bin
-RUN $HOME/.cargo/bin/rustup target add x86_64-unknown-linux-musl
-
-
-RUN RUSTFLAGS="-C target-feature=+crt-static" SQLX_OFFLINE=true \
+RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
   $HOME/.cargo/bin/cargo build \
-  --release --target=x86_64-unknown-linux-musl \
-  --bin inference-job
+  --release \
+  --bin es-update-job
+
 # Print a report on disk space
 RUN echo "Disk usage at current directory (after all builds):"
 RUN pwd
@@ -134,43 +167,55 @@ RUN du -hsc * | sort -hr
 # =============================================================
 
 # Final image
-#FROM ubuntu:jammy as final
-# TODO(bt,2023-04-26): This is only necessary for download-job and inference-job
-#FROM nvidia/cuda:12.0.1-runtime-ubuntu22.04 as final # Same image as so-vits-svc
-FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04 as final
+FROM final-container as final
 
-# See: https://github.com/opencontainers/image-spec/blob/master/annotations.md
-LABEL org.opencontainers.image.title='Storyteller Rust (GPU)'
-LABEL org.opencontainers.image.authors='bt@brand.io, echelon@gmail.com'
-LABEL org.opencontainers.image.description='All of the binaries from the Rust monorepo (GPU)'
-LABEL org.opencontainers.image.documentation='https://github.com/storytold/storyteller-web'
-LABEL org.opencontainers.image.source='https://github.com/storytold/storyteller-web'
-LABEL org.opencontainers.image.url='https://github.com/storytold/storyteller-web'
+# # See: https://github.com/opencontainers/image-spec/blob/master/annotations.md
+# LABEL org.opencontainers.image.title='Storyteller Rust (CPU)'
+# LABEL org.opencontainers.image.authors='bt@brand.io, echelon@gmail.com'
+# LABEL org.opencontainers.image.description='All of the binaries from the Rust monorepo (CPU)'
+# LABEL org.opencontainers.image.documentation='https://github.com/storytold/storyteller-web'
+# LABEL org.opencontainers.image.source='https://github.com/storytold/storyteller-web'
+# LABEL org.opencontainers.image.url='https://github.com/storytold/storyteller-web'
+#
+# WORKDIR /
 
-WORKDIR /
-
-# Install rsync to copy files to other containers
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
-        rsync \
-        --no-install-recommends \
-    && apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
+# # Install rsync to copy files to other containers
+# RUN apt-get update \
+#     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
+#         rsync \
+#         --no-install-recommends \
+#     && apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 # Give the container its version so it can report over HTTP.
 ARG GIT_SHA
 RUN echo -n ${GIT_SHA} > GIT_SHA
 
-# Copy all the binaries.
-COPY --from=builder /tmp/target/x86_64-unknown-linux-gnu/release/dummy-service /
-COPY --from=builder /tmp/target/x86_64-unknown-linux-gnu/release/download-job /
-COPY --from=builder /tmp/target/x86_64-unknown-linux-gnu/release/inference-job /
-COPY --from=builder /tmp/target/x86_64-unknown-linux-musl/release/inference-job /inference-job-musl
+# Copy all the binaries (except those that need a GPU):
+COPY --from=builder /tmp/target/release/storyteller-web /
+COPY --from=builder /tmp/target/release/dummy-service /
+COPY --from=builder /tmp/target/release/analytics-job /
+COPY --from=builder /tmp/target/release/email-sender-job  /
+COPY --from=builder /tmp/target/release/es-update-job  /
+
+# Legacy apps:
+# COPY --from=builder /tmp/target/release/tts-download-job /
+# COPY --from=builder /tmp/target/release/tts-inference-job /
+
+# NB(bt,2023-11-28): These still seem essential even after switching to rustls
+# NB(bt,2023-11-30): I commented out the /etc/ssl copy and it broke certs, so this is *essential*
+# SSL certs are required for crypto
+COPY --from=builder /etc/ssl /etc/ssl
+
+# NB(bt,2023-11-28): These still seem essential even after switching to rustls
+# Required dynamically linked libraries
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libssl.*             /lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libcrypto.*          /lib/x86_64-linux-gnu/
 
 # Container includes
 COPY includes/ /includes
 
 # Make sure all the links resolve
-RUN ldd inference-job
+RUN ldd storyteller-web
 
 # Without a .env file, Rust crashes "mysteriously" (ugh)
 RUN touch .env
@@ -178,50 +223,8 @@ RUN touch .env-secrets
 
 # Some services have default env files that live under their code directories
 # These should also be readable from the relative current path
-COPY crates/service/job/download_job/config/download-job.common.env .
-COPY crates/service/job/download_job/config/download-job.production.env .
-
-COPY crates/service/job/inference_job/config/inference-job.common.env .
-COPY crates/service/job/inference_job/config/inference-job.production.env .
-
-# # Need python to make use of other containers' venv
-# # TODO(bt,2023-04-26): This is only necessary for download-job and inference-job
-# # NB(bt,2023-05-04): Installing lsof, htop, ripgrep, as debugging tools
-# # - net-tools: netstat, for debugging process network connections
-# # - psmisc: fuser, for determining which things users have opennetstat, for debugging process network connections
-# # - libnvidia-container: these are installed to attempt to fix https://github.com/NVIDIA/nvidia-docker/issues/1618#issuecomment-1120104007
-# RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
-#     ffmpeg \
-#     htop \
-#     less \
-#     libnvidia-container-dev \
-#     libnvidia-container-tools \
-#     libnvidia-container1 \
-#     libsndfile1 \
-#     lsof \
-#     net-tools \
-#     nvidia-driver-530 \
-#     psmisc \
-#     python3-pip \
-#     python3.10 \
-#     python3.10-venv \
-#     ripgrep \
-#     tmux \
-#     vim \
-#     --no-install-recommends
-#
-# # NB(bt,2023-11-17): We need python3.8 for vall-e-x (for now)
-# # We should make the effort to get it running on python3.10
-# RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install software-properties-common -y \
-#     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC add-apt-repository ppa:deadsnakes/ppa -y \
-#     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update \
-#     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y python3.8 python3.8-venv python3.8-dev python3.8-full python3.8-distutils
-
-RUN  apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
-
-# NB(bt,2023-05-28): Python logging may be slowing down in k8s
-# See: https://github.com/kubernetes-client/python/issues/1867
-COPY includes/container_includes/python_overrides/logger/__init__.py /usr/lib/python3.10/logging/__init__.py
-# COPY includes/container_includes/python_overrides/logger/__init__.py /usr/lib/python3.8/logging/__init__.py
+COPY crates/service/web/storyteller_web/config/storyteller-web.common.env .
+COPY crates/service/web/storyteller_web/config/storyteller-web.production.env .
 
 EXPOSE 8080
+CMD LD_LIBRARY_PATH=/usr/lib /storyteller-web

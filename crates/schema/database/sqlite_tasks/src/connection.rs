@@ -58,7 +58,7 @@ async fn run_migrations<P: AsRef<Path>>(database_file: P) -> Result<SqlitePool, 
   // The migrations text get compiled into the binary, so no worries about build inclusion.
   // Since the task database is being treated as ephemeral, we can always run migrations without
   // worrying about previous state if we simply blow away old versions of the schema.
-  sqlx::migrate!("../../../../_sql/artcraft_migrations").run(&pool).await?;
+  sqlx::migrate!("../../../../_database/sql/artcraft_migrations").run(&pool).await?;
 
   Ok(pool)
 }

@@ -16,7 +16,7 @@ use crate::searches::search_model_weights::predicates::{creator_user_token_predi
 use crate::searches::search_model_weights::sort::add_sort;
 
 static JSON_QUERY : Lazy<Value> = Lazy::new(|| {
-  const QUERY_TEMPLATE : &str = include_str!("../../../../../../../_elasticsearch/searches/model_weights/search.json");
+  const QUERY_TEMPLATE : &str = include_str!("../../../../../../../_database/elasticsearch/searches/model_weights/search.json");
 
   let json : Value = serde_json::from_str(QUERY_TEMPLATE)
       .expect("json should parse");

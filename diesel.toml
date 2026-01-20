@@ -10,4 +10,4 @@ file = "_ignored_schema.rs"
 # You'll need to install the a non-released diesel CLI
 # (See storyteller READMEs/docs on how to install)
 [migrations_directory]
-dir = "_sql/migrations"
+dir = "_database/sql/migrations"

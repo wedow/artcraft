@@ -13,7 +13,7 @@ use tokens::tokens::users::UserToken;
 use crate::documents::media_file_document::{MEDIA_FILE_INDEX, MediaFileDocument};
 
 static JSON_QUERY : Lazy<Value> = Lazy::new(|| {
-  const QUERY_TEMPLATE : &str = include_str!("../../../../../../_elasticsearch/searches/media_files/search.json");
+  const QUERY_TEMPLATE : &str = include_str!("../../../../../../_database/elasticsearch/searches/media_files/search.json");
 
   let json : Value = serde_json::from_str(QUERY_TEMPLATE)
       .expect("json should parse");

@@ -66,7 +66,7 @@ jobs:
           username: ${{ github.actor }} # username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
           image_name: storytold/storyteller-rust
-          dockerfile: service_cpu.Dockerfile
+          dockerfile: ./build/service_cpu.Dockerfile
           # NB: The `git_push_tag: true` option does not work as expected, so we put the sha in `image_tag`:
           # https://github.com/whoan/docker-build-with-cache-action/issues/72
           image_tag: latest,${{ github.sha }},${{ steps.vars.outputs.sha_short }}

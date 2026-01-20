@@ -28,7 +28,7 @@ prepare_sqlite_tasks() {
   echo "Migrate Tauri SQLite tasks database file..."
   cargo sqlx migrate run \
     --database-url "sqlite:${sqlite_db_file}" \
-    --source "${root_dir}/_sql/artcraft_migrations"
+    --source "${root_dir}/_database/sql/artcraft_migrations"
 
   echo "Prepare Tauri SQLite tasks query cache..."
   pushd "${sqlite_package_path}"

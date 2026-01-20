@@ -178,7 +178,7 @@ async fn create_media_file_index(client: &Elasticsearch, delete_existing: bool) 
   info!("Creating model media file index...");
 
   let index_path = get_storyteller_rust_root()
-      .join("_elasticsearch/index_definitions/media_files_v1.json");
+      .join("_database/elasticsearch/index_definitions/media_files_v1.json");
 
   info!("Reading index file: {:?}", index_path);
 

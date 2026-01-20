@@ -153,7 +153,7 @@ async fn create_model_weight_model_index(client: &Elasticsearch, delete_existing
   info!("Creating model weight model index...");
 
   let index_path = get_storyteller_rust_root()
-      .join("_elasticsearch/index_definitions/model_weights_v1.json");
+      .join("_database/elasticsearch/index_definitions/model_weights_v1.json");
 
   info!("Reading index file: {:?}", index_path);
 
