@@ -2,19 +2,20 @@ import {
   faCheckCircle,
   faDownload,
   faDesktop,
-  faRocket,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
 import { Link } from "react-router-dom";
 import { isMobile, isMacOs } from "react-device-detect";
 import { DOWNLOAD_LINKS } from "../../config/downloads";
+import Seo from "../../components/seo";
 
 const Welcome = () => {
   const downloadUrl = isMacOs ? DOWNLOAD_LINKS.MACOS : DOWNLOAD_LINKS.WINDOWS;
 
   return (
     <div className="relative min-h-[calc(100vh-1px)] pt-20 md:pt-0 overflow-hidden bg-[#101014] text-white flex flex-col items-center justify-center p-4">
+      <Seo title="Welcome - ArtCraft" description="Welcome to ArtCraft." />
       <main className="relative z-10 w-full max-w-2xl">
         <div className="bg-[#28282C] rounded-[32px] overflow-hidden shadow-2xl border border-white/5">
           <div className="p-8 pt-10 text-center flex flex-col items-center">

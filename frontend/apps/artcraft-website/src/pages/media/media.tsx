@@ -30,14 +30,15 @@ import {
   getProviderDisplayName,
   getProviderIconByName,
 } from "@storyteller/model-list";
+import Seo from "../../components/seo";
 
-const VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".avi", ".mkv", ".m4v"];
 const COPY_FEEDBACK_DURATION = 1500;
-const SHARE_URL_BASE = 'https://getartcraft.com/media/';
+const SHARE_URL_BASE = "https://getartcraft.com/media/";
 
 const isVideoUrl = (url: string): boolean => {
   const urlLower = url.toLowerCase();
-  return VIDEO_EXTENSIONS.some(ext => urlLower.includes(ext));
+  return VIDEO_EXTENSIONS.some((ext) => urlLower.includes(ext));
 };
 
 interface ContextImage {
@@ -78,7 +79,7 @@ const EMPTY_PROMPT_DATA: PromptData = {
 const createPromptData = (
   data: any,
   hasToken: boolean,
-  loading: boolean = false
+  loading: boolean = false,
 ): PromptData => ({
   text: data?.maybe_positive_prompt || null,
   loading,
@@ -114,7 +115,13 @@ const useCopyFeedback = () => {
   return { copied, triggerCopy };
 };
 
-const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+const InfoRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) => (
   <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 last:border-0">
     <span className="text-sm text-white/60 font-medium">{label}</span>
     <span className="text-sm text-white font-medium flex items-center gap-2">
@@ -155,7 +162,7 @@ export default function MediaPage() {
       if (mediaResponse.success && mediaResponse.data) {
         const file = mediaResponse.data;
         const url = file.media_links?.cdn_url || null;
-        
+
         setMedia((prev) => {
           const isSameUrl = prev.url === url;
           return {
@@ -171,8 +178,8 @@ export default function MediaPage() {
         });
 
         if (file.maybe_prompt_token) {
-          setPromptData(prev => ({ ...prev, hasToken: true, loading: true }));
-          
+          setPromptData((prev) => ({ ...prev, hasToken: true, loading: true }));
+
           try {
             const promptsApi = new PromptsApi();
             const promptResponse = await promptsApi.GetPromptsByToken({
@@ -182,17 +189,31 @@ export default function MediaPage() {
             const data = promptResponse.success ? promptResponse.data : null;
             setPromptData(createPromptData(data, true, false));
           } catch {
-            setPromptData(prev => ({ ...prev, loading: false }));
+            setPromptData((prev) => ({ ...prev, loading: false }));
           }
         } else {
           setPromptData(EMPTY_PROMPT_DATA);
         }
       } else {
-        setMedia({ url: null, token: null, createdAt: null, isVideo: false, isLoaded: false, creator: null });
+        setMedia({
+          url: null,
+          token: null,
+          createdAt: null,
+          isVideo: false,
+          isLoaded: false,
+          creator: null,
+        });
         toast.error("Media not found");
       }
     } catch {
-      setMedia({ url: null, token: null, createdAt: null, isVideo: false, isLoaded: false, creator: null });
+      setMedia({
+        url: null,
+        token: null,
+        createdAt: null,
+        isVideo: false,
+        isLoaded: false,
+        creator: null,
+      });
       toast.error("Failed to load media");
     } finally {
       setMediaRecordLoading(false);
@@ -204,8 +225,6 @@ export default function MediaPage() {
       loadMedia(mediaIdParam);
     }
   }, [mediaIdParam, loadMedia]);
-
-
 
   const handleCopyPrompt = useCallback(async () => {
     if (!promptData.text) return;
@@ -231,10 +250,12 @@ export default function MediaPage() {
 
   const shareButtonIcon = shareCopy.copied ? faCheck : faLink;
 
-
-
   return (
     <div className="relative min-h-screen w-full p-4 pt-16 bg-dots flex items-start lg:items-center justify-center">
+      <Seo
+        title="Shared Media - ArtCraft"
+        description="View shared media from ArtCraft."
+      />
       <div className="mx-auto max-w-[1920px] w-full h-auto lg:h-[calc(100vh-100px)] min-h-[500px]">
         <div className="flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-xl border border-white/[2%]">
           {/* Media Preview Area */}
@@ -254,14 +275,14 @@ export default function MediaPage() {
                     loop
                     muted
                     playsInline
-                    onError={() => console.error('Video failed to load')}
+                    onError={() => console.error("Video failed to load")}
                     onLoadedData={(e) => {
                       const el = e.currentTarget;
-                      setMedia(prev => ({ 
-                        ...prev, 
+                      setMedia((prev) => ({
+                        ...prev,
                         isLoaded: true,
                         width: el.videoWidth,
-                        height: el.videoHeight
+                        height: el.videoHeight,
                       }));
                     }}
                   />
@@ -273,18 +294,22 @@ export default function MediaPage() {
                       className="h-full w-full object-contain transition-opacity duration-300"
                       style={{ opacity: media.isLoaded ? 1 : 0 }}
                       onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = PLACEHOLDER_IMAGES.DEFAULT;
-                        (e.currentTarget as HTMLImageElement).style.opacity = "0.3";
-                        (e.currentTarget as HTMLImageElement).dataset.brokenurl = media.url || "";
-                        setMedia(prev => ({ ...prev, isLoaded: true }));
+                        (e.currentTarget as HTMLImageElement).src =
+                          PLACEHOLDER_IMAGES.DEFAULT;
+                        (e.currentTarget as HTMLImageElement).style.opacity =
+                          "0.3";
+                        (
+                          e.currentTarget as HTMLImageElement
+                        ).dataset.brokenurl = media.url || "";
+                        setMedia((prev) => ({ ...prev, isLoaded: true }));
                       }}
                       onLoad={(e) => {
                         const el = e.currentTarget;
-                        setMedia(prev => ({ 
-                          ...prev, 
+                        setMedia((prev) => ({
+                          ...prev,
                           isLoaded: true,
                           width: el.naturalWidth,
-                          height: el.naturalHeight
+                          height: el.naturalHeight,
                         }));
                       }}
                     />
@@ -327,7 +352,10 @@ export default function MediaPage() {
                     <div className="h-4 w-32 bg-white/10 rounded" />
                     <div className="grid grid-cols-5 gap-2">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="aspect-square w-full bg-white/10 rounded-lg" />
+                        <div
+                          key={i}
+                          className="aspect-square w-full bg-white/10 rounded-lg"
+                        />
                       ))}
                     </div>
                   </div>
@@ -341,8 +369,12 @@ export default function MediaPage() {
                           size={36}
                           username={media.creator.username}
                           email_hash={media.creator.email_gravatar_hash}
-                          avatarIndex={media.creator.core_info.default_avatar.image_index}
-                          backgroundIndex={media.creator.core_info.default_avatar.color_index}
+                          avatarIndex={
+                            media.creator.core_info.default_avatar.image_index
+                          }
+                          backgroundIndex={
+                            media.creator.core_info.default_avatar.color_index
+                          }
                           className="rounded-xl border-white/10"
                         />
                       ) : (
@@ -351,8 +383,12 @@ export default function MediaPage() {
                         </div>
                       )}
                       <div className="flex flex-col gap-1">
-                        <span className="text-white text-sm font-semibold leading-none">{media.creator.display_name}</span>
-                        <span className="text-white/60 text-xs font-medium">Author</span>
+                        <span className="text-white text-sm font-semibold leading-none">
+                          {media.creator.display_name}
+                        </span>
+                        <span className="text-white/60 text-xs font-medium">
+                          Author
+                        </span>
                       </div>
                     </div>
                   )}
@@ -381,11 +417,13 @@ export default function MediaPage() {
                             onClick={handleCopyPrompt}
                             className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
                           >
-                            <FontAwesomeIcon icon={promptCopy.copied ? faCheck : faCopy} />
+                            <FontAwesomeIcon
+                              icon={promptCopy.copied ? faCheck : faCopy}
+                            />
                             <span>{promptCopy.copied ? "Copied" : "Copy"}</span>
                           </button>
                         </div>
-                        
+
                         <div className="relative text-sm text-white/90 break-words px-4 py-3 rounded-xl bg-black/20 leading-relaxed border border-white/5">
                           {promptData.loading ? (
                             <div className="flex items-center gap-2">
@@ -404,52 +442,59 @@ export default function MediaPage() {
                         </div>
                       </div>
 
-                      {promptData.contextImages && promptData.contextImages.length > 0 && (
-                        <div className="space-y-2">
-                           <div className="flex items-center gap-2 text-xs font-medium text-white/60">
-                            <FontAwesomeIcon icon={faImage} />
-                            <span>Reference Images</span>
+                      {promptData.contextImages &&
+                        promptData.contextImages.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-medium text-white/60">
+                              <FontAwesomeIcon icon={faImage} />
+                              <span>Reference Images</span>
+                            </div>
+                            <div className="grid grid-cols-5 gap-2">
+                              {promptData.contextImages.map(
+                                (contextImage, index) => {
+                                  const { thumbnail } =
+                                    getContextImageThumbnail(contextImage, {
+                                      size: THUMBNAIL_SIZES.SMALL,
+                                    });
+                                  return (
+                                    <div
+                                      key={contextImage.media_token}
+                                      className="glass relative aspect-square overflow-hidden rounded-lg border border-white/10 hover:border-white/40 transition-colors"
+                                    >
+                                      <img
+                                        src={thumbnail}
+                                        alt={`Reference image ${index + 1}`}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
                           </div>
-                          <div className="grid grid-cols-5 gap-2">
-                            {promptData.contextImages.map((contextImage, index) => {
-                              const { thumbnail } = getContextImageThumbnail(
-                                contextImage,
-                                { size: THUMBNAIL_SIZES.SMALL }
-                              );
-                              return (
-                                <div
-                                  key={contextImage.media_token}
-                                  className="glass relative aspect-square overflow-hidden rounded-lg border border-white/10 hover:border-white/40 transition-colors"
-                                >
-                                  <img
-                                    src={thumbnail}
-                                    alt={`Reference image ${index + 1}`}
-                                    className="h-full w-full object-cover"
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                        )}
 
-                      {(promptData.provider || promptData.modelType || media.createdAt) && (
+                      {(promptData.provider ||
+                        promptData.modelType ||
+                        media.createdAt) && (
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-xs font-medium text-white/60">
                             <FontAwesomeIcon icon={faCircleInfo} />
                             <span>Information</span>
                           </div>
-                          
+
                           <div className="flex flex-col rounded-xl bg-black/20 border border-white/5 overflow-hidden">
-
-
                             {promptData.modelType && (
                               <InfoRow
                                 label="Model"
                                 value={
                                   <>
                                     {getModelCreatorIcon(promptData.modelType)}
-                                    <span>{getModelDisplayName(promptData.modelType)}</span>
+                                    <span>
+                                      {getModelDisplayName(
+                                        promptData.modelType,
+                                      )}
+                                    </span>
                                   </>
                                 }
                               />
@@ -460,8 +505,15 @@ export default function MediaPage() {
                                 label="Provider"
                                 value={
                                   <>
-                                    {getProviderIconByName(promptData.provider, "h-4 w-4 invert")}
-                                    <span>{getProviderDisplayName(promptData.provider)}</span>
+                                    {getProviderIconByName(
+                                      promptData.provider,
+                                      "h-4 w-4 invert",
+                                    )}
+                                    <span>
+                                      {getProviderDisplayName(
+                                        promptData.provider,
+                                      )}
+                                    </span>
                                   </>
                                 }
                               />
@@ -473,11 +525,13 @@ export default function MediaPage() {
                                 value={`${media.width} × ${media.height}`}
                               />
                             )}
-                            
+
                             {media.createdAt && (
                               <InfoRow
                                 label="Created"
-                                value={dayjs(media.createdAt).format("MMMM D, YYYY")}
+                                value={dayjs(media.createdAt).format(
+                                  "MMMM D, YYYY",
+                                )}
                               />
                             )}
                           </div>
@@ -504,11 +558,15 @@ export default function MediaPage() {
                     "w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors border border-ui-panel-border",
                     media.url
                       ? "bg-ui-controls/40 hover:bg-ui-controls/60 text-white"
-                      : "bg-ui-controls/20 text-white/60 cursor-not-allowed pointer-events-none"
+                      : "bg-ui-controls/20 text-white/60 cursor-not-allowed pointer-events-none",
                   )}
-                  href={media.url ? addCorsParam(media.url) || media.url : undefined}
+                  href={
+                    media.url ? addCorsParam(media.url) || media.url : undefined
+                  }
                   download={
-                    media.url ? `artcraft-${media.token || (media.isVideo ? "video" : "image")}` : undefined
+                    media.url
+                      ? `artcraft-${media.token || (media.isVideo ? "video" : "image")}`
+                      : undefined
                   }
                   aria-disabled={!media.url}
                   target="_blank"

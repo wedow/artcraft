@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
 import { DOWNLOAD_LINKS } from "../../config/downloads";
 import { isMobile } from "react-device-detect";
+import Seo from "../../components/seo";
 
 const Download = () => {
   const systemRequirements = [
@@ -29,6 +30,10 @@ const Download = () => {
 
   return (
     <div className="relative min-h-screen bg-[#101014] text-white bg-dots">
+      <Seo
+        title="Download ArtCraft - Windows and macOS"
+        description="Download ArtCraft for Windows and macOS. Start creating AI artwork today."
+      />
       <div className="dotted-pattern absolute inset-0 z-[0] opacity-50" />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
         <div className="w-[900px] h-[900px] rounded-full bg-gradient-to-br from-blue-700 via-blue-500 to-[#00AABA] opacity-30 blur-[120px]"></div>
