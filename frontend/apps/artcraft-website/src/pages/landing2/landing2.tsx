@@ -1,6 +1,6 @@
 import { DiscordButton } from "../../components/discord-button";
 import { Button } from "@storyteller/ui-button";
-import { isMobile } from "react-device-detect";
+import { isMobile, isMacOs } from "react-device-detect";
 import { faWindows, faApple, faGithub } from "@fortawesome/free-brands-svg-icons";
 import {
   faVolumeMute,
@@ -25,6 +25,8 @@ import ModelBadgeGrid from "../../components/model-badge-grid";
 import Seo from "../../components/seo";
 import { DOWNLOAD_LINKS } from "../../config/downloads";
 import { OwnershipComparison } from "../../components/ownership-comparison/ownership-comparison";
+import { DownloadModal } from "../../components/download-modal";
+import { UsersApi } from "@storyteller/api";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -52,7 +54,32 @@ const Landing = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
   const [activeVideo, setActiveVideo] = useState<number | null>(null);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const downloadUrl = isMacOs ? MAC_LINK : WINDOWS_LINK;
+
+  useEffect(() => {
+    const checkSession = async () => {
+        const api = new UsersApi();
+        const response = await api.GetSession();
+        if (response.success && response.data?.loggedIn) {
+            setIsLoggedIn(true);
+        }
+    };
+    checkSession();
+  }, []);
+
+  const onDownloadClick = (e: React.MouseEvent) => {
+    if (isLoggedIn) {
+        return; 
+    }
+    
+    setShowDownloadModal(true);
+    
+    localStorage.setItem("artcraft_download_initiated", "true");
+  };
 
   const features = [
     {
@@ -263,26 +290,17 @@ const Landing = () => {
                   Download on a desktop
                 </Button>
               ) : (
-                <>
-                  <Button
-                    className="text-md px-4 py-3 font-semibold rounded-xl shadow-lg gap-3"
-                    as="link"
-                    href={WINDOWS_LINK}
-                  >
-                    <FontAwesomeIcon icon={faWindows} />
-                    Download Windows
-                  </Button>
-                  <Button
-                    className="text-md px-4 py-3 font-semibold rounded-xl shadow-lg gap-3"
-                    as="link"
-                    href={MAC_LINK}
-                  >
-                    <FontAwesomeIcon icon={faApple} />
-                    Download Mac
-                  </Button>
-                </>
+                <Button
+                  className="text-md px-8 py-4 text-lg font-semibold rounded-xl shadow-lg gap-3 transition-all duration-300 hover:scale-105 hover:shadow-primary/25"
+                  as="link"
+                  href={downloadUrl}
+                  onClick={onDownloadClick}
+                >
+                  <FontAwesomeIcon icon={isMacOs ? faApple : faWindows} />
+                  Download for {isMacOs ? "Mac" : "Windows"}
+                </Button>
               )}
-              <img src="/images/try-free.png" alt="Try Free" draggable={false} className="absolute -left-[45%] -top-5 h-40 pointer-events-none select-none hidden md:block" />
+              <img src="/images/try-free.png" alt="Try Free" draggable={false} className="absolute -left-[58%] -top-2 h-40 pointer-events-none select-none hidden md:block" />
             </div>
 
             {/* Glassy Video Mockup */}
@@ -773,13 +791,13 @@ const Landing = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Discord CTA Section */}
             <div
-              className="flex flex-col items-center justify-center text-center p-8 sm:p-12 lg:p-16 rounded-[24px] sm:rounded-[40px] bg-gradient-to-br from-primary/30 to-primary/50 backdrop-blur-lg border-[3px] sm:border-[6px] border-primary/70 shadow-2xl shadow-primary/30"
+              className="flex flex-col items-center justify-center text-center p-8 sm:p-12 lg:p-16 rounded-[24px] sm:rounded-[40px] bg-[#1a1b36] backdrop-blur-lg border-[3px] sm:border-[6px] border-[#3f415c] shadow-2xl"
               data-animate
             >
-              <h2 className="relative mb-4 sm:mb-6 font-bold text-2xl sm:text-3xl lg:text-4xl max-w-lg !leading-tight">
+              <h2 className="relative mb-4 sm:mb-6 font-bold text-2xl sm:text-3xl lg:text-4xl max-w-lg !leading-tight text-white">
                 Join the Discord
               </h2>
-              <p className="text-base sm:text-lg text-gray-200 mb-6 sm:mb-8 max-w-md leading-relaxed">
+              <p className="text-base sm:text-lg text-[#aab3c9] mb-6 sm:mb-8 max-w-md leading-relaxed">
                 Connect with other creators, share your work, get feedback, and stay updated.
               </p>
               <DiscordButton />
@@ -807,9 +825,41 @@ const Landing = () => {
                 Star on GitHub
               </Button>
             </div>
+
+
+            {/* Download CTA Section - New */}
+            <div
+              className="flex flex-col items-center justify-center text-center p-8 sm:p-12 lg:col-span-2 rounded-[24px] sm:rounded-[40px] bg-gradient-to-br from-primary/30 to-primary/50 backdrop-blur-lg border-[3px] sm:border-[6px] border-primary/70 shadow-2xl shadow-primary/30 overflow-hidden relative"
+              data-animate
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-purple-500/20 opacity-30 pointer-events-none" />
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              <h2 className="relative mb-4 sm:mb-6 font-bold text-3xl sm:text-4xl lg:text-5xl max-w-2xl !leading-tight text-white z-10">
+                Ready to Create?
+              </h2>
+              <p className="text-base sm:text-l md:text-xl text-white/90 mb-8 sm:mb-10 max-w-xl leading-relaxed z-10">
+                 Join thousands of artists and filmmakers using ArtCraft to bring their vision to life.
+              </p>
+              
+              <div className="relative z-10">
+                <Button
+                  className="text-md px-10 py-5 text-xl font-semibold rounded-2xl shadow-xl gap-3 transition-all duration-300 hover:scale-105 hover:shadow-primary/40 bg-white text-black hover:bg-white"
+                  as="link"
+                  href={downloadUrl}
+                  onClick={onDownloadClick}
+                >
+                   <FontAwesomeIcon icon={isMacOs ? faApple : faWindows} />
+                   Download for {isMacOs ? "Mac" : "Windows"}
+                </Button>
+                <div className="mt-4 text-sm text-white/80 font-medium">Free to use.</div>
+                <div className="text-xs text-white/80 mt-1 font-medium">Unlimited Nano Banana Pro for a limited time!</div>
+              </div>
+            </div>
         </div>
       </div>
 
+      <DownloadModal isOpen={showDownloadModal} onClose={() => setShowDownloadModal(false)} />
       <Footer />
     </div>
   );

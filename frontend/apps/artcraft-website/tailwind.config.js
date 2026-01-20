@@ -7,7 +7,7 @@ module.exports = {
   content: [
     join(
       __dirname,
-      "{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}"
+      "{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}",
     ),
     ...createGlobPatternsForDependencies(__dirname),
     "./app/index.html",
@@ -23,6 +23,7 @@ module.exports = {
       white: colors.white,
       gray: colors.gray,
       black: colors.black,
+      red: colors.red,
       blue: colors.blue,
       orange: colors.orange,
       green: colors.green,

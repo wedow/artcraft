@@ -8,7 +8,7 @@ interface SignupRequest {
   password: string;
   password_confirmation: string;
   signup_source?: string;
-};
+}
 
 export class UsersApi extends ApiManager {
   private async authFetch<B, T>(
@@ -19,7 +19,7 @@ export class UsersApi extends ApiManager {
     }: {
       method: string;
       body?: B;
-    }
+    },
   ): Promise<T> {
     const bodyInString = JSON.stringify(body);
 
@@ -33,8 +33,14 @@ export class UsersApi extends ApiManager {
       body: bodyInString,
     });
 
-    const responseData = await response.json();
-    return responseData as T;
+    const text = await response.text();
+    try {
+      const responseData = JSON.parse(text);
+      return responseData as T;
+    } catch (e) {
+      console.error("Failed to parse response as JSON:", text);
+      throw new Error(text || `Request failed with status ${response.status}`);
+    }
   }
 
   public GetSession(): Promise<
@@ -164,7 +170,7 @@ export class UsersApi extends ApiManager {
     signupSource?: string;
   }): Promise<ApiResponse<{ signedSession?: string }>> {
     const endpoint = `${this.getApiSchemeAndHost()}/v1/create_account`;
-    const body : SignupRequest = {
+    const body: SignupRequest = {
       email_address: email,
       password,
       password_confirmation: passwordConfirmation,

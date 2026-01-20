@@ -1,8 +1,16 @@
-import { Disclosure } from "@headlessui/react";
+import {
+  Disclosure,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { DiscordButton } from "../discord-button";
+import { Button } from "@storyteller/ui-button";
+import { UsersApi, UserInfo } from "@storyteller/api";
 
 const NAV_ITEMS = [
   { name: "Home", href: "/" },
@@ -10,12 +18,51 @@ const NAV_ITEMS = [
   { name: "News", href: "/news" },
   { name: "FAQ", href: "/faq" },
   { name: "Press Kit", href: "/press-kit" },
+  { name: "Download", href: "/download" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  // Underline hover handled purely via CSS
+  const [user, setUser] = useState<UserInfo | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check session on mount
+  // Check session on mount and when auth changes or location changes
+  useEffect(() => {
+    const checkSession = async () => {
+      const api = new UsersApi();
+      const response = await api.GetSession();
+      if (
+        response.success &&
+        response.data &&
+        response.data.loggedIn &&
+        response.data.user
+      ) {
+        setUser(response.data.user);
+      } else {
+        setUser(undefined);
+      }
+      setIsLoading(false);
+    };
+
+    checkSession();
+
+    const handleAuthChange = () => {
+      setIsLoading(true);
+      checkSession();
+    };
+
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => window.removeEventListener("auth-change", handleAuthChange);
+  }, [location.pathname]);
+
+  const handleLogout = async () => {
+    const api = new UsersApi();
+    await api.Logout();
+    // Reload to clear state/cache
+    window.location.href = "/";
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,21 +136,99 @@ export default function Navbar() {
             </div>
           </div>
           <div className="flex items-center">
-            <div className="hidden md:ml-4 md:flex md:shrink-0 md:items-center">
-              {/* <Button as="link" href="/download">
-                Download
-              </Button> */}
-              <DiscordButton
-                small
-                className="bg-white text-black hover:bg-white/90"
-              />
-            </div>
-            <div className="-ml-2 flex items-center md:hidden">
-              {/* Mobile menu button */}
-              <DiscordButton
-                className="text-sm bg-white text-black hover:bg-white/90"
-                small
-              />
+            {isLoading ? (
+              // Loading placeholder
+              <div className="hidden md:ml-4 md:flex items-center gap-6 opacity-0"></div>
+            ) : user ? (
+              // Logged In State
+              <div className="hidden md:ml-4 md:flex items-center gap-6">
+                <Link
+                  to="/pricing"
+                  className="text-[15px] font-semibold text-white/60 hover:text-white transition-colors"
+                >
+                  Pricing
+                </Link>
+
+                <Menu as="div" className="relative ml-3">
+                  <div>
+                    <MenuButton className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                      <span className="sr-only">Open user menu</span>
+                      <img
+                        className="h-8 w-8 rounded-full border border-white/10"
+                        src={`https://www.gravatar.com/avatar/${user.email_gravatar_hash}?d=mp`}
+                        alt=""
+                      />
+                    </MenuButton>
+                  </div>
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95"
+                  >
+                    <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-[#1C1C20] py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border border-white/10">
+                      <div className="px-4 py-3 border-b border-white/10">
+                        <p className="text-sm text-white font-semibold truncate">
+                          {user.display_name || user.username}
+                        </p>
+                      </div>
+                      <MenuItem>
+                        {({ active }) => (
+                          <button
+                            onClick={handleLogout}
+                            className={twMerge(
+                              active ? "bg-white/5" : "",
+                              "block w-full text-left px-4 py-2 text-sm text-white/70",
+                            )}
+                          >
+                            Sign out
+                          </button>
+                        )}
+                      </MenuItem>
+                    </MenuItems>
+                  </Transition>
+                </Menu>
+              </div>
+            ) : (
+              // Logged Out State
+              <div className="hidden md:ml-4 md:flex md:shrink-0 md:items-center gap-6">
+                <Link
+                  to="/pricing"
+                  className="text-[15px] font-semibold text-white/60 hover:text-white transition-colors"
+                >
+                  Pricing
+                </Link>
+                <Button
+                  as="link"
+                  href="/signup"
+                  className="bg-white text-black hover:bg-white/90 text-sm font-semibold px-4 py-2 h-auto rounded-lg shadow-md"
+                >
+                  Sign up
+                </Button>
+              </div>
+            )}
+
+            {/* Mobile Menu Button - simplified for now */}
+            <div className="-ml-2 flex items-center md:hidden gap-3">
+              {!user && (
+                <Button
+                  as="link"
+                  href="/signup"
+                  className="bg-white text-black hover:bg-white/90 text-xs font-semibold px-3 py-1.5 h-auto rounded-lg"
+                >
+                  Sign up
+                </Button>
+              )}
+              {user && (
+                <img
+                  className="h-8 w-8 rounded-full border border-white/10"
+                  src={`https://www.gravatar.com/avatar/${user.email_gravatar_hash}?d=mp`}
+                  alt=""
+                />
+              )}
             </div>
           </div>
         </div>

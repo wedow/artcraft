@@ -32,6 +32,9 @@ export default defineConfig(() => ({
         target: 'https://api.storyteller.ai',
         changeOrigin: true,
         secure: true,
+        headers: {
+          Origin: 'https://api.storyteller.ai',
+        },
       },
     },
   },

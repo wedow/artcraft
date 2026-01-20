@@ -9,6 +9,11 @@ import TutorialsArticle from "../pages/tutorials/article";
 import FaqIndex from "../pages/faq/index";
 import FaqArticle from "../pages/faq/article";
 import { NewsIndex, NewsPost } from "@storyteller/markdown-content";
+import Pricing from "../pages/pricing";
+import Login from "../pages/login";
+import Signup from "../pages/signup";
+import ForgotPassword from "../pages/forgot-password";
+import Welcome from "../pages/welcome";
 
 export function App() {
   return (
@@ -27,6 +32,11 @@ export function App() {
         <Route path="/faq/:slug" element={<FaqArticle />} />
         <Route path="/news" element={<NewsIndex basePath="/news" />} />
         <Route path="/news/:slug" element={<NewsPost basePath="/news" />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/welcome" element={<Welcome />} />
       </Routes>
     </div>
   );

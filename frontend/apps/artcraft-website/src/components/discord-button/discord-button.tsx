@@ -17,7 +17,7 @@ export const DiscordButton = ({
 
   return (
     <Button
-      className={`relative z-10 ${sizeClasses} font-semibold transition-all duration-300 shadow-lg hover:shadow-blue-500/25 ${className}`}
+      className={`relative z-10 ${sizeClasses} font-semibold transition-all duration-300 shadow-lg bg-white text-black hover:bg-gray-200 ${className}`}
       icon={faDiscord}
       as="link"
       href={SOCIAL_LINKS.DISCORD}
