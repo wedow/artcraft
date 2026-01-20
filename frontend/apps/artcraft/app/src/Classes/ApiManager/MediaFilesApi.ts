@@ -42,39 +42,6 @@ interface SearchFeaturedMediaQuery {
 }
 
 export class MediaFilesApi extends ApiManager {
-  public async DeleteMediaFileByToken({
-    mediaFileToken,
-    asMod = true,
-    setDelete = true,
-  }: {
-    mediaFileToken: string;
-    asMod?: boolean;
-    setDelete?: boolean;
-  }): Promise<ApiResponse<MediaFile>> {
-    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/file/${mediaFileToken}`;
-
-    const body = { as_mod: asMod, set_delete: setDelete };
-    return await this.delete<
-      {
-        as_mod: boolean;
-        set_delete: boolean;
-      },
-      {
-        success?: boolean;
-        BadInput?: string;
-      }
-    >({ endpoint, body })
-      .then((response) => ({
-        success: response.success ?? false,
-        errorMessage: response.BadInput,
-      }))
-      .catch((err) => {
-        return {
-          success: false,
-          errorMessage: err.message,
-        };
-      });
-  }
 
   public async ListMediaFilesByTokens({
     mediaTokens,

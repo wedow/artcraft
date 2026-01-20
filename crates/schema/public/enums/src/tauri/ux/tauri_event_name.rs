@@ -48,8 +48,13 @@ pub enum TauriEventName {
   #[serde(rename = "subscription_plan_changed_event")]
   SubscriptionPlanChangedEvent,
 
+  /// Informational event:
+  /// A media file was deleted (and we'll send the token)
+  #[serde(rename = "media_file_deleted_event")]
+  MediaFileDeletedEvent,
+
   /// Special event:
-  /// Background removal complete
+  /// Background removal is complete
   #[serde(rename = "canvas_bg_removed_event")]
   CanvasBgRemovedEvent,
 
@@ -119,6 +124,7 @@ impl TauriEventName {
       Self::GenerationFailedEvent => "generation-failed-event",
       Self::CreditsBalanceChangedEvent => "credits_balance_changed_event",
       Self::SubscriptionPlanChangedEvent => "subscription_plan_changed_event",
+      Self::MediaFileDeletedEvent => "media_file_deleted_event",
       Self::CanvasBgRemovedEvent => "canvas_bg_removed_event",
       Self::TextToImageGenerationCompleteEvent => "text_to_image_generation_complete_event",
       Self::ImageEditCompleteEvent => "image_edit_complete_event",
@@ -141,6 +147,7 @@ impl TauriEventName {
       "generation-failed-event" => Ok(Self::GenerationFailedEvent),
       "credits_balance_changed_event" => Ok(Self::CreditsBalanceChangedEvent),
       "subscription_plan_changed_event" => Ok(Self::SubscriptionPlanChangedEvent),
+      "media_file_deleted_event" => Ok(Self::MediaFileDeletedEvent),
       "canvas_bg_removed_event" => Ok(Self::CanvasBgRemovedEvent),
       "text_to_image_generation_complete_event" => Ok(Self::TextToImageGenerationCompleteEvent),
       "image_edit_complete_event" => Ok(Self::ImageEditCompleteEvent),
@@ -166,6 +173,7 @@ impl TauriEventName {
       Self::GenerationFailedEvent,
       Self::CreditsBalanceChangedEvent,
       Self::SubscriptionPlanChangedEvent,
+      Self::MediaFileDeletedEvent,
       Self::CanvasBgRemovedEvent,
       Self::TextToImageGenerationCompleteEvent,
       Self::ImageEditCompleteEvent,
@@ -197,6 +205,7 @@ mod tests {
       assert_serialization(TauriEventName::GenerationFailedEvent, "generation-failed-event");
       assert_serialization(TauriEventName::CreditsBalanceChangedEvent, "credits_balance_changed_event");
       assert_serialization(TauriEventName::SubscriptionPlanChangedEvent, "subscription_plan_changed_event");
+      assert_serialization(TauriEventName::MediaFileDeletedEvent, "media_file_deleted_event");
       assert_serialization(TauriEventName::CanvasBgRemovedEvent, "canvas_bg_removed_event");
       assert_serialization(TauriEventName::TextToImageGenerationCompleteEvent, "text_to_image_generation_complete_event");
       assert_serialization(TauriEventName::ImageEditCompleteEvent, "image_edit_complete_event");
@@ -218,6 +227,7 @@ mod tests {
       assert_eq!(TauriEventName::GenerationFailedEvent.to_str(), "generation-failed-event");
       assert_eq!(TauriEventName::CreditsBalanceChangedEvent.to_str(), "credits_balance_changed_event");
       assert_eq!(TauriEventName::SubscriptionPlanChangedEvent.to_str(), "subscription_plan_changed_event");
+      assert_eq!(TauriEventName::MediaFileDeletedEvent.to_str(), "media_file_deleted_event");
       assert_eq!(TauriEventName::CanvasBgRemovedEvent.to_str(), "canvas_bg_removed_event");
       assert_eq!(TauriEventName::TextToImageGenerationCompleteEvent.to_str(), "text_to_image_generation_complete_event");
       assert_eq!(TauriEventName::ImageEditCompleteEvent.to_str(), "image_edit_complete_event");
@@ -239,6 +249,7 @@ mod tests {
       assert_eq!(TauriEventName::from_str("generation-failed-event").unwrap(), TauriEventName::GenerationFailedEvent);
       assert_eq!(TauriEventName::from_str("credits_balance_changed_event").unwrap(), TauriEventName::CreditsBalanceChangedEvent);
       assert_eq!(TauriEventName::from_str("subscription_plan_changed_event").unwrap(), TauriEventName::SubscriptionPlanChangedEvent);
+      assert_eq!(TauriEventName::from_str("media_file_deleted_event").unwrap(), TauriEventName::MediaFileDeletedEvent);
       assert_eq!(TauriEventName::from_str("canvas_bg_removed_event").unwrap(), TauriEventName::CanvasBgRemovedEvent);
       assert_eq!(TauriEventName::from_str("text_to_image_generation_complete_event").unwrap(), TauriEventName::TextToImageGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("image_edit_complete_event").unwrap(), TauriEventName::ImageEditCompleteEvent);
@@ -255,13 +266,14 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 17);
+      assert_eq!(variants.len(), 18);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationFailedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::CreditsBalanceChangedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::SubscriptionPlanChangedEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::MediaFileDeletedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::CanvasBgRemovedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::TextToImageGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ImageEditCompleteEvent));

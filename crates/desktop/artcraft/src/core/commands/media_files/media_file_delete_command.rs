@@ -1,5 +1,7 @@
 use crate::core::commands::response::shorthand::ResponseOrErrorMessage;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
+use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::core::events::functional_events::media_file_deleted_event::MediaFileDeletedEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
@@ -23,6 +25,7 @@ pub struct MediaFileDeleteRequest {
 
 #[derive(Serialize)]
 pub struct MediaFileDeleteSuccessResponse {
+  pub success: bool,
 }
 
 impl SerializeMarker for MediaFileDeleteSuccessResponse {}
@@ -49,7 +52,9 @@ pub async fn media_file_delete_command(
     return Err("delete failed".into())
   }
 
-  Ok(MediaFileDeleteSuccessResponse{}.into())
+  Ok(MediaFileDeleteSuccessResponse {
+    success: true,
+  }.into())
 }
 
 pub async fn handle_request(
@@ -67,7 +72,9 @@ pub async fn handle_request(
     &request.media_file_token
   ).await?;
 
-  // TODO: Send event to frontend that the file was deleted.
+  MediaFileDeletedEvent {
+    media_file_token: request.media_file_token,
+  }.send_infallible(app);
 
   Ok(())
 }

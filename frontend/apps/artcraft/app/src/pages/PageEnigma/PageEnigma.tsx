@@ -31,7 +31,7 @@ import {
   actionReminderProps,
   ActionReminderModal,
 } from "@storyteller/ui-action-reminder-modal";
-import { useFlashFileDownloadErrorEvent, useFlashUserInputErrorEvent } from "@storyteller/tauri-events";
+import { useFlashFileDownloadErrorEvent, useFlashUserInputErrorEvent, useMediaFileDeletedEvent } from "@storyteller/tauri-events";
 import { useGenerationCompleteEvent } from "@storyteller/tauri-events";
 import { useGenerationEnqueueFailureEvent } from "@storyteller/tauri-events";
 import { useGenerationEnqueueSuccessEvent } from "@storyteller/tauri-events";
@@ -113,6 +113,11 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useFlashFileDownloadErrorEvent(async (event) => {
     console.log("Flash file download error event received:", event);
     toast.error(event.message || "File download failed");
+  });
+
+  useMediaFileDeletedEvent(async (event) => {
+    console.log("Media file deleted event received:", event);
+    toast.error("File deleted.");
   });
 
   useEffect(() => {
