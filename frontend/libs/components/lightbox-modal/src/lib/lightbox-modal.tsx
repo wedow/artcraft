@@ -12,6 +12,7 @@ import {
 import {
   EnqueueImageTo3dObject,
   EnqueueImageTo3dObjectModel,
+  MediaFileDelete,
 } from "@storyteller/tauri-api";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import { Viewer3D } from "@storyteller/ui-viewer-3d";
@@ -29,6 +30,10 @@ import { toast } from "@storyteller/ui-toaster";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faLink, faCheck } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
+import {
+  showActionReminder,
+  isActionReminderOpen,
+} from "@storyteller/ui-action-reminder-modal";
 import {
   getModelCreatorIcon,
   getModelDisplayName,
@@ -307,6 +312,30 @@ export function LightboxModal({
     },
     [emblaMainApi, emblaThumbsApi],
   );
+
+  const onDeleteClicked = (mediaToken: string) => {
+    showActionReminder({
+      reminderType: "default",
+      title: "Delete this media?",
+      message: (
+        <p className="text-sm text-white/70">
+          This will permanently remove the media from your library. This action
+          cannot be undone.
+        </p>
+      ),
+      primaryActionText: "Delete",
+      secondaryActionText: "Cancel",
+      primaryActionBtnClassName: "bg-red text-white hover:bg-red/90",
+      onPrimaryAction: async () => {
+        try {
+          await MediaFileDelete(mediaToken);
+        } finally {
+          isActionReminderOpen.value = false;
+          onClose();
+        }
+      },
+    });
+  };
 
   const onSelect = useCallback(() => {
     if (!emblaMainApi || !emblaThumbsApi) return;
@@ -803,7 +832,7 @@ export function LightboxModal({
 
                 {selectedMediaToken && (
                   <Button
-                    className="w-full col-span-2"
+                    className="w-full"
                     variant="secondary"
                     icon={shareCopied ? faCheck : faLink}
                     onClick={async (e) => {
@@ -829,7 +858,21 @@ export function LightboxModal({
                       }
                     }}
                   >
-                    {shareCopied ? "Link Copied!" : "Copy Share Link"}
+                    {shareCopied ? "Link Copied!" : "Share"}
+                  </Button>
+                )}
+
+                {selectedMediaToken && onDeleteClicked && (
+                  <Button
+                    className="w-full"
+                    variant="destructive"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      gtagEvent("delete_media_clicked");
+                      await onDeleteClicked(selectedMediaToken);
+                    }}
+                  >
+                    Delete
                   </Button>
                 )}
               </div>
