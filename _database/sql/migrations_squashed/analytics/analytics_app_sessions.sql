@@ -44,6 +44,8 @@ CREATE TABLE analytics_app_sessions (
   -- change the ping cadence (eg. 1 minute pings --> 5 minute pings).
   measurement_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
 
+  -- ========== GENERATION COUNTS ==========
+
   -- Number of items generated across all types.
   -- This counts attempts, not successes. This also includes multiples,
   -- eg. four requested images adds four to this total.
@@ -85,6 +87,13 @@ CREATE TABLE analytics_app_sessions (
 
   -- Number of objects generated with text to image.
   image_to_object_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  image_page_prompt_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  video_page_prompt_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  edit_page_prompt_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  stage_page_prompt_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  object_page_prompt_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  other_page_prompt_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
 
   -- ========== RECORD TIMESTAMPS ==========
 
