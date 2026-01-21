@@ -44,6 +44,48 @@ CREATE TABLE analytics_app_sessions (
   -- change the ping cadence (eg. 1 minute pings --> 5 minute pings).
   measurement_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
 
+  -- Number of items generated across all types.
+  -- This counts attempts, not successes. This also includes multiples,
+  -- eg. four requested images adds four to this total.
+  -- Two bytes (65,535 max)
+  total_generation_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of images generated
+  -- This counts attempts, not successes. This also includes multiples,
+  -- eg. four requested images adds four to this total.
+  -- Two bytes (65,535 max)
+  image_generation_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of images generated
+  -- This counts attempts, not successes. This also includes multiples,
+  -- eg. four requested images adds four to this total.
+  -- Two bytes (65,535 max)
+  video_generation_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of objects generated (meshes, etc.)
+  -- This counts attempts, not successes. This also includes multiples,
+  -- eg. four requested images adds four to this total.
+  -- Two bytes (65,535 max)
+  object_generation_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of images generated with text to image.
+  text_to_image_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of images generated with text to image (image edits)
+  image_to_image_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of videos generated with text to image.
+  text_to_video_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of images generated with text to image.
+  image_to_video_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of objects generated with text to image.
+  text_to_object_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+  -- Number of objects generated with text to image.
+  image_to_object_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
   -- ========== RECORD TIMESTAMPS ==========
 
   -- Written at create only.
