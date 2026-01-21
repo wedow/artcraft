@@ -2,7 +2,7 @@ use crate::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use crate::error::storyteller_error::StorytellerError;
 use crate::utils::api_host::ApiHost;
 use crate::utils::basic_query_string_post_request::basic_query_string_post_request;
-use artcraft_api_defs::analytics::log_active_user::{LogAppActiveUserRequest, LogAppActiveUserResponse, LOG_ACTIVE_USER_PATH};
+use artcraft_api_defs::analytics::log_active_user::{LogAppActiveUserRequest, LogAppActiveUserResponse, LOG_ACTIVE_USER_V1_PATH};
 use std::collections::HashMap;
 
 pub async fn log_active_user(
@@ -41,7 +41,7 @@ pub async fn log_active_user(
 
   Ok(basic_query_string_post_request(
     api_host,
-    LOG_ACTIVE_USER_PATH,
+    LOG_ACTIVE_USER_V1_PATH,
     maybe_creds,
     &query,
   ).await?)

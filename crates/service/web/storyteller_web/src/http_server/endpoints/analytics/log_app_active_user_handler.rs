@@ -116,6 +116,22 @@ pub async fn log_app_active_user_handler(
       os_platform: request.maybe_os_platform.as_deref(),
       os_version: request.maybe_os_version.as_deref(),
       session_duration_seconds: request.maybe_session_duration_seconds,
+      total_generation_count: 0,
+      image_generation_count: 0,
+      video_generation_count: 0,
+      object_generation_count: 0,
+      text_to_image_count: 0,
+      image_to_image_count: 0,
+      text_to_video_count: 0,
+      image_to_video_count: 0,
+      text_to_object_count: 0,
+      image_to_object_count: 0,
+      image_page_prompt_count: 0,
+      video_page_prompt_count: 0,
+      edit_page_prompt_count: 0,
+      stage_page_prompt_count: 0,
+      object_page_prompt_count: 0,
+      other_page_prompt_count: 0,
     };
   
     upsert.upsert_with_connection(&mut mysql_connection).await?;

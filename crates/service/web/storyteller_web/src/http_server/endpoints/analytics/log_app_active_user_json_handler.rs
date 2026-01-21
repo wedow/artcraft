@@ -112,6 +112,22 @@ pub async fn log_app_active_user_json_handler(
       os_platform: request.maybe_os_platform.as_deref(),
       os_version: request.maybe_os_version.as_deref(),
       session_duration_seconds: request.maybe_session_duration_seconds,
+      total_generation_count: request.total_generation_count.unwrap_or(0),
+      image_generation_count: request.image_generation_count.unwrap_or(0),
+      video_generation_count: request.video_generation_count.unwrap_or(0),
+      object_generation_count: request.object_generation_count.unwrap_or(0),
+      text_to_image_count: request.text_to_image_count.unwrap_or(0),
+      image_to_image_count: request.image_to_image_count.unwrap_or(0),
+      text_to_video_count: request.text_to_video_count.unwrap_or(0),
+      image_to_video_count: request.image_to_video_count.unwrap_or(0),
+      text_to_object_count: request.text_to_object_count.unwrap_or(0),
+      image_to_object_count: request.image_to_object_count.unwrap_or(0),
+      image_page_prompt_count: request.image_page_prompt_count.unwrap_or(0),
+      video_page_prompt_count: request.video_page_prompt_count.unwrap_or(0),
+      edit_page_prompt_count: request.edit_page_prompt_count.unwrap_or(0),
+      stage_page_prompt_count: request.stage_page_prompt_count.unwrap_or(0),
+      object_page_prompt_count: request.object_page_prompt_count.unwrap_or(0),
+      other_page_prompt_count: request.other_page_prompt_count.unwrap_or(0),
     };
 
     upsert.upsert_with_connection(&mut mysql_connection).await?;
