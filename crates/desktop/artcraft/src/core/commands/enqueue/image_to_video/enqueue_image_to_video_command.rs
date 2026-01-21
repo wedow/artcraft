@@ -14,6 +14,7 @@ use crate::core::events::generation_events::common::GenerationAction;
 use crate::core::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
@@ -27,6 +28,7 @@ use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
@@ -175,6 +177,7 @@ pub async fn enqueue_image_to_video_command(
   app: AppHandle,
   app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
+  artcraft_usage_tracker: State<'_, ArtcraftUsageTracker>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   grok_creds_manager: State<'_, GrokCredentialManager>,
@@ -190,6 +193,7 @@ pub async fn enqueue_image_to_video_command(
     &app,
     &app_env_configs,
     &app_data_root,
+    &artcraft_usage_tracker,
     &provider_priority_store,
     &task_database,
     &grok_creds_manager,
@@ -262,6 +266,7 @@ pub async fn handle_request(
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
+  artcraft_usage_tracker: &ArtcraftUsageTracker,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   grok_creds_manager: &GrokCredentialManager,
@@ -329,6 +334,11 @@ pub async fn handle_request(
   if let Err(err) = result {
     error!("Failed to create task in database: {:?}", err);
     // NB: Fail open, but find a way to flag this.
+  }
+
+  if let Err(err) = artcraft_usage_tracker.record_video_generation(1, ArtcraftUsageType::ImageToResult, ArtcraftUsagePage::VideoPage) {
+    // NB: Fail open.
+    warn!("Failed to report usage: {:?}", err);
   }
 
   Ok(success_event)

@@ -41,6 +41,8 @@ use storyteller_client::error::storyteller_error::StorytellerError;
 use storyteller_client::utils::api_host::ApiHost;
 use tauri::{AppHandle, Manager, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
 #[derive(Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -155,6 +157,7 @@ pub async fn enqueue_image_inpaint_command(
   request: EnqueueInpaintImageCommand,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
+  artcraft_usage_tracker: State<'_, ArtcraftUsageTracker>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -170,6 +173,7 @@ pub async fn enqueue_image_inpaint_command(
     &app,
     &app_data_root,
     &app_env_configs,
+    &artcraft_usage_tracker,
     &provider_priority_store,
     &task_database,
     &storyteller_creds_manager,
@@ -220,6 +224,7 @@ pub async fn handle_request(
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
+  artcraft_usage_tracker: &ArtcraftUsageTracker,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -270,6 +275,13 @@ pub async fn handle_request(
   if let Err(err) = result {
     error!("Failed to create task in database: {:?}", err);
     // NB: Fail open, but find a way to flag this.
+  }
+
+  // TODO: We don't know that this is strictly the edit page. It could be the stage. It might also be nice to distinguish inpainting.
+  let num_images = request.image_count.map(|count| count as u16).unwrap_or(1);
+  if let Err(err) = artcraft_usage_tracker.record_image_generation(num_images, ArtcraftUsageType::ImageToResult, ArtcraftUsagePage::EditPage) {
+    // NB: Fail open.
+    warn!("Failed to report usage: {:?}", err);
   }
 
   Ok(success_event)

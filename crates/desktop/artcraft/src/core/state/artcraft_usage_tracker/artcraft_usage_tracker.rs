@@ -4,6 +4,8 @@ use log::{error, warn};
 use crate::core::artcraft_error::ArtcraftError;
 use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
+/// Track generation volume so we know which areas to focus efforts on.
+/// But also note: https://en.wikipedia.org/wiki/Survivorship_bias
 #[derive(Clone)]
 pub struct ArtcraftUsageTracker {
   data: Arc<RwLock<ArtcraftUsageTrackerData>>,

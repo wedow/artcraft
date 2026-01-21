@@ -35,6 +35,8 @@ use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
 use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
@@ -179,6 +181,7 @@ pub async fn enqueue_text_to_image_command(
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
+  artcraft_usage_tracker: State<'_, ArtcraftUsageTracker>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   mj_creds_manager: State<'_, MidjourneyCredentialManager>,
@@ -197,6 +200,7 @@ pub async fn enqueue_text_to_image_command(
     request,
     &app,
     &app_data_root,
+    &artcraft_usage_tracker,
     &provider_priority_store,
     &task_database,
     &mj_creds_manager,
@@ -267,6 +271,7 @@ pub async fn handle_request(
   request: EnqueueTextToImageRequest,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
+  artcraft_usage_tracker: &ArtcraftUsageTracker,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   mj_creds_manager: &MidjourneyCredentialManager,
@@ -309,6 +314,24 @@ pub async fn handle_request(
   if let Err(err) = result {
     error!("Failed to create task in database: {:?}", err);
     // NB: Fail open, but find a way to flag this.
+  }
+
+  let num_images = request.number_images.map(|n| n as u16).unwrap_or(1);
+  
+  let is_image_to_image = request.image_media_tokens
+      .as_ref()
+      .map(|tokens| !tokens.is_empty())
+      .unwrap_or(false);
+  
+  let usage_type = if is_image_to_image {
+    ArtcraftUsageType::ImageToResult
+  } else {
+    ArtcraftUsageType::TextToResult
+  };
+  
+  if let Err(err) = artcraft_usage_tracker.record_image_generation(num_images, usage_type, ArtcraftUsagePage::ImagePage) {
+    // NB: Fail open.
+    warn!("Failed to report usage: {:?}", err);
   }
   
   Ok(success_event)

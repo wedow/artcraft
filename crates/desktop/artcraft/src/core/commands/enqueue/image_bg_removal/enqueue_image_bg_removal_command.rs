@@ -12,6 +12,8 @@ use crate::core::events::generation_events::generation_enqueue_failure_event::Ge
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
@@ -97,6 +99,7 @@ pub async fn enqueue_image_bg_removal_command(
   request: EnqueueImageBgRemovalCommand,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
+  artcraft_usage_tracker: State<'_, ArtcraftUsageTracker>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -109,6 +112,7 @@ pub async fn enqueue_image_bg_removal_command(
     &app,
     &app_data_root,
     &app_env_configs,
+    &artcraft_usage_tracker,
     &provider_priority_store,
     &task_database,
     &storyteller_creds_manager,
@@ -157,6 +161,7 @@ pub async fn handle_request(
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
+  artcraft_usage_tracker: &ArtcraftUsageTracker,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -184,6 +189,11 @@ pub async fn handle_request(
   if let Err(err) = result {
     error!("Failed to create task in database: {:?}", err);
     // NB: Fail open, but find a way to flag this.
+  }
+  
+  if let Err(err) = artcraft_usage_tracker.record_image_generation(1, ArtcraftUsageType::ImageToResult, ArtcraftUsagePage::EditPage) {
+    // NB: Fail open.
+    warn!("Failed to report usage: {:?}", err);
   }
 
   Ok(success_event)

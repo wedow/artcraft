@@ -1,4 +1,6 @@
 
+/// Track generation volume so we know which areas to focus efforts on.
+/// But also note: https://en.wikipedia.org/wiki/Survivorship_bias
 #[derive(Clone)]
 pub struct ArtcraftUsageTrackerData {
   pub total_generation_count: u16,

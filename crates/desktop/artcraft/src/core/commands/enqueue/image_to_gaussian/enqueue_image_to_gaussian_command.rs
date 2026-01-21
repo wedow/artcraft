@@ -30,6 +30,8 @@ use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
@@ -97,6 +99,7 @@ pub async fn enqueue_image_to_gaussian_command(
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
+  artcraft_usage_tracker: State<'_, ArtcraftUsageTracker>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
   worldlabs_creds_manager: State<'_, WorldlabsCredentialManager>,
@@ -108,6 +111,7 @@ pub async fn enqueue_image_to_gaussian_command(
     request,
     &app,
     &app_data_root,
+    &artcraft_usage_tracker,
     &task_database,
     &storyteller_creds_manager,
     &worldlabs_creds_manager,
@@ -168,6 +172,7 @@ pub async fn handle_request(
   request: EnqueueImageToGaussianRequest,
   app: &AppHandle,
   app_data_root: &AppDataRoot,
+  artcraft_usage_tracker: &ArtcraftUsageTracker,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
   worldlabs_creds_manager: &WorldlabsCredentialManager,
@@ -201,7 +206,12 @@ pub async fn handle_request(
     error!("Failed to create task in database: {:?}", err);
     // NB: Fail open, but find a way to flag this.
   }
-  
+
+  if let Err(err) = artcraft_usage_tracker.record_object_generation(1, ArtcraftUsageType::ImageToResult, ArtcraftUsagePage::OtherPage) {
+    // NB: Fail open.
+    warn!("Failed to report usage: {:?}", err);
+  }
+
   Ok(success_event)
 }
 

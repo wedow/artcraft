@@ -19,6 +19,8 @@ use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
 #[derive(Deserialize)]
 pub struct EnqueueImageTo3dObjectRequest {
@@ -88,6 +90,7 @@ pub async fn enqueue_image_to_3d_object_command(
   request: EnqueueImageTo3dObjectRequest,
   app_env_configs: State<'_, AppEnvConfigs>,
   app_data_root: State<'_, AppDataRoot>,
+  artcraft_usage_tracker: State<'_, ArtcraftUsageTracker>,
   provider_priority_store: State<'_, ProviderPriorityStore>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
@@ -101,6 +104,7 @@ pub async fn enqueue_image_to_3d_object_command(
     &app,
     &app_env_configs,
     &app_data_root,
+    &artcraft_usage_tracker,
     &provider_priority_store,
     &task_database,
     &storyteller_creds_manager,
@@ -171,6 +175,7 @@ pub async fn handle_request(
   app: &AppHandle,
   app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
+  artcraft_usage_tracker: &ArtcraftUsageTracker,
   provider_priority_store: &ProviderPriorityStore,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -203,6 +208,10 @@ pub async fn handle_request(
     // NB: Fail open, but find a way to flag this.
   }
 
+  if let Err(err) = artcraft_usage_tracker.record_object_generation(1, ArtcraftUsageType::ImageToResult, ArtcraftUsagePage::ObjectPage) {
+    // NB: Fail open.
+    warn!("Failed to report usage: {:?}", err);
+  }
 
   Ok(success_event)
 }
