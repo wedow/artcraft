@@ -22,6 +22,7 @@ use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskAr
 use std::time::Instant;
 use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::endpoints::analytics::log_active_user::log_active_user;
+use storyteller_client::endpoints::analytics::log_active_user_v2::log_active_user_v2;
 use storyteller_client::endpoints::jobs::list_session_jobs::{list_session_jobs, States};
 use storyteller_client::endpoints::media_files::upload_image_media_file_from_file::upload_image_media_file_from_file;
 use storyteller_client::error::api_error::ApiError;
@@ -94,11 +95,27 @@ async fn polling_loop(
       maybe_os_platform: Some(artcraft_platform_info.os_platform.as_str().to_owned()),
       maybe_os_version: Some(artcraft_platform_info.os_version.clone()),
       maybe_session_duration_seconds: Some(time_since_startup.as_secs()),
+      total_generation_count: None,
+      image_generation_count: None,
+      video_generation_count: None,
+      object_generation_count: None,
+      text_to_image_count: None,
+      image_to_image_count: None,
+      text_to_video_count: None,
+      image_to_video_count: None,
+      text_to_object_count: None,
+      image_to_object_count: None,
+      image_page_prompt_count: None,
+      video_page_prompt_count: None,
+      edit_page_prompt_count: None,
+      stage_page_prompt_count: None,
+      object_page_prompt_count: None,
+      other_page_prompt_count: None,
     };
 
     debug!("Logging active user with storyteller.");
 
-    let result = log_active_user(
+    let result = log_active_user_v2(
       &app_env_configs.storyteller_host,
       Some(&creds),
       request,
