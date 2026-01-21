@@ -72,6 +72,7 @@ use tauri_plugin_dialog;
 use tauri_plugin_http;
 use tauri_plugin_log::Target;
 use tauri_plugin_log::TargetKind;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -124,6 +125,9 @@ pub fn run() {
 
   let worldlabs_bearer_bridge = WorldlabsBearerBridge::empty();
   let worldlabs_bearer_bridge_2 = worldlabs_bearer_bridge.clone();
+  
+  let artcraft_usage_tracker = ArtcraftUsageTracker::new();
+  let artcraft_usage_tracker_2 = artcraft_usage_tracker.clone();
 
   println!("Initializing backend runtime...");
 
@@ -159,6 +163,7 @@ pub fn run() {
           root,
           env_config,
           artcraft_platform_info_2,
+          artcraft_usage_tracker_2,
           storyteller_creds,
           sora_creds,
           sora_tasks,
@@ -181,6 +186,7 @@ pub fn run() {
     .manage(app_env_configs)
     .manage(app_preferences)
     .manage(artcraft_platform_info)
+    .manage(artcraft_usage_tracker)
     .manage(grok_creds_manager)
     .manage(grok_prompt_queue)
     .manage(midjourney_creds_manager)
