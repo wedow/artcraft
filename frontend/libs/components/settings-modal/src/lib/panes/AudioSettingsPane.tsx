@@ -36,6 +36,7 @@ const SOUND_OPTIONS = [
   { label: "Special Alert", value: "special_alert" },
   { label: "Special Flower", value: "special_flower" },
   { label: "Spike Throw", value: "spike_throw" },
+  { label: "Trash", value: "trash" },
   { label: "Wrong", value: "wrong" },
 ];
 
@@ -56,6 +57,7 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
 
   const playSounds = preferences?.play_sounds || false;
 
+  const deleteFileSound = orNone(preferences?.delete_file_sound);
   const enqueueSuccessSound = orNone(preferences?.enqueue_success_sound);
   const enqueueFailureSound = orNone(preferences?.enqueue_failure_sound);
   const generationSuccessSound = orNone(preferences?.generation_success_sound);
@@ -72,6 +74,16 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
       preference: PreferenceName.PlaySounds,
       value: checked,
     });
+    await reloadPreferences();
+  };
+
+  const setDeleteFileSound = async (val: string) => {
+    let sendVal = val === "none" ? undefined : val;
+    await UpdateAppPreferences({
+      preference: PreferenceName.DeleteFileSound,
+      value: sendVal,
+    });
+    SoundRegistry.getInstance().playSound(val);
     await reloadPreferences();
   };
 
@@ -129,6 +141,25 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
             Play Notification Sounds for Events?
           </Label>
           <Switch enabled={playSounds} setEnabled={setPlaySounds} />
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="success-sound">Delete File Sound</Label>
+          <div className="flex items-center gap-2">
+            <Select
+              id="success-sound"
+              value={deleteFileSound}
+              onChange={(val: SelectValue) => setDeleteFileSound(val as string)}
+              options={SOUND_OPTIONS}
+              className="grow"
+            />
+            <Button
+              variant="primary"
+              className="w-[40px] h-[40px]"
+              icon={faPlay}
+              onClick={() => playSound(deleteFileSound)}
+            />
+          </div>
         </div>
 
         <div className="space-y-1">

@@ -5,7 +5,9 @@ use errors::AnyhowResult;
 use serde_derive::{Deserialize, Serialize};
 
 /// Vector clock versioning string rather than semver.
-const CURRENT_VERSION: &str = "1";
+/// - Version 1 - initial version.
+/// - Version 2 - added "delete_file_sound", marked optionals "skip_serializing_if"
+const CURRENT_VERSION: &str = "2";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPreferencesSerializable {
@@ -16,15 +18,23 @@ pub struct AppPreferencesSerializable {
   pub preferred_download_directory: Option<PreferredDownloadDirectory>,
 
   /// Play sounds on events.
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub play_sounds: Option<bool>,
-  
+
   /// Key pointing to file; defined in the frontend code.
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub delete_file_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub generation_success_sound: Option<String>,
   
   /// Key pointing to file; defined in the frontend code.
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub generation_failure_sound: Option<String>,
   
   /// Key pointing to file; defined in the frontend code.
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub generation_enqueue_sound: Option<String>,
 }
 
@@ -45,6 +55,7 @@ impl AppPreferencesSerializable {
       version: CURRENT_VERSION.to_string(),
       preferred_download_directory: Some(preferences.preferred_download_directory.clone()),
       play_sounds: Some(preferences.play_sounds),
+      delete_file_sound: preferences.delete_file_sound.clone(),
       generation_success_sound: preferences.generation_success_sound.clone(),
       generation_failure_sound: preferences.generation_failure_sound.clone(),
       generation_enqueue_sound: preferences.generation_enqueue_sound.clone(),
@@ -61,11 +72,12 @@ impl AppPreferencesSerializable {
     if let Some(play_sounds) = self.play_sounds {
       preferences.play_sounds = play_sounds;
     }
-    
+
+    preferences.delete_file_sound = self.delete_file_sound.clone();
     preferences.generation_success_sound = self.generation_success_sound.clone();
     preferences.generation_failure_sound = self.generation_failure_sound.clone();
     preferences.generation_enqueue_sound = self.generation_enqueue_sound.clone();
-    
+
     preferences
   }
 }

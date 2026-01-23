@@ -11,6 +11,9 @@ pub struct AppPreferences {
   pub play_sounds: bool,
 
   /// Key pointing to file; defined in the frontend code.
+  pub delete_file_sound: Option<String>,
+
+  /// Key pointing to file; defined in the frontend code.
   /// Defined for enqueue since image enqueue can be async
   pub enqueue_success_sound: Option<String>,
 
@@ -40,6 +43,7 @@ impl Default for AppPreferences {
       generation_success_sound: Some("special_flower".to_string()),
       generation_failure_sound: Some("crumble".to_string()),
       generation_enqueue_sound: Some("done".to_string()),
+      delete_file_sound: Some("trash".to_string()),
     }
   }
 }

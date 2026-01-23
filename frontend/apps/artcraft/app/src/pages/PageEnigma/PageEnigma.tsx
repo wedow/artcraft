@@ -39,6 +39,8 @@ import { useGenerationEnqueueSuccessEvent } from "@storyteller/tauri-events";
 import { useGenerationFailedEvent } from "@storyteller/tauri-events";
 import { useTextToImageGenerationCompleteEvent } from "@storyteller/tauri-events";
 import { useTextToImageStore } from "~/pages/PageImage/TextToImageStore";
+import { GetAppPreferences } from "@storyteller/tauri-api";
+import { SoundRegistry } from "@storyteller/soundboard";
 
 export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
   useSignals();
@@ -117,6 +119,12 @@ export const PageEnigma = ({ sceneToken }: { sceneToken?: string }) => {
 
   useMediaFileDeletedEvent(async (event) => {
     console.log("Media file deleted event received:", event);
+    const prefs = await GetAppPreferences();
+    const soundName = prefs.preferences?.delete_file_sound;
+    if (soundName !== undefined) {
+      const registry = SoundRegistry.getInstance();
+      registry.playSound(soundName);
+    }
     toast.error("File deleted.");
   });
 

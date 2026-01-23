@@ -43,6 +43,9 @@ export const InstallSounds = () => {
   r.setSoundOnce("correct", new SoundEffect("resources/sound/smrpg_correct.wav", { defaultVolume: 0.1 }));
   r.setSoundOnce("flower", new SoundEffect("resources/sound/smrpg_flower.wav", { defaultVolume: 0.1 }));
 
+  // File delete, trash, etc.
+  r.setSoundOnce("trash", new SoundEffect("resources/sound/oot_scrub_crumble.wav", { defaultVolume: 0.4 }));
+
   // Misc / ungrouped
   r.setSoundOnce("accept_chirp", new SoundEffect("resources/sound/goldensun_101.wav", { defaultVolume: 0.2 }));
   r.setSoundOnce("accept_normal_level_1", new SoundEffect("resources/sound/goldensun_173.wav", { defaultVolume: 0.2 }));

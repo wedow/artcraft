@@ -13,6 +13,7 @@ export interface AppPreferencesPayload {
 
   // Sound names to play. 
   // These are keys, not filenames, and are defined by the frontend.
+  delete_file_sound?: string,
   enqueue_success_sound?: string,
   enqueue_failure_sound?: string,
   generation_success_sound?: string,

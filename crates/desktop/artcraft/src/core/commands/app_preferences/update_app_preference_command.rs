@@ -28,6 +28,7 @@ pub enum ValueType {
 pub enum PreferenceName {
   PreferredDownloadDirectory,
   PlaySounds,
+  DeleteFileSound,
   EnqueueSuccessSound,
   EnqueueFailureSound,
   GenerationSuccessSound,
@@ -84,6 +85,11 @@ async fn update_prefs(
         _ => 
           return Err(anyhow!("Invalid value: {:?}", request.value)),
       }
+    }
+    PreferenceName::DeleteFileSound => {
+      prefs.delete_file_sound = request.value
+          .map(|val| string_value(&val))
+          .transpose()?;
     }
     PreferenceName::EnqueueSuccessSound => {
       prefs.enqueue_success_sound = request.value
