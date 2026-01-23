@@ -3,6 +3,12 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/components/tab-selector"
+    },
+    {
+      "path": "../../libs/state/subscription"
+    },
+    {
       "path": "../../libs/model-list"
     },
     {
@@ -18,13 +24,13 @@
       "path": "../../libs/components/loading-spinner"
     },
     {
+      "path": "../../libs/markdown-content"
+    },
+    {
       "path": "../../libs/api"
     },
     {
       "path": "../../libs/components/button"
-    },
-    {
-      "path": "../../libs/markdown-content"
     },
     {
       "path": "./tsconfig.app.json"

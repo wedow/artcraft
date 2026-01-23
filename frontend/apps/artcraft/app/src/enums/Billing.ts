@@ -1,5 +1,6 @@
 export enum SubscriptionNamespace {
   FAKEYOU = "fakeyou",
+  ARTCRAFT = "artcraft",
 }
 export enum SubscriptionProduct {
   PLUS = "fakeyou_plus",

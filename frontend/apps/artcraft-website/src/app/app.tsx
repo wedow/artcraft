@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import Download from "../pages/download";
 import Media from "../pages/media";
 import PressKit from "../pages/press-kit";
@@ -15,6 +15,7 @@ import Login from "../pages/login";
 import Signup from "../pages/signup";
 import ForgotPassword from "../pages/forgot-password";
 import Welcome from "../pages/welcome";
+import { CheckoutSuccess, CheckoutCancel } from "../pages/checkout";
 
 export function App() {
   return (
@@ -38,6 +39,17 @@ export function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/welcome" element={<Welcome />} />
+        <Route path="/checkout/success" element={<CheckoutSuccess />} />
+        <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+        {/* Redirects for underscore-based URLs (legacy Stripe config) */}
+        <Route
+          path="/checkout_success"
+          element={<Navigate to="/checkout/success" replace />}
+        />
+        <Route
+          path="/checkout_cancel"
+          element={<Navigate to="/checkout/cancel" replace />}
+        />
       </Routes>
     </div>
   );
