@@ -9,6 +9,9 @@
       "path": "../../model-list"
     },
     {
+      "path": "../action-reminder-modal"
+    },
+    {
       "path": "../toaster"
     },
     {

@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import * as path from 'path';
+import { isExternal } from '../../shared-vite-config';
 
 export default defineConfig(() => ({
   root: __dirname,
@@ -31,7 +32,7 @@ export default defineConfig(() => ({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: []
+      external: isExternal
     },
   },
 }));

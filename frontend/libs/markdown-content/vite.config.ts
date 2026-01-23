@@ -3,6 +3,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 import * as path from 'path';
+import { isExternal } from '../shared-vite-config';
+
+// Custom external check that adds react-router-dom and @fortawesome on top of standard externals
+const markdownContentIsExternal = (id: string) =>
+  isExternal(id) || id === 'react-router-dom' || id.startsWith('@fortawesome/');
 
 export default defineConfig(() => ({
   root: __dirname,
@@ -32,13 +37,8 @@ export default defineConfig(() => ({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: [
-        'react',
-        'react-dom',
-        'react/jsx-runtime',
-        'react-router-dom',
-        /^@fortawesome\/.*/
-      ]
+      // Uses shared config plus react-router-dom and @fortawesome
+      external: markdownContentIsExternal
     },
   },
   test: {

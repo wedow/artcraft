@@ -62,4 +62,12 @@ export default defineConfig({
       allow: [workspaceRoot],
     },
   },
+  resolve: {
+    dedupe: [
+      "react",
+      "react-dom",
+      "@preact/signals-core",
+      "@preact/signals-react"
+    ],
+  },
 });

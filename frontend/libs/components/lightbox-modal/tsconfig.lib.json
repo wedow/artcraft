@@ -50,6 +50,9 @@
       "path": "../../model-list/tsconfig.lib.json"
     },
     {
+      "path": "../action-reminder-modal/tsconfig.lib.json"
+    },
+    {
       "path": "../toaster/tsconfig.lib.json"
     },
     {
