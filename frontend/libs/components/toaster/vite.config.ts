@@ -5,9 +5,6 @@ import dts from 'vite-plugin-dts';
 import * as path from 'path';
 import { isExternal } from '../../shared-vite-config';
 
-// Custom external check that adds react-hot-toast on top of standard externals
-const toasterIsExternal = (id: string) => isExternal(id) || id === 'react-hot-toast';
-
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../../node_modules/.vite/libs/components/toaster',
@@ -43,7 +40,7 @@ export default defineConfig(() => ({
     rollupOptions: {
       // External packages that should not be bundled into your library.
       // Uses shared config plus react-hot-toast
-      external: toasterIsExternal,
+      external: isExternal,
       output: {
         globals: {
           'react-hot-toast': 'react-hot-toast',

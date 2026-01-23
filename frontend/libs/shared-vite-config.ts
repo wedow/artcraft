@@ -25,8 +25,27 @@ export function isExternal(id: string): boolean {
     return true;
   }
 
+  // Other react libraries
+  if (
+    id === 'react-hot-toast' ||
+    id === 'react-router-dom' ||
+    id.startsWith('react-')
+  ) {
+    return true;
+  }
+
   // Externalize @preact/signals to prevent duplicate signal state
   if (id.startsWith('@preact/signals')) {
+    return true;
+  }
+
+  // Other important libraries
+  if (
+    id === 'konva' ||
+    id === 'three' ||
+    id === 'zustand' ||
+    id.startsWith('@fortawesome/')
+  ) {
     return true;
   }
 
@@ -37,15 +56,3 @@ export function isExternal(id: string): boolean {
 
   return false;
 }
-
-/**
- * Common external dependencies for library builds.
- * Use this with rollupOptions.external when you need a static list.
- */
-export const commonExternals = [
-  'react',
-  'react-dom',
-  'react/jsx-runtime',
-  '@preact/signals-core',
-  '@preact/signals-react',
-];
