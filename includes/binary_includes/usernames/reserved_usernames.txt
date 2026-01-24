@@ -8,32 +8,7 @@
 # Stuff we care about
 art_craft
 artcraft
-fakeu
-fakeyou
-fake_you
 hanashi
-monogatari
-storied
-stories
-story
-storyteller
-storytellerai
-storyteller_ai
-story_teller
-story_teller_ai
-tell
-teller
-vocode
-vocoder
-vocoders
-vocodes
-
-# Past brands/products
-hyper_jail
-hyperjail
-jungle_horse
-junglehorse
-voxelcam
 
 # Possible uses
 # See https://www.wired.com/story/by-seizing-music-elon-musk-shows-he-doesnt-know-what-made-twitter-good/
@@ -73,6 +48,7 @@ franchise
 franchises
 game
 games
+generative
 gif
 gifs
 glb
@@ -115,8 +91,11 @@ sequel
 series
 song
 songs
+spz
+spzs
 stories
 story
+threed
 three_d
 track
 tracks
@@ -133,10 +112,6 @@ wiki
 wikis
 writing
 writings
-
-# Hypothetical brands/products
-generative
-generatv
 
 # Permission levels, users, etc.
 account
@@ -187,7 +162,32 @@ tt2
 tts
 w2l
 
-# Competitors
+# Past brands/products
+fake_you
+fakeu
+fakeyou
+hyper_jail
+hyperjail
+jungle_horse
+junglehorse
+monogatari
+storied
+stories
+story
+story_teller
+story_teller_ai
+storyteller
+storyteller_ai
+storytellerai
+tell
+teller
+vocode
+vocoder
+vocoders
+vocodes
+voxelcam
+
+# Startups
 11labs
 11_labs
 15ai
@@ -206,16 +206,38 @@ fifteenai
 fifteen_ai
 focalml
 focal_ml
+freepic
+freepick
+freepick_ai
+freepic_ai
+freepik
+freepik_ai
 goenhance
 go_enhance
 heygen
 hey_gen
+hig
+higg
+higgfield
+higgs
+higgsfield
+higs
+higsfield
 kaiber
 kaiberai
 kaiber_ai
+krea
+kreaai
+krea_ai
 lensgo
 lensgo_ai
 lens_go
+leonardoai
+leonardo_ai
+luma
+lumaai
+lumalabs
+luma_ai
 magichour
 magic_hour
 moonvalley
@@ -227,9 +249,11 @@ oaisora
 openai
 openaisora
 openai_sora
+openart
 open_ai
 open_aisora
 open_ai_sora
+open_art
 pika
 pikaai
 pikalabs
@@ -249,6 +273,8 @@ voicemod
 voice_ai
 voice_mod
 wombo
+worldlabs
+world_labs
 
 # Existing frontend pages (frontend repo)
 about
@@ -313,6 +339,16 @@ weight
 4d
 5d
 6d
+7d
+8d
+9d
+10d
+11d
+12d
+13d
+14d
+15d
+16d
 admin
 administrate
 administrator
@@ -320,8 +356,8 @@ administrators
 admins
 alpha
 article
-article_list
 articles
+article_list
 ask
 assign
 assigned
@@ -369,6 +405,9 @@ gamma
 generate
 generating
 good
+greenlight
+greenlighting
+greenlit
 help
 hide
 highlight
@@ -385,11 +424,10 @@ legal
 less
 list
 lists
-lists
-log_in
-log_out
 login
 logout
+log_in
+log_out
 mail
 manage
 management
@@ -400,14 +438,14 @@ mentions
 message
 messages
 mod
-mod_mail
 model
-model_list
 models
+model_list
 moderator
 moderators
 modmail
 mods
+mod_mail
 more
 most
 new
@@ -447,10 +485,10 @@ search
 setting
 settings
 show
-sign_in
-sign_out
 signin
 signout
+sign_in
+sign_out
 sitemap
 sponsor
 sponsors
@@ -467,8 +505,8 @@ team
 teams
 terms
 thread
-thread_list
 threads
+thread_list
 top
 topic
 topics
@@ -581,6 +619,7 @@ upvote
 # Companies we'd love to have use our service
 # so we'll reserve them to be safe
 amazon
+anthropic
 apple
 cash
 cashapp
@@ -611,6 +650,8 @@ youtube
 
 # Production companies, too
 a24
+adultswim
+adult_swim
 disney
 ghibli
 hbo
