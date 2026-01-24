@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use once_cell::sync::Lazy;
 
-const TERMS : &str = include_str!("../../../../../../includes/binary_includes/dictionary_sex_terms.txt");
+const TERMS : &str = include_str!("../../../../../../includes/binary_includes/safety/dictionary_sex_terms.txt");
 pub (crate) fn contains_sex_keyword(prompt_tokens: &[String]) -> bool {
   static TERM_DICTIONARY : Lazy<HashSet<String>> = Lazy::new(|| {
     TERMS.lines()
