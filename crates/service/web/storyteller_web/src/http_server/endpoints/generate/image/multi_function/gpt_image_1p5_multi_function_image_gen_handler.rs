@@ -17,6 +17,8 @@ use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptC
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
+use enums::common::payments_namespace::PaymentsNamespace;
+use enums::common::stripe_subscription_status::StripeSubscriptionStatus;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
 use fal_client::requests::webhook::image::edit::enqueue_gpt_image_1p5_edit_image_webhook::{enqueue_gpt_image_1p5_image_edit_webhook, EnqueueGptImage1p5EditImageArgs, EnqueueGptImage1p5EditImageBackground, EnqueueGptImage1p5EditImageInputFidelity, EnqueueGptImage1p5EditImageNumImages, EnqueueGptImage1p5EditImageQuality, EnqueueGptImage1p5EditImageSize};
@@ -30,6 +32,7 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::{batch_get_media_files_by_tokens, batch_get_media_files_by_tokens_with_connection};
 use mysql_queries::queries::prompt_context_items::insert_batch_prompt_context_items::{insert_batch_prompt_context_items, InsertBatchArgs, PromptContextItem};
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 use server_environment::ServerEnvironment;
 use sqlx::pool::PoolConnection;
 use sqlx::{Acquire, MySql};
@@ -55,6 +58,10 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
 ) -> Result<Json<GptImage1p5MultiFunctionImageGenResponse>, CommonWebError> {
   
   payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
+
+  if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
+    return Err(CommonWebError::BadInputWithSimpleMessage(reason));
+  }
   
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
@@ -73,6 +80,10 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
       .avt_cookie_manager
       .get_avt_token_from_request(&http_request);
 
+  let maybe_user_token = maybe_user_session
+      .as_ref()
+      .map(|s| &s.user_token);
+
   // TODO: Limit usage for new accounts. Billing, free credits metering, etc.
 
   //let user_session = match maybe_user_session {
@@ -83,9 +94,29 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
   //  }
   //};
 
-  if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
-    return Err(CommonWebError::BadInputWithSimpleMessage(reason));
+  let mut downgrade_for_free_user = true;
+
+  if let Some(user_token) = maybe_user_token.as_ref() {
+    let result = find_subscription_for_owner_user_using_connection(
+      user_token,
+      PaymentsNamespace::Artcraft,
+      &mut mysql_connection,
+    ).await;
+
+    if let Ok(Some(subscription)) = result {
+      info!("User {:?} has subscription: {:?} (stripe customer: {:?}, status: {:?})", 
+        user_token,
+        subscription.token, 
+        subscription.stripe_customer_id,
+        subscription.stripe_subscription_status);
+      // NB: Failing open means subscribers might get fewer results, but they're free right now.
+      if subscription.stripe_subscription_status == StripeSubscriptionStatus::Active {
+        downgrade_for_free_user = false;
+      }
+    }
   }
+
+  info!("downgrade_for_free_user: {}", downgrade_for_free_user);
 
   let mut query_media_tokens = None;
 
@@ -148,7 +179,7 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
   if let Some(input_image_urls) = maybe_image_urls.as_deref() {
     info!("gpt image 1.5 edit image");
 
-    let num_images = match request.num_images {
+    let mut num_images = match request.num_images {
       Some(GptImage1p5MultiFunctionImageGenNumImages::One) => EnqueueGptImage1p5EditImageNumImages::One,
       Some(GptImage1p5MultiFunctionImageGenNumImages::Two) => EnqueueGptImage1p5EditImageNumImages::Two,
       Some(GptImage1p5MultiFunctionImageGenNumImages::Three) => EnqueueGptImage1p5EditImageNumImages::Three,
@@ -183,6 +214,10 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
       None => EnqueueGptImage1p5EditImageInputFidelity::High,
     };
 
+    if downgrade_for_free_user {
+      num_images = EnqueueGptImage1p5EditImageNumImages::One;
+    }
+
     let args = EnqueueGptImage1p5EditImageArgs {
       prompt: request.prompt.as_deref().unwrap_or(""),
       image_urls: input_image_urls.to_owned(),
@@ -207,7 +242,7 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
   } else {
     info!("gpt image 1.5 text-to-image");
 
-    let num_images = match request.num_images {
+    let mut num_images = match request.num_images {
       Some(GptImage1p5MultiFunctionImageGenNumImages::One) => EnqueueGptImage1p5TextToImageNumImages::One,
       Some(GptImage1p5MultiFunctionImageGenNumImages::Two) => EnqueueGptImage1p5TextToImageNumImages::Two,
       Some(GptImage1p5MultiFunctionImageGenNumImages::Three) => EnqueueGptImage1p5TextToImageNumImages::Three,
@@ -235,6 +270,10 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
       Some(GptImage1p5MultiFunctionImageGenQuality::High) => EnqueueGptImage1p5TextToImageQuality::High,
       None => EnqueueGptImage1p5TextToImageQuality::High,
     };
+
+    if downgrade_for_free_user {
+      num_images = EnqueueGptImage1p5TextToImageNumImages::One;
+    }
 
     let args = EnqueueGptImage1p5TextToImageArgs {
       prompt: request.prompt.as_deref().unwrap_or(""),
@@ -277,9 +316,7 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
   let prompt_result = insert_prompt(InsertPromptArgs {
     maybe_apriori_prompt_token: None,
     prompt_type: PromptType::ArtcraftApp,
-    maybe_creator_user_token: maybe_user_session
-        .as_ref()
-        .map(|s| &s.user_token),
+    maybe_creator_user_token: maybe_user_token,
     maybe_model_type: Some(ModelType::GptImage1p5),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
@@ -324,7 +361,7 @@ pub async fn gpt_image_1p5_multi_function_image_gen_handler(
     fal_category: FalCategory::ImageGeneration,
     maybe_inference_args: None,
     maybe_prompt_token: prompt_token.as_ref(),
-    maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
+    maybe_creator_user_token: maybe_user_token,
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,

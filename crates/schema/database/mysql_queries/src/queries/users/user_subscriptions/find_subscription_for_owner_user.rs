@@ -7,6 +7,7 @@ use sqlx;
 use sqlx::mysql::MySqlRow;
 use sqlx::pool::PoolConnection;
 use sqlx::MySql;
+use enums::common::stripe_subscription_status::StripeSubscriptionStatus;
 use tokens::tokens::user_subscriptions::UserSubscriptionToken;
 use tokens::tokens::users::UserToken;
 
@@ -21,7 +22,7 @@ pub struct UserSubscription {
   pub stripe_customer_id: String,
   pub stripe_product_id: String,
   pub stripe_subscription_id: String,
-  pub stripe_subscription_status: String,
+  pub stripe_subscription_status: StripeSubscriptionStatus,
   pub stripe_invoice_is_paid: bool,
 
   /// When the subscription was created (Stripe's POV, not our db record),
@@ -125,7 +126,7 @@ SELECT
   maybe_stripe_customer_id,
   maybe_stripe_product_id,
   maybe_stripe_subscription_id,
-  maybe_stripe_subscription_status,
+  maybe_stripe_subscription_status as `maybe_stripe_subscription_status: enums::common::stripe_subscription_status::StripeSubscriptionStatus`,
   maybe_stripe_invoice_is_paid,
   subscription_start_at,
   subscription_expires_at,
@@ -164,7 +165,7 @@ struct RawUserSubscription {
   maybe_stripe_customer_id: Option<String>,
   maybe_stripe_product_id: Option<String>,
   maybe_stripe_subscription_id: Option<String>,
-  maybe_stripe_subscription_status: Option<String>,
+  maybe_stripe_subscription_status: Option<StripeSubscriptionStatus>,
   maybe_stripe_invoice_is_paid: Option<i8>,
 
   subscription_start_at: DateTime<Utc>,

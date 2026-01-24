@@ -14,6 +14,8 @@ use enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptC
 use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
+use enums::common::payments_namespace::PaymentsNamespace;
+use enums::common::stripe_subscription_status::StripeSubscriptionStatus;
 use enums::common::visibility::Visibility;
 use fal_client::creds::open_ai_api_key::OpenAiApiKey;
 use fal_client::requests::webhook::image::edit::enqueue_gemini_25_flash_edit_webhook::{enqueue_gemini_25_flash_edit_webhook, Gemini25FlashEditArgs, Gemini25FlashEditNumImages};
@@ -29,6 +31,7 @@ use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_
 use mysql_queries::queries::media_files::get::batch_get_media_files_by_tokens::{batch_get_media_files_by_tokens, batch_get_media_files_by_tokens_with_connection};
 use mysql_queries::queries::prompt_context_items::insert_batch_prompt_context_items::{insert_batch_prompt_context_items, InsertBatchArgs, PromptContextItem};
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
+use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 use sqlx::Acquire;
 use utoipa::ToSchema;
 
@@ -52,7 +55,11 @@ pub async fn gemini_25_flash_edit_image_handler(
 ) -> Result<Json<Gemini25FlashEditImageResponse>, CommonWebError> {
   
   payments_error_test(&request.prompt.as_deref().unwrap_or(""))?;
-  
+
+  if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
+    return Err(CommonWebError::BadInputWithSimpleMessage(reason));
+  }
+
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
       .await?;
@@ -65,6 +72,10 @@ pub async fn gemini_25_flash_edit_image_handler(
         warn!("Session checker error: {:?}", e);
         CommonWebError::ServerError
       })?;
+
+  let maybe_user_token = maybe_user_session
+      .as_ref()
+      .map(|s| &s.user_token);
 
   let maybe_avt_token = server_state
       .avt_cookie_manager
@@ -80,9 +91,29 @@ pub async fn gemini_25_flash_edit_image_handler(
   //  }
   //};
 
-  if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
-    return Err(CommonWebError::BadInputWithSimpleMessage(reason));
+  let mut downgrade_for_free_user = true;
+
+  if let Some(user_token) = maybe_user_token.as_ref() {
+    let result = find_subscription_for_owner_user_using_connection(
+      user_token,
+      PaymentsNamespace::Artcraft,
+      &mut mysql_connection,
+    ).await;
+
+    if let Ok(Some(subscription)) = result {
+      info!("User {:?} has subscription: {:?} (stripe customer: {:?}, status: {:?})",
+        user_token,
+        subscription.token,
+        subscription.stripe_customer_id,
+        subscription.stripe_subscription_status);
+      // NB: Failing open means subscribers might get fewer results, but they're free right now.
+      if subscription.stripe_subscription_status == StripeSubscriptionStatus::Active {
+        downgrade_for_free_user = false;
+      }
+    }
   }
+
+  info!("downgrade_for_free_user: {}", downgrade_for_free_user);
 
   const CAN_SEE_DELETED: bool = false;
   
@@ -142,13 +173,17 @@ pub async fn gemini_25_flash_edit_image_handler(
 
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
 
-  let num_images = match request.num_images {
+  let mut num_images = match request.num_images {
     Some(Gemini25FlashEditImageNumImages::One) => Gemini25FlashEditNumImages::One,
     Some(Gemini25FlashEditImageNumImages::Two) => Gemini25FlashEditNumImages::Two,
     Some(Gemini25FlashEditImageNumImages::Three) => Gemini25FlashEditNumImages::Three,
     Some(Gemini25FlashEditImageNumImages::Four) => Gemini25FlashEditNumImages::Four,
     None => Gemini25FlashEditNumImages::One, // Default to One
   };
+
+  if downgrade_for_free_user {
+    num_images = Gemini25FlashEditNumImages::One;
+  }
 
   let args = Gemini25FlashEditArgs {
     image_urls,
@@ -188,9 +223,7 @@ pub async fn gemini_25_flash_edit_image_handler(
   let prompt_result = insert_prompt(InsertPromptArgs {
     maybe_apriori_prompt_token: None,
     prompt_type: PromptType::ArtcraftApp,
-    maybe_creator_user_token: maybe_user_session
-        .as_ref()
-        .map(|s| &s.user_token),
+    maybe_creator_user_token: maybe_user_token,
     maybe_model_type: Some(ModelType::Gemini25Flash),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
@@ -233,7 +266,7 @@ pub async fn gemini_25_flash_edit_image_handler(
     fal_category: FalCategory::ImageGeneration,
     maybe_inference_args: None,
     maybe_prompt_token: prompt_token.as_ref(),
-    maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
+    maybe_creator_user_token: maybe_user_token,
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
