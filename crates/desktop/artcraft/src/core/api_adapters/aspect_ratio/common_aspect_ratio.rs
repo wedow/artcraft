@@ -1,8 +1,8 @@
 use serde_derive::{Deserialize, Serialize};
 
-/// This is a comprehensive list of common aspect ratios.
+/// This is a comprehensive list of common aspect ratios you can specify when enqueuing a generation.
 /// Not every model will support every aspect ratio.
-/// In the case a model doesn't support the aspect ratio, pick the nearest option.
+/// In the case a model doesn't support the aspect ratio, gracefully pick the nearest option.
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonAspectRatio {

@@ -4,6 +4,7 @@ import { ModelCategory } from "../legacy/ModelConfig.js";
 import { ModelTag } from "./metadata/ModelTag.js";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { CommonAspectRatio } from "./properties/CommonAspectRatio.js";
+import { CommonResolution } from "./properties/CommonResolution.js";
 
 export class ImageModel extends Model {
   // Typescript type discriminator property
@@ -51,9 +52,15 @@ export class ImageModel extends Model {
   // (This is a new field that will take time to roll out and replace the old aspect ratios)
   readonly aspectRatios: CommonAspectRatio[];
 
+  readonly resolutions: CommonResolution[];
+
   // Aspect ratio to use as default when nothing is selected.
   // Otherwise, use `aspectRatios[0]` as default.
   readonly defaultAspectRatio?: CommonAspectRatio;
+
+  // Resolution to use as default when nothing is selected.
+  // Otherwise, use `resolutions[0]` as default.
+  readonly defaultResolution?: CommonResolution;
 
   constructor(args: {
     id: string;
@@ -79,7 +86,9 @@ export class ImageModel extends Model {
     progressBarTime?: number;
     providers?: GenerationProvider[];
     aspectRatios?: CommonAspectRatio[];
+    resolutions?: CommonResolution[];
     defaultAspectRatio?: CommonAspectRatio;
+    defaultResolution?: CommonResolution;
   }) {
     if (args.maxGenerationCount < 1) {
       throw new Error("maxGenerationCount must be at least 1");
@@ -105,7 +114,9 @@ export class ImageModel extends Model {
     this.canChangeResolution = args.canChangeResolution ?? false;
     this.canChangeAspectRatio = args.canChangeAspectRatio ?? false;
     this.aspectRatios = args.aspectRatios ?? [];
+    this.resolutions = args.resolutions ?? [];
     this.defaultAspectRatio = args.defaultAspectRatio ?? (args.aspectRatios && args.aspectRatios.length > 0 ? args.aspectRatios[0] : undefined);
+    this.defaultResolution = args.defaultResolution ?? (args.resolutions && args.resolutions.length > 0 ? args.resolutions[0] : undefined);
   }
 
   // If the model is a "Nano Banana"-type model, we may want to enable certain features. 
@@ -129,6 +140,14 @@ export class ImageModel extends Model {
     return this.canChangeAspectRatio 
       && this.aspectRatios 
       && this.aspectRatios.length > 0;
+  }
+
+  // Rolling out new resolution controls to models.
+  // If we have them set on the model, we can use the new UI controls.
+  supportsNewResolution(): boolean {
+    return this.canChangeResolution 
+      && this.resolutions 
+      && this.resolutions.length > 0;
   }
 
   // Return whether the count of generations is valid for this model

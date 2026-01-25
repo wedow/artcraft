@@ -1,3 +1,5 @@
+use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use crate::core::api_adapters::resolution::common_resolution::CommonResolution;
 use crate::core::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
 use crate::core::commands::enqueue::image_edit::image_edit_models::image_edit_model_to_model_type;
@@ -16,6 +18,8 @@ use crate::core::events::generation_events::common::{GenerationAction, Generatio
 use crate::core::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::core::events::sendable_event_trait::SendableEvent;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::core::state::task_database::TaskDatabase;
@@ -34,9 +38,6 @@ use serde::{Deserialize, Serialize};
 use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
-use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
-use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
-use crate::core::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.
@@ -88,15 +89,20 @@ pub struct EnqueueTextToImageRequest {
   /// Text prompt for the image generation. Required.
   pub prompt: Option<String>,
 
-  /// Aspect ratio.
-  #[deprecated(note="use common_aspect_ratio")]
-  pub aspect_ratio: Option<TextToImageSize>,
-  
   /// New field for aspect ratio.
   /// Not all models support each of these aspect ratios, but we can choose or interpolate sensibly.
   pub common_aspect_ratio: Option<CommonAspectRatio>,
 
+  /// New field for resolution.
+  /// Not all models support each of these resolutions, but we can choose or interpolate sensibly.
+  pub common_resolution: Option<CommonResolution>,
+
   /// Aspect ratio.
+  #[deprecated(note="use common_aspect_ratio")]
+  pub aspect_ratio: Option<TextToImageSize>,
+
+  /// Aspect ratio.
+  #[deprecated(note="use common_resolution")]
   pub image_resolution: Option<TextToImageResolution>,
 
   /// The number of images to generate.

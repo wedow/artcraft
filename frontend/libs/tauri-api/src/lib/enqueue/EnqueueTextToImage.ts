@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 import { CommonAspectRatio, Model } from "@storyteller/model-list";
 import { GenerationProvider } from "@storyteller/api-enums";
+import { CommonResolution } from "@storyteller/model-list";
 
 export enum EnqueueTextToImageErrorType {
   /// Caller didn't specify a model
@@ -24,13 +25,17 @@ export interface EnqueueTextToImageRequest {
   // The text prompt.
   prompt?: string;
 
+  // This is the new aspect ratio.
+  common_aspect_ratio?: CommonAspectRatio;
+
+  // This is the new aspect ratio.
+  common_resolution?: CommonResolution;
+
   // TODO: This is deprecated and will be phased out.
   // The desired output aspect ratio.
   aspect_ratio?: EnqueueTextToImageSize;
 
-  // This is the new aspect ratio.
-  common_aspect_ratio?: CommonAspectRatio;
-
+  // TODO: This is deprecated and will be phased out.
   // Image resolution. Support: Nano Banana Pro
   image_resolution?: EnqueueTextToImageResolution;
 
@@ -59,6 +64,7 @@ interface EnqueueTextToImageRawRequest {
   prompt?: string;
   aspect_ratio?: EnqueueTextToImageSize;
   common_aspect_ratio?: CommonAspectRatio;
+  common_resolution?: CommonResolution;
   image_resolution?: EnqueueTextToImageResolution;
   number_images?: number;
   image_media_tokens?: string[];
@@ -127,14 +133,18 @@ export const EnqueueTextToImage = async (request: EnqueueTextToImageRequest) : P
     mutableRequest.provider = request.provider;
   }
 
-  if (!!request.aspect_ratio) {
-    mutableRequest.aspect_ratio = request.aspect_ratio;
-  }
-
   if (!!request.common_aspect_ratio) {
     mutableRequest.common_aspect_ratio = request.common_aspect_ratio;
   }
 
+  if (!!request.common_resolution) {
+    mutableRequest.common_resolution = request.common_resolution;
+  }
+
+  if (!!request.aspect_ratio) {
+    mutableRequest.aspect_ratio = request.aspect_ratio;
+  }
+  
   if (!!request.image_resolution) {
     mutableRequest.image_resolution = request.image_resolution;
   }

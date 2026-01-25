@@ -1,5 +1,7 @@
 use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use crate::core::api_adapters::aspect_ratio::convert::aspect_ratio_to_artcraft_nano_banana_pro::aspect_ratio_to_artcraft_nano_banana_pro;
+use crate::core::api_adapters::resolution::common_resolution::CommonResolution;
+use crate::core::api_adapters::resolution::convert::resolution_to_artcraft_nano_banana_pro::resolution_to_artcraft_nano_banana_pro;
 use crate::core::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::core::commands::enqueue::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageResolution, EditImageSize};
 use crate::core::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
@@ -61,13 +63,7 @@ pub async fn handle_artcraft_nano_banana_pro_text_to_image(
   };
 
   let aspect_ratio = get_aspect_ratio(request);
-
-  let resolution = request.image_resolution
-      .map(|image_resolution| match image_resolution {
-        TextToImageResolution::OneK => NanoBananaProMultiFunctionImageGenImageResolution::OneK,
-        TextToImageResolution::TwoK => NanoBananaProMultiFunctionImageGenImageResolution::TwoK,
-        TextToImageResolution::FourK => NanoBananaProMultiFunctionImageGenImageResolution::FourK,
-      });
+  let resolution = get_resolution(request);
 
   let request = NanoBananaProMultiFunctionImageGenRequest {
     uuid_idempotency_token,
@@ -122,6 +118,23 @@ fn get_aspect_ratio(request: &EnqueueTextToImageRequest) -> Option<NanoBananaPro
       TextToImageSize::Wide => Some(NanoBananaProMultiFunctionImageGenAspectRatio::SixteenByNine),
       TextToImageSize::Tall => Some(NanoBananaProMultiFunctionImageGenAspectRatio::NineBySixteen),
     }
+  }
+  
+  None
+}
+
+fn get_resolution(request: &EnqueueTextToImageRequest) -> Option<NanoBananaProMultiFunctionImageGenImageResolution> {
+  if let Some(common_resolution) = request.common_resolution {
+    return Some(resolution_to_artcraft_nano_banana_pro(common_resolution));
+  }
+
+  if let Some(resolution) = request.image_resolution {
+    // Deprecated resolution
+    return Some(match resolution {
+      TextToImageResolution::OneK => NanoBananaProMultiFunctionImageGenImageResolution::OneK,
+      TextToImageResolution::TwoK => NanoBananaProMultiFunctionImageGenImageResolution::TwoK,
+      TextToImageResolution::FourK => NanoBananaProMultiFunctionImageGenImageResolution::FourK,
+    })
   }
   
   None

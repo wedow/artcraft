@@ -35,6 +35,8 @@ import { ImagePromptRow } from "./ImagePromptRow";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { AspectRatioPicker } from "./common/AspectRatioPicker";
 import { GenerationCountPicker } from "./common/GenerationCountPicker";
+import { ResolutionPicker } from "./common/ResolutionPicker";
+import { CommonResolution } from "@storyteller/model-list";
 
 interface PromptBoxImageProps {
   useJobContext: () => JobContextType;
@@ -113,6 +115,9 @@ export const PromptBoxImage = ({
 
   // New aspect ratio state will begin to phase out old aspect ratio
   const [commonAspectRatio, setCommonAspectRatio] = useState<CommonAspectRatio | undefined>(undefined);
+
+  // New resolution state will begin to phase out old resolution
+  const [commonResolution, setCommonResolution] = useState<CommonResolution | undefined>(undefined);  
 
   useEffect(() => {
     onImageRowVisibilityChange?.(isImageRowVisible);
@@ -278,6 +283,10 @@ export const PromptBoxImage = ({
 
       if (selectedModel?.supportsNewAspectRatio()) {
         request.common_aspect_ratio = commonAspectRatio;
+      }
+
+      if (selectedModel?.supportsNewResolution()) {
+        request.common_resolution = commonResolution;
       }
 
       if (
@@ -472,7 +481,14 @@ export const PromptBoxImage = ({
                   />
                 </Tooltip>
               )}
-              {selectedModel?.canChangeResolution && (
+              {selectedModel?.supportsNewResolution() && (
+                <ResolutionPicker
+                  model={selectedModel}
+                  currentResolution={commonResolution}
+                  handleCommonResolutionSelect={setCommonResolution}
+                />
+              )}
+              {selectedModel?.canChangeResolution && !selectedModel?.supportsNewResolution() && (
                 <Tooltip
                   content="Resolution"
                   position="top"
