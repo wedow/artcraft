@@ -119,7 +119,7 @@ export const PageEditor = () => {
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
 
-  const selectedProvider : GenerationProvider | undefined = 
+  const selectedProvider: GenerationProvider | undefined =
     useSelectedProviderForModel(PAGE_ID, selectedImageModel?.id);
 
   const height =
@@ -596,11 +596,6 @@ export const PageEditor = () => {
       {tabStore.activeTabId == "VIDEO" && (
         <div>
           <ImageToVideo />
-        </div>
-      )}
-      {tabStore.activeTabId == "EDIT" && (
-        <div>
-          <PageEdit />
         </div>
       )}
       {tabStore.activeTabId == "VIDEO_FRAME_EXTRACTOR" && (

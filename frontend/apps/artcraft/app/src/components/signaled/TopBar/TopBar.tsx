@@ -1,69 +1,68 @@
-import { useEffect, useRef, useState } from "react";
 import {
-  faGear,
-  faImages,
-  faGem,
-  faCoinFront,
-  faGrid2,
-} from "@fortawesome/pro-solid-svg-icons";
-import {
-  faWindowRestore,
-  faSquare,
-  faXmark,
   faDash,
+  faSquare,
+  faWindowRestore,
+  faXmark,
 } from "@fortawesome/pro-regular-svg-icons";
-import { Button } from "@storyteller/ui-button";
-import { PopoverMenu } from "@storyteller/ui-popover";
-import { SceneTitleInput } from "./SceneTitleInput";
 import {
-  GalleryModal,
-  galleryModalVisibleViewMode,
-  galleryModalVisibleDuringDrag,
-  galleryModalLightboxVisible,
-} from "@storyteller/ui-gallery-modal";
-import { SettingsModal } from "@storyteller/ui-settings-modal";
-import { Tooltip } from "@storyteller/ui-tooltip";
-import { downloadFileFromUrl, FilterMediaClasses } from "@storyteller/api";
-import {
-  MenuIconSelector,
-  MenuIconItem,
-} from "@storyteller/ui-menu-icon-selector";
+  faCoinFront,
+  faGear,
+  faGem,
+  faGrid2,
+  faImages,
+} from "@fortawesome/pro-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { setLogoutStates } from "~/signals/authentication/utilities";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TabId, useTabStore } from "~/pages/Stores/TabState";
+import { FilterMediaClasses } from "@storyteller/api";
+import { useCreditsState } from "@storyteller/credits";
+import { gtagEvent } from "@storyteller/google-analytics";
+import { ProviderBillingModal } from "@storyteller/provider-billing-modal";
+import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
+import { useSubscriptionState } from "@storyteller/subscription";
+import { DownloadUrl } from "@storyteller/tauri-api";
+import { useCreditsBalanceChangedEvent, useSubscriptionPlanChangedEvent } from "@storyteller/tauri-events";
+import {
+  useTauriPlatform,
+  useTauriWindowControls,
+} from "@storyteller/tauri-utils";
+import { Button } from "@storyteller/ui-button";
+import {
+  GalleryModal,
+  galleryModalLightboxVisible,
+  galleryModalVisibleDuringDrag,
+  galleryModalVisibleViewMode,
+} from "@storyteller/ui-gallery-modal";
+import {
+  MenuIconItem,
+  MenuIconSelector,
+} from "@storyteller/ui-menu-icon-selector";
+import { PopoverMenu } from "@storyteller/ui-popover";
+import {
+  useCreditsModalStore,
+  usePricingModalStore,
+} from "@storyteller/ui-pricing-modal";
+import { RefImage, usePromptVideoStore } from "@storyteller/ui-promptbox";
+import { SettingsModal } from "@storyteller/ui-settings-modal";
+import { Tooltip } from "@storyteller/ui-tooltip";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { APP_DESCRIPTORS } from "~/config/appMenu";
+import { useSceneStore } from "~/pages/PageDraw/stores/SceneState";
 import {
   is3DEditorInitialized,
   is3DSceneLoaded,
   set3DPageMounted,
 } from "~/pages/PageEnigma/Editor/editor";
-import toast from "react-hot-toast";
-import { gtagEvent } from "@storyteller/google-analytics";
-import {
-  useTauriWindowControls,
-  useTauriPlatform,
-} from "@storyteller/tauri-utils";
-import { useEditStore } from "../../../pages/PageEdit/stores/EditState";
-import { BaseSelectorImage } from "../../../pages/PageEdit/BaseImageSelector";
-import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
-import { ProviderBillingModal } from "@storyteller/provider-billing-modal";
-import {
-  usePricingModalStore,
-  useCreditsModalStore,
-} from "@storyteller/ui-pricing-modal";
-import { useCreditsBalanceChangedEvent } from "@storyteller/tauri-events";
-import { useSubscriptionPlanChangedEvent } from "@storyteller/tauri-events";
-import { useCreditsState } from "@storyteller/credits";
-import { useSubscriptionState } from "@storyteller/subscription";
-import { UploadImagesButton } from "./UploadImagesButton";
-import { TaskQueue } from "./TaskQueue";
-import { usePromptVideoStore, RefImage } from "@storyteller/ui-promptbox";
-import { APP_DESCRIPTORS } from "~/config/appMenu";
-import { AppsQuickMenu } from "./AppsQuickMenu";
-import { useRemoveBackgroundStore } from "~/pages/PageRemoveBackground/RemoveBackgroundStore";
 import { useImageTo3DWorldStore } from "~/pages/PageImageTo3DWorld/ImageTo3DWorldStore";
-import { DownloadUrl } from "@storyteller/tauri-api";
+import { useRemoveBackgroundStore } from "~/pages/PageRemoveBackground/RemoveBackgroundStore";
+import { TabId, useTabStore } from "~/pages/Stores/TabState";
+import { setLogoutStates } from "~/signals/authentication/utilities";
+import { BaseSelectorImage } from "../../../pages/PageEdit/BaseImageSelector";
+import { AppsQuickMenu } from "./AppsQuickMenu";
+import { SceneTitleInput } from "./SceneTitleInput";
+import { TaskQueue } from "./TaskQueue";
+import { UploadImagesButton } from "./UploadImagesButton";
 
 interface Props {
   pageName: string;
@@ -188,10 +187,10 @@ export const TopBar = ({ pageName }: Props) => {
   const handleEditFromGallery = async (url: string, mediaId?: string) => {
     try {
       // Reset editor state
-      useEditStore.getState().RESET();
+      useSceneStore.getState().RESET();
 
       // Switch to EDIT tab
-      useTabStore.getState().setActiveTab("EDIT");
+      useTabStore.getState().setActiveTab("2D");
 
       // Select the image for editing
       const baseImage: BaseSelectorImage = {
@@ -200,8 +199,8 @@ export const TopBar = ({ pageName }: Props) => {
       };
 
       // Add it to state history
-      useEditStore.getState().addHistoryImageBundle({ images: [baseImage] });
-      useEditStore.getState().setBaseImageInfo(baseImage);
+      useSceneStore.getState().addHistoryImageBundle({ images: [baseImage] });
+      useSceneStore.getState().setBaseImageInfo(baseImage);
 
       // Close gallery modal and lightbox if open
       galleryModalVisibleViewMode.value = false;

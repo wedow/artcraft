@@ -6,7 +6,6 @@ export type TabId =
   | "3D"
   | "VIDEO"
   | "IMAGE"
-  | "EDIT"
   | "APPS"
   | "VIDEO_FRAME_EXTRACTOR"
   | "VIDEO_WATERMARK_REMOVAL"

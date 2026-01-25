@@ -47,14 +47,6 @@ export const APP_DESCRIPTORS: AppDescriptor[] = [
     icon: faFilm,
   },
   {
-    id: "EDIT",
-    label: "Edit Image",
-    icon: faPencil,
-    imageSrc: "/resources/gifs/INPAINT_CANVAS_DEMO.gif",
-    description: "Modify your image with AI",
-    large: true,
-  },
-  {
     id: "2D",
     label: "2D Canvas",
     icon: faPalette,
@@ -127,7 +119,7 @@ export const ALL_APPS: FullAppItem[] = [
     description: "Change with inpainting",
     icon: faPencil,
     category: "edit",
-    action: "EDIT",
+    action: "2D",
     color: "bg-purple-600/40",
   },
   {
@@ -213,7 +205,6 @@ export const goToApp = (action?: string) => {
     [
       "IMAGE",
       "VIDEO",
-      "EDIT",
       "2D",
       "3D",
       "VIDEO_FRAME_EXTRACTOR",
