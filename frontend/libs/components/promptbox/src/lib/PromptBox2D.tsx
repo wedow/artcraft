@@ -34,53 +34,59 @@ import {
   EnqueueEditImageResolution,
   EnqueueEditImageRequest,
 } from "@storyteller/tauri-api";
-import { usePrompt2DStore } from "./promptStore";
+import { Prompt2DStore, RefImage } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { getCapabilitiesForModel } from "@storyteller/model-list";
 import { ImageModel } from "@storyteller/model-list";
-import { ImagePromptRow } from "./ImagePromptRow";
+import { ImagePromptRow, UploadImageFn } from "./ImagePromptRow";
 import { twMerge } from "tailwind-merge";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { GenerationCountPicker } from "./common/GenerationCountPicker";
+import { StoreApi, UseBoundStore } from "zustand";
 
 export type AspectRatio = "wide" | "tall" | "square";
 
-interface PromptBox2DProps {
-  uploadImage: ({
-    title,
-    assetFile,
-    progressCallback,
-  }: {
-    title: string;
-    assetFile: File;
-    progressCallback: (newState: UploaderState) => void;
-  }) => Promise<void>;
+export interface PromptBox2DProps {
+  uploadImage?: UploadImageFn;
   selectedImageModel?: ImageModel;
   selectedProvider?: GenerationProvider;
-  getCanvasRenderBitmap: () => MaybeCanvasRenderBitmapType;
   EncodeImageBitmapToBase64: (imageBitmap: ImageBitmap) => Promise<string>;
-  useJobContext: () => JobContextType;
-  onEnqueuePressed?: () => void | Promise<void>;
+  onGenerateClick: (
+    prompt: string,
+    options?: {
+      aspectRatio?: string;
+      resolution?: string;
+      images?: RefImage[];
+      selectedProvider?: GenerationProvider;
+    },
+  ) => void | Promise<void>;
+  isDisabled?: boolean;
+  isEnqueueing?: boolean;
+  generationCount?: number;
+  onGenerationCountChange?: (count: number) => void;
   onAspectRatioChange?: (ratio: AspectRatio) => void;
   onFitPressed?: () => void | Promise<void>;
+  usePrompt2DStore: UseBoundStore<StoreApi<Prompt2DStore>>;
 }
 
 export const PromptBox2D = ({
   uploadImage,
-  getCanvasRenderBitmap,
-  EncodeImageBitmapToBase64,
-  useJobContext,
-  onEnqueuePressed,
-  onAspectRatioChange,
   selectedImageModel,
   selectedProvider,
+  EncodeImageBitmapToBase64,
+  onGenerateClick,
+  isDisabled = false,
+  isEnqueueing = false,
+  generationCount = 1,
+  onGenerationCountChange,
+  onAspectRatioChange,
   onFitPressed,
+  usePrompt2DStore,
 }: PromptBox2DProps) => {
   useSignals();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState<React.ReactNode>("");
-  const { addJobToken } = useJobContext();
 
   //const { lastRenderedBitmap } = useCanvasSignal();
   const prompt = usePrompt2DStore((s) => s.prompt);
@@ -91,10 +97,8 @@ export const PromptBox2D = ({
   const setAspectRatio = usePrompt2DStore((s) => s.setAspectRatio);
   const resolution = usePrompt2DStore((s) => s.resolution);
   const setResolution = usePrompt2DStore((s) => s.setResolution);
-  const generationCount = usePrompt2DStore((s) => s.generationCount);
-  const setGenerationCount = usePrompt2DStore((s) => s.setGenerationCount);
+  const [internalEnqueueing, setInternalEnqueueing] = useState(false);
 
-  const [isEnqueueing, setIsEnqueueing] = useState(false);
   const referenceImages = usePrompt2DStore((s) => s.referenceImages);
   const setReferenceImages = usePrompt2DStore((s) => s.setReferenceImages);
   const [showImagePrompts, setShowImagePrompts] = useState(false);
@@ -139,7 +143,7 @@ export const PromptBox2D = ({
       return;
     }
     const defaultGenerations = selectedImageModel?.defaultGenerationCount || 4;
-    setGenerationCount(defaultGenerations);
+    onGenerationCountChange?.(defaultGenerations);
   }, [selectedImageModel, generationCount]);
 
   useEffect(() => {
@@ -239,7 +243,7 @@ export const PromptBox2D = ({
     const aspectRatio = getCurrentAspectRatio();
     const resolution = getCurrentResolution();
 
-    let request : EnqueueEditImageRequest = {
+    let request: EnqueueEditImageRequest = {
       model: selectedImageModel,
       scene_image_media_token: snapshotMediaToken.data!,
       image_media_tokens: referenceImages
@@ -261,104 +265,25 @@ export const PromptBox2D = ({
     console.log("generateResponse", generateResponse);
   };
 
-  const handleWebEnqueue = async () => {
-    const api = new PromptsApi();
-    // to take the snapshot of the canvas
-    // Call onEnqueuePressed if it exists
-
-    let image = getCanvasRenderBitmap();
-    if (image === undefined) {
-      toast.error(
-        "Error: Unable to generate image. Please check the input and try again.",
-      );
-      return;
-    }
-    const base64Bitmap = await EncodeImageBitmapToBase64(image);
-
-    const byteString = atob(base64Bitmap);
-    const mimeString = "image/png";
-
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-
-    const uuid = crypto.randomUUID(); // Generate a new UUID
-    const file = new File([ab], `${uuid}.png`, { type: mimeString });
-
-    const snapshotMediaToken = await api.uploadSceneSnapshot({
-      screenshot: file,
-    });
-
-    if (snapshotMediaToken.data === undefined) {
-      toast.error("Error: Unable to upload scene snapshot Please try again.");
-      return;
-    }
-    console.log("useSystemPrompt", useSystemPrompt);
-    console.log("Snapshot media token:", snapshotMediaToken.data);
-
-    const response = await api.enqueueImageGeneration({
-      disableSystemPrompt: !useSystemPrompt,
-      prompt: prompt,
-      snapshotMediaToken: snapshotMediaToken.data,
-      additionalImages: referenceImages
-        .map((image) => image.mediaToken)
-        .filter((t) => t.length > 0),
-    });
-
-    if (response.success === true) {
-      toast.success("Please wait while we process your image.");
-      if (response.data) {
-        addJobToken(response.data);
-      }
-      return;
-    } else {
-      toast.error("Failed to enqueue image generation. Please try again.");
-    }
-  };
-
-  const handleEnqueue = async () => {
-    console.log("Pressing Enqueue");
-    if (onEnqueuePressed) {
-      try {
-        await onEnqueuePressed();
-      } catch (error) {
-        console.error("Error in onEnqueuePressed callback:", error);
-        return;
-      }
-    }
-
-    gtagEvent("enqueue_2d");
-
-    if (isEnqueueing) return;
-    setIsEnqueueing(true);
-    if (!prompt.trim()) return;
+  const handleGenerate = async () => {
+    const busy = Boolean(isEnqueueing ?? internalEnqueueing);
+    if (busy || isDisabled || !prompt.trim()) return;
+    setInternalEnqueueing(true);
+    const timeout = setTimeout(() => {
+      setInternalEnqueueing(false);
+    }, 10000);
     try {
-      console.log(
-        "(4) Enqueuing with prompt:",
-        prompt,
-        "and reference images:",
-        referenceImages,
-      );
-
-      const isDesktop = IsDesktopApp();
-      console.log("Is this a desktop app?", isDesktop);
-
-      if (isDesktop) {
-        await handleTauriEnqueue();
-      } else {
-        await handleWebEnqueue();
-      }
-    } catch (error) {
-      console.error("Error during image generation:", error);
-      toast.error(
-        "An error occurred while generating the image. Please try again.",
+      await Promise.resolve(
+        onGenerateClick(prompt, {
+          aspectRatio,
+          resolution,
+          images: referenceImages,
+          selectedProvider: selectedProvider,
+        }),
       );
     } finally {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      setIsEnqueueing(false);
+      clearTimeout(timeout);
+      setInternalEnqueueing(false);
     }
   };
 
@@ -402,7 +327,7 @@ export const PromptBox2D = ({
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleEnqueue();
+      handleGenerate();
     }
   };
 
@@ -445,8 +370,8 @@ export const PromptBox2D = ({
           className={twMerge(
             "glass w-[730px] rounded-xl p-4",
             selectedImageModel?.canUseImagePrompt &&
-              isImageRowVisible &&
-              "rounded-t-none",
+            isImageRowVisible &&
+            "rounded-t-none",
           )}
         >
           <div className="flex justify-center gap-2">
@@ -492,8 +417,8 @@ export const PromptBox2D = ({
               onChange={handleChange}
               onPaste={handlePaste}
               onKeyDown={handleKeyDown}
-              onFocus={() => {}}
-              onBlur={() => {}}
+              onFocus={() => { }}
+              onBlur={() => { }}
             />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
@@ -579,16 +504,20 @@ export const PromptBox2D = ({
                 currentModel={selectedImageModel}
                 currentCount={generationCount}
                 handleCountChange={(count) => {
-                  setGenerationCount(count);
+                  onGenerationCountChange?.(count);
                 }}
               />
               <Button
                 className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
-                icon={!isEnqueueing ? faSparkles : undefined}
-                onClick={handleEnqueue}
+                icon={
+                  !(isEnqueueing ?? internalEnqueueing) && !isDisabled
+                    ? faSparkles
+                    : undefined
+                }
+                onClick={handleGenerate}
                 disabled={isEnqueueing || !prompt.trim()}
               >
-                {isEnqueueing ? (
+                {(isEnqueueing ?? internalEnqueueing) ? (
                   <FontAwesomeIcon
                     icon={faSpinnerThird}
                     className="animate-spin text-lg"

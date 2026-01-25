@@ -11,7 +11,7 @@ export interface RefImage {
 type AspectRatio = "wide" | "tall" | "square";
 type Resolution = "1k" | "2k" | "4k";
 
-interface Prompt2DStore {
+export interface Prompt2DStore {
   prompt: string;
   aspectRatio: AspectRatio;
   resolution: Resolution;
@@ -98,8 +98,6 @@ export const usePromptImageStore = create<PromptImageStore>()((set) => ({
 }));
 
 // ----- Video Prompt Box Store -----
-type Resolution = "720p" | "480p"; // TODO: This needs to be relaxed.
-
 interface PromptVideoStore {
   prompt: string;
   resolution: Resolution | string;
