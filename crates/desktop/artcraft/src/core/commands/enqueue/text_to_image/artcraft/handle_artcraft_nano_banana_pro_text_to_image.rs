@@ -72,7 +72,7 @@ pub async fn handle_artcraft_nano_banana_pro_text_to_image(
   let request = NanoBananaProMultiFunctionImageGenRequest {
     uuid_idempotency_token,
     prompt: request.prompt.clone(),
-    image_media_tokens: None,
+    image_media_tokens: request.image_media_tokens.clone(),
     num_images,
     resolution,
     aspect_ratio,

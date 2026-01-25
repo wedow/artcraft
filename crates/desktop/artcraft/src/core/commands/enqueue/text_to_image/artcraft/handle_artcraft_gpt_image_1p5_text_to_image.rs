@@ -62,8 +62,7 @@ pub async fn handle_artcraft_gpt_image_1p5_text_to_image(
     prompt: request.prompt.clone(),
     image_size: aspect_ratio,
     num_images,
-    // Not provided for text-to-image
-    image_media_tokens: None,
+    image_media_tokens: request.image_media_tokens.clone(),
     mask_image_token: None,
     input_fidelity: None,
     // Not provided
