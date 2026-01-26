@@ -26,6 +26,7 @@ use crate::http_server::endpoints::media_files::upload::upload_generic::upload_m
 use crate::http_server::endpoints::media_files::upload::upload_image_media_file_handler::upload_image_media_file_handler;
 use crate::http_server::endpoints::media_files::upload::upload_new_engine_asset_media_file_handler::upload_new_engine_asset_media_file_handler;
 use crate::http_server::endpoints::media_files::upload::upload_new_scene_media_file_handler::upload_new_scene_media_file_handler;
+use crate::http_server::endpoints::media_files::upload::upload_new_spz_media_file_handler::upload_new_spz_media_file_handler;
 use crate::http_server::endpoints::media_files::upload::upload_pmx::upload_pmx_media_file_handler::upload_pmx_media_file_handler;
 use crate::http_server::endpoints::media_files::upload::upload_saved_scene_media_file_handler::upload_saved_scene_media_file_handler;
 use crate::http_server::endpoints::media_files::upload::upload_scene_snapshot_media_file_handler::upload_scene_snapshot_media_file_handler;
@@ -147,6 +148,10 @@ pub fn add_media_file_routes<T, B> (app: App<T>) -> App<T>
       )
       .service(web::resource("/upload/new_scene")
           .route(web::post().to(upload_new_scene_media_file_handler))
+          .route(web::head().to(|| HttpResponse::Ok()))
+      )
+      .service(web::resource("/upload/new_spz")
+          .route(web::post().to(upload_new_spz_media_file_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
       .service(web::resource("/upload/scene_snapshot")
