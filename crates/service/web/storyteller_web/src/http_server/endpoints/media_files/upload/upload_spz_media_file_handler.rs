@@ -33,10 +33,10 @@ const CERAMIC_SPZ_EXTENSION: &str = ".ceramic.spz";
 
 /// Form-multipart request fields for SPZ (Gaussian Splat) upload.
 ///
-/// IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadNewSpzMediaFileForm` (Under "Schema") FOR DETAILS ON FIELDS AND NULLABILITY.
+/// IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadSpzMediaFileForm` (Under "Schema") FOR DETAILS ON FIELDS AND NULLABILITY.
 #[derive(MultipartForm, ToSchema)]
 #[multipart(duplicate_field = "deny")]
-pub struct UploadNewSpzMediaFileForm {
+pub struct UploadSpzMediaFileForm {
   /// UUID for request idempotency
   #[multipart(limit = "2 KiB")]
   #[schema(value_type = String, format = Binary)]
@@ -59,7 +59,7 @@ pub struct UploadNewSpzMediaFileForm {
 }
 
 #[derive(Serialize, ToSchema)]
-pub struct UploadNewSpzMediaFileSuccessResponse {
+pub struct UploadSpzMediaFileSuccessResponse {
   pub success: bool,
   pub media_file_token: MediaFileToken,
 }
@@ -71,9 +71,9 @@ pub struct UploadNewSpzMediaFileSuccessResponse {
 #[utoipa::path(
   post,
   tag = "Media Files (Upload)",
-  path = "/v1/media_files/upload/new_spz",
+  path = "/v1/media_files/upload/spz",
   responses(
-    (status = 200, description = "Success", body = UploadNewSpzMediaFileSuccessResponse),
+    (status = 200, description = "Success", body = UploadSpzMediaFileSuccessResponse),
     (status = 400, description = "Bad input", body = MediaFileUploadError),
     (status = 401, description = "Not authorized", body = MediaFileUploadError),
     (status = 429, description = "Too many requests", body = MediaFileUploadError),
@@ -81,16 +81,16 @@ pub struct UploadNewSpzMediaFileSuccessResponse {
   ),
   params(
     (
-      "request" = UploadNewSpzMediaFileForm,
-      description = "IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadNewSpzMediaFileForm` (Under 'Schema') FOR DETAILS ON FIELDS AND NULLABILITY."
+      "request" = UploadSpzMediaFileForm,
+      description = "IF VIEWING DOCS, PLEASE SEE BOTTOM OF PAGE `UploadSpzMediaFileForm` (Under 'Schema') FOR DETAILS ON FIELDS AND NULLABILITY."
     ),
   )
 )]
-pub async fn upload_new_spz_media_file_handler(
+pub async fn upload_spz_media_file_handler(
   http_request: HttpRequest,
   server_state: web::Data<Arc<ServerState>>,
-  MultipartForm(mut form): MultipartForm<UploadNewSpzMediaFileForm>,
-) -> Result<Json<UploadNewSpzMediaFileSuccessResponse>, MediaFileUploadError> {
+  MultipartForm(mut form): MultipartForm<UploadSpzMediaFileForm>,
+) -> Result<Json<UploadSpzMediaFileSuccessResponse>, MediaFileUploadError> {
 
   let mut mysql_connection = server_state.mysql_pool
       .acquire()
@@ -266,7 +266,7 @@ pub async fn upload_new_spz_media_file_handler(
 
   info!("new SPZ media file token: {:?}", &media_token);
 
-  Ok(Json(UploadNewSpzMediaFileSuccessResponse {
+  Ok(Json(UploadSpzMediaFileSuccessResponse {
     success: true,
     media_file_token: media_token,
   }))

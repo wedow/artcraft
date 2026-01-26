@@ -1,65 +1,5 @@
 use utoipa::OpenApi;
 
-use artcraft_api_defs::common::responses::job_details::JobDetailsLipsyncRequest;
-use artcraft_api_defs::common::responses::job_details::JobDetailsLivePortraitRequest;
-use artcraft_api_defs::common::responses::media_links::*;
-use artcraft_api_defs::common::responses::simple_generic_json_success::SimpleGenericJsonSuccess;
-use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::*;
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageResponse;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageAspectRatio;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageNumImages;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageResponse;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageAspectRatio;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageNumImages;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageResponse;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageAspectRatio;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageNumImages;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
-use artcraft_api_defs::generate::image::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
-use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageImageQuality;
-use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageImageSize;
-use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageNumImages;
-use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageRequest;
-use artcraft_api_defs::generate::image::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageResponse;
-use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundRequest;
-use artcraft_api_defs::generate::image::remove_image_background::RemoveImageBackgroundResponse;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dResponse;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
-use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
-use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProAspectRatio;
-use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProDuration;
-use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
-use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterAspectRatio;
-use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterDuration;
-use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterImageToVideoResponse;
-use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProAspectRatio;
-use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProDuration;
-use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoResponse;
-use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteDuration;
-use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoResponse;
-use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteResolution;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2AspectRatio;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2Duration;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
-use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
-use artcraft_api_defs::jobs::list_session_jobs::*;
-use artcraft_api_defs::media_file::delete_media_file::DeleteMediaFilePathInfo;
-use artcraft_api_defs::media_file::delete_media_file::DeleteMediaFileRequest;
-use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
-use artcraft_api_defs::prompts::create_prompt::CreatePromptResponse;
-use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
-use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
-use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
 use crate::http_server::common_requests::auto_product_category::AutoProductCategory;
 use crate::http_server::common_requests::media_file_token_path_info::MediaFileTokenPathInfo;
 use crate::http_server::common_responses::media::cover_image_links::CoverImageLinks;
@@ -134,10 +74,10 @@ use crate::http_server::endpoints::media_files::upload::upload_generic::upload_m
 use crate::http_server::endpoints::media_files::upload::upload_image_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_new_engine_asset_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_new_scene_media_file_handler::*;
-use crate::http_server::endpoints::media_files::upload::upload_new_spz_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_pmx::upload_pmx_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_saved_scene_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_scene_snapshot_media_file_handler::*;
+use crate::http_server::endpoints::media_files::upload::upload_spz_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_studio_shot::upload_studio_shot_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_video_new::upload_new_video_media_file_handler::*;
 use crate::http_server::endpoints::media_files::upload::upload_video_old::upload_video_media_file_handler::*;
@@ -149,8 +89,8 @@ use crate::http_server::endpoints::moderation::user_feature_flags::edit_user_fea
 use crate::http_server::endpoints::prompts::get_prompt_handler::*;
 use crate::http_server::endpoints::service::status_alert_handler::*;
 use crate::http_server::endpoints::stats::get_unified_queue_stats_handler::*;
-use crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::*;
 use crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::EnqueueStudioGen2Request;
+use crate::http_server::endpoints::studio_gen2::enqueue_studio_gen2_handler::*;
 use crate::http_server::endpoints::tags::list_tags_for_entity_handler::*;
 use crate::http_server::endpoints::tags::set_tags_for_entity_handler::*;
 use crate::http_server::endpoints::tts::enqueue_infer_tts_handler::enqueue_infer_tts_handler::*;
@@ -182,6 +122,66 @@ use crate::http_server::endpoints::weights::list::list_weights_by_user_handler::
 use crate::http_server::endpoints::weights::search::search_model_weights_impl::*;
 use crate::http_server::endpoints::weights::update::set_model_weight_cover_image_handler::*;
 use crate::http_server::endpoints::weights::update::update_weight_handler::*;
+use artcraft_api_defs::common::responses::job_details::JobDetailsLipsyncRequest;
+use artcraft_api_defs::common::responses::job_details::JobDetailsLivePortraitRequest;
+use artcraft_api_defs::common::responses::media_links::*;
+use artcraft_api_defs::common::responses::simple_generic_json_success::SimpleGenericJsonSuccess;
+use artcraft_api_defs::generate::image::bg_removal::remove_image_background::RemoveImageBackgroundRequest;
+use artcraft_api_defs::generate::image::bg_removal::remove_image_background::RemoveImageBackgroundResponse;
+use artcraft_api_defs::generate::image::edit::gpt_image_1_edit_image::*;
+use artcraft_api_defs::generate::image::text::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
+use artcraft_api_defs::generate::image::text::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageNumImages;
+use artcraft_api_defs::generate::image::text::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageRequest;
+use artcraft_api_defs::generate::image::text::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageResponse;
+use artcraft_api_defs::generate::image::text::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageAspectRatio;
+use artcraft_api_defs::generate::image::text::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageNumImages;
+use artcraft_api_defs::generate::image::text::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageRequest;
+use artcraft_api_defs::generate::image::text::generate_flux_1_schnell_text_to_image::GenerateFlux1SchnellTextToImageResponse;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageAspectRatio;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageNumImages;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageRequest;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageResponse;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageAspectRatio;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageNumImages;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageRequest;
+use artcraft_api_defs::generate::image::text::generate_flux_pro_11_ultra_text_to_image::GenerateFluxPro11UltraTextToImageResponse;
+use artcraft_api_defs::generate::image::text::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageImageQuality;
+use artcraft_api_defs::generate::image::text::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageImageSize;
+use artcraft_api_defs::generate::image::text::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageNumImages;
+use artcraft_api_defs::generate::image::text::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageRequest;
+use artcraft_api_defs::generate::image::text::generate_gpt_image_1_text_to_image::GenerateGptImage1TextToImageResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_0_image_to_3d::GenerateHunyuan20ImageTo3dResponse;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dRequest;
+use artcraft_api_defs::generate::object::generate_hunyuan_2_1_image_to_3d::GenerateHunyuan21ImageTo3dResponse;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProAspectRatio;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProDuration;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_kling_1_6_pro_image_to_video::GenerateKling16ProImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterAspectRatio;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterDuration;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_kling_2_1_master_image_to_video::GenerateKling21MasterImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProAspectRatio;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProDuration;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_kling_2_1_pro_image_to_video::GenerateKling21ProImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteDuration;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteImageToVideoResponse;
+use artcraft_api_defs::generate::video::generate_seedance_1_0_lite_image_to_video::GenerateSeedance10LiteResolution;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2AspectRatio;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2Duration;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoRequest;
+use artcraft_api_defs::generate::video::generate_veo_2_image_to_video::GenerateVeo2ImageToVideoResponse;
+use artcraft_api_defs::jobs::list_session_jobs::*;
+use artcraft_api_defs::media_file::delete_media_file::DeleteMediaFilePathInfo;
+use artcraft_api_defs::media_file::delete_media_file::DeleteMediaFileRequest;
+use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_api_defs::prompts::create_prompt::CreatePromptResponse;
+use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_error::CreateCheckoutSessionError;
+use billing_component::stripe::http_endpoints::checkout::create::stripe_create_checkout_session_json_handler::*;
+use billing_component::users::http_endpoints::list_active_user_subscriptions_handler::*;
 use enums::by_table::beta_keys::beta_key_product::BetaKeyProduct;
 use enums::by_table::comments::comment_entity_type::CommentEntityType;
 use enums::by_table::featured_items::featured_item_entity_type::FeaturedItemEntityType;
@@ -286,7 +286,7 @@ use tokens::tokens::zs_voice_datasets::*;
     crate::http_server::endpoints::media_files::upload::upload_image_media_file_handler::upload_image_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_new_engine_asset_media_file_handler::upload_new_engine_asset_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_new_scene_media_file_handler::upload_new_scene_media_file_handler,
-    crate::http_server::endpoints::media_files::upload::upload_new_spz_media_file_handler::upload_new_spz_media_file_handler,
+    crate::http_server::endpoints::media_files::upload::upload_spz_media_file_handler::upload_spz_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_pmx::upload_pmx_media_file_handler::upload_pmx_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_saved_scene_media_file_handler::upload_saved_scene_media_file_handler,
     crate::http_server::endpoints::media_files::upload::upload_scene_snapshot_media_file_handler::upload_scene_snapshot_media_file_handler,
@@ -755,8 +755,8 @@ use tokens::tokens::zs_voice_datasets::*;
     UploadNewEngineAssetSuccessResponse,
     UploadNewSceneMediaFileForm,
     UploadNewSceneMediaFileSuccessResponse,
-    UploadNewSpzMediaFileForm,
-    UploadNewSpzMediaFileSuccessResponse,
+    UploadSpzMediaFileForm,
+    UploadSpzMediaFileSuccessResponse,
     UploadNewVideoMediaFileForm,
     UploadNewVideoMediaFileSuccessResponse,
     UploadPmxFileForm,
