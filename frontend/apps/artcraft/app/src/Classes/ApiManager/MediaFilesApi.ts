@@ -7,7 +7,7 @@ import {
 import { ApiManager, ApiResponse } from "./ApiManager";
 import { authentication } from "~/signals";
 import type { Property } from "csstype";
-type Visibility = Property.Visibility;
+import { Visibility } from "~/enums";
 
 import {
   FilterEngineCategories,
@@ -333,4 +333,67 @@ export class MediaFilesApi extends ApiManager {
         };
       });
   }
+
+  public async UploadSpzFile({
+    file,
+    fileName,
+    uuid,
+    maybe_title,
+    maybe_visibility = Visibility.Public,
+  }: {
+    file: File;
+    fileName: string;
+    uuid: string;
+    maybe_title?: string;
+    maybe_visibility?: Visibility;
+  }): Promise<ApiResponse<string>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/media_files/upload/spz`;
+    const options: Record<string, string | number | undefined> = {
+      maybe_title,
+      maybe_visibility: maybe_visibility?.toString(),
+    };
+    return this.Upload({ endpoint, blob: file, fileName, uuid, options });
+  }
+
+  private async Upload({
+    endpoint,
+    uuid,
+    blob,
+    fileName,
+    options,
+  }: {
+    endpoint: string;
+    blob: Blob | File;
+    fileName: string;
+    uuid: string;
+    options: Record<string, string | number | undefined>;
+  }): Promise<ApiResponse<string>> {
+    const formRecord = Object.entries(options).reduce(
+      (allOptions, [key, value]) => {
+        if (value === undefined) {
+          return allOptions;
+        }
+        return { ...allOptions, [key]: value.toString() };
+      },
+      {} as Record<string, string>,
+    );
+
+    return await this.postForm<{
+      success: boolean;
+      media_file_token?: string;
+      BadInput?: string;
+    }>({ endpoint, formRecord, blob, blobFileName: fileName, uuid })
+      .then((response) => ({
+        success: Boolean(response.success ?? false),
+        data: response.media_file_token,
+        errorMessage: response.BadInput,
+      }))
+      .catch((err) => {
+        return {
+          success: false,
+          errorMessage: err.message,
+        };
+      });
+  }
+
 }
