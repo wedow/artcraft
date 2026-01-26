@@ -153,7 +153,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
       None => EnqueueNanoBananaProEditImageNumImages::One, // Default to One
     };
 
-    let resolution = match request.resolution {
+    let mut resolution = match request.resolution {
       Some(NanoBananaProMultiFunctionImageGenImageResolution::OneK) => EnqueueNanoBananaProEditImageResolution::OneK,
       Some(NanoBananaProMultiFunctionImageGenImageResolution::TwoK) => EnqueueNanoBananaProEditImageResolution::TwoK,
       Some(NanoBananaProMultiFunctionImageGenImageResolution::FourK) => EnqueueNanoBananaProEditImageResolution::FourK,
@@ -177,6 +177,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
 
     if downgrade_for_free_user {
       num_images = EnqueueNanoBananaProEditImageNumImages::One;
+      resolution = EnqueueNanoBananaProEditImageResolution::OneK;
     }
 
     let args = EnqueueNanoBananaProEditImageArgs {
@@ -207,7 +208,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
       None => EnqueueNanoBananaProTextToImageNumImages::One, // Default to One
     };
 
-    let resolution = match request.resolution {
+    let mut resolution = match request.resolution {
       Some(NanoBananaProMultiFunctionImageGenImageResolution::OneK) => EnqueueNanoBananaProTextToImageResolution::OneK,
       Some(NanoBananaProMultiFunctionImageGenImageResolution::TwoK) => EnqueueNanoBananaProTextToImageResolution::TwoK,
       Some(NanoBananaProMultiFunctionImageGenImageResolution::FourK) => EnqueueNanoBananaProTextToImageResolution::FourK,
@@ -231,6 +232,7 @@ pub async fn nano_banana_pro_multi_function_image_gen_handler(
 
     if downgrade_for_free_user {
       num_images = EnqueueNanoBananaProTextToImageNumImages::One;
+      resolution = EnqueueNanoBananaProTextToImageResolution::OneK;
     }
 
     let args = EnqueueNanoBananaProTextToImageArgs {
