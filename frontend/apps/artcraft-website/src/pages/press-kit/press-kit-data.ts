@@ -56,15 +56,25 @@ export const PRESS_KIT_CATEGORIES: PressKitCategory[] = [
           "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/artcraft_website_v2.mp4",
         fileSize: "125 MB",
       },
-      // ArtCraft Commercial / Trailer (direct video, same as homepage)
+      // Sci-Fi Horror Posing Demo
       {
         type: "video",
-        title: "ArtCraft Sci-Fi Animation",
+        title: "ArtCraft 3D Sci-Fi Animation",
         description: "3D Pre-viz Workflow demonstrates precision control",
         thumbnail: "/images/video-thumbnails/artcraft-sci-fi.png",
         downloadUrl:
           "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_SciFi_Horror.mp4",
         fileSize: "14.5 MB",
+      },
+      // WorldLabs Pirate Demo
+      {
+        type: "video",
+        title: "ArtCraft x WorldLabs Pirate Demo",
+        description: "ArtCraft with Gaussian Splats can be used to quickly create sets",
+        thumbnail: "/images/video-thumbnails/artcraft-pirate.png",
+        downloadUrl:
+          "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_World_Pirate.mp4",
+        fileSize: "88.5 MB",
       },
       // Grinch: The Anime
       {
