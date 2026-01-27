@@ -20,7 +20,7 @@ export const OwnershipComparison = () => {
         </p>
         <br />
         <p className="md:text-xl text-lg text-white/80 max-w-2xl mx-auto">
-          So you can dump that aggregator <strike>subscription</strike> rent payment.
+          So you can dump that aggregator <s>subscription</s> rent payment.
         </p>
       </div>
 
