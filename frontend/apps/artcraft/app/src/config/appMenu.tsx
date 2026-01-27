@@ -2,14 +2,12 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faCube,
   faFilm,
-  faPalette,
   faImage,
   faDroplet,
   faPhotoFilm,
   faGlobe,
   faPencil,
   faWandMagicSparkles,
-  faPenFancy,
   faPenNib,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
