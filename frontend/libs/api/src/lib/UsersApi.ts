@@ -211,6 +211,44 @@ export class UsersApi extends ApiManager {
       };
     }
   }
+
+  public async GoogleSSO({
+    credential,
+  }: {
+    credential: string;
+  }): Promise<ApiResponse<{ usernameNotYetCustomized?: boolean }>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/accounts/google_sso`;
+    const body = {
+      google_credential: credential,
+    };
+
+    try {
+      const response = await this.authFetch<
+        { google_credential: string },
+        {
+          success: boolean;
+          username_not_yet_customized?: boolean;
+          error_message?: string;
+        }
+      >(endpoint, {
+        method: "POST",
+        body: body,
+      });
+
+      return {
+        success: response.success,
+        data: response.success
+          ? { usernameNotYetCustomized: response.username_not_yet_customized }
+          : undefined,
+        errorMessage: response.error_message,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        errorMessage: err.message,
+      };
+    }
+  }
 }
 
 (window as any).UsersApi = new UsersApi();

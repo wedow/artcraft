@@ -1,12 +1,12 @@
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { faEye, faEyeSlash, faSpinner } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
 import { useState } from "react";
 import { UsersApi } from "@storyteller/api";
+import { GoogleLoginButton } from "./GoogleLoginButton";
 
 interface SignupFormProps {
-  onSuccess: () => void;
+  onSuccess: (isNewUser?: boolean) => void;
   signupSource: string;
   className?: string;
   showGoogleButton?: boolean;
@@ -69,17 +69,23 @@ export const SignupForm = ({
     }
   };
 
+  const handleGoogleSuccess = (isNewUser: boolean) => {
+    onSuccess(isNewUser);
+  };
+
+  const handleGoogleError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       {showGoogleButton && (
         <>
-          <Button
-            className="w-full bg-white text-black hover:bg-gray-100 border-none justify-center gap-3 font-medium h-12"
-            onClick={() => {}}
-          >
-            <FontAwesomeIcon icon={faGoogle} className="text-lg" />
-            Continue with Google
-          </Button>
+          <GoogleLoginButton
+            mode="signup"
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+          />
 
           <div className="relative flex items-center justify-center py-2">
             <div className="absolute inset-0 flex items-center">

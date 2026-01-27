@@ -1,4 +1,3 @@
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { faEye, faEyeSlash, faSpinner } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
@@ -6,6 +5,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UsersApi } from "@storyteller/api";
 import Seo from "../../components/seo";
+import { GoogleLoginButton } from "../../components/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,6 +36,19 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSuccess = (isNewUser: boolean) => {
+    if (isNewUser) {
+      // Optionally redirect to set username for new users
+      navigate("/welcome");
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleGoogleError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
   return (
     <div className="relative min-h-screen bg-[#101014] text-white bg-dots flex flex-col">
       <Seo
@@ -52,13 +65,11 @@ const Login = () => {
           </div>
 
           <div className="space-y-4">
-            <Button
-              className="w-full bg-white text-black hover:bg-gray-100 border-none justify-center gap-3 font-medium h-12"
-              onClick={() => {}}
-            >
-              <FontAwesomeIcon icon={faGoogle} className="text-lg" />
-              Continue with Google
-            </Button>
+            <GoogleLoginButton
+              mode="login"
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+            />
 
             <div className="relative flex items-center justify-center py-2">
               <div className="absolute inset-0 flex items-center">
