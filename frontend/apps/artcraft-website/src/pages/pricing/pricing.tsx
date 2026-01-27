@@ -16,10 +16,14 @@ const Pricing = () => {
 
       <main className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <PricingTable
-          title="Simple, Transparent Pricing"
-          subtitle="Support open-source development. Your subscription keeps ArtCraft free and open for everyone."
+          title="Invest in ArtCraft"
+          subtitle="Support open-source development. Your subscription makes ArtCraft better and gets you tons of generations."
         />
       </main>
+
+      <p className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        Note: Pricing table is wrong, but we'll fix this shortly.
+      </p>
 
       <Footer />
     </div>
