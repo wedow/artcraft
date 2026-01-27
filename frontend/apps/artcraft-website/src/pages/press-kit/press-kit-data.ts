@@ -76,6 +76,16 @@ export const PRESS_KIT_CATEGORIES: PressKitCategory[] = [
           "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_World_Pirate.mp4",
         fileSize: "88.5 MB",
       },
+      // WorldLabs Ad
+      {
+        type: "video",
+        title: "ArtCraft x WorldLabs Ad",
+        description: "Several shots crafted using WorldLabs' advanced Marble model",
+        thumbnail: "/images/video-thumbnails/artcraft-worldlabs-ad.png",
+        downloadUrl:
+          "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_WorldLabs_Ad.mp4",
+        fileSize: "23.7 MB",
+      },
       // Grinch: The Anime
       {
         type: "embed",
