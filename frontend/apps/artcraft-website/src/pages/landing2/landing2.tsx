@@ -246,8 +246,8 @@ const Landing = () => {
               className="text-base mt-4 sm:text-xl md:text-2xl lg:text-2xl text-white/70 mb-8 sm:mb-14 max-w-2xl mx-auto font-medium drop-shadow-[0_2px_12px_rgba(80,80,255,0.10)]"
               data-animate
             >
-              Text prompting sucks. Bring your true vision to life with
-              unparalleled control and precision.
+              Artists need and deserve unparalleled control and precision.
+              ArtCraft&rsquo;s got you covered.
             </p>
 
             {/* CTA Buttons */}
@@ -351,7 +351,20 @@ const Landing = () => {
                 We're Pulling You <br /> <span className="text-white">Out of Prompting</span>
               </h1>
               <p className="text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto">
-                Text-to-image is great, but artists <em>need control</em>. Achieve consistency and repeatability with our advanced toolset.
+                Text prompting is neat, but artists <em>crave control</em>.
+              </p>
+
+              <br />
+
+              <p className="text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto">
+                Before you type "rotate arm thirty degrees", try ArtCraft and let our advanced 
+                toolset help you achieve consistency and repeatability.
+              </p>
+
+              <br />
+              
+              <p className="text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto">
+                ArtCraft is the control that mere words cannot buy. 
               </p>
             </div>
          </div>
