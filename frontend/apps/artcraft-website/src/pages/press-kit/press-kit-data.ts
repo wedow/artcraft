@@ -76,6 +76,16 @@ export const PRESS_KIT_CATEGORIES: PressKitCategory[] = [
           "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_World_Pirate.mp4",
         fileSize: "88.5 MB",
       },
+      // Pose Ad
+      {
+        type: "video",
+        title: "ArtCraft Posing and Blocking",
+        description: "More examples of detailed posing and blocking in 3D",
+        thumbnail: "/images/video-thumbnails/artcraft-knight-pose.png",
+        downloadUrl:
+          "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_Pose_Ad.mp4",
+        fileSize: "23.7 MB",
+      },
       // WorldLabs Ad
       {
         type: "video",

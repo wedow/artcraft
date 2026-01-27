@@ -286,7 +286,7 @@ export default function PressKitPage() {
             </h2>
             <p className="text-white/70 mb-6 max-w-lg mx-auto">
               For specific press inquiries, interview requests, or custom
-              assets, reach out to us on Discord. Or text Brandon at <a href="tel:678-744-6080">(678) 744-6080</a> and say "wazzup?!"
+              assets, reach out to us on Discord. Or text Brandon at <a href="tel:678-744-6080">(678) 744-6080</a>.
             </p>
             <a
               href="https://discord.gg/artcraft"
