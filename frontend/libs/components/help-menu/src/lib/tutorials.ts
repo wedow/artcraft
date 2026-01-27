@@ -7,8 +7,8 @@ export type TutorialItem = {
 };
 
 export enum TutorialCategory {
-  Editor3D = "3D Editor",
-  Canvas2D = "2D Canvas",
+  Editor3D = "3D Stage",
+  Canvas2D = "Image Editor",
 }
 
 export const defaultTutorials: TutorialItem[] = [
@@ -22,14 +22,14 @@ export const defaultTutorials: TutorialItem[] = [
   },
   {
     id: "2d-editor-basics",
-    title: "2D Editor Basics",
+    title: "Image Editor Basics",
     thumbnailUrl: "/resources/images/tutorial-thumbnails/2D_Editor_Basics.jpg",
     videoUrl: "https://youtu.be/ZASPqlqUBQc?si=U9yRn6KETNJKaUAo",
     category: TutorialCategory.Canvas2D,
   },
   {
     id: "3d-editor-posing",
-    title: "3D Editor & Posing",
+    title: "3D Stage & Posing",
     thumbnailUrl: "/resources/images/tutorial-thumbnails/3D_Editor_Basics.jpg",
     videoUrl: "https://youtu.be/pM4CxN-isrY?si=XDyG5C1aMIL4KK5O",
     category: TutorialCategory.Editor3D,
