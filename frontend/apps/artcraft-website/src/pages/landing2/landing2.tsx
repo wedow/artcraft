@@ -362,7 +362,7 @@ const Landing = () => {
               </p>
 
               <br />
-              
+
               <p className="text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto">
                 ArtCraft is the control that mere words cannot buy. 
               </p>
@@ -490,6 +490,8 @@ const Landing = () => {
             )}
          </div>
       </div>
+
+      <OwnershipComparison />
 
       <div className="relative flex overflow-visible xl:items-center xl:pt-0 px-2 sm:px-4 md:px-0 md:-mt-36 min-[1980px]:-mt-64">
         {/* Gradient Orb for Section */}
@@ -761,7 +763,6 @@ const Landing = () => {
         </div>
       </div>
       
-      <OwnershipComparison />
 
       <div className="relative z-10 mx-auto w-full max-w-screen py-10 sm:py-20 md:py-32 sm:px-8 lg:px-32 overflow-visible px-4">
         {/* Gradient Orb for Section */}

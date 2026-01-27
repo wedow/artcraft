@@ -16,7 +16,11 @@ export const OwnershipComparison = () => {
            <span>From Websites</span>
         </h2>
         <p className="md:text-xl text-lg text-white/80 max-w-2xl mx-auto">
-          Take back control of your tools.
+          We're artists, not landlords. We're going to give you ArtCraft to have and to hold <em>forever</em>. It's yours.
+        </p>
+        <br />
+        <p className="md:text-xl text-lg text-white/80 max-w-2xl mx-auto">
+          So you can dump that aggregator <strike>subscription</strike> rent payment.
         </p>
       </div>
 
@@ -58,7 +62,7 @@ export const OwnershipComparison = () => {
                </h3>
                
                <p className="text-white/80 mb-8 leading-relaxed opacity-100">
-                  You're paying for permission, not a product. If they shut down, you lose everything.
+                  You're paying for permission, not a product. If they shut down, you lose everything. (Ask them about downloading your LoRAs! 🤫)
                </p>
 
                <div className="flex flex-wrap justify-center gap-3 text-xs sm:text-sm font-bold tracking-wide uppercase">
@@ -96,7 +100,7 @@ export const OwnershipComparison = () => {
                 <p className="text-white/80 mb-8 leading-relaxed opacity-100">
                    Download ArtCraft. You own the code, the keys, and the output. You don't even have to pay us to use it.
                    <br />
-                   <div className="text-xs text-white/50 pt-3">(Lots of 3rd party logins and API keys supported.)</div>
+                   <div className="text-xs text-white/50 pt-3">(Lots of 3rd party logins and API keys supported. Also please pay us. We turn that into coffee and development and movies.)</div>
                 </p>
 
                  <div className="flex flex-wrap justify-center gap-3 text-xs sm:text-sm font-bold tracking-wide uppercase">
