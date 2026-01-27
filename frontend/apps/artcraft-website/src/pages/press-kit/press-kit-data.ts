@@ -84,7 +84,7 @@ export const PRESS_KIT_CATEGORIES: PressKitCategory[] = [
         thumbnail: "/images/video-thumbnails/artcraft-knight-pose.png",
         downloadUrl:
           "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_Pose_Ad.mp4",
-        fileSize: "23.7 MB",
+        fileSize: "60.6 MB",
       },
       // WorldLabs Ad
       {
@@ -103,7 +103,8 @@ export const PRESS_KIT_CATEGORIES: PressKitCategory[] = [
         description: "Made using ArtCraft",
         thumbnail: "https://img.youtube.com/vi/oqoCWdOwr2U/maxresdefault.jpg",
         embedUrl: "https://www.youtube.com/embed/oqoCWdOwr2U",
-        downloadUrl: "", // Add R2 download link here
+        downloadUrl: "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/ArtCraft_Grinch_Anime.mp4",
+        fileSize: "56.3 MB",
       },
     ],
   },
