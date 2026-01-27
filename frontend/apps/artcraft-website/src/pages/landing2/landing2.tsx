@@ -25,7 +25,6 @@ import ModelBadgeGrid from "../../components/model-badge-grid";
 import Seo from "../../components/seo";
 import { DOWNLOAD_LINKS } from "../../config/downloads";
 import { OwnershipComparison } from "../../components/ownership-comparison/ownership-comparison";
-import { ReallyAI } from "../../components/really-ai/really-ai";
 
 gsap.registerPlugin(ScrollTrigger);
 

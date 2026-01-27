@@ -4,6 +4,8 @@ import {
   faDiscord,
   faYoutube,
   faGithubAlt,
+  faLinkedinIn,
+  faInstagram,
 } from "@fortawesome/free-brands-svg-icons";
 import { SOCIAL_LINKS } from "../../config/links";
 import { getFaqItems, getTutorialItems } from "@storyteller/markdown-content";
@@ -38,6 +40,16 @@ const navigation = {
       name: "GitHub",
       href: SOCIAL_LINKS.GITHUB,
       icon: (props: any) => <FontAwesomeIcon icon={faGithubAlt} {...props} />,
+    },
+    {
+      name: "Instagram",
+      href: SOCIAL_LINKS.INSTAGRAM,
+      icon: (props: any) => <FontAwesomeIcon icon={faInstagram} {...props} />,
+    },
+    {
+      name: "LinkedIn",
+      href: SOCIAL_LINKS.LINKEDIN,
+      icon: (props: any) => <FontAwesomeIcon icon={faLinkedinIn} {...props} />,
     },
   ],
 };
