@@ -230,7 +230,8 @@ export default function PressKitPage() {
             </h1>
             <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
               Everything you need for press coverage, reviews, and content
-              creation. Download high-quality assets and promotional materials.
+              creation. Download high-quality assets and promotional materials 
+              about the world's only open source precision AI tool for artists.
             </p>
           </div>
 
