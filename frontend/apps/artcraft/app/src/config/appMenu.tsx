@@ -9,6 +9,8 @@ import {
   faGlobe,
   faPencil,
   faWandMagicSparkles,
+  faPenFancy,
+  faPenNib,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
 import { set3DPageMounted } from "~/pages/PageEnigma/Editor/editor";
@@ -48,15 +50,15 @@ export const APP_DESCRIPTORS: AppDescriptor[] = [
   },
   {
     id: "2D",
-    label: "2D Canvas",
-    icon: faPalette,
+    label: "Image Editor",
+    icon: faPenNib,
     imageSrc: "/resources/gifs/2D_CANVAS_DEMO.gif",
     description: "Easy edits. Great for graphic design.",
     large: true,
   },
   {
     id: "3D",
-    label: "3D Editor",
+    label: "3D Stage",
     icon: faCube,
     imageSrc: "/resources/gifs/3D_CANVAS_DEMO.gif",
     description: "Precision control. Great for AI film.",
@@ -163,16 +165,16 @@ export const ALL_APPS: FullAppItem[] = [
 
   {
     id: "2d-canvas",
-    label: "2D Canvas",
+    label: "Image Editor",
     description: "Easy edits. Great for graphic design.",
-    icon: faPalette,
+    icon: faPenNib,
     category: "generate",
     action: "2D",
     color: "bg-sky-500/40",
   },
   {
     id: "3d-editor",
-    label: "3D Editor",
+    label: "3D Stage",
     description: "Precision control. Great for AI film.",
     icon: faCube,
     category: "generate",
