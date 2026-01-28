@@ -69,17 +69,17 @@ export const SignupForm = ({
     }
   };
 
-  const handleGoogleSuccess = (isNewUser: boolean) => {
-    onSuccess(isNewUser);
-  };
+  //const handleGoogleSuccess = (isNewUser: boolean) => {
+  //  onSuccess(isNewUser);
+  //};
 
-  const handleGoogleError = (errorMessage: string) => {
-    setError(errorMessage);
-  };
+  //const handleGoogleError = (errorMessage: string) => {
+  //  setError(errorMessage);
+  //};
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {showGoogleButton && (
+      {/* {showGoogleButton && (
         <>
           <GoogleLoginButton
             mode="signup"
@@ -97,6 +97,7 @@ export const SignupForm = ({
           </div>
         </>
       )}
+      */}
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm text-center animate-in fade-in slide-in-from-top-2">

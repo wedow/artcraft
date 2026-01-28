@@ -36,18 +36,18 @@ const Login = () => {
     }
   };
 
-  const handleGoogleSuccess = (isNewUser: boolean) => {
-    if (isNewUser) {
-      // Optionally redirect to set username for new users
-      navigate("/welcome");
-    } else {
-      navigate("/");
-    }
-  };
+  //const handleGoogleSuccess = (isNewUser: boolean) => {
+  //  if (isNewUser) {
+  //    // Optionally redirect to set username for new users
+  //    navigate("/welcome");
+  //  } else {
+  //    navigate("/");
+  //  }
+  //};
 
-  const handleGoogleError = (errorMessage: string) => {
-    setError(errorMessage);
-  };
+  //const handleGoogleError = (errorMessage: string) => {
+  //  setError(errorMessage);
+  //};
 
   return (
     <div className="relative min-h-screen bg-[#101014] text-white bg-dots flex flex-col">
@@ -65,7 +65,7 @@ const Login = () => {
           </div>
 
           <div className="space-y-4">
-            <GoogleLoginButton
+            {/*<GoogleLoginButton
               mode="login"
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
@@ -79,6 +79,7 @@ const Login = () => {
                 or
               </span>
             </div>
+            */}
 
             <div className="space-y-4">
               {error && (
