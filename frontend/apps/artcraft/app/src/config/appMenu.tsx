@@ -9,6 +9,7 @@ import {
   faPencil,
   faWandMagicSparkles,
   faPenNib,
+  faPersonWalkingArrowLoopLeft,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
 import { set3DPageMounted } from "~/pages/PageEnigma/Editor/editor";
@@ -24,7 +25,8 @@ export type AppId =
   | "IMAGE_WATERMARK_REMOVAL"
   | "IMAGE_TO_3D_OBJECT"
   | "IMAGE_TO_3D_WORLD"
-  | "REMOVE_BACKGROUND";
+  | "REMOVE_BACKGROUND"
+  | "MOTION_CONTROL";
 
 export interface AppDescriptor {
   id: AppId;
@@ -160,6 +162,16 @@ export const ALL_APPS: FullAppItem[] = [
     color: "bg-violet-500/40",
     badge: "NEW",
   },
+  {
+    id: "motion-control",
+    label: "Motion Control",
+    description: "Copy motion from video onto your character",
+    icon: faPersonWalkingArrowLoopLeft,
+    category: "generate",
+    action: "MOTION_CONTROL",
+    color: "bg-lime-500/40",
+    badge: "NEW",
+  },
 
   {
     id: "2d-canvas",
@@ -213,6 +225,7 @@ export const goToApp = (action?: string) => {
       "IMAGE_TO_3D_OBJECT",
       "IMAGE_TO_3D_WORLD",
       "REMOVE_BACKGROUND",
+      "MOTION_CONTROL",
     ].includes(action)
   ) {
     if (action === "3D") {

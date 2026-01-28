@@ -21,7 +21,10 @@ import { ProviderBillingModal } from "@storyteller/provider-billing-modal";
 import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
 import { useSubscriptionState } from "@storyteller/subscription";
 import { DownloadUrl } from "@storyteller/tauri-api";
-import { useCreditsBalanceChangedEvent, useSubscriptionPlanChangedEvent } from "@storyteller/tauri-events";
+import {
+  useCreditsBalanceChangedEvent,
+  useSubscriptionPlanChangedEvent,
+} from "@storyteller/tauri-events";
 import {
   useTauriPlatform,
   useTauriWindowControls,
@@ -251,9 +254,7 @@ export const TopBar = ({ pageName }: Props) => {
   ) => {
     try {
       if (mediaId) {
-        useImageTo3DWorldStore
-          .getState()
-          .setPendingExternalImage(url, mediaId);
+        useImageTo3DWorldStore.getState().setPendingExternalImage(url, mediaId);
       }
       useTabStore.getState().setActiveTab("IMAGE_TO_3D_WORLD");
       galleryModalVisibleViewMode.value = false;
@@ -274,8 +275,6 @@ export const TopBar = ({ pageName }: Props) => {
         return "Text to Image";
       case "VIDEO":
         return "Image to Video";
-      case "EDIT":
-        return "Edit Image";
       case "VIDEO_FRAME_EXTRACTOR":
         return "Video Frame Extractor";
       case "VIDEO_WATERMARK_REMOVAL":
@@ -286,6 +285,8 @@ export const TopBar = ({ pageName }: Props) => {
         return "Image to 3D Object";
       case "IMAGE_TO_3D_WORLD":
         return "Image to 3D World";
+      case "MOTION_CONTROL":
+        return "Motion Control";
       case "APPS":
         return "ArtCraft Apps";
       default:

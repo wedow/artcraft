@@ -17,6 +17,7 @@ import { ImageWatermarkRemover } from "../PageImageWatermarkRemover";
 import { ImageTo3DObject } from "../PageImageTo3DObject";
 import { ImageTo3DWorld } from "../PageImageTo3DWorld";
 import { RemoveBackground } from "../PageRemoveBackground";
+import { MotionControl } from "../PageMotionControl";
 
 import {
   timelineHeight,
@@ -626,6 +627,11 @@ export const PageEditor = () => {
       {tabStore.activeTabId == "REMOVE_BACKGROUND" && (
         <div>
           <RemoveBackground />
+        </div>
+      )}
+      {tabStore.activeTabId == "MOTION_CONTROL" && (
+        <div>
+          <MotionControl />
         </div>
       )}
     </div>

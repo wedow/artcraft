@@ -13,6 +13,7 @@ export * from "./lib/enqueue/EnqueueImageTo3dObject.js";
 export * from "./lib/enqueue/EnqueueImageTo3dWorld.js";
 export * from "./lib/enqueue/EnqueueImageToGaussian.js";
 export * from "./lib/enqueue/EnqueueImageToVideo.js";
+export * from "./lib/enqueue/EnqueueMotionControl.js";
 export * from "./lib/enqueue/EnqueueTextToImage.js";
 export * from "./lib/events/BasicEventWrapper.js";
 export * from "./lib/events/CanvasBgRemovedEvent.js";
