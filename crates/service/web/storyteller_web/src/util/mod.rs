@@ -5,7 +5,6 @@ pub mod canonicalize_email_for_users_table;
 pub mod check_creator_tokens;
 pub mod cleaners;
 pub mod delete_role_disambiguation;
-pub mod email_to_gravatar;
 pub mod encrypted_sort_id;
 pub mod enroll_in_studio;
 pub mod http_download_url_to_bytes;

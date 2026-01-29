@@ -12,7 +12,6 @@ use crate::http_server::session::http::http_user_session_manager::HttpUserSessio
 use crate::http_server::validations::is_reserved_username::is_reserved_username;
 use crate::http_server::validations::validate_passwords::validate_passwords;
 use crate::http_server::validations::validate_username::validate_username;
-use crate::util::email_to_gravatar::email_to_gravatar;
 use crate::util::enroll_in_studio::enroll_in_studio;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
@@ -29,6 +28,7 @@ use password::bcrypt_hash_password::bcrypt_hash_password;
 use sqlx::MySqlPool;
 use tokens::tokens::user_sessions::UserSessionToken;
 use user_input_common::check_for_slurs::contains_slurs;
+use users::email::email_to_gravatar::email_to_gravatar;
 use utoipa::ToSchema;
 
 #[derive(ToSchema, Deserialize)]
