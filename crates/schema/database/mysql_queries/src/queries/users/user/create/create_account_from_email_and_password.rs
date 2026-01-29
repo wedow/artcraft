@@ -64,6 +64,11 @@ pub async fn create_account_from_email_and_password(
 
       // NB: This is just for testing.
       maybe_user_token: args.maybe_user_token,
+      
+      // These flags represent eagerly created users and are false for this flow
+      is_temporary: false,
+      email_is_synthetic: false,
+      was_eagerly_provisioned: false,
     },
     Transactor::for_pool(mysql_pool),
   ).await?;
