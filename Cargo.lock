@@ -1377,6 +1377,7 @@ dependencies = [
  "tokens",
  "tokio",
  "user_traits_component",
+ "users",
  "workspace-build-acceleration",
 ]
 
@@ -10807,6 +10808,7 @@ dependencies = [
  "url_config",
  "user_input_common",
  "user_traits_component",
+ "users",
  "utoipa",
  "utoipa-swagger-ui",
  "videos",
@@ -12670,6 +12672,18 @@ version = "0.0.1"
 dependencies = [
  "actix-web",
  "mockall",
+ "workspace-build-acceleration",
+]
+
+[[package]]
+name = "users"
+version = "0.0.1"
+dependencies = [
+ "collections",
+ "md-5 0.10.6",
+ "once_cell",
+ "primitives",
+ "rand 0.9.1",
  "workspace-build-acceleration",
 ]
 

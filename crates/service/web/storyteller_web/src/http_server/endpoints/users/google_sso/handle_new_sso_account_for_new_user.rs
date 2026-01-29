@@ -3,7 +3,6 @@ use crate::http_server::endpoints::users::google_sso::handle_new_sso_account::Ne
 use crate::http_server::requests::get_request_signup_source::{get_request_signup_source, get_request_signup_source_enum};
 use crate::http_server::session::lookup::user_session_feature_flags::UserSessionFeatureFlags;
 use crate::util::email_to_gravatar::email_to_gravatar;
-use crate::util::generate_random_username::generate_random_username;
 use actix_web::HttpRequest;
 use enums::by_table::users::user_feature_flag::UserFeatureFlag;
 use google_sign_in::claims::claims::Claims;
@@ -15,6 +14,7 @@ use mysql_queries::queries::users::user::create::create_account_from_google_sso:
 use mysql_queries::utils::transactor::Transactor;
 use sqlx::pool::PoolConnection;
 use sqlx::{Acquire, MySql};
+use users::username::generate_random_username::generate_random_username;
 
 pub struct CreateArgs<'a> {
   pub http_request: &'a HttpRequest,

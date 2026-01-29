@@ -8,7 +8,6 @@ pub mod delete_role_disambiguation;
 pub mod email_to_gravatar;
 pub mod encrypted_sort_id;
 pub mod enroll_in_studio;
-pub mod generate_random_username;
 pub mod http_download_url_to_bytes;
 pub mod http_download_url_to_tempfile;
 pub mod lookup;
