@@ -12,6 +12,14 @@ CREATE TABLE users (
   -- Visible "primary key"
   token VARCHAR(32) NOT NULL,
 
+  -- This is TRUE for accounts that were provisioned automatically (eg. eager stripe
+  -- checkout flow), and who haven't completed onboarding (eg. finishing with billing).
+  -- Once the user finishes setup, this is set to FALSE.
+  -- Existing users and normal signup flow always sets this to FALSE.
+  -- If enough time has elapsed for an incomplete `is_temporary` user, such user records
+  -- might be possible to delete as we assume the user abandoned sign up long ago.
+  is_temporary BOOLEAN NOT NULL DEFAULT false,
+
   -- Username is a lookup key; display_name allows the user to add custom case.
   username VARCHAR(20) NOT NULL,
   display_name VARCHAR(20) NOT NULL,
@@ -30,6 +38,8 @@ CREATE TABLE users (
   -- Set by the user at sign up:
   --  - When email + password signup, this is the email provided.
   --  - When Google SSO, this is the email provided by Google.
+  --  - When "eager" checkout flow, this is synthetically generated and
+  --    updated by the user later.
   email_address VARCHAR(255) NOT NULL,
 
   -- Email address is confirmed by us.
@@ -38,6 +48,11 @@ CREATE TABLE users (
 
   -- Email address is confirmed by Google.
   email_confirmed_by_google BOOLEAN NOT NULL DEFAULT false,
+
+  -- We created a user account provisionally, and the email address is not yet real.
+  -- This happens during "eager" checkout flow before users create accounts - we create
+  -- a user account for them with a fake email address (since this is a unique key).
+  email_is_synthetic BOOLEAN NOT NULL DEFAULT false,
 
   -- The role assigned to the user confers permissions.
   user_role_slug VARCHAR(16) NOT NULL,
@@ -86,6 +101,7 @@ CREATE TABLE users (
   password_version INT UNSIGNED NOT NULL DEFAULT 0,
 
   -- Users signing up from SSO do not have a password at time of account creation.
+  -- Users signing up with eager stripe checkout flow do not have a password at time of creation
   is_without_password BOOLEAN NOT NULL DEFAULT false,
 
   -- ========== ABUSE TRACKING ==========
@@ -193,7 +209,16 @@ CREATE TABLE users (
   -- How users created their account
   -- Initially this will be "email_password" or "google_sign_in"
   -- Older users do not have a value and are assumed to be "email_sign_in"
+  -- Values:
+  --   - "email_sign_in" / "email_password" (todo: check which is correct)
+  --   - "google_sign_in"
+  --   - "stripe_checkout" (eager stripe checkout account provisioning)
   maybe_signup_method VARCHAR(16) DEFAULT NULL,
+
+  -- Account was provisioned automatically (eg. stripe eager checkout flow)
+  -- This will remain true even if the user finishes account setup, email change,
+  -- password setup, etc.
+  was_eagerly_provisioned BOOLEAN NOT NULL DEFAULT false,
 
   -- ========== MODERATION DETAILS ==========
 
