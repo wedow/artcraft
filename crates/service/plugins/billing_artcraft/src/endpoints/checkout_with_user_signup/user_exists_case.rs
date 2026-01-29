@@ -159,6 +159,5 @@ pub (super) async fn user_exists_case(
     checkout_session
   };
 
-
   Ok(checkout_session)
 }
