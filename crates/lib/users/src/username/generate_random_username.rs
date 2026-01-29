@@ -1,15 +1,15 @@
-use crate::http_server::validations::validate_username::USERNAME_MAX_LENGTH;
+use crate::username::constants::USERNAME_MAX_LENGTH;
 use collections::random_from_array::random_from_array;
 use once_cell::sync::Lazy;
 use primitives::iterators::iterate_trimmed_lines_without_comments::iterate_trimmed_lines_without_comments;
 use primitives::str::first_letter_uppercase::first_letter_uppercase;
+use rand::distr::{Distribution, StandardUniform};
 use rand::Rng;
 use std::collections::HashSet;
-use rand::distr::{Distribution, StandardUniform};
 
-pub const ADJECTIVES : &str = include_str!("../../../../../../includes/binary_includes/usernames/atoms/username_adjectives.txt");
-pub const NOUNS : &str = include_str!("../../../../../../includes/binary_includes/usernames/atoms/username_nouns.txt");
-pub const NOUNS_ANIMALS: &str = include_str!("../../../../../../includes/binary_includes/usernames/atoms/username_nouns_animals.txt");
+pub const ADJECTIVES : &str = include_str!("../../../../../includes/binary_includes/usernames/atoms/username_adjectives.txt");
+pub const NOUNS : &str = include_str!("../../../../../includes/binary_includes/usernames/atoms/username_nouns.txt");
+pub const NOUNS_ANIMALS: &str = include_str!("../../../../../includes/binary_includes/usernames/atoms/username_nouns_animals.txt");
 
 static ALL_NOUNS : Lazy<Vec<&'static str>> = Lazy::new(|| {
   iterate_trimmed_lines_without_comments(NOUNS.lines())
@@ -120,7 +120,7 @@ fn maybe_random_safe_digit() -> Option<u32> {
 #[cfg(test)]
 mod tests {
   use std::collections::HashSet;
-  use crate::util::generate_random_username::generate_random_username;
+  use crate::username::generate_random_username::generate_random_username;
 
   #[test]
   fn test_base_case_success() {

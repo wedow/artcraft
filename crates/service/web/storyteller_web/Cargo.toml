@@ -38,7 +38,7 @@ artcraft_api_defs.workspace = true
 bootstrap = { path = "../../../lib/bootstrap" }
 bucket_paths = { path = "../../../lib/bucket_paths" }
 cloud_storage.workspace = true
-collections = { path = "../../../lib/data/collections" }
+collections.workspace = true
 component_traits.workspace = true
 composite_identifiers = { path = "../../../schema/public/composite_identifiers" }
 config = { path = "../../../lib/deprecated/config" }
@@ -78,6 +78,7 @@ tokens.workspace = true
 tts_common = { path = "../../../lib/tts_common" }
 url_config = { path = "../../../lib/url_config" }
 user_input_common = { path = "../../../lib/user_input_common" }
+users.workspace = true
 videos = { path = "../../../lib/files/videos" }
 
 # Internal Components
