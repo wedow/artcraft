@@ -1,4 +1,5 @@
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
+use crate::endpoints::checkout_with_user_signup::creation_payload::CreationPayload;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::Data;
@@ -19,7 +20,7 @@ pub (super) async fn user_exists_case(
   user_metadata: &UserMetadata,
   mysql_connection: &mut PoolConnection<MySql>,
   stripe_config: &ArtcraftStripeConfigWithClient,
-) -> Result<CheckoutSession, CommonWebError> {
+) -> Result<CreationPayload, CommonWebError> {
 
   // NB: Currently the stripe customer id field in the `users` table is only for FakeYou subscriptions,
   // so we need to look up any existing Artcraft subscription separately. This is needed to pre-fill
@@ -159,5 +160,8 @@ pub (super) async fn user_exists_case(
     checkout_session
   };
 
-  Ok(checkout_session)
+  Ok(CreationPayload {
+    checkout_session,
+    maybe_user_metadata: None,
+  })
 }
