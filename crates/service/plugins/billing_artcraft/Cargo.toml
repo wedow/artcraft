@@ -21,6 +21,7 @@ normal = ["workspace-build-acceleration"]
 workspace-build-acceleration.workspace = true
 
 # Internal
+actix_artcraft.workspace = true
 artcraft_api_defs.workspace = true
 component_traits.workspace = true
 enums.workspace = true
