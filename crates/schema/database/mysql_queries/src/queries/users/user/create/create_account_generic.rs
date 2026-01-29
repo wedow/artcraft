@@ -23,10 +23,35 @@ pub struct GenericCreateAccountArgs<'a> {
 
   pub email_address: &'a str,
   pub email_gravatar_hash: &'a str,
+
+  /// Google did email IDV and told us it's legitimate.
   pub email_confirmed_by_google: bool,
+  
+  /// The email address is not real yet. We generated a fake/synthetic value 
+  /// that will hopefully be replaced later. This is for automated user creation 
+  /// flows, like Stripe Checkout onboarding flow.
+  pub email_is_synthetic: bool,
 
   pub password_hash: &'a str,
   pub is_without_password: bool,
+  
+  /// This is initially TRUE for accounts that were provisioned automatically,
+  /// without user intervention, e.g. in the eager Stripe Checkout onboarding 
+  /// flow. Accounts in this state have not yet been customized by users and may
+  /// not in fact represent real users if the users abandon the flow. Once the 
+  /// user finishes setup, this will be set to false.
+  /// 
+  /// Existing and normal setup flow sets this flag to false.
+  /// 
+  /// If enough time has passed without the user interacting with the account, 
+  /// then it might be prudent to delete these records.
+  pub is_temporary: bool,
+  
+  /// Whether the account was created eagerly (e.g. via stripe checkout flow) 
+  /// without the user explicitly setting up an account, choosing an email or 
+  /// password, etc. (It's a technical choice to do faster checkout flow.)
+  /// This is a permanent label on the account.
+  pub was_eagerly_provisioned: bool,
 
   pub ip_address: &'a str,
   pub maybe_source: Option<UserSignupSource>,
@@ -66,6 +91,9 @@ pub async fn create_account_generic(
 INSERT INTO users
 SET
   token = ?,
+  
+  is_temporary = ?,
+  
   username = ?,
   display_name = ?,
 
@@ -77,6 +105,9 @@ SET
 
   email_confirmed = FALSE,
   email_confirmed_by_google = ?,
+  email_is_synthetic = ?,
+  
+  was_eagerly_provisioned = ?,
 
   profile_markdown = ?,
   profile_rendered_html = ?,
@@ -96,6 +127,9 @@ SET
   maybe_signup_method = ?
         "#,
       user_token.as_str(),
+    
+      args.is_temporary,
+    
       args.username,
       args.display_name,
 
@@ -106,6 +140,9 @@ SET
       args.email_gravatar_hash,
 
       args.email_confirmed_by_google,
+      args.email_is_synthetic,
+    
+      args.was_eagerly_provisioned,
 
       INITIAL_PROFILE_MARKDOWN,
       INITIAL_PROFILE_RENDERED_HTML,

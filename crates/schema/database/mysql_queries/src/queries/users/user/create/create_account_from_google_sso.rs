@@ -59,6 +59,11 @@ pub async fn create_account_from_google_sso(
 
       // NB: This is just for testing.
       maybe_user_token: None,
+
+      // These flags represent eagerly created users and are false for this flow
+      is_temporary: false,
+      email_is_synthetic: false,
+      was_eagerly_provisioned: false,
     },
     transactor,
   ).await?;

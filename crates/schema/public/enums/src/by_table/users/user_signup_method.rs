@@ -18,6 +18,11 @@ pub enum UserSignupMethod {
 
   /// "Sign in With Google" SSO
   GoogleSignIn,
+
+  /// Stripe Checkout flow, where we provision user accounts for users with a
+  /// synthetic/fake email address and no password. After checkout completes,
+  /// the user gets a real email and password - or the user can set them.
+  StripeCheckout,
 }
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
@@ -31,6 +36,7 @@ impl UserSignupMethod {
     match self {
       Self::EmailPassword => "email_password",
       Self::GoogleSignIn=> "google_sign_in",
+      Self::StripeCheckout => "stripe_checkout",
     }
   }
 
@@ -38,6 +44,7 @@ impl UserSignupMethod {
     match value {
       "email_password" => Ok(Self::EmailPassword),
       "google_sign_in" => Ok(Self::GoogleSignIn),
+      "stripe_checkout" => Ok(Self::StripeCheckout),
       _ => Err(format!("invalid value: {:?}", value)),
     }
   }
@@ -48,6 +55,7 @@ impl UserSignupMethod {
     BTreeSet::from([
       Self::EmailPassword,
       Self::GoogleSignIn,
+      Self::StripeCheckout,
     ])
   }
 }
@@ -64,6 +72,7 @@ mod tests {
     fn test_serialization() {
       assert_serialization(UserSignupMethod::EmailPassword, "email_password");
       assert_serialization(UserSignupMethod::GoogleSignIn, "google_sign_in");
+      assert_serialization(UserSignupMethod::StripeCheckout, "stripe_checkout");
     }
   }
 
@@ -74,12 +83,14 @@ mod tests {
     fn to_str() {
       assert_eq!(UserSignupMethod::EmailPassword.to_str(), "email_password");
       assert_eq!(UserSignupMethod::GoogleSignIn.to_str(), "google_sign_in");
+      assert_eq!(UserSignupMethod::StripeCheckout.to_str(), "stripe_checkout");
     }
 
     #[test]
     fn from_str() {
       assert_eq!(UserSignupMethod::from_str("email_password").unwrap(), UserSignupMethod::EmailPassword);
       assert_eq!(UserSignupMethod::from_str("google_sign_in").unwrap(), UserSignupMethod::GoogleSignIn);
+      assert_eq!(UserSignupMethod::from_str("stripe_checkout").unwrap(), UserSignupMethod::StripeCheckout);
       assert!(UserSignupMethod::from_str("foo").is_err());
     }
   }
@@ -90,9 +101,10 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = UserSignupMethod::all_variants();
-      assert_eq!(variants.len(), 2);
+      assert_eq!(variants.len(), 3);
       assert_eq!(variants.pop_first(), Some(UserSignupMethod::EmailPassword));
       assert_eq!(variants.pop_first(), Some(UserSignupMethod::GoogleSignIn));
+      assert_eq!(variants.pop_first(), Some(UserSignupMethod::StripeCheckout));
       assert_eq!(variants.pop_first(), None);
     }
   }

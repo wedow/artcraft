@@ -207,17 +207,17 @@ CREATE TABLE users (
   maybe_source VARCHAR(255) DEFAULT NULL,
 
   -- How users created their account
-  -- Initially this will be "email_password" or "google_sign_in"
-  -- Older users do not have a value and are assumed to be "email_sign_in"
+  -- Older users do not have a value and are assumed to be "email_password"
   -- Values:
-  --   - "email_sign_in" / "email_password" (todo: check which is correct)
+  --   - "email_password"
   --   - "google_sign_in"
   --   - "stripe_checkout" (eager stripe checkout account provisioning)
   maybe_signup_method VARCHAR(16) DEFAULT NULL,
 
   -- Account was provisioned automatically (eg. stripe eager checkout flow)
   -- This will remain true even if the user finishes account setup, email change,
-  -- password setup, etc.
+  -- password setup, etc. (It's a permanent label on the account for later
+  -- statistical evaluation.)
   was_eagerly_provisioned BOOLEAN NOT NULL DEFAULT false,
 
   -- ========== MODERATION DETAILS ==========
