@@ -1,3 +1,4 @@
+pub mod create_create_new_user_account_and_subscription_checkout;
 pub mod create_credits_pack_checkout;
 pub mod create_subscription_checkout;
 pub mod customer_portal_cancel_plan;
