@@ -36,6 +36,7 @@ members = [
   "crates/desktop/artcraft",
 
   # Shared libraries
+  "crates/lib/actix_artcraft",
   "crates/lib/actix_cors_configs",
   "crates/lib/actix_helpers",
   "crates/lib/bootstrap",
@@ -186,6 +187,8 @@ workspace-build-acceleration = { path = "crates/workspace-build-acceleration" }
 # Internal libs
 # Setting paths here ensures we don't need to do so in every crate's Cargo.toml
 # It makes refactoring much easier.
+actix_artcraft = { path = "crates/lib/actix_artcraft" }
+actix_helpers = { path = "crates/lib/actix_helpers" }
 artcraft_api_defs = { path = "crates/api_clients/artcraft/artcraft_api_defs" }
 build_metadata = { path = "crates/lib/build_metadata" }
 cloud_storage = { path = "crates/api_clients/cloud_storage" }
