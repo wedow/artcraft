@@ -1,24 +1,25 @@
-use std::collections::HashMap;
+use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
+use crate::endpoints::checkout_with_user_signup::creation_payload::{CreationPayload, UserMetadata};
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_artcraft::requests::get_request_signup_source_enum::get_request_signup_source_enum;
 use actix_web::HttpRequest;
+use enums::by_table::users::user_feature_flag::UserFeatureFlag;
 use http_server_common::request::get_request_ip::get_request_ip;
 use log::{error, info, warn};
 use mysql_queries::queries::users::user::create::create_account_error::CreateAccountError;
 use mysql_queries::queries::users::user::create::create_account_from_google_sso::{create_account_from_google_sso, CreateAccountFromGoogleSsoArgs};
+use mysql_queries::queries::users::user::create::create_account_from_stripe_checkout::{create_account_from_stripe_checkout, CreateAccountFromStripeCheckoutArgs};
 use mysql_queries::utils::transactor::Transactor;
 use sqlx::pool::PoolConnection;
-use sqlx::MySql;
+use sqlx::{Acquire, MySql};
+use std::collections::HashMap;
 use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
 use stripe_shared::{CheckoutSession, CheckoutSessionMode};
-use enums::by_table::users::user_feature_flag::UserFeatureFlag;
-use mysql_queries::queries::users::user::create::create_account_from_stripe_checkout::{create_account_from_stripe_checkout, CreateAccountFromStripeCheckoutArgs};
+use mysql_queries::queries::users::user_sessions::create_user_session_with_transactor::create_user_session_with_transactor;
 use users::email::email_to_gravatar::email_to_gravatar;
 use users::email::generate_random_synthetic_email::generate_random_synthetic_email;
 use users::username::generate_random_username::generate_random_username;
-use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
-use crate::endpoints::checkout_with_user_signup::creation_payload::{CreationPayload, UserMetadata};
 
 pub (super) async fn user_creation_case(
   http_request: &HttpRequest,
@@ -27,7 +28,7 @@ pub (super) async fn user_creation_case(
   stripe_config: &ArtcraftStripeConfigWithClient,
 ) -> Result<CreationPayload, CommonWebError> {
 
-  let mut transaction = args.mysql_connection.begin()
+  let mut transaction = mysql_connection.begin()
       .await
       .map_err(|e| {
         warn!("Could not begin transaction: {:?}", e);
@@ -46,10 +47,10 @@ pub (super) async fn user_creation_case(
       .collect::<Vec<String>>()
       .join(",");
 
-  let final_user_token;
-  let final_username;
-  let final_display_name;
-  let final_email_address;
+  let mut final_user_token = None;
+  let mut final_username = None;
+  let mut final_display_name = None;
+  let mut final_email_address = None;
 
   for _ in 0..3 {
     // NB: We try a few times to make sure we don't hit an email/username collision.
@@ -77,10 +78,10 @@ pub (super) async fn user_creation_case(
 
     match result {
       Ok(token) => {
-        final_user_token = token;
-        final_username = username;
-        final_display_name = display_name;
-        final_email_address = user_email_address;
+        final_user_token = Some(token);
+        final_username = Some(username);
+        final_display_name = Some(display_name);
+        final_email_address = Some(user_email_address);
         break;
       },
       Err(CreateAccountError::UsernameIsTaken) => {
@@ -92,6 +93,43 @@ pub (super) async fn user_creation_case(
       },
     }
   }
+
+  let final_user_token = final_user_token.ok_or_else(|| {
+    error!("Could not generate user token after several attempts");
+    CommonWebError::ServerError
+  })?;
+
+  let final_username = final_username.ok_or_else(|| {
+    error!("Could not generate username after several attempts");
+    CommonWebError::ServerError
+  })?;
+
+  let final_display_name = final_display_name.ok_or_else(|| {
+    error!("Could not generate display name after several attempts");
+    CommonWebError::ServerError
+  })?;
+
+  let final_email_address = final_email_address.ok_or_else(|| {
+    error!("Could not generate email address after several attempts");
+    CommonWebError::ServerError
+  })?;
+
+  transaction.commit()
+      .await
+      .map_err(|e| {
+        warn!("Could not commit transaction: {:?}", e);
+        CommonWebError::ServerError
+      })?;
+
+  let session_token = create_user_session_with_transactor(
+    &final_user_token,
+    &ip_address,
+    Transactor::for_connection(mysql_connection))
+      .await
+      .map_err(|e| {
+        warn!("error creating user session: {:?}", e);
+        CommonWebError::ServerError
+      })?;
 
   let success_url = stripe_config.checkout_success_url.clone();
   let cancel_url = stripe_config.checkout_cancel_url.clone();
@@ -175,6 +213,7 @@ pub (super) async fn user_creation_case(
     checkout_session,
     maybe_user_metadata: Some(UserMetadata {
       user_token: final_user_token,
+      session_token,
       username: final_username,
       display_name: final_display_name,
       email_address: final_email_address,

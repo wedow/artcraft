@@ -81,10 +81,11 @@ pub async fn stripe_artcraft_create_checkout_with_user_signup_handler(
         CommonWebError::ServerError // NB: This was probably *our* fault.
       })?;
 
-  let checkout_session = match maybe_user_metadata {
+  let creation_payload= match maybe_user_metadata {
     None => {
       info!("Creating new user, then creating checkout session...");
       user_creation_case(
+        &http_request,
         &price_id,
         &mut mysql_connection,
         &stripe_config,
@@ -101,7 +102,7 @@ pub async fn stripe_artcraft_create_checkout_with_user_signup_handler(
     },
   };
 
-  let url = checkout_session.url.ok_or(CommonWebError::ServerError)?;
+  let url = creation_payload.checkout_session.url.ok_or(CommonWebError::ServerError)?;
 
   // Best effort to delete Redis session cache
   internal_session_cache_purge.best_effort_purge_session_cache(&http_request);
