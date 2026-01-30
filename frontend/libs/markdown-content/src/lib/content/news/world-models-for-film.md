@@ -1,6 +1,6 @@
 ---
-title: World Models for Consistent AI Filmmaking
-abstract: How to use World Models and 3D Rendering to Get Consistent AI Film Locations
+title: Less Slop: World Models for Consistent AI Filmmaking
+abstract: How to use World Models and 3D Rendering to Get Consistent AI Film Locations and better AI Films
 date: 2026-01-30
 ---
 
@@ -15,10 +15,10 @@ like this.
 
 Good stories have characters that occupy real spaces. They have room to live, breathe, and interact. 
 
-You don't just fast track everyone through a journey from point A to B and have that be the end of things [1]. 
-Characters need to spend time in places, to explore interpersonal relationships, to overcome challenges. 
-They need places to think, talk, fight and argue, process emotions, grow, and sometimes do absolutely nothing 
-at all.
+You don't just fast track everyone through a journey from point A to B and have that be the end of things 
+(unless you're Game of Thrones). Characters need to spend time in places, to explore interpersonal relationships, 
+to overcome challenges. They need places to think, talk, fight and argue, process emotions, grow, and sometimes 
+do absolutely nothing at all.
 
 Stories need locations. They're a first class citizen in storytelling.
 
@@ -37,6 +37,8 @@ let me show you what we've discovered. You'll intuit how this technique works im
 
 @youtube(wJCJYdGdpHg)
 
+Now let me break down the rationale and the technique...
+
 # Moving the Camera is Important
 
 In *"film language"*, the camera's relationship to the characters conveys meaning. Sometimes we want to give the 
@@ -46,7 +48,7 @@ imply a certain power dynamic.
 Sometimes it's just important to show the location so the viewer can settle in. So the setting feels lived in and 
 the viewer is immersed in it alongside our characters.
 
-# Text is a Coarse Grained Representation
+# Text is a Coarse-Grained Representation
 
 Here's a simple Nano Banana Pro prompt:
 
@@ -84,47 +86,119 @@ imprecise.
 
 (Why does the desk block the door? What is it even trying to do with that poster?)
 
-# 3D to the Rescue
+# 3D to the Rescue!
 
-One of the best tools for consistency is 3D. You can position your characters and props in a "3D set", and then move the "camera" to any angle, maintaining strong consistency throughout.
+One of the best tools for consistency is 3D. You can position your characters and props in a "3D set" exactly as you want them, 
+and then move the "camera" to any angle, maintaining strong consistency throughout.
 
 ![Hi Sam!](./images/blog/sam_previz.png)
 
 Pick a "smart" model like GPT Image 1.5 or Nano Banana Pro to convert this previz into a photorealistic render (or any style - anime, sci-fi, whatever): 
 
+> Suspense movie - live action - night time. Make a photorealistic picture of Sam Altman sitting at a fancy office desk. 
+> Use the previz scene as the layout and posing of the shot. The camera and pose of Sam should match this shot. 
+> Nighttime shot, moonlit glow. 
+
 ![Hi Sam!](./images/blog/sam_gpt_image_1.png)
 
-And after Nano Banana Pro lighting adjustments and upscaling (and showing it the previz again to restore the missing desk pad), we get this:
+If desired, you can also attach additional reference images for character designs, wardrobe choices, etc.
+
+After Nano Banana Pro lighting adjustments and upscaling (and showing it the previz again to restore the missing desk pad), we get this:
+
+> Make this look more photorealistic. Suspenseful night in the office
 
 ![Hi Sam!](./images/blog/sam_nbp2.png)
 
-It's a great starting composition before calling "action" with a video model. (I'd adjust the framing, but I wanted to show under the desk as well as bookcase features.)
+It's a great starting composition before calling "action" with a video model. (I'm no Roger Deakins. I would adjust the framing, but I wanted to show under the desk as well as bookcase features. I was also up late writing this.)
 
+# 3D Kit Bashing 
 
-# 3D Kit Bashing and Greyboxing
+You can use 3D kits found online, many of which are free or low cost, to "kit bash" a scene. Synty, CGTrader, ... there are hundreds of sites for locations, objects, characters, and more. With these assets, you can provide exact blocking and layout you want - but more importantly, you can reuse them for additional shots and camera angles. Your characters need to be seen from multiple angles, and your props need to be consistent throughout the scene.
 
-You can use 3D kits to provide blocking and layout. You can also use 3D primitive shapes to create a "greybox" of your scene.
+> Action movie - live action - day. Turn this previz scene into a photorealistic desert island. Keep the tree, boxes, and treasure chest in place. 
+
+![Island](./images/blog/island_previz.png)
+
+And the render, with one extra NBP 4K upscale (I did ask it to change the clouds on the second pass): 
+
+![Island](./images/blog/island_nbp.png)
+
+Image editing models are also surprisingly robust at changing the composition controllably if you give it enough structure to start with.
+
+# Greyboxing
+
+But kit bashing can be slow. You have to find and curate a selection of assets. 
+If you need to go faster, you can use 3D primitive shapes to "greybox" a scene:
+
+![Greyboxing](./images/blog/ruins_previz.png)
+
+> Historical epic - live action - sunset. Use this previz scene for the composition. 
+> An ancient greek temple with ruined concrete and marble columns. The pink and orange sunset bathes the concrete and marble. 
+> In the distance, there are rolling green hills and valleys. Bright pink sky. 
+
+![Greyboxing](./images/blog/ruins_nbp.png)
+
+You can drop 3D assets in alongside the greybox to position existing props or characters. You can even greybox just a single element, like a TV.
+
+# Billboards and Matte Plates
+
+If you want to add a dramatic backdrop behind characters and a foreground, you can use the old Hollywood technique of creating a background plate (think the "matte paintings" used in Star Wars). In video game parlance, this is called using flat or billboard textures. 
+
+It's quick and easy, though you do lose your ability to rotate the camera. Use it for depth and backdrops:
+
+![Billboards](./images/blog/snow_previz.png)
+
+> Sports footage - live action - day. Woman is hiking in the mountains. She is dressed in sporty warm winter wear. 
+> She’s standing at the peak, with a mountain forest behind her. Use this previz image to upscale the photo into a 
+> fully lifelike and photorealistic cinematic image.
+
+![Billboards](./images/blog/snow_nbp.png)
+
 
 # Object Generation for Props
 
-You can turn images into 3D prop objects using models such as Hunyuan 3D.
+You can turn images into 3D prop objects using models such as Hunyuan 3D. This is useful if you need angles and 
+precision posing for a complicated object, or if you intend to use the asset over and over and need consistency.
+
+I generated a quick photo of an FJ Cruiser SUV:
+
+![Object Generation](./images/blog/fj_gen.png)
+
+Turning this into a 3D object and instancing it around all over the place:
+
+![Object Generation](./images/blog/fj_previz.png)
+
+Then prompt, followed by a 4K upscale (with a few more fixes):
+
+> An artistic collage of fj cruiser SUVs floating in a pixelated desert. 
+> Match their pose and orientations exactly, including the ones that are flipped and rotated. 
+> Make the low poly fj cruisers look photorealistic and high resolution.
+
+![Object Generation](./images/blog/fj_nbp.png)
+
 
 # World Models Make This Easy
 
 The real star of this workflow is image-to-Gaussian Splat models, such as World Labs' Marble or Apple's Sharp. You can very quickly create a pleasing image of an intracate set in MidJourney, edit it in Nano Banana, then turn it into a fully navigable 3D scene.
 
+# Combining Techniques
+
+You can use MidJourney to quickly generate brilliant scenes with high detail and magazine photoshoot quality layout, or you can draw a sketch or greybox a scene you'd like to build, iterate, then turn that into a world. 
+
+This is less like "prompting" and more like "crafting", with lots of different visual tools used in quick succession and coordination. 
 
 # ArtCraft: Free and Open 3D Filmmaking
 
-ArtCraft in its entirety is available on [Github (please star us!)](https://github.com/storytold/artcraft)
+ArtCraft is a crafting engine and is available in its entirety on [Github (please star us!)](https://github.com/storytold/artcraft)
 
 We have [downloads for Windows and Mac](/download), with Linux support coming soon.
 
-You can pay us for image and video compute, or you can bring your own keys and subscriptions
+You can pay us for image and video compute, or you can *bring your own keys and subscriptions*
 without needing to pay us a dime. We offer the ability to log in with MidJourney, Grok, 
-OpenAI/Sora, and several other providers. We'll be adding FAL, Replicate, and Google Gemini 
-shortly, and local GPU support is coming soon (subscribe to stay updated).
+OpenAI/Sora, World Labs, and several other providers. 
+
+Over the coming weeks, we'll be adding FAL, Replicate, and Google Gemini. Local GPU support and RunPod support 
+is also coming soon (subscribe to stay updated, or better yet, [join our Discord](https://discord.gg/artcraft)).
 
 &mdash; Brandon Thomas
 
-[1] Unless you're Game of Thrones...
