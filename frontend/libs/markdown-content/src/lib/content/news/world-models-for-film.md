@@ -198,8 +198,11 @@ You can use MidJourney to quickly generate brilliant scenes with high detail and
 This is less like "prompting" and more like "crafting", with lots of different visual tools used in quick succession and coordination. 
 
 Need something? Generate it, turn it into 3D, edit, manipulate it. Stick it into something else. Rinse, cycle, repeat. Highly tangible, 
-like an artist molding clay - except now we're moving closer to the speed of thoughts. Yet we're still being largely intentional. 
-Auteurs of crafting.
+like an artist molding clay - except now we're moving closer to the speed of thoughts. 
+
+We're still being largely intentional. If there's something we want to see, we now have the tool to make it real. It's *What You See Is What You Get*. 
+
+We're painting with pictures. We're not prompters, but rather auteurs of crafting.
 
 # ArtCraft: Free and Open 3D Filmmaking
 
