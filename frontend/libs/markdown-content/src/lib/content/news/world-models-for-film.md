@@ -1,6 +1,6 @@
 ---
 title: Less Slop: World Models for Consistent AI Filmmaking
-abstract: How to use World Models and 3D Rendering to Get Consistent AI Film Locations and better AI Films
+abstract: How to use World Models and 3D Rendering to Get Consistent AI Film Locations and better AI Films.
 date: 2026-01-30
 ---
 
@@ -35,7 +35,7 @@ continuity.
 We've figured out how to overcome this problem. And in the spirit of "Show, Don't Tell", 
 let me show you what we've discovered. You'll intuit how this technique works immediately:
 
-@youtube(wJCJYdGdpHg)
+@youtube(kzvQMdg66Go)
 
 Now let me break down the rationale and the technique...
 
@@ -179,13 +179,27 @@ Then prompt, followed by a 4K upscale (with a few more fixes):
 
 # World Models Make This Easy
 
-The real star of this workflow is image-to-Gaussian Splat models, such as World Labs' Marble or Apple's Sharp. You can very quickly create a pleasing image of an intracate set in MidJourney, edit it in Nano Banana, then turn it into a fully navigable 3D scene.
+The real stars of the modern 3D compositing workflow are image-to-Gaussian Splat models, such as World Labs' Marble or Apple's Sharp. 
+
+You can very quickly create a pleasing image of an intracate set in MidJourney, edit it in Nano Banana, 
+then turn it into a fully navigable 3D scene. This gives your characters room to move, your camera places 
+to go, and your location opportunities to shine. 
+
+@loop_autoplay(https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/Fantasy_Gif_One.mp4)
+@loop_autoplay(https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/Beach_Gif_One.mp4)
+@loop_autoplay(https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/SciFi_Gif_One.mp4)
+
+Finally, we have set pieces. And they're easy to build and iterate on.
 
 # Combining Techniques
 
 You can use MidJourney to quickly generate brilliant scenes with high detail and magazine photoshoot quality layout, or you can draw a sketch or greybox a scene you'd like to build, iterate, then turn that into a world. 
 
 This is less like "prompting" and more like "crafting", with lots of different visual tools used in quick succession and coordination. 
+
+Need something? Generate it, turn it into 3D, edit, manipulate it. Stick it into something else. Rinse, cycle, repeat. Highly tangible, 
+like an artist molding clay - except now we're moving closer to the speed of thoughts. Yet we're still being largely intentional. 
+Auteurs of crafting.
 
 # ArtCraft: Free and Open 3D Filmmaking
 

@@ -65,6 +65,12 @@ export const markdownToHtml = (
     return `<div class="video-embed"><video controls><source src="${safeUrl}" type="video/${getVideoMimeType(url)}">Your browser does not support the video tag.</video></div>`;
   };
 
+  // Render a looping autoplay video embed (muted required for autoplay)
+  const renderLoopAutoplayVideoEmbed = (url: string): string => {
+    const safeUrl = normalizeLink(url);
+    return `<div class="video-embed"><video autoplay loop muted playsinline><source src="${safeUrl}" type="video/${getVideoMimeType(url)}">Your browser does not support the video tag.</video></div>`;
+  };
+
   // Get video MIME type from URL
   const getVideoMimeType = (url: string): string => {
     const lowerUrl = url.toLowerCase().split("?")[0];
@@ -200,6 +206,15 @@ export const markdownToHtml = (
       flushParagraph();
       closeListIfOpen();
       htmlParts.push(renderVideoEmbed(videoMatch[1]));
+      continue;
+    }
+
+    // Looping autoplay video embed: @loop_autoplay(url)
+    const loopAutoplayMatch = ltrim.match(/^@loop_autoplay\(([^)]+)\)\s*$/);
+    if (loopAutoplayMatch) {
+      flushParagraph();
+      closeListIfOpen();
+      htmlParts.push(renderLoopAutoplayVideoEmbed(loopAutoplayMatch[1]));
       continue;
     }
 
