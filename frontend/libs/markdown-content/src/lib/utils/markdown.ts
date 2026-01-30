@@ -5,6 +5,7 @@ export const markdownToHtml = (
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const htmlParts: string[] = [];
   let inList = false;
+  let blockquoteLines: string[] = [];
 
   const closeListIfOpen = () => {
     if (inList) {
@@ -155,9 +156,29 @@ export const markdownToHtml = (
     }
   };
 
+  const flushBlockquote = () => {
+    if (blockquoteLines.length > 0) {
+      const content = blockquoteLines.join(" ");
+      htmlParts.push(`<blockquote>${renderInline(content)}</blockquote>`);
+      blockquoteLines = [];
+    }
+  };
+
   for (const raw of lines) {
     const line = raw.trimEnd();
     const ltrim = line.replace(/^\s+/, "");
+
+    // Blockquote: > text
+    const blockquoteMatch = line.match(/^>\s?(.*)$/);
+    if (blockquoteMatch) {
+      flushParagraph();
+      closeListIfOpen();
+      blockquoteLines.push(blockquoteMatch[1]);
+      continue;
+    }
+
+    // If we were in a blockquote but this line isn't, flush it
+    flushBlockquote();
 
     // YouTube embed: @youtube(VIDEO_ID or URL)
     const youtubeMatch = ltrim.match(/^@youtube\(([^)]+)\)\s*$/);
@@ -243,6 +264,7 @@ export const markdownToHtml = (
   }
 
   flushParagraph();
+  flushBlockquote();
   closeListIfOpen();
   return htmlParts.join("\n");
 };
