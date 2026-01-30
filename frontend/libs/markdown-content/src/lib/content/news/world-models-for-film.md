@@ -88,13 +88,30 @@ imprecise.
 
 One of the best tools for consistency is 3D. You can position your characters and props in a "3D set", and then move the "camera" to any angle, maintaining strong consistency throughout.
 
-# 3D Kit Bashing
+![Hi Sam!](./images/blog/sam_previz.png)
 
-... 
+Pick a "smart" model like GPT Image 1.5 or Nano Banana Pro to convert this previz into a photorealistic render (or any style - anime, sci-fi, whatever): 
+
+![Hi Sam!](./images/blog/sam_gpt_image_1.png)
+
+And after Nano Banana Pro lighting adjustments and upscaling (and showing it the previz again to restore the missing desk pad), we get this:
+
+![Hi Sam!](./images/blog/sam_nbp2.png)
+
+It's a great starting composition before calling "action" with a video model. (I'd adjust the framing, but I wanted to show under the desk as well as bookcase features.)
+
+
+# 3D Kit Bashing and Greyboxing
+
+You can use 3D kits to provide blocking and layout. You can also use 3D primitive shapes to create a "greybox" of your scene.
 
 # Object Generation for Props
 
+You can turn images into 3D prop objects using models such as Hunyuan 3D.
+
 # World Models Make This Easy
+
+The real star of this workflow is image-to-Gaussian Splat models, such as World Labs' Marble or Apple's Sharp. You can very quickly create a pleasing image of an intracate set in MidJourney, edit it in Nano Banana, then turn it into a fully navigable 3D scene.
 
 
 # ArtCraft: Free and Open 3D Filmmaking
@@ -107,8 +124,6 @@ You can pay us for image and video compute, or you can bring your own keys and s
 without needing to pay us a dime. We offer the ability to log in with MidJourney, Grok, 
 OpenAI/Sora, and several other providers. We'll be adding FAL, Replicate, and Google Gemini 
 shortly, and local GPU support is coming soon (subscribe to stay updated).
-
-p.s. did you catch the typo(s)? The pixels may be generated, but the text was artisinally hand-crafted.
 
 &mdash; Brandon Thomas
 
