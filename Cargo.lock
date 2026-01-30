@@ -338,8 +338,13 @@ dependencies = [
  "actix-service",
  "actix-web",
  "actix_helpers",
+ "anyhow",
+ "cookies",
  "enums",
+ "errors",
+ "http_headers",
  "log",
+ "tokens",
  "workspace-build-acceleration",
 ]
 
@@ -1378,6 +1383,7 @@ dependencies = [
  "component_traits",
  "enums",
  "errors",
+ "http_headers",
  "http_server_common",
  "log",
  "mockall",

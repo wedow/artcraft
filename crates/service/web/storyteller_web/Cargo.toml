@@ -43,7 +43,7 @@ collections.workspace = true
 component_traits.workspace = true
 composite_identifiers = { path = "../../../schema/public/composite_identifiers" }
 config = { path = "../../../lib/deprecated/config" }
-cookies = { path = "../../../lib/cookies" }
+cookies.workspace = true
 crockford = { path = "../../../lib/data/crockford" }
 datetimes = { path = "../../../lib/data/datetimes" }
 easyenv = { path = "../../../lib/easyenv" }

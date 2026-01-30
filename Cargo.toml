@@ -197,6 +197,7 @@ cloudflare_mitigation = { path = "crates/lib/cloudflare_mitigation" }
 collections = { path = "crates/lib/data/collections" }
 component_traits = { path = "crates/service/plugins/component_traits" }
 cookie_store = { path = "crates/lib/cookie_store" }
+cookies = { path = "crates/lib/cookies" }
 crockford = { path = "crates/lib/data/crockford" }
 enums = { path = "crates/schema/public/enums" }
 enums_public = { path = "crates/schema/public/enums_public" }

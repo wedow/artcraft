@@ -4,9 +4,11 @@ use crate::endpoints::checkout_with_user_signup::user_creation_case::user_creati
 use crate::endpoints::checkout_with_user_signup::user_exists_case::user_exists_case;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
+use actix_artcraft::sessions::http_user_session_manager::HttpUserSessionManager;
 use actix_web::web::{Data, Json};
-use actix_web::{web, HttpRequest};
-use artcraft_api_defs::stripe_artcraft::create_create_new_user_account_and_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutWithUserSignupRequest, StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
+use artcraft_api_defs::stripe_artcraft::create_create_new_user_account_and_subscription_checkout::{PlanBillingCadence, SessionDetails, StripeArtcraftCreateSubscriptionCheckoutWithUserSignupRequest, StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse, UserDetails};
+use http_headers::
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
@@ -22,7 +24,10 @@ use std::sync::Arc;
 use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
+use stripe_shared::CheckoutSession;
+use http_headers::values::content_type::CONTENT_TYPE_APPLICATION_JSON;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
+use crate::endpoints::checkout_with_user_signup::creation_payload::{CreationPayload, UserMetadata};
 // /// Create a new user account and Stripe Checkout session and return the redirect URL in Json.
 // #[utoipa::path(
 //   get,
@@ -43,10 +48,11 @@ pub async fn stripe_artcraft_create_checkout_with_user_signup_handler(
   request: Json<StripeArtcraftCreateSubscriptionCheckoutWithUserSignupRequest>,
   stripe_config: Data<ArtcraftStripeConfigWithClient>,
   server_environment: Data<ServerEnvironment>,
+  session_cookie_manager: web::Data<HttpUserSessionManager>,
   internal_user_lookup: Data<dyn InternalUserLookup>,
   internal_session_cache_purge: Data<dyn InternalSessionCachePurge>,
   mysql_pool: Data<MySqlPool>,
-) -> Result<Json<StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse>, CommonWebError>
+) -> Result<HttpResponse, CommonWebError>
 {
   let slug = match request.plan {
     None => return Err(CommonWebError::BadInputWithSimpleMessage("no plan supplied".to_string())),
@@ -102,15 +108,76 @@ pub async fn stripe_artcraft_create_checkout_with_user_signup_handler(
     },
   };
 
-  let url = creation_payload.checkout_session.url.ok_or(CommonWebError::ServerError)?;
-
   // Best effort to delete Redis session cache
   internal_session_cache_purge.best_effort_purge_session_cache(&http_request);
 
-  Ok(Json(StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse {
+  match creation_payload.maybe_user_metadata {
+    None => create_http_response_existing_user(creation_payload.checkout_session)
+    Some(_) => {}
+  }
+}
+
+pub fn create_http_response_existing_user(
+  checkout_session: CheckoutSession,
+) -> Result<HttpResponse, CommonWebError> {
+  let url = checkout_session.url.ok_or(CommonWebError::ServerError)?;
+
+  let response = StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse {
     success: true,
     stripe_checkout_redirect_url: url,
     generated_user: None,
     session: None,
-  }))
+  };
+
+  let body = serde_json::to_string(&response)
+      .map_err(|_e| CommonWebError::ServerError)?;
+
+  Ok(HttpResponse::Ok()
+      .content_type(CONTENT_TYPE_APPLICATION_JSON)
+      .body(body))
+}
+
+pub fn create_http_response_new_user(
+  session_cookie_manager: &HttpUserSessionManager,
+  checkout_session: CheckoutSession,
+  user_metadata: UserMetadata,
+) -> Result<HttpResponse, CommonWebError> {
+  
+  let session_cookie = match session_cookie_manager.create_cookie(&user_metadata.session_token, &user_metadata.user_token) {
+    Ok(cookie) => cookie,
+    Err(err) => {
+      error!("Error creating session cookie: {:?}", err);
+      return Err(CommonWebError::ServerError)
+    },
+  };
+
+  let signed_session = match session_cookie_manager.encode_session_payload(&user_metadata.session_token, &user_metadata.user_token) {
+    Ok(payload) => payload,
+    Err(err) => {
+      error!("Error encoding session payload: {:?}", err);
+      return Err(CommonWebError::ServerError)
+    },
+  };
+
+  let url = checkout_session.url.ok_or(CommonWebError::ServerError)?;
+
+  let response = StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse {
+    success: true,
+    stripe_checkout_redirect_url: url,
+    generated_user: Some(UserDetails {
+      username: user_metadata.username,
+      display_name: user_metadata.display_name,
+    }),
+    session: Some(SessionDetails {
+      signed_session,
+    }),
+  };
+
+  let body = serde_json::to_string(&response)
+      .map_err(|_e| CommonWebError::ServerError)?;
+
+  Ok(HttpResponse::Ok()
+      .cookie(session_cookie)
+      .content_type(CONTENT_TYPE_APPLICATION_JSON)
+      .body(body))
 }

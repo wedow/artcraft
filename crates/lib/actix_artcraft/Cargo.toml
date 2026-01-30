@@ -22,13 +22,19 @@ workspace-build-acceleration.workspace = true
 
 # Internal
 actix_helpers.workspace = true
+cookies.workspace = true
 enums.workspace = true
+errors.workspace = true
+http_headers.workspace = true
+tokens.workspace = true
 
 # External
 actix-http.workspace = true
 actix-service.workspace = true
 actix-web.workspace = true
 log.workspace = true
+anyhow.workspace = true
+
 
 [dev-dependencies]
 # (None yet)

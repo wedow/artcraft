@@ -33,7 +33,7 @@ pub struct StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse {
   pub generated_user: Option<UserDetails>,
 
   /// If a session was created, these are the details.
-  pub session: Option<UserDetails>,
+  pub session: Option<SessionDetails>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
