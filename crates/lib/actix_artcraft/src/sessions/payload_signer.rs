@@ -1,11 +1,10 @@
 use std::collections::BTreeMap;
 
+use crate::sessions::http_user_session_payload::HttpUserSessionPayload;
 use cookies::jwt_signer::JwtSigner;
 use errors::AnyhowResult;
 use tokens::tokens::user_sessions::UserSessionToken;
 use tokens::tokens::users::UserToken;
-
-use crate::http_server::session::http::http_user_session_payload::HttpUserSessionPayload;
 
 /**
  * Session payload version history
@@ -57,10 +56,9 @@ impl HttpUserSessionPayloadSigner {
 
 #[cfg(test)]
 mod tests {
+  use crate::sessions::payload_signer::HttpUserSessionPayloadSigner;
   use tokens::tokens::user_sessions::UserSessionToken;
   use tokens::tokens::users::UserToken;
-
-  use crate::http_server::session::http::payload_signer::HttpUserSessionPayloadSigner;
 
   #[test]
   fn test_encode() {

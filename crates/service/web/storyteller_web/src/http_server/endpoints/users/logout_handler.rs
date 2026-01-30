@@ -5,18 +5,16 @@
 
 use std::fmt;
 
+use actix_artcraft::sessions::http_user_session_manager::HttpUserSessionManager;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse};
-use log::warn;
-use sqlx::MySqlPool;
-use utoipa::ToSchema;
-
 use http_server_common::response::response_error_helpers::to_simple_json_error;
+use log::warn;
 use mysql_queries::queries::users::user_sessions::delete_user_session::delete_user_session;
+use sqlx::MySqlPool;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
-
-use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
+use utoipa::ToSchema;
 
 #[derive(Serialize, ToSchema)]
 pub struct LogoutSuccessResponse {

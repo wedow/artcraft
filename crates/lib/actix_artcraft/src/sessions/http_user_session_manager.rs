@@ -9,12 +9,11 @@ use actix_web::HttpRequest;
 use anyhow::anyhow;
 use log::warn;
 
+use crate::sessions::http_user_session_payload::HttpUserSessionPayload;
+use crate::sessions::payload_signer::HttpUserSessionPayloadSigner;
 use errors::AnyhowResult;
 use tokens::tokens::user_sessions::UserSessionToken;
 use tokens::tokens::users::UserToken;
-
-use crate::http_server::session::http::http_user_session_payload::HttpUserSessionPayload;
-use crate::http_server::session::http::payload_signer::HttpUserSessionPayloadSigner;
 
 /// Name of the HTTP cookie that carries the session payload
 const SESSION_COOKIE_NAME : &str = "session";
@@ -139,7 +138,7 @@ mod tests {
   use tokens::tokens::user_sessions::UserSessionToken;
   use tokens::tokens::users::UserToken;
 
-  use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
+  use crate::sessions::http_user_session_manager::HttpUserSessionManager;
 
   #[test]
   fn test_create_cookie_payload() {

@@ -3,19 +3,18 @@
 #![forbid(unused_mut)]
 #![forbid(unused_variables)]
 
+use actix_artcraft::sessions::http_user_session_manager::HttpUserSessionManager;
 use actix_web::HttpRequest;
-use log::warn;
-use sqlx::pool::PoolConnection;
-use sqlx::{Executor, MySql, MySqlPool};
-
 use errors::AnyhowResult;
+use log::warn;
 use mysql_queries::queries::users::user_sessions::get_user_session_by_token::{get_user_session_by_token, get_user_session_by_token_pooled_connection, SessionUserRecord};
 use mysql_queries::queries::users::user_sessions::get_user_session_by_token_light::{get_user_session_by_token_light, SessionRecord};
 use mysql_queries::queries::users::user_subscriptions::list_active_user_subscriptions::list_active_user_subscriptions;
 use redis_caching::redis_ttl_cache::{RedisTtlCache, RedisTtlCacheConnection};
 use redis_common::redis_cache_keys::RedisCacheKeys;
+use sqlx::pool::PoolConnection;
+use sqlx::{Executor, MySql, MySqlPool};
 
-use crate::http_server::session::http::http_user_session_manager::HttpUserSessionManager;
 use crate::http_server::session::lookup::user_session_extended::{UserSessionExtended, UserSessionPreferences, UserSessionPremiumPlanInfo, UserSessionRoleAndPermissions, UserSessionSubscriptionPlan, UserSessionUserDetails};
 use crate::http_server::session::lookup::user_session_feature_flags::UserSessionFeatureFlags;
 
