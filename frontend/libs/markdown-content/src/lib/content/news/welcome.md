@@ -18,4 +18,5 @@ Welcome to the official **ArtCraft Blog**. This is where we'll be posting about:
 We have a lot of exciting things in the pipeline. Make sure to check back regularly!
 
 Happy Crafting!
+
 The ArtCraft Team
