@@ -568,6 +568,10 @@ const PageDraw = () => {
 
   // Auto-fit canvas to screen on initial load
   useEffect(() => {
+    if (!store.baseImageBitmap) {
+      return;
+    }
+
     const autoFitCanvas = async () => {
       let attempts = 0;
       const maxAttempts = 20;
@@ -593,7 +597,7 @@ const PageDraw = () => {
 
     autoFitCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [store.baseImageBitmap]);
 
   // Display image selector on launch, otherwise hide it
   // Also show loading state if info is set but image is loading
