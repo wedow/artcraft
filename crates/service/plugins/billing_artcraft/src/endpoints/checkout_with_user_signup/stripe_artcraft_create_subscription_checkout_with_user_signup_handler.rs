@@ -1,5 +1,6 @@
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
 use crate::configs::subscriptions::get_artcraft_subscription_by_slug_and_env::get_artcraft_subscription_by_slug_and_env;
+use crate::endpoints::checkout_with_user_signup::creation_payload::{CreationPayload, UserMetadata};
 use crate::endpoints::checkout_with_user_signup::user_creation_case::user_creation_case;
 use crate::endpoints::checkout_with_user_signup::user_exists_case::user_exists_case;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
@@ -8,10 +9,10 @@ use actix_artcraft::sessions::http_user_session_manager::HttpUserSessionManager;
 use actix_web::web::{Data, Json};
 use actix_web::{web, HttpRequest, HttpResponse};
 use artcraft_api_defs::stripe_artcraft::create_create_new_user_account_and_subscription_checkout::{PlanBillingCadence, SessionDetails, StripeArtcraftCreateSubscriptionCheckoutWithUserSignupRequest, StripeArtcraftCreateSubscriptionCheckoutWithUserSignupResponse, UserDetails};
-use http_headers::
 use component_traits::traits::internal_user_lookup::InternalUserLookup;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use enums::common::payments_namespace::PaymentsNamespace;
+use http_headers::values::content_type::CONTENT_TYPE_APPLICATION_JSON;
 use log::{error, info, warn};
 use mysql_queries::queries::users::user_stripe_customer_links::find_user_stripe_customer_link::find_user_stripe_customer_link_using_connection;
 use mysql_queries::queries::users::user_subscriptions::find_possibly_inactive_first_subscription_for_owner_user::find_possibly_inactive_first_subscription_for_owner_user_using_connection;
@@ -25,9 +26,8 @@ use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSes
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use stripe_shared::CheckoutSession;
-use http_headers::values::content_type::CONTENT_TYPE_APPLICATION_JSON;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
-use crate::endpoints::checkout_with_user_signup::creation_payload::{CreationPayload, UserMetadata};
+
 // /// Create a new user account and Stripe Checkout session and return the redirect URL in Json.
 // #[utoipa::path(
 //   get,
@@ -111,9 +111,15 @@ pub async fn stripe_artcraft_create_checkout_with_user_signup_handler(
   // Best effort to delete Redis session cache
   internal_session_cache_purge.best_effort_purge_session_cache(&http_request);
 
-  match creation_payload.maybe_user_metadata {
-    None => create_http_response_existing_user(creation_payload.checkout_session)
-    Some(_) => {}
+  match creation_payload.maybe_new_user_metadata {
+    None => {
+      info!("delevering response for existing user...");
+      create_http_response_existing_user(creation_payload.checkout_session)
+    }
+    Some(user_metadata) => {
+      info!("delevering response for new user...");
+      create_http_response_new_user(&session_cookie_manager, creation_payload.checkout_session, user_metadata)
+    }
   }
 }
 

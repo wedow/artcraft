@@ -2,6 +2,7 @@ use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMA
 use crate::endpoints::checkout_with_user_signup::creation_payload::CreationPayload;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
+use crate::utils::create_checkout::create_subscription_checkout_session::{create_subscription_checkout_session, CreateSubscriptionCheckoutSessionArgs};
 use actix_web::web::Data;
 use component_traits::traits::internal_user_lookup::UserMetadata;
 use enums::common::payments_namespace::PaymentsNamespace;
@@ -16,7 +17,7 @@ use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSes
 use stripe_shared::{CheckoutSession, CheckoutSessionMode, CustomerId, PriceId};
 
 pub (super) async fn user_exists_case(
-  price_id: &str,
+  price_id: &PriceId,
   user_metadata: &UserMetadata,
   mysql_connection: &mut PoolConnection<MySql>,
   stripe_config: &ArtcraftStripeConfigWithClient,
@@ -70,98 +71,19 @@ pub (super) async fn user_exists_case(
     warn!("Error looking up user's ({}) existing stripe customer link: {:?}", &user_metadata.user_token_typed, err);
   }
 
-  let success_url = stripe_config.checkout_success_url.clone();
-  let cancel_url = stripe_config.checkout_cancel_url.clone();
-
-  let checkout_session = {
-    // `client_reference_id`
-    // Stripe Docs:
-    //   A unique string to reference the Checkout Session.
-    //   This can be a customer ID, a cart ID, or similar, and can be used to reconcile the session
-    //   with your internal systems.
-    //
-    // Our Notes:
-    //   This gets reported back in the Checkout Session (and related webhooks) as
-    //   `client_reference_id`. Passing the same ID on multiple checkouts does not unify or
-    //   cross-correlate customers and only seems to be metadata for the checkout session itself.
-    //   This is probably only useful for tracking checkout session engagement.
-    //params.client_reference_id = Some("SOME_INTERNAL_ID");
-
-    // `customer_email`
-    // Stripe Docs:
-    //   If provided, this value will be used when the Customer object is created. If not provided,
-    //   customers will be asked to enter their email address. Use this parameter to prefill
-    //   customer data if you already have an email on file. To access information about the
-    //   customer once a session is complete, use the customer field.
-    //
-    // Our Notes:
-    //   This does not look up previous customers with the same email and will not unify or
-    //   cross-correlate customers. By default the field will be un-editable in the checkout flow
-    //   if this is specified.
-    //params.customer_email = Some("email@example.com");
-
-    let mut metadata = HashMap::new();
-
-    metadata.insert(STRIPE_ARTCRAFT_METADATA_USER_TOKEN.to_string(), user_metadata.user_token.to_string());
-
-    if let Some(username) = user_metadata.username.as_deref() {
-      metadata.insert(STRIPE_ARTCRAFT_METADATA_USERNAME.to_string(), username.to_string());
-    }
-
-    if let Some(user_email) = user_metadata.user_email.as_deref() {
-      metadata.insert(STRIPE_ARTCRAFT_METADATA_EMAIL.to_string(), user_email.to_string());
-    }
-
-    let mut checkout_builder = CreateCheckoutSession::new()
-        .success_url(&success_url)
-        .cancel_url(&cancel_url)
-        .mode(CheckoutSessionMode::Subscription)
-        .line_items(vec![
-          CreateCheckoutSessionLineItems {
-            price: Some(price_id.to_string()),
-            quantity: Some(1),
-            ..Default::default()
-          }
-        ])
-        .saved_payment_method_options(CreateCheckoutSessionSavedPaymentMethodOptions {
-          allow_redisplay_filters: Some(vec![
-            CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Always,
-            CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Limited,
-            CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters::Unspecified,
-          ]),
-          // The user can choose to tick a checkbox that saves their card for redisplay later.
-          payment_method_save: Some(CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave::Enabled),
-        })
-        .allow_promotion_codes(true) // Allow promo codes / coupons
-        .automatic_tax(CreateCheckoutSessionAutomaticTax {
-          enabled: true, // This will ask for the customer's location
-          liability: None,
-        })
-        .metadata(metadata.clone())
-        .subscription_data(CreateCheckoutSessionSubscriptionData {
-          metadata: Some(metadata),
-          ..Default::default()
-        })
-        ;
-
-    if let Some(customer_id) = maybe_existing_stripe_customer_id {
-      info!("Adding existing stripe customer id to checkout session: {}", customer_id.as_str());
-      checkout_builder = checkout_builder.customer(customer_id);
-    }
-
-    let checkout_session = checkout_builder
-        .send(&stripe_config.client)
-        .await
-        .map_err(|err| {
-          error!("Stripe Error: {:?}", err);
-          CommonWebError::ServerError
-        })?;
-
-    checkout_session
-  };
+  let checkout_session = create_subscription_checkout_session(CreateSubscriptionCheckoutSessionArgs {
+    subscription_price_id: price_id,
+    maybe_existing_stripe_customer_id: maybe_existing_stripe_customer_id.as_ref(),
+    user_token: &user_metadata.user_token_typed,
+    username: user_metadata.username.as_deref(),
+    user_email: user_metadata.user_email.as_deref(),
+    stripe_client: &stripe_config.client,
+    success_url: &stripe_config.checkout_success_url,
+    cancel_url: &stripe_config.checkout_cancel_url,
+  }).await?;
 
   Ok(CreationPayload {
     checkout_session,
-    maybe_user_metadata: None,
+    maybe_new_user_metadata: None,
   })
 }

@@ -4,7 +4,7 @@ use tokens::tokens::users::UserToken;
 
 pub (super) struct CreationPayload {
   pub checkout_session: CheckoutSession,
-  pub maybe_user_metadata: Option<UserMetadata>
+  pub maybe_new_user_metadata: Option<UserMetadata>
 }
 
 pub (super) struct UserMetadata {
