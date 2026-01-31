@@ -25,7 +25,7 @@ use std::sync::Arc;
 use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
 use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
-use stripe_shared::CheckoutSession;
+use stripe_shared::{CheckoutSession, PriceId};
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
 
 // /// Create a new user account and Stripe Checkout session and return the redirect URL in Json.
@@ -78,6 +78,12 @@ pub async fn stripe_artcraft_create_checkout_with_user_signup_handler(
     PlanBillingCadence::Monthly => plan.monthly_price_id.clone(),
     PlanBillingCadence::Yearly => plan.yearly_price_id.clone(),
   };
+
+  let price_id = PriceId::from_str(&price_id)
+      .map_err(|err| {
+        error!("Error parsing price id: {:?}", err);
+        CommonWebError::ServerError
+      })?;
 
   let maybe_user_metadata = internal_user_lookup
       .lookup_user_from_http_request_and_mysql_connection(&http_request, &mut mysql_connection)
