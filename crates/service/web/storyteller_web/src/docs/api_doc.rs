@@ -103,6 +103,7 @@ use crate::http_server::endpoints::user_ratings::batch_get_user_rating_handler::
 use crate::http_server::endpoints::user_ratings::get_user_rating_handler::*;
 use crate::http_server::endpoints::user_ratings::set_user_rating_handler::*;
 use crate::http_server::endpoints::users::create_account_handler::*;
+use crate::http_server::endpoints::users::edit_email_handler::*;
 use crate::http_server::endpoints::users::edit_username_handler::*;
 use crate::http_server::endpoints::users::get_profile_handler::*;
 use crate::http_server::endpoints::users::google_sso::google_sso_handler::*;
@@ -122,6 +123,8 @@ use crate::http_server::endpoints::weights::list::list_weights_by_user_handler::
 use crate::http_server::endpoints::weights::search::search_model_weights_impl::*;
 use crate::http_server::endpoints::weights::update::set_model_weight_cover_image_handler::*;
 use crate::http_server::endpoints::weights::update::update_weight_handler::*;
+use artcraft_api_defs::users::edit_email::{EditEmailRequest, EditEmailResponse};
+use artcraft_api_defs::users::edit_username::{EditUsernameRequest, EditUsernameResponse};
 use artcraft_api_defs::common::responses::job_details::JobDetailsLipsyncRequest;
 use artcraft_api_defs::common::responses::job_details::JobDetailsLivePortraitRequest;
 use artcraft_api_defs::common::responses::media_links::*;
@@ -314,6 +317,7 @@ use tokens::tokens::zs_voice_datasets::*;
     crate::http_server::endpoints::user_ratings::get_user_rating_handler::get_user_rating_handler,
     crate::http_server::endpoints::user_ratings::set_user_rating_handler::set_user_rating_handler,
     crate::http_server::endpoints::users::create_account_handler::create_account_handler,
+    crate::http_server::endpoints::users::edit_email_handler::edit_email_handler,
     crate::http_server::endpoints::users::edit_username_handler::edit_username_handler,
     crate::http_server::endpoints::users::get_profile_handler::get_profile_handler,
     crate::http_server::endpoints::users::google_sso::google_sso_handler::google_sso_handler,
@@ -508,6 +512,9 @@ use tokens::tokens::zs_voice_datasets::*;
     GptImage1EditImageNumImages,
     GptImage1EditImageImageQuality,
     GptImage1EditImageResponse,
+    EditEmailError,
+    EditEmailRequest,
+    EditEmailResponse,
     EditUsernameError,
     EditUsernameRequest,
     EditUsernameResponse,
