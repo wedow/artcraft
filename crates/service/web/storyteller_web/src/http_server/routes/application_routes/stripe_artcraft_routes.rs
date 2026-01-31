@@ -4,6 +4,7 @@ use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error, HttpResponse};
 use billing_artcraft_component::endpoints::checkout::stripe_artcraft_create_credits_pack_checkout_handler::stripe_artcraft_create_credits_pack_checkout_handler;
 use billing_artcraft_component::endpoints::checkout::stripe_artcraft_create_subscription_checkout_handler::stripe_artcraft_create_subscription_session_handler;
+use billing_artcraft_component::endpoints::checkout_with_user_signup::stripe_artcraft_create_subscription_checkout_with_user_signup_handler::stripe_artcraft_create_subscription_checkout_with_user_signup_handler;
 use billing_artcraft_component::endpoints::customer_portal::stripe_artcraft_customer_portal_cancel_plan_handler::stripe_artcraft_customer_portal_cancel_plan_handler;
 use billing_artcraft_component::endpoints::customer_portal::stripe_artcraft_customer_portal_manage_plan_handler::stripe_artcraft_customer_portal_manage_plan_handler;
 use billing_artcraft_component::endpoints::customer_portal::stripe_artcraft_customer_portal_switch_plan_handler::stripe_artcraft_customer_portal_switch_plan_handler;
@@ -48,6 +49,10 @@ where
       )
       .service(web::resource("/portal/update_payment_method")
           .route(web::post().to(stripe_artcraft_customer_portal_update_payment_method_handler))
+          .route(web::head().to(|| HttpResponse::Ok()))
+      )
+      .service(web::resource("/user_signup_subscription_checkout")
+          .route(web::post().to(stripe_artcraft_create_subscription_checkout_with_user_signup_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )

@@ -32,7 +32,7 @@ use user_traits_component::traits::internal_session_cache_purge::InternalSession
 // #[utoipa::path(
 //   get,
 //   tag = "Stripe (Artcraft)",
-//   path = "/v1/stripe_artcraft/user_signup/subscription_checkout",
+//   path = "/v1/stripe_artcraft/user_signup_subscription_checkout",
 //   params(
 //     ("request" = CreateCheckoutSessionRequest, description = "Payload for Request"),
 //   ),
@@ -43,7 +43,7 @@ use user_traits_component::traits::internal_session_cache_purge::InternalSession
 
 /// Create a Stripe Checkout session *with* user signup and return the redirect URL in Json.
 /// If the user is already logged in, we just attach it to that record instead.
-pub async fn stripe_artcraft_create_checkout_with_user_signup_handler(
+pub async fn stripe_artcraft_create_subscription_checkout_with_user_signup_handler(
   http_request: HttpRequest,
   request: Json<StripeArtcraftCreateSubscriptionCheckoutWithUserSignupRequest>,
   stripe_config: Data<ArtcraftStripeConfigWithClient>,
