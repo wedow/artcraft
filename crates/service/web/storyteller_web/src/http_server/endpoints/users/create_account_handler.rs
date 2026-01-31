@@ -28,7 +28,7 @@ use password::bcrypt_hash_password::bcrypt_hash_password;
 use sqlx::MySqlPool;
 use tokens::tokens::user_sessions::UserSessionToken;
 use user_input_common::check_for_slurs::contains_slurs;
-use users::email::email_to_gravatar::email_to_gravatar;
+use users::email::email_to_gravatar_hash::email_to_gravatar_hash;
 use utoipa::ToSchema;
 
 #[derive(ToSchema, Deserialize)]
@@ -185,7 +185,7 @@ pub async fn create_account_handler(
 
   let email_address = request.email_address.trim().to_lowercase();
 
-  let email_gravatar_hash = email_to_gravatar(&email_address);
+  let email_gravatar_hash = email_to_gravatar_hash(&email_address);
 
   let ip_address = get_request_ip(&http_request);
 

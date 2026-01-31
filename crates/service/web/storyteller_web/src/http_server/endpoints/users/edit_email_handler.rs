@@ -16,11 +16,11 @@ use artcraft_api_defs::users::edit_email::{EditEmailRequest, EditEmailResponse};
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
 use crate::http_server::web_utils::user_session::require_user_session_using_connection::require_user_session_using_connection;
 use crate::state::server_state::ServerState;
-use hashing::md5::email_to_gravatar_hash::email_to_gravatar_hash;
 use http_server_common::request::get_request_ip::get_request_ip;
 use mysql_queries::queries::users::user::update::update_email::{update_email, UpdateEmailArgs, UpdateEmailError};
 use mysql_queries::utils::transactor::Transactor;
-
+use users::email::email_to_gravatar_hash::email_to_gravatar_hash;
+use users::email::validate_email_address_format::validate_email_address_format;
 
 #[derive(Debug, ToSchema)]
 pub enum EditEmailError {
@@ -56,52 +56,6 @@ impl fmt::Display for EditEmailError {
   }
 }
 
-/// Basic email format validation
-fn validate_email(email: &str) -> Result<(), String> {
-  let email = email.trim();
-
-  if email.is_empty() {
-    return Err("email address cannot be empty".to_string());
-  }
-
-  if email.len() > 255 {
-    return Err("email address is too long".to_string());
-  }
-
-  // Basic format check: must contain exactly one @ with content on both sides
-  let at_count = email.matches('@').count();
-  if at_count != 1 {
-    return Err("email address must contain exactly one @".to_string());
-  }
-
-  let parts: Vec<&str> = email.split('@').collect();
-  if parts.len() != 2 {
-    return Err("invalid email format".to_string());
-  }
-
-  let local = parts[0];
-  let domain = parts[1];
-
-  if local.is_empty() {
-    return Err("email address must have content before @".to_string());
-  }
-
-  if domain.is_empty() {
-    return Err("email address must have a domain after @".to_string());
-  }
-
-  // Domain must contain at least one dot
-  if !domain.contains('.') {
-    return Err("email domain must contain a dot".to_string());
-  }
-
-  // Domain cannot start or end with a dot
-  if domain.starts_with('.') || domain.ends_with('.') {
-    return Err("email domain cannot start or end with a dot".to_string());
-  }
-
-  Ok(())
-}
 
 /// Edit email address of the current user.
 #[utoipa::path(
@@ -126,7 +80,7 @@ pub async fn edit_email_handler(
 {
   let email_address = request.email_address.trim().to_lowercase();
 
-  if let Err(reason) = validate_email(&email_address) {
+  if let Err(reason) = validate_email_address_format(&email_address) {
     return Err(EditEmailError::BadInput(format!("bad email: {}", &reason)));
   }
 

@@ -18,7 +18,7 @@ use sqlx::{Acquire, MySql};
 use std::collections::HashMap;
 use stripe_checkout::checkout_session::{CreateCheckoutSession, CreateCheckoutSessionAutomaticTax, CreateCheckoutSessionLineItems, CreateCheckoutSessionSavedPaymentMethodOptions, CreateCheckoutSessionSavedPaymentMethodOptionsAllowRedisplayFilters, CreateCheckoutSessionSavedPaymentMethodOptionsPaymentMethodSave, CreateCheckoutSessionSubscriptionData};
 use stripe_shared::{CheckoutSession, CheckoutSessionMode, PriceId};
-use users::email::email_to_gravatar::email_to_gravatar;
+use users::email::email_to_gravatar_hash::email_to_gravatar_hash;
 use users::email::generate_random_synthetic_email::generate_random_synthetic_email;
 use users::username::generate_random_username::generate_random_username;
 
@@ -57,7 +57,7 @@ pub (super) async fn user_creation_case(
     // NB: We try a few times to make sure we don't hit an email/username collision.
 
     let user_email_address = generate_random_synthetic_email();
-    let user_email_gravatar_hash = email_to_gravatar(&user_email_address);
+    let user_email_gravatar_hash = email_to_gravatar_hash(&user_email_address);
     
     let display_name = generate_random_username();
     let username = display_name.trim().to_lowercase();
