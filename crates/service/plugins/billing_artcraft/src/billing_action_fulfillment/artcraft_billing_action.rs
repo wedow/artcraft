@@ -142,4 +142,8 @@ pub struct SubscriptionPaidEvent {
 
   /// Token to track in the wallet_ledger_events
   pub ledger_event_ref: Option<String>,
+  
+  /// For eagerly created user records (in the new checkout flow), we need to update the user's email.
+  /// We started creating user accounts without a username, email, and password - so we need to collect it here.
+  pub customer_email: Option<String>,
 }

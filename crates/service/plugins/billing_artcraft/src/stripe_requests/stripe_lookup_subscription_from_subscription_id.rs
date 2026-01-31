@@ -1,5 +1,5 @@
 use crate::configs::stripe_client_retry_strategy::STRIPE_CLIENT_RETRY_STRATEGY;
-use crate::requests::lookup_purchase_from_payment_intent_success::PurchaseSummary;
+use crate::stripe_requests::stripe_lookup_purchase_from_payment_intent_success::PurchaseSummary;
 use crate::utils::enum_conversion::recurring_interval_to_reusable_type::recurring_interval_to_reusable_type;
 use crate::utils::enum_conversion::subscription_status_to_reusable_type::subscription_status_to_reusable_type;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
@@ -63,7 +63,7 @@ pub struct SubscriptionAndProduct {
   pub maybe_canceled_at: Option<NaiveDateTime>,
 }
 
-pub async fn lookup_subscription_from_subscription_id(
+pub async fn stripe_lookup_subscription_from_subscription_id(
   subscription_id: &str,
   stripe_client: &Client
 ) -> anyhow::Result<SubscriptionAndProduct> {

@@ -17,7 +17,7 @@ pub struct PurchaseSummary {
 }
 
 // This assumes the payment came from a checkout session.
-pub async fn lookup_purchase_from_payment_intent_success(
+pub async fn stripe_lookup_purchase_from_payment_intent_success(
   payment_intent_id: &str,
   stripe_client: &Client
 ) -> anyhow::Result<PurchaseSummary> {

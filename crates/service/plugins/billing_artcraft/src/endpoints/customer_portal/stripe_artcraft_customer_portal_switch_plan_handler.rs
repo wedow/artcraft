@@ -1,6 +1,7 @@
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
 use crate::configs::subscriptions::get_artcraft_subscription_by_slug_and_env::get_artcraft_subscription_by_slug_and_env;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
+use crate::stripe_requests::stripe_lookup_subscription_from_subscription_id::stripe_lookup_subscription_from_subscription_id;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::{Data, Json};
@@ -24,7 +25,6 @@ use stripe_checkout::CheckoutSessionMode;
 use stripe_core::CustomerId;
 use tokens::tokens::users::UserToken;
 use user_traits_component::traits::internal_session_cache_purge::InternalSessionCachePurge;
-use crate::requests::lookup_subscription_from_subscription_id::lookup_subscription_from_subscription_id;
 
 pub async fn stripe_artcraft_customer_portal_switch_plan_handler(
   http_request: HttpRequest,
@@ -130,7 +130,7 @@ async fn update_confirm(
   let existing_subscription_id = user_subscription.stripe_subscription_id.clone();
   let existing_product_id = user_subscription.stripe_product_id.clone();
 
-  let existing_subscription = lookup_subscription_from_subscription_id(
+  let existing_subscription = stripe_lookup_subscription_from_subscription_id(
     &existing_subscription_id,
     &stripe_config.client
   ).await.map_err(|err| {

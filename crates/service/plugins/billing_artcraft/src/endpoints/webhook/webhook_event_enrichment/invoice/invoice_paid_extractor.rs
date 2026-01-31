@@ -4,15 +4,16 @@ use crate::configs::stripe_artcraft_generic_product_info::StripeArtcraftGenericP
 use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
 use crate::endpoints::webhook::common::webhook_event_log_summary::WebhookEventLogSummary;
-use crate::requests::lookup_subscription_from_subscription_id::lookup_subscription_from_subscription_id;
+use crate::stripe_requests::stripe_lookup_subscription_from_subscription_id::stripe_lookup_subscription_from_subscription_id;
 use crate::utils::expand_ids::expand_customer_id::expand_customer_id;
 use crate::utils::expand_ids::expand_subscription_id::expand_subscription_id;
 use crate::utils::metadata::get_metadata_user_token::get_metadata_user_token;
+use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
 use log::{error, info, warn};
 use reusable_types::server_environment::ServerEnvironment;
 use stripe::Client;
 use stripe_shared::{Invoice, InvoiceBillingReason, InvoiceStatus};
-use crate::utils::stripe_event_descriptor::StripeEventDescriptor;
+use stripe_types::Expandable;
 
 // Handle event type: 'invoice.paid'
 //
@@ -101,7 +102,7 @@ pub async fn invoice_paid_extractor(
 
   info!("Calling Stripe to look up subscription info...");
 
-  let subscription = lookup_subscription_from_subscription_id(
+  let subscription = stripe_lookup_subscription_from_subscription_id(
     &subscription_id, stripe_client).await?;
 
   // TODO: Multiple ways to get this; better ways to get this
@@ -155,6 +156,7 @@ pub async fn invoice_paid_extractor(
       maybe_cancel_at: subscription.maybe_cancel_at,
       maybe_canceled_at: subscription.maybe_canceled_at,
       ledger_event_ref: Some(ledger_event_ref),
+      customer_email: invoice.customer_email.clone(),
     })),
     webhook_event_log_summary: event_log_summary,
   })

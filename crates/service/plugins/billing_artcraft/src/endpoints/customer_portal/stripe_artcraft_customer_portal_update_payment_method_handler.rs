@@ -1,7 +1,7 @@
 use crate::configs::stripe_artcraft_metadata_keys::{STRIPE_ARTCRAFT_METADATA_EMAIL, STRIPE_ARTCRAFT_METADATA_USERNAME, STRIPE_ARTCRAFT_METADATA_USER_TOKEN};
 use crate::configs::subscriptions::get_artcraft_subscription_by_slug_and_env::get_artcraft_subscription_by_slug_and_env;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
-use crate::requests::lookup_subscription_from_subscription_id::lookup_subscription_from_subscription_id;
+use crate::stripe_requests::stripe_lookup_subscription_from_subscription_id::stripe_lookup_subscription_from_subscription_id;
 use crate::utils::artcraft_stripe_config::ArtcraftStripeConfigWithClient;
 use crate::utils::common_web_error::CommonWebError;
 use actix_web::web::{Data, Json};
