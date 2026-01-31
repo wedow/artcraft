@@ -228,14 +228,19 @@ export const HistoryStack = ({
                         e.stopPropagation();
                         showActionReminder({
                           reminderType: "default",
-                          title: "Delete Image",
+                          title: "Remove Image",
                           primaryActionIcon: faTrashXmark,
                           primaryActionBtnClassName: "bg-red hover:bg-red/80",
                           message: (
+                            <>
                             <p className="text-base-fg text-sm opacity-70">
-                              Are you sure you want to delete this image? This
+                              Are you sure you want to remove this image from the history stack? This
                               action cannot be undone.
                             </p>
+                            <p className="text-base-fg text-sm opacity-70">
+                              Images removed here can still be found in the library.
+                            </p>
+                            </>
                           ),
                           primaryActionText: "Delete",
                           onPrimaryAction: () => {
