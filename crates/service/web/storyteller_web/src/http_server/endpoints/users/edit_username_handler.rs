@@ -12,7 +12,7 @@ use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use log::warn;
 use utoipa::ToSchema;
-
+use artcraft_api_defs::users::edit_username::{EditUsernameRequest, EditUsernameResponse};
 use crate::http_server::validations::is_reserved_username::is_reserved_username;
 use crate::http_server::validations::validate_username::validate_username;
 use crate::http_server::web_utils::response_error_helpers::to_simple_json_error;
@@ -23,15 +23,6 @@ use mysql_queries::queries::users::user::update::update_username::{update_userna
 use mysql_queries::utils::transactor::Transactor;
 use user_input_common::check_for_slurs::contains_slurs;
 
-#[derive(Deserialize, ToSchema)]
-pub struct EditUsernameRequest {
-  display_name: String,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct EditUsernameResponse {
-  pub success: bool,
-}
 
 #[derive(Debug, ToSchema)]
 pub enum EditUsernameError {

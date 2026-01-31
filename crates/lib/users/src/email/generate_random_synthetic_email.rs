@@ -26,4 +26,11 @@ mod tests {
     }
     assert!(collection.len() > 50); // NB: Should be an easy bar to hit
   }
+
+  #[test]
+  fn test_email_format() {
+    let email = generate_random_synthetic_email();
+    assert!(email.contains("@"));
+    assert!(email.contains("."));
+  }
 }
