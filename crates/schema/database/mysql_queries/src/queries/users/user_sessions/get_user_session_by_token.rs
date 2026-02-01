@@ -20,8 +20,15 @@ pub struct SessionUserRecord {
   pub display_name: String,
 
   pub email_address: String,
-  pub email_confirmed: bool,
   pub email_gravatar_hash: String,
+  
+  // ===== ONBOARDING STATE ===== //
+
+  pub email_confirmed: bool,
+  pub email_confirmed_by_google: bool,
+  pub email_is_synthetic: bool,
+  pub is_without_password: bool,
+  pub username_is_not_customized: bool,
 
   // ===== PREMIUM FEATURES ===== //
 
@@ -111,8 +118,13 @@ SELECT
     users.display_name,
 
     users.email_address,
-    users.email_confirmed,
     users.email_gravatar_hash,
+    
+    users.email_confirmed,
+    users.email_confirmed_by_google,
+    users.email_is_synthetic,
+    users.is_without_password,
+    users.username_is_not_customized,
 
     users.maybe_stripe_customer_id,
     users.maybe_loyalty_program_key,
@@ -173,8 +185,13 @@ WHERE user_sessions.token = ?
         username: raw_user_record.username,
         display_name: raw_user_record.display_name,
         email_address: raw_user_record.email_address,
-        email_confirmed: i8_to_bool(raw_user_record.email_confirmed),
         email_gravatar_hash: raw_user_record.email_gravatar_hash,
+        // Onboarding
+        email_confirmed: i8_to_bool(raw_user_record.email_confirmed),
+        email_confirmed_by_google: i8_to_bool(raw_user_record.email_confirmed_by_google),
+        email_is_synthetic: i8_to_bool(raw_user_record.email_is_synthetic),
+        is_without_password: i8_to_bool(raw_user_record.is_without_password),
+        username_is_not_customized: i8_to_bool(raw_user_record.username_is_not_customized),
         // Premium features
         maybe_stripe_customer_id: raw_user_record.maybe_stripe_customer_id,
         maybe_loyalty_program_key: raw_user_record.maybe_loyalty_program_key,
@@ -239,8 +256,13 @@ struct SessionUserRawDbRecord {
   display_name: String,
 
   email_address: String,
-  email_confirmed: i8,
   email_gravatar_hash: String,
+
+  email_confirmed: i8,
+  email_confirmed_by_google: i8,
+  email_is_synthetic: i8,
+  is_without_password: i8,
+  username_is_not_customized: i8,
 
   maybe_stripe_customer_id: Option<String>,
   maybe_loyalty_program_key: Option<String>,

@@ -3,7 +3,6 @@
 #![forbid(unused_mut)]
 #![forbid(unused_variables)]
 
-use std::collections::BTreeSet;
 use std::fmt;
 
 use actix_web::error::ResponseError;
@@ -13,90 +12,15 @@ use log::warn;
 use sqlx::MySqlPool;
 use utoipa::ToSchema;
 
+use artcraft_api_defs::users::session_info::{FakeYouPlan, SessionInfoSuccessResponse, SessionOnboardingState, SessionUserInfo, StorytellerStreamPlan};
 use enums::by_table::users::user_feature_flag::UserFeatureFlag;
 use http_server_common::response::response_error_helpers::to_simple_json_error;
-use tokens::tokens::users::UserToken;
 
-use crate::http_server::common_responses::user_details_lite::UserDetailsLight;
+use crate::http_server::common_responses::user_details_lite_builder::UserDetailsLightBuilder;
 use crate::http_server::cookies::anonymous_visitor_tracking::avt_cookie_manager::AvtCookieManager;
 use crate::http_server::session::lookup::user_session_feature_flags::UserSessionFeatureFlags;
 use crate::http_server::session::session_checker::SessionChecker;
 
-#[derive(Serialize, Copy, Clone, ToSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum FakeYouPlan {
-  Free,
-  Basic,
-  Standard,
-  Pro,
-}
-
-#[derive(Serialize, Copy, Clone, ToSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum StorytellerStreamPlan {
-  Free,
-  Basic,
-  Standard,
-  Pro,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct SessionUserInfo {
-  pub core_info: UserDetailsLight,
-
-  pub user_token: UserToken,
-  pub username: String,
-  pub display_name: String,
-  pub email_gravatar_hash: String,
-
-  // TODO(bt,2024-03-30): Remove legacy feature flag
-  #[deprecated(note = "DO NOT USE. Use `maybe_feature_flags` instead! The flag you're looking for is `studio`.")]
-  pub can_access_studio: bool,
-
-  /// Collection of feature / rollout flags
-  /// This is the proper place to detect if a user has access to some rollout (non-paywall) feature.
-  /// NB: The BTreeSet maintains order so React doesn't introduce re-render state bugs when order changes
-  pub maybe_feature_flags: BTreeSet<UserFeatureFlag>,
-
-  // Premium plans:
-  #[deprecated(note = "DO NOT USE. This was never used and is 100% meaningless.")]
-  pub fakeyou_plan: FakeYouPlan,
-
-  #[deprecated(note = "DO NOT USE. This was never used and is 100% meaningless.")]
-  pub storyteller_stream_plan: StorytellerStreamPlan,
-
-  // Usage permissions:
-  pub can_use_tts: bool,
-  pub can_use_w2l: bool,
-  pub can_delete_own_tts_results: bool,
-  pub can_delete_own_w2l_results: bool,
-  pub can_delete_own_account: bool,
-
-  // Contribution permissions:
-  pub can_upload_tts_models: bool,
-  pub can_upload_w2l_templates: bool,
-  pub can_delete_own_tts_models: bool,
-  pub can_delete_own_w2l_templates: bool,
-
-  // Moderation permissions:
-  pub can_approve_w2l_templates: bool,
-  pub can_edit_other_users_profiles: bool,
-  pub can_edit_other_users_tts_models: bool,
-  pub can_edit_other_users_w2l_templates: bool,
-  pub can_delete_other_users_tts_models: bool,
-  pub can_delete_other_users_tts_results: bool,
-  pub can_delete_other_users_w2l_templates: bool,
-  pub can_delete_other_users_w2l_results: bool,
-  pub can_ban_users: bool,
-  pub can_delete_users: bool,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct SessionInfoSuccessResponse {
-  pub success: bool,
-  pub logged_in: bool,
-  pub user: Option<SessionUserInfo>,
-}
 
 #[derive(Debug, ToSchema)]
 pub enum SessionInfoError {
@@ -170,12 +94,18 @@ pub async fn session_info_handler(
         // NB: Banned users can't be logged in
         logged_in = true;
         user_info = Some(SessionUserInfo {
-          core_info: UserDetailsLight::from_db_fields(
+          core_info: UserDetailsLightBuilder::from_db_fields(
             &session_data.user_token,
             &session_data.username,
             &session_data.display_name,
             &session_data.email_gravatar_hash,
           ),
+          onboarding: SessionOnboardingState {
+            email_not_set: session_data.email_is_synthetic,
+            email_not_confirmed: !(session_data.email_confirmed || session_data.email_confirmed_by_google),
+            password_not_set: session_data.is_without_password,
+            username_not_customized: session_data.username_is_not_customized,
+          },
           user_token: session_data.user_token,
           username: session_data.username.to_string(),
           display_name: session_data.display_name.to_string(),
