@@ -97,7 +97,5 @@ pub async fn mark_subscription_as_paid(
     transaction
   ).await?;
 
-  // TODO: Insert wallet ledger entry.
-
   Ok(())
 }

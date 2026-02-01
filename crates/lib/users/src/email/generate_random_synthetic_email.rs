@@ -1,17 +1,17 @@
 use rand::Rng;
 
-const EMAIL_PREFIX : &str = "synthetic.email";
-const EMAIL_DOMAIN : &str = "getartcraft.com";
+const SYNTHETIC_EMAIL_PREFIX : &str = "synthetic.email";
+const SYNTHETIC_EMAIL_DOMAIN : &str = "getartcraft.com";
 
 pub fn generate_random_synthetic_email() -> String {
   let random_digit = rand::thread_rng().gen_range(u32::MIN..u32::MAX);
-  format!("{}.{}@{}", EMAIL_PREFIX, random_digit, EMAIL_DOMAIN)
+  format!("{}.{}@{}", SYNTHETIC_EMAIL_PREFIX, random_digit, SYNTHETIC_EMAIL_DOMAIN)
 }
 
 #[cfg(test)]
 mod tests {
-  use std::collections::HashSet;
   use crate::email::generate_random_synthetic_email::generate_random_synthetic_email;
+  use std::collections::HashSet;
 
   #[test]
   fn test_base_case_success() {

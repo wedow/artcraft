@@ -1,3 +1,4 @@
+pub mod maybe_update_email_from_synthetic_value;
 pub mod set_can_access_studio_transactional;
 pub mod set_user_ban_status;
 pub mod set_user_feature_flags;

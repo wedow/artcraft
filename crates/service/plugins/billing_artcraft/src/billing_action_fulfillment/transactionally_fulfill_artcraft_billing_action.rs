@@ -44,6 +44,8 @@ pub async fn transactionally_fulfill_artcraft_billing_action(
     ArtcraftBillingAction::SubscriptionPaid(paid_details) => {
       info!("Completing subscription paid event for user: {:?}", paid_details.owner_user_token);
       mark_subscription_as_paid(paid_details, transaction).await?;
+      //paid_details.customer_email
+      //paid_details.owner_user_token
     }
     // ArtcraftBillingAction::CustomerCreated(customer_link) => {
     //   info!("Linking user to newly created stripe customer: {:?}", customer_link.user_token);

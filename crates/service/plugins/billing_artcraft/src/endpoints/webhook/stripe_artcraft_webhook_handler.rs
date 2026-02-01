@@ -1,6 +1,7 @@
 use actix_web::web::{Bytes, Data, Json};
 use actix_web::{web, HttpRequest, HttpResponse};
 
+use crate::billing_action_fulfillment::artcraft_billing_action::ArtcraftBillingAction;
 use crate::billing_action_fulfillment::transactionally_fulfill_artcraft_billing_action::transactionally_fulfill_artcraft_billing_action;
 use crate::endpoints::webhook::common::enriched_webhook_event::EnrichedWebhookEvent;
 use crate::endpoints::webhook::common::stripe_artcraft_webhook_error::StripeArtcraftWebhookError;
@@ -13,13 +14,14 @@ use http_server_common::request::get_request_header_optional::get_request_header
 use log::{error, info, warn};
 use mysql_queries::queries::billing::stripe::get_stripe_webhook_event_log_by_id::{get_stripe_webhook_event_log_by_id, get_stripe_webhook_event_log_by_id_with_connection};
 use mysql_queries::queries::billing::stripe::insert_stripe_webhook_event_log::InsertStripeWebhookEventLog;
+use mysql_queries::queries::users::user::update::maybe_update_email_from_synthetic_value::{maybe_update_email_from_synthetic_value, MaybeUpdateEmailFromSyntheticValueArgs};
 use reusable_types::server_environment::ServerEnvironment;
 use serde_derive::Serialize;
 use sqlx::pool::PoolConnection;
 use sqlx::{Acquire, MySql, MySqlConnection, MySqlPool, Transaction};
 use std::sync::Arc;
 use stripe_webhook::{Event, EventObject, Webhook};
-
+use users::email::email_to_gravatar_hash::email_to_gravatar_hash;
 /*
 For one-off payments (eg. credits packs), we see this typical sequence of events:
 
@@ -140,7 +142,7 @@ pub async fn stripe_artcraft_webhook_handler(
   let result = process_enriched_event(
     **server_environment, 
     &stripe_config,
-    enriched_event,
+    &enriched_event,
     stripe_event_descriptor.clone(),
     stripe_event_id.clone(), 
     stripe_event_created_at, 
@@ -164,6 +166,11 @@ pub async fn stripe_artcraft_webhook_handler(
     }
   }
 
+  if let Err(err) = maybe_update_user_email(&enriched_event, &mut mysql_connection).await {
+    // NB: Don't fail to process the stripe event if we couldn't update the user's email.
+    error!("Error updating user email: {:?}", err);
+  }
+
   Ok(Json(StripeArtcraftWebhookSuccessResponse {
     success: true,
   }))
@@ -172,7 +179,7 @@ pub async fn stripe_artcraft_webhook_handler(
 async fn process_enriched_event(
   server_environment: ServerEnvironment, 
   stripe_config: &ArtcraftStripeConfigWithClient, 
-  artcraft_event: EnrichedWebhookEvent,
+  artcraft_event: &EnrichedWebhookEvent,
   stripe_event_descriptor: StripeEventDescriptor,
   stripe_event_id: String, 
   stripe_event_created_at: NaiveDateTime, 
@@ -197,11 +204,11 @@ async fn process_enriched_event(
   let query = InsertStripeWebhookEventLog {
     stripe_event_id,
     stripe_event_type,
-    maybe_stripe_event_entity_id: artcraft_event.webhook_event_log_summary.maybe_event_entity_id,
-    maybe_stripe_customer_id: artcraft_event.webhook_event_log_summary.maybe_stripe_customer_id,
+    maybe_stripe_event_entity_id: artcraft_event.webhook_event_log_summary.maybe_event_entity_id.clone(),
+    maybe_stripe_customer_id: artcraft_event.webhook_event_log_summary.maybe_stripe_customer_id.clone(),
     stripe_event_created_at,
     stripe_is_production,
-    maybe_user_token: artcraft_event.webhook_event_log_summary.maybe_user_token.map(|t| t.to_string()),
+    maybe_user_token: artcraft_event.webhook_event_log_summary.maybe_user_token.as_ref().map(|t| t.to_string()),
     action_was_taken: artcraft_event.webhook_event_log_summary.action_was_taken,
     should_ignore_retry: artcraft_event.webhook_event_log_summary.should_ignore_retry,
   };
@@ -213,6 +220,48 @@ async fn process_enriched_event(
         error!("{}", &reason);
         StripeArtcraftWebhookError::ServerError("database error".to_string())
       })?;
+
+  Ok(())
+}
+
+/// For users eagerly created in the new "Stripe user creation flow", we didn't ask for their email, password, or username.
+/// Stripe will have these details for us. Update if the user hasn't already customized their email yet.
+async fn maybe_update_user_email(
+  artcraft_event: &EnrichedWebhookEvent,
+  mysql_connection: &mut PoolConnection<MySql>
+) -> Result<(), StripeArtcraftWebhookError> {
+
+  let action = match artcraft_event.maybe_billing_action.as_ref() {
+    None => return Ok(()),
+    Some(action) => action,
+  };
+
+  let user_token;
+  let user_email;
+
+  match action {
+    ArtcraftBillingAction::SubscriptionPaid(paid) => {
+      user_token = paid.owner_user_token.clone();
+      match paid.customer_email.as_ref() {
+        Some(email) => user_email = email.clone(),
+        None => return Ok(()),
+      }
+    }
+    _ => return Ok(()),
+  }
+
+  let user_email = user_email.trim().to_lowercase();
+  let gravatar_hash = email_to_gravatar_hash(&user_email);
+
+  info!("Attempting to update user email from synthetic value for user {} to: {}", &user_token, &user_email);
+  maybe_update_email_from_synthetic_value(MaybeUpdateEmailFromSyntheticValueArgs {
+    user_token: &user_token,
+    email_address: &user_email,
+    email_gravatar_hash: &gravatar_hash,
+    mysql_connection,
+  }).await?;
+
+  info!("Updated user email from synthetic value for user {} to: {}", &user_token, &user_email);
 
   Ok(())
 }
