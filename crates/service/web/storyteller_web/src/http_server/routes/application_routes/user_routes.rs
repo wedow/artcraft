@@ -8,6 +8,7 @@ use crate::http_server::deprecated_endpoints::w2l::list_user_w2l_inference_resul
 use crate::http_server::deprecated_endpoints::w2l::list_user_w2l_templates::list_user_w2l_templates_handler;
 use crate::http_server::endpoints::tts::list_user_tts_inference_results::list_user_tts_inference_results_handler;
 use crate::http_server::endpoints::tts::list_user_tts_models::list_user_tts_models_handler;
+use crate::http_server::endpoints::users::change_password_handler::change_password_handler;
 use crate::http_server::endpoints::users::create_account_handler::create_account_handler;
 use crate::http_server::endpoints::users::edit_email_handler::edit_email_handler;
 use crate::http_server::endpoints::users::edit_profile_handler::edit_profile_handler;
@@ -100,6 +101,11 @@ pub fn add_user_routes<T, B> (app: App<T>) -> App<T>
 
       // NB(bt): Modern user profile routes
       .service(web::scope("/v1/user")
+          .service(
+            web::resource("/change_password")
+                .route(web::post().to(change_password_handler))
+                .route(web::head().to(|| HttpResponse::Ok()))
+          )
           .service(
             web::resource("/edit_email")
                 .route(web::post().to(edit_email_handler))
