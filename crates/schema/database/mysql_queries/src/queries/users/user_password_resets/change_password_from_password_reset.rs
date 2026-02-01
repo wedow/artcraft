@@ -24,6 +24,7 @@ SET
   email_confirmed = true,
   password_hash = ?,
   ip_address_last_update = ?,
+  is_without_password = false,
   password_version = password_version + 1,
   version = version + 1
 WHERE
