@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\nUPDATE users\nSET\n  email_confirmed = true,\n  password_hash = ?,\n  ip_address_last_update = ?,\n  is_without_password = false,\n  password_version = password_version + 1,\n  version = version + 1\nWHERE\n  token = ?\nLIMIT 1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "b8795466b4251d869bdcc644324c6a873791ad1ef0d6d43f77ad2569accec3a4"
+}

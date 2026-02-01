@@ -1,6 +1,6 @@
 {
   "db_name": "MySQL",
-  "query": "\nSELECT\n    users.token as user_token,\n    users.username,\n    users.display_name,\n\n    users.email_address,\n    users.email_confirmed,\n    users.email_gravatar_hash,\n\n    users.maybe_stripe_customer_id,\n    users.maybe_loyalty_program_key,\n\n    users.disable_gravatar,\n    users.auto_play_audio_preference,\n    users.auto_play_video_preference,\n    users.preferred_tts_result_visibility as `preferred_tts_result_visibility: enums::common::visibility::Visibility`,\n    users.preferred_w2l_result_visibility as `preferred_w2l_result_visibility: enums::common::visibility::Visibility`,\n\n    users.user_role_slug,\n    users.is_banned,\n\n    users.can_access_studio,\n    users.maybe_feature_flags,\n\n    user_roles.can_use_tts,\n    user_roles.can_use_w2l,\n    user_roles.can_delete_own_tts_results,\n    user_roles.can_delete_own_w2l_results,\n    user_roles.can_delete_own_account,\n\n    user_roles.can_upload_tts_models,\n    user_roles.can_upload_w2l_templates,\n    user_roles.can_delete_own_tts_models,\n    user_roles.can_delete_own_w2l_templates,\n\n    user_roles.can_approve_w2l_templates,\n    user_roles.can_edit_other_users_profiles,\n    user_roles.can_edit_other_users_tts_models,\n    user_roles.can_edit_other_users_w2l_templates,\n    user_roles.can_delete_other_users_tts_models,\n    user_roles.can_delete_other_users_tts_results,\n    user_roles.can_delete_other_users_w2l_templates,\n    user_roles.can_delete_other_users_w2l_results,\n    user_roles.can_ban_users,\n    user_roles.can_delete_users\n\nFROM users\nLEFT OUTER JOIN user_sessions\n    ON users.token = user_sessions.user_token\nLEFT OUTER JOIN user_roles\n    ON users.user_role_slug = user_roles.slug\nWHERE user_sessions.token = ?\n    AND user_sessions.deleted_at IS NULL\n    AND users.user_deleted_at IS NULL\n    AND users.mod_deleted_at IS NULL\n        ",
+  "query": "\nSELECT\n    users.token as user_token,\n    users.username,\n    users.display_name,\n\n    users.email_address,\n    users.email_gravatar_hash,\n    \n    users.email_confirmed,\n    users.email_confirmed_by_google,\n    users.email_is_synthetic,\n    users.is_without_password,\n    users.username_is_not_customized,\n\n    users.maybe_stripe_customer_id,\n    users.maybe_loyalty_program_key,\n\n    users.disable_gravatar,\n    users.auto_play_audio_preference,\n    users.auto_play_video_preference,\n    users.preferred_tts_result_visibility as `preferred_tts_result_visibility: enums::common::visibility::Visibility`,\n    users.preferred_w2l_result_visibility as `preferred_w2l_result_visibility: enums::common::visibility::Visibility`,\n\n    users.user_role_slug,\n    users.is_banned,\n\n    users.can_access_studio,\n    users.maybe_feature_flags,\n\n    user_roles.can_use_tts,\n    user_roles.can_use_w2l,\n    user_roles.can_delete_own_tts_results,\n    user_roles.can_delete_own_w2l_results,\n    user_roles.can_delete_own_account,\n\n    user_roles.can_upload_tts_models,\n    user_roles.can_upload_w2l_templates,\n    user_roles.can_delete_own_tts_models,\n    user_roles.can_delete_own_w2l_templates,\n\n    user_roles.can_approve_w2l_templates,\n    user_roles.can_edit_other_users_profiles,\n    user_roles.can_edit_other_users_tts_models,\n    user_roles.can_edit_other_users_w2l_templates,\n    user_roles.can_delete_other_users_tts_models,\n    user_roles.can_delete_other_users_tts_results,\n    user_roles.can_delete_other_users_w2l_templates,\n    user_roles.can_delete_other_users_w2l_results,\n    user_roles.can_ban_users,\n    user_roles.can_delete_users\n\nFROM users\nLEFT OUTER JOIN user_sessions\n    ON users.token = user_sessions.user_token\nLEFT OUTER JOIN user_roles\n    ON users.user_role_slug = user_roles.slug\nWHERE user_sessions.token = ?\n    AND user_sessions.deleted_at IS NULL\n    AND users.user_deleted_at IS NULL\n    AND users.mod_deleted_at IS NULL\n        ",
   "describe": {
     "columns": [
       {
@@ -45,16 +45,6 @@
       },
       {
         "ordinal": 4,
-        "name": "email_confirmed",
-        "type_info": {
-          "type": "Tiny",
-          "flags": "NOT_NULL",
-          "char_set": 63,
-          "max_size": 1
-        }
-      },
-      {
-        "ordinal": 5,
         "name": "email_gravatar_hash",
         "type_info": {
           "type": "String",
@@ -64,28 +54,38 @@
         }
       },
       {
-        "ordinal": 6,
-        "name": "maybe_stripe_customer_id",
+        "ordinal": 5,
+        "name": "email_confirmed",
         "type_info": {
-          "type": "VarString",
-          "flags": "BINARY",
-          "char_set": 224,
-          "max_size": 1020
+          "type": "Tiny",
+          "flags": "NOT_NULL",
+          "char_set": 63,
+          "max_size": 1
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "email_confirmed_by_google",
+        "type_info": {
+          "type": "Tiny",
+          "flags": "NOT_NULL",
+          "char_set": 63,
+          "max_size": 1
         }
       },
       {
         "ordinal": 7,
-        "name": "maybe_loyalty_program_key",
+        "name": "email_is_synthetic",
         "type_info": {
-          "type": "VarString",
-          "flags": "BINARY",
-          "char_set": 224,
-          "max_size": 128
+          "type": "Tiny",
+          "flags": "NOT_NULL",
+          "char_set": 63,
+          "max_size": 1
         }
       },
       {
         "ordinal": 8,
-        "name": "disable_gravatar",
+        "name": "is_without_password",
         "type_info": {
           "type": "Tiny",
           "flags": "NOT_NULL",
@@ -95,6 +95,46 @@
       },
       {
         "ordinal": 9,
+        "name": "username_is_not_customized",
+        "type_info": {
+          "type": "Tiny",
+          "flags": "NOT_NULL",
+          "char_set": 63,
+          "max_size": 1
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "maybe_stripe_customer_id",
+        "type_info": {
+          "type": "VarString",
+          "flags": "BINARY",
+          "char_set": 224,
+          "max_size": 1020
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "maybe_loyalty_program_key",
+        "type_info": {
+          "type": "VarString",
+          "flags": "BINARY",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "disable_gravatar",
+        "type_info": {
+          "type": "Tiny",
+          "flags": "NOT_NULL",
+          "char_set": 63,
+          "max_size": 1
+        }
+      },
+      {
+        "ordinal": 13,
         "name": "auto_play_audio_preference",
         "type_info": {
           "type": "Tiny",
@@ -104,7 +144,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 14,
         "name": "auto_play_video_preference",
         "type_info": {
           "type": "Tiny",
@@ -114,7 +154,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 15,
         "name": "preferred_tts_result_visibility: enums::common::visibility::Visibility",
         "type_info": {
           "type": "String",
@@ -124,7 +164,7 @@
         }
       },
       {
-        "ordinal": 12,
+        "ordinal": 16,
         "name": "preferred_w2l_result_visibility: enums::common::visibility::Visibility",
         "type_info": {
           "type": "String",
@@ -134,7 +174,7 @@
         }
       },
       {
-        "ordinal": 13,
+        "ordinal": 17,
         "name": "user_role_slug",
         "type_info": {
           "type": "VarString",
@@ -144,7 +184,7 @@
         }
       },
       {
-        "ordinal": 14,
+        "ordinal": 18,
         "name": "is_banned",
         "type_info": {
           "type": "Tiny",
@@ -154,7 +194,7 @@
         }
       },
       {
-        "ordinal": 15,
+        "ordinal": 19,
         "name": "can_access_studio",
         "type_info": {
           "type": "Tiny",
@@ -164,7 +204,7 @@
         }
       },
       {
-        "ordinal": 16,
+        "ordinal": 20,
         "name": "maybe_feature_flags",
         "type_info": {
           "type": "VarString",
@@ -174,7 +214,7 @@
         }
       },
       {
-        "ordinal": 17,
+        "ordinal": 21,
         "name": "can_use_tts",
         "type_info": {
           "type": "Tiny",
@@ -184,7 +224,7 @@
         }
       },
       {
-        "ordinal": 18,
+        "ordinal": 22,
         "name": "can_use_w2l",
         "type_info": {
           "type": "Tiny",
@@ -194,7 +234,7 @@
         }
       },
       {
-        "ordinal": 19,
+        "ordinal": 23,
         "name": "can_delete_own_tts_results",
         "type_info": {
           "type": "Tiny",
@@ -204,7 +244,7 @@
         }
       },
       {
-        "ordinal": 20,
+        "ordinal": 24,
         "name": "can_delete_own_w2l_results",
         "type_info": {
           "type": "Tiny",
@@ -214,7 +254,7 @@
         }
       },
       {
-        "ordinal": 21,
+        "ordinal": 25,
         "name": "can_delete_own_account",
         "type_info": {
           "type": "Tiny",
@@ -224,7 +264,7 @@
         }
       },
       {
-        "ordinal": 22,
+        "ordinal": 26,
         "name": "can_upload_tts_models",
         "type_info": {
           "type": "Tiny",
@@ -234,7 +274,7 @@
         }
       },
       {
-        "ordinal": 23,
+        "ordinal": 27,
         "name": "can_upload_w2l_templates",
         "type_info": {
           "type": "Tiny",
@@ -244,7 +284,7 @@
         }
       },
       {
-        "ordinal": 24,
+        "ordinal": 28,
         "name": "can_delete_own_tts_models",
         "type_info": {
           "type": "Tiny",
@@ -254,7 +294,7 @@
         }
       },
       {
-        "ordinal": 25,
+        "ordinal": 29,
         "name": "can_delete_own_w2l_templates",
         "type_info": {
           "type": "Tiny",
@@ -264,7 +304,7 @@
         }
       },
       {
-        "ordinal": 26,
+        "ordinal": 30,
         "name": "can_approve_w2l_templates",
         "type_info": {
           "type": "Tiny",
@@ -274,7 +314,7 @@
         }
       },
       {
-        "ordinal": 27,
+        "ordinal": 31,
         "name": "can_edit_other_users_profiles",
         "type_info": {
           "type": "Tiny",
@@ -284,7 +324,7 @@
         }
       },
       {
-        "ordinal": 28,
+        "ordinal": 32,
         "name": "can_edit_other_users_tts_models",
         "type_info": {
           "type": "Tiny",
@@ -294,7 +334,7 @@
         }
       },
       {
-        "ordinal": 29,
+        "ordinal": 33,
         "name": "can_edit_other_users_w2l_templates",
         "type_info": {
           "type": "Tiny",
@@ -304,7 +344,7 @@
         }
       },
       {
-        "ordinal": 30,
+        "ordinal": 34,
         "name": "can_delete_other_users_tts_models",
         "type_info": {
           "type": "Tiny",
@@ -314,7 +354,7 @@
         }
       },
       {
-        "ordinal": 31,
+        "ordinal": 35,
         "name": "can_delete_other_users_tts_results",
         "type_info": {
           "type": "Tiny",
@@ -324,7 +364,7 @@
         }
       },
       {
-        "ordinal": 32,
+        "ordinal": 36,
         "name": "can_delete_other_users_w2l_templates",
         "type_info": {
           "type": "Tiny",
@@ -334,7 +374,7 @@
         }
       },
       {
-        "ordinal": 33,
+        "ordinal": 37,
         "name": "can_delete_other_users_w2l_results",
         "type_info": {
           "type": "Tiny",
@@ -344,7 +384,7 @@
         }
       },
       {
-        "ordinal": 34,
+        "ordinal": 38,
         "name": "can_ban_users",
         "type_info": {
           "type": "Tiny",
@@ -354,7 +394,7 @@
         }
       },
       {
-        "ordinal": 35,
+        "ordinal": 39,
         "name": "can_delete_users",
         "type_info": {
           "type": "Tiny",
@@ -368,6 +408,10 @@
       "Right": 1
     },
     "nullable": [
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -406,5 +450,5 @@
       true
     ]
   },
-  "hash": "1c32bdb79ed2bc1b8988bbb6ea3f2a1db4ed4552d53cb4f31ff4b08de01691f7"
+  "hash": "3ca99449c071cb0a8d90a735e1a767a94be224a02e0d16e81997d569af8d4cbb"
 }
