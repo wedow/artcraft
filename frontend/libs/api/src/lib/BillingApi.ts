@@ -30,4 +30,149 @@ export class BillingApi extends ApiManager {
         };
       });
   }
+
+  public async UserSignupSubscriptionCheckout({
+    plan,
+    cadence,
+  }: {
+    plan: string;
+    cadence: "yearly" | "monthly";
+  }): Promise<ApiResponse<{ stripeCheckoutRedirectUrl: string }>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/stripe_artcraft/user_signup_subscription_checkout`;
+
+    return await this.post<
+      { plan: string; cadence: string },
+      {
+        success: boolean;
+        stripe_checkout_redirect_url?: string;
+        error_message?: string;
+      }
+    >({
+      endpoint: endpoint,
+      body: {
+        plan,
+        cadence,
+      },
+    })
+      .then((response) => ({
+        success: response.success,
+        data: response.stripe_checkout_redirect_url
+          ? { stripeCheckoutRedirectUrl: response.stripe_checkout_redirect_url }
+          : undefined,
+        errorMessage: response.error_message,
+      }))
+      .catch((err) => {
+        return {
+          success: false,
+          errorMessage: err.message,
+        };
+      });
+  }
+
+  public async SubscriptionCheckout({
+    plan,
+    cadence,
+  }: {
+    plan: string;
+    cadence: "yearly" | "monthly";
+  }): Promise<ApiResponse<{ stripeCheckoutRedirectUrl: string }>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/stripe_artcraft/checkout/subscription`;
+
+    return await this.post<
+      { plan: string; cadence: string },
+      {
+        success: boolean;
+        stripe_checkout_redirect_url?: string;
+        error_message?: string;
+      }
+    >({
+      endpoint: endpoint,
+      body: {
+        plan,
+        cadence,
+      },
+    })
+      .then((response) => ({
+        success: response.success,
+        data: response.stripe_checkout_redirect_url
+          ? { stripeCheckoutRedirectUrl: response.stripe_checkout_redirect_url }
+          : undefined,
+        errorMessage: response.error_message,
+      }))
+      .catch((err) => {
+        return {
+          success: false,
+          errorMessage: err.message,
+        };
+      });
+  }
+
+  public async SwitchPlan({
+    plan,
+    cadence,
+  }: {
+    plan: string;
+    cadence: "yearly" | "monthly";
+  }): Promise<ApiResponse<{ stripePortalUrl: string }>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/stripe_artcraft/portal/switch_plan`;
+
+    return await this.post<
+      { plan: string; cadence: string },
+      {
+        success: boolean;
+        stripe_portal_url?: string;
+        error_message?: string;
+      }
+    >({
+      endpoint: endpoint,
+      body: {
+        plan,
+        cadence,
+      },
+    })
+      .then((response) => ({
+        success: response.success,
+        data: response.stripe_portal_url
+          ? { stripePortalUrl: response.stripe_portal_url }
+          : undefined,
+        errorMessage: response.error_message,
+      }))
+      .catch((err) => {
+        return {
+          success: false,
+          errorMessage: err.message,
+        };
+      });
+  }
+
+  public async GetPortalUrl(): Promise<
+    ApiResponse<{ stripePortalUrl: string }>
+  > {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/stripe_artcraft/portal/manage_plan`;
+
+    return await this.post<
+      Record<string, never>,
+      {
+        success: boolean;
+        stripe_portal_url?: string;
+        error_message?: string;
+      }
+    >({
+      endpoint: endpoint,
+      body: {},
+    })
+      .then((response) => ({
+        success: response.success,
+        data: response.stripe_portal_url
+          ? { stripePortalUrl: response.stripe_portal_url }
+          : undefined,
+        errorMessage: response.error_message,
+      }))
+      .catch((err) => {
+        return {
+          success: false,
+          errorMessage: err.message,
+        };
+      });
+  }
 }

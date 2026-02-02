@@ -47,13 +47,26 @@ export class UsersApi extends ApiManager {
     ApiResponse<{
       loggedIn: boolean;
       user?: UserInfo;
+      onboarding?: {
+        email_not_set: boolean;
+        email_not_confirmed: boolean;
+        password_not_set: boolean;
+        username_not_customized: boolean;
+      };
     }>
   > {
     const endpoint = `${this.getApiSchemeAndHost()}/v1/session`;
     return this.get<{
       success: boolean;
       logged_in: boolean;
-      user?: UserInfo;
+      user?: UserInfo & {
+        onboarding?: {
+          email_not_set: boolean;
+          email_not_confirmed: boolean;
+          password_not_set: boolean;
+          username_not_customized: boolean;
+        };
+      };
       error_message?: string;
     }>({ endpoint: endpoint })
       .then((response) => ({
@@ -61,6 +74,7 @@ export class UsersApi extends ApiManager {
         data: {
           loggedIn: response.logged_in,
           user: response.user,
+          onboarding: response.user?.onboarding,
         },
       }))
       .catch((err) => {
@@ -240,6 +254,111 @@ export class UsersApi extends ApiManager {
         data: response.success
           ? { usernameNotYetCustomized: response.username_not_yet_customized }
           : undefined,
+        errorMessage: response.error_message,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        errorMessage: err.message,
+      };
+    }
+  }
+
+  public async ChangePassword({
+    password,
+    passwordConfirmation,
+  }: {
+    password: string;
+    passwordConfirmation: string;
+  }): Promise<ApiResponse<null>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user/change_password`;
+    const body = {
+      password,
+      password_confirmation: passwordConfirmation,
+    };
+
+    try {
+      const response = await this.authFetch<
+        { password: string; password_confirmation: string },
+        {
+          success: boolean;
+          error_message?: string;
+        }
+      >(endpoint, {
+        method: "POST",
+        body: body,
+      });
+
+      return {
+        success: response.success,
+        errorMessage: response.error_message,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        errorMessage: err.message,
+      };
+    }
+  }
+
+  public async EditEmail({
+    emailAddress,
+  }: {
+    emailAddress: string;
+  }): Promise<ApiResponse<null>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user/edit_email`;
+    const body = {
+      email_address: emailAddress,
+    };
+
+    try {
+      const response = await this.authFetch<
+        { email_address: string },
+        {
+          success: boolean;
+          error_message?: string;
+        }
+      >(endpoint, {
+        method: "POST",
+        body: body,
+      });
+
+      return {
+        success: response.success,
+        errorMessage: response.error_message,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        errorMessage: err.message,
+      };
+    }
+  }
+
+  public async EditUsername({
+    displayName,
+  }: {
+    displayName: string;
+  }): Promise<ApiResponse<null>> {
+    const endpoint = `${this.getApiSchemeAndHost()}/v1/user/edit_username`;
+    const body = {
+      display_name: displayName,
+    };
+
+    try {
+      const response = await this.authFetch<
+        { display_name: string },
+        {
+          success: boolean;
+          error_message?: string;
+        }
+      >(endpoint, {
+        method: "POST",
+        body: body,
+      });
+
+      return {
+        success: response.success,
         errorMessage: response.error_message,
       };
     } catch (err: any) {

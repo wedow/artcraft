@@ -15,6 +15,7 @@ import Login from "../pages/login";
 import Signup from "../pages/signup";
 import ForgotPassword from "../pages/forgot-password";
 import Welcome from "../pages/welcome";
+import Onboarding from "../pages/onboarding";
 import { CheckoutSuccess, CheckoutCancel } from "../pages/checkout";
 
 export function App() {
@@ -39,6 +40,7 @@ export function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/welcome" element={<Welcome />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/checkout/cancel" element={<CheckoutCancel />} />
         {/* Redirects for underscore-based URLs (legacy Stripe config) */}
@@ -48,6 +50,10 @@ export function App() {
         />
         <Route
           path="/checkout_cancel"
+          element={<Navigate to="/checkout/cancel" replace />}
+        />
+        <Route
+          path="/portal_closed"
           element={<Navigate to="/checkout/cancel" replace />}
         />
       </Routes>

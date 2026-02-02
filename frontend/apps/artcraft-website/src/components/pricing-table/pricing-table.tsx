@@ -8,12 +8,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { useState, useEffect } from "react";
 import { TabSelector } from "@storyteller/ui-tab-selector";
-import {
-  UsersApi,
-  BillingApi,
-  UserInfo,
-  StorytellerApiHostStore,
-} from "@storyteller/api";
+import { UsersApi, BillingApi, UserInfo } from "@storyteller/api";
 import { useNavigate } from "react-router-dom";
 
 const billingTabs = [
@@ -54,6 +49,7 @@ const PricingTable = ({
   const [activePlanSlug, setActivePlanSlug] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   // Fetch user session and subscriptions on mount
   useEffect(() => {
@@ -172,12 +168,6 @@ const PricingTable = ({
       return;
     }
 
-    // Not logged in - redirect to signup
-    if (!user) {
-      navigate("/signup");
-      return;
-    }
-
     // Set loading state for this plan
     setProcessingPlan(planSlug);
 
@@ -185,46 +175,86 @@ const PricingTable = ({
       const cadence = isYearly ? "yearly" : "monthly";
       const apiPlanSlug = PLAN_SLUG_MAP[planSlug] || planSlug;
 
-      // Determine if we need checkout (new subscription) or portal (switch plan)
-      const hasActiveSub = activePlanSlug && activePlanSlug !== "free";
-
-      const endpoint = hasActiveSub
-        ? "/v1/stripe_artcraft/portal/switch_plan"
-        : "/v1/stripe_artcraft/checkout/subscription";
-
-      const apiHost =
-        StorytellerApiHostStore.getInstance().getApiSchemeAndHost();
-      const response = await fetch(`${apiHost}${endpoint}`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
+      // Not logged in - use user_signup_subscription_checkout
+      if (!user) {
+        const billingApi = new BillingApi();
+        const response = await billingApi.UserSignupSubscriptionCheckout({
           plan: apiPlanSlug,
           cadence: cadence,
-        }),
-      });
+        });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.success || !response.data) {
+          throw new Error(
+            response.errorMessage || "Failed to initiate checkout",
+          );
+        }
+
+        // Redirect to Stripe
+        window.location.href = response.data.stripeCheckoutRedirectUrl;
+        return;
       }
 
-      const data = await response.json();
+      // Logged in - determine if we need checkout (new subscription) or portal (switch plan)
+      const hasActiveSub = activePlanSlug && activePlanSlug !== "free";
+      const billingApi = new BillingApi();
 
-      // Redirect to Stripe
-      const redirectUrl =
-        data.stripe_checkout_redirect_url || data.stripe_portal_url;
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
+      if (hasActiveSub) {
+        // User has active subscription - switch plan via portal
+        const response = await billingApi.SwitchPlan({
+          plan: apiPlanSlug,
+          cadence: cadence,
+        });
+
+        if (!response.success || !response.data) {
+          throw new Error(
+            response.errorMessage || "Failed to initiate plan switch",
+          );
+        }
+
+        // Redirect to Stripe Portal
+        window.location.href = response.data.stripePortalUrl;
       } else {
-        console.error("No redirect URL returned from API");
+        // User logged in but no active subscription - checkout
+        const response = await billingApi.SubscriptionCheckout({
+          plan: apiPlanSlug,
+          cadence: cadence,
+        });
+
+        if (!response.success || !response.data) {
+          throw new Error(
+            response.errorMessage || "Failed to initiate checkout",
+          );
+        }
+
+        // Redirect to Stripe Checkout
+        window.location.href = response.data.stripeCheckoutRedirectUrl;
       }
     } catch (error) {
       console.error("Error initiating checkout:", error);
     } finally {
       setProcessingPlan(null);
+    }
+  };
+
+  const handleCancelPlan = async () => {
+    setIsCancelling(true);
+    try {
+      const billingApi = new BillingApi();
+      // Access general portal where user can cancel
+      const response = await billingApi.GetPortalUrl();
+
+      if (!response.success || !response.data) {
+        throw new Error(
+          response.errorMessage || "Failed to access subscription management",
+        );
+      }
+
+      // Redirect to Stripe Portal where user can cancel
+      window.location.href = response.data.stripePortalUrl;
+    } catch (error) {
+      console.error("Error accessing subscription management:", error);
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -386,6 +416,19 @@ const PricingTable = ({
           );
         })}
       </div>
+
+      {/* Manage Plan Button - Only shown if user has active subscription */}
+      {activePlanSlug && activePlanSlug !== "free" && (
+        <div className="mt-2 text-center">
+          <button
+            onClick={handleCancelPlan}
+            disabled={isCancelling}
+            className="text-sm text-white/40 hover:text-white/60 underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isCancelling ? "Loading..." : "Manage Plan"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

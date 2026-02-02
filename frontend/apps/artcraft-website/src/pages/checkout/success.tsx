@@ -7,14 +7,66 @@ import {
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { isMobile, isMacOs } from "react-device-detect";
 import { DOWNLOAD_LINKS } from "../../config/downloads";
 import { SOCIAL_LINKS } from "../../config/links";
 import Seo from "../../components/seo";
+import { UsersApi } from "@storyteller/api";
+import { useEffect, useState } from "react";
 
 const CheckoutSuccess = () => {
+  const [searchParams] = useSearchParams();
   const downloadUrl = isMacOs ? DOWNLOAD_LINKS.MACOS : DOWNLOAD_LINKS.WINDOWS;
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      // If coming from completed onboarding, skip the check
+      if (searchParams.get("onboarding_complete") === "true") {
+        setIsCheckingOnboarding(false);
+        return;
+      }
+
+      try {
+        const usersApi = new UsersApi();
+        const sessionResponse = await usersApi.GetSession();
+
+        if (sessionResponse.success && sessionResponse.data?.loggedIn) {
+          const onboarding = sessionResponse.data.onboarding;
+
+          // If onboarding is undefined or has any required fields not set, redirect to onboarding
+          // This handles the case where the backend hasn't populated onboarding data yet
+          if (
+            !onboarding ||
+            onboarding.password_not_set ||
+            onboarding.email_not_set ||
+            onboarding.email_not_confirmed
+          ) {
+            // Use window.location for a hard redirect to ensure it works
+            // Do NOT set isCheckingOnboarding to false - keep showing loading spinner
+            window.location.href = "/onboarding";
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Error checking onboarding status:", error);
+      }
+
+      // Only set loading to false if we're actually staying on this page
+      setIsCheckingOnboarding(false);
+    };
+
+    checkOnboarding();
+  }, [searchParams]);
+
+  if (isCheckingOnboarding) {
+    return (
+      <div className="relative min-h-screen bg-[#101014] text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#101014] text-white">
