@@ -95,7 +95,7 @@ const Onboarding = () => {
       const sessionResponse = await usersApi.GetSession();
 
       if (!sessionResponse.success || !sessionResponse.data?.loggedIn) {
-        navigate(getSuccessUrl());
+        navigate("/");
         return;
       }
 
