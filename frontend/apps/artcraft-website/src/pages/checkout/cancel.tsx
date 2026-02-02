@@ -2,17 +2,25 @@ import { faXmarkCircle } from "@fortawesome/pro-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { SOCIAL_LINKS } from "../../config/links";
 import Seo from "../../components/seo";
 import { useEffect, useState } from "react";
 import { UsersApi } from "@storyteller/api";
 
 const CheckoutCancel = () => {
+  const [searchParams] = useSearchParams();
+  const skipOnboarding = searchParams.get("skip_onboarding") === "true";
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkOnboarding = async () => {
+      // Skip onboarding check if we already went through it
+      if (skipOnboarding) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const usersApi = new UsersApi();
         const sessionResponse = await usersApi.GetSession();
@@ -27,9 +35,10 @@ const CheckoutCancel = () => {
             onboarding.email_not_set ||
             onboarding.email_not_confirmed
           ) {
-            // Redirect to onboarding but come back to home page (or here) after
-            // We use / primarily because if they cancelled, they likely want to browse or try again later
-            window.location.href = "/onboarding?redirect_to=/pricing";
+            // Redirect to onboarding - it will add skip_onboarding=true after username step
+            window.location.href =
+              "/onboarding?redirect_to=" +
+              encodeURIComponent("/checkout/cancel");
             return;
           }
         }
@@ -41,7 +50,7 @@ const CheckoutCancel = () => {
     };
 
     checkOnboarding();
-  }, []);
+  }, [skipOnboarding]);
 
   if (isLoading) {
     return (

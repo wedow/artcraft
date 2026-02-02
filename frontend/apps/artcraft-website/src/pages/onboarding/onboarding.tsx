@@ -46,11 +46,16 @@ const Onboarding = () => {
     checkOnboardingStatus();
   }, []);
 
-  const getSuccessUrl = () => {
+  const getSuccessUrl = (afterUsernameStep = false) => {
     // If redirecting to success, append parameter
     const decodedRedirect = decodeURIComponent(redirectTo);
     if (decodedRedirect.includes("/checkout/success")) {
       return `${decodedRedirect}?onboarding_complete=true`;
+    }
+    // If redirecting to checkout/cancel and we've completed username step, add skip_onboarding
+    if (decodedRedirect.includes("/checkout/cancel") && afterUsernameStep) {
+      const separator = decodedRedirect.includes("?") ? "&" : "?";
+      return `${decodedRedirect}${separator}skip_onboarding=true`;
     }
     return decodedRedirect;
   };
@@ -65,8 +70,8 @@ const Onboarding = () => {
     return "Redirecting you...";
   };
 
-  const handleCompletion = async () => {
-    const targetUrl = getSuccessUrl();
+  const handleCompletion = async (afterUsernameStep = false) => {
+    const targetUrl = getSuccessUrl(afterUsernameStep);
 
     // If heading to success/download, verify subscription first
     if (targetUrl.includes("success") || targetUrl.includes("download")) {
@@ -245,7 +250,7 @@ const Onboarding = () => {
           throw new Error(errorMsg);
         }
 
-        await handleCompletion();
+        await handleCompletion(true);
       }
     } catch (err) {
       const errorMessage =
@@ -261,7 +266,7 @@ const Onboarding = () => {
   const handleSkip = async () => {
     if (currentStep === "username") {
       // Username is low priority, can skip
-      await handleCompletion();
+      await handleCompletion(true);
     }
   };
 
