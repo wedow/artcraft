@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@storyteller/ui-button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,9 +8,10 @@ import {
   faLock,
   faCheckCircle,
   faExclamationCircle,
+  faInfoCircle,
 } from "@fortawesome/pro-solid-svg-icons";
 import Seo from "../../components/seo";
-import { UsersApi } from "@storyteller/api";
+import { UsersApi, BillingApi } from "@storyteller/api";
 
 interface OnboardingData {
   email_not_set: boolean;
@@ -21,6 +22,9 @@ interface OnboardingData {
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect_to") || "/checkout/success";
+
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(
     null,
   );
@@ -28,6 +32,7 @@ const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState<
     "email" | "password" | "username" | "complete"
   >("email");
+  const [isNewAccount, setIsNewAccount] = useState(false);
 
   // Form state
   const [email, setEmail] = useState("");
@@ -41,20 +46,61 @@ const Onboarding = () => {
     checkOnboardingStatus();
   }, []);
 
+  const getSuccessUrl = () => {
+    // If redirecting to success, append parameter
+    const decodedRedirect = decodeURIComponent(redirectTo);
+    if (decodedRedirect.includes("/checkout/success")) {
+      return `${decodedRedirect}?onboarding_complete=true`;
+    }
+    return decodedRedirect;
+  };
+
+  const getRedirectMessage = () => {
+    const decodedRedirect = decodeURIComponent(redirectTo);
+    if (decodedRedirect === "/") return "Redirecting you to the home page...";
+    if (decodedRedirect === "/pricing")
+      return "Redirecting you to view plans...";
+    if (decodedRedirect.includes("success"))
+      return "Redirecting you to your download...";
+    return "Redirecting you...";
+  };
+
+  const handleCompletion = async () => {
+    const targetUrl = getSuccessUrl();
+
+    // If heading to success/download, verify subscription first
+    if (targetUrl.includes("success") || targetUrl.includes("download")) {
+      try {
+        const billingApi = new BillingApi();
+        const subResponse = await billingApi.ListActiveSubscriptions();
+
+        if (subResponse.success && subResponse.data) {
+          const hasActiveSub = subResponse.data.active_subscriptions.length > 0;
+          if (!hasActiveSub) {
+            console.log(
+              "⚠️ No active subscription found, redirecting to pricing",
+            );
+            navigate("/pricing");
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Error checking subscription:", e);
+      }
+    }
+
+    // Determine step complete immediately
+    setCurrentStep("complete");
+    setTimeout(() => navigate(targetUrl), 2000);
+  };
+
   const checkOnboardingStatus = async () => {
     try {
       const usersApi = new UsersApi();
       const sessionResponse = await usersApi.GetSession();
 
-      console.log("🔍 Onboarding Check - Session response:", sessionResponse);
-      console.log(
-        "🔍 Onboarding Check - Onboarding data:",
-        sessionResponse.data?.onboarding,
-      );
-
       if (!sessionResponse.success || !sessionResponse.data?.loggedIn) {
-        console.log("❌ Not logged in, redirecting to success");
-        navigate("/checkout/success");
+        navigate(getSuccessUrl());
         return;
       }
 
@@ -62,9 +108,6 @@ const Onboarding = () => {
 
       // If onboarding is undefined, assume full onboarding is needed (new account)
       if (!onboarding) {
-        console.log(
-          "⚠️ Onboarding data is undefined, defaulting to email step",
-        );
         setOnboardingData({
           email_not_set: true,
           email_not_confirmed: true,
@@ -72,16 +115,10 @@ const Onboarding = () => {
           username_not_customized: true,
         });
         setCurrentStep("email");
+        setIsNewAccount(true);
         setIsLoading(false);
         return;
       }
-
-      console.log("📊 Onboarding flags:", {
-        email_not_set: onboarding.email_not_set,
-        email_not_confirmed: onboarding.email_not_confirmed,
-        password_not_set: onboarding.password_not_set,
-        username_not_customized: onboarding.username_not_customized,
-      });
 
       // If all onboarding fields are false, no onboarding needed
       if (
@@ -90,35 +127,32 @@ const Onboarding = () => {
         !onboarding.email_not_confirmed &&
         !onboarding.username_not_customized
       ) {
-        console.log("✅ All onboarding complete, redirecting to success");
-        navigate("/checkout/success");
+        await handleCompletion();
         return;
       }
 
       setOnboardingData(onboarding);
 
+      // Determine if this looks like a new account that needs setup
+      if (onboarding.password_not_set) {
+        setIsNewAccount(true);
+      }
+
       // Determine the first step needed - prioritize email, then password, then username
-      if (onboarding.email_not_set || onboarding.email_not_confirmed) {
-        console.log("📧 Showing email step");
+      if (onboarding.email_not_set) {
         setCurrentStep("email");
       } else if (onboarding.password_not_set) {
-        console.log("🔒 Showing password step");
         setCurrentStep("password");
       } else if (onboarding.username_not_customized) {
-        console.log("👤 Showing username step");
         setCurrentStep("username");
       } else {
         // All done!
-        console.log("✅ All onboarding complete");
-        setCurrentStep("complete");
-        setTimeout(
-          () => navigate("/checkout/success?onboarding_complete=true"),
-          2000,
-        );
+
+        await handleCompletion();
       }
     } catch (err) {
       console.error("❌ Error checking onboarding status:", err);
-      navigate("/checkout/success");
+      navigate(getSuccessUrl());
     } finally {
       setIsLoading(false);
     }
@@ -154,11 +188,7 @@ const Onboarding = () => {
           } else if (updatedOnboarding.username_not_customized) {
             setCurrentStep("username");
           } else {
-            setCurrentStep("complete");
-            setTimeout(
-              () => navigate("/checkout/success?onboarding_complete=true"),
-              2000,
-            );
+            await handleCompletion();
           }
         } else {
           // Fallback to old logic if session fetch fails
@@ -167,11 +197,7 @@ const Onboarding = () => {
           } else if (onboardingData?.username_not_customized) {
             setCurrentStep("username");
           } else {
-            setCurrentStep("complete");
-            setTimeout(
-              () => navigate("/checkout/success?onboarding_complete=true"),
-              2000,
-            );
+            await handleCompletion();
           }
         }
         setEmail("");
@@ -202,22 +228,14 @@ const Onboarding = () => {
           if (updatedOnboarding.username_not_customized) {
             setCurrentStep("username");
           } else {
-            setCurrentStep("complete");
-            setTimeout(
-              () => navigate("/checkout/success?onboarding_complete=true"),
-              2000,
-            );
+            await handleCompletion();
           }
         } else {
           // Fallback to old logic if session fetch fails
           if (onboardingData?.username_not_customized) {
             setCurrentStep("username");
           } else {
-            setCurrentStep("complete");
-            setTimeout(
-              () => navigate("/checkout/success?onboarding_complete=true"),
-              2000,
-            );
+            await handleCompletion();
           }
         }
         setPassword("");
@@ -232,11 +250,7 @@ const Onboarding = () => {
           throw new Error(errorMsg);
         }
 
-        setCurrentStep("complete");
-        setTimeout(
-          () => navigate("/checkout/success?onboarding_complete=true"),
-          2000,
-        );
+        await handleCompletion();
       }
     } catch (err) {
       const errorMessage =
@@ -250,14 +264,10 @@ const Onboarding = () => {
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     if (currentStep === "username") {
       // Username is low priority, can skip
-      setCurrentStep("complete");
-      setTimeout(
-        () => navigate("/checkout/success?onboarding_complete=true"),
-        2000,
-      );
+      await handleCompletion();
     }
   };
 
@@ -293,9 +303,7 @@ const Onboarding = () => {
             <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white">
               All Set!
             </h1>
-            <p className="text-lg text-white/70 mb-8">
-              Your account is ready. Redirecting you...
-            </p>
+            <p className="text-lg text-white/70 mb-8">{getRedirectMessage()}</p>
           </div>
         </main>
       </div>
@@ -315,20 +323,44 @@ const Onboarding = () => {
 
       <main className="relative z-10 pt-28 pb-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
         <div className="max-w-md w-full">
+          {isNewAccount && (
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6 flex items-start gap-3 animate-fade-in shadow-lg shadow-blue-900/10">
+              <FontAwesomeIcon
+                icon={faInfoCircle}
+                className="text-blue-400 mt-1 flex-shrink-0 text-lg"
+              />
+              <div>
+                <h3 className="text-blue-200 font-semibold mb-1">
+                  Account Created
+                </h3>
+                <p className="text-blue-300/80 text-sm leading-relaxed">
+                  We've automatically created an account for you. Please
+                  complete your setup below to secure it.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="bg-[#1A1A1E] border border-white/10 rounded-3xl p-8 md:p-12">
             <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                {currentStep === "password" && "Set Your Password"}
-                {currentStep === "email" && "Verify Your Email"}
-                {currentStep === "username" && "Choose Your Username"}
+              <h1 className="text-3xl md:text-3xl font-bold mb-4 text-white">
+                {currentStep === "password" &&
+                  (isNewAccount ? "Secure Your Account" : "Set Your Password")}
+                {currentStep === "email" &&
+                  (isNewAccount
+                    ? "Complete Your Profile"
+                    : "Verify Your Email")}
+                {currentStep === "username" && "Choose A Username"}
               </h1>
               <p className="text-white/70">
                 {currentStep === "password" &&
-                  "Create a secure password for your account"}
+                  "Create a password to access your account across devices."}
                 {currentStep === "email" &&
-                  "We need a valid email address for your account"}
+                  (isNewAccount
+                    ? "Enter your email address to secure your account and receive important updates."
+                    : "Please provide a valid email address for your account updates.")}
                 {currentStep === "username" &&
-                  "Pick a username to personalize your profile (optional)"}
+                  "Pick a unique display name for the community (optional)."}
               </p>
             </div>
 

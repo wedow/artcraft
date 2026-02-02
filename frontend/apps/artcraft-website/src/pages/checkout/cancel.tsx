@@ -5,8 +5,52 @@ import { Button } from "@storyteller/ui-button";
 import { Link } from "react-router-dom";
 import { SOCIAL_LINKS } from "../../config/links";
 import Seo from "../../components/seo";
+import { useEffect, useState } from "react";
+import { UsersApi } from "@storyteller/api";
 
 const CheckoutCancel = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const usersApi = new UsersApi();
+        const sessionResponse = await usersApi.GetSession();
+
+        if (sessionResponse.success && sessionResponse.data?.loggedIn) {
+          const onboarding = sessionResponse.data.onboarding;
+
+          // If onboarding is undefined or has any required fields not set, redirect to onboarding
+          if (
+            !onboarding ||
+            onboarding.password_not_set ||
+            onboarding.email_not_set ||
+            onboarding.email_not_confirmed
+          ) {
+            // Redirect to onboarding but come back to home page (or here) after
+            // We use / primarily because if they cancelled, they likely want to browse or try again later
+            window.location.href = "/onboarding?redirect_to=/pricing";
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Error checking onboarding status:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkOnboarding();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="relative min-h-screen bg-[#101014] text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#101014] text-white">
       <Seo
