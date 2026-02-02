@@ -2,6 +2,10 @@
 /checkout_cancel/ /index.html 200
 /checkout_cancel/* /index.html 200
 
+/onboarding /index.html 200
+/onboarding/ /index.html 200
+/onboarding/* /index.html 200
+
 /portal_closed /index.html 200
 /portal_closed/ /index.html 200
 /portal_closed/* /index.html 200
