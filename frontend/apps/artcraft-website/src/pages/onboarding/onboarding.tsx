@@ -77,16 +77,11 @@ const Onboarding = () => {
         if (subResponse.success && subResponse.data) {
           const hasActiveSub = subResponse.data.active_subscriptions.length > 0;
           if (!hasActiveSub) {
-            console.log(
-              "⚠️ No active subscription found, redirecting to pricing",
-            );
             navigate("/pricing");
             return;
           }
         }
-      } catch (e) {
-        console.error("Error checking subscription:", e);
-      }
+      } catch (e) {}
     }
 
     // Determine step complete immediately
@@ -151,7 +146,7 @@ const Onboarding = () => {
         await handleCompletion();
       }
     } catch (err) {
-      console.error("❌ Error checking onboarding status:", err);
+      // console.error("❌ Error checking onboarding status:", err);
       navigate(getSuccessUrl());
     } finally {
       setIsLoading(false);
@@ -258,7 +253,6 @@ const Onboarding = () => {
           ? err.message
           : "An error occurred. Please try again.";
       setError(errorMessage);
-      console.error("Form submission error:", err);
     } finally {
       setIsSubmitting(false);
     }
