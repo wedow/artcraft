@@ -329,10 +329,16 @@ const Landing = () => {
                 </>
               )}
               <img
-                src="/images/try-free.png"
-                alt="Try Free"
+                src="/images/buy-credits.png"
+                alt="Buy Credits"
                 draggable={false}
-                className="absolute -left-[58%] -top-2 h-40 pointer-events-none select-none hidden md:block"
+                className="absolute -left-[33%] -top-2 h-40 pointer-events-none select-none hidden md:block"
+              />
+              <img
+                src="/images/try-download.png"
+                alt="Try Download"
+                draggable={false}
+                className="absolute -right-[36%] -bottom-2 h-40 pointer-events-none select-none hidden md:block"
               />
             </div>
 
