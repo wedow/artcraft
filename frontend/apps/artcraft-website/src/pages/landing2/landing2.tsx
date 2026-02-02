@@ -1,11 +1,7 @@
 import { DiscordButton } from "../../components/discord-button";
 import { Button } from "@storyteller/ui-button";
-import { isMobile, isMacOs } from "react-device-detect";
-import {
-  faWindows,
-  faApple,
-  faGithub,
-} from "@fortawesome/free-brands-svg-icons";
+import { isMobile } from "react-device-detect";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import {
   faVolumeMute,
   faVolumeHigh,
@@ -19,7 +15,6 @@ import {
   faTools,
   faShapes,
   faEraser,
-  faRocket,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Footer from "../../components/footer";
@@ -28,20 +23,18 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ModelBadgeGrid from "../../components/model-badge-grid";
 import Seo from "../../components/seo";
-import { DOWNLOAD_LINKS } from "../../config/downloads";
+
 import { OwnershipComparison } from "../../components/ownership-comparison/ownership-comparison";
 import { DownloadModal } from "../../components/download-modal";
+
 import { UsersApi } from "@storyteller/api";
+import { LandingActionButtons } from "../../components/landing-action-buttons";
 
 gsap.registerPlugin(ScrollTrigger);
 
 //const HERO_VIDEO_URL = "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/artcraft_commercial.mp4";
 const HERO_VIDEO_URL =
   "https://pub-f7441936e5804042a1ea2bdc92e4dc71.r2.dev/artcraft_website_v2.mp4";
-
-// Versions and links are now centralized in downloads config - BFlat
-const MAC_LINK = DOWNLOAD_LINKS.MACOS;
-const WINDOWS_LINK = DOWNLOAD_LINKS.WINDOWS;
 
 const Landing = () => {
   const videos = [
@@ -63,8 +56,6 @@ const Landing = () => {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  const downloadUrl = isMacOs ? MAC_LINK : WINDOWS_LINK;
 
   useEffect(() => {
     const checkSession = async () => {
@@ -297,48 +288,24 @@ const Landing = () => {
 
             {/* CTA Buttons */}
             <div
-              className="relative flex flex-col sm:flex-row items-center justify-center gap-2.5 md:gap-4 mb-10 sm:mb-16 w-fit max-w-xs sm:max-w-none mx-auto"
+              className="relative flex flex-col sm:flex-row items-center justify-center mb-10 sm:mb-16 w-full"
               data-animate
             >
-              {isMobile ? (
-                <Button
-                  className="text-lg font-semibold rounded-xl shadow-lg"
-                  disabled
-                >
-                  Download on a desktop
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    className="glow-border-animated text-md px-8 py-4 text-lg font-semibold rounded-xl shadow-lg gap-3 transition-all duration-300 hover:scale-105 hover:shadow-primary/25 border-2 border-primary/30 bg-gradient-to-r from-primary/20 to-purple-600/20 hover:from-primary/30 hover:to-purple-600/30 backdrop-blur-md"
-                    as="link"
-                    href="/pricing"
-                  >
-                    <FontAwesomeIcon icon={faRocket} />
-                    Supercharge Credits
-                  </Button>
-                  <Button
-                    className="text-md px-8 py-4 text-lg font-semibold rounded-xl shadow-lg gap-3 transition-all duration-300 bg-white hover:bg-white/80 text-black"
-                    as="link"
-                    href={downloadUrl}
-                    onClick={onDownloadClick}
-                  >
-                    <FontAwesomeIcon icon={isMacOs ? faApple : faWindows} />
-                    Download for {isMacOs ? "Mac" : "Windows"}
-                  </Button>
-                </>
-              )}
+              <LandingActionButtons
+                onDownloadClick={onDownloadClick}
+                className="w-fit max-w-xs sm:max-w-none mx-auto z-10"
+              />
               <img
                 src="/images/buy-credits.png"
                 alt="Buy Credits"
                 draggable={false}
-                className="absolute -left-[33%] -top-2 h-40 pointer-events-none select-none hidden md:block"
+                className="absolute left-[10%] -top-2 h-40 pointer-events-none select-none hidden md:block"
               />
               <img
                 src="/images/try-download.png"
                 alt="Try Download"
                 draggable={false}
-                className="absolute -right-[36%] -bottom-2 h-40 pointer-events-none select-none hidden md:block"
+                className="absolute right-[9%] -bottom-2 h-40 pointer-events-none select-none hidden md:block"
               />
             </div>
 
@@ -891,16 +858,8 @@ const Landing = () => {
               their vision to life.
             </p>
 
-            <div className="relative z-10">
-              <Button
-                className="text-md px-10 py-5 text-xl font-semibold rounded-2xl shadow-xl gap-3 transition-all duration-300 hover:scale-105 hover:shadow-primary/40 bg-white text-black hover:bg-white"
-                as="link"
-                href={downloadUrl}
-                onClick={onDownloadClick}
-              >
-                <FontAwesomeIcon icon={isMacOs ? faApple : faWindows} />
-                Download for {isMacOs ? "Mac" : "Windows"}
-              </Button>
+            <div className="relative z-10 w-full flex flex-col items-center">
+              <LandingActionButtons onDownloadClick={onDownloadClick} />
               <div className="mt-4 text-sm text-white/80 font-medium">
                 Free to use.
               </div>
