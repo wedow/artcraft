@@ -4,6 +4,8 @@ use crate::error::fal_error_plus::FalErrorPlus;
 use fal::endpoints::fal_ai::bytedance::seedream::bytedance_seedream_v4p5_text_to_image::{bytedance_seedream_v4p5_text_to_image, BytedanceSeedreamV4p5TextToImageInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
+use crate::requests::webhook::image::edit::enqueue_bytedance_seedream_v4p5_edit_image_webhook::{EnqueueBytedanceSeedreamV4p5EditImageArgs, EnqueueBytedanceSeedreamV4p5EditImageNumImages};
 
 pub struct EnqueueBytedanceSeedreamV4p5TextToImageArgs<'a, R: IntoUrl> {
   // Request required
@@ -50,6 +52,24 @@ pub enum EnqueueBytedanceSeedreamV4p5TextToImageSize {
   Auto2k,
   Auto4k,
 }
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueBytedanceSeedreamV4p5TextToImageArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // NB: Copied from edit image costs
+    // Your request will cost $0.04 per image.
+    let unit_cost = 4;
+    let cost = match self.num_images {
+      None => unit_cost,
+      Some(EnqueueBytedanceSeedreamV4p5TextToImageNumImages::One) => unit_cost,
+      Some(EnqueueBytedanceSeedreamV4p5TextToImageNumImages::Two) => unit_cost * 2,
+      Some(EnqueueBytedanceSeedreamV4p5TextToImageNumImages::Three) => unit_cost * 3,
+      Some(EnqueueBytedanceSeedreamV4p5TextToImageNumImages::Four) => unit_cost * 4,
+    };
+    cost as UsdCents
+  }
+}
+
 
 pub async fn enqueue_bytedance_seedream_v4p5_text_to_image_webhook<R: IntoUrl>(
   args: EnqueueBytedanceSeedreamV4p5TextToImageArgs<'_, R>

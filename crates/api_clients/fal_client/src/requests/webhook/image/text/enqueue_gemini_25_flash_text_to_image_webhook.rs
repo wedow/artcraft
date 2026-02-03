@@ -5,6 +5,8 @@ use fal::prelude::fal_ai::gemini_25_flash_image::text_to_image::gemini_25_flash_
 use fal::prelude::fal_ai::gemini_25_flash_image::text_to_image::Gemini25FlashTextToImageInput;
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
+use crate::requests::webhook::image::edit::enqueue_gemini_25_flash_edit_webhook::{Gemini25FlashEditArgs, Gemini25FlashEditNumImages};
 
 pub struct Gemini25FlashTextToImageArgs<'a, R: IntoUrl> {
   // Request required
@@ -45,6 +47,21 @@ pub enum Gemini25FlashTextToImageAspectRatio {
   TwoByThree,
   NineBySixteen, // NB: No NineByTwentyOne ?
 }
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for Gemini25FlashTextToImageArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // NB: This was copied from the image-to-image case.
+    // Your request will cost $0.039 per image. For $1.00, you can run this model 25 times.
+    match self.num_images {
+      Gemini25FlashTextToImageNumImages::One => 4,
+      Gemini25FlashTextToImageNumImages::Two => 8,
+      Gemini25FlashTextToImageNumImages::Three => 12,
+      Gemini25FlashTextToImageNumImages::Four => 16,
+    }
+  }
+}
+
 
 pub async fn enqueue_gemini_25_flash_text_to_image_webhook<R: IntoUrl>(
   args: Gemini25FlashTextToImageArgs<'_, R>

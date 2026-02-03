@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::bytedance::seedream::bytedance_seedream_v4p5_edit_image::{bytedance_seedream_v4p5_edit_image, BytedanceSeedreamV4p5EditImageInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -51,6 +52,23 @@ pub enum EnqueueBytedanceSeedreamV4p5EditImageSize {
   Auto2k,
   Auto4k,
 }
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueBytedanceSeedreamV4p5EditImageArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // Your request will cost $0.04 per image.
+    let unit_cost = 4;
+    let cost = match self.num_images {
+      None => unit_cost,
+      Some(EnqueueBytedanceSeedreamV4p5EditImageNumImages::One) => unit_cost,
+      Some(EnqueueBytedanceSeedreamV4p5EditImageNumImages::Two) => unit_cost * 2,
+      Some(EnqueueBytedanceSeedreamV4p5EditImageNumImages::Three) => unit_cost * 3,
+      Some(EnqueueBytedanceSeedreamV4p5EditImageNumImages::Four) => unit_cost * 4,
+    };
+    cost as UsdCents
+  }
+}
+
 
 pub async fn enqueue_bytedance_seedream_v4p5_edit_image_webhook<R: IntoUrl>(
   args: EnqueueBytedanceSeedreamV4p5EditImageArgs<'_, R>
