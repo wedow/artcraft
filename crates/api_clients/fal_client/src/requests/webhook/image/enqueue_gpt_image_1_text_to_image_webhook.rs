@@ -2,6 +2,7 @@ use crate::creds::fal_api_key::FalApiKey;
 use crate::creds::open_ai_api_key::OpenAiApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::prelude::fal_ai::gpt_image_1::edit_image::byok::{gpt_text_to_image, GptTextToImageRequest};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -42,6 +43,31 @@ pub enum GptTextToImageNumImages{
   Three,
   Four,
 }
+
+
+// NB: These are BYOK, so they're not Fal's prices
+impl <U: IntoUrl> FalRequestCostCalculator for GptTextToImageByokArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // Can't find details, so using this: https://www.reddit.com/r/OpenAI/comments/1krfwa1/pricing_gpt_image_1_model/
+    // Prompts are billed similarly to other GPT models. Image outputs cost approximately $0.01 (low), $0.04 (medium),
+    // and $0.17 (high) for square images.
+    // We're likely losing money on this, but that's okay. Will adjust in the future to be fair to users and us.
+    let base_cost = match self.quality {
+      GptTextToImageQuality::Auto => 17,
+      GptTextToImageQuality::Low => 1,
+      GptTextToImageQuality::Medium => 4,
+      GptTextToImageQuality::High => 17,
+    };
+    let cost = match self.num_images {
+      GptTextToImageNumImages::One => base_cost,
+      GptTextToImageNumImages::Two => base_cost * 2,
+      GptTextToImageNumImages::Three => base_cost * 3,
+      GptTextToImageNumImages::Four => base_cost * 4,
+    };
+    cost as UsdCents
+  }
+}
+
 
 pub async fn enqueue_gpt_image_1_text_to_image_webhook<V: IntoUrl>(
   args: GptTextToImageByokArgs<'_, V>

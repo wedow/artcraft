@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::nano_banana_pro::nano_banana_pro_image_edit::{nano_banana_pro_image_edit, NanoBananaProImageEditInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -54,6 +55,30 @@ pub enum EnqueueNanoBananaProEditImageAspectRatio {
   ThreeByFour,
   TwoByThree,
   NineBySixteen, // NB: No NineByTwentyOne ?
+}
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueNanoBananaProEditImageArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // Your request will cost $0.15 per image.
+    // For $1.00, you can run this model 7 times.
+    // 4K outputs will be charged at double the standard rate.
+    // If web search is used, an additional $0.015 will be charged.
+    // Note: Pricing may change in the future.
+    let cost = match self.resolution {
+      None => 15,
+      Some(EnqueueNanoBananaProEditImageResolution::OneK) => 15,
+      Some(EnqueueNanoBananaProEditImageResolution::TwoK) => 15,
+      Some(EnqueueNanoBananaProEditImageResolution::FourK) => 30,
+    };
+    let cost = match self.num_images {
+      EnqueueNanoBananaProEditImageNumImages::One => cost,
+      EnqueueNanoBananaProEditImageNumImages::Two => cost * 2,
+      EnqueueNanoBananaProEditImageNumImages::Three => cost * 3,
+      EnqueueNanoBananaProEditImageNumImages::Four => cost * 4,
+    };
+    cost as UsdCents
+  }
 }
 
 pub async fn enqueue_nano_banana_pro_image_edit_webhook<R: IntoUrl>(

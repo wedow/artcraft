@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::gpt_image::gpt_image_1p5_text_to_image::{gpt_image_1p5_text_to_image, GptImage1p5TextToImageInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -58,6 +59,34 @@ pub enum EnqueueGptImage1p5TextToImageOutputFormat {
   Jpeg,
   Png,
   Webp,
+}
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueGptImage1p5TextToImageArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // NB: copied from edit image case - should be correct, but not verified.
+    // Your request will cost different amounts based on the number of images, quality, and size.
+    // For low quality, you will be charged $0.009 for 1024x1024 or $0.013 for any other size per image.
+    // For medium quality, you will be charged $0.034 for 1024x1024, $0.051 for 1024x1536 and $0.050 for 1536x1024 per image.
+    // For high quality, you will be charged $0.133 for 1024x1024, $0.200 for 1024x1536 or $0.199 for 1536x1024 per image.
+    let use_quality = self.quality.unwrap_or(EnqueueGptImage1p5TextToImageQuality::Medium);
+    let use_size = self.image_size.unwrap_or(EnqueueGptImage1p5TextToImageSize::Square);
+    let base_cost = match (use_quality, use_size) {
+      (EnqueueGptImage1p5TextToImageQuality::Low, EnqueueGptImage1p5TextToImageSize::Square) => 1,
+      (EnqueueGptImage1p5TextToImageQuality::Low, _) => 1,
+      (EnqueueGptImage1p5TextToImageQuality::Medium, EnqueueGptImage1p5TextToImageSize::Square) => 3,
+      (EnqueueGptImage1p5TextToImageQuality::Medium, _) => 5,
+      (EnqueueGptImage1p5TextToImageQuality::High, EnqueueGptImage1p5TextToImageSize::Square) => 13,
+      (EnqueueGptImage1p5TextToImageQuality::High, _) => 20,
+    };
+    let cost = match self.num_images {
+      EnqueueGptImage1p5TextToImageNumImages::One => base_cost,
+      EnqueueGptImage1p5TextToImageNumImages::Two => base_cost * 2,
+      EnqueueGptImage1p5TextToImageNumImages::Three => base_cost * 3,
+      EnqueueGptImage1p5TextToImageNumImages::Four => base_cost * 4,
+    };
+    cost as UsdCents
+  }
 }
 
 

@@ -34,6 +34,10 @@ use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPrompt
 use mysql_queries::queries::users::user_subscriptions::find_subscription_for_owner_user::find_subscription_for_owner_user_using_connection;
 use sqlx::Acquire;
 use utoipa::ToSchema;
+use fal_client::requests::traits::fal_request_cost_calculator_trait::FalRequestCostCalculator;
+use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue_with_apriori_job_token::{insert_generic_inference_job_for_fal_queue_with_apriori_job_token, InsertGenericInferenceForFalWithAprioriJobTokenArgs};
+use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::billing::wallets::attempt_wallet_deduction::attempt_wallet_deduction_else_common_web_error;
 
 /// Gemini 2.5 Flash Image Editing
 #[utoipa::path(
@@ -73,43 +77,34 @@ pub async fn gemini_25_flash_edit_image_handler(
         CommonWebError::ServerError
       })?;
 
-  let maybe_user_token = maybe_user_session
-      .as_ref()
-      .map(|s| &s.user_token);
-
   let maybe_avt_token = server_state
       .avt_cookie_manager
       .get_avt_token_from_request(&http_request);
 
-  // TODO: Limit usage for new accounts. Billing, free credits metering, etc.
-
-  //let user_session = match maybe_user_session {
-  //  Some(session) => session,
-  //  None => {
-  //    warn!("not logged in");
-  //    return Err(CommonWebError::NotAuthorized);
-  //  }
-  //};
+  let user_token = match maybe_user_session.as_ref() {
+    Some(session) => &session.user_token,
+    None => {
+      return Err(CommonWebError::NotAuthorized);
+    }
+  };
 
   let mut downgrade_for_free_user = true;
 
-  if let Some(user_token) = maybe_user_token.as_ref() {
-    let result = find_subscription_for_owner_user_using_connection(
-      user_token,
-      PaymentsNamespace::Artcraft,
-      &mut mysql_connection,
-    ).await;
+  let result = find_subscription_for_owner_user_using_connection(
+    user_token,
+    PaymentsNamespace::Artcraft,
+    &mut mysql_connection,
+  ).await;
 
-    if let Ok(Some(subscription)) = result {
-      info!("User {:?} has subscription: {:?} (stripe customer: {:?}, status: {:?})",
-        user_token,
-        subscription.token,
-        subscription.stripe_customer_id,
-        subscription.stripe_subscription_status);
-      // NB: Failing open means subscribers might get fewer results, but they're free right now.
-      if subscription.stripe_subscription_status == StripeSubscriptionStatus::Active {
-        downgrade_for_free_user = false;
-      }
+  if let Ok(Some(subscription)) = result {
+    info!("User {:?} has subscription: {:?} (stripe customer: {:?}, status: {:?})",
+      user_token,
+      subscription.token,
+      subscription.stripe_customer_id,
+      subscription.stripe_subscription_status);
+    // NB: Failing open means subscribers might get fewer results, but they're free right now.
+    if subscription.stripe_subscription_status == StripeSubscriptionStatus::Active {
+      downgrade_for_free_user = false;
     }
   }
 
@@ -194,6 +189,17 @@ pub async fn gemini_25_flash_edit_image_handler(
     aspect_ratio: None, // TODO
   };
 
+  let apriori_job_token = InferenceJobToken::generate();
+
+  //let cost = args.calculate_cost_in_cents();
+  //info!("Charging wallet: {}", cost);
+  //attempt_wallet_deduction_else_common_web_error(
+  //  user_token,
+  //  Some(apriori_job_token.as_str()),
+  //  cost,
+  //  &mut mysql_connection,
+  //).await?;
+
   let fal_result = enqueue_gemini_25_flash_edit_webhook(args)
       .await
       .map_err(|err| {
@@ -223,7 +229,7 @@ pub async fn gemini_25_flash_edit_image_handler(
   let prompt_result = insert_prompt(InsertPromptArgs {
     maybe_apriori_prompt_token: None,
     prompt_type: PromptType::ArtcraftApp,
-    maybe_creator_user_token: maybe_user_token,
+    maybe_creator_user_token: Some(&user_token),
     maybe_model_type: Some(ModelType::Gemini25Flash),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
@@ -260,13 +266,14 @@ pub async fn gemini_25_flash_edit_image_handler(
     }
   }
 
-  let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
+  let db_result = insert_generic_inference_job_for_fal_queue_with_apriori_job_token(InsertGenericInferenceForFalWithAprioriJobTokenArgs {
+    apriori_job_token: &apriori_job_token,
     uuid_idempotency_token: &request.uuid_idempotency_token,
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::ImageGeneration,
     maybe_inference_args: None,
     maybe_prompt_token: prompt_token.as_ref(),
-    maybe_creator_user_token: maybe_user_token,
+    maybe_creator_user_token: Some(&user_token),
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,

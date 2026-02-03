@@ -4,6 +4,8 @@ use crate::error::fal_error_plus::FalErrorPlus;
 use fal::endpoints::fal_ai::nano_banana_pro::nano_banana_pro_text_to_image::{nano_banana_pro_text_to_image, NanoBananaProTextToImageInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
+use crate::requests::webhook::image::edit::enqueue_nano_banana_pro_edit_image_webhook::{EnqueueNanoBananaProEditImageArgs, EnqueueNanoBananaProEditImageNumImages, EnqueueNanoBananaProEditImageResolution};
 
 pub struct EnqueueNanoBananaProTextToImageArgs<'a, R: IntoUrl> {
   // Request required
@@ -52,6 +54,31 @@ pub enum EnqueueNanoBananaProTextToImageAspectRatio {
   TwoByThree,
   NineBySixteen, // NB: No NineByTwentyOne ?
 }
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for EnqueueNanoBananaProTextToImageArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // Your request will cost $0.15 per image.
+    // For $1.00, you can run this model 7 times.
+    // 4K outputs will be charged at double the standard rate.
+    // If web search is used, an additional $0.015 will be charged.
+    // Note: Pricing may change in the future.
+    let cost = match self.resolution {
+      None => 15,
+      Some(EnqueueNanoBananaProTextToImageResolution::OneK) => 15,
+      Some(EnqueueNanoBananaProTextToImageResolution::TwoK) => 15,
+      Some(EnqueueNanoBananaProTextToImageResolution::FourK) => 30,
+    };
+    let cost = match self.num_images {
+      EnqueueNanoBananaProTextToImageNumImages::One => cost,
+      EnqueueNanoBananaProTextToImageNumImages::Two => cost * 2,
+      EnqueueNanoBananaProTextToImageNumImages::Three => cost * 3,
+      EnqueueNanoBananaProTextToImageNumImages::Four => cost * 4,
+    };
+    cost as UsdCents
+  }
+}
+
 
 pub async fn enqueue_nano_banana_pro_text_to_image_webhook<R: IntoUrl>(
   args: EnqueueNanoBananaProTextToImageArgs<'_, R>

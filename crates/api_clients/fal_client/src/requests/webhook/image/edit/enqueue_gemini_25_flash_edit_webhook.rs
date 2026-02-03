@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::gemini_25_flash_image::edit::gemini_25_flash_image_edit;
 use fal::prelude::fal_ai::gemini_25_flash_image::edit::Gemini25FlashImageEditInput;
 use fal::webhook::WebhookResponse;
@@ -48,6 +49,20 @@ pub enum Gemini25FlashEditAspectRatio {
   TwoByThree,
   NineBySixteen, // NB: No NineByTwentyOne ?
 }
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for Gemini25FlashEditArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // Your request will cost $0.039 per image. For $1.00, you can run this model 25 times.
+    match self.num_images {
+      Gemini25FlashEditNumImages::One => 4,
+      Gemini25FlashEditNumImages::Two => 8,
+      Gemini25FlashEditNumImages::Three => 12,
+      Gemini25FlashEditNumImages::Four => 16,
+    }
+  }
+}
+
 
 pub async fn enqueue_gemini_25_flash_edit_webhook<R: IntoUrl>(
   args: Gemini25FlashEditArgs<'_, R>
