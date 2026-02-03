@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::flux_pro::v1_1_ultra::{v1_1_ultra, AspectRatioProperty, FluxProUltraTextToImageInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -34,6 +35,22 @@ pub enum FluxPro11UltraNumImages {
   Three,
   Four,
 }
+
+
+impl <U: IntoUrl> FalRequestCostCalculator for FluxPro11UltraArgs<'_, U> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // Your request will cost $0.06 per image.
+    let base_cost = 6;
+    let cost = match self.num_images {
+      FluxPro11UltraNumImages::One => base_cost,
+      FluxPro11UltraNumImages::Two => base_cost * 2,
+      FluxPro11UltraNumImages::Three => base_cost * 3,
+      FluxPro11UltraNumImages::Four => base_cost * 4,
+    };
+    cost as UsdCents
+  }
+}
+
 
 pub async fn enqueue_flux_pro_11_ultra_text_to_image_webhook<U: IntoUrl>(
   args: FluxPro11UltraArgs<'_, U>

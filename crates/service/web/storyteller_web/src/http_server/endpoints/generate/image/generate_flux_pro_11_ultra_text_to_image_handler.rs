@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::billing::wallets::attempt_wallet_deduction::attempt_wallet_deduction_else_common_web_error;
 use crate::billing::wallets::temporary_test_wallet_deduction::temporary_test_wallet_deduction;
 use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
@@ -14,6 +15,7 @@ use enums::by_table::prompts::prompt_type::PromptType;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::model_type::ModelType;
 use enums::common::visibility::Visibility;
+use fal_client::requests::traits::fal_request_cost_calculator_trait::FalRequestCostCalculator;
 use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::FluxPro11UltraArgs;
 use fal_client::requests::webhook::image::enqueue_flux_pro_11_ultra_text_to_image_webhook::{enqueue_flux_pro_11_ultra_text_to_image_webhook, FluxPro11UltraAspectRatio, FluxPro11UltraNumImages};
 use http_server_common::request::get_request_ip::get_request_ip;
@@ -21,9 +23,11 @@ use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::insert_generic_inference_job_for_fal_queue;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
 use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::InsertGenericInferenceForFalArgs;
+use mysql_queries::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue_with_apriori_job_token::{insert_generic_inference_job_for_fal_queue_with_apriori_job_token, InsertGenericInferenceForFalWithAprioriJobTokenArgs};
 use mysql_queries::queries::idepotency_tokens::insert_idempotency_token::insert_idempotency_token;
 use mysql_queries::queries::prompts::insert_prompt::{insert_prompt, InsertPromptArgs};
 use sqlx::Acquire;
+use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use utoipa::ToSchema;
 
 /// Flux Pro 1.1 Ultra
@@ -70,16 +74,6 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
     }
   };
 
-  // TODO: Limit usage for new accounts. Billing, free credits metering, etc.
-
-  //let user_session = match maybe_user_session {
-  //  Some(session) => session,
-  //  None => {
-  //    warn!("not logged in");
-  //    return Err(GenerateFluxProUltraTextToImageError::NotAuthorized);
-  //  }
-  //};
-
   if let Err(reason) = validate_idempotency_token_format(&request.uuid_idempotency_token) {
     return Err(CommonWebError::BadInputWithSimpleMessage(reason));
   }
@@ -91,32 +85,12 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
         CommonWebError::BadInputWithSimpleMessage("invalid idempotency token".to_string())
       })?;
 
-  // // TODO: This is test code
-  // let credits = match request.num_images {
-  //   Some(GenerateFluxPro11UltraTextToImageNumImages::One) => 25,
-  //   Some(GenerateFluxPro11UltraTextToImageNumImages::Two) => 50,
-  //   Some(GenerateFluxPro11UltraTextToImageNumImages::Three) => 75,
-  //   Some(GenerateFluxPro11UltraTextToImageNumImages::Four) => 100,
-  //   None => 100,
-  // };
-
-  // // TODO: This is test code
-  // let result = temporary_test_wallet_deduction(
-  //   user_token,
-  //   Some("todo-reference-token"),
-  //   credits,
-  //   &mut mysql_connection,
-  // ).await;
-
-  // // TODO: This is test code
-  // if let Err(err) = result {
-  //   warn!("Temporary wallet deduction failed: {:?}", err); // Infallible for now.
-  // }
-
   const IS_MOD : bool = false;
   
   info!("Fal webhook URL: {}", server_state.fal.webhook_url);
-  
+
+  let apriori_job_token = InferenceJobToken::generate();
+
   let aspect_ratio = match request.aspect_ratio {
     Some(GenerateFluxPro11UltraTextToImageAspectRatio::Square) => FluxPro11UltraAspectRatio::Square,
     Some(GenerateFluxPro11UltraTextToImageAspectRatio::LandscapeFourByThree) => FluxPro11UltraAspectRatio::LandscapeFourByThree,
@@ -145,6 +119,17 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
     aspect_ratio,
     num_images,
   };
+
+  let cost = args.calculate_cost_in_cents();
+
+  info!("Charging wallet: {}", cost);
+
+  attempt_wallet_deduction_else_common_web_error(
+    user_token,
+    Some(apriori_job_token.as_str()),
+    cost,
+    &mut mysql_connection,
+  ).await?;
 
   let fal_result = enqueue_flux_pro_11_ultra_text_to_image_webhook(args)
       .await
@@ -175,9 +160,7 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
   let prompt_result = insert_prompt(InsertPromptArgs {
     maybe_apriori_prompt_token: None,
     prompt_type: PromptType::ArtcraftApp,
-    maybe_creator_user_token: maybe_user_session
-        .as_ref()
-        .map(|s| &s.user_token),
+    maybe_creator_user_token: Some(&user_token),
     maybe_model_type: Some(ModelType::FluxPro11Ultra),
     maybe_generation_provider: Some(GenerationProvider::Artcraft),
     maybe_positive_prompt: request.prompt.as_deref(),
@@ -196,13 +179,14 @@ pub async fn generate_flux_pro_11_ultra_text_to_image_handler(
     }
   };
 
-  let db_result = insert_generic_inference_job_for_fal_queue(InsertGenericInferenceForFalArgs {
+  let db_result = insert_generic_inference_job_for_fal_queue_with_apriori_job_token(InsertGenericInferenceForFalWithAprioriJobTokenArgs {
+    apriori_job_token: &apriori_job_token,
     uuid_idempotency_token: &request.uuid_idempotency_token,
     maybe_external_third_party_id: &external_job_id,
     fal_category: FalCategory::ImageGeneration,
     maybe_inference_args: None,
     maybe_prompt_token: prompt_token.as_ref(),
-    maybe_creator_user_token: maybe_user_session.as_ref().map(|s| &s.user_token),
+    maybe_creator_user_token: Some(&user_token),
     maybe_avt_token: maybe_avt_token.as_ref(),
     creator_ip_address: &ip_address,
     creator_set_visibility: Visibility::Public,
