@@ -1,6 +1,7 @@
 use crate::creds::fal_api_key::FalApiKey;
 use crate::error::classify_fal_error::classify_fal_error;
 use crate::error::fal_error_plus::FalErrorPlus;
+use crate::requests::traits::fal_request_cost_calculator_trait::{FalRequestCostCalculator, UsdCents};
 use fal::endpoints::fal_ai::qwen_image_edit::{qwen_image_edit, QwenImageEditInput};
 use fal::webhook::WebhookResponse;
 use reqwest::IntoUrl;
@@ -44,6 +45,23 @@ pub enum QwenImageEditSize {
   PortraitNineBySixteen, // 9:16
   //Custom { width: u32, height: u32 }, // TODO
 }
+
+
+impl <U: IntoUrl, R: IntoUrl> FalRequestCostCalculator for QwenImageEditArgs<'_, U, R> {
+  fn calculate_cost_in_cents(&self) -> UsdCents {
+    // Your request will cost $0.03 per megapixel. -- Ugh, not calculating that
+    let base_cost = 3;
+    let cost = match self.num_images {
+      None => base_cost,
+      Some(QwenImageEditNumImages::One) => base_cost,
+      Some(QwenImageEditNumImages::Two) => base_cost * 2,
+      Some(QwenImageEditNumImages::Three) => base_cost * 3,
+      Some(QwenImageEditNumImages::Four) => base_cost * 4,
+    };
+    cost as UsdCents
+  }
+}
+
 
 pub async fn enqueue_qwen_image_edit_webhook<U: IntoUrl, R: IntoUrl>(
   args: QwenImageEditArgs<'_, U, R>
