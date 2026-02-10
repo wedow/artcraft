@@ -267,7 +267,7 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           {bulkSelected && (
             <FontAwesomeIcon
               icon={faCheck}
-              className="text-[10px] text-black"
+              className="text-[10px] text-white"
             />
           )}
         </div>
