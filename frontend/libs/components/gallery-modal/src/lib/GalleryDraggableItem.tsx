@@ -31,6 +31,9 @@ interface GalleryDraggableItemProps {
   onDeleted?: (id: string) => void;
   onEditClicked?: (url: string, media_id?: string) => Promise<void> | void;
   maxSelections?: number;
+  bulkSelected?: boolean;
+  onBulkSelectToggle?: () => void;
+  bulkSelectionMode?: boolean;
 }
 
 export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
@@ -45,6 +48,9 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
   onDeleted,
   onEditClicked,
   maxSelections,
+  bulkSelected = false,
+  onBulkSelectToggle,
+  bulkSelectionMode = false,
 }) => {
   const imgRef = useRef<HTMLImageElement>(null);
   const dragStarted = useRef(false);
@@ -76,6 +82,11 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     // Disable dragging for video items, but allow clicks in select mode
     if (item.mediaClass === "video" && mode !== "select") return;
+    // In bulk selection mode, skip drag — clicks toggle selection
+    if (bulkSelectionMode) {
+      dragStarted.current = false;
+      return;
+    }
     dragStarted.current = false;
     const moveListener = (moveEvent: PointerEvent) => {
       const dx = moveEvent.pageX - event.pageX;
@@ -100,24 +111,83 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
   };
 
   const handlePointerUp = (event: React.PointerEvent) => {
-    if (!dragStarted.current && (mode === "select" || !disableTooltipAndBadge)) {
+    // In bulk selection mode, let only handleButtonClick fire onClick
+    // to avoid double-toggling the selection
+    if (bulkSelectionMode) return;
+    if (
+      !dragStarted.current &&
+      (mode === "select" || !disableTooltipAndBadge)
+    ) {
       onClick();
     }
   };
 
   const handleButtonClick = (event: React.MouseEvent) => {
-    if (mode === "select" || !disableTooltipAndBadge) {
+    if (mode === "select" || !disableTooltipAndBadge || bulkSelectionMode) {
       onClick();
     }
   };
 
-  return (
-    <div
+  // Shared button content — avoids duplicating the image/thumbnail rendering
+  const showTooltip = !disableTooltipAndBadge && !bulkSelectionMode;
+
+  const itemButton = (
+    <button
+      type="button"
+      tabIndex={-1}
       className={twMerge(
-        "group relative w-full",
-        activeFilter === "video" ? "aspect-square" : "aspect-square"
+        "w-full group relative overflow-visible rounded-md border-[3px] transition-all focus:outline-none",
+        "aspect-square",
+        selected || bulkSelected
+          ? "border-primary"
+          : disableTooltipAndBadge
+            ? "border-transparent hover:border-primary/80"
+            : "border-transparent hover:border-primary",
+        mode === "select" || item.mediaClass === "video" || bulkSelectionMode
+          ? "cursor-pointer"
+          : disableTooltipAndBadge
+            ? "cursor-pointer"
+            : "cursor-grab hover:cursor-grab active:cursor-grabbing",
       )}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onClick={handleButtonClick}
+      aria-label={item.label}
     >
+      <div className="relative h-full w-full">
+        {!item.thumbnail ? (
+          <div className="flex h-full w-full items-center justify-center bg-black/30">
+            <span className="text-white/60">Image not available</span>
+          </div>
+        ) : (
+          <img
+            data-gallery-draggable-1="true"
+            // NB: "loading=lazy" is necessary to prevent loading GIGABYTES of images!
+            // It is a bit finnicky, too: you must include this attribute
+            // BEFORE the `src` attribute, or it won't work.
+            loading="lazy"
+            ref={imgRef}
+            src={item.thumbnail}
+            alt={item.label}
+            className={twMerge(
+              "h-full w-full bg-black/30",
+              imageFit === "contain" ? "object-contain" : "object-cover",
+            )}
+            draggable={false}
+            onError={onImageError}
+          />
+        )}
+        {selected && (
+          <div className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+            <FontAwesomeIcon icon={faCheck} className="text-sm" />
+          </div>
+        )}
+      </div>
+    </button>
+  );
+
+  return (
+    <div className={twMerge("group relative w-full", "aspect-square")}>
       {/* dropdown menu */}
       {mode !== "select" && (
         <div
@@ -128,111 +198,88 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
           }}
         >
           <PopoverMenu
-          position="bottom"
-          align="end"
-          mode="default"
-          triggerIcon={
-            <FontAwesomeIcon icon={faEllipsis} className="text-base-fg" />
-          }
-          buttonClassName="h-7 w-7 p-0 rounded-full bg-ui-controls/60 hover:bg-ui-controls/90 text-base-fg border border-ui-controls-border"
-          panelClassName="min-w-28 p-1"
-          closeOnUnhover
-        >
-          {(close) => (
-            <div className="flex flex-col">
-              {item.mediaClass === "image" && (
+            position="bottom"
+            align="end"
+            mode="default"
+            triggerIcon={
+              <FontAwesomeIcon icon={faEllipsis} className="text-base-fg" />
+            }
+            buttonClassName="h-7 w-7 p-0 rounded-full bg-ui-controls/60 hover:bg-ui-controls/90 text-base-fg border border-ui-controls-border"
+            panelClassName="min-w-28 p-1"
+            closeOnUnhover
+          >
+            {(close) => (
+              <div className="flex flex-col">
+                {item.mediaClass === "image" && (
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-base-fg text-sm"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (onEditClicked && (item.fullImage || item.thumbnail)) {
+                        await onEditClicked(
+                          item.fullImage || item.thumbnail!,
+                          item.id,
+                        );
+                      }
+                      close();
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPencil} className="text-base-fg" />
+                    <span>Edit image</span>
+                  </button>
+                )}
                 <button
                   type="button"
-                  className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-base-fg text-sm"
-                  onClick={async (e) => {
+                  className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-sm"
+                  onClick={(e) => {
                     e.stopPropagation();
-                    if (onEditClicked && (item.fullImage || item.thumbnail)) {
-                      await onEditClicked(
-                        item.fullImage || item.thumbnail!,
-                        item.id
-                      );
-                    }
+                    handleDelete();
                     close();
                   }}
                 >
-                  <FontAwesomeIcon icon={faPencil} className="text-base-fg" />
-                  <span>Edit image</span>
+                  <FontAwesomeIcon icon={faTrashCan} className="text-red" />
+                  <span className="text-red">Delete</span>
                 </button>
-              )}
-              <button
-                type="button"
-                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete();
-                  close();
-                }}
-              >
-                <FontAwesomeIcon icon={faTrashCan} className="text-red" />
-                <span className="text-red">Delete</span>
-              </button>
-            </div>
-          )}
-        </PopoverMenu>
+              </div>
+            )}
+          </PopoverMenu>
         </div>
       )}
-      {/* Media class badge on hover */}
+      {/* Bulk selection checkbox — top-left */}
+      {mode !== "select" && (
+        <div
+          className={twMerge(
+            "absolute left-2 top-2 z-30 flex h-5 w-5 items-center justify-center rounded border-2 cursor-pointer transition-all duration-100",
+            bulkSelected
+              ? "bg-primary border-primary"
+              : "border-white/60 bg-black/40 hover:border-white",
+            bulkSelectionMode
+              ? "opacity-100"
+              : "opacity-0 group-hover:opacity-100",
+          )}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onBulkSelectToggle?.();
+          }}
+        >
+          {bulkSelected && (
+            <FontAwesomeIcon
+              icon={faCheck}
+              className="text-[10px] text-black"
+            />
+          )}
+        </div>
+      )}
+      {/* Media class badge on hover — bottom-left */}
       {!disableTooltipAndBadge && item.mediaClass && (
-        <div className="pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-black/50 backdrop-blur-lg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <div className="pointer-events-none absolute left-2 bottom-2 z-20 rounded-full bg-black/50 backdrop-blur-lg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           {item.mediaClass === "dimensional" ? "3D" : item.mediaClass}
         </div>
       )}
-      {/* Tooltip on hover */}
-      {disableTooltipAndBadge ? (
-        <button
-          type="button"
-          tabIndex={0}
-          className={twMerge(
-            "w-full group relative overflow-visible rounded-md border-transparent border-[3px] transition-all",
-            activeFilter === "video" ? "aspect-square" : "aspect-square",
-            selected
-              ? "border-primary"
-              : "border-transparent hover:border-primary/80",
-            mode === "select" || item.mediaClass === "video"
-              ? "cursor-pointer"
-              : "cursor-grab hover:cursor-grab active:cursor-grabbing"
-          )}
-          onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
-          onClick={handleButtonClick}
-          aria-label={item.label}
-        >
-          <div className="relative h-full w-full">
-            {!item.thumbnail ? (
-              <div className="flex h-full w-full items-center justify-center bg-black/30">
-                <span className="text-white/60">Image not available</span>
-              </div>
-            ) : (
-              <img
-                data-gallery-draggable-1="true"
-                // NB: "loading=lazy" is necessary to prevent loading GIGABYTES of images!
-                // It is a bit finnicky, too: you must include this attribute
-                // BEFORE the `src` attribute, or it won't work.
-                loading="lazy"
-                ref={imgRef}
-                src={item.thumbnail}
-                alt={item.label}
-                className={twMerge(
-                  "h-full w-full bg-black/30",
-                  imageFit === "contain" ? "object-contain" : "object-cover"
-                )}
-                draggable={false}
-                onError={onImageError}
-              />
-            )}
-            {selected && (
-              <div className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
-                <FontAwesomeIcon icon={faCheck} className="text-sm" />
-              </div>
-            )}
-          </div>
-        </button>
-      ) : (
+      {/* Conditionally wrap with Tooltip — hidden when selecting or in bulk mode */}
+      {showTooltip ? (
         <Tooltip
           position="bottom"
           delay={200}
@@ -256,55 +303,10 @@ export const GalleryDraggableItem: React.FC<GalleryDraggableItemProps> = ({
             </div>
           }
         >
-          <button
-            type="button"
-            tabIndex={0}
-            className={twMerge(
-              "w-full group relative overflow-visible rounded-md border-[3px] transition-all focus:outline-none focus:ring-2 focus:ring-primary",
-              activeFilter === "video" ? "aspect-square" : "aspect-square",
-              selected
-                ? "border-primary"
-                : "border-transparent hover:border-primary",
-              mode === "select" || item.mediaClass === "video"
-                ? "cursor-pointer"
-                : "cursor-grab hover:cursor-grab active:cursor-grabbing"
-            )}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-            onClick={handleButtonClick}
-            aria-label={item.label}
-          >
-            <div className="relative h-full w-full">
-              {!item.thumbnail ? (
-                <div className="flex h-full w-full items-center justify-center bg-black/30">
-                  <span className="text-white/60">Image not available</span>
-                </div>
-              ) : (
-                <img
-                  data-gallery-draggable-2="true"
-                  // NB: "loading=lazy" is necessary to prevent loading GIGABYTES of images!
-                  // It is a bit finnicky, too: you must include this attribute
-                  // BEFORE the `src` attribute, or it won't work.
-                  loading="lazy"
-                  ref={imgRef}
-                  src={item.thumbnail}
-                  alt={item.label}
-                  className={twMerge(
-                    "h-full w-full bg-black/30",
-                    imageFit === "contain" ? "object-contain" : "object-cover"
-                  )}
-                  draggable={false}
-                  onError={onImageError}
-                />
-              )}
-              {selected && (
-                <div className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
-                  <FontAwesomeIcon icon={faCheck} className="text-sm" />
-                </div>
-              )}
-            </div>
-          </button>
+          {itemButton}
         </Tooltip>
+      ) : (
+        itemButton
       )}
     </div>
   );

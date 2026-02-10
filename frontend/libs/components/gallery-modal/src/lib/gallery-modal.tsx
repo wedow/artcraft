@@ -43,10 +43,17 @@ import {
   faExpand,
   faCompress,
   faArrowsRotate,
+  faTrashCan,
+  faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
 import { PopoverMenu } from "@storyteller/ui-popover";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
 import { Tooltip } from "@storyteller/ui-tooltip";
+import {
+  showActionReminder,
+  isActionReminderOpen,
+} from "@storyteller/ui-action-reminder-modal";
+import { MediaFileDelete } from "@storyteller/tauri-api";
 
 export interface GalleryItem {
   id: string;
@@ -80,22 +87,22 @@ interface GalleryModalProps {
   onDownloadClicked?: (url: string, mediaClass?: string) => Promise<void>;
   onAddToSceneClicked?: (
     url: string,
-    media_id: string | undefined
+    media_id: string | undefined,
   ) => Promise<void>;
   isOpen?: boolean;
   forceFilter?: string;
   onEditClicked?: (url: string, media_id?: string) => Promise<void> | void;
   onTurnIntoVideoClicked?: (
     url: string,
-    media_id?: string
+    media_id?: string,
   ) => Promise<void> | void;
   onRemoveBackgroundClicked?: (
     url: string,
-    media_id?: string
+    media_id?: string,
   ) => Promise<void> | void;
   onMake3DWorldClicked?: (
     url: string,
-    media_id?: string
+    media_id?: string,
   ) => Promise<void> | void;
 }
 
@@ -136,13 +143,24 @@ export const GalleryModal = React.memo(
     // Default gridColumns to 5
     const defaultGridColumns = 5;
     const [sliderValue, setSliderValue] = useState(
-      maxColumns - (defaultGridColumns - minColumns)
+      maxColumns - (defaultGridColumns - minColumns),
     );
     const gridColumns = maxColumns - (sliderValue - minColumns);
     const [imageFit, setImageFit] = useState<"cover" | "contain">("contain");
     const [allItems, setAllItems] = useState<GalleryItem[]>([]);
     const [pageIndex, setPageIndex] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+
+    // Bulk selection state (view mode only)
+    const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(
+      new Set(),
+    );
+    const bulkSelectionMode = bulkSelectedIds.size > 0;
+
+    // Clear bulk selection when filter changes
+    useEffect(() => {
+      setBulkSelectedIds(new Set());
+    }, [activeFilter]);
 
     // NB: We've got some kind of cursoring issue where subsequent pages are not requested.
     // For now, let's set the pagination limit really high.
@@ -180,11 +198,11 @@ export const GalleryModal = React.memo(
           Object.entries(grouped).sort(
             (a, b) =>
               new Date(b[1][0].createdAt).getTime() -
-              new Date(a[1][0].createdAt).getTime()
-          )
+              new Date(a[1][0].createdAt).getTime(),
+          ),
         );
       },
-      [formatDate]
+      [formatDate],
     );
 
     const handleImageError = useCallback(
@@ -192,7 +210,7 @@ export const GalleryModal = React.memo(
         console.error(`Failed to load gallery modal image: ${url}`);
         failedImageUrls.add(url);
       },
-      [failedImageUrls]
+      [failedImageUrls],
     );
 
     useEffect(() => {
@@ -280,7 +298,7 @@ export const GalleryModal = React.memo(
         if (response.success && response.data) {
           const newItems = response.data
             .filter(
-              (item: any) => item.media_type !== FilterMediaType.SCENE_JSON
+              (item: any) => item.media_type !== FilterMediaType.SCENE_JSON,
             )
             .map((item: any) => ({
               id: item.token,
@@ -289,10 +307,13 @@ export const GalleryModal = React.memo(
                 item.media_class === "video"
                   ? item.media_links.maybe_video_previews?.animated
                   : item.media_class === "dimensional"
-                  ? item.cover_image?.maybe_cover_image_public_bucket_url
-                  : getThumbnailUrl(item.media_links.maybe_thumbnail_template, {
-                      width: THUMBNAIL_SIZES.MEDIUM,
-                    }),
+                    ? item.cover_image?.maybe_cover_image_public_bucket_url
+                    : getThumbnailUrl(
+                        item.media_links.maybe_thumbnail_template,
+                        {
+                          width: THUMBNAIL_SIZES.MEDIUM,
+                        },
+                      ),
               thumbnailUrlTemplate: item.media_links.maybe_thumbnail_template,
               fullImage: item.media_links.cdn_url,
               createdAt: item.created_at,
@@ -338,8 +359,8 @@ export const GalleryModal = React.memo(
         mode === "view"
           ? galleryModalVisibleViewMode.value
           : typeof isOpen === "boolean"
-          ? isOpen
-          : true;
+            ? isOpen
+            : true;
       if (modalIsOpen && username) {
         refreshGallery();
       }
@@ -356,13 +377,15 @@ export const GalleryModal = React.memo(
       (item: GalleryItem) => {
         if (mode === "select" && onSelectItem) {
           onSelectItem(item.id);
+        } else if (bulkSelectionMode) {
+          toggleBulkSelect(item.id);
         } else {
           lightboxImageSignal.value = item;
           lightboxVisibleSignal.value = true;
           galleryModalLightboxMediaId.value = item.id;
         }
       },
-      [mode, onSelectItem]
+      [mode, onSelectItem, bulkSelectionMode],
     );
 
     const handleCloseLightbox = useCallback(() => {
@@ -384,7 +407,62 @@ export const GalleryModal = React.memo(
 
     const handleItemDeleted = useCallback((id: string) => {
       setAllItems((prev) => prev.filter((it) => it.id !== id));
+      setBulkSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }, []);
+
+    const toggleBulkSelect = useCallback((id: string) => {
+      setBulkSelectedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+    }, []);
+
+    const clearBulkSelection = useCallback(() => {
+      setBulkSelectedIds(new Set());
+    }, []);
+
+    const bulkSelectedItems = useMemo(
+      () => allItems.filter((item) => bulkSelectedIds.has(item.id)),
+      [allItems, bulkSelectedIds],
+    );
+
+    const handleBulkDelete = useCallback(() => {
+      const count = bulkSelectedIds.size;
+      showActionReminder({
+        reminderType: "default",
+        title: `Delete ${count} item${count > 1 ? "s" : ""}?`,
+        message: (
+          <p className="text-sm text-white/70">
+            This will permanently remove {count} item{count > 1 ? "s" : ""} from
+            your library. This action cannot be undone.
+          </p>
+        ),
+        primaryActionText: "Delete",
+        secondaryActionText: "Cancel",
+        primaryActionBtnClassName: "bg-red text-white hover:bg-red/90",
+        onPrimaryAction: async () => {
+          try {
+            const ids = Array.from(bulkSelectedIds);
+            await Promise.allSettled(ids.map((id) => MediaFileDelete(id)));
+            setAllItems((prev) =>
+              prev.filter((it) => !bulkSelectedIds.has(it.id)),
+            );
+            clearBulkSelection();
+          } finally {
+            isActionReminderOpen.value = false;
+          }
+        },
+      });
+    }, [bulkSelectedIds, clearBulkSelection]);
 
     useSignals();
 
@@ -392,7 +470,7 @@ export const GalleryModal = React.memo(
     useEffect(() => {
       if (galleryModalLightboxMediaId.value && allItems.length > 0) {
         const target = allItems.find(
-          (it) => it.id === galleryModalLightboxMediaId.value
+          (it) => it.id === galleryModalLightboxMediaId.value,
         );
         if (target) {
           lightboxImageSignal.value = target;
@@ -425,11 +503,12 @@ export const GalleryModal = React.memo(
               ? galleryModalVisibleViewMode.value &&
                 galleryModalVisibleDuringDrag.value
               : typeof isOpen === "boolean"
-              ? isOpen
-              : true
+                ? isOpen
+                : true
           }
           onClose={() => {
             if (mode === "view") {
+              clearBulkSelection();
               onClose?.() || (galleryModalVisibleViewMode.value = false);
             } else {
               onClose?.();
@@ -438,7 +517,7 @@ export const GalleryModal = React.memo(
           className={twMerge(
             "h-[620px] max-w-4xl rounded-xl",
             mode === "view" &&
-              "h-[640px] min-h-[640px] min-w-[56rem] w-[56rem] max-w-none"
+              "h-[640px] min-h-[640px] min-w-[56rem] w-[56rem] max-w-none",
           )}
           childPadding={false}
           showClose={false}
@@ -462,18 +541,18 @@ export const GalleryModal = React.memo(
                           ? "Select Video"
                           : "Select Videos"
                         : activeFilter === "3d"
-                        ? maxSelections === 1
-                          ? "Select 3D Object"
-                          : "Select 3D Objects"
-                        : activeFilter === "uploaded"
-                        ? maxSelections === 1
-                          ? "Select Upload"
-                          : "Select Uploads"
-                        : activeFilter === "all"
-                        ? "Select Media"
-                        : maxSelections === 1
-                        ? "Select Image"
-                        : "Select Images"
+                          ? maxSelections === 1
+                            ? "Select 3D Object"
+                            : "Select 3D Objects"
+                          : activeFilter === "uploaded"
+                            ? maxSelections === 1
+                              ? "Select Upload"
+                              : "Select Uploads"
+                            : activeFilter === "all"
+                              ? "Select Media"
+                              : maxSelections === 1
+                                ? "Select Image"
+                                : "Select Images"
                       : "My Library"}
                   </h2>
                   {mode === "view" && (
@@ -527,7 +606,7 @@ export const GalleryModal = React.memo(
                       variant="action"
                       onClick={() =>
                         setImageFit((fit) =>
-                          fit === "cover" ? "contain" : "cover"
+                          fit === "cover" ? "contain" : "cover",
                         )
                       }
                       className="relative z-[51] h-9 w-9 bg-ui-controls/60 hover:bg-ui-controls/90"
@@ -587,7 +666,7 @@ export const GalleryModal = React.memo(
                         // Only allow filter changes if no forceFilter was provided
                         if (!forceFilterRef.current) {
                           const filter = FILTERS.find(
-                            (f) => f.label === item.label
+                            (f) => f.label === item.label,
                           );
                           if (filter) setActiveFilter(filter.id);
                         }
@@ -604,6 +683,7 @@ export const GalleryModal = React.memo(
                   <CloseButton
                     onClick={() => {
                       if (mode === "view") {
+                        clearBulkSelection();
                         galleryModalVisibleViewMode.value = false;
                       } else {
                         onClose?.();
@@ -674,7 +754,9 @@ export const GalleryModal = React.memo(
                                     PLACEHOLDER_IMAGES.DEFAULT;
                                   e.currentTarget.style.opacity = "0.3";
                                   // Set the `data-brokenurl` property for debugging the broken images:
-                                  (e.currentTarget as HTMLImageElement).dataset.brokenurl = item.thumbnail || "";
+                                  (
+                                    e.currentTarget as HTMLImageElement
+                                  ).dataset.brokenurl = item.thumbnail || "";
                                   handleImageError(item.thumbnail!);
                                 }}
                                 disableTooltipAndBadge={mode === "select"}
@@ -682,12 +764,17 @@ export const GalleryModal = React.memo(
                                 onDeleted={handleItemDeleted}
                                 onEditClicked={onEditClicked}
                                 maxSelections={maxSelections}
+                                bulkSelected={bulkSelectedIds.has(item.id)}
+                                onBulkSelectToggle={() =>
+                                  toggleBulkSelect(item.id)
+                                }
+                                bulkSelectionMode={bulkSelectionMode}
                               />
                             ))}
                           </div>
                         </div>
                       );
-                    }
+                    },
                   )}
                   {loading && allItems.length > 0 && (
                     <div className="flex justify-center py-4">
@@ -702,6 +789,52 @@ export const GalleryModal = React.memo(
                 </div>
               )}
             </div>
+
+            {mode === "view" && bulkSelectionMode && (
+              <div className="flex items-center justify-between border-t border-ui-panel-border bg-ui-background p-3 py-2 rounded-b-xl">
+                <div className="flex items-center gap-3">
+                  {/* Thumbnail previews of selected items */}
+                  <div className="flex -space-x-1.5">
+                    {bulkSelectedItems.slice(0, 4).map((si) => (
+                      <div
+                        key={si.id}
+                        className="h-8 w-8 rounded overflow-hidden border-2 border-ui-panel bg-black/30 flex-shrink-0"
+                      >
+                        {si.thumbnail ? (
+                          <img
+                            src={si.thumbnail}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-black/50" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium text-base-fg/80">
+                    {bulkSelectedIds.size} selected
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="destructive"
+                    onClick={handleBulkDelete}
+                    className="px-3"
+                    icon={faTrashCan}
+                  >
+                    Delete
+                  </Button>
+                  <button
+                    onClick={clearBulkSelection}
+                    className="flex h-8 w-8 items-center justify-center rounded-md bg-ui-controls/60 hover:bg-ui-controls/90 text-base-fg transition-colors"
+                    aria-label="Clear selection"
+                  >
+                    <FontAwesomeIcon icon={faXmark} className="text-base" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {mode === "select" && (
               <div className="flex items-center justify-between border-t border-ui-panel-border bg-ui-panel p-4 rounded-b-xl">
@@ -761,7 +894,7 @@ export const GalleryModal = React.memo(
         )}
       </>
     );
-  }
+  },
 );
 
 GalleryModal.displayName = "GalleryModal";

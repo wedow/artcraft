@@ -6,6 +6,7 @@ import {
   faDownToLine,
   faGlobe,
   faPencil,
+  faTrashCan,
   faVideo,
   faWandMagicSparkles,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -864,6 +865,7 @@ export function LightboxModal({
 
                 {selectedMediaToken && onDeleteClicked && (
                   <Button
+                    icon={faTrashCan}
                     className="w-full"
                     variant="destructive"
                     onClick={async (e) => {
