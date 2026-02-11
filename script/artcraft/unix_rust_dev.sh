@@ -52,6 +52,7 @@ export WEBKIT_DISABLE_COMPOSITING_MODE=1
 
 echo "Build and run..."
 RUSTFLAGS="-Awarnings" cargo tauri dev \
+  --verbose \
   --no-dev-server \
   --no-dev-server-wait \
   --no-watch \

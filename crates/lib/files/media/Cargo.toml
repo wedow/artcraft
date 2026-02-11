@@ -29,7 +29,8 @@ log = { workspace = true }
 #symphonia = { version = "0.5.2", features = ["aac", "alac", "flac", "isomp4", "mkv", "mp3", "ogg", "vorbis", "wav"] }
 # Opus support still hasn't landed in Symphonia, so we have to use an older version (~0.5) off-master.
 # Opus is the browser's default (only) recording codec: https://blog.addpipe.com/audio-constraints-getusermedia/
-symphonia = { git = "https://github.com/pdeljanov/Symphonia.git", rev = "e1a70095c4409478c1ded499fb8dd4afa540fb90", features = ["aac", "alac", "flac", "isomp4", "mkv", "mp3", "ogg", "opus", "vorbis", "wav"] }
+# symphonia = { git = "https://github.com/pdeljanov/Symphonia.git", rev = "e1a70095c4409478c1ded499fb8dd4afa540fb90", features = ["aac", "alac", "flac", "isomp4", "mkv", "mp3", "ogg", "opus", "vorbis", "wav"] }
+symphonia = { path = "../../../vendor/Symphonia/symphonia", features = ["aac", "alac", "flac", "isomp4", "mkv", "mp3", "ogg", "opus", "vorbis", "wav"] }
 
 [dev-dependencies]
 # None yet
