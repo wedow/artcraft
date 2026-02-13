@@ -29,6 +29,13 @@ pub async fn send_password_reset_email(
     DomainBranding::Storyteller => "FakeYou <noreply@fakeyou.com>",
   };
 
+  let platform = match args.domain_branding {
+    DomainBranding::ArtCraftDotAi |
+    DomainBranding::GetArtCraft => "ArtCraft",
+    DomainBranding::FakeYou => "FakeYou",
+    DomainBranding::Storyteller => "Storyteller.ai",
+  };
+
   let team_name = match args.domain_branding {
     DomainBranding::ArtCraftDotAi |
     DomainBranding::GetArtCraft => "ArtCraft Team",
@@ -50,6 +57,10 @@ pub async fn send_password_reset_email(
   let code = args.verification_token;
 
   let html_message = format!(r#"
+      We received a request to reset your password on {platform}.
+      If this wasn't you, you can safely ignore this email.
+      <br />
+      <br />
       <a href="{link}">Click here to reset your password!</a>
       <br />
       <br />
