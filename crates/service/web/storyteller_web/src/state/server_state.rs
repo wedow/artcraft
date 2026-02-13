@@ -95,6 +95,8 @@ pub struct ServerState {
   
   pub openai: OpenAiData,
   
+  pub resend: ResendData,
+  
   /// Where to store audio uploads for w2l
   pub audio_uploads_bucket_root: String,
 
@@ -312,5 +314,11 @@ pub struct FalData {
 /// OpenAI integration
 #[derive(Clone)]
 pub struct OpenAiData {
+  pub api_key: String,
+}
+
+/// Resend integration
+#[derive(Clone)]
+pub struct ResendData {
   pub api_key: String,
 }

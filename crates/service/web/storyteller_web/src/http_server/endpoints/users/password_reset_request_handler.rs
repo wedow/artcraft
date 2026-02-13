@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
-use log::{error, warn};
+use log::{error, info, warn};
 use serde::Deserialize;
 use sqlx::MySqlPool;
 use strum_macros::Display;
@@ -20,6 +20,9 @@ use mysql_queries::queries::users::user::get::lookup_user_for_login_by_email::lo
 use mysql_queries::queries::users::user::get::lookup_user_for_login_by_username::lookup_user_for_login_by_username;
 use mysql_queries::queries::users::user_password_resets::create_password_reset_request::create_password_reset;
 use server_environment::ServerEnvironment;
+use crate::email::send_password_reset_email::{send_password_reset_email, SendPasswordResetEmailArgs};
+use crate::http_server::requests::get_request_domain_branding::{get_request_domain_branding, DomainBranding};
+use crate::state::server_state::ServerState;
 
 #[derive(Deserialize)]
 pub struct PasswordResetRequestedRequest {
@@ -81,7 +84,8 @@ pub async fn password_reset_request_handler(
     http_request: HttpRequest,
     request: web::Json<PasswordResetRequestedRequest>,
     mysql_pool: web::Data<MySqlPool>,
-    _server_environment: web::Data<ServerEnvironment>,
+    server_environment: web::Data<ServerEnvironment>,
+    server_state: web::Data<ServerState>,
     _sender: web::Data<SmtpEmailSender>,
 ) -> Result<HttpResponse, PasswordResetRequestedErrorResponse> {
 
@@ -134,7 +138,7 @@ pub async fn password_reset_request_handler(
         email_category: EmailCategory::PasswordReset,
         maybe_email_args: Some(EmailSenderJobArgs {
             args: Some(PolymorphicEmailSenderJobArgs::Pr(EmailJobPasswordResetArgs {
-                password_reset_secret_key: Some(secret_key),
+                password_reset_secret_key: Some(secret_key.clone()),
             })),
         }),
         ietf_language_tag,
@@ -153,7 +157,20 @@ pub async fn password_reset_request_handler(
             PasswordResetRequestedRequestError::Internal
         })?;
 
+    let domain_branding = get_request_domain_branding(&http_request)
+        .unwrap_or(DomainBranding::GetArtCraft);
 
+    let server_environment = **server_environment;
+
+    info!("Sending password reset email...");
+
+    send_password_reset_email(SendPasswordResetEmailArgs {
+        email_address_destination: &user.email_address,
+        verification_token: &secret_key,
+        resend_api_key: &server_state.resend.api_key,
+        server_environment,
+        domain_branding,
+    }).await?;
 
     success_response()
 }

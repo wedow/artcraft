@@ -1,2 +1,2 @@
-mod send_password_reset_email;
-mod get_password_reset_url;
+pub mod send_password_reset_email;
+pub mod get_password_reset_url;

@@ -6,27 +6,37 @@ use resend_rs::Resend;
 use server_environment::ServerEnvironment;
 
 pub struct SendPasswordResetEmailArgs<'a> {
-  email_address_destination: &'a str,
-  verification_token: &'a str,
-  resend_client: &'a Resend,
-  server_environment: ServerEnvironment,
-  domain_branding: DomainBranding,
+  pub email_address_destination: &'a str,
+  pub verification_token: &'a str,
+  pub resend_api_key: &'a str,
+  pub server_environment: ServerEnvironment,
+  pub domain_branding: DomainBranding,
 }
 
 pub async fn send_password_reset_email(
   args: SendPasswordResetEmailArgs<'_>
 ) -> AnyhowResult<()> {
-  let resend = Resend::new("re_xxxxxxxxx");
+  let resend = Resend::new(&args.resend_api_key);
 
-  let from = "ArtCraft <noreply@getartcraft.com>";
   let to = [args.email_address_destination];
 
   let subject = "ArtCraft Password Reset";
   
+  let from_address = match args.domain_branding {
+    DomainBranding::ArtCraftDotAi |
+    DomainBranding::GetArtCraft => "ArtCraft <noreply@getartcraft.com>",
+    DomainBranding::FakeYou => "FakeYou <noreply@fakeyou.com>",
+    DomainBranding::Storyteller => "FakeYou <noreply@fakeyou.com>",
+  };
+
   let url = match (args.domain_branding, args.server_environment) {
+    // Legacy FakeYou
     (DomainBranding::FakeYou, ServerEnvironment::Development) => PasswordResetLocation::FakeYouDevelopment,
     (DomainBranding::FakeYou, ServerEnvironment::Production) => PasswordResetLocation::FakeYouProduction,
-    (_, _) => PasswordResetLocation::ArtCraftProduction,
+    // Everything else "development" is ArtCraft Development
+    (_, ServerEnvironment::Development) => PasswordResetLocation::ArtCraftDevelopment,
+    // Everything else "production" is ArtCraft Production
+    (_, ServerEnvironment::Production) => PasswordResetLocation::ArtCraftProduction,
   };
 
   let link = get_password_reset_url(args.verification_token, url);
@@ -45,10 +55,10 @@ pub async fn send_password_reset_email(
       Storyteller.ai (FakeYou) Team
     "#);
 
-  let email = CreateEmailBaseOptions::new(from, to, subject)
+  let email = CreateEmailBaseOptions::new(from_address, to, subject)
       .with_html(&html_message);
 
-  let _email = args.resend_client.emails.send(email).await?;
+  let _email = resend.emails.send(email).await?;
 
   Ok(())
 }
