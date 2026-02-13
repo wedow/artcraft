@@ -1,5 +1,5 @@
 use std::fmt::Display;
-
+use std::sync::Arc;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use log::{error, info, warn};
@@ -85,7 +85,7 @@ pub async fn password_reset_request_handler(
     request: web::Json<PasswordResetRequestedRequest>,
     mysql_pool: web::Data<MySqlPool>,
     server_environment: web::Data<ServerEnvironment>,
-    server_state: web::Data<ServerState>,
+    server_state: web::Data<Arc<ServerState>>,
     _sender: web::Data<SmtpEmailSender>,
 ) -> Result<HttpResponse, PasswordResetRequestedErrorResponse> {
 

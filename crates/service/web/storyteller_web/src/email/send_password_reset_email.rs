@@ -21,12 +21,19 @@ pub async fn send_password_reset_email(
   let to = [args.email_address_destination];
 
   let subject = "ArtCraft Password Reset";
-  
+
   let from_address = match args.domain_branding {
     DomainBranding::ArtCraftDotAi |
     DomainBranding::GetArtCraft => "ArtCraft <noreply@getartcraft.com>",
     DomainBranding::FakeYou => "FakeYou <noreply@fakeyou.com>",
     DomainBranding::Storyteller => "FakeYou <noreply@fakeyou.com>",
+  };
+
+  let team_name = match args.domain_branding {
+    DomainBranding::ArtCraftDotAi |
+    DomainBranding::GetArtCraft => "ArtCraft Team",
+    DomainBranding::FakeYou => "FakeYou Team",
+    DomainBranding::Storyteller => "Storyteller.ai Team",
   };
 
   let url = match (args.domain_branding, args.server_environment) {
@@ -52,7 +59,7 @@ pub async fn send_password_reset_email(
       Thank You,
       <br />
       <br />
-      Storyteller.ai (FakeYou) Team
+      {team_name}
     "#);
 
   let email = CreateEmailBaseOptions::new(from_address, to, subject)
