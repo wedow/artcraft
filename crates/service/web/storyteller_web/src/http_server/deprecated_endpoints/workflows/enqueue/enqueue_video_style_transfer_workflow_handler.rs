@@ -253,6 +253,7 @@ pub async fn enqueue_video_style_transfer_workflow_handler(
   let mut watermark_type = match branding {
     Some(DomainBranding::FakeYou) => Some(WatermarkType::FakeYou),
     Some(DomainBranding::Storyteller) => Some(WatermarkType::Storyteller),
+    Some(_) => Some(WatermarkType::Storyteller),
     None => Some(WatermarkType::Storyteller),
   };
 

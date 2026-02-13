@@ -224,6 +224,7 @@ pub async fn enqueue_face_fusion_workflow_handler(
   let mut watermark_type = match branding {
     Some(DomainBranding::FakeYou) => Some(WatermarkType::FakeYou),
     Some(DomainBranding::Storyteller) => Some(WatermarkType::Storyteller),
+    Some(_) => Some(WatermarkType::Storyteller),
     None => Some(WatermarkType::Storyteller),
   };
 

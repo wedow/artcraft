@@ -8,6 +8,8 @@ pub fn get_media_domain(http_request: &HttpRequest) -> MediaDomain {
       .map(|domain| match domain {
           DomainBranding::FakeYou => MediaDomain::FakeYou,
           DomainBranding::Storyteller => MediaDomain::Storyteller,
+          DomainBranding::ArtCraftDotAi => MediaDomain::Storyteller,
+          DomainBranding::GetArtCraft => MediaDomain::Storyteller,
       })
       .unwrap_or(MediaDomain::FakeYou)
 }

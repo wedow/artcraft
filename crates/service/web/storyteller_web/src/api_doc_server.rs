@@ -37,6 +37,7 @@ pub mod threads;
 pub mod util;
 
 pub mod docs;
+mod email;
 
 #[actix_web::main]
 async fn main() -> Result<(), impl Error> {

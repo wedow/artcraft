@@ -5,6 +5,8 @@ use log::{debug, warn};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum DomainBranding {
+  ArtCraftDotAi,
+  GetArtCraft,
   FakeYou,
   Storyteller,
 }
@@ -59,6 +61,8 @@ fn match_possible_hostname(maybe_hostname: Option<&str>) -> Option<DomainBrandin
     None => return None,
   };
   match hostname {
+    host if host.contains("artcraft.ai") => Some(DomainBranding::ArtCraftDotAi),
+    host if host.contains("getartcraft") => Some(DomainBranding::GetArtCraft),
     host if host.contains("fakeyou") => Some(DomainBranding::FakeYou),
     host if host.contains("storyteller") => Some(DomainBranding::Storyteller),
     _ => None,
@@ -73,6 +77,39 @@ mod tests {
 
   mod origin_header {
     use super::*;
+    
+    #[test]
+    fn getartcraft_dot_com() {
+      let request = TestRequest::get()
+          .insert_header(("origin", "https://getartcraft.com"))
+          .to_http_request();
+      assert_eq!(get_request_domain_branding(&request), Some(DomainBranding::GetArtCraft));
+    }
+    
+    #[test]
+    fn api_dot_getartcraft_dot_com() {
+      let request = TestRequest::get()
+          .insert_header(("origin", "https://api.getartcraft.com"))
+          .to_http_request();
+      assert_eq!(get_request_domain_branding(&request), Some(DomainBranding::GetArtCraft));
+    }
+
+
+    #[test]
+    fn artcraft_dot_ai() {
+      let request = TestRequest::get()
+          .insert_header(("origin", "https://artcraft.ai"))
+          .to_http_request();
+      assert_eq!(get_request_domain_branding(&request), Some(DomainBranding::ArtCraftDotAi));
+    }
+
+    #[test]
+    fn api_dot_artcraft_dot_ai() {
+      let request = TestRequest::get()
+          .insert_header(("origin", "https://api.artcraft.ai"))
+          .to_http_request();
+      assert_eq!(get_request_domain_branding(&request), Some(DomainBranding::ArtCraftDotAi));
+    }
 
     #[test]
     fn fakeyou_dot_com() {
@@ -110,6 +147,21 @@ mod tests {
   mod host_header {
     use super::*;
 
+    fn getartcraft_dot_com() {
+      let request = TestRequest::get()
+          .insert_header(("host", "getartcraft.com"))
+          .to_http_request();
+      assert_eq!(get_request_domain_branding(&request), Some(DomainBranding::GetArtCraft));
+    }
+
+    #[test]
+    fn api_dot_getartcraft_dot_com() {
+      let request = TestRequest::get()
+          .insert_header(("host", "api.getartcraft.com"))
+          .to_http_request();
+      assert_eq!(get_request_domain_branding(&request), Some(DomainBranding::GetArtCraft));
+    }
+    
     #[test]
     fn fakeyou_dot_com() {
       let request = TestRequest::get()

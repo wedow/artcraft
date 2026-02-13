@@ -113,6 +113,9 @@ language-tags = "0.3.2" # Parsing single tags richly
 # TODO/NB: This is just for Twitch, but we might need it later.
 reqwest.workspace = true
 
+# Email
+resend-rs = "0.21.0"
+
 # Runtime
 tokio.workspace = true
 
