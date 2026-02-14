@@ -33,7 +33,6 @@ QUERY = """
   delete
   from media_files
   where maybe_creator_user_token is null
-  and media_type IN ("audio", "wav")
   limit 10000
 """
 
@@ -83,15 +82,17 @@ def run_migration():
   try:
     while True:
       try:
+        batch_start = time.monotonic()
         with conn.cursor() as cursor:
           cursor.execute(QUERY)
           affected = cursor.rowcount
 
         total_affected += affected
         failures = 0
-        runtime = int(time.monotonic() - start_time)
+        batch_time = int(time.monotonic() - batch_start)
+        elapsed = int(time.monotonic() - start_time)
         now = datetime.now().strftime("%H:%M:%S")
-        print(f"  Batch: {affected} rows | Total: {total_affected} | Runtime: {runtime}s | Time: {now}")
+        print(f"  Batch: {affected} rows | Total: {total_affected} | Time: {batch_time}s | Elapsed: {elapsed}s | Clock: {now}")
 
         if affected == 0:
           print("No more rows to process. Done.")
