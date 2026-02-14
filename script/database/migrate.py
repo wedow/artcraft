@@ -14,6 +14,7 @@ Secrets file (script/database/secrets.toml):
 import sys
 import time
 import tomllib
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -29,9 +30,11 @@ SECRETS_PATH = "secrets.toml"
 # -- Migration query to run in batches --
 # Tweak this as needed. Use LIMIT to control batch size.
 QUERY = """
-DELETE FROM some_table
-WHERE created_at < DATE_SUB(NOW(), INTERVAL 90 DAY)
-LIMIT 1000
+  delete
+  from media_files
+  where maybe_creator_user_token is null
+  and media_type IN ("audio", "wav")
+  limit 10000
 """
 
 BATCH_PAUSE_SECONDS = 0.5
@@ -85,7 +88,8 @@ def run_migration():
 
         total_affected += affected
         failures = 0
-        print(f"  Batch: {affected} rows | Total: {total_affected}")
+        now = datetime.now().strftime("%H:%M:%S")
+        print(f"  Batch: {affected} rows | Total: {total_affected} | Time: {now}")
 
         if affected == 0:
           print("No more rows to process. Done.")
