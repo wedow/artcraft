@@ -92,7 +92,7 @@ def run_migration():
         batch_time = int(time.monotonic() - batch_start)
         elapsed = int(time.monotonic() - start_time)
         now = datetime.now().strftime("%H:%M:%S")
-        print(f"  Batch: {affected} rows | Total: {total_affected} | Time: {batch_time}s | Elapsed: {elapsed}s | Clock: {now}")
+        print(f"  Batch: {affected} rows {batch_time}s | Total: {total_affected} rows {elapsed}s | Clock: {now}")
 
         if affected == 0:
           print("No more rows to process. Done.")
