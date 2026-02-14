@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""
+Database migration script for running queries in a loop with failure fallback.
+Reads MySQL credentials from a TOML secrets file.
+
+Requirements:
+    pip install pymysql
+
+Secrets file (script/database/secrets.toml):
+    [database]
+    url = "mysql://user:password@host:3306/dbname"
+"""
+
+import sys
+import time
+import tomllib
+from pathlib import Path
+from urllib.parse import urlparse
+
+try:
+    import pymysql
+except ImportError:
+    print("pymysql is required: pip install pymysql")
+    sys.exit(1)
+
+
+SECRETS_PATH = Path(__file__).parent / "secrets.toml"
+
+# -- Migration query to run in batches --
+# Tweak this as needed. Use LIMIT to control batch size.
+QUERY = """
+DELETE FROM some_table
+WHERE created_at < DATE_SUB(NOW(), INTERVAL 90 DAY)
+LIMIT 1000
+"""
+
+BATCH_PAUSE_SECONDS = 0.5
+MAX_CONSECUTIVE_FAILURES = 5
+FAILURE_BACKOFF_SECONDS = 5
+
+
+def load_config():
+    with open(SECRETS_PATH, "rb") as f:
+        config = tomllib.load(f)
+    url = config["database"]["url"]
+    parsed = urlparse(url)
+    return {
+        "host": parsed.hostname,
+        "port": parsed.port or 3306,
+        "user": parsed.username,
+        "password": parsed.password,
+        "database": parsed.path.lstrip("/"),
+    }
+
+
+def connect(config):
+    return pymysql.connect(
+        host=config["host"],
+        port=config["port"],
+        user=config["user"],
+        password=config["password"],
+        database=config["database"],
+        connect_timeout=10,
+        read_timeout=30,
+        write_timeout=30,
+        autocommit=True,
+    )
+
+
+def run_migration():
+    config = load_config()
+    conn = connect(config)
+    total_affected = 0
+    failures = 0
+
+    print(f"Connected to {config['host']}/{config['database']}")
+    print(f"Running query:\n{QUERY.strip()}\n")
+
+    try:
+        while True:
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(QUERY)
+                    affected = cursor.rowcount
+
+                total_affected += affected
+                failures = 0
+                print(f"  Batch: {affected} rows | Total: {total_affected}")
+
+                if affected == 0:
+                    print("No more rows to process. Done.")
+                    break
+
+                time.sleep(BATCH_PAUSE_SECONDS)
+
+            except (pymysql.OperationalError, pymysql.InterfaceError) as e:
+                failures += 1
+                print(f"  Error ({failures}/{MAX_CONSECUTIVE_FAILURES}): {e}")
+
+                if failures >= MAX_CONSECUTIVE_FAILURES:
+                    print("Too many consecutive failures. Aborting.")
+                    sys.exit(1)
+
+                print(f"  Reconnecting in {FAILURE_BACKOFF_SECONDS}s...")
+                time.sleep(FAILURE_BACKOFF_SECONDS)
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+                conn = connect(config)
+
+    except KeyboardInterrupt:
+        print(f"\nInterrupted. Total rows affected: {total_affected}")
+    finally:
+        conn.close()
+
+    print(f"Finished. Total rows affected: {total_affected}")
+
+
+if __name__ == "__main__":
+    run_migration()
