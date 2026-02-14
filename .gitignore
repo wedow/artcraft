@@ -32,6 +32,9 @@ script/production_database_secret_backup.sh
 script/production_database_secret_connect.sh
 script/socat_dev_database_connect.sh
 
+# Python virtual envs (named by convention)
+venv/
+
 # Scratch data
 scratch/
 test_data/temp/
