@@ -75,6 +75,7 @@ def run_migration():
   conn = connect(config)
   total_affected = 0
   failures = 0
+  start_time = time.monotonic()
 
   print(f"Connected to {config['host']}/{config['database']}")
   print(f"Running query:\n{QUERY.strip()}\n")
@@ -88,8 +89,9 @@ def run_migration():
 
         total_affected += affected
         failures = 0
+        runtime = int(time.monotonic() - start_time)
         now = datetime.now().strftime("%H:%M:%S")
-        print(f"  Batch: {affected} rows | Total: {total_affected} | Time: {now}")
+        print(f"  Batch: {affected} rows | Total: {total_affected} | Runtime: {runtime}s | Time: {now}")
 
         if affected == 0:
           print("No more rows to process. Done.")
