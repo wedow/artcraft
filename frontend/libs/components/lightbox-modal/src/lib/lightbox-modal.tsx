@@ -120,7 +120,11 @@ export function LightboxModal({
   const [prompt, setPrompt] = useState<string | null>(null);
   const [promptLoading, setPromptLoading] = useState<boolean>(false);
   const [hasPromptToken, setHasPromptToken] = useState<boolean>(false);
-  const [isPromptHovered, setIsPromptHovered] = useState<boolean>(false);
+  const [isPromptExpanded, setIsPromptExpanded] = useState<boolean>(false);
+  const promptRef = useRef<HTMLDivElement>(null);
+  const [isPromptClamped, setIsPromptClamped] = useState<boolean>(false);
+  const [promptCopied, setPromptCopied] = useState<boolean>(false);
+  const promptCopiedTimeoutRef = useRef<number | null>(null);
   const [generationProvider, setGenerationProvider] = useState<string | null>(
     null,
   );
@@ -151,6 +155,7 @@ export function LightboxModal({
       setSelectedIndex(0);
       setMediaLoaded(false);
       setShareCopied(false);
+      setIsPromptExpanded(false);
       if (shareCopiedTimeoutRef.current) {
         window.clearTimeout(shareCopiedTimeoutRef.current);
         shareCopiedTimeoutRef.current = null;
@@ -233,6 +238,23 @@ export function LightboxModal({
 
     fetchPrompt();
   }, [currentMediaId]);
+
+  // Detect if prompt text is clamped (overflows the 4-line clamp)
+  useEffect(() => {
+    if (!promptRef.current || !prompt || promptLoading) {
+      setIsPromptClamped(false);
+      return;
+    }
+    // Use requestAnimationFrame to ensure DOM has painted
+    const raf = requestAnimationFrame(() => {
+      if (promptRef.current) {
+        setIsPromptClamped(
+          promptRef.current.scrollHeight > promptRef.current.clientHeight,
+        );
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [prompt, promptLoading, isPromptExpanded]);
 
   useEffect(() => {
     const fetchBatch = async () => {
@@ -533,7 +555,7 @@ export function LightboxModal({
 
           {/* info + actions - fixed width */}
           <div className="flex h-full w-[280px] shrink-0 flex-col">
-            <div className="flex-1 space-y-5 text-base-fg">
+            <div className="flex-1 overflow-y-auto space-y-5 text-base-fg min-h-0 pb-2">
               {/* <div className="text-xl font-medium">
               {title || "Image Generation"}
             </div> */}
@@ -552,25 +574,48 @@ export function LightboxModal({
               {hasPromptToken && (
                 <>
                   {/* Prompt */}
-                  <div className="relative space-y-1.5">
-                    <div className="text-sm font-medium text-base-fg/90">
-                      Prompt
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium text-base-fg/90">
+                        Prompt
+                      </div>
+                      {!promptLoading && prompt && (
+                        <button
+                          className="flex items-center gap-1.5 text-xs text-base-fg/60 hover:text-base-fg transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!prompt) return;
+                            navigator.clipboard
+                              .writeText(prompt)
+                              .catch(() => {});
+                            toast.success("Prompt copied");
+                            setPromptCopied(true);
+                            if (promptCopiedTimeoutRef.current) {
+                              window.clearTimeout(
+                                promptCopiedTimeoutRef.current,
+                              );
+                            }
+                            promptCopiedTimeoutRef.current = window.setTimeout(
+                              () => {
+                                setPromptCopied(false);
+                                promptCopiedTimeoutRef.current = null;
+                              },
+                              1500,
+                            );
+                          }}
+                        >
+                          <FontAwesomeIcon
+                            icon={promptCopied ? faCheck : faCopy}
+                            className="h-3 w-3"
+                          />
+                          <span>{promptCopied ? "Copied!" : "Copy"}</span>
+                        </button>
+                      )}
                     </div>
                     <div
-                      className={twMerge(
-                        "relative text-sm text-base-fg break-words p-3 rounded-lg cursor-pointer transition-colors duration-100 leading-relaxed",
-                      )}
+                      className="text-sm text-base-fg break-words p-3 rounded-lg leading-relaxed"
                       style={{
-                        background: isPromptHovered
-                          ? "rgb(var(--st-controls-rgb) / 0.30)"
-                          : "rgb(var(--st-controls-rgb) / 0.20)",
-                      }}
-                      onMouseEnter={() => setIsPromptHovered(true)}
-                      onMouseLeave={() => setIsPromptHovered(false)}
-                      onClick={() => {
-                        if (!prompt) return;
-                        navigator.clipboard.writeText(prompt).catch(() => {});
-                        toast.success("Prompt copied");
+                        background: "rgb(var(--st-controls-rgb) / 0.20)",
                       }}
                     >
                       {promptLoading ? (
@@ -581,32 +626,51 @@ export function LightboxModal({
                           </span>
                         </div>
                       ) : (
-                        prompt || (
-                          <span className="text-sm text-base-fg">
-                            No prompt
-                          </span>
-                        )
+                        <div
+                          ref={promptRef}
+                          className={twMerge(
+                            !isPromptExpanded && "line-clamp-4",
+                          )}
+                        >
+                          {prompt || (
+                            <span className="text-sm text-base-fg">
+                              No prompt
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
 
-                    {!promptLoading && (
-                      <div
-                        className={twMerge(
-                          "pointer-events-none absolute inset-0 flex items-end justify-end opacity-0 transition-opacity duration-50",
-                          isPromptHovered && "opacity-100",
-                        )}
-                      >
-                        <div
-                          className="flex items-center gap-1 text-xs text-base-fg backdrop-blur-md p-1.5 rounded-tl-lg rounded-br-lg"
-                          style={{
-                            background: "rgb(var(--st-controls-rgb) / 0.80)",
+                    {!promptLoading &&
+                      prompt &&
+                      (isPromptClamped || isPromptExpanded) && (
+                        <button
+                          className="flex w-full items-center justify-center gap-1 text-xs text-base-fg/70 hover:text-base-fg transition-colors py-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsPromptExpanded((prev) => !prev);
                           }}
                         >
-                          <FontAwesomeIcon icon={faCopy} className="h-3 w-3" />
-                          <span>Copy prompt</span>
-                        </div>
-                      </div>
-                    )}
+                          <span>{isPromptExpanded ? "Hide" : "See all"}</span>
+                          <svg
+                            className={twMerge(
+                              "h-3 w-3 transition-transform duration-200",
+                              isPromptExpanded && "rotate-180",
+                            )}
+                            viewBox="0 0 12 12"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M2.5 4.5L6 8L9.5 4.5"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </button>
+                      )}
                   </div>
 
                   {contextImages && contextImages.length > 0 && (

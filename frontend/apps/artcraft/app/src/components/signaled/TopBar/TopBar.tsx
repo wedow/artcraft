@@ -21,7 +21,10 @@ import { ProviderBillingModal } from "@storyteller/provider-billing-modal";
 import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
 import { useSubscriptionState } from "@storyteller/subscription";
 import { DownloadUrl } from "@storyteller/tauri-api";
-import { useCreditsBalanceChangedEvent, useSubscriptionPlanChangedEvent } from "@storyteller/tauri-events";
+import {
+  useCreditsBalanceChangedEvent,
+  useSubscriptionPlanChangedEvent,
+} from "@storyteller/tauri-events";
 import {
   useTauriPlatform,
   useTauriWindowControls,
@@ -251,9 +254,7 @@ export const TopBar = ({ pageName }: Props) => {
   ) => {
     try {
       if (mediaId) {
-        useImageTo3DWorldStore
-          .getState()
-          .setPendingExternalImage(url, mediaId);
+        useImageTo3DWorldStore.getState().setPendingExternalImage(url, mediaId);
       }
       useTabStore.getState().setActiveTab("IMAGE_TO_3D_WORLD");
       galleryModalVisibleViewMode.value = false;
@@ -569,7 +570,7 @@ export const TopBar = ({ pageName }: Props) => {
       />
 
       <ProviderSetupModal />
-      <ProviderBillingModal />
+      <ProviderBillingModal isVideoPage={tabStore.activeTabId === "VIDEO"} />
     </>
   );
 };

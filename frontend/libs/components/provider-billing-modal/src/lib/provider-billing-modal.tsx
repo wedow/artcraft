@@ -7,15 +7,22 @@ import { ArtcraftBillingBlock } from "./artcraft/ArtcraftBillingBlock";
 import { twMerge } from "tailwind-merge";
 
 interface ProviderBillingModalProps {
+  isVideoPage?: boolean;
 }
 
 export function ProviderBillingModal({
+  isVideoPage = false,
 }: ProviderBillingModalProps) {
   const [showModal, setShowModal] = useState(false);
-  const [provider, setProvider] = useState<GenerationProvider>(GenerationProvider.Artcraft);
+  const [provider, setProvider] = useState<GenerationProvider>(
+    GenerationProvider.Artcraft,
+  );
 
   useShowProviderBillingModalEvent(async (event) => {
-    console.log("Show provider billing modal event received from Tauri:", event);
+    console.log(
+      "Show provider billing modal event received from Tauri:",
+      event,
+    );
     setProvider(event.provider);
     setShowModal(true);
   });
@@ -32,7 +39,7 @@ export function ProviderBillingModal({
       block = <GenericProviderBillingBlock provider={provider} />;
       break;
     case GenerationProvider.Artcraft:
-      block = <ArtcraftBillingBlock />;
+      block = <ArtcraftBillingBlock isVideoPage={isVideoPage} />;
       break;
   }
 
@@ -46,14 +53,18 @@ export function ProviderBillingModal({
       }}
       className={twMerge(
         "bg-ui-panel border border-ui-panel-border transition-all duration-300 overflow-y-auto",
-        isArtcraft ? "max-w-screen-2xl max-h-[90vh]" : "max-w-2xl max-h-[500px]"
+        isArtcraft
+          ? "max-w-screen-2xl max-h-[90vh]"
+          : "max-w-2xl max-h-[500px]",
       )}
       showClose={true}
     >
-      <div className={twMerge(
-        "flex flex-col items-center justify-center",
-        isArtcraft ? "h-full w-full" : "gap-6 p-6"
-      )}>
+      <div
+        className={twMerge(
+          "flex flex-col items-center justify-center",
+          isArtcraft ? "h-full w-full" : "gap-6 p-6",
+        )}
+      >
         {block}
       </div>
     </Modal>
