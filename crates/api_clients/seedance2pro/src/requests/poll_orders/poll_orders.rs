@@ -21,10 +21,6 @@ const FIREFOX_USER_AGENT: &str =
 
 pub struct PollOrdersArgs<'a> {
   pub session: &'a Seedance2ProSession,
-
-  /// Order IDs to filter for. The API always returns recent orders; we filter client-side.
-  /// If empty, all orders in the response are returned.
-  pub order_ids: Vec<String>,
 }
 
 pub struct PollOrdersResponse {
@@ -97,7 +93,7 @@ pub struct OrderStatus {
 // --- Implementation ---
 
 pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse, Seedance2ProError> {
-  info!("Polling orders (filter: {:?})", args.order_ids);
+  info!("Polling orders...");
 
   let client = Client::builder()
     .emulation(Emulation::Firefox143)
@@ -156,7 +152,6 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
 
   let orders: Vec<OrderStatus> = raw_orders
     .into_iter()
-    .filter(|o| args.order_ids.is_empty() || args.order_ids.contains(&o.order_id))
     .map(|o| OrderStatus {
       order_id: o.order_id,
       task_status: TaskStatus::from_str(&o.task_status),
@@ -198,7 +193,6 @@ mod tests {
     let session = test_session()?;
     let args = PollOrdersArgs {
       session: &session,
-      order_ids: vec![],
     };
     let result = poll_orders(args).await?;
     println!("Orders returned: {}", result.orders.len());
@@ -210,28 +204,4 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  #[ignore] // manually test — requires real cookies
-  async fn test_poll_specific_orders() -> AnyhowResult<()> {
-    setup_test_logging(LevelFilter::Trace);
-    let session = test_session()?;
-    let args = PollOrdersArgs {
-      session: &session,
-      order_ids: vec![
-        "ord_zfrcdtgscx506j60n7oq0lp9".to_string(),
-        "ord_t0uhyqwfphrzakxwi6w6ihek".to_string(),
-      ],
-    };
-    let result = poll_orders(args).await?;
-    println!("Orders returned: {}", result.orders.len());
-    for order in &result.orders {
-      println!("  {} | {:?} | url={:?} | fail={:?}",
-        order.order_id, order.task_status, order.result_url, order.fail_reason);
-      for video in &order.results {
-        println!("    video: {} ({}x{})", video.url, video.width, video.height);
-      }
-    }
-    assert_eq!(1, 2); // NB: Intentional failure to inspect output.
-    Ok(())
-  }
 }
