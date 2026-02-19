@@ -60,6 +60,7 @@ pub struct PrepareImageUploadArgs<'a> {
 pub struct PrepareImageUploadResponse {
   /// The signed URL to upload the image to (Cloudflare R2 / S3-compatible).
   pub upload_url: String,
+
   /// The material path that was generated for this upload.
   pub material_path: String,
 }
