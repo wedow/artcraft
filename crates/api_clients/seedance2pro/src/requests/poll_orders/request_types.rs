@@ -19,8 +19,7 @@ pub(super) struct BatchResponseData {
 #[serde(rename_all = "camelCase")]
 pub(super) struct OrdersResponseJson {
   pub orders: Vec<RawOrder>,
-  #[allow(dead_code)]
-  pub next_cursor: Option<String>,
+  pub next_cursor: Option<u64>,
 }
 
 #[derive(Deserialize, Debug)]

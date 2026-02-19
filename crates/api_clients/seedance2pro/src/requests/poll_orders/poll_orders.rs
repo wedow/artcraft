@@ -9,24 +9,38 @@ use wreq_util::Emulation;
 
 const GET_ORDERS_BASE_URL: &str = "https://seedance2-pro.com/api/trpc/userOrder.getOrders";
 
-/// The fixed tRPC input for fetching recent orders (limit 30, forward direction).
-const ORDERS_INPUT_JSON: &str =
-  r#"{"0":{"json":{"limit":30,"format":null,"direction":"forward"},"meta":{"values":{"format":["undefined"]},"v":1}}}"#;
-
 const FIREFOX_USER_AGENT: &str =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0";
 
+/// Builds the tRPC `input` JSON for the getOrders endpoint.
+/// When `cursor` is `Some`, it is included in the JSON payload.
+fn build_input_json(cursor: Option<u64>) -> String {
+  match cursor {
+    None => r#"{"0":{"json":{"limit":30,"format":null,"direction":"forward"},"meta":{"values":{"format":["undefined"]},"v":1}}}"#.to_string(),
+    Some(c) => format!(
+      r#"{{"0":{{"json":{{"limit":30,"format":null,"cursor":{cursor},"direction":"forward"}},"meta":{{"values":{{"format":["undefined"]}},"v":1}}}}}}"#,
+      cursor = c
+    ),
+  }
+}
 
 // --- Args & response ---
 
 pub struct PollOrdersArgs<'a> {
   pub session: &'a Seedance2ProSession,
+
+  /// Optional cursor from a previous `PollOrdersResponse::next_cursor`.
+  /// When `None`, the most recent orders are returned.
+  pub cursor: Option<u64>,
 }
 
 pub struct PollOrdersResponse {
   pub orders: Vec<OrderStatus>,
-}
 
+  /// Present when there are more orders to fetch.
+  /// Pass this value as `PollOrdersArgs::cursor` in the next call.
+  pub next_cursor: Option<u64>,
+}
 
 // --- Public types ---
 
@@ -90,10 +104,13 @@ pub struct OrderStatus {
   /// ISO 8601 creation timestamp (e.g. `"2026-02-19T01:20:50.398Z"`).
   pub created_at: String,
 }
+
 // --- Implementation ---
 
 pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse, Seedance2ProError> {
-  info!("Polling orders...");
+  info!("Polling orders (cursor: {:?})...", args.cursor);
+
+  let input_json = build_input_json(args.cursor);
 
   let client = Client::builder()
     .emulation(Emulation::Firefox143)
@@ -103,7 +120,7 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
   let cookie = args.session.cookies.as_str();
 
   let response = client.get(GET_ORDERS_BASE_URL)
-    .query(&[("batch", "1"), ("input", ORDERS_INPUT_JSON)])
+    .query(&[("batch", "1"), ("input", input_json.as_str())])
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
     .header("Accept-Language", "en-US,en;q=0.9")
@@ -139,7 +156,7 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
   let batch_response: Vec<BatchResponseItem> = serde_json::from_str(&response_body)
     .map_err(|err| Seedance2ProGenericApiError::SerdeResponseParseErrorWithBody(err, response_body.clone()))?;
 
-  let raw_orders = batch_response
+  let json = batch_response
     .into_iter()
     .next()
     .ok_or_else(|| Seedance2ProGenericApiError::UncategorizedBadResponse(
@@ -147,10 +164,11 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
     ))?
     .result
     .data
-    .json
-    .orders;
+    .json;
 
-  let orders: Vec<OrderStatus> = raw_orders
+  let next_cursor = json.next_cursor;
+
+  let orders: Vec<OrderStatus> = json.orders
     .into_iter()
     .map(|o| OrderStatus {
       order_id: o.order_id,
@@ -167,9 +185,9 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
     })
     .collect();
 
-  info!("Polled {} matching orders", orders.len());
+  info!("Polled {} orders, next_cursor: {:?}", orders.len(), next_cursor);
 
-  Ok(PollOrdersResponse { orders })
+  Ok(PollOrdersResponse { orders, next_cursor })
 }
 
 #[cfg(test)]
@@ -191,11 +209,9 @@ mod tests {
   async fn test_poll_all_orders() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
     let session = test_session()?;
-    let args = PollOrdersArgs {
-      session: &session,
-    };
-    let result = poll_orders(args).await?;
+    let result = poll_orders(PollOrdersArgs { session: &session, cursor: None }).await?;
     println!("Orders returned: {}", result.orders.len());
+    println!("Next cursor: {:?}", result.next_cursor);
     for order in &result.orders {
       println!("  {} | {:?} | result_url={:?} | fail={:?}",
         order.order_id, order.task_status, order.result_url, order.fail_reason);
@@ -204,4 +220,53 @@ mod tests {
     Ok(())
   }
 
+  #[tokio::test]
+  #[ignore] // manually test — requires real cookies and a known cursor value
+  async fn test_poll_with_cursor() -> AnyhowResult<()> {
+    setup_test_logging(LevelFilter::Trace);
+    let session = test_session()?;
+    // Use the cursor value returned from a prior call (e.g. 394062 from the example responses).
+    let cursor: u64 = 394062;
+    let result = poll_orders(PollOrdersArgs { session: &session, cursor: Some(cursor) }).await?;
+    println!("Orders returned (with cursor {}): {}", cursor, result.orders.len());
+    println!("Next cursor: {:?}", result.next_cursor);
+    for order in &result.orders {
+      println!("  {} | {:?} | result_url={:?} | fail={:?}",
+        order.order_id, order.task_status, order.result_url, order.fail_reason);
+    }
+    assert_eq!(1, 2); // NB: Intentional failure to inspect output.
+    Ok(())
+  }
+
+  #[tokio::test]
+  #[ignore] // manually test — requires real cookies; exhausts all pages
+  async fn test_poll_all_pages() -> AnyhowResult<()> {
+    setup_test_logging(LevelFilter::Trace);
+    let session = test_session()?;
+
+    let mut cursor: Option<u64> = None;
+    let mut page = 0usize;
+    let mut total_orders = 0usize;
+
+    loop {
+      page += 1;
+      let result = poll_orders(PollOrdersArgs { session: &session, cursor }).await?;
+      let page_count = result.orders.len();
+      total_orders += page_count;
+
+      println!("Page {}: {} orders, next_cursor: {:?}", page, page_count, result.next_cursor);
+      for order in &result.orders {
+        println!("  {} | {:?}", order.order_id, order.task_status);
+      }
+
+      cursor = result.next_cursor;
+      if cursor.is_none() {
+        break;
+      }
+    }
+
+    println!("Total orders across {} pages: {}", page, total_orders);
+    assert_eq!(1, 2); // NB: Intentional failure to inspect output.
+    Ok(())
+  }
 }
