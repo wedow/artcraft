@@ -232,7 +232,7 @@ mod tests {
     let session = test_session()?;
     let args = GenerateVideoArgs {
       session: &session,
-      prompt: "A shiba inu eating a cake in a fancy kitchen.".to_string(),
+      prompt: "A corgi eating a cake in a fancy kitchen.".to_string(),
       resolution: Resolution::Square1x1,
       duration_seconds: 5,
       batch_count: BatchCount::One,
@@ -256,11 +256,11 @@ mod tests {
     let session = test_session()?;
     let args = GenerateVideoArgs {
       session: &session,
-      prompt: "A man stands up from his desk and smiles.".to_string(),
+      prompt: "A dog shakes the glasses off its head. The camera pans out as the shiba shakes. The shiba barks.".to_string(),
       resolution: Resolution::Landscape16x9,
-      duration_seconds: 5,
+      duration_seconds: 15,
       batch_count: BatchCount::One,
-      start_frame_url: Some("https://static.seedance2-pro.com/materials/20260219/test.png".to_string()),
+      start_frame_url: Some("https://static.seedance2-pro.com/materials/20260219/1771496300184-fb32e08c.jpg".to_string()),
       end_frame_url: None,
       reference_image_urls: None,
     };
@@ -279,15 +279,15 @@ mod tests {
     let session = test_session()?;
     let args = GenerateVideoArgs {
       session: &session,
-      prompt: "Scenic landscape from @1 with a shiba from @2 wearing glasses.".to_string(),
+      prompt: "The dog in @2 is in the office at @1 without the man. The office is dark and moonlight streams in through the windows. Particles of dust gleam in the moon beams. Suddenly, the dog jumps on the desk and barks.".to_string(),
       resolution: Resolution::Standard4x3,
-      duration_seconds: 5,
+      duration_seconds: 10,
       batch_count: BatchCount::One,
       start_frame_url: None,
       end_frame_url: None,
       reference_image_urls: Some(vec![
-        "https://static.seedance2-pro.com/materials/20260219/test1.png".to_string(),
-        "https://static.seedance2-pro.com/materials/20260219/test2.jpg".to_string(),
+        "https://static.seedance2-pro.com/materials/20260219/1771463564512-b14bfe90.png".to_string(),
+        "https://static.seedance2-pro.com/materials/20260219/1771496300184-fb32e08c.jpg".to_string(),
       ]),
     };
     let result = generate_video(args).await?;
