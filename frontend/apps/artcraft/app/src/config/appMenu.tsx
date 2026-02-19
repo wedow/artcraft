@@ -9,6 +9,7 @@ import {
   faPencil,
   faWandMagicSparkles,
   faPenNib,
+  faCrosshairs,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
 import { set3DPageMounted } from "~/pages/PageEnigma/Editor/editor";
@@ -24,7 +25,8 @@ export type AppId =
   | "IMAGE_WATERMARK_REMOVAL"
   | "IMAGE_TO_3D_OBJECT"
   | "IMAGE_TO_3D_WORLD"
-  | "REMOVE_BACKGROUND";
+  | "REMOVE_BACKGROUND"
+  | "ANGLES";
 
 export interface AppDescriptor {
   id: AppId;
@@ -160,6 +162,16 @@ export const ALL_APPS: FullAppItem[] = [
     color: "bg-violet-500/40",
     badge: "NEW",
   },
+  {
+    id: "angles",
+    label: "Angles",
+    description: "Generate new camera angles from a single photo",
+    icon: faCrosshairs,
+    category: "generate",
+    action: "ANGLES",
+    color: "bg-lime-500/40",
+    badge: "NEW",
+  },
 
   {
     id: "2d-canvas",
@@ -213,6 +225,7 @@ export const goToApp = (action?: string) => {
       "IMAGE_TO_3D_OBJECT",
       "IMAGE_TO_3D_WORLD",
       "REMOVE_BACKGROUND",
+      "ANGLES",
     ].includes(action)
   ) {
     if (action === "3D") {
