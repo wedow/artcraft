@@ -11,6 +11,30 @@ use wreq_util::Emulation;
 const RUN_TASK_URL: &str = "https://seedance2-pro.com/api/trpc/workflow.runTask?batch=1";
 const FIREFOX_USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0";
 
+// --- Request args ---
+
+pub struct GenerateVideoArgs<'a> {
+  pub session: &'a Seedance2ProSession,
+
+  pub prompt: String,
+
+  pub resolution: Resolution,
+
+  /// Duration in seconds (4–15).
+  pub duration_seconds: u8,
+
+  pub batch_count: BatchCount,
+
+  /// Optional start frame image URL (keyframe mode).
+  pub start_frame_url: Option<String>,
+
+  /// Optional end frame image URL (keyframe mode).
+  pub end_frame_url: Option<String>,
+
+  /// Optional reference image URLs (reference mode). When present, takes priority over start/end frames.
+  pub reference_image_urls: Option<Vec<String>>,
+}
+
 // --- Public enums ---
 
 /// Video resolution / aspect ratio.
@@ -56,30 +80,6 @@ impl BatchCount {
       Self::Four => 4,
     }
   }
-}
-
-// --- Request args ---
-
-pub struct GenerateVideoArgs<'a> {
-  pub session: &'a Seedance2ProSession,
-
-  pub prompt: String,
-
-  pub resolution: Resolution,
-
-  /// Duration in seconds (4–15).
-  pub duration_seconds: u8,
-
-  pub batch_count: BatchCount,
-
-  /// Optional start frame image URL (keyframe mode).
-  pub start_frame_url: Option<String>,
-
-  /// Optional end frame image URL (keyframe mode).
-  pub end_frame_url: Option<String>,
-
-  /// Optional reference image URLs (reference mode). When present, takes priority over start/end frames.
-  pub reference_image_urls: Option<Vec<String>>,
 }
 
 // --- Response ---
