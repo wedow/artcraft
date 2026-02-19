@@ -60,15 +60,22 @@ impl BatchCount {
 
 pub struct GenerateVideoArgs<'a> {
   pub cookie: &'a str,
+
   pub prompt: String,
+
   pub resolution: Resolution,
+
   /// Duration in seconds (4–15).
   pub duration_seconds: u8,
+
   pub batch_count: BatchCount,
+
   /// Optional start frame image URL (keyframe mode).
   pub start_frame_url: Option<String>,
+
   /// Optional end frame image URL (keyframe mode).
   pub end_frame_url: Option<String>,
+
   /// Reference image URLs (reference mode). Takes priority over start/end frames.
   pub reference_image_urls: Vec<String>,
 }
@@ -77,11 +84,15 @@ pub struct GenerateVideoArgs<'a> {
 
 pub struct GenerateVideoResponse {
   pub task_id: String,
+
   pub order_id: String,
+
   /// Present when batch_count > 1.
   pub task_ids: Option<Vec<String>>,
+
   /// Present when batch_count > 1.
   pub order_ids: Option<Vec<String>>,
+
   pub violation_warning: bool,
 }
 
