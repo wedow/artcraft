@@ -2,10 +2,12 @@ use crate::error::seedance2pro_client_error::Seedance2ProClientError;
 use crate::error::seedance2pro_error::Seedance2ProError;
 use crate::error::seedance2pro_generic_api_error::Seedance2ProGenericApiError;
 use log::info;
+use url::Url;
 use wreq::Client;
 use wreq_util::Emulation;
 
 const FIREFOX_USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0";
+const STATIC_BASE_URL: &str = "https://static.seedance2-pro.com";
 
 pub struct UploadImageArgs {
   /// The signed upload URL returned by `prepare_image_upload`.
@@ -15,7 +17,23 @@ pub struct UploadImageArgs {
   pub image_bytes: Vec<u8>,
 }
 
-pub async fn upload_image(args: UploadImageArgs) -> Result<(), Seedance2ProError> {
+pub struct UploadImageResponse {
+  /// The public-facing URL for the uploaded image.
+  /// e.g. `https://static.seedance2-pro.com/materials/20260219/1771463564512-b14bfe90.png`
+  pub public_url: String,
+}
+
+/// Extracts the path from the R2 upload URL and builds the static public URL.
+/// e.g. `https://comm.….r2.cloudflarestorage.com/materials/20260219/…?X-Amz-…`
+///   -> `https://static.seedance2-pro.com/materials/20260219/…`
+fn build_public_url(upload_url: &str) -> Result<String, Seedance2ProError> {
+  let parsed = Url::parse(upload_url)
+    .map_err(|err| Seedance2ProClientError::UrlParseError(err))?;
+  let path = parsed.path(); // e.g. "/materials/20260219/1771463564512-b14bfe90.png"
+  Ok(format!("{}{}", STATIC_BASE_URL, path))
+}
+
+pub async fn upload_image(args: UploadImageArgs) -> Result<UploadImageResponse, Seedance2ProError> {
   info!("Uploading image to: {}", args.upload_url);
 
   let client = Client::builder()
@@ -55,7 +73,11 @@ pub async fn upload_image(args: UploadImageArgs) -> Result<(), Seedance2ProError
     }.into());
   }
 
-  Ok(())
+  let public_url = build_public_url(&args.upload_url)?;
+
+  info!("Public URL: {}", public_url);
+
+  Ok(UploadImageResponse { public_url })
 }
 
 #[cfg(test)]
@@ -92,10 +114,11 @@ mod tests {
       upload_url: prepare_result.upload_url,
       image_bytes,
     };
-    upload_image(upload_args).await?;
-    println!("Upload succeeded!");
+    let result = upload_image(upload_args).await?;
+    println!("Public URL: {}", result.public_url);
 
-    assert_eq!(1, 2);
+    assert!(result.public_url.starts_with("https://static.seedance2-pro.com/materials/"));
+    assert_eq!(1, 2); // NB: Intentional failure to check the response.
 
     Ok(())
   }
