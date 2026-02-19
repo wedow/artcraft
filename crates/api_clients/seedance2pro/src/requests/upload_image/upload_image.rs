@@ -83,6 +83,7 @@ pub async fn upload_image(args: UploadImageArgs) -> Result<UploadImageResponse, 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::creds::seedance2pro_session::Seedance2ProSession;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use crate::requests::prepare_image_upload::prepare_image_upload::{
@@ -98,9 +99,10 @@ mod tests {
     setup_test_logging(LevelFilter::Trace);
 
     // Step 1: Get a signed upload URL
-    let cookie = get_test_cookies()?;
+    let cookies = get_test_cookies()?;
+    let session = Seedance2ProSession::from_cookies_string(cookies);
     let prepare_args = PrepareImageUploadArgs {
-      cookie: &cookie,
+      session: &session,
     };
     let prepare_result = prepare_image_upload(prepare_args).await?;
     println!("Upload URL: {}", prepare_result.upload_url);

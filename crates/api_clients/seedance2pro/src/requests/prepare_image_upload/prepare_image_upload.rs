@@ -1,10 +1,11 @@
+use crate::creds::seedance2pro_session::Seedance2ProSession;
 use crate::error::seedance2pro_client_error::Seedance2ProClientError;
 use crate::error::seedance2pro_error::Seedance2ProError;
 use crate::error::seedance2pro_generic_api_error::Seedance2ProGenericApiError;
+use crate::requests::prepare_image_upload::request_types::*;
 use chrono::Utc;
 use log::info;
 use rand::Rng;
-use serde_derive::{Deserialize, Serialize};
 use wreq::Client;
 use wreq_util::Emulation;
 
@@ -22,39 +23,8 @@ fn generate_material_path() -> String {
   format!("materials/{}/{}-{}.png", date_part, timestamp_millis, hex_part)
 }
 
-#[derive(Serialize)]
-struct BatchRequest {
-  #[serde(rename = "0")]
-  zero: BatchRequestInner,
-}
-
-#[derive(Serialize)]
-struct BatchRequestInner {
-  json: BatchRequestJson,
-}
-
-#[derive(Serialize)]
-struct BatchRequestJson {
-  path: String,
-}
-
-#[derive(Deserialize, Debug)]
-struct BatchResponseItem {
-  result: BatchResponseResult,
-}
-
-#[derive(Deserialize, Debug)]
-struct BatchResponseResult {
-  data: BatchResponseData,
-}
-
-#[derive(Deserialize, Debug)]
-struct BatchResponseData {
-  json: String,
-}
-
 pub struct PrepareImageUploadArgs<'a> {
-  pub cookie: &'a str,
+  pub session: &'a Seedance2ProSession,
 }
 
 pub struct PrepareImageUploadResponse {
@@ -83,6 +53,8 @@ pub async fn prepare_image_upload(args: PrepareImageUploadArgs<'_>) -> Result<Pr
     },
   };
 
+  let cookie = args.session.cookies.as_str();
+
   let response = client.post(SIGNED_UPLOAD_URL)
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
@@ -93,7 +65,7 @@ pub async fn prepare_image_upload(args: PrepareImageUploadArgs<'_>) -> Result<Pr
     .header("x-trpc-source", "client")
     .header("Origin", "https://seedance2-pro.com")
     .header("Connection", "keep-alive")
-    .header("Cookie", args.cookie)
+    .header("Cookie", cookie)
     .header("Sec-Fetch-Dest", "empty")
     .header("Sec-Fetch-Mode", "cors")
     .header("Sec-Fetch-Site", "same-origin")
@@ -140,6 +112,7 @@ pub async fn prepare_image_upload(args: PrepareImageUploadArgs<'_>) -> Result<Pr
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::creds::seedance2pro_session::Seedance2ProSession;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
@@ -149,9 +122,10 @@ mod tests {
   #[ignore] // manually test — requires real cookies
   async fn test_prepare_image_upload() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let cookie = get_test_cookies()?;
+    let cookies = get_test_cookies()?;
+    let session = Seedance2ProSession::from_cookies_string(cookies);
     let args = PrepareImageUploadArgs {
-      cookie: &cookie,
+      session: &session,
     };
     let result = prepare_image_upload(args).await?;
     println!("Upload URL: {}", result.upload_url);
@@ -159,6 +133,8 @@ mod tests {
     assert!(!result.upload_url.is_empty());
     assert!(result.upload_url.contains("cloudflarestorage.com"));
     assert!(result.material_path.starts_with("materials/"));
+
+    assert_eq!(1, 2); // NB: Intentional failure to check the response.
     Ok(())
   }
 }
