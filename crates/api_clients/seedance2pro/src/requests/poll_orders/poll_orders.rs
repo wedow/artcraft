@@ -16,6 +16,22 @@ const ORDERS_INPUT_JSON: &str =
 const FIREFOX_USER_AGENT: &str =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0";
 
+
+// --- Args & response ---
+
+pub struct PollOrdersArgs<'a> {
+  pub session: &'a Seedance2ProSession,
+
+  /// Order IDs to filter for. The API always returns recent orders; we filter client-side.
+  /// If empty, all orders in the response are returned.
+  pub order_ids: Vec<String>,
+}
+
+pub struct PollOrdersResponse {
+  pub orders: Vec<OrderStatus>,
+}
+
+
 // --- Public types ---
 
 /// The lifecycle status of a video generation task.
@@ -63,30 +79,21 @@ pub struct VideoResult {
 #[derive(Debug, Clone)]
 pub struct OrderStatus {
   pub order_id: String,
+
   pub task_status: TaskStatus,
+
   /// Top-level result video URL. Populated when `task_status` is `Completed`.
   pub result_url: Option<String>,
+
   /// Detailed result entries. Typically one entry per video.
   pub results: Vec<VideoResult>,
+
   /// Failure reason. Populated when `task_status` is `Failed`.
   pub fail_reason: Option<String>,
+
   /// ISO 8601 creation timestamp (e.g. `"2026-02-19T01:20:50.398Z"`).
   pub created_at: String,
 }
-
-// --- Args & response ---
-
-pub struct PollOrdersArgs<'a> {
-  pub session: &'a Seedance2ProSession,
-  /// Order IDs to filter for. The API always returns recent orders; we filter client-side.
-  /// If empty, all orders in the response are returned.
-  pub order_ids: Vec<String>,
-}
-
-pub struct PollOrdersResponse {
-  pub orders: Vec<OrderStatus>,
-}
-
 // --- Implementation ---
 
 pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse, Seedance2ProError> {
