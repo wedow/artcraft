@@ -36,7 +36,7 @@ script/socat_dev_database_connect.sh
 venv/
 
 # Testing
-requests/
+/requests/
 
 # Scratch data
 scratch/

@@ -19,13 +19,20 @@ workspace-build-acceleration.workspace = true
 errors.workspace = true
 
 # External
+chrono.workspace = true
 cloudflare_errors.workspace = true
 log.workspace = true
+rand.workspace = true
 serde.workspace = true
+serde_derive.workspace = true
 serde_json.workspace = true
 wreq.workspace = true
 wreq-util.workspace = true
 url.workspace = true
 
 [dev-dependencies]
+chrono.workspace = true
+env.workspace = true
+env_logger.workspace = true
 testing = { path = "../../lib/testing" }
+tokio = { version = "1", features = ["full"] }
