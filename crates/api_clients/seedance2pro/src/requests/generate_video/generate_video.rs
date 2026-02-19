@@ -1,8 +1,10 @@
+use crate::creds::seedance2pro_session::Seedance2ProSession;
 use crate::error::seedance2pro_client_error::Seedance2ProClientError;
 use crate::error::seedance2pro_error::Seedance2ProError;
 use crate::error::seedance2pro_generic_api_error::Seedance2ProGenericApiError;
+use crate::error::seedance2pro_specific_api_error::Seedance2ProSpecificApiError;
+use crate::requests::generate_video::request_types::*;
 use log::info;
-use serde_derive::{Deserialize, Serialize};
 use wreq::Client;
 use wreq_util::Emulation;
 
@@ -59,7 +61,7 @@ impl BatchCount {
 // --- Request args ---
 
 pub struct GenerateVideoArgs<'a> {
-  pub cookie: &'a str,
+  pub session: &'a Seedance2ProSession,
 
   pub prompt: String,
 
@@ -76,8 +78,8 @@ pub struct GenerateVideoArgs<'a> {
   /// Optional end frame image URL (keyframe mode).
   pub end_frame_url: Option<String>,
 
-  /// Reference image URLs (reference mode). Takes priority over start/end frames.
-  pub reference_image_urls: Vec<String>,
+  /// Optional reference image URLs (reference mode). When present, takes priority over start/end frames.
+  pub reference_image_urls: Option<Vec<String>>,
 }
 
 // --- Response ---
@@ -92,80 +94,17 @@ pub struct GenerateVideoResponse {
 
   /// Present when batch_count > 1.
   pub order_ids: Option<Vec<String>>,
-
-  pub violation_warning: bool,
-}
-
-// --- Serde types for the wire format ---
-
-#[derive(Serialize)]
-struct BatchRequest {
-  #[serde(rename = "0")]
-  zero: BatchRequestInner,
-}
-
-#[derive(Serialize)]
-struct BatchRequestInner {
-  json: BatchRequestJson,
-}
-
-#[derive(Serialize)]
-struct BatchRequestJson {
-  #[serde(rename = "businessType")]
-  business_type: &'static str,
-  #[serde(rename = "apiParams")]
-  api_params: ApiParams,
-}
-
-#[derive(Serialize)]
-struct ApiParams {
-  prompt: String,
-  resolution: String,
-  mode: &'static str,
-  model: &'static str,
-  duration: String,
-  #[serde(rename = "videoInputMode")]
-  video_input_mode: &'static str,
-  #[serde(rename = "uploadedUrls", skip_serializing_if = "Option::is_none")]
-  uploaded_urls: Option<Vec<String>>,
-  #[serde(rename = "batchCount", skip_serializing_if = "Option::is_none")]
-  batch_count: Option<u8>,
-}
-
-#[derive(Deserialize, Debug)]
-struct BatchResponseItem {
-  result: BatchResponseResult,
-}
-
-#[derive(Deserialize, Debug)]
-struct BatchResponseResult {
-  data: BatchResponseData,
-}
-
-#[derive(Deserialize, Debug)]
-struct BatchResponseData {
-  json: TaskResponseJson,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct TaskResponseJson {
-  task_id: String,
-  order_id: String,
-  task_ids: Option<Vec<String>>,
-  order_ids: Option<Vec<String>>,
-  violation_warning: bool,
 }
 
 // --- Implementation ---
 
 pub async fn generate_video(args: GenerateVideoArgs<'_>) -> Result<GenerateVideoResponse, Seedance2ProError> {
-  let is_reference_mode = !args.reference_image_urls.is_empty();
+  let is_reference_mode = args.reference_image_urls.as_ref().is_some_and(|urls| !urls.is_empty());
 
   let video_input_mode = if is_reference_mode { "reference" } else { "keyframe" };
 
   let uploaded_urls: Option<Vec<String>> = if is_reference_mode {
-    Some(args.reference_image_urls)
+    args.reference_image_urls
   } else {
     let mut urls = Vec::new();
     if let Some(url) = args.start_frame_url {
@@ -205,6 +144,8 @@ pub async fn generate_video(args: GenerateVideoArgs<'_>) -> Result<GenerateVideo
     },
   };
 
+  let cookie = args.session.cookies.as_str();
+
   let client = Client::builder()
     .emulation(Emulation::Firefox143)
     .build()
@@ -220,7 +161,7 @@ pub async fn generate_video(args: GenerateVideoArgs<'_>) -> Result<GenerateVideo
     .header("x-trpc-source", "client")
     .header("Origin", "https://seedance2-pro.com")
     .header("Connection", "keep-alive")
-    .header("Cookie", args.cookie)
+    .header("Cookie", cookie)
     .header("Sec-Fetch-Dest", "empty")
     .header("Sec-Fetch-Mode", "cors")
     .header("Sec-Fetch-Site", "same-origin")
@@ -258,42 +199,50 @@ pub async fn generate_video(args: GenerateVideoArgs<'_>) -> Result<GenerateVideo
     .data
     .json;
 
+  if task_data.violation_warning {
+    return Err(Seedance2ProSpecificApiError::VideoGenerationViolation(response_body).into());
+  }
+
   Ok(GenerateVideoResponse {
     task_id: task_data.task_id,
     order_id: task_data.order_id,
     task_ids: task_data.task_ids,
     order_ids: task_data.order_ids,
-    violation_warning: task_data.violation_warning,
   })
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::creds::seedance2pro_session::Seedance2ProSession;
   use crate::test_utils::get_test_cookies::get_test_cookies;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
 
+  fn test_session() -> AnyhowResult<Seedance2ProSession> {
+    let cookies = get_test_cookies()?;
+    Ok(Seedance2ProSession::from_cookies_string(cookies))
+  }
+
   #[tokio::test]
   #[ignore] // manually test — requires real cookies
   async fn test_generate_text_to_video() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let cookie = get_test_cookies()?;
+    let session = test_session()?;
     let args = GenerateVideoArgs {
-      cookie: &cookie,
+      session: &session,
       prompt: "A shiba inu eating a cake in a fancy kitchen.".to_string(),
       resolution: Resolution::Square1x1,
       duration_seconds: 5,
       batch_count: BatchCount::One,
       start_frame_url: None,
       end_frame_url: None,
-      reference_image_urls: vec![],
+      reference_image_urls: None,
     };
     let result = generate_video(args).await?;
     println!("Task ID: {}", result.task_id);
     println!("Order ID: {}", result.order_id);
-    println!("Violation warning: {}", result.violation_warning);
     assert!(!result.task_id.is_empty());
     assert!(!result.order_id.is_empty());
     assert_eq!(1, 2); // NB: Intentional failure to inspect output.
@@ -304,16 +253,16 @@ mod tests {
   #[ignore] // manually test — requires real cookies
   async fn test_generate_keyframe_video() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let cookie = get_test_cookies()?;
+    let session = test_session()?;
     let args = GenerateVideoArgs {
-      cookie: &cookie,
+      session: &session,
       prompt: "A man stands up from his desk and smiles.".to_string(),
       resolution: Resolution::Landscape16x9,
       duration_seconds: 5,
       batch_count: BatchCount::One,
       start_frame_url: Some("https://static.seedance2-pro.com/materials/20260219/test.png".to_string()),
       end_frame_url: None,
-      reference_image_urls: vec![],
+      reference_image_urls: None,
     };
     let result = generate_video(args).await?;
     println!("Task ID: {}", result.task_id);
@@ -327,19 +276,19 @@ mod tests {
   #[ignore] // manually test — requires real cookies
   async fn test_generate_reference_video() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let cookie = get_test_cookies()?;
+    let session = test_session()?;
     let args = GenerateVideoArgs {
-      cookie: &cookie,
+      session: &session,
       prompt: "Scenic landscape from @1 with a shiba from @2 wearing glasses.".to_string(),
       resolution: Resolution::Standard4x3,
       duration_seconds: 5,
       batch_count: BatchCount::One,
       start_frame_url: None,
       end_frame_url: None,
-      reference_image_urls: vec![
+      reference_image_urls: Some(vec![
         "https://static.seedance2-pro.com/materials/20260219/test1.png".to_string(),
         "https://static.seedance2-pro.com/materials/20260219/test2.jpg".to_string(),
-      ],
+      ]),
     };
     let result = generate_video(args).await?;
     println!("Task ID: {}", result.task_id);
