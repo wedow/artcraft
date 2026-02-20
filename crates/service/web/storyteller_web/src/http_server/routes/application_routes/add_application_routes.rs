@@ -13,6 +13,7 @@ use crate::http_server::routes::application_routes::tag_routes::add_tag_routes;
 use crate::http_server::routes::application_routes::user_bookmarks_routes::add_user_bookmarks_routes;
 use crate::http_server::routes::application_routes::user_rating_routes::add_user_rating_routes;
 use crate::http_server::routes::application_routes::user_routes::add_user_routes;
+use crate::http_server::routes::application_routes::wallet_routes::add_wallet_routes;
 use crate::http_server::routes::application_routes::webhook_routes::add_webhook_routes;
 use crate::http_server::routes::application_routes::weights_routes::add_weights_routes;
 use actix_http::body::MessageBody;
@@ -62,6 +63,7 @@ where
   app = add_user_routes(app); // /create_account, /session, /login, /logout, etc.
 
   // Artcraft Billing pieces
+  app = add_wallet_routes(app); // /v1/wallets/...
   app = add_credits_routes(app); // /v1/credits/...
   app = add_stripe_artcraft_routes(app); // /v1/stripe_artcraft/...
   app = add_subscription_routes(app); // /v1/subscriptions/...
