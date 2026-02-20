@@ -70,444 +70,446 @@ interface OrbitSphereProps {
   onDragEnd: (rotation: number, tilt: number) => void;
 }
 
-const OrbitSphere = memo(({ rotation, tilt, zoom, onDragEnd }: OrbitSphereProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isDragging = useRef(false);
-  const lastPos = useRef({ x: 0, y: 0 });
-  // Live (unsnapped) values used during drag for smooth rendering
-  const liveRotation = useRef(rotation);
-  const liveTilt = useRef(tilt);
-  const rafId = useRef<number | null>(null);
+const OrbitSphere = memo(
+  ({ rotation, tilt, zoom, onDragEnd }: OrbitSphereProps) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const isDragging = useRef(false);
+    const lastPos = useRef({ x: 0, y: 0 });
+    // Live (unsnapped) values used during drag for smooth rendering
+    const liveRotation = useRef(rotation);
+    const liveTilt = useRef(tilt);
+    const rafId = useRef<number | null>(null);
 
-  // Sync live values when props change (i.e., from slider or snap)
-  useEffect(() => {
-    if (!isDragging.current) {
-      liveRotation.current = rotation;
-      liveTilt.current = tilt;
-    }
-  }, [rotation, tilt]);
+    // Sync live values when props change (i.e., from slider or snap)
+    useEffect(() => {
+      if (!isDragging.current) {
+        liveRotation.current = rotation;
+        liveTilt.current = tilt;
+      }
+    }, [rotation, tilt]);
 
-  const drawSphere = useCallback(
-    (renderRotation: number, renderTilt: number, dragging = false) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+    const drawSphere = useCallback(
+      (renderRotation: number, renderTilt: number, dragging = false) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-      const displayW = canvas.clientWidth;
-      const displayH = canvas.clientHeight;
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = displayW * dpr;
-      canvas.height = displayH * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const displayW = canvas.clientWidth;
+        const displayH = canvas.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = displayW * dpr;
+        canvas.height = displayH * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const w = displayW;
-      const h = displayH;
-      const cx = w / 2;
-      const cy = h / 2;
-      const radius = Math.min(w, h) * 0.36;
+        const w = displayW;
+        const h = displayH;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) * 0.36;
 
-      ctx.clearRect(0, 0, w, h);
+        ctx.clearRect(0, 0, w, h);
 
-      // Subtle outer glow (neutral, matches dark UI)
-      const outerGlow = ctx.createRadialGradient(
-        cx,
-        cy,
-        radius * 0.8,
-        cx,
-        cy,
-        radius * 1.3,
-      );
-      outerGlow.addColorStop(0, "rgba(255, 255, 255, 0.02)");
-      outerGlow.addColorStop(1, "rgba(255, 255, 255, 0)");
-      ctx.fillStyle = outerGlow;
-      ctx.fillRect(0, 0, w, h);
+        // Subtle outer glow (neutral, matches dark UI)
+        const outerGlow = ctx.createRadialGradient(
+          cx,
+          cy,
+          radius * 0.8,
+          cx,
+          cy,
+          radius * 1.3,
+        );
+        outerGlow.addColorStop(0, "rgba(255, 255, 255, 0.02)");
+        outerGlow.addColorStop(1, "rgba(255, 255, 255, 0)");
+        ctx.fillStyle = outerGlow;
+        ctx.fillRect(0, 0, w, h);
 
-      const rotRad = (renderRotation * Math.PI) / 180;
-      const tiltRad = (renderTilt * Math.PI) / 180;
+        const rotRad = (renderRotation * Math.PI) / 180;
+        const tiltRad = (renderTilt * Math.PI) / 180;
 
-      const project = (
-        x3d: number,
-        y3d: number,
-        z3d: number,
-      ): { x: number; y: number; depth: number } => {
-        const perspective = 3.5;
-        const scale = perspective / (perspective - z3d);
-        return {
-          x: cx + x3d * radius * scale,
-          y: cy + y3d * radius * scale,
-          depth: z3d,
+        const project = (
+          x3d: number,
+          y3d: number,
+          z3d: number,
+        ): { x: number; y: number; depth: number } => {
+          const perspective = 3.5;
+          const scale = perspective / (perspective - z3d);
+          return {
+            x: cx + x3d * radius * scale,
+            y: cy + y3d * radius * scale,
+            depth: z3d,
+          };
         };
-      };
 
-      // Draw wireframe sphere — brighter when actively dragging
-      const wireAlpha = dragging ? 0.12 : 0.06;
-      ctx.strokeStyle = `rgba(255, 255, 255, ${wireAlpha})`;
-      ctx.lineWidth = 0.7;
+        // Draw wireframe sphere — brighter when actively dragging
+        const wireAlpha = dragging ? 0.12 : 0.06;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${wireAlpha})`;
+        ctx.lineWidth = 0.7;
 
-      for (let i = 0; i < 12; i++) {
-        const angle = (i * Math.PI) / 6 + rotRad;
-        ctx.beginPath();
-        for (let j = 0; j <= 40; j++) {
-          const phi = (j / 40) * Math.PI * 2;
-          const x3d = Math.cos(angle) * Math.sin(phi);
-          const y3d = Math.cos(phi);
-          const z3d = Math.sin(angle) * Math.sin(phi);
-          const p = project(x3d, y3d, z3d);
-          if (j === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        }
-        ctx.stroke();
-      }
-
-      for (let i = 1; i < 6; i++) {
-        const phi = (i * Math.PI) / 6;
-        ctx.beginPath();
-        for (let j = 0; j <= 40; j++) {
-          const angle = (j / 40) * Math.PI * 2 + rotRad;
-          const x3d = Math.cos(angle) * Math.sin(phi);
-          const y3d = Math.cos(phi);
-          const z3d = Math.sin(angle) * Math.sin(phi);
-          const p = project(x3d, y3d, z3d);
-          if (j === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        }
-        ctx.stroke();
-      }
-
-      // ─── 3D Camera object ──────────────────────────────────────────
-      const camPosX = Math.sin(rotRad) * Math.cos(tiltRad);
-      const camPosY = -Math.sin(tiltRad);
-      const camPosZ = Math.cos(rotRad) * Math.cos(tiltRad);
-
-      const camScreen = project(camPosX, camPosY, camPosZ);
-      const centerScreen = project(0, 0, 0);
-
-      // Solid line from camera to center
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(camScreen.x, camScreen.y);
-      ctx.lineTo(centerScreen.x, centerScreen.y);
-      ctx.stroke();
-
-      const dirX = -camPosX;
-      const dirY = -camPosY;
-      const dirZ = -camPosZ;
-
-      let rightX = dirZ;
-      const rightY = 0;
-      let rightZ = -dirX;
-      const rightLen = Math.sqrt(rightX * rightX + rightZ * rightZ) || 1;
-      rightX /= rightLen;
-      rightZ /= rightLen;
-
-      let upX = rightY * dirZ - rightZ * dirY;
-      let upY = rightZ * dirX - rightX * dirZ;
-      let upZ = rightX * dirY - rightY * dirX;
-      const upLen = Math.sqrt(upX * upX + upY * upY + upZ * upZ) || 1;
-      upX /= upLen;
-      upY /= upLen;
-      upZ /= upLen;
-
-      // Camera body — wider than tall for realistic proportions
-      const bodyW = 0.19;
-      const bodyH = 0.13;
-      const bodyD = 0.16;
-
-      // Helper to build 8-corner box from center + half-dims
-      const makeBox = (
-        bx: number,
-        by: number,
-        bz: number,
-        hw: number,
-        hh: number,
-        hd: number,
-      ) => [
-        // Back face 0-3
-        {
-          x: bx + rightX * hw + upX * hh,
-          y: by + rightY * hw + upY * hh,
-          z: bz + rightZ * hw + upZ * hh,
-        },
-        {
-          x: bx - rightX * hw + upX * hh,
-          y: by - rightY * hw + upY * hh,
-          z: bz - rightZ * hw + upZ * hh,
-        },
-        {
-          x: bx - rightX * hw - upX * hh,
-          y: by - rightY * hw - upY * hh,
-          z: bz - rightZ * hw - upZ * hh,
-        },
-        {
-          x: bx + rightX * hw - upX * hh,
-          y: by + rightY * hw - upY * hh,
-          z: bz + rightZ * hw - upZ * hh,
-        },
-        // Front face 4-7
-        {
-          x: bx + dirX * hd + rightX * hw + upX * hh,
-          y: by + dirY * hd + rightY * hw + upY * hh,
-          z: bz + dirZ * hd + rightZ * hw + upZ * hh,
-        },
-        {
-          x: bx + dirX * hd - rightX * hw + upX * hh,
-          y: by + dirY * hd - rightY * hw + upY * hh,
-          z: bz + dirZ * hd - rightZ * hw + upZ * hh,
-        },
-        {
-          x: bx + dirX * hd - rightX * hw - upX * hh,
-          y: by + dirY * hd - rightY * hw - upY * hh,
-          z: bz + dirZ * hd - rightZ * hw - upZ * hh,
-        },
-        {
-          x: bx + dirX * hd + rightX * hw - upX * hh,
-          y: by + dirY * hd + rightY * hw - upY * hh,
-          z: bz + dirZ * hd + rightZ * hw - upZ * hh,
-        },
-      ];
-
-      // Main body
-      const bodyCorners3D = makeBox(
-        camPosX,
-        camPosY,
-        camPosZ,
-        bodyW,
-        bodyH,
-        bodyD,
-      );
-
-      // Lens barrel — protrudes from front face center
-      const lensLen = 0.1;
-      const lensR = 0.07;
-      const lensCx = camPosX + dirX * bodyD;
-      const lensCy = camPosY + dirY * bodyD;
-      const lensCz = camPosZ + dirZ * bodyD;
-      const lensCorners3D = makeBox(
-        lensCx,
-        lensCy,
-        lensCz,
-        lensR,
-        lensR,
-        lensLen,
-      );
-
-      // Viewfinder — small bump on top, toward back
-      const vfOffD = -0.02;
-      const vfCx = camPosX + dirX * vfOffD + upX * (bodyH + 0.04);
-      const vfCy = camPosY + dirY * vfOffD + upY * (bodyH + 0.04);
-      const vfCz = camPosZ + dirZ * vfOffD + upZ * (bodyH + 0.04);
-      const vfCorners3D = makeBox(vfCx, vfCy, vfCz, 0.06, 0.04, 0.07);
-
-      // Project all corners
-      const bodyCorners = bodyCorners3D.map((c) => project(c.x, c.y, c.z));
-      const lensCorners = lensCorners3D.map((c) => project(c.x, c.y, c.z));
-      const vfCorners = vfCorners3D.map((c) => project(c.x, c.y, c.z));
-
-      // Face definitions for each part
-      const faceIndices: [number, number, number, number][] = [
-        [0, 1, 2, 3],
-        [4, 5, 6, 7],
-        [0, 1, 5, 4],
-        [3, 2, 6, 7],
-        [1, 2, 6, 5],
-        [0, 3, 7, 4],
-      ];
-      const bodyColors = [
-        "rgba(80, 80, 90, 0.9)",
-        "rgba(50, 50, 60, 0.9)",
-        "rgba(70, 70, 80, 0.9)",
-        "rgba(55, 55, 65, 0.9)",
-        "rgba(60, 60, 70, 0.9)",
-        "rgba(65, 65, 75, 0.9)",
-      ];
-      const lensColors = [
-        "rgba(45, 45, 55, 0.95)",
-        "rgba(30, 30, 40, 0.95)",
-        "rgba(40, 40, 50, 0.95)",
-        "rgba(35, 35, 45, 0.95)",
-        "rgba(38, 38, 48, 0.95)",
-        "rgba(42, 42, 52, 0.95)",
-      ];
-      const vfColors = [
-        "rgba(75, 75, 85, 0.9)",
-        "rgba(55, 55, 65, 0.9)",
-        "rgba(65, 65, 75, 0.9)",
-        "rgba(60, 60, 70, 0.9)",
-        "rgba(58, 58, 68, 0.9)",
-        "rgba(68, 68, 78, 0.9)",
-      ];
-
-      // Collect all faces with their projected corners for painter's sort
-      const allFaces: {
-        pts: { x: number; y: number; depth: number }[];
-        color: string;
-        isFront: boolean;
-        avgDepth: number;
-      }[] = [];
-
-      const addFaces = (
-        corners: { x: number; y: number; depth: number }[],
-        colors: string[],
-        markFront: boolean,
-      ) => {
-        for (let i = 0; i < 6; i++) {
-          const pts = faceIndices[i].map((idx) => corners[idx]);
-          const avgDepth =
-            pts.reduce((sum, p) => sum + p.depth, 0) / pts.length;
-          allFaces.push({
-            pts,
-            color: colors[i],
-            isFront: markFront && i === 1,
-            avgDepth,
-          });
-        }
-      };
-      addFaces(bodyCorners, bodyColors, false);
-      addFaces(lensCorners, lensColors, true);
-      addFaces(vfCorners, vfColors, false);
-
-      // Sort all faces back-to-front
-      allFaces.sort((a, b) => a.avgDepth - b.avgDepth);
-
-      // Lens tip position for red dot
-      const lensTip = {
-        x: lensCx + dirX * (lensLen + 0.01),
-        y: lensCy + dirY * (lensLen + 0.01),
-        z: lensCz + dirZ * (lensLen + 0.01),
-      };
-      const lensTipScreen = project(lensTip.x, lensTip.y, lensTip.z);
-
-      // Draw all faces
-      for (const face of allFaces) {
-        ctx.beginPath();
-        ctx.moveTo(face.pts[0].x, face.pts[0].y);
-        for (let i = 1; i < face.pts.length; i++) {
-          ctx.lineTo(face.pts[i].x, face.pts[i].y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = face.color;
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
-
-        // Draw red lens dot after lens front face
-        if (face.isFront) {
-          const lensGlow = ctx.createRadialGradient(
-            lensTipScreen.x,
-            lensTipScreen.y,
-            0,
-            lensTipScreen.x,
-            lensTipScreen.y,
-            10,
-          );
-          lensGlow.addColorStop(0, "rgba(255, 60, 60, 0.9)");
-          lensGlow.addColorStop(0.5, "rgba(255, 60, 60, 0.3)");
-          lensGlow.addColorStop(1, "rgba(255, 60, 60, 0)");
-          ctx.fillStyle = lensGlow;
+        for (let i = 0; i < 12; i++) {
+          const angle = (i * Math.PI) / 6 + rotRad;
           ctx.beginPath();
-          ctx.arc(lensTipScreen.x, lensTipScreen.y, 10, 0, Math.PI * 2);
+          for (let j = 0; j <= 40; j++) {
+            const phi = (j / 40) * Math.PI * 2;
+            const x3d = Math.cos(angle) * Math.sin(phi);
+            const y3d = Math.cos(phi);
+            const z3d = Math.sin(angle) * Math.sin(phi);
+            const p = project(x3d, y3d, z3d);
+            if (j === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          }
+          ctx.stroke();
+        }
+
+        for (let i = 1; i < 6; i++) {
+          const phi = (i * Math.PI) / 6;
+          ctx.beginPath();
+          for (let j = 0; j <= 40; j++) {
+            const angle = (j / 40) * Math.PI * 2 + rotRad;
+            const x3d = Math.cos(angle) * Math.sin(phi);
+            const y3d = Math.cos(phi);
+            const z3d = Math.sin(angle) * Math.sin(phi);
+            const p = project(x3d, y3d, z3d);
+            if (j === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          }
+          ctx.stroke();
+        }
+
+        // ─── 3D Camera object ──────────────────────────────────────────
+        const camPosX = Math.sin(rotRad) * Math.cos(tiltRad);
+        const camPosY = -Math.sin(tiltRad);
+        const camPosZ = Math.cos(rotRad) * Math.cos(tiltRad);
+
+        const camScreen = project(camPosX, camPosY, camPosZ);
+        const centerScreen = project(0, 0, 0);
+
+        // Solid line from camera to center
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(camScreen.x, camScreen.y);
+        ctx.lineTo(centerScreen.x, centerScreen.y);
+        ctx.stroke();
+
+        const dirX = -camPosX;
+        const dirY = -camPosY;
+        const dirZ = -camPosZ;
+
+        let rightX = dirZ;
+        const rightY = 0;
+        let rightZ = -dirX;
+        const rightLen = Math.sqrt(rightX * rightX + rightZ * rightZ) || 1;
+        rightX /= rightLen;
+        rightZ /= rightLen;
+
+        let upX = rightY * dirZ - rightZ * dirY;
+        let upY = rightZ * dirX - rightX * dirZ;
+        let upZ = rightX * dirY - rightY * dirX;
+        const upLen = Math.sqrt(upX * upX + upY * upY + upZ * upZ) || 1;
+        upX /= upLen;
+        upY /= upLen;
+        upZ /= upLen;
+
+        // Camera body — wider than tall for realistic proportions
+        const bodyW = 0.19;
+        const bodyH = 0.13;
+        const bodyD = 0.16;
+
+        // Helper to build 8-corner box from center + half-dims
+        const makeBox = (
+          bx: number,
+          by: number,
+          bz: number,
+          hw: number,
+          hh: number,
+          hd: number,
+        ) => [
+          // Back face 0-3
+          {
+            x: bx + rightX * hw + upX * hh,
+            y: by + rightY * hw + upY * hh,
+            z: bz + rightZ * hw + upZ * hh,
+          },
+          {
+            x: bx - rightX * hw + upX * hh,
+            y: by - rightY * hw + upY * hh,
+            z: bz - rightZ * hw + upZ * hh,
+          },
+          {
+            x: bx - rightX * hw - upX * hh,
+            y: by - rightY * hw - upY * hh,
+            z: bz - rightZ * hw - upZ * hh,
+          },
+          {
+            x: bx + rightX * hw - upX * hh,
+            y: by + rightY * hw - upY * hh,
+            z: bz + rightZ * hw - upZ * hh,
+          },
+          // Front face 4-7
+          {
+            x: bx + dirX * hd + rightX * hw + upX * hh,
+            y: by + dirY * hd + rightY * hw + upY * hh,
+            z: bz + dirZ * hd + rightZ * hw + upZ * hh,
+          },
+          {
+            x: bx + dirX * hd - rightX * hw + upX * hh,
+            y: by + dirY * hd - rightY * hw + upY * hh,
+            z: bz + dirZ * hd - rightZ * hw + upZ * hh,
+          },
+          {
+            x: bx + dirX * hd - rightX * hw - upX * hh,
+            y: by + dirY * hd - rightY * hw - upY * hh,
+            z: bz + dirZ * hd - rightZ * hw - upZ * hh,
+          },
+          {
+            x: bx + dirX * hd + rightX * hw - upX * hh,
+            y: by + dirY * hd + rightY * hw - upY * hh,
+            z: bz + dirZ * hd + rightZ * hw - upZ * hh,
+          },
+        ];
+
+        // Main body
+        const bodyCorners3D = makeBox(
+          camPosX,
+          camPosY,
+          camPosZ,
+          bodyW,
+          bodyH,
+          bodyD,
+        );
+
+        // Lens barrel — protrudes from front face center
+        const lensLen = 0.1;
+        const lensR = 0.07;
+        const lensCx = camPosX + dirX * bodyD;
+        const lensCy = camPosY + dirY * bodyD;
+        const lensCz = camPosZ + dirZ * bodyD;
+        const lensCorners3D = makeBox(
+          lensCx,
+          lensCy,
+          lensCz,
+          lensR,
+          lensR,
+          lensLen,
+        );
+
+        // Viewfinder — small bump on top, toward back
+        const vfOffD = -0.02;
+        const vfCx = camPosX + dirX * vfOffD + upX * (bodyH + 0.04);
+        const vfCy = camPosY + dirY * vfOffD + upY * (bodyH + 0.04);
+        const vfCz = camPosZ + dirZ * vfOffD + upZ * (bodyH + 0.04);
+        const vfCorners3D = makeBox(vfCx, vfCy, vfCz, 0.06, 0.04, 0.07);
+
+        // Project all corners
+        const bodyCorners = bodyCorners3D.map((c) => project(c.x, c.y, c.z));
+        const lensCorners = lensCorners3D.map((c) => project(c.x, c.y, c.z));
+        const vfCorners = vfCorners3D.map((c) => project(c.x, c.y, c.z));
+
+        // Face definitions for each part
+        const faceIndices: [number, number, number, number][] = [
+          [0, 1, 2, 3],
+          [4, 5, 6, 7],
+          [0, 1, 5, 4],
+          [3, 2, 6, 7],
+          [1, 2, 6, 5],
+          [0, 3, 7, 4],
+        ];
+        const bodyColors = [
+          "rgba(80, 80, 90, 0.9)",
+          "rgba(50, 50, 60, 0.9)",
+          "rgba(70, 70, 80, 0.9)",
+          "rgba(55, 55, 65, 0.9)",
+          "rgba(60, 60, 70, 0.9)",
+          "rgba(65, 65, 75, 0.9)",
+        ];
+        const lensColors = [
+          "rgba(45, 45, 55, 0.95)",
+          "rgba(30, 30, 40, 0.95)",
+          "rgba(40, 40, 50, 0.95)",
+          "rgba(35, 35, 45, 0.95)",
+          "rgba(38, 38, 48, 0.95)",
+          "rgba(42, 42, 52, 0.95)",
+        ];
+        const vfColors = [
+          "rgba(75, 75, 85, 0.9)",
+          "rgba(55, 55, 65, 0.9)",
+          "rgba(65, 65, 75, 0.9)",
+          "rgba(60, 60, 70, 0.9)",
+          "rgba(58, 58, 68, 0.9)",
+          "rgba(68, 68, 78, 0.9)",
+        ];
+
+        // Collect all faces with their projected corners for painter's sort
+        const allFaces: {
+          pts: { x: number; y: number; depth: number }[];
+          color: string;
+          isFront: boolean;
+          avgDepth: number;
+        }[] = [];
+
+        const addFaces = (
+          corners: { x: number; y: number; depth: number }[],
+          colors: string[],
+          markFront: boolean,
+        ) => {
+          for (let i = 0; i < 6; i++) {
+            const pts = faceIndices[i].map((idx) => corners[idx]);
+            const avgDepth =
+              pts.reduce((sum, p) => sum + p.depth, 0) / pts.length;
+            allFaces.push({
+              pts,
+              color: colors[i],
+              isFront: markFront && i === 1,
+              avgDepth,
+            });
+          }
+        };
+        addFaces(bodyCorners, bodyColors, false);
+        addFaces(lensCorners, lensColors, true);
+        addFaces(vfCorners, vfColors, false);
+
+        // Sort all faces back-to-front
+        allFaces.sort((a, b) => a.avgDepth - b.avgDepth);
+
+        // Lens tip position for red dot
+        const lensTip = {
+          x: lensCx + dirX * (lensLen + 0.01),
+          y: lensCy + dirY * (lensLen + 0.01),
+          z: lensCz + dirZ * (lensLen + 0.01),
+        };
+        const lensTipScreen = project(lensTip.x, lensTip.y, lensTip.z);
+
+        // Draw all faces
+        for (const face of allFaces) {
+          ctx.beginPath();
+          ctx.moveTo(face.pts[0].x, face.pts[0].y);
+          for (let i = 1; i < face.pts.length; i++) {
+            ctx.lineTo(face.pts[i].x, face.pts[i].y);
+          }
+          ctx.closePath();
+          ctx.fillStyle = face.color;
           ctx.fill();
-
-          // Lens glass circle
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.arc(lensTipScreen.x, lensTipScreen.y, 5, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+          ctx.lineWidth = 0.8;
           ctx.stroke();
 
-          ctx.fillStyle = "rgba(80, 140, 220, 0.6)";
-          ctx.beginPath();
-          ctx.arc(lensTipScreen.x, lensTipScreen.y, 4, 0, Math.PI * 2);
-          ctx.fill();
+          // Draw red lens dot after lens front face
+          if (face.isFront) {
+            const lensGlow = ctx.createRadialGradient(
+              lensTipScreen.x,
+              lensTipScreen.y,
+              0,
+              lensTipScreen.x,
+              lensTipScreen.y,
+              10,
+            );
+            lensGlow.addColorStop(0, "rgba(255, 60, 60, 0.9)");
+            lensGlow.addColorStop(0.5, "rgba(255, 60, 60, 0.3)");
+            lensGlow.addColorStop(1, "rgba(255, 60, 60, 0)");
+            ctx.fillStyle = lensGlow;
+            ctx.beginPath();
+            ctx.arc(lensTipScreen.x, lensTipScreen.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Lens glass circle
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(lensTipScreen.x, lensTipScreen.y, 5, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = "rgba(80, 140, 220, 0.6)";
+            ctx.beginPath();
+            ctx.arc(lensTipScreen.x, lensTipScreen.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
+
+        // Center crosshair
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.lineWidth = 0.8;
+        const crossSize = 5;
+        ctx.beginPath();
+        ctx.moveTo(centerScreen.x - crossSize, centerScreen.y);
+        ctx.lineTo(centerScreen.x + crossSize, centerScreen.y);
+        ctx.moveTo(centerScreen.x, centerScreen.y - crossSize);
+        ctx.lineTo(centerScreen.x, centerScreen.y + crossSize);
+        ctx.stroke();
+      },
+      [],
+    );
+
+    // Redraw when props change (not during drag — drag triggers its own redraws)
+    useEffect(() => {
+      if (!isDragging.current) {
+        drawSphere(rotation, tilt);
       }
+    }, [rotation, tilt, drawSphere]);
 
-      // Center crosshair
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-      ctx.lineWidth = 0.8;
-      const crossSize = 5;
-      ctx.beginPath();
-      ctx.moveTo(centerScreen.x - crossSize, centerScreen.y);
-      ctx.lineTo(centerScreen.x + crossSize, centerScreen.y);
-      ctx.moveTo(centerScreen.x, centerScreen.y - crossSize);
-      ctx.lineTo(centerScreen.x, centerScreen.y + crossSize);
-      ctx.stroke();
-    },
-    [],
-  );
-
-  // Redraw when props change (not during drag — drag triggers its own redraws)
-  useEffect(() => {
-    if (!isDragging.current) {
-      drawSphere(rotation, tilt);
-    }
-  }, [rotation, tilt, drawSphere]);
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    isDragging.current = true;
-    lastPos.current = { x: e.clientX, y: e.clientY };
-  }, []);
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (!isDragging.current) return;
-      const dx = e.clientX - lastPos.current.x;
-      const dy = e.clientY - lastPos.current.y;
+    const handleMouseDown = useCallback((e: React.MouseEvent) => {
+      isDragging.current = true;
       lastPos.current = { x: e.clientX, y: e.clientY };
+    }, []);
 
-      // Update live values smoothly
-      liveRotation.current += dx * 0.8;
-      liveTilt.current = Math.max(
-        -30,
-        Math.min(60, liveTilt.current - dy * 0.8),
-      );
+    const handleMouseMove = useCallback(
+      (e: React.MouseEvent) => {
+        if (!isDragging.current) return;
+        const dx = e.clientX - lastPos.current.x;
+        const dy = e.clientY - lastPos.current.y;
+        lastPos.current = { x: e.clientX, y: e.clientY };
 
-      // Request a redraw with live values
-      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
-      rafId.current = requestAnimationFrame(() => {
-        drawSphere(liveRotation.current, liveTilt.current, true);
-        rafId.current = null;
-      });
-    },
-    [drawSphere],
-  );
+        // Update live values smoothly
+        liveRotation.current += dx * 0.8;
+        liveTilt.current = Math.max(
+          -30,
+          Math.min(60, liveTilt.current - dy * 0.8),
+        );
 
-  const handleMouseUp = useCallback(() => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
+        // Request a redraw with live values
+        if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+        rafId.current = requestAnimationFrame(() => {
+          drawSphere(liveRotation.current, liveTilt.current, true);
+          rafId.current = null;
+        });
+      },
+      [drawSphere],
+    );
 
-    // Snap to nearest allowed values on release
-    let rawRot = liveRotation.current % 360;
-    if (rawRot < 0) rawRot += 360;
-    const snappedRotation = snapToNearest(rawRot, ROTATION_VALUES);
-    const snappedTilt = snapToNearest(liveTilt.current, TILT_VALUES);
+    const handleMouseUp = useCallback(() => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
 
-    // Update live refs to snapped values
-    liveRotation.current = snappedRotation;
-    liveTilt.current = snappedTilt;
+      // Snap to nearest allowed values on release
+      let rawRot = liveRotation.current % 360;
+      if (rawRot < 0) rawRot += 360;
+      const snappedRotation = snapToNearest(rawRot, ROTATION_VALUES);
+      const snappedTilt = snapToNearest(liveTilt.current, TILT_VALUES);
 
-    // Redraw at snapped position
-    drawSphere(snappedRotation, snappedTilt);
+      // Update live refs to snapped values
+      liveRotation.current = snappedRotation;
+      liveTilt.current = snappedTilt;
 
-    // Notify parent
-    onDragEnd(snappedRotation, snappedTilt);
-  }, [drawSphere, onDragEnd]);
+      // Redraw at snapped position
+      drawSphere(snappedRotation, snappedTilt);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="h-[200px] w-full cursor-grab active:cursor-grabbing"
-      style={{ width: "100%", height: "200px" }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-    />
-  );
-});
+      // Notify parent
+      onDragEnd(snappedRotation, snappedTilt);
+    }, [drawSphere, onDragEnd]);
+
+    return (
+      <canvas
+        ref={canvasRef}
+        className="h-[200px] w-full cursor-grab active:cursor-grabbing"
+        style={{ width: "100%", height: "200px" }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      />
+    );
+  },
+);
 
 // ─── Main Angles Component ─────────────────────────────────────────────────────
 
@@ -834,7 +836,10 @@ export const Angles = () => {
   const handleTiltStep = useCallback(
     (direction: 1 | -1) => {
       const idx = TILT_VALUES.indexOf(angleConfig.tilt);
-      const next = Math.max(0, Math.min(TILT_VALUES.length - 1, idx + direction));
+      const next = Math.max(
+        0,
+        Math.min(TILT_VALUES.length - 1, idx + direction),
+      );
       setTilt(TILT_VALUES[next]);
     },
     [angleConfig.tilt, setTilt],
@@ -851,10 +856,10 @@ export const Angles = () => {
                 <div className="relative aspect-video overflow-hidden rounded-2xl border border-ui-panel-border bg-ui-background shadow-lg">
                   <UploadEntryCard
                     icon={faCrosshairs}
-                    title="ANGLES"
+                    title="Angles"
                     description="Generate new camera angles from a single photo. Upload an image to get started."
-                    accentBackgroundClass="bg-primary/30"
-                    accentBorderClass="border-primary/40"
+                    accentBackgroundClass="bg-lime-500/20"
+                    accentBorderClass="border-lime-500/40"
                     accept="image/*"
                     onFilesSelected={handleLocalImageSelect}
                     primaryLabel="Upload media"
@@ -1001,7 +1006,7 @@ export const Angles = () => {
             <div className="flex items-center gap-2.5 border-b border-ui-panel-border px-4 py-3">
               <FontAwesomeIcon
                 icon={faCrosshairs}
-                className="text-sm text-primary-400"
+                className="text-sm text-lime-400"
               />
               <span className="text-sm font-semibold text-base-fg/90">
                 Angle Controls
@@ -1042,7 +1047,10 @@ export const Angles = () => {
                     onClick={() => handleRotationStep(1)}
                     className="absolute right-0 top-1/2 z-10 -translate-y-1/2 p-1.5 text-base-fg/40 transition-colors hover:text-base-fg/80"
                   >
-                    <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+                    <FontAwesomeIcon
+                      icon={faChevronRight}
+                      className="text-xs"
+                    />
                   </button>
                   <OrbitSphere
                     rotation={angleConfig.rotation}
