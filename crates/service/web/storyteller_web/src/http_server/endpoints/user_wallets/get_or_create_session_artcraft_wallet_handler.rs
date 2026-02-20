@@ -7,7 +7,7 @@ use actix_web::{web, HttpRequest};
 use enums::common::payments_namespace::PaymentsNamespace;
 use log::{error, warn};
 use mysql_queries::queries::wallets::create_new_artcraft_wallet_for_owner_user::create_new_artcraft_wallet_for_owner_user;
-use mysql_queries::queries::wallets::find_primary_wallet_token_for_owner::find_primary_wallet_token_for_owner_using_transaction;
+use mysql_queries::queries::wallets::find_primary_wallet_token_for_owner::find_primary_wallet_token_for_owner_using_connection;
 use serde::{Deserialize, Serialize};
 use sqlx::Acquire;
 use tokens::tokens::wallets::WalletToken;
@@ -19,8 +19,11 @@ pub struct GetOrCreateSessionArtcraftWalletResponse {
   pub wallet_token: WalletToken,
 }
 
+/// NB: This endpoint was created primarily for local testing with new dev accounts
+/// It should be harmless to have in production as wallet creation is idempotent
+/// and (should be) side effect free.
 #[utoipa::path(
-  post,
+  get,
   tag = "Wallets",
   path = "/v1/wallets/session_artcraft_wallet",
   responses(
@@ -53,18 +56,10 @@ pub async fn get_or_create_session_artcraft_wallet_handler(
     None => return Err(CommonWebError::NotAuthorized),
   };
 
-  let mut transaction = mysql_connection
-      .begin()
-      .await
-      .map_err(|err| {
-        error!("Error starting MySQL transaction: {:?}", err);
-        CommonWebError::ServerError
-      })?;
-
-  let maybe_wallet_token = find_primary_wallet_token_for_owner_using_transaction(
+  let maybe_wallet_token = find_primary_wallet_token_for_owner_using_connection(
     &user_token,
     PaymentsNamespace::Artcraft,
-    &mut transaction,
+    &mut mysql_connection,
   ).await.map_err(|err| {
     error!("Error finding primary artcraft wallet for user {:?}: {:?}", user_token, err);
     CommonWebError::ServerError
@@ -76,6 +71,14 @@ pub async fn get_or_create_session_artcraft_wallet_handler(
       wallet_token,
     }));
   }
+
+  let mut transaction = mysql_connection
+      .begin()
+      .await
+      .map_err(|err| {
+        error!("Error starting MySQL transaction: {:?}", err);
+        CommonWebError::ServerError
+      })?;
 
   let wallet_token = create_new_artcraft_wallet_for_owner_user(
     &user_token,

@@ -17,7 +17,7 @@ where
 {
   app.service(web::scope("/v1/wallets")
       .service(web::resource("/session_artcraft_wallet")
-          .route(web::post().to(get_or_create_session_artcraft_wallet_handler))
+          .route(web::get().to(get_or_create_session_artcraft_wallet_handler))
           .route(web::head().to(|| HttpResponse::Ok()))
       )
   )
