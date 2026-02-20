@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = MediaFileOriginModelType::all_variants();
-      assert_eq!(variants.len(), 15);
+      assert_eq!(variants.len(), 18);
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::FaceFusion));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::F5TTS));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginModelType::LivePortrait));
