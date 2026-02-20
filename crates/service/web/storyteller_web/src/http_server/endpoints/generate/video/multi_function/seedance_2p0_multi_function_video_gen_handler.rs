@@ -332,7 +332,7 @@ pub async fn seedance_2p0_multi_function_video_gen_handler(
     _ => vec![gen_response.order_id],
   };
 
-  let mut first_job_token: Option<InferenceJobToken> = None;
+  let mut all_job_tokens: Vec<InferenceJobToken> = Vec::with_capacity(order_ids.len());
 
   for (i, order_id) in order_ids.iter().enumerate() {
     let job_token = if i == 0 {
@@ -366,9 +366,7 @@ pub async fn seedance_2p0_multi_function_video_gen_handler(
 
     match db_result {
       Ok(token) => {
-        if first_job_token.is_none() {
-          first_job_token = Some(token);
-        }
+        all_job_tokens.push(token);
       }
       Err(err) => {
         warn!("Error inserting seedance2pro inference job (order_id={}): {:?}", order_id, err);
@@ -379,7 +377,7 @@ pub async fn seedance_2p0_multi_function_video_gen_handler(
     }
   }
 
-  let job_token = first_job_token.ok_or_else(|| {
+  let first_job_token = all_job_tokens.first().cloned().ok_or_else(|| {
     error!("No inference job token was created");
     CommonWebError::ServerError
   })?;
@@ -394,6 +392,7 @@ pub async fn seedance_2p0_multi_function_video_gen_handler(
 
   Ok(Json(Seedance2p0MultiFunctionVideoGenResponse {
     success: true,
-    inference_job_token: job_token,
+    inference_job_token: first_job_token,
+    all_inference_job_tokens: all_job_tokens,
   }))
 }

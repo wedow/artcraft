@@ -59,5 +59,10 @@ pub enum Seedance2p0BatchCount {
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct Seedance2p0MultiFunctionVideoGenResponse {
   pub success: bool,
+
+  /// The first inference job token (always present).
   pub inference_job_token: InferenceJobToken,
+
+  /// All inference job tokens for the batch (includes `inference_job_token` as the first entry).
+  pub all_inference_job_tokens: Vec<InferenceJobToken>,
 }
