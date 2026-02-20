@@ -38,6 +38,8 @@ const ENV_ACCESS_KEY: &str = "ACCESS_KEY";
 const ENV_SECRET_KEY: &str = "SECRET_KEY";
 const ENV_REGION_NAME: &str = "REGION_NAME";
 const ENV_PUBLIC_BUCKET_NAME: &str = "PUBLIC_BUCKET_NAME";
+const ENV_S3_ENDPOINT: &str = "S3_COMPATIBLE_ENDPOINT_URL";
+const ENV_SEEDANCE2PRO_COOKIES : &str = "SEEDANCE2PRO_COOKIES";
 
 #[actix_web::main]
 async fn main() -> AnyhowResult<()> {
@@ -78,11 +80,8 @@ async fn main() -> AnyhowResult<()> {
   let secret_key = easyenv::get_env_string_required(ENV_SECRET_KEY)?;
   let region_name = easyenv::get_env_string_required(ENV_REGION_NAME)?;
   let public_bucket_name = easyenv::get_env_string_required(ENV_PUBLIC_BUCKET_NAME)?;
+  let s3_compatible_endpoint_url = easyenv::get_env_string_required(ENV_S3_ENDPOINT)?;
 
-  let s3_compatible_endpoint_url = easyenv::get_env_string_or_default(
-    "S3_COMPATIBLE_ENDPOINT_URL",
-    "https://storage.googleapis.com",
-  );
   let bucket_timeout = easyenv::get_env_duration_seconds_or_default(
     "BUCKET_TIMEOUT_SECONDS",
     Duration::from_secs(60 * 5),
@@ -99,13 +98,13 @@ async fn main() -> AnyhowResult<()> {
   )?;
 
   // Seedance2Pro session from cookie string
-  let seedance2pro_cookies = easyenv::get_env_string_required("SEEDANCE2PRO_COOKIES")?;
+  let seedance2pro_cookies = easyenv::get_env_string_required(ENV_SEEDANCE2PRO_COOKIES)?;
   let seedance2pro_session = Seedance2ProSession::from_cookies_string(seedance2pro_cookies);
 
   // How often to poll for results (default: 15 seconds)
   let poll_interval_millis: u64 = easyenv::get_env_num(
     "SEEDANCE_POLL_INTERVAL_MILLIS",
-    15_000,
+    5_000,
   )?;
 
   let application_shutdown = RelaxedAtomicBool::new(false);

@@ -56,6 +56,8 @@ FROM generic_inference_jobs as jobs
 WHERE jobs.maybe_external_third_party = ?
   AND jobs.status NOT IN ('complete_success', 'complete_failure')
   AND jobs.maybe_external_third_party_id IS NOT NULL
+
+LIMIT 25000
     "#,
     InferenceJobExternalThirdParty::Seedance2Pro.to_str(),
   )

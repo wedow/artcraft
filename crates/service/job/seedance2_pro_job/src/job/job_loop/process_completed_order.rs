@@ -10,6 +10,7 @@ use enums::by_table::media_files::media_file_origin_product_category::MediaFileO
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use errors::AnyhowResult;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
+use mysql_queries::queries::generic_inference::job::mark_generic_inference_job_failure::mark_generic_inference_job_failure;
 use mysql_queries::queries::generic_inference::seedance2pro::list_pending_seedance2pro_jobs::PendingSeedance2ProJob;
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_successfully_done_by_token::mark_generic_inference_job_successfully_done_by_token;
@@ -17,6 +18,9 @@ use seedance2pro::requests::poll_orders::poll_orders::OrderStatus;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
 use crate::job_dependencies::JobDependencies;
+
+const PREFIX : &str = "artcraft_seedance2_";
+const SUFFIX : &str = ".mp4";
 
 /// Download the completed video, upload to bucket, create media file record, and mark job done.
 pub async fn process_completed_order(
@@ -66,7 +70,7 @@ pub async fn process_completed_order(
     .map_err(|err| anyhow!("error hashing video: {:?}", err))?;
 
   // Build the bucket path.
-  let bucket_path = MediaFileBucketPath::from_object_hash(&checksum, None, Some(".mp4"));
+  let bucket_path = MediaFileBucketPath::from_object_hash(&checksum, Some(PREFIX), Some(SUFFIX));
 
   let object_path = bucket_path.get_full_object_path_str();
 
@@ -99,8 +103,8 @@ pub async fn process_completed_order(
     .creator_set_visibility(job.creator_set_visibility)
     .media_file_class(MediaFileClass::Video)
     .media_file_type(MediaFileType::Mp4)
-    .media_file_origin_category(MediaFileOriginCategory::Processed)
-    .media_file_origin_product_category(MediaFileOriginProductCategory::ImageGeneration)
+    .media_file_origin_category(MediaFileOriginCategory::Inference)
+    .media_file_origin_product_category(MediaFileOriginProductCategory::VideoGeneration)
     .mime_type("video/mp4")
     .file_size_bytes(video_bytes.len() as u64)
     .maybe_frame_width(maybe_frame_width)

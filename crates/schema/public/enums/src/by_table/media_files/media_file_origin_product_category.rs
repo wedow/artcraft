@@ -66,6 +66,9 @@ pub enum MediaFileOriginProductCategory {
   #[serde(rename = "image_gen")]
   ImageGeneration,
 
+  #[serde(rename = "video_gen")]
+  VideoGeneration,
+
   // Media files for video filters
   #[deprecated(note = "This isn't relevant product surface area anymore")]
   #[serde(rename = "video_filter")]
@@ -98,6 +101,7 @@ impl MediaFileOriginProductCategory {
       Self::ZeroShotVoice => "zs_voice",
       Self::Mocap => "mocap",
       Self::ImageGeneration => "image_gen",
+      Self::VideoGeneration => "video_gen",
       Self::VideoFilter => "video_filter",
       Self::Workflow => "workflow",
     }
@@ -117,6 +121,7 @@ impl MediaFileOriginProductCategory {
       "zs_voice" => Ok(Self::ZeroShotVoice),
       "mocap" => Ok(Self::Mocap),
       "image_gen" => Ok(Self::ImageGeneration),
+      "video_gen" => Ok(Self::VideoGeneration),
       "video_filter" => Ok(Self::VideoFilter),
       "workflow" => Ok(Self::Workflow),
       _ => Err(format!("invalid value: {:?}", value)),
@@ -139,6 +144,7 @@ impl MediaFileOriginProductCategory {
       Self::ZeroShotVoice,
       Self::Mocap,
       Self::ImageGeneration,
+      Self::VideoGeneration,
       Self::VideoFilter,
       Self::Workflow,
     ])
@@ -167,6 +173,7 @@ mod tests {
       assert_serialization(MediaFileOriginProductCategory::ZeroShotVoice, "zs_voice");
       assert_serialization(MediaFileOriginProductCategory::Mocap, "mocap");
       assert_serialization(MediaFileOriginProductCategory::ImageGeneration, "image_gen");
+      assert_serialization(MediaFileOriginProductCategory::VideoGeneration, "video_gen");
       assert_serialization(MediaFileOriginProductCategory::VideoFilter, "video_filter");
       assert_serialization(MediaFileOriginProductCategory::Workflow, "workflow");
     }
@@ -185,6 +192,7 @@ mod tests {
       assert_eq!(MediaFileOriginProductCategory::ZeroShotVoice.to_str(), "zs_voice");
       assert_eq!(MediaFileOriginProductCategory::Mocap.to_str(), "mocap");
       assert_eq!(MediaFileOriginProductCategory::ImageGeneration.to_str(), "image_gen");
+      assert_eq!(MediaFileOriginProductCategory::VideoGeneration.to_str(), "video_gen");
       assert_eq!(MediaFileOriginProductCategory::VideoFilter.to_str(), "video_filter");
       assert_eq!(MediaFileOriginProductCategory::Workflow.to_str(), "workflow");
     }
@@ -203,6 +211,7 @@ mod tests {
       assert_eq!(MediaFileOriginProductCategory::from_str("zs_voice").unwrap(), MediaFileOriginProductCategory::ZeroShotVoice);
       assert_eq!(MediaFileOriginProductCategory::from_str("mocap").unwrap(), MediaFileOriginProductCategory::Mocap);
       assert_eq!(MediaFileOriginProductCategory::from_str("image_gen").unwrap(),MediaFileOriginProductCategory::ImageGeneration);
+      assert_eq!(MediaFileOriginProductCategory::from_str("video_gen").unwrap(), MediaFileOriginProductCategory::VideoGeneration);
       assert_eq!(MediaFileOriginProductCategory::from_str("video_filter").unwrap(), MediaFileOriginProductCategory::VideoFilter);
       assert_eq!(MediaFileOriginProductCategory::from_str("workflow").unwrap(), MediaFileOriginProductCategory::Workflow);
     }
@@ -210,7 +219,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = MediaFileOriginProductCategory::all_variants();
-      assert_eq!(variants.len(), 14);
+      assert_eq!(variants.len(), 15);
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::Unknown));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::FaceAnimator));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::FaceFusion));
@@ -223,6 +232,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::ZeroShotVoice));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::Mocap));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::ImageGeneration));
+      assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::VideoGeneration));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::VideoFilter));
       assert_eq!(variants.pop_first(), Some(MediaFileOriginProductCategory::Workflow));
       assert_eq!(variants.pop_first(), None);
