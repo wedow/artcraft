@@ -5,6 +5,7 @@ use crate::http_server::common_responses::common_web_error::CommonWebError;
 use crate::http_server::endpoints::generate::common::payments_error_test::payments_error_test;
 use crate::http_server::validations::validate_idempotency_token_format::validate_idempotency_token_format;
 use crate::state::server_state::ServerState;
+use crate::util::http_download_url_to_bytes::http_download_url_to_bytes;
 use crate::util::lookup::lookup_image_urls_as_map::lookup_image_urls_as_map;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest};
@@ -360,16 +361,10 @@ async fn upload_to_seedance2pro(
   session: &Seedance2ProSession,
   our_cdn_url: &str,
 ) -> Result<String, CommonWebError> {
-  let image_bytes = reqwest::get(our_cdn_url)
+  let image_bytes = http_download_url_to_bytes(our_cdn_url)
       .await
       .map_err(|err| {
         warn!("Error downloading media file from CDN: {:?}", err);
-        CommonWebError::ServerError
-      })?
-      .bytes()
-      .await
-      .map_err(|err| {
-        warn!("Error reading media file bytes: {:?}", err);
         CommonWebError::ServerError
       })?
       .to_vec();
