@@ -91,7 +91,7 @@ interface HistoryNodeData {
   lineNodes: LineNode[];
 }
 
-interface SceneState {
+export interface SceneState {
   // Nodes
   nodes: Node[];
   selectedNodeIds: string[];
