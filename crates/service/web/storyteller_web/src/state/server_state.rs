@@ -92,7 +92,9 @@ pub struct ServerState {
   pub auto_gc_bucket_client: BucketClient,
 
   pub fal: FalData,
-  
+
+  pub seedance2pro: Seedance2ProData,
+
   pub openai: OpenAiData,
   
   pub resend: ResendData,
@@ -309,6 +311,13 @@ pub struct TrollBans {
 pub struct FalData {
   pub api_key: FalApiKey,
   pub webhook_url: String,
+}
+
+/// Seedance 2 Pro integration
+#[derive(Clone)]
+pub struct Seedance2ProData {
+  /// Cookie string for seedance2-pro.com
+  pub cookies: String,
 }
 
 /// OpenAI integration

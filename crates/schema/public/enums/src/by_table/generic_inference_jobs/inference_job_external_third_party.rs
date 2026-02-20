@@ -16,6 +16,10 @@ pub enum InferenceJobExternalThirdParty {
   #[serde(rename = "fal")]
   #[default]
   Fal,
+
+  /// Seedance 2 Pro jobs
+  #[serde(rename = "seedance2pro")]
+  Seedance2Pro,
 }
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
@@ -27,12 +31,14 @@ impl InferenceJobExternalThirdParty {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::Fal => "fal",
+      Self::Seedance2Pro => "seedance2pro",
     }
   }
 
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
       "fal" => Ok(Self::Fal),
+      "seedance2pro" => Ok(Self::Seedance2Pro),
       _ => Err(format!("invalid value: {:?}", value)),
     }
   }
@@ -42,6 +48,7 @@ impl InferenceJobExternalThirdParty {
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
       Self::Fal,
+      Self::Seedance2Pro,
     ])
   }
 }
@@ -57,22 +64,25 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(InferenceJobExternalThirdParty::Fal, "fal");
+      assert_serialization(InferenceJobExternalThirdParty::Seedance2Pro, "seedance2pro");
     }
 
     #[test]
     fn to_str() {
       assert_eq!(InferenceJobExternalThirdParty::Fal.to_str(), "fal");
+      assert_eq!(InferenceJobExternalThirdParty::Seedance2Pro.to_str(), "seedance2pro");
     }
 
     #[test]
     fn from_str() {
       assert_eq!(InferenceJobExternalThirdParty::from_str("fal").unwrap(), InferenceJobExternalThirdParty::Fal);
+      assert_eq!(InferenceJobExternalThirdParty::from_str("seedance2pro").unwrap(), InferenceJobExternalThirdParty::Seedance2Pro);
     }
 
     #[test]
     fn all_variants() {
       // Static check
-      const EXPECTED_COUNT : usize = 1;
+      const EXPECTED_COUNT : usize = 2;
       
       assert_eq!(InferenceJobExternalThirdParty::all_variants().len(), EXPECTED_COUNT);
       assert_eq!(InferenceJobExternalThirdParty::iter().len(), EXPECTED_COUNT);
@@ -103,7 +113,7 @@ mod tests {
 
     #[test]
     fn serialized_length_ok_for_database() {
-      const MAX_LENGTH : usize = 32;
+      const MAX_LENGTH : usize = 16;
       for variant in InferenceJobExternalThirdParty::all_variants() {
         let serialized = variant.to_str();
         assert!(serialized.len() > 0, "variant {:?} is too short", variant);

@@ -100,6 +100,10 @@ pub enum PublicInferenceJobType {
   /// Sora GPT 4o image gen
   #[serde(rename = "image_gen_api")]
   ImageGenApi,
+
+  /// Seedance 2 Pro video generation jobs. We poll for results.
+  #[serde(rename = "seedance2pro_queue")]
+  Seedance2ProQueue,
 }
 
 /// NB: Legacy API for older code.
@@ -130,6 +134,7 @@ impl PublicInferenceJobType {
       InferenceJobType::BevyToWorkflow => Self::BevyToWorkflow,
       InferenceJobType::RerenderAVideo => Self::RerenderAVideo,
       InferenceJobType::ImageGenApi => Self::ImageGenApi,
+      InferenceJobType::Seedance2ProQueue => Self::Seedance2ProQueue,
     }
   }
   
@@ -153,6 +158,7 @@ impl PublicInferenceJobType {
       Self::SoVitsSvc => InferenceJobType::SoVitsSvc,
       Self::StableDiffusion => InferenceJobType::StableDiffusion,
       Self::ImageGenApi => InferenceJobType::ImageGenApi,
+      Self::Seedance2ProQueue => InferenceJobType::Seedance2ProQueue,
       Self::StyleTTS2 => InferenceJobType::StyleTTS2,
       Self::Tacotron2 => InferenceJobType::Tacotron2,
       Self::Unknown => InferenceJobType::Unknown,

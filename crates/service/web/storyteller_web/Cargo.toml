@@ -54,6 +54,7 @@ enums_public.workspace = true
 errors.workspace = true
 fal_client.workspace = true
 filesys.workspace = true
+seedance2pro.workspace = true
 google_sign_in = { path = "../../../api_clients/google_sign_in" }
 hashing = { path = "../../../lib/files/hashing" }
 http_server_common = { path = "../../../lib/deprecated/http_server_common" }

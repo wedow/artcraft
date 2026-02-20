@@ -18,7 +18,11 @@ pub enum InferenceJobType {
   /// Fal jobs do not run on our job runners.
   /// Instead, we receive web hook updates from Fal.
   FalQueue,
-  
+
+  /// Seedance 2 Pro jobs. We poll for results.
+  #[serde(rename = "seedance2pro_queue")]
+  Seedance2ProQueue,
+
   /// Storyteller Studio and Video Style Transfer Jobs (which we may want to split).
   /// These run in Comfy.
   /// TODO(bt,2024-07-15): We may segregate these two job types in the future
@@ -110,6 +114,7 @@ impl InferenceJobType {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::FalQueue => "fal_queue",
+      Self::Seedance2ProQueue => "seedance2pro_queue",
       Self::VideoRender => "video_render",
       Self::LivePortrait => "live_portrait",
       Self::FaceFusion => "face_fusion",
@@ -136,6 +141,7 @@ impl InferenceJobType {
   pub fn from_str(value: &str) -> Result<Self, String> {
     match value {
       "fal_queue" => Ok(Self::FalQueue),
+      "seedance2pro_queue" => Ok(Self::Seedance2ProQueue),
       "video_render" => Ok(Self::VideoRender),
       "live_portrait" => Ok(Self::LivePortrait),
       "face_fusion" => Ok(Self::FaceFusion),
@@ -165,6 +171,7 @@ impl InferenceJobType {
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
       Self::FalQueue,
+      Self::Seedance2ProQueue,
       Self::VideoRender,
       Self::LivePortrait,
       Self::FaceFusion,
@@ -205,6 +212,7 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(InferenceJobType::FalQueue, "fal_queue");
+      assert_serialization(InferenceJobType::Seedance2ProQueue, "seedance2pro_queue");
       assert_serialization(InferenceJobType::VideoRender, "video_render");
       assert_serialization(InferenceJobType::LivePortrait, "live_portrait");
       assert_serialization(InferenceJobType::FaceFusion, "face_fusion");
@@ -230,6 +238,7 @@ mod tests {
     #[test]
     fn to_str() {
       assert_eq!(InferenceJobType::FalQueue.to_str(), "fal_queue");
+      assert_eq!(InferenceJobType::Seedance2ProQueue.to_str(), "seedance2pro_queue");
       assert_eq!(InferenceJobType::VideoRender.to_str(), "video_render");
       assert_eq!(InferenceJobType::LivePortrait.to_str(), "live_portrait");
       assert_eq!(InferenceJobType::FaceFusion.to_str(), "face_fusion");
@@ -255,6 +264,7 @@ mod tests {
     #[test]
     fn from_str() {
       assert_eq!(InferenceJobType::from_str("fal_queue").unwrap(), InferenceJobType::FalQueue);
+      assert_eq!(InferenceJobType::from_str("seedance2pro_queue").unwrap(), InferenceJobType::Seedance2ProQueue);
       assert_eq!(InferenceJobType::from_str("video_render").unwrap(), InferenceJobType::VideoRender);
       assert_eq!(InferenceJobType::from_str("live_portrait").unwrap(), InferenceJobType::LivePortrait);
       assert_eq!(InferenceJobType::from_str("face_fusion").unwrap(), InferenceJobType::FaceFusion);
@@ -280,7 +290,7 @@ mod tests {
     #[test]
     fn all_variants() {
       // Static check
-      const EXPECTED_COUNT : usize = 21;
+      const EXPECTED_COUNT : usize = 22;
       
       assert_eq!(InferenceJobType::all_variants().len(), EXPECTED_COUNT);
       assert_eq!(InferenceJobType::iter().len(), EXPECTED_COUNT);
