@@ -16,4 +16,5 @@ pub fn add_artcraft_3d(cors: Cors, _is_production: bool) -> Cors {
       .allowed_origin("http://localhost:5175") // If already started
       .allowed_origin("https://macaroni-1.tailce84f.ts.net") // TODO
       .allowed_origin("https://halide.tailce84f.ts.net") // TODO
+      .allowed_origin("https://brandons-macbook-pro.taild62114.ts.net") // TODO
 }
