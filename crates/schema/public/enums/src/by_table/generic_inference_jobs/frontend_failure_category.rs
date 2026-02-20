@@ -42,6 +42,11 @@ pub enum FrontendFailureCategory {
   /// exactly what happened. We'll retry their workload in any case.
   #[serde(rename = "retryable_worker_error")]
   RetryableWorkerError,
+
+  /// Model content rules were violated
+  /// Eg. Seedance 2 will report: "your input text violates platform rules. please modify and try again"
+  #[serde(rename = "model_rules_violation")]
+  ModelRulesViolation,
 }
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
@@ -56,6 +61,7 @@ impl FrontendFailureCategory {
       Self::KeepAliveElapsed => "keep_alive_elapsed",
       Self::NotYetImplemented => "not_yet_implemented",
       Self::RetryableWorkerError => "retryable_worker_error",
+      Self::ModelRulesViolation => "model_rules_violation",
     }
   }
 
@@ -65,6 +71,7 @@ impl FrontendFailureCategory {
       "keep_alive_elapsed" => Ok(Self::KeepAliveElapsed),
       "not_yet_implemented" => Ok(Self::NotYetImplemented),
       "retryable_worker_error" => Ok(Self::RetryableWorkerError),
+      "model_rules_violation" => Ok(Self::ModelRulesViolation),
       _ => Err(format!("invalid value: {:?}", value)),
     }
   }
@@ -77,6 +84,7 @@ impl FrontendFailureCategory {
       Self::KeepAliveElapsed,
       Self::NotYetImplemented,
       Self::RetryableWorkerError,
+      Self::ModelRulesViolation,
     ])
   }
 }
@@ -95,6 +103,7 @@ mod tests {
       assert_serialization(FrontendFailureCategory::KeepAliveElapsed, "keep_alive_elapsed");
       assert_serialization(FrontendFailureCategory::NotYetImplemented, "not_yet_implemented");
       assert_serialization(FrontendFailureCategory::RetryableWorkerError, "retryable_worker_error");
+      assert_serialization(FrontendFailureCategory::ModelRulesViolation, "model_rules_violation");
     }
 
     #[test]
@@ -103,6 +112,7 @@ mod tests {
       assert_eq!(FrontendFailureCategory::KeepAliveElapsed.to_str(), "keep_alive_elapsed");
       assert_eq!(FrontendFailureCategory::NotYetImplemented.to_str(), "not_yet_implemented");
       assert_eq!(FrontendFailureCategory::RetryableWorkerError.to_str(), "retryable_worker_error");
+      assert_eq!(FrontendFailureCategory::ModelRulesViolation.to_str(), "model_rules_violation");
     }
 
     #[test]
@@ -111,16 +121,18 @@ mod tests {
       assert_eq!(FrontendFailureCategory::from_str("keep_alive_elapsed").unwrap(), FrontendFailureCategory::KeepAliveElapsed);
       assert_eq!(FrontendFailureCategory::from_str("not_yet_implemented").unwrap(), FrontendFailureCategory::NotYetImplemented);
       assert_eq!(FrontendFailureCategory::from_str("retryable_worker_error").unwrap(), FrontendFailureCategory::RetryableWorkerError);
+      assert_eq!(FrontendFailureCategory::from_str("model_rules_violation").unwrap(), FrontendFailureCategory::ModelRulesViolation);
     }
 
     #[test]
     fn all_variants() {
       let mut variants = FrontendFailureCategory::all_variants();
-      assert_eq!(variants.len(), 4);
+      assert_eq!(variants.len(), 5);
       assert_eq!(variants.pop_first(), Some(FrontendFailureCategory::FaceNotDetected));
       assert_eq!(variants.pop_first(), Some(FrontendFailureCategory::KeepAliveElapsed));
       assert_eq!(variants.pop_first(), Some(FrontendFailureCategory::NotYetImplemented));
       assert_eq!(variants.pop_first(), Some(FrontendFailureCategory::RetryableWorkerError));
+      assert_eq!(variants.pop_first(), Some(FrontendFailureCategory::ModelRulesViolation));
       assert_eq!(variants.pop_first(), None);
     }
   }

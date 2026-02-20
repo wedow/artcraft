@@ -6,7 +6,7 @@ use log::{error, info, warn};
 use mysql_queries::queries::generic_inference::seedance2pro::list_pending_seedance2pro_jobs::list_pending_seedance2pro_jobs;
 use seedance2pro::requests::poll_orders::poll_orders::{poll_orders, PollOrdersArgs, TaskStatus};
 
-use crate::job::job_loop::process_completed_order::{mark_job_failed_by_token, process_completed_order};
+use crate::job::job_loop::process_completed_order::{mark_job_failed, process_completed_order};
 use crate::job_dependencies::JobDependencies;
 
 pub async fn main_loop(job_dependencies: JobDependencies) {
@@ -98,7 +98,7 @@ async fn run_poll_iteration(deps: &JobDependencies) -> anyhow::Result<()> {
           "Order {} failed: {}. Marking job {} failed.",
           order.order_id, reason, job.job_token.as_str()
         );
-        if let Err(err) = mark_job_failed_by_token(&deps.mysql_pool, &job.job_token, Some(reason)).await {
+        if let Err(err) = mark_job_failed(deps, &job, reason).await {
           error!(
             "Error marking job {} as failed: {:?}",
             job.job_token.as_str(),

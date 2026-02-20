@@ -1,6 +1,5 @@
 use anyhow::anyhow;
-use log::{error, info, warn};
-use sqlx::MySqlPool;
+use log::{error, info};
 
 use bucket_paths::legacy::typified_paths::public::media_files::bucket_file_path::MediaFileBucketPath;
 use enums::by_table::generic_inference_jobs::inference_result_type::InferenceResultType;
@@ -10,13 +9,11 @@ use enums::by_table::media_files::media_file_origin_product_category::MediaFileO
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use errors::AnyhowResult;
 use hashing::sha256::sha256_hash_bytes::sha256_hash_bytes;
-use mysql_queries::queries::generic_inference::job::mark_generic_inference_job_failure::mark_generic_inference_job_failure;
+use mysql_queries::queries::generic_inference::job::mark_job_failed_by_token::mark_job_failed_by_token;
 use mysql_queries::queries::generic_inference::seedance2pro::list_pending_seedance2pro_jobs::PendingSeedance2ProJob;
 use mysql_queries::queries::media_files::create::insert_builder::media_file_insert_builder::MediaFileInsertBuilder;
 use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_successfully_done_by_token::mark_generic_inference_job_successfully_done_by_token;
 use seedance2pro::requests::poll_orders::poll_orders::OrderStatus;
-use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-
 use crate::job_dependencies::JobDependencies;
 
 const PREFIX : &str = "artcraft_seedance2_";
@@ -148,35 +145,16 @@ pub async fn process_completed_order(
 }
 
 /// Mark a job as permanently failed.
-pub async fn mark_job_failed_by_token(
-  pool: &MySqlPool,
-  job_token: &InferenceJobToken,
-  maybe_reason: Option<&str>,
+pub async fn mark_job_failed(
+  deps: &JobDependencies,
+  job: &PendingSeedance2ProJob,
+  fail_reason: &str,
 ) -> AnyhowResult<()> {
-  let reason = maybe_reason.unwrap_or("seedance2pro task failed");
-  let mut reason = reason.trim().to_string();
-  reason.truncate(512);
-
-  sqlx::query!(
-    r#"
-UPDATE generic_inference_jobs
-SET
-  status = "complete_failure",
-  failure_reason = ?,
-  internal_debugging_failure_reason = ?,
-  retry_at = NULL
-WHERE token = ?
-    "#,
-    reason,
-    reason,
-    job_token.as_str()
-  )
-    .execute(pool)
-    .await
-    .map_err(|err| {
-      warn!("Error marking job {} failed: {:?}", job_token.as_str(), err);
-      anyhow!("db error marking job failed: {:?}", err)
-    })?;
-
-  Ok(())
+  mark_job_failed_by_token(
+    &deps.mysql_pool,
+    &job.job_token,
+    Some(fail_reason),
+    fail_reason,
+    None,
+  ).await
 }
