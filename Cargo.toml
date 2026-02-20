@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 
+
 # This block defines the workspace members.
 # When we add a library or binary crate, it needs an entry here.
 members = [
@@ -246,6 +247,7 @@ url_utils = { path = "crates/lib/url_utils" }
 users = { path = "crates/lib/users" }
 web_base64 = { path = "crates/lib/data/web_base64" }
 world_labs_client = { path = "crates/api_clients/world_labs_client" }
+
 
 # External libs
 # Centrally pinned versions so that we can uniformly upgrade/downgrade versions across the workspace
