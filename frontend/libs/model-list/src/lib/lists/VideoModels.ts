@@ -139,6 +139,23 @@ export const VIDEO_MODELS: VideoModel[] = [
     startFrame: true,
     endFrame: true,
     requiresImage: false,
+    sizeOptions: [
+      {
+        tauriValue: "landscape",
+        textLabel: "Landscape",
+        icon: SizeIconOption.Landscape,
+      },
+      {
+        tauriValue: "portrait",
+        textLabel: "Portrait",
+        icon: SizeIconOption.Portrait,
+      },
+      {
+        tauriValue: "square",
+        textLabel: "Square",
+        icon: SizeIconOption.Square,
+      },
+    ],
     progressBarTime: 100000,
   }),
   new VideoModel({
