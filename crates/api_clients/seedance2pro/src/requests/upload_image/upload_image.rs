@@ -1,12 +1,12 @@
 use crate::error::seedance2pro_client_error::Seedance2ProClientError;
 use crate::error::seedance2pro_error::Seedance2ProError;
 use crate::error::seedance2pro_generic_api_error::Seedance2ProGenericApiError;
+use crate::utils::common_headers::FIREFOX_USER_AGENT;
 use log::info;
 use url::Url;
 use wreq::Client;
 use wreq_util::Emulation;
 
-const FIREFOX_USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0";
 const STATIC_BASE_URL: &str = "https://static.seedance2-pro.com";
 
 pub struct UploadImageArgs {

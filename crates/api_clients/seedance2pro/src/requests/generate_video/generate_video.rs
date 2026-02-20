@@ -4,12 +4,12 @@ use crate::error::seedance2pro_error::Seedance2ProError;
 use crate::error::seedance2pro_generic_api_error::Seedance2ProGenericApiError;
 use crate::error::seedance2pro_specific_api_error::Seedance2ProSpecificApiError;
 use crate::requests::generate_video::request_types::*;
+use crate::utils::common_headers::FIREFOX_USER_AGENT;
 use log::info;
 use wreq::Client;
 use wreq_util::Emulation;
 
 const RUN_TASK_URL: &str = "https://seedance2-pro.com/api/trpc/workflow.runTask?batch=1";
-const FIREFOX_USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0";
 
 // --- Request args ---
 
