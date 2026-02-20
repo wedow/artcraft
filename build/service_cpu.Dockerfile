@@ -137,7 +137,13 @@ RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
   $HOME/.cargo/bin/cargo build \
   --release \
-  --bin dummy-service
+  --bin dummy-service \
+
+RUN SQLX_OFFLINE=true \
+  LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
+  $HOME/.cargo/bin/cargo build \
+  --release \
+  --bin seedance2-pro-job
 
 RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
@@ -155,7 +161,7 @@ RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
   $HOME/.cargo/bin/cargo build \
   --release \
-  --bin es-update-job
+  --bin es-update-job \
 
 # Print a report on disk space
 RUN echo "Disk usage at current directory (after all builds):"
@@ -193,6 +199,7 @@ RUN echo -n ${GIT_SHA} > GIT_SHA
 # Copy all the binaries (except those that need a GPU):
 COPY --from=builder /tmp/target/release/storyteller-web /
 COPY --from=builder /tmp/target/release/dummy-service /
+COPY --from=builder /tmp/target/release/seedance2-pro-job /
 COPY --from=builder /tmp/target/release/analytics-job /
 COPY --from=builder /tmp/target/release/email-sender-job  /
 COPY --from=builder /tmp/target/release/es-update-job  /
