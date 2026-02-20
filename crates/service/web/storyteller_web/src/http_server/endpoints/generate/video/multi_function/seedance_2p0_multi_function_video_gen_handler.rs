@@ -42,44 +42,6 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 /// Cost per seedance2pro credit in cents.
 const COST_PER_CREDIT_IN_CENTS: u64 = 1;
 
-async fn upload_to_seedance2pro(
-  session: &Seedance2ProSession,
-  our_cdn_url: &str,
-) -> Result<String, CommonWebError> {
-  let image_bytes = reqwest::get(our_cdn_url)
-      .await
-      .map_err(|err| {
-        warn!("Error downloading media file from CDN: {:?}", err);
-        CommonWebError::ServerError
-      })?
-      .bytes()
-      .await
-      .map_err(|err| {
-        warn!("Error reading media file bytes: {:?}", err);
-        CommonWebError::ServerError
-      })?
-      .to_vec();
-
-  let prepare_result = prepare_image_upload(PrepareImageUploadArgs { session })
-      .await
-      .map_err(|err| {
-        warn!("Error preparing seedance2pro image upload: {:?}", err);
-        CommonWebError::ServerError
-      })?;
-
-  let upload_result = upload_image(UploadImageArgs {
-    upload_url: prepare_result.upload_url,
-    image_bytes,
-  })
-      .await
-      .map_err(|err| {
-        warn!("Error uploading image to seedance2pro: {:?}", err);
-        CommonWebError::ServerError
-      })?;
-
-  Ok(upload_result.public_url)
-}
-
 /// Seedance 2.0 Multi-Function video generation (text-to-video, keyframe, and reference).
 #[utoipa::path(
   post,
@@ -222,10 +184,11 @@ pub async fn seedance_2p0_multi_function_video_gen_handler(
   };
 
   let duration_seconds = request.duration_seconds.unwrap_or(5).clamp(4, 15);
+  let prompt = request.prompt.clone().unwrap_or_else(|| "".to_string());
 
   let video_gen_args = GenerateVideoArgs {
     session: &session,
-    prompt: request.prompt.clone().unwrap_or_default(),
+    prompt,
     resolution,
     duration_seconds,
     batch_count,
@@ -395,4 +358,42 @@ pub async fn seedance_2p0_multi_function_video_gen_handler(
     inference_job_token: first_job_token,
     all_inference_job_tokens: all_job_tokens,
   }))
+}
+
+async fn upload_to_seedance2pro(
+  session: &Seedance2ProSession,
+  our_cdn_url: &str,
+) -> Result<String, CommonWebError> {
+  let image_bytes = reqwest::get(our_cdn_url)
+      .await
+      .map_err(|err| {
+        warn!("Error downloading media file from CDN: {:?}", err);
+        CommonWebError::ServerError
+      })?
+      .bytes()
+      .await
+      .map_err(|err| {
+        warn!("Error reading media file bytes: {:?}", err);
+        CommonWebError::ServerError
+      })?
+      .to_vec();
+
+  let prepare_result = prepare_image_upload(PrepareImageUploadArgs { session })
+      .await
+      .map_err(|err| {
+        warn!("Error preparing seedance2pro image upload: {:?}", err);
+        CommonWebError::ServerError
+      })?;
+
+  let upload_result = upload_image(UploadImageArgs {
+    upload_url: prepare_result.upload_url,
+    image_bytes,
+  })
+      .await
+      .map_err(|err| {
+        warn!("Error uploading image to seedance2pro: {:?}", err);
+        CommonWebError::ServerError
+      })?;
+
+  Ok(upload_result.public_url)
 }
