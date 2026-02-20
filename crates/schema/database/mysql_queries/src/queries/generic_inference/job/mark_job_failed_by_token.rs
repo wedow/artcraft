@@ -6,23 +6,25 @@ use enums::common::job_status_plus::JobStatusPlus;
 use errors::AnyhowResult;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
+pub struct MarkJobFailedByTokenArgs<'a> {
+  pub pool: &'a MySqlPool,
+  pub job_token: &'a InferenceJobToken,
+  pub maybe_public_failure_reason: Option<&'a str>,
+  pub internal_debugging_failure_reason: &'a str,
+  pub maybe_frontend_failure_category: Option<FrontendFailureCategory>,
+}
+
 /// Permanently mark an inference job as failed, looked up by its token.
 /// Unlike `mark_generic_inference_job_failure`, this does not allow retries —
 /// the job will always land in `complete_failure`.
-pub async fn mark_job_failed_by_token(
-  pool: &MySqlPool,
-  job_token: &InferenceJobToken,
-  maybe_public_failure_reason: Option<&str>,
-  internal_debugging_failure_reason: &str,
-  maybe_frontend_failure_category: Option<FrontendFailureCategory>,
-) -> AnyhowResult<()> {
-  let maybe_public_failure_reason = maybe_public_failure_reason.map(|reason| {
+pub async fn mark_job_failed_by_token(args: MarkJobFailedByTokenArgs<'_>) -> AnyhowResult<()> {
+  let maybe_public_failure_reason = args.maybe_public_failure_reason.map(|reason| {
     let mut reason = reason.trim().to_string();
     reason.truncate(512);
     reason
   });
 
-  let mut internal_debugging_failure_reason = internal_debugging_failure_reason.trim().to_string();
+  let mut internal_debugging_failure_reason = args.internal_debugging_failure_reason.trim().to_string();
   internal_debugging_failure_reason.truncate(512);
 
   const FAILURE_STATUS: &str = JobStatusPlus::CompleteFailure.to_str();
@@ -41,10 +43,10 @@ WHERE token = ?
     FAILURE_STATUS,
     maybe_public_failure_reason.as_deref(),
     &internal_debugging_failure_reason,
-    maybe_frontend_failure_category,
-    job_token.as_str()
+    args.maybe_frontend_failure_category,
+    args.job_token.as_str()
   )
-    .execute(pool)
+    .execute(args.pool)
     .await;
 
   match query_result {
