@@ -48,7 +48,7 @@ async fn main() -> AnyhowResult<()> {
     app_name: "seedance2-pro-job",
     default_logging_override: Some(DEFAULT_RUST_LOG),
     config_search_directories: &[".", "./config", "crates/service/job/seedance2_pro_job/config"],
-    ignore_legacy_dot_env_file: false,
+    ignore_legacy_dot_env_file: true,
   })?;
 
   info!("Hostname: {}", &container_environment.hostname);
