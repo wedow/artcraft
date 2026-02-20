@@ -86,7 +86,6 @@ pub async fn insert_generic_inference_job_for_fal_queue_with_apriori_job_token<'
 
   let maybe_external_third_party = InferenceJobExternalThirdParty::Fal;
   
-  let maybe_external_third_party_id = "";
   const STATUS : JobStatusPlus = JobStatusPlus::Pending;
 
   let query = sqlx::query!(
