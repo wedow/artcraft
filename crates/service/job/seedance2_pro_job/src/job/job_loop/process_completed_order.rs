@@ -16,7 +16,7 @@ use mysql_queries::queries::generic_inference::web::mark_generic_inference_job_s
 use seedance2pro::requests::poll_orders::poll_orders::OrderStatus;
 use crate::job_dependencies::JobDependencies;
 
-const PREFIX : &str = "artcraft_seedance2_";
+const PREFIX : &str = "artcraft_";
 const SUFFIX : &str = ".mp4";
 
 /// Download the completed video, upload to bucket, create media file record, and mark job done.
@@ -67,7 +67,7 @@ pub async fn process_completed_order(
     .map_err(|err| anyhow!("error hashing video: {:?}", err))?;
 
   // Build the bucket path.
-  let bucket_path = MediaFileBucketPath::from_object_hash(&checksum, Some(PREFIX), Some(SUFFIX));
+  let bucket_path = MediaFileBucketPath::generate_new(Some(PREFIX), Some(SUFFIX));
 
   let object_path = bucket_path.get_full_object_path_str();
 
