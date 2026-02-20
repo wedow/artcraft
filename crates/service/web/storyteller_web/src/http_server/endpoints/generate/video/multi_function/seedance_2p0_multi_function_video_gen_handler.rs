@@ -39,9 +39,6 @@ use seedance2pro::requests::upload_image::upload_image::{upload_image, UploadIma
 use sqlx::Acquire;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
-/// Cost per seedance2pro credit in cents.
-const COST_PER_CREDIT_IN_CENTS: u64 = 1;
-
 /// Seedance 2.0 Multi-Function video generation (text-to-video, keyframe, and reference).
 #[utoipa::path(
   post,
@@ -199,12 +196,11 @@ pub async fn seedance_2p0_multi_function_video_gen_handler(
 
   // --- Calculate cost and charge wallet ---
 
-  let credits = video_gen_args.estimate_credits();
-  let cost_in_cents = u64::from(credits) * COST_PER_CREDIT_IN_CENTS;
+  let cost_in_cents = video_gen_args.estimate_cost_in_usd_cents(); // NB: ArtCraft credits are 1:1 with USD cents.
 
   let apriori_job_token = InferenceJobToken::generate();
 
-  info!("Charging wallet: {} cents ({} credits)", cost_in_cents, credits);
+  info!("Charging wallet: {} cents ({} credits)", cost_in_cents, cost_in_cents);
 
   attempt_wallet_deduction_else_common_web_error(
     user_token,

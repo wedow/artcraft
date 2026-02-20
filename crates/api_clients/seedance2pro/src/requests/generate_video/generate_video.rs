@@ -52,6 +52,14 @@ impl GenerateVideoArgs<'_> {
     };
     per_video * batch_multiplier
   }
+
+  pub fn estimate_cost_in_usd_cents(&self) -> u64 {
+    // 25000 Credits costs $99.99 as of 2026-02-20
+    // 250 for $1.
+    let credits = self.estimate_credits() as f64;
+    let cost = credits / 250.0 * 100.0;
+    cost.round() as u64
+  }
 }
 
 // --- Public enums ---
@@ -270,10 +278,32 @@ mod tests {
     // Batch 2 = 2×
     assert_eq!(args_with(4, BatchCount::Two).estimate_credits(), 320);
     assert_eq!(args_with(5, BatchCount::Two).estimate_credits(), 400);
+    assert_eq!(args_with(15, BatchCount::Two).estimate_credits(), 1200);
 
     // Batch 4 = 3× (not 4×)
     assert_eq!(args_with(4, BatchCount::Four).estimate_credits(), 480);
     assert_eq!(args_with(5, BatchCount::Four).estimate_credits(), 600);
+    assert_eq!(args_with(15, BatchCount::Four).estimate_credits(), 1800);
+  }
+
+  #[test]
+  fn test_estimate_cost_usd_cents() {
+    // 40 credits per second, batch 1
+    assert_eq!(args_with(4, BatchCount::One).estimate_cost_in_usd_cents(), 64);
+    assert_eq!(args_with(5, BatchCount::One).estimate_cost_in_usd_cents(), 80);
+    assert_eq!(args_with(6, BatchCount::One).estimate_cost_in_usd_cents(), 96);
+    assert_eq!(args_with(7, BatchCount::One).estimate_cost_in_usd_cents(), 112);
+    assert_eq!(args_with(15, BatchCount::One).estimate_cost_in_usd_cents(), 240);
+
+    // Batch 2 = 2×
+    assert_eq!(args_with(4, BatchCount::Two).estimate_cost_in_usd_cents(), 128);
+    assert_eq!(args_with(5, BatchCount::Two).estimate_cost_in_usd_cents(), 160);
+    assert_eq!(args_with(15, BatchCount::Two).estimate_cost_in_usd_cents(), 480);
+
+    // Batch 4 = 3× (not 4×)
+    assert_eq!(args_with(4, BatchCount::Four).estimate_cost_in_usd_cents(), 192);
+    assert_eq!(args_with(5, BatchCount::Four).estimate_cost_in_usd_cents(), 240);
+    assert_eq!(args_with(15, BatchCount::Four).estimate_cost_in_usd_cents(), 720);
   }
 
   fn test_session() -> AnyhowResult<Seedance2ProSession> {
