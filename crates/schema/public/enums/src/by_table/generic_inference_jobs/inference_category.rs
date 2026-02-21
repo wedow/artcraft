@@ -40,6 +40,7 @@ pub enum InferenceCategory {
   ImageGeneration,
 
   /// FAL-powered video generation
+  /// (Also Seedance2-Pro.com)
   #[serde(rename = "video_generation")]
   VideoGeneration,
   
