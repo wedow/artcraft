@@ -1,44 +1,35 @@
 use anyhow::anyhow;
 use log::info;
-use sqlx::MySqlPool;
 use sqlx::{Executor, MySql};
 use std::marker::PhantomData;
 
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
-use enums::by_table::generic_inference_jobs::inference_input_source_token_type::InferenceInputSourceTokenType;
 use enums::by_table::generic_inference_jobs::inference_job_external_third_party::InferenceJobExternalThirdParty;
 use enums::by_table::generic_inference_jobs::inference_job_product_category::InferenceJobProductCategory;
 use enums::by_table::generic_inference_jobs::inference_job_type::InferenceJobType;
-use enums::by_table::generic_inference_jobs::inference_model_type::InferenceModelType;
 use enums::common::job_status_plus::JobStatusPlus;
 use enums::common::visibility::Visibility;
 use tokens::tokens::anonymous_visitor_tracking::AnonymousVisitorTrackingToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::prompts::PromptToken;
 use tokens::tokens::users::UserToken;
 
 use crate::errors::database_query_error::DatabaseQueryError;
 use crate::payloads::generic_inference_args::generic_inference_args::GenericInferenceArgs;
-use crate::queries::generic_inference::fal::insert_generic_inference_job_for_fal_queue::FalCategory;
-use crate::queries::tts::tts_inference_jobs::kill_tts_inference_jobs::JobStatus;
 
-
-pub struct InsertGenericInferenceForFalWithAprioriJobTokenArgs<'e, 'c, E> 
+pub struct InsertGenericInferenceForSeedance2ProWithAprioriJobTokenArgs<'e, 'c, E>
   where E: 'e + Executor<'c, Database = MySql>
 {
   pub uuid_idempotency_token: &'e str,
-  
+
   // NOTE: We'll generate this ahead of time so we can save it with billing info!
   pub apriori_job_token: &'e InferenceJobToken,
 
-  /// The external primary key identifier for the job.
+  /// The external order_id returned by the seedance2pro generate_video call.
   pub maybe_external_third_party_id: &'e str,
-  
-  pub fal_category: FalCategory,
 
   pub maybe_inference_args: Option<GenericInferenceArgs>,
-  
+
   pub maybe_prompt_token: Option<&'e PromptToken>,
 
   pub maybe_creator_user_token: Option<&'e UserToken>,
@@ -47,46 +38,23 @@ pub struct InsertGenericInferenceForFalWithAprioriJobTokenArgs<'e, 'c, E>
   pub creator_set_visibility: Visibility,
 
   pub mysql_executor: E,
-  
-  // TODO: Not sure if this works to tell the compiler we need the lifetime annotation.
-  //  See: https://doc.rust-lang.org/std/marker/struct.PhantomData.html#unused-lifetime-parameters
+
   pub phantom: PhantomData<&'c E>,
 }
 
-pub async fn insert_generic_inference_job_for_fal_queue_with_apriori_job_token<'e, 'c : 'e, E>(args: InsertGenericInferenceForFalWithAprioriJobTokenArgs<'e, 'c, E>)
-  -> Result<InferenceJobToken, DatabaseQueryError>
+pub async fn insert_generic_inference_job_for_seedance2pro_queue_with_apriori_job_token<'e, 'c : 'e, E>(
+  args: InsertGenericInferenceForSeedance2ProWithAprioriJobTokenArgs<'e, 'c, E>
+) -> Result<InferenceJobToken, DatabaseQueryError>
   where E: 'e + Executor<'c, Database = MySql>
 {
-
   let serialized_args_payload = serde_json::ser::to_string(&args.maybe_inference_args)
       .map_err(|_e| anyhow!("could not encode inference args"))?;
 
-  const JOB_TYPE : InferenceJobType = InferenceJobType::FalQueue;
-
-  let (inference_category, product_category) =
-      match args.fal_category {
-        FalCategory::ImageGeneration => (
-          InferenceCategory::ImageGeneration,
-          InferenceJobProductCategory::FalImage
-        ),
-        FalCategory::VideoGeneration => (
-          InferenceCategory::VideoGeneration,
-          InferenceJobProductCategory::FalVideo
-        ),
-        FalCategory::BackgroundRemoval => (
-          InferenceCategory::BackgroundRemoval,
-          InferenceJobProductCategory::FalBgRemoval
-        ),
-        FalCategory::ObjectGeneration => (
-          InferenceCategory::ObjectGeneration,
-          InferenceJobProductCategory::FalObject,
-        ),
-      };
-
-
-  let maybe_external_third_party = InferenceJobExternalThirdParty::Fal;
-  
-  const STATUS : JobStatusPlus = JobStatusPlus::Pending;
+  const JOB_TYPE: InferenceJobType = InferenceJobType::Seedance2ProQueue;
+  const INFERENCE_CATEGORY: InferenceCategory = InferenceCategory::VideoGeneration;
+  const PRODUCT_CATEGORY: InferenceJobProductCategory = InferenceJobProductCategory::Seedance2ProVideo;
+  const EXTERNAL_THIRD_PARTY: InferenceJobExternalThirdParty = InferenceJobExternalThirdParty::Seedance2Pro;
+  const STATUS: JobStatusPlus = JobStatusPlus::Pending;
 
   let query = sqlx::query!(
         r#"
@@ -111,7 +79,7 @@ SET
 
   maybe_download_url = NULL,
   maybe_cover_image_media_file_token = NULL,
-  
+
   maybe_prompt_token = ?,
 
   maybe_raw_inference_text = NULL,
@@ -136,13 +104,13 @@ SET
         args.uuid_idempotency_token,
 
         JOB_TYPE.to_str(),
-    
-        maybe_external_third_party.to_str(),
+
+        EXTERNAL_THIRD_PARTY.to_str(),
         args.maybe_external_third_party_id,
 
-        product_category.to_str(),
-        inference_category.to_str(),
-    
+        PRODUCT_CATEGORY.to_str(),
+        INFERENCE_CATEGORY.to_str(),
+
         args.maybe_prompt_token.map(|t| t.to_string()),
 
         serialized_args_payload,
@@ -163,7 +131,7 @@ SET
     Ok(res) => res.last_insert_id(),
   };
 
-  info!("Insert generic inference job for FAL queue: {} with record ID {}", args.apriori_job_token, record_id);
+  info!("Insert generic inference job for Seedance 2 Pro queue: {} with record ID {}", args.apriori_job_token, record_id);
 
   Ok(args.apriori_job_token.clone())
 }
