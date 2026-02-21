@@ -691,8 +691,6 @@ const PageDraw = () => {
           pendingPlaceholders={pendingGenerations}
           blurredBackgroundUrl={baseImageUrl}
           onImageSelect={(baseImage) => {
-            clearLineNodes();
-            setNodes([]);
             setBaseImageInfo(baseImage);
           }}
           onImageRemove={(baseImage) => {
