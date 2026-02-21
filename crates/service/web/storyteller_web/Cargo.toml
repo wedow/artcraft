@@ -99,7 +99,7 @@ once_cell.workspace = true
 rand.workspace = true
 regex.workspace = true
 strum_macros = "0.26.4"
-time = "0.3.30"
+time = "0.3.36"
 url.workspace = true
 
 # Money

@@ -124,6 +124,8 @@ const LOG_FORMAT : &str =
 #[actix_web::main]
 async fn main() -> AnyhowResult<()> {
 
+  println!("Forcing a rebuild...");
+
   let container_environment = bootstrap(BootstrapArgs {
     app_name: "storyteller-web",
     default_logging_override: Some(DEFAULT_RUST_LOG),
