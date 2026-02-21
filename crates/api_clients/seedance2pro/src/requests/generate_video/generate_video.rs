@@ -35,6 +35,33 @@ pub struct GenerateVideoArgs<'a> {
   pub reference_image_urls: Option<Vec<String>>,
 }
 
+impl GenerateVideoArgs<'_> {
+  /// Estimates the credit cost for this generation request.
+  ///
+  /// Pricing rules:
+  /// - 40 credits per second of video (4s = 160, 15s = 600)
+  /// - Resolution has no effect on cost
+  /// - Input mode (text, keyframe, reference) has no effect on cost
+  /// - Batch 1 = 1×, Batch 2 = 2×, Batch 4 = 3× (not 4×)
+  pub fn estimate_credits(&self) -> u32 {
+    let per_video = u32::from(self.duration_seconds) * 40;
+    let batch_multiplier = match self.batch_count {
+      BatchCount::One => 1,
+      BatchCount::Two => 2,
+      BatchCount::Four => 3, // NB: 3x, not 4x.
+    };
+    per_video * batch_multiplier
+  }
+
+  pub fn estimate_cost_in_usd_cents(&self) -> u64 {
+    // 25000 Credits costs $99.99 as of 2026-02-20
+    // 250 for $1.
+    let credits = self.estimate_credits() as f64;
+    let cost = credits / 250.0 * 100.0;
+    cost.round() as u64
+  }
+}
+
 // --- Public enums ---
 
 /// Video resolution / aspect ratio.
@@ -219,6 +246,65 @@ mod tests {
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
+
+  fn dummy_session() -> Seedance2ProSession {
+    Seedance2ProSession::from_cookies_string(String::new())
+  }
+
+  fn args_with(duration_seconds: u8, batch_count: BatchCount) -> GenerateVideoArgs<'static> {
+    // Safety: the dummy session is leaked so the reference is 'static for test purposes.
+    let session = Box::leak(Box::new(dummy_session()));
+    GenerateVideoArgs {
+      session,
+      prompt: String::new(),
+      resolution: Resolution::Square1x1,
+      duration_seconds,
+      batch_count,
+      start_frame_url: None,
+      end_frame_url: None,
+      reference_image_urls: None,
+    }
+  }
+
+  #[test]
+  fn test_estimate_credits() {
+    // 40 credits per second, batch 1
+    assert_eq!(args_with(4, BatchCount::One).estimate_credits(), 160);
+    assert_eq!(args_with(5, BatchCount::One).estimate_credits(), 200);
+    assert_eq!(args_with(6, BatchCount::One).estimate_credits(), 240);
+    assert_eq!(args_with(7, BatchCount::One).estimate_credits(), 280);
+    assert_eq!(args_with(15, BatchCount::One).estimate_credits(), 600);
+
+    // Batch 2 = 2×
+    assert_eq!(args_with(4, BatchCount::Two).estimate_credits(), 320);
+    assert_eq!(args_with(5, BatchCount::Two).estimate_credits(), 400);
+    assert_eq!(args_with(15, BatchCount::Two).estimate_credits(), 1200);
+
+    // Batch 4 = 3× (not 4×)
+    assert_eq!(args_with(4, BatchCount::Four).estimate_credits(), 480);
+    assert_eq!(args_with(5, BatchCount::Four).estimate_credits(), 600);
+    assert_eq!(args_with(15, BatchCount::Four).estimate_credits(), 1800);
+  }
+
+  #[test]
+  fn test_estimate_cost_usd_cents() {
+    // 40 credits per second, batch 1
+    assert_eq!(args_with(4, BatchCount::One).estimate_cost_in_usd_cents(), 64);
+    assert_eq!(args_with(5, BatchCount::One).estimate_cost_in_usd_cents(), 80);
+    assert_eq!(args_with(6, BatchCount::One).estimate_cost_in_usd_cents(), 96);
+    assert_eq!(args_with(7, BatchCount::One).estimate_cost_in_usd_cents(), 112);
+    assert_eq!(args_with(15, BatchCount::One).estimate_cost_in_usd_cents(), 240);
+
+    // Batch 2 = 2×
+    assert_eq!(args_with(4, BatchCount::Two).estimate_cost_in_usd_cents(), 128);
+    assert_eq!(args_with(5, BatchCount::Two).estimate_cost_in_usd_cents(), 160);
+    assert_eq!(args_with(15, BatchCount::Two).estimate_cost_in_usd_cents(), 480);
+
+    // Batch 4 = 3× (not 4×)
+    assert_eq!(args_with(4, BatchCount::Four).estimate_cost_in_usd_cents(), 192);
+    assert_eq!(args_with(5, BatchCount::Four).estimate_cost_in_usd_cents(), 240);
+    assert_eq!(args_with(15, BatchCount::Four).estimate_cost_in_usd_cents(), 720);
+  }
 
   fn test_session() -> AnyhowResult<Seedance2ProSession> {
     let cookies = get_test_cookies()?;
