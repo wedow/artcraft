@@ -52,6 +52,7 @@ email_sender= { path = "../../../lib/email_sender" }
 enums.workspace = true
 enums_public.workspace = true
 errors.workspace = true
+seedance2pro.workspace = true
 fal_client.workspace = true
 filesys.workspace = true
 google_sign_in = { path = "../../../api_clients/google_sign_in" }
