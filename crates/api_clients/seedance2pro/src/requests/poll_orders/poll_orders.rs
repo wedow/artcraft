@@ -117,7 +117,7 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
 
   let cookie = args.session.cookies.as_str();
 
-  let response = client.get(GET_ORDERS_BASE_URL)
+  let request = client.get(GET_ORDERS_BASE_URL)
     .query(&[("batch", "1"), ("input", input_json.as_str())])
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
@@ -133,7 +133,10 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
     .header("Sec-Fetch-Site", "same-origin")
     .header("Priority", "u=4")
     .header("TE", "trailers")
-    .send()
+    .build()
+    .map_err(|err| Seedance2ProClientError::WreqClientError(err))?;
+
+  let response = client.execute(request)
     .await
     .map_err(|err| Seedance2ProGenericApiError::WreqError(err))?;
 

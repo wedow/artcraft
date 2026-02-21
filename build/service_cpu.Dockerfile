@@ -33,7 +33,7 @@ RUN apt-get update \
 FROM ubuntu:jammy as rust-base
 
 # NB: This can be "stable" or another version.
-ARG RUST_TOOLCHAIN="1.86.0"
+ARG RUST_TOOLCHAIN="1.93.0"
 
 WORKDIR /tmp
 
@@ -44,13 +44,16 @@ WORKDIR /tmp
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
         build-essential \
-        clang \
         cmake \
         curl \
         ffmpeg \
         fontconfig \
+        git \
+        libclang-dev \
         libfontconfig1-dev \
         libssl-dev \
+        musl-tools \
+        perl \
         pkg-config
 
 # NB: Fix for fontconfig (servo-fontconfig-sys): https://github.com/alacritty/alacritty/issues/4423#issuecomment-727277235
@@ -129,11 +132,16 @@ RUN du -hsc * | sort -hr
 
 # Build all the binaries.
 RUN SQLX_OFFLINE=true \
-  RUST_BACKTRACE=full \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
-  $HOME/.cargo/bin/cargo build -vv \
+  $HOME/.cargo/bin/cargo build \
   --release \
   --bin storyteller-web
+
+RUN SQLX_OFFLINE=true \
+  LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \
+  $HOME/.cargo/bin/cargo build \
+  --release \
+  --bin seedance2-pro-job
 
 RUN SQLX_OFFLINE=true \
   LD_LIBRARY_PATH=/usr/lib:${LD_LIBRARY_PATH} \

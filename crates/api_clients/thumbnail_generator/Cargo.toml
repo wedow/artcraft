@@ -12,8 +12,10 @@ normal = ["workspace-build-acceleration"]
 # Workspace hack (faster compile times)
 workspace-build-acceleration.workspace = true
 
-# External
+# Internal
 easyenv = { path = "../../lib/easyenv" }
+
+# External
 log.workspace = true
 reqwest = {  version = "0.12.4", default-features = false, features = [ "charset", "http2", "system-proxy", "rustls-tls" ] }
 serde_json.workspace = true
