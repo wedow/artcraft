@@ -48,8 +48,12 @@ RUN apt-get update \
         curl \
         ffmpeg \
         fontconfig \
+        git \
+        libclang-dev \
         libfontconfig1-dev \
         libssl-dev \
+        musl-tools \
+        perl \
         pkg-config
 
 # NB: Fix for fontconfig (servo-fontconfig-sys): https://github.com/alacritty/alacritty/issues/4423#issuecomment-727277235

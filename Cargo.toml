@@ -299,7 +299,9 @@ toml = "0.8.23"
 url = { version = "2.5.4", features = ["serde"] }
 uuid = "1.18.1"
 
-# NB: wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
+# NB(1): wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
+#
+# NB(2): wreq's boring conflicts with openssl. Use the `prefix-symbols` feature.
 #
 # Mac:
 #   brew install --formula cmake pkg-config llvm
@@ -309,5 +311,5 @@ uuid = "1.18.1"
 #   choco install pkgconfiglite -y
 #   choco install llvm -y
 #   choco install nasm -y
-wreq = { version = "6.0.0-rc.20", features = ["json", "multipart", "cookies", "ws", "stream"] }
+wreq = { version = "6.0.0-rc.20", features = ["json", "multipart", "cookies", "ws", "stream", "prefix-symbols"] }
 wreq-util = "3.0.0-rc.6"
