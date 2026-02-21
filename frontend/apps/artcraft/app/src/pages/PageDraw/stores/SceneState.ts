@@ -86,11 +86,17 @@ type SerializedNodeData = {
   locked: boolean;
 };
 
-interface SceneState {
+interface HistoryNodeData {
+  nodes: Node[];
+  lineNodes: LineNode[];
+}
+
+export interface SceneState {
   // Nodes
   nodes: Node[];
   selectedNodeIds: string[];
   lineNodes: LineNode[]; // Add lineNodes to state
+  historyImageNodeMap: Map<BaseSelectorImage, HistoryNodeData>;
 
   // Clipboard
   clipboard: (Node | LineNode)[]; // To store copied items
@@ -292,6 +298,7 @@ export const useSceneStore = create<SceneState>((set, get, store) => ({
   nodes: [],
   lineNodes: [],
   selectedNodeIds: [],
+  historyImageNodeMap: new Map<BaseSelectorImage, HistoryNodeData>(),
   clipboard: [],
   history: [],
   historyIndex: -1,
@@ -1587,15 +1594,40 @@ export const useSceneStore = create<SceneState>((set, get, store) => ({
   },
 
   setBaseImageInfo: (image: BaseSelectorImage | null) => {
-    set({ baseImageInfo: image });
-
+    // If the new base image is null, return early because nothing needs to be loaded.
     if (!image) {
+      // Set the new base image info - setting null is allowed.
+      set({ baseImageInfo: null });
       return;
     }
 
-    // Load the image bitmap as well
+    // Save the current node data to the history image node map
+    const currentBaseImage = get().baseImageInfo;
+    if (currentBaseImage) {
+      get().historyImageNodeMap.set(currentBaseImage, {
+        nodes: get().nodes,
+        lineNodes: get().lineNodes,
+      });
+    }
+
+    // Set the new base image info
+    set({ baseImageInfo: image });
+
+    // Load the image bitmap now
     const imgBitmap = new Image();
     imgBitmap.onload = () => {
+      // Once the base image is set, check previous node data - or create new empty one
+      const previousNodeData = get().historyImageNodeMap.get(image);
+      if (previousNodeData) {
+        set({
+          nodes: previousNodeData.nodes,
+          lineNodes: previousNodeData.lineNodes,
+        });
+      } else {
+        set({ nodes: [], lineNodes: [] });
+      }
+
+      // Finally, set the base image bitmap
       set({ baseImageBitmap: imgBitmap });
     };
     imgBitmap.onerror = (event) => {
@@ -1615,7 +1647,10 @@ export const useSceneStore = create<SceneState>((set, get, store) => ({
   },
 
   clearHistoryImages: () => {
-    set({ historyImageBundles: [] });
+    set({
+      historyImageBundles: [],
+      historyImageNodeMap: new Map<BaseSelectorImage, HistoryNodeData>(),
+    });
   },
 
   addHistoryImageBundle(bundle) {
@@ -1627,6 +1662,10 @@ export const useSceneStore = create<SceneState>((set, get, store) => ({
   removeHistoryImage(image) {
     console.log("Removing history image:", image);
     set((state) => {
+      // Remove the history image node data
+      state.historyImageNodeMap.delete(image);
+
+      // Remove the image from the history image bundles
       const updatedBundles = state.historyImageBundles
         .map((bundle) => {
           return {

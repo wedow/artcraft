@@ -1,9 +1,14 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { DRAW_LAYER_ID, INPAINT_LAYER_ID, PaintSurface } from "./PaintSurface";
 import "./App.css";
 import PromptEditor from "./PromptEditor/PromptEditor";
 import SideToolbar from "./components/ui/SideToolbar";
-import { AspectRatioType, useSceneStore } from "./stores/SceneState";
+import {
+  AspectRatioType,
+  type SceneState,
+  useSceneStore,
+} from "./stores/SceneState";
 import { useUndoRedoHotkeys } from "./hooks/useUndoRedoHotkeys";
 import { useDeleteHotkeys } from "./hooks/useDeleteHotkeys";
 import { useCopyPasteHotkeys } from "./hooks/useCopyPasteHotkeys";
@@ -18,16 +23,26 @@ import {
   useSelectedImageModel,
   useSelectedProviderForModel,
 } from "@storyteller/ui-model-selector";
-import { EnqueueEditImage, EnqueueEditImageRequest, EnqueueEditImageResolution, EnqueueEditImageSize, EnqueueImageInpaint, EnqueueImageInpaintRequest, useCanvasBgRemovedEvent } from "@storyteller/tauri-api";
+import {
+  EnqueueEditImage,
+  EnqueueEditImageRequest,
+  EnqueueEditImageResolution,
+  EnqueueEditImageSize,
+  EnqueueImageInpaint,
+  EnqueueImageInpaintRequest,
+  useCanvasBgRemovedEvent,
+} from "@storyteller/tauri-api";
 import { HelpMenuButton } from "@storyteller/ui-help-menu";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { HistoryStack, ImageBundle } from "../PageEdit/HistoryStack";
-import { BaseImageSelector, BaseSelectorImage } from "../PageEdit/BaseImageSelector";
+import {
+  BaseImageSelector,
+  BaseSelectorImage,
+} from "../PageEdit/BaseImageSelector";
 import { normalizeCanvas } from "~/Helpers/CanvasHelpers";
 import { EncodeImageBitmapToBase64 } from "./utilities/EncodeImageBitmapToBase64";
 import { RefImage, usePrompt2DStore } from "@storyteller/ui-promptbox";
 import { PromptsApi } from "@storyteller/api";
-import toast from "react-hot-toast";
 
 const PAGE_ID: ModelPage = ModelPage.Canvas2D;
 
@@ -62,26 +77,123 @@ const PageDraw = () => {
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
   const stageRef = useRef<Konva.Stage>({} as Konva.Stage);
   const transformerRefs = useRef<{ [key: string]: Konva.Transformer }>({});
-  const store = useSceneStore();
+
+  /*
+   * Scene store: use a selector + useShallow to avoid re-rendering on every store change.
+   * Without this, useSceneStore() subscribes to the whole store (e.g. moveNode during
+   * drag updates state constantly) and PageDraw would re-render every frame.
+   *
+   * useShallow compares the selected object by top-level keys: we only re-render when
+   * one of these values actually changes. Do NOT add:
+   * - cursorPosition / cursorVisible: updated every mouse move → would re-render constantly.
+   * - historyImageNodeMap: mutated in place in the store (reference never changes),
+   *   so shallow would never see updates; fix the store to replace the Map if you need it.
+   * When adding new store fields here, prefer primitive/array/object refs that the store
+   * replaces (e.g. new array from .map()), not in-place mutations.
+   *
+   * IMPORTANT: The selector function is memoized to prevent infinite loops. If you modify
+   * this selector, ensure the function reference stays stable (use useMemo if needed).
+   */
+  const selector = useMemo(
+    () => (state: SceneState) => ({
+      baseImageInfo: state.baseImageInfo,
+      baseImageBitmap: state.baseImageBitmap,
+      nodes: state.nodes,
+      selectedNodeIds: state.selectedNodeIds,
+      lineNodes: state.lineNodes,
+      activeTool: state.activeTool,
+      currentShape: state.currentShape,
+      fillColor: state.fillColor,
+      brushColor: state.brushColor,
+      brushSize: state.brushSize,
+      historyImageBundles: state.historyImageBundles,
+      getAspectRatioDimensions: state.getAspectRatioDimensions,
+      finishRemoveBackground: state.finishRemoveBackground,
+      createImageFromUrl: state.createImageFromUrl,
+      createImageFromFile: state.createImageFromFile,
+      setBaseImageInfo: state.setBaseImageInfo,
+      RESET: state.RESET,
+      clearLineNodes: state.clearLineNodes,
+      setNodes: state.setNodes,
+      removeHistoryImage: state.removeHistoryImage,
+      addHistoryImageBundle: state.addHistoryImageBundle,
+      setAspectRatioType: state.setAspectRatioType,
+      setActiveTool: state.setActiveTool,
+      selectNode: state.selectNode,
+      setCurrentShape: state.setCurrentShape,
+      setBrushColor: state.setBrushColor,
+      setBrushSize: state.setBrushSize,
+      setBrushOpacity: state.setBrushOpacity,
+      setFillColor: state.setFillColor,
+      toggleLock: state.toggleLock,
+      beginRemoveBackground: state.beginRemoveBackground,
+      bringToFront: state.bringToFront,
+      bringForward: state.bringForward,
+      sendBackward: state.sendBackward,
+      sendToBack: state.sendToBack,
+      copySelectedItems: state.copySelectedItems,
+      pasteItems: state.pasteItems,
+      deleteSelectedItems: state.deleteSelectedItems,
+      undo: state.undo,
+      redo: state.redo,
+    }),
+    [],
+  );
+
+  const {
+    baseImageInfo,
+    baseImageBitmap,
+    nodes,
+    selectedNodeIds,
+    lineNodes,
+    activeTool,
+    currentShape,
+    fillColor,
+    brushColor,
+    brushSize,
+    historyImageBundles,
+    getAspectRatioDimensions,
+    finishRemoveBackground,
+    createImageFromUrl,
+    createImageFromFile,
+    setBaseImageInfo,
+    RESET,
+    clearLineNodes,
+    setNodes,
+    removeHistoryImage,
+    addHistoryImageBundle,
+    setAspectRatioType,
+    setActiveTool,
+    selectNode,
+    setCurrentShape,
+    setBrushColor,
+    setBrushSize,
+    setBrushOpacity,
+    setFillColor,
+    toggleLock,
+    beginRemoveBackground,
+    bringToFront,
+    bringForward,
+    sendBackward,
+    sendToBack,
+    copySelectedItems,
+    pasteItems,
+    deleteSelectedItems,
+    undo,
+    redo,
+  } = useSceneStore(useShallow(selector));
+
   const promptStoreProvider = usePrompt2DStore;
   const generationCount = promptStoreProvider((state) => state.generationCount);
-  const setGenerationCount = promptStoreProvider((state) => state.setGenerationCount);
-  const useSystemPrompt = promptStoreProvider((state) => state.useSystemPrompt);
-  const referenceImages = promptStoreProvider((state) => state.referenceImages);
-  const prompt = promptStoreProvider((state) => state.prompt);
+  const setGenerationCount = promptStoreProvider(
+    (state) => state.setGenerationCount,
+  );
 
   const baseImageKonvaRef = useRef<Konva.Image>({} as Konva.Image);
-  const baseImageUrl = store.baseImageInfo?.url;
+  const baseImageUrl = baseImageInfo?.url;
   const [pendingGenerations, setPendingGenerations] = useState<
     { id: string; count: number }[]
   >([]);
-  const addHistoryImageBundle = useSceneStore(
-    (state) => state.addHistoryImageBundle,
-  );
-  const removeHistoryImage = useSceneStore((state) => state.removeHistoryImage);
-  const historyImageBundles = useSceneStore(
-    (state) => state.historyImageBundles,
-  );
 
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);
@@ -92,11 +204,11 @@ const PageDraw = () => {
   const supportsMaskedInpainting =
     selectedImageModel?.usesInpaintingMask ?? false;
 
-  useDeleteHotkeys({ onDelete: store.deleteSelectedItems });
-  useUndoRedoHotkeys({ undo: store.undo, redo: store.redo });
+  useDeleteHotkeys({ onDelete: deleteSelectedItems });
+  useUndoRedoHotkeys({ undo, redo });
   useCopyPasteHotkeys({
-    onCopy: store.copySelectedItems,
-    onPaste: store.pasteItems,
+    onCopy: copySelectedItems,
+    onPaste: pasteItems,
   });
 
   useCanvasBgRemovedEvent(async (event) => {
@@ -113,24 +225,19 @@ const PageDraw = () => {
     // const file = new File([blob], "generated_image.png", {
     //   type: blob.type,
     // });
-    store.finishRemoveBackground(
-      nodeId,
-      event.media_token,
-      event.image_cdn_url,
-    );
+    finishRemoveBackground(nodeId, event.media_token, event.image_cdn_url);
   });
 
   // Create a function to use the left layer ref and download the bitmap from it
   const getMaskArrayBuffer = async (): Promise<Uint8Array> => {
-    if (
-      !stageRef.current ||
-      !baseImageKonvaRef.current
-    ) {
+    if (!stageRef.current || !baseImageKonvaRef.current) {
       console.error("Stage or left panel ref is not available");
       throw new Error("Stage or left panel or base image ref is not available");
     }
 
-    const layer = stageRef.current.getLayers().find((l) => l.id() === INPAINT_LAYER_ID)!;
+    const layer = stageRef.current
+      .getLayers()
+      .find((l) => l.id() === INPAINT_LAYER_ID)!;
 
     // Get the canvas area that's covered by the image/rectangle
     const rect = baseImageKonvaRef.current;
@@ -195,7 +302,7 @@ const PageDraw = () => {
 
       console.log("Creating image from URL:", imageUrl);
 
-      store.createImageFromUrl(stagePoint.x, stagePoint.y, imageUrl);
+      createImageFromUrl(stagePoint.x, stagePoint.y, imageUrl);
 
       console.log(
         `Created image "${item.label}" at stage position:`,
@@ -214,12 +321,12 @@ const PageDraw = () => {
         handleGallery2DDrop as EventListener,
       );
     };
-  }, [store]);
+    // Stable action ref; no need to depend on full store.
+  }, [createImageFromUrl]);
 
   const handleImageUpload = async (files: File[]): Promise<void> => {
     // Determine current canvas dimensions from the store (according to aspect-ratio)
-    const { width: canvasW, height: canvasH } =
-      store.getAspectRatioDimensions();
+    const { width: canvasW, height: canvasH } = getAspectRatioDimensions();
 
     // Target maximum size – 85 % of the canvas in each direction
     const maxW = canvasW * 0.85;
@@ -240,80 +347,20 @@ const PageDraw = () => {
         const x = (canvasW - finalW) / 2;
         const y = (canvasH - finalH) / 2;
 
-        store.createImageFromFile(x, y, file, finalW, finalH);
+        createImageFromFile(x, y, file, finalW, finalH);
       };
       img.src = URL.createObjectURL(file);
     }
   };
 
-  const handleTauriEnqueue = async (image: ImageBitmap, aspectRatio: EnqueueEditImageSize | undefined, resolution: EnqueueEditImageResolution | undefined, subscriberId: string) => {
-    if (image === undefined) {
-      console.log("image is undefined");
-      return;
-    }
-
-    const api = new PromptsApi();
-    const base64Bitmap = await EncodeImageBitmapToBase64(image);
-
-    const byteString = atob(base64Bitmap);
-    const mimeString = "image/png";
-
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-
-    const uuid = crypto.randomUUID(); // Generate a new UUID
-    const file = new File([ab], `${uuid}.png`, { type: mimeString });
-
-    const snapshotMediaToken = await api.uploadSceneSnapshot({
-      screenshot: file,
-    });
-
-    if (snapshotMediaToken.data === undefined) {
-      toast.error("Error: Unable to upload scene snapshot Please try again.");
-      return;
-    }
-
-    console.log("useSystemPrompt", useSystemPrompt);
-    console.log("Snapshot media token:", snapshotMediaToken.data);
-
-    const request: EnqueueEditImageRequest = {
-      model: selectedImageModel,
-      scene_image_media_token: snapshotMediaToken.data!,
-      image_media_tokens: referenceImages
-        .map((image) => image.mediaToken)
-        .filter((t) => t.length > 0),
-      disable_system_prompt: !useSystemPrompt,
-      prompt: prompt,
-      image_count: generationCount,
-      aspect_ratio: aspectRatio,
-      image_resolution: resolution,
-      frontend_caller: "image_editor",
-      frontend_subscriber_id: subscriberId,
-    };
-
-    if (selectedProvider) {
-      request.provider = selectedProvider;
-    }
-
-    const generateResponse = await EnqueueEditImage(request);
-    console.log("generateResponse", generateResponse);
-    return generateResponse;
-  }
-
   const getCompositeCanvasFile = useCallback(async (): Promise<File | null> => {
-    if (
-      !stageRef.current ||
-      !baseImageKonvaRef.current ||
-      !store.baseImageBitmap
-    ) {
+    if (!stageRef.current || !baseImageKonvaRef.current || !baseImageBitmap) {
       return null;
     }
 
-    const editsLayer = stageRef.current.getLayers().find((l) => l.id() === DRAW_LAYER_ID);
+    const editsLayer = stageRef.current
+      .getLayers()
+      .find((l) => l.id() === DRAW_LAYER_ID);
 
     if (!editsLayer) {
       console.error("Edits layer not found");
@@ -328,7 +375,7 @@ const PageDraw = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    ctx.drawImage(store.baseImageBitmap, 0, 0, width, height);
+    ctx.drawImage(baseImageBitmap, 0, 0, width, height);
 
     const markerLayerCanvas = editsLayer.toCanvas({
       x: stageRef.current.x(),
@@ -347,7 +394,7 @@ const PageDraw = () => {
     const blob = await canvas.convertToBlob({ type: "image/png" });
     const uuid = crypto.randomUUID();
     return new File([blob], `${uuid}.png`, { type: "image/png" });
-  }, [store.baseImageBitmap]);
+  }, [baseImageBitmap]);
 
   const handleGenerate = useCallback(
     async (
@@ -359,7 +406,7 @@ const PageDraw = () => {
         selectedProvider?: GenerationProvider;
       },
     ) => {
-      const editedImageToken = store.baseImageInfo?.mediaToken;
+      const editedImageToken = baseImageInfo?.mediaToken;
 
       if (!editedImageToken) {
         console.error("Base image is not available");
@@ -400,7 +447,7 @@ const PageDraw = () => {
         }
       };
 
-      const { width, height } = store.getAspectRatioDimensions();
+      const { width, height } = getAspectRatioDimensions();
       const subscriberId: string =
         crypto?.randomUUID?.() ??
         `inpaint-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -518,7 +565,9 @@ const PageDraw = () => {
         );
         throw error;
       }
-    }, [generationCount, getCompositeCanvasFile, selectedImageModel, store]);
+    },
+    [generationCount, getCompositeCanvasFile, selectedImageModel],
+  );
 
   const onFitPressed = async () => {
     // Get the stage and its container dimensions
@@ -530,8 +579,8 @@ const PageDraw = () => {
     const containerHeight = stage.container().offsetHeight;
 
     // Get canvas dimensions from store aspect ratio
-    const canvasW = store.getAspectRatioDimensions().width;
-    const canvasH = store.getAspectRatioDimensions().height;
+    const canvasW = getAspectRatioDimensions().width;
+    const canvasH = getAspectRatioDimensions().height;
 
     // Add padding to ensure canvas doesn't touch the edges
     const padding = 40;
@@ -560,15 +609,17 @@ const PageDraw = () => {
   };
 
   // When the model inpainting support changes, we need to auto-change the tool so it's not set to inpainting
+  // Note: setActiveTool is a stable Zustand action, so we don't need it in deps
   useEffect(() => {
-    if (!supportsMaskedInpainting && store.activeTool === "inpaint") {
-      store.setActiveTool("select");
+    if (!supportsMaskedInpainting && activeTool === "inpaint") {
+      setActiveTool("select");
     }
-  }, [store, supportsMaskedInpainting]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTool, supportsMaskedInpainting]);
 
   // Auto-fit canvas to screen on initial load
   useEffect(() => {
-    if (!store.baseImageBitmap) {
+    if (!baseImageBitmap) {
       return;
     }
 
@@ -597,11 +648,11 @@ const PageDraw = () => {
 
     autoFitCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.baseImageBitmap]);
+  }, [baseImageBitmap]);
 
   // Display image selector on launch, otherwise hide it
   // Also show loading state if info is set but image is loading
-  if (!store.baseImageInfo || !store.baseImageBitmap) {
+  if (!baseImageInfo || !baseImageBitmap) {
     return (
       <div
         className={
@@ -613,11 +664,9 @@ const PageDraw = () => {
             <BaseImageSelector
               onImageSelect={(image: BaseSelectorImage) => {
                 addHistoryImageBundle({ images: [image] });
-                store.setBaseImageInfo(image);
+                setBaseImageInfo(image);
               }}
-              showLoading={
-                store.baseImageInfo !== null && store.baseImageInfo === null
-              }
+              showLoading={baseImageInfo !== null && baseImageBitmap === null}
             />
           </div>
         </div>
@@ -629,29 +678,28 @@ const PageDraw = () => {
     <>
       <div className="fixed inset-0 -z-10 bg-ui-background" />
       <div
-        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
-          }`}
+        className={`preserve-aspect-ratio fixed right-4 top-1/2 z-10 -translate-y-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
       >
         <HistoryStack
           onClear={() => {
-            store.RESET();
+            RESET();
             setPendingGenerations([]);
           }}
           imageBundles={historyImageBundles}
           pendingPlaceholders={pendingGenerations}
           blurredBackgroundUrl={baseImageUrl}
           onImageSelect={(baseImage) => {
-            store.clearLineNodes();
-            store.setNodes([]);
-            store.setBaseImageInfo(baseImage);
+            setBaseImageInfo(baseImage);
           }}
           onImageRemove={(baseImage) => {
             if (
               pendingGenerations.length === 0 &&
-              store.historyImageBundles.length === 1 &&
-              store.historyImageBundles[0].images.length <= 1
+              historyImageBundles.length === 1 &&
+              historyImageBundles[0].images.length <= 1
             ) {
-              store.RESET();
+              RESET();
             } else {
               removeHistoryImage(baseImage);
             }
@@ -662,12 +710,13 @@ const PageDraw = () => {
           onResolvePending={(id: string) =>
             setPendingGenerations((prev) => prev.filter((p) => p.id !== id))
           }
-          selectedImageToken={store.baseImageInfo?.mediaToken}
+          selectedImageToken={baseImageInfo?.mediaToken}
         />
       </div>
       <div
-        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${isSelecting ? "pointer-events-none" : "pointer-events-auto"
-          }`}
+        className={`preserve-aspect-ratio fixed bottom-0 left-1/2 z-10 -translate-x-1/2 transform ${
+          isSelecting ? "pointer-events-none" : "pointer-events-auto"
+        }`}
       >
         <PromptEditor
           onAspectRatioChange={async (ratio: string) => {
@@ -685,7 +734,7 @@ const PageDraw = () => {
             };
 
             const aspectRatioType = ratioToType(ratio);
-            store.setAspectRatioType(aspectRatioType);
+            setAspectRatioType(aspectRatioType);
 
             await new Promise((resolve) => requestAnimationFrame(resolve));
             onFitPressed();
@@ -705,28 +754,28 @@ const PageDraw = () => {
       <SideToolbar
         className="fixed left-0 top-1/2 z-10 -translate-y-1/2 transform"
         onSelect={(): void => {
-          store.setActiveTool("select");
+          setActiveTool("select");
         }}
         onActivateShapeTool={(
           shape: "rectangle" | "circle" | "triangle",
         ): void => {
-          store.selectNode(null);
-          store.setCurrentShape(shape);
-          store.setActiveTool("shape");
-          store.selectNode(null);
+          selectNode(null);
+          setCurrentShape(shape);
+          setActiveTool("shape");
+          selectNode(null);
         }}
         onPaintBrush={(hex: string, size: number, opacity: number): void => {
-          store.setActiveTool("draw");
-          store.setBrushColor(hex);
-          store.setBrushSize(size);
-          store.setBrushOpacity(opacity);
+          setActiveTool("draw");
+          setBrushColor(hex);
+          setBrushSize(size);
+          setBrushOpacity(opacity);
         }}
         onCanvasBackground={(hex: string): void => {
           console.log("Canvas background activated", { color: hex });
           // Add background change logic here
           // TODO: minor bug needs to update the preview panel
           // Debounce also causes issues with real time color change.
-          store.setFillColor(hex);
+          setFillColor(hex);
         }}
         onUploadImage={(): void => {
           // Create input element dynamically like in PromptEditor
@@ -765,14 +814,14 @@ const PageDraw = () => {
           input.click();
         }}
         supportsMaskTool={supportsMaskedInpainting}
-        activeToolId={store.activeTool}
-        currentShape={store.currentShape}
+        activeToolId={activeTool}
+        currentShape={currentShape}
       />
       <div className="relative z-0">
         <ContextMenuContainer
           onAction={(e, action) => {
             if (action === "contextMenu") {
-              const hasSelection = store.selectedNodeIds.length > 0;
+              const hasSelection = selectedNodeIds.length > 0;
               if (hasSelection) {
                 console.log("An item is selected.");
                 return true;
@@ -786,51 +835,54 @@ const PageDraw = () => {
           onMenuAction={async (action) => {
             switch (action) {
               case "LOCK":
-                store.toggleLock(store.selectedNodeIds);
+                toggleLock(selectedNodeIds);
                 break;
               case "REMOVE_BACKGROUND":
-                await store.beginRemoveBackground(store.selectedNodeIds);
+                await beginRemoveBackground(selectedNodeIds);
                 break;
               case "BRING_TO_FRONT":
-                store.bringToFront(store.selectedNodeIds);
+                bringToFront(selectedNodeIds);
                 break;
               case "BRING_FORWARD":
-                store.bringForward(store.selectedNodeIds);
+                bringForward(selectedNodeIds);
                 break;
               case "SEND_BACKWARD":
-                store.sendBackward(store.selectedNodeIds);
+                sendBackward(selectedNodeIds);
                 break;
               case "SEND_TO_BACK":
-                store.sendToBack(store.selectedNodeIds);
+                sendToBack(selectedNodeIds);
                 break;
               case "DUPLICATE":
-                store.copySelectedItems();
-                store.pasteItems();
+                copySelectedItems();
+                pasteItems();
                 break;
               case "DELETE":
-                store.deleteSelectedItems();
+                deleteSelectedItems();
                 break;
               default:
               // No action
             }
           }}
-          isLocked={store.selectedNodeIds.some((id) => {
-            const node = store.nodes.find((n) => n.id === id);
-            const lineNode = store.lineNodes.find((n) => n.id === id);
+          isLocked={selectedNodeIds.some((id: string) => {
+            const node = nodes.find((n: (typeof nodes)[number]) => n.id === id);
+            const lineNode = lineNodes.find(
+              (n: (typeof lineNodes)[number]) => n.id === id,
+            );
             return (node?.locked || lineNode?.locked) ?? false;
           })}
         >
           <PaintSurface
-            nodes={store.nodes}
-            selectedNodeIds={store.selectedNodeIds}
+            nodes={nodes}
+            lineNodes={lineNodes}
+            selectedNodeIds={selectedNodeIds}
             onCanvasSizeChange={(width: number, height: number): void => {
               canvasWidth.current = width;
               canvasHeight.current = height;
             }}
-            fillColor={store.fillColor}
-            activeTool={store.activeTool}
-            brushColor={store.brushColor}
-            brushSize={store.brushSize}
+            fillColor={fillColor}
+            activeTool={activeTool}
+            brushColor={brushColor}
+            brushSize={brushSize}
             onSelectionChange={setIsSelecting}
             stageRef={stageRef}
             transformerRefs={transformerRefs}

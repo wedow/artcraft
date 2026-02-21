@@ -90,7 +90,6 @@ export const EditPaintSurface = ({
   /* 1️⃣ Track SplitPane percent so we can re-measure */
   const [leftPct, setLeftPct] = useState(singlePaneMode ? 100 : 50);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [, setLastPoint] = useState<{ x: number; y: number } | null>(null);
 
   const selectionRectRef = React.useRef<Konva.Rect>(null);
   const [selectionRect, setSelectionRect] = useState<{
@@ -144,7 +143,6 @@ export const EditPaintSurface = ({
     setIsSelecting,
     isSelectingRef,
     setSelectionRect,
-    setLastPoint,
     onSelectionChange,
   );
 
@@ -282,7 +280,6 @@ export const EditPaintSurface = ({
       store.addLineNode(newLineNode, false);
       setCurrentLineId(lineId);
       setIsDrawing(true);
-      setLastPoint(stagePoint);
       return;
     }
 
@@ -451,8 +448,6 @@ export const EditPaintSurface = ({
         lineNode.points(currentPoints);
         lineNode.getLayer()?.batchDraw();
       }
-
-      setLastPoint(stagePoint);
     }
 
     // Handle selection rectangle - Update directly through Konva
@@ -481,11 +476,11 @@ export const EditPaintSurface = ({
       setSelectionRect((prev) =>
         prev
           ? {
-            // Ensure prev is not null
-            ...prev,
-            endX: clampedPoint.x,
-            endY: clampedPoint.y,
-          }
+              // Ensure prev is not null
+              ...prev,
+              endX: clampedPoint.x,
+              endY: clampedPoint.y,
+            }
           : null,
       );
     }
@@ -562,7 +557,6 @@ export const EditPaintSurface = ({
     isSelectingRef.current = false;
     onSelectionChange?.(false);
     setSelectionRect(null);
-    setLastPoint(null);
     setIsMiddleMousePressed(false); // Reset middle mouse state
   };
 
@@ -638,8 +632,8 @@ export const EditPaintSurface = ({
     if (!container) return;
     const defaultCursor =
       activeTool === "edit" ||
-        activeTool === "marker" ||
-        activeTool === "eraser"
+      activeTool === "marker" ||
+      activeTool === "eraser"
         ? "none"
         : activeTool === "select"
           ? "grab"
@@ -693,7 +687,7 @@ export const EditPaintSurface = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-      Math.pow(touch2.clientY - touch1.clientY, 2),
+        Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   };
 
@@ -1473,11 +1467,11 @@ export const EditPaintSurface = ({
             scaleY={previewScale}
             x={0}
             y={0}
-          // style={{
-          //   background: '#f5f5f5',
-          //   border: '1px solid #ddd',
-          //   borderRadius: '8px',
-          // }}
+            // style={{
+            //   background: '#f5f5f5',
+            //   border: '1px solid #ddd',
+            //   borderRadius: '8px',
+            // }}
           >
             <Layer>
               <Image

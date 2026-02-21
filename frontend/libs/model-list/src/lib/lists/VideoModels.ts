@@ -128,6 +128,37 @@ export const VIDEO_MODELS: VideoModel[] = [
     progressBarTime: 100000,
   }),
   new VideoModel({
+    id: "seedance_2p0",
+    tauriId: "seedance_2p0",
+    fullName: "Seedance 2.0",
+    category: "video",
+    creator: ModelCreator.Bytedance,
+    selectorName: "Seedance 2.0",
+    selectorDescription: "High quality model",
+    selectorBadges: ["2 min."],
+    startFrame: true,
+    endFrame: true,
+    requiresImage: false,
+    sizeOptions: [
+      {
+        tauriValue: "landscape",
+        textLabel: "Landscape",
+        icon: SizeIconOption.Landscape,
+      },
+      {
+        tauriValue: "portrait",
+        textLabel: "Portrait",
+        icon: SizeIconOption.Portrait,
+      },
+      {
+        tauriValue: "square",
+        textLabel: "Square",
+        icon: SizeIconOption.Square,
+      },
+    ],
+    progressBarTime: 100000,
+  }),
+  new VideoModel({
     id: "sora_2",
     tauriId: "sora_2",
     fullName: "Sora 2",
