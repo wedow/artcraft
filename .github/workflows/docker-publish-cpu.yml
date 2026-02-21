@@ -9,6 +9,7 @@ on:
       # NB: Default-branch doesn't work, despite Github's documentation.
       #- $default-branch
       - main
+      - test
 env:
   IMAGE_NAME: storyteller-rust
 
