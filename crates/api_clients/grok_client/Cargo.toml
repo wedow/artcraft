@@ -41,6 +41,9 @@ uuid.workspace = true
 wreq-util.workspace = true
 wreq.workspace = true
 
+[target.'cfg(target_os = "linux")'.dependencies]
+wreq = { workspace = true, features = ["prefix-symbols"] }
+
 [dev-dependencies]
 filesys.workspace = true
 test_data.workspace = true

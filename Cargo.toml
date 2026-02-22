@@ -311,5 +311,7 @@ uuid = "1.18.1"
 #   choco install pkgconfiglite -y
 #   choco install llvm -y
 #   choco install nasm -y
-wreq = { version = "6.0.0-rc.28", features = ["json", "multipart", "cookies", "ws", "stream", "prefix-symbols"] }
-wreq-util = "3.0.0-rc.6"
+wreq-util = "3.0.0-rc.10"
+# NB: Linux additionally needs `prefix-symbols` (see per-crate target sections).
+wreq = { version = "6.0.0-rc.28", features = ["json", "query", "multipart", "cookies", "ws", "stream", "gzip", "form"] }
+

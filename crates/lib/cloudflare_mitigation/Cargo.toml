@@ -22,5 +22,8 @@ workspace-build-acceleration.workspace = true
 once_cell.workspace = true
 wreq.workspace = true
 
+[target.'cfg(target_os = "linux")'.dependencies]
+wreq = { workspace = true, features = ["prefix-symbols"] }
+
 [dev-dependencies]
 # (None)

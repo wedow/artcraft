@@ -26,9 +26,12 @@ rand.workspace = true
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
-wreq.workspace = true
 wreq-util.workspace = true
+wreq.workspace = true
 url.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+wreq = { workspace = true, features = ["prefix-symbols"] }
 
 [dev-dependencies]
 chrono.workspace = true
