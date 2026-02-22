@@ -182,7 +182,6 @@ pub async fn generate_video(args: GenerateVideoArgs<'_>) -> Result<GenerateVideo
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
     .header("Accept-Language", "en-US,en;q=0.9")
-    .header("Accept-Encoding", "gzip, deflate, br, zstd")
     .header("Referer", "https://seedance2-pro.com/")
     .header("Content-Type", "application/json")
     .header("x-trpc-source", "client")
