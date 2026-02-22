@@ -750,6 +750,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "artcraft_router"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "artcraft_api_defs",
+ "log",
+ "serde",
+ "serde_derive",
+ "storyteller_client",
+ "tokens",
+ "tokio",
+ "uuid 1.18.1",
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "ashpd"
 version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
