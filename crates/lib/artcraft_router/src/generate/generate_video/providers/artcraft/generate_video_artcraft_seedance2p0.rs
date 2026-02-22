@@ -5,9 +5,7 @@ use crate::generate::generate_video::generate_video::{GenerateVideoArgs, Generat
 use artcraft_api_defs::generate::video::multi_function::seedance_2p0_multi_function_video_gen::{
   Seedance2p0AspectRatio, Seedance2p0BatchCount, Seedance2p0MultiFunctionVideoGenRequest,
 };
-use storyteller_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use storyteller_client::endpoints::generate::video::multi_function::seedance_2p0_multi_function_video_gen::seedance_2p0_multi_function_video_gen;
-use storyteller_client::utils::api_host::ApiHost;
 use uuid::Uuid;
 
 fn map_aspect_ratio(aspect_ratio: Option<CommonAspectRatio>) -> Option<Seedance2p0AspectRatio> {
@@ -26,12 +24,14 @@ fn map_aspect_ratio(aspect_ratio: Option<CommonAspectRatio>) -> Option<Seedance2
 }
 
 pub async fn generate_video_artcraft_seedance2p0(
-  args: &GenerateVideoArgs,
-  api_host: &ApiHost,
-  creds: Option<&StorytellerCredentialSet>,
+  args: &GenerateVideoArgs<'_>,
 ) -> Result<GenerateVideoResponse, ArtcraftRouterError> {
-  let uuid_idempotency_token = Uuid::new_v4().to_string(); // TODO: Make this an optional top-level arg
+  let artcraft_client = args.client.artcraft_client.as_ref()
+    .ok_or_else(|| ArtcraftRouterError::InvalidInput(
+      "Artcraft client is not configured on the RouterClient".to_string()
+    ))?;
 
+  let uuid_idempotency_token = Uuid::new_v4().to_string(); // TODO: Make this an optional top-level arg
   let aspect_ratio = map_aspect_ratio(args.aspect_ratio);
 
   let request = Seedance2p0MultiFunctionVideoGenRequest {
@@ -45,7 +45,11 @@ pub async fn generate_video_artcraft_seedance2p0(
     batch_count: Some(Seedance2p0BatchCount::One),
   };
 
-  let response = seedance_2p0_multi_function_video_gen(api_host, creds, request)
+  let response = seedance_2p0_multi_function_video_gen(
+    &artcraft_client.api_host,
+    Some(&artcraft_client.credentials),
+    request,
+  )
     .await
     .map_err(|err| ArtcraftRouterError::Provider(ProviderError::Storyteller(err)))?;
 
