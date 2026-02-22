@@ -300,7 +300,7 @@ toml = "0.8.23"
 url = { version = "2.5.4", features = ["serde"] }
 uuid = "1.18.1"
 
-# NB(1): wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
+# NB: wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
 #
 # Mac:
 #   brew install --formula cmake pkg-config llvm
