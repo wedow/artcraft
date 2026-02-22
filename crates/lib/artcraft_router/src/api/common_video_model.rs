@@ -8,13 +8,13 @@ pub enum CommonVideoModel {
   #[serde(rename = "grok_video")]
   GrokVideo,
 
-  #[serde(rename = "kling_1.6_pro")]
+  #[serde(rename = "kling_1p6_pro")]
   Kling16Pro,
 
-  #[serde(rename = "kling_2.1_pro")]
+  #[serde(rename = "kling_2p1_pro")]
   Kling21Pro,
 
-  #[serde(rename = "kling_2.1_master")]
+  #[serde(rename = "kling_2p1_master")]
   Kling21Master,
 
   #[serde(rename = "kling_2p5_turbo_pro")]
@@ -23,7 +23,7 @@ pub enum CommonVideoModel {
   #[serde(rename = "kling_2p6_pro")]
   Kling2p6Pro,
 
-  #[serde(rename = "seedance_1.0_lite")]
+  #[serde(rename = "seedance_1p0_lite")]
   Seedance10Lite,
 
   #[serde(rename = "seedance_2p0")]

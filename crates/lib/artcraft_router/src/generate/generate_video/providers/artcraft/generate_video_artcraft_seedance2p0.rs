@@ -30,7 +30,8 @@ pub async fn generate_video_artcraft_seedance2p0(
   api_host: &ApiHost,
   creds: Option<&StorytellerCredentialSet>,
 ) -> Result<GenerateVideoResponse, ArtcraftRouterError> {
-  let uuid_idempotency_token = Uuid::new_v4().to_string();
+  let uuid_idempotency_token = Uuid::new_v4().to_string(); // TODO: Make this an optional top-level arg
+
   let aspect_ratio = map_aspect_ratio(args.aspect_ratio);
 
   let request = Seedance2p0MultiFunctionVideoGenRequest {
