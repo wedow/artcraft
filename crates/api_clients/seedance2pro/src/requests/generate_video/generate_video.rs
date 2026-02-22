@@ -182,6 +182,7 @@ pub async fn generate_video(args: GenerateVideoArgs<'_>) -> Result<GenerateVideo
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
     .header("Accept-Language", "en-US,en;q=0.9")
+    .header("Accept-Encoding", "gzip, deflate, br, zstd")
     .header("Referer", "https://seedance2-pro.com/")
     .header("Content-Type", "application/json")
     .header("x-trpc-source", "client")
@@ -364,7 +365,7 @@ mod tests {
     let session = test_session()?;
     let args = GenerateVideoArgs {
       session: &session,
-      prompt: "The dog in @2 is in the office at @1 without the man. The office is dark and moonlight streams in through the windows. Particles of dust gleam in the moon beams. Suddenly, the dog jumps on the desk and barks.".to_string(),
+      prompt: "The dog in @2 is in the office at @1 without the man. The office is dark and moonlight streams in through the windows. Particles of dust gleam in the moon beams. Suddenly, the dog jumps walks in front of the desk and barks.".to_string(),
       resolution: Resolution::Standard4x3,
       duration_seconds: 10,
       batch_count: BatchCount::One,

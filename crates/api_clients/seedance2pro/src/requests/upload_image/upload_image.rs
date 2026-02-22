@@ -45,6 +45,7 @@ pub async fn upload_image(args: UploadImageArgs) -> Result<UploadImageResponse, 
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
     .header("Accept-Language", "en-US,en;q=0.9")
+    .header("Accept-Encoding", "gzip, deflate, br, zstd")
     .header("Referer", "https://seedance2-pro.com/")
     .header("Origin", "https://seedance2-pro.com")
     .header("Connection", "keep-alive")

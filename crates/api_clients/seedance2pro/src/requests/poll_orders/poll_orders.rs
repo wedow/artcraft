@@ -122,6 +122,7 @@ pub async fn poll_orders(args: PollOrdersArgs<'_>) -> Result<PollOrdersResponse,
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
     .header("Accept-Language", "en-US,en;q=0.9")
+    .header("Accept-Encoding", "gzip, deflate, br, zstd")
     .header("Referer", "https://seedance2-pro.com/app/gallery")
     .header("content-type", "application/json")
     .header("x-trpc-source", "client")

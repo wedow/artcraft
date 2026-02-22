@@ -59,6 +59,7 @@ pub async fn prepare_image_upload(args: PrepareImageUploadArgs<'_>) -> Result<Pr
     .header("User-Agent", FIREFOX_USER_AGENT)
     .header("Accept", "*/*")
     .header("Accept-Language", "en-US,en;q=0.9")
+    .header("Accept-Encoding", "gzip, deflate, br, zstd")
     .header("Referer", "https://seedance2-pro.com/")
     .header("Content-Type", "application/json")
     .header("x-trpc-source", "client")
