@@ -115,7 +115,7 @@ language-tags = "0.3.2" # Parsing single tags richly
 reqwest.workspace = true
 
 # Email
-resend-rs = "0.21.0"
+resend-rs = { version = "0.21.0", default-features = false, features = ["rustls-tls"] }
 
 # Runtime
 tokio.workspace = true
