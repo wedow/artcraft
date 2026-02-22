@@ -30,9 +30,6 @@ wreq-util.workspace = true
 wreq.workspace = true
 url.workspace = true
 
-[target.'cfg(target_os = "linux")'.dependencies]
-wreq = { workspace = true, features = ["prefix-symbols"] }
-
 [dev-dependencies]
 chrono.workspace = true
 env.workspace = true

@@ -302,8 +302,6 @@ uuid = "1.18.1"
 
 # NB(1): wreq gets past fingerprinting, but we have to deal with platform-specific build issues.
 #
-# NB(2): wreq's boring conflicts with openssl. Use the `prefix-symbols` feature.
-#
 # Mac:
 #   brew install --formula cmake pkg-config llvm
 # Windows:
@@ -313,6 +311,5 @@ uuid = "1.18.1"
 #   choco install llvm -y
 #   choco install nasm -y
 wreq-util = "3.0.0-rc.10"
-# NB: Linux additionally needs `prefix-symbols` (see per-crate target sections).
 wreq = { version = "6.0.0-rc.28", features = ["json", "query", "multipart", "cookies", "ws", "stream", "gzip", "form"] }
 

@@ -31,9 +31,6 @@ url.workspace = true
 wreq-util.workspace = true
 wreq.workspace = true
 
-[target.'cfg(target_os = "linux")'.dependencies]
-wreq = { workspace = true, features = ["prefix-symbols"] }
-
 # NB: We need to parse HTML to get out the websocket token
 dom_query = "0.20.2"
 

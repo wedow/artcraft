@@ -42,8 +42,5 @@ tokio = { version = "1", features = ["full"] }
 wreq-util.workspace = true
 wreq.workspace = true
 
-[target.'cfg(target_os = "linux")'.dependencies]
-wreq = { workspace = true, features = ["prefix-symbols"] }
-
 [dev-dependencies]
 testing = { path = "../../lib/testing" }
