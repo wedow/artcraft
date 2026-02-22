@@ -56,6 +56,9 @@ pub enum VideoModel {
   #[serde(rename = "seedance_1.0_lite")]
   Seedance10Lite,
 
+  #[serde(rename = "seedance_2p0")]
+  Seedance2p0,
+
   #[serde(rename = "sora_2")]
   Sora2,
 
