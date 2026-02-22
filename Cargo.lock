@@ -11493,6 +11493,7 @@ dependencies = [
  "resend-rs",
  "reusable_types",
  "rust-s3",
+ "rustls 0.23.36",
  "seedance2pro",
  "serde",
  "serde_derive",

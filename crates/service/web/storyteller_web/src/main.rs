@@ -124,6 +124,13 @@ const LOG_FORMAT : &str =
 #[actix_web::main]
 async fn main() -> AnyhowResult<()> {
 
+  // NB: Both ring (via reqwest 0.12/hyper-rustls) and aws-lc-rs (via quinn/resend-rs)
+  // are compiled into this binary as rustls crypto providers. rustls 0.23 panics at
+  // runtime if it can't auto-select a single provider, so we install ring explicitly.
+  rustls::crypto::ring::default_provider()
+    .install_default()
+    .expect("Failed to install rustls crypto provider");
+
   let container_environment = bootstrap(BootstrapArgs {
     app_name: "storyteller-web",
     default_logging_override: Some(DEFAULT_RUST_LOG),
