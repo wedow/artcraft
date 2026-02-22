@@ -11520,7 +11520,6 @@ dependencies = [
  "redis_common",
  "redis_schema",
  "regex",
- "reqwest 0.12.23",
  "resend-rs",
  "reusable_types",
  "rust-s3",
@@ -11552,6 +11551,7 @@ dependencies = [
  "utoipa-swagger-ui",
  "videos",
  "workspace-build-acceleration",
+ "wreq",
  "zip 0.6.6",
 ]
 

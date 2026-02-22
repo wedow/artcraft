@@ -52,10 +52,8 @@ email_sender= { path = "../../../lib/email_sender" }
 enums.workspace = true
 enums_public.workspace = true
 errors.workspace = true
-seedance2pro.workspace = true
 fal_client.workspace = true
 filesys.workspace = true
-seedance2pro.workspace = true
 google_sign_in = { path = "../../../api_clients/google_sign_in" }
 hashing = { path = "../../../lib/files/hashing" }
 http_server_common = { path = "../../../lib/deprecated/http_server_common" }
@@ -67,7 +65,6 @@ memory_caching = { path = "../../../lib/caching/memory_caching" }
 migration = { path = "../../../lib/migration" }
 mimetypes.workspace = true
 mysql_queries = { path = "../../../schema/database/mysql_queries" }
-#openai_sora_client = { path = "../../../api_clients/openai_sora_client" }
 password = { path = "../../../lib/password" }
 primitives = { path = "../../../lib/data/primitives" }
 prompt_engineering = { path = "../../../lib/machine_learning/prompt_engineering" }
@@ -75,6 +72,7 @@ redis_caching = { path = "../../../lib/caching/redis_caching" }
 redis_common = { path = "../../../schema/database/redis_common" }
 redis_schema = { path = "../../../schema/database/redis_schema" }
 reusable_types = { path = "../../../schema/public/reusable_types" }
+seedance2pro.workspace = true
 server_environment = { path = "../../../lib/server_environment" }
 thumbnail_generator = { path = "../../../api_clients/thumbnail_generator" }
 tokens.workspace = true
@@ -118,6 +116,7 @@ wreq.workspace = true
 
 # Email
 resend-rs = { version = "0.21.0", default-features = false, features = ["rustls-tls"] }
+
 # NB: Both ring (via reqwest 0.12/hyper-rustls) and aws-lc-rs (via quinn/resend-rs)
 # are features of rustls 0.23 in this binary. rustls requires an explicit default
 # provider when multiple crypto providers are compiled in.
