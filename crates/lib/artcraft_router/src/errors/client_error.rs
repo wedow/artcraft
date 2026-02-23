@@ -18,6 +18,10 @@ impl Display for ClientType {
 pub enum ClientError {
   /// The requested client is not configured on the RouterClient.
   ClientNotConfigured(ClientType),
+
+  /// The model does not support the given option value.
+  /// `field` is the request field name, `value` is what was requested.
+  ModelDoesNotSupportOption { field: &'static str, value: String },
 }
 
 impl Error for ClientError {}
@@ -27,6 +31,9 @@ impl Display for ClientError {
     match self {
       Self::ClientNotConfigured(client_type) => {
         write!(f, "{} client is not configured on the RouterClient", client_type)
+      }
+      Self::ModelDoesNotSupportOption { field, value } => {
+        write!(f, "Model does not support '{}' for field '{}'", value, field)
       }
     }
   }
