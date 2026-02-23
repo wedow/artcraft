@@ -19,14 +19,7 @@ import {
   faClock,
 } from "@fortawesome/pro-solid-svg-icons";
 import { faCircleInfo } from "@fortawesome/pro-regular-svg-icons";
-import {
-  faRectangle,
-  faRectangleWide,
-  faSquare,
-  faRectangleVertical,
-} from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import {
   SizeIconOption,
@@ -37,6 +30,7 @@ import { usePromptVideoStore, RefImage, VideoInputMode } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { ImagePromptRow } from "./ImagePromptRow";
 import type { UploadImageFn } from "./ImagePromptRow";
+import { AspectRatioIcon } from "./common/AspectRatioIcon";
 import { twMerge } from "tailwind-merge";
 import { toast } from "@storyteller/ui-toaster";
 import { GenerationProvider } from "@storyteller/api-enums";
@@ -134,24 +128,6 @@ export const PromptBoxVideo = ({
   // TODO: Get rid of default resolutions. Just disable it if not present.
   let aspectRatioOptions: PopoverItem[];
 
-  const getSizeIcon = (sizeIcon: SizeIconOption) => {
-    switch (sizeIcon) {
-      case SizeIconOption.Landscape:
-      case SizeIconOption.Landscape16x9:
-        return faRectangle;
-      case SizeIconOption.Portrait:
-      case SizeIconOption.Portrait9x16:
-      case SizeIconOption.Portrait3x4:
-        return faRectangleVertical;
-      case SizeIconOption.Square:
-        return faSquare;
-      case SizeIconOption.Standard4x3:
-        return faRectangleWide;
-      default:
-        return faRectangle;
-    }
-  };
-
   const buildAspectRatioOptions = (options: SizeOption[]): PopoverItem[] => {
     const currentExists = options.some(
       (option) => option.textLabel === aspectRatio,
@@ -162,9 +138,7 @@ export const PromptBoxVideo = ({
       label: option.textLabel,
       selected:
         option.textLabel === aspectRatio || (useFirstOption && index === 0),
-      icon: (
-        <FontAwesomeIcon icon={getSizeIcon(option.icon)} className="h-4 w-4" />
-      ),
+      icon: <AspectRatioIcon sizeIcon={option.icon} />,
     }));
   };
 
@@ -515,11 +489,11 @@ export const PromptBoxVideo = ({
     setIsEnqueueing(false);
   };
 
-  const getCurrentAspectRatioIcon = () => {
-    const selected = aspectRatioList.find((item) => item.selected);
-    if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement<{ icon: IconProp }>;
-    return iconElement.props.icon;
+  const getCurrentAspectRatioIcon = (): SizeIconOption => {
+    const selectedLabel = aspectRatioList.find((item) => item.selected)?.label;
+    const allOptions = selectedModel?.sizeOptions ?? DEFAULT_RESOLUTIONS;
+    const match = allOptions.find((o) => o.textLabel === selectedLabel);
+    return match?.icon ?? SizeIconOption.Landscape;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -754,10 +728,7 @@ export const PromptBoxVideo = ({
                   panelTitle="Aspect Ratio"
                   showIconsInList
                   triggerIcon={
-                    <FontAwesomeIcon
-                      icon={getCurrentAspectRatioIcon()}
-                      className="h-4 w-4"
-                    />
+                    <AspectRatioIcon sizeIcon={getCurrentAspectRatioIcon()} />
                   }
                 />
               </Tooltip>
