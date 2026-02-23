@@ -18,6 +18,10 @@ impl Display for ClientType {
 pub enum ClientError {
   /// The requested client is not configured on the RouterClient.
   ClientNotConfigured(ClientType),
+
+  /// Both a URL and a media token were supplied for the same field.
+  /// The field name is included for debugging.
+  UrlAndMediaTokenSupplied(String),
 }
 
 impl Error for ClientError {}
@@ -27,6 +31,9 @@ impl Display for ClientError {
     match self {
       Self::ClientNotConfigured(client_type) => {
         write!(f, "{} client is not configured on the RouterClient", client_type)
+      }
+      Self::UrlAndMediaTokenSupplied(field) => {
+        write!(f, "Both a URL and a media token were supplied for '{}'; supply only one", field)
       }
     }
   }
