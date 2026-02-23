@@ -17,6 +17,14 @@ pub struct GenerateVideoRequest<'a> {
   // /// Some models support negative prompts
   // pub negative_prompt: Option<String>,
 
+  /// Ending keyframe (optional)
+  /// Must be a URL.
+  pub start_frame_url: Option<&'a str>,
+
+  /// Ending keyframe (optional)
+  /// Must be a URL.
+  pub end_frame_url: Option<&'a str>,
+
   /// The resolution to use
   pub resolution: Option<CommonVideoResolution>,
 
