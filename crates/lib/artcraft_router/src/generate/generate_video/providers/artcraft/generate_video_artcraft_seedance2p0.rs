@@ -1,4 +1,5 @@
 use crate::api::common_aspect_ratio::CommonAspectRatio;
+use crate::client::router_artcraft_client::RouterArtcraftClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::provider_error::ProviderError;
 use crate::generate::generate_video::generate_video::{GenerateVideoArgs, GenerateVideoResponse};
@@ -25,12 +26,8 @@ fn map_aspect_ratio(aspect_ratio: Option<CommonAspectRatio>) -> Option<Seedance2
 
 pub async fn generate_video_artcraft_seedance2p0(
   args: &GenerateVideoArgs<'_>,
+  artcraft_client: &RouterArtcraftClient,
 ) -> Result<GenerateVideoResponse, ArtcraftRouterError> {
-  let artcraft_client = args.client.artcraft_client.as_ref()
-    .ok_or_else(|| ArtcraftRouterError::InvalidInput(
-      "Artcraft client is not configured on the RouterClient".to_string()
-    ))?;
-
   let uuid_idempotency_token = Uuid::new_v4().to_string(); // TODO: Make this an optional top-level arg
   let aspect_ratio = map_aspect_ratio(args.aspect_ratio);
 

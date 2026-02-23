@@ -1,6 +1,7 @@
 use crate::api::common_aspect_ratio::CommonAspectRatio;
 use crate::api::common_resolution::CommonVideoResolution;
 use crate::api::common_video_model::CommonVideoModel;
+use crate::api::provider::Provider;
 use crate::client::router_client::RouterClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_video::providers::artcraft::generate_video_artcraft_seedance2p0::generate_video_artcraft_seedance2p0;
@@ -8,6 +9,7 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
 pub struct GenerateVideoArgs<'a> {
   pub client: &'a RouterClient,
+  pub provider: Provider,
   pub model: CommonVideoModel,
   pub resolution: Option<CommonVideoResolution>,
   pub aspect_ratio: Option<CommonAspectRatio>,
@@ -22,10 +24,15 @@ pub struct GenerateVideoResponse {
 pub async fn generate_video(
   args: &GenerateVideoArgs<'_>,
 ) -> Result<GenerateVideoResponse, ArtcraftRouterError> {
-  match args.model {
-    CommonVideoModel::Seedance2p0 => {
-      generate_video_artcraft_seedance2p0(args).await
+  match args.provider {
+    Provider::Artcraft => {
+      let artcraft_client = args.client.get_artcraft_client_ref()?;
+      match args.model {
+        CommonVideoModel::Seedance2p0 => {
+          generate_video_artcraft_seedance2p0(args, artcraft_client).await
+        }
+        _ => Err(ArtcraftRouterError::UnsupportedModel(format!("{:?}", args.model))),
+      }
     }
-    _ => Err(ArtcraftRouterError::UnsupportedModel(format!("{:?}", args.model))),
   }
 }
