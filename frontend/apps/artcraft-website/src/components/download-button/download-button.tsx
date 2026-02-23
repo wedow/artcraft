@@ -5,7 +5,7 @@ import {
   faLinux,
 } from "@fortawesome/free-brands-svg-icons";
 import { isMobile, isWindows, isMacOs } from "react-device-detect";
-import { DOWNLOAD_LINKS } from "../../config/downloads";
+import { DOWNLOAD_LINKS } from "../../config/github_download_links";
 
 interface DownloadButtonProps {
   className?: string;

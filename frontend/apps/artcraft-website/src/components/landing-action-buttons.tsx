@@ -3,7 +3,7 @@ import { isMobile, isMacOs } from "react-device-detect";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindows, faApple } from "@fortawesome/free-brands-svg-icons";
 import { faRocket } from "@fortawesome/pro-solid-svg-icons";
-import { DOWNLOAD_LINKS } from "../config/downloads";
+import { DOWNLOAD_LINKS } from "../config/github_download_links";
 
 interface LandingActionButtonsProps {
   onDownloadClick?: (e: React.MouseEvent) => void;

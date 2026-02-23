@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
 import { Link } from "react-router-dom";
 import { isMobile, isMacOs } from "react-device-detect";
-import { DOWNLOAD_LINKS } from "../../config/downloads";
+import { DOWNLOAD_LINKS } from "../../config/github_download_links";
 import Seo from "../../components/seo";
 import { PricingTable } from "../../components/pricing-table";
 

@@ -2,7 +2,7 @@ import { faApple, faWindows } from "@fortawesome/free-brands-svg-icons";
 import { faArrowDownToLine } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@storyteller/ui-button";
-import { DOWNLOAD_LINKS } from "../../config/downloads";
+import { DOWNLOAD_LINKS } from "../../config/github_download_links";
 import { isMobile } from "react-device-detect";
 import Seo from "../../components/seo";
 
