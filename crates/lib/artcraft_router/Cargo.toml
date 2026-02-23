@@ -25,5 +25,5 @@ anyhow.workspace = true
 log.workspace = true
 serde.workspace = true
 serde_derive.workspace = true
-tokio = { version = "1", features = ["full"] }
-uuid = { version = "1", features = ["v4"] }
+tokio.workspace = true
+uuid.workspace = true

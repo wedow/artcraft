@@ -28,11 +28,11 @@ pub async fn generate_video_artcraft_seedance2p0(
   request: &GenerateVideoRequest<'_>,
   artcraft_client: &RouterArtcraftClient,
 ) -> Result<GenerateVideoResponse, ArtcraftRouterError> {
-  
+
   let uuid_idempotency_token = request.get_or_generate_idempotency_token();
   let aspect_ratio = map_aspect_ratio(request.aspect_ratio);
   let prompt = request.prompt.map(|p| p.to_string());
-  
+
   let batch_count = match request.video_batch_count {
     Some(1) => Seedance2p0BatchCount::One,
     Some(2) => Seedance2p0BatchCount::Two,
@@ -43,9 +43,9 @@ pub async fn generate_video_artcraft_seedance2p0(
   let request = Seedance2p0MultiFunctionVideoGenRequest {
     uuid_idempotency_token,
     prompt,
-    start_frame_media_token: None,
-    end_frame_media_token: None,
-    reference_image_media_tokens: None,
+    start_frame_media_token: request.start_frame_media_token.map(|t| t.to_owned()),
+    end_frame_media_token: request.end_frame_media_token.map(|t| t.to_owned()),
+    reference_image_media_tokens: request.reference_image_media_tokens.map(|tokens| tokens.to_owned()),
     aspect_ratio,
     duration_seconds: None,
     batch_count: Some(batch_count),
