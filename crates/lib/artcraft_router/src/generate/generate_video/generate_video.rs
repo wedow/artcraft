@@ -7,13 +7,15 @@ use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_video::providers::artcraft::generate_video_artcraft_seedance2p0::generate_video_artcraft_seedance2p0;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
+// The flow is thus:
+// Generate Video Request -> Generate Video Plan (testable + cost estimate) -> Generate Video -> Job details
+
 pub struct GenerateVideoArgs<'a> {
-  pub client: &'a RouterClient,
-
-  pub provider: Provider,
-
   /// Which model to use.
   pub model: CommonVideoModel,
+
+  /// Which provider to use.
+  pub provider: Provider,
 
   /// The prompt for the video generation
   pub prompt: Option<String>,
@@ -26,6 +28,16 @@ pub struct GenerateVideoArgs<'a> {
 
   /// The aspect ratio to use
   pub aspect_ratio: Option<CommonAspectRatio>,
+
+  /// How many seconds to generate.
+  pub duration_seconds: Option<u16>,
+
+  // /// Whether to turn on/off audio.
+  // /// Not all models support audio, not all models have a choice.
+  // pub generate_audio: Option<bool>,
+
+  /// The polymorphic router client, which can dispatch to multiple providers.
+  pub client: &'a RouterClient,
 }
 
 pub struct GenerateVideoResponse {
