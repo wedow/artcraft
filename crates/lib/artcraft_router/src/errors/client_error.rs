@@ -22,6 +22,12 @@ pub enum ClientError {
   /// The model does not support the given option value.
   /// `field` is the request field name, `value` is what was requested.
   ModelDoesNotSupportOption { field: &'static str, value: String },
+
+  /// The caller requested zero generations, which is never valid.
+  UserRequestedZeroGenerations,
+
+  /// ArtCraft only accepts media tokens for image inputs, not raw URLs.
+  ArtcraftOnlySupportsMediaTokens,
 }
 
 impl Error for ClientError {}
@@ -34,6 +40,12 @@ impl Display for ClientError {
       }
       Self::ModelDoesNotSupportOption { field, value } => {
         write!(f, "Model does not support '{}' for field '{}'", value, field)
+      }
+      Self::UserRequestedZeroGenerations => {
+        write!(f, "Cannot request zero generations")
+      }
+      Self::ArtcraftOnlySupportsMediaTokens => {
+        write!(f, "ArtCraft only supports media tokens for image inputs; upload the image first to obtain a media token")
       }
     }
   }
