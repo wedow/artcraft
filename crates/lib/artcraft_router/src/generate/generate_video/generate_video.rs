@@ -2,8 +2,8 @@ use crate::api::common_video_model::CommonVideoModel;
 use crate::api::provider::Provider;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
+use crate::generate::generate_video::execute::artcraft::generate_video_artcraft_seedance2p0::generate_video_artcraft_seedance2p0;
 use crate::generate::generate_video::generate_video_request::GenerateVideoRequest;
-use crate::generate::generate_video::providers::artcraft::generate_video_artcraft_seedance2p0::generate_video_artcraft_seedance2p0;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
 // The flow is thus:
