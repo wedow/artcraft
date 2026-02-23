@@ -9,11 +9,23 @@ use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
 pub struct GenerateVideoArgs<'a> {
   pub client: &'a RouterClient,
+
   pub provider: Provider,
+
+  /// Which model to use.
   pub model: CommonVideoModel,
-  pub resolution: Option<CommonVideoResolution>,
-  pub aspect_ratio: Option<CommonAspectRatio>,
+
+  /// The prompt for the video generation
   pub prompt: Option<String>,
+
+  // /// Some models support negative prompts
+  // pub negative_prompt: Option<String>,
+
+  /// The resolution to use
+  pub resolution: Option<CommonVideoResolution>,
+
+  /// The aspect ratio to use
+  pub aspect_ratio: Option<CommonAspectRatio>,
 }
 
 pub struct GenerateVideoResponse {
