@@ -1,4 +1,6 @@
 use crate::api::common_aspect_ratio::CommonAspectRatio;
+use crate::api::image_ref::ImageRef;
+use crate::api::image_list_ref::ImageListRef;
 use crate::client::router_artcraft_client::RouterArtcraftClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::provider_error::ProviderError;
@@ -40,12 +42,25 @@ pub async fn generate_video_artcraft_seedance2p0(
     _ => Seedance2p0BatchCount::One,
   };
 
+  let start_frame_media_token = match &request.start_frame {
+    Some(ImageRef::MediaFileToken(t)) => Some((*t).to_owned()),
+    _ => None,
+  };
+  let end_frame_media_token = match &request.end_frame {
+    Some(ImageRef::MediaFileToken(t)) => Some((*t).to_owned()),
+    _ => None,
+  };
+  let reference_image_media_tokens = match &request.reference_images {
+    Some(ImageListRef::MediaFileTokens(tokens)) => Some((*tokens).to_owned()),
+    _ => None,
+  };
+
   let request = Seedance2p0MultiFunctionVideoGenRequest {
     uuid_idempotency_token,
     prompt,
-    start_frame_media_token: request.start_frame_media_token.map(|t| t.to_owned()),
-    end_frame_media_token: request.end_frame_media_token.map(|t| t.to_owned()),
-    reference_image_media_tokens: request.reference_image_media_tokens.map(|tokens| tokens.to_owned()),
+    start_frame_media_token,
+    end_frame_media_token,
+    reference_image_media_tokens,
     aspect_ratio,
     duration_seconds: None,
     batch_count: Some(batch_count),

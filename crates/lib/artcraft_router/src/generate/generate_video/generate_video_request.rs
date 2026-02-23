@@ -1,9 +1,10 @@
 use crate::api::common_aspect_ratio::CommonAspectRatio;
 use crate::api::common_resolution::CommonVideoResolution;
 use crate::api::common_video_model::CommonVideoModel;
+use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::api::provider::Provider;
 use crate::client::router_client::RouterClient;
-use tokens::tokens::media_files::MediaFileToken;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 
 pub struct GenerateVideoRequest<'a> {
@@ -19,29 +20,14 @@ pub struct GenerateVideoRequest<'a> {
   // /// Some models support negative prompts
   // pub negative_prompt: Option<String>,
 
-  /// Starting keyframe (optional). Must be a URL.
-  /// Mutually exclusive with `start_frame_media_token`.
-  pub start_frame_url: Option<&'a str>,
+  /// Starting keyframe (optional).
+  pub start_frame: Option<ImageRef<'a>>,
 
-  /// Starting keyframe as a media token (optional).
-  /// Mutually exclusive with `start_frame_url`.
-  pub start_frame_media_token: Option<&'a MediaFileToken>,
+  /// Ending keyframe (optional).
+  pub end_frame: Option<ImageRef<'a>>,
 
-  /// Ending keyframe (optional). Must be a URL.
-  /// Mutually exclusive with `end_frame_media_token`.
-  pub end_frame_url: Option<&'a str>,
-
-  /// Ending keyframe as a media token (optional).
-  /// Mutually exclusive with `end_frame_url`.
-  pub end_frame_media_token: Option<&'a MediaFileToken>,
-
-  /// Reference image URLs (optional).
-  /// Mutually exclusive with `reference_image_media_tokens`.
-  pub reference_image_urls: Option<&'a Vec<String>>,
-
-  /// Reference image media tokens (optional).
-  /// Mutually exclusive with `reference_image_urls`.
-  pub reference_image_media_tokens: Option<&'a Vec<MediaFileToken>>,
+  /// Reference images (optional).
+  pub reference_images: Option<ImageListRef<'a>>,
 
   /// The resolution to use
   pub resolution: Option<CommonVideoResolution>,
