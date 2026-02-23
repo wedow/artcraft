@@ -5,7 +5,8 @@ use crate::generate::generate_video::generate_video_request::GenerateVideoReques
 use crate::generate::generate_video::plan::artcraft::plan_generate_video_artcraft_seedance2p0::plan_generate_video_artcraft_seedance2p0;
 use crate::generate::generate_video::video_generation_plan::VideoGenerationPlan;
 
-pub fn plan_video_generation<'a>(
+/// Read the video generation request, construct a plan, then yield a means to execute it.
+pub fn begin_video_generation<'a>(
   request: &'a GenerateVideoRequest<'a>,
 ) -> Result<VideoGenerationPlan<'a>, ArtcraftRouterError> {
   match request.provider {
