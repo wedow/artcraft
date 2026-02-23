@@ -4,7 +4,6 @@ use crate::api::common_video_model::CommonVideoModel;
 use crate::api::image_list_ref::ImageListRef;
 use crate::api::image_ref::ImageRef;
 use crate::api::provider::Provider;
-use crate::client::router_client::RouterClient;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 
 pub struct GenerateVideoRequest<'a> {
@@ -51,9 +50,6 @@ pub struct GenerateVideoRequest<'a> {
   /// Some providers support idempotency.
   /// If not supplied, we'll generate one for the required providers.
   pub idempotency_token: Option<&'a str>,
-
-  /// The polymorphic router client, which can dispatch to multiple providers.
-  pub client: &'a RouterClient,
 }
 
 impl <'a> GenerateVideoRequest<'a> {
