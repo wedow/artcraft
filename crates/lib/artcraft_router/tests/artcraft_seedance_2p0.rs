@@ -132,19 +132,16 @@ mod plan_tests {
 
   #[test]
   fn batch_count_direct_mapping() {
-    let VideoGenerationPlan::ArtcraftSeedance2p0(plan) = begin_video_generation(
-      &GenerateVideoRequest { video_batch_count: Some(1), ..base_request() }
-    ).unwrap();
+    let req = GenerateVideoRequest { video_batch_count: Some(1), ..base_request() };
+    let VideoGenerationPlan::ArtcraftSeedance2p0(plan) = begin_video_generation(&req).unwrap();
     assert!(matches!(plan.batch_count, Seedance2p0BatchCount::One));
 
-    let VideoGenerationPlan::ArtcraftSeedance2p0(plan) = begin_video_generation(
-      &GenerateVideoRequest { video_batch_count: Some(2), ..base_request() }
-    ).unwrap();
+    let req = GenerateVideoRequest { video_batch_count: Some(2), ..base_request() };
+    let VideoGenerationPlan::ArtcraftSeedance2p0(plan) = begin_video_generation(&req).unwrap();
     assert!(matches!(plan.batch_count, Seedance2p0BatchCount::Two));
 
-    let VideoGenerationPlan::ArtcraftSeedance2p0(plan) = begin_video_generation(
-      &GenerateVideoRequest { video_batch_count: Some(4), ..base_request() }
-    ).unwrap();
+    let req = GenerateVideoRequest { video_batch_count: Some(4), ..base_request() };
+    let VideoGenerationPlan::ArtcraftSeedance2p0(plan) = begin_video_generation(&req).unwrap();
     assert!(matches!(plan.batch_count, Seedance2p0BatchCount::Four));
   }
 
