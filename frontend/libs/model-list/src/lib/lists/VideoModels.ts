@@ -10,9 +10,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     fullName: "Grok Video",
     category: "video",
     creator: ModelCreator.Grok,
-    providers: [
-      GenerationProvider.Grok
-    ],
+    providers: [GenerationProvider.Grok],
     selectorName: "Grok Video",
     selectorDescription: "Fastest video model",
     selectorBadges: ["20 sec."],
@@ -141,22 +139,39 @@ export const VIDEO_MODELS: VideoModel[] = [
     requiresImage: false,
     sizeOptions: [
       {
-        tauriValue: "landscape",
-        textLabel: "Landscape",
-        icon: SizeIconOption.Landscape,
+        tauriValue: "landscape_16x9",
+        textLabel: "16:9",
+        icon: SizeIconOption.Landscape16x9,
       },
       {
-        tauriValue: "portrait",
-        textLabel: "Portrait",
-        icon: SizeIconOption.Portrait,
-      },
-      {
-        tauriValue: "square",
-        textLabel: "Square",
+        tauriValue: "square_1x1",
+        textLabel: "1:1",
         icon: SizeIconOption.Square,
       },
+      {
+        tauriValue: "portrait_3x4",
+        textLabel: "3:4",
+        icon: SizeIconOption.Portrait3x4,
+      },
+      {
+        tauriValue: "standard_4x3",
+        textLabel: "4:3",
+        icon: SizeIconOption.Standard4x3,
+      },
+      {
+        tauriValue: "portrait_9x16",
+        textLabel: "9:16",
+        icon: SizeIconOption.Portrait9x16,
+      },
     ],
-    progressBarTime: 100000,
+    durationOptions: [4, 5, 6, 7, 8, 9],
+    defaultDuration: 4,
+    supportsReferenceMode: true,
+    maxReferenceImages: 3,
+    resolutionOptions: ["480p", "720p"],
+    defaultResolution: "720p",
+    supportsSystemPrompt: false,
+    progressBarTime: 360000,
   }),
   new VideoModel({
     id: "sora_2",
@@ -164,10 +179,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     fullName: "Sora 2",
     category: "video",
     creator: ModelCreator.OpenAi,
-    providers: [
-      GenerationProvider.Artcraft,
-      GenerationProvider.Sora,
-    ],
+    providers: [GenerationProvider.Artcraft, GenerationProvider.Sora],
     selectorName: "Sora 2",
     selectorDescription: "Smart video model",
     selectorBadges: ["2 min."],
