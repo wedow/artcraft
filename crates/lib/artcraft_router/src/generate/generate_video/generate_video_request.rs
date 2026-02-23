@@ -4,6 +4,7 @@ use crate::api::common_video_model::CommonVideoModel;
 use crate::api::provider::Provider;
 use crate::client::router_client::RouterClient;
 use tokens::tokens::media_files::MediaFileToken;
+use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 
 pub struct GenerateVideoRequest<'a> {
   /// Which model to use.
@@ -57,6 +58,9 @@ pub struct GenerateVideoRequest<'a> {
   // /// Whether to turn on/off audio.
   // /// Not all models support audio, not all models have a choice.
   // pub generate_audio: Option<bool>,
+
+  /// If the request is a mismatch with the (model/provider), how to mitigate it.
+  pub request_mismatch_mitigation_strategy: RequestMismatchMitigationStrategy,
 
   /// Some providers support idempotency.
   /// If not supplied, we'll generate one for the required providers.
