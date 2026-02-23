@@ -1,5 +1,5 @@
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum RequestMismatchMitigationStrategy {
   /// Upgrade the request to pay more.
   PayMoreUpgrade,

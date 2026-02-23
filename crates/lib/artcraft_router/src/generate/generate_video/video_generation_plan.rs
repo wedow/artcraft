@@ -4,6 +4,7 @@ use crate::generate::generate_video::execute::artcraft::generate_video_artcraft_
 use crate::generate::generate_video::plan::artcraft::plan_generate_video_artcraft_seedance2p0::PlanArtcraftSeedance2p0;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
+#[derive(Clone, Debug)]
 pub struct GenerateVideoResponse {
   pub inference_job_token: InferenceJobToken,
   pub all_inference_job_tokens: Vec<InferenceJobToken>,
